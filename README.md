@@ -16,7 +16,7 @@ and switching the UI elements to use the MFC Feature Pack from the Visual Studio
 2008 release. The MFC Feature Pack provided many of the essential features that 
 Xtreme Toolkit provided.
 
-This repository has the results of that work. Note that history of the repository
+This repository has the results of that work. Note that the history of the repository
 has been truncated to start at the point where the code cleanup is largely completed
 and the new MIT license for the source code has been put in force.
 
