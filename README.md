@@ -60,7 +60,7 @@ At that point newer features can be added to evolve the system's capabilities.
 In essence first focus on stability, then extend the feature set.
 
 My ultimate hope is that a group of enthusiasts will adopt the program and its
-future as I'm getting "long in the tooth" and the fewer lose ends the better. ;)
+future as I'm getting "long in the tooth" and the fewer loose ends the better. ;)
 
 The CyberBoard Web Site
 -----------------------
