@@ -1,0 +1,1992 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""afxres.rc""             // Standard components\r\n"
+    "#include ""afxprint.rc""           // printing/print preview resources\r\n"
+    "#if !defined(_AFXDLL)\r\n"
+    "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
+    "#endif\r\n"
+    "#endi\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_GP_MAINFRAME        ICON                    "res\\GP.ico"
+
+IDR_GSCNTYPE            ICON                    "res\\GSNDOC.ico"
+
+IDR_GAMETYPE            ICON                    "res\\GAMDOC.ico"
+
+IDR_GP_BOARDVIEW        ICON                    "res\\BRDVIEW.ico"
+
+IDR_GMOVTYPE            ICON                    "res\\GMOVDOC.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_GP_MAINFRAME        BITMAP                  "res\\ToolBar.bmp"
+
+IDB_25PERCENT           BITMAP                  "res\\BadColum.bmp"
+
+IDB_50PERCENT           BITMAP                  "res\\Bmp50Percent.bmp"
+
+IDB_SYSBUTTON           BITMAP                  "res\\SysButton.bmp"
+
+IDB_UNUSED              BITMAP                  "res\\Gp_MainFrame.bmp"
+
+IDB_MENU_ICON           BITMAP                  "res\\menuicon.bmp"
+
+IDR_TBAR_PLAYBACK       BITMAP                  "res\\tbplayback.bmp"
+
+IDR_TBAR_VIEW           BITMAP                  "res\\tbview.bmp"
+
+IDR_TBAR_MOVE           BITMAP                  "res\\tbmove.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_GP_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New...\tCtrl+N",             ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents",                   ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM SEPARATOR
+        MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
+    END
+END
+
+IDR_GSCNTYPE MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New...\tCtrl+N",             ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "C&opy Board Image to Clipboard\tCtrl+C", ID_EDIT_COPY
+        MENUITEM "&Save Board Image in File...", ID_EDIT_BRD2FILE
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete Markers\tDel",        ID_EDIT_CLEAR
+        MENUITEM "Select All &Markers",         ID_EDIT_SELALLMARKERS
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Object Te&xt...",        ID_EDIT_ELEMENT_TEXT
+        MENUITEM SEPARATOR
+        MENUITEM "Board &Properties...",        ID_EDIT_BRDPROP
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Stat&us Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Save Window &Positions",      ID_VIEW_SAVE_WIN_STATE
+        MENUITEM SEPARATOR
+        MENUITEM "S&nap Grid",                  ID_VIEW_SNAPGRID
+        MENUITEM SEPARATOR
+        MENUITEM "Tray Palette &A",             ID_VIEW_TRAYA
+        MENUITEM "Tray Palette &B",             ID_VIEW_TRAYB
+        MENUITEM "&Marker Palette",             ID_VIEW_MARKERPAL
+        MENUITEM SEPARATOR
+        MENUITEM "&Full Scale Board",           ID_VIEW_FULLSCALEBRD
+        MENUITEM "&Half Scale Board",           ID_VIEW_HALFSCALEBRD
+        MENUITEM "&Small Scale Board",          ID_VIEW_SMALLSCALEBRD
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Board",               ID_VIEW_BOARD_ROTATE180
+        MENUITEM SEPARATOR
+        MENUITEM "Show &Object Text Tips\tF7",  ID_VIEW_SHOW_TIP_TEXT
+        MENUITEM "Show Object O&wner Tips",     ID_VIEW_SHOW_TIP_OWNER
+        MENUITEM "Hide &Pieces\tF9",            ID_VIEW_PIECES
+    END
+    POPUP "&Project"
+    BEGIN
+        MENUITEM "&Create Playing Piece Tray...", ID_EDIT_CREATETRAY
+        MENUITEM "Create Trays from Piece &Groups...", ID_EDIT_IMPORTPCEGROUPS
+        MENUITEM "Create Geomorphic Board...",  ID_EDIT_CREATE_GEOMORPHIC
+        MENUITEM SEPARATOR
+        MENUITEM "Create P&layers...",          ID_EDIT_CREATE_PLAYERS
+        MENUITEM "Edit Pl&ayers...",            ID_EDIT_EDIT_PLAYERS
+        MENUITEM SEPARATOR
+        MENUITEM "Select Game &Boards...",      ID_EDIT_SELECTBOARDS
+        MENUITEM "Select Game Pi&eces...",      ID_EDIT_SELECTGAMEPIECES
+        MENUITEM SEPARATOR
+        MENUITEM "Scenario &Properties...",     ID_EDIT_SCNPROPERTIES
+    END
+    POPUP "&Actions"
+    BEGIN
+        MENUITEM "Auto &Stack\tCtrl+A",         ID_ACT_STACK
+        MENUITEM "Auto &Deck Stack",            ID_ACT_AUTOSTACK_DECK
+        MENUITEM "S&huffle Objects",            ID_ACT_SHUFFLE_SELECTED
+        MENUITEM SEPARATOR
+        MENUITEM "Move To &Front\tCtrl+F",      ID_ACT_TOFRONT
+        MENUITEM "Move To &Back\tCtrl+B",       ID_ACT_TOBACK
+        MENUITEM "Turn Piece &Over\tCtrl+I",    ID_ACT_TURNOVER
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
+        MENUITEM "&Rotate Object - &Incremental...", 40074
+        POPUP "Rotate Object - &Absolute"
+        BEGIN
+            MENUITEM "&Reset Rotation",             ID_ACT_ROTATE_0
+            MENUITEM SEPARATOR
+            POPUP "&Square Faces"
+            BEGIN
+                MENUITEM "&0\013O",                     ID_ACT_ROTATE_0
+                MENUITEM "&90°",                        ID_ACT_ROTATE_90
+                MENUITEM "&180°",                       ID_ACT_ROTATE_180
+                MENUITEM "&270°",                       ID_ACT_ROTATE_270
+            END
+            POPUP "Hex Faces (&Flat Up)"
+            BEGIN
+                MENUITEM "&60°",                        ID_ACT_ROTATE_60
+                MENUITEM "&120°",                       ID_ACT_ROTATE_120
+                MENUITEM "&240°",                       ID_ACT_ROTATE_240
+                MENUITEM "&300°",                       ID_ACT_ROTATE_300
+            END
+            POPUP "Hex Faces (&Point Up)"
+            BEGIN
+                MENUITEM "&30°",                        ID_ACT_ROTATE_30
+                MENUITEM "&150°",                       ID_ACT_ROTATE_150
+                MENUITEM "&210°",                       ID_ACT_ROTATE_210
+                MENUITEM "33&0°",                       ID_ACT_ROTATE_330
+            END
+            POPUP "&Diamond Faces"
+            BEGIN
+                MENUITEM "&45°",                        ID_ACT_ROTATE_45
+                MENUITEM "&135°",                       ID_ACT_ROTATE_135
+                MENUITEM "&225°",                       ID_ACT_ROTATE_225
+                MENUITEM "&315°",                       ID_ACT_ROTATE_315
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Lock Objects",               ID_ACT_LOCKOBJECT
+        MENUITEM "S&uspend Object Locks",       ID_ACT_LOCK_SUSPEND
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
+        MENUITEM "Tile &Vertically",            ID_WINDOW_TILE_VERT
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Horizontal Split",            ID_VIEW_SPLITBOARDROWS
+        MENUITEM "Vertical Split",              ID_VIEW_SPLITBOARDCOLS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents",                   ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Make a CyberBoard Donation...", ID_HELP_DONATION
+        MENUITEM SEPARATOR
+        MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
+    END
+END
+
+IDR_GAMETYPE MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New...\tCtrl+N",             ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save Game As Sc&enario...",   ID_FILE_SAVE_GAME_AS_SCENARIO
+        MENUITEM SEPARATOR
+        MENUITEM "&Load Recorded Move File...", ID_FILE_LOADMOVES
+        MENUITEM "Send Recorded &Moves to File...", ID_FILE_SENDMOVES2FILE
+        MENUITEM "&Discard Current Move Recording...", ID_FILE_DISCARDRECORDING
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "C&opy Board Image to Clipboard\tCtrl+C", ID_EDIT_COPY
+        MENUITEM "S&ave Board Image in File...", ID_EDIT_BRD2FILE
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete Selected Markers\tDel", ID_EDIT_CLEAR
+        MENUITEM "Select All &Markers",         ID_EDIT_SELALLMARKERS
+        POPUP "Select All Markers &From"
+        BEGIN
+            MENUITEM "No Markers",                  ID_MRKGROUP_FIRST
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Object Te&xt...",        ID_EDIT_ELEMENT_TEXT
+        MENUITEM SEPARATOR
+        MENUITEM "Board &Properties...",        ID_EDIT_BRDPROP
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Save Window &Positions",      ID_VIEW_SAVE_WIN_STATE
+        MENUITEM SEPARATOR
+        MENUITEM "S&nap Grid",                  ID_VIEW_SNAPGRID
+        MENUITEM SEPARATOR
+        MENUITEM "Tray Palette &A",             ID_VIEW_TRAYA
+        MENUITEM "Tray Palette &B",             ID_VIEW_TRAYB
+        MENUITEM "&Marker Palette",             ID_VIEW_MARKERPAL
+        MENUITEM SEPARATOR
+        MENUITEM "&Full Scale Board",           ID_VIEW_FULLSCALEBRD
+        MENUITEM "&Half Scale Board",           ID_VIEW_HALFSCALEBRD
+        MENUITEM "&Small Scale Board",          ID_VIEW_SMALLSCALEBRD
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Board",               ID_VIEW_BOARD_ROTATE180
+        MENUITEM SEPARATOR
+        MENUITEM "Show Object Text Tips\tF7",   ID_VIEW_SHOW_TIP_TEXT
+        MENUITEM "Show Object O&wner Tips",     ID_VIEW_SHOW_TIP_OWNER
+        MENUITEM "Sim&ulate Spectator Player\tF8", ID_ACT_SIMULATE_SPECTATOR
+        MENUITEM "Hide &Pieces\tF9",            ID_VIEW_PIECES
+        MENUITEM "I&ndicators On Top\tF10",     ID_VIEW_DRAW_IND_ON_TOP
+    END
+    POPUP "&Actions"
+    BEGIN
+        MENUITEM "Auto &Stack\tCtrl+A",         ID_ACT_STACK
+        MENUITEM "Auto &Deck Stack",            ID_ACT_AUTOSTACK_DECK
+        MENUITEM "S&huffle Objects",            ID_ACT_SHUFFLE_SELECTED
+        MENUITEM SEPARATOR
+        MENUITEM "Move To &Front\tCtrl+F",      ID_ACT_TOFRONT
+        MENUITEM "Move To &Back\tCtrl+B",       ID_ACT_TOBACK
+        MENUITEM "Turn Piece &Over\tCtrl+I",    ID_ACT_TURNOVER
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
+        MENUITEM "Rotate Object - &Incremental...", ID_ACT_ROTATEREL
+        POPUP "Rotate Object - &Absolute"
+        BEGIN
+            MENUITEM "&Reset Rotation",             ID_ACT_ROTATE_0
+            MENUITEM SEPARATOR
+            POPUP "&Square Faces"
+            BEGIN
+                MENUITEM "&0°",                         ID_ACT_ROTATE_0
+                MENUITEM "&90°",                        ID_ACT_ROTATE_90
+                MENUITEM "&180°",                       ID_ACT_ROTATE_180
+                MENUITEM "&270°",                       ID_ACT_ROTATE_270
+            END
+            POPUP "Hex Faces (&Flat Up)"
+            BEGIN
+                MENUITEM "&0°",                         ID_ACT_ROTATE_0
+                MENUITEM "&60°",                        ID_ACT_ROTATE_60
+                MENUITEM "&120°",                       ID_ACT_ROTATE_120
+                MENUITEM "&180°",                       ID_ACT_ROTATE_180
+                MENUITEM "&240°",                       ID_ACT_ROTATE_240
+                MENUITEM "&300°",                       ID_ACT_ROTATE_300
+            END
+            POPUP "Hex Faces (&Point Up)"
+            BEGIN
+                MENUITEM "&30°",                        ID_ACT_ROTATE_30
+                MENUITEM "&90°",                        ID_ACT_ROTATE_90
+                MENUITEM "&150°",                       ID_ACT_ROTATE_150
+                MENUITEM "&210°",                       ID_ACT_ROTATE_210
+                MENUITEM "&270°",                       ID_ACT_ROTATE_270
+                MENUITEM "33&0°",                       ID_ACT_ROTATE_330
+            END
+            POPUP "&Diamond Faces"
+            BEGIN
+                MENUITEM "&45°",                        ID_ACT_ROTATE_45
+                MENUITEM "&135°",                       ID_ACT_ROTATE_135
+                MENUITEM "&225°",                       ID_ACT_ROTATE_225
+                MENUITEM "&315°",                       ID_ACT_ROTATE_315
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Ta&ke Ownership",             ID_ACT_TAKE_OWNERSHIP
+        MENUITEM "Release O&wnership",          ID_ACT_RELEASE_OWNERSHIP
+        MENUITEM "Set Ow&nership...",           ID_ACT_SET_OWNER
+        MENUITEM SEPARATOR
+        MENUITEM "&Lock Objects",               ID_ACT_LOCKOBJECT
+        MENUITEM "S&uspend Object Locks",       ID_ACT_LOCK_SUSPEND
+        MENUITEM SEPARATOR
+        MENUITEM "Begin a Compound Move\tCtrl+Enter", ID_ACT_COMPOUNDMOVE_BEGIN
+        MENUITEM "Accept Compound Move\tEnter", ID_ACT_COMPOUNDMOVE_END
+        MENUITEM "Discard Compound Move\tEsc",  ID_ACT_COMPOUNDMOVE_DISCARD
+        MENUITEM SEPARATOR
+        MENUITEM "Begin a &Plotted Move",       ID_PTOOL_PLOTMOVE
+        MENUITEM "A&ccept Plotted Move",        ID_ACT_PLOTDONE
+        MENUITEM "&Discard Plotted Move",       ID_ACT_PLOTDISCARD
+        MENUITEM SEPARATOR
+        MENUITEM "&Roll Dice...\tCtrl+R",       ID_ACTIONS_ROLLDICE
+        MENUITEM "Enter &Message...\tCtrl+M",   ID_ACT_DOMESSAGE
+    END
+    POPUP "&Playback"
+    BEGIN
+        MENUITEM "&Start of Moves",             ID_PBCK_START
+        MENUITEM "&Previous Move\tF2",          ID_PBCK_PREVIOUS
+        MENUITEM "&Next Move\tF3",              ID_PBCK_NEXT
+        MENUITEM "&End of Moves",               ID_PBCK_END
+        MENUITEM SEPARATOR
+        MENUITEM "Aut&omatic Playback\tF6",     ID_PBCK_AUTO_STEP
+        MENUITEM SEPARATOR
+        MENUITEM "Single S&tep Compound Moves", ID_PBCK_STEP_CMOVES
+        MENUITEM "Automatically Step to Ne&xt History", ID_PBCK_STEP_TO_NEXT_HIST
+        MENUITEM "Keep S&kipped Move Indications", ID_PBCK_SKIP_KEEP_IND
+        MENUITEM SEPARATOR
+        MENUITEM "Ne&xt History Entry\tF4",     ID_PBCK_NEXTHIST
+        MENUITEM "&Close History Playback\tF5", ID_PBCK_CLOSEHIST
+        MENUITEM SEPARATOR
+        MENUITEM "&Accept Move File Playback...", ID_PBCK_FINISH
+        MENUITEM "&Discard Move File Playback", ID_PBCK_DISCARD
+        MENUITEM SEPARATOR
+        MENUITEM "Show Current &Message...",    ID_PBCK_READMESSAGE
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile Horizontally",          ID_WINDOW_TILE_HORZ
+        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Horizontal Split",            ID_VIEW_SPLITBOARDROWS
+        MENUITEM "Vertical Split",              ID_VIEW_SPLITBOARDCOLS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents",                   ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Make a CyberBoard Donation...", ID_HELP_DONATION
+        MENUITEM SEPARATOR
+        MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
+    END
+END
+
+IDR_MENU_PLAYER_POPUPS MENU
+BEGIN
+    POPUP "0=PV_MOVEMODE"
+    BEGIN
+        MENUITEM "Delete Marker",               ID_EDIT_CLEAR
+        MENUITEM "Select All Markers",          ID_EDIT_SELALLMARKERS
+        POPUP "Select All Markers From"
+        BEGIN
+            MENUITEM "No Markers",                  ID_MRKGROUP_FIRST
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Auto Stack",                  ID_ACT_STACK
+        MENUITEM "Auto Stack Deck",             ID_ACT_AUTOSTACK_DECK
+        MENUITEM "Shuffle Objects",             ID_ACT_SHUFFLE_SELECTED
+        MENUITEM SEPARATOR
+        MENUITEM "Move To Front",               ID_ACT_TOFRONT
+        MENUITEM "Move To Back",                ID_ACT_TOBACK
+        MENUITEM "Turn Piece Over",             ID_ACT_TURNOVER
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
+        MENUITEM "Rotate Object - Incremental...", ID_ACT_ROTATEREL
+        POPUP "Rotate Object - Absolute"
+        BEGIN
+            MENUITEM "Reset Rotation",              ID_ACT_ROTATE_0
+            MENUITEM SEPARATOR
+            POPUP "Square Faces"
+            BEGIN
+                MENUITEM "0°",                          ID_ACT_ROTATE_0
+                MENUITEM "90°",                         ID_ACT_ROTATE_90
+                MENUITEM "180°",                        ID_ACT_ROTATE_180
+                MENUITEM "270°",                        ID_ACT_ROTATE_270
+            END
+            POPUP "Hex Faces (Flat Up)"
+            BEGIN
+                MENUITEM "0°",                          ID_ACT_ROTATE_0
+                MENUITEM "60°",                         ID_ACT_ROTATE_60
+                MENUITEM "120°",                        ID_ACT_ROTATE_120
+                MENUITEM "180°",                        ID_ACT_ROTATE_180
+                MENUITEM "240°",                        ID_ACT_ROTATE_240
+                MENUITEM "300°",                        ID_ACT_ROTATE_300
+            END
+            POPUP "Hex Faces (Point Up)"
+            BEGIN
+                MENUITEM "30°",                         ID_ACT_ROTATE_30
+                MENUITEM "90°",                         ID_ACT_ROTATE_90
+                MENUITEM "150°",                        ID_ACT_ROTATE_150
+                MENUITEM "210°",                        ID_ACT_ROTATE_210
+                MENUITEM "270°",                        ID_ACT_ROTATE_270
+                MENUITEM "330°",                        ID_ACT_ROTATE_330
+            END
+            POPUP "Diamond Faces"
+            BEGIN
+                MENUITEM "45°",                         ID_ACT_ROTATE_45
+                MENUITEM "135°",                        ID_ACT_ROTATE_135
+                MENUITEM "225°",                        ID_ACT_ROTATE_225
+                MENUITEM "315°",                        ID_ACT_ROTATE_315
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Take Ownership",              ID_ACT_TAKE_OWNERSHIP
+        MENUITEM "Release Ownership",           ID_ACT_RELEASE_OWNERSHIP
+        MENUITEM "Set Ownership...",            ID_ACT_SET_OWNER
+        MENUITEM SEPARATOR
+        MENUITEM "Lock Objects",                ID_ACT_LOCKOBJECT
+        MENUITEM "Suspend Object Locks",        ID_ACT_LOCK_SUSPEND
+        MENUITEM SEPARATOR
+        MENUITEM "Roll Dice...",                ID_ACTIONS_ROLLDICE
+        MENUITEM "Enter Message...",            ID_ACT_DOMESSAGE
+        MENUITEM "Edit Object Text...",         ID_EDIT_ELEMENT_TEXT
+        MENUITEM SEPARATOR
+        POPUP "Compound Move"
+        BEGIN
+            MENUITEM "Begin a Compound Move",       ID_ACT_COMPOUNDMOVE_BEGIN
+            MENUITEM "Accept Compound Move",        ID_ACT_COMPOUNDMOVE_END
+            MENUITEM "Discard Compound Move",       ID_ACT_COMPOUNDMOVE_DISCARD
+        END
+        POPUP "Plotted Move"
+        BEGIN
+            MENUITEM "Begin a Plotted Move",        ID_PTOOL_PLOTMOVE
+            MENUITEM "Accept Plotted Move",         ID_ACT_PLOTDONE
+            MENUITEM "Discard Plotted Move",        ID_ACT_PLOTDISCARD
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Full Scale Board",            ID_VIEW_FULLSCALEBRD
+        MENUITEM "Half Scale Board",            ID_VIEW_HALFSCALEBRD
+        MENUITEM "Small Scale Board",           ID_VIEW_SMALLSCALEBRD
+        MENUITEM SEPARATOR
+        MENUITEM "Horizontal Split",            ID_VIEW_SPLITBOARDROWS
+        MENUITEM "Vertical Split",              ID_VIEW_SPLITBOARDCOLS
+        MENUITEM SEPARATOR
+        MENUITEM "Hide Pieces",                 ID_VIEW_PIECES
+        MENUITEM "Simulate Spectator Player",   ID_ACT_SIMULATE_SPECTATOR
+    END
+    POPUP "1=PV_PLAYMODE"
+    BEGIN
+        MENUITEM "Start of Moves",              ID_PBCK_START
+        MENUITEM "Next Move",                   ID_PBCK_NEXT
+        MENUITEM "Previous Move",               ID_PBCK_PREVIOUS
+        MENUITEM "End of Moves",                ID_PBCK_END
+        MENUITEM SEPARATOR
+        MENUITEM "Automatic Playback",          ID_PBCK_AUTO_STEP
+        MENUITEM SEPARATOR
+        MENUITEM "Single Step Compound Moves",  ID_PBCK_STEP_CMOVES
+        MENUITEM "Automatically Step to Next History", ID_PBCK_STEP_TO_NEXT_HIST
+        MENUITEM "Keep Skipped Move Indications", ID_PBCK_SKIP_KEEP_IND
+        MENUITEM SEPARATOR
+        MENUITEM "Show Current Message...",     ID_PBCK_READMESSAGE
+        MENUITEM SEPARATOR
+        MENUITEM "Next History Entry",          ID_PBCK_NEXTHIST
+        MENUITEM "Close History Playback",      ID_PBCK_CLOSEHIST
+        MENUITEM SEPARATOR
+        MENUITEM "Full Scale Board",            ID_VIEW_FULLSCALEBRD
+        MENUITEM "Half Scale Board",            ID_VIEW_HALFSCALEBRD
+        MENUITEM "Small Scale Board",           ID_VIEW_SMALLSCALEBRD
+        MENUITEM SEPARATOR
+        MENUITEM "Horizontal Split",            ID_VIEW_SPLITBOARDROWS
+        MENUITEM "Vertical Split",              ID_VIEW_SPLITBOARDCOLS
+        MENUITEM SEPARATOR
+        MENUITEM "Hide Pieces",                 ID_VIEW_PIECES
+        MENUITEM "Indicators On Top",           ID_VIEW_DRAW_IND_ON_TOP
+        MENUITEM "Simulate Spectator Player",   ID_ACT_SIMULATE_SPECTATOR
+        MENUITEM SEPARATOR
+        MENUITEM "Accept Move File Playback...", ID_PBCK_FINISH
+        MENUITEM "Discard Move File Playback...", ID_PBCK_DISCARD
+    END
+    POPUP "2=PV_SCNMODE"
+    BEGIN
+        MENUITEM "Delete Marker",               ID_EDIT_CLEAR
+        MENUITEM "Select All Markers",          ID_EDIT_SELALLMARKERS
+        MENUITEM SEPARATOR
+        MENUITEM "Auto Stack",                  ID_ACT_STACK
+        MENUITEM "Auto Stack Deck",             ID_ACT_AUTOSTACK_DECK
+        MENUITEM "Shuffle Objects",             ID_ACT_SHUFFLE_SELECTED
+        MENUITEM SEPARATOR
+        MENUITEM "Move To Front",               ID_ACT_TOFRONT
+        MENUITEM "Move To Back",                ID_ACT_TOBACK
+        MENUITEM "Turn Piece Over",             ID_ACT_TURNOVER
+        MENUITEM SEPARATOR
+        MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
+        MENUITEM "Rotate Object - Incremental...", ID_ACT_ROTATEREL
+        POPUP "Rotate Object - Absolute"
+        BEGIN
+            MENUITEM "Reset Rotation",              ID_ACT_ROTATE_0
+            MENUITEM SEPARATOR
+            POPUP "Square Faces"
+            BEGIN
+                MENUITEM "0°",                          ID_ACT_ROTATE_0
+                MENUITEM "90°",                         ID_ACT_ROTATE_90
+                MENUITEM "180°",                        ID_ACT_ROTATE_180
+                MENUITEM "270°",                        ID_ACT_ROTATE_270
+            END
+            POPUP "Hex Faces (Flat Up)"
+            BEGIN
+                MENUITEM "60°",                         ID_ACT_ROTATE_60
+                MENUITEM "120°",                        ID_ACT_ROTATE_120
+                MENUITEM "240°",                        ID_ACT_ROTATE_240
+                MENUITEM "300°",                        ID_ACT_ROTATE_300
+            END
+            POPUP "Hex Faces (Point Up)"
+            BEGIN
+                MENUITEM "30°",                         ID_ACT_ROTATE_30
+                MENUITEM "150°",                        ID_ACT_ROTATE_150
+                MENUITEM "210°",                        ID_ACT_ROTATE_210
+                MENUITEM "330°",                        ID_ACT_ROTATE_330
+            END
+            POPUP "Diamond Faces"
+            BEGIN
+                MENUITEM "45°",                         ID_ACT_ROTATE_45
+                MENUITEM "135°",                        ID_ACT_ROTATE_135
+                MENUITEM "225°",                        ID_ACT_ROTATE_225
+                MENUITEM "315°",                        ID_ACT_ROTATE_315
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Lock Objects",                ID_ACT_LOCKOBJECT
+        MENUITEM "Suspend Object Locks",        ID_ACT_LOCK_SUSPEND
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Object Text...",         ID_EDIT_ELEMENT_TEXT
+        MENUITEM SEPARATOR
+        MENUITEM "Full Scale Board",            ID_VIEW_FULLSCALEBRD
+        MENUITEM "Half Scale Board",            ID_VIEW_HALFSCALEBRD
+        MENUITEM "Small Scale Board",           ID_VIEW_SMALLSCALEBRD
+        MENUITEM SEPARATOR
+        MENUITEM "Horizontal Split",            ID_VIEW_SPLITBOARDROWS
+        MENUITEM "Vertical Split",              ID_VIEW_SPLITBOARDCOLS
+        MENUITEM SEPARATOR
+        MENUITEM "Hide Pieces",                 ID_VIEW_PIECES
+        MENUITEM "Snap Grid",                   ID_VIEW_SNAPGRID
+    END
+    POPUP "3=PJ_GSN_DEFAULT"
+    BEGIN
+        MENUITEM "Create Playing Piece Tray...", ID_EDIT_CREATETRAY
+        MENUITEM "Create Geomorphic Board...",  ID_EDIT_CREATE_GEOMORPHIC
+        MENUITEM SEPARATOR
+        MENUITEM "Select Game Boards...",       ID_EDIT_SELECTBOARDS
+        MENUITEM "Select Game Pieces...",       ID_EDIT_SELECTGAMEPIECES
+        MENUITEM SEPARATOR
+        MENUITEM "View",                        ID_PPROJITEM_VIEW
+        MENUITEM SEPARATOR
+        MENUITEM "Edit...",                     ID_PPROJITEM_EDIT
+        MENUITEM "Delete",                      ID_PPROJITEM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Properties...",               ID_PPROJITEM_PROPERTIES
+    END
+    POPUP "4=PJ_GAM_DEFAULT"
+    BEGIN
+        MENUITEM "View",                        ID_PPROJITEM_VIEW
+        MENUITEM "Replay",                      ID_PPROJITEM_REPLAY
+        MENUITEM "Export...",                   ID_PPROJITEM_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Next History Entry",          ID_PBCK_NEXTHIST
+        MENUITEM "Close History Playback",      ID_PBCK_CLOSEHIST
+        MENUITEM SEPARATOR
+        MENUITEM "Discard Current Move Recording...", ID_FILE_DISCARDRECORDING
+        MENUITEM SEPARATOR
+        MENUITEM "Load Recorded Move File...",  ID_FILE_LOADMOVES
+        MENUITEM "Send Recorded Moves to File...", ID_FILE_SENDMOVES2FILE
+        MENUITEM SEPARATOR
+        MENUITEM "Accept Move File Playback...", ID_PBCK_FINISH
+        MENUITEM "&Discard Move File Playback", ID_PBCK_DISCARD
+        MENUITEM SEPARATOR
+        MENUITEM "Properties...",               ID_PPROJITEM_PROPERTIES
+    END
+    POPUP "5=PV_PIECE_TRAY"
+    BEGIN
+        MENUITEM "Turn Selected Pieces Over",   ID_ACT_TURNOVER
+        MENUITEM "Turn All Pieces Over",        ID_ACT_TURNOVER_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "Shuffle Selected Items",      ID_PTRAY_SHUFFLE_SELECTED
+        MENUITEM "Shuffle All Pieces",          ID_PTRAY_SHUFFLE
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Object Text...",         ID_EDIT_ELEMENT_TEXT
+        MENUITEM SEPARATOR
+        MENUITEM "About the Selected Tray...",  ID_PTRAY_ABOUT
+    END
+    POPUP "6=MV_RICHEDIT"
+    BEGIN
+        MENUITEM "Copy",                        ID_EDIT_COPY
+    END
+END
+
+IDR_HOLDER MENU
+BEGIN
+    POPUP "Holder"
+    BEGIN
+        MENUITEM "&Set Bookmark",               ID_EDIT_SETBOOKMARK
+        MENUITEM "&Restore Bookmark",           ID_EDIT_RESTOREBOOKMARK
+        MENUITEM "&Clear Bookmark",             ID_EDIT_CLRBOOKMARK
+        MENUITEM SEPARATOR
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_GP_MAINFRAME ACCELERATORS
+BEGIN
+    "D",            ID_ACT_AUTOSTACK_DECK,  VIRTKEY, CONTROL, NOINVERT
+    VK_RETURN,      ID_ACT_COMPOUNDMOVE_BEGIN, VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_ACT_DOMESSAGE,       VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_ACT_ROTATE_0,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "G",            ID_ACT_ROTATEGROUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "R",            ID_ACT_ROTATEREL,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F8,          ID_ACT_SIMULATE_SPECTATOR, VIRTKEY, NOINVERT
+    "A",            ID_ACT_STACK,           VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_ACT_TOBACK,          VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_ACT_TOFRONT,         VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_ACT_TURNOVER,        VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_ACTIONS_ROLLDICE,    VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
+    "M",            ID_DEBUG_MOVELIST,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "P",            ID_DEBUG_PIECETABLE,    VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_CHANGE_GAME_OWNER, VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "R",            ID_FILE_CREATE_REFEREE, VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_PTOOL_PLOTMOVE,      VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
+    VK_F6,          ID_PBCK_AUTO_STEP,      VIRTKEY, NOINVERT
+    VK_F5,          ID_PBCK_CLOSEHIST,      VIRTKEY, NOINVERT
+    VK_F3,          ID_PBCK_NEXT,           VIRTKEY, NOINVERT
+    VK_F4,          ID_PBCK_NEXTHIST,       VIRTKEY, NOINVERT
+    VK_F2,          ID_PBCK_PREVIOUS,       VIRTKEY, NOINVERT
+    VK_F10,         ID_VIEW_DRAW_IND_ON_TOP, VIRTKEY, NOINVERT
+    VK_F9,          ID_VIEW_PIECES,         VIRTKEY, NOINVERT
+    VK_F7,          ID_VIEW_SHOW_TIP_TEXT,  VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 34, 22, 217, 119
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About CyberBoard Player"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    ICON            IDR_GP_MAINFRAME,IDC_STATIC,11,17,20,20
+    CTEXT           "CyberBoard Player Program",IDC_STATIC,42,10,132,8
+    CTEXT           "Copyright © 1994-2020 by Dale L. Larson",IDC_STATIC,25,50,166,8
+    DEFPUSHBUTTON   "OK",IDOK,93,95,32,14,WS_GROUP
+    CTEXT           "All Rights Reserved",IDC_STATIC,42,58,132,8
+    CTEXT           "Program Version - ?????",IDC_D_ABOUT_PROGVER,42,19,132,8
+    ICON            IDR_GP_MAINFRAME,IDC_STATIC,185,17,20,20
+    CTEXT           "GBX File Version - ?????",IDC_D_ABOUT_GBXVER,67,50,132,8,NOT WS_VISIBLE
+    CTEXT           "GAM File Version - ?????",IDC_D_ABOUT_GAMVER,8,40,132,8,NOT WS_VISIBLE
+    CTEXT           "GSN File Version - ?????",IDC_D_ABOUT_GSNVER,78,41,132,8,NOT WS_VISIBLE
+    CTEXT           "GMV File Version - ?????",IDC_D_ABOUT_GMVVER,39,31,132,8,NOT WS_VISIBLE
+    LTEXT           "GenDate:???",IDC_D_ABOUT_GENDATE,5,97,82,9,NOT WS_VISIBLE
+    CTEXT           "dlarson42@gmail.com",IDC_STATIC,43,70,132,8
+    RTEXT           "Beta XX",IDC_D_ABOUT_GENDATE2,144,97,61,9,NOT WS_VISIBLE
+    CTEXT           "NOTE: Program ceases to function on: October 1, 2005",IDC_STATIC,13,78,195,8,NOT WS_VISIBLE
+END
+
+IDD_SCNPROP DIALOG 50, 50, 190, 140
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Scenario Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_SCNPRP_AUTHOR,6,20,116,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_SCNPRP_TITLE,6,50,177,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_SCNPRP_DESCR,6,79,177,53,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,134,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,134,23,50,14
+    LTEXT           "Author:",IDC_STATIC,6,8,27,8
+    LTEXT           "Title:",IDC_STATIC,6,39,19,7
+    LTEXT           "Description:",IDC_STATIC,6,68,43,9
+END
+
+IDD_PBRDPROP DIALOGEX 35, 40, 213, 297
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Board Properties"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,159,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,159,23,50,14
+    COMBOBOX        IDC_D_PBPRP_OWNER_LIST,8,44,147,102,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Allow non-owners to access pieces on this board.",IDC_D_PBPRP_NONOWNER_ACCESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,62,172,10
+    CONTROL         "Automatically Show Board on Open",IDC_D_PBPRP_AUTOOPEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,74,127,10
+    CONTROL         "Show select list and tiny board view. (Reopen window)",IDC_D_PBPRP_SHOW_SEL_AND_TINY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,86,187,10
+    EDITTEXT        IDC_D_PBPRP_XPIXELS,46,123,37,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_PBPRP_XOFFSET,122,123,37,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_PBPRP_YPIXELS,46,136,37,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_PBPRP_YOFFSET,122,136,37,12,ES_AUTOHSCROLL
+    CONTROL         "Enable snap grid",IDC_D_PBPRP_SNAPON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,72,11
+    CONTROL         "Snap objects to their centers.",IDC_D_PBPRP_S_RECTCENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,165,115,10
+    CONTROL         "Snap plotted move lines to grid.",IDC_D_PBPRP_S_SNAPPLOTS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,178,120,10
+    CONTROL         "Show cell border lines on large boards.",IDC_D_PBPRP_L_CELLBORDER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,212,141,10
+    CONTROL         "Show cell border lines on small board.",IDC_D_PBPRP_S_CELLBORDER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,227,141,10
+    EDITTEXT        IDC_D_PBPRP_XPCE_STGGR,75,258,22,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_PBPRP_YPCE_STGGR,75,270,22,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_D_PBPRP_PLOTWIDTH,170,276,35,48,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_D_PBPRP_BOARDNAME,8,20,142,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    LTEXT           "Board Name:",IDC_STATIC,8,9,47,8
+    RTEXT           "X Pixels:",IDC_STATIC,10,125,33,8
+    RTEXT           "X Offset:",IDC_STATIC,89,125,29,8
+    RTEXT           "Y Offset:",IDC_STATIC,88,138,30,8
+    GROUPBOX        "Snap Grid",IDC_STATIC,8,112,161,82
+    GROUPBOX        "Cells",IDC_STATIC,8,199,162,42
+    GROUPBOX        "Auto Stack",IDC_STATIC,7,244,125,47
+    LTEXT           "X Piece Stagger:",IDC_STATIC,14,259,58,9
+    LTEXT           "Y Piece Stagger:",IDC_STATIC,14,271,58,9
+    LTEXT           "Pixels",IDC_STATIC,102,259,23,8
+    LTEXT           "Pixels",IDC_STATIC,102,271,23,8
+    RTEXT           "Y Pixels:",IDC_STATIC,10,139,33,8
+    GROUPBOX        "Plotted Moves",IDC_STATIC,138,244,70,47
+    LTEXT           "Color:",IDC_STATIC,141,260,23,8
+    LTEXT           "Width:",IDC_STATIC,141,277,26,8
+    LTEXT           "Board's owner:",IDC_D_PBPRP_OWNER_LABEL,8,34,56,8
+    PUSHBUTTON      "",IDC_D_PBPRP_PLOTCOLOR,170,258,34,14
+    CONTROL         "Draw locked objects below non-locked objects.",IDC_D_PBPRP_DRAW_LOCKED_BENEATH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,98,165,10
+END
+
+IDD_SETBOARDS DIALOGEX 50, 50, 218, 139
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Boards"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,163,16,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,163,32,50,14
+    LTEXT           "Select boards used in the scenario:",IDC_STATIC,3,3,123,9
+    LISTBOX         IDC_D_SETBRD_LIST,3,14,155,103,LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Select All",IDC_D_SETBRD_SELECTALL,3,120,50,14
+    PUSHBUTTON      "Clear All",IDC_D_SETBRD_CLEARALL,108,120,50,14
+END
+
+IDD_VIEWBOARD_DELETEME DIALOG 0, 0, 185, 82
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "View Board"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,23,50,14
+    LTEXT           "Select a board to view:",IDC_STATIC,9,6,108,9
+    LISTBOX         IDC_D_VWBRD_LIST,10,19,113,57,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SETPIECES DIALOG 0, 0, 335, 202
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Setup Pieces"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_D_SETPCE_PCEGRP,5,17,125,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_SETPCE_PCELIST,5,46,125,150,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Copy >>",IDC_D_SETPCE_COPYSEL,139,65,57,14
+    PUSHBUTTON      "Copy All >>",IDC_D_SETPCE_COPYALL,139,84,57,14
+    COMBOBOX        IDC_D_SETPCE_TRAYNAME,204,17,125,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_SETPCE_TRAYLIST,204,46,125,150,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Remove <<",IDC_D_SETPCE_REMSEL,139,113,57,14
+    PUSHBUTTON      "Remove All <<",IDC_D_SETPCE_REMALL,139,132,57,14
+    DEFPUSHBUTTON   "Close",IDOK,139,17,50,14
+    LTEXT           "Pieces:",IDC_STATIC,7,35,30,8
+    LTEXT           "Piece Group:",IDC_STATIC,7,7,55,8
+    LTEXT           "Tray Name:",IDC_STATIC,204,7,57,8
+    LTEXT           "Tray Contents:",IDC_STATIC,204,35,57,8
+END
+
+IDD_TRAYNEW DIALOG 55, 40, 233, 53
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Tray"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_YNEW_NAME,9,18,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Enter name of new Playing Piece Tray:",IDC_STATIC,9,5,148,8
+    LTEXT           "See the Tray Properties dialog to set Tray options.",IDC_STATIC,9,38,158,8
+END
+
+IDD_TRAYPRP DIALOG 55, 40, 232, 167
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Tray Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_YPRP_NAME,9,18,148,12,ES_AUTOHSCROLL
+    CONTROL         "Drag delivers random pieces for selections",IDC_D_YPRP_RANDSEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,76,149,10
+    GROUPBOX        "Tray content visibility",IDC_STATIC,9,90,211,71
+    CONTROL         "Both sides of pieces are fully visible",IDC_D_YPRP_VIZFULL,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,112,127,10
+    CONTROL         "Only the top side of pieces are visible",IDC_D_YPRP_VIZTOP,
+                    "Button",BS_AUTORADIOBUTTON,17,123,133,10
+    CONTROL         "Each piece image is hidden. (shows ""HIDDEN"")",IDC_D_YPRP_VIZHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,134,167,10
+    CONTROL         "All piece items hidden. (shows the text ""ALL HIDDEN"")",IDC_D_YPRP_VIZALLHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,145,189,10
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Name for Playing Piece Tray:",IDC_STATIC,9,5,148,8
+    COMBOBOX        IDC_D_YPRP_OWNER_LIST,9,44,147,102,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tray's owner:",IDC_D_YPRP_OWNER_LABEL,9,34,45,8
+    CONTROL         "Allow non-owners to access this owned tray.",IDC_D_YPRP_NONOWNER_ACCESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,62,158,10
+    CONTROL         "Visibility rule also applies to the tray's owner.",IDC_D_YPRP_OWNER_TOO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,100,189,10
+END
+
+IDD_GMOVDESCR DIALOG 60, 50, 229, 158
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Move Description"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_MDESC_TITLE,6,47,216,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_MDESC_DESCR,6,77,216,77,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,23,50,14
+    LTEXT           "Enter a description for this recorded set of moves. The title is presented in the move history list.",IDC_STATIC,6,7,159,26
+    LTEXT           "Title:",IDC_STATIC,6,35,30,8
+    LTEXT           "Description:",IDC_STATIC,6,65,45,8
+END
+
+IDD_CHOOSESTATE DIALOG 80, 60, 225, 92
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Game State"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,162,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,23,50,14
+    CONTROL         "Use the state information in the move file as the starting point.",IDC_D_STATE_MOVEFILE,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,9,42,213,9
+    CONTROL         "Use the current game state as the starting point.",IDC_D_STATE_CURSTATE,
+                    "Button",BS_AUTORADIOBUTTON,9,55,213,10
+    LTEXT           "The move file's game state (positions, etc..) doesn't match the current game's state. Choose one of the following corrective measures:",IDC_STATIC,7,10,148,26
+    LTEXT           "Choose Cancel if you don't know what's going on.",IDC_STATIC,7,73,202,9
+END
+
+IDD_SENDMESSAGE DIALOGEX 60, 80, 289, 148
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Send Message"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_D_SMSG_MESSAGE,5,3,280,124,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_GROUP
+    EDITTEXT        IDC_D_SMSG_MESSAGE2,159,133,23,12,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | NOT WS_VISIBLE | WS_VSCROLL | WS_GROUP
+    DEFPUSHBUTTON   "Send && Close",IDOK,5,131,50,14
+    PUSHBUTTON      "Roll Dice...",IDC_D_SMSG_ROLLDICE,105,131,50,14
+    PUSHBUTTON      "Defer",IDC_D_SMSG_CLOSE,185,131,50,14
+    PUSHBUTTON      "Discard",IDCANCEL,235,131,50,14
+    PUSHBUTTON      "Send",IDC_D_SMSG_SEND,55,131,50,14
+END
+
+IDD_ROTATE DIALOG 0, 0, 185, 140
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Rotate Piece or Marker"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,23,50,14
+    CONTROL         "",IDC_D_ROT_PREVIEW,"Static",SS_BLACKFRAME,12,50,166,84
+    EDITTEXT        IDC_D_ROT_ANGLE,38,10,40,12,ES_AUTOHSCROLL
+    RTEXT           "Angle:",IDC_STATIC,12,12,23,8
+    PUSHBUTTON      "Apply Angle ->",IDC_D_ROT_APPLY,12,29,67,14,NOT WS_TABSTOP
+END
+
+IDD_ROTATEPIECE DIALOGEX 0, 0, 97, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CLIENTEDGE
+CAPTION "Rotate Object"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,63,1,31,14
+    PUSHBUTTON      "Cancel",IDCANCEL,63,17,31,14
+    PUSHBUTTON      "-5°",IDC_D_ROTPCE_CCW5,1,16,25,14
+    PUSHBUTTON      "-10°",IDC_D_ROTPCE_CCW10,1,31,25,14
+    PUSHBUTTON      "-50°",IDC_D_ROTPCE_CCW50,1,46,25,14
+    PUSHBUTTON      "+5°",IDC_D_ROTPCE_CW5,30,16,25,14
+    PUSHBUTTON      "+10°",IDC_D_ROTPCE_CW10,30,31,25,14
+    PUSHBUTTON      "+50°",IDC_D_ROTPCE_CW50,30,46,25,14
+    EDITTEXT        IDC_D_ROTPCE_CURVAL,63,46,31,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "-1°",IDC_D_ROTPCE_CCW1,1,1,25,14
+    PUSHBUTTON      "+1°",IDC_D_ROTPCE_CW1,30,1,25,14
+END
+
+IDD_DIEROLLER DIALOGEX 0, 0, 217, 127
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Roll Dice"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Roll:",IDC_DIE_ROLL1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,24,27,10
+    EDITTEXT        IDC_DIE_NUMDIES1,39,23,19,12,ES_NUMBER
+    EDITTEXT        IDC_DIE_FACES1,105,23,27,12,ES_NUMBER
+    CONTROL         "Roll:",IDC_DIE_ROLL2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,27,10
+    EDITTEXT        IDC_DIE_NUMDIES2,39,36,19,12,ES_NUMBER
+    EDITTEXT        IDC_DIE_FACES2,105,36,27,12,ES_NUMBER
+    CONTROL         "Roll:",IDC_DIE_ROLL3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,27,10
+    EDITTEXT        IDC_DIE_NUMDIES3,39,50,19,12,ES_NUMBER
+    EDITTEXT        IDC_DIE_FACES3,105,50,27,12,ES_NUMBER
+    EDITTEXT        IDC_DIE_BIAS,39,69,29,12
+    EDITTEXT        IDC_DIE_SEED,81,89,129,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Roll",IDOK,160,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,26,50,14
+    LTEXT           "Dice having:",IDC_STATIC,61,24,41,10
+    LTEXT           "Faces",IDC_STATIC,135,24,25,10
+    LTEXT           "Dice having:",IDC_STATIC,61,38,41,10
+    LTEXT           "Faces",IDC_STATIC,135,38,25,10
+    LTEXT           "Dice having:",IDC_STATIC,61,51,41,10
+    LTEXT           "Faces",IDC_STATIC,135,52,25,10
+    LTEXT           "Seed value (optional):",IDC_STATIC,7,91,70,8
+    LTEXT           "Add:",IDC_STATIC,20,71,16,8
+    LTEXT           "to the above result.",IDC_STATIC,71,71,62,8
+    PUSHBUTTON      "Reset Seed Vaue",IDC_DIE_RESET_SEED,81,105,129,14
+    LTEXT           "Roll",IDC_STATIC,7,8,13,8
+    LTEXT           "sets of the following:",IDC_STATIC,46,8,75,8
+    EDITTEXT        IDC_DIE_SETS,23,7,20,12,ES_AUTOHSCROLL
+END
+
+IDD_TRUNCATE_PLAYBACK DIALOG 0, 0, 354, 94
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Truncate Playback?"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,297,7,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,297,24,50,14
+    CONTROL         "NO! Do NOT...I repeat DO NOT truncate the playback.",IDC_D_TRUNC_DONT,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,64,266,10
+    CONTROL         "Yes. Truncate the playback and retain that state of the game.",IDC_D_TRUNC_DOIT,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,77,275,10
+    LTEXT           "You are not at the end of the move playback. You have the option of discarding all moves that occur after this point. The preceding moves will be stored in the Game History database.",IDC_STATIC,7,7,272,26
+    LTEXT           "Truncating moves is useful in order to recover from a hopelessly flawed set of moves. You resume play at the state of the game where the playback was truncated.",IDC_STATIC,7,36,272,18
+END
+
+IDD_IMPORTPIECEGROUPS DIALOGEX 0, 0, 224, 158
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Import Piece Groups"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,167,15,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,167,34,50,14
+    LTEXT           "Create Trays from the selected Piece Groups:",IDC_STATIC,7,3,149,9
+    LISTBOX         IDC_D_IMPPCE_GROUPLIST,7,15,153,119,LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Select All",IDC_D_IMPPCE_SELECTALL,7,137,50,14
+    PUSHBUTTON      "Clear All",IDC_D_IMPPCE_CLEARALL,111,137,50,14
+END
+
+IDD_EDIT_ELEMENT_TEXT DIALOGEX 0, 0, 253, 95
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Object Text"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_D_EDITELEM_TEXT,7,17,180,55,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "Set text on both sides of pieces.",IDC_D_EDITELEM_SETBOTH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,78,180,10
+    DEFPUSHBUTTON   "OK",IDOK,196,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,196,24,50,14
+    LTEXT           "Enter text to be associated with the piece and/or marker:",IDC_STATIC,7,7,186,9
+END
+
+IDD_CREATE_PLAYERS DIALOGEX 0, 0, 241, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Players"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_D_CPLAY_NUM_PLAYERS,139,14,36,12,ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,184,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,184,24,50,14
+    LTEXT           "How many players should be created?",IDC_STATIC,13,16,123,8
+    LTEXT           "Tip: Maximum of 26 players. Zero deletes all players.",IDC_STATIC,13,30,177,8
+END
+
+IDD_EDIT_PLAYERS DIALOG 0, 0, 213, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Player Names"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,156,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,156,24,50,14
+    LISTBOX         IDC_D_EPLAY_NAME_LIST,7,18,139,40,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Player names:",IDC_STATIC,7,7,65,8
+    EDITTEXT        IDC_D_EPLAY_EDIT_NAME,7,74,141,14,ES_AUTOHSCROLL
+    LTEXT           "New player name:",IDC_STATIC,7,62,139,8
+    PUSHBUTTON      "Update Name",IDC_D_EPLAY_UPDATE_NAME,47,93,63,14
+END
+
+IDD_MULTIPLAYER_GAME DIALOG 0, 0, 272, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Creating Multiplayer Game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_D_MPGAME_PLAYER_LIST,7,84,194,55,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_D_MPGAME_PLAYER_NAME,7,143,193,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Update Name",IDC_D_MPGAME,71,163,74,14
+    DEFPUSHBUTTON   "OK",IDOK,215,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,215,24,50,14
+    LTEXT           "This scenario is for a multi-player game. You will be prompted for a base file name that will be used to create a unique game file for each player. The generated files should be distributed to the appropriate players after which you may begin play.",IDC_STATIC,7,7,195,33
+    LTEXT           "The names below are the default player names. You may change them now before creating the games. Press OK when you are done.",IDC_STATIC,7,58,202,26
+    CONTROL         "Create a Referee game file. It has unlimited player access.",IDC_D_MPGAME_CREATE_REFEREE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,44,201,10
+END
+
+IDD_SELECT_OWNER DIALOG 0, 0, 189, 95
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select New Owner"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_D_SELOWN_LIST,7,19,116,69,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,132,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,132,24,50,14
+    LTEXT           "Select a new owner for the piece(s):",IDC_STATIC,7,7,122,8
+END
+
+IDD_CHANGE_GAME_OWNER DIALOG 0, 0, 189, 95
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Game File Owner"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_D_CHGGAMEOWN_LIST,7,19,116,69,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,132,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,132,24,50,14
+    LTEXT           "Select a new owner for the Game file:",IDC_STATIC,7,7,122,8
+END
+
+IDD_GEOMORPHIC_BOARD DIALOG 0, 0, 287, 202
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Geomorphic Board"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,230,18,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,230,35,50,14
+    LISTBOX         IDC_D_NEWGEO_BOARD_LIST,7,35,90,125,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_NEWGEO_GEOMORPHIC_LIST,109,35,116,140,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add Board",IDC_D_NEWGEO_ADD_BOARD,7,164,90,14
+    PUSHBUTTON      "Add Row Break",IDC_D_NEWGEO_ADD_BREAK,7,181,90,14
+    LTEXT           "New board's name:",IDC_STATIC,7,7,162,8
+    EDITTEXT        IDC_D_NEWGEO_BOARD_NAME,7,18,218,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Clear List",IDC_D_NEWGEO_CLEAR,109,181,116,14
+    PUSHBUTTON      "Help",IDC_D_NEWGEO_HELP,230,66,50,14
+END
+
+IDD_MARKER_COUNT DIALOG 0, 0, 249, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Marker Count"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_MRKCNT_NUMBER,147,12,23,13,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,190,5,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,190,22,50,14
+    LTEXT           "Enter the number of markers to be created:",IDC_STATIC,5,14,137,8
+END
+
+IDD_GET_PASSWORD DIALOG 0, 0, 238, 42
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Password"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_GETPASS_PASSWORD,8,18,168,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,182,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,182,24,50,14
+    LTEXT           "Enter the password:",IDC_STATIC,8,6,91,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_NODROP              CURSOR                  "res\\NoDrop.cur"
+
+IDC_DRAGTILE            CURSOR                  "res\\DragTile.cur"
+
+IDC_CROSSHAIR           CURSOR                  "res\\CrossHair.cur"
+
+IDC_CMOVMODE            CURSOR                  "res\\CMovMode.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_PBRDPROP DLGINIT
+BEGIN
+    IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
+0x0031, 
+    IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
+0x0032, 
+    IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
+0x0033, 
+    IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
+0x0034, 
+    IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
+0x0035, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,5,0,1000
+ PRODUCTVERSION 3,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "NorseSoft"
+            VALUE "FileDescription", "CyberBoard Player Program"
+            VALUE "FileVersion", "3.5.0.1000"
+            VALUE "LegalCopyright", "Copyright © Dale L. Larson 1994-2029"
+            VALUE "OriginalFilename", "CBPlay.exe"
+            VALUE "ProductName", "CyberBoard(tm)"
+            VALUE "ProductVersion", "3.5.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 117
+    END
+
+    IDD_SETBOARDS, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 213
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 134
+    END
+
+    IDD_SETPIECES, DIALOG
+    BEGIN
+        RIGHTMARGIN, 332
+        BOTTOMMARGIN, 198
+    END
+
+    IDD_TRAYNEW, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 46
+    END
+
+    IDD_TRAYPRP, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 164
+    END
+
+    IDD_SENDMESSAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 285
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 145
+    END
+
+    IDD_ROTATEPIECE, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 94
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 45
+    END
+
+    IDD_DIEROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+
+    IDD_TRUNCATE_PLAYBACK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 347
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+
+    IDD_IMPORTPIECEGROUPS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 217
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 151
+    END
+
+    IDD_EDIT_ELEMENT_TEXT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 246
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_CREATE_PLAYERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 234
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_EDIT_PLAYERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 206
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    IDD_MULTIPLAYER_GAME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 265
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 177
+    END
+
+    IDD_SELECT_OWNER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 182
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_GEOMORPHIC_BOARD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 195
+    END
+
+    IDD_MARKER_COUNT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_GET_PASSWORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 231
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 35
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_GP_MAINFRAME TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    BUTTON      ID_FILE_SENDMOVES2FILE
+    BUTTON      ID_FILE_LOADMOVES
+    SEPARATOR
+    BUTTON      ID_CONTEXT_HELP
+END
+
+IDR_TBAR_PLAYBACK TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_FILE_LOADMOVES
+    BUTTON      ID_PBCK_FINISH
+    BUTTON      ID_PBCK_DISCARD
+    SEPARATOR
+    BUTTON      ID_PBCK_START
+    BUTTON      ID_PBCK_PREVIOUS
+    BUTTON      ID_PBCK_NEXT
+    BUTTON      ID_PBCK_END
+    SEPARATOR
+    BUTTON      ID_PBCK_NEXTHIST
+    BUTTON      ID_PBCK_CLOSEHIST
+END
+
+IDR_TBAR_VIEW TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_VIEW_TOGGLESCALE
+    BUTTON      ID_VIEW_PIECES
+    SEPARATOR
+    BUTTON      ID_VIEW_BOARD_ROTATE180
+    SEPARATOR
+    BUTTON      ID_VIEW_SHOW_TIP_TEXT
+    BUTTON      ID_VIEW_SHOW_TIP_OWNER
+    SEPARATOR
+    BUTTON      ID_VIEW_TRAYA
+    BUTTON      ID_VIEW_TRAYB
+    BUTTON      ID_VIEW_MARKERPAL
+    SEPARATOR
+    BUTTON      ID_PBCK_READMESSAGE
+END
+
+IDR_TBAR_MOVE TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_FILE_SENDMOVES2FILE
+    BUTTON      ID_FILE_DISCARDRECORDING
+    SEPARATOR
+    BUTTON      ID_ACT_COMPOUNDMOVE_BEGIN
+    BUTTON      ID_ACT_COMPOUNDMOVE_END
+    BUTTON      ID_ACT_COMPOUNDMOVE_DISCARD
+    SEPARATOR
+    BUTTON      ID_PTOOL_PLOTMOVE
+    BUTTON      ID_ACT_PLOTDONE
+    BUTTON      ID_ACT_PLOTDISCARD
+    SEPARATOR
+    BUTTON      ID_ACT_DOMESSAGE
+    SEPARATOR
+    BUTTON      ID_ACTIONS_ROLLDICE
+    SEPARATOR
+    BUTTON      ID_ACT_TOFRONT
+    BUTTON      ID_ACT_TOBACK
+    SEPARATOR
+    BUTTON      ID_ACT_STACK
+    BUTTON      ID_ACT_TURNOVER
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDR_GP_MAINFRAME        "CyberBoard Player"
+    IDR_GSCNTYPE            "\nGScn\nScenario\nScenario Files (*.gsn)\n.gsn\nCyberBoardScenario\nCyberBoard Scenario"
+    IDR_GAMETYPE            "\nGame\nGame\nGame Files (*.gam)\n.gam\nCyberBoardGame\nCyberBoard Game"
+    IDR_GP_BOARDVIEW        "\nBoard\n\n\n\n\n"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_GBOX_FILTER         "GameBox Files (*.gbx)|*.gbx|All Files (*.*)|*.*||"
+    IDS_GSCN_FILTER         "Scenario Files (*.gsn)|*.gsn|All Files (*.*)|*.*||"
+    IDS_GBOX_SELECT         "Select Game Box File for Scenario"
+    IDS_GSCN_SELECT         "Select Initial Scenario for Game"
+    IDP_PROGVER             "Program Version - %1.%2"
+    IDP_GBXVER              "GBX File Version - %1.%2"
+    IDP_GSNVER              "GSN File Version - %1.%2"
+    IDP_GAMVER              "GAM File Version - %1.%2"
+    IDP_GMVVER              "GMV File Version - %1.%2"
+    IDS_ERR_NOTAGAMEBOX     "The file is not a Game Box."
+    IDS_ERR_GAMEBOXNEWER    "The Game Box file was created by a newer version of the program. You must upgrade to load it."
+    IDS_ERR_GBXVIDEORES     "The Game Box file you have selected was created using a video driver supporting at least 16 bit color (65536 colors). Colors in the game may appear strange."
+    IDS_ERR_GBXNOMEM        "Not enough memory is available to load the Game Box file. Try closing other applications or increase your swap file size."
+    IDS_ERR_GBXREAD         "Error reading the Game Box file into memory. The file may be damaged."
+    IDS_ERR_NEEDABOARD      "The Game Box file must contain at least one playing board in order to create a scenario."
+    IDS_ERR_BOARDNOTEXIST   "A board is in use which doesn't exist in the game box file. The game may have had major modifications and cannot be trusted with this game or scenario."
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "CyberBoard Player"
+    AFX_IDS_IDLEMESSAGE     "For Help, press F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Create a new Game or Scenario\nNew Game or Scenario"
+    ID_FILE_OPEN            "Open an existing Game or Scenario\nOpen Game or Scenario"
+    ID_FILE_CLOSE           "Close the active document"
+    ID_FILE_SAVE            "Save the active Game or Scenario\nSave Active Game or Scenario"
+    ID_FILE_SAVE_AS         "Save the active document with a new name"
+    ID_FILE_PAGE_SETUP      "Change the printing options"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options"
+    ID_FILE_PRINT           "Print the active document"
+    ID_FILE_PRINT_PREVIEW   "Display full pages"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nProgram Information"
+    ID_APP_EXIT             "Quit the application; prompts to save documents"
+    ID_HELP_INDEX           "List Help topics"
+    ID_HELP_USING           "Display instructions about how to use help"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows"
+    ID_HELP                 "Display help for current task or command"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane"
+    ID_PREV_PANE            "Switch back to the previous window pane"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles"
+    ID_WINDOW_SPLIT         "Split the active window into panes"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection"
+    ID_EDIT_CLEAR_ALL       "Erase everything"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard"
+    ID_EDIT_FIND            "Find the specified text"
+    ID_EDIT_PASTE           "Insert Clipboard contents"
+    ID_EDIT_REPEAT          "Repeat the last action"
+    ID_EDIT_REPLACE         "Replace specific text with different text"
+    ID_EDIT_SELECT_ALL      "Select the entire document"
+    ID_EDIT_UNDO            "Undo the last action\nUndio"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE
+BEGIN
+    ID_SCN_SELPIECES        "Select pieces for this scenario"
+    ID_SCN_BOARDSEL         "Select boards for this scenario"
+    ID_SCN_TRAYS            "Create and destroy playing piece trays"
+    ID_SCN_PROPERTIES       "Modify scenario properties"
+    ID_VIEW_BOARD           "Select a playing board for viewing"
+    ID_VIEW_TRAYA           "Shows or hides piece tray A\nPiece Tray A"
+    ID_VIEW_TRAYB           "Shows or hides Piece tray B\nPiece Tray B"
+    ID_VIEW_MARKERPAL       "Shows or hides the marker palette\nMarkers"
+    ID_VIEW_FULLSCALEBRD    "Show full scale board"
+    ID_VIEW_HALFSCALEBRD    "Show half scale board"
+    ID_EDIT_SETBOOKMARK     "Save the current state of the game"
+    ID_EDIT_RESTOREBOOKMARK "Restore game to saved state"
+    ID_VIEW_ANNOTATIONS     "Show or hide annotation graphics"
+    ID_VIEW_PIECES          "Hide or show pieces on board\nHide Pieces (F9)"
+    ID_ACT_TOFRONT          "Move selected piece(s) in front of other pieces\nMove Pieces to Front (Ctrl+F)"
+    ID_ACT_TOBACK           "Move selected pieces(s) behind other pieces\nMove Pieces to Back (Ctrl+B)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_NOBOARDSSELECTED 
+                            "A scenario must contain at least one playing board."
+    IDS_ERR_TRAYHASPIECES   "The tray you are about to delete contains playing pieces. If you proceed the pieces will be removed from the scenario. You may reimport them from the piece setup dialog."
+    IDS_TRAYA_TITLE         "Tray A"
+    IDS_TRAYB_TITLE         "Tray B"
+    IDS_BTN_GSN_SELECT      "Select"
+    IDS_BTN_GSN_VIEW        "View"
+    IDS_BTN_GSN_PROPERTIES  "Properties"
+    IDS_BTN_GSN_REMOVE      "Remove"
+    IDS_BTN_GSN_CREATE      "Create"
+    IDS_BTN_GSN_EDIT        "Edit"
+    IDS_BTN_GSN_DELETE      "Delete"
+    IDS_PHEAD_GSN_BOARDS    "Playing Boards"
+    IDS_PHEAD_GSN_TRAYS     "Playing Piece Trays"
+    IDS_ERR_TRAYNAME        "You must provide a unique board name."
+    IDS_ERR_TRAYNAMEUSED    "The tray name is already in use."
+    IDS_PHEAD_GSN_DOCTYPE   "Game Scenario"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_GAMEBOXID       "The Game Box file must have a unique Game ID. Run the game designer program and select Game Box properties in the project window to set an ID."
+    IDP_ERR_NOGAMEBOX       "The Game Box file:\n\n     ""%1""\n\ndoesn't exist. Perhaps it is located elsewhere.\n\nPress to OK to specify the location of the Game Box."
+    IDS_ERR_SCENARIONEWER   "The Scenario or Game file was created by a newer version of the program. You must upgrade your CyberBoard software to load it."
+    IDS_ERR_NOTASCENARIO    "Not a Scenario file."
+    IDS_ERR_WRONGGAMEBOX    "This is not the correct Game Box file for this scenario or game."
+    IDS_ERR_MAJORREV        "There have been deletions to the Game Box file since it was last used. They may have invalidated your Scenario or Game. Press OK to continue loading. Cancel aborts loading."
+    IDS_ERR_BOARDMISSING    "A playing board used by the Scenario or Game no longer exists in the Game Box file. There is no way to recover from this situation other than finding the proper Game Box file."
+    IDS_ERR_PIECETBLSIZE    "The piece table used by the Scenario or Game has been truncated since last use. Press OK to continue loading. If you continue, undefined pieces will be removed from boards and trays."
+    IDS_BTN_GAM_PROPERTIES  "Properties"
+    IDS_BTN_GAM_VIEW        "View"
+    IDS_BTN_GAM_LOAD        "Load"
+    IDS_BTN_GAM_SAVE        "Save"
+    IDS_BTN_GAM_REPLAY      "Replay"
+    IDS_BTN_GAM_EXPORT      "Export"
+    IDS_PHEAD_GAM_DOCTYPE   "Game"
+    IDS_PHEAD_GAM_BOARDS    "Playing Boards"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PHEAD_GAM_HISTORY   "Game History"
+    IDS_PHEAD_GAM_CURRENT   "<Current Recording>"
+    IDS_ERR_NOTAGAME        "Not a Game file."
+    IDS_ERR_GAMENEWER       "The Move file was created by a newer version of the program. You must upgrade your CyberBoard software to load it."
+    IDS_ERR_WRONGGAME       "The Move file wasn't created for this game."
+    IDS_GMOV_FILTER         "Move Files (*.gmv)|*.gmv|All Files (*.*)|*.*||"
+    IDS_GMOV_ENTERNAME      "Enter a Move File Name"
+    IDS_ERR_NOTAMOVEFILE    "Not a Move file."
+    IDS_ERR_HISTSAVE        "Failed to save the moves in the game file's history list."
+    IDS_ERR_SAVEASFAIL      "Failed to reopen working file. This is an unrecoverable condition. Try to manually open the file."
+    IDS_ERR_FAILEDREVERT    "Failed to restore backup version of file to original file name."
+    IDS_GAME_USA_TIMEFMT    "%m/%d/%y %H:%M"
+    IDS_BTN_GAM_DISCARD     "Discard"
+    IDS_PHEAD_GAM_MOVEFILE  "<Move File Playback>"
+    IDS_PMT_RCD_DISCARD     "Are you sure you want to discard your moves? The game will be restored to its state prior to making any moves."
+    IDS_ERR_FAILEDRESTORE   "Failed to restore the game to its state prior to making any moves. This is typically a low memory problem."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_FAILEDSTATECHG  "Failed to reset the game to its beginning state. This is typically a low memory problem."
+    IDS_ERR_FAILEDSTATESAVE "Failed to save current state of game. This is typically a low memory problem."
+    IDS_BTN_GAM_DONE        "Done"
+    IDS_ERR_NOLOADWHENPLAY  "You can't load a move file while a playback is active. Please finish the playback and try again."
+    IDS_ERR_MUSTSAVEB4SAVE  "Before you save your moves you must have saved the game at least once in order create the game history database. Select Save from the File menu."
+    IDS_ERR_MUSTSAVEB4LOAD  "Before you playback a move file you must have saved the game at least once in order to create the game history database. Select Save from the File menu."
+    IDS_PMT_FINISHPLAY      "The current moves are about to be added to the game history. Are you sure you are finished with the playback?"
+    IDS_MSG_NOGAMESTATE     "The game file doesn't contain game state information. All pieces will be moved from current game positions."
+    IDS_ERR_MISSINGPIECES   "The move file manipulates pieces that no longer exist in the Game Box file. Without the proper Game Box file this file cannot be used."
+    IDS_PHEAD_GAM_HISTPLAY  "<History Entry Playback>"
+    IDS_PHEAD_GAM_SUSPEND   "[Current Recording - Suspended]"
+    IDS_ERR_NOSAVEWHENPLAY  "You cannot save your current recording while a history playback is in progress."
+    IDS_ERR_NODISCARDWHENPLAY 
+                            "You cannot discard your current recording while a history playback is in progress."
+    IDP_ERR_EXPIRED         "This Beta version of CyberBoard is really old and will no longer run. Please obtain a newer version."
+    IDP_ERR_ALMOSTEXPIRED   "This Beta version of CyberBoard is really old and on October 1, 2005 it will no longer run. Please obtain a newer version."
+    IDS_BTN_GAM_ACCEPT      "Accept"
+END
+
+STRINGTABLE
+BEGIN
+    ID_PTOOL_PLOTMOVE       "Begin a plotted move.\nBegin Plotted Move (Ctrl+P)"
+    ID_FILE_SAVE_GAME_AS_SCENARIO 
+                            "Save current state of game as a scenario file.\nSave Game As Scenario"
+END
+
+STRINGTABLE
+BEGIN
+    ID_PBCK_PREVIOUS        "Step back to previous move\nPrevious Move (F2)"
+    ID_PBCK_END             "Jump to end of move\nEnd of Moves (F5)"
+    ID_PBCK_DISCARD         "Discard the current move recording.\nDiscard Current Recording"
+    ID_PBCK_FINISH          "Finishes and accepts the  move file being played back. Adds to game history.\nAccepts Current Move Playback"
+    ID_ACT_PLOTDONE         "Record the plotted move\nAccept Plotted Move (Enter)"
+    ID_ACT_PLOTDISCARD      "Discard the plotted move\nDiscard Plotted Move (Esc)"
+    ID_PBCK_READMESSAGE     "Display current message text\nShow Message"
+    ID_INDICATOR_CELLNUM    "9999, 9999"
+    ID_VIEW_SNAPGRID        "Enable or disable current board's snap grid\nToggle Snap Grid"
+    ID_EDIT_SELALLMARKERS   "Select all markers in the current board view\nSelect All Markers"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_SELECTGAMEPIECES 
+                            "Select the game pieces that are used in this scenario"
+    ID_EDIT_SCNPROPERTIES   "Edit scenario properties"
+    ID_VIEW_TOGGLESCALE     "Toggle board scale\nToggle Board Scale"
+    ID_FILE_LOADMOVES       "Load file of recorded moves.\nLoad Recorded Move File"
+    ID_EDIT_BRD2FILE        "Save the current board image as a bitmap file."
+    ID_EDIT_BRDPROP         "Edit properties of current playing board."
+    ID_ACT_COMPOUNDMOVE_BEGIN 
+                            "Begin compound move\nBegin Compound Move (Ctrl+Enter)"
+    ID_ACT_COMPOUNDMOVE_END "End active compound move\nEnd Compound Move (Enter)"
+    ID_ACT_COMPOUNDMOVE_DISCARD 
+                            "Discard current compound move\nDiscard Compound Move (Esc)"
+    ID_INDICATOR_COMPMOVE   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\n....GOOD BYE!"
+    ID_ACT_ROTATEREL        "Rotate piece or marker using incremental amounts\nRotate Object - Incremental"
+    ID_PPROJITEM_PROPERTIES "Examine item properties."
+    ID_PPROJITEM_DELETE     "Delete or Remove selected item."
+    ID_PPROJITEM_EDIT       "Edit selected item."
+    ID_PPROJITEM_VIEW       "View selected item."
+    ID_PPROJITEM_REPLAY     "Replay selected move record."
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACT_STACK            "Automatically stack selected pieces.\nAuto-Stack (Ctrl+A)"
+    ID_ACTIONS_ANNWITHTEXT  "Annotate board with text box"
+    ID_ACT_DRAWLINE         "Draw line annotation on board"
+    ID_ACT_DRAWTEXTBOX      "Draw text box annotation on board"
+    ID_ACT_DOMESSAGE        "Enter message for opponent\nEnter Message (Ctrl+M)"
+    ID_EDIT_CLRBOOKMARK     "Clear saved bookmark"
+    ID_VIEW_DICEPAL         "Show or hide the dice palette"
+    ID_ACT_TURNOVER         "Turn the selected piece over to the opposite side\nTurn Piece Over (Ctrl+I)"
+    ID_ACT_ROTATE           "Rotate the selected piece\nRotate Piece"
+    ID_ACT_REFINESELECT     "Manually reduce the piece selections"
+    ID_ACT_ARRANGESTACK     "Manually arrange stack order of selected pieces"
+    ID_PBCK_START           "Jump to start of moves\nStart of Moves"
+    ID_PBCK_NEXT            "Do the next move\nNext Move (F3)"
+END
+
+STRINGTABLE
+BEGIN
+    ID_PLAYBACK_NEXTHISTORYENTRY 
+                            "Close this history and open the next history entry\nOpen Next History Entry (F6)"
+    ID_PBCK_NEXTHIST        "Close current history playback and open the next\nOpen Next History (F4)"
+    ID_PBCK_CLOSEHIST       "Close history playback mode.\nClose History Playback (F5)"
+    ID_FILE_SENDMOVES2FILE  "Send current move recording to file\nSend Recording to File"
+    ID_FILE_DISCARDRECORDING 
+                            "Discard the current move recording.\nDiscard Current Recording"
+    ID_EDIT_SELECTBOARDS    "Select the game boards that are used in this scenario"
+    ID_EDIT_CREATETRAY      "Create a new tray which are used to hold playing pieces"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDS_SEL_BITMAPFILE      "Specify the Bitmap Filename"
+    IDP_ERR_BMPWRITE        "An error occurred writing the bitmap file."
+    IDP_ERR_BMPCREATE       "An error occurred creating the bitmap file."
+    IDS_PROJTYPE_GAME       "Game Project"
+    IDS_PROJTYPE_SCENARIO   "Scenario Project"
+    IDS_SAVEGAMEASSCENARIO  "Save Game As Scenario"
+    IDS_MSG_NOROLLS         "No dice were specified."
+    IDS_MSG_ROLLWITHSEED    "DICE ROLL:\r\nSeed = ""%1""\r\n» Specification = "
+    IDS_MSG_ROLLWITHOUTSEED "DICE ROLL:\r\n» Specification = "
+    IDS_MSG_ROLLRESULT      "» Result = "
+    IDS_TRUNCATED           " - TRUNCATED!"
+    IDS_TRAY_HIDDEN         "HIDDEN"
+    IDS_TRAY_RANDHIDDEN     "HIDDEN - Random Selection"
+    IDS_TRAY_ALLHIDDEN      "ALL HIDDEN"
+    IDS_TRAY_ALLRANDHIDDEN  "ALL HIDDEN - Random Selection"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MSG_NOMOVES         "No moves have been recorded in this file. However, you still must either discard or accept the playback of the file."
+    IDS_MSG_DIVIDER         "«»-------------------------------------«»-------------------------------------«»\r\n"
+    IDS_WARN_DISCARD_COMP_MOVE 
+                            "Are you sure you want to discard your compound move?"
+    IDS_MSG_ROLLSET         "SET"
+    IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of %d piece(s) have been removed from the game."
+    IDS_TIP_OBJTEXTCHG      "This object's text has changed"
+    IDS_TIP_OBJLOCKED       "Objects have been locked on this playing board.\r\n\r\nLocked objects cannot be selected."
+    IDS_TIP_OBJUNLOCKED     "Objects have been unlocked on this playing board."
+    IDS_WARN_DELETEMARKERS  "Do you want to delete the selected marker objects?"
+    IDS_TIP_PREFIX_FRONT    "Front: "
+    IDS_TIP_PREFIX_BACK     "Back: "
+    IDS_TIP_LBOXITEM_MARKER "* "
+    IDS_TIP_CLICK_MENU      "Click here for tray's menu"
+    IDS_TIP_TRAY_SHUFFLED   "%d pieces in this tray have been shuffled."
+    IDS_TIP_OBJS_SHUFFLED   "%d objects in this area of the board have been shuffled."
+    IDS_TIP_SELLIST_HELP    "Insert key = Selects only highlighted items.\r\nDelete key = Deselects all highlighted items."
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACT_ROTATE_0         "Set all selection piece rotations to zero."
+END
+
+STRINGTABLE
+BEGIN
+    ID_PROJITEM_DELETE      "Delete selected item."
+END
+
+STRINGTABLE
+BEGIN
+    ID_PPROJITEM_EXPORT     "Export more record to a disk file."
+    ID_ACT_ROTATEGROUP      "Rotate (or wheel) group of pieces or markers by incremental amounts\nRotate (wheel) Group - Incremental"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACTIONS_ROLLDICE     "Roll Dice\nRoll Dice (Ctrl+R)"
+    ID_VIEW_DRAW_IND_ON_TOP "Draw movement playback indicators on top of pieces.\nIndicators On Top (F10)"
+    ID_PBCK_STEP_CMOVES     "If checked, compound moves are single stepped.\nSingle Step Compound Moves"
+    ID_PTRAY_SHUFFLE        "Shuffle (randomize) the tray's contents"
+    ID_VIEW_SPLITBOARDROWS  "Split board view horizontally into two rows.\nHorizontal Split"
+    ID_VIEW_SPLITBOARDCOLS  "Split board view vertically into two columns.\nVertical Split"
+    ID_VIEW_SHOW_TIP_TEXT   "Show text associated with objects as pop-up data tips.\nShow Object Text Tips (F7)"
+    ID_EDIT_ELEMENT_TEXT    "Edit text associated with a piece or marker\nEdit Object Text"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACT_LOCKOBJECT       "Lock or unlock pieces and markers from selection.\nLock Objects"
+    ID_ACT_LOCK_SUSPEND     "Temporarily suspend piece and marker locks\nSuspend Object Locks"
+    ID_VIEW_SAVE_WIN_STATE  "Save window positions when saving the file."
+    ID_PTRAY_SHUFFLE_SELECTED 
+                            "Shuffle (randomize) only the tray's selected items."
+    ID_ACT_SHUFFLE_SELECTED "Randomize the stacking order of the selected objects\nShuffle Objects"
+    ID_ACT_AUTOSTACK_DECK   "Autostack selected objects using a offset of zero.\nAuto Stack Deck"
+    ID_ACT_SHUFFLE_AND_STACK 
+                            "Randomize selected objects and stack them as a deck.\nShuffle and Auto Deck Stack"
+    ID_EDIT_CREATE_PLAYERS  "Create players. Enables hidden piece support.\nCreate Players"
+    ID_EDIT_EDIT_PLAYERS    "Edit the names of created players.\nEdit Players"
+    ID_ACT_TAKE_OWNERSHIP   "Take ownership of selected pieces.\nTake Ownership"
+    ID_ACT_RELEASE_OWNERSHIP 
+                            "Release ownership of selected pieces\nRelease Ownership"
+    ID_ACT_SET_OWNER        "Explicitly set piece ownership.\nSet Ownership"
+    ID_ACT_TURNOVER_ALL     "Turn over all pieces in the Tray.\nTurn All Pieces Over"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_RESOURCE_VERSION    "3.90"
+    IDS_ERR_RESOURCE_VERSION 
+                            "The localization resource DLL ""%1"" is not the correct version. This version of CyberBoard requires version %2 resources. The default English resources will be used."
+    IDS_BASEFONT_NAME       "MS Sans Serif"
+    IDS_BASEFONT_SIZE_SMALL "8"
+    IDS_BASEFONT_SIZE_BIG   "10"
+    IDS_BETA_VERSION        " RC1"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BASE_PLAYER_NAME    "Player %s"
+    IDS_LBL_NO_OWNER        "<< NO OWNER >>"
+    IDS_TIP_OWNER_ACQUIRED  "Pieces in this area of the board have had their ownership set."
+    IDS_TIP_OWNER_RELEASED  "Pieces in this area of the board have had their ownership cleared."
+    IDS_TIP_OWNED_BY_UC     "Owned by %s"
+    IDS_TIP_OWNED_BY_LC     "owned by %s"
+    IDS_TIP_OWNED_BY_PROJ   " - Owned by %s"
+    IDS_GAME_FILTER         "Game Files (*.gam)|*.gam|All Files (*.*)|*.*||"
+    IDS_GAME_SELECT_ROOT_NAME "Select Base Name for Player Game Files"
+    IDS_GAME_SPECTATOR      "-Spectator."
+    IDS_MSG_PLAYER_FILES    "The following player specific game files have been created:\n\n%s\n\nDistribute them as required."
+    IDS_WARN_PLAYER_FILES_EXIST 
+                            "Player files already exist with the specified base filename. They are:\n\n%s\nPress OK to overwrite them. Press Cancel to abort."
+    IDS_PHEAD_SPECTATOR_OWNED " - Owned by Spectator"
+    IDS_ERR_PLAYER_TAMPER   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\nYou *ARE* the weakest link....GOOD BYE!"
+    IDS_GAME_REFEREE        "-Referee."
+    IDS_PHEAD_REFEREE_OWNED " - OWNED BY THE REFEREE"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INFO_MPLAY_CREATE   "%d player files were created for this game. The players names are:\r\n\r\n%s\r\n"
+    IDS_INFO_MPLAY_CREATE_REF "A Referee file was created as well.\r\n\r\n"
+    IDS_PRJINFO_TITLE       "TITLE: "
+    IDS_PRJINFO_AUTHOR      "AUTHOR: "
+    IDS_PRJINFO_DESCRIPTION "DESCRIPTION:\r\n\r\n"
+    IDS_PRJINFO_MPLAYER     "MULTIPLAYER INFORMATION:\r\n\r\n"
+    IDS_ROW_BREAK           "<ROW-BREAK>"
+    IDS_URL_CB_WEBSITE      "http://www.norsesoft.com/cyberboard.html"
+    IDS_MSG_TRAY_INFO       "Playing piece tray ""%s"" has the following properties:\n\n"
+    IDS_MSG_TVIZ_TWO_SIDE   "- Both sides of pieces are visible"
+    IDS_MSG_TVIZ_ONE_SIDE   "- Only the top side of a piece is visible"
+    IDS_MSG_TVIZ_HIDDEN     "- Pieces only show the word ""HIDDEN"""
+    IDS_MSG_TVIZ_ALL_HIDDEN "- All pieces are hidden"
+    IDS_ERR_TRAY_VIZ        "ILLEGAL TRAY VISIBILITY CODE!"
+    IDS_MSG_RANDOM_PULL     "- Pieces are randomly selected when dragged out of the tray"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACT_SIMULATE_SPECTATOR 
+                            "View the board and trays as if the current player was a spectator.\nSimulate Spectator Player (F8)"
+    ID_EDIT_CREATE_GEOMORPHIC 
+                            "Create geomorphic board.\nCreate Geomorphic Board"
+    ID_HELP_WEBSITE         "Opens a web browser and takes you to the CyberBoard web site."
+    ID_HELP_DONATION        "Make a donation for CyberBoard."
+    ID_PTRAY_ABOUT          "Show information about the currently selected tray."
+    ID_PBCK_STEP_TO_NEXT_HIST 
+                            "Next move automatically steps to next history entry on last move."
+    ID_PBCK_SKIP_KEEP_IND   "Keep graphical move indications when skipping moves."
+    ID_PBCK_AUTO_STEP       "Toggles automatic playback feature.\nAutomatic Playback (F6)"
+    ID_VIEW_SHOW_TIP_OWNER  "Show object owner name in tool tip. Otherwise show owner name in status bar.\nShow Owner Name Tips"
+    ID_VIEW_SMALLSCALEBRD   "Show small scale board"
+    ID_VIEW_BOARD_ROTATE180 "Rotate board by 180 degrees\nRotate Board"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MSG_NOT_OWNED       "- There is no tray owner"
+    IDS_MSG_OWNED_BY        "- The tray's owner is ""%s"""
+    IDS_MSG_NONOWN_ALLOWED  "- Non-owners are allowed access to the tray"
+    IDS_MSG_NONOWN_NOT_ALLOWED 
+                            "- Non-owners are NOT allowed access to the tray"
+    IDS_MSG_TVIZ_OWNER_TOO  "- The above visibility also applies to the tray's owner"
+    IDS_MSG_TVIZ_OWNER_FULL "- It's fully visible to the its owner"
+    IDS_WARN_FILE_UPGRADE   "You are loading a Game or Scenario file from a prior version of CyberBoard. It will automatically be upgraded when you save it. The upgraded file is not compatible with prior versions of CyberBoard.\n\nPress OK to continue, Cancel to exit."
+    IDS_ERR_INVALID_PASSWORD "Invalid Password."
+    IDS_INFO_REF_CREATED    "Referee file created:\n\n%s"
+    IDS_WARN_REF_EXISTS     "The referee file:\n\n%s\n\nAlready exists. Press OK to overwrite."
+    IDS_ERR_NOHISTWHENMOVE  "You can't replay a history entry while a move file is active. Please accept or discard the move file and try again."
+    IDS_BARNAME_STANDARD    "Standard"
+    IDS_BARNAME_VIEW        "View"
+    IDS_BARNAME_MOVE        "Move"
+    IDS_BARNAME_PLAYBACK    "Playback"
+    IDS_PAL_MARKERS         "Markers"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MESSAGE_WND         "Messages"
+    IDS_INFO_GAME_CREATED   "New Game File Created:\n\n%s"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "afxres.rc"             // Standard components
+#include "afxprint.rc"           // printing/print preview resources
+#if !defined(_AFXDLL)
+#include "afxribbon.rc"          // MFC ribbon and control bar resources
+#endif
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

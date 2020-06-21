@@ -1,0 +1,1539 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""afxres.rc""             // Standard components\r\n"
+    "#include ""afxprint.rc""           // printing/print preview resources\r\n"
+    "#if !defined(_AFXDLL)\r\n"
+    "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
+    "#endif\r\n"
+    "#endi\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\IDR_MAIN.ico"
+
+IDR_GAMEBOX             ICON                    "res\\GBoxDoc.ico"
+
+IDR_BOARDVIEW           ICON                    "res\\IDR_BOARD.ico"
+
+IDR_BITEDITOR           ICON                    "res\\BitEdit.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\ToolBar.bmp"
+
+IDB_50PERCENT           BITMAP                  "res\\Bmp50Percent.bmp"
+
+IDB_SYSBUTTON           BITMAP                  "res\\SysButton.bmp"
+
+IDB_DRAWLAYERTOOLS      BITMAP                  "res\\DrawLayer.bmp"
+
+IDB_25PERCENT           BITMAP                  "res\\BadColum.bmp"
+
+IDB_IMAGETOOLS          BITMAP                  "res\\ImageTool.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents",                   ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM SEPARATOR
+        MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
+    END
+END
+
+IDR_GAMEBOX MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "&Move\tCtrl+M",               ID_EDIT_MOVE
+        MENUITEM "&Delete\tDel",                ID_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "Paste &Bitmap From File...",  ID_EDIT_PASTEBITMAPFROMFILE
+        MENUITEM SEPARATOR
+        MENUITEM "B&ase Board Layer\tCtrl+1",   ID_EDIT_LAYER_BASE
+        MENUITEM "C&ell Board Layer\tCtrl+2",   ID_EDIT_LAYER_TILE
+        MENUITEM "&Top Board Layer\tCtrl+3",    ID_EDIT_LAYER_TOP
+        MENUITEM SEPARATOR
+        MENUITEM "Board Properties...",         ID_TOOLS_BRDPROPS
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom Tile Image &In",         ID_VIEW_ZOOMIN
+        MENUITEM "Zoom Tile Image &Out",        ID_VIEW_ZOOMOUT
+        MENUITEM SEPARATOR
+        MENUITEM "Tile Image &Grid Lines",      ID_IMAGE_GRIDLINES
+        MENUITEM SEPARATOR
+        MENUITEM "&Full Scale Board",           ID_VIEW_FULLSCALE
+        MENUITEM "&Half Scale Board",           ID_VIEW_HALFSCALE
+        MENUITEM "S&mall Scale Board",          ID_VIEW_SMALLSCALE
+        MENUITEM SEPARATOR
+        MENUITEM "&Cell Border Lines",          ID_VIEW_GRIDLINES
+    END
+    POPUP "&Project"
+    BEGIN
+        MENUITEM "Create Playing &Board...",    ID_EDIT_CREATEBOARD
+        MENUITEM "Create Tile &Image Group...", ID_EDIT_CREATETILEGROUP
+        MENUITEM "Create Playing &Piece Group...", ID_EDIT_CREATEPIECEGROUP
+        MENUITEM "Create &Marker Group...",     ID_EDIT_CREATEMARKGROUP
+        MENUITEM SEPARATOR
+        MENUITEM "&GameBox Properties...",      ID_EDIT_GBOXPROPERTIES
+        MENUITEM "Change GameBox &Fingerprint...", ID_PROJECT_CHGID
+        MENUITEM SEPARATOR
+        MENUITEM "&Save Tile Library File...",  ID_PROJECT_SAVETILEFILE
+        MENUITEM "&Load Tile Library File...",  ID_PROJECT_LOADTILEFILE
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "Fo&nt...",                    ID_DWG_FONT
+        MENUITEM SEPARATOR
+        MENUITEM "Bring Objects to &Front",     ID_DWG_TOFRONT
+        MENUITEM "Send Objects to &Back",       ID_DWG_TOBACK
+        MENUITEM "Draw Objects Above Grid",     ID_DWG_DRAWABOVEGRID
+        MENUITEM SEPARATOR
+        MENUITEM "Set Scale &Visibility...",    ID_TOOL_SETVISIBLESCALE
+        MENUITEM "&Suspend Scale Visibility",   ID_TOOL_SUSPENDSCALEVISIBILITY
+        MENUITEM SEPARATOR
+        MENUITEM "Snap &Grid",                  ID_TOOLS_BRDSNAPGRID
+        MENUITEM "Bo&ard Properties...",        ID_TOOLS_BRDPROPS
+        MENUITEM SEPARATOR
+        MENUITEM "Drawing Tools Are Sticky",    ID_STICKY_DRAWTOOLS
+        POPUP "Board Drawing Tools"
+        BEGIN
+            MENUITEM "&Selector",                   ID_TOOL_ARROW
+            MENUITEM "Pick&up Color",               ID_TOOL_DROPPER
+            MENUITEM "Draw &Tile",                  ID_TOOL_TILE
+            MENUITEM "Draw Te&xt",                  ID_TOOL_TEXT
+            MENUITEM "Draw &Line",                  ID_TOOL_LINE
+            MENUITEM "Draw &Rectangle",             ID_TOOL_RECT
+            MENUITEM "Draw &Polygon",               ID_TOOL_POLYGON
+            MENUITEM "Draw &Oval",                  ID_TOOL_OVAL
+            MENUITEM "&Color Cell",                 ID_TOOL_FILL
+            MENUITEM "&Erase Cell",                 ID_TOOL_ERASER
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Update Tile Changes\tCtrl+U", ID_IMAGE_UPDATE
+        MENUITEM "&Discard Tile Changes",       ID_IMAGE_DISCARD
+        POPUP "Rotate Tile"
+        BEGIN
+            MENUITEM "90°",                         ID_TOOLS_ROT90
+            MENUITEM "180°",                        ID_TOOLS_ROT180
+            MENUITEM "270°",                        ID_TOOLS_ROT270
+        END
+        MENUITEM "R&esize Tile...",             ID_TOOLS_RESIZETILE
+        MENUITEM "Apply Cell &Mask to Tile...", ID_IMAGE_BOARDMASK
+        MENUITEM SEPARATOR
+        POPUP "Tile Image Tools"
+        BEGIN
+            MENUITEM "&Pencil",                     ID_ITOOL_PENCIL
+            MENUITEM "&Selector",                   ID_ITOOL_SELECT
+            MENUITEM "&Brush",                      ID_ITOOL_BRUSH
+            MENUITEM "&Fill",                       ID_ITOOL_FILL
+            MENUITEM "&Change Color",               ID_ITOOL_COLORCHANGE
+            MENUITEM "&Text",                       ID_ITOOL_TEXT
+            MENUITEM "&Line",                       ID_ITOOL_LINE
+            MENUITEM "&Rect",                       ID_ITOOL_RECT
+            MENUITEM "&Oval",                       ID_ITOOL_OVAL
+            MENUITEM "Filled R&ect",                ID_ITOOL_FILLRECT
+            MENUITEM "Filled O&val",                ID_ITOOL_FILLOVAL
+            MENUITEM "P&ickup Color",               ID_ITOOL_DROPPER
+        END
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile Horizontally",          ID_WINDOW_TILE_HORZ
+        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "T&ool Palette",               ID_WINDOW_TOOLPAL
+        MENUITEM "Co&lor Palette",              ID_WINDOW_COLORPAL
+        MENUITEM "T&ile Palette",               ID_WINDOW_TILEPAL
+        MENUITEM "I&mage Palette",              ID_WINDOW_ITOOLPAL
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents",                   ID_HELP_INDEX
+        MENUITEM SEPARATOR
+        MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Make a CyberBoard Donation...", ID_HELP_DONATION
+        MENUITEM SEPARATOR
+        MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
+    END
+END
+
+IDR_MENU_DESIGN_POPUPS MENU
+BEGIN
+    POPUP "0=BV_EDIT"
+    BEGIN
+        MENUITEM "Undo",                        ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Copy",                        ID_EDIT_COPY
+        MENUITEM "Paste",                       ID_EDIT_PASTE
+        MENUITEM "Delete",                      ID_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        POPUP "Board Drawing Tools"
+        BEGIN
+            MENUITEM "Selector",                    ID_TOOL_ARROW
+            MENUITEM "Pickup Color",                ID_TOOL_DROPPER
+            MENUITEM "Draw Tile",                   ID_TOOL_TILE
+            MENUITEM "Draw Text",                   ID_TOOL_TEXT
+            MENUITEM "Draw Line",                   ID_TOOL_LINE
+            MENUITEM "Draw Rectangle",              ID_TOOL_RECT
+            MENUITEM "Draw Polygon",                ID_TOOL_POLYGON
+            MENUITEM "Draw Oval",                   ID_TOOL_OVAL
+            MENUITEM "Color Cell",                  ID_TOOL_FILL
+            MENUITEM "Erase Cell",                  ID_TOOL_ERASER
+        END
+        MENUITEM "Drawing Tools Are Sticky",    ID_STICKY_DRAWTOOLS
+        MENUITEM "Font...",                     ID_DWG_FONT
+        MENUITEM SEPARATOR
+        MENUITEM "Bring Objects to Front",      ID_DWG_TOFRONT
+        MENUITEM "Send Objects to Back",        ID_DWG_TOBACK
+        MENUITEM "Draw Objects Above Grid",     ID_DWG_DRAWABOVEGRID
+        MENUITEM SEPARATOR
+        MENUITEM "Snap Grid",                   ID_TOOLS_BRDSNAPGRID
+        MENUITEM "Set Scale Related Visibility...", ID_TOOL_SETVISIBLESCALE
+        MENUITEM "Suspend Scale Related Visibility", ID_TOOL_SUSPENDSCALEVISIBILITY
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Base Board Layer",       ID_EDIT_LAYER_BASE
+        MENUITEM "Edit Cell Board Layer",       ID_EDIT_LAYER_TILE
+        MENUITEM "Edit Top Board Layer",        ID_EDIT_LAYER_TOP
+        MENUITEM SEPARATOR
+        MENUITEM "View Full Scale Board",       ID_VIEW_FULLSCALE
+        MENUITEM "View Half Scale Board",       ID_VIEW_HALFSCALE
+        MENUITEM "View Small Scale Board",      ID_VIEW_SMALLSCALE
+        MENUITEM SEPARATOR
+        MENUITEM "View Cell Border Lines",      ID_VIEW_GRIDLINES
+        MENUITEM SEPARATOR
+        MENUITEM "Board Properties...",         ID_TOOLS_BRDPROPS
+        MENUITEM "Paste Bitmap From File...",   ID_EDIT_PASTEBITMAPFROMFILE
+    END
+    POPUP "1=IV_BITEDIT"
+    BEGIN
+        MENUITEM "Undo",                        ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Copy",                        ID_EDIT_COPY
+        MENUITEM "Paste",                       ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        POPUP "Tile Image Tools"
+        BEGIN
+            MENUITEM "Pencil",                      ID_ITOOL_PENCIL
+            MENUITEM "Selector",                    ID_ITOOL_SELECT
+            MENUITEM "Brush",                       ID_ITOOL_BRUSH
+            MENUITEM "Fill",                        ID_ITOOL_FILL
+            MENUITEM "Change Color",                ID_ITOOL_COLORCHANGE
+            MENUITEM "Text",                        ID_ITOOL_TEXT
+            MENUITEM "Line",                        ID_ITOOL_LINE
+            MENUITEM "Rect",                        ID_ITOOL_RECT
+            MENUITEM "Oval",                        ID_ITOOL_OVAL
+            MENUITEM "Filled Rect",                 ID_ITOOL_FILLRECT
+            MENUITEM "Filled Oval",                 ID_ITOOL_FILLOVAL
+            MENUITEM "Pickup Color",                ID_ITOOL_DROPPER
+        END
+        MENUITEM "Image Tools Are Sticky",      ID_STICKY_DRAWTOOLS
+        POPUP "Rotate Tile"
+        BEGIN
+            MENUITEM "90°",                         ID_TOOLS_ROT90
+            MENUITEM "180°",                        ID_TOOLS_ROT180
+            MENUITEM "270°",                        ID_TOOLS_ROT270
+        END
+        MENUITEM "Font...",                     ID_DWG_FONT
+        MENUITEM "Resize Tile...",              ID_TOOLS_RESIZETILE
+        MENUITEM "Apply Cell Mask toTile...",   ID_IMAGE_BOARDMASK
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom Tile Image In",          ID_VIEW_ZOOMIN
+        MENUITEM "Zoom Tile Image Out",         ID_VIEW_ZOOMOUT
+        MENUITEM SEPARATOR
+        MENUITEM "Tile Image Grid Lines",       ID_IMAGE_GRIDLINES
+        MENUITEM SEPARATOR
+        MENUITEM "Update Tile Changes",         ID_IMAGE_UPDATE
+        MENUITEM "Discard Tile Changes",        ID_IMAGE_DISCARD
+    END
+    POPUP "2=PJ_DEFAULT"
+    BEGIN
+        MENUITEM "Create Playing Board...",     ID_EDIT_CREATEBOARD
+        MENUITEM "Create Tile Image Group...",  ID_EDIT_CREATETILEGROUP
+        MENUITEM "Create Playing Piece Group...", ID_EDIT_CREATEPIECEGROUP
+        MENUITEM "Create Marker Group...",      ID_EDIT_CREATEMARKGROUP
+        MENUITEM SEPARATOR
+        MENUITEM "Clone Selected Board",        ID_PROJECT_CLONEBOARD
+        MENUITEM SEPARATOR
+        MENUITEM "Delete...",                   ID_PROJITEM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Change GameBox Finger Print...", ID_PROJECT_CHGID
+        MENUITEM "Properties...",               ID_PROJITEM_PROPERTIES
+    END
+    POPUP "3=PJ_TILELIST"
+    BEGIN
+        MENUITEM "Edit Tile",                   ID_TILE_EDIT
+        MENUITEM "Clone Tile",                  ID_TILE_CLONE
+        MENUITEM "New Tile...",                 ID_TILE_NEW
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Tile",                 ID_TILE_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Move Tiles Here",             ID_EDIT_MOVE
+        MENUITEM SEPARATOR
+        MENUITEM "Save Tile Library File...",   ID_PROJECT_SAVETILEFILE
+        MENUITEM "Load Tile Library File...",   ID_PROJECT_LOADTILEFILE
+    END
+    POPUP "4=PJ_PIECELIST"
+    BEGIN
+        MENUITEM "New Pieces...",               ID_PIECE_NEW
+        MENUITEM "Edit Piece...",               ID_PIECE_EDIT
+        MENUITEM "Delete Piece",                ID_PIECE_DELETE
+    END
+    POPUP "5=PJ_MARKERLIST"
+    BEGIN
+        MENUITEM "New Markers...",              ID_MARKER_NEW
+        MENUITEM "Edit Marker...",              ID_MARKER_EDIT
+        MENUITEM "Delete Marker",               ID_MARKER_DELETE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    "F",            ID_BUGFIX_DUMPBADTILES, VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
+    "P",            ID_DEBUG_DUMPPAL,       VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "T",            ID_DUMP_TILEDATA,       VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_EDIT_LAYER_BASE,     VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_EDIT_LAYER_TILE,     VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_EDIT_LAYER_TOP,      VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_EDIT_MOVE,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_EXPORT_GAMEBOX,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
+    "U",            ID_IMAGE_UPDATE,        VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_GM_ABOUTBOX DIALOGEX 34, 22, 217, 109
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About CyberBoard Designer"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    CTEXT           "CyberBoard Designer Program",IDC_STATIC,43,8,132,8
+    CTEXT           "Copyright © 1994-2020 by Dale L. Larson",IDC_STATIC,35,40,147,8
+    DEFPUSHBUTTON   "OK",IDOK,92,89,32,14,WS_GROUP
+    CTEXT           "All Rights Reserved",IDC_STATIC,43,50,132,8
+    CTEXT           "Program Version - ???????",IDC_D_ABOUT_VERSION,43,18,132,8
+    ICON            IDR_MAINFRAME,IDC_STATIC,185,17,20,20
+    CTEXT           "File Version - ???????",IDC_D_ABOUT_FILEVER,43,28,132,8,NOT WS_VISIBLE
+    LTEXT           "GenDate: ????",IDC_D_ABOUT_GENDATE,4,91,80,9,NOT WS_VISIBLE
+    CTEXT           "dlarson42@gmail.com",IDC_STATIC,43,60,132,8
+    RTEXT           "Beta XX",IDC_D_ABOUT_GENDATE2,146,92,61,9,NOT WS_VISIBLE
+    CTEXT           "NOTE: Program ceases to function on: October 1, 2005",IDC_STATIC,11,73,195,8,NOT WS_VISIBLE
+END
+
+IDD_BRDNEW DIALOG 60, 40, 179, 154
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "New Board"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,121,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,121,22,50,14
+    CONTROL         "Rectangular Grid",IDC_D_NEWBRD_RECT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,10,6,75,10
+    CONTROL         "Brick Grid (Horizontal)",IDC_D_NEWBRD_HBRICK,"Button",BS_AUTORADIOBUTTON,10,18,93,10
+    CONTROL         "Brick Grid (Vertical)",IDC_D_NEWBRD_VBRICK,"Button",BS_AUTORADIOBUTTON,10,30,94,10
+    CONTROL         "Hex (Flat Up)",IDC_D_NEWBRD_HEXFLAT,"Button",BS_AUTORADIOBUTTON,10,42,64,10
+    CONTROL         "Hex (Point Up)",IDC_D_NEWBRD_HEXPNT,"Button",BS_AUTORADIOBUTTON,10,54,70,10
+    EDITTEXT        IDC_D_NEWBRD_GRIDROWS,34,69,40,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_D_NEWBRD_GRIDCOLS,34,84,40,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_D_NEWBRD_CELLHEIGHT,131,69,40,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_D_NEWBRD_CELLWIDTH,131,84,40,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_D_NEWBRD_BOARDNAME,11,124,160,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Stagger First Row In",IDC_D_NEWBRD_STAGGERIN,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,88,55,79,10
+    RTEXT           "Cell Width:",IDC_STATIC,91,86,36,10
+    RTEXT           "Cell Height:",IDC_STATIC,89,71,38,11
+    RTEXT           "Rows:",IDC_STATIC,5,71,26,10
+    RTEXT           "Cols:",IDC_STATIC,5,86,26,9
+    LTEXT           "Board Name:",IDC_STATIC,11,114,47,8
+    CTEXT           "Size",IDC_D_NEWBRD_PIXSIZE,11,101,157,8
+END
+
+IDD_TILESETNEW DIALOG 55, 40, 233, 44
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Tile Group"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_CRTGRP_TSETNAME,9,18,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Enter name of Tile Group:",IDC_STATIC,9,5,87,8
+END
+
+IDD_ENTERNUM DIALOG 0, 0, 238, 55
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Number"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,177,10,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,177,31,50,14
+    LTEXT           "Prompt text",IDC_D_ENTNUM_PROMPTTEXT,11,12,161,9
+    EDITTEXT        IDC_D_ENTNUM_NUMBER,10,26,40,12,ES_AUTOHSCROLL
+END
+
+IDD_TEXTPROP DIALOG 55, 40, 214, 44
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Text Object Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_TXTPRP_TEXT,5,23,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,159,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,159,22,50,14
+    LTEXT           "Enter Text:",IDC_STATIC,6,9,42,10
+    PUSHBUTTON      "Font...",IDC_D_TXTPRP_FONT,102,6,50,14
+END
+
+IDD_PIECEFACTORY DIALOG 40, 50, 351, 246
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Pieces"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_D_PCREATE_FTSET,6,18,70,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_PCREATE_FTILE,6,34,70,91,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Back (optional):",IDC_D_PCREATE_BACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,5,69,10
+    COMBOBOX        IDC_D_PCREATE_BTSET,79,18,70,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_PCREATE_BTILE,79,34,70,91,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_D_PCREATE_TEXT_FRONT,6,164,186,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    CONTROL         "Back text is the same as the front text.",IDC_D_PCREATE_TEXT_SAMEASTOP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,193,185,10
+    EDITTEXT        IDC_D_PCREATE_TEXT_BACK,6,216,186,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_D_PIECE_QTY,190,49,23,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Create Piece ->",IDC_D_PIECE_CREATE,154,65,61,14
+    DEFPUSHBUTTON   "Close",IDOK,154,91,61,14
+    LISTBOX         IDC_D_PCREATE_PIECES,221,18,125,221,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL
+    LTEXT           "Front:",IDC_STATIC,6,6,30,8
+    RTEXT           "Quantity:",IDC_STATIC,155,51,32,8
+    LTEXT           "Pieces:",IDC_STATIC,221,7,30,8
+    LTEXT           "Associate this piece's front with the following text:",IDC_STATIC,6,153,159,9
+    LTEXT           "Associate this piece's back with the following text:",IDC_STATIC,6,204,159,9
+    CONTROL         "Only show top image during games.",IDC_D_PCREATE_TOP_VISIBLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,129,192,10
+    CONTROL         "Enforce above option for owned pieces too.",IDC_D_PCREATE_TOP_VISIBLE_OWNERS_TOO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,140,177,10
+END
+
+IDD_PIECEEDIT DIALOG 0, 0, 332, 238
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Playing Piece"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_D_PEDIT_FTSET,5,18,70,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_PEDIT_FTILE,5,34,70,88,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "New Back:",IDC_D_PEDIT_BACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,5,58,10
+    COMBOBOX        IDC_D_PEDIT_BTSET,79,18,70,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_PEDIT_BTILE,79,34,70,88,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Only show top image during games.",IDC_D_PEDIT_TOP_VISIBLE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,126,127,10
+    EDITTEXT        IDC_D_PEDIT_TEXT_FRONT,5,159,217,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    CONTROL         "Back text is the same as the front text.",IDC_D_PEDIT_TEXT_SAMEASTOP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,188,185,10
+    EDITTEXT        IDC_D_PEDIT_TEXT_BACK,5,211,217,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    DEFPUSHBUTTON   "OK",IDOK,286,17,43,14
+    PUSHBUTTON      "Cancel",IDCANCEL,286,35,43,14
+    LISTBOX         IDC_D_PEDIT_PIECE,156,17,125,104,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL
+    LTEXT           "New Front:",IDC_STATIC,5,6,54,8
+    LTEXT           "Current Piece:",IDC_STATIC,156,6,57,8
+    LTEXT           "Associate this piece's front with the following text:",IDC_STATIC,5,148,218,8
+    LTEXT           "Associate this piece's back with the following text:",IDC_STATIC,5,200,216,9
+    CONTROL         "Enforce above option for owned pieces too.",IDC_D_PEDIT_TOP_VISIBLE_OWNERS_TOO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,136,177,10
+END
+
+IDD_NEWTILE DIALOG 55, 40, 190, 54
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "New Tile"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_NTILE_HEIGHT,34,5,23,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_NTILE_WIDTH,92,5,23,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_D_NTILE_BOARDNAME,7,33,114,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,136,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,136,23,50,14
+    RTEXT           "Height:",IDC_STATIC,5,7,26,9
+    RTEXT           "Width:",IDC_STATIC,62,7,25,9
+    LTEXT           "Set tile size based on board:",IDC_STATIC,8,23,102,8
+END
+
+IDD_MASKBOARD DIALOG 55, 40, 178, 80
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Board"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_D_BRDMSK_BOARDS,11,17,100,56,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,117,9,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,28,50,14
+    LTEXT           "Select mask from board:",IDC_STATIC,12,5,80,9
+END
+
+IDD_GBOXPROP DIALOG 70, 80, 235, 151
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Game Box Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_GBXPRP_AUTHOR,5,18,168,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_GBXPRP_TITLE,5,47,225,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_GBXPRP_DESCR,5,76,225,53,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,180,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,180,23,50,14
+    LTEXT           "Author:",IDC_STATIC,5,7,27,8
+    LTEXT           "Title:",IDC_STATIC,5,36,19,8
+    LTEXT           "Description:",IDC_STATIC,5,65,43,9
+    LTEXT           "Compression Level:",IDC_STATIC,7,134,64,9
+    COMBOBOX        IDC_D_GBXPRP_COMPRESSION,74,133,84,52,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Set Password...",IDC_D_SET_PASSWORD,166,131,64,14
+END
+
+IDD_TILESETPROP DIALOG 0, 0, 226, 100
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Tile Group Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_TGRP_NAME,8,74,209,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,172,10,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,172,26,50,14
+    GROUPBOX        "For This Tile Group",IDC_STATIC,2,49,221,44
+    GROUPBOX        "For All Tiles:",IDC_STATIC,2,6,155,35
+    LTEXT           "Transparent Pixel Color:",IDC_STATIC,7,21,79,9
+    LTEXT           "Group Name:",IDC_STATIC,8,62,47,8
+    PUSHBUTTON      "",IDC_D_TGRP_TRANSCOLOR,87,17,63,17
+END
+
+IDD_BRDPRP DIALOG 50, 20, 254, 244
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Board Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_BRDPRP_XPIXELS,45,44,35,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDPRP_YPIXELS,45,57,35,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDPRP_XOFFSET,123,44,35,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDPRP_YOFFSET,123,57,35,12,ES_AUTOHSCROLL
+    CONTROL         "Enable Snap Grid",IDC_D_BRDPRP_SNAPON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,73,72,11
+    COMBOBOX        IDC_D_BRDPRP_TRKSTYLE,16,111,139,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse Rows",IDC_D_BRDPRP_INVROWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,129,65,10
+    CONTROL         "Reverse Columns",IDC_D_BRDPRP_INVCOLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,129,71,10
+    EDITTEXT        IDC_D_BRDPRP_TRKROFF,55,143,27,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDPRP_TRKCOFF,136,143,27,12,ES_AUTOHSCROLL
+    CONTROL         "Track mouse movement over cells",IDC_D_BRDPRP_TRACK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,159,136,10
+    CONTROL         "Show cell border lines.",IDC_D_BRDPRP_CELLBORDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,174,141,10
+    CONTROL         "Draw cell border lines over top.",IDC_D_BRDPRP_BORDERTOP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,189,141,10
+    DEFPUSHBUTTON   "OK",IDOK,195,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,195,21,50,14
+    PUSHBUTTON      "Reshape...",IDC_D_BRDPRP_RESHAPE,195,99,50,14
+    EDITTEXT        IDC_D_BRDPRP_BOARDNAME,7,17,162,12,ES_AUTOHSCROLL
+    LTEXT           "Board Name:",IDC_STATIC,7,6,47,8
+    RTEXT           "X Pixels:",IDC_STATIC,9,46,33,8
+    RTEXT           "Y Pixels:",IDC_STATIC,9,59,33,8
+    RTEXT           "X Offset:",IDC_STATIC,86,46,33,8
+    RTEXT           "Y Offset:",IDC_STATIC,86,59,33,8
+    GROUPBOX        "Snap Grid",IDC_STATIC,7,33,161,57
+    RTEXT           "Row Offset:",IDC_STATIC,11,145,42,8
+    RTEXT           "Column Offset:",IDC_STATIC,83,145,50,8
+    GROUPBOX        "Cells",IDC_STATIC,7,94,162,144
+    RTEXT           "Rows:",IDC_STATIC,189,48,30,8
+    RTEXT           "Cols:",IDC_STATIC,189,40,30,8
+    RTEXT           "Cell Height:",IDC_STATIC,179,65,40,8
+    RTEXT           "Cell Width:",IDC_STATIC,180,58,39,8
+    LTEXT           "99",IDC_D_BRDPRP_ROWS,221,48,30,8
+    LTEXT           "99",IDC_D_BRDPRP_COLS,221,40,30,8
+    LTEXT           "99",IDC_D_BRDPRP_HEIGHT,221,65,30,8
+    LTEXT           "99",IDC_D_BRDPRP_WIDTH,221,58,30,8
+    LTEXT           "Cell border color:",IDC_STATIC,15,222,56,9
+    RTEXT           "Pixel Height:",IDC_STATIC,170,83,49,8
+    RTEXT           "Pixel Width:",IDC_STATIC,170,75,49,8
+    LTEXT           "99",IDC_D_BRDPRP_PXLHEIGHT,221,83,30,8
+    LTEXT           "99",IDC_D_BRDPRP_PXLWIDTH,221,75,30,8
+    CONTROL         "Enable transparent tiles in cells",IDC_D_BRDPRP_XPARENTCELLS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,204,141,10
+    RTEXT           "Half Height:",IDC_STATIC,181,128,38,8
+    RTEXT           "Small Width:",IDC_STATIC,179,140,40,8
+    RTEXT           "Half Width:",IDC_STATIC,183,119,36,8
+    RTEXT           "Small Height:",IDC_STATIC,177,148,42,8
+    LTEXT           "99",IDC_D_BRDPRP_HALF_PXLWIDTH,221,119,30,8
+    LTEXT           "99",IDC_D_BRDPRP_SMALL_PXLWIDTH,221,140,30,8
+    LTEXT           "99",IDC_D_BRDPRP_SMALL_PXLHEIGHT,221,148,30,8
+    LTEXT           "99",IDC_D_BRDPRP_HALF_PXLHEIGHT,221,127,30,8
+    PUSHBUTTON      "",IDC_D_BRDPRP_CELLCOLOR,75,219,60,15
+END
+
+IDD_BRDRESHAPE DIALOG 60, 64, 237, 49
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Reshape Board"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,181,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,181,22,50,14
+    EDITTEXT        IDC_D_BRDSHP_ROWS,35,4,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDSHP_COLS,35,19,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDSHP_CELLHT,131,4,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_BRDSHP_CELLWD,131,19,40,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Stagger First Row In",IDC_D_BRDSHP_STAGGERIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,35,79,10
+    RTEXT           "Cell Width:",-1,91,21,36,10
+    RTEXT           "Cell Height:",-1,90,6,38,11
+    RTEXT           "Rows:",-1,6,6,26,10
+    RTEXT           "Cols:",-1,6,21,26,9
+END
+
+IDD_TILERESIZE DIALOG 60, 64, 237, 67
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Resize Tile"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,181,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,181,22,50,14
+    EDITTEXT        IDC_D_RETILE_TILEHT,46,4,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_RETILE_TILEWD,131,4,40,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Rescale bitmaps to new size",IDC_D_RETILE_RESCALE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,122,49,107,10
+    RTEXT           "Tile Width:",IDC_STATIC,91,6,36,10
+    RTEXT           "Tile Height:",IDC_STATIC,5,6,38,11
+    RTEXT           "Current Height:",IDC_STATIC,2,23,53,8
+    LTEXT           "99",IDC_D_RETILE_CURHT,57,23,14,8
+    RTEXT           "Current Width:",IDC_STATIC,85,23,53,8
+    LTEXT           "99",IDC_D_RETILE_CURWD,140,23,14,8
+    COMBOBOX        IDC_D_RETILE_BOARDNAME,7,48,104,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Set tile size based on board:",IDC_STATIC,6,37,102,8
+END
+
+IDD_PIECENEWGRP DIALOG 55, 40, 233, 44
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Piece Group"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_PIECEGRP_NAME,9,18,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Enter name of Piece Group:",IDC_STATIC,9,5,96,8
+END
+
+IDD_MARKERNEWGRP DIALOG 55, 40, 233, 61
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Marker Group"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_MARKGRP_NAME,9,18,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Enter name of Marker Group:",IDC_STATIC,9,5,96,8
+    LTEXT           "See the Marker Group Properties dialog to set Marker Group options.",IDC_STATIC,8,39,148,17
+END
+
+IDD_PIECEGRPPROP DIALOG 55, 40, 233, 44
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Piece Group Name"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_PGRP_NAME,9,18,148,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "Enter name of Piece Group:",IDC_STATIC,9,5,96,8
+END
+
+IDD_MARKERGRPPROP DIALOG 55, 40, 233, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Marker Group Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_MARKGRP_NAME,9,18,148,12,ES_AUTOHSCROLL
+    GROUPBOX        "Marker tray content visibility",IDC_STATIC,9,40,211,59
+    CONTROL         "Markers are fully visible",IDC_D_MARKGRP_VIZFULL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,50,89,10
+    CONTROL         "Marker images are hidden. (shows ""HIDDEN"")",IDC_D_MARKGRP_RAND_VIZHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,72,162,10
+    CONTROL         "All marker items hidden. (shows the text ""ALL HIDDEN"")",IDC_D_MARKGRP_RAND_VIZALLHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,83,193,10
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
+    LTEXT           "The following selections enable random Marker selection:",IDC_STATIC,17,61,181,8
+    LTEXT           "Enter name of Marker Group:",IDC_STATIC,9,5,96,8
+END
+
+IDD_MARKERFACTORY DIALOG 0, 0, 281, 210
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Markers"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_D_MCREATE_TSET,3,16,110,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_MCREATE_TILES,3,32,110,102,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Prompt for text when this marker is created.",IDC_D_MCREATE_TEXTPROMPT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,140,148,10
+    EDITTEXT        IDC_D_MCREATE_TEXT,3,165,224,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    PUSHBUTTON      "Create Marker",IDC_D_MCREATE_CREATE,3,191,225,14
+    DEFPUSHBUTTON   "Close",IDOK,234,16,43,14
+    LISTBOX         IDC_D_MCREATE_MARKERS,118,16,110,119,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL
+    LTEXT           "Tile Image:",IDC_STATIC,3,4,46,8
+    LTEXT           "Markers:",IDC_STATIC,118,5,30,8
+    LTEXT           "Associate this marker with the following text:",IDC_STATIC,3,154,139,9
+END
+
+IDD_MARKEREDIT DIALOG 0, 0, 283, 186
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Marker"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_D_MEDIT_MARKERS,117,13,110,119,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_D_MEDIT_TSET,4,13,110,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_D_MEDIT_TILES,4,29,110,103,LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tile Image:",IDC_STATIC,4,3,46,8
+    LTEXT           "Marker:",IDC_STATIC,119,3,30,8
+    DEFPUSHBUTTON   "OK",IDOK,231,14,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,29,50,14
+    CONTROL         "Prompt for text when this marker is created.",IDC_D_MEDIT_TEXTPROMPT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,135,148,10
+    EDITTEXT        IDC_D_MEDIT_TEXT,4,160,222,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    LTEXT           "Associate this marker with the following text:",IDC_STATIC,6,149,139,9
+END
+
+IDD_SETSCALEVISIBILITY DIALOG 60, 40, 199, 100
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Scale Visibility"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,141,6,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,141,23,50,14
+    LTEXT           "The selected objects will be visible for the following board scalings:",IDC_STATIC,5,6,120,18
+    CONTROL         "Full Scale",IDC_D_SETVISI_FULL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,39,67,10
+    CONTROL         "Half Scale",IDC_D_SETVISI_HALF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,50,67,10
+    CONTROL         "Small Scale",IDC_D_SETVISI_SMALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,61,67,10
+    CONTROL         "Above scale is natural scale (bitmaps only).",IDC_D_SETVISI_NATURAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,84,165,10
+    GROUPBOX        "Visible Scales",IDC_STATIC,5,26,103,51
+END
+
+IDD_PASTE DIALOG 0, 0, 241, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Paste Image"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,185,10,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,185,27,50,14
+    LTEXT           "The clipboard bitmap you are pasting is a different size than the bitmap being edited. Please choose an action:",IDC_STATIC,9,11,167,26
+    CONTROL         "Maintain the pasted bitmap size.",IDC_D_PASTE_KEEPSIZE,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,11,41,171,10
+    CONTROL         "Rescale pasted bitmap to fit edited bitmap.",IDC_D_PASTE_RESIZE,
+                    "Button",BS_AUTORADIOBUTTON,11,54,151,10
+END
+
+IDD_ENTER_PASSWORD DIALOG 0, 0, 190, 46
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter Password"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_GETPASS_PASSWORD,7,17,116,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,133,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,133,24,50,14
+    LTEXT           "Please type the GameBox password:",IDC_STATIC,7,7,117,9
+END
+
+IDD_SET_PASSWORD DIALOG 0, 0, 202, 67
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Password"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_D_SETPASS_PASS_1,7,18,123,13,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_D_SETPASS_PASS_2,7,47,123,13,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,145,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,145,24,50,14
+    LTEXT           "Enter your GameBox password:",IDC_STATIC,7,7,106,10
+    LTEXT           "Enter your password again:",IDC_STATIC,7,35,93,10
+END
+
+IDD_PIECE_EDIT_MULTIPLE DIALOG 0, 0, 301, 167
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Multiple Pieces"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,244,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,244,24,50,14
+    CONTROL         "Only show top image during games.",IDC_D_MPEDIT_TOP_VISIBLE,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,7,20,127,10
+    EDITTEXT        IDC_D_MPEDIT_TEXT_FRONT,13,77,217,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_D_MPEDIT_TEXT_BACK,13,131,217,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    LTEXT           "Associate these piece's front with the following text:",IDC_D_MPEDIT_FRONT_LABEL,13,67,215,8
+    LTEXT           "Associate this piece's back with the following text:",IDC_D_MPEDIT_BACK_LABEL,13,119,159,9
+    LTEXT           "Change the attributes of the selected pieces.",IDC_STATIC,7,7,153,9
+    GROUPBOX        "Piece Text ",IDC_STATIC,7,44,230,116
+    CONTROL         "Change front text.",IDC_D_MPEDIT_CHG_TOP_TEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,55,153,10
+    CONTROL         "Change back text.",IDC_D_MPEDIT_CHG_BACK_TEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,108,153,10
+    CONTROL         "Enforce above option for owned pieces too.",IDC_D_MPEDIT_TOP_VISIBLE_OWNERS_TOO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,177,10
+END
+
+IDD_MARKER_EDIT_MULTIPLE DIALOG 0, 0, 293, 111
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit Multiple Markers"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,236,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,236,24,50,14
+    LTEXT           "Change the attributes of the selected pieces.",IDC_STATIC,7,7,153,9
+    CONTROL         "Prompt for text when one of these markers is created.",IDC_D_MMEDIT_TEXTPROMPT,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,7,21,224,10
+    CONTROL         "Change marker text.",IDC_D_MMEDIT_CHG_TEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,49,210,10
+    EDITTEXT        IDC_D_MMEDIT_TEXT,13,72,210,23,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    LTEXT           "Associate these markers with the following text:",IDC_D_MMEDIT_TEXT_LABEL,13,62,210,9
+    GROUPBOX        "Marker Text",IDC_STATIC,7,36,224,68
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_NODROP              CURSOR                  "res\\NODROP.CUR"
+
+IDC_CROSSHAIR           CURSOR                  "res\\CROSSHAIR.CUR"
+
+IDC_DRAGTILE            CURSOR                  "res\\DRAGTILE.CUR"
+
+IDC_FILL                CURSOR                  "res\\FILL.CUR"
+
+IDC_DROPPER             CURSOR                  "res\\DROPPER.CUR"
+
+IDC_ERASER              CURSOR                  "res\\ERASER.CUR"
+
+IDC_PENCIL              CURSOR                  "res\\PENCIL.CUR"
+
+IDC_BRUSH               CURSOR                  "res\\BRUSH.CUR"
+
+IDC_SMALL4WAY           CURSOR                  "res\\SMALL4WAY.CUR"
+
+IDC_COLORCHANGE         CURSOR                  "res\\ColorChange.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_BRDPRP DLGINIT
+BEGIN
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 9, 0
+0x4f52, 0x2c57, 0x4320, 0x4c4f, "\000" 
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 9, 0
+0x4f43, 0x2c4c, 0x5220, 0x574f, "\000" 
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 20, 0
+0x3130, 0x3130, 0x2d20, 0x5220, 0x776f, 0x2073, 0x6e6f, 0x6c20, 0x6665, 
+0x0074, 
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 23, 0
+0x3130, 0x3130, 0x2d20, 0x4320, 0x6c6f, 0x6d75, 0x736e, 0x6f20, 0x206e, 
+0x656c, 0x7466, "\000" 
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 19, 0
+0x4141, 0x2031, 0x202d, 0x6f52, 0x7377, 0x6f20, 0x206e, 0x656c, 0x7466, 
+"\000" 
+    IDC_D_BRDPRP_TRKSTYLE, 0x403, 22, 0
+0x4141, 0x2031, 0x202d, 0x6f43, 0x756c, 0x6e6d, 0x2073, 0x6e6f, 0x6c20, 
+0x6665, 0x0074, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,5,0,1000
+ PRODUCTVERSION 3,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "NorseSoft"
+            VALUE "FileDescription", "CyberBoard Design Program"
+            VALUE "FileVersion", "3.5.0.1000"
+            VALUE "LegalCopyright", "Copyright © Dale L. Larson 1994-2020"
+            VALUE "OriginalFilename", "CBDesign.exe"
+            VALUE "ProductName", "CyberBoard(tm)"
+            VALUE "ProductVersion", "3.5.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_WINDOW_TILEPAL
+    BUTTON      ID_WINDOW_TOOLPAL
+    BUTTON      ID_WINDOW_COLORPAL
+    BUTTON      ID_WINDOW_ITOOLPAL
+    SEPARATOR
+    BUTTON      ID_VIEW_TOGGLE_SCALE
+    SEPARATOR
+    BUTTON      ID_EDIT_LAYER_BASE
+    BUTTON      ID_EDIT_LAYER_TILE
+    BUTTON      ID_EDIT_LAYER_TOP
+    SEPARATOR
+    BUTTON      ID_VIEW_GRIDLINES
+    BUTTON      ID_TOOLS_BRDSNAPGRID
+    SEPARATOR
+    BUTTON      ID_DWG_TOFRONT
+    BUTTON      ID_DWG_TOBACK
+    SEPARATOR
+    BUTTON      ID_CONTEXT_HELP
+END
+
+IDB_DRAWLAYERTOOLS TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_TOOL_ARROW
+    BUTTON      ID_TOOL_ERASER
+    BUTTON      ID_TOOL_TILE
+    BUTTON      ID_TOOL_TEXT
+    BUTTON      ID_TOOL_FILL
+    BUTTON      ID_TOOL_DROPPER
+    BUTTON      ID_TOOL_LINE
+    BUTTON      ID_TOOL_POLYGON
+    BUTTON      ID_TOOL_RECT
+    BUTTON      ID_TOOL_OVAL
+END
+
+IDB_IMAGETOOLS TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_ITOOL_PENCIL
+    BUTTON      ID_ITOOL_SELECT
+    BUTTON      ID_ITOOL_BRUSH
+    BUTTON      ID_ITOOL_FILL
+    BUTTON      ID_ITOOL_COLORCHANGE
+    BUTTON      ID_ITOOL_TEXT
+    BUTTON      ID_ITOOL_LINE
+    BUTTON      ID_ITOOL_RECT
+    BUTTON      ID_ITOOL_OVAL
+    BUTTON      ID_ITOOL_FILLRECT
+    BUTTON      ID_ITOOL_FILLOVAL
+    BUTTON      ID_ITOOL_DROPPER
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_GM_ABOUTBOX, DIALOG
+    BEGIN
+    END
+
+    IDD_PIECEFACTORY, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 345
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 239
+    END
+
+    IDD_PIECEEDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 329
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 234
+    END
+
+    IDD_GBOXPROP, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 230
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 145
+    END
+
+    IDD_MARKERNEWGRP, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 56
+    END
+
+    IDD_MARKERGRPPROP, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 228
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_MARKERFACTORY, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 278
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 206
+    END
+
+    IDD_MARKEREDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 278
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 183
+    END
+
+    IDD_ENTER_PASSWORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
+
+    IDD_SET_PASSWORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 195
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 60
+    END
+
+    IDD_PIECE_EDIT_MULTIPLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 294
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+    IDD_MARKER_EDIT_MULTIPLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 286
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_GM_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDR_MAINFRAME           "CyberBoard Designer"
+    IDR_GAMEBOX             "\nGameBox\nGame Box\nGame Box Files (*.gbx)\n.gbx\nCyberBoardGameBox\nCyberBoard Game Box"
+    IDR_BOARDVIEW           "\nBoard\n\n\n\n\n"
+    IDR_BITEDITOR           "\nTileEdit\n\n\n\n\n"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TILEINUSE           "The tile you are going to delete is being used. If you delete it will vanish from the boards, etc. Select Yes to proceed."
+    IDS_ERR_BOARDNAME       "You must provide a unique board name."
+    IDS_ERR_NOTAGAMEBOX     "The file is not a Game Box."
+    IDS_ERR_GAMEBOXNEWER    "The Game Box file was created by a newer version of the program. You must upgrade your CyberBoard software to load it."
+    IDP_DELETEBOARD         "You are about to delete board:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
+    IDP_DELETETILESET       "You are about to delete tile group:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
+    IDP_DELETEPIECESET      "You are about to delete piece group:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
+    IDP_DELETEMARKSET       "You are about to delete marker group:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
+    IDS_ERR_VIDEORES        "This Game Box was last edited with a video driver that supported at least 16 bit color (65536 colors). Your current video driver does not. If you save this file, color information will be lost. Select OK to proceed or Cancel to abort."
+    IDS_WARN_RESHAPE        "WARNING! Reshaping the board will probably result in losing some board edits. Graphical tiles may be improperly sized. Other drawing objects may be poorly positioned. It is best to use this option to ""tweak"" a new board. You have been warned!"
+    IDS_ERR_TILESETNAME     "You must provide a unique name for tile groups."
+    IDS_ERR_PIECESETNAME    "You must provide a unique piece group name."
+    IDS_ERR_MARKERSETNAME   "You must provide a unique marker group name."
+    IDP_PROGVER             "Program Version - %1.%2"
+    IDP_FILEVER             "GBX File Version - %1.%2"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "CyberBoard Designer"
+    AFX_IDS_IDLEMESSAGE     "For Help, press F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Create a new GameBox\nNew GameBox"
+    ID_FILE_OPEN            "Open an existing GameBox\nOpen GameBox"
+    ID_FILE_CLOSE           "Close the active document"
+    ID_FILE_SAVE            "Save the active GameBox\nSave Active GameBox"
+    ID_FILE_SAVE_AS         "Save the active document with a new name"
+    ID_FILE_PAGE_SETUP      "Change the printing options"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options"
+    ID_FILE_PRINT           "Print the active document"
+    ID_FILE_PRINT_PREVIEW   "Display full pages"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nProgram Information"
+    ID_APP_EXIT             "Quit the application; prompts to save documents"
+    ID_HELP_INDEX           "List Help topics"
+    ID_HELP_USING           "Display instructions about how to use help"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows"
+    ID_HELP                 "Display help for current task or command"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane"
+    ID_PREV_PANE            "Switch back to the previous window pane"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles"
+    ID_WINDOW_SPLIT         "Split the active window into panes"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Erase the current selection\nDelete (Del)"
+    ID_EDIT_CLEAR_ALL       "Erase everything"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy (Ctrl+C)"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste (Ctrl+V)"
+    ID_EDIT_REPEAT          "Repeat the last action"
+    ID_EDIT_REPLACE         "Replace specific text with different text"
+    ID_EDIT_SELECT_ALL      "Select the entire document"
+    ID_EDIT_UNDO            "Undo the last action\nUndo (Ctrl+Z)"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE
+BEGIN
+    ID_OFFSCREEN            "Draw pieces off screen and blit to screen"
+    ID_EDIT_COLORDLG        "Color Dialog Test"
+    ID_VIEW_GRIDLINES       "Hides or shows cell layer border lines\nCell Border Lines"
+    ID_DEBUG_DUMPPAL        "Oh the Doo Dah Day...."
+    ID_EDIT_LAYER_BASE      "Edit the board's base drawing layer\nBase Drawing Layer (Ctrl+1)"
+    ID_EDIT_LAYER_TILE      "Edit the board's cell layer\nBoard Cell Layer (Ctrl+2)"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_LAYER_TOP       "Edit the board's top drawing layer\nTop Drawing Layer (Ctrl+3)"
+    ID_WINDOW_TOOLPAL       "Hides or shows the Board tool palette\nBoard Tool Palette"
+    ID_WINDOW_COLORPAL      "Shows or hides the Color palette\nColor Palette"
+    ID_WINDOW_TILEPAL       "Shows or hides the Tile palette\nTile Palette"
+    ID_WINDOW_ITOOLPAL      "Shows or hides the Tile Drawing palette\nTile Tool Palette"
+    ID_DWG_TOFRONT          "Brings the selected drawing objects to the front of the drawing\nMove Object to Front"
+    ID_DWG_TOBACK           "Sends the selected drawing objects to the back of the drawing\nMove Object to Back"
+    ID_DWG_FONT             "Set default drawing font."
+    ID_IMAGE_GRIDLINES      "Shows or hides tile editor grid lines\nTile Grid Lines"
+    ID_IMAGE_UPDATE         "Update original tile with changes"
+    ID_IMAGE_DISCARD        "Discard changes to tile image"
+    ID_IMAGE_BOARDMASK      "Apply the cell mask from a board"
+    ID_VIEW_ZOOMOUT         "Zoom the tile image out\nZoom Tile Image Out"
+    ID_VIEW_ZOOMIN          "Zoom the tile image in\nZoom Tile Image In"
+END
+
+STRINGTABLE
+BEGIN
+    ID_TOOL_ARROW           "Selects objects\nSelect Objects"
+    ID_TOOL_ERASER          "Erases contents of board cell\nErase Cell"
+    ID_TOOL_TILE            "Places tiles on the board\nTile"
+    ID_TOOL_TEXT            "Places text on the board\nText"
+    ID_TOOL_FILL            "Fills board cell with a single color\nColor Cell"
+    ID_TOOL_DROPPER         "Extract a color from the screen\nPickup Color"
+    ID_TOOL_LINE            "Draw a line on the board\nLine"
+    ID_TOOL_POLYGON         "Draw a polygon or polyline on board\nPolygon or Polyline"
+    ID_TOOL_RECT            "Draw a rectangle on the board\nRectangle"
+    ID_TOOL_OVAL            "Draw an oval on the board\nOval"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ITOOL_PENCIL         "Draws using a singe-pixel pencil\nPixel Pencil"
+    ID_ITOOL_SELECT         "Selects a portion the image for move, cut or copy\nSelect"
+    ID_ITOOL_BRUSH          "Draw using a brush having the selected size\nBrush"
+    ID_ITOOL_FILL           "Fill a portion of the image with the selected color\nFill"
+    ID_ITOOL_TEXT           "Draw text on the image using the current font\nText"
+    ID_ITOOL_LINE           "Draw lines on the the image using the current size\nLine"
+    ID_ITOOL_RECT           "Draw a rectagle using the selected color and border width\nRectangle"
+    ID_ITOOL_OVAL           "Draw an oval using the selected color and border width\nOval"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ITOOL_FILLRECT       "Draw a filled rectagle using the selected color and border width\nFilled Rectangle"
+    ID_ITOOL_FILLOVAL       "Draw an filled oval using the selected colors and border width\nFilled Oval"
+    ID_ITOOL_DROPPER        "Extract a color from the screen\nPickup Color"
+    ID_ITOOL_COLORCHANGE    "Change clicked color to current color.\nChange Color"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_FULLSCALE       "Show full scale board view"
+    ID_VIEW_HALFSCALE       "Show half scale board view"
+    ID_VIEW_SMALLSCALE      "Show small scale board view"
+    ID_INDICATOR_CELLNUM    "X=9999, Y=9999"
+    ID_TOOLS_BRDSNAPGRID    "Enable or disables the board editor snap grid\nBoard Snap Grid"
+    ID_TOOLS_BRDPROPS       "Change the board properties"
+    ID_TOOLS_RESIZETILE     "Resize the tile's bitmaps"
+    ID_TOOL_SETVISIBLESCALE "Select which scales the objects are visible"
+    ID_TOOL_SUSPENDSCALEVISIBILITY 
+                            "Turn off scaled visibility for drawn objects"
+    ID_TOOLS_ROT90          "Rotate the tile image clockwise 90 degrees"
+    ID_TOOLS_ROT180         "Rotate the tile image clockwise 180 degrees"
+    ID_TOOLS_ROT270         "Rotate the tile image clockwise 270 degrees"
+    ID_EDIT_GBOXPROPERTIES  "Edit the game box properties"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_BOARDSIZE       "The combination of either rows and cell height or columns and cell width has created a board larger than allowed. A board can be as large as 32,000 by 32,000 pixels."
+    IDS_BTN_CREATE          "Create"
+    IDS_BTN_PROPERTIES      "Properties"
+    IDS_BTN_EDIT            "Edit"
+    IDS_BTN_DELETE          "Delete"
+    IDS_BTN_CLONE           "Clone"
+    IDS_BTN_NEW             "New"
+    IDS_PHEAD_BOARDS        "Playing Boards"
+    IDS_PHEAD_TILES         "Tile Image Groups"
+    IDS_PHEAD_PIECES        "Playing Piece Groups"
+    IDS_PHEAD_MARKS         "Board Marker Groups"
+    IDS_PHEAD_DOCTYPE       "Game Box"
+    IDS_ERR_NEEDONEOBJECT   "Objects must be visible in at least one board scale."
+    IDP_ERR_MINCOLORS       "In order to create and edit GameBox files you must be running in a video mode that supports at least 16 bit color (65536 colors)."
+    IDP_ERR_EXPIRED         "This Beta version of CyberBoard is really old and will no longer run. Please obtain a newer version."
+    IDP_ERR_ALMOSTEXPIRED   "This Beta version of CyberBoard is really old and on October 1, 2005 it will no longer run. Please obtain a newer version."
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CREATETILEGROUP "Create tile image grouping"
+    ID_EDIT_CREATEBOARD     "Create game play board."
+    ID_EDIT_CREATEPIECEGROUP "Create a grouping for playing pieces"
+    ID_EDIT_CREATEMARKGROUP "Create a grouping for markers"
+    ID_EDIT_MOVE            "Move clipboard objects to new locations\nMove (Ctrl+M)"
+    ID_PROJECT_SAVETILESINTILELIBRARYFILE 
+                            "Save selected tiles in a file\nSave Tiles in File"
+    ID_PROJECT_SAVETILEFILE "Save tiles in a tile library file\nSave Tile File"
+    ID_PROJECT_LOADTILEFILE "Load tiles from a tile library file\nLoad Tile File"
+    ID_PROJECT_CHGID        "Change GameBox Fingerprint."
+    ID_STICKY_DRAWTOOLS     "Toggle automatic selection of Select tool after drawing."
+    ID_TILE_CLONE           "Clone selected tile."
+    ID_TILE_NEW             "Create new tile."
+    ID_TILE_DELETE          "Delete select tile."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BMP_FILTER          "Bitmap Files (*.bmp)|*.bmp|All Files (*.*)|*.*||"
+    IDP_ERR_LOADBITMAP      "An error occured loading the bitmap file."
+    IDS_SEL_BITMAPFILE      "Select bitmap file to paste onto playing board"
+    IDS_GTL_FILTER          "Tile Library Files (*.gtl)|*.gtl|All Files (*.*)|*.*||"
+    IDS_SEL_LOADTILELIBRARY "Select Tile Library"
+    IDP_ERR_NOTGTLB         "File is not a tile library."
+    IDP_ERR_GTLBVERSION     "Cannot load file. The version of the tile library is newer than this version of CyberBoard. "
+    IDP_ERR_GTLBREAD        "An error occurred loading the tile library file."
+    IDP_ERR_GTLBWRITE       "An error occurred writing the tile library file."
+    IDS_SEL_SAVETILELIBRARY "Specify Tile Library Name"
+    IDP_ERR_GTLBCREATE      "An error occurred creating the tile library file."
+    IDP_WARN_CHGID          "You are about to change the GameBox fingerprint. The new GameBox file will no longer function with current games and scenarios. Use only for cloning new GameBox's. This is serious stuff!  Are you sure you want to proceed?"
+    IDP_WARN_CHGID2         "Like I said:\n\nTHIS IS SERIOUS STUFF!\n\nIf you're sure you know what you're doing, press ""Yes"" to do the dirty deed."
+    IDS_PROJTYPE_GAMEBOX    "GameBox Project"
+    IDS_TT_NULLCOLOR        "Click for No Color"
+    IDS_TT_TRANSCOLOR       "Click for Transparent Color"
+END
+
+STRINGTABLE
+BEGIN
+    ID_TILE_EDIT            "Edit selected tile."
+    ID_PROJITEM_PROPERTIES  "Examine item properties."
+    ID_PROJITEM_DELETE      "Delete selected item."
+    ID_PIECE_NEW            "Create new pieces."
+    ID_PIECE_EDIT           "Edit selected piece."
+    ID_PIECE_DELETE         "Delete selected piece."
+    ID_MARKER_NEW           "Create new markers."
+    ID_MARKER_EDIT          "Edit selected marker."
+    ID_MARKER_DELETE        "Delete selected marker."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TT_COLORCELLS       "Left Click=Fore Color; Right Click=Back Color"
+    IDS_BSIZE_PATTERN       "Height = %d, Width = %d pixels."
+    IDS_BSIZE_INVALID       "Invalid Board Size"
+    IDS_COPY_OF             "Copy of "
+    IDS_COMPRESS_NONE       "No Compression"
+    IDS_COMPRESS_FASTEST    "Fastest Compression"
+    IDS_COMPRESS_MEDIUM     "Medium Compression"
+    IDS_COMPRESS_MOST       "Most Compression"
+    IDS_ERR_BAD_PASSWORD    "You have entered an incorrect password for this GameBox file."
+    IDS_ERR_NEED_PASSWORD   "You must enter a password to edit this GameBox file."
+    IDS_WARN_PASS_MUST_MATCH 
+                            "The passwords you entered do not match. Please retype them."
+    IDS_TIP_PREFIX_FRONT    "Front: "
+    IDS_TIP_PREFIX_BACK     "Back: "
+    IDS_TIP_LBOXITEM_MARKER "* "
+    IDS_URL_CB_WEBSITE      "http://www.norsesoft.com/cyberboard.html"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLONEBOARD      "Make a copy of the selected board."
+    ID_DWG_DRAWABOVEGRID    "Draw selected objects above the grid lines\nDraw Above Grid"
+    ID_URL_DONATION         "D-TEST"
+    ID_HELP_DONATION        "Make a donation for CyberBoard."
+    ID_VIEW_TOGGLE_SCALE    "Cycle to the next board or tile scale.\nToggle Scale"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_RESOURCE_VERSION    "3.90"
+    IDS_ERR_RESOURCE_VERSION 
+                            "The localization resource DLL ""%1"" is not the correct version. This version of CyberBoard requires version %2 resources. The default English resources will be used."
+    IDS_BASEFONT_NAME       "MS Sans Serif"
+    IDS_BASEFONT_SIZE_SMALL "8"
+    IDS_BASEFONT_SIZE_BIG   "10"
+    IDS_BETA_VERSION        " RC1"
+END
+
+STRINGTABLE
+BEGIN
+    ID_HELP_WEBSITE         "Opens a web browser and takes you to the CyberBoard web site."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_WARN_FILE_UPGRADE   "You are loading a GameBox file from a prior version of CyberBoard. It will automatically be upgraded when you save it. The upgraded file is not compatible with prior versions of CyberBoard.\n\nPress OK to continue, Cancel to exit."
+    IDS_ERR_SAVE_DELETE_FAIL 
+                            "Failed to remove back-up file ""%s"". Check if the file attributes are marked as read-only. Please correct and Save again."
+    IDS_TT_CUST_COLOR_CELLS "Left Click=Fore Color; Right Click=Back Color\nShift Click & Ctrl Click = Set Custom Color"
+    IDS_TT_LINEWIDTH_COMBO  "Line or Border Width"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "afxres.rc"             // Standard components
+#include "afxprint.rc"           // printing/print preview resources
+#if !defined(_AFXDLL)
+#include "afxribbon.rc"          // MFC ribbon and control bar resources
+#endif
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

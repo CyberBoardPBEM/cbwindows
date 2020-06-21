@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<Title>How to Use CyberBoard</Title>
+<style>@import url(cbhelp.css);</style>
+<script language="JavaScript" src="master.js"></script>
+</HEAD>
+<BODY>
+<H1>How to Use CyberBoard</H1>
+<h2>Create a GameBox File</h2>
+<p>
+Use the game designer program to create a GameBox file. A GameBox
+contains all the playing boards, game pieces and annotation graphics 
+(called markers) used in a game. This is the major portion of the work
+of using CyberBoard. Once the GameBox is created it may be used to create
+many different game scenarios.</p>
+<P>
+The following procedure is used to create a GameBox file:</P>
+
+<p><i>TO BE ADDED</i></p>
+
+<H2>Setup a Game for Play</H2>
+
+<p>Use the game player program to create a game scenario file. The game 
+scenario contains:</p>
+<UL>
+<LI>Playing piece tray definitions. Trays hold pieces that are not on
+    the playing board. For instance, if your game is checkers, a tray could
+    be used to hold king pieces and pieces removed from play. Alternately, 
+    the game designer could have placed a "King" image on the backside 
+    of the playing piece.</LI>
+<LI>Pieces placed on the board in their starting positions. For the game
+    of checkers they would be placed in their standard positions.</LI>
+</UL>
+<p>
+The steps to creating a scenario file are:</p>
+<ol>
+<li>Using the <code>CBPlay</code> program, create a Scenario file. 
+    All games start from a scenario file. To create a scenario 
+    use menu command <b><a href="gp-ref-menu-file.htm">File/New</a></b> and 
+    select Scenario. You'll be prompted to select the GameBox file
+    that the scenario is associated with.</li> 
+<li>Next, use menu command <b><a href="gp-ref-menu-project.htm">Project/Select 
+    Playing Boards</a></b> to select the boards that are going to used in your scenario. 
+    This selection process is to mimic the fact that some games come with more
+    than one playing board--only a few of which are used.</li>
+<li>Now create trays to hold playing pieces. Use menu command 
+    <b><a href="gp-ref-menu-project.htm">Project/CreatePlaying Piece Tray</a></b>.
+    Create any combination of trays that makes sense for your game. In
+    the case of the example generic game there is one for the red army and one for
+    the blue army.</li>
+<li>Transfer the pieces this scenario will use into the trays. To do this, 
+    select one of the trays in the <a href="gp-ref-window-gsn-project.htm">
+    main project window</a> and press the Edit button. You'll be presented 
+    with a dialog that is used to transfer pieces from the GameBox 
+    playing piece groups into the trays.</li>
+<li>Finally, set up the game's starting situation for the game by dragging
+    pieces from the trays onto the playing board. Move them around etc.</li>
+<li>Close the file.</li>
+</ol>
+<p>You're ready to play the game.</p>
+<H2>Playing a Game</H2>
+<ol>
+<li>Use the menu command <b><a href="gm-ref-menu-file.htm">File/New</a></b> and select 
+    <b>Game</b>. You'll be prompted for the scenario file which defines the 
+    starting setup for the game. You can now start playing. The game automatically 
+    records your moves, messages, etc. </li>
+<li>When you're ready to send the moves to your opponent select the menu 
+    command <b><a href="gp-ref-menu-file.htm">
+    File/Send Recorded Moves to File</a></b>. E-Mail this file to your
+    opponent.</li>
+<li>When you get a move file from your opponent, use the menu command 
+    <b><a href="gp-ref-menu-file.htm">File/Load Recorded Move File</a></b> to load it. 
+    Use commands on the <b><a href="gp-ref-menu-playback.htm">Playback</a></b> menu 
+    to do the playback. When you're done, accept the move file and it'll be added 
+    to your game history. Keep exchanging move files in the same manner.</li>
+</ol>
+</BODY>
+</HTML>

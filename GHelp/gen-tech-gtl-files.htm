@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<Title>Tile Library File Format</Title>
+<style>@import url(cbhelp.css);</style>
+<script language="JavaScript" src="master.js"></script>
+</HEAD>
+<BODY>
+<H1>Tile Library File Format (For Programmer's Only)</H1>
+
+<p>A CyberBoard Tile Library file contains one or more tiles
+in a format that can be directly loaded into a GameBox tile grouping. 
+Each tile is composed of a COLORREF value for the color of the small 
+scale tile and two device independent bitmaps (DIB) in CF_DIB clipboard 
+format. One DIB is for the full size tile image, the other is for the
+half size image. The half size tile is 1/2 the size of the full size
+tile rounded up. For example, if the full size tile is 15 pixels
+the half size tile is 8 pixels.</p>
+<p>
+The overall structure of the file is:</p>
+<pre><code><font color="darkred">
+BYTE    chSig[4];       // File Signature = "GTLB"
+WORD    wVersion;       // Version = 0x0100 (1.00)
+DWORD   dwNumTiles;     // Number of &lt;Tile_Definition&gt;'s in the file
+// dwNumTiles tile definitions follow...
+&lt;Tile_Definition&gt;
+       :
+       :
+&lt;Tile_Definition&gt;
+</pre></font></code>
+<p>
+Each <code>&lt;Tile_Definition&gt;</code> is structured like so:</p>
+<pre><code><font color="darkred">
+DWORD           dwSmallTileColor;   // Color of small tile (COLORREF format)
+&lt;Packed_DIB&gt;    dibFullSizeTile;    // The DIB data for the full size tile
+&lt;Packed_DIB&gt;    dibHalfSizeTile;    // The DIB data for the half size tile
+</pre></font></code>
+<p>
+Each &lt;Packed_DIB&gt; record looks like:</p>
+<pre><code><font color="darkred">
+DWORD               dwRecordSize;   // Size in bytes of bitmap that follows.
+
+                                    // The following is the same stuff 
+                                    // that gets put on the clipboard 
+                                    // for the CF_DIB format...
+struct BITMAPINFO   dib;            // (See the Win32 SDK docs)
+&lt;bitmap_data>
+</pre></font></code>
+<p>
+Oh...one more thing...all numbers larger than a byte are stored in 
+little-endian (aka Intel) byte order:</p>
+<p>
+<code>Least Significant Byte....Most Significant Byte.</code></p>
+<p>
+Oh...Get the format of your file right because there isn't 
+heck of a lot of checking going on in CyberBoard to make sure the 
+incoming format is correct. </p>
+</BODY>
+</HTML>

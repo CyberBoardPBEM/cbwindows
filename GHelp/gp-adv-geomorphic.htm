@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<Title>How Geomorphic Boards Work</Title>
+<style>@import url(cbhelp.css);</style>
+<script language="JavaScript" src="master.js"></script>
+</HEAD>
+<BODY>
+<H1>How Geomorphic Boards Work</H1>
+
+<P>
+Before you can use the geomorphic board construction feature
+you must follow a few rules. But first some terminology.</P>
+
+<P>
+The GRAIN of boards using hex cell styles is either vertical
+or horizontal. If your hex cells have a horizontal line on an
+edge then that board has a vertical GRAIN. This corresponds to
+the "Hex (Flat Up)" board creation option.</P>
+
+<P>
+If your hex cells have a vertical line on an edge then that 
+board has a horizontal GRAIN. This corresponds to the 
+"Hex (Point Up)" board creation option.</P>
+
+<P>
+Here are the rules for creating boards compliant with the
+geomorphic board construction feature:</P>
+
+<P>
+RULE:  The board must use hexes.</P>
+
+<P>
+RULE:  The number of rows/columns in the direction of the
+GRAIN *MUST* be odd.</P>
+
+<P>
+That's all of them.</P>
+
+<P>
+Only boards having the same cell dimensions, orientation, and
+stagger option may be combined as a composite board.</P>
+
+<P>
+When CyberBoard "stitches" together boards. The half cells that 
+join two boards along the grain are graphically merged by taking
+the image of the two halves of those cells and creating a special
+joining cell (you really don't need to know this but it's kind of 
+cool to see).</P>
+
+<P>
+New boards are constructed from geomorphically compliant boards
+by using the "Create Geomorphic Board" Dialog.</P>
+
+<P>
+The left list box in the dialog shows all the boards the are 
+geomorphically compliant so you don't have to guess. The  list's 
+content is dynamically adjusted during the build process 
+so you can only select valid boards for the particular situation.</P>
+
+<P>
+Constructing a composite board is done by building an array of other
+boards. You add boards along a row until you want to start a new
+row. Then you push the "Row break" button. You then add more
+boards and so on. The right list box shows the composition.</P>
+
+<P>
+The board array must be properly formed before the "Ok" button
+is enabled (don't forget you also have to name the board). That is:</P>
+
+<UL>
+<LI>All boards in a row must be the same number of cells high.</LI>
+<LI>All boards in a column must be the same number of cells wide.</LI>
+<LI>All board array cells must have a board. No empty slots are allowed.</LI>
+</UL>
+
+<p>
+Settings like the snap grid and the base board color are taken from the first
+board added to the board array. This means if the first board's base
+color is green and another board's base color is blue, the resultant
+composite board's base color will be green. The blue color is ignored. Please
+plan for this when you create the component geomorphic boards.</p>
+
+<p>
+There is no capability to flip a board 180 degrees. This means you have to create
+two boards to actually be able to use both orientations of a component board in
+the resulting composite board.</p>
+
+</BODY>
+</HTML>

@@ -1,0 +1,419 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}</ProjectGuid>
+    <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>CBPlay</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildStep>
+      <Message>Build HTML Help</Message>
+      <Command>makehm IDR_,IDH_R_,0x20000 resource.h &gt;"gphelpidmap.h"
+makehm ID_,IDH_,0x10000 IDM_,IDH_M_,0x10000 resource.h &gt;&gt;"gphelpidmap.h"
+..\ghelp\makeidh gphelpidmap.h
+copy $(ProjectDir)gphelpidmap.h ..\GHelp\*.*
+copy $(ProjectDir)gphelp.h ..\GHelp\*.*
+hhc.exe ..\GHelp\CBoard.hhp
+copy ..\GHelp\CBoard.chm $(TargetDir)cboard.chm
+echo off
+</Command>
+      <Outputs>$(TargetDir)cboard.chm;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/Cbplay32.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(VCToolsInstallDir)atlmfc\src\mfc;..\zLib;..\gshr;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;GPLAY;_AFX_SECURE_NO_WARNINGS;_ATL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/Cbplay32.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat />
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\..\..\XtremeToolkit\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>htmlhelp.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>Release/CBPlay.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Release/CBPlay.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Message>Build HTML Help</Message>
+      <Command>makehm IDR_,IDH_R_,0x20000 resource.h &gt;"gphelpidmap.h"
+makehm ID_,IDH_,0x10000 IDM_,IDH_M_,0x10000 resource.h &gt;&gt;"gphelpidmap.h"
+..\ghelp\makeidh gphelpidmap.h
+copy $(ProjectDir)gphelpidmap.h ..\GHelp\*.*
+copy $(ProjectDir)gphelp.h ..\GHelp\*.*
+hhc.exe ..\GHelp\CBoard.hhp
+copy ..\GHelp\CBoard.chm $(TargetDir)cboard.chm
+echo off
+</Command>
+      <Outputs>$(TargetDir)cboard.chm;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/Cbplay32.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(VCToolsInstallDir)atlmfc\src\mfc;..\zLib;..\gshr;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;GPLAY;_AFX_SECURE_NO_WARNINGS;_ATL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Debug/Cbplay32.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\..\..\XtremeToolkit\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>htmlhelp.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/CBPlay.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\GShr\Arclib.cpp" />
+    <ClCompile Include="..\GShr\Atom.cpp" />
+    <ClCompile Include="..\GShr\Board.cpp" />
+    <ClCompile Include="..\GShr\BrdCell.cpp" />
+    <ClCompile Include="..\GShr\CalcLib.cpp" />
+    <ClCompile Include="..\GShr\CDib.cpp" />
+    <ClCompile Include="..\GShr\CellForm.cpp" />
+    <ClCompile Include="..\GShr\Color.cpp" />
+    <ClCompile Include="..\GShr\DibApi.cpp" />
+    <ClCompile Include="DlgChgGameOwner.cpp" />
+    <ClCompile Include="DlgDice.cpp" />
+    <ClCompile Include="DlgEdtEl.cpp" />
+    <ClCompile Include="DlgEPly.cpp" />
+    <ClCompile Include="DlgItray.cpp" />
+    <ClCompile Include="DlgMarkCount.cpp" />
+    <ClCompile Include="DlgMdesc.cpp" />
+    <ClCompile Include="DlgMPly.cpp" />
+    <ClCompile Include="DlgNewGeoBoard.cpp" />
+    <ClCompile Include="DlgNPly.cpp" />
+    <ClCompile Include="DlgPass.cpp" />
+    <ClCompile Include="DlgPbprp.cpp" />
+    <ClCompile Include="DlgRot.cpp" />
+    <ClCompile Include="DlgRotpc.cpp" />
+    <ClCompile Include="DlgScnp.cpp" />
+    <ClCompile Include="DlgSelOwner.cpp" />
+    <ClCompile Include="DlgSlbrd.cpp" />
+    <ClCompile Include="DlgSmsg.cpp" />
+    <ClCompile Include="DlgSpece.cpp" />
+    <ClCompile Include="DlgState.cpp" />
+    <ClCompile Include="DlgTrunc.cpp" />
+    <ClCompile Include="DlgYnew.cpp" />
+    <ClCompile Include="DlgYprop.cpp" />
+    <ClCompile Include="..\GShr\DrawObj.cpp" />
+    <ClCompile Include="Editnocv.cpp" />
+    <ClCompile Include="FileLib.cpp" />
+    <ClCompile Include="..\GShr\Font.cpp" />
+    <ClCompile Include="..\GShr\FontName.cpp" />
+    <ClCompile Include="FrmDockMark.cpp" />
+    <ClCompile Include="FrmDockTray.cpp" />
+    <ClCompile Include="FrmMain.cpp" />
+    <ClCompile Include="FrmPbrd.cpp" />
+    <ClCompile Include="FrmProj.cpp" />
+    <ClCompile Include="GamDoc.cpp" />
+    <ClCompile Include="GamDoc1.cpp" />
+    <ClCompile Include="GamDoc2.cpp" />
+    <ClCompile Include="GamDoc3.cpp" />
+    <ClCompile Include="GamDoc4.cpp" />
+    <ClCompile Include="GamDoc5.cpp" />
+    <ClCompile Include="GameBox.cpp" />
+    <ClCompile Include="GamState.cpp" />
+    <ClCompile Include="..\GShr\GdiTools.cpp" />
+    <ClCompile Include="GeoBoard.cpp" />
+    <ClCompile Include="Gp.cpp" />
+    <ClCompile Include="..\GShr\LBoxGfx2.cpp" />
+    <ClCompile Include="..\GShr\LBoxGrfx.cpp" />
+    <ClCompile Include="..\GShr\LBoxMark.cpp" />
+    <ClCompile Include="..\GShr\LBoxPiec.cpp" />
+    <ClCompile Include="..\GShr\LBoxProj.cpp" />
+    <ClCompile Include="LBoxSlct.cpp" />
+    <ClCompile Include="..\GShr\LBoxTileBase.cpp" />
+    <ClCompile Include="..\GShr\LBoxTileBase2.cpp" />
+    <ClCompile Include="LBoxTray.cpp" />
+    <ClCompile Include="..\GShr\LibMfc.cpp" />
+    <ClCompile Include="MapFace.cpp" />
+    <ClCompile Include="..\GShr\MapStrng.cpp" />
+    <ClCompile Include="..\GShr\Marks.cpp" />
+    <ClCompile Include="..\GShr\MD5.cpp" />
+    <ClCompile Include="MoveHist.cpp" />
+    <ClCompile Include="MoveMgr.cpp" />
+    <ClCompile Include="PalMark.cpp" />
+    <ClCompile Include="PalReadMsg.cpp" />
+    <ClCompile Include="PalTray.cpp" />
+    <ClCompile Include="PBoard.cpp" />
+    <ClCompile Include="..\GShr\Pieces.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PPieces.cpp" />
+    <ClCompile Include="..\GShr\ResTbl.cpp" />
+    <ClCompile Include="..\GShr\Rotate.cpp" />
+    <ClCompile Include="SelOPlay.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\GShr\StrLib.cpp" />
+    <ClCompile Include="..\GShr\Tile.cpp" />
+    <ClCompile Include="..\GShr\TileMgr.cpp" />
+    <ClCompile Include="..\GShr\TileSet.cpp" />
+    <ClCompile Include="..\GShr\TileSht.cpp" />
+    <ClCompile Include="ToolPlay.cpp" />
+    <ClCompile Include="Trays.cpp" />
+    <ClCompile Include="VwPbrd.cpp" />
+    <ClCompile Include="VwPbrd1.cpp" />
+    <ClCompile Include="VwPrjga1.cpp" />
+    <ClCompile Include="VwPrjgam.cpp" />
+    <ClCompile Include="VwPrjgs1.cpp" />
+    <ClCompile Include="VwPrjgsn.cpp" />
+    <ClCompile Include="VwSelpce.cpp" />
+    <ClCompile Include="VwTbrd.cpp" />
+    <ClCompile Include="WinDynspl.cpp" />
+    <ClCompile Include="WinMyspl.cpp" />
+    <ClCompile Include="WinPoptb.cpp" />
+    <ClCompile Include="..\GShr\WinState.cpp" />
+    <ClCompile Include="WStateGp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Cbplay.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Arrows.h" />
+    <ClInclude Include="..\GShr\Atom.h" />
+    <ClInclude Include="..\GShr\BarCbDock.h" />
+    <ClInclude Include="..\GShr\Board.h" />
+    <ClInclude Include="..\GShr\BrdCell.h" />
+    <ClInclude Include="..\GShr\CDib.h" />
+    <ClInclude Include="..\GShr\CellForm.h" />
+    <ClInclude Include="..\GShr\Ctl3d.h" />
+    <ClInclude Include="..\GShr\DibApi.h" />
+    <ClInclude Include="DlgChgGameOwner.h" />
+    <ClInclude Include="DlgDice.h" />
+    <ClInclude Include="DlgEdtEl.h" />
+    <ClInclude Include="DlgEPly.h" />
+    <ClInclude Include="DlgItray.h" />
+    <ClInclude Include="DlgMarkCount.h" />
+    <ClInclude Include="DlgMdesc.h" />
+    <ClInclude Include="DlgMPly.h" />
+    <ClInclude Include="DlgNewGeoBoard.h" />
+    <ClInclude Include="DlgNPly.h" />
+    <ClInclude Include="DlgPass.h" />
+    <ClInclude Include="DlgPbprp.h" />
+    <ClInclude Include="DlgRmsg.h" />
+    <ClInclude Include="DlgRot.h" />
+    <ClInclude Include="DlgRotpc.h" />
+    <ClInclude Include="DlgScnp.h" />
+    <ClInclude Include="DlgSelOwner.h" />
+    <ClInclude Include="DlgSlbrd.h" />
+    <ClInclude Include="DlgSmsg.h" />
+    <ClInclude Include="DlgSpece.h" />
+    <ClInclude Include="DlgState.h" />
+    <ClInclude Include="DlgTrunc.h" />
+    <ClInclude Include="DlgYnew.h" />
+    <ClInclude Include="DlgYprop.h" />
+    <ClInclude Include="..\GShr\DragDrop.h" />
+    <ClInclude Include="..\GShr\DrawObj.h" />
+    <ClInclude Include="Editnocv.h" />
+    <ClInclude Include="FileLib.h" />
+    <ClInclude Include="..\GShr\Font.h" />
+    <ClInclude Include="..\GShr\FontName.h" />
+    <ClInclude Include="..\GShr\FrmCBMini.h" />
+    <ClInclude Include="FrmDockMark.h" />
+    <ClInclude Include="FrmDockTray.h" />
+    <ClInclude Include="FrmMain.h" />
+    <ClInclude Include="FrmPbrd.h" />
+    <ClInclude Include="FrmProj.h" />
+    <ClInclude Include="GamDoc.h" />
+    <ClInclude Include="GameBox.h" />
+    <ClInclude Include="GamState.h" />
+    <ClInclude Include="..\GShr\GdiTools.h" />
+    <ClInclude Include="GeoBoard.h" />
+    <ClInclude Include="..\GShr\GMisc.h" />
+    <ClInclude Include="Gp.h" />
+    <ClInclude Include="gphelp.h" />
+    <ClInclude Include="gphelpidmap.h" />
+    <ClInclude Include="..\GShr\LBoxGfx2.h" />
+    <ClInclude Include="..\GShr\LBoxGrfx.h" />
+    <ClInclude Include="..\GShr\LBoxMark.h" />
+    <ClInclude Include="..\GShr\LBoxPiec.h" />
+    <ClInclude Include="..\GShr\LBoxProj.h" />
+    <ClInclude Include="LBoxSlct.h" />
+    <ClInclude Include="..\GShr\LBoxTileBase.h" />
+    <ClInclude Include="..\GShr\LBoxTileBase2.h" />
+    <ClInclude Include="LBoxTray.h" />
+    <ClInclude Include="..\GShr\LibMfc.h" />
+    <ClInclude Include="MapFace.h" />
+    <ClInclude Include="..\GShr\MapStrng.h" />
+    <ClInclude Include="..\GShr\Marks.h" />
+    <ClInclude Include="..\GShr\MD5.h" />
+    <ClInclude Include="MoveHist.h" />
+    <ClInclude Include="MoveMgr.h" />
+    <ClInclude Include="PalMark.h" />
+    <ClInclude Include="PalReadMsg.h" />
+    <ClInclude Include="PalTray.h" />
+    <ClInclude Include="PBoard.h" />
+    <ClInclude Include="..\GShr\Pieces.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PPieces.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="..\GShr\ResTbl.h" />
+    <ClInclude Include="SelOPlay.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="..\GShr\StrLib.h" />
+    <ClInclude Include="..\GShr\Tile.h" />
+    <ClInclude Include="ToolPlay.h" />
+    <ClInclude Include="..\GShr\TraceWin.h" />
+    <ClInclude Include="Trays.h" />
+    <ClInclude Include="..\GShr\Versions.h" />
+    <ClInclude Include="VwPbrd.h" />
+    <ClInclude Include="VwPrjgam.h" />
+    <ClInclude Include="VwPrjgsn.h" />
+    <ClInclude Include="VwSelpce.h" />
+    <ClInclude Include="VwTbrd.h" />
+    <ClInclude Include="WinDynspl.h" />
+    <ClInclude Include="..\GShr\WinExt.h" />
+    <ClInclude Include="WinMyspl.h" />
+    <ClInclude Include="WinPoptb.h" />
+    <ClInclude Include="..\GShr\WinState.h" />
+    <ClInclude Include="..\GShr\WinTiny.h" />
+    <ClInclude Include="WStateGp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\BadColum.bmp" />
+    <Image Include="res\Bmp50Percent.bmp" />
+    <Image Include="res\BrdView.ico" />
+    <Image Include="res\GamDoc.ico" />
+    <Image Include="res\GMovDoc.ico" />
+    <Image Include="res\GP.ico" />
+    <Image Include="res\Gp_MainFrame.bmp" />
+    <Image Include="res\GsnDoc.ico" />
+    <Image Include="res\menuicon.bmp" />
+    <Image Include="res\SysButton.bmp" />
+    <Image Include="res\tbmove.bmp" />
+    <Image Include="res\tbplayback.bmp" />
+    <Image Include="res\tbview.bmp" />
+    <Image Include="res\ToolBar.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\CMovMode.cur" />
+    <None Include="res\CrossHair.cur" />
+    <None Include="res\DragTile.cur" />
+    <None Include="res\NoDrop.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="res\manifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\zLib\zLib.vcxproj">
+      <Project>{5bf1b9ba-043f-469f-be19-787ff317eddc}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="Cbplay.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

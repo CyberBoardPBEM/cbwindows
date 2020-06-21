@@ -1,0 +1,98 @@
+[OPTIONS]
+Binary TOC=Yes
+Compatibility=1.1 or later
+Compiled file=CBoard.chm
+Contents file=CBoardTOC.hhc
+Default Window=CyberBoardHelp
+Default topic=gen-main-cover.htm
+Display compile progress=No
+Full-text search=Yes
+Language=0x409 English (United States)
+
+[WINDOWS]
+CyberBoardHelp="CyberBoard Help","CBoardTOC.hhc",,"gen-main-cover.htm","gen-main-cover.htm",,,,,0x42120,,0x60384e,,,,,,,,0
+
+
+[FILES]
+master.js
+cbhelp.css
+gen-main-concepts.htm
+gen-main-cover.htm
+gen-main-features.htm
+gen-main-overview.htm
+gen-main-release-history.htm
+gen-main-steps-to-use.htm
+gen-tech-gtl-files.htm
+gm-adv-how-to.htm
+gm-main-cover.htm
+gm-ref-cover.htm
+gm-ref-keyboard-shortcuts.htm
+gm-ref-menu-edit.htm
+gm-ref-menu-file.htm
+gm-ref-menu-help.htm
+gm-ref-menu-project.htm
+gm-ref-menu-tools.htm
+gm-ref-menu-view.htm
+gm-ref-menu-window.htm
+gm-ref-pal-board-tools.htm
+gm-ref-pal-color.htm
+gm-ref-pal-tile-tools.htm
+gm-ref-pal-tile.htm
+gm-ref-window-board-edit.htm
+gm-ref-window-project.htm
+gm-ref-window-tile-edit.htm
+gm-tut-cover.htm
+gp-adv-geomorphic.htm
+gp-adv-hidden.htm
+gp-adv-how-to.htm
+gp-adv-object-locking.htm
+gp-adv-object-text.htm
+gp-main-cover.htm
+gp-ref-cover.htm
+gp-ref-keyboard-shortcuts.htm
+gp-ref-menu-actions.htm
+gp-ref-menu-edit.htm
+gp-ref-menu-file.htm
+gp-ref-menu-help.htm
+gp-ref-menu-playback.htm
+gp-ref-menu-project.htm
+gp-ref-menu-view.htm
+gp-ref-menu-window.htm
+gp-ref-pal-markers.htm
+gp-ref-pal-tray.htm
+gp-ref-window-board.htm
+gp-ref-window-gam-project.htm
+gp-ref-window-gsn-project.htm
+gp-tut-cover.htm
+
+[ALIAS]
+IDH_R_GP_MAINFRAME=gp-main-cover.htm
+IDH_R_MAINFRAME=gm-main-cover.htm
+IDH_R_GAMEBOX=gm-ref-window-project.htm
+IDH_R_BOARDVIEW=gm-ref-window-board-edit.htm
+IDH_R_BITEDITOR=gm-ref-window-tile-edit.htm
+IDH_R_GSCNTYPE=gp-ref-window-gsn-project.htm
+IDH_R_GAMETYPE=gp-ref-window-gam-project.htm
+IDH_R_GP_BOARDVIEW=gp-ref-window-board.htm
+IDH_VIEW_TOGGLESCALE=gp-ref-menu-view.htm#scale
+IDH_VIEW_SHOW_TIP_TEXT=gp-ref-menu-view.htm#tips
+IDH_VIEW_TRAYA=gp-ref-menu-view.htm#traya
+IDH_VIEW_TRAYB=gp-ref-menu-view.htm#trayb
+IDH_VIEW_MARKERPAL=gp-ref-menu-view.htm#marks
+
+[MAP]
+#include gphelpidmap.h
+#include gmhelpidmap.h
+gmcontext.txt
+gmhelp.h
+gpcontext.txt
+gphelp.h
+
+[TEXT POPUPS]
+gmcontext.txt
+gmhelp.h
+gpcontext.txt
+gphelp.h
+
+[INFOTYPES]
+

@@ -1,0 +1,413 @@
+.Topic IDH_D_MPEDIT_TOP_VISIBLE
+Check this to restrict players from seeing both sides of a piece
+in the selection view or in a tray. If the check mark is gray, 
+this property will not be changed. That is, the current settings
+will be unchanged.
+
+.Topic IDH_D_MPEDIT_TOP_VISIBLE_OWNERS_TOO
+Set this to force a piece's owner to be restricted to viewing only the
+top image of the piece. If this is not checked, the owner of the piece
+can see both sides of the piece.
+
+.Topic IDH_D_MPEDIT_CHG_TOP_TEXT
+Check this to change the text associated with the front surface
+of a piece. If it is not checked the current text (if any) will
+remain.
+
+.Topic IDH_D_MPEDIT_TEXT_BACK
+Enter the text to be associated with the back surface of a piece.
+
+.Topic IDH_D_MPEDIT_CHG_BACK_TEXT
+Check this to change the text associated with the back surface
+of a piece. If it is not checked the current text (if any) will
+remain.
+
+.Topic IDH_D_MPEDIT_TEXT_FRONT
+Enter the text to be associated with the front surface of a piece.
+
+.Topic IDH_D_BRDMSK_BOARDS
+No Help Available
+
+.Topic IDH_D_BRDPRP_BOARDNAME
+No Help Available
+
+.Topic IDH_D_BRDPRP_BORDERTOP
+No Help Available
+
+.Topic IDH_D_BRDPRP_CELLBORDER
+No Help Available
+
+.Topic IDH_D_BRDPRP_CELLCOLOR
+No Help Available
+
+.Topic IDH_D_BRDPRP_COLS
+No Help Available
+
+.Topic IDH_D_BRDPRP_HEIGHT
+No Help Available
+
+.Topic IDH_D_BRDPRP_INVCOLS
+No Help Available
+
+.Topic IDH_D_BRDPRP_INVROWS
+No Help Available
+
+.Topic IDH_D_BRDPRP_PXLHEIGHT
+No Help Available
+
+.Topic IDH_D_BRDPRP_PXLWIDTH
+No Help Available
+
+.Topic IDH_D_BRDPRP_RESHAPE
+No Help Available
+
+.Topic IDH_D_BRDPRP_ROWS
+No Help Available
+
+.Topic IDH_D_BRDPRP_SNAPON
+No Help Available
+
+.Topic IDH_D_BRDPRP_TRACK
+No Help Available
+
+.Topic IDH_D_BRDPRP_TRKCOFF
+No Help Available
+
+.Topic IDH_D_BRDPRP_TRKROFF
+No Help Available
+
+.Topic IDH_D_BRDPRP_TRKSTYLE
+No Help Available
+
+.Topic IDH_D_BRDPRP_WIDTH
+No Help Available
+
+.Topic IDH_D_BRDPRP_XOFFSET
+No Help Available
+
+.Topic IDH_D_BRDPRP_XPARENTCELLS
+No Help Available
+
+.Topic IDH_D_BRDPRP_XPIXELS
+No Help Available
+
+.Topic IDH_D_BRDPRP_YOFFSET
+No Help Available
+
+.Topic IDH_D_BRDPRP_YPIXELS
+No Help Available
+
+.Topic IDH_D_BRDSHP_CELLHT
+No Help Available
+
+.Topic IDH_D_BRDSHP_CELLWD
+No Help Available
+
+.Topic IDH_D_BRDSHP_COLS
+No Help Available
+
+.Topic IDH_D_BRDSHP_ROWS
+No Help Available
+
+.Topic IDH_D_BRDSHP_STAGGERIN
+No Help Available
+
+.Topic IDH_D_GBXPRP_AUTHOR
+No Help Available
+
+.Topic IDH_D_GBXPRP_COMPRESSION
+No Help Available
+
+.Topic IDH_D_GBXPRP_DESCR
+No Help Available
+
+.Topic IDH_D_GBXPRP_TITLE
+No Help Available
+
+.Topic IDH_D_SET_PASSWORD
+No Help Available
+
+.Topic IDH_D_GETPASS_PASSWORD
+No Help Available
+
+.Topic IDH_D_MMEDIT_CHG_TEXT
+No Help Available
+
+.Topic IDH_D_MMEDIT_TEXTPROMPT
+No Help Available
+
+.Topic IDH_D_MMEDIT_TEXT
+No Help Available
+              
+.Topic IDH_D_MEDIT_CHG_TEXT
+No Help Available
+
+.Topic IDH_D_MEDIT_TEXTPROMPT
+No Help Available
+
+.Topic IDH_D_MEDIT_TEXT
+No Help Available
+
+.Topic IDH_D_MEDIT_MARKERS
+No Help Available
+
+.Topic IDH_D_MEDIT_TEXT
+No Help Available
+
+.Topic IDH_D_MEDIT_TEXTPROMPT
+No Help Available
+
+.Topic IDH_D_MEDIT_TILES
+No Help Available
+
+.Topic IDH_D_MEDIT_TSET
+No Help Available
+
+.Topic IDH_D_NEWBRD_BOARDNAME
+No Help Available
+
+.Topic IDH_D_NEWBRD_CELLHEIGHT
+No Help Available
+
+.Topic IDH_D_NEWBRD_CELLWIDTH
+No Help Available
+
+.Topic IDH_D_NEWBRD_GRIDCOLS
+No Help Available
+
+.Topic IDH_D_NEWBRD_GRIDROWS
+No Help Available
+
+.Topic IDH_D_NEWBRD_HBRICK
+No Help Available
+
+.Topic IDH_D_NEWBRD_HEXFLAT
+No Help Available
+
+.Topic IDH_D_NEWBRD_HEXPNT
+No Help Available
+
+.Topic IDH_D_NEWBRD_PIXSIZE
+No Help Available
+
+.Topic IDH_D_NEWBRD_RECT
+No Help Available
+
+.Topic IDH_D_NEWBRD_STAGGERIN
+No Help Available
+
+.Topic IDH_D_NEWBRD_VBRICK
+No Help Available
+
+.Topic IDH_D_MCREATE_CREATE
+No Help Available
+
+.Topic IDH_D_MCREATE_MARKERS
+No Help Available
+
+.Topic IDH_D_MCREATE_TEXT
+No Help Available
+
+.Topic IDH_D_MCREATE_TEXTPROMPT
+No Help Available
+
+.Topic IDH_D_MCREATE_TILES
+No Help Available
+
+.Topic IDH_D_MCREATE_TSET
+No Help Available
+
+.Topic IDH_D_MARKGRP_NAME
+No Help Available
+
+.Topic IDH_D_MARKGRP_VIZFULL
+No Help Available
+
+.Topic IDH_D_MARKGRP_RAND_VIZHIDDEN
+No Help Available
+
+.Topic IDH_D_MARKGRP_RAND_VIZALLHIDDEN
+No Help Available
+
+.Topic IDH_D_NTILE_BOARDNAME
+No Help Available
+
+.Topic IDH_D_NTILE_HEIGHT
+No Help Available
+
+.Topic IDH_D_NTILE_WIDTH
+No Help Available
+
+.Topic IDH_D_PASTE_KEEPSIZE
+Select this if you don't wish to resize the pasted image.
+
+.Topic IDH_D_PASTE_RESIZE
+Select this to cause the pasted image to be resized
+to match the tile size.
+
+.Topic IDH_D_PCREATE_BACK
+Check this to create a two sided playing piece.
+
+.Topic IDH_D_PCREATE_BTSET
+Selects which tile group is visible below.
+
+.Topic IDH_D_PCREATE_BTILE
+Select the image for the back side of a two sided 
+playing piece. TIP: If you are creating pieces 
+that represent playing cards, you should choose 
+the *front* image for the card here.
+
+.Topic IDH_D_PCREATE_FTILE
+Select the image for the front side of a  
+playing piece. TIP: If you are creating pieces 
+that represent playing cards, you should choose 
+the *back* image for the card here.
+
+.Topic IDH_D_PCREATE_FTSET
+Selects which tile group is visible below.
+
+.Topic IDH_D_PCREATE_PIECES
+The newly constructed playing pieces are displayed here.
+
+.Topic IDH_D_PCREATE_TEXT_FRONT
+Enter the text to be associated with the front 
+surface of the playing piece.
+
+.Topic IDH_D_PCREATE_TEXT_BACK
+Enter the text to be associated with the back 
+surface of the playing piece.
+
+.Topic IDH_D_PCREATE_TEXT_SAMEASTOP
+If you check this the back surface of the piece will 
+be set to the same text as the top surface.
+
+.Topic IDH_D_PCREATE_TOP_VISIBLE
+Check this to restrict players from seeing both 
+sides of a piece in the selection view or in a tray. 
+If you are creating playing cards you probably want to 
+check this.
+
+.Topic IDH_D_PCREATE_TOP_VISIBLE_OWNERS_TOO
+Normally owners of a piece can see both sides of a piece even if
+the "Only show top image during games." is checked. 
+Check this if you also want the piece's owner to be 
+restricted to seeing only the top.
+
+.Topic IDH_D_PIECE_CREATE
+Pressing this creates the pieces.
+
+.Topic IDH_D_PIECE_QTY
+The number of pieces to be created.
+
+.Topic IDH_D_PEDIT_BACK
+Check this to have a two sided playing piece.
+
+.Topic IDH_D_PEDIT_BTSET
+Selects which tile group is visible below.
+
+.Topic IDH_D_PEDIT_BTILE
+Select the image for the back side of a two 
+sided playing piece. TIP: If you are editing pieces 
+that represent playing cards, you should choose 
+the *front* image for the card here.
+
+.Topic IDH_D_PEDIT_FTILE
+Select the image for the front side of a 
+playing piece. TIP: If you are editing pieces that 
+represent playing cards, you should choose 
+the *back* image for the card here.
+
+.Topic IDH_D_PEDIT_FTSET
+Selects which tile group is visible below.
+
+.Topic IDH_D_PEDIT_PIECE
+The playing piece you are editing is displayed here.
+
+.Topic IDH_D_PEDIT_TEXT_BACK
+Enter the text to be associated with the back 
+surface of the playing piece.
+
+.Topic IDH_D_PEDIT_TEXT_FRONT
+Enter the text to be associated with the front 
+surface of the playing piece.
+
+.Topic IDH_D_PEDIT_TEXT_SAMEASTOP
+If you check this the back surface of the piece will 
+be set to the same text as the top surface.
+
+.Topic IDH_D_PEDIT_TOP_VISIBLE
+Check this to restrict players from seeing both sides of a piece
+in the selection view or in a tray. If you are editing playing
+cards you probably want to be checked.
+
+.Topic IDH_D_PEDIT_TOP_VISIBLE_OWNERS_TOO
+Normally owners of a piece can see both sides of a piece even if
+the "Only show top image during games." is checked. Check
+this if you want the piece's owner to be restricted to seeing 
+the top too.
+
+.Topic IDH_D_SETPASS_PASS_1
+Enter the new password here.
+
+.Topic IDH_D_SETPASS_PASS_2
+Enter the password again to verify.
+
+.Topic IDH_D_SETVISI_FULL
+Show the selected objects in full scale views.
+
+.Topic IDH_D_SETVISI_HALF
+Show the selected objects in half scale views.
+
+.Topic IDH_D_SETVISI_SMALL
+Show the selected objects in the small scale view.
+
+.Topic IDH_D_SETVISI_NATURAL
+If this is checked the bitmap is rendered without rescaling and
+only at the above board scale. There can only be one scale selected.
+This check box only applies to bitmaps. It is ignored
+for other types of ojects.
+
+.Topic IDH_D_TXTPRP_TEXT
+Enter the text for the text object here.
+
+.Topic IDH_D_TXTPRP_FONT
+Press this to select the font to be used for the text object.
+
+.Topic IDH_D_RETILE_BOARDNAME
+No Help Available
+
+.Topic IDH_D_RETILE_CURHT
+No Help Available
+
+.Topic IDH_D_RETILE_CURWD
+No Help Available
+
+.Topic IDH_D_RETILE_RESCALE
+No Help Available
+
+.Topic IDH_D_RETILE_TILEHT
+No Help Available
+
+.Topic IDH_D_RETILE_TILEWD
+No Help Available
+
+.Topic IDH_D_TGRP_NAME
+No Help Available
+
+.Topic IDH_D_TGRP_TRANSCOLOR
+No Help Available
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

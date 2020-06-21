@@ -1,0 +1,31 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CBDsgn32", "GM\CBDsgn32.vcxproj", "{107CA415-78FA-4517-B192-D207313CD48E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cbplay32", "GP\Cbplay32.vcxproj", "{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zLib", "zLib\zLib.vcxproj", "{5BF1B9BA-043F-469F-BE19-787FF317EDDC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{107CA415-78FA-4517-B192-D207313CD48E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{107CA415-78FA-4517-B192-D207313CD48E}.Debug|Win32.Build.0 = Debug|Win32
+		{107CA415-78FA-4517-B192-D207313CD48E}.Release|Win32.ActiveCfg = Release|Win32
+		{107CA415-78FA-4517-B192-D207313CD48E}.Release|Win32.Build.0 = Release|Win32
+		{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}.Debug|Win32.Build.0 = Debug|Win32
+		{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}.Release|Win32.ActiveCfg = Release|Win32
+		{2A0A2247-0569-4973-8E0D-8A3DF0B66A43}.Release|Win32.Build.0 = Release|Win32
+		{5BF1B9BA-043F-469F-BE19-787FF317EDDC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BF1B9BA-043F-469F-BE19-787FF317EDDC}.Debug|Win32.Build.0 = Debug|Win32
+		{5BF1B9BA-043F-469F-BE19-787FF317EDDC}.Release|Win32.ActiveCfg = Release|Win32
+		{5BF1B9BA-043F-469F-BE19-787FF317EDDC}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

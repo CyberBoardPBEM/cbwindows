@@ -1,0 +1,827 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<Title>Release History</Title>
+<style>@import url(cbhelp.css);</style>
+<script language="JavaScript" src="master.js"></script>
+</HEAD>
+<BODY>
+<H1>Release History</H1>
+
+<h2>Version 3.10 Release</h2>
+<h3>New features and bug fixes for CBPlay.exe:</h3>
+<ul>
+  <li>Assign Ctrl-P hot key to start a Plotted Move, ESC cancels, and 
+  Enter accepts.</li>
+  <li>Added ability to use markers in a Plotted Move.</li>
+  <li>Upgrade multiplayer feature to support up to 26 players. The prior
+  maximum was 8 players.</li>
+  <li>Added ability to directly transfer ownership to another player.
+  Previously you had to release ownership and then assign ownership.
+  A possible use for this is to make it easy to pass a card to someone.</li>
+  <li>Prompt and create multiple markers if dragged from marker tray while 
+  holding the Ctrl key. For example: If the marker tray is set to deliver 
+  random markers and the markers are graphical images of dice faces you 
+  essentially have created a graphical die roller.</li>
+  <li>Change piece X & X stagger maximums from 16 to 256. This is used by the
+  Autostack feature.</li>
+  <li>The die roller has extended maximum die face value to 32767. The prior
+  maximum was 100.</li>
+  <li>Added "Select All" and "Clear All" buttons to tray import dialog in 
+      scenario editor.</li>
+  <li>Added "Select All" and "Clear All" buttons to board selection dialog
+      in scenario editor.</li> 
+</ul>
+
+<h3>New features for CBDesign.exe:</h3>
+<ul>
+  <li>None. (Sorry)</li>
+</ul>
+
+<h2>Version 3.03 Release</h2>
+<h3>New features and bug fixes for CBPlay.exe:</h3>
+<ul>
+  <li>Added ability to rotate the selected group of markers and/or pieces around the selection's center point. This can be used to "wheel" as set of playing pieces.</li>
+  <li>Added ability to rotate pieces and markers down to a single degree of resolution.</li>
+  <li>Added hot keys for "Action / Rotate Object - Incremental" (Ctrl-Shift+R) and "Action / Rotate Group - Incremental" 
+      (Ctrl-Shift+G) menu commands. You'll need to delete your CyberBoard CBPlay.exe registry key to get the new hotkeys to work. 
+      To do this you can Double-Click on the provided "CBPlayRegDel.reg" file.</li>
+  <li>If pieces and/or markers are selected then the view will be centered on the selections when using the zoom feature.</li>
+  <li>The mouse wheel scrolls the view horizontally or vertically based on location of the cursor. If it's 
+      near the upper or lower edge of the view, the mouse wheel will scroll the view horizontally. Otherwise
+      it's scrolled vertically.</li>
+  <li>Bugfix: If the first action after starting a new move recording involved a random number (a die roll or a marker draw) 
+      a fixed result was generated. Now the result is simply random. </li>
+  <li>Bugfix: If an incremental rotation is the first action in a move recording, the incorrect game state is 
+      stored in the move file. This caused a prompt to synchronize the game state when your opponent loaded the move file.</li>
+  <li>Bugfix: Fixed the dialog used to enter text for pieces or markers to automatically wrap 
+      text rather than horizontally scroll the edit box.</li>
+</ul>
+
+<h3>New features and bug fixes for CBDesign.exe:</h3>
+<ul>
+  <li>None. (Sorry)</li>
+</ul>
+
+<h2>Version 3.02 Release</h2>
+<P>Patch release that fixes launching files by double-clicking on them.</P>
+
+<h2>Version 3.00 Release</h2>
+<P>A revamped user interface including such features as:</P>
+<ul>
+  <li>Dockable trays and markers.</li>
+  <li>Tabs that allow direct selection of open windows.</li>
+  <li>New XP menu style with icons.</li>
+  <li>Customizable tool bars.</li>
+  <li>Compatible with XP skins</li>
+</ul>
+
+<h3>New features for CBDesign.exe:</h3>
+<ul>
+  <li>65536 color (aka 16 bit color) support. Along with the new UI framework,
+      this was a large chunk of the work for this release.</li>
+  <li>Greatly improved color palette window:</li>
+  <ul>
+    <li>The first 3 x 8 area from the left are standard colors along with a grey scale.</li>
+    <li>The next 6 x 8 area are the custom colors that can be set in a variety 
+        of ways.</li>
+    <li>The box to the right of the 6 x 8 area is the current color mix 
+        created by changing the bottom Hue picker and the Saturation/Value 
+        picker on the far right.</li>
+    <li>The 48 custom colors are saved with the gamebox file.</li>
+    <li>You can double-click on a custom color to adjust it using a color
+        setting dialog.</li>
+  </ul>
+</ul>
+
+<h3>New features for CBPlay.exe:</h3>
+<ul>
+  <li>Playing boards can be rotated by 180 degrees during play.</li>
+  <li>The message history window is now stand-alone and can be docked.</li>
+  <li>Message history text is now color coded.</li>
+  <li>Playback functionality is greatly improved:</li>
+  <ul>
+    <li>The default hot key assignments have been changed: </li>
+      <P>F2 - previous move</P>
+      <P>F3 - next move</P>
+      <P>F4 - next history entry</P>
+      <P>F5 - close history playback</P>
+      <P>F6 - toggle automatic playback</P>
+    <li>The spacebar can be used to do "Next Move"s instead of F3.</li>
+    <li>You can hit the "Next Move" command before the current move is totally 
+        played back. With this you can blast through moves if you don't want 
+        to see the time animated playback.</li>
+    <li>You can enable an option that causes the "Next Move" command to
+        automatically load the next history record when at the end of the
+        current history record.</li>
+    <li>You can turn on an option called "Automatic Playback (F6)". When you hit the
+        "Next Move" command CyberBoard takes over and steps moves all the way to the
+        end without you having to hit any keys. You hit the next move command
+        again to abort the playback.</li>
+  </ul>
+  <li>New game files by default render locked objects underneath other non-locked
+      pieces and markers. For backward compatibility reasons upgraded games 
+      render locked objects in their current postions in the drawing order. 
+      This option can be changed in the board properties dialog.</li>
+  <li>All three zoom levels are available in the player program.</li>
+</ul>
+
+<h2>Version 2.00 Release</h2>
+
+<h3>New features for CBDesign.exe:</h3>
+<ul>
+  <li>GameBox files now support internal compression of bitmap images. 
+      The GameBox file size can now be greatly reduced. Multiple levels
+      of compress are supported.</li>
+  <li>GameBox files may now be password protected.</li>
+  <li>The list of files recently opened (the so called LRU list) has 
+      been increased to ten.</li>
+  <li>When defining playing pieces there is an option allowing only the top 
+      (active) side of a playing piece to be visible in select lists and
+      piece trays while playing a game. This is intended for implementing 
+      playing cards.</li>
+  <li>Top drawing layer objects now have the option to be drawn above the 
+      grid. They are rendered in a second pass after drawing the grid. 
+      This allows tables and such to be placed on the board and still 
+      have the grid on top of some terrain features that are drawn using 
+      lines and polygons.</li>
+</ul>
+
+<h3>New features for CBPlay.exe:</h3>
+<ul>
+  <li>Ability to associate text with pieces and markers.</li>
+  <li>Ability to rotate markers.</li>
+  <li>Piece and markers can now be locked so they can't be selected.</li>
+  <li>Supports geomorphic construction of boards having hex style cells.</li>
+  <li>Supports shuffling (randomizing) pieces in trays and on the 
+      playing board. One application would be for playing cards.</li>
+  <li>The game player program now remembers layout of open 
+      windows in a game or scenario. The layout is restored when the 
+      file is reloaded.</li>
+  <li>Playing piece and maker trays now support several visibility 
+      and behavior options.</li>
+  <li>If you drag a marker out of a group that is set to deliver random 
+      markers AND you hold the CTRL key when the mouse button is released, 
+      you will be prompted for the number of random markers to be created. 
+      This is great for actually "rolling" dice. Say a 5D6 where the 
+      marker set is the six faces of a six sided die. This feature would 
+      also be great for games that use pictures rather than numbers for
+      die faces.</li>
+  <li>The board's selection list now includes markers.</li>
+  <li>The board's selection list supports the use of the "Insert" and 
+      "Delete" keys. These keys can be used selective remove objects 
+      from the selection list. "Insert" keeps those highlighted in the 
+      list. "Delete" removes those highlighted in the list.</li>
+  <li>Markers now stack just like pieces.</li>
+  <li>New "Auto Stack Deck" command that is used to stack selected items 
+      using stagger values of zero.</li>
+  <li>Toolbar buttons for plotted moves.</li>
+  <li>The list of files recently opened (the so called LRU list) has 
+      been increased to ten.</li>
+  <li>The full path of the GameBox file is now stored in the Game file 
+      so the GameBox can be in different areas of the file system than 
+      the game file. This prevents your being prompted for its location 
+      when loading the game.</li>
+</ul>
+
+<h2>Version 1.12 Release</h2>
+
+<h3>New features for CBPlay.exe:</h3>
+<ul>
+  <li>A different style of cursor is displayed when you are recording a compound move.</li>
+</ul>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+  <li>CBPlay.exe - The die roller now supports 100 faces on a die.</li>
+  <li>CBPlay.exe - The cell visibility setting of a playing board is imported from 
+    the GameBox when adding new boards in the Scenario designer.</li>
+  <li>CBPlay.exe - The auto-stack feature now properly saves and restores negative offsets.</li>
+  <li>CBDesign.exe - The rotate tile option of the main menu no longer disables forever if 
+    the project window is selected.</li>
+  <li>Tiles in board cells that use the transparent color for the small 
+    image now work properly.</li>
+  <li>Various other small bugs.</li>
+</ul>
+
+<h2>Version 1.10 Release</h2>
+
+<ul>
+  <li>New icons for files and programs. These were done by Pokke (the same
+    fellow who did the CyberBoard logos on the Web page). They are <i>much</i> nicer than my artistically
+    challenged hacks.&nbsp;Sorry for the delay in getting these out Pokke!</li>
+  <li>If the folder that contains CyberBoard is tagged as a <i> system</i> file then a
+    nice CyberBoard icon will show up in the Windows file explorer for that folder. The
+    batch file &quot;CBIcon.bat&quot; will do this for you.</li>
+</ul>
+
+<h3>New features for CBDesign.exe:</h3>
+
+<ul>
+    <li>Keyboard nudging of graphical objects within the board
+        editor. Note that this is the <strong>*FIRST*</strong> 3rd
+        party programmed feature addition for CyberBoard. It was
+        programmed by Donald McLean. Thanks Donald! A very cool feature. Here is the
+        key list:<ul>
+            <li>Arrow (up, down, left, right) nudge selected
+                components 1 pixel (or 1 grid width/length if
+                grid turned on).</li>
+            <li>Shift-arrow scroll window.</li>
+            <li>Control-arrow nudge and scroll.</li>
+            <li>Alt-arrow nudge 5 pixels (or 5 grid widths/lengths).</li>
+            <li>Alt-Shift-Arrow fast scroll.</li>
+            <li>Alt-Control-Arrow fast nudge/scroll.</li>
+            <li>Page scroll window one page up or down.</li>
+            <li>Control-Page (up, down) scroll window one page
+                left or right.</li>
+            <li>Home top of board.</li>
+            <li>End bottom of board.</li>
+            <li>Control-Home far left of board.</li>
+            <li>Control-End far right of board.</li>
+        </ul>
+    </li>
+</ul>
+
+<ul>
+    <li>The cell layer now supports tiles that have transparent regions. For
+      backward compatibility this feature is off by default. To enable it for a
+      playing board check &quot;Enable transparent tiles in cells&quot; in the
+      Board Properties Dialog.</li>
+    <li>You can now clone a playing board by right-clicking on the board name in
+      the project window and selecting the &quot;Clone Selected Board&quot;
+      command.</li>
+    <li>The tile selection pane in the bitmap editor now supports scrolling so you can select
+      different tiles even when the full scale tile is really large.</li>
+</ul>
+
+<h3>New features for CBPlay.exe:</h3>
+
+<ul>
+    <li>The main playing area can now be split vertically and horizontally. Each
+      board view can be zoomed and scrolled independently. To use the feature
+      select the Window menu or right click on a board view.</li>
+    <li>The select list and tiny board view can now be hidden. To hide them,
+      uncheck &quot;Show select list and tiny board view.&quot; in the Board
+      Properties Dialog.</li>
+    <li>The Scenario designer now supports automatically creating piece trays
+      from the piece groupings defined in the gamebox file. See the command
+      &quot;Create Trays from Piece Groups...&quot; on the &quot;Project&quot;
+      menu.</li>
+    <li>The die roller now supports rolling multiple sets of the specified roll.
+      For instance, you could roll 50 2D6's at a time (if you're so inclined).</li>
+    <li>The message view dialog now displays the entire history of messages that
+      have been viewed during playback.</li>
+    <li>The message entry dialog now displays the entire history of messages
+      that have been entered during the current recording.</li>
+    <li>A message can now be recorded without closing the send message dialog.</li>
+    <li>If the pop-up map is too large for the screen it will be scaled down so
+      all of it is visible.</li>
+    <li>If you chose to discard a
+      compound move, you are now prompted to verify your decision. This is to prevent accidental loss of moves.</li>
+    <li>The delay between submoves of a compound move has been increased.</li>
+</ul>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBDesign.exe - If you used the &quot;Apply Cell Mask&quot; feature in
+      the tile editor and cancelled the dialog the program would crash. This embarrassing
+      bug is now fixed.</li>
+    <li>CBPlay.exe - Importing move files that contain no moves will no longer
+      enable the move stepping buttons. These buttons would cause the program to
+      crash if used.</li>
+    <li>CBPlay.exe - names in marker tray are now alpha sorted.</li>
+    <li>CBPlay.exe - Tiles that are greater than 255 pixels in height are now
+      truncated properly in lists. Note that due to a limitation in Windows
+      listboxes items larger than 255 pixels are not possible.</li>
+    <li>CBPlay.exe - If the board cell grid is set to use very large cells in
+      messes up the auto-scroll code. This is now fixed.</li>
+</ul>
+
+<h2>Version 1.02 Release</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBPlay.exe - The random number generator used for die
+        rolls has been completely overhauled.</li>
+    <li>CBPlay.exe - Sort the tray name combo in the tray
+        palettes by name. Also doubled the length of the combo
+        box's drop down list.</li>
+    <li>CBPlay.exe - Fixed rare crash that occurred when merging
+        move files with a new game created from a modified
+        scenario. It occurred when the &quot;Use move game state
+        is selected&quot; option was used.</li>
+    <li>CBPlay.exe - Hitting the Close History button while moves
+        were in mid-playback caused the program to crash.</li>
+    <li>CBDesign - If tiles are deleted that aren't being used
+        anywhere in the GameBox, don't consider it a major
+        revision. This prevents messages about the GameBox file
+        being newer than the game file when the file really is OK
+        for play.</li>
+    <li>CBDesign.exe - When drawing on tile bitmap images with a
+        zero width pen nothing was rendered. Now the pen is
+        assumed to be one pixel.</li>
+</ul>
+
+<h3>New features for CBPlay.exe:</h3>
+
+<ul>
+    <li>The key &quot;F9&quot; toggles playing piece visibility.
+        This is handy for a quick check of the underlying hexes.</li>
+    <li>The key &quot;F10&quot; toggles between showing move
+        indicator lines above the playing pieces or below them.</li>
+</ul>
+
+<h2>Version 1.01 Release</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBDesign.exe - Sheesh! I screwed up the File/New command
+        so it crashes the program &lt;blush&gt;. This update
+        fixes it. Many thanks to Luca Saletti for reporting this
+        so quickly!</li>
+</ul>
+
+<h2>Version 1.0 Release</h2>
+
+<p>Here it finally is...a version with no time limits!</p>
+
+<p>The file format has not changed from the final beta version.
+Existing games and gameboxes will work fine.</p>
+
+<p><font color="#0000A0" size="4"><strong>Enjoy!</strong></font></p>
+
+<h2>Beta 5.13 Board Editor Update Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBDesign.exe. Yet another bug exists in Beta 5.12 and
+        earlier versions of the designer program that could cause
+        a GameBox file to be damaged beyond repair. This is a
+        very rare bug that only rears its ugly head on GameBoxes
+        with many tiles of differening dimensions. Almost all
+        users of the software will not be affected sinze they
+        only use a small set of tile sizes. Those who have been
+        impacted no doubt know about it already (as far as I know
+        only one person was affected and I managed to repair his
+        GameBox).</li>
+</ul>
+
+<blockquote>
+    <p><strong>Details:</strong></p>
+    <p>The problem occurs when you hit an internal limit of the
+    program. CyberBoard internally stores tiles in bitmaps called
+    tile sheets. Tiles that are the same height and width are
+    stored in the same tile sheet. If the a tile sheet gets too
+    large I create a new tile sheet. CB supports up to 255 of
+    these tile sheets. If you exceed 255 tile sheets the problem
+    occurs. I never imagined in the early days of CB (in 16 bit
+    Windows) that more than 255 tile sheets would be needed.</p>
+</blockquote>
+
+<blockquote>
+    <p>To really fix this I need to expand the number of tile
+    sheets internally supported (which changes the GameBox file
+    format) but this will produce GameBoxes that are not
+    compatible with earlier versions of the program. For now,
+    Beta 5.13 expands the allowable size of each tile sheet and
+    more efficiently reuses tile sheets that are empty.</p>
+</blockquote>
+
+<h2>Beta 5.12 Board Editor Update Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBDesign.exe. A bug exists in Beta 5.11 and earlier
+        versions of the designer program that could cause a
+        GameBox file to be damaged beyond repair. This bug only
+        rears its ugly head on VERY large GameBoxes. Almost all
+        users of the software will not be affected. Those who
+        have been impacted no doubt know about it already. This
+        is a good news / bad news fix:</li>
+</ul>
+
+<blockquote>
+    <p><strong>The Good News</strong></p>
+    <p>The bug is fixed. This bug has been in the program since
+    its first release. Basically CB tries to keep the size of
+    internal bitmaps (internally dubbed &quot;tile sheets&quot;)
+    smaller than 4096 pixels high. A tile sheet contains tiles
+    that are all the same height and width. The code that checks
+    if a new tile sheet should be created was not working
+    properly. The result: bitmaps that can be much taller than
+    4096 pixels. GameBoxes that have exceeded this limit are OK
+    until they exceed 65535 pixels--a very unlikely event.</p>
+    <p><strong>The Bad News</strong></p>
+    <p>Any gameboxes that have tile sheets larger than 65535
+    pixels high are damaged for good. A rare occurrence but can
+    happen. Tile sheets that are larger than 4096 but less than
+    65535 will still work fine. </p>
+    <p>A thousand apologies for any trouble this may have caused
+    some folks.</p>
+</blockquote>
+
+<h2>Beta 5.11 Release Notes</h2>
+
+<p>This release was primarily made to provide a new date for the
+program's &quot;Time-Bomb&quot;.</p>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBPlay.exe. If you used the window close button (X) of
+        the message reading dialog, no other messages in the
+        playback could be read.</li>
+    <li>Both programs. Cyberboard files types are no longer
+        available on the Windows &quot;New&quot; menu (normally
+        seen by right clicking in the Windows Explorer).
+        CyberBoard doesn't support this feature.</li>
+    <li>CBPlay.exe. Two sided playing pieces using different
+        sized tiles on each side didn't properly repaint when
+        flipped over.</li>
+    <li>CBPlay.exe. When changing a playing board's zoom level
+        CyberBoard now tries to maintain the center of the view (if
+        possible). This should give more consistant results when
+        zooming in and out.</li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>There is a new board properties option called &quot;Automatically
+        Show Board on Open&quot;. If this is checked, the board
+        will automatically be viewed when you open that Game or
+        Scenario file. (Happy Bart?)</li>
+</ul>
+
+<h2>Beta 5.10 Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>CBDesign.exe. Fixed a bug in the PolyGon drawing tool
+        that made it impossible to draw right and bottom areas of
+        a board. I accidentally introduced this bug in Beta 5.08.
+        Sorry about that!</li>
+    <li>CBPlay.exe. The popup mini-board now can be dismissed
+        without affecting the main board. Either hit the ESC key
+        or click off of the mini-board window.</li>
+</ul>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>The polygon board drawing tool functionality has been
+        extended to allow &quot;free-hand&quot; drawing. Just
+        hold the mouse button down and scribble.</li>
+    <li>A new color changer tool has been added to the tile
+        editor. It works just like the paint bucket (flood fill)
+        tool except that all colors in the bitmap that match the
+        clicked color are changed to the new color.</li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>An &quot;Indicators on Top&quot; command has been added
+        to the &quot;View&quot; menu. Indicators are the lines
+        and boxes that indicate piece movement during playback.</li>
+    <li>A &quot;Single Step Compound Moves&quot; command has been
+        added to the &quot;Playback&quot; menu. This command
+        allows you to step through a compound move to see every
+        piece of it.</li>
+</ul>
+
+<h2>Beta 5.08 Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>Fixed a NASTY crash bug in CBDesign.exe. The crash was
+        most likely to occur if a session of program use was very
+        long and you were doing a lot of bitmap editing (copies,
+        pastes, etc.). Basically the program was leaking bitmap
+        resources. When you close the program the resources were
+        reclaimed. In rare cases you could cause Win95 to operate
+        strangely since it would get resource starved. This
+        problem wouldn't show itself on Windows NT since NT
+        essentially provides an &quot;unlimited&quot; amount of
+        resources. This is why I never saw it--I do my program
+        development in Windows NT. A special thanks goes out to
+        Tim Cropley who reported the crash problem and worked
+        tirelessly with me to nail it. He gave very good bug
+        reports that helped me narrow the problem down. THANKS
+        TIM!</li>
+</ul>
+
+<h2>Beta 5.06 Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>Send message dialog. If you type text after rolling dice,
+        that text wasn't recorded.</li>
+    <li>Die roller security hole. It has been pointed out to me (thanks
+        Paul!) that a person could simply type in text that looks
+        like a die roll to get the results they want. Duh. I'll
+        admit it never occurred to me. To prevent this, all lines
+        of text produced by the die roller now have a chevron
+        character (<font color="#FF0000">»</font>) prefixing
+        them. The editable areas of the send message dialog no
+        longer allow this character to be typed or pasted into a
+        message.</li>
+</ul>
+
+<h2>Beta 5.05 Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>The die roller was only r olling D6's. I'm very sorry for
+        that one!</li>
+</ul>
+
+<h2>Beta 5.04 Release Notes</h2>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>None.</li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>Die Roller. Yep...you heard right. I guess I can be
+        convinced to do something if I get hit in the head enough!</li>
+</ul>
+
+<blockquote>
+    <p>The die roller is integrated into the message send dialog.
+    When you roll dice the message edit area is converted into a
+    read-only part and an editable part. The results of the roll
+    as well as any message text typed thus far are transferred
+    into the read-only area to discourage &quot;adjustments&quot;
+    to the results. Also, the ability to discard the message is
+    thereafter disabled. If the roll had a problem the player
+    would need to inform the opponent via the editable message
+    area.</p>
+</blockquote>
+
+<ul>
+    <li>A quick navigation feature has been added to the tiny
+        overview map. If you right click on the tiny map you'll
+        get a pop up version of it that you can click on to
+        quickly jump about in the main map window.</li>
+    <li>Playback truncation. You can now discard the trailing
+        parts of a move playback. To use this, step to the place
+        in the playback that you want to use as the new starting
+        position of the game and select menu command &quot;Playback/Accept
+        Move File Playback...&quot;. You will be presented with a
+        dialog that gives you the option of discarding the
+        remainder of the moves.</li>
+</ul>
+
+<blockquote>
+    <p>Truncating the move file playback is useful for recovering
+    from a hopelessly flawed set of moves. You would resume play
+    at the state of the game where the playback was truncated.</p>
+</blockquote>
+
+<ul>
+    <li>When you are playing back a move file, the title and
+        description of the file are now associated with the
+        &lt;Move File Playback&gt; line of the project window.</li>
+    <li>You can now save a bitmap image of a playing board
+        directly into a disk file.</li>
+    <li>There is now a menu command that allows you to select all
+        markers that were created from a specific marker group.
+        This is useful for only deleting a specific class of
+        markers.</li>
+</ul>
+
+<blockquote>
+    <p>One use for this feature would be to have a marker group
+    that contains markers used to indicate a piece has moved. So
+    you would move a piece, mark it, move another piece, mark it,
+    and so on. When all your pieces are moved, use the menu
+    command &quot;Select All Markers From &gt;&quot; and pick the
+    group that has the &quot;moved piece&quot; markers and hit
+    the delete key. </p>
+</blockquote>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>F1 key now pops up the Help file.</li>
+    <li>Using a &quot;net&quot; selection rectangle that clicks
+        on the lower right and drags to the upper left now works
+        properly.</li>
+    <li>A weird bug related to exporting game history records to
+        a move file has been corrected. For the few people it
+        impacted the bug gave the appearance of saving a previous
+        move recording.</li>
+    <li>Some problems with the snap grid, which occurred when
+        dragging multiple pieces, have been corrected.</li>
+    <li>Other little nits...here and there.</li>
+</ul>
+
+<h2>Beta 5.01 Release Notes</h2>
+
+<h3>Bug fixes: </h3>
+
+<ul>
+    <li>Problem with snap grid when dragging multiple selected
+        pieces. Now uses the piece clicked on for snap grid
+        reference.</li>
+    <li>Loading history record caused complaint about a missing
+        playing board. If you get this message the game file is
+        probably corrupted. Save the game file as a scenario and
+        work from there. Problem is caused by too much text in
+        the scenario description.</li>
+    <li>In half size board scale drags left artifacts if half
+        piece size was odd number of pixels.</li>
+    <li>New Scenarios should inherit the snap grid settings from
+        the GameBox.</li>
+    <li>When pieces are moved around on the playing board they
+        now remain selected.</li>
+</ul>
+
+<h2>Beta 5 Release Notes</h2>
+
+<p>This beta of CyberBoard contains all the features that will be
+in the final release. I don't intend to add any more major
+features before the first unrestricted version is posted.</p>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>Context menus have been added to the right mouse button
+        for most of the windows in the program. </li>
+    <li>You can now edit existing text fields on the map window
+        by selecting and double-clicking them. </li>
+    <li>You can now copy an existing drawing layer bitmap to the
+        clipboard. Just select the bitmap on one of the playing
+        board drawing layers and use the Edit/Copy menu command. </li>
+    <li>ToolTips have been added to the color picker window to
+        clarify its use. </li>
+    <li>The board creation dialog now displays pixel dimensions
+        of a candidate board.</li>
+    <li>Some small bugs.</li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>Context menus have been added to the right mouse button
+        for most of the windows in the program. </li>
+    <li>A new way of specifying moves called <i>Compound Moves</i>
+        has been added. Compound moves allow you group an
+        arbitrary sequence of single moves so they are played
+        back as a single animated sequence of moves. For example,
+        you could move a piece, rotate it and move it again as a
+        single compound move. Upon playback your opponent will
+        see the move as a single animated sequence. The Actions
+        menu has the new commands for compound moves. </li>
+    <li>A new way to rotate playing pieces called <i>Incremental
+        Rotation</i> has been added. Incremental rotation is done
+        directly on the board so you can see the exact piece
+        facing before committing to it. To do this, select a
+        piece and use the Actions/Rotate Piece - Incremental menu
+        command. You'll be presented with a popup window that you
+        can use to rotate the piece either clockwise or counter-clockwise.
+    </li>
+    <li>You can now step backwards through the moves during
+        playback. When you step back a move you'll see a replay
+        of the previous move.</li>
+    <li>The small overview map can be used to jump around on the
+        main map view. The main view is centered on wherever you
+        click the mouse in the small map.</li>
+    <li>You can now save the current state of game play as a
+        scenario file.</li>
+    <li>Some small bugs.</li>
+</ul>
+
+<h2>Beta 4 Release Notes</h2>
+
+<p>This release of CyberBoard is mainly composed of bug fixes.</p>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>You may now toggle whether or not the Select tool is
+        automatically reselected after drawing with another tool.
+        The toggle is available under the Project menu. </li>
+    <li>You may now change the fingerprint of a GameBox. The
+        fingerprint is a unique numeric ID that enables Game
+        files to identify the GameBox they below with. The
+        probable use of this feature is to make a new GameBox
+        based on another GameBox. Once you change the finger
+        print the GameBox will not work with any scenario and
+        game files that were associated with them. </li>
+    <li>Fixed bug in initial default snap grid values. </li>
+    <li>Fixed bug that prevented app from being restored from a
+        minimized state if a palette window was open. </li>
+    <li>Some small bugs.</li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>Fixed a NASTY bug that prevented games history records
+        from being loaded and replayed in pre-beta3 files. If you
+        double-clicked on a game history record and it didn't
+        work you were victimized by the bug. </li>
+    <li>Fixed bug in initial default snap grid values. </li>
+    <li>Fixed bug that prevented app from being restored from a
+        minimized state if tray or marker windows were open. </li>
+    <li>Some small bugs. </li>
+</ul>
+
+<h2>Beta 3 Release Notes</h2>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>You can now save and load tile libraries (file extension <strong>gtl</strong>).
+        The file format is documented in file <strong>GTLFormat.txt</strong>
+        so programmer types can create ad-hoc tile generation
+        programs whose output can be directly imported into
+        CyberBoard. </li>
+</ul>
+
+<blockquote>
+    <p>To create a tile library select the tiles you wish to save
+    using the project window. Then use menu command Project/Save
+    Tile Library File to specify the filename. To load a tile
+    library select the tile group you wish to load the tiles into
+    (in the project window) and use the menu command Project/Load
+    Tile Library File.</p>
+</blockquote>
+
+<ul>
+    <li>You can now specify fractions of a pixel when setting up
+        snap grids. </li>
+    <li>Various adjustments to the menus. </li>
+    <li>Bug Fixes. </li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>You can now save a bitmap image of the current game board
+        into a bitmap file. </li>
+    <li>You can now specify fractions of a pixel when setting up
+        snap grids. </li>
+    <li>Various adjustments to the menus. </li>
+    <li>Bug Fixes. </li>
+</ul>
+
+<h2>Beta 2 Release Notes</h2>
+
+<h3>New features for CBDesign.exe</h3>
+
+<ul>
+    <li>When working with Tiles in the project window you may now
+        select more than one in the list box. </li>
+    <li>You can now copy tiles (Ctrl+C) selected in the tile list
+        shown in the project window onto the clipboard. You may
+        then paste (Ctrl+V) them into tilesets in any GameBox. </li>
+    <li>You can now rearrange tiles in the tile window by using
+        the mouse to drag and drop them. </li>
+    <li>You can now move tiles from one tileset to another by
+        using the clipboard. To do this: select and copy the
+        tiles you want to move to the clipboard (Ctrl+C) using
+        the tile list in the project window. Then select the new
+        tile set and use menu File/Move (Ctrl+M) to move them. </li>
+    <li>Added toolbar button for leaving history playback mode.
+        The free form drawing layers of the board editor now
+        allow you to paste an arbitrary Windows bitmap from the
+        clipboard or a file directly onto the board. You can then
+        move it around as you would any drawing object. </li>
+</ul>
+
+<h3>New features for CBPlay.exe</h3>
+
+<ul>
+    <li>Added menu handling for accepting or discarding a
+        playback of a move file. This was and still is an option
+        available in the project window. It was put on the main
+        menu to make it easier to find and more intuitive. </li>
+    <li>If the move file is accepted rather than discarded, the
+        moves are entered into the game history log and the final
+        board state (piece locations etc.) are now considered the
+        current state of the game. </li>
+    <li>Added ability to copy a bitmap image of a complete game
+        board to the Windows Clipboard. One possible use would be
+        to paste the image into Windows Paint so you could print
+        it. </li>
+</ul>
+
+</BODY>
+</HTML>

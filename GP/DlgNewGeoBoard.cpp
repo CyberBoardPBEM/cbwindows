@@ -1,0 +1,323 @@
+// DlgNewGeoBoard.cpp : implementation file
+//
+// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+#include    "stdafx.h"
+#include    "Gp.h"
+#include    "Board.h"
+#include    "PBoard.h"
+#include    "GamDoc.h"
+#include    "GeoBoard.h"
+#include    "DlgNewGeoBoard.h"
+#include    "gphelp.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CCreateGeomorphicBoardDialog dialog
+
+CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CWnd* pParent /*=NULL*/)
+    : CDialog(CCreateGeomorphicBoardDialog::IDD, pParent)
+{
+    //{{AFX_DATA_INIT(CCreateGeomorphicBoardDialog)
+    //}}AFX_DATA_INIT
+    m_pDoc = NULL;
+    m_pGeoBoard = NULL;
+    m_pRootMapCellForm = NULL;
+    m_nCurrentRowHeight = 0;
+    m_nCurrentColumn = 0;
+    m_nMaxColumns = 0;
+    m_nRowNumber = 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CCreateGeomorphicBoardDialog::DoDataExchange(CDataExchange* pDX)
+{
+    CDialog::DoDataExchange(pDX);
+    //{{AFX_DATA_MAP(CCreateGeomorphicBoardDialog)
+    DDX_Control(pDX, IDOK, m_btnOK);
+    DDX_Control(pDX, IDC_D_NEWGEO_CLEAR, m_btnClearList);
+    DDX_Control(pDX, IDC_D_NEWGEO_ADD_BREAK, m_btnAddBreak);
+    DDX_Control(pDX, IDC_D_NEWGEO_ADD_BOARD, m_btnAddBoard);
+    DDX_Control(pDX, IDC_D_NEWGEO_GEOMORPHIC_LIST, m_listGeo);
+    DDX_Control(pDX, IDC_D_NEWGEO_BOARD_NAME, m_editBoardName);
+    DDX_Control(pDX, IDC_D_NEWGEO_BOARD_LIST, m_listBoard);
+    //}}AFX_DATA_MAP
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+BEGIN_MESSAGE_MAP(CCreateGeomorphicBoardDialog, CDialog)
+    //{{AFX_MSG_MAP(CCreateGeomorphicBoardDialog)
+    ON_LBN_SELCHANGE(IDC_D_NEWGEO_BOARD_LIST, OnSelChangeBoardList)
+    ON_BN_CLICKED(IDC_D_NEWGEO_ADD_BOARD, OnBtnPressedAddBoard)
+    ON_BN_CLICKED(IDC_D_NEWGEO_ADD_BREAK, OnBtnPressedAddBreak)
+    ON_BN_CLICKED(IDC_D_NEWGEO_CLEAR, OnBtnPressClear)
+    ON_EN_CHANGE(IDC_D_NEWGEO_BOARD_NAME, OnChangeBoardName)
+    ON_LBN_DBLCLK(IDC_D_NEWGEO_BOARD_LIST, OnDblClickBoardList)
+    ON_WM_HELPINFO()
+    ON_WM_CONTEXTMENU()
+    ON_BN_CLICKED(IDC_D_NEWGEO_HELP, OnBtnPressedHelp)
+    //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// Html Help control ID Map
+
+static DWORD adwHelpMap[] =
+{
+    IDC_D_NEWGEO_CLEAR, IDH_D_NEWGEO_CLEAR,
+    IDC_D_NEWGEO_ADD_BREAK, IDH_D_NEWGEO_ADD_BREAK,
+    IDC_D_NEWGEO_ADD_BOARD, IDH_D_NEWGEO_ADD_BOARD,
+    IDC_D_NEWGEO_GEOMORPHIC_LIST, IDH_D_NEWGEO_GEOMORPHIC_LIST,
+    IDC_D_NEWGEO_BOARD_NAME, IDH_D_NEWGEO_BOARD_NAME,
+    IDC_D_NEWGEO_BOARD_LIST, IDH_D_NEWGEO_BOARD_LIST,
+    0,0
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
+{
+    m_listBoard.ResetContent();
+    if (m_nMaxColumns != 0 && m_nCurrentColumn == m_nMaxColumns)
+        return;               // No boards allowed since row break is only option
+
+    // All boards must use hexes and have an odd number of columns
+    // or rows along the flat side of the hex.
+    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
+
+    for (int i = 0; i < pBMgr->GetSize(); i++)
+    {
+        CBoard* pBrd = pBMgr->GetBoard(i);
+        CBoardArray* pBArray = pBrd->GetBoardArray();
+        CCellForm* pCellForm = pBArray->GetCellForm(fullScale);
+
+        if (!(pCellForm->GetCellType() == cformHexFlat && (pBArray->GetCols() & 1) != 0 ||
+              pCellForm->GetCellType() == cformHexPnt && (pBArray->GetRows() & 1) != 0))
+            continue;                           // These maps aren't compliant at all
+        if (pBrd->GetSerialNumber() >= GEO_BOARD_SERNUM_BASE)
+            continue;                           // Can't build geo maps from geo maps
+
+        if (m_pRootMapCellForm != NULL)
+        {
+            // Already have at least one map selected. The rest must
+            // comply with the geometry of the root one.
+            if (!m_pRootMapCellForm->CompareEqual(*pCellForm))
+                continue;
+            if (m_nMaxColumns != 0 && m_tblColWidth[m_nCurrentColumn] != pBArray->GetCols())
+                continue;
+            if (m_nCurrentColumn > 0 && pBArray->GetRows() != m_nCurrentRowHeight)
+                continue;
+        }
+        int nItem = m_listBoard.AddString(pBrd->GetName());
+        m_listBoard.SetItemData(nItem, pBrd->GetSerialNumber());
+    }
+    if (m_listBoard.GetCount() > 0)
+        m_listBoard.SetCurSel(0);
+}
+
+void CCreateGeomorphicBoardDialog::UpdateButtons()
+{
+    BOOL bEnableOK = m_editBoardName.GetWindowTextLength() > 0 &&
+         m_listGeo.GetCount() > 0 &&
+        (m_nCurrentColumn == m_nMaxColumns || m_nMaxColumns == 0);
+    m_btnOK.EnableWindow(bEnableOK);
+
+    if (m_pRootMapCellForm == NULL)
+    {
+        // Nothing added yet. Don't allow row break.
+        m_btnAddBreak.EnableWindow(FALSE);
+        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+    }
+    else if (m_nMaxColumns == 0 && m_tblColWidth.GetSize() > 0)
+    {
+        // At least one column but no row break yet. Allow anything.
+        m_btnAddBreak.EnableWindow(TRUE);
+        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+    }
+    else if (m_nMaxColumns > 0 && m_nCurrentColumn == m_nMaxColumns)
+    {
+        m_btnAddBreak.EnableWindow(TRUE);
+        m_btnAddBoard.EnableWindow(FALSE);
+    }
+    else
+    {
+        // Somewhere other than the end of a follow on row
+        // of boards. Only allow adding a board.
+        m_btnAddBreak.EnableWindow(FALSE);
+        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+    }
+
+    m_btnClearList.EnableWindow(m_listGeo.GetCount() > 0);
+}
+
+CGeomorphicBoard* CCreateGeomorphicBoardDialog::DetachGeomorphicBoard()
+{
+    CGeomorphicBoard* pGeoBoard = m_pGeoBoard;
+    m_pGeoBoard = NULL;
+    return pGeoBoard;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CCreateGeomorphicBoardDialog message handlers
+
+void CCreateGeomorphicBoardDialog::OnSelChangeBoardList()
+{
+    UpdateButtons();
+}
+
+void CCreateGeomorphicBoardDialog::OnChangeBoardName()
+{
+    UpdateButtons();
+}
+
+void CCreateGeomorphicBoardDialog::OnDblClickBoardList()
+{
+    if (m_btnAddBoard.IsWindowEnabled())
+        OnBtnPressedAddBoard();
+}
+
+void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
+{
+    ASSERT(m_listBoard.GetCurSel() >= 0);
+    DWORD dwItemData = m_listBoard.GetItemData(m_listBoard.GetCurSel());
+
+    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
+    int nBrdNum = pBMgr->FindBoardBySerial((int)dwItemData);
+    ASSERT(nBrdNum != -1);
+    CBoard* pBrd = pBMgr->GetBoard(nBrdNum);
+    CBoardArray* pBArray = pBrd->GetBoardArray();
+    m_pRootMapCellForm = pBArray->GetCellForm(fullScale);
+
+    if (m_nMaxColumns == 0)
+        m_tblColWidth.Add(pBArray->GetCols());
+
+    if (m_nCurrentRowHeight == 0)
+        m_nCurrentRowHeight = pBArray->GetRows();
+
+    CString strLabel = pBrd->GetName();
+
+    int nItem = m_listGeo.AddString(strLabel);
+    m_listGeo.SetItemData(nItem, dwItemData);
+
+    m_nCurrentColumn++;
+    if (m_nCurrentColumn == m_nMaxColumns)
+    {
+        m_btnAddBoard.EnableWindow(FALSE);
+        m_btnAddBreak.EnableWindow(TRUE);
+    }
+    else if (m_nMaxColumns == 0 && m_tblColWidth.GetSize() > 0)
+        m_btnAddBreak.EnableWindow(TRUE);
+
+    LoadBoardListWithCompliantBoards();
+    UpdateButtons();
+}
+
+void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
+{
+    CString str;
+    str.LoadString(IDS_ROW_BREAK);
+
+    int nItem = m_listGeo.AddString(str);
+    m_listGeo.SetItemData(nItem, -1);
+
+    m_nMaxColumns = m_tblColWidth.GetSize();
+    m_nRowNumber++;
+    m_nCurrentColumn = 0;
+    m_nCurrentRowHeight = 0;
+
+    LoadBoardListWithCompliantBoards();
+    UpdateButtons();
+}
+
+void CCreateGeomorphicBoardDialog::OnBtnPressClear()
+{
+    m_listGeo.ResetContent();
+    m_nMaxColumns = 0;
+    m_nCurrentColumn = 0;
+    m_nCurrentRowHeight = 0;
+    m_nRowNumber = 0;
+    m_pRootMapCellForm = NULL;
+    m_tblColWidth.RemoveAll();
+
+    LoadBoardListWithCompliantBoards();
+    UpdateButtons();
+}
+
+BOOL CCreateGeomorphicBoardDialog::OnInitDialog()
+{
+    CDialog::OnInitDialog();
+    ASSERT(m_pDoc != NULL);
+
+    LoadBoardListWithCompliantBoards();
+    UpdateButtons();
+
+    return TRUE;  // return TRUE unless you set the focus to a control
+                  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CCreateGeomorphicBoardDialog::OnOK()
+{
+    m_pGeoBoard = new CGeomorphicBoard;
+
+    CString strName;
+    m_editBoardName.GetWindowText(strName);
+    m_pGeoBoard->SetName(strName);
+    m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager()->IssueGeoSerialNumber());
+
+    m_pGeoBoard->SetBoardRowCount(m_nRowNumber + 1);
+    m_pGeoBoard->SetBoardColCount(m_tblColWidth.GetSize());
+
+    for (int i = 0; i < m_listGeo.GetCount(); i++)
+    {
+        DWORD dwItemData = m_listGeo.GetItemData(i);
+        if ((DWORD)-1 == dwItemData)
+            continue;                       // Skip the row break
+        int nBrdSer = (int)dwItemData;
+        m_pGeoBoard->AddElement(nBrdSer);
+    }
+
+    CDialog::OnOK();
+}
+
+BOOL CCreateGeomorphicBoardDialog::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+    return GetApp()->DoHelpTipHelp(pHelpInfo, adwHelpMap);
+}
+
+void CCreateGeomorphicBoardDialog::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+    GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
+}
+
+void CCreateGeomorphicBoardDialog::OnBtnPressedHelp()
+{
+    GetApp()->DoHelpTopic("gp-adv-geomorphic.htm");
+}
+

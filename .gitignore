@@ -1,0 +1,15 @@
+*.ncb
+*.suo
+*.aps
+*.vpw
+*.vpwhist
+*.vtg
+*.vpj
+[Dd]ebug
+[Rr]elease
+GP/gphelpidmap.h
+GM/gmhelpidmap.h
+GHelp/CBoard.chm
+*.old
+*.user
+.vs/

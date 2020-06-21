@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<Title>How Hidden Units Work</Title>
+<style>@import url(cbhelp.css);</style>
+<script language="JavaScript" src="master.js"></script>
+</HEAD>
+<BODY>
+<H1>How Hidden Pieces Work</H1>
+<H2>First some teminology is needed.</H2>
+<P>
+When you create pieces in the game designer program you can 
+chose one or two images for pieces. There is a FRONT tile image 
+and an optional BACK image. </P>
+<P>
+When you play a game with two sided pieces a piece has a 
+normally visible TOP side and the face down BOTTOM side.</P>
+<P>
+IMPORTANT RULE:   If a piece is considered hidden (for 
+whatever reason) during game play the FRONT image is displayed. 
+This is true regardless of what image of piece is on TOP.</P>
+<P>
+You also need to understand the notion of game players. 
+Players can OWN things used in a game. I'll cleverly call 
+them the OWNERs. The following things can be OWNed (or not 
+OWNed) when playing in CyberBoard's multiplayer mode:</P>
+<UL>
+<LI>Piece TRAYs</LI>
+<LI>Playing BOARDs</LI>
+<LI>Pieces</LI>
+</UL>
+<P>
+IMPORTANT RULE:  The OWNERship of a BOARD or a TRAY cannot
+be changed in a game. The OWNERship of pieces can change.</P>
+<P>
+IMPORTANT RULE:  If a TRAY or BOARD is OWNed, then all the 
+pieces residing in or on them are automatically set to be 
+OWNed by that TRAY or BOARD's OWNER.</P>
+<P>
+IMPORTANT RULE: Pieces in non-OWNed TRAYs cannot be OWNed 
+by anyone. Those pieces will have their OWNERship 
+automatically cleared.</P>
+<P>
+IMPORTANT RULE: Pieces on non-OWNed BOARDs can either be 
+OWNed or not OWNed. Non-OWNed BOARDs will probably be where 
+most of the action takes place.</P>
+<P>
+Therefore, non-OWNERs of pieces will only see the FRONT 
+tile image of them during play. OWNERs will see whatever 
+image is on TOP.</P>
+
+<H2>Visibility of Tray Content</H2>
+
+Trays have several visibility rules available:</P>
+<OL>
+<LI>Both sides of pieces are fully visible</LI>
+<LI>Only the top side of pieces are visible</LI>
+<LI>Each piece image is hidden. (shows "HIDDEN")</LI>
+<LI>All piece items hidden. (shows the text "ALL HIDDEN")</LI>
+</OL>
+<P>
+I'll call these the TRAY VISIBILITY RULES.</P>
+<P>
+If a TRAY is OWNed by the current player, then rule (1) 
+is used *unless* the "Visibility rule also applies to 
+the tray's owner" option is checked.</P>
+<P>
+If a TRAY is OWNed but not by the current player, then the 
+TRAY VISIBILITY RULES are used.</P>
+<P>
+If a TRAY isn't OWNed by anyone, then the TRAY VISIBILITY 
+RULES are used.</P>
+
+<H2>Security of Pieces, Boards, and Trays</H2>
+
+<P>
+There is a single option which selects how secure TRAYs, 
+BOARDs, and PIECES are from your opponents. The Option 
+is set in either the BOARD properties or the TRAY properties 
+dialogs. The checkbox option is:</P>
+<P>
+"Allow non-owners to access pieces on this board/tray."</P>
+<P>
+I'll call this the ACCESS OPTION.</P>
+<P>
+If the ACCESS OPTION is cleared for OWNed TRAYs and BOARDs, 
+those BOARDs and TRAYs are completely inaccessable to Non-OWNERs. 
+They operate normally for the OWNers. If the ACCESS OPTION is 
+set for this case, then only the visibility rules are enforced.</P>
+<P>
+If the ACCESS OPTION is cleared for non-OWNed BOARDs, then 
+pieces that are OWNed by players other than the current player 
+cannot selected or otherwise affected. If the ACCESS OPTION is 
+set for this case, then only the visibility rules are enforced.</P>
+
+<H2>Some Miscellaneous Information</H2>
+
+<P>
+If a move affects a piece in a manner that should be hidden 
+from view, the move is played back SILENTLY. The opponent is 
+not be aware anything happened. The following operations performed 
+on OWNed pieces will not be seen by your opponent:</P>
+
+<UL>
+<LI>Flipping a piece over</LI>
+<LI>Setting a piece's text</LI>
+<LI>Locking or unlocking a Piece</LI>
+</UL>
+
+<P>
+At times it can be confusing to know what your opponent can actually see
+since you, as the owner, see quite a bit more. To see the boards and trays
+from the perspective of a game spectator use the 
+<b><a href="gp-ref-menu-view.htm">View/Simulate Specator Player</a></b> 
+menu command.</P>
+
+<H2>Creating a Board Resident Non-Owned Decks of Cards</H2>
+
+<P>
+In CyberBoard cards are simply pieces.</P>
+<P>
+If you need a deck of cards that reside on a BOARD (rather 
+than in a TRAY) and aren't owned by any player, a special option 
+has been added to assist in this situation. Basically what 
+is needed is that when a non-OWNed card is selected on a BOARD or 
+viewed in a TRAY, the BOTTOM information should NOT be visible. 
+The checkbox option is specified when a piece is created and reads 
+as follows:</P>
+<P>
+"Only show top image during games."</P>
+<P>
+IMPORTANT RULE: This rule is only enforced if a piece is 
+not OWNed. You can force the rule to apply to everyone including
+OWNERs by checking the following companion option:</P>
+<P>
+"Enforce above option for owned pieces too."</P>
+
+<H2>How to Create a Multiplayer Game</H2>
+
+<P>
+First you need to create a multiplayer Scenario. This is done
+using the menu command <b><a href="gp-ref-menu-project.htm">Project/Create Players...</a></b>. 
+If this is set to a non-zero value, the Scenario is considered to be 
+multiplayer and supports hidden units. </P>
+<P>
+You can change the default player names using the menu command
+<b><a href="gp-ref-menu-project.htm">Project/Edit Players...</a></b>.</P>
+<P>
+Set ownership and security on various TRAYs and BOARDs as 
+required.</P>
+<P>
+Create a game as you normally would and select the multiplayer
+scenario file. First you will be given the opportunity to change 
+the player names to real names. Press Ok. Next you select a 
+base filename for the game. This name will be the root part of 
+all the generated player files. When you press Ok the player 
+files are created. The following files will be created:</P>
+
+<UL>
+<LI><code>RootFilename-&lt;Player_Name&gt;.gam</code>. One of these will be 
+  created for each player in the game. These should be
+  EMailed to the appropriate players.</LI>
+
+<LI><code>RootFilename-Spectator.gam</code>. This file has no OWNERship access
+  rights. It can be sent to spectators who will observe the game.</LI>
+
+<LI><code>RootFilename-Referee.gam</code>. This file has total rights. Generally
+  the Referee for a game should only have this file. This game file
+  allows access and viewability to everything. It could also be used
+  for "power" spectators who would like to look over the shoulder
+  of all other players.</LI> 
+</UL>
+</BODY>
+</HTML>

@@ -1,0 +1,261 @@
+.Topic IDH_D_NEWGEO_CLEAR
+Clears all entries in the board array construction list.
+
+.Topic IDH_D_NEWGEO_ADD_BREAK
+Adds a board array row break.
+
+.Topic IDH_D_NEWGEO_ADD_BOARD
+Adds a board to the next position in the board array.
+
+.Topic IDH_D_NEWGEO_GEOMORPHIC_LIST
+List of all boards in the board array construction.
+
+.Topic IDH_D_NEWGEO_BOARD_LIST
+A list of all playing boards that qualify for the board
+array position currently being filled. If this list is empty
+either a row break is required or no boards qualify.
+
+.Topic IDH_D_NEWGEO_BOARD_NAME
+The name that will be used for the newly created board. You must fill
+this in before the OK button will be enabled.
+
+.Topic IDH_DIE_RESET_SEED
+No Help Available
+
+.Topic IDH_DIE_ROLL
+No Help Available
+
+.Topic IDH_DIE_SEED
+No Help Available
+
+.Topic IDH_DIE_FACES
+No Help Available
+
+.Topic IDH_DIE_NUMDIES
+No Help Available
+
+.Topic IDH_DIE_BIAS
+No Help Available
+
+.Topic IDH_DIE_SETS
+No Help Available
+
+.Topic IDH_D_EDITELEM_TEXT
+No Help Available
+
+.Topic IDH_D_EDITELEM_SETBOTH
+No Help Available
+
+.Topic IDH_D_EPLAY_UPDATE_NAME
+No Help Available
+
+.Topic IDH_D_EPLAY_NAME_LIST
+No Help Available
+
+.Topic IDH_D_EPLAY_EDIT_NAME
+No Help Available
+
+.Topic IDH_D_IMPPCE_GROUPLIST
+No Help Available
+
+.Topic IDH_D_MDESC_DESCR
+No Help Available
+
+.Topic IDH_D_MDESC_TITLE
+No Help Available
+
+.Topic IDH_D_PBPRP_NONOWNER_ACCESS
+No Help Available
+
+.Topic IDH_D_PBPRP_OWNER_LIST
+No Help Available
+
+.Topic IDH_D_PBPRP_OWNER_LABEL
+No Help Available
+
+.Topic IDH_D_PBPRP_PLOTCOLOR
+No Help Available
+
+.Topic IDH_D_PBPRP_PLOTWIDTH
+No Help Available
+
+.Topic IDH_D_PBPRP_SNAPON
+No Help Available
+
+.Topic IDH_D_PBPRP_S_CELLBORDER
+No Help Available
+
+.Topic IDH_D_PBPRP_L_CELLBORDER
+No Help Available
+
+.Topic IDH_D_PBPRP_XPCE_STGGR
+No Help Available
+
+.Topic IDH_D_PBPRP_YPCE_STGGR
+No Help Available
+
+.Topic IDH_D_PBPRP_BOARDNAME
+No Help Available
+
+.Topic IDH_D_PBPRP_S_RECTCENTER
+No Help Available
+
+.Topic IDH_D_PBPRP_S_SNAPPLOTS
+No Help Available
+
+.Topic IDH_D_PBPRP_XOFFSET
+No Help Available
+
+.Topic IDH_D_PBPRP_YOFFSET
+No Help Available
+
+.Topic IDH_D_PBPRP_XPIXELS
+No Help Available
+
+.Topic IDH_D_PBPRP_YPIXELS
+No Help Available
+
+.Topic IDH_D_PBPRP_AUTOOPEN
+No Help Available
+
+.Topic IDH_D_PBPRP_SHOW_SEL_AND_TINY
+No Help Available
+
+.Topic IDH_D_ROTPCE_CCW5
+No Help Available
+
+.Topic IDH_D_ROTPCE_CCW10
+No Help Available
+
+.Topic IDH_D_ROTPCE_CCW50
+No Help Available
+
+.Topic IDH_D_ROTPCE_CW5
+No Help Available
+
+.Topic IDH_D_ROTPCE_CW10
+No Help Available
+
+.Topic IDH_D_ROTPCE_CW50
+No Help Available
+
+.Topic IDH_D_ROTPCE_CURVAL
+No Help Available
+
+.Topic IDH_D_SETPCE_TRAYNAME
+No Help Available
+
+.Topic IDH_D_SETPCE_TRAYLIST
+No Help Available
+
+.Topic IDH_D_SETPCE_PCELIST
+No Help Available
+
+.Topic IDH_D_SETPCE_PCEGRP
+No Help Available
+
+.Topic IDH_D_SETPCE_REMALL
+No Help Available
+
+.Topic IDH_D_SETPCE_COPYALL
+No Help Available
+
+.Topic IDH_D_SETPCE_COPYSEL
+No Help Available
+
+.Topic IDH_D_SETPCE_REMSEL
+No Help Available
+
+.Topic IDH_D_YPRP_OWNER_TOO
+No Help Available
+
+.Topic IDH_D_YPRP_NONOWNER_ACCESS
+No Help Available
+
+.Topic IDH_D_YPRP_OWNER_LABEL
+No Help Available
+
+.Topic IDH_D_YPRP_OWNER_LIST
+No Help Available
+
+.Topic IDH_D_YPRP_NAME
+No Help Available
+
+.Topic IDH_D_YPRP_VIZFULL
+No Help Available
+
+.Topic IDH_D_YPRP_VIZTOP
+No Help Available
+
+.Topic IDH_D_YPRP_VIZHIDDEN
+No Help Available
+
+.Topic IDH_D_YPRP_VIZALLHIDDEN
+No Help Available
+
+.Topic IDH_D_YPRP_RANDSEL
+No Help Available
+
+.Topic IDH_D_MPGAME_PLAYER_NAME
+No Help Available
+
+.Topic IDH_D_MPGAME_PLAYER_LIST
+No Help Available
+
+.Topic IDH_D_MPGAME_CREATE_REFEREE
+No Help Available
+
+.Topic IDH_D_MPGAME
+No Help Available
+
+.Topic IDH_D_RMSG_MESSAGE
+No Help Available
+
+.Topic IDH_D_SCNPRP_AUTHOR
+No Help Available
+
+.Topic IDH_D_SCNPRP_DESCR
+No Help Available
+
+.Topic IDH_D_SCNPRP_TITLE
+No Help Available
+
+.Topic IDH_D_SELOWN_LIST
+No Help Available
+
+.Topic IDH_D_SETBRD_LIST
+No Help Available
+
+.Topic IDH_D_SMSG_CANCEL
+No Help Available
+
+.Topic IDH_D_SMSG_CLOSE
+No Help Available
+
+.Topic IDH_D_SMSG_MESSAGE
+No Help Available
+
+.Topic IDH_D_SMSG_MESSAGE2
+No Help Available
+
+.Topic IDH_D_SMSG_OK
+No Help Available
+
+.Topic IDH_D_SMSG_ROLLDICE
+No Help Available
+
+.Topic IDH_D_SMSG_SEND
+No Help Available
+
+.Topic IDH_D_STATE_MOVEFILE
+No Help Available
+
+.Topic IDH_D_STATE_CURSTATE
+No Help Available
+
+.Topic IDH_D_TRUNC_DONT
+No Help Available
+
+.Topic IDH_D_TRUNC_DOIT
+No Help Available
+
