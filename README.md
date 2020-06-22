@@ -24,6 +24,13 @@ In the future I may share the entire history in a read-only fashion just for the
 capturing the program's history for history's sake. Currently I don't want to wrestle 
 with that problem.
 
+Prebuilt Releases
+-----------------
+
+You can find prebuild releases available for download here:
+
+https://github.com/CyberBoardPBEM/cbwindows/releases
+
 Building the Code
 -----------------
 
