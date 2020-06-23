@@ -1,0 +1,40 @@
+name: Check Cyberboard Commit
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Setup MSBuild
+      id: setup_msbuild
+      uses: microsoft/setup-msbuild@v1.0.0
+
+    - name: echo msbuild path
+      run: echo "${{ steps.setup_msbuild.outputs.msbuildPath }}"
+
+    - name: echo MSBuild version
+      run: msbuild -version       # Runs a single command using the runners shell
+
+    # Runs a set of commands using the runners shell
+    - name: Run a multi-line script
+      run: |
+        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /target:build
+        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /target:build
+        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /target:build
+
