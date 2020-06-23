@@ -2351,10 +2351,9 @@ void CPlayBoardView::OnUpdateActSetOwner(CCmdUI* pCmdUI)
 
 BOOL CPlayBoardView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-    return CScrollView::OnMouseWheel(nFlags, zDelta, pt);
+    return DoMouseWheelFix(nFlags, zDelta, pt);
 }
 
-#ifdef STILL_HAVE_PROBLEMS_WITH_WHEELS  //@@@@@@ TODO: IS THIS DEAD CODE? 20200618
 BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
 {
     static BOOL bInitOsType = TRUE;
@@ -2364,8 +2363,8 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
     if (bInitOsType)
     {
         bInitOsType = FALSE;
-        bWin98 = COSVersionInfo::Get().IsWin98();
-        bWinME = COSVersionInfo::Get().IsWinME();
+        bWin98 = FALSE;
+        bWinME = FALSE;
     }
 
     if (bWin98 || bWinME)
@@ -2496,5 +2495,3 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
         return bResult;
     }
 }
-#endif      //@@@@@@
-
