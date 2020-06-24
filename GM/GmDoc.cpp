@@ -140,7 +140,6 @@ CGamDoc::~CGamDoc()
 
 void CGamDoc::OnCloseDocument()
 {
-    GetMainFrame()->GetDockingTileWindow()->SetChild(NULL);  //@@@@@@ DO WE STILL WANT TO DO THIS HERE? 20200615
     CDocument::OnCloseDocument();
 }
 

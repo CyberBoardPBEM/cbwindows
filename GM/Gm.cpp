@@ -159,8 +159,6 @@ BOOL CGmApp::InitInstance()
     // Load standard INI file options (including MRU)
     LoadStdProfileSettings(10);
 
-    //@@@@InitShellManager();
-    //@@@@InitKeyboardManager();
     InitContextMenuManager();
     InitTooltipManager();
 

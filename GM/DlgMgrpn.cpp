@@ -62,21 +62,6 @@ END_MESSAGE_MAP()
 
 void CMarkGroupNewDialog::OnOK()
 {
-// check for duplicates.......//@@@@@ DELETE THIS?
-//  ASSERT(m_pYMgr);
-//  m_editName.GetWindowText(m_strName);
-//  if (m_strName.IsEmpty())
-//  {
-//      AfxMessageBox(IDS_ERR_TRAYNAME, MB_OK | MB_ICONINFORMATION);
-//      m_editName.SetFocus();
-//      return;
-//  }
-//  if (m_pYMgr->FindTrayByName(m_strName) == -1)
-//  {
-//      AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
-//      m_editName.SetFocus();
-//      return;
-//  }
     CDialog::OnOK();
 }
 
