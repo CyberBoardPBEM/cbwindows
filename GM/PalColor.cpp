@@ -225,16 +225,6 @@ void CColorPalette::OnNcPaint()
 
 void CColorPalette::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
 {
-#if 0   //@@@@@@
-    CRect rect; rect.SetRectEmpty();
-    BOOL bHorz = (m_dwStyle & CBRS_ORIENT_HORZ) != 0;
-    CDockablePane::CalcInsideRect(rect, bHorz);
-    // Adjust non-client area for border space
-    lpncsp->rgrc[0].left += rect.left;
-    lpncsp->rgrc[0].top += rect.top;
-    lpncsp->rgrc[0].right += rect.right;
-    lpncsp->rgrc[0].bottom += rect.bottom;
-#endif
     CDockablePane::OnNcCalcSize(bCalcValidRects, lpncsp);
 }
 
@@ -374,7 +364,6 @@ void CColorPalette::ComputeLayout()
 
 LRESULT CColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
 {
-    //@@@@@@ if (GetStyle() & WS_VISIBLE)                // Ignore if child is invisible
     if (IsVisible())             // Ignore if child is invisible
     {
         CFrameWnd* pTarget = GetMainFrame();

@@ -198,7 +198,7 @@ CGamDoc::CGamDoc()
     m_pntMsgReadPos = CPoint(INT_MIN, INT_MIN);
     m_nMoveIdxAtBookMark = 0;
     m_pBookMark = NULL;
-#if 0   //@@@@@@@@TODO: 20200618 RESOLVE THIS...
+#if 1   //@@@@@@@@TODO: 20200618 RESOLVE THIS...
     m_bTrayAVisible = FALSE;
     m_bTrayBVisible = FALSE;
     m_bMarkPalVisible = FALSE;
@@ -264,12 +264,6 @@ BOOL CGamDoc::OnNewDocument()
 
 void CGamDoc::OnCloseDocument()
 {
-//@@@@@@ |---->>>>>>TODO: 20200618 RESOLVE THIS...
-//  GetMainFrame()->GetDockingMarkerWindow()->SetChild(NULL);
-//  GetMainFrame()->GetDockingTrayAWindow()->SetChild(NULL);
-//  GetMainFrame()->GetDockingTrayBWindow()->SetChild(NULL);
-//@@@@@@ <<<<<<----|
-
     if (!IsScenario())
     {
         TRY
@@ -404,21 +398,21 @@ void CGamDoc::DeleteContents()
 
     if (m_palTrayA.m_hWnd != NULL)
     {
-        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayA.GetParent();
+        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayA.GetDockingFrame();
         ASSERT_KINDOF(CDockTrayPalette, pFrame);
         pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         m_palTrayA.DestroyWindow();
     }
     if (m_palTrayB.m_hWnd != NULL)
     {
-        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayB.GetParent();
+        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayB.GetDockingFrame();
         ASSERT_KINDOF(CDockTrayPalette, pFrame);
         pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         m_palTrayB.DestroyWindow();
     }
     if (m_palMark.m_hWnd != NULL)
     {
-        CDockMarkPalette* pFrame = (CDockMarkPalette*)m_palMark.GetParent();
+        CDockMarkPalette* pFrame = (CDockMarkPalette*)m_palMark.GetDockingFrame();
         ASSERT_KINDOF(CDockMarkPalette, pFrame);
         pFrame->SetChild(NULL);         // Need to remove pointer from Marker's UI Frame.
         m_palMark.DestroyWindow();

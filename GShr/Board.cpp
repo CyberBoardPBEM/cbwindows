@@ -281,7 +281,7 @@ void CBoard::Serialize(CArchive& ar)
         else
         {
             ar >> wTmp; m_bShowCellBorder = (BOOL)wTmp;
-            //@@@@ ar >> m_wReserved1;
+            // ar >> m_wReserved1;
             ar >> wTmp; m_bCellBorderOnTop = (BOOL)wTmp;
         }
 #endif

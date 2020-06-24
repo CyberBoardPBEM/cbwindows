@@ -262,8 +262,6 @@ void CReadMsgWnd::InsertText(LPCTSTR pszText, BOOL bAtEnd /* = TRUE */)
 void CReadMsgWnd::SetDefaults()
 {
     // Set the font for the edit control.
-    //@@@@@@ TODO: Set font.   //TODO: IS THIS NEEDED ANYMORE 20200618
-    //@@@@@@ m_editCtrl.SetFont(&xtAfxData.font);
     CharFormat cf;
 
     m_editCtrl.GetDefaultCharFormat(cf);

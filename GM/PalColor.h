@@ -65,15 +65,10 @@ class CColorPalette : public CDockablePane
     // Construction
 public:
     CColorPalette();
-    //@@@@@ BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID, LPCTSTR pszName);
     BOOL SetupLineControl();
 
-    // Attributes
+// Attributes
 public:
-    //@@@@@ virtual BOOL IsResizable() const
-    //@@@@@ {
-    //@@@@@     return FALSE;
-    //@@@@@ }
 
 // Operations
 public:
@@ -185,10 +180,6 @@ protected:
     {
         strName = m_strPaneName;
     }
-//@@@@@ virtual BOOL CanBeResized() const
-//@@@@@    {
-//@@@@@        return FALSE;
-//@@@@@    }
 
 // Generated message map functions
 protected:

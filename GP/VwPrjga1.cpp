@@ -23,7 +23,6 @@
 //
 
 #include    "stdafx.h"
-#include    "Ctl3d.h"           //@@@@@@ TODO: IS THIS RELEVANT ANYMORE? 20200618
 #include    "Gp.h"
 #include    "Gamdoc.h"
 #include    "Restbl.h"
