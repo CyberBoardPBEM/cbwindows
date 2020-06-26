@@ -198,17 +198,10 @@ CGamDoc::CGamDoc()
     m_pntMsgReadPos = CPoint(INT_MIN, INT_MIN);
     m_nMoveIdxAtBookMark = 0;
     m_pBookMark = NULL;
-#if 1   //@@@@@@@@TODO: 20200618 RESOLVE THIS...
     m_bTrayAVisible = FALSE;
     m_bTrayBVisible = FALSE;
     m_bMarkPalVisible = FALSE;
     m_bMsgWinVisible = FALSE;
-#else
-    m_bTrayAVisible = TRUE;
-    m_bTrayBVisible = TRUE;
-    m_bMarkPalVisible = TRUE;
-    m_bMsgWinVisible = TRUE;
-#endif
     m_bShowObjTipText = TRUE;
     m_bDisableOwnerTips = FALSE;            // (was m_wReserved1)
     m_bSaveWindowPositions = TRUE;
@@ -283,6 +276,10 @@ BOOL CGamDoc::OnOpenDocument(const char* pszPathName)
 {
     BOOL bRet = FALSE;
     SetThisDocumentType();
+    // We make this call to ensure the sizes of the palette windows layout
+    // don't "bloat" during document load. I can't really tell you why this
+    // works but, unless you have a proper solution... Don't mess with it!
+    GetMainFrame()->ShowPalettePanes(TRUE);
 
     // This cheat is to have the filename being loaded available
     // to the Serialize routine
@@ -437,6 +434,10 @@ void CGamDoc::OnIdle(BOOL bActive)
     {
         CMainFrame* pMFrame = GetMainFrame();
 
+        CDockMarkPalette* pDockMark = pMFrame->GetDockingMarkerWindow();
+        pDockMark->SetChild(&m_palMark);
+        pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
+
         CDockTrayPalette* pDockTrayA = pMFrame->GetDockingTrayAWindow();
         pDockTrayA->SetChild(&m_palTrayA);
         pMFrame->UpdatePaletteWindow(pDockTrayA, m_bTrayAVisible);
@@ -445,9 +446,9 @@ void CGamDoc::OnIdle(BOOL bActive)
         pDockTrayB->SetChild(&m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
 
-        CDockMarkPalette* pDockMark = pMFrame->GetDockingMarkerWindow();
-        pDockMark->SetChild(&m_palMark);
-        pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
+        //CDockMarkPalette* pDockMark = pMFrame->GetDockingMarkerWindow();
+        //pDockMark->SetChild(&m_palMark);
+        //pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
 
         CReadMsgWnd* pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());

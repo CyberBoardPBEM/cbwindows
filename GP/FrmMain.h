@@ -61,6 +61,7 @@ public:
 // Operations
 public:
     void UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn);
+    void ShowPalettePanes(BOOL bShow);
     void OnIdle();
 
 // Implementation

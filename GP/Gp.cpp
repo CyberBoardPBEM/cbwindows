@@ -208,6 +208,8 @@ BOOL CGpApp::InitInstance()
         RUNTIME_CLASS(CPlayBoardFrame),
         RUNTIME_CLASS(CPlayBoardView));
 
+    EnableLoadWindowPlacement(FALSE);
+
     // Create main MDI Frame window
     CMainFrame* pMainFrame = new CMainFrame;
     if (!pMainFrame || !pMainFrame->LoadFrame(IDR_GP_MAINFRAME))
@@ -261,8 +263,11 @@ BOOL CGpApp::InitInstance()
         return FALSE;
 
     // The main window has been initialized, so show and update it.
-    pMainFrame->ShowWindow(m_nCmdShow);
-    pMainFrame->UpdateWindow();
+    if (!ReloadWindowPlacement(pMainFrame))
+    {
+        pMainFrame->ShowWindow(m_nCmdShow);
+        pMainFrame->UpdateWindow();
+    }
 
     OnIdle(0);   // Run idle so control bars are in sync prior to message boxes
 

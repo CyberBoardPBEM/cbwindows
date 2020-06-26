@@ -204,6 +204,8 @@ BOOL CGmApp::InitInstance()
         RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CBitEditFrame),
         RUNTIME_CLASS(CBitEditView));
 
+    EnableLoadWindowPlacement(FALSE);
+
     // Create main MDI Frame window
     CMainFrame* pMainFrame = new CMainFrame;
     if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
@@ -246,8 +248,11 @@ BOOL CGmApp::InitInstance()
         return FALSE;
 
     // The main window has been initialized, so show and update it.
-    pMainFrame->ShowWindow(m_nCmdShow);
-    pMainFrame->UpdateWindow();
+    if (!ReloadWindowPlacement(pMainFrame))
+    {
+        pMainFrame->ShowWindow(m_nCmdShow);
+        pMainFrame->UpdateWindow();
+    }
 
     if (GetCurrentVideoResolution() < 16)
     {
