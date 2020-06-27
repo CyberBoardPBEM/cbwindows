@@ -36,27 +36,27 @@ static char THIS_FILE[] = __FILE__;
 // CTruncatePlaybackDlg dialog
 
 CTruncatePlaybackDlg::CTruncatePlaybackDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CTruncatePlaybackDlg::IDD, pParent)
+    : CDialog(CTruncatePlaybackDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CTruncatePlaybackDlg)
-	m_nTruncateSel = 0;
-	//}}AFX_DATA_INIT
+    //{{AFX_DATA_INIT(CTruncatePlaybackDlg)
+    m_nTruncateSel = 0;
+    //}}AFX_DATA_INIT
 }
 
 void CTruncatePlaybackDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CTruncatePlaybackDlg)
-	DDX_Radio(pDX, IDC_D_TRUNC_DONT, m_nTruncateSel);
-	//}}AFX_DATA_MAP
+    CDialog::DoDataExchange(pDX);
+    //{{AFX_DATA_MAP(CTruncatePlaybackDlg)
+    DDX_Radio(pDX, IDC_D_TRUNC_DONT, m_nTruncateSel);
+    //}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(CTruncatePlaybackDlg, CDialog)
-	//{{AFX_MSG_MAP(CTruncatePlaybackDlg)
-		// NOTE: the ClassWizard will add message map macros here
+    //{{AFX_MSG_MAP(CTruncatePlaybackDlg)
+        // NOTE: the ClassWizard will add message map macros here
     ON_WM_HELPINFO()
-	ON_WM_CONTEXTMENU()
-	//}}AFX_MSG_MAP
+    ON_WM_CONTEXTMENU()
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////

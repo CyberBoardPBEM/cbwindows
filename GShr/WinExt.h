@@ -12,7 +12,7 @@
 #ifndef _INC_WINDOWSX
 #define _INC_WINDOWSX
 
-#ifndef	WIN32			//Win16 forms
+#ifndef WIN32           //Win16 forms
 
 #ifndef RC_INVOKED
 #pragma pack(1)         /* Assume byte packing throughout */
@@ -20,7 +20,7 @@
 
 #ifdef __cplusplus
 extern "C" {            /* Assume C declarations for C++ */
-#endif	/* __cplusplus */
+#endif  /* __cplusplus */
 
 /****** KERNEL Macro APIs ****************************************************/
 
@@ -30,16 +30,16 @@ extern "C" {            /* Assume C declarations for C++ */
 #define     GlobalPtrHandle(lp)         \
                 ((HGLOBAL)LOWORD(GlobalHandle(SELECTOROF(lp))))
 
-#define     GlobalLockPtr(lp)		\
+#define     GlobalLockPtr(lp)       \
                 ((BOOL)SELECTOROF(GlobalLock(GlobalPtrHandle(lp))))
-#define     GlobalUnlockPtr(lp) 	\
+#define     GlobalUnlockPtr(lp)     \
                 GlobalUnlock(GlobalPtrHandle(lp))
 
-#define     GlobalAllocPtr(flags, cb)	\
+#define     GlobalAllocPtr(flags, cb)   \
                 (GlobalLock(GlobalAlloc((flags), (cb))))
-#define     GlobalReAllocPtr(lp, cbNew, flags)	\
+#define     GlobalReAllocPtr(lp, cbNew, flags)  \
                 (GlobalUnlockPtr(lp), GlobalLock(GlobalReAlloc(GlobalPtrHandle(lp) , (cbNew), (flags))))
-#define     GlobalFreePtr(lp)		\
+#define     GlobalFreePtr(lp)       \
                 (GlobalUnlockPtr(lp), (BOOL)GlobalFree(GlobalPtrHandle(lp)))
 
 #ifndef RC_INVOKED
@@ -48,10 +48,10 @@ extern "C" {            /* Assume C declarations for C++ */
 
 #ifdef __cplusplus
 }                       /* End of extern "C" { */
-#endif	/* __cplusplus */
+#endif  /* __cplusplus */
 
 ///////////////////////////////////////////////////////////////////////
-#else					// WIN32 Forms.........
+#else                   // WIN32 Forms.........
 
 #ifdef __cplusplus
 extern "C" {            /* Assume C declarations for C++ */
@@ -80,7 +80,7 @@ extern "C" {            /* Assume C declarations for C++ */
 }                       /* End of extern "C" { */
 #endif       /* __cplusplus */
 
-#endif	/* WIN32 */
+#endif  /* WIN32 */
 
 #endif  /* !_INC_WINDOWSX */
 
