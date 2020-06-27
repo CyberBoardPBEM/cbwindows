@@ -49,8 +49,6 @@ BOOL AppendStringToEditBox(CEdit& edit, CString strAppend,
 BOOL GetMaximumTextExtent(HDC hDC, LPCTSTR pszStr, int nStringLen, int nMaxWidth,
     int* pnFit);    // (not really MFC related)
 
-int CWndOnToolHitTestFix(HWND hWnd, CPoint point, TOOLINFO* pTI);
-
 void GetTemporaryFileName(LPCTSTR lpPrefixString, CString& strTempName);
 void TruncatedAnsiStringWithEllipses(CDC *pRefDC, int nTargWidth, CString& str);
 
