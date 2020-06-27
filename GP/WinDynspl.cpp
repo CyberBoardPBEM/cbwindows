@@ -48,7 +48,7 @@ CCbSplitterWnd::~CCbSplitterWnd()
 }
 
 BEGIN_MESSAGE_MAP(CCbSplitterWnd, CSplitterWndEx)
-	// Message handlers are added here.
+    // Message handlers are added here.
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
