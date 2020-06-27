@@ -256,7 +256,6 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
-        MENUITEM "Make a CyberBoard Donation...", ID_HELP_DONATION
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -1474,7 +1473,7 @@ BEGIN
     IDS_TIP_PREFIX_FRONT    "Front: "
     IDS_TIP_PREFIX_BACK     "Back: "
     IDS_TIP_LBOXITEM_MARKER "* "
-    IDS_URL_CB_WEBSITE      "http://www.norsesoft.com/cyberboard.html"
+    IDS_URL_CB_WEBSITE      "http://cyberboard.norsesoft.com"
 END
 
 STRINGTABLE
