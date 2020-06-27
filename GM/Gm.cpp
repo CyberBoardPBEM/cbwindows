@@ -260,17 +260,6 @@ BOOL CGmApp::InitInstance()
         return FALSE;
     }
 
-    /*
-    // TODO remove this on release
-    if (AfxMessageBox("WARNING!\n\nYou are running a BETA version of CyberBoard that hasn't "
-        "been released. If you save a file it WON'T be compatible with "
-        "version 2.xx or earlier of CyberBoard.\n\nAre you sure this is what you want? (\"No\" exits the program.)",
-        MB_YESNO | MB_ICONEXCLAMATION | MB_APPLMODAL) != IDYES)
-    {
-        return FALSE;
-    }
-    */
-
     return TRUE;
 }
 
@@ -571,14 +560,6 @@ BOOL CAboutDlg::OnInitDialog()
     _itoa(progVerMinor + 100, szNum2, 10);
 
     AfxFormatString2(str, IDP_PROGVER, szNum1, szNum2 + 1);
-/*
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
-    CString strBeta;
-    strBeta.LoadString(IDS_BETA_VERSION);
-    str += strBeta;
-#pragma message("NOTE: Don't forget to remove this beta version string!")
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
-*/
     m_staticProgVer.SetWindowText(str);
 
     _itoa(fileGbxVerMajor, szNum1, 10);
@@ -605,3 +586,4 @@ void CGmApp::OnHelpWebsite()
     strUrl.LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
+

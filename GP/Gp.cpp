@@ -271,18 +271,6 @@ BOOL CGpApp::InitInstance()
 
     OnIdle(0);   // Run idle so control bars are in sync prior to message boxes
 
-//    if (AfxMessageBox("WARNING!\n\nYou are running an new version CyberBoard that hasn't "
-//        "been released. If you save a file it WONT be compatible with "
-//        "version 2.xx or earlier of CB.\n\nAre you sure this is what you want? (\"No\" exits the program.)",
-//        MB_YESNO | MB_ICONEXCLAMATION | MB_APPLMODAL) != IDYES)
-//    if (AfxMessageBox("WARNING!\n\nYou are running a BETA version of CyberBoard that hasn't "
-//        "been released. If you save a file it WON'T be compatible with "
-//        "version 2.xx or earlier of CyberBoard.\n\nAre you sure this is what you want? (\"No\" exits the program.)",
-//        MB_YESNO | MB_ICONEXCLAMATION | MB_APPLMODAL) != IDYES)
-//    {
-//        return FALSE;
-//    }
-
     return TRUE;
 }
 
@@ -583,14 +571,6 @@ void CAboutDlg::SetupVersion(CStatic& s, int major, int minor, UINT nRes)
     _itoa(major, szNum1, 10);
     _itoa(minor + 100, szNum2, 10);
     AfxFormatString2(str, nRes, szNum1, szNum2 + 1);
-/*
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
-    CString strBeta;
-    strBeta.LoadString(IDS_BETA_VERSION);
-    str += strBeta;
-#pragma message("NOTE: Don't forget to remove this beta version string!")
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
-*/
     s.SetWindowText(str);
 }
 
@@ -634,3 +614,4 @@ void CGpApp::OnHelpWebsite()
     strUrl.LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
+
