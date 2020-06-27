@@ -101,3 +101,4 @@ void CDockTrayPalette::OnDestroy()
     m_pChildWnd = NULL;
     CDockablePane::OnDestroy();
 }
+

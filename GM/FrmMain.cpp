@@ -215,16 +215,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     DockPane(&m_wndToolBar);
 
     DockPane(&m_wndIToolPal, AFX_IDW_DOCKBAR_RIGHT);
-    ShowPane(&m_wndIToolPal, TRUE, TRUE, FALSE);
-
     DockPaneLeftOf(&m_wndToolPal, &m_wndIToolPal);
-    ShowPane(&m_wndToolPal, TRUE, TRUE, FALSE);
 
     DockPane(&m_wndTilePal, AFX_IDW_DOCKBAR_RIGHT);
-    ShowPane(&m_wndTilePal, FALSE, TRUE, FALSE);
-
     m_wndColorPal.DockToWindow(&m_wndTilePal, CBRS_ALIGN_BOTTOM);
-    ShowPane(&m_wndColorPal, FALSE, TRUE, FALSE);
 
     RestoreProfileSettings();
 

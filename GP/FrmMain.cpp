@@ -224,8 +224,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     CString str;
     str.LoadString(IDS_TRAYA_TITLE);
-
-    if (!m_wndTrayPalA.Create((LPCTSTR)str, this, CRect(0, 0, 200, 100), TRUE, IDW_TRAY_PALETTEA,
+    if (!m_wndTrayPalA.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEA,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray A palette dock window\n");
@@ -233,7 +232,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     str.LoadString(IDS_TRAYB_TITLE);
-    if (!m_wndTrayPalB.Create((LPCTSTR)str, this, CRect(0, 0, 200, 100), TRUE, IDW_TRAY_PALETTEB,
+    if (!m_wndTrayPalB.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEB,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray B palette dock window\n");
@@ -241,7 +240,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     str.LoadString(IDS_PAL_MARKERS);
-    if (!m_wndMarkPal.Create((LPCTSTR)str, this, CRect(0, 0, 200, 100), TRUE, IDW_MARK_PALETTE,
+    if (!m_wndMarkPal.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_MARK_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create marker palette dock window\n");
@@ -287,27 +286,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     DockPaneLeftOf(&m_wndTBarMove, &m_wndTBarPlay);
     DockPaneLeftOf(&m_wndTBarView, &m_wndTBarMove);
     DockPaneLeftOf(&m_wndToolBar, &m_wndTBarView);
-    ShowPane(&m_wndTBarView, TRUE, TRUE, FALSE);
-    ShowPane(&m_wndTBarMove, TRUE, TRUE, FALSE);
-    ShowPane(&m_wndTBarPlay, TRUE, TRUE, FALSE);
 
     DockPane(&m_wndTrayPalA, AFX_IDW_DOCKBAR_RIGHT);
-    ShowPane(&m_wndTrayPalA, TRUE, TRUE, FALSE);
-
     m_wndTrayPalB.DockToWindow(&m_wndTrayPalA, CBRS_ALIGN_BOTTOM);
-    //DockPane(&m_wndTrayPalB, AFX_IDW_DOCKBAR_RIGHT);
-    ShowPane(&m_wndTrayPalB, TRUE, TRUE, FALSE);
-
     m_wndMarkPal.DockToWindow(&m_wndTrayPalB, CBRS_ALIGN_BOTTOM);
-    //DockPane(&m_wndMarkPal, AFX_IDW_DOCKBAR_RIGHT);
-    ShowPane(&m_wndMarkPal, TRUE, TRUE, FALSE);
 
     DockPane(&m_wndMessage, AFX_IDW_DOCKBAR_BOTTOM);
-    ShowPane(&m_wndMessage, TRUE, TRUE, FALSE);
 
-    //@@@@@LoadBarState(szSectControlBars);
-
-    //@@@@@@ m_wndMDITabWindow.Install(this);
+    //@@@@@ LoadBarState(szSectControlBars);
+    //@@@@@ m_wndMDITabWindow.Install(this);
 
     return 0;
 }
@@ -356,11 +343,16 @@ void CMainFrame::OnIdle()
 {
     if (GetCurrentDocument() == NULL)
     {
-        ShowPane(&m_wndTrayPalA, FALSE, FALSE, TRUE);
-        ShowPane(&m_wndTrayPalB, FALSE, FALSE, TRUE);
-        ShowPane(&m_wndMarkPal, FALSE, FALSE, TRUE);
-        ShowPane(&m_wndMessage, FALSE, FALSE, TRUE);
+    	ShowPalettePanes(FALSE);
     }
+}
+
+void CMainFrame::ShowPalettePanes(BOOL bShow)
+{
+    ShowPane(&m_wndTrayPalA, bShow, FALSE, TRUE);
+    ShowPane(&m_wndTrayPalB, bShow, FALSE, TRUE);
+    ShowPane(&m_wndMarkPal, bShow, FALSE, TRUE);
+    ShowPane(&m_wndMessage, bShow, FALSE, TRUE);
 }
 
 ///////////////////////////////////////////////////////////////////////
