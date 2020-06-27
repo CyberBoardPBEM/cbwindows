@@ -446,15 +446,11 @@ void CGamDoc::OnIdle(BOOL bActive)
         pDockTrayB->SetChild(&m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
 
-        //CDockMarkPalette* pDockMark = pMFrame->GetDockingMarkerWindow();
-        //pDockMark->SetChild(&m_palMark);
-        //pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
-
         CReadMsgWnd* pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());
         pDocMsg->SetText(this);
 
-        pMFrame->RecalcLayout();// AdjustDockingLayout();
+        pMFrame->RecalcLayout();
     }
 }
 

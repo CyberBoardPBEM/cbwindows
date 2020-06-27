@@ -128,62 +128,6 @@ BOOL GetMaximumTextExtent(HDC hDC, LPCTSTR pszStr, int nStringLen, int nMaxWidth
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Fix for nasty tooltip problem in VC++ 5.0 service pack 1. Basically,
-// tootips don't work for child windows unless this is called.
-
-#if _MFC_VER < 0x0600
-
-int CWndOnToolHitTestFix(HWND hWnd, CPoint point, TOOLINFO* pTI)
-{
-    HWND hWndChild = NULL;
-    // find child window which hits the point
-    // (don't use WindowFromPoint, because it ignores disabled windows)
-    // check child windows
-    // From _AfxChildWindowFromPoint
-    ::ClientToScreen(hWnd, &point);
-    HWND hChild = ::GetWindow(hWnd, GW_CHILD);
-    for (; hChild != NULL; hChild = ::GetWindow(hChild, GW_HWNDNEXT))
-    {
-        if (_AfxGetDlgCtrlID(hChild) != (WORD)-1 &&
-            (::GetWindowLong(hChild, GWL_STYLE) & WS_VISIBLE))
-        {
-            // see if point hits the child window
-            CRect rect;
-            ::GetWindowRect(hChild, rect);
-            if (rect.PtInRect(point))
-            {
-                hWndChild = hChild;
-                break;
-            }
-        }
-    }
-
-    if (hWndChild != NULL)
-    {
-        // return positive hit if control ID isn't -1
-        int nHit = _AfxGetDlgCtrlID(hWndChild);
-
-        // hits against child windows always center the tip
-        if (pTI != NULL && pTI->cbSize >= sizeof(AfxOldTOOLINFO))
-        {
-            // setup the TOOLINFO structure
-            pTI->hwnd = hWnd;
-            pTI->uId = (UINT)hWndChild;
-            pTI->uFlags |= TTF_IDISHWND;
-            pTI->lpszText = LPSTR_TEXTCALLBACK;
-
-            // set TTF_NOTBUTTON and TTF_CENTERTIP if it isn't a button
-            if (!(::SendMessage(hWndChild, WM_GETDLGCODE, 0, 0) & DLGC_BUTTON))
-                pTI->uFlags |= TTF_NOTBUTTON|TTF_CENTERTIP;
-        }
-        return nHit;
-    }
-    return -1;  // not found
-}
-
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
 
 CDisableMainWindow::CDisableMainWindow(BOOL bDisable /* = TRUE */)
 {
