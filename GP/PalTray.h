@@ -119,7 +119,7 @@ public:
 protected:
     void LoadMenuButtonBitmap();
     void DoEditSelectedPieceText(BOOL bEditTop);
-    BOOL AssureTooltipExistance();
+    BOOL EnsureTooltipExistance();
 
 // Generated message map functions
 protected:
