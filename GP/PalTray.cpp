@@ -161,7 +161,7 @@ int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     m_listTray.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
-    AssureTooltipExistance();
+    EnsureTooltipExistance();
 
     return 0;
 }
@@ -172,7 +172,7 @@ int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 // class. To get around this we will recreate the control if it doesn't
 // exist. Mouse moves within the window will generally call this code.
 
-BOOL CTrayPalette::AssureTooltipExistance()
+BOOL CTrayPalette::EnsureTooltipExistance()
 {
     if (m_toolTipMenu.m_hWnd == NULL)
     {
@@ -1044,7 +1044,7 @@ BOOL CTrayPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 
 void CTrayPalette::OnMouseMove(UINT nFlags, CPoint point)
 {
-    if (AssureTooltipExistance())
+    if (EnsureTooltipExistance())
         UpdateTrayList();
 
     CWnd::OnMouseMove(nFlags, point);
