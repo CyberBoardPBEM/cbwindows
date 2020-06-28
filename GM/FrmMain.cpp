@@ -182,6 +182,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;      // fail to create
     }
     m_wndStatusBar.SetPaneStyle(0, SBPS_STRETCH);
+
     CSize colorPalSize;
     m_wndColorPal.CalculateMinClientSize(colorPalSize);
     m_wndColorPal.SetMinSize(colorPalSize);

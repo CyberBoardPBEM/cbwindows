@@ -410,7 +410,7 @@ BOOL CPlayBoardView::PreTranslateMessage(MSG* pMsg)
     m_toolHitTip.RelayEvent(pMsg);
     m_toolMsgTip.RelayEvent(pMsg);
 
-    return CView::PreTranslateMessage(pMsg);
+    return CScrollView::PreTranslateMessage(pMsg);
 }
 
 /////////////////////////////////////////////////////////////////////////////

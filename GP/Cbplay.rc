@@ -1616,9 +1616,9 @@ BEGIN
     ID_EDIT_SETBOOKMARK     "Save the current state of the game"
     ID_EDIT_RESTOREBOOKMARK "Restore game to saved state"
     ID_VIEW_ANNOTATIONS     "Show or hide annotation graphics"
-    ID_VIEW_PIECES          "Hide or show pieces on board\nHide Pieces (F9)"
-    ID_ACT_TOFRONT          "Move selected piece(s) in front of other pieces\nMove Pieces to Front (Ctrl+F)"
-    ID_ACT_TOBACK           "Move selected pieces(s) behind other pieces\nMove Pieces to Back (Ctrl+B)"
+    ID_VIEW_PIECES          "Hide or show pieces on board\nHide Pieces"
+    ID_ACT_TOFRONT          "Move selected piece(s) in front of other pieces\nMove Pieces to Front"
+    ID_ACT_TOBACK           "Move selected pieces(s) behind other pieces\nMove Pieces to Back"
 END
 
 STRINGTABLE
@@ -1705,15 +1705,15 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_PTOOL_PLOTMOVE       "Begin a plotted move.\nBegin Plotted Move (Ctrl+P)"
+    ID_PTOOL_PLOTMOVE       "Begin a plotted move.\nBegin Plotted Move"
     ID_FILE_SAVE_GAME_AS_SCENARIO 
                             "Save current state of game as a scenario file.\nSave Game As Scenario"
 END
 
 STRINGTABLE
 BEGIN
-    ID_PBCK_PREVIOUS        "Step back to previous move\nPrevious Move (F2)"
-    ID_PBCK_END             "Jump to end of move\nEnd of Moves (F5)"
+    ID_PBCK_PREVIOUS        "Step back to previous move\nPrevious Move"
+    ID_PBCK_END             "Jump to end of move\nEnd of Moves"
     ID_PBCK_DISCARD         "Discard the current move recording.\nDiscard Current Recording"
     ID_PBCK_FINISH          "Finishes and accepts the  move file being played back. Adds to game history.\nAccepts Current Move Playback"
     ID_ACT_PLOTDONE         "Record the plotted move\nAccept Plotted Move (Enter)"
@@ -1734,10 +1734,10 @@ BEGIN
     ID_EDIT_BRD2FILE        "Save the current board image as a bitmap file."
     ID_EDIT_BRDPROP         "Edit properties of current playing board."
     ID_ACT_COMPOUNDMOVE_BEGIN 
-                            "Begin compound move\nBegin Compound Move (Ctrl+Enter)"
-    ID_ACT_COMPOUNDMOVE_END "End active compound move\nEnd Compound Move (Enter)"
+                            "Begin compound move\nBegin Compound Move"
+    ID_ACT_COMPOUNDMOVE_END "End active compound move\nEnd Compound Move"
     ID_ACT_COMPOUNDMOVE_DISCARD 
-                            "Discard current compound move\nDiscard Compound Move (Esc)"
+                            "Discard current compound move\nDiscard Compound Move"
     ID_INDICATOR_COMPMOVE   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\n....GOOD BYE!"
     ID_ACT_ROTATEREL        "Rotate piece or marker using incremental amounts\nRotate Object - Incremental"
     ID_PPROJITEM_PROPERTIES "Examine item properties."
@@ -1749,27 +1749,27 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_ACT_STACK            "Automatically stack selected pieces.\nAuto-Stack (Ctrl+A)"
+    ID_ACT_STACK            "Automatically stack selected pieces.\nAuto-Stack"
     ID_ACTIONS_ANNWITHTEXT  "Annotate board with text box"
     ID_ACT_DRAWLINE         "Draw line annotation on board"
     ID_ACT_DRAWTEXTBOX      "Draw text box annotation on board"
-    ID_ACT_DOMESSAGE        "Enter message for opponent\nEnter Message (Ctrl+M)"
+    ID_ACT_DOMESSAGE        "Enter message for opponent\nEnter Message"
     ID_EDIT_CLRBOOKMARK     "Clear saved bookmark"
     ID_VIEW_DICEPAL         "Show or hide the dice palette"
-    ID_ACT_TURNOVER         "Turn the selected piece over to the opposite side\nTurn Piece Over (Ctrl+I)"
+    ID_ACT_TURNOVER         "Turn the selected piece over to the opposite side\nTurn Piece Over"
     ID_ACT_ROTATE           "Rotate the selected piece\nRotate Piece"
     ID_ACT_REFINESELECT     "Manually reduce the piece selections"
     ID_ACT_ARRANGESTACK     "Manually arrange stack order of selected pieces"
     ID_PBCK_START           "Jump to start of moves\nStart of Moves"
-    ID_PBCK_NEXT            "Do the next move\nNext Move (F3)"
+    ID_PBCK_NEXT            "Do the next move\nNext Move"
 END
 
 STRINGTABLE
 BEGIN
     ID_PLAYBACK_NEXTHISTORYENTRY 
-                            "Close this history and open the next history entry\nOpen Next History Entry (F6)"
-    ID_PBCK_NEXTHIST        "Close current history playback and open the next\nOpen Next History (F4)"
-    ID_PBCK_CLOSEHIST       "Close history playback mode.\nClose History Playback (F5)"
+                            "Close this history and open the next history entry\nOpen Next History Entry"
+    ID_PBCK_NEXTHIST        "Close current history playback and open the next\nOpen Next History"
+    ID_PBCK_CLOSEHIST       "Close history playback mode.\nClose History Playback"
     ID_FILE_SENDMOVES2FILE  "Send current move recording to file\nSend Recording to File"
     ID_FILE_DISCARDRECORDING 
                             "Discard the current move recording.\nDiscard Current Recording"
@@ -1836,13 +1836,13 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_ACTIONS_ROLLDICE     "Roll Dice\nRoll Dice (Ctrl+R)"
-    ID_VIEW_DRAW_IND_ON_TOP "Draw movement playback indicators on top of pieces.\nIndicators On Top (F10)"
+    ID_ACTIONS_ROLLDICE     "Roll Dice\nRoll Dice"
+    ID_VIEW_DRAW_IND_ON_TOP "Draw movement playback indicators on top of pieces.\nIndicators On Top"
     ID_PBCK_STEP_CMOVES     "If checked, compound moves are single stepped.\nSingle Step Compound Moves"
     ID_PTRAY_SHUFFLE        "Shuffle (randomize) the tray's contents"
     ID_VIEW_SPLITBOARDROWS  "Split board view horizontally into two rows.\nHorizontal Split"
     ID_VIEW_SPLITBOARDCOLS  "Split board view vertically into two columns.\nVertical Split"
-    ID_VIEW_SHOW_TIP_TEXT   "Show text associated with objects as pop-up data tips.\nShow Object Text Tips (F7)"
+    ID_VIEW_SHOW_TIP_TEXT   "Show text associated with objects as pop-up data tips.\nShow Object Text Tips"
     ID_EDIT_ELEMENT_TEXT    "Edit text associated with a piece or marker\nEdit Object Text"
 END
 
@@ -1920,7 +1920,7 @@ END
 STRINGTABLE
 BEGIN
     ID_ACT_SIMULATE_SPECTATOR 
-                            "View the board and trays as if the current player was a spectator.\nSimulate Spectator Player (F8)"
+                            "View the board and trays as if the current player was a spectator.\nSimulate Spectator Player"
     ID_EDIT_CREATE_GEOMORPHIC 
                             "Create geomorphic board.\nCreate Geomorphic Board"
     ID_HELP_WEBSITE         "Opens a web browser and takes you to the CyberBoard web site."

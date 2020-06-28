@@ -1270,14 +1270,14 @@ STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the current selection\nDelete (Del)"
     ID_EDIT_CLEAR_ALL       "Erase everything"
-    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy (Ctrl+C)"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
     ID_EDIT_FIND            "Find the specified text"
-    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste (Ctrl+V)"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
     ID_EDIT_REPEAT          "Repeat the last action"
     ID_EDIT_REPLACE         "Replace specific text with different text"
     ID_EDIT_SELECT_ALL      "Select the entire document"
-    ID_EDIT_UNDO            "Undo the last action\nUndo (Ctrl+Z)"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
@@ -1311,13 +1311,13 @@ BEGIN
     ID_EDIT_COLORDLG        "Color Dialog Test"
     ID_VIEW_GRIDLINES       "Hides or shows cell layer border lines\nCell Border Lines"
     ID_DEBUG_DUMPPAL        "Oh the Doo Dah Day...."
-    ID_EDIT_LAYER_BASE      "Edit the board's base drawing layer\nBase Drawing Layer (Ctrl+1)"
-    ID_EDIT_LAYER_TILE      "Edit the board's cell layer\nBoard Cell Layer (Ctrl+2)"
+    ID_EDIT_LAYER_BASE      "Edit the board's base drawing layer\nBase Drawing Layer"
+    ID_EDIT_LAYER_TILE      "Edit the board's cell layer\nBoard Cell Layer"
 END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_LAYER_TOP       "Edit the board's top drawing layer\nTop Drawing Layer (Ctrl+3)"
+    ID_EDIT_LAYER_TOP       "Edit the board's top drawing layer\nTop Drawing Layer"
     ID_WINDOW_TOOLPAL       "Hides or shows the Board tool palette\nBoard Tool Palette"
     ID_WINDOW_COLORPAL      "Shows or hides the Color palette\nColor Palette"
     ID_WINDOW_TILEPAL       "Shows or hides the Tile palette\nTile Palette"
@@ -1411,7 +1411,7 @@ BEGIN
     ID_EDIT_CREATEBOARD     "Create game play board."
     ID_EDIT_CREATEPIECEGROUP "Create a grouping for playing pieces"
     ID_EDIT_CREATEMARKGROUP "Create a grouping for markers"
-    ID_EDIT_MOVE            "Move clipboard objects to new locations\nMove (Ctrl+M)"
+    ID_EDIT_MOVE            "Move clipboard objects to new locations\nMove"
     ID_PROJECT_SAVETILESINTILELIBRARYFILE 
                             "Save selected tiles in a file\nSave Tiles in File"
     ID_PROJECT_SAVETILEFILE "Save tiles in a tile library file\nSave Tile File"
