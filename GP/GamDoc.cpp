@@ -449,8 +449,6 @@ void CGamDoc::OnIdle(BOOL bActive)
         CReadMsgWnd* pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());
         pDocMsg->SetText(this);
-
-        pMFrame->RecalcLayout();
     }
 }
 

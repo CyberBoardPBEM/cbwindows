@@ -171,7 +171,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     // Build the main window tool bar.
     if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT,
-            WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER |
+            CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
             CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
             CRect(0, 0, 0, 0), IDW_TOOLBAR_MAIN) ||
         !m_wndToolBar.LoadToolBar(IDR_GP_MAINFRAME))
@@ -181,10 +181,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     if (!m_wndTBarView.CreateEx(this, TBSTYLE_FLAT,
-            WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY |
-            CBRS_HIDE_INPLACE | CBRS_SIZE_DYNAMIC | CBRS_GRIPPER | CBRS_BORDER_3D,
-            //CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
-            //CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
+            CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
+            CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
             CRect(0, 0, 0, 0), IDW_TOOLBAR_VIEW) ||
         !m_wndTBarView.LoadToolBar(IDR_TBAR_VIEW))
     {
@@ -193,10 +191,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     if (!m_wndTBarMove.CreateEx(this, TBSTYLE_FLAT,
-            WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY |
-            CBRS_HIDE_INPLACE | CBRS_SIZE_DYNAMIC | CBRS_GRIPPER | CBRS_BORDER_3D,
-            //CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
-            //CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
+            CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
+            CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
             CRect(0, 0, 0, 0), IDW_TOOLBAR_MOVE) ||
         !m_wndTBarMove.LoadToolBar(IDR_TBAR_MOVE))
     {
@@ -205,10 +201,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     if (!m_wndTBarPlay.CreateEx(this, TBSTYLE_FLAT,
-            WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY |
-            CBRS_HIDE_INPLACE | CBRS_SIZE_DYNAMIC | CBRS_GRIPPER | CBRS_BORDER_3D,
-            //CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
-            //CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
+            CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
+            CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
             CRect(0, 0, 0, 0), IDW_TOOLBAR_PLAY) ||
         !m_wndTBarPlay.LoadToolBar(IDR_TBAR_PLAYBACK))
     {
@@ -216,11 +210,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;      // fail to create
     }
 
-    if (!m_wndStatusBar.Create(this) || !m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)))
+    if (!m_wndStatusBar.Create(this) ||
+        !m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)))
     {
         TRACE0("Failed to create status bar\n");
         return -1;      // fail to create
     }
+    m_wndStatusBar.SetPaneStyle(0, SBPS_STRETCH);
 
     CString str;
     str.LoadString(IDS_TRAYA_TITLE);
