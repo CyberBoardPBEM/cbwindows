@@ -27,7 +27,7 @@ with that problem.
 Prebuilt Releases
 -----------------
 
-You can find prebuild releases available for download here:
+You can find prebuilt releases available for download here:
 
 https://github.com/CyberBoardPBEM/cbwindows/releases
 
