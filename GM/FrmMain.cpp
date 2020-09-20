@@ -30,6 +30,7 @@
 #include    "VwBitedt.h"
 #include    "VwTilesl.h"
 #include    "PalColor.h"
+#include    "LibMfc.h"
 
 #include    "HtmlHelp.h"
 
@@ -106,6 +107,7 @@ static CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 
 CMainFrame::CMainFrame()
 {
+    DockInit();
     m_bColorPalOn = TRUE;
     m_bTilePalOn = TRUE;
 }

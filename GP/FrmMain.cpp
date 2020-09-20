@@ -26,6 +26,7 @@
 #include    "Gp.h"
 #include    "GdiTools.h"
 #include    "FrmMain.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -91,6 +92,7 @@ static char szSectControlBars[] = "ControlBars";
 
 CMainFrame::CMainFrame()
 {
+    DockInit();
     // TODO: add member initialization code here
 }
 

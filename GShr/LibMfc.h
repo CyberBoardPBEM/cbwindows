@@ -57,5 +57,7 @@ UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
 void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblNames,
         CUIntArray* pTblSelections = NULL, UINT nBreaksAt = 20);
 
+void DockInit();
+
 #endif
 
