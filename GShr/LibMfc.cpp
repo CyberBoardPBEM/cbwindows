@@ -270,3 +270,157 @@ BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar)
     return FALSE;
 }
 
+namespace {
+    class CPaneContainerManagerCb : public CPaneContainerManager
+    {
+        DECLARE_DYNCREATE(CPaneContainerManagerCb)
+    public:
+        virtual BOOL Create(CWnd* pParentWnd, CPaneDivider* pDefaultSlider, CRuntimeClass* pContainerRTC = NULL);
+        void AddHiddenPanesToList(CObList* plstControlBars, CObList* plstSliders);
+    };
+
+    class CPaneContainerCb : public CPaneContainer
+    {
+        DECLARE_DYNCREATE(CPaneContainerCb)
+    public:
+        virtual void Resize(CRect rect, HDWP& hdwp, BOOL bRedraw = FALSE);
+    };
+
+    class CPaneDividerCb : public CPaneDivider
+    {
+        DECLARE_DYNCREATE(CPaneDividerCb)
+    public:
+        virtual void OnShowPane(CDockablePane* pBar, BOOL bShow);
+        void GetHiddenPanes(CObList& lstBars);
+    };
+
+    IMPLEMENT_DYNCREATE(CPaneContainerManagerCb, CPaneContainerManager)
+
+    BOOL CPaneContainerManagerCb::Create(CWnd* pParentWnd, CPaneDivider* pDefaultSlider, CRuntimeClass* pContainerRTC /*= NULL*/)
+    {
+        ASSERT(!pContainerRTC);
+        return CPaneContainerManager::Create(pParentWnd, pDefaultSlider, RUNTIME_CLASS(CPaneContainerCb));
+    }
+
+    // based on CPaneContainerManager::AddPanesToList
+    void CPaneContainerManagerCb::AddHiddenPanesToList(CObList* plstControlBars, CObList* plstSliders)
+    {
+        ASSERT_VALID(this);
+        if (plstControlBars != NULL)
+        {
+            for (POSITION pos = m_lstControlBars.GetHeadPosition(); pos != NULL;)
+            {
+                CWnd* pWnd = DYNAMIC_DOWNCAST(CWnd, m_lstControlBars.GetNext(pos));
+                ASSERT_VALID(pWnd);
+
+                if (!(pWnd->GetStyle() & WS_VISIBLE))
+                {
+                    plstControlBars->AddTail(pWnd);
+                }
+            }
+        }
+
+        if (plstSliders != NULL)
+        {
+            for (POSITION pos = m_lstSliders.GetHeadPosition(); pos != NULL;)
+            {
+                CWnd* pWnd = DYNAMIC_DOWNCAST(CWnd, m_lstSliders.GetNext(pos));
+                ASSERT_VALID(pWnd);
+
+                if (!(pWnd->GetStyle() & WS_VISIBLE))
+                {
+                    plstSliders->AddTail(pWnd);
+                }
+            }
+        }
+    }
+
+    IMPLEMENT_DYNCREATE(CPaneContainerCb, CPaneContainer)
+
+    void CPaneContainerCb::Resize(CRect rect, HDWP& hdwp, BOOL bRedraw /*= FALSE*/)
+    {
+        CPaneContainer::Resize(rect, hdwp, bRedraw);
+
+        /* if hidden panes larger than rect, shrink them to fit rect
+            (fix issue #16) */
+        const CPaneDivider* p = GetPaneDivider();
+        if (p)
+        {
+            CPaneDividerCb* div = DYNAMIC_DOWNCAST(CPaneDividerCb, p);
+            ASSERT(div);
+            CObList panes;
+            div->GetHiddenPanes(panes);
+            for (POSITION pos = panes.GetHeadPosition() ; pos ; )
+            {
+                CDockablePane* pane = DYNAMIC_DOWNCAST(CDockablePane, panes.GetNext(pos));
+                ASSERT(pane && !pane->IsVisible());
+                CRect paneRect;
+                pane->GetWindowRect(paneRect);
+                CRect newRect;
+                newRect.SetRectEmpty();
+                if (paneRect.Width() > rect.Width())
+                {
+                    if (newRect.IsRectEmpty())
+                    {
+                        newRect = paneRect;
+                    }
+                    newRect.left = rect.left;
+                    newRect.right = rect.right;
+                }
+                if (paneRect.Height() > rect.Height())
+                {
+                    if (newRect.IsRectEmpty())
+                    {
+                        newRect = paneRect;
+                    }
+                    newRect.top = rect.top;
+                    newRect.bottom = rect.bottom;
+                }
+                if (!newRect.IsRectEmpty())
+                {
+                    pane->GetParent()->ScreenToClient(newRect);
+                    pane->MoveWindow(newRect, FALSE, hdwp);
+                }
+            }
+        }
+    }
+
+    IMPLEMENT_DYNCREATE(CPaneDividerCb, CPaneDivider)
+
+    void CPaneDividerCb::OnShowPane(CDockablePane* pBar, BOOL bShow)
+    {
+        if (bShow)
+        {
+            // ensure pBar is at least as big as its minimum size
+            CSize minSize;
+            pBar->GetMinSize(minSize);
+            CRect paneRect;
+            pBar->GetWindowRect(paneRect);
+            if (paneRect.Width() < minSize.cx)
+            {
+                paneRect.right = paneRect.left + minSize.cx;
+            }
+            if (paneRect.Height() < minSize.cy)
+            {
+                paneRect.bottom = paneRect.top + minSize.cy;
+            }
+            pBar->GetParent()->ScreenToClient(paneRect);
+            pBar->MoveWindow(paneRect, FALSE);
+        }
+        CPaneDivider::OnShowPane(pBar, bShow);
+    }
+
+    void CPaneDividerCb::GetHiddenPanes(CObList& lstBars)
+    {
+        if (m_pContainerManager != NULL)
+        {
+            (DYNAMIC_DOWNCAST(CPaneContainerManagerCb, m_pContainerManager))->AddHiddenPanesToList(&lstBars, NULL);
+        }
+    }
+}
+
+void DockInit()
+{
+    CPaneDivider::m_pContainerManagerRTC = RUNTIME_CLASS(CPaneContainerManagerCb);
+    CPaneDivider::m_pSliderRTC = RUNTIME_CLASS(CPaneDividerCb);
+}
