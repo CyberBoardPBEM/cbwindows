@@ -84,6 +84,12 @@ void CDockMarkPalette::SetChild(CMarkerPalette* pChildWnd)
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
 }
 
+void CDockMarkPalette::OnPressCloseButton()
+{
+    CDockablePane::OnPressCloseButton();
+    m_pChildWnd->SendMessage(WM_PALETTE_HIDE);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CDockMarkPalette message handlers
 

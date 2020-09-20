@@ -180,6 +180,7 @@ protected:
     {
         strName = m_strPaneName;
     }
+    virtual void OnPressCloseButton();
 
 // Generated message map functions
 protected:

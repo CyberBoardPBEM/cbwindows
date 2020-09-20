@@ -447,6 +447,12 @@ void CColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
     state.DoUpdate(pTarget, bDisableIfNoHndler);
 }
 
+void CColorPalette::OnPressCloseButton()
+{
+    CDockablePane::OnPressCloseButton();
+    SendMessage(WM_PALETTE_HIDE);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Operations
 

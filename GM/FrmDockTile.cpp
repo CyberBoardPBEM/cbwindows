@@ -53,6 +53,12 @@ CDockTilePalette::~CDockTilePalette()
 {
 }
 
+void CDockTilePalette::OnPressCloseButton()
+{
+    CDockablePane::OnPressCloseButton();
+    m_pChildWnd->SendMessage(WM_PALETTE_HIDE);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
