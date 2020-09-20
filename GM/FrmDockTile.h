@@ -48,6 +48,9 @@ public:
 public:
     virtual ~CDockTilePalette();
 
+protected:
+    virtual void OnPressCloseButton();
+
     // Generated message map functions
 protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

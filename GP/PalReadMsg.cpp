@@ -163,6 +163,12 @@ BOOL CReadMsgWnd::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
     return CDockablePane::OnNotify(wParam, lParam, pResult);
 }
 
+void CReadMsgWnd::OnPressCloseButton()
+{
+    CDockablePane::OnPressCloseButton();
+    SendMessage(WM_PALETTE_HIDE);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void CReadMsgWnd::SetText(CGamDoc* pDoc)
