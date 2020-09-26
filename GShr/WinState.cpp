@@ -136,6 +136,7 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
             }
         }
     }
+    (DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd()))->RecalcLayout();
 }
 
 ///////////////////////////////////////////////////////////////////////////
