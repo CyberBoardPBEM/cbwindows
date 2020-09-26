@@ -343,44 +343,45 @@ namespace {
 
         /* if hidden panes larger than rect, shrink them to fit rect
             (fix issue #16) */
-        const CPaneDivider* p = GetPaneDivider();
-        if (p)
+        CPaneContainerManagerCb* mgr = DYNAMIC_DOWNCAST(CPaneContainerManagerCb, m_pContainerManager);
+        ASSERT(mgr);
+        CWnd* frame = mgr->GetDockSiteFrameWnd();
+        // rect is client coords, but client of what?
+        CRect screenRect = rect;
+        // best guess:  client of docksite
+        frame->ClientToScreen(screenRect);
+        CObList panes;
+        mgr->AddHiddenPanesToList(&panes, NULL);
+        for (POSITION pos = panes.GetHeadPosition() ; pos ; )
         {
-            CPaneDividerCb* div = DYNAMIC_DOWNCAST(CPaneDividerCb, p);
-            ASSERT(div);
-            CObList panes;
-            div->GetHiddenPanes(panes);
-            for (POSITION pos = panes.GetHeadPosition() ; pos ; )
+            CDockablePane* pane = DYNAMIC_DOWNCAST(CDockablePane, panes.GetNext(pos));
+            ASSERT(pane && !pane->IsVisible());
+            CRect paneRect;
+            pane->GetWindowRect(paneRect);
+            CRect newRect;
+            newRect.SetRectEmpty();
+            if (paneRect.Width() > rect.Width())
             {
-                CDockablePane* pane = DYNAMIC_DOWNCAST(CDockablePane, panes.GetNext(pos));
-                ASSERT(pane && !pane->IsVisible());
-                CRect paneRect;
-                pane->GetWindowRect(paneRect);
-                CRect newRect;
-                newRect.SetRectEmpty();
-                if (paneRect.Width() > rect.Width())
+                if (newRect.IsRectEmpty())
                 {
-                    if (newRect.IsRectEmpty())
-                    {
-                        newRect = paneRect;
-                    }
-                    newRect.left = rect.left;
-                    newRect.right = rect.right;
+                    newRect = paneRect;
                 }
-                if (paneRect.Height() > rect.Height())
+                newRect.left = screenRect.left;
+                newRect.right = screenRect.right;
+            }
+            if (paneRect.Height() > rect.Height())
+            {
+                if (newRect.IsRectEmpty())
                 {
-                    if (newRect.IsRectEmpty())
-                    {
-                        newRect = paneRect;
-                    }
-                    newRect.top = rect.top;
-                    newRect.bottom = rect.bottom;
+                    newRect = paneRect;
                 }
-                if (!newRect.IsRectEmpty())
-                {
-                    pane->GetParent()->ScreenToClient(newRect);
-                    pane->MoveWindow(newRect, FALSE, hdwp);
-                }
+                newRect.top = screenRect.top;
+                newRect.bottom = screenRect.bottom;
+            }
+            if (!newRect.IsRectEmpty())
+            {
+                pane->GetParent()->ScreenToClient(newRect);
+                pane->MoveWindow(newRect, FALSE, hdwp);
             }
         }
     }
@@ -396,16 +397,22 @@ namespace {
             pBar->GetMinSize(minSize);
             CRect paneRect;
             pBar->GetWindowRect(paneRect);
+            bool update = false;
             if (paneRect.Width() < minSize.cx)
             {
                 paneRect.right = paneRect.left + minSize.cx;
+                update = true;
             }
             if (paneRect.Height() < minSize.cy)
             {
                 paneRect.bottom = paneRect.top + minSize.cy;
+                update = true;
             }
-            pBar->GetParent()->ScreenToClient(paneRect);
-            pBar->MoveWindow(paneRect, FALSE);
+            if (update)
+            {
+                pBar->GetParent()->ScreenToClient(paneRect);
+                pBar->MoveWindow(paneRect, FALSE);
+            }
         }
         CPaneDivider::OnShowPane(pBar, bShow);
     }
