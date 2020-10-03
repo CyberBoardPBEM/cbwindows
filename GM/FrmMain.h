@@ -24,6 +24,8 @@
 #ifndef _FRMMAIN_H
 #define _FRMMAIN_H
 
+#include "LibMfc.h"
+
 #ifndef     _GMDOC_H
 #include    "gmdoc.h"
 #endif
@@ -40,7 +42,7 @@
 #include    "frmdocktile.h"
 #endif
 
-class CMainFrame : public CMDIFrameWndEx
+class CMainFrame : public CMDIFrameWndExCb
 {
     DECLARE_DYNAMIC(CMainFrame)
 public:

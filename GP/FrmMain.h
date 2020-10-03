@@ -25,6 +25,8 @@
 #ifndef _FRMMAIN_H_
 #define _FRMMAIN_H_
 
+#include "LibMfc.h"
+
 #ifndef _FRMDOCKTRAY_H
 #include "FrmDockTray.h"
 #endif
@@ -37,7 +39,7 @@
 #include "PalReadMsg.h"
 #endif
 
-class CMainFrame : public CMDIFrameWndEx
+class CMainFrame : public CMDIFrameWndExCb
 {
     DECLARE_DYNAMIC(CMainFrame)
 public:
