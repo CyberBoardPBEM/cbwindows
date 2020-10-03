@@ -107,7 +107,6 @@ static CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 
 CMainFrame::CMainFrame()
 {
-    DockInit();
     m_bColorPalOn = TRUE;
     m_bTilePalOn = TRUE;
 }

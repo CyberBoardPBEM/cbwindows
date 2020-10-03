@@ -57,8 +57,6 @@ UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
 void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblNames,
         CUIntArray* pTblSelections = NULL, UINT nBreaksAt = 20);
 
-void DockInit();
-
 /////////////////////////////////////////////////////////////////////////////
 // Extend CMDIFrameWndEx with message handlers to split tabs
 // into groups.
@@ -68,6 +66,8 @@ class CMDIFrameWndExCb : public CMDIFrameWndEx
     DECLARE_DYNAMIC(CMDIFrameWndExCb)
 
 protected:
+    CMDIFrameWndExCb();
+
     afx_msg void OnUpdateWindowTile(CCmdUI* pCmdUI);
     afx_msg BOOL OnWindowTile(UINT nID);
 

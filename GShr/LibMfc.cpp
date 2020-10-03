@@ -426,12 +426,6 @@ namespace {
     }
 }
 
-void DockInit()
-{
-    CPaneDivider::m_pContainerManagerRTC = RUNTIME_CLASS(CPaneContainerManagerCb);
-    CPaneDivider::m_pSliderRTC = RUNTIME_CLASS(CPaneDividerCb);
-}
-
 IMPLEMENT_DYNAMIC(CMDIFrameWndExCb, CMDIFrameWndEx)
 
 BEGIN_MESSAGE_MAP(CMDIFrameWndExCb, CMDIFrameWndEx)
@@ -440,6 +434,12 @@ BEGIN_MESSAGE_MAP(CMDIFrameWndExCb, CMDIFrameWndEx)
     ON_COMMAND_EX(ID_WINDOW_TILE_HORZ, OnWindowTile)
     ON_COMMAND_EX(ID_WINDOW_TILE_VERT, OnWindowTile)
 END_MESSAGE_MAP()
+
+CMDIFrameWndExCb::CMDIFrameWndExCb()
+{
+    CPaneDivider::m_pContainerManagerRTC = RUNTIME_CLASS(CPaneContainerManagerCb);
+    CPaneDivider::m_pSliderRTC = RUNTIME_CLASS(CPaneDividerCb);
+}
 
 // KLUDGE:  dirty trick to get access to CMDIClientAreaWnd members
 class CMDIFrameWndExCb::CMDIClientAreaWndCb : public CMDIClientAreaWnd
