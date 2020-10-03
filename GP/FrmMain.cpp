@@ -92,7 +92,6 @@ static char szSectControlBars[] = "ControlBars";
 
 CMainFrame::CMainFrame()
 {
-    DockInit();
     // TODO: add member initialization code here
 }
 
