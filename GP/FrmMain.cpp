@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
+IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +42,7 @@ IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
+BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_WM_CREATE()
     ON_UPDATE_COMMAND_UI(ID_VIEW_SNAPGRID, OnUpdateDisable)
     ON_WM_HELPINFO()

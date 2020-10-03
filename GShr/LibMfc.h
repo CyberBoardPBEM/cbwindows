@@ -59,5 +59,24 @@ void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblName
 
 void DockInit();
 
+/////////////////////////////////////////////////////////////////////////////
+// Extend CMDIFrameWndEx with message handlers to split tabs
+// into groups.
+
+class CMDIFrameWndExCb : public CMDIFrameWndEx
+{
+    DECLARE_DYNAMIC(CMDIFrameWndExCb)
+
+protected:
+    afx_msg void OnUpdateWindowTile(CCmdUI* pCmdUI);
+    afx_msg BOOL OnWindowTile(UINT nID);
+
+    DECLARE_MESSAGE_MAP()
+
+    class CMDIClientAreaWndCb;
+    const CMDIClientAreaWndCb& GetMDIClient() const;
+    CMDIClientAreaWndCb& GetMDIClient();
+};
+
 #endif
 

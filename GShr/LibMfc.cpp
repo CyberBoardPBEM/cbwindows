@@ -431,3 +431,111 @@ void DockInit()
     CPaneDivider::m_pContainerManagerRTC = RUNTIME_CLASS(CPaneContainerManagerCb);
     CPaneDivider::m_pSliderRTC = RUNTIME_CLASS(CPaneDividerCb);
 }
+
+IMPLEMENT_DYNAMIC(CMDIFrameWndExCb, CMDIFrameWndEx)
+
+BEGIN_MESSAGE_MAP(CMDIFrameWndExCb, CMDIFrameWndEx)
+    ON_UPDATE_COMMAND_UI(ID_WINDOW_TILE_HORZ, OnUpdateWindowTile)
+    ON_UPDATE_COMMAND_UI(ID_WINDOW_TILE_VERT, OnUpdateWindowTile)
+    ON_COMMAND_EX(ID_WINDOW_TILE_HORZ, OnWindowTile)
+    ON_COMMAND_EX(ID_WINDOW_TILE_VERT, OnWindowTile)
+END_MESSAGE_MAP()
+
+// KLUDGE:  dirty trick to get access to CMDIClientAreaWnd members
+class CMDIFrameWndExCb::CMDIClientAreaWndCb : public CMDIClientAreaWnd
+{
+public:
+    void OnUpdateWindowTile(CCmdUI* pCmdUI)
+    {
+        BOOL vert = pCmdUI->m_nID == ID_WINDOW_TILE_VERT;
+        // allow switching between horz and vert split
+        if (!vert && m_groupAlignment == GROUP_VERT_ALIGN ||
+            vert && m_groupAlignment == GROUP_HORZ_ALIGN) {
+            pCmdUI->Enable(TRUE);
+            return;
+        }
+
+        // if active tab is in a multiple-tab group, allow split
+        CMFCTabCtrl* activeTabWnd = FindActiveTabWnd();
+        if (!activeTabWnd)
+        {
+            pCmdUI->Enable(FALSE);
+            return;
+        }
+        pCmdUI->Enable(activeTabWnd->GetTabsNum() >= 2);
+    }
+
+    BOOL OnWindowTile(UINT nID)
+    {
+        BOOL vert = nID == ID_WINDOW_TILE_VERT;
+
+        // no reason to show intermediate window changes
+        SetRedraw(FALSE);
+
+        // see comment in CMDIClientAreaWnd::MDITabNewGroup
+        if (vert && m_groupAlignment == GROUP_HORZ_ALIGN ||
+            !vert && m_groupAlignment == GROUP_VERT_ALIGN)
+        {
+            Unsplit();
+        }
+
+        MDITabNewGroup(vert);
+
+        // show final state
+        SetRedraw(TRUE);
+        UpdateTabs(TRUE);
+
+        return TRUE;
+    }
+
+protected:
+    void Unsplit()
+    {
+        CMFCTabCtrl* activeTabWnd = FindActiveTabWnd();
+        CWnd* activeWnd = activeTabWnd ? activeTabWnd->GetActiveWnd() : NULL;
+
+        CMFCTabCtrl* pFirstTabWnd = NULL;
+        for (POSITION pos = m_lstTabbedGroups.GetHeadPosition() ; pos != NULL ; )
+        {
+            CMFCTabCtrl* pNextTabWnd = DYNAMIC_DOWNCAST(CMFCTabCtrl, m_lstTabbedGroups.GetNext(pos));
+            ASSERT_VALID(pNextTabWnd);
+            if (!pFirstTabWnd)
+            {
+                pFirstTabWnd = pNextTabWnd;
+            }
+            else
+            {
+                int tabs = pNextTabWnd->GetTabsNum();
+                for (int i = 0; i < tabs; ++i)
+                {
+                    MoveWindowToTabGroup(pNextTabWnd, pFirstTabWnd, 0);
+                }
+            }
+        }
+
+        if (activeWnd)
+        {
+            SetActiveTab(activeWnd->GetSafeHwnd());
+        }
+    }
+};
+
+void CMDIFrameWndExCb::OnUpdateWindowTile(CCmdUI* pCmdUI)
+{
+    GetMDIClient().OnUpdateWindowTile(pCmdUI);
+}
+
+BOOL CMDIFrameWndExCb::OnWindowTile(UINT nID)
+{
+    return GetMDIClient().OnWindowTile(nID);
+}
+
+const CMDIFrameWndExCb::CMDIClientAreaWndCb& CMDIFrameWndExCb::GetMDIClient() const
+{
+    return const_cast<CMDIFrameWndExCb*>(this)->GetMDIClient();
+}
+
+CMDIFrameWndExCb::CMDIClientAreaWndCb& CMDIFrameWndExCb::GetMDIClient()
+{
+    return static_cast<CMDIClientAreaWndCb&>(m_wndClientArea);
+}

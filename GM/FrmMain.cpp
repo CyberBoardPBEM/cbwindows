@@ -44,9 +44,9 @@ static char THIS_FILE[] = __FILE__;
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
+IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
 
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
+BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_WM_CREATE()
     ON_WM_CLOSE()
     ON_WM_PALETTECHANGED()

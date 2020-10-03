@@ -241,10 +241,8 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "&Tile Horizontally",          ID_WINDOW_TILE_HORZ
-        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
-        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM "Split Tabs &Horizontally",    ID_WINDOW_TILE_HORZ
+        MENUITEM "Split Tabs &Vertically",      ID_WINDOW_TILE_VERT
         MENUITEM SEPARATOR
         MENUITEM "T&ool Palette",               ID_WINDOW_TOOLPAL
         MENUITEM "Co&lor Palette",              ID_WINDOW_COLORPAL
@@ -1259,10 +1257,8 @@ END
 STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document"
-    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window"
-    ID_WINDOW_CASCADE       "Arrange windows so they overlap"
-    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles"
-    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles"
+    ID_WINDOW_TILE_HORZ     "Split active tab into a new group horizontally"
+    ID_WINDOW_TILE_VERT     "Split active tab into a new group vertically"
     ID_WINDOW_SPLIT         "Split the active window into panes"
 END
 
