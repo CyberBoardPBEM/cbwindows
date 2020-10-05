@@ -293,6 +293,8 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
     pNewFrame->SetWindowText(str);
     m_lpvCreateParam = lpvCreateParam;
     pTemplate->InitialUpdateFrame(pNewFrame, this);
+    // KLUDGE:  work around https://github.com/CyberBoardPBEM/cbwindows/issues/23
+    GetMainFrame()->RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
     m_lpvCreateParam = NULL;
     return TRUE;
 }
