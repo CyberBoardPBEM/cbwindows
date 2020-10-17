@@ -616,11 +616,11 @@ void CGamDoc::SetPieceOwnershipTable(CWordArray* pTblPieces, DWORD dwOwnerMask)
 // pnt is center of mark image
 
 CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
-    DWORD dwObjID)
+    ObjectID dwObjID)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
-    if (dwObjID == 0)
+    if (dwObjID == ObjectID())
         dwObjID = CreateObjectID(CDrawObj::drawMarkObj);
 
     CMarkManager* pMMgr = GetMarkManager();
@@ -662,11 +662,11 @@ CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
 //////////////////////////////////////////////////////////////////////
 
 CDrawObj* CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
-    CPoint ptEnd, UINT nLineWd, COLORREF crLine, DWORD dwObjID)
+    CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
-    if (dwObjID == 0)
+    if (dwObjID == ObjectID())
         dwObjID = CreateObjectID(CDrawObj::drawLineObj);
 
     CLineObj* pObj = new CLineObj;
@@ -693,7 +693,7 @@ CDrawObj* CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
 void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     CPoint ptEnd, UINT nLineWd, COLORREF crLine, CLine* pObj)
 {
-    ASSERT(pObj->GetObjectID() != 0);
+    ASSERT(pObj->GetObjectID() != ObjectID());
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
 
@@ -758,7 +758,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
 
 ////////////////////////////////////////////////////////////////////
 
-CPlayBoard* CGamDoc::FindObjectOnBoard(DWORD dwObjID, CDrawObj** ppObj)
+CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, CDrawObj** ppObj)
 {
     ASSERT(m_pPBMgr != NULL);
     return m_pPBMgr->FindObjectOnBoard(dwObjID, ppObj);
@@ -915,12 +915,10 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
 
 ////////////////////////////////////////////////////////////////////
 
-DWORD CGamDoc::CreateObjectID(int nObjType)
+ObjectID CGamDoc::CreateObjectID(CDrawObj::CDrawObjType nObjType)
 {
-    WORD wUpper = ((nObjType + 1) << 12) + (0x0FFF & m_wDocRand);
     // Make sure we don't get redundant object ID's if we are getting them
     // all at the same moment in time.
-    m_wDocRand++;
-    return MAKELONG(GetTimeBasedRandomNumber(FALSE), wUpper);
+    return ObjectID(GetTimeBasedRandomNumber(FALSE), m_wDocRand++, nObjType);
 }
 

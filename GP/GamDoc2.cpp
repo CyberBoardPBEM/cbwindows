@@ -371,7 +371,7 @@ void CGamDoc::RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordMarkerSetFacing(DWORD dwObjID, MarkID mid, int nFacingDegCW)
+void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
@@ -395,7 +395,7 @@ void CGamDoc::RecordEventMessage(CString strMsg, BOOL bIsBoardEvent,
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, DWORD dwObjID,
+void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
     MarkID mid, CPoint pnt, PlacePos ePos /* = placeDefault */)
 {
     if (!IsRecording()) return;
@@ -408,7 +408,7 @@ void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, DWORD dwObjID,
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordObjectDelete(DWORD dwObjID)
+void CGamDoc::RecordObjectDelete(ObjectID dwObjID)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();

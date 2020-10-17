@@ -202,7 +202,7 @@ class CMarkerSetFacing : public CMoveRecord
 {
 public:
     CMarkerSetFacing() { m_eType = mrecMFacing; }
-    CMarkerSetFacing(DWORD dwObjID, MarkID mid, int nFacingDegCW);
+    CMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -214,7 +214,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    DWORD       m_dwObjID;
+    ObjectID    m_dwObjID;
     MarkID      m_mid;
     int         m_nFacingDegCW;
 };
@@ -225,7 +225,7 @@ class CBoardMarkerMove : public CMoveRecord
 {
 public:
     CBoardMarkerMove() { m_eType = mrecMMove; }
-    CBoardMarkerMove(int nBrdSerNum, DWORD dwObjID, MarkID mid,
+    CBoardMarkerMove(int nBrdSerNum, ObjectID dwObjID, MarkID mid,
         CPoint pnt, PlacePos ePos);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -238,7 +238,7 @@ public:
 #endif
 protected:
     CPoint      m_ptCtr;
-    DWORD       m_dwObjID;
+    ObjectID    m_dwObjID;
     MarkID      m_mid;
     int         m_nBrdNum;
     PlacePos    m_ePos;
@@ -250,7 +250,7 @@ class CObjectDelete : public CMoveRecord
 {
 public:
     CObjectDelete() { m_eType = mrecDelObj; }
-    CObjectDelete(DWORD dwObjID);
+    CObjectDelete(ObjectID dwObjID);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -262,7 +262,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    DWORD       m_dwObjID;
+    ObjectID    m_dwObjID;
 };
 
 ///////////////////////////////////////////////////////////////////////

@@ -99,7 +99,7 @@ public:
     // ------- //
     CPieceObj* AddPiece(CPoint pnt, PieceID pid);
     CPieceObj* FindPieceID(PieceID pid);
-    CDrawObj* FindObjectID(DWORD oid);
+    CDrawObj* FindObjectID(ObjectID oid);
     //  void RemovePiece(CPieceObj* pObj);
     // ------- //
     void AddIndicatorObject(CDrawObj* pObj);
@@ -213,10 +213,10 @@ public:
     int FindPBoardBySerial(int nSerialNum);
     CPlayBoard* GetPBoardBySerial(int nSerialNum);
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
-    CPlayBoard* FindObjectOnBoard(DWORD oid, CDrawObj** ppObj);
+    CPlayBoard* FindObjectOnBoard(ObjectID oid, CDrawObj** ppObj);
     CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj** ppObj = NULL);
 
-    CDrawObj* RemoveObjectID(DWORD oid);    // Doesn't delete it
+    CDrawObj* RemoveObjectID(ObjectID oid);    // Doesn't delete it
     // ------- //
     CPBoardManager* Clone(CGamDoc *pDoc);
     void Restore(CGamDoc *pDoc, CPBoardManager* pMgr);

@@ -49,6 +49,51 @@
 #define new DEBUG_NEW
 #endif
 
+#if defined(GPLAY)
+static_assert(sizeof(ObjectID) == sizeof(uint32_t), "size error");
+static_assert(sizeof(ObjectID) == sizeof(DWORD), "size error");
+static_assert(alignof(ObjectID) == alignof(uint32_t), "align error");
+namespace {
+    class ObjectIDCheck
+    {
+    public:
+        ObjectIDCheck()
+        {
+            ObjectID test(4, 3, CDrawObj::drawMarkObj);
+            ASSERT(reinterpret_cast<uint32_t&>(test) == 0x20030004 || !"non-Microsoft field layout");
+        }
+    } objectIDCheck;
+}
+
+ObjectID::ObjectID()
+{
+    id = 0;
+    serial = 0;
+    subtype = 0;
+}
+
+ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+    id(i),
+    serial(s & 0x0FFF),
+    subtype((t + 1) & 0x000F)
+{
+    ASSERT((t & 0xFFF0) == 0x0080 || !"unexpected CDrawObjType value");
+    ASSERT((t & 0x000F) < 0x000E || !"conflict with GameElement marker tag");
+}
+
+ObjectID::ObjectID(PieceID pid)
+{
+    id = pid;
+    serial = 0;
+    subtype = 0;
+}
+
+ObjectID::ObjectID(DWORD dw)
+{
+    reinterpret_cast<DWORD&>(*this) = dw;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 // Class variables
 
@@ -73,6 +118,11 @@ BOOL CDrawObj::IsVisible(RECT* pClipRct)
 }
 
 #ifdef GPLAY
+ObjectID CDrawObj::GetObjectID()
+{
+    return ObjectID();
+}
+
 void CDrawObj::MoveObject(CPoint ptUpLeft)
 {
     m_rctExtent += CPoint(ptUpLeft.x - m_rctExtent.left,
@@ -1639,7 +1689,7 @@ void CDrawList::SetOwnerMasks(DWORD dwOwnerMask)
 
 CPieceObj* CDrawList::FindPieceID(PieceID pid)
 {
-    CPieceObj* pObj = (CPieceObj*)FindObjectID((DWORD)pid);
+    CPieceObj* pObj = (CPieceObj*)FindObjectID(static_cast<ObjectID>(pid));
     if (pObj != NULL)
     {
         ASSERT(pObj->GetType() == CDrawObj::drawPieceObj);
@@ -1648,7 +1698,7 @@ CPieceObj* CDrawList::FindPieceID(PieceID pid)
     return NULL;
 }
 
-CDrawObj* CDrawList::FindObjectID(DWORD oid)
+CDrawObj* CDrawList::FindObjectID(ObjectID oid)
 {
     POSITION pos;
     for (pos = GetHeadPosition(); pos != NULL; )

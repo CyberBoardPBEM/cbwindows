@@ -42,6 +42,7 @@ class CSelection;
 #ifdef GPLAY
 class CPlayBoardView;
 class CGamDoc;
+class ObjectID;
 #else
 class CBrdEditView;
 #endif
@@ -98,7 +99,7 @@ public:
     virtual CRect GetEnclosingRect() { return m_rctExtent; }
     virtual BOOL HitTest(CPoint pt) { return FALSE; }
 #ifdef GPLAY
-    virtual DWORD GetObjectID() { return 0; }
+    virtual ObjectID GetObjectID();
     virtual void MoveObject(CPoint ptUpLeft);
 #endif
     virtual void OffsetObject(CPoint offset);
@@ -159,6 +160,42 @@ protected:
     static CBrush*  c_pPrvBrush;
     static BOOL     c_bHitTestDraw;// TRUE=Draw() is being called for hit test.
 };
+
+///////////////////////////////////////////////////////////////////////
+
+#ifdef GPLAY
+class ObjectID
+{
+public:
+    ObjectID();
+    ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
+    explicit ObjectID(PieceID pid);
+    explicit ObjectID(DWORD dw);
+
+    bool operator==(const ObjectID& rhs) const {
+        return reinterpret_cast<const uint32_t&>(*this) == reinterpret_cast<const uint32_t&>(rhs);
+    }
+    bool operator!=(const ObjectID& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
+private:
+    uint32_t id : 16;
+    uint32_t serial : 12;
+    uint32_t subtype : 4;
+};
+
+inline CArchive& operator<<(CArchive& ar, const ObjectID& oid)
+{
+    return ar << reinterpret_cast<const uint32_t&>(oid);
+}
+
+inline CArchive& operator>>(CArchive& ar, ObjectID& oid)
+{
+    return ar >> reinterpret_cast<uint32_t&>(oid);
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -498,7 +535,7 @@ public:
     void SetOwnerMask(DWORD dwMask);
 
     virtual enum CDrawObjType GetType() { return drawPieceObj; }
-    virtual DWORD GetObjectID() { return (DWORD)m_pid; }
+    virtual ObjectID GetObjectID() { return static_cast<ObjectID>(m_pid); }
 
 // Operations
 public:
@@ -520,15 +557,15 @@ class CLineObj : public CLine
 {
 // Constructors
 public:
-    CLineObj() { m_dwObjectID = 0; }
+    CLineObj() {}
 // Other...
 protected:
     virtual enum CDrawObjType GetType() { return drawLineObj; }
 
-    DWORD    m_dwObjectID;
+    ObjectID    m_dwObjectID;
 public:
-    virtual DWORD GetObjectID() { return m_dwObjectID; }
-    void    SetObjectID(DWORD dwID) { m_dwObjectID = dwID; }
+    virtual ObjectID GetObjectID() { return m_dwObjectID; }
+    void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
     // ------ //
     virtual CDrawObj* Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
@@ -541,9 +578,9 @@ class CMarkObj : public CDrawObj
 {
 // Constructors
 public:
-    CMarkObj() { m_mid = nullTid; m_pDoc = NULL; m_dwObjectID = 0; m_nFacingDegCW = 0; }
+    CMarkObj() { m_mid = nullTid; m_pDoc = NULL; m_nFacingDegCW = 0; }
     CMarkObj(CGamDoc* pDoc)
-        { m_mid = nullTid; m_pDoc = pDoc; m_dwObjectID = 0; m_nFacingDegCW = 0; }
+        { m_mid = nullTid; m_pDoc = pDoc; m_nFacingDegCW = 0; }
 
 // Attributes
 public:
@@ -555,14 +592,14 @@ public:
     void SetFacing(int nFacingDegCW) { m_nFacingDegCW = nFacingDegCW; }
     int  GetFacing() { return m_nFacingDegCW; }
 
-    void    SetObjectID(DWORD dwID) { m_dwObjectID = dwID; }
-    virtual DWORD GetObjectID() { return m_dwObjectID; }
+    void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
+    virtual ObjectID GetObjectID() { return m_dwObjectID; }
 
     void ResyncExtentRect();
 
     virtual enum CDrawObjType GetType() { return drawMarkObj; }
 protected:
-    DWORD    m_dwObjectID;
+    ObjectID m_dwObjectID;
     int      m_nFacingDegCW;           // Rotation of marker (degrees)
 
 // Operations
@@ -615,7 +652,7 @@ public:
     void SetOwnerMasks(DWORD dwOwnerMask);
 
     CPieceObj* FindPieceID(PieceID pid);
-    CDrawObj* FindObjectID(DWORD oid);
+    CDrawObj* FindObjectID(ObjectID oid);
     BOOL HasObject(CDrawObj* pObj) { return Find(pObj) != NULL; }
     BOOL HasMarker();
     void GetPieceObjectPtrList(CPtrList* pLst);

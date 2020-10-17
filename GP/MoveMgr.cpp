@@ -503,7 +503,7 @@ void CPieceSetOwnership::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CMarkerSetFacing methods....
 
-CMarkerSetFacing::CMarkerSetFacing(DWORD dwObjID, MarkID mid, int nFacingDegCW)
+CMarkerSetFacing::CMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW)
 {
     m_eType = mrecMFacing;
     m_dwObjID = dwObjID;
@@ -572,7 +572,7 @@ void CMarkerSetFacing::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CBoardMarkerMove methods....
 
-CBoardMarkerMove::CBoardMarkerMove(int nBrdSerNum, DWORD dwObjID, MarkID mid,
+CBoardMarkerMove::CBoardMarkerMove(int nBrdSerNum, ObjectID dwObjID, MarkID mid,
     CPoint pnt, PlacePos ePos)
 {
     m_eType = mrecMMove;
@@ -670,7 +670,7 @@ void CBoardMarkerMove::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CObjectDelete methods....
 
-CObjectDelete::CObjectDelete(DWORD dwObjID)
+CObjectDelete::CObjectDelete(ObjectID dwObjID)
 {
     m_eType = mrecDelObj;
     m_dwObjID = dwObjID;
@@ -748,7 +748,7 @@ BOOL CObjectSetText::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
         pDoc->FindPieceCurrentLocation(pid, pTray, pPBoard, &pPObj);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard((DWORD)m_elem, &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
     if (pPBoard != NULL)
     {
         if (pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
@@ -781,7 +781,7 @@ void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
             pDoc->SelectTrayItem(pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard((DWORD)m_elem, &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
 
     if (pPBoard != NULL)
     {
@@ -846,7 +846,7 @@ BOOL CObjectLockdown::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard((DWORD)m_elem, &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
 
     ASSERT(pObj != NULL);
 
@@ -868,7 +868,7 @@ void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard((DWORD)m_elem, &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
 
 
     ASSERT(pObj != NULL);
@@ -901,7 +901,7 @@ void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard((DWORD)m_elem, &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
 
 
     if (pPBoard != NULL)

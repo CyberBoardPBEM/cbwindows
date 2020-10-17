@@ -677,7 +677,7 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
             {
                 CSize size = pMMgr->GetMarkSize((MarkID)tblMarks[i]);
                 CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, (MarkID)tblMarks[i],
-                    CPoint(x - size.cx / 2, y), 0);
+                    CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
             }
@@ -695,7 +695,7 @@ NASTY_GOTO_TARGET:
         pnt = GetMidRect(rct);
 
         pDoc->AssignNewMoveGroup();
-        CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, mid, pnt, 0);
+        CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, mid, pnt, ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.

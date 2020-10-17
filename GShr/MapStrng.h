@@ -32,6 +32,10 @@
 #include    "Pieces.h"
 #include    "Marks.h"
 
+#if defined(GPLAY)
+#include    "DrawObj.h"
+#endif
+
 //////////////////////////////////////////////////////////////////////
 
 typedef DWORD GameElement;
@@ -46,8 +50,10 @@ inline GameElement MakePieceElement(PieceID pid, int nSide = 0)
 inline GameElement MakeMarkerElement(MarkID mid)
     { return (GameElement)((DWORD)mid | GAMEELEM_MARKERID_FLAG); }
 
-inline GameElement MakeObjectIDElement(DWORD dwObjectID)
-    { return (GameElement)dwObjectID; }
+#if defined(GPLAY)
+inline GameElement MakeObjectIDElement(ObjectID dwObjectID)
+    { return (GameElement)reinterpret_cast<uint32_t&>(dwObjectID); }
+#endif
 
 inline BOOL IsGameElementAPiece(GameElement elem)
     { return !(BOOL)(elem & GAMEELEM_MARKERID_FLAG); }
@@ -64,8 +70,10 @@ inline BOOL IsGameElementAnObjectID(GameElement elem)
 inline PieceID GetPieceIDFromElement(GameElement elem)
     { return (PieceID)(elem & 0xFFFF); }
 
-inline DWORD GetObjectIDFromElement(GameElement elem)
-    { return (DWORD)elem; }
+#if defined(GPLAY)
+inline ObjectID GetObjectIDFromElement(GameElement elem)
+    { return static_cast<ObjectID>(elem); }
+#endif
 
 
 //////////////////////////////////////////////////////////////////////
