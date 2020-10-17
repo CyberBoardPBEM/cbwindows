@@ -211,7 +211,7 @@ CPieceObj* CPlayBoard::FindPieceID(PieceID pid)
     return m_pPceList->FindPieceID(pid);
 }
 
-CDrawObj* CPlayBoard::FindObjectID(DWORD oid)
+CDrawObj* CPlayBoard::FindObjectID(ObjectID oid)
 {
     ASSERT(m_pPceList != NULL);
     return m_pPceList->FindObjectID(oid);
@@ -658,7 +658,7 @@ int CPBoardManager::FindPBoardByPtr(CPlayBoard *pPBrd)
     return -1;
 }
 
-CDrawObj* CPBoardManager::RemoveObjectID(DWORD oid)
+CDrawObj* CPBoardManager::RemoveObjectID(ObjectID oid)
 {
     CDrawObj* pObj;
     CPlayBoard* pPBrd = FindObjectOnBoard(oid, &pObj);
@@ -667,7 +667,7 @@ CDrawObj* CPBoardManager::RemoveObjectID(DWORD oid)
     return pObj;
 }
 
-CPlayBoard* CPBoardManager::FindObjectOnBoard(DWORD oid, CDrawObj** ppObj)
+CPlayBoard* CPBoardManager::FindObjectOnBoard(ObjectID oid, CDrawObj** ppObj)
 {
     if (ppObj != NULL) *ppObj = NULL;
     for (int i = 0; i < GetNumPBoards(); i++)

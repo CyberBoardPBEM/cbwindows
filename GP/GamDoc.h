@@ -53,6 +53,10 @@
 #include    "Mapstrng.h"
 #endif
 
+#ifndef     _DRAWOBJ_H
+#include    "DrawObj.h"
+#endif
+
 ////////////////////////////////////////////////////////////////
 
 class CMoveList;
@@ -234,7 +238,7 @@ public:
     void CloseTrayPalettes();
 
     // Generate unique Object Identifier number.
-    DWORD CreateObjectID(int nObjType); // 0 <= nObjType < 15
+    ObjectID CreateObjectID(CDrawObj::CDrawObjType nObjType);
 
     // Recording support methods...
     void SaveRecordedMoves();
@@ -251,13 +255,13 @@ public:
     void RecordPieceSetSide(PieceID pid, BOOL bTopUp);
     void RecordPieceSetFacing(PieceID pid, int nFacingDegCW);
     void RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask);
-    void RecordMarkerSetFacing(DWORD dwObjID, MarkID mid, int nFacingDegCW);
-    void RecordMarkMoveToBoard(CPlayBoard* pPBrd, DWORD dwObjID,
+    void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW);
+    void RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
         MarkID mid, CPoint pnt, PlacePos ePos = placeDefault);
     void RecordPlotList(CPlayBoard* pPBrd);
     void RecordGameState();
     void RecordMessage(CString strMsg);
-    void RecordObjectDelete(DWORD dwObjID);
+    void RecordObjectDelete(ObjectID dwObjID);
     void RecordCompoundMoveBegin();
     void RecordCompoundMoveEnd();
     void RecordCompoundMoveDiscard();
@@ -296,9 +300,9 @@ public:
     void SetPieceOwnershipTable(CWordArray* pTblPieces, DWORD dwOwnerMask);
 
     CDrawObj* CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
-        DWORD dwObjID = 0);
+        ObjectID dwObjID = ObjectID());
     CDrawObj* CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
-        CPoint ptEnd, UINT nLineWd, COLORREF crLine, DWORD dwObjID = 0);
+        CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID = ObjectID());
     void ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg, CPoint ptEnd,
         UINT nLineWd, COLORREF crLine, CLine* pObj);
     void ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList, BOOL bToFront);
@@ -319,7 +323,7 @@ public:
         CPlayBoard*& pPBoard, CPieceObj** ppObj = NULL);
     CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj** ppObj = NULL);
     CTraySet*   FindPieceInTray(PieceID pid);
-    CPlayBoard* FindObjectOnBoard(DWORD dwObjID, CDrawObj** ppObj = NULL);
+    CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, CDrawObj** ppObj = NULL);
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
 
     // Support for playback...
