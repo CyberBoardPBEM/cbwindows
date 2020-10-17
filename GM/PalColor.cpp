@@ -141,6 +141,7 @@ BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
     ON_WM_HELPINFO()
     ON_WM_MOUSEMOVE()
     ON_WM_LBUTTONUP()
+    ON_WM_RBUTTONUP()
     ON_WM_ERASEBKGND()
     ON_WM_NCCALCSIZE()
     ON_WM_NCPAINT()
@@ -171,6 +172,7 @@ CColorPalette::CColorPalette()
 
     m_bTrackHue = FALSE;
     m_bTrackSV = FALSE;
+    m_bIgnoreRButtonUp = FALSE;
 
     m_pCustColors = (COLORREF*)CustomColorsAllocate();
 }
@@ -971,7 +973,15 @@ void CColorPalette::OnLButtonDown(UINT nFlags, CPoint point)
 void CColorPalette::OnRButtonDown(UINT nFlags, CPoint point)
 {
     if (!HandleButtonDown(nFlags, point))
+    {
         CDockablePane::OnRButtonDown(nFlags, point);
+    }
+    else
+    {
+        // in case user drags mouse to another window before RButtonUp
+        SetCapture();
+        m_bIgnoreRButtonUp = TRUE;
+    }
 }
 
 void CColorPalette::OnMouseMove(UINT nFlags, CPoint point)
@@ -1002,6 +1012,18 @@ void CColorPalette::OnLButtonUp(UINT nFlags, CPoint point)
     ReleaseCapture();
 
     CDockablePane::OnLButtonUp(nFlags, point);
+}
+
+void CColorPalette::OnRButtonUp(UINT nFlags, CPoint point)
+{
+    if (m_bIgnoreRButtonUp)
+    {
+        m_bIgnoreRButtonUp = FALSE;
+        ReleaseCapture();
+        return;
+    }
+
+    CDockablePane::OnRButtonUp(nFlags, point);
 }
 
 /////////////////////////////////////////////////////////////////////////////

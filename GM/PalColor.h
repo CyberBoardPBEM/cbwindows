@@ -128,6 +128,7 @@ protected:
 
     BOOL        m_bTrackHue;        // Mouse down in hue picker
     BOOL        m_bTrackSV;         // Mouse down in S/V picker
+    BOOL        m_bIgnoreRButtonUp; // avoid two (unrelated) actions on single click
 
     int         m_nHue;             // Current hue value
     int         m_nVal;             // Current value
@@ -196,6 +197,7 @@ protected:
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp);
     afx_msg void OnNcPaint();
