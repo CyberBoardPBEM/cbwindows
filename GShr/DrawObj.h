@@ -164,6 +164,22 @@ protected:
 ///////////////////////////////////////////////////////////////////////
 
 #ifdef GPLAY
+/* ObjectID is the unique identifier for an object that is
+    created by CBPlay during a game.  As such, it is possible
+    that two (or more) players could be creating objects in
+    parallel.  To give a good probability of these objects
+    having distinct values, but not require a public NewID
+    server, the main part of the ObjectID is a 16bit random
+    number.  Since we're just playing games, not running
+    critical infrastructure, this is good enough.
+
+    Currently, the only CBPlay-created objects are markers.
+    However, the subtype field permits 13 more additional types
+    (subtype 0xF is used up by GameElement's
+    GAMEELEM_MARKERID_FLAG, subtype 0x2 is markers, and
+    subtype 0x0 is used up as the invalid subtype code).
+    Possible future objects:  lines showing moves (subtype 0x3
+    already reserved), textual notes, multimedia clips, ... */
 class ObjectID
 {
 public:
@@ -172,7 +188,8 @@ public:
     explicit ObjectID(PieceID pid);
     explicit ObjectID(DWORD dw);
 
-    bool operator==(const ObjectID& rhs) const {
+    bool operator==(const ObjectID& rhs) const
+    {
         return reinterpret_cast<const uint32_t&>(*this) == reinterpret_cast<const uint32_t&>(rhs);
     }
     bool operator!=(const ObjectID& rhs) const
@@ -181,8 +198,12 @@ public:
     }
 
 private:
+    // a random number (seeded by time in seconds)
     uint32_t id : 16;
+    /* serial number to avoid equality of two ObjectID values
+        created in the same second */
     uint32_t serial : 12;
+    // cooked version of CDrawObj::CDrawObjType
     uint32_t subtype : 4;
 };
 
