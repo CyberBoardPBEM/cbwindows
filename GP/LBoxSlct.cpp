@@ -60,6 +60,7 @@ CTileManager* CSelectListBox::GetTileManager()
 
 BOOL CSelectListBox::OnDragSetup(DragInfo* pDI)
 {
+    ASSERT(!"untested code");
     if (GetCount() <= 1)
         return FALSE;
 
@@ -69,9 +70,9 @@ BOOL CSelectListBox::OnDragSetup(DragInfo* pDI)
         m_multiSelList.Add(GetCurMapItem());
     }
     pDI->m_dragType = DRAG_SELECTVIEW;
-    pDI->m_dwVal = (DWORD)GetMappedMultiSelectList();
+    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = GetMappedMultiSelectList();
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
-    pDI->m_pObj = (void*)m_pDoc;
+    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
     return TRUE;
 }
 
@@ -84,7 +85,7 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (pdi->m_dragType != DRAG_SELECTVIEW)
         return 0;               // Only our drops allowed
 
-    if (pdi->m_pObj != (void*)m_pDoc)
+    if (pdi->GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
         return 0;               // Only pieces from our document.
 
     DoAutoScrollProcessing(pdi);

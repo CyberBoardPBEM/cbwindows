@@ -568,8 +568,8 @@ void CPSelectTool::KillScrollTimer(CPlayBoardView* pView)
 void CPSelectTool::DoDragDropStart(CPlayBoardView* pView)
 {
     m_di.m_dragType = DRAG_SELECTLIST;
-    m_di.m_dwVal = (DWORD)pView->GetSelectList();
-    m_di.m_pObj = (void*)pView->GetDocument();
+    m_di.GetSubInfo<DRAG_SELECTLIST>().m_selectList = pView->GetSelectList();
+    m_di.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc = pView->GetDocument();
     m_di.m_hcsrSuggest = g_res.hcrDragTile;
 
     m_hLastWnd = NULL;

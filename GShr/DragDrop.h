@@ -25,6 +25,11 @@
 #ifndef _DRAGDROP_H
 #define _DRAGDROP_H
 
+#include "Tile.h"
+#include "Pieces.h"
+#include "Marks.h"
+class CSelList;
+
 ////////////////////////////////////////////////////////////////
 // The WM_DRAGDROP message is sent the underlying window
 // to see if a drop can occur. The underlying window should
@@ -50,14 +55,14 @@ const   WORD    phaseDragDrop  = 3;
 
 enum DragType
 {
-    DRAG_TILE,              // pObj = CTileManager*, dwItem = TileID
-    DRAG_TILELIST,          // pObj = CTileManager*, dwItem = CWordArray*
+    DRAG_TILE,              // pObj = CGamDoc*, dwItem = TileID
+    DRAG_TILELIST,          // pObj = CGamDoc*, dwItem = CWordArray*
     DRAG_MGRTILE,           // pObj = CTileManager*, dwItem = TileID
     DRAG_PIECE,             // pObj = CGamDoc*, dwItem = PieceID
     DRAG_PIECELIST,         // pObj = CGamDoc*, dwItem = CWordArray*
-    DRAG_MARKER,            // pObj = CMarkManager*, dwItem = MarkID
+    DRAG_MARKER,            // pObj = CGamDoc*, dwItem = MarkID
     DRAG_SELECTLIST,        // pObj = CGamDoc*, dwItem = CSelList*
-    DRAG_SELECTVIEW         // pObj = CGamDoc*, dwItem = CWordArray*
+    DRAG_SELECTVIEW         // pObj = CGamDoc*, dwItem = CPtrArray*
 };
 
 struct DragInfo
@@ -67,9 +72,90 @@ struct DragInfo
     CPoint      m_point;        // Loc of mouse in window (dragOver&dragDrop)
     CPoint      m_pointClient;  // list box relative
     HCURSOR     m_hcsrSuggest;  // Suggested cursor to return if can drop
-    // Drag specific info...
-    DWORD       m_dwVal;        // Depends on dragType
-    void*       m_pObj;         // Depends on dragType
+
+    template<DragType DT>
+    struct SubInfo
+    {
+    };
+    template<>
+    struct SubInfo<DRAG_TILE>
+    {
+        TileID m_tileID;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_TILELIST>
+    {
+        CWordArray* m_tileIDList;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_MGRTILE>
+    {
+        TileID m_tileID;
+        CTileManager* m_tileMgr;
+    };
+    template<>
+    struct SubInfo<DRAG_PIECE>
+    {
+        PieceID m_pieceID;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_PIECELIST>
+    {
+        CWordArray* m_pieceIDList;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_MARKER>
+    {
+        MarkID m_markID;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_SELECTLIST>
+    {
+        CSelList* m_selectList;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_SELECTVIEW>
+    {
+        CPtrArray* m_ptrArray;
+        CGamDoc* m_gamDoc;
+    };
+    // TODO:  when upgrade to c++ 17, use std::variant
+private:
+    union
+    {
+        SubInfo<DRAG_TILE> m_tile;
+        SubInfo<DRAG_TILELIST> m_tileList;
+        SubInfo<DRAG_MGRTILE> m_mgrTile;
+        SubInfo<DRAG_PIECE> m_piece;
+        SubInfo<DRAG_PIECELIST> m_pieceList;
+        SubInfo<DRAG_MARKER> m_marker;
+        SubInfo<DRAG_SELECTLIST> m_selectList;
+        SubInfo<DRAG_SELECTVIEW> m_selectView;
+    } subInfos;
+public:
+    template<DragType DT>
+    SubInfo<DT>& GetSubInfo()
+    {
+        ASSERT(m_dragType == DT);
+        /* TODO:  This check could be removed to improve release
+            build performance if we trust ourselves to always
+            catch any m_dragType mistakes in testing.  Also,
+            since this function is inlined, it will often be
+            possible for the optimizer to detect that m_dragType
+            is correct through data analysis and optimize the
+            check out.  */
+        if (m_dragType != DT)
+        {
+            AfxThrowInvalidArgException();
+        }
+        return reinterpret_cast<SubInfo<DT>&>(subInfos);
+    }
 };
 
 #endif

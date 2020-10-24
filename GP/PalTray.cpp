@@ -555,12 +555,14 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         pdi->m_dragType != DRAG_PIECELIST)
         return 0;                       // Only piece drops allowed
 
-    if (pdi->m_pObj != (void*)m_pDoc)
+    if (pdi->m_dragType == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != m_pDoc ||
+        pdi->m_dragType == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != m_pDoc ||
+        pdi->m_dragType == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != m_pDoc)
         return 0;                       // Only pieces from our document.
 
     if (pdi->m_dragType == DRAG_SELECTLIST)
     {
-        if (!((CSelList*)(pdi->m_dwVal))->HasPieces())
+        if (!pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
             return 0;                   // Only piece drops allowed
     }
 
@@ -596,20 +598,20 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         if (pdi->m_dragType == DRAG_PIECE)
         {
             m_pDoc->AssignNewMoveGroup();
-            m_pDoc->PlacePieceInTray((PieceID)pdi->m_dwVal, pYGrp, nSel);
+            m_pDoc->PlacePieceInTray(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel);
             // Select the last piece that was inserted
-            nSel = pYGrp->GetPieceIDIndex((PieceID)pdi->m_dwVal);
+            nSel = pYGrp->GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID);
         }
         if (pdi->m_dragType == DRAG_PIECELIST)
         {
             m_pDoc->AssignNewMoveGroup();
-            nSel = m_pDoc->PlacePieceListInTray((CWordArray*)pdi->m_dwVal,
+            nSel = m_pDoc->PlacePieceListInTray(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList,
                 pYGrp, nSel);
         }
         else        // DRAG_SELECTLIST
         {
             CPtrList m_listPtr;
-            CSelList* pSLst = (CSelList*)pdi->m_dwVal;
+            CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
             pSLst->LoadListWithObjectPtrs(&m_listPtr);
             pSLst->PurgeList(FALSE);
             m_pDoc->AssignNewMoveGroup();

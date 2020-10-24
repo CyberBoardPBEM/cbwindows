@@ -881,7 +881,7 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
 
     if (pdi->m_dragType != DRAG_TILE)
         return 0;               // Only tile drops allowed
-    if (pdi->m_pObj != (void*)GetDocument())
+    if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
         return 0;               // Only tiles from our document.
 
     if (wParam == phaseDragOver)
@@ -896,14 +896,14 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
         {
             case LAYER_BASE:
                 pDwg = m_pBoard->GetBaseDrawing(TRUE);
-                SetDrawingTile(pDwg, (TileID)pdi->m_dwVal, pnt, TRUE);
+                SetDrawingTile(pDwg, pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_GRID:
-                SetCellTile((TileID)pdi->m_dwVal, pnt, TRUE);
+                SetCellTile(pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_TOP:
                 pDwg = m_pBoard->GetTopDrawing(TRUE);
-                SetDrawingTile(pDwg, (TileID)pdi->m_dwVal, pnt, TRUE);
+                SetDrawingTile(pDwg, pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             default: ;
         }

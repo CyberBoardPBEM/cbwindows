@@ -528,7 +528,7 @@ LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
 LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo* pdi)
 {
     ASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
-    if (pdi->m_pObj != (void*)GetDocument())
+    if (pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
     if (wParam == phaseDragExit)
@@ -542,7 +542,7 @@ LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo* pdi)
     {
         CPoint pnt = pdi->m_point;
         ClientToWorkspace(pnt);
-        AddPiece(pnt, (PieceID)pdi->m_dwVal);
+        AddPiece(pnt, pdi->GetSubInfo<DRAG_PIECE>().m_pieceID);
         DragKillAutoScroll();
     }
     return 0;
@@ -550,7 +550,7 @@ LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo* pdi)
 
 LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
 {
-    if (pdi->m_pObj != (void*)GetDocument())
+    if (pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
     if (wParam == phaseDragExit)
@@ -564,7 +564,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
     {
         CGamDoc* pDoc = GetDocument();
         CPoint pnt = pdi->m_point;
-        CWordArray* pTbl = (CWordArray *)pdi->m_dwVal;
+        CWordArray* pTbl = pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList;
         ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
@@ -586,7 +586,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
             CPtrList pceList;
-            pDwg->GetObjectListFromPieceIDTable((CWordArray *)pdi->m_dwVal, &pceList);
+            pDwg->GetObjectListFromPieceIDTable(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList, &pceList);
             SelectAllObjectsInList(&pceList);   // Reselect pieces dropped on board
         }
 
@@ -599,8 +599,9 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
 
 LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
 {
+    ASSERT(pdi->m_dragType == DRAG_MARKER);
     CGamDoc* pDoc = GetDocument();
-    if (pdi->m_pObj != (void*)pDoc)
+    if (pdi->GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
         return 0;               // Only markers from our document.
 
     if (wParam == phaseDragExit)
@@ -614,7 +615,7 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
     {
         CMarkManager* pMMgr = pDoc->GetMarkManager();
         CPoint pnt = pdi->m_point;
-        MarkID mid = (MarkID)pdi->m_dwVal;
+        MarkID mid = pdi->GetSubInfo<DRAG_MARKER>().m_markID;
         ClientToWorkspace(pnt);
 
         // If Control is held and the marker tray is set to
@@ -718,12 +719,12 @@ NASTY_GOTO_TARGET:
 
 LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
 {
-    if (pdi->m_pObj != (void*)GetDocument())
+    if (pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
     ClientToWorkspace(pdi->m_point);
 
-    CSelList *pSLst = (CSelList *)pdi->m_dwVal;
+    CSelList *pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
     CDC *pDC = GetDC();
     OnPrepareScaledDC(pDC, TRUE);
 

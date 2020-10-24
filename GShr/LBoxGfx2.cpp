@@ -349,6 +349,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
     }
     if (m_bAllowDrag)
     {
+        ASSERT(!"unreachable code");
         BOOL bWasDragging = CWnd::GetCapture() == this;
         CListBox::OnLButtonUp(nFlags, point);
 
@@ -366,12 +367,16 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
             }
             else
             {
+                ASSERT(!"unreachable code");
+                ASSERT(!"what is m_dragType here?");
+#if 0
                 // The parent may want to override the value.
                 int nValueOverride = di.m_dwVal;
                 CWnd *pWnd = GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM2, (WPARAM)&nValueOverride);
                 di.m_dwVal = nValueOverride;
+#endif
             }
 
             ReleaseCapture();
@@ -408,6 +413,7 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
 
     if (m_bAllowDrag)
     {
+        ASSERT(!"unreachable code");
         if (CWnd::GetCapture() != this)
             return;
         // OK...We are dragging. Let's check if the cursor has been

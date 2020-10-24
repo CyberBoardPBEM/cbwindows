@@ -428,7 +428,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (pdi->m_dragType != DRAG_TILELIST)
         return 0;               // Only tile list drops allowed
 
-    if (pdi->m_pObj != (void*)pDoc)
+    if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != pDoc)
         return 0;               // Only pieces from our document.
 
     CRect rct;
@@ -463,10 +463,10 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
                 nSel++;
         }
 
-        pTMgr->MoveTileIDsToTileSet(nGrpSel, *(CWordArray*)pdi->m_dwVal, nSel);
+        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList, nSel);
         DoUpdateTileList();
         GetDocument()->NotifyTileDatabaseChange();
-        m_listTiles.SetCurSelsMapped(*(CWordArray*)pdi->m_dwVal);
+        m_listTiles.SetCurSelsMapped(*pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList);
         m_listTiles.ShowFirstSelection();
         pDoc->SetModifiedFlag();
     }
