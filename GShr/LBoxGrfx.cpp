@@ -434,11 +434,26 @@ void CGrafixListBox::OnLButtonUp(UINT nFlags, CPoint point)
             else
             {
                 // The parent may want to override the value.
-                int nValueOverride = di.GetSubInfo<DRAG_MARKER>().m_markID;
-                CWnd *pWnd = GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, (WPARAM)&nValueOverride);
-                di.GetSubInfo<DRAG_MARKER>().m_markID = nValueOverride;
+                if (di.m_dragType == DRAG_MARKER)
+                {
+                    int nValueOverride = di.GetSubInfo<DRAG_MARKER>().m_markID;
+                    CWnd* pWnd = GetParent();
+                    ASSERT(pWnd != NULL);
+                    pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, (WPARAM)&nValueOverride);
+                    di.GetSubInfo<DRAG_MARKER>().m_markID = nValueOverride;
+                }
+                else if (di.m_dragType == DRAG_TILE)
+                {
+                    int nValueOverride = di.GetSubInfo<DRAG_TILE>().m_tileID;
+                    CWnd* pWnd = GetParent();
+                    ASSERT(pWnd != NULL);
+                    pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, (WPARAM)&nValueOverride);
+                    di.GetSubInfo<DRAG_TILE>().m_tileID = nValueOverride;
+                }
+                else
+                {
+                    ASSERT(!"unexpected dragType");
+                }
             }
 
             ReleaseCapture();
