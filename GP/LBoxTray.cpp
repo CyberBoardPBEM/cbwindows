@@ -306,15 +306,15 @@ BOOL CTrayListBox::OnDragSetup(DragInfo* pDI)
     if (IsMultiSelect())
     {
         pDI->m_dragType = DRAG_PIECELIST;
-        pDI->m_dwVal = (DWORD)GetMappedMultiSelectList();// PieceID array
-        pDI->m_pObj = (void*)m_pDoc;
+        pDI->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = GetMappedMultiSelectList();// PieceID array
+        pDI->GetSubInfo<DRAG_PIECELIST>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
         pDI->m_dragType = DRAG_PIECE;
-        pDI->m_dwVal = (DWORD)GetCurMapItem();      // The PieceID
-        pDI->m_pObj = (void*)m_pDoc;
+        pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();      // The PieceID
+        pDI->GetSubInfo<DRAG_PIECE>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     return TRUE;

@@ -140,15 +140,15 @@ BOOL CTileListBox::OnDragSetup(DragInfo* pDI)
     if (IsMultiSelect())
     {
         pDI->m_dragType = DRAG_TILELIST;
-        pDI->m_dwVal = (DWORD)GetMappedMultiSelectList();// TileID array
-        pDI->m_pObj = (void*)m_pDoc;
+        pDI->GetSubInfo<DRAG_TILELIST>().m_tileIDList = GetMappedMultiSelectList();// TileID array
+        pDI->GetSubInfo<DRAG_TILELIST>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
         pDI->m_dragType = DRAG_TILE;
-        pDI->m_dwVal = (DWORD)GetCurMapItem();      // The TileID
-        pDI->m_pObj = (void*)m_pDoc;
+        pDI->GetSubInfo<DRAG_TILE>().m_tileID = GetCurMapItem();      // The TileID
+        pDI->GetSubInfo<DRAG_TILE>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     return TRUE;

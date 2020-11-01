@@ -217,8 +217,8 @@ BOOL CMarkListBox::OnDragSetup(DragInfo* pDI)
         return 0;                       // Drags not supported during play
 #endif
     pDI->m_dragType = DRAG_MARKER;
-    pDI->m_dwVal = (DWORD)GetCurMapItem();          // The MarkID
-    pDI->m_pObj = (void*)m_pDoc;
+    pDI->GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();          // The MarkID
+    pDI->GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
     pDI->m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;
 }

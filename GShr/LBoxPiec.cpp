@@ -166,8 +166,13 @@ void CPieceListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
 BOOL CPieceListBox::OnDragSetup(DragInfo* pDI)
 {
     pDI->m_dragType = DRAG_PIECE;
-    pDI->m_dwVal = (DWORD)GetCurMapItem();          // The PieceID
+    pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();          // The PieceID
+    ASSERT(!"code look wrong, but I think this is unreachable");
+    /* this is the original code, but it looks wrong since
+        everything else seems to say DRAG_PIECE should have
+        m_pObj contain CGamDoc*
     pDI->m_pObj = (void*)m_pPMgr;
+    */
     pDI->m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;
 }
