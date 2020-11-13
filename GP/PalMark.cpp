@@ -303,7 +303,7 @@ void CMarkerPalette::UpdatePaletteContents()
         nSel = 0;               // Force first entry (if any)
     LoadMarkerNameList();
     if (nSel < m_comboMGrp.GetCount())
-        m_comboMGrp.SetCurSel(nSel);
+        m_comboMGrp.SetCurSel(FindMarkerGroupIndex(nSel));
     UpdateMarkerList();
 }
 
