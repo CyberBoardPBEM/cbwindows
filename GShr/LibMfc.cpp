@@ -484,6 +484,7 @@ public:
         // show final state
         SetRedraw(TRUE);
         UpdateTabs(TRUE);
+        RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
         return TRUE;
     }
