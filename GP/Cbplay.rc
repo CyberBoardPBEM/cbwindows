@@ -27,12 +27,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#ifndef APSTUDIO_INVOKED\r\n"
     "#include ""targetver.h""\r\n"
@@ -40,7 +40,7 @@ BEGIN
     "#include ""afxres.h""\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
@@ -1182,15 +1182,15 @@ IDC_CMOVMODE            CURSOR                  "res\\CMovMode.cur"
 IDD_PBRDPROP DLGINIT
 BEGIN
     IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
-0x0031, 
+0x0031,
     IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
-0x0032, 
+0x0032,
     IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
-0x0033, 
+0x0033,
     IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
-0x0034, 
+0x0034,
     IDC_D_PBPRP_PLOTWIDTH, 0x403, 2, 0
-0x0035, 
+0x0035,
     0
 END
 
@@ -1617,7 +1617,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ERR_NOBOARDSSELECTED 
+    IDS_ERR_NOBOARDSSELECTED
                             "A scenario must contain at least one playing board."
     IDS_ERR_TRAYHASPIECES   "The tray you are about to delete contains playing pieces. If you proceed the pieces will be removed from the scenario. You may reimport them from the piece setup dialog."
     IDS_TRAYA_TITLE         "Tray A"
@@ -1690,7 +1690,7 @@ BEGIN
     IDS_PHEAD_GAM_HISTPLAY  "<History Entry Playback>"
     IDS_PHEAD_GAM_SUSPEND   "[Current Recording - Suspended]"
     IDS_ERR_NOSAVEWHENPLAY  "You cannot save your current recording while a history playback is in progress."
-    IDS_ERR_NODISCARDWHENPLAY 
+    IDS_ERR_NODISCARDWHENPLAY
                             "You cannot discard your current recording while a history playback is in progress."
     IDP_ERR_EXPIRED         "This Beta version of CyberBoard is really old and will no longer run. Please obtain a newer version."
     IDP_ERR_ALMOSTEXPIRED   "This Beta version of CyberBoard is really old and on October 1, 2005 it will no longer run. Please obtain a newer version."
@@ -1700,7 +1700,7 @@ END
 STRINGTABLE
 BEGIN
     ID_PTOOL_PLOTMOVE       "Begin a plotted move.\nBegin Plotted Move"
-    ID_FILE_SAVE_GAME_AS_SCENARIO 
+    ID_FILE_SAVE_GAME_AS_SCENARIO
                             "Save current state of game as a scenario file.\nSave Game As Scenario"
 END
 
@@ -1720,19 +1720,19 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_SELECTGAMEPIECES 
+    ID_EDIT_SELECTGAMEPIECES
                             "Select the game pieces that are used in this scenario"
     ID_EDIT_SCNPROPERTIES   "Edit scenario properties"
     ID_VIEW_TOGGLESCALE     "Toggle board scale\nToggle Board Scale"
     ID_FILE_LOADMOVES       "Load file of recorded moves.\nLoad Recorded Move File"
     ID_EDIT_BRD2FILE        "Save the current board image as a bitmap file."
     ID_EDIT_BRDPROP         "Edit properties of current playing board."
-    ID_ACT_COMPOUNDMOVE_BEGIN 
+    ID_ACT_COMPOUNDMOVE_BEGIN
                             "Begin compound move\nBegin Compound Move"
     ID_ACT_COMPOUNDMOVE_END "End active compound move\nEnd Compound Move"
-    ID_ACT_COMPOUNDMOVE_DISCARD 
+    ID_ACT_COMPOUNDMOVE_DISCARD
                             "Discard current compound move\nDiscard Compound Move"
-    ID_INDICATOR_COMPMOVE   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\n....GOOD BYE!"
+    ID_INDICATOR_COMPMOVE   "CMOVE"
     ID_ACT_ROTATEREL        "Rotate piece or marker using incremental amounts\nRotate Object - Incremental"
     ID_PPROJITEM_PROPERTIES "Examine item properties."
     ID_PPROJITEM_DELETE     "Delete or Remove selected item."
@@ -1760,12 +1760,12 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_PLAYBACK_NEXTHISTORYENTRY 
+    ID_PLAYBACK_NEXTHISTORYENTRY
                             "Close this history and open the next history entry\nOpen Next History Entry"
     ID_PBCK_NEXTHIST        "Close current history playback and open the next\nOpen Next History"
     ID_PBCK_CLOSEHIST       "Close history playback mode.\nClose History Playback"
     ID_FILE_SENDMOVES2FILE  "Send current move recording to file\nSend Recording to File"
-    ID_FILE_DISCARDRECORDING 
+    ID_FILE_DISCARDRECORDING
                             "Discard the current move recording.\nDiscard Current Recording"
     ID_EDIT_SELECTBOARDS    "Select the game boards that are used in this scenario"
     ID_EDIT_CREATETRAY      "Create a new tray which are used to hold playing pieces"
@@ -1795,7 +1795,7 @@ STRINGTABLE
 BEGIN
     IDS_MSG_NOMOVES         "No moves have been recorded in this file. However, you still must either discard or accept the playback of the file."
     IDS_MSG_DIVIDER         "«»-------------------------------------«»-------------------------------------«»\r\n"
-    IDS_WARN_DISCARD_COMP_MOVE 
+    IDS_WARN_DISCARD_COMP_MOVE
                             "Are you sure you want to discard your compound move?"
     IDS_MSG_ROLLSET         "SET"
     IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of %d piece(s) have been removed from the game."
@@ -1845,16 +1845,16 @@ BEGIN
     ID_ACT_LOCKOBJECT       "Lock or unlock pieces and markers from selection.\nLock Objects"
     ID_ACT_LOCK_SUSPEND     "Temporarily suspend piece and marker locks\nSuspend Object Locks"
     ID_VIEW_SAVE_WIN_STATE  "Save window positions when saving the file."
-    ID_PTRAY_SHUFFLE_SELECTED 
+    ID_PTRAY_SHUFFLE_SELECTED
                             "Shuffle (randomize) only the tray's selected items."
     ID_ACT_SHUFFLE_SELECTED "Randomize the stacking order of the selected objects\nShuffle Objects"
     ID_ACT_AUTOSTACK_DECK   "Autostack selected objects using a offset of zero.\nAuto Stack Deck"
-    ID_ACT_SHUFFLE_AND_STACK 
+    ID_ACT_SHUFFLE_AND_STACK
                             "Randomize selected objects and stack them as a deck.\nShuffle and Auto Deck Stack"
     ID_EDIT_CREATE_PLAYERS  "Create players. Enables hidden piece support.\nCreate Players"
     ID_EDIT_EDIT_PLAYERS    "Edit the names of created players.\nEdit Players"
     ID_ACT_TAKE_OWNERSHIP   "Take ownership of selected pieces.\nTake Ownership"
-    ID_ACT_RELEASE_OWNERSHIP 
+    ID_ACT_RELEASE_OWNERSHIP
                             "Release ownership of selected pieces\nRelease Ownership"
     ID_ACT_SET_OWNER        "Explicitly set piece ownership.\nSet Ownership"
     ID_ACT_TURNOVER_ALL     "Turn over all pieces in the Tray.\nTurn All Pieces Over"
@@ -1863,7 +1863,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_RESOURCE_VERSION    "3.90"
-    IDS_ERR_RESOURCE_VERSION 
+    IDS_ERR_RESOURCE_VERSION
                             "The localization resource DLL ""%1"" is not the correct version. This version of CyberBoard requires version %2 resources. The default English resources will be used."
     IDS_BASEFONT_NAME       "MS Sans Serif"
     IDS_BASEFONT_SIZE_SMALL "8"
@@ -1884,7 +1884,7 @@ BEGIN
     IDS_GAME_SELECT_ROOT_NAME "Select Base Name for Player Game Files"
     IDS_GAME_SPECTATOR      "-Spectator."
     IDS_MSG_PLAYER_FILES    "The following player specific game files have been created:\n\n%s\n\nDistribute them as required."
-    IDS_WARN_PLAYER_FILES_EXIST 
+    IDS_WARN_PLAYER_FILES_EXIST
                             "Player files already exist with the specified base filename. They are:\n\n%s\nPress OK to overwrite them. Press Cancel to abort."
     IDS_PHEAD_SPECTATOR_OWNED " - Owned by Spectator"
     IDS_ERR_PLAYER_TAMPER   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\nYou *ARE* the weakest link....GOOD BYE!"
@@ -1913,14 +1913,14 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_ACT_SIMULATE_SPECTATOR 
+    ID_ACT_SIMULATE_SPECTATOR
                             "View the board and trays as if the current player was a spectator.\nSimulate Spectator Player"
-    ID_EDIT_CREATE_GEOMORPHIC 
+    ID_EDIT_CREATE_GEOMORPHIC
                             "Create geomorphic board.\nCreate Geomorphic Board"
     ID_HELP_WEBSITE         "Opens a web browser and takes you to the CyberBoard web site."
     ID_HELP_DONATION        "Make a donation for CyberBoard."
     ID_PTRAY_ABOUT          "Show information about the currently selected tray."
-    ID_PBCK_STEP_TO_NEXT_HIST 
+    ID_PBCK_STEP_TO_NEXT_HIST
                             "Next move automatically steps to next history entry on last move."
     ID_PBCK_SKIP_KEEP_IND   "Keep graphical move indications when skipping moves."
     ID_PBCK_AUTO_STEP       "Toggles automatic playback feature.\nAutomatic Playback (F6)"
@@ -1934,7 +1934,7 @@ BEGIN
     IDS_MSG_NOT_OWNED       "- There is no tray owner"
     IDS_MSG_OWNED_BY        "- The tray's owner is ""%s"""
     IDS_MSG_NONOWN_ALLOWED  "- Non-owners are allowed access to the tray"
-    IDS_MSG_NONOWN_NOT_ALLOWED 
+    IDS_MSG_NONOWN_NOT_ALLOWED
                             "- Non-owners are NOT allowed access to the tray"
     IDS_MSG_TVIZ_OWNER_TOO  "- The above visibility also applies to the tray's owner"
     IDS_MSG_TVIZ_OWNER_FULL "- It's fully visible to the its owner"
