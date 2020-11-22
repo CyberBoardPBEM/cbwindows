@@ -95,13 +95,11 @@ void CDockMarkPalette::OnPressCloseButton()
 
 void CDockMarkPalette::OnSize(UINT nType, int cx, int cy)
 {
-    ATLTRACE2(traceAppMsg, 0, "CDockMarkPalette::OnSize(nType=%u, cx=%d, cy=%d) called...\n", nType, cx, cy);
     CDockablePane::OnSize(nType, cx, cy);
     CRect rct;
     GetClientRect(rct);
     if (m_pChildWnd != NULL)
         m_pChildWnd->MoveWindow(&rct);
-    ATLTRACE2(traceAppMsg, 0, "...CDockMarkPalette::OnSize() returns nothing.\n");
 }
 
 void CDockMarkPalette::OnDestroy()
