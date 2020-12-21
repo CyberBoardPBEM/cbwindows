@@ -322,7 +322,7 @@ BOOL CGamDoc::PurgeMissingTileIDs()
     return bRet;
 }
 
-BOOL CGamDoc::QueryTileInUse(TileID tid)
+BOOL CGamDoc::QueryTileInUse(TileID tid) const
 {
     BOOL bRet = m_pBMgr->IsTileInUse(tid);
     bRet |= m_pPMgr->IsTileInUse(tid);
@@ -330,11 +330,11 @@ BOOL CGamDoc::QueryTileInUse(TileID tid)
     return bRet;
 }
 
-BOOL CGamDoc::QueryAnyOfTheseTilesInUse(CWordArray& tbl)
+BOOL CGamDoc::QueryAnyOfTheseTilesInUse(const std::vector<TileID>& tbl) const
 {
-    for (int i = 0; i < tbl.GetSize(); i++)
+    for (size_t i = 0; i < tbl.size(); i++)
     {
-        if (QueryTileInUse((TileID)tbl[i]))
+        if (QueryTileInUse(tbl[i]))
             return TRUE;
     }
     return FALSE;
@@ -377,7 +377,7 @@ CView* CGamDoc::FindTileEditorView(TileID tid)
     return NULL;
 }
 
-CView* CGamDoc::FindBoardEditorView(CBoard* pBoard)
+CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
 {
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -385,7 +385,7 @@ CView* CGamDoc::FindBoardEditorView(CBoard* pBoard)
         CBrdEditView* pView = (CBrdEditView*)GetNextView(pos);
         if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditView)))
         {
-            if (pView->GetBoard() == pBoard)
+            if (pView->GetBoard() == &pBoard)
                 return pView;
         }
     }
@@ -441,21 +441,20 @@ BOOL CGamDoc::SetupBlankBoard()
 // This is here for sharing. Probably could go in BOARD.CPP too.
 // returns TRUE if board was changed.
 
-BOOL CGamDoc::DoBoardPropertyDialog(CBoard* pBoard)
+BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
 {
     CBoardPropDialog dlg;
-    ASSERT(pBoard);
-    CBoardArray* pBrdAry = pBoard->GetBoardArray();
+    CBoardArray* pBrdAry = pBoard.GetBoardArray();
     ASSERT(pBrdAry);
 
-    dlg.m_strName = pBoard->GetName();
-    dlg.m_bGridSnap = pBoard->m_bGridSnap;
-    dlg.m_xGridSnap = pBoard->m_xGridSnap;
-    dlg.m_yGridSnap = pBoard->m_yGridSnap;
-    dlg.m_xGridSnapOff = pBoard->m_xGridSnapOff;
-    dlg.m_yGridSnapOff = pBoard->m_yGridSnapOff;
-    dlg.m_bCellLines = pBoard->GetCellBorder();
-    dlg.m_bCellBorderOnTop = pBoard->GetCellBorderOnTop();
+    dlg.m_strName = pBoard.GetName();
+    dlg.m_bGridSnap = pBoard.m_bGridSnap;
+    dlg.m_xGridSnap = pBoard.m_xGridSnap;
+    dlg.m_yGridSnap = pBoard.m_yGridSnap;
+    dlg.m_xGridSnapOff = pBoard.m_xGridSnapOff;
+    dlg.m_yGridSnapOff = pBoard.m_yGridSnapOff;
+    dlg.m_bCellLines = pBoard.GetCellBorder();
+    dlg.m_bCellBorderOnTop = pBoard.GetCellBorderOnTop();
     dlg.m_nStyleNum = (int)pBrdAry->GetCellNumStyle();
     dlg.m_bTrackCellNum = pBrdAry->GetCellNumTracking();
     dlg.m_nRowTrkOffset = pBrdAry->GetRowCellTrackingOffset();
@@ -476,14 +475,14 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard* pBoard)
 
     if (dlg.DoModal() == IDOK)
     {
-        pBoard->SetName(dlg.m_strName);
-        pBoard->m_bGridSnap = dlg.m_bGridSnap;
-        pBoard->m_xGridSnap = dlg.m_xGridSnap;
-        pBoard->m_yGridSnap = dlg.m_yGridSnap;
-        pBoard->m_xGridSnapOff = dlg.m_xGridSnapOff;
-        pBoard->m_yGridSnapOff = dlg.m_yGridSnapOff;
-        pBoard->SetCellBorder(dlg.m_bCellLines);
-        pBoard->SetCellBorderOnTop(dlg.m_bCellBorderOnTop);
+        pBoard.SetName(dlg.m_strName);
+        pBoard.m_bGridSnap = dlg.m_bGridSnap;
+        pBoard.m_xGridSnap = dlg.m_xGridSnap;
+        pBoard.m_yGridSnap = dlg.m_yGridSnap;
+        pBoard.m_xGridSnapOff = dlg.m_xGridSnapOff;
+        pBoard.m_yGridSnapOff = dlg.m_yGridSnapOff;
+        pBoard.SetCellBorder(dlg.m_bCellLines);
+        pBoard.SetCellBorderOnTop(dlg.m_bCellBorderOnTop);
         pBrdAry->SetCellNumStyle((CellNumStyle)dlg.m_nStyleNum);
         pBrdAry->SetCellNumTracking(dlg.m_bTrackCellNum);
         pBrdAry->SetRowCellTrackingOffset(dlg.m_nRowTrkOffset);
@@ -499,10 +498,10 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard* pBoard)
                 dlg.m_nCellHt = dlg.m_nCellWd;
             pBrdAry->ReshapeBoard(dlg.m_nRows, dlg.m_nCols,
                 dlg.m_nCellHt, dlg.m_nCellWd, dlg.m_bStaggerIn);
-            pBoard->ForceObjectsOntoBoard();
+            pBoard.ForceObjectsOntoBoard();
         }
         CGmBoxHint hint;
-        hint.m_pBoard = pBoard;
+        hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = &pBoard;
         UpdateAllViews(NULL, HINT_BOARDPROPCHANGE, &hint);
         return TRUE;
     }
@@ -511,7 +510,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard* pBoard)
 
 ///////////////////////////////////////////////////////////////////////
 
-TileID CGamDoc::CreateTileFromDib(CDib* pDib, int nTSet)
+TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
 {
     int xTile = pDib->Width();
     int yTile = pDib->Height();

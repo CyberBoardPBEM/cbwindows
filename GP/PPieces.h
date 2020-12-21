@@ -71,9 +71,9 @@ public:
     BOOL IsOwned()              { return m_dwOwnerMask != 0; }
     BOOL IsOwnedBy(DWORD dwMask)  { return (BOOL)(m_dwOwnerMask & dwMask); }
 
-    BOOL operator != (Piece& pce)
+    BOOL operator != (const Piece& pce) const
         { return m_nSide != pce.m_nSide || m_nFacing != pce.m_nFacing; }
-    BOOL operator == (Piece& pce)
+    BOOL operator == (const Piece& pce) const
         { return m_nSide == pce.m_nSide && m_nFacing == pce.m_nFacing; }
 
     void Serialize(CArchive& ar);
@@ -95,7 +95,7 @@ class CPieceTable
 {
 public:
     CPieceTable();
-    ~CPieceTable();
+    ~CPieceTable() = default;
 
 // Attributes
 public:
@@ -105,12 +105,12 @@ public:
 
 // Operations
 public:
-    void LoadUnusedPieceList(CWordArray *pPTbl, int nPieceSet,
+    void LoadUnusedPieceList(std::vector<PieceID>& pPTbl, size_t nPieceSet,
         BOOL bClear = TRUE);
-    void LoadUnusedPieceList(CWordArray *pPTbl, CPieceSet* pPceSet,
+    void LoadUnusedPieceList(std::vector<PieceID>& pPTbl, const CPieceSet& pPceSet,
         BOOL bClear = TRUE);
-    void SetPieceListAsUnused(CWordArray *pPTbl);
-    void SetPieceListAsFrontUp(CWordArray *pPTbl);
+    void SetPieceListAsUnused(const std::vector<PieceID>& pPTbl);
+    void SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl);
 
     void FlipPieceOver(PieceID pid);
 
@@ -137,7 +137,7 @@ public:
     TileID GetInactiveTileID(PieceID pid, BOOL bWithFacing = FALSE);
 
     CSize GetPieceSize(PieceID pid, BOOL bWithFacing = FALSE);
-    CSize GetStackedSize(CWordArray* pTbl, int xDelta, int yDelta, BOOL bWithFacing = FALSE);
+    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing = FALSE);
 
     void CreatePlayingPieceTable();
     void SetPiece(PieceID pid, int nSide = 0, int nFacing = 0);
@@ -147,9 +147,9 @@ public:
 
     void Clear();
 
-    CPieceTable* Clone(CGamDoc *pDoc);
-    void Restore(CGamDoc *pDoc, CPieceTable* pTbl);
-    BOOL Compare(CPieceTable* pTbl);
+    CPieceTable* Clone(CGamDoc *pDoc) const;
+    void Restore(CGamDoc *pDoc, const CPieceTable& pTbl);
+    BOOL Compare(const CPieceTable& pTbl) const;
 
     void Serialize(CArchive& ar);
 
@@ -159,8 +159,9 @@ public:
 
 // Implementation
 protected:
-    Piece*      m_pPieceTbl;        // Global def'ed
-    UINT        m_nTblSize;         // Number of alloc'ed ents in Piece table
+    XxxxIDTable<PieceID, Piece,
+                maxPieces, pieceTblBaseSize, pieceTblIncrSize,
+                true> m_pPieceTbl;
 
     WORD        m_wReserved1;       // For future need (set to 0)
     WORD        m_wReserved2;       // For future need (set to 0)
@@ -170,11 +171,11 @@ protected:
     CPieceManager* m_pPMgr;         // To get access to piece defs.
     CGamDoc*       m_pDoc;          // Used for serialize fixups
     // ------- //
-    Piece* GetPiece(PieceID pid);
-    PieceDef* GetPieceDef(PieceID pid);
-    void GetPieceDefinitionPair(PieceID pid, Piece*& pPce, PieceDef*& pDef);
+    Piece& GetPiece(PieceID pid);
+    const PieceDef& GetPieceDef(PieceID pid) const;
+    void GetPieceDefinitionPair(PieceID pid, Piece*& pPce, const PieceDef*& pDef);
 
-    TileID GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide);
+    TileID GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide) const;
 };
 
 #endif

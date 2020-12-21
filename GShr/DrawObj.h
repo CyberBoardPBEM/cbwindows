@@ -105,7 +105,7 @@ public:
     virtual void OffsetObject(CPoint offset);
     // ----- //
     virtual BOOL IsVisible(RECT* pClipRct);
-    virtual CDrawObjType GetType() = 0;
+    virtual CDrawObjType GetType() const = 0;
     // ----- //
     // Some functions that may or may not mean anything to the
     // underlying object. The object will return TRUE if the
@@ -180,7 +180,7 @@ protected:
     subtype 0x0 is used up as the invalid subtype code).
     Possible future objects:  lines showing moves (subtype 0x3
     already reserved), textual notes, multimedia clips, ... */
-class ObjectID
+class alignas(uint32_t) ObjectID
 {
 public:
     ObjectID();
@@ -199,12 +199,12 @@ public:
 
 private:
     // a random number (seeded by time in seconds)
-    uint32_t id : 16;
+    uint16_t id;
     /* serial number to avoid equality of two ObjectID values
         created in the same second */
-    uint32_t serial : 12;
+    uint16_t serial : 12;
     // cooked version of CDrawObj::CDrawObjType
-    uint32_t subtype : 4;
+    uint16_t subtype : 4;
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID& oid)
@@ -234,7 +234,7 @@ public:
     UINT     m_nLineWidth;
 
     virtual CRect GetEnclosingRect();
-    virtual enum CDrawObjType GetType() { return drawRect; }
+    virtual enum CDrawObjType GetType() const { return drawRect; }
 
     void SetRect(RECT* rect) { m_rctExtent = rect; }
 
@@ -277,7 +277,7 @@ class CEllipse : public CRectObj
 public:
     CEllipse() {}
 
-    virtual enum CDrawObjType GetType() { return drawEllipse; }
+    virtual enum CDrawObjType GetType() const { return drawEllipse; }
 
 // Operations
 public:
@@ -313,7 +313,7 @@ public:
         { ptBeg = m_ptBeg; ptEnd = m_ptEnd; }
 
     virtual CRect GetEnclosingRect();
-    virtual enum CDrawObjType GetType() { return drawLine; }
+    virtual enum CDrawObjType GetType() const { return drawLine; }
 
     virtual BOOL SetForeColor(COLORREF cr) { m_crLine = cr; return TRUE; }
     virtual BOOL SetLineWidth(UINT nLineWidth)
@@ -366,7 +366,7 @@ public:
     int      m_nPnts;
 
     virtual CRect GetEnclosingRect();
-    virtual enum CDrawObjType GetType() { return drawPolygon; }
+    virtual enum CDrawObjType GetType() const { return drawPolygon; }
 
     virtual BOOL SetForeColor(COLORREF cr) { m_crLine = cr; return TRUE; }
     virtual BOOL SetBackColor(COLORREF cr) { m_crFill = cr; return TRUE; }
@@ -425,7 +425,7 @@ public:
 
     void SetText(int x, int y, const char* pszText, FontID fntID,
         COLORREF crText = RGB(255,255,255));
-    virtual enum CDrawObjType GetType() { return drawText; }
+    virtual enum CDrawObjType GetType() const { return drawText; }
 
     virtual BOOL SetForeColor(COLORREF cr) { m_crText = cr; return TRUE; }
     virtual BOOL SetFont(FontID fid);
@@ -464,7 +464,7 @@ public:
     CBitmap         m_bitmap;
 
     void SetBitmap(int x, int y, HBITMAP hBMap, TileScale eBaseScale = fullScale);
-    virtual enum CDrawObjType GetType() { return drawBitmap; }
+    virtual enum CDrawObjType GetType() const { return drawBitmap; }
 
 // Operations
 public:
@@ -497,15 +497,15 @@ class CTileImage : public CDrawObj
 {
 // Constructors
 public:
-    CTileImage() { m_tid = nullTid; m_pTMgr = NULL; }
-    CTileImage(CTileManager* pTMgr) { m_tid = nullTid; m_pTMgr = pTMgr; }
+    CTileImage() : m_tid(nullTid) { m_pTMgr = NULL; }
+    CTileImage(CTileManager* pTMgr) : m_tid(nullTid) { m_pTMgr = pTMgr; }
 // Attributes
 public:
     TileID          m_tid;
     CTileManager*   m_pTMgr;
 
     void SetTile(int x, int y, TileID tid);
-    virtual enum CDrawObjType GetType() { return drawTile; }
+    virtual enum CDrawObjType GetType() const { return drawTile; }
 // Operations
 public:
     virtual void Draw(CDC* pDC, TileScale eScale);
@@ -539,8 +539,8 @@ class CPieceObj : public CDrawObj
 {
 // Constructors
 public:
-    CPieceObj() { m_pid = nullTid; m_pDoc = NULL; }
-    CPieceObj(CGamDoc* pDoc) { m_pid = nullTid; m_pDoc = pDoc; }
+    CPieceObj() { m_pid = nullPid; m_pDoc = NULL; }
+    CPieceObj(CGamDoc* pDoc) { m_pid = nullPid; m_pDoc = pDoc; }
 
 // Attributes
 public:
@@ -555,7 +555,7 @@ public:
     BOOL IsOwnedButNotByCurrentPlayer();
     void SetOwnerMask(DWORD dwMask);
 
-    virtual enum CDrawObjType GetType() { return drawPieceObj; }
+    virtual enum CDrawObjType GetType() const { return drawPieceObj; }
     virtual ObjectID GetObjectID() { return static_cast<ObjectID>(m_pid); }
 
 // Operations
@@ -581,7 +581,7 @@ public:
     CLineObj() {}
 // Other...
 protected:
-    virtual enum CDrawObjType GetType() { return drawLineObj; }
+    virtual enum CDrawObjType GetType() const { return drawLineObj; }
 
     ObjectID    m_dwObjectID;
 public:
@@ -599,9 +599,9 @@ class CMarkObj : public CDrawObj
 {
 // Constructors
 public:
-    CMarkObj() { m_mid = nullTid; m_pDoc = NULL; m_nFacingDegCW = 0; }
+    CMarkObj() { m_mid = nullMid; m_pDoc = NULL; m_nFacingDegCW = 0; }
     CMarkObj(CGamDoc* pDoc)
-        { m_mid = nullTid; m_pDoc = pDoc; m_nFacingDegCW = 0; }
+        { m_mid = nullMid; m_pDoc = pDoc; m_nFacingDegCW = 0; }
 
 // Attributes
 public:
@@ -618,7 +618,7 @@ public:
 
     void ResyncExtentRect();
 
-    virtual enum CDrawObjType GetType() { return drawMarkObj; }
+    virtual enum CDrawObjType GetType() const { return drawMarkObj; }
 protected:
     ObjectID m_dwObjectID;
     int      m_nFacingDegCW;           // Rotation of marker (degrees)
@@ -663,12 +663,14 @@ public:
         BOOL bApplyVisibility = TRUE);
     void DrillDownHitTest(CPoint point, CPtrList* selLst,
         TileScale eScale = (TileScale)AllTileScales, BOOL bApplyVisibility = TRUE);
-    void ArrangePieceTableInDrawOrder(CWordArray* pTbl);
-    void ArrangePieceTableInVisualOrder(CWordArray* pTbl);
+#ifdef GPLAY
+    void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl);
+    void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl);
+#endif
     void ArrangeObjectListInDrawOrder(CPtrList* pLst);
     void ArrangeObjectListInVisualOrder(CPtrList* pLst);
-    void ArrangeObjectPtrTableInDrawOrder(CPtrArray* pTbl);
-    void ArrangeObjectPtrTableInVisualOrder(CPtrArray* pTbl);
+    void ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl);
+    void ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl);
 #ifdef GPLAY
     void SetOwnerMasks(DWORD dwOwnerMask);
 
@@ -677,9 +679,9 @@ public:
     BOOL HasObject(CDrawObj* pObj) { return Find(pObj) != NULL; }
     BOOL HasMarker();
     void GetPieceObjectPtrList(CPtrList* pLst);
-    void GetPieceIDTable(CWordArray *pTbl);
-    void GetObjectListFromPieceIDTable(CWordArray* pTbl, CPtrList* pLst);
-    static void GetPieceIDTableFromObjList(CPtrList* pLst, CWordArray* pTbl,
+    void GetPieceIDTable(std::vector<PieceID>& pTbl);
+    void GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList* pLst);
+    static void GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>& pTbl,
         BOOL bDeleteObjs = FALSE);
     // ------- //
     CDrawList* Clone(CGamDoc* pDoc);

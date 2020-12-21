@@ -48,7 +48,7 @@
 
 #define WM_ROTATEPIECE_DELTA    (WM_USER + 210) // WPARAM = (int)relative rotation delta
 #define WM_CENTERBOARDONPOINT   (WM_USER + 211) // WPARAM = POINT* in board coords
-#define WM_SHOWPLAYINGBOARD     (WM_USER + 212) // WPARAM = Playing Board Index
+#define WM_SHOWPLAYINGBOARD     (WM_USER + 212) // WPARAM = size_t Playing Board Index
 #define WM_WINSTATE_RESTORE     (WM_USER + 213) // No Args. Posted to project window
 #define WM_SELECT_BOARD_OBJLIST (WM_USER + 214) // WPARAM = CPlayBoard*, LPARAM = CPtrList*
 

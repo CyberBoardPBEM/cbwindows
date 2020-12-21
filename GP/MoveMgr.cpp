@@ -67,7 +67,7 @@ void CMoveRecord::Serialize(CArchive& ar)
 /////////////////////////////////////////////////////////////////////
 // CBoardPieceMove methods....
 
-CBoardPieceMove::CBoardPieceMove(int nBrdSerNum, PieceID pid, CPoint pnt,
+CBoardPieceMove::CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt,
     PlacePos ePos)
 {
     m_eType = mrecPMove;
@@ -83,7 +83,7 @@ BOOL CBoardPieceMove::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", m_pid);
+        TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -100,7 +100,7 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
             GetPBoardBySerial(m_nBrdNum);
         ASSERT(pPBrdDest);
@@ -108,7 +108,7 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
             pObj->GetRect().Size());
     }
     else
-        pDoc->SelectTrayItem(pTray, m_pid);
+        pDoc->SelectTrayItem(*pTray, m_pid);
 }
 
 void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
@@ -121,7 +121,7 @@ void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
         GetPBoardBySerial(m_nBrdNum);
     ASSERT(pPBrdDest);
 
-    pDoc->EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
+    pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
 
     if (pDoc->FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, &pObj))
     {
@@ -138,7 +138,7 @@ void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
         CPoint ptCtr = GetMidRect(rct);
         pDoc->IndicateBoardPiece(pPBrdDest, ptCtr, rct.Size());
     }
-    pDoc->SelectObjectOnBoard(pPBrdDest, pObj);
+    pDoc->SelectObjectOnBoard(*pPBrdDest, pObj);
 }
 
 void CBoardPieceMove::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
@@ -150,18 +150,17 @@ void CBoardPieceMove::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
-        ar << (short)m_nBrdNum;
+        ar << m_pid;
+        ar << m_nBrdNum;
         ar << (short)m_ePos;
         ar << (short)m_ptCtr.x;
         ar << (short)m_ptCtr.y;
     }
     else
     {
-        WORD wTmp;
         short sTmp;
-        ar >> wTmp; m_pid = (int)wTmp;
-        ar >> sTmp; m_nBrdNum = (int)sTmp;
+        ar >> m_pid;
+        ar >> m_nBrdNum;
         ar >> sTmp; m_ePos = (PlacePos)sTmp;
         ar >> sTmp; m_ptCtr.x = sTmp;
         ar >> sTmp; m_ptCtr.y = sTmp;
@@ -173,7 +172,7 @@ void CBoardPieceMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    board = %d, pos = %d, pid = %d, @(%d, %d)\r\n",
-        m_nBrdNum, m_ePos, m_pid, m_ptCtr.x, m_ptCtr.y);
+        value_preserving_cast<int>(static_cast<WORD>(m_nBrdNum)), m_ePos, value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_ptCtr.x, m_ptCtr.y);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -181,7 +180,7 @@ void CBoardPieceMove::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CTrayPieceMove methods....
 
-CTrayPieceMove::CTrayPieceMove(int nTrayNum, PieceID pid, int nPos)
+CTrayPieceMove::CTrayPieceMove(size_t nTrayNum, PieceID pid, size_t nPos)
 {
     m_eType = mrecTMove;
     // ------- //
@@ -195,7 +194,7 @@ BOOL CTrayPieceMove::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", m_pid);
+        TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -212,22 +211,22 @@ void CTrayPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
     }
     else
-        pDoc->SelectTrayItem(pTray, m_pid);
+        pDoc->SelectTrayItem(*pTray, m_pid);
 }
 
 void CTrayPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
-    CTraySet* pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
+    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
     pDoc->PlacePieceInTray(m_pid, pYGrp, m_nPos);
 }
 
 void CTrayPieceMove::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
 {
-    CTraySet* pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
+    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
     pDoc->SelectTrayItem(pYGrp, m_pid);
 }
 
@@ -236,17 +235,18 @@ void CTrayPieceMove::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
-        ar << (short)m_nTrayNum;
-        ar << (short)m_nPos;
+        ar << m_pid;
+        ar << value_preserving_cast<int16_t>(m_nTrayNum);
+        ASSERT(m_nPos == Invalid_v<size_t> ||
+                m_nPos < size_t(int16_t(-1)));
+        ar << (m_nPos == Invalid_v<size_t> ? int16_t(-1) : value_preserving_cast<int16_t>(m_nPos));
     }
     else
     {
-        WORD wTmp;
-        short sTmp;
-        ar >> wTmp; m_pid = (int)wTmp;
-        ar >> sTmp; m_nTrayNum = (int)sTmp;
-        ar >> sTmp; m_nPos = (int)sTmp;
+        int16_t sTmp;
+        ar >> m_pid;
+        ar >> sTmp; m_nTrayNum = value_preserving_cast<size_t>(sTmp);
+        ar >> sTmp; m_nPos = sTmp == int16_t(-1) ? Invalid_v<size_t> : value_preserving_cast<size_t>(sTmp);
     }
 }
 
@@ -254,8 +254,8 @@ void CTrayPieceMove::Serialize(CArchive& ar)
 void CTrayPieceMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    tray = %d, nPos = %d, pid = %d\r\n",
-        m_nTrayNum, m_nPos, m_pid);
+    wsprintf(szBfr, "    tray = %zu, nPos = %zu, pid = %u\r\n",
+        m_nTrayNum, m_nPos, static_cast<WORD>(m_pid));
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -268,7 +268,7 @@ BOOL CPieceSetSide::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", m_pid);
+        TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -307,12 +307,12 @@ void CPieceSetSide::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(pPBoard, pObj);
+        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(pTray, m_pid);
+        pDoc->SelectTrayItem(*pTray, m_pid);
 }
 
 void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
@@ -332,13 +332,12 @@ void CPieceSetSide::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
+        ar << m_pid;
         ar << (BYTE)m_bTopUp;
     }
     else
     {
-        WORD wTmp;
-        ar >> wTmp; m_pid = (PieceID)wTmp;
+        ar >> m_pid;
         BYTE cTmp;
         ar >> cTmp; m_bTopUp = (BOOL)cTmp;
     }
@@ -349,7 +348,7 @@ void CPieceSetSide::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    Piece %d is set to %s visible.\r\n",
-        m_pid, m_bTopUp ? "top" : "bottom");
+        value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_bTopUp ? "top" : "bottom");
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -362,7 +361,7 @@ BOOL CPieceSetFacing::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", m_pid);
+        TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -379,12 +378,12 @@ void CPieceSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(pPBoard, pObj);
+        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(pTray, m_pid);
+        pDoc->SelectTrayItem(*pTray, m_pid);
 }
 
 void CPieceSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
@@ -404,13 +403,13 @@ void CPieceSetFacing::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
+        ar << m_pid;
         ar << (WORD)m_nFacingDegCW;
     }
     else
     {
         WORD wTmp;
-        ar >> wTmp; m_pid = (PieceID)wTmp;
+        ar >> m_pid;
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
         {
             BYTE cTmp;
@@ -429,7 +428,7 @@ void CPieceSetFacing::Serialize(CArchive& ar)
 void CPieceSetFacing::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    Piece %d is rotated %d degrees.\r\n", m_pid, m_nFacingDegCW);
+    wsprintf(szBfr, "    Piece %d is rotated %d degrees.\r\n", value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_nFacingDegCW);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -442,7 +441,7 @@ BOOL CPieceSetOwnership::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", m_pid);
+        TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -459,12 +458,12 @@ void CPieceSetOwnership::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(pPBoard, pObj);
+        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(pTray, m_pid);
+        pDoc->SelectTrayItem(*pTray, m_pid);
     pDoc->SetPieceOwnership(m_pid, m_dwOwnerMask);
 }
 
@@ -473,13 +472,13 @@ void CPieceSetOwnership::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
+        ar << m_pid;
         ar << m_dwOwnerMask;
     }
     else
     {
         WORD wTmp;
-        ar >> wTmp; m_pid = (PieceID)wTmp;
+        ar >> m_pid;
         if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
         {
             ar >> wTmp;
@@ -495,7 +494,7 @@ void CPieceSetOwnership::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    Piece %d has ownership changed to 0x%X.\r\n",
-        m_pid, m_dwOwnerMask);
+        value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_dwOwnerMask);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -520,9 +519,9 @@ void CMarkerSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(pPBoard, pObj);
+        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
         ASSERT(FALSE);          // SHOULDN'T HAPPEN
@@ -545,15 +544,15 @@ void CMarkerSetFacing::Serialize(CArchive& ar)              // VER2.0 is first t
     if (ar.IsStoring())
     {
         ar << m_dwObjID;
-        ar << (WORD)m_mid;
-        ar << (WORD)m_nFacingDegCW;
+        ar << m_mid;
+        ar << value_preserving_cast<WORD>(m_nFacingDegCW);
     }
     else
     {
         ar >> m_dwObjID;
         WORD wTmp;
-        ar >> wTmp; m_mid = (PieceID)wTmp;
-        ar >> wTmp; m_nFacingDegCW = (int)wTmp;
+        ar >> m_mid;
+        ar >> wTmp; m_nFacingDegCW = value_preserving_cast<int>(wTmp);
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
             m_nFacingDegCW *= 5;                                // Convert old values to degrees
     }
@@ -564,7 +563,7 @@ void CMarkerSetFacing::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    Marker dwObjID = %lX, mid = %d is rotated %d degrees.\r\n",
-        m_dwObjID, m_mid, m_nFacingDegCW);
+        m_dwObjID, value_preserving_cast<int>(static_cast<WORD>(m_mid)), m_nFacingDegCW);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -572,7 +571,7 @@ void CMarkerSetFacing::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CBoardMarkerMove methods....
 
-CBoardMarkerMove::CBoardMarkerMove(int nBrdSerNum, ObjectID dwObjID, MarkID mid,
+CBoardMarkerMove::CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID mid,
     CPoint pnt, PlacePos ePos)
 {
     m_eType = mrecMMove;
@@ -593,7 +592,7 @@ void CBoardMarkerMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
             GetPBoardBySerial(m_nBrdNum);
         ASSERT(pPBrdDest != NULL);
@@ -610,7 +609,7 @@ void CBoardMarkerMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
         GetPBoardBySerial(m_nBrdNum);
     ASSERT(pPBrdDest != NULL);
 
-    pDoc->EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
+    pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
 
     CDrawObj* pObj;
     CPlayBoard* pPBrdFrom = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
@@ -637,20 +636,19 @@ void CBoardMarkerMove::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_mid;
+        ar << m_mid;
         ar << m_dwObjID;
-        ar << (short)m_nBrdNum;
+        ar << m_nBrdNum;
         ar << (short)m_ePos;
         ar << (short)m_ptCtr.x;
         ar << (short)m_ptCtr.y;
     }
     else
     {
-        WORD wTmp;
         short sTmp;
-        ar >> wTmp; m_mid = (int)wTmp;
+        ar >> m_mid;
         ar >> m_dwObjID;
-        ar >> sTmp; m_nBrdNum = (int)sTmp;
+        ar >> m_nBrdNum;
         ar >> sTmp; m_ePos = (PlacePos)sTmp;
         ar >> sTmp; m_ptCtr.x = sTmp;
         ar >> sTmp; m_ptCtr.y = sTmp;
@@ -662,7 +660,7 @@ void CBoardMarkerMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    board = %d, pos = %d, dwObjID = %lX, mid = %d, @(%d, %d)\r\n",
-        m_nBrdNum, m_ePos, m_dwObjID, m_mid, m_ptCtr.x, m_ptCtr.y);
+        value_preserving_cast<int>(static_cast<WORD>(m_nBrdNum)), m_ePos, m_dwObjID, value_preserving_cast<int>(static_cast<WORD>(m_mid)), m_ptCtr.x, m_ptCtr.y);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -685,7 +683,7 @@ void CObjectDelete::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
     }
 }
@@ -778,7 +776,7 @@ void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
                 pTray, pPBoard, &pPObj))
             pObj = pPObj;
         else
-            pDoc->SelectTrayItem(pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
+            pDoc->SelectTrayItem(*pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
     }
     else
         pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
@@ -787,12 +785,12 @@ void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
 
         // Show a balloon tip so person knows what happened
         if (nMoveWithinGroup == 0)
-            pDoc->IndicateTextTipOnBoard(pPBoard, ptCtr, IDS_TIP_OBJTEXTCHG);
+            pDoc->IndicateTextTipOnBoard(*pPBoard, ptCtr, IDS_TIP_OBJTEXTCHG);
     }
 }
 
@@ -881,7 +879,7 @@ void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
         pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
     }
 }
@@ -909,10 +907,10 @@ void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(pPBoard, ptCtr);
+        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
 
         // Show a balloon tip so person knows what happened
-        pDoc->IndicateTextTipOnBoard(pPBoard, ptCtr,
+        pDoc->IndicateTextTipOnBoard(*pPBoard, ptCtr,
             m_bLockState ? IDS_TIP_OBJLOCKED : IDS_TIP_OBJUNLOCKED);
     }
 }
@@ -1024,11 +1022,10 @@ void CMovePlotList::Serialize(CArchive& ar)
 {
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
-        ar << (short)m_nBrdNum;
+        ar << m_nBrdNum;
     else
     {
-        short sTmp;
-        ar >> sTmp; m_nBrdNum = (int)sTmp;
+        ar >> m_nBrdNum;
     }
     m_tblPlot.Serialize(ar);
 }
@@ -1068,23 +1065,33 @@ void CMessageRcd::DumpToTextFile(CFile& file)
 
 /////////////////////////////////////////////////////////////////////
 
-CEventMessageRcd::CEventMessageRcd(CString strMsg, BOOL bIsBoardEvent,
-    int nID, int nVal1, int nVal2 /* = 0 */)
+CEventMessageRcd::CEventMessageRcd(CString strMsg,
+    BoardID nBoard, int x, int y)
 {
     m_eType = mrecEvtMsg;
-    m_bIsBoardEvent = bIsBoardEvent;
-    m_nID = nID;
-    m_nVal1 = nVal1;
-    m_nVal2 = nVal2;
+    m_bIsBoardEvent = TRUE;
+    m_nBoard = nBoard;
+    m_x = x;
+    m_y = y;
+    m_strMsg = strMsg;
+}
+
+CEventMessageRcd::CEventMessageRcd(CString strMsg,
+    size_t nTray, PieceID pieceID)
+{
+    m_eType = mrecEvtMsg;
+    m_bIsBoardEvent = FALSE;
+    m_nTray = nTray;
+    m_pieceID = pieceID;
     m_strMsg = strMsg;
 }
 
 void CEventMessageRcd::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     if (m_bIsBoardEvent)        // Board event message
-        pDoc->EventShowBoardNotification(m_nID, CPoint(m_nVal1, m_nVal2), m_strMsg);
+        pDoc->EventShowBoardNotification(m_nBoard, CPoint(m_x, m_y), m_strMsg);
     else                        // Tray event message
-        pDoc->EventShowTrayNotification(m_nID, (PieceID)m_nVal1, m_strMsg);
+        pDoc->EventShowTrayNotification(m_nTray, m_pieceID, m_strMsg);
 }
 
 void CEventMessageRcd::Serialize(CArchive& ar)
@@ -1093,9 +1100,18 @@ void CEventMessageRcd::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << (WORD)m_bIsBoardEvent;
-        ar << (WORD)m_nID;
-        ar << (DWORD)m_nVal1;
-        ar << (DWORD)m_nVal2;
+        if (m_bIsBoardEvent)
+        {
+            ar << m_nBoard;
+            ar << value_preserving_cast<DWORD>(m_x);
+            ar << value_preserving_cast<DWORD>(m_y);
+        }
+        else
+        {
+            ar << value_preserving_cast<WORD>(m_nTray);
+            ar << value_preserving_cast<DWORD>(static_cast<WORD>(m_pieceID));
+            ar << (DWORD)0;
+        }
         ar << m_strMsg;
     }
     else
@@ -1103,9 +1119,18 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         WORD wTmp;
         DWORD dwTmp;
         ar >> wTmp; m_bIsBoardEvent = (int)wTmp;
-        ar >> wTmp; m_nID = (int)wTmp;
-        ar >> dwTmp; m_nVal1 = (int)dwTmp;
-        ar >> dwTmp; m_nVal2 = (int)dwTmp;
+        if (m_bIsBoardEvent)
+        {
+            ar >> m_nBoard;
+            ar >> dwTmp; m_x = value_preserving_cast<int>(dwTmp);
+            ar >> dwTmp; m_y = value_preserving_cast<int>(dwTmp);
+        }
+        else
+        {
+            ar >> wTmp; m_nTray = value_preserving_cast<size_t>(wTmp);
+            ar >> dwTmp; m_pieceID = static_cast<PieceID>(dwTmp);
+            ar >> dwTmp;
+        }
         ar >> m_strMsg;
     }
 }
@@ -1114,8 +1139,16 @@ void CEventMessageRcd::Serialize(CArchive& ar)
 void CEventMessageRcd::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    BoardEvt = %s, nID = %d, nVal1 = %d, nVal2 = %d\r\n",
-             (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), m_nID, m_nVal1, m_nVal2);
+    if (m_bIsBoardEvent)
+    {
+        wsprintf(szBfr, "    BoardEvt = %s, nBoard = %d, (x, y) = (%d, %d)\r\n",
+                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), value_preserving_cast<int>(static_cast<WORD>(m_nBoard)), m_x, m_y);
+    }
+    else
+    {
+        wsprintf(szBfr, "    BoardEvt = %s, nTray = %zu, pieceID = %d\r\n",
+                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), m_nTray, value_preserving_cast<int>(static_cast<WORD>(m_pieceID)));
+    }
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif

@@ -51,7 +51,7 @@ public:
 
     // .. Caller must set these ..
     CGamDoc*        m_pDoc;
-    int             m_nMSet;
+    size_t          m_nMSet;
 
 // Implementation
 protected:
@@ -61,7 +61,7 @@ protected:
     void SetupTileListbox();
     void SetupTileSetNames();
     void CreateMarker();
-    TileID GetTileID();
+    TileID GetTileID() const;
     void RefreshMarkerList();
     // ------- //
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

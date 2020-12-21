@@ -43,35 +43,35 @@ const int prefixLen = 5;                // five characters
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CProjListBox, CGrafixListBox)
+BEGIN_MESSAGE_MAP(CProjListBoxBase, CGrafixListBox)
     //{{AFX_MSG_MAP(CProjListBox)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CProjListBox::AddItem(int nGroupCode, LPCSTR pszText, int nSourceCode)
+int CProjListBoxBase::AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode)
 {
     CString str;
-    str += (char)(nGroupCode + 'A');
-    str += (char)(nSourceCode == -1 ? '*' : '+');
+    str += value_preserving_cast<char>(nGroupCode + 'A');
+    str += nSourceCode == Invalid_v<size_t> ? '*' : '+';
     str += "   ";           // Will always precede sequenced entries
     str += pszText;
     int nIdx = AddString(str);
     if (nIdx == LB_ERR)
         return nIdx;
-    int nItem = SetItemData(nIdx, (DWORD)nSourceCode);
-    m_nHorzWidth = max(GetItemWidth(nIdx), m_nHorzWidth);
+    int nItem = SetItemData(nIdx, nSourceCode != Invalid_v<size_t> ? value_preserving_cast<DWORD_PTR>(nSourceCode) : Invalid_v<uintptr_t>);
+    m_nHorzWidth = CB::max(GetItemWidth(nIdx), m_nHorzWidth);
     SetHorizontalExtent(m_nHorzWidth);
     return nItem;
 }
 
-int CProjListBox::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
-    int nSourceCode)
+int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
+    size_t nSourceCode)
 {
     CString str;
-    str += (char)(nGroupCode + 'A');
-    str += (char)(nSourceCode == -1 ? '*' : '+');
+    str += value_preserving_cast<char>(nGroupCode + 'A');
+    str += nSourceCode == Invalid_v<size_t> ? '*' : '+';
 
     char szNum[16];
     _itoa(nSeqNum, szNum, 10);
@@ -82,25 +82,25 @@ int CProjListBox::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
     int nIdx = AddString(str);
     if (nIdx == LB_ERR)
         return nIdx;
-    int nItem = SetItemData(nIdx, (DWORD)nSourceCode);
-    m_nHorzWidth = max(GetItemWidth(nIdx), m_nHorzWidth);
+    int nItem = SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(nSourceCode));
+    m_nHorzWidth = CB::max(GetItemWidth(nIdx), m_nHorzWidth);
     SetHorizontalExtent(m_nHorzWidth);
     return nItem;
 }
 
-int CProjListBox::GetItemGroupCode(int nIndex)
+int CProjListBoxBase::GetItemGroupCode(int nIndex)
 {
     CString str;
     GetText(nIndex, str);
     return (int)(str[0] - 'A');
 }
 
-int CProjListBox::GetItemSourceCode(int nIndex)
+size_t CProjListBoxBase::GetItemSourceCode(int nIndex)
 {
-    return (int)GetItemData(nIndex);
+    return value_preserving_cast<size_t>(GetItemData(nIndex));
 }
 
-void CProjListBox::GetItemText(int nIndex, CString& str)
+void CProjListBoxBase::GetItemText(int nIndex, CString& str)
 {
     CString strTmp;
     GetText(nIndex, strTmp);
@@ -109,7 +109,7 @@ void CProjListBox::GetItemText(int nIndex, CString& str)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CProjListBox::GetItemWidth(int nIndex)
+int CProjListBoxBase::GetItemWidth(int nIndex)
 {
     int nWidth = 0;
 
@@ -137,12 +137,12 @@ int CProjListBox::GetItemWidth(int nIndex)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CProjListBox::OnItemHeight(int nIndex)
+unsigned CProjListBoxBase::OnItemHeight(size_t /*nIndex*/)
 {
-    return g_res.tm8ssb.tmHeight;
+    return value_preserving_cast<unsigned>(g_res.tm8ssb.tmHeight);
 }
 
-void CProjListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CProjListBoxBase::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
@@ -155,14 +155,14 @@ void CProjListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
         // First character in string is sorting code. The second is the
         // style ('*' = Heading line, '+' = Item line)
         CString str;
-        GetText(nIndex, str);
+        GetText(value_preserving_cast<int>(nIndex), str);
         BOOL bHead = str[1] == '*';
 
         CFont* pPrevFont = pDC->SelectObject(CFont::FromHandle(
             bHead ? g_res.h8ssb : g_res.h8ss));
 
         if (str[0] - 'A' == m_nMarkGrp &&
-            GetItemSourceCode(nIndex) == m_nMarkSourceCode)
+            GetItemSourceCode(value_preserving_cast<int>(nIndex)) == m_nMarkSourceCode)
         {
             CRect rct = rctItem;
             // Mark the line with a chevron

@@ -292,7 +292,7 @@ CRollState* CGamDoc::GetDieRollState()
 // coordinates. If either of the coordinates are -1, the center of
 // the view receives the tip.
 
-void CGamDoc::EventShowBoardNotification(int nBrdSerNum, CPoint pntTipLoc, CString strMsg)
+void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, CString strMsg)
 {
     if (IsQuietPlayback()) return;
 
@@ -302,16 +302,16 @@ void CGamDoc::EventShowBoardNotification(int nBrdSerNum, CPoint pntTipLoc, CStri
 
     if (pntTipLoc.x == -1 || pntTipLoc.y == -1)
     {
-        EnsureBoardVisible(pPBoard);
-        pView = (CPlayBoardView*)FindPBoardView(pPBoard);
+        EnsureBoardVisible(*pPBoard);
+        pView = (CPlayBoardView*)FindPBoardView(*pPBoard);
         CRect rct;
         pView->GetClientRect(rct);
         pntTipLoc = rct.CenterPoint();
     }
     else
     {
-        EnsureBoardLocationVisible(pPBoard, pntTipLoc);
-        pView = (CPlayBoardView*)FindPBoardView(pPBoard);
+        EnsureBoardLocationVisible(*pPBoard, pntTipLoc);
+        pView = (CPlayBoardView*)FindPBoardView(*pPBoard);
         pView->WorkspaceToClient(pntTipLoc);
     }
     pView->SetNotificationTip(pntTipLoc, strMsg);
@@ -322,11 +322,11 @@ void CGamDoc::EventShowBoardNotification(int nBrdSerNum, CPoint pntTipLoc, CStri
 // If the piece id is null or not found in the tray, the center of the
 // listbox receives the tip.
 
-void CGamDoc::EventShowTrayNotification(int nTrayNum, PieceID pid, CString strMsg)
+void CGamDoc::EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString strMsg)
 {
     if (IsQuietPlayback()) return;
 
-    CTraySet* pYGrp = GetTrayManager()->GetTraySet(nTrayNum);
+    CTraySet& pYGrp = GetTrayManager()->GetTraySet(nTrayNum);
     SelectTrayItem(pYGrp, pid, strMsg);
 }
 

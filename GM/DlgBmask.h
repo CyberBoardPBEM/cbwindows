@@ -39,7 +39,7 @@ public:
     CListBox    m_lboxBoard;
     //}}AFX_DATA
 
-    int m_nBrdNum;
+    size_t m_nBrdNum;
     CBoardManager* m_pBMgr;
 
 // Implementation

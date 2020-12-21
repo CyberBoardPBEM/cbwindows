@@ -1798,7 +1798,7 @@ BEGIN
     IDS_WARN_DISCARD_COMP_MOVE
                             "Are you sure you want to discard your compound move?"
     IDS_MSG_ROLLSET         "SET"
-    IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of %d piece(s) have been removed from the game."
+    IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of %zu piece(s) have been removed from the game."
     IDS_TIP_OBJTEXTCHG      "This object's text has changed"
     IDS_TIP_OBJLOCKED       "Objects have been locked on this playing board.\r\n\r\nLocked objects cannot be selected."
     IDS_TIP_OBJUNLOCKED     "Objects have been unlocked on this playing board."
@@ -1807,8 +1807,8 @@ BEGIN
     IDS_TIP_PREFIX_BACK     "Back: "
     IDS_TIP_LBOXITEM_MARKER "* "
     IDS_TIP_CLICK_MENU      "Click here for tray's menu"
-    IDS_TIP_TRAY_SHUFFLED   "%d pieces in this tray have been shuffled."
-    IDS_TIP_OBJS_SHUFFLED   "%d objects in this area of the board have been shuffled."
+    IDS_TIP_TRAY_SHUFFLED   "%zu pieces in this tray have been shuffled."
+    IDS_TIP_OBJS_SHUFFLED   "%zu objects in this area of the board have been shuffled."
     IDS_TIP_SELLIST_HELP    "Insert key = Selects only highlighted items.\r\nDelete key = Deselects all highlighted items."
 END
 

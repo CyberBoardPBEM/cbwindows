@@ -43,7 +43,7 @@ class CGamDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTileListBox : public CGrafixListBox
+class CTileListBox : public CGrafixListBoxData<CGrafixListBox, TileID>
 {
 // Construction
 public:
@@ -65,10 +65,10 @@ protected:
     int         m_bDisplayIDs;     // Set to prop [Settings]:DisplayIDs
 
     // Overrides
-    virtual int OnItemHeight(int nIndex);
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem);
-    virtual BOOL OnDragSetup(DragInfo* pDI);
+    virtual unsigned OnItemHeight(size_t nIndex) override;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) override;
+    virtual BOOL OnDragSetup(DragInfo* pDI) override;
 
     //{{AFX_MSG(CTileListBox)
     //}}AFX_MSG

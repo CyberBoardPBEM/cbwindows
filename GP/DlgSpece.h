@@ -56,8 +56,8 @@ protected:
     CPieceTable*    m_pPTbl;        // Loaded using doc pointer
     CTrayManager*   m_pYMgr;        // Loaded using doc pointer
 
-    CWordArray      m_tblPiece;
-    CWordArray      m_tblTray;
+    std::vector<PieceID> m_tblPiece;
+    std::vector<PieceID> m_tblTray;
 
     // -------- //
     void LoadPieceNameList();

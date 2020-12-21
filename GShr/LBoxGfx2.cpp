@@ -36,7 +36,7 @@
 static DragInfo di;
 
 const int TRIGGER_THRESHOLD = 3;
-const int defaultItemHeight = 16;
+const unsigned defaultItemHeight = 16;
 
 const int scrollZonePixels = 7;         // size of autoscroll trigger zone
 const int timerScrollStart = 180;
@@ -71,7 +71,7 @@ CGrafixListBox2::CGrafixListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::SetItemMap(CPtrArray* pMap,
+void CGrafixListBox2::SetItemMap(const std::vector<CDrawObj*>* pMap,
     BOOL bKeepPosition /* = TRUE */)
 {
     m_pItemMap = pMap;
@@ -93,16 +93,16 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
     ResetContent();
 
     int nItem;
-    for (nItem = 0; nItem < m_pItemMap->GetSize(); nItem++)
+    for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
         AddString(" ");             // Fill with dummy data
     if (bKeepPosition)
     {
         if (nTopIdx >= 0)
-            SetTopIndex(min(nTopIdx, nItem - 1));
+            SetTopIndex(CB::min(nTopIdx, nItem - 1));
         if (nFcsIdx >= 0)
-            SetCaretIndex(min(nFcsIdx, nItem - 1), FALSE);
+            SetCaretIndex(CB::min(nFcsIdx, nItem - 1), FALSE);
         if (nCurSel >= 0)
-            SetCurSel(min(nCurSel, nItem - 1));
+            SetCurSel(CB::min(nCurSel, nItem - 1));
     }
     SetRedraw(TRUE);
     Invalidate();
@@ -110,74 +110,74 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
 
 /////////////////////////////////////////////////////////////////////////////
 
-LPVOID CGrafixListBox2::MapIndexToItem(int nIndex)
+CDrawObj* CGrafixListBox2::MapIndexToItem(size_t nIndex)
 {
     ASSERT(m_pItemMap);
-    ASSERT(nIndex < m_pItemMap->GetSize());
-    return m_pItemMap->GetAt(nIndex);
+    ASSERT(nIndex < m_pItemMap->size());
+    return m_pItemMap->at(nIndex);
 }
 
-int CGrafixListBox2::MapItemToIndex(LPVOID pItem)
+size_t CGrafixListBox2::MapItemToIndex(CDrawObj* pItem)
 {
     ASSERT(m_pItemMap);
-    for (int i = 0; i < m_pItemMap->GetSize(); i++)
+    for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
-        if (pItem == m_pItemMap->GetAt(i))
+        if (pItem == m_pItemMap->at(i))
             return i;
     }
-    return -1;                  // Failed to find it
+    return Invalid_v<size_t>;                  // Failed to find it
 }
 
-LPVOID CGrafixListBox2::GetCurMapItem()
+CDrawObj* CGrafixListBox2::GetCurMapItem()
 {
     ASSERT(!IsMultiSelect());
     ASSERT(m_pItemMap);
     int nItem = GetCurSel();
     ASSERT(nItem >= 0);
-    ASSERT(nItem < m_pItemMap->GetSize());
-    return m_pItemMap->GetAt(nItem);
+    ASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
+    return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
 }
 
-void CGrafixListBox2::GetCurMappedItemList(CPtrArray* pLst)
+void CGrafixListBox2::GetCurMappedItemList(std::vector<CDrawObj*>& pLst)
 {
-    pLst->RemoveAll();
+    pLst.clear();
     ASSERT(IsMultiSelect());
     int nSels = GetSelCount();
     if (nSels == LB_ERR || nSels == 0)
         return;
-    int* pSelTbl = new int[nSels];
-    GetSelItems(nSels, pSelTbl);
-    for (int i = 0; i < nSels; i++)
-        pLst->Add(MapIndexToItem(pSelTbl[i]));
-    delete pSelTbl;
+    std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
+    GetSelItems(nSels, pSelTbl.data());
+    pLst.reserve(pSelTbl.size());
+    for (size_t i = 0; i < pSelTbl.size(); i++)
+        pLst.push_back(MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
     return;
 }
 
-void CGrafixListBox2::SetCurSelMapped(LPVOID nMapVal)
+void CGrafixListBox2::SetCurSelMapped(CDrawObj* nMapVal)
 {
     ASSERT(m_pItemMap);
-    for (int i = 0; i < m_pItemMap->GetSize(); i++)
+    for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
-        if (m_pItemMap->GetAt(i) == nMapVal)
+        if (m_pItemMap->at(i) == nMapVal)
         {
-            SetCurSel(i);
-            SetTopIndex(i);
+            SetCurSel(value_preserving_cast<int>(i));
+            SetTopIndex(value_preserving_cast<int>(i));
         }
     }
 }
 
-void CGrafixListBox2::SetCurSelsMapped(CPtrArray& items)
+void CGrafixListBox2::SetCurSelsMapped(const std::vector<CDrawObj*>& items)
 {
     ASSERT(m_pItemMap);
     ASSERT(IsMultiSelect());
 
     SetSel(-1, FALSE);      // Deselect all
-    for (int i = 0; i < items.GetSize(); i++)
+    for (size_t i = 0; i < items.size(); i++)
     {
-        for (int j = 0; j < m_pItemMap->GetSize(); j++)
+        for (size_t j = 0; j < m_pItemMap->size(); j++)
         {
-            if (m_pItemMap->GetAt(j) == items[i])
-                SetSel(j);
+            if (m_pItemMap->at(j) == items[i])
+                SetSel(value_preserving_cast<int>(j));
         }
     }
 }
@@ -305,17 +305,17 @@ LRESULT CGrafixListBox2::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CGrafixListBox2::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
 {
-    int nHt = OnItemHeight((int)lpMIS->itemID);
+    unsigned nHt = OnItemHeight(lpMIS->itemID);
 
     if (nHt >= 256) nHt = 255;
     if (nHt == 0) nHt = defaultItemHeight;
 
-    lpMIS->itemHeight = (UINT)nHt;
+    lpMIS->itemHeight = nHt;
 }
 
 void CGrafixListBox2::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 {
-    int nIndex = (int)lpDIS->itemID;
+    size_t nIndex = lpDIS->itemID;
     CDC* pDC = CDC::FromHandle(lpDIS->hDC);
 
     CRect rct(lpDIS->rcItem);
@@ -355,7 +355,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
 
         // Get the final selection results after the mouse was released.
         if (IsMultiSelect())
-            GetCurMappedItemList(&m_multiSelList);
+            GetCurMappedItemList(m_multiSelList);
 
         if (bWasDragging && m_triggeredCursor)
         {
@@ -396,7 +396,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
             pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
                 (LPARAM)(LPVOID)&di);
             OnDragCleanup(&di);             // Tell subclass we're all done.
-            m_multiSelList.RemoveAll();
+            m_multiSelList.clear();
         }
     }
     else

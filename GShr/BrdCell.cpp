@@ -95,8 +95,8 @@ void CBoardArray::ReshapeBoard(int nRows, int nCols, int nParm1, int nParm2,
     for (int i = 0; i < nRows * nCols; i++)
         pMap[i].Clear();
 
-    int maxRows = min(m_nRows, nRows);
-    int maxCols = min(m_nCols, nCols);
+    int maxRows = CB::min(m_nRows, nRows);
+    int maxCols = CB::min(m_nCols, nCols);
 
     for (int r = 0; r < maxRows; r++)
     {
@@ -151,14 +151,14 @@ void CBoardArray::GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
     cfFull.CreateCell(eType, nParm1, nParm2, nStagger);
     int nHalfP1 = (nParm1 / 2) + ((nParm1 & 1) != 0 ? 1 : 0);
     int nHalfP2 = (nParm2 / 2) + ((nParm2 & 1) != 0 ? 1 : 0);
-    cfHalf.CreateCell(eType, max(2, nHalfP1), max(2, nHalfP2 ), nStagger);
+    cfHalf.CreateCell(eType, CB::max(2, nHalfP1), CB::max(2, nHalfP2 ), nStagger);
 
     // Attempt to compute 1/8 scale. Rounds up to get dimensions.
     // Minimum cell size is two pixels.
     int nSmallP1 = (nParm1 / 8) + ((nParm1 % 8) != 0 ? 1 : 0);
     int nSmallP2 = (nParm2 / 8) + ((nParm2 % 8) != 0 ? 1 : 0);
-    nSmallP1 = max(nSmallP1, 2);
-    nSmallP2 = max(nSmallP2, 2);
+    nSmallP1 = CB::max(nSmallP1, 2);
+    nSmallP2 = CB::max(nSmallP2, 2);
 
     // Hexagonal grids are shown as brick grids in small scale.
     if (eType == cformHexFlat)

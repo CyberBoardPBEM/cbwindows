@@ -41,29 +41,27 @@ static char THIS_FILE[] = __FILE__;
 
 void CHistoryTable::Clear()
 {
-    for (int i = 0; i < GetSize(); i++)
-        delete GetHistRecord(i);
-    RemoveAll();
+    clear();
 }
 
 void CHistoryTable::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetSize();
-        for (int i = 0; i < GetSize(); i++)
-            GetHistRecord(i)->Serialize(ar);
+        ar << value_preserving_cast<WORD>(size());
+        for (size_t i = 0; i < size(); i++)
+            GetHistRecord(i).Serialize(ar);
     }
     else
     {
         Clear();
         WORD wSize;
         ar >> wSize;
-        for (int i = 0; i < (int)wSize; i++)
+        for (WORD i = 0; i < wSize; i++)
         {
             CHistRecord* pRcd = new CHistRecord;
             pRcd->Serialize(ar);
-            Add(pRcd);
+            AddNewHistRecord(pRcd);
         }
     }
 }
@@ -75,12 +73,6 @@ CHistRecord::CHistRecord()
     m_nGamFileVersion = NumVersion(fileGamVerMajor, fileGamVerMinor);
     m_dwFilePos = 0;
     m_pMList = NULL;
-}
-
-CHistRecord::~CHistRecord()
-{
-    if (m_pMList != NULL)
-        delete m_pMList;
 }
 
 void CHistRecord::Serialize(CArchive& ar)
@@ -107,20 +99,18 @@ void CHistRecord::Serialize(CArchive& ar)
         ar >> m_strDescr;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
         {
-            if (m_pMList != NULL)
-                delete m_pMList;
-            m_pMList = NULL;
+            m_pMList.reset();
             BYTE fMoveExist;
             ar >> fMoveExist;
             if (fMoveExist)
             {
-                m_pMList = new CMoveList;
+                m_pMList.reset(new CMoveList);
                 m_pMList->Serialize(ar);
             }
         }
         else
         {
-            m_pMList = NULL;
+            m_pMList.reset();
             ar >> m_dwFilePos;
             if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 59))
             {

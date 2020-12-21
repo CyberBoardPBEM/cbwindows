@@ -54,7 +54,7 @@ public:
 
 // Attributes
 public:
-    virtual CTileManager* GetTileManager();
+    virtual CTileManager* GetTileManager() override;
 
 // Operations
 public:
@@ -65,22 +65,22 @@ protected:
     CGamDoc*    m_pDoc;
 
     // Misc
-    TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, int nIndex);
+    TileID GetTileID(BOOL bActiveIfApplies, size_t nIndex);
     void GetTileRectsForTwoSidedView(int nLBoxIndex, CRect& rctLeft, CRect& rctRight);
 
     // Overrides
-    virtual int OnItemHeight(int nIndex);
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem);
-    virtual BOOL OnDragSetup(DragInfo* pDI);
+    virtual unsigned OnItemHeight(size_t nIndex) override;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) override;
+    virtual BOOL OnDragSetup(DragInfo* pDI) override;
 
-    virtual void OnGetItemDebugString(int nIndex, CString& str);
+    virtual void OnGetItemDebugString(size_t nItem, CString& str) override;
 
     // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled();
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct);
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle);
-    virtual BOOL OnDoesItemHaveTipText(int nItem);
+    virtual BOOL OnIsToolTipsEnabled() override;
+    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
+    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
 
     //{{AFX_MSG(CSelectListBox)
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);

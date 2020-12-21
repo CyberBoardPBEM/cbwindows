@@ -28,6 +28,7 @@
 #include "Tile.h"
 #include "Pieces.h"
 #include "Marks.h"
+class CDrawObj;
 class CSelList;
 
 ////////////////////////////////////////////////////////////////
@@ -55,14 +56,16 @@ const   WORD    phaseDragDrop  = 3;
 
 enum DragType
 {
-    DRAG_TILE,              // pObj = CGamDoc*, dwItem = TileID
-    DRAG_TILELIST,          // pObj = CGamDoc*, dwItem = CWordArray*
-    DRAG_MGRTILE,           // pObj = CTileManager*, dwItem = TileID
-    DRAG_PIECE,             // pObj = CGamDoc*, dwItem = PieceID
-    DRAG_PIECELIST,         // pObj = CGamDoc*, dwItem = CWordArray*
-    DRAG_MARKER,            // pObj = CGamDoc*, dwItem = MarkID
-    DRAG_SELECTLIST,        // pObj = CGamDoc*, dwItem = CSelList*
-    DRAG_SELECTVIEW         // pObj = CGamDoc*, dwItem = CPtrArray*
+    DRAG_TILE,
+    DRAG_TILELIST,
+    DRAG_MGRTILE,
+    DRAG_PIECE,
+    DRAG_PIECELIST,
+    DRAG_MARKER,
+    DRAG_SELECTLIST,
+    DRAG_SELECTVIEW,
+
+    DRAG_INVALID = -1,
 };
 
 struct DragInfo
@@ -86,7 +89,7 @@ struct DragInfo
     template<>
     struct SubInfo<DRAG_TILELIST>
     {
-        CWordArray* m_tileIDList;
+        const std::vector<TileID>* m_tileIDList;
         CGamDoc* m_gamDoc;
     };
     template<>
@@ -104,7 +107,7 @@ struct DragInfo
     template<>
     struct SubInfo<DRAG_PIECELIST>
     {
-        CWordArray* m_pieceIDList;
+        const std::vector<PieceID>* m_pieceIDList;
         CGamDoc* m_gamDoc;
     };
     template<>
@@ -122,7 +125,7 @@ struct DragInfo
     template<>
     struct SubInfo<DRAG_SELECTVIEW>
     {
-        CPtrArray* m_ptrArray;
+        std::vector<CDrawObj*>* m_ptrArray;
         CGamDoc* m_gamDoc;
     };
     // TODO:  when upgrade to c++ 17, use std::variant

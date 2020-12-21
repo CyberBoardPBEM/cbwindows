@@ -83,8 +83,8 @@ public:
     void SelectAllUnderPoint(CPoint point);
     CDrawObj* ObjectHitTest(CPoint point);
     void SelectAllObjectsInList(CPtrList* pLst);
-    void SelectAllObjectsInTable(CPtrArray* pTbl);
-    void SelectMarkersInGroup(UINT nGroup);
+    void SelectAllObjectsInTable(const std::vector<CDrawObj*>& pTbl);
+    void SelectMarkersInGroup(size_t nGroup);
     void SelectAllMarkers();
 
     // TEMP FOR NOW!

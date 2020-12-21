@@ -55,13 +55,13 @@ protected:
 // Helpers...
 protected:
     void DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid);
-    void DrawItemDebugIDCode(CDC* pDC, int nItem, CRect rctItem, BOOL bDrawIt, int& x);
+    void DrawItemDebugIDCode(CDC* pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x);
 
     void SetupTipMarkerIfRequired();
     void DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, int& x);
 
-    int  DoOnItemHeight(TileID tid1, TileID tid2);
-    void DoOnDrawItem(CDC *pDC, int nItem, UINT nAction, UINT nState, CRect rctItem,
+    unsigned DoOnItemHeight(TileID tid1, TileID tid2);
+    void DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
         TileID tid1, TileID tid2);
 
     void GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight, CRect& rctLeft,
@@ -69,15 +69,15 @@ protected:
 
 // Overrides...
 public:
-    virtual CTileManager* GetTileManager() = 0;
+    virtual CTileManager* GetTileManager() /* override */ = 0;
 
 // Overrides...
 protected:
-    virtual BOOL OnDoesItemHaveTipText(int nItem) { return FALSE; }
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) /* override */ { return FALSE; }
 
-    // Subclass should only override one of these if any...
-    virtual int  OnGetItemDebugIDCode(int nItem) { return MapIndexToItem(nItem); }
-    virtual void OnGetItemDebugString(int nItem, CString& str);
+    // see CGrafixListBox::OnGetItemDebugIDCode comment
+    virtual int  OnGetItemDebugIDCode(size_t nItem) override = 0;
+    virtual void OnGetItemDebugString(size_t nItem, CString & str) /* override */;
 
     //{{AFX_MSG(CTileBaseListBox)
     //}}AFX_MSG

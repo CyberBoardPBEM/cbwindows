@@ -106,8 +106,8 @@ void CSetPiecesDialog::LoadPieceNameList()
     m_comboPGrp.ResetContent();
     CPieceManager* pPMgr = m_pPTbl->GetPieceManager();
     ASSERT(pPMgr != NULL);
-    for (int i = 0; i < pPMgr->GetNumPieceSets(); i++)
-        m_comboPGrp.AddString(pPMgr->GetPieceSet(i)->GetName());
+    for (size_t i = 0; i < pPMgr->GetNumPieceSets(); i++)
+        m_comboPGrp.AddString(pPMgr->GetPieceSet(i).GetName());
     m_comboPGrp.SetCurSel(0);
     UpdatePieceList();
 }
@@ -115,8 +115,8 @@ void CSetPiecesDialog::LoadPieceNameList()
 void CSetPiecesDialog::LoadTrayNameList()
 {
     m_comboYGrp.ResetContent();
-    for (int i = 0; i < m_pYMgr->GetNumTraySets(); i++)
-        m_comboYGrp.AddString(m_pYMgr->GetTraySet(i)->GetName());
+    for (size_t i = 0; i < m_pYMgr->GetNumTraySets(); i++)
+        m_comboYGrp.AddString(m_pYMgr->GetTraySet(i).GetName());
     m_comboYGrp.SetCurSel(m_nYSel == -1 ? 0 : m_nYSel);
     UpdateTrayList();
 }
@@ -131,7 +131,7 @@ void CSetPiecesDialog::UpdatePieceList()
         m_listPiece.SetItemMap(NULL);
         return;
     }
-    m_pPTbl->LoadUnusedPieceList(&m_tblPiece, nSel);
+    m_pPTbl->LoadUnusedPieceList(m_tblPiece, value_preserving_cast<size_t>(nSel));
     m_listPiece.SetItemMap(&m_tblPiece, FALSE);
 }
 
@@ -143,13 +143,11 @@ void CSetPiecesDialog::UpdateTrayList()
         m_listTray.SetItemMap(NULL);
         return;
     }
-    CWordArray* pPieceTbl = m_pYMgr->GetTraySet(nSel)->GetPieceIDTable();
-    ASSERT(pPieceTbl != NULL);
+    const std::vector<PieceID>& pPieceTbl = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nSel)).GetPieceIDTable();
 
-    m_tblTray.RemoveAll();              // Clone the table
-    m_tblTray.InsertAt(0, pPieceTbl);
+    m_tblTray = pPieceTbl;              // Clone the table
 
-    m_listTray.SetItemMap(pPieceTbl, FALSE);
+    m_listTray.SetItemMap(&pPieceTbl, FALSE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -170,15 +168,14 @@ void CSetPiecesDialog::OnCopyAll()
     int nTraySet = m_comboYGrp.GetCurSel();
     if (nTraySet < 0)
         return;
-    CTraySet* pYSet = m_pYMgr->GetTraySet(nTraySet);
-    ASSERT(pYSet != NULL);
+    CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
-    CWordArray* pPList = m_listPiece.GetItemMap();
+    const std::vector<PieceID>* pPList = m_listPiece.GetItemMap();
     if (pPList == NULL)
         return;
 
-    m_pPTbl->SetPieceListAsFrontUp(pPList);
-    pYSet->AddPieceList(pPList);
+    m_pPTbl->SetPieceListAsFrontUp(*pPList);
+    pYSet.AddPieceList(*pPList);
 
     UpdatePieceList();
     UpdateTrayList();
@@ -189,16 +186,15 @@ void CSetPiecesDialog::OnCopySelections()
     int nTraySet = m_comboYGrp.GetCurSel();
     if (nTraySet < 0)
         return;
-    CTraySet* pYSet = m_pYMgr->GetTraySet(nTraySet);
-    ASSERT(pYSet != NULL);
+    CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
-    CWordArray selList;
-    m_listPiece.GetCurMappedItemList(&selList);
-    if (selList.GetSize() == 0)
+    std::vector<PieceID> selList;
+    m_listPiece.GetCurMappedItemList(selList);
+    if (selList.empty())
         return;                     // Nothing to copy.
 
-    m_pPTbl->SetPieceListAsFrontUp(&selList);
-    pYSet->AddPieceList(&selList);
+    m_pPTbl->SetPieceListAsFrontUp(selList);
+    pYSet.AddPieceList(selList);
 
     UpdatePieceList();
     UpdateTrayList();
@@ -209,17 +205,16 @@ void CSetPiecesDialog::OnRemoveSelections()
     int nTraySet = m_comboYGrp.GetCurSel();
     if (nTraySet < 0)
         return;
-    CTraySet* pYSet = m_pYMgr->GetTraySet(nTraySet);
-    ASSERT(pYSet != NULL);
+    CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
 
-    CWordArray selList;
-    m_listTray.GetCurMappedItemList(&selList);
-    if (selList.GetSize() == 0)
+    std::vector<PieceID> selList;
+    m_listTray.GetCurMappedItemList(selList);
+    if (selList.empty())
         return;                     // Nothing to remove
 
-    m_pPTbl->SetPieceListAsUnused(&selList);
-    pYSet->RemovePieceList(&selList);
+    m_pPTbl->SetPieceListAsUnused(selList);
+    pYSet.RemovePieceList(selList);
 
     UpdatePieceList();
     UpdateTrayList();
@@ -231,12 +226,11 @@ void CSetPiecesDialog::OnRemoveAll()
     if (nTraySet < 0)
         return;
 
-    CTraySet* pYSet = m_pYMgr->GetTraySet(nTraySet);
-    ASSERT(pYSet != NULL);
+    CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
     // Use cloned list as basis for delete or nasty things happen
-    m_pPTbl->SetPieceListAsUnused(&m_tblTray);
-    pYSet->RemovePieceList(&m_tblTray);
+    m_pPTbl->SetPieceListAsUnused(m_tblTray);
+    pYSet.RemovePieceList(m_tblTray);
 
     UpdatePieceList();
     UpdateTrayList();

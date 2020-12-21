@@ -57,7 +57,7 @@ CTileBaseListBox::CTileBaseListBox()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2)
+unsigned CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2)
 {
     ASSERT(tid1 != nullTid);        // At least one tile needs to exist
 
@@ -74,16 +74,16 @@ int CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2)
         nHt2 = tile.GetHeight();
     }
     // Listbox lines can only be 255 pixels high.
-    int nHt = min(2 * tileBorder + max(nHt1, nHt2), 255);
+    LONG nHt = CB::min(2 * tileBorder + CB::max(nHt1, nHt2), 255);
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
-        nHt = max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return nHt;
+        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+    return value_preserving_cast<unsigned>(nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox::DoOnDrawItem(CDC *pDC, int nItem, UINT nAction, UINT nState,
+void CTileBaseListBox::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT nState,
     CRect rctItem, TileID tid1, TileID tid2)
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
@@ -146,7 +146,7 @@ void CTileBaseListBox::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int&
 // Optionally draw debug code string for item. If bDrawIt is false,
 // x is advanced the size of the string anyway but nothing is rendered
 
-void CTileBaseListBox::DrawItemDebugIDCode(CDC* pDC, int nItem, CRect rctItem, BOOL bDrawIt, int& x)
+void CTileBaseListBox::DrawItemDebugIDCode(CDC* pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x)
 {
     if (m_bDisplayIDs)
     {
@@ -202,7 +202,7 @@ void CTileBaseListBox::DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, int
     }
 }
 
-void CTileBaseListBox::OnGetItemDebugString(int nItem, CString& str)
+void CTileBaseListBox::OnGetItemDebugString(size_t nItem, CString& str)
 {
     str.Format("[%d] ", OnGetItemDebugIDCode(nItem));
 }
@@ -228,7 +228,7 @@ void CTileBaseListBox::GetTileRectsForItem(int nItem, TileID tidLeft, TileID tid
     // rendered to left of tile images
     CDC* pDC = GetDC();
     DrawTipMarker(pDC, rctItem, FALSE, x);
-    DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
+    DrawItemDebugIDCode(pDC, value_preserving_cast<size_t>(nItem), rctItem, FALSE, x);
     ReleaseDC(pDC);
 
     rctLeft.left = x;

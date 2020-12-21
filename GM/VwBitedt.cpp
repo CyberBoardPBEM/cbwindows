@@ -611,10 +611,10 @@ void CBitEditView::GetImagePixelLocClamped(CPoint& point)
     point -= CSize(xBorder, yBorder);
     point.x = point.x / (int)m_nZoom;
     point.y = point.y / (int)m_nZoom;
-    point.x = max(point.x, 0);
-    point.x = min(point.x, m_size.cx - 1);
-    point.y = max(point.y, 0);
-    point.y = min(point.y, m_size.cy - 1);
+    point.x = CB::max(point.x, 0);
+    point.x = CB::min(point.x, m_size.cx - 1);
+    point.y = CB::max(point.y, 0);
+    point.y = CB::min(point.y, m_size.cy - 1);
 }
 
 void CBitEditView::InvalidateFocusBorder(BOOL bUpdate /* = FALSE */)
@@ -683,8 +683,8 @@ void CBitEditView::RecalcScrollLimits()
         CSize size = GetZoomedSize();
         SetScrollSizes(MM_TEXT, CSize(size.cx + 2 * xBorder,
             size.cy + 2 * yBorder),
-            CSize(max(size.cx/4, 16),
-            max(size.cy/4, 16)), CSize(4, 4));
+            CSize(CB::max(size.cx/4, 16),
+            CB::max(size.cy/4, 16)), CSize(4, 4));
     }
     else
         SetScrollSizes(MM_TEXT, CSize(100, 100));
@@ -725,7 +725,7 @@ int CBitEditView::CalcCaretHeight(int yLoc)
 {
     if (yLoc >= m_size.cy) return 0;
     int yEnd = yLoc + m_tmHeight;
-    yEnd = min(yEnd, m_size.cy);
+    yEnd = CB::min(yEnd, m_size.cy);
     return yEnd - yLoc;
 }
 
@@ -1152,13 +1152,12 @@ void CBitEditView::OnImageBoardMask()
 
     CBoardMaskDialog dlg;
     dlg.m_pBMgr = pBMgr;
-    if (dlg.DoModal() != IDOK || dlg.m_nBrdNum < 0)
+    if (dlg.DoModal() != IDOK || dlg.m_nBrdNum == Invalid_v<size_t>)
         return;
 
-    CBoard* pBoard = pBMgr->GetBoard(dlg.m_nBrdNum);
+    CBoard& pBoard = pBMgr->GetBoard(dlg.m_nBrdNum);
 
-    ASSERT(pBoard);
-    CCellForm* pcf = pBoard->GetBoardArray()->
+    CCellForm* pcf = pBoard.GetBoardArray()->
         GetCellForm(m_pSelView->GetCurrentScale());
     ASSERT(pcf);
 
@@ -1190,7 +1189,7 @@ void CBitEditView::OnImageBoardMask()
 void CBitEditView::OnUpdateImageBoardMask(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_pSelView->GetCurrentScale() != smallScale &&
-        GetDocument()->GetBoardManager()->GetNumBoards() > 0);
+        !GetDocument()->GetBoardManager()->IsEmpty());
 }
 
 void CBitEditView::OnUpdateViewZoomIn(CCmdUI* pCmdUI)

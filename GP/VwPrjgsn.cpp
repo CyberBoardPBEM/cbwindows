@@ -142,7 +142,7 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     int xProjListRight = posBtn.x - 1;  // Save for list box construction
 
-    xProjListRight = max(xProjListRight, PROJ_LIST_WIDTH);
+    xProjListRight = CB::max(xProjListRight, PROJ_LIST_WIDTH);
 
     // The project list box.
     CRect rctList(XBORDER, YBORDER, xProjListRight, YBORDER);
@@ -179,14 +179,14 @@ void CGsnProjView::OnInitialUpdate()
     // is disabled.
     if (!pDoc->m_bSaveWindowPositions)
     {
-        for (int i = 0; i < pPBMgr->GetNumPBoards(); i++)
+        for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
         {
-            CPlayBoard* pPBoard = pPBMgr->GetPBoard(i);
-            if (pPBoard->m_bOpenBoardOnLoad)
+            CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+            if (pPBoard.m_bOpenBoardOnLoad)
             {
                 // Defer opening the view until our view init
                 // in done.
-                PostMessage(WM_SHOWPLAYINGBOARD, (WPARAM)i);
+                PostMessage(WM_SHOWPLAYINGBOARD, value_preserving_cast<WPARAM>(i));
             }
         }
     }
@@ -425,20 +425,20 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
     ASSERT(pPBMgr);
-    for (int i = 0; i < pPBMgr->GetNumPBoards(); i++)
+    for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
     {
-        CPlayBoard* pPBoard = pPBMgr->GetPBoard(i);
-        str = pPBoard->GetBoard()->GetName();
+        CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+        str = pPBoard.GetBoard()->GetName();
         if (bDisplayIDs)
         {
             CString strTmp = str;
             str.Format("[%d] %s",
-                pPBoard->GetBoard()->GetSerialNumber(), (LPCTSTR)strTmp);
+                static_cast<WORD>(pPBoard.GetBoard()->GetSerialNumber()), (LPCTSTR)strTmp);
         }
-        if (pPBoard->IsOwned())
+        if (pPBoard.IsOwned())
         {
             CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
-                pPBoard->GetOwnerMask()).m_strName;
+                pPBoard.GetOwnerMask()).m_strName;
             CString strOwnedBy;
             strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -452,19 +452,19 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CTrayManager* pYMgr = pDoc->GetTrayManager();
     ASSERT(pYMgr);
-    for (int i = 0; i < pYMgr->GetNumTraySets(); i++)
+    for (size_t i = 0; i < pYMgr->GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = pYMgr->GetTraySet(i);
-        str = pYSet->GetName();
+        CTraySet& pYSet = pYMgr->GetTraySet(i);
+        str = pYSet.GetName();
         if (bDisplayIDs)
         {
             CString strTmp = str;
-            str.Format("[%d] %s", i, (LPCTSTR)strTmp);
+            str.Format("[%zu] %s", i, (LPCTSTR)strTmp);
         }
-        if (pYSet->IsOwned())
+        if (pYSet.IsOwned())
         {
             CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
-                pYSet->GetOwnerMask()).m_strName;
+                pYSet.GetOwnerMask()).m_strName;
             CString strOwnedBy;
             strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -752,11 +752,10 @@ void CGsnProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
 LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 {
     CGamDoc* pDoc = GetDocument();
-    CPlayBoard* pPBoard = pDoc->GetPBoardManager()->GetPBoard((int)wParam);
-    ASSERT(pPBoard != NULL);
-    ASSERT(pPBoard->m_bOpenBoardOnLoad);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(value_preserving_cast<size_t>(wParam));
+    ASSERT(pPBoard.m_bOpenBoardOnLoad);
     pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-        pPBoard->GetBoard()->GetName(), pPBoard);
+        pPBoard.GetBoard()->GetName(), &pPBoard);
     return (LRESULT)0;
 }
 

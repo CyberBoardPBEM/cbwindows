@@ -52,16 +52,16 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
     // Then we need to build a list of MDI frames that are in Z
     // order so we can restore the proper visual order later.
 
-    CPtrArray tblFrame;
+    std::vector<CFrameWnd*> tblFrame;
     GetDocumentFrameList(tblFrame);         // Get's unordered list
     ArrangeFrameListInZOrder(tblFrame);     // Order 'em
 
     // Scan the list in reverse Z order and obtain serialized
     // data needed to later restore the window state.
 
-    for (int i = tblFrame.GetSize() - 1; i >= 0; i--)
+    for (size_t i = tblFrame.size(); i > 0; i--)
     {
-        CWnd* pWnd = (CWnd*)tblFrame.GetAt(i);
+        CWnd* pWnd = tblFrame.at(i - 1);
         CWinStateElement* pWse = GetWindowState(pWnd);
         if (pWse != NULL)
         {
@@ -192,9 +192,9 @@ BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement* pWse)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CWinStateManager::GetDocumentFrameList(CPtrArray& tblFrames)
+void CWinStateManager::GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames)
 {
-    tblFrames.RemoveAll();
+    tblFrames.clear();
 
     POSITION pos = m_pDoc->GetFirstViewPosition();
     while (pos != NULL)
@@ -202,14 +202,14 @@ void CWinStateManager::GetDocumentFrameList(CPtrArray& tblFrames)
         CView* pView = m_pDoc->GetNextView(pos);
         CFrameWnd* pFrame = pView->GetParentFrame();
         ASSERT(pFrame != NULL);
-        int i;
-        for (i = 0; i < tblFrames.GetSize(); i++)
+        size_t i;
+        for (i = 0; i < tblFrames.size(); i++)
         {
-            if (pFrame == (CFrameWnd*)tblFrames.GetAt(i))
+            if (pFrame == tblFrames.at(i))
                 break;
         }
-        if (i == tblFrames.GetSize())
-            tblFrames.Add(pFrame);          // Add new frame
+        if (i == tblFrames.size())
+            tblFrames.push_back(pFrame);          // Add new frame
     }
 }
 
@@ -268,9 +268,9 @@ void CWinStateManager::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CWinStateManager::ArrangeFrameListInZOrder(CPtrArray& tblFrames)
+void CWinStateManager::ArrangeFrameListInZOrder(std::vector<CFrameWnd*>& tblFrames)
 {
-    CPtrArray tblZFrames;
+    std::vector<CFrameWnd*> tblZFrames;
 
     CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetMainWnd();
     ASSERT(pFrame->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)));
@@ -278,34 +278,34 @@ void CWinStateManager::ArrangeFrameListInZOrder(CPtrArray& tblFrames)
     EnumChildWindows(pFrame->m_hWndMDIClient, EnumFrames, (LPARAM)&tblZFrames);
 
     // Null out any entries that aren't in the caller's table
-    for (int i = 0; i < tblZFrames.GetSize(); i++)
+    for (size_t i = 0; i < tblZFrames.size(); i++)
     {
-        int j;
-        for (j = 0; j < tblFrames.GetSize(); j++)
+        size_t j;
+        for (j = 0; j < tblFrames.size(); j++)
         {
-            if (tblFrames.GetAt(j) == tblZFrames.GetAt(i))
+            if (tblFrames.at(j) == tblZFrames.at(i))
                 break;
         }
-        if (j == tblFrames.GetSize())
-            tblZFrames.SetAt(i, NULL);
+        if (j == tblFrames.size())
+            tblZFrames.at(i) = NULL;
     }
     // Now copy the remaining frame pointers into the caller's list
     // in Z order (top to bottom)
-    tblFrames.RemoveAll();
-    for (int i = 0; i < tblZFrames.GetSize(); i++)
+    tblFrames.clear();
+    for (size_t i = 0; i < tblZFrames.size(); i++)
     {
-        if (tblZFrames.GetAt(i) != NULL)
-            tblFrames.Add(tblZFrames.GetAt(i));
+        if (tblZFrames.at(i) != NULL)
+            tblFrames.push_back(tblZFrames.at(i));
     }
 }
 
 BOOL CALLBACK CWinStateManager::EnumFrames(HWND hWnd, LPARAM dwTblFramePtr)
 {
-    CPtrArray* pTbl = (CPtrArray*)dwTblFramePtr;
+    std::vector<CFrameWnd*>& pTbl = CheckedDeref(reinterpret_cast<std::vector<CFrameWnd*>*>(dwTblFramePtr));
     CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
     // Only interested in certain kinds of windows.
     if (pWnd != NULL && pWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)))
-        pTbl->Add(pWnd);
+        pTbl.push_back(static_cast<CMDIChildWndEx*>(pWnd));
     return TRUE;
 }
 

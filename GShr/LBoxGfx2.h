@@ -29,6 +29,8 @@
 #include    "DragDrop.h"
 #endif
 
+class CDrawObj;
+
 /////////////////////////////////////////////////////////////////////////////
 
 #define ID_TIP_LISTITEM_HIT             1
@@ -56,9 +58,9 @@ public:
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-    CPtrArray* GetItemMap() { return m_pItemMap; }
-    LPVOID GetCurMapItem();
-    void GetCurMappedItemList(CPtrArray* pLst);
+    const std::vector<CDrawObj*>* GetItemMap() { return m_pItemMap; }
+    CDrawObj* GetCurMapItem();
+    void GetCurMappedItemList(std::vector<CDrawObj*>& pLst);
     BOOL IsMultiSelect()
         { return (GetStyle() & (LBS_EXTENDEDSEL | LBS_MULTIPLESEL)) != 0; }
     // Note: the following pointer is only good during drag and drop.
@@ -68,37 +70,43 @@ public:
     // data in the case of a shift click isn't valid until the button
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
-    CPtrArray* GetMappedMultiSelectList() { return &m_multiSelList; }
+    std::vector<CDrawObj*>& GetMappedMultiSelectList() { return m_multiSelList; }
 
 // Operations
 public:
-    void SetItemMap(CPtrArray* pMap, BOOL bKeepPosition = TRUE);
+    void SetItemMap(const std::vector<CDrawObj*>* pMap, BOOL bKeepPosition = TRUE);
     void UpdateList(BOOL bKeepPosition = TRUE);
-    void SetCurSelMapped(LPVOID pMapVal);
-    void SetCurSelsMapped(CPtrArray& items);
+    void SetCurSelMapped(CDrawObj* pMapVal);
+    void SetCurSelsMapped(const std::vector<CDrawObj*>& items);
     void SetSelFromPoint(CPoint point);
     void ShowFirstSelection();
-    LPVOID MapIndexToItem(int nIndex);
-    int  MapItemToIndex(LPVOID pItem);
+    CDrawObj* MapIndexToItem(size_t nIndex);
+    size_t MapItemToIndex(CDrawObj* pItem);
     void MakeItemVisible(int nItem);
 
 // Overrides - the subclass of this class must override these
 public:
-    virtual int OnItemHeight(int nIndex) = 0;
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem) = 0;
-    virtual BOOL OnDragSetup(DragInfo* pDI) { return FALSE; }
-    virtual void OnDragCleanup(DragInfo* pDI) { }
+    virtual unsigned OnItemHeight(size_t nIndex) /* override */ = 0;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) /* override */ = 0;
+    virtual BOOL OnDragSetup(DragInfo* pDI) /* override */
+    {
+        pDI->m_dragType = DRAG_INVALID;
+        return FALSE;
+    }
+    virtual void OnDragCleanup(DragInfo* pDI) /* override */ { }
 
     // For tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() { return FALSE; }
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) { return -1; }
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) { }
+    virtual BOOL OnIsToolTipsEnabled() /* override */ { return FALSE; }
+    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return -1; }
+    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) /* override */ { }
 
 // Implementation
 protected:
-    CPtrArray* m_pItemMap;          // Maps index to item
-    CPtrArray  m_multiSelList;      // Holds mapped multi select items on drop
+    /* N.B.:  this class could be templatized to hold any pointer,
+                but that generality isn't actually needed yet */
+    const std::vector<CDrawObj*>* m_pItemMap;          // Maps index to item
+    std::vector<CDrawObj*> m_multiSelList;      // Holds mapped multi select items on drop
 
     // Tool tip support
     CToolTipCtrl m_toolTip;
@@ -126,9 +134,9 @@ protected:
     void  DrawSingle(int nIndex);
 
     // Overrides
-    virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMIS);
-    virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS);
-    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMIS) override;
+    virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS) override;
+    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
     //{{AFX_MSG(CGrafixListBox2)
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

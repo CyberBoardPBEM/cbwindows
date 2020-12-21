@@ -191,7 +191,7 @@ public:
     BOOL IsMultipleSelects() const { return GetCount() > 1; }
     BOOL IsSingleSelect() const { return GetCount() == 1; }
     BOOL IsAnySelects() const { return GetCount() > 0; }
-    BOOL IsObjectSelected(CDrawObj* pObj) const;
+    BOOL IsObjectSelected(const CDrawObj* pObj) const;
     BOOL HasPieces() const;
     BOOL HasOwnedPieces() const;
     BOOL HasNonOwnedPieces() const;
@@ -222,11 +222,11 @@ public:
     // -------- //
     void LoadListWithObjectPtrs(CPtrList* pList, BOOL bPiecesOnly = FALSE,
         BOOL bVisualOrder = FALSE);
-    void LoadTableWithPieceIDs(CWordArray* pTbl, BOOL bVisualOrder = TRUE);
-    void LoadTableWithObjectPtrs(CPtrArray* pTbl, BOOL bVisualOrder = TRUE);
+    void LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder = TRUE);
+    void LoadTableWithObjectPtrs(std::vector<CDrawObj*>& pTbl, BOOL bVisualOrder = TRUE);
     // -------- //
     enum LoadFilter { LF_NOTOWNED, LF_OWNED, LF_BOTH };
-    void LoadTableWithOwnerStatePieceIDs(CWordArray* pTbl, LoadFilter eWantOwned, BOOL bVisualOrder = TRUE);
+    void LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned, BOOL bVisualOrder = TRUE);
     // -------- //
     void InvalidateListHandles(BOOL bUpdate = FALSE);
     void InvalidateList(BOOL bUpdate = FALSE);

@@ -170,12 +170,11 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
         // Set game state and vars for playback.
         m_eState = stateMovePlay;
-        m_pRcdMoves = pHist->m_pMList;
-        m_pMoves = pHist->m_pMList;         // Shadow for playback
-        m_pPlayHist = pHist;                // Save for storing in history table
         // Decouple the list since it's held by m_pRcdMoves. If we
         // don't do this the move list will be deleted twice.
-        m_pPlayHist->m_pMList = NULL;
+        m_pRcdMoves = std::move(pHist->m_pMList);
+        m_pMoves = m_pRcdMoves.get();       // Shadow for playback
+        m_pPlayHist = pHist;                // Save for storing in history table
 
         // Final check if there are any possible moves. It might be that
         // a move file with no moves is being loaded.
@@ -203,7 +202,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::LoadAndActivateHistory(int nHistRec)
+BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 {
     ASSERT(m_file.m_hFile != NULL);
     ASSERT(m_pHistTbl != NULL);
@@ -212,9 +211,8 @@ BOOL CGamDoc::LoadAndActivateHistory(int nHistRec)
     FlushAllIndicators();
 
     ASSERT(nHistRec < m_pHistTbl->GetNumHistRecords());
-    CHistRecord* pHist = m_pHistTbl->GetHistRecord(nHistRec);
-    ASSERT(pHist != NULL);
-    CMoveList* pMoves = pHist->m_pMList;
+    CHistRecord& pHist = m_pHistTbl->GetHistRecord(nHistRec);
+    CMoveList* pMoves = pHist.m_pMList.get();
     ASSERT(pMoves != NULL);
 
     TRY
@@ -234,8 +232,8 @@ BOOL CGamDoc::LoadAndActivateHistory(int nHistRec)
         m_nCurHist = nHistRec;                  // Set number of history playback
         // m_pHistMoves = pHist->m_pMList;      // Set pointer to history moves
         // Make a copy of the move list for playback
-        m_pHistMoves = CMoveList::CloneMoveList(this, pHist->m_pMList);
-        m_pMoves = m_pHistMoves;            // Shadow for playback
+        m_pHistMoves.reset(CMoveList::CloneMoveList(this, pHist.m_pMList.get()));
+        m_pMoves = m_pHistMoves.get();            // Shadow for playback
 
         // Insert the current state of the game in front of the
         // move list. This allows us to discard the moves if desired.
@@ -288,9 +286,9 @@ BOOL CGamDoc::LoadVintageHistoryMoveLists(CFile& file)
     ASSERT(file.m_hFile != NULL);
     ASSERT(m_pHistTbl != NULL);
 
-    for (int nHistRec = 0; nHistRec < m_pHistTbl->GetNumHistRecords(); nHistRec++)
+    for (size_t nHistRec = 0; nHistRec < m_pHistTbl->GetNumHistRecords(); nHistRec++)
     {
-        CHistRecord* pHist = m_pHistTbl->GetHistRecord(nHistRec);
+        CHistRecord& pHist = m_pHistTbl->GetHistRecord(nHistRec);
         if (!LoadVintageHistoryRecord(file, pHist))
             return FALSE;
     }
@@ -300,17 +298,16 @@ BOOL CGamDoc::LoadVintageHistoryMoveLists(CFile& file)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist)
+BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
 {
     ASSERT(file.m_hFile != NULL);
-    ASSERT(pHist != NULL);
 
     CMoveList* pMoves = NULL;
 
     TRY
     {
-        ASSERT(pHist->m_dwFilePos > 0);
-        file.Seek(pHist->m_dwFilePos, CFile::begin);
+        ASSERT(pHist.m_dwFilePos > 0);
+        file.Seek(pHist.m_dwFilePos, CFile::begin);
         CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
         ar.m_pDocument = this;
         ar.m_bForceFlat = FALSE;
@@ -318,7 +315,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist)
         pMoves = new CMoveList;
 
         // HACKO----RAMA!!!!!!! //
-        SetLoadingVersion(pHist->m_nGamFileVersion);
+        SetLoadingVersion(pHist.m_nGamFileVersion);
         BOOL bTryEarlyVersion = FALSE;
         TRY
             pMoves->Serialize(ar);
@@ -335,7 +332,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist)
         ar.Close();
         if (bTryEarlyVersion)
         {
-            file.Seek(pHist->m_dwFilePos, CFile::begin);
+            file.Seek(pHist.m_dwFilePos, CFile::begin);
             CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
             ar.m_pDocument = this;
             ar.m_bForceFlat = FALSE;
@@ -343,7 +340,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist)
             pMoves->Serialize(ar);
             ar.Close();
             // A-OK set version to proper value.
-            pHist->m_nGamFileVersion = NumVersion(0, 57);
+            pHist.m_nGamFileVersion = NumVersion(0, 57);
         }
 
         // The move data has loaded without problems.
@@ -360,8 +357,8 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist)
         // of pieces in move file (for crash resistance)
         GetPieceTable()->PurgeUndefinedPieceIDs();
 
-        pHist->m_dwFilePos = 0;             // Just to be clean. Never used again
-        pHist->m_pMList = pMoves;
+        pHist.m_dwFilePos = 0;             // Just to be clean. Never used again
+        pHist.m_pMList.reset(pMoves);
     }
     CATCH_ALL(e)
     {
@@ -396,11 +393,10 @@ void CGamDoc::FinishHistoryPlayback()
 
     // Delete the history  move list since it is a clone of the actual record
     // kept in the history database.
-    delete m_pHistMoves;
-    m_pHistMoves = NULL;
-    m_nCurHist = -1;
+    m_pHistMoves.reset();
+    m_nCurHist = Invalid_v<size_t>;
     m_eState = stateRecording;
-    m_pMoves = m_pRcdMoves;         // Restore recording pointer
+    m_pMoves = m_pRcdMoves.get();         // Restore recording pointer
 
     MsgDialogCancel(TRUE);
     UpdateAllViews(NULL, HINT_GAMESTATEUSED);
@@ -447,7 +443,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
 
     m_pPlayHist->m_timeAbsorbed = CTime::GetCurrentTime();
 
-    m_pPlayHist->m_pMList = m_pRcdMoves;        // Take ownership of move list
+    m_pPlayHist->m_pMList = std::move(m_pRcdMoves);        // Take ownership of move list
 
     AddMovesToGameHistoryTable(m_pPlayHist);
     m_pPlayHist = NULL;
@@ -456,7 +452,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::EnsureBoardLocationVisible(CPlayBoard* pPBoard, CPoint point)
+void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
 {
     if (IsQuietPlayback()) return;
     EnsureBoardVisible(pPBoard);
@@ -464,14 +460,14 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard* pPBoard, CPoint point)
     // Use hint to scroll board to make point visible somewhere
     // near the center of the view.
     CGamDocHint hint;
-    hint.m_pPBoard = pPBoard;
+    hint.m_pPBoard = &pPBoard;
     hint.m_point = point;
     UpdateAllViews(NULL, HINT_POINTINVIEW, &hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::EnsureBoardVisible(CPlayBoard* pPBoard)
+void CGamDoc::EnsureBoardVisible(CPlayBoard& pPBoard)
 {
     if (IsQuietPlayback()) return;
 
@@ -481,21 +477,21 @@ void CGamDoc::EnsureBoardVisible(CPlayBoard* pPBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::EnsureTrayIndexVisible(CTraySet* pYSet, int nPos)
+void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos)
 {
     if (IsQuietPlayback()) return;
     if (!m_bTrayAVisible)
         OnViewTrayA();
 
     // Make sure item nPos is visible.
-    int nGroup = GetTrayManager()->FindTrayByPtr(pYSet);
-    ASSERT(nGroup >= 0);
+    size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
+    ASSERT(nGroup != Invalid_v<size_t>);
     m_palTrayA.ShowTrayIndex(nGroup, nPos);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SelectObjectOnBoard(CPlayBoard* pPBoard, CDrawObj* pObj)
+void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
 {
     if (IsQuietPlayback()) return;
     // If board isn't visible, open it.
@@ -503,14 +499,14 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard* pPBoard, CDrawObj* pObj)
 
     // Use hint to add object to select list
     CGamDocHint hint;
-    hint.m_pPBoard = pPBoard;
+    hint.m_pPBoard = &pPBoard;
     hint.m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SelectObjectListOnBoard(CPlayBoard* pPBoard, CPtrList* pList)
+void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList)
 {
     if (IsQuietPlayback()) return;
     // If board isn't visible, open it.
@@ -518,21 +514,21 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard* pPBoard, CPtrList* pList)
 
     // Use hint to add object to select list
     CGamDocHint hint;
-    hint.m_pPBoard = pPBoard;
+    hint.m_pPBoard = &pPBoard;
     hint.m_pPtrList = pList;
     UpdateAllViews(NULL, HINT_SELECTOBJLIST, &hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SelectTrayItem(CTraySet* pYSet, PieceID pid, UINT nResourceID)
+void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID)
 {
     CString str;
     str.LoadString(nResourceID);
     SelectTrayItem(pYSet, pid, str);
 }
 
-void CGamDoc::SelectTrayItem(CTraySet* pYSet, PieceID pid,
+void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     LPCTSTR pszNotificationTip /* = NULL */)
 {
     if (IsQuietPlayback()) return;
@@ -541,8 +537,8 @@ void CGamDoc::SelectTrayItem(CTraySet* pYSet, PieceID pid,
         OnViewTrayA();
 
     // Select the piece in the appropriate trayset.
-    int nGroup = GetTrayManager()->FindTrayByPtr(pYSet);
-    ASSERT(nGroup >= 0);
+    size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
+    ASSERT(nGroup != Invalid_v<size_t>);
     m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip);
 }
 
@@ -558,7 +554,7 @@ void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard* pPBoard)
+CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
 {
     if (IsQuietPlayback()) return NULL;
 
@@ -573,7 +569,7 @@ CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard* pPBoard)
     else
     {
         CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-            pPBoard->GetBoard()->GetName(), pPBoard);
+            pPBoard.GetBoard()->GetName(), &pPBoard);
         pView = FindPBoardView(pPBoard);
     }
     return pView;
@@ -632,7 +628,7 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size)
 }
 
 // Shows a balloon tip so person knows what happened. Uses a resource ID.
-void CGamDoc::IndicateTextTipOnBoard(CPlayBoard* pPBoard,
+void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     CPoint pointWorkspace, UINT nResID)
 {
     CString str;
@@ -641,7 +637,7 @@ void CGamDoc::IndicateTextTipOnBoard(CPlayBoard* pPBoard,
 }
 
 // Shows a balloon tip so person knows what happened.
-void CGamDoc::IndicateTextTipOnBoard(CPlayBoard* pPBoard,
+void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     CPoint pointWorkspace, LPCTSTR pszStr)
 {
     if (IsQuietPlayback()) return;
@@ -668,19 +664,18 @@ void CGamDoc::FlushAllIndicators()
     m_palTrayA.DeselectAll();
     m_palTrayB.DeselectAll();
 
-    for (int i = 0; i < m_pPBMgr->GetNumPBoards(); i++)
+    for (size_t i = 0; i < m_pPBMgr->GetNumPBoards(); i++)
     {
-        CPlayBoard* pPBrd = m_pPBMgr->GetPBoard(i);
-        ASSERT(pPBrd != NULL);
+        CPlayBoard& pPBrd = m_pPBMgr->GetPBoard(i);
 
         UpdateAllBoardIndicators(pPBrd);
 
-        CDrawList* pDwg = pPBrd->GetIndicatorList();
+        CDrawList* pDwg = pPBrd.GetIndicatorList();
         ASSERT(pDwg != NULL);
 
         pDwg->Flush();
 
-        pPBrd->SetPlotMoveMode(FALSE);
+        pPBrd.SetPlotMoveMode(FALSE);
     }
     // Use hint to flush select lists.
     CGamDocHint hint;
@@ -691,10 +686,10 @@ void CGamDoc::FlushAllIndicators()
     UpdateAllViews(NULL, HINT_CLEARINDTIP, &hint);
 }
 
-void CGamDoc::UpdateAllBoardIndicators(CPlayBoard* pPBrd)
+void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
 {
     if (IsQuietPlayback()) return;
-    CDrawList* pDwg = pPBrd->GetIndicatorList();
+    CDrawList* pDwg = pPBrd.GetIndicatorList();
     ASSERT(pDwg != NULL);
 
     POSITION pos;
@@ -703,7 +698,7 @@ void CGamDoc::UpdateAllBoardIndicators(CPlayBoard* pPBrd)
         CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
         ASSERT(pObj);
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
+        hint.m_pPBoard = &pPBrd;
         hint.m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }

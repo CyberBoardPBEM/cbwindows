@@ -62,16 +62,19 @@ BOOL CSelectListBox::OnDragSetup(DragInfo* pDI)
 {
     ASSERT(!"untested code");
     if (GetCount() <= 1)
+    {
+        pDI->m_dragType = DRAG_INVALID;
         return FALSE;
+    }
 
     if (!IsMultiSelect())
     {
-        m_multiSelList.RemoveAll();
-        m_multiSelList.Add(GetCurMapItem());
+        m_multiSelList.clear();
+        m_multiSelList.push_back(GetCurMapItem());
     }
     pDI->m_dragType = DRAG_SELECTVIEW;
-    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = GetMappedMultiSelectList();
-        pDI->m_hcsrSuggest = g_res.hcrDragTile;
+    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
+    pDI->m_hcsrSuggest = g_res.hcrDragTile;
     pDI->GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
     return TRUE;
 }
@@ -159,7 +162,7 @@ void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CSelectListBox::OnDoesItemHaveTipText(int nItem)
+BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 {
     CDrawObj* pObj = (CDrawObj*)MapIndexToItem(nItem);
     GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
@@ -169,24 +172,24 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(int nItem)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSelectListBox::OnGetItemDebugString(int nIndex, CString& str)
+void CSelectListBox::OnGetItemDebugString(size_t nIndex, CString& str)
 {
     CDrawObj* pDObj = (CDrawObj*)MapIndexToItem(nIndex);
     if (pDObj->GetType() == CDrawObj::drawPieceObj)
     {
         PieceID pid = ((CPieceObj*)pDObj)->m_pid;
-        str.Format("[pid:%d] ", (UINT)pid);
+        str.Format("[pid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(pid)));
     }
     else if (pDObj->GetType() == CDrawObj::drawMarkObj)
     {
         MarkID mid = ((CMarkObj*)pDObj)->m_mid;
-        str.Format("[mid:%d] ", (UINT)mid);
+        str.Format("[mid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(mid)));
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CSelectListBox::OnItemHeight(int nIndex)
+unsigned CSelectListBox::OnItemHeight(size_t nIndex)
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -199,10 +202,11 @@ int CSelectListBox::OnItemHeight(int nIndex)
     return DoOnItemHeight(tid1, tid2);
 }
 
-void CSelectListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CSelectListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
-    if (nIndex < 0)
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
         return;                 // Nothing to draw.
 
     TileID tid1 = GetTileID(TRUE, nIndex);
@@ -211,7 +215,7 @@ void CSelectListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
     DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid1, tid2);
 }
 
-TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, int nIndex)
+TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
 {
     CDrawObj* pDObj = (CDrawObj*)MapIndexToItem(nIndex);
 
@@ -231,11 +235,11 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, int nIndex)
                 return nullTid;
         }
 
-        PieceDef* pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+        PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
 
-        if ((pPce->m_flags & PieceDef::flagShowOnlyVisibleSide) && !bActiveIfApplies &&
+        if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) && !bActiveIfApplies &&
             (!pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()) ||
-             pPce->m_flags & PieceDef::flagShowOnlyOwnersToo))
+             pPce.m_flags & PieceDef::flagShowOnlyOwnersToo))
         {
             return nullTid;
         }
@@ -251,7 +255,7 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, int nIndex)
         MarkID mid = ((CMarkObj*)pDObj)->m_mid;
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
         ASSERT(pMMgr != NULL);
-        return pMMgr->GetMark(mid)->m_tid;
+        return pMMgr->GetMark(mid).m_tid;
     }
     else
     {

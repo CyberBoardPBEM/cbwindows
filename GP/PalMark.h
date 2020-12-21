@@ -55,7 +55,7 @@ public:
 
 // Operations
 public:
-    int  GetSelectedMarkerGroup();
+    size_t GetSelectedMarkerGroup();
 
     void UpdatePaletteContents();
 
@@ -80,7 +80,7 @@ protected:
     // when only single entry should be shown in the Tray listbox.
     // This is pretty much a hack but is was easier than reworking
     // CGrafixListBox to support this oddball situation.
-    CWordArray  m_dummyArray;
+    std::vector<MarkID> m_dummyArray;
 
     // Enclosed controls....
     CComboBox   m_comboMGrp;
@@ -89,7 +89,7 @@ protected:
     void LoadMarkerNameList();
     void UpdateMarkerList();
 
-    int  FindMarkerGroupIndex(int nGroupNum);
+    int  FindMarkerGroupIndex(size_t nGroupNum);
 
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.

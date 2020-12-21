@@ -45,7 +45,6 @@ CGameState::CGameState()
 {
     m_pDoc = NULL;
     m_pPBMgr = NULL;
-    m_pYMgr = NULL;
     m_pPTbl = NULL;
 }
 
@@ -53,7 +52,6 @@ CGameState::CGameState(CGamDoc* pDoc)
 {
     m_pDoc = pDoc;
     m_pPBMgr = NULL;
-    m_pYMgr = NULL;
     m_pPTbl = NULL;
 }
 
@@ -61,15 +59,14 @@ BOOL CGameState::CompareState()
 {
     ASSERT(m_pDoc != NULL);
     ASSERT(m_pPBMgr != NULL);
-    ASSERT(m_pYMgr != NULL);
     ASSERT(m_pPTbl != NULL);
     // Compare the string tables
 
     // Compare the piece tables
-    if (!m_pDoc->GetPieceTable()->Compare(m_pPTbl))
+    if (!m_pDoc->GetPieceTable()->Compare(*m_pPTbl))
         return FALSE;
     // Compare the play boards
-    if (!m_pDoc->GetPBoardManager()->Compare(m_pPBMgr))
+    if (!m_pDoc->GetPBoardManager()->Compare(*m_pPBMgr))
         return FALSE;
     // Compare the trays
     if (!m_pDoc->GetTrayManager()->Compare(m_pYMgr))
@@ -101,15 +98,14 @@ BOOL CGameState::RestoreState()
 {
     ASSERT(m_pDoc != NULL);
     ASSERT(m_pPBMgr != NULL);
-    ASSERT(m_pYMgr != NULL);
     ASSERT(m_pPTbl != NULL);
 
     TRY
     {
         m_pDoc->GetGameStringMap()->Clone(&m_mapString);
-        m_pDoc->GetPBoardManager()->Restore(m_pDoc, m_pPBMgr);
+        m_pDoc->GetPBoardManager()->Restore(m_pDoc, *m_pPBMgr);
         m_pDoc->GetTrayManager()->Restore(m_pDoc, m_pYMgr);
-        m_pDoc->GetPieceTable()->Restore(m_pDoc, m_pPTbl);
+        m_pDoc->GetPieceTable()->Restore(m_pDoc, *m_pPTbl);
     }
     CATCH_ALL(e)
     {
@@ -125,8 +121,7 @@ void CGameState::Clear()
 
     if (m_pPBMgr != NULL) delete m_pPBMgr;
     m_pPBMgr = NULL;
-    if (m_pYMgr != NULL) delete m_pYMgr;
-    m_pYMgr = NULL;
+    m_pYMgr.Clear();
     if (m_pPTbl != NULL) delete m_pPTbl;
     m_pPTbl = NULL;
 }
@@ -142,14 +137,13 @@ void CGameState::Serialize(CArchive& ar)
         Clear();
 
         m_pPBMgr = new CPBoardManager;
-        m_pYMgr = new CTrayManager;
         m_pPTbl = new CPieceTable;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
             m_mapString.Serialize(ar);                  // V2.0
     }
     m_pPBMgr->Serialize(ar);
-    m_pYMgr->Serialize(ar);
+    m_pYMgr.Serialize(ar);
     m_pPTbl->Serialize(ar);
 }
 

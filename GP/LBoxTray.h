@@ -44,7 +44,7 @@ enum  TrayViz;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTrayListBox : public CTileBaseListBox
+class CTrayListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
 {
 // Construction
 public:
@@ -52,7 +52,7 @@ public:
 
 // Attributes
 public:
-    virtual CTileManager* GetTileManager();
+    virtual CTileManager* GetTileManager() override;
 
     TrayViz GetTrayContentVisibility() { return m_eTrayViz; }
 
@@ -61,7 +61,7 @@ public:
 // Operations
 public:
     void DeselectAll();
-    int  SelectTrayPiece(PieceID pid);
+    size_t SelectTrayPiece(PieceID pid);
     void ShowListIndex(int nPos);
 
     void SetDocument(CGamDoc *pDoc);
@@ -74,7 +74,7 @@ public:
 
 // Implementation
 protected:
-    void GetPieceTileIDs(int nIndex, TileID& tid1, TileID& tid2);
+    void GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2);
 
 // Implementation
 protected:
@@ -85,16 +85,16 @@ protected:
     BOOL        m_bAllowTips;
 
     // Overrides
-    virtual int OnItemHeight(int nIndex);
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem);
-    virtual BOOL OnDragSetup(DragInfo* pDI);
+    virtual unsigned OnItemHeight(size_t nIndex) override;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) override;
+    virtual BOOL OnDragSetup(DragInfo* pDI) override;
 
     // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled();
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct);
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle);
-    virtual BOOL OnDoesItemHaveTipText(int nItem);
+    virtual BOOL OnIsToolTipsEnabled() override;
+    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
+    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
 
     // Misc
 

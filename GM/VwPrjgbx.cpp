@@ -186,7 +186,7 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     int xProjListRight = posBtn.x - 1;  // Save for list box construction
 
-    xProjListRight = max(xProjListRight, PROJ_LIST_WIDTH);
+    xProjListRight = CB::max(xProjListRight, PROJ_LIST_WIDTH);
 
     // Buttons associated with the project item area...
     posBtn.x = BTN_GROUP_XGAP + xProjListRight;
@@ -443,11 +443,10 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
         int nProjSel = m_listProj.GetCurSel();
         ASSERT(nProjSel >= 0 &&
             m_listProj.GetItemGroupCode(nProjSel) == grpTile);
-        int nGrpSel = m_listProj.GetItemSourceCode(nProjSel);
+        size_t nGrpSel = m_listProj.GetItemSourceCode(nProjSel);
 
         CTileManager* pTMgr = pDoc->GetTileManager();
-        CTileSet* pTGrp = pTMgr->GetTileSet(nGrpSel);
-        ASSERT(pTGrp != NULL);
+        const CTileSet& pTGrp = pTMgr->GetTileSet(nGrpSel);
 
         // Force selection of item under the mouse
         m_listTiles.SetSelFromPoint(pdi->m_point);
@@ -463,7 +462,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
                 nSel++;
         }
 
-        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList, nSel);
+        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
         DoUpdateTileList();
         GetDocument()->NotifyTileDatabaseChange();
         m_listTiles.SetCurSelsMapped(*pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList);
@@ -568,19 +567,19 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CBoardManager* pBMgr = pDoc->GetBoardManager();
     ASSERT(pBMgr);
-    for (int i = 0; i < pBMgr->GetNumBoards(); i++)
+    for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
     {
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
         {
             bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
         }
-        str = pBMgr->GetBoard(i)->GetName();
+        str = pBMgr->GetBoard(i).GetName();
         if (bDisplayIDs)
         {
             CString strTmp = str;
             str.Format("[%d] %s",
-                pBMgr->GetBoard(i)->GetSerialNumber(), (LPCTSTR)strTmp);
+                value_preserving_cast<int>(static_cast<WORD>(pBMgr->GetBoard(i).GetSerialNumber())), (LPCTSTR)strTmp);
         }
         m_listProj.AddItem(grpBrd, str, i);
     }
@@ -591,8 +590,8 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CTileManager* pTMgr = pDoc->GetTileManager();
     ASSERT(pTMgr);
-    for (int i = 0; i < pTMgr->GetNumTileSets(); i++)
-        m_listProj.AddItem(grpTile, pTMgr->GetTileSet(i)->GetName(), i);
+    for (size_t i = 0; i < pTMgr->GetNumTileSets(); i++)
+        m_listProj.AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
 
     // Pieces....
     str.LoadString(IDS_PHEAD_PIECES);
@@ -600,8 +599,8 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CPieceManager* pPMgr = pDoc->GetPieceManager();
     ASSERT(pPMgr);
-    for (int i = 0; i < pPMgr->GetNumPieceSets(); i++)
-        m_listProj.AddItem(grpPce, pPMgr->GetPieceSet(i)->GetName(), i);
+    for (size_t i = 0; i < pPMgr->GetNumPieceSets(); i++)
+        m_listProj.AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
 
     // Marks....
     str.LoadString(IDS_PHEAD_MARKS);
@@ -609,8 +608,8 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CMarkManager* pMMgr = pDoc->GetMarkManager();
     ASSERT(pMMgr);
-    for (int i = 0; i < pMMgr->GetNumMarkSets(); i++)
-        m_listProj.AddItem(grpMark, pMMgr->GetMarkSet(i)->GetName(), i);
+    for (size_t i = 0; i < pMMgr->GetNumMarkSets(); i++)
+        m_listProj.AddItem(grpMark, pMMgr->GetMarkSet(i).GetName(), i);
 
     // OK...Show the updates
     m_listProj.SetRedraw(TRUE);
@@ -805,8 +804,8 @@ void CGbxProjView::OnEditCopy()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    CWordArray tidtbl;
-    m_listTiles.GetCurMappedItemList(&tidtbl);
+    std::vector<TileID> tidtbl;
+    m_listTiles.GetCurMappedItemList(tidtbl);
 
     BeginWaitCursor();
     TRY
@@ -818,7 +817,7 @@ void CGbxProjView::OnEditCopy()
 
         CSharedFile file2;
         CArchive ar2(&file2, CArchive::store);
-        tidtbl.Serialize(ar2);
+        ar2 << tidtbl;
         ar2.Close();
 
         CSharedFile file3(GMEM_DDESHARE | GMEM_MOVEABLE, 16);
@@ -852,7 +851,7 @@ void CGbxProjView::OnEditPaste()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
         IsClipboardFormatAvailable(CF_TILEIMAGES));
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
@@ -861,7 +860,7 @@ void CGbxProjView::OnEditPaste()
     TRY
     {
         CSharedFile file;
-        CWordArray tidtbl;
+        std::vector<TileID> tidtbl;
         if (OpenClipboard())
         {
             file.SetHandle(CopyHandle(::GetClipboardData(CF_TILEIMAGES)), FALSE);
@@ -869,14 +868,14 @@ void CGbxProjView::OnEditPaste()
 
             CArchive ar(&file, CArchive::load);
             int nCurSel = m_listTiles.GetTopSelectedItem();
-            nCurSel = nCurSel == LB_ERR ? -1 : nCurSel;
-            pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel);
+            size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
+            pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
             ar.Close();
         }
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        for (int i = 0; i < tidtbl.GetSize(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, tidtbl[i]), NULL);
+        for (size_t i = 0; i < tidtbl.size(); i++)
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
     }
@@ -897,7 +896,7 @@ void CGbxProjView::OnEditMove()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
         IsClipboardFormatAvailable(CF_TIDLIST));
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
@@ -922,12 +921,12 @@ void CGbxProjView::OnEditMove()
                 CloseClipboard();
 
                 CArchive ar(&file, CArchive::load);
-                CWordArray tidtbl;
-                tidtbl.Serialize(ar);
+                std::vector<TileID> tidtbl;
+                ar >> tidtbl;
                 ar.Close();
                 int nCurSel = m_listTiles.GetTopSelectedItem();
-                nCurSel = nCurSel == LB_ERR ? -1 : nCurSel;
-                pTMgr->MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel);
+                size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
+                pTMgr->MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel2);
                 DoUpdateTileList();
                 pDoc->NotifyTileDatabaseChange();
                 m_listTiles.SetCurSelsMapped(tidtbl);
@@ -1007,8 +1006,8 @@ void CGbxProjView::OnProjectSaveTileFile()
     if (dlg.DoModal() != IDOK)
         return;
 
-    CWordArray tidtbl;
-    m_listTiles.GetCurMappedItemList(&tidtbl);
+    std::vector<TileID> tidtbl;
+    m_listTiles.GetCurMappedItemList(tidtbl);
 
     BeginWaitCursor();
     TRY
@@ -1050,7 +1049,7 @@ void CGbxProjView::OnProjectLoadTileFile()
 {
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile);
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
@@ -1102,16 +1101,16 @@ void CGbxProjView::OnProjectLoadTileFile()
             AfxMessageBox(IDP_ERR_GTLBVERSION, MB_ICONEXCLAMATION);
             return;
         }
-        CWordArray tidtbl;
+        std::vector<TileID> tidtbl;
         int nCurSel = m_listTiles.GetTopSelectedItem();
-        nCurSel = nCurSel == LB_ERR ? -1 : nCurSel;
-        pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel);
+        size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
+        pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
         ar.Close();
 
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        for (int i = 0; i < tidtbl.GetSize(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, tidtbl[i]), NULL);
+        for (size_t i = 0; i < tidtbl.size(); i++)
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
         EndWaitCursor();

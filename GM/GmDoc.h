@@ -54,41 +54,101 @@
 //////////////////////////////////////////////////////////////////////
 // Hints for UpdateAllViews/OnUpdate
 
-#define     HINT_ALWAYSUPDATE       0       // Must be zero!
+enum CGamDocHint
+{
+    HINT_ALWAYSUPDATE =     0,      // Must be zero!
 
-#define     HINT_TILECREATED        1       // HIWORD = TileID
-#define     HINT_TILEMODIFIED       2       // HIWORD = TileID
-#define     HINT_TILEDELETED        3       // HIWORD = TileID
-#define     HINT_TILEGROUP          0x0F    // Mask for all tile hints
+    HINT_TILECREATED =      1,      // HIWORD = TileID
+    HINT_TILEMODIFIED =     2,      // HIWORD = TileID
+    HINT_TILEDELETED =      3,      // HIWORD = TileID
+    HINT_TILEGROUP =        0x0F,   // Mask for all tile hints
 
-#define     HINT_BOARDDELETED       0x10    // pHint->m_pBoard;
-#define     HINT_TILESETDELETED     0x11    // pHint->m_nVal = tset num
-#define     HINT_PIECESETDELETED    0x12    // pHint->m_nVal = pset num
-#define     HINT_MARKSETDELETED     0x13    // pHint->m_nVal = mset num
-#define     HINT_PIECEDELETED       0x14
-#define     HINT_MARKERDELETED      0x15
+    HINT_BOARDDELETED =     0x10,   // pHint->m_pBoard;
+    HINT_TILESETDELETED =   0x11,   // pHint->m_nVal = tset num
+    HINT_PIECESETDELETED =  0x12,   // pHint->m_nVal = pset num
+    HINT_MARKSETDELETED =   0x13,   // pHint->m_nVal = mset num
+    HINT_PIECEDELETED =     0x14,
+    HINT_MARKERDELETED =    0x15,
 
-#define     HINT_DELETEGROUP        0x10    // Set if delete hint group
+    HINT_DELETEGROUP =      0x10,   // Set if delete hint group
 
-#define     HINT_TILESETPROPCHANGE  0x20
-#define     HINT_BOARDPROPCHANGE    0x21    // pHint->m_pBoard
-#define     HINT_PIECESETPROPCHANGE 0x22
-#define     HINT_MARKERSETPROPCHANGE 0x23
+    HINT_TILESETPROPCHANGE =0x20,
+    HINT_BOARDPROPCHANGE =  0x21,   // pHint->m_pBoard
+    HINT_PIECESETPROPCHANGE=0x22,
+    HINT_MARKERSETPROPCHANGE=0x23,
 
-#define     HINT_FORCETILEUPDATE    0x40    // Used before a save is done
+    HINT_FORCETILEUPDATE =  0x40,   // Used before a save is done
 
-#define     HINT_UPDATEPROJVIEW     0x0100  // Used to reload prject window
+    HINT_UPDATEPROJVIEW =   0x0100, // Used to reload prject window
+
+    HINT_INVALID =          -1,     // uninitialized Args
+};
 
 class CGmBoxHint : public CObject
 {
     DECLARE_DYNCREATE(CGmBoxHint);
 public:
-    union
+    CGmBoxHint() : hint(HINT_INVALID) {}
+
+    template<CGamDocHint HINT>
+    struct Args
     {
-        void*       m_pVoid;
-        CBoard*     m_pBoard;
-        int         m_nVal;
     };
+
+    template<>
+    struct Args<HINT_BOARDDELETED>
+    {
+        CBoard*     m_pBoard;
+    };
+
+    template<>
+    struct Args<HINT_TILESETDELETED>
+    {
+        size_t      m_tileSet;
+    };
+
+    template<>
+    struct Args<HINT_PIECESETDELETED>
+    {
+        size_t      m_pieceSet;
+    };
+
+    template<>
+    struct Args<HINT_MARKSETDELETED>
+    {
+        size_t      m_markSet;
+    };
+
+    template<>
+    struct Args<HINT_BOARDPROPCHANGE>
+    {
+        CBoard*     m_pBoard;
+    };
+
+private:
+    CGamDocHint hint;
+    union {
+        Args<HINT_BOARDDELETED> m_boardDeleted;
+        Args<HINT_TILESETDELETED> m_tileSetDeleted;
+        Args<HINT_PIECESETDELETED> m_pieceSetDeleted;
+        Args<HINT_MARKSETDELETED> m_markSetDeleted;
+        Args<HINT_BOARDPROPCHANGE> m_boardPropChange;
+    } args;
+
+public:
+    template<CGamDocHint HINT>
+    Args<HINT>& GetArgs()
+    {
+        if (hint == HINT_INVALID)
+        {
+            hint = HINT;
+        }
+        else if (HINT != hint)
+        {
+            CbThrowBadCastException();
+        }
+        return reinterpret_cast<Args<HINT>&>(args);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -150,18 +210,18 @@ public:
 
     BOOL NotifyTileDatabaseChange(BOOL bPurgeScan = TRUE);
     BOOL PurgeMissingTileIDs();
-    BOOL QueryTileInUse(TileID tid);
-    BOOL QueryAnyOfTheseTilesInUse(CWordArray& tbl);
+    BOOL QueryTileInUse(TileID tid) const;
+    BOOL QueryAnyOfTheseTilesInUse(const std::vector<TileID>& tbl) const;
 
-    TileID CreateTileFromDib(CDib* pDib, int nTSet);
+    TileID CreateTileFromDib(CDib* pDib, size_t nTSet);
     CView* FindTileEditorView(TileID tid);
-    CView* FindBoardEditorView(CBoard* pBoard);
+    CView* FindBoardEditorView(const CBoard& pBoard);
 
     // Support for strings associated with game elements (pieces, markers)
     CString     GetGameElementString(GameElement gelem);
     BOOL        HasGameElementString(GameElement gelem);
 
-    BOOL DoBoardPropertyDialog(CBoard* pBoard);
+    BOOL DoBoardPropertyDialog(CBoard& pBoard);
 
     void DoGbxProperties() { OnEditGbxProperties(); }
     void DoCreateBoard() { OnEditCreateBoard(); }

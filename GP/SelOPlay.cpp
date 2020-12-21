@@ -421,7 +421,7 @@ void CSelList::RemoveObject(CDrawObj* pObj, BOOL bInvalidate)
     ASSERT(FALSE);                      //// Object wasn't in list ////
 }
 
-BOOL CSelList::IsObjectSelected(CDrawObj* pObj) const
+BOOL CSelList::IsObjectSelected(const CDrawObj* pObj) const
 {
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
@@ -756,18 +756,18 @@ void CSelList::CountDObjFlags(DWORD dwFlagBits, int& nSet, int& nCleared)
 
 void CSelList::DeselectIfDObjFlagsSet(DWORD dwFlagBits)
 {
-    CPtrArray tblDeselObjs;
+    std::vector<CDrawObj*> tblDeselObjs;
     // First find them...
     POSITION pos;
     for (pos = GetHeadPosition(); pos != NULL; )
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         if (pSel->m_pObj->GetDObjFlags() & dwFlagBits)
-            tblDeselObjs.Add(pSel->m_pObj);
+            tblDeselObjs.push_back(pSel->m_pObj);
     }
     // Then deselect them...
-    for (int i = 0; i < tblDeselObjs.GetSize(); i++)
-        RemoveObject((CDrawObj*)(tblDeselObjs.GetAt(i)), TRUE);
+    for (size_t i = 0; i < tblDeselObjs.size(); i++)
+        RemoveObject(tblDeselObjs.at(i), TRUE);
 }
 
 CSelection* CSelList::FindObject(CDrawObj* pObj) const
@@ -784,18 +784,19 @@ CSelection* CSelList::FindObject(CDrawObj* pObj) const
     return NULL;
 }
 
-void CSelList::LoadTableWithPieceIDs(CWordArray* pTbl, BOOL bVisualOrder /* = TRUE */)
+void CSelList::LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder /* = TRUE */)
 {
-    pTbl->RemoveAll();
+    pTbl.clear();
+    pTbl.reserve(value_preserving_cast<size_t>(GetSize()));
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl->Add((WORD)((CPieceObj*)pSel->m_pObj)->m_pid);
+            pTbl.push_back(static_cast<CPieceObj*>(pSel->m_pObj)->m_pid);
     }
-    if (pTbl->GetSize() == 0)
+    if (pTbl.empty())
         return;
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
@@ -809,12 +810,13 @@ void CSelList::LoadTableWithPieceIDs(CWordArray* pTbl, BOOL bVisualOrder /* = TR
         pDwg->ArrangePieceTableInDrawOrder(pTbl);
 }
 
-void CSelList::LoadTableWithOwnerStatePieceIDs(CWordArray* pTbl, LoadFilter eWantOwned,
+void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned,
     BOOL bVisualOrder /* = TRUE */)
 {
     CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
 
-    pTbl->RemoveAll();
+    pTbl.clear();
+    pTbl.reserve(value_preserving_cast<size_t>(GetSize()));
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
@@ -827,11 +829,11 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(CWordArray* pTbl, LoadFilter eWan
                 eWantOwned == LF_NOTOWNED && pPTbl->GetOwnerMask(pPObj->m_pid) == 0 ||
                 eWantOwned == LF_BOTH)
             {
-                pTbl->Add((WORD)pPObj->m_pid);
+                pTbl.push_back(pPObj->m_pid);
             }
         }
     }
-    if (pTbl->GetSize() == 0)
+    if (pTbl.empty())
         return;
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
@@ -845,9 +847,9 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(CWordArray* pTbl, LoadFilter eWan
 }
 
 // Loads the table with the CDrawObj pointers of playing pieces and markers.
-void CSelList::LoadTableWithObjectPtrs(CPtrArray* pTbl, BOOL bVisualOrder /* = TRUE */)
+void CSelList::LoadTableWithObjectPtrs(std::vector<CDrawObj*>& pTbl, BOOL bVisualOrder /* = TRUE */)
 {
-    pTbl->RemoveAll();
+    pTbl.clear();
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
@@ -855,9 +857,9 @@ void CSelList::LoadTableWithObjectPtrs(CPtrArray* pTbl, BOOL bVisualOrder /* = T
         ASSERT(pSel != NULL);
         CDrawObj::CDrawObjType type = pSel->m_pObj->GetType();
         if (type == CDrawObj::drawPieceObj || type == CDrawObj::drawMarkObj)
-            pTbl->Add(pSel->m_pObj);
+            pTbl.push_back(pSel->m_pObj);
     }
-    if (pTbl->GetSize() == 0)
+    if (pTbl.empty())
         return;
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list

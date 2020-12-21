@@ -47,9 +47,6 @@ static char THIS_FILE[] = __FILE__;
 
 CPieceTable::CPieceTable()
 {
-    m_pPieceTbl = NULL;
-    m_nTblSize = 0;
-    // ------ //
     m_wReserved1 = 0;
     m_wReserved2 = 0;
     m_wReserved3 = 0;
@@ -58,34 +55,28 @@ CPieceTable::CPieceTable()
     m_pPMgr = NULL;
 }
 
-CPieceTable::~CPieceTable()
-{
-    Clear();
-}
-
 ///////////////////////////////////////////////////////////////////////
-// Loads a word array with piece ID's that aren't already marked as
+// Loads array with piece ID's that aren't already marked as
 // is in use and are part of a particular piece set.
 
-void CPieceTable::LoadUnusedPieceList(CWordArray *pPTbl, int nPieceSet,
+void CPieceTable::LoadUnusedPieceList(std::vector<PieceID>& pPTbl, size_t nPieceSet,
     BOOL bClear)
 {
     ASSERT(m_pPMgr != NULL);
-    CPieceSet *pPSet = m_pPMgr->GetPieceSet(nPieceSet);
-    ASSERT(pPSet != NULL);
+    CPieceSet& pPSet = m_pPMgr->GetPieceSet(nPieceSet);
     LoadUnusedPieceList(pPTbl, pPSet, bClear);
 }
 
-void CPieceTable::LoadUnusedPieceList(CWordArray *pPTbl, CPieceSet* pPceSet,
+void CPieceTable::LoadUnusedPieceList(std::vector<PieceID>& pPTbl, const CPieceSet& pPceSet,
     BOOL bClear)
 {
-    if (bClear) pPTbl->RemoveAll();
-    CWordArray* pPidTbl = pPceSet->GetPieceIDTable();
-    for (int i = 0; i < pPidTbl->GetSize(); i++)
+    if (bClear) pPTbl.clear();
+    const std::vector<PieceID>& pPidTbl = pPceSet.GetPieceIDTable();
+    for (size_t i = 0; i < pPidTbl.size(); i++)
     {
-        PieceID pid = (PieceID)pPidTbl->GetAt(i);
-        if (!GetPiece(pid)->IsUsed())
-            pPTbl->Add(pid);
+        PieceID pid = pPidTbl.at(i);
+        if (!GetPiece(pid).IsUsed())
+            pPTbl.push_back(pid);
     }
 }
 
@@ -93,21 +84,21 @@ void CPieceTable::LoadUnusedPieceList(CWordArray *pPTbl, CPieceSet* pPceSet,
 // Marks all piece ID's corresponding to the input array's entries
 // as unused.
 
-void CPieceTable::SetPieceListAsUnused(CWordArray *pPTbl)
+void CPieceTable::SetPieceListAsUnused(const std::vector<PieceID>& pPTbl)
 {
-    for (int i = 0; i < pPTbl->GetSize(); i++)
+    for (size_t i = 0; i < pPTbl.size(); i++)
     {
-        PieceID pid = (PieceID)pPTbl->GetAt(i);
-        GetPiece(pid)->SetUnused();
+        PieceID pid = pPTbl.at(i);
+        GetPiece(pid).SetUnused();
     }
 }
 
-void CPieceTable::SetPieceListAsFrontUp(CWordArray *pPTbl)
+void CPieceTable::SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl)
 {
-    for (int i = 0; i < pPTbl->GetSize(); i++)
+    for (size_t i = 0; i < pPTbl.size(); i++)
     {
-        PieceID pid = (PieceID)pPTbl->GetAt(i);
-        GetPiece(pid)->SetSide(0);          // Front is up
+        PieceID pid = pPTbl.at(i);
+        GetPiece(pid).SetSide(0);          // Front is up
     }
 }
 
@@ -124,20 +115,20 @@ void CPieceTable::PurgeUndefinedPieceIDs()
     CPBoardManager* pPBMgr = m_pDoc->GetPBoardManager();
     ASSERT(pPBMgr != NULL);
 
-    int nPiecesDeleted = 0;
+    size_t nPiecesDeleted = 0;
 
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
         Piece* pPce;
-        PieceDef* pDef;
-        GetPieceDefinitionPair((PieceID)i, pPce, pDef);
+        const PieceDef* pDef;
+        GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
         if (pDef->IsEmpty())
         {
             if (pPce->IsUsed())
             {
-                TRACE1("ERROR: Piece %d was defined but had no Tile Images. "
+                TRACE1("ERROR: Piece %zu was defined but had no Tile Images. "
                        "Piece removed from game!\n", i);
-                pYMgr->RemovePieceIDFromTraySets((PieceID)i);
+                pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
                 CDrawObj* pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
                 if (pObj != NULL) delete pObj;
                 pPce->SetUnused();      // Render it gone!
@@ -167,28 +158,23 @@ void CPieceTable::CreatePlayingPieceTable()
 {
     ASSERT(m_pPMgr != NULL);
     Clear();
-    UINT nPieces = m_pPMgr->GetPieceTableSize();
+    size_t nPieces = m_pPMgr->GetPieceTableSize();
     ASSERT(nPieces < maxPieces);
     if (nPieces == 0)
         return;
-    m_pPieceTbl = (Piece*)GlobalAllocPtr(GHND, nPieces * sizeof(Piece));
-    if (m_pPieceTbl == NULL)
-        AfxThrowMemoryException();
-    m_nTblSize = nPieces;
-    for (UINT i = 0; i < m_nTblSize; i++)
-        GetPiece((PieceID)i)->SetUnused();
+    m_pPieceTbl.ResizeTable(nPieces, &Piece::SetUnused);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void CPieceTable::SetPieceFacing(PieceID pid, int nFacingDegCW)
 {
-    GetPiece(pid)->SetFacing(nFacingDegCW);
+    GetPiece(pid).SetFacing(nFacingDegCW);
 }
 
 int  CPieceTable::GetPieceFacing(PieceID pid)
 {
-    return GetPiece(pid)->GetFacing();
+    return GetPiece(pid).GetFacing();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -196,28 +182,28 @@ int  CPieceTable::GetPieceFacing(PieceID pid)
 void CPieceTable::FlipPieceOver(PieceID pid)
 {
     ASSERT(Is2Sided(pid));
-    GetPiece(pid)->InvertSide();
+    GetPiece(pid).InvertSide();
 }
 
 void CPieceTable::SetPieceUnused(PieceID pid)
 {
-    GetPiece(pid)->SetUnused();
+    GetPiece(pid).SetUnused();
 }
 
 BOOL CPieceTable::IsPieceUsed(PieceID pid)
 {
-    return GetPiece(pid)->IsUsed();
+    return GetPiece(pid).IsUsed();
 }
 
 BOOL CPieceTable::IsFrontUp(PieceID pid)
 {
-    return GetPiece(pid)->IsFrontUp();
+    return GetPiece(pid).IsFrontUp();
 }
 
 BOOL CPieceTable::Is2Sided(PieceID pid)
 {
     Piece* pPce;
-    PieceDef* pDef;
+    const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     return pDef->Is2Sided();
 }
@@ -226,18 +212,18 @@ BOOL CPieceTable::Is2Sided(PieceID pid)
 
 void CPieceTable::ClearAllOwnership()
 {
-    for (UINT i = 0; i < m_nTblSize; i++)
-        m_pPieceTbl[i].SetOwnerMask(0);
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
+        m_pPieceTbl[static_cast<PieceID>(i)].SetOwnerMask(0);
 }
 
 BOOL CPieceTable::IsPieceOwned(PieceID pid)
 {
-    return GetPiece(pid)->IsOwned();
+    return GetPiece(pid).IsOwned();
 }
 
 BOOL CPieceTable::IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask)
 {
-    return GetPiece(pid)->IsOwnedBy(dwOwnerMask);
+    return GetPiece(pid).IsOwnedBy(dwOwnerMask);
 }
 
 BOOL CPieceTable::IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc)
@@ -247,21 +233,21 @@ BOOL CPieceTable::IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc)
 
 DWORD CPieceTable::GetOwnerMask(PieceID pid)
 {
-    return GetPiece(pid)->GetOwnerMask();
+    return GetPiece(pid).GetOwnerMask();
 }
 
 void CPieceTable::SetOwnerMask(PieceID pid, DWORD dwMask)
 {
-    GetPiece(pid)->SetOwnerMask(dwMask);
+    GetPiece(pid).SetOwnerMask(dwMask);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void CPieceTable::SetPiece(PieceID pid, int nSide, int nFacing)
 {
-    Piece* pPce = GetPiece(pid);
-    pPce->SetSide(nSide);
-    pPce->SetFacing(nFacing);
+    Piece& pPce = GetPiece(pid);
+    pPce.SetSide(nSide);
+    pPce.SetFacing(nFacing);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -274,7 +260,7 @@ CSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
     return tile.GetSize();
 }
 
-CSize CPieceTable::GetStackedSize(CWordArray* pTbl, int xDelta, int yDelta,
+CSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta,
     BOOL bWithFacing)
 {
     CRect rctFull;
@@ -282,9 +268,9 @@ CSize CPieceTable::GetStackedSize(CWordArray* pTbl, int xDelta, int yDelta,
 
     CPoint pntCtr(0, 0);
 
-    for (int i = 0; i < pTbl->GetSize(); i++)
+    for (size_t i = 0; i < pTbl.size(); i++)
     {
-        CSize sz = GetPieceSize((PieceID)pTbl->GetAt(i), bWithFacing);
+        CSize sz = GetPieceSize(pTbl.at(i), bWithFacing);
         // First create rect centered on zero
         CRect rct(CPoint(-sz.cx/2, -sz.cy/2), sz);
         // Offset by staggered point
@@ -305,7 +291,7 @@ CSize CPieceTable::GetStackedSize(CWordArray* pTbl, int xDelta, int yDelta,
 TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
 {
     Piece* pPce;
-    PieceDef* pDef;
+    const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
     TileID tidBase = pDef->m_tidFront;
@@ -320,7 +306,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
 TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
 {
     Piece* pPce;
-    PieceDef* pDef;
+    const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
     TileID tidBase = pDef->m_tidFront;
@@ -347,7 +333,7 @@ BOOL CPieceTable::IsPieceInvisible(PieceID pid)
 TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
 {
     Piece* pPce;
-    PieceDef* pDef;
+    const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     TileID tidBase = pPce->IsFrontUp() ? pDef->GetFrontTID() : pDef->GetBackTID();
 
@@ -361,7 +347,7 @@ TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
 TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 {
     Piece* pPce;
-    PieceDef* pDef;
+    const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     TileID tidBase = pPce->IsFrontUp() ? pDef->GetBackTID() : pDef->GetFrontTID();
 
@@ -374,7 +360,7 @@ TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 
 ///////////////////////////////////////////////////////////////////////
 
-TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide)
+TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide) const
 {
     // Handle rotated pieces...
     ElementState state = MakePieceState(pid, nFacing, nSide);
@@ -390,72 +376,55 @@ TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int
 
 void CPieceTable::Clear()
 {
-    if (m_pPieceTbl != NULL)
-        GlobalFreePtr(m_pPieceTbl);
-    m_pPieceTbl = NULL;
-    m_nTblSize = 0;
+    m_pPieceTbl.Clear();
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-Piece* CPieceTable::GetPiece(PieceID pid)
+Piece& CPieceTable::GetPiece(PieceID pid)
 {
     ASSERT(m_pPieceTbl != NULL);
-    ASSERT((UINT)pid < m_nTblSize);
-    return &m_pPieceTbl[pid];
+    ASSERT(m_pPieceTbl.Valid(pid));
+    return m_pPieceTbl[pid];
 }
 
-PieceDef* CPieceTable::GetPieceDef(PieceID pid)
+const PieceDef& CPieceTable::GetPieceDef(PieceID pid) const
 {
     ASSERT(m_pPMgr != NULL);
     return m_pPMgr->GetPiece(pid);
 }
 
 void CPieceTable::GetPieceDefinitionPair(PieceID pid, Piece*& pPce,
-    PieceDef*& pDef)
+    const PieceDef*& pDef)
 {
-    pPce = GetPiece(pid);
-    ASSERT(pPce != NULL);
+    pPce = &GetPiece(pid);
 
     ASSERT(m_pPMgr != NULL);
-    pDef = m_pPMgr->GetPiece(pid);
-    ASSERT(pDef != NULL);
+    pDef = &m_pPMgr->GetPiece(pid);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-CPieceTable* CPieceTable::Clone(CGamDoc *pDoc)
+CPieceTable* CPieceTable::Clone(CGamDoc *pDoc) const
 {
     CPieceTable* pTbl = new CPieceTable;
-    pTbl->m_nTblSize = m_nTblSize;
-    pTbl->m_pPieceTbl = (Piece*)GlobalAllocPtr(GHND,
-        (long)m_nTblSize * sizeof(Piece));
-    if (pTbl->m_pPieceTbl == NULL)
-        AfxThrowMemoryException();
-    for (UINT i = 0; i < m_nTblSize; i++)
-        pTbl->m_pPieceTbl[i] = m_pPieceTbl[i];
+    pTbl->m_pPieceTbl = m_pPieceTbl;
     return pTbl;
 }
 
-void CPieceTable::Restore(CGamDoc *pDoc, CPieceTable* pTbl)
+void CPieceTable::Restore(CGamDoc *pDoc, const CPieceTable& pTbl)
 {
     Clear();
-    m_nTblSize = pTbl->m_nTblSize;
-    m_pPieceTbl = (Piece*)GlobalAllocPtr(GHND,
-        (long)m_nTblSize * sizeof(Piece));
-    if (m_pPieceTbl == NULL)
-        AfxThrowMemoryException();
-    for (UINT i = 0; i < m_nTblSize; i++)
-        m_pPieceTbl[i] = pTbl->m_pPieceTbl[i];
+    m_pPieceTbl = pTbl.m_pPieceTbl;
 }
 
-BOOL CPieceTable::Compare(CPieceTable* pTbl)
+BOOL CPieceTable::Compare(const CPieceTable& pTbl) const
 {
-    if (m_nTblSize != pTbl->m_nTblSize)
+    if (m_pPieceTbl.GetSize() != pTbl.m_pPieceTbl.GetSize())
         return FALSE;
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
-        if (m_pPieceTbl[i] != pTbl->m_pPieceTbl[i])
+        if (m_pPieceTbl[static_cast<PieceID>(i)] != pTbl.m_pPieceTbl[static_cast<PieceID>(i)])
             return FALSE;
     }
     return TRUE;
@@ -472,10 +441,7 @@ void CPieceTable::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        ar << (WORD)m_nTblSize;
-
-        for (UINT i = 0; i < m_nTblSize; i++)
-            m_pPieceTbl[i].Serialize(ar);
+        ar << m_pPieceTbl;
     }
     else
     {
@@ -489,44 +455,18 @@ void CPieceTable::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
 
-        WORD wTmp;
-        ar >> wTmp;
-        if (wTmp > 0)
-        {
-            m_pPieceTbl = (Piece *)GlobalAllocPtr(GHND,
-                (long)wTmp * sizeof(Piece));
-            if (m_pPieceTbl == NULL)
-                AfxThrowMemoryException();
-            for (UINT i = 0; i < (UINT)wTmp; i++)
-                m_pPieceTbl[i].Serialize(ar);
-        }
-        m_nTblSize = (UINT)wTmp;
+        ar >> m_pPieceTbl;
 
         // Check for consistancy with game box piece table.
 
         ASSERT(m_pPMgr != NULL);
-        UINT nDefSize = m_pPMgr->GetPieceTableSize();
-        if (m_nTblSize < nDefSize)
+        size_t nDefSize = m_pPMgr->GetPieceTableSize();
+        if (m_pPieceTbl.GetSize() < nDefSize)
         {
             // Need to increase the size of the playing piece table.
-            if (m_nTblSize == 0)
-            {
-                m_pPieceTbl = (Piece *)GlobalAllocPtr(GHND,
-                    (long)nDefSize * sizeof(Piece));
-            }
-            else
-            {
-                m_pPieceTbl = (Piece *)GlobalReAllocPtr(m_pPieceTbl,
-                    (long)nDefSize * sizeof(Piece), GHND);
-            }
-            if (m_pPieceTbl == NULL)
-                AfxThrowMemoryException();
-            UINT nPrevSize = m_nTblSize;
-            m_nTblSize = nDefSize;
-            for (UINT i = nPrevSize; i < nDefSize; i++)
-                GetPiece((PieceID)i)->SetUnused();
+            m_pPieceTbl.ResizeTable(nDefSize, &Piece::SetUnused);
         }
-        else if (m_nTblSize > nDefSize)
+        else if (m_pPieceTbl.GetSize() > nDefSize)
         {
             // Piece table in Game box was truncated. Probably
             // bad news.
@@ -534,18 +474,14 @@ void CPieceTable::Serialize(CArchive& ar)
                     MB_ICONEXCLAMATION) != IDOK)
                 AfxThrowArchiveException(CArchiveException::genericException);
             // Need to decrease the size of the playing piece table.
-            m_pPieceTbl = (Piece*)GlobalReAllocPtr(m_pPieceTbl,
-                (long)nDefSize * sizeof(Piece), GHND);
-            if (m_pPieceTbl == NULL)
-                AfxThrowMemoryException();
-            UINT nOldTblSize = m_nTblSize;
-            m_nTblSize = nDefSize;
+            size_t nOldTblSize = m_pPieceTbl.GetSize();
+            m_pPieceTbl.ResizeTable(nDefSize, nullptr);
             // Purge pieces in use that don't exist anymore
             CTrayManager* pYMgr = m_pDoc->GetTrayManager();
             CPBoardManager* pPBMgr = m_pDoc->GetPBoardManager();
-            for (UINT i = m_nTblSize; i < nOldTblSize; i++)
+            for (size_t i = m_pPieceTbl.GetSize(); i < nOldTblSize; i++)
             {
-                pYMgr->RemovePieceIDFromTraySets((PieceID)i);
+                pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
                 CDrawObj* pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
                 if (pObj != NULL) delete pObj;
             }
@@ -598,15 +534,16 @@ void CPieceTable::DumpToTextFile(CFile& file)
     file.Write(szHead, lstrlen(szHead));
 
     char szBfr[256];
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
         Piece* pPce;
-        PieceDef* pDef;
-        GetPieceDefinitionPair((PieceID)i, pPce, pDef);
+        const PieceDef* pDef;
+        GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
         wsprintf(szBfr, "PieceID %5.5d: m_nSide=%02X, m_nFacing=%3u, "
             "m_tidFront=%5u, m_tidBack=%5u\r\n", i,
             (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing,
-            (UINT)pDef->m_tidFront, (UINT)pDef->m_tidBack);
+            (UINT)static_cast<WORD>(pDef->m_tidFront),
+            (UINT)static_cast<WORD>(pDef->m_tidBack));
         file.Write(szBfr, lstrlen(szBfr));
     }
 }

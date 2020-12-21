@@ -270,10 +270,10 @@ static void FindRectVectorMinMax(POINT* pPnts, CPoint& pntMin, CPoint& pntMax)
     pntMax.y = INT_MIN;
     for (int i = 0; i < numPnts; i++)
     {
-        pntMin.x = min(pntMin.x, pPnts[i].x);
-        pntMin.y = min(pntMin.y, pPnts[i].y);
-        pntMax.x = max(pntMax.x, pPnts[i].x);
-        pntMax.y = max(pntMax.y, pPnts[i].y);
+        pntMin.x = CB::min(pntMin.x, pPnts[i].x);
+        pntMin.y = CB::min(pntMin.y, pPnts[i].y);
+        pntMax.x = CB::max(pntMax.x, pPnts[i].x);
+        pntMax.y = CB::max(pntMax.y, pPnts[i].y);
     }
 }
 

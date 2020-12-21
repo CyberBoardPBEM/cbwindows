@@ -83,7 +83,7 @@ void CGsnProjView::DoBoardProperty()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    int nBrd = m_listProj.GetItemSourceCode(nSel);
+    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
     pDoc->DoBoardProperties(nBrd);
 }
 
@@ -93,9 +93,9 @@ void CGsnProjView::DoBoardView()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    int nBrd = m_listProj.GetItemSourceCode(nSel);
+    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard* pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
     CView* pView = pDoc->FindPBoardView(pPBoard);
     if (pView != NULL)
     {
@@ -108,7 +108,7 @@ void CGsnProjView::DoBoardView()
     {
         CString strTitle;
         m_listProj.GetItemText(nSel, strTitle);
-        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, pPBoard);
+        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
 
@@ -119,7 +119,7 @@ void CGsnProjView::DoBoardRemove()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    int nBrd = m_listProj.GetItemSourceCode(nSel);
+    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
     pDoc->GetPBoardManager()->DeletePBoard(nBrd);
     pDoc->SetModifiedFlag(TRUE);
@@ -150,7 +150,7 @@ void CGsnProjView::DoTrayProperty()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
 
     CTrayPropDialog dlg;
@@ -158,25 +158,25 @@ void CGsnProjView::DoTrayProperty()
     dlg.m_pYMgr = pDoc->GetTrayManager();
     dlg.m_pPlayerMgr = pDoc->GetPlayerManager();
 
-    CTraySet* pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
-    dlg.m_bRandomSel = pYGrp->IsRandomPiecePull();
-    dlg.SetTrayViz(pYGrp->GetTrayContentVisibility());
-    dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pYGrp->GetOwnerMask());
-    dlg.m_bNonOwnerAccess = pYGrp->IsNonOwnerAccessAllowed();
-    dlg.m_bEnforceVizForOwnerToo = pYGrp->IsEnforcingVisibilityForOwnerToo();
+    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
+    dlg.m_bRandomSel = pYGrp.IsRandomPiecePull();
+    dlg.SetTrayViz(pYGrp.GetTrayContentVisibility());
+    dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pYGrp.GetOwnerMask());
+    dlg.m_bNonOwnerAccess = pYGrp.IsNonOwnerAccessAllowed();
+    dlg.m_bEnforceVizForOwnerToo = pYGrp.IsEnforcingVisibilityForOwnerToo();
 
     if (dlg.DoModal() == IDOK)
     {
-        pYGrp->SetName(dlg.m_strName);
+        pYGrp.SetName(dlg.m_strName);
 
-        pYGrp->SetRandPiecePull(dlg.m_bRandomSel);
-        pYGrp->SetTrayContentVisibility(dlg.GetTrayViz());
+        pYGrp.SetRandPiecePull(dlg.m_bRandomSel);
+        pYGrp.SetTrayContentVisibility(dlg.GetTrayViz());
         if (dlg.m_pPlayerMgr != NULL)
         {
-            pYGrp->SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
-            pYGrp->PropagateOwnerMaskToAllPieces(pDoc);
-            pYGrp->SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
-            pYGrp->SetEnforceVisibilityForOwnerToo(dlg.m_bEnforceVizForOwnerToo);
+            pYGrp.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
+            pYGrp.PropagateOwnerMaskToAllPieces(pDoc);
+            pYGrp.SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
+            pYGrp.SetEnforceVisibilityForOwnerToo(dlg.m_bEnforceVizForOwnerToo);
         }
 
         CGamDocHint hint;
@@ -192,12 +192,12 @@ void CGsnProjView::DoTrayEdit()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
     CTrayManager* pYMgr = pDoc->GetTrayManager();
 
     CSetPiecesDialog dlg;
     dlg.m_pDoc = pDoc;
-    dlg.m_nYSel = nGrp;
+    dlg.m_nYSel = value_preserving_cast<int>(nGrp);
 
     m_listTrays.SetItemMap(NULL);       // Clear this since repaint may fail...
     pDoc->CloseTrayPalettes();          // ...Ditto that for tray palettes
@@ -220,16 +220,16 @@ void CGsnProjView::DoTrayDelete()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    if (!pYMgr->GetTraySet(nGrp)->IsEmpty())
+    if (!pYMgr->GetTraySet(nGrp).IsEmpty())
     {
         if (AfxMessageBox(IDS_ERR_TRAYHASPIECES,
                 MB_OKCANCEL | MB_ICONEXCLAMATION) != IDOK)
             return;
         // Mark those pieces as unused.
         pPTbl->SetPieceListAsUnused(
-            pYMgr->GetTraySet(nGrp)->GetPieceIDTable());
+            pYMgr->GetTraySet(nGrp).GetPieceIDTable());
     }
     pYMgr->DeleteTraySet(nGrp);
     CGamDocHint hint;
@@ -250,16 +250,11 @@ void CGsnProjView::DoUpdateTrayList()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    int nGrp = m_listProj.GetItemSourceCode(nSel);
+    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CTraySet* pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
-    if (pYGrp == NULL)
-    {
-        m_listTrays.SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pYGrp->GetPieceIDTable();
-    m_listTrays.SetItemMap(pLstMap);
+    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
+    const std::vector<PieceID>& pLstMap = pYGrp.GetPieceIDTable();
+    m_listTrays.SetItemMap(&pLstMap);
 }
 
 

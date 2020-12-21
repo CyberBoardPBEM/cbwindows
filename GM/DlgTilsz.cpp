@@ -109,8 +109,8 @@ BOOL CResizeTileDialog::OnInitDialog()
 
     ASSERT(m_pBMgr != NULL);
 
-    for (int i = 0; i < m_pBMgr->GetNumBoards(); i++)
-        m_comboBrdName.AddString(m_pBMgr->GetBoard(i)->GetName());
+    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
+        m_comboBrdName.AddString(m_pBMgr->GetBoard(i).GetName());
     m_comboBrdName.SetCurSel(-1);
 
     char szNum[40];
@@ -128,17 +128,16 @@ void CResizeTileDialog::OnSelchangeBrdName()
     if (nBrd >= 0)
     {
         char szNum[40];
-        CBoard* pBoard = m_pBMgr->GetBoard(nBrd);
-        ASSERT(pBoard);
+        CBoard& pBoard = m_pBMgr->GetBoard(value_preserving_cast<size_t>(nBrd));
 
-        CSize size = pBoard->GetCellSize(fullScale);
+        CSize size = pBoard.GetCellSize(fullScale);
 
         _itoa(size.cx, szNum, 10);
         m_editWidth.SetWindowText(szNum);
         _itoa(size.cy, szNum, 10);
         m_editHeight.SetWindowText(szNum);
 
-        size = pBoard->GetCellSize(halfScale);
+        size = pBoard.GetCellSize(halfScale);
         m_nHalfWidth = size.cx;
         m_nHalfHeight = size.cy;
     }

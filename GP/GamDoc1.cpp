@@ -72,18 +72,18 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
-void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet* pYGrp, int nPos)
+void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
 {
     RecordPieceMoveToTray(pYGrp, pid, nPos);        // Record processing
 
     BOOL bTrayHintAllowed = TRUE;
     CTraySet *pCurYGrp = FindPieceInTray(pid);
-    if (pCurYGrp == pYGrp && nPos != -1)
+    if (pCurYGrp == &pYGrp && nPos != Invalid_v<size_t>)
     {
         // May need to mess with 'nPos' if moving the piece
         // to a location higher up in the list.
-        int nIdx = pCurYGrp->GetPieceIDIndex(pid);
-        ASSERT(nIdx != -1);
+        size_t nIdx = pCurYGrp->GetPieceIDIndex(pid);
+        ASSERT(nIdx != Invalid_v<size_t>);
         if (nPos > nIdx)
             nPos--;
         bTrayHintAllowed = FALSE;
@@ -93,14 +93,14 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet* pYGrp, int nPos)
 
     // Force the piece to take on the same ownership as the
     // tray has.
-    GetPieceTable()->SetOwnerMask(pid, pYGrp->IsOwned() ? pYGrp->GetOwnerMask() : 0);
+    GetPieceTable()->SetOwnerMask(pid, pYGrp.IsOwned() ? pYGrp.GetOwnerMask() : 0);
 
-    pYGrp->AddPieceID(pid, nPos);
+    pYGrp.AddPieceID(pid, nPos);
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pTray = pYGrp;
+        hint.m_pTray = &pYGrp;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     }
     SetModifiedFlag();
@@ -250,28 +250,28 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, CPtrArray *pTbl,
+void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& pTbl,
     int xStagger, int yStagger, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
     // in the view, we'll walk the array from bottom to top.
-    if (pTbl->GetSize() & 1)
+    if (pTbl.size() & 1)
     {
         // Odd number of pieces
-        pnt += CSize(xStagger * (pTbl->GetSize() / 2),
-            yStagger * (pTbl->GetSize() / 2));
+        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
+            yStagger * (value_preserving_cast<int>(pTbl.size()) / 2));
     }
     else
     {
         // Even number of pieces
-        pnt += CSize(xStagger * (pTbl->GetSize() / 2) - xStagger / 2,
-            yStagger * (pTbl->GetSize() / 2) - yStagger / 2);
+        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
+            yStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - yStagger / 2);
         pnt.x -= xStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
         pnt.y -= yStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
     }
-    for (int i = pTbl->GetUpperBound(); i >= 0; i--)
+    for (size_t i = pTbl.size(); i > 0; i--)
     {
-        CDrawObj* pDObj = (CDrawObj*)pTbl->GetAt(i);
+        CDrawObj* pDObj = pTbl.at(i - 1);
         CSize sizeDelta = pnt - pDObj->GetRect().CenterPoint();
         PlaceObjectOnBoard(pPBrd, pDObj, sizeDelta, placeTop);
         pnt -= CSize(xStagger, yStagger);
@@ -282,84 +282,84 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, CPtrArray *pTbl,
 // Places that objects in there current coordinates but changes
 // their Z-order.
 
-void CGamDoc::PlaceObjectTableOnBoard(CPtrArray *pTbl, CPlayBoard *pPBrd)
+void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CDrawObj*>& pTbl, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
     // in the view, we'll walk the array from bottom to top.
-    for (int i = pTbl->GetUpperBound(); i >= 0; i--)
+    for (size_t i = pTbl.size(); i > 0; i--)
     {
-        CDrawObj* pDObj = (CDrawObj*)pTbl->GetAt(i);
+        CDrawObj* pDObj = pTbl.at(i - 1);
         PlaceObjectOnBoard(pPBrd, pDObj, CSize(0,0), placeTop);
     }
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::PlacePieceListOnBoard(CPoint pnt, CWordArray *pTbl,
+void CGamDoc::PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl,
     int xStagger, int yStagger, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
     // in the view, we'll walk the array from bottom to top.
-    if (pTbl->GetSize() & 1)
+    if (pTbl.size() & 1)
     {
         // Odd number of pieces
-        pnt += CSize(xStagger * (pTbl->GetSize() / 2),
-            yStagger * (pTbl->GetSize() / 2));
+        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
+            yStagger * (value_preserving_cast<int>(pTbl.size()) / 2));
     }
     else
     {
         // Even number of pieces
-        pnt += CSize(xStagger * (pTbl->GetSize() / 2) - xStagger / 2,
-            yStagger * (pTbl->GetSize() / 2) - yStagger / 2);
+        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
+            yStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - yStagger / 2);
         pnt.x -= xStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
         pnt.y -= yStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
     }
-    for (int i = pTbl->GetUpperBound(); i >= 0; i--)
+    for (size_t i = pTbl.size(); i > 0; i--)
     {
-        PieceID pid = pTbl->GetAt(i);
+        PieceID pid = pTbl.at(i - 1);
         PlacePieceOnBoard(pnt, pid, pPBrd);
         pnt -= CSize(xStagger, yStagger);
     }
 }
 
-int CGamDoc::PlacePieceListInTray(CWordArray *pTbl, CTraySet* pYGrp, int nPos)
+size_t CGamDoc::PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet& pYGrp, size_t nPos)
 {
     //TODO: This code will have to get smarter when dropping pieces
     //TODO that originate from the same tray.
-    for (int i = 0; i < pTbl->GetSize(); i++)
+    for (size_t i = 0; i < pTbl.size(); i++)
     {
-        PieceID pid = pTbl->GetAt(i);
+        PieceID pid = pTbl.at(i);
         // We need to find out if the source of the list is in the
         // same as the target list. If it is, we shouldn't increment
         // the position.
         CTraySet *pCurYGrp = FindPieceInTray(pid);
 
         PlacePieceInTray(pid, pYGrp, nPos);
-        if (nPos != -1)
+        if (nPos != Invalid_v<size_t>)
             nPos++;
     }
-    return nPos == -1 ? nPos : nPos - 1;
+    return nPos == Invalid_v<size_t> ? nPos : nPos - 1;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Returns index of last piece inserted.
-int CGamDoc::PlaceObjectListInTray(CPtrList *pLst, CTraySet* pYGrp, int nPos)
+size_t CGamDoc::PlaceObjectListInTray(const CPtrList& pLst, CTraySet& pYGrp, size_t nPos)
 {
     // Scan this list in reverse order so they show up in the
     // same visual order.
     POSITION pos;
-    for (pos = pLst->GetTailPosition(); pos != NULL; )
+    for (pos = pLst.GetTailPosition(); pos != NULL; )
     {
-        CPieceObj* pObj = (CPieceObj*)pLst->GetPrev(pos);
+        CPieceObj* pObj = (CPieceObj*)pLst.GetPrev(pos);
         // Only pieces are placed. Other objects are left as they were.
         if (pObj->GetType() == CDrawObj::drawPieceObj)
         {
             PlacePieceInTray(pObj->m_pid, pYGrp, nPos);
-            if (nPos != -1)
+            if (nPos != Invalid_v<size_t>)
                 nPos++;
         }
     }
-    return nPos == -1 ? nPos : nPos - 1;
+    return nPos == Invalid_v<size_t> ? nPos : nPos - 1;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -606,10 +606,10 @@ void CGamDoc::SetPieceOwnership(PieceID pid, DWORD dwOwnerMask)
     SetModifiedFlag();
 }
 
-void CGamDoc::SetPieceOwnershipTable(CWordArray* pTblPieces, DWORD dwOwnerMask)
+void CGamDoc::SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask)
 {
-    for (int i = 0; i < pTblPieces->GetSize(); i++)
-        SetPieceOwnership((PieceID)pTblPieces->GetAt(i), dwOwnerMask);
+    for (size_t i = 0; i < pTblPieces.size(); i++)
+        SetPieceOwnership(pTblPieces.at(i), dwOwnerMask);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -626,12 +626,12 @@ CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     CMarkManager* pMMgr = GetMarkManager();
     ASSERT(pMMgr != NULL);
 
-    MarkDef* pMark = pMMgr->GetMark(mid);
-    ASSERT(pMark->m_tid != nullTid);
+    MarkDef& pMark = pMMgr->GetMark(mid);
+    ASSERT(pMark.m_tid != nullTid);
 
     // Marker is centered on point.
     CTile tile;
-    GetTileManager()->GetTile(pMark->m_tid,  &tile, fullScale);
+    GetTileManager()->GetTile(pMark.m_tid,  &tile, fullScale);
     CRect rct(pnt, tile.GetSize());
     rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
     pPBrd->LimitRectToBoard(rct);
@@ -880,10 +880,10 @@ void CGamDoc::FindObjectListUnionRect(CPtrList* pLst, CRect& rct)
 
 void CGamDoc::ExpungeUnusedPiecesFromBoards()
 {
-    for (int i = 0; i < m_pPBMgr->GetNumPBoards(); i++)
+    for (size_t i = 0; i < m_pPBMgr->GetNumPBoards(); i++)
     {
-        CPlayBoard *pPBrd = m_pPBMgr->GetPBoard(i);
-        CDrawList* pDwg = pPBrd->GetPieceList();
+        CPlayBoard& pPBrd = m_pPBMgr->GetPBoard(i);
+        CDrawList* pDwg = pPBrd.GetPieceList();
 
         CPtrList listPtr;
         pDwg->GetPieceObjectPtrList(&listPtr);
@@ -895,13 +895,13 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
             ASSERT(pObj != NULL);
             if (!m_pPTbl->IsPieceUsed(pObj->m_pid))
             {
-                pPBrd->RemoveObject(pObj);
+                pPBrd.RemoveObject(pObj);
 
                 if (!IsQuietPlayback())
                 {
                     // Cause object display area to be invalidated
                     CGamDocHint hint;
-                    hint.m_pPBoard = pPBrd;
+                    hint.m_pPBoard = &pPBrd;
                     hint.m_pDrawObj = pObj;
                     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
                 }

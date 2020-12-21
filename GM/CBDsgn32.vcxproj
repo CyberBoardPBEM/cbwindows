@@ -260,6 +260,7 @@ echo off
     <ClInclude Include="..\GShr\BrdCell.h" />
     <ClInclude Include="..\GShr\CDib.h" />
     <ClInclude Include="..\GShr\CellForm.h" />
+    <ClInclude Include="..\GShr\CyberBoard.h" />
     <ClInclude Include="ClipBrd.h" />
     <ClInclude Include="..\GShr\Ctl3d.h" />
     <ClInclude Include="..\GShr\DibApi.h" />

@@ -47,13 +47,13 @@ CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(CWinStateElement* pWse)
     else if (pWse->m_wUserCode1 == gpFrmPlayBoard)
     {
         // The second user code is the board's serial number.
-        CPlayBoard* pPBoard = pDoc->GetPBoardManager()->GetPBoardBySerial(pWse->m_wUserCode2);
+        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager()->GetPBoardBySerial(static_cast<BoardID>(pWse->m_wUserCode2)));
         CView* pView = pDoc->FindPBoardView(pPBoard);
         if (pView == NULL)
         {
             // No frame open for board. Create it.
             pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-                pPBoard->GetBoard()->GetName(), pPBoard);
+                pPBoard.GetBoard()->GetName(), &pPBoard);
             // Try to locate it again
             pView = pDoc->FindPBoardView(pPBoard);
         }
@@ -71,7 +71,7 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement *pWse, CWnd *pWn
     {
         CPlayBoardFrame* pFrame = (CPlayBoardFrame*)pWnd;
         pWse->m_wUserCode1 = gpFrmPlayBoard;
-        pWse->m_wUserCode2 = pFrame->m_pPBoard->GetSerialNumber();
+        pWse->m_wUserCode2 = static_cast<WORD>(pFrame->m_pPBoard->GetSerialNumber());
     }
 }
 

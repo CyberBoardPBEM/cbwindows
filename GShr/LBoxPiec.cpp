@@ -93,27 +93,29 @@ int  CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     ASSERT(m_pDoc != NULL);
 
-    UINT nPid = MapIndexToItem(nIndex);
+    PieceID nPid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
+    uint32_t flags = 0;
 
-    TileID tidLeft = m_pPMgr->GetPiece((PieceID)nPid)->GetFrontTID();
+    TileID tidLeft = m_pPMgr->GetPiece(nPid).GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece((PieceID)nPid)->GetBackTID();
+    TileID tidRight = m_pPMgr->GetPiece(nPid).GetBackTID();
 
     CRect rctLeft;
     CRect rctRight;
-    GetTileRectsForItem(nIndex, tidLeft, tidRight, rctLeft, rctRight);
+    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tidLeft, tidRight, rctLeft, rctRight);
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
         rct = rctLeft;
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         rct = rctRight;
-        nPid |= 0x10000;             // Set flag bit indicating right side rect
+        static_assert(sizeof(nPid) <= 2, "flags and PieceID bits overlap");
+        flags |= 0x10000;             // Set flag bit indicating right side rect
     }
     else
         return -1;
 
-    return (int)nPid;
+    return value_preserving_cast<int>(static_cast<WORD>(nPid) | flags);
 }
 
 void CPieceListBox::OnGetTipTextForItemCode(int nItemCode,
@@ -121,7 +123,7 @@ void CPieceListBox::OnGetTipTextForItemCode(int nItemCode,
 {
     if (nItemCode < 0)
         return;
-    PieceID pid = (PieceID)(nItemCode & 0xFFFF);
+    PieceID pid = static_cast<PieceID>(nItemCode & 0xFFFF);
     BOOL bRightRect = (nItemCode & 0x10000) != 0;
     GameElement elem = MakePieceElement(pid, bRightRect ? 1 : 0);
     strTip = m_pDoc->GetGameElementString(elem);
@@ -129,36 +131,37 @@ void CPieceListBox::OnGetTipTextForItemCode(int nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CPieceListBox::OnDoesItemHaveTipText(int nItem)
+BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem)
 {
-    PieceID pid = (PieceID)MapIndexToItem(nItem);
+    PieceID pid = MapIndexToItem(nItem);
     return m_pDoc->HasGameElementString(MakePieceElement(pid, 0)) ||
         m_pDoc->HasGameElementString(MakePieceElement(pid, 1));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CPieceListBox::OnItemHeight(int nIndex)
+unsigned CPieceListBox::OnItemHeight(size_t nIndex)
 {
-    PieceID pid = (PieceID)MapIndexToItem(nIndex);
+    PieceID pid = MapIndexToItem(nIndex);
 
-    TileID tidLeft = m_pPMgr->GetPiece(pid)->GetFrontTID();
+    TileID tidLeft = m_pPMgr->GetPiece(pid).GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece(pid)->GetBackTID();
+    TileID tidRight = m_pPMgr->GetPiece(pid).GetBackTID();
     return DoOnItemHeight(tidLeft, tidRight);
 }
 
-void CPieceListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CPieceListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
-    if (nIndex < 0)
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
         return;
 
-    PieceID pid = (PieceID)MapIndexToItem(nIndex);
+    PieceID pid = MapIndexToItem(nIndex);
 
-    TileID tidLeft = m_pPMgr->GetPiece(pid)->GetFrontTID();
+    TileID tidLeft = m_pPMgr->GetPiece(pid).GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece(pid)->GetBackTID();
+    TileID tidRight = m_pPMgr->GetPiece(pid).GetBackTID();
 
     DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tidLeft, tidRight);
 }
@@ -166,7 +169,7 @@ void CPieceListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
 BOOL CPieceListBox::OnDragSetup(DragInfo* pDI)
 {
     pDI->m_dragType = DRAG_PIECE;
-    pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();          // The PieceID
+    pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
     ASSERT(!"code look wrong, but I think this is unreachable");
     /* this is the original code, but it looks wrong since
         everything else seems to say DRAG_PIECE should have

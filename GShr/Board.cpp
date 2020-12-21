@@ -51,7 +51,7 @@ CBoard::CBoard()
     m_pTopDwg = NULL;
     m_iMaxLayer = -1;
     // --------- //
-    m_nSerialNum = 0;           // Needs to be set by creator
+    m_nSerialNum = BoardID(0);           // Needs to be set by creator
     m_bShowCellBorder = TRUE;
     m_bApplyVisibility = TRUE;
     // ------ //
@@ -393,7 +393,7 @@ void CBoardBase::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)m_nSerialNum;
+        ar << m_nSerialNum;
         ar << (WORD)m_bApplyVisibility;
         ar << (WORD)m_bGridSnap;
         ar << (DWORD)m_xGridSnap;
@@ -414,9 +414,9 @@ void CBoardBase::Serialize(CArchive& ar)
             delete m_pBaseDwg;
             m_pBaseDwg = NULL;
         }
-        WORD wTmp;
+        uint16_t wTmp;
         DWORD dwTmp;
-        ar >> wTmp; m_nSerialNum = (int)wTmp;
+        ar >> m_nSerialNum;
 #ifndef GPLAY
         if (CGamDoc::GetLoadingVersion() > NumVersion(0, 54))
 #endif
@@ -454,7 +454,7 @@ void CBoardBase::Serialize(CArchive& ar)
 
 CBoardManager::CBoardManager()
 {
-    m_nNextSerialNumber = 1;
+    m_nNextSerialNumber = BoardID(1);
     // ------ //
     SetForeColor(RGB(0, 0, 0));
     SetBackColor(RGB(255, 255, 255));
@@ -470,9 +470,7 @@ CBoardManager::CBoardManager()
 
 void CBoardManager::DestroyAllElements(void)
 {
-    for (int i = 0; i < GetSize(); i++)
-        delete (CBoard*)GetAt(i);
-    RemoveAll();
+    clear();
     CGamDoc::GetFontManager()->DeleteFont(m_fontID);
     m_fontID = 0;
 }
@@ -481,32 +479,32 @@ void CBoardManager::DestroyAllElements(void)
 BOOL CBoardManager::PurgeMissingTileIDs()
 {
     BOOL bPurged = FALSE;
-    for (int i = 0; i < GetNumBoards(); i++)
-        bPurged |= GetBoard(i)->PurgeMissingTileIDs();
+    for (size_t i = 0; i < GetNumBoards(); i++)
+        bPurged |= GetBoard(i).PurgeMissingTileIDs();
     return bPurged;
 }
 
 BOOL CBoardManager::IsTileInUse(TileID tid)
 {
-    for (int i = 0; i < GetNumBoards(); i++)
+    for (size_t i = 0; i < GetNumBoards(); i++)
     {
-        if (GetBoard(i)->IsTileInUse(tid))
+        if (GetBoard(i).IsTileInUse(tid))
             return TRUE;
     }
     return FALSE;
 }
 #endif // !GPLAY
 
-// Returns -1 if board doesn't exist.
-int CBoardManager::FindBoardBySerial(int nSerialNum)
+// Returns Invalid_v<size_t> if board doesn't exist.
+size_t CBoardManager::FindBoardBySerial(BoardID nSerialNum) const
 {
-    for (int i = 0; i < GetNumBoards(); i++)
+    for (size_t i = 0; i < GetNumBoards(); i++)
     {
-        TRACE2("Board %d has serial number %d\n", i, GetBoard(i)->GetSerialNumber());
-        if (GetBoard(i)->GetSerialNumber() == nSerialNum)
+        TRACE2("Board %zu has serial number %d\n", i, value_preserving_cast<int>(static_cast<WORD>(GetBoard(i).GetSerialNumber())));
+        if (GetBoard(i).GetSerialNumber() == nSerialNum)
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
 BOOL CBoardManager::DoBoardFontDialog()
@@ -521,11 +519,22 @@ BOOL CBoardManager::DoBoardFontDialog()
     return FALSE;
 }
 
+BoardID CBoardManager::IssueSerialNumber()
+{
+    if (static_cast<WORD>(m_nNextSerialNumber) == GEO_BOARD_SERNUM_BASE)
+    {
+        AfxThrowMemoryException();
+    }
+    BoardID retval = m_nNextSerialNumber;
+    m_nNextSerialNumber = static_cast<BoardID>(static_cast<WORD>(m_nNextSerialNumber) + 1);
+    return retval;
+}
+
 void CBoardManager::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)m_nNextSerialNumber;
+        ar << m_nNextSerialNumber;
 
         ar << (DWORD)m_crFore;
         ar << (DWORD)m_crBack;
@@ -539,15 +548,15 @@ void CBoardManager::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        ar << (WORD)GetNumBoards();
-        for (int i = 0; i < GetNumBoards(); i++)
-            GetBoard(i)->Serialize(ar);
+        ar << value_preserving_cast<WORD>(GetNumBoards());
+        for (size_t i = 0; i < GetNumBoards(); i++)
+            GetBoard(i).Serialize(ar);
     }
     else
     {
         DestroyAllElements();
         WORD wTmp;
-        ar >> wTmp; m_nNextSerialNumber = (int)wTmp;
+        ar >> m_nNextSerialNumber;
 
         DWORD dwTmp;
         ar >> dwTmp; m_crFore = (COLORREF)dwTmp;
@@ -563,11 +572,11 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
         ar >> wTmp;
-        for (int i = 0; i < (int)wTmp; i++)
+        resize(value_preserving_cast<size_t>(wTmp));
+        for (size_t i = 0; i < size(); i++)
         {
-            CBoard *pBoard = new CBoard;
-            pBoard->Serialize(ar);
-            Add(pBoard);
+            (*this)[i].reset(new CBoard);
+            (*this)[i]->Serialize(ar);
         }
     }
 }

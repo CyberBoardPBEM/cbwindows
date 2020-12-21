@@ -181,7 +181,7 @@ void CBrdEditView::OnInitialUpdate()
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     WORD wHint = LOWORD(lHint);
-    TileID tid = (TileID)HIWORD(lHint);
+    TileID tid = static_cast<TileID>(HIWORD(lHint));
     if ((wHint == HINT_TILEMODIFIED && m_pBoard->IsTileInUse(tid)) ||
         wHint == HINT_TILEDELETED || wHint == HINT_TILESETDELETED)
     {
@@ -190,7 +190,7 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (wHint == HINT_BOARDDELETED)
     {
-        if (((CGmBoxHint*)pHint)->m_pBoard == m_pBoard)
+        if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDDELETED>().m_pBoard == m_pBoard)
         {
             CFrameWnd* pFrm = GetParentFrame();
             ASSERT(pFrm != NULL);
@@ -199,7 +199,7 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (wHint == HINT_BOARDPROPCHANGE)
     {
-        if (((CGmBoxHint*)pHint)->m_pBoard == m_pBoard)
+        if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard == m_pBoard)
         {
             SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
             Invalidate(FALSE);
@@ -561,7 +561,7 @@ void CBrdEditView::OnViewGridLines()
     EndWaitCursor();
 
     CGmBoxHint hint;
-    hint.m_pBoard = m_pBoard;
+    hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = m_pBoard;
     GetDocument()->UpdateAllViews(this, HINT_BOARDPROPCHANGE, &hint);
 }
 
@@ -1550,7 +1550,7 @@ void CBrdEditView::OnUpdateToolsBrdSnapGrid(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnToolsBrdProps()
 {
-    GetDocument()->DoBoardPropertyDialog(m_pBoard);
+    GetDocument()->DoBoardPropertyDialog(*m_pBoard);
 }
 
 static void SetObjVisibility(CDrawObj* pObj, DWORD dwUser)
@@ -2251,7 +2251,7 @@ BOOL CBrdEditView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cy;
-                nDisplacement = min(nDisplacement, m_pageDev.cy);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cy);
             }
             bResult = OnScrollBy(CSize(0, nDisplacement), TRUE);
         }
@@ -2266,7 +2266,7 @@ BOOL CBrdEditView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cx;
-                nDisplacement = min(nDisplacement, m_pageDev.cx);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cx);
             }
             bResult = OnScrollBy(CSize(nDisplacement, 0), TRUE);
         }

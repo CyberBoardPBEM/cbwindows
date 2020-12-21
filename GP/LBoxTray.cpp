@@ -103,31 +103,33 @@ int  CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
 
-    UINT nPid = MapIndexToItem(nIndex);
+    PieceID nPid = MapIndexToItem(nIndex);
+    uint32_t flags = 0;
 
-    TileID tidLeft = pPTbl->GetActiveTileID((PieceID)nPid);
+    TileID tidLeft = pPTbl->GetActiveTileID(nPid);
     ASSERT(tidLeft != nullTid);            // Should exist
 
     TileID tidRight = nullTid;              // Initially assume no second tile image
 
     if (m_eTrayViz == trayVizTwoSide)
-        tidRight = pPTbl->GetInactiveTileID((PieceID)nPid);
+        tidRight = pPTbl->GetInactiveTileID(nPid);
 
     CRect rctLeft;
     CRect rctRight;
-    GetTileRectsForItem(nIndex, tidLeft, tidRight, rctLeft, rctRight);
+    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tidLeft, tidRight, rctLeft, rctRight);
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
         rct = rctLeft;
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         rct = rctRight;
-        nPid |= 0x10000;             // Set flag bit indicating right side rect
+        static_assert(sizeof(nPid) <= 2, "flags and PieceID bits overlap");
+        flags |= 0x10000;               // Set flag bit indicating right side rect
     }
     else
         return -1;
 
-    return (int)nPid;
+    return value_preserving_cast<int>(static_cast<WORD>(nPid) | flags);
 }
 
 void CTrayListBox::OnGetTipTextForItemCode(int nItemCode,
@@ -135,7 +137,7 @@ void CTrayListBox::OnGetTipTextForItemCode(int nItemCode,
 {
     if (nItemCode < 0)
         return;
-    PieceID pid = (PieceID)(nItemCode & 0xFFFF);
+    PieceID pid = static_cast<PieceID>(nItemCode & 0xFFFF);
     BOOL bRightRect = (nItemCode & 0x10000) != 0;
     int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
     if (bRightRect) nSide ^= 1;         // Toggle the side
@@ -144,11 +146,11 @@ void CTrayListBox::OnGetTipTextForItemCode(int nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTrayListBox::OnDoesItemHaveTipText(int nItem)
+BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem)
 {
     ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
 
-    PieceID pid = (PieceID)MapIndexToItem(nItem);
+    PieceID pid = MapIndexToItem(nItem);
     int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
     if (m_pDoc->HasGameElementString(MakePieceElement(pid, nSide)))
         return TRUE;
@@ -173,13 +175,13 @@ void CTrayListBox::DeselectAll()
     SelItemRange(FALSE, 0, GetCount()-1);
 }
 
-int CTrayListBox::SelectTrayPiece(PieceID pid)
+size_t CTrayListBox::SelectTrayPiece(PieceID pid)
 {
-    int nIndex = MapItemToIndex((int)pid);
-    if (nIndex != -1)
+    size_t nIndex = MapItemToIndex(pid);
+    if (nIndex != Invalid_v<size_t>)
     {
-        ShowListIndex(nIndex);
-        SetSel(nIndex, TRUE);
+        ShowListIndex(value_preserving_cast<int>(nIndex));
+        SetSel(value_preserving_cast<int>(nIndex), TRUE);
     }
     else
     {
@@ -210,32 +212,33 @@ void CTrayListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CTrayListBox::OnItemHeight(int nIndex)
+unsigned CTrayListBox::OnItemHeight(size_t nIndex)
 {
     if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
     {
         TileID tid1, tid2;
-        GetPieceTileIDs(nIndex, tid1, tid2);
+        GetPieceTileIDs(value_preserving_cast<size_t>(nIndex), tid1, tid2);
         return DoOnItemHeight(tid1, tid2);
     }
     else
     {
         // Hidden pieces. Draw the supplied text.
-        int nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
-        return nHeight;
+        LONG nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
+        return value_preserving_cast<unsigned>(nHeight);
     }
 }
 
-void CTrayListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CTrayListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
-    if (nIndex == -1)
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
         return;
 
     if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
     {
         TileID tid1, tid2;
-        GetPieceTileIDs(nIndex, tid1, tid2);
+        GetPieceTileIDs(value_preserving_cast<size_t>(nIndex), tid1, tid2);
         DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid1, tid2);
     }
     else
@@ -259,13 +262,13 @@ void CTrayListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
     }
 }
 
-void CTrayListBox::GetPieceTileIDs(int nIndex, TileID& tid1, TileID& tid2)
+void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2)
 {
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
 
-    PieceID pid = (PieceID)MapIndexToItem(nIndex);
+    PieceID pid = MapIndexToItem(nIndex);
 
     tid2 = nullTid;              // Initially assume no second tile image
 
@@ -282,7 +285,7 @@ void CTrayListBox::GetPieceTileIDs(int nIndex, TileID& tid1, TileID& tid2)
         tid1 = pPTbl->GetActiveTileID(pid);
         ASSERT(tid1 != nullTid);
 
-        PieceDef* pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+        PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
 
         BOOL bIsOwnedByCurrentPlayer = m_pDoc->HasPlayers() &&
             pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask());
@@ -291,8 +294,8 @@ void CTrayListBox::GetPieceTileIDs(int nIndex, TileID& tid1, TileID& tid2)
         // or if the current players is the owner, or if the
         // program is in scenario mode.
         if (m_eTrayViz == trayVizTwoSide && (bIsOwnedByCurrentPlayer &&
-                !(pPce->m_flags & PieceDef::flagShowOnlyOwnersToo)   ||
-                !(pPce->m_flags & PieceDef::flagShowOnlyVisibleSide))||
+                !(pPce.m_flags & PieceDef::flagShowOnlyOwnersToo)   ||
+                !(pPce.m_flags & PieceDef::flagShowOnlyVisibleSide))||
                  m_pDoc->IsScenario())
             tid2 = pPTbl->GetInactiveTileID(pid);
     }
@@ -301,19 +304,22 @@ void CTrayListBox::GetPieceTileIDs(int nIndex, TileID& tid1, TileID& tid2)
 BOOL CTrayListBox::OnDragSetup(DragInfo* pDI)
 {
     if (m_pDoc->IsPlaying())
+    {
+        pDI->m_dragType = DRAG_INVALID;
         return FALSE;                   // Drags not supported during play
+    }
 
     if (IsMultiSelect())
     {
         pDI->m_dragType = DRAG_PIECELIST;
-        pDI->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = GetMappedMultiSelectList();// PieceID array
+        pDI->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
         pDI->GetSubInfo<DRAG_PIECELIST>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
         pDI->m_dragType = DRAG_PIECE;
-        pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();      // The PieceID
+        pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
         pDI->GetSubInfo<DRAG_PIECE>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }

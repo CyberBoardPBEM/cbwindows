@@ -170,10 +170,10 @@ void CBitSelectTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
     {
         pView->GetImagePixelLoc(point);
         // Make sure drag doesn't leave image.
-        point.x = max(point.x, m_rctBound.left);
-        point.y = max(point.y, m_rctBound.top);
-        point.x = min(point.x, m_rctBound.right);
-        point.y = min(point.y, m_rctBound.bottom);
+        point.x = CB::max(point.x, m_rctBound.left);
+        point.y = CB::max(point.y, m_rctBound.top);
+        point.x = CB::min(point.x, m_rctBound.right);
+        point.y = CB::min(point.y, m_rctBound.bottom);
 
         if (point == c_ptLast)
             return;

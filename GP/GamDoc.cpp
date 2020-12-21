@@ -185,7 +185,7 @@ CGamDoc::CGamDoc()
     m_pMoves = NULL;
     m_nCurMove = -1;
     m_nFirstMove = -1;
-    m_nCurHist = -1;
+    m_nCurHist = Invalid_v<size_t>;
     m_posCurMove = NULL;
     m_pRcdMoves = NULL;
     m_pPlayHist = NULL;
@@ -361,10 +361,8 @@ void CGamDoc::DeleteContents()
     if (m_pPTbl != NULL) delete m_pPTbl;
     m_pPTbl = NULL;
 
-    if (m_pRcdMoves != NULL) delete m_pRcdMoves;
-    m_pRcdMoves = NULL;
-    if (m_pHistMoves != NULL) delete m_pHistMoves;
-    m_pHistMoves = NULL;
+    m_pRcdMoves.reset();
+    m_pHistMoves.reset();
 
     if (m_pPlayHist != NULL) delete m_pPlayHist;
     m_pPlayHist = NULL;
@@ -389,7 +387,7 @@ void CGamDoc::DeleteContents()
     m_posCurMove = NULL;
     m_nCurMove = -1;
     m_nFirstMove = -1;
-    m_nCurHist = -1;
+    m_nCurHist = Invalid_v<size_t>;
     m_nMoveInterlock = 0;
     m_bQuietPlayback = FALSE;
 
@@ -503,7 +501,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
 
 /////////////////////////////////////////////////////////////////////////////
 
-CView* CGamDoc::FindPBoardView(CPlayBoard* pPBoard)
+CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard)
 {
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -511,7 +509,7 @@ CView* CGamDoc::FindPBoardView(CPlayBoard* pPBoard)
         CPlayBoardView* pView = (CPlayBoardView*)GetNextView(pos);
         if (pView->IsKindOf(RUNTIME_CLASS(CPlayBoardView)))
         {
-            if (pView->GetPlayBoard() == pPBoard)
+            if (pView->GetPlayBoard() == &pPBoard)
                 return pView;
         }
     }
@@ -520,9 +518,9 @@ CView* CGamDoc::FindPBoardView(CPlayBoard* pPBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::GetDocumentFrameList(CPtrArray& tblFrames)
+void CGamDoc::GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames)
 {
-    tblFrames.RemoveAll();
+    tblFrames.clear();
 
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -530,14 +528,14 @@ void CGamDoc::GetDocumentFrameList(CPtrArray& tblFrames)
         CView* pView = GetNextView(pos);
         CFrameWnd* pFrame = pView->GetParentFrame();
         ASSERT(pFrame != NULL);
-        int i;
-        for (i = 0; i < tblFrames.GetSize(); i++)
+        size_t i;
+        for (i = 0; i < tblFrames.size(); i++)
         {
-            if (pFrame == (CFrameWnd*)tblFrames.GetAt(i))
+            if (pFrame == tblFrames.at(i))
                 break;
         }
-        if (i == tblFrames.GetSize())
-            tblFrames.Add(pFrame);          // Add new frame
+        if (i == tblFrames.size())
+            tblFrames.push_back(pFrame);          // Add new frame
     }
 }
 
@@ -572,7 +570,7 @@ BOOL CGamDoc::OnNewScenario()
 
     // There must be at least one board in the Game Box file
 
-    if (m_pGbx->GetBoardManager()->GetNumBoards() == 0)
+    if (m_pGbx->GetBoardManager()->IsEmpty())
     {
         AfxMessageBox(IDS_ERR_NEEDABOARD, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
@@ -991,62 +989,62 @@ void CGamDoc::CloseTrayPalettes()
 
 ////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::DoBoardProperties(int nBrd)
+void CGamDoc::DoBoardProperties(size_t nBrd)
 {
-    CPlayBoard* pPBoard = GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = GetPBoardManager()->GetPBoard(nBrd);
     DoBoardProperties(pPBoard);
 }
 
-void CGamDoc::DoBoardProperties(CPlayBoard* pPBoard)
+void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
 {
     CPBrdPropDialog dlg;
 
-    dlg.m_bGridSnap = pPBoard->m_bGridSnap;
-    dlg.m_bGridRectCenters = pPBoard->m_bGridRectCenters;
-    dlg.m_xGridSnap = pPBoard->m_xGridSnap;
-    dlg.m_yGridSnap = pPBoard->m_yGridSnap;
-    dlg.m_xGridSnapOff = pPBoard->m_xGridSnapOff;
-    dlg.m_yGridSnapOff = pPBoard->m_yGridSnapOff;
-    dlg.m_bSnapMovePlot = pPBoard->m_bSnapMovePlot;
-    dlg.m_bSmallCellBorders = pPBoard->m_bSmallCellBorders;
-    dlg.m_bCellBorders = pPBoard->m_bCellBorders;
-    dlg.m_bOpenBoardOnLoad = pPBoard->m_bOpenBoardOnLoad;
-    dlg.m_bShowSelListAndTinyMap = pPBoard->m_bShowSelListAndTinyMap;
-    dlg.m_xStackStagger = pPBoard->m_xStackStagger;
-    dlg.m_yStackStagger = pPBoard->m_yStackStagger;
-    dlg.m_crPlotColor = pPBoard->m_crPlotLineColor;
-    dlg.m_nPlotWd = pPBoard->m_nPlotLineWidth;
-    dlg.m_strBoardName = pPBoard->GetBoard()->GetName();
+    dlg.m_bGridSnap = pPBoard.m_bGridSnap;
+    dlg.m_bGridRectCenters = pPBoard.m_bGridRectCenters;
+    dlg.m_xGridSnap = pPBoard.m_xGridSnap;
+    dlg.m_yGridSnap = pPBoard.m_yGridSnap;
+    dlg.m_xGridSnapOff = pPBoard.m_xGridSnapOff;
+    dlg.m_yGridSnapOff = pPBoard.m_yGridSnapOff;
+    dlg.m_bSnapMovePlot = pPBoard.m_bSnapMovePlot;
+    dlg.m_bSmallCellBorders = pPBoard.m_bSmallCellBorders;
+    dlg.m_bCellBorders = pPBoard.m_bCellBorders;
+    dlg.m_bOpenBoardOnLoad = pPBoard.m_bOpenBoardOnLoad;
+    dlg.m_bShowSelListAndTinyMap = pPBoard.m_bShowSelListAndTinyMap;
+    dlg.m_xStackStagger = pPBoard.m_xStackStagger;
+    dlg.m_yStackStagger = pPBoard.m_yStackStagger;
+    dlg.m_crPlotColor = pPBoard.m_crPlotLineColor;
+    dlg.m_nPlotWd = pPBoard.m_nPlotLineWidth;
+    dlg.m_strBoardName = pPBoard.GetBoard()->GetName();
     dlg.m_pPlayerMgr = GetPlayerManager();
-    dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pPBoard->GetOwnerMask());
+    dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pPBoard.GetOwnerMask());
     dlg.m_bOwnerInfoIsReadOnly = !IsScenario();
-    dlg.m_bNonOwnerAccess = pPBoard->IsNonOwnerAccessAllowed();
-    dlg.m_bDrawLockedBeneath = pPBoard->GetDrawLockedBeneath();
+    dlg.m_bNonOwnerAccess = pPBoard.IsNonOwnerAccessAllowed();
+    dlg.m_bDrawLockedBeneath = pPBoard.GetDrawLockedBeneath();
 
     if (dlg.DoModal() == IDOK)
     {
-        pPBoard->m_bGridSnap = dlg.m_bGridSnap;
-        pPBoard->m_bGridRectCenters = dlg.m_bGridRectCenters;
-        pPBoard->m_xGridSnap = dlg.m_xGridSnap;
-        pPBoard->m_yGridSnap= dlg.m_yGridSnap;
-        pPBoard->m_xGridSnapOff = dlg.m_xGridSnapOff;
-        pPBoard->m_yGridSnapOff = dlg.m_yGridSnapOff;
-        pPBoard->m_bSnapMovePlot = dlg.m_bSnapMovePlot;
-        pPBoard->m_bSmallCellBorders = dlg.m_bSmallCellBorders;
-        pPBoard->m_bCellBorders = dlg.m_bCellBorders;
-        pPBoard->m_bOpenBoardOnLoad = dlg.m_bOpenBoardOnLoad;
-        pPBoard->m_bShowSelListAndTinyMap = dlg.m_bShowSelListAndTinyMap;
-        pPBoard->m_xStackStagger = dlg.m_xStackStagger;
-        pPBoard->m_yStackStagger = dlg.m_yStackStagger;
-        pPBoard->m_crPlotLineColor = dlg.m_crPlotColor;
-        pPBoard->m_nPlotLineWidth = dlg.m_nPlotWd;
-        pPBoard->SetDrawLockedBeneath(dlg.m_bDrawLockedBeneath);
+        pPBoard.m_bGridSnap = dlg.m_bGridSnap;
+        pPBoard.m_bGridRectCenters = dlg.m_bGridRectCenters;
+        pPBoard.m_xGridSnap = dlg.m_xGridSnap;
+        pPBoard.m_yGridSnap= dlg.m_yGridSnap;
+        pPBoard.m_xGridSnapOff = dlg.m_xGridSnapOff;
+        pPBoard.m_yGridSnapOff = dlg.m_yGridSnapOff;
+        pPBoard.m_bSnapMovePlot = dlg.m_bSnapMovePlot;
+        pPBoard.m_bSmallCellBorders = dlg.m_bSmallCellBorders;
+        pPBoard.m_bCellBorders = dlg.m_bCellBorders;
+        pPBoard.m_bOpenBoardOnLoad = dlg.m_bOpenBoardOnLoad;
+        pPBoard.m_bShowSelListAndTinyMap = dlg.m_bShowSelListAndTinyMap;
+        pPBoard.m_xStackStagger = dlg.m_xStackStagger;
+        pPBoard.m_yStackStagger = dlg.m_yStackStagger;
+        pPBoard.m_crPlotLineColor = dlg.m_crPlotColor;
+        pPBoard.m_nPlotLineWidth = dlg.m_nPlotWd;
+        pPBoard.SetDrawLockedBeneath(dlg.m_bDrawLockedBeneath);
 
         if (dlg.m_pPlayerMgr && !dlg.m_bOwnerInfoIsReadOnly)
         {
-            pPBoard->SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
-            pPBoard->PropagateOwnerMaskToAllPieces(this);
-            pPBoard->SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
+            pPBoard.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
+            pPBoard.PropagateOwnerMaskToAllPieces(this);
+            pPBoard.SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
         }
 
         UpdateAllViews(NULL, HINT_BOARDCHANGE);
@@ -1095,9 +1093,9 @@ void CGamDoc::OnDebugMoveList()
 {
     CMoveList* pMoveList = NULL;
     if (m_pHistMoves != NULL)
-        pMoveList = m_pHistMoves;
+        pMoveList = m_pHistMoves.get();
     else if (m_pRcdMoves != NULL)
-        pMoveList = m_pRcdMoves;
+        pMoveList = m_pRcdMoves.get();
     else
     {
         AfxMessageBox("No move list exists!");
@@ -1480,7 +1478,7 @@ void CGamDoc::OnPbckNextHistory()
     if (m_pMoves->IsDoMoveActive())
         return;                         // Must ignore since moves are still being played back
 
-    int nCurHist = m_nCurHist;
+    size_t nCurHist = m_nCurHist;
     FinishHistoryPlayback();
     LoadAndActivateHistory(nCurHist + 1);
     UpdateAllViews(NULL, HINT_GAMESTATEUSED);
@@ -1612,11 +1610,11 @@ void CGamDoc::OnEditSelectBoards()
     {
         // First close all the views of boards that are going
         // to be removed from the play list.
-        CPtrArray tblNotInList;
+        std::vector<CPlayBoard*> tblNotInList;
         pPBMgr->FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
-        for (int i = 0; i < tblNotInList.GetSize(); i++)
+        for (size_t i = 0; i < tblNotInList.size(); i++)
         {
-            CView* pView = FindPBoardView((CPlayBoard*)tblNotInList.GetAt(i));
+            CView* pView = FindPBoardView(*tblNotInList.at(i));
             if (pView != NULL)
             {
                 CFrameWnd* pFrame = pView->GetParentFrame();

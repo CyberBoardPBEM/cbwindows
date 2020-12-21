@@ -80,34 +80,34 @@ BOOL CMarkListBox::OnIsToolTipsEnabled()
 int  CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 {
     BOOL bOutsideClient;
-    int nIndex = ItemFromPoint(point, bOutsideClient);
+    UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
         return -1;
 
     CMarkManager* pMMgr = m_pDoc->GetMarkManager();
 
-    MarkID mid = (MarkID)MapIndexToItem(nIndex);
-    MarkDef* pMark = pMMgr->GetMark(mid);
-    TileID tid = pMark->m_tid;
+    MarkID mid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
+    MarkDef& pMark = pMMgr->GetMark(mid);
+    TileID tid = pMark.m_tid;
 
-    GetTileRectsForItem(nIndex, tid, nullTid, rct, rct);
+    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tid, nullTid, rct, rct);
 
-    return rct.PtInRect(point) ? (int)mid : -1;
+    return rct.PtInRect(point) ? value_preserving_cast<int>(static_cast<WORD>(mid)) : -1;
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(int nItemCode,
     CString& strTip, CString& strTitle)
 {
-    MarkID mid = (MarkID)nItemCode;
+    MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CMarkListBox::OnDoesItemHaveTipText(int nItem)
+BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem)
 {
     ASSERT(m_eTrayViz == mtrayVizNormal);
-    MarkID mid = (MarkID)MapIndexToItem(nItem);
+    MarkID mid = MapIndexToItem(nItem);
     return m_pDoc->HasGameElementString(MakeMarkerElement(mid));
 }
 
@@ -115,16 +115,16 @@ BOOL CMarkListBox::OnDoesItemHaveTipText(int nItem)
 
 void CMarkListBox::SelectMarker(MarkID mid)
 {
-    int nIndex = MapItemToIndex((int)mid);
+    size_t nIndex = MapItemToIndex(mid);
     // NO LONGER IMPOSSIBLE SINCE HIDE ALL MARKERS. ASSERT(nIndex != -1);
-    if (nIndex == -1)
+    if (nIndex == Invalid_v<size_t>)
     {
         if (GetCount() >= 1)
             SetCurSel(0);           // Just select the first one.
     }
 
-    ShowListIndex(nIndex);
-    SetCurSel(nIndex);
+    ShowListIndex(value_preserving_cast<int>(nIndex));
+    SetCurSel(value_preserving_cast<int>(nIndex));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -148,31 +148,32 @@ void CMarkListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CMarkListBox::OnItemHeight(int nIndex)
+unsigned CMarkListBox::OnItemHeight(size_t nIndex)
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
         ASSERT(pMMgr);
-        MarkDef* pMark = pMMgr->GetMark((MarkID)MapIndexToItem(nIndex));
-        ASSERT(pMark->m_tid != nullTid);
+        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        ASSERT(pMark.m_tid != nullTid);
 
-        TileID tid = pMark->m_tid;
+        TileID tid = pMark.m_tid;
 
         return DoOnItemHeight(tid, nullTid);
     }
     else
     {
         // Hidden markers. Account for drawing the supplied text.
-        int nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
-        return nHeight;
+        LONG nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
+        return value_preserving_cast<unsigned>(nHeight);
     }
 }
 
-void CMarkListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CMarkListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
-    if (nIndex < 0)
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
         return;
 
     if (m_eTrayViz == mtrayVizNormal)
@@ -183,10 +184,10 @@ void CMarkListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
         ASSERT(pMMgr);
 
-        MarkDef* pMark = pMMgr->GetMark((MarkID)MapIndexToItem(nIndex));
-        ASSERT(pMark->m_tid != nullTid);
+        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        ASSERT(pMark.m_tid != nullTid);
 
-        TileID tid = pMark->m_tid;
+        TileID tid = pMark.m_tid;
         DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid, nullTid);
     }
     else
@@ -214,10 +215,13 @@ BOOL CMarkListBox::OnDragSetup(DragInfo* pDI)
 {
 #ifdef GPLAY
     if (m_pDoc->IsPlaying())
+    {
+        pDI->m_dragType = DRAG_INVALID;
         return 0;                       // Drags not supported during play
+    }
 #endif
     pDI->m_dragType = DRAG_MARKER;
-    pDI->GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();          // The MarkID
+    pDI->GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
     pDI->GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
     pDI->m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;

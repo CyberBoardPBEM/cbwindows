@@ -115,14 +115,9 @@ void CPieceEditDialog::SetupTileListbox(CComboBox *pCombo, CTileListBox *pList)
         return;
     }
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-    {
-        pList->SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    pList->SetItemMap(pLstMap);
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    pList->SetItemMap(&pLstMap);
 }
 
 void CPieceEditDialog::SetupTileSetNames(CComboBox* pCombo)
@@ -130,9 +125,9 @@ void CPieceEditDialog::SetupTileSetNames(CComboBox* pCombo)
     ASSERT(m_pTMgr);
     pCombo->ResetContent();
 
-    for (int i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        pCombo->AddString(m_pTMgr->GetTileSet(i)->GetName());
-    if (m_pTMgr->GetNumTileSets() > 0)
+    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
+        pCombo->AddString(m_pTMgr->GetTileSet(i).GetName());
+    if (!m_pTMgr->IsEmpty())
         pCombo->SetCurSel(-1);          // Select no entry yet
 }
 
@@ -146,42 +141,39 @@ TileID CPieceEditDialog::GetTileID(CComboBox *pCombo, CTileListBox *pList)
     if (nCurTile < 0)
         return nullTid;
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-        return nullTid;
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    return (TileID)pLstMap->GetAt(nCurTile);
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CPieceEditDialog::SetupPieceTiles()
 {
-    PieceDef* pDef = m_pPMgr->GetPiece(m_pid);
-    ASSERT(pDef);
+    PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
 
-    int nSet = m_pTMgr->FindTileSetFromTileID(pDef->m_tidFront);
-    ASSERT(nSet >= 0);
+    size_t nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tidFront);
+    ASSERT(nSet != Invalid_v<size_t>);
 
-    m_comboFtset.SetCurSel(nSet);
+    m_comboFtset.SetCurSel(value_preserving_cast<int>(nSet));
     SetupTileListbox(&m_comboFtset, &m_listFtile);
-    m_listFtile.SetCurSelMapped(pDef->m_tidFront);
+    m_listFtile.SetCurSelMapped(pDef.m_tidFront);
 
-    if (pDef->m_tidBack != nullTid)
+    if (pDef.m_tidBack != nullTid)
     {
-        nSet = m_pTMgr->FindTileSetFromTileID(pDef->m_tidBack);
-        ASSERT(nSet >= 0);
-        m_comboBtset.SetCurSel(nSet);
+        nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tidBack);
+        ASSERT(nSet != Invalid_v<size_t>);
+        m_comboBtset.SetCurSel(value_preserving_cast<int>(nSet));
         SetupTileListbox(&m_comboBtset, &m_listBtile);
-        m_listBtile.SetCurSelMapped(pDef->m_tidBack);
+        m_listBtile.SetCurSelMapped(pDef.m_tidBack);
     }
     else
     {
         m_comboBtset.SetCurSel(-1);
         SetupTileListbox(&m_comboBtset, &m_listBtile);
     }
-    m_chkBack.SetCheck(pDef->m_tidBack != nullTid ? 1 : 0);
+    m_chkBack.SetCheck(pDef.m_tidBack != nullTid ? 1 : 0);
 
     OnBackCheck();          // To reflect state of check box.
 }
@@ -220,8 +212,7 @@ void CPieceEditDialog::OnBackCheck()
 
 void CPieceEditDialog::OnOK()
 {
-    PieceDef* pDef = m_pPMgr->GetPiece(m_pid);
-    ASSERT(pDef);
+    PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
     TileID tidFront = GetTileID(&m_comboFtset, &m_listFtile);
     TileID tidBack  = GetTileID(&m_comboBtset, &m_listBtile);
     if (tidFront == nullTid)
@@ -229,8 +220,8 @@ void CPieceEditDialog::OnOK()
 
     BOOL bBackChecked = m_chkBack.GetCheck() == 1;
 
-    pDef->m_tidFront = tidFront;
-    pDef->m_tidBack = bBackChecked ? tidBack : nullTid;
+    pDef.m_tidFront = tidFront;
+    pDef.m_tidBack = bBackChecked ? tidBack : nullTid;
 
     CString strText;
     m_editTextFront.GetWindowText(strText);
@@ -250,13 +241,13 @@ void CPieceEditDialog::OnOK()
     else
         m_pDoc->GetGameStringMap().RemoveKey(ge);
 
-    pDef->m_flags &= ~PieceDef::flagShowOnlyVisibleSide;      // Initially clear the flags
-    pDef->m_flags &= ~PieceDef::flagShowOnlyOwnersToo;
+    pDef.m_flags &= ~PieceDef::flagShowOnlyVisibleSide;      // Initially clear the flags
+    pDef.m_flags &= ~PieceDef::flagShowOnlyOwnersToo;
     if (bBackChecked && m_chkTopOnlyVisible.GetCheck() != 0)
     {
-        pDef->m_flags |= PieceDef::flagShowOnlyVisibleSide;     // Set the flag
+        pDef.m_flags |= PieceDef::flagShowOnlyVisibleSide;     // Set the flag
         if (m_chkTopOnlyOwnersToo.GetCheck() != 0)
-            pDef->m_flags |= PieceDef::flagShowOnlyOwnersToo;   // Set the other flag
+            pDef.m_flags |= PieceDef::flagShowOnlyOwnersToo;   // Set the other flag
     }
 
     CDialog::OnOK();
@@ -271,7 +262,7 @@ BOOL CPieceEditDialog::OnInitDialog()
 
     m_pPMgr = m_pDoc->GetPieceManager();
 
-    m_tbl.Add(m_pid);
+    m_tbl.push_back(m_pid);
     m_listPieces.SetItemMap(&m_tbl);
 
     m_pTMgr = m_pDoc->GetTileManager();
@@ -293,8 +284,8 @@ BOOL CPieceEditDialog::OnInitDialog()
     m_chkTopOnlyVisible.SetCheck(0);
     m_chkTopOnlyOwnersToo.SetCheck(0);
 
-    PieceDef* pPce = m_pPMgr->GetPiece(m_pid);
-    if (pPce->Is2Sided())
+    PieceDef& pPce = m_pPMgr->GetPiece(m_pid);
+    if (pPce.Is2Sided())
     {
         CString strTextBack;
         m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, 1), strTextBack);
@@ -303,9 +294,9 @@ BOOL CPieceEditDialog::OnInitDialog()
         if (!strTextBack.IsEmpty())
             m_editTextBack.SetWindowText(strTextBack);
         m_chkTopOnlyVisible.SetCheck(
-            (pPce->m_flags & PieceDef::flagShowOnlyVisibleSide) ? 1 : 0);
+            (pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) ? 1 : 0);
         m_chkTopOnlyOwnersToo.SetCheck(
-            (pPce->m_flags & PieceDef::flagShowOnlyOwnersToo) ? 1 : 0);
+            (pPce.m_flags & PieceDef::flagShowOnlyOwnersToo) ? 1 : 0);
     }
     OnCheckSameAsTop();
     OnBackCheck();

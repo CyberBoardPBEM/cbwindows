@@ -78,7 +78,7 @@ class CBoardPieceMove : public CMoveRecord
 {
 public:
     CBoardPieceMove() { m_eType = mrecPMove; }
-    CBoardPieceMove(int nBrdSerNum, PieceID pid, CPoint pnt, PlacePos ePos);
+    CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt, PlacePos ePos);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -94,7 +94,7 @@ public:
 protected:
     CPoint      m_ptCtr;
     PieceID     m_pid;
-    int         m_nBrdNum;
+    BoardID     m_nBrdNum;
     PlacePos    m_ePos;
 };
 
@@ -104,7 +104,7 @@ class CTrayPieceMove : public CMoveRecord
 {
 public:
     CTrayPieceMove() { m_eType = mrecTMove; }
-    CTrayPieceMove(int nTrayNum, PieceID pid, int nPos);
+    CTrayPieceMove(size_t nTrayNum, PieceID pid, size_t nPos);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -119,8 +119,8 @@ public:
 #endif
 protected:
     PieceID     m_pid;
-    int         m_nTrayNum;
-    int         m_nPos;
+    size_t      m_nTrayNum;
+    size_t      m_nPos;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ class CBoardMarkerMove : public CMoveRecord
 {
 public:
     CBoardMarkerMove() { m_eType = mrecMMove; }
-    CBoardMarkerMove(int nBrdSerNum, ObjectID dwObjID, MarkID mid,
+    CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID mid,
         CPoint pnt, PlacePos ePos);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -240,7 +240,7 @@ protected:
     CPoint      m_ptCtr;
     ObjectID    m_dwObjID;
     MarkID      m_mid;
-    int         m_nBrdNum;
+    BoardID     m_nBrdNum;
     PlacePos    m_ePos;
 };
 
@@ -343,7 +343,7 @@ class CMovePlotList : public CMoveRecord
 {
 public:
     CMovePlotList() { m_eType = mrecMPlot; }
-    CMovePlotList(int nBrdSerNum, CDrawList* pDwg)
+    CMovePlotList(BoardID nBrdSerNum, CDrawList* pDwg)
         { m_eType = mrecMPlot; m_nBrdNum = nBrdSerNum; SavePlotList(pDwg); }
 
     void SavePlotList(CDrawList* pDwg);
@@ -357,7 +357,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    int         m_nBrdNum;
+    BoardID     m_nBrdNum;
     CDWordArray m_tblPlot;
 };
 
@@ -387,8 +387,10 @@ class CEventMessageRcd : public CMoveRecord
 {
 public:
     CEventMessageRcd() { m_eType = mrecEvtMsg; }
-    CEventMessageRcd(CString strMsg, BOOL bIsBoardEvent,
-        int nID, int nVal1, int nVal2 = 0);
+    CEventMessageRcd(CString strMsg,
+        BoardID nBoard, int x, int y);
+    CEventMessageRcd(CString strMsg,
+        size_t nTray, PieceID pid);
 
     virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
 
@@ -399,9 +401,20 @@ public:
 #endif
 protected:
     BOOL    m_bIsBoardEvent;        // If TRUE, message relates to board
-    int     m_nID;                  // Serial num of board or tray number
-    int     m_nVal1;                // X coord if board, tray item index if tray
-    int     m_nVal2;                // Y coord if board, 0 if tray
+    union
+    {
+        struct
+        {
+            BoardID m_nBoard;
+            int     m_x;
+            int     m_y;
+        };
+        struct
+        {
+            size_t  m_nTray;
+            PieceID m_pieceID;
+        };
+    };
     CString m_strMsg;               // The message text
 };
 
