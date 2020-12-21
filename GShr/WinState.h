@@ -83,10 +83,10 @@ protected:
 protected:
     CWinStateElement* GetWindowState(CWnd* pWnd);
     BOOL RestoreWindowState(CWnd* pWnd, CWinStateElement* pWse);
-    void GetDocumentFrameList(CPtrArray& tblFrames);
+    void GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames);
     CWnd* GetDocumentFrameHavingRuntimeClass(CRuntimeClass* pClass);
 
-    void ArrangeFrameListInZOrder(CPtrArray& tblFrames);
+    void ArrangeFrameListInZOrder(std::vector<CFrameWnd*>& tblFrames);
     static BOOL CALLBACK EnumFrames(HWND hWnd, LPARAM dwTblFramePtr);
 
     void SetUpListIfNeedTo();

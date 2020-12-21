@@ -45,15 +45,8 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////
 
-const UINT tblBaseSize = 32;            // PieceDef table allocation strategy
-const UINT tblIncrSize = 8;
-
-///////////////////////////////////////////////////////////////////////
-
 CPieceManager::CPieceManager()
 {
-    m_pPieceTbl = NULL;
-    m_nTblSize = 0;
     m_pTMgr = NULL;
     // --------- //
     m_wReserved1 = 0;
@@ -62,37 +55,29 @@ CPieceManager::CPieceManager()
     m_wReserved4 = 0;
 }
 
-CPieceManager::~CPieceManager()
-{
-    Clear();
-}
-
 void CPieceManager::Clear()
 {
-    if (m_pPieceTbl != NULL) GlobalFreePtr(m_pPieceTbl);
-    m_pPieceTbl = NULL;
-    m_nTblSize = 0;
-    for (int i = 0; i < m_PSetTbl.GetSize(); i++)
-        delete (CPieceSet*)m_PSetTbl.GetAt(i);
+    m_pPieceTbl.Clear();
+    m_PSetTbl.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-PieceDef* CPieceManager::GetPiece(PieceID pid)
+const PieceDef& CPieceManager::GetPiece(PieceID pid) const
 {
     ASSERT(m_pPieceTbl != NULL);
-    ASSERT(pid < m_nTblSize);
-    return &m_pPieceTbl[pid];
+    ASSERT(m_pPieceTbl.Valid(pid));
+    return m_pPieceTbl[pid];
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CPieceManager::IsTileInUse(TileID tid)
+BOOL CPieceManager::IsTileInUse(TileID tid) const
 {
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
-        PieceDef* pDef = GetPiece((PieceID)i);
-        if (pDef->m_tidFront == tid || pDef->m_tidBack == tid)
+        const PieceDef& pDef = GetPiece(static_cast<PieceID>(i));
+        if (pDef.m_tidFront == tid || pDef.m_tidBack == tid)
             return TRUE;
     }
     return FALSE;
@@ -101,15 +86,15 @@ BOOL CPieceManager::IsTileInUse(TileID tid)
 BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = NULL */)
 {
     BOOL bPieceRemoved = FALSE;
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
-        PieceDef* pDef = GetPiece((PieceID)i);
-        TileID tid1 = pDef->m_tidFront;
-        TileID tid2 = pDef->m_tidBack;
+        PieceDef& pDef = GetPiece(static_cast<PieceID>(i));
+        TileID tid1 = pDef.m_tidFront;
+        TileID tid2 = pDef.m_tidBack;
         if ((tid1 != nullTid && !m_pTMgr->IsTileIDValid(tid1)) ||
             (tid2 != nullTid && !m_pTMgr->IsTileIDValid(tid2)))
         {
-            DeletePiece((PieceID)i, pMapStrings, TRUE);
+            DeletePiece(static_cast<PieceID>(i), pMapStrings, TRUE);
             bPieceRemoved = TRUE;
         }
     }
@@ -118,15 +103,15 @@ BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = 
 
 ///////////////////////////////////////////////////////////////////////
 
-PieceID CPieceManager::CreatePiece(int nPSet, TileID tidFront, TileID tidBack)
+PieceID CPieceManager::CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack)
 {
-    ASSERT(nPSet < m_PSetTbl.GetSize());
-    PieceID pid = CreatePieceIDEntry();
+    ASSERT(nPSet < m_PSetTbl.size());
+    PieceID pid = m_pPieceTbl.CreateIDEntry(nullptr);
 
     PieceDef* pDef = &m_pPieceTbl[pid];
     pDef->m_tidFront = tidFront;
     pDef->m_tidBack = tidBack;
-    GetPieceSet(nPSet)->AddPieceID(pid);
+    GetPieceSet(nPSet).AddPieceID(pid);
     return pid;
 }
 
@@ -134,7 +119,7 @@ void CPieceManager::DeletePiece(PieceID pid, CGameElementStringMap* pMapStrings 
     BOOL bFromSetAlso /* = TRUE */)
 {
     ASSERT(m_pPieceTbl != NULL);
-    ASSERT(pid < m_nTblSize);
+    ASSERT(m_pPieceTbl.Valid(pid));
     ASSERT(!m_pPieceTbl[pid].IsEmpty());
     PieceDef* pDef = &m_pPieceTbl[pid];
 
@@ -150,95 +135,54 @@ void CPieceManager::DeletePiece(PieceID pid, CGameElementStringMap* pMapStrings 
         pMapStrings->RemoveKey(MakePieceElement(pid, 1));
 }
 
-BOOL CPieceManager::IsPieceIDValid(PieceID pid)
+BOOL CPieceManager::IsPieceIDValid(PieceID pid) const
 {
-    for (int i = 0; i < GetNumPieceSets(); i++)
+    for (size_t i = 0; i < GetNumPieceSets(); i++)
     {
-        CPieceSet* pPSet = GetPieceSet(i);
-        if (pPSet->HasPieceID(pid))
+        const CPieceSet& pPSet = GetPieceSet(i);
+        if (pPSet.HasPieceID(pid))
             return TRUE;
     }
     return FALSE;
 }
 
-int CPieceManager::FindPieceSetFromPieceID(PieceID pid)
+size_t CPieceManager::FindPieceSetFromPieceID(PieceID pid) const
 {
-    for (int i = 0; i < GetNumPieceSets(); i++)
+    for (size_t i = 0; i < GetNumPieceSets(); i++)
     {
-        CPieceSet* pPSet = GetPieceSet(i);
-        if (pPSet->HasPieceID(pid))
+        const CPieceSet& pPSet = GetPieceSet(i);
+        if (pPSet.HasPieceID(pid))
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
-int CPieceManager::CreatePieceSet(const char* pszName)
+size_t CPieceManager::CreatePieceSet(const char* pszName)
 {
-    CPieceSet* pPSet = new CPieceSet;
-    pPSet->SetName(pszName);
-    m_PSetTbl.Add(pPSet);
-    return m_PSetTbl.GetSize() - 1;
+    m_PSetTbl.resize(m_PSetTbl.size() + 1);
+    m_PSetTbl.back().SetName(pszName);
+    return m_PSetTbl.size() - 1;
 }
 
-void CPieceManager::DeletePieceSet(int nPSet, CGameElementStringMap* pMapStrings /* = NULL */)
+void CPieceManager::DeletePieceSet(size_t nPSet, CGameElementStringMap* pMapStrings /* = NULL */)
 {
-    CPieceSet* pPSet = GetPieceSet(nPSet);
-    CWordArray* pPids = pPSet->GetPieceIDTable();
-    for (int i = 0; i < pPids->GetSize(); i++)
-        DeletePiece((PieceID)pPids->GetAt(i), pMapStrings, FALSE);
-    m_PSetTbl.RemoveAt(nPSet);
-    delete pPSet;
+    CPieceSet& pPSet = GetPieceSet(nPSet);
+    const std::vector<PieceID>& pPids = pPSet.GetPieceIDTable();
+    for (size_t i = 0; i < pPids.size(); i++)
+        DeletePiece(pPids.at(i), pMapStrings, FALSE);
+    m_PSetTbl.erase(m_PSetTbl.begin() + value_preserving_cast<ptrdiff_t>(nPSet));
 }
 
 ///////////////////////////////////////////////////////////////////////
-
-void CPieceManager::ResizePieceTable(UINT nEntsNeeded)
-{
-    UINT nNewSize = CalcAllocSize(nEntsNeeded, tblBaseSize, tblIncrSize);
-    if (m_pPieceTbl != NULL)
-    {
-        PieceDef * pNewTbl = (PieceDef *)GlobalReAllocPtr(
-            m_pPieceTbl, (DWORD)nNewSize * sizeof(PieceDef), GHND);
-        if (pNewTbl == NULL)
-            AfxThrowMemoryException();
-        m_pPieceTbl = pNewTbl;
-    }
-    else
-    {
-        m_pPieceTbl = (PieceDef *)GlobalAllocPtr(GHND,
-            (DWORD)nNewSize * sizeof(PieceDef));
-        if (m_pPieceTbl == NULL)
-            AfxThrowMemoryException();
-    }
-    for (UINT i = m_nTblSize; i < nNewSize; i++)
-        m_pPieceTbl[i].SetEmpty();
-    m_nTblSize = nNewSize;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-PieceID CPieceManager::CreatePieceIDEntry()
-{
-    // Allocate from empty entry if possible
-    for (UINT i = 0; i < m_nTblSize; i++)
-    {
-        if (m_pPieceTbl[i].IsEmpty())
-            return (PieceID)i;
-    }
-    // Get TileID from end of table.
-    PieceID newPid = m_nTblSize;
-    ResizePieceTable(m_nTblSize + 1);
-    return newPid;
-}
 
 void CPieceManager::RemovePieceIDFromPieceSets(PieceID pid)
 {
-    for (int i = 0; i < GetNumPieceSets(); i++)
+    for (size_t i = 0; i < GetNumPieceSets(); i++)
     {
-        CPieceSet* pPSet = GetPieceSet(i);
-        if (pPSet->HasPieceID(pid))
+        CPieceSet& pPSet = GetPieceSet(i);
+        if (pPSet.HasPieceID(pid))
         {
-            pPSet->RemovePieceID(pid);
+            pPSet.RemovePieceID(pid);
             return;
         }
     }
@@ -253,9 +197,7 @@ void CPieceManager::Serialize(CArchive& ar)
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        ar << (WORD)m_nTblSize;
-        for (UINT i = 0; i < m_nTblSize; i++)
-            m_pPieceTbl[i].Serialize(ar);
+        ar << m_pPieceTbl;
     }
     else
     {
@@ -264,14 +206,7 @@ void CPieceManager::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        WORD wTmp;
-        ar >> wTmp;
-        if (wTmp > 0)
-        {
-            ResizePieceTable((UINT)wTmp);
-            for (UINT i = 0; i < (UINT)wTmp; i++)
-                m_pPieceTbl[i].Serialize(ar);
-        }
+        ar >> m_pPieceTbl;
     }
     SerializePieceSets(ar);
 }
@@ -280,19 +215,18 @@ void CPieceManager::SerializePieceSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetNumPieceSets();
-        for (int i = 0; i < GetNumPieceSets(); i++)
-            GetPieceSet(i)->Serialize(ar);
+        ar << value_preserving_cast<WORD>(GetNumPieceSets());
+        for (size_t i = 0; i < GetNumPieceSets(); i++)
+            GetPieceSet(i).Serialize(ar);
     }
     else
     {
         WORD wSize;
         ar >> wSize;
-        for (int i = 0; i < (int)wSize; i++)
+        m_PSetTbl.resize(wSize);
+        for (size_t i = 0; i < m_PSetTbl.size(); i++)
         {
-            CPieceSet* pPSet = new CPieceSet;
-            pPSet->Serialize(ar);
-            m_PSetTbl.Add(pPSet);
+            m_PSetTbl[i].Serialize(ar);
         }
     }
 }
@@ -300,11 +234,11 @@ void CPieceManager::SerializePieceSets(CArchive& ar)
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CPieceSet::HasPieceID(PieceID pid)
+BOOL CPieceSet::HasPieceID(PieceID pid) const
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if ((PieceID)m_pidTbl.GetAt(i) == pid)
+        if (m_pidTbl.at(i) == pid)
             return TRUE;
     }
     return FALSE;
@@ -312,34 +246,39 @@ BOOL CPieceSet::HasPieceID(PieceID pid)
 
 void CPieceSet::RemovePieceID(PieceID pid)
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if ((PieceID)m_pidTbl.GetAt(i) == pid)
+        if (m_pidTbl.at(i) == pid)
         {
-            m_pidTbl.RemoveAt(i);
+            m_pidTbl.erase(m_pidTbl.begin() + value_preserving_cast<ptrdiff_t>(i));
             return;
         }
     }
 }
 
-void CPieceSet::AddPieceID(PieceID pid, int nPos /* = -1 */)
+void CPieceSet::AddPieceID(PieceID pid, size_t nPos /* = Invalid_v<size_t> */)
 {
-    if (nPos < 0)
-        m_pidTbl.Add((WORD)pid);
+    if (nPos == Invalid_v<size_t>)
+        m_pidTbl.push_back(pid);
     else
     {
-        ASSERT(nPos <= m_pidTbl.GetSize());
-        m_pidTbl.InsertAt(nPos, (WORD)pid);
+        ASSERT(nPos <= m_pidTbl.size());
+        m_pidTbl.insert(m_pidTbl.begin() + value_preserving_cast<ptrdiff_t>(nPos), pid);
     }
 }
 
 void CPieceSet::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
+    {
         ar << m_strName;
+        ar << m_pidTbl;
+    }
     else
+    {
         ar >> m_strName;
-    m_pidTbl.Serialize(ar);
+        ar >> m_pidTbl;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -354,9 +293,8 @@ void PieceDef::Serialize(CArchive& ar)
     }
     else
     {
-        WORD wTmp;
-        ar >> wTmp; m_tidFront = (TileID)wTmp;
-        ar >> wTmp; m_tidBack = (TileID)wTmp;
+        ar >> m_tidFront;
+        ar >> m_tidBack;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))   // V2.0
             ar >> m_flags;
         else

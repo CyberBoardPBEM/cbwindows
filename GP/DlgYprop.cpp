@@ -44,7 +44,7 @@ CTrayPropDialog::CTrayPropDialog(CWnd* pParent /*=NULL*/)
     m_nVizOpts = -1;
     m_bRandomSel = FALSE;
     //}}AFX_DATA_INIT
-    m_nYSel = -1;
+    m_nYSel = Invalid_v<size_t>;
     m_nOwnerSel = -1;
     m_bNonOwnerAccess = FALSE;
     m_pPlayerMgr = NULL;
@@ -134,8 +134,8 @@ void CTrayPropDialog::OnOK()
         m_editName.SetFocus();
         return;
     }
-    int nSel = m_pYMgr->FindTrayByName(m_strName);
-    if (nSel != -1 && nSel != m_nYSel)
+    size_t nSel = m_pYMgr->FindTrayByName(m_strName);
+    if (nSel != Invalid_v<size_t> && nSel != m_nYSel)
     {
         AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
         m_editName.SetFocus();
@@ -160,9 +160,9 @@ BOOL CTrayPropDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
     ASSERT(m_pYMgr);
-    ASSERT(m_nYSel != -1);
+    ASSERT(m_nYSel != Invalid_v<size_t>);
 
-    m_editName.SetWindowText(m_pYMgr->GetTraySet(m_nYSel)->GetName());
+    m_editName.SetWindowText(m_pYMgr->GetTraySet(m_nYSel).GetName());
     if (m_pPlayerMgr == NULL)
     {
         m_comboOwners.EnableWindow(FALSE);

@@ -45,10 +45,10 @@ const DWORD GAMEELEM_OBJECTID_MASK = 0xFFFE0000L; // else...top 15 bits nonzero 
                                                   // otherwise it's a piece ID with side code
 
 inline GameElement MakePieceElement(PieceID pid, int nSide = 0)
-    { return (GameElement)(pid | (DWORD)nSide << 16); }
+    { return (GameElement)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
 
 inline GameElement MakeMarkerElement(MarkID mid)
-    { return (GameElement)((DWORD)mid | GAMEELEM_MARKERID_FLAG); }
+    { return (GameElement)((DWORD)static_cast<WORD>(mid) | GAMEELEM_MARKERID_FLAG); }
 
 #if defined(GPLAY)
 inline GameElement MakeObjectIDElement(ObjectID dwObjectID)
@@ -68,7 +68,7 @@ inline BOOL IsGameElementAnObjectID(GameElement elem)
     }
 
 inline PieceID GetPieceIDFromElement(GameElement elem)
-    { return (PieceID)(elem & 0xFFFF); }
+    { return static_cast<PieceID>(elem & 0xFFFF); }
 
 #if defined(GPLAY)
 inline ObjectID GetObjectIDFromElement(GameElement elem)

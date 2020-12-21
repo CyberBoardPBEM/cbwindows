@@ -345,13 +345,13 @@ void CPlayBoardView::SelectAllObjectsInList(CPtrList* pLst)
         NotifySelectListChange();
 }
 
-void CPlayBoardView::SelectAllObjectsInTable(CPtrArray* pTbl)
+void CPlayBoardView::SelectAllObjectsInTable(const std::vector<CDrawObj*>& pTbl)
 {
     BOOL bPieceSelected = FALSE;
 
-    for (int i = 0; i < pTbl->GetSize(); i++)
+    for (size_t i = 0; i < pTbl.size(); i++)
     {
-        CDrawObj* pObj = (CDrawObj*)pTbl->GetAt(i);
+        CDrawObj* pObj = pTbl.at(i);
         ASSERT(pObj != NULL);
         if (!m_selList.IsObjectSelected(pObj))
         {
@@ -391,7 +391,7 @@ void CPlayBoardView::SelectAllMarkers()
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::SelectMarkersInGroup(UINT nGroup)
+void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
 {
     CDrawList* pDwg = m_pPBoard->GetPieceList();
     ASSERT(pDwg);

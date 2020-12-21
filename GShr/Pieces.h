@@ -31,8 +31,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
-const UINT maxPieces = 32000;
-typedef unsigned short PieceID;
+const size_t maxPieces = 32000;
+typedef XxxxID<'P'> PieceID;
+
+const       PieceID nullPid = PieceID(0xFFFF);
+
+//////////////////////////////////////////////////////////////////////
+
+const size_t pieceTblBaseSize = 32;            // PieceDef table allocation strategy
+const size_t pieceTblIncrSize = 8;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -50,12 +57,12 @@ struct PieceDef
 
     // -------- //
     void SetEmpty() { m_tidFront = m_tidBack = nullTid; }
-    BOOL IsEmpty() { return m_tidFront == nullTid && m_tidBack == nullTid; }
+    BOOL IsEmpty() const { return m_tidFront == nullTid && m_tidBack == nullTid; }
     // ---------- //
     void Serialize(CArchive& ar);
-    TileID GetFrontTID() { return m_tidFront; }
-    TileID GetBackTID() { return m_tidBack; }
-    BOOL Is2Sided() { return m_tidBack != nullTid; }
+    TileID GetFrontTID() const { return m_tidFront; }
+    TileID GetBackTID() const { return m_tidBack; }
+    BOOL Is2Sided() const { return m_tidBack != nullTid; }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -65,22 +72,29 @@ class CPieceSet
     friend class CGamDoc;
 // Attributes
 public:
-    CWordArray* GetPieceIDTable() { return &m_pidTbl; }
-    BOOL HasPieceID(PieceID pid);
+    CPieceSet() noexcept = default;
+    CPieceSet(const CPieceSet&) = delete;
+    CPieceSet& operator=(const CPieceSet&) = delete;
+    CPieceSet(CPieceSet&&) noexcept = default;
+    CPieceSet& operator=(CPieceSet&&) noexcept = default;
+    ~CPieceSet() = default;
 
-    const char* GetName() const { return m_strName; }
+    const std::vector<PieceID>& GetPieceIDTable() const { return m_pidTbl; }
+    BOOL HasPieceID(PieceID pid) const;
+
+    const char* GetName() const { return m_strName.c_str(); }
     void SetName(const char *pszName) { m_strName = pszName; }
 
 // Operations
 public:
-    void AddPieceID(PieceID pid, int nPos = -1);
+    void AddPieceID(PieceID pid, size_t nPos = Invalid_v<size_t>);
     void RemovePieceID(PieceID pid);
     // ---------- //
     void Serialize(CArchive& ar);
 // Implementation
 protected:
-    CString     m_strName;
-    CWordArray  m_pidTbl;       // PieceIDs in this set.
+    std::string m_strName;
+    std::vector<PieceID> m_pidTbl;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -93,42 +107,51 @@ class CPieceManager
     friend class CGamDoc;
 public:
     CPieceManager();
-    ~CPieceManager();
+    ~CPieceManager() = default;
 
 // Attributes
 public:
 
     // Piece Set attributes
-    int GetNumPieceSets() const { return m_PSetTbl.GetSize(); }
-    CPieceSet* GetPieceSet(UINT nPSet)
-        { return (CPieceSet*)m_PSetTbl.GetAt(nPSet); }
+    size_t GetNumPieceSets() const { return m_PSetTbl.size(); }
+    const CPieceSet& GetPieceSet(size_t nPSet) const
+        { return m_PSetTbl.at(nPSet); }
+    CPieceSet& GetPieceSet(size_t nPSet)
+    {
+        return const_cast<CPieceSet&>(std::as_const(*this).GetPieceSet(nPSet));
+    }
     void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
     CTileManager* GetTileManager() { return m_pTMgr; }
 
 // Operations
 public:
-    PieceDef* GetPiece(PieceID pid);
-    BOOL IsPieceIDValid(PieceID pid);
-    int FindPieceSetFromPieceID(PieceID pid);
-    PieceID CreatePiece(int nPSet, TileID tidFront, TileID tidBack);
-    void CPieceManager::DeletePiece(PieceID pid, CGameElementStringMap* mapStrings = NULL,
+    const PieceDef& GetPiece(PieceID pid) const;
+    PieceDef& GetPiece(PieceID pid)
+    {
+        return const_cast<PieceDef&>(std::as_const(*this).GetPiece(pid));
+    }
+    BOOL IsPieceIDValid(PieceID pid) const;
+    size_t FindPieceSetFromPieceID(PieceID pid) const;
+    PieceID CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack);
+    void DeletePiece(PieceID pid, CGameElementStringMap* mapStrings = NULL,
         BOOL bFromSetAlso = TRUE);
     // ------- //
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapStrings = NULL);
     BOOL PurgeMissingTileIDs();
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
     // ------- //
-    int CreatePieceSet(const char* pszName);
-    void DeletePieceSet(int nPSet, CGameElementStringMap* mapStrings = NULL);
+    size_t CreatePieceSet(const char* pszName);
+    void DeletePieceSet(size_t nPSet, CGameElementStringMap* mapStrings = NULL);
     void Clear();
     // ---------- //
     void Serialize(CArchive& ar);
     void SerializePieceSets(CArchive& ar);
 // Implementation
 protected:
-    PieceDef * m_pPieceTbl; // Global def'ed
-    UINT        m_nTblSize;         // Number of alloc'ed ents in Piece table
-    CPtrArray   m_PSetTbl;          // Table of piece set pointers
+    XxxxIDTable<PieceID, PieceDef,
+                maxPieces, pieceTblBaseSize, pieceTblIncrSize,
+                true> m_pPieceTbl;
+    std::vector<CPieceSet> m_PSetTbl;
     WORD        m_wReserved1;       // For future need (set to 0)
     WORD        m_wReserved2;       // For future need (set to 0)
     WORD        m_wReserved3;       // For future need (set to 0)
@@ -136,9 +159,7 @@ protected:
     // ------- //
     CTileManager* m_pTMgr;          // Supporting tile manager
     // ------- //
-    UINT GetPieceTableSize() { return m_nTblSize; }
-    PieceID CreatePieceIDEntry();
-    void ResizePieceTable(UINT nEntsNeeded);
+    size_t GetPieceTableSize() const { return m_pPieceTbl.GetSize(); }
     void RemovePieceIDFromPieceSets(PieceID pid);
 };
 

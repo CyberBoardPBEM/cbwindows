@@ -54,7 +54,7 @@ public:
 
 // Implementation
 protected:
-    CWordArray      m_tbl;          // Need to use list box.
+    std::vector<MarkID> m_tbl;      // Need to use list box.
     CMarkManager*   m_pMMgr;
     CTileManager*   m_pTMgr;        // Set internally from m_pPMgr
     // --------- //

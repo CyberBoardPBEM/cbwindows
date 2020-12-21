@@ -102,14 +102,9 @@ void CMarkerCreateDialog::SetupTileListbox()
         return;
     }
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-    {
-        m_listTiles.SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    m_listTiles.SetItemMap(pLstMap);
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    m_listTiles.SetItemMap(&pLstMap);
 }
 
 void CMarkerCreateDialog::SetupTileSetNames()
@@ -117,9 +112,9 @@ void CMarkerCreateDialog::SetupTileSetNames()
     ASSERT(m_pTMgr);
     m_comboTSet.ResetContent();
 
-    for (int i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        m_comboTSet.AddString(m_pTMgr->GetTileSet(i)->GetName());
-    if (m_pTMgr->GetNumTileSets() > 0)
+    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
+        m_comboTSet.AddString(m_pTMgr->GetTileSet(i).GetName());
+    if (!m_pTMgr->IsEmpty())
         m_comboTSet.SetCurSel(0);           // Select the first entry
 }
 
@@ -137,7 +132,7 @@ void CMarkerCreateDialog::CreateMarker()
     RefreshMarkerList();
 }
 
-TileID CMarkerCreateDialog::GetTileID()
+TileID CMarkerCreateDialog::GetTileID() const
 {
     int nCurSel = m_comboTSet.GetCurSel();
     if (nCurSel < 0)
@@ -147,24 +142,17 @@ TileID CMarkerCreateDialog::GetTileID()
     if (nCurTile < 0)
         return nullTid;
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-        return nullTid;
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    return (TileID)pLstMap->GetAt(nCurTile);
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
 }
 
 void CMarkerCreateDialog::RefreshMarkerList()
 {
-    CMarkSet* pMSet = m_pMMgr->GetMarkSet(m_nMSet);
-    if (pMSet == NULL)
-    {
-        m_listMarks.SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pMSet->GetMarkIDTable();
-    m_listMarks.SetItemMap(pLstMap);
+    CMarkSet& pMSet = m_pMMgr->GetMarkSet(m_nMSet);
+    const std::vector<MarkID>& pLstMap = pMSet.GetMarkIDTable();
+    m_listMarks.SetItemMap(&pLstMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////

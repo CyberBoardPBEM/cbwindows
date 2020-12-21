@@ -53,10 +53,10 @@ typedef DWORD ElementState;
 const DWORD MARKER_ELEMENT_FLAG = 0x80000000L; // Top set if a marker, else a piece
 
 inline ElementState MakePieceState(PieceID pid, WORD nFacingDegCW, BYTE nSide)
-    { return ((DWORD)pid << 12) | ((DWORD)nSide << 9) | (nFacingDegCW & 0x1FF); }
+    { return ((DWORD)static_cast<WORD>(pid) << 12) | ((DWORD)nSide << 9) | (nFacingDegCW & 0x1FF); }
 
 inline ElementState MakeMarkerState(MarkID mid, WORD nFacingDegCW)
-    { return ((DWORD)mid << 12) | (nFacingDegCW & 0x1FF) | MARKER_ELEMENT_FLAG; }
+    { return ((DWORD)static_cast<WORD>(mid) << 12) | (nFacingDegCW & 0x1FF) | MARKER_ELEMENT_FLAG; }
 
 inline int GetElementFacingAngle(ElementState elem)
 {
@@ -70,7 +70,7 @@ inline int GetElementFacingAngle(ElementState elem)
 class CTileFacingMap : public CMap< ElementState, ElementState, TileID, TileID >
 {
     CTileManager*   m_pTMgr;
-    int             m_nTileSet;         // Our private tile set
+    size_t          m_nTileSet;         // Our private tile set
 public:
     CTileFacingMap() { m_pTMgr = NULL; }
     CTileFacingMap(CTileManager* pTileMgr) { m_pTMgr = NULL; SetTileManager(pTileMgr); }

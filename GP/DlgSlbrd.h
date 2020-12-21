@@ -40,12 +40,12 @@ public:
     CCheckListBox   m_listBoards;
     //}}AFX_DATA
 
-    CWordArray  m_tblBrds;      // Table of board serial numbers
+    std::vector<BoardID> m_tblBrds;      // Table of board serial numbers
     CBoardManager* m_pBMgr;     // Pointer to gamebox board manager.
 
 // Implementation
 protected:
-    int FindSerialNumberListIndex(int nSerial);
+    int FindSerialNumberListIndex(BoardID nSerial) const;
 
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 

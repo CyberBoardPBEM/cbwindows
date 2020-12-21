@@ -84,11 +84,11 @@ void CSelectBoardsDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CSelectBoardsDialog::FindSerialNumberListIndex(int nSerial)
+int CSelectBoardsDialog::FindSerialNumberListIndex(BoardID nSerial) const
 {
     for (int i = 0; i < m_listBoards.GetCount(); i++)
     {
-        if ((int)m_listBoards.GetItemData(i) == nSerial)
+        if (static_cast<BoardID>(m_listBoards.GetItemData(i)) == nSerial)
             return i;
     }
     return -1;
@@ -103,19 +103,19 @@ BOOL CSelectBoardsDialog::OnInitDialog()
 
     ASSERT(m_pBMgr != NULL);
 
-    for (int i = 0; i < m_pBMgr->GetNumBoards(); i++)
+    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
     {
-        CBoard* pBoard = m_pBMgr->GetBoard(i);
-        int nIdx = m_listBoards.AddString(pBoard->GetName());
-        m_listBoards.SetItemData(nIdx, pBoard->GetSerialNumber());
+        CBoard& pBoard = m_pBMgr->GetBoard(i);
+        int nIdx = m_listBoards.AddString(pBoard.GetName());
+        m_listBoards.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(pBoard.GetSerialNumber())));
         m_listBoards.SetCheck(nIdx, 0);
     }
 
     // If there are actively selected boards. Reselect them.
 
-    for (int i = 0; i < m_tblBrds.GetSize(); i++)
+    for (size_t i = 0; i < m_tblBrds.size(); i++)
     {
-        int nIdx = FindSerialNumberListIndex((int)m_tblBrds[i]);
+        int nIdx = FindSerialNumberListIndex(m_tblBrds[i]);
         if (nIdx == -1)
             AfxMessageBox(IDS_ERR_BOARDNOTEXIST, MB_OK | MB_ICONEXCLAMATION);
         m_listBoards.SetCheck(nIdx, 1);
@@ -126,14 +126,15 @@ BOOL CSelectBoardsDialog::OnInitDialog()
 
 void CSelectBoardsDialog::OnOK()
 {
-    m_tblBrds.RemoveAll();          // Clear the board table
+    m_tblBrds.clear();          // Clear the board table
 
+    m_tblBrds.reserve(value_preserving_cast<size_t>(m_listBoards.GetCount()));
     for (int i = 0; i < m_listBoards.GetCount(); i++)
     {
         if (m_listBoards.GetCheck(i) > 0)
         {
             // Add serial numbers for selected boards
-            m_tblBrds.Add((WORD)m_listBoards.GetItemData(i));
+            m_tblBrds.push_back(static_cast<BoardID>(m_listBoards.GetItemData(i)));
         }
     }
     CDialog::OnOK();

@@ -78,7 +78,7 @@ BOOL CopyOpenFiles(CFile* pSrcFile, CFile* pDestFile, DWORD dwLen)
         pszBfr = new char[COPY_BFR_LEN];
         while (TRUE)
         {
-            UINT nRead = (UINT)min(dwLen, (DWORD)COPY_BFR_LEN);
+            UINT nRead = value_preserving_cast<UINT>(CB::min(dwLen, COPY_BFR_LEN));
             pSrcFile->Read(pszBfr, nRead);
             pDestFile->Write(pszBfr, nRead);
             dwLen -= nRead;

@@ -213,7 +213,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_BOARDCHANGE)
     {
         // Make sure we still exist!
-        if (GetDocument()->GetPBoardManager()->FindPBoardByPtr(m_pPBoard) == -1)
+        if (GetDocument()->GetPBoardManager()->FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
         {
             CFrameWnd* pFrm = GetParentFrame();
             ASSERT(pFrm != NULL);
@@ -355,13 +355,13 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         // Save the select list
         if (m_selList.GetCount() > 0)
         {
-            CPtrArray tblObjPtrs;
-            m_selList.LoadTableWithObjectPtrs(&tblObjPtrs);
-            ar << (DWORD)tblObjPtrs.GetSize();
-            for (int i = 0; i < tblObjPtrs.GetSize(); i++)
+            std::vector<CDrawObj*> tblObjPtrs;
+            m_selList.LoadTableWithObjectPtrs(tblObjPtrs);
+            ar << value_preserving_cast<DWORD>(tblObjPtrs.size());
+            for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
-                CDrawObj* pObj = (CDrawObj*)tblObjPtrs.GetAt(i);
-                ar << (DWORD)GetDocument()->GetGameElementCodeForObject(pObj);
+                CDrawObj* pObj = tblObjPtrs.at(i);
+                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(pObj));
             }
         }
         else
@@ -564,7 +564,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
     {
         CGamDoc* pDoc = GetDocument();
         CPoint pnt = pdi->m_point;
-        CWordArray* pTbl = pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList;
+        const std::vector<PieceID>& pTbl = CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
         ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
@@ -586,7 +586,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
             CPtrList pceList;
-            pDwg->GetObjectListFromPieceIDTable(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList, &pceList);
+            pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), &pceList);
             SelectAllObjectsInList(&pceList);   // Reselect pieces dropped on board
         }
 
@@ -627,11 +627,11 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
             // I'm going to cheat. I happen to know that marker drops
             // can only originate at the marker palette. I can find out
             // the current marker set this way.
-            int nMrkGrp = pDoc->m_palMark.GetSelectedMarkerGroup();
-            ASSERT(nMrkGrp >= 0);
-            if (nMrkGrp < 0)
+            size_t nMrkGrp = pDoc->m_palMark.GetSelectedMarkerGroup();
+            ASSERT(nMrkGrp != Invalid_v<size_t>);
+            if (nMrkGrp == Invalid_v<size_t>)
                 goto NASTY_GOTO_TARGET;
-            CMarkSet* pMSet = pMMgr->GetMarkSet(nMrkGrp);
+            CMarkSet& pMSet = pMMgr->GetMarkSet(nMrkGrp);
 
             CMarkerCountDialog dlg;
             dlg.m_nMarkerCount = 2;
@@ -641,27 +641,29 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
 
             m_selList.PurgeList();
 
-            CWordArray tblMarks;
-            if (pMSet->IsRandomMarkerPull())
+            std::vector<MarkID> tblMarks;
+            if (pMSet.IsRandomMarkerPull())
             {
                 // Pull markers randomly from the marker group.
-                tblMarks.Add(mid);              // Add the first one that was dropped
-                pMSet->GetRandomSelection(dlg.m_nMarkerCount - 1, tblMarks, pDoc);
+                tblMarks.reserve(1);
+                tblMarks.push_back(mid);              // Add the first one that was dropped
+                pMSet.GetRandomSelection(value_preserving_cast<size_t>(dlg.m_nMarkerCount - 1), tblMarks, pDoc);
             }
             else
             {
                 // Create duplicates of the one tile.
+                tblMarks.reserve(value_preserving_cast<size_t>(dlg.m_nMarkerCount));
                 for (int i = 0; i < dlg.m_nMarkerCount; i++)
-                    tblMarks.Add(mid);          // Add the first one that was dropped
+                    tblMarks.push_back(mid);          // Add the first one that was dropped
             }
             // First figure out the minimum size required.
             CSize sizeMin(0, 0);
             int i;
             for (i = 0; i < dlg.m_nMarkerCount; i++)
             {
-                CSize size = pMMgr->GetMarkSize((MarkID)tblMarks[i]);
+                CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 sizeMin.cx += size.cx;
-                sizeMin.cy = max(sizeMin.cy, size.cy);
+                sizeMin.cy = CB::max(sizeMin.cy, size.cy);
                 if (i < dlg.m_nMarkerCount - 1)
                     sizeMin += CSize(MARKER_DROP_GAP_X, 0);
             }
@@ -676,8 +678,8 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
             // corresponding to left to right.
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
-                CSize size = pMMgr->GetMarkSize((MarkID)tblMarks[i]);
-                CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, (MarkID)tblMarks[i],
+                CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
+                CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
@@ -700,7 +702,7 @@ NASTY_GOTO_TARGET:
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
-        if (pMMgr->GetMark(mid)->m_flags & MarkDef::flagPromptText)
+        if (pMMgr->GetMark(mid).m_flags & MarkDef::flagPromptText)
         {
             CEditElementTextDialog dlg;
 
@@ -1388,17 +1390,17 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    CPtrArray tblObjs;
-    m_selList.LoadTableWithObjectPtrs(&tblObjs);
+    std::vector<CDrawObj*> tblObjs;
+    m_selList.LoadTableWithObjectPtrs(tblObjs);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectTableOnBoard(pntCenter, &tblObjs,
+    GetDocument()->PlaceObjectTableOnBoard(pntCenter, tblObjs,
         xStagger, yStagger, m_pPBoard);
 
     // Reselect the pieces.
-    SelectAllObjectsInTable(&tblObjs);      // Reselect objects
+    SelectAllObjectsInTable(tblObjs);      // Reselect objects
 }
 
 void CPlayBoardView::OnUpdateActStack(CCmdUI* pCmdUI)
@@ -1429,22 +1431,23 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    CPtrArray tblObjs;
-    m_selList.LoadTableWithObjectPtrs(&tblObjs);
+    std::vector<CDrawObj*> tblObjs;
+    m_selList.LoadTableWithObjectPtrs(tblObjs);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
 
     // Generate a shuffled index vector for the number of selected items
     UINT nRandSeed = pDoc->GetRandomNumberSeed();
-    int nNumIndices = tblObjs.GetSize();
-    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
-        nNumIndices, nRandSeed, &nRandSeed);
+    size_t nNumIndices = tblObjs.size();
+    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(nNumIndices),
+        value_preserving_cast<int>(nNumIndices), nRandSeed, &nRandSeed);
     pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Create a shuffled table of objects...
-    CPtrArray tblRandObjs;
-    for (int i = 0; i < tblObjs.GetSize(); i++)
-        tblRandObjs.Add(tblObjs[pnIndices[i]]);
+    std::vector<CDrawObj*> tblRandObjs;
+    tblRandObjs.reserve(tblObjs.size());
+    for (int i = 0; i < value_preserving_cast<int>(tblObjs.size()); i++)
+        tblRandObjs.push_back(tblObjs[value_preserving_cast<size_t>(pnIndices[i])]);
 
     pDoc->AssignNewMoveGroup();
 
@@ -1453,15 +1456,15 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
         // Insert a notification tip so there is some information
         // feedback during playback.
         CString strMsg;
-        strMsg.Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.GetSize());
-        pDoc->RecordEventMessage(strMsg, TRUE, m_pPBoard->GetSerialNumber(),
-            pntCenter.x, pntCenter.y);
+        strMsg.Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.size());
+        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->PlaceObjectTableOnBoard(&tblRandObjs, m_pPBoard);
+    pDoc->PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard);
 
     // Reselect the pieces.
-    SelectAllObjectsInTable(&tblRandObjs);  // Reselect objects
+    SelectAllObjectsInTable(tblRandObjs);  // Reselect objects
 }
 
 void CPlayBoardView::OnUpdateActShuffleSelectedObjects(CCmdUI* pCmdUI)
@@ -1604,7 +1607,7 @@ void CPlayBoardView::OnActPlotDone()
         SelectAllObjectsInList(&listObjs);  // Select on this board.
     }
     m_pPBoard->SetPlotMoveMode(FALSE);
-    GetDocument()->UpdateAllBoardIndicators(m_pPBoard);
+    GetDocument()->UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
     m_nCurToolID = ID_PTOOL_SELECT;
 }
@@ -1622,7 +1625,7 @@ void CPlayBoardView::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 void CPlayBoardView::OnActPlotDiscard()
 {
     m_pPBoard->SetPlotMoveMode(FALSE);
-    GetDocument()->UpdateAllBoardIndicators(m_pPBoard);
+    GetDocument()->UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
     m_nCurToolID = ID_PTOOL_SELECT;
 }
@@ -1662,10 +1665,10 @@ void CPlayBoardView::OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI)
 
 void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
 {
-    CWordArray tbl;
+    std::vector<PieceID> tbl;
     CGamDoc* pDoc = GetDocument();
-    m_selList.LoadTableWithPieceIDs(&tbl);
-    TileID tid = pDoc->GetPieceTable()->GetActiveTileID((PieceID)tbl[0]);
+    m_selList.LoadTableWithPieceIDs(tbl);
+    TileID tid = pDoc->GetPieceTable()->GetActiveTileID(tbl.front());
     CTile tile;
     pDoc->GetTileManager()->GetTile(tid, &tile);
     CBitmap bmap;
@@ -2058,7 +2061,7 @@ void CPlayBoardView::OnEditBoardToFile()
 
 void CPlayBoardView::OnEditBoardProperties()
 {
-    GetDocument()->DoBoardProperties(GetPlayBoard());
+    GetDocument()->DoBoardProperties(CheckedDeref(GetPlayBoard()));
 }
 
 void CPlayBoardView::OnSelectGroupMarkers(UINT nID)
@@ -2071,11 +2074,11 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
     if (pCmdUI->m_pSubMenu != NULL)
     {
         CMarkManager* pMgr = GetDocument()->GetMarkManager();
-        if (pMgr->GetNumMarkSets() == 0)
+        if (pMgr->IsEmpty())
             return;
         CStringArray tbl;
-        for (int i = 0; i < pMgr->GetNumMarkSets(); i++)
-            tbl.Add(pMgr->GetMarkSet(i)->GetName());
+        for (size_t i = 0; i < pMgr->GetNumMarkSets(); i++)
+            tbl.Add(pMgr->GetMarkSet(i).GetName());
         CMenu menu;
         VERIFY(menu.CreatePopupMenu());
 
@@ -2199,9 +2202,9 @@ void CPlayBoardView::OnActTakeOwnership()
 
     CGamDoc* pDoc = GetDocument();
 
-    CWordArray tblPieces;
+    std::vector<PieceID> tblPieces;
 
-    m_selList.LoadTableWithOwnerStatePieceIDs(&tblPieces, m_selList.LF_NOTOWNED);
+    m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_NOTOWNED);
 
     pDoc->AssignNewMoveGroup();
 
@@ -2211,11 +2214,11 @@ void CPlayBoardView::OnActTakeOwnership()
         // feedback during playback.
         CString strMsg;
         strMsg.LoadString(IDS_TIP_OWNER_ACQUIRED);
-        pDoc->RecordEventMessage(strMsg, TRUE, m_pPBoard->GetSerialNumber(),
-            pntCenter.x, pntCenter.y);
+        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(&tblPieces, pDoc->GetCurrentPlayerMask());
+    pDoc->SetPieceOwnershipTable(tblPieces, pDoc->GetCurrentPlayerMask());
 
     CGamDocHint hint;
     hint.m_pPBoard = m_pPBoard;
@@ -2249,9 +2252,9 @@ void CPlayBoardView::OnActReleaseOwnership()
 
     CGamDoc* pDoc = GetDocument();
 
-    CWordArray tblPieces;
+    std::vector<PieceID> tblPieces;
 
-    m_selList.LoadTableWithOwnerStatePieceIDs(&tblPieces, m_selList.LF_OWNED);
+    m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_OWNED);
 
     pDoc->AssignNewMoveGroup();
 
@@ -2261,11 +2264,11 @@ void CPlayBoardView::OnActReleaseOwnership()
         // feedback during playback.
         CString strMsg;
         strMsg.LoadString(IDS_TIP_OWNER_RELEASED);
-        pDoc->RecordEventMessage(strMsg, TRUE, m_pPBoard->GetSerialNumber(),
-            pntCenter.x, pntCenter.y);
+        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(&tblPieces, 0);
+    pDoc->SetPieceOwnershipTable(tblPieces, 0);
 
     CGamDocHint hint;
     hint.m_pPBoard = m_pPBoard;
@@ -2308,8 +2311,8 @@ void CPlayBoardView::OnActSetOwner()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    CWordArray tblPieces;
-    m_selList.LoadTableWithOwnerStatePieceIDs(&tblPieces, m_selList.LF_BOTH);
+    std::vector<PieceID> tblPieces;
+    m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_BOTH);
 
     pDoc->AssignNewMoveGroup();
 
@@ -2319,11 +2322,11 @@ void CPlayBoardView::OnActSetOwner()
         // feedback during playback.
         CString strMsg;
         strMsg.LoadString(IDS_TIP_OWNER_ACQUIRED);
-        pDoc->RecordEventMessage(strMsg, TRUE, m_pPBoard->GetSerialNumber(),
-            pntCenter.x, pntCenter.y);
+        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(&tblPieces, dwNewOwnerMask);
+    pDoc->SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
 
     CGamDocHint hint;
     hint.m_pPBoard = m_pPBoard;
@@ -2399,7 +2402,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cy;
-                nDisplacement = min(nDisplacement, m_pageDev.cy);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cy);
             }
             bResult = OnScrollBy(CSize(0, nDisplacement), TRUE);
         }
@@ -2414,7 +2417,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cx;
-                nDisplacement = min(nDisplacement, m_pageDev.cx);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cx);
             }
             bResult = OnScrollBy(CSize(nDisplacement, 0), TRUE);
         }
@@ -2442,7 +2445,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             ScreenToClient(&point);
             CRect rctClient;
             GetClientRect(&rctClient);
-            int yEdge = min(point.y, rctClient.bottom - point.y);
+            int yEdge = CB::min(point.y, rctClient.bottom - point.y);
             int ySize = rctClient.Height();
             bScrollVert = yEdge > ((ySize * 5) / 100);
         }
@@ -2470,7 +2473,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cy;
-                nDisplacement = min(nDisplacement, m_pageDev.cy);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cy);
             }
             bResult = OnScrollBy(CSize(0, nDisplacement), TRUE);
         }
@@ -2485,7 +2488,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
             else
             {
                 nDisplacement = nToScroll * m_lineDev.cx;
-                nDisplacement = min(nDisplacement, m_pageDev.cx);
+                nDisplacement = CB::min(nDisplacement, m_pageDev.cx);
             }
             bResult = OnScrollBy(CSize(nDisplacement, 0), TRUE);
         }

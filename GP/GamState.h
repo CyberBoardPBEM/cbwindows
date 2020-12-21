@@ -67,7 +67,7 @@ protected:
     // --------- //
     CGameElementStringMap m_mapString; // Text set by player
     CPBoardManager* m_pPBMgr;   // Playing boards in use.
-    CTrayManager*   m_pYMgr;    // Content of trays manager
+    CTrayManager    m_pYMgr;    // Content of trays manager
     CPieceTable*    m_pPTbl;    // The playing piece table.
 };
 

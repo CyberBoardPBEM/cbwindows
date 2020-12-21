@@ -62,11 +62,6 @@ CTileSheet::CTileSheet(CSize size)
     m_pMem = NULL;
 }
 
-CTileSheet::~CTileSheet()
-{
-    if (m_pBMap) delete m_pBMap;
-}
-
 //////////////////////////////////////////////////////////////////
 
 void CTileSheet::Serialize(CArchive& ar)
@@ -79,7 +74,7 @@ void CTileSheet::Serialize(CArchive& ar)
         if (m_pBMap)
         {
             CDib dib;
-            dib.BitmapToDIB(m_pBMap, GetAppPalette());
+            dib.BitmapToDIB(m_pBMap.get(), GetAppPalette());
             ASSERT(dib.m_lpDib != NULL);
             if (dib.m_lpDib != NULL)
             {
@@ -117,7 +112,7 @@ void CTileSheet::Serialize(CArchive& ar)
             ar >> dib;
             if (dib.m_lpDib != NULL)
             {
-                m_pBMap = dib.DIBToBitmap(GetAppPalette());
+                m_pBMap.reset(dib.DIBToBitmap(GetAppPalette()));
                 BITMAP bmInfo;
                 m_pBMap->GetObject(sizeof(bmInfo), &bmInfo);
                 TRACE3("-- Loaded Tile Sheet for cx=%d, cy=%d tiles. Tile sheet height = %d\n",
@@ -174,7 +169,7 @@ void CTileSheet::CreateTile()
             bmInfo.bmWidth, bmInfo.bmHeight));
         ASSERT(pBMap->m_hObject != NULL);
         g_gt.mDC1.SelectObject(pBMap);          // Dest bitmap
-        g_gt.mDC2.SelectObject(m_pBMap);        // Source bitmap
+        g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
 
         g_gt.mDC1.BitBlt(0, 0, m_size.cx, m_sheetHt, &g_gt.mDC2, 0, 0, SRCCOPY);
         g_gt.mDC1.PatBlt(0, m_sheetHt, m_size.cx, m_size.cy, WHITENESS);
@@ -184,18 +179,17 @@ void CTileSheet::CreateTile()
 
         m_sheetHt = bmInfo.bmHeight;
 
-        delete m_pBMap;
-        m_pBMap = pBMap;
+        m_pBMap.reset(pBMap);
     }
     else
     {
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        m_pBMap = new CBitmap;
+        m_pBMap.reset(new CBitmap);
         SetupPalette(&g_gt.mDC1);
         m_pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             m_size.cx, m_size.cy));
-        g_gt.mDC1.SelectObject(m_pBMap);
+        g_gt.mDC1.SelectObject(m_pBMap.get());
         g_gt.mDC1.PatBlt(0, 0, m_size.cx, m_size.cy, WHITENESS);
         g_gt.SelectSafeObjectsForDC1();
 
@@ -212,8 +206,7 @@ void CTileSheet::DeleteTile(int yLoc)
         TRACE("CTileSheet::DeleteTile - Deleting TileSheet bitmap\n");
         // Single tile is all that's left...
         ASSERT(yLoc == 0);
-        delete m_pBMap;
-        m_pBMap = 0;
+        m_pBMap.reset();
         m_sheetHt = 0;
     }
     else
@@ -224,7 +217,7 @@ void CTileSheet::DeleteTile(int yLoc)
         bmInfo.bmHeight -= m_size.cy;           // Decrease size.
 
         CBitmap* pBMap = new CBitmap;
-        g_gt.mDC2.SelectObject(m_pBMap);        // Source bitmap
+        g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
         SetupPalette(&g_gt.mDC2);
 
         pBMap->Attach(Create16BitDIBSection(g_gt.mDC2.m_hDC,
@@ -249,8 +242,7 @@ void CTileSheet::DeleteTile(int yLoc)
 
         m_sheetHt = bmInfo.bmHeight;
 
-        delete m_pBMap;
-        m_pBMap = pBMap;
+        m_pBMap.reset(pBMap);
     }
 }
 
@@ -258,7 +250,7 @@ void CTileSheet::UpdateTile(CBitmap *pBMap, int yLoc)
 {
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
-    g_gt.mDC1.SelectObject(m_pBMap);        // Dest bitmap
+    g_gt.mDC1.SelectObject(m_pBMap.get());        // Dest bitmap
     SetupPalette(&g_gt.mDC1);
     g_gt.mDC2.SelectObject(pBMap);          // Source bitmap
     SetupPalette(&g_gt.mDC2);
@@ -273,7 +265,7 @@ void CTileSheet::CreateBitmapOfTile(CBitmap *pBMap, int yLoc)
 {
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
-    g_gt.mDC1.SelectObject(m_pBMap);        // Source bitmap
+    g_gt.mDC1.SelectObject(m_pBMap.get());        // Source bitmap
     SetupPalette(&g_gt.mDC1);
 
     pBMap->DeleteObject();                  // Flush any existing bitmap
@@ -443,20 +435,19 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int y
 void CTileSheet::ClearSheet()
 {
     m_size = CSize(0, 0);
-    if (m_pBMap) delete m_pBMap;
+    m_pBMap.reset();
     if (m_pDC) delete m_pDC;
-    m_pBMap = NULL;
     m_pDC = NULL;
     m_pMem = NULL;
 }
 
 void CTileSheet::CreateSheetDC()
 {
-    ASSERT(m_pBMap != NULL);
+    ASSERT(m_pBMap);
     if (m_pDC == NULL)
     {
         m_pDC = &g_gt.mTileDC;
-        m_pDC->SelectObject(m_pBMap);
+        m_pDC->SelectObject(m_pBMap.get());
         m_pDC->SelectPalette(GetAppPalette(), TRUE);
     }
 }

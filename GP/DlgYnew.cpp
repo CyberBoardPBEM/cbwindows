@@ -72,8 +72,8 @@ void CTrayNewDialog::OnOK()
         m_editName.SetFocus();
         return;
     }
-    int nSel = m_pYMgr->FindTrayByName(m_strName);
-    if (nSel != -1)
+    size_t nSel = m_pYMgr->FindTrayByName(m_strName);
+    if (nSel != Invalid_v<size_t>)
     {
         AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
         m_editName.SetFocus();

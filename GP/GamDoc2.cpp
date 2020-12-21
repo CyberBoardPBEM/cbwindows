@@ -53,12 +53,11 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SaveHistoryMovesInFile(int nHistRec)
+void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
 {
     // Get history record.
     ASSERT(nHistRec < m_pHistTbl->GetNumHistRecords());
-    CHistRecord* pHist = m_pHistTbl->GetHistRecord(nHistRec);
-    ASSERT(pHist != NULL);
+    CHistRecord& pHist = m_pHistTbl->GetHistRecord(nHistRec);
 
     // Get the output file name
     CString strFilter;
@@ -96,7 +95,9 @@ void CGamDoc::SaveHistoryMovesInFile(int nHistRec)
 
     TRY
     {
-        SerializeMoveSet(ar, pHist);
+        CHistRecord* temp = &pHist;
+        SerializeMoveSet(ar, temp);
+        ASSERT(temp == &pHist);
 
         ar.Close();
         file.Close();
@@ -168,7 +169,7 @@ void CGamDoc::SaveRecordedMoves()
     if (m_pRcdMoves->IsRecordingCompoundMove())
         m_pRcdMoves->EndRecordingCompoundMove();
 
-    pHist->m_pMList = m_pRcdMoves;
+    pHist->m_pMList = std::move(m_pRcdMoves);
 
     TRY
     {
@@ -212,7 +213,7 @@ void CGamDoc::AddMovesToGameHistoryTable(CHistRecord* pHist)
         CMoveRecord* pRcd = pHist->m_pMList->GetAt(pos);
         if (pRcd->GetType() == CMoveRecord::mrecState)
         {
-            CMoveRecord* pRcd = (CMoveRecord*)m_pRcdMoves->RemoveHead();
+            CMoveRecord* pRcd = (CMoveRecord*)pHist->m_pMList->RemoveHead();
             delete pRcd;
         }
     }
@@ -222,7 +223,6 @@ void CGamDoc::AddMovesToGameHistoryTable(CHistRecord* pHist)
     m_pHistTbl->AddNewHistRecord(pHist);
 
     m_eState = stateRecording;
-    m_pRcdMoves = NULL;
     m_pMoves = NULL;            // Clear shadow pointer
 
     if (m_pBookMark)
@@ -265,8 +265,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
         return FALSE;
     }
 
-    delete m_pRcdMoves;
-    m_pRcdMoves = NULL;
+    m_pRcdMoves.reset();
 
     m_eState = stateRecording;
     m_pMoves = NULL;        // Clear shadow pointer
@@ -325,13 +324,13 @@ void CGamDoc::RecordPlotList(CPlayBoard* pPBrd)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordPieceMoveToTray(CTraySet* pYGrp, PieceID pid, int nPos)
+void CGamDoc::RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    int nYGrp = GetTrayManager()->FindTrayByPtr(pYGrp);
-    ASSERT(nYGrp != -1);
+    size_t nYGrp = GetTrayManager()->FindTrayByRef(pYGrp);
+    ASSERT(nYGrp != Invalid_v<size_t>);
     CTrayPieceMove* pRcd = new CTrayPieceMove(nYGrp, pid, nPos);
     m_pRcdMoves->AppendMoveRecord(pRcd);
 }
@@ -382,14 +381,25 @@ void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDeg
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordEventMessage(CString strMsg, BOOL bIsBoardEvent,
-        int nID, int nVal1, int nVal2 /* = 0*/)
+void CGamDoc::RecordEventMessage(CString strMsg,
+        BoardID nBoard, int x, int y)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     CEventMessageRcd* pRcd =
-        new CEventMessageRcd(strMsg, bIsBoardEvent, nID, nVal1, nVal2);
+        new CEventMessageRcd(strMsg, nBoard, x, y);
+    m_pRcdMoves->AppendMoveRecord(pRcd);
+}
+
+void CGamDoc::RecordEventMessage(CString strMsg,
+        size_t nTray, PieceID pid)
+{
+    if (!IsRecording()) return;
+    CreateRecordListIfRequired();
+    ASSERT(m_pRcdMoves != NULL);
+    CEventMessageRcd* pRcd =
+        new CEventMessageRcd(strMsg, nTray, pid);
     m_pRcdMoves->AppendMoveRecord(pRcd);
 }
 
@@ -509,9 +519,9 @@ void CGamDoc::CreateRecordListIfRequired()
     // moves is started.
     m_nSeedCarryOver = (UINT)GetTickCount();
 
-    m_pRcdMoves = new CMoveList;
+    m_pRcdMoves.reset(new CMoveList);
     if (m_eState == stateRecording)
-        m_pMoves = m_pRcdMoves;         // Set up shadow pointer
+        m_pMoves = m_pRcdMoves.get();         // Set up shadow pointer
 
     // First record is the board state. Required so the
     // move file can be used to reconstitute the game state and

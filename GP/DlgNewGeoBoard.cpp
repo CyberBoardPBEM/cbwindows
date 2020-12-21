@@ -112,16 +112,16 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
     // or rows along the flat side of the hex.
     CBoardManager* pBMgr = m_pDoc->GetBoardManager();
 
-    for (int i = 0; i < pBMgr->GetSize(); i++)
+    for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
     {
-        CBoard* pBrd = pBMgr->GetBoard(i);
-        CBoardArray* pBArray = pBrd->GetBoardArray();
+        CBoard& pBrd = pBMgr->GetBoard(i);
+        CBoardArray* pBArray = pBrd.GetBoardArray();
         CCellForm* pCellForm = pBArray->GetCellForm(fullScale);
 
         if (!(pCellForm->GetCellType() == cformHexFlat && (pBArray->GetCols() & 1) != 0 ||
               pCellForm->GetCellType() == cformHexPnt && (pBArray->GetRows() & 1) != 0))
             continue;                           // These maps aren't compliant at all
-        if (pBrd->GetSerialNumber() >= GEO_BOARD_SERNUM_BASE)
+        if (static_cast<WORD>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
 
         if (m_pRootMapCellForm != NULL)
@@ -135,8 +135,8 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             if (m_nCurrentColumn > 0 && pBArray->GetRows() != m_nCurrentRowHeight)
                 continue;
         }
-        int nItem = m_listBoard.AddString(pBrd->GetName());
-        m_listBoard.SetItemData(nItem, pBrd->GetSerialNumber());
+        int nItem = m_listBoard.AddString(pBrd.GetName());
+        m_listBoard.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(pBrd.GetSerialNumber())));
     }
     if (m_listBoard.GetCount() > 0)
         m_listBoard.SetCurSel(0);
@@ -206,13 +206,13 @@ void CCreateGeomorphicBoardDialog::OnDblClickBoardList()
 void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
 {
     ASSERT(m_listBoard.GetCurSel() >= 0);
-    DWORD dwItemData = m_listBoard.GetItemData(m_listBoard.GetCurSel());
+    BoardID dwItemData = static_cast<BoardID>(m_listBoard.GetItemData(m_listBoard.GetCurSel()));
 
     CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-    int nBrdNum = pBMgr->FindBoardBySerial((int)dwItemData);
-    ASSERT(nBrdNum != -1);
-    CBoard* pBrd = pBMgr->GetBoard(nBrdNum);
-    CBoardArray* pBArray = pBrd->GetBoardArray();
+    size_t nBrdNum = pBMgr->FindBoardBySerial(dwItemData);
+    ASSERT(nBrdNum != Invalid_v<size_t>);
+    CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
+    CBoardArray* pBArray = pBrd.GetBoardArray();
     m_pRootMapCellForm = pBArray->GetCellForm(fullScale);
 
     if (m_nMaxColumns == 0)
@@ -221,10 +221,10 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     if (m_nCurrentRowHeight == 0)
         m_nCurrentRowHeight = pBArray->GetRows();
 
-    CString strLabel = pBrd->GetName();
+    CString strLabel = pBrd.GetName();
 
     int nItem = m_listGeo.AddString(strLabel);
-    m_listGeo.SetItemData(nItem, dwItemData);
+    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(dwItemData)));
 
     m_nCurrentColumn++;
     if (m_nCurrentColumn == m_nMaxColumns)
@@ -245,7 +245,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
     str.LoadString(IDS_ROW_BREAK);
 
     int nItem = m_listGeo.AddString(str);
-    m_listGeo.SetItemData(nItem, -1);
+    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(nullBid)));
 
     m_nMaxColumns = m_tblColWidth.GetSize();
     m_nRowNumber++;
@@ -296,11 +296,10 @@ void CCreateGeomorphicBoardDialog::OnOK()
 
     for (int i = 0; i < m_listGeo.GetCount(); i++)
     {
-        DWORD dwItemData = m_listGeo.GetItemData(i);
-        if ((DWORD)-1 == dwItemData)
+        BoardID dwItemData = static_cast<BoardID>(m_listGeo.GetItemData(i));
+        if (nullBid == dwItemData)
             continue;                       // Skip the row break
-        int nBrdSer = (int)dwItemData;
-        m_pGeoBoard->AddElement(nBrdSer);
+        m_pGeoBoard->AddElement(dwItemData);
     }
 
     CDialog::OnOK();

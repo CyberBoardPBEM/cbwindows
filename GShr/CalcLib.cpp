@@ -197,11 +197,11 @@ BOOL StrDecimalChecked(const char **psp, int *pnVal, int *pnScale)
 // ----------------------------------------------- //
 // Helper for calculation allocation increments.
 
-UINT CalcAllocSize(UINT uiDesired, UINT uiBaseSize, UINT uiExtendSize)
+size_t CalcAllocSize(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize)
 {
     if (uiDesired < uiBaseSize)
         return uiBaseSize;
-    UINT uiVal = uiExtendSize * ((uiDesired - uiBaseSize) / uiExtendSize) +
+    size_t uiVal = uiExtendSize * ((uiDesired - uiBaseSize) / uiExtendSize) +
         uiBaseSize;
     if (uiVal < uiDesired)
         uiVal += uiExtendSize;

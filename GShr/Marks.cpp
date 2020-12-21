@@ -46,15 +46,8 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////
 
-const UINT tblBaseSize = 32;            // MarkDef table allocation strategy
-const UINT tblIncrSize = 8;
-
-///////////////////////////////////////////////////////////////////////
-
 CMarkManager::CMarkManager()
 {
-    m_pMarkTbl = NULL;
-    m_nTblSize = 0;
     m_pTMgr = NULL;
     // --------- //
     m_wReserved1 = 0;
@@ -63,38 +56,28 @@ CMarkManager::CMarkManager()
     m_wReserved4 = 0;
 }
 
-CMarkManager::~CMarkManager()
-{
-    if (m_pMarkTbl != NULL) GlobalFreePtr(m_pMarkTbl);
-    for (int i = 0; i < m_MSetTbl.GetSize(); i++)
-        delete (CMarkSet*)m_MSetTbl.GetAt(i);
-}
-
 void CMarkManager::Clear()
 {
-    if (m_pMarkTbl != NULL) GlobalFreePtr(m_pMarkTbl);
-    m_pMarkTbl = NULL;
-    m_nTblSize = 0;
-    for (int i = 0; i < m_MSetTbl.GetSize(); i++)
-        delete (CMarkSet*)m_MSetTbl.GetAt(i);
+    m_pMarkTbl.Clear();
+    m_MSetTbl.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-MarkDef* CMarkManager::GetMark(MarkID mid)
+MarkDef& CMarkManager::GetMark(MarkID mid)
 {
     ASSERT(m_pMarkTbl != NULL);
-    ASSERT(mid < m_nTblSize);
-    return &m_pMarkTbl[mid];
+    ASSERT(m_pMarkTbl.Valid(mid));
+    return m_pMarkTbl[mid];
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 CSize CMarkManager::GetMarkSize(MarkID mid)
 {
-    MarkDef* pDef = GetMark(mid);
+    MarkDef& pDef = GetMark(mid);
     CTile tile;
-    m_pTMgr->GetTile(pDef->m_tid, &tile);
+    m_pTMgr->GetTile(pDef.m_tid, &tile);
     return tile.GetSize();
 }
 
@@ -102,10 +85,10 @@ CSize CMarkManager::GetMarkSize(MarkID mid)
 
 BOOL CMarkManager::IsTileInUse(TileID tid)
 {
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pMarkTbl.GetSize(); i++)
     {
-        MarkDef* pDef = GetMark((MarkID)i);
-        if (pDef->m_tid == tid)
+        MarkDef& pDef = GetMark(static_cast<MarkID>(i));
+        if (pDef.m_tid == tid)
             return TRUE;
     }
     return FALSE;
@@ -114,13 +97,13 @@ BOOL CMarkManager::IsTileInUse(TileID tid)
 BOOL CMarkManager::PurgeMissingTileIDs(CGameElementStringMap* pMapString)
 {
     BOOL bMarkRemoved = FALSE;
-    for (UINT i = 0; i < m_nTblSize; i++)
+    for (size_t i = 0; i < m_pMarkTbl.GetSize(); i++)
     {
-        MarkDef* pDef = GetMark((MarkID)i);
-        TileID tid = pDef->m_tid;
+        MarkDef& pDef = GetMark(static_cast<MarkID>(i));
+        TileID tid = pDef.m_tid;
         if ((tid != nullTid && !m_pTMgr->IsTileIDValid(tid)))
         {
-            DeleteMark((MarkID)i, pMapString, TRUE);
+            DeleteMark(static_cast<MarkID>(i), pMapString, TRUE);
             bMarkRemoved = TRUE;
         }
     }
@@ -129,15 +112,15 @@ BOOL CMarkManager::PurgeMissingTileIDs(CGameElementStringMap* pMapString)
 
 ///////////////////////////////////////////////////////////////////////
 
-MarkID CMarkManager::CreateMark(int nMSet, TileID tid, WORD wFlags /* = 0 */)
+MarkID CMarkManager::CreateMark(size_t nMSet, TileID tid, WORD wFlags /* = 0 */)
 {
-    ASSERT(nMSet < m_MSetTbl.GetSize());
-    MarkID mid = CreateMarkIDEntry();
+    ASSERT(nMSet < m_MSetTbl.size());
+    MarkID mid = m_pMarkTbl.CreateIDEntry(nullptr);
 
-    MarkDef* pDef = &m_pMarkTbl[mid];
-    pDef->m_tid = tid;
-    pDef->m_flags = wFlags;
-    GetMarkSet(nMSet)->AddMarkID(mid);
+    MarkDef& pDef = m_pMarkTbl[mid];
+    pDef.m_tid = tid;
+    pDef.m_flags = wFlags;
+    GetMarkSet(nMSet).AddMarkID(mid);
     return mid;
 }
 
@@ -145,7 +128,7 @@ void CMarkManager::DeleteMark(MarkID mid, CGameElementStringMap* pMapString /* =
     BOOL bFromSetAlso /* = TRUE */)
 {
     ASSERT(m_pMarkTbl != NULL);
-    ASSERT(mid < m_nTblSize);
+    ASSERT(m_pMarkTbl.Valid(mid));
     ASSERT(!m_pMarkTbl[mid].IsEmpty());
     MarkDef* pDef = &m_pMarkTbl[mid];
 
@@ -158,112 +141,60 @@ void CMarkManager::DeleteMark(MarkID mid, CGameElementStringMap* pMapString /* =
         pMapString->RemoveKey(MakeMarkerElement(mid));
 }
 
-BOOL CMarkManager::IsMarkIDValid(MarkID mid)
+BOOL CMarkManager::IsMarkIDValid(MarkID mid) const
 {
-    for (int i = 0; i < GetNumMarkSets(); i++)
+    for (size_t i = 0; i < GetNumMarkSets(); i++)
     {
-        CMarkSet* pMSet = GetMarkSet(i);
-        if (pMSet->HasMarkID(mid))
+        const CMarkSet& pMSet = GetMarkSet(i);
+        if (pMSet.HasMarkID(mid))
             return TRUE;
     }
     return FALSE;
 }
 
-int CMarkManager::FindMarkerSetFromPieceID(MarkID mid)
+bool CMarkManager::IsMarkerInGroup(size_t nGroup, MarkID mid) const
 {
-    for (int i = 0; i < GetNumMarkSets(); i++)
-    {
-        CMarkSet* pMSet = GetMarkSet(i);
-        if (pMSet->HasMarkID(mid))
-            return i;
-    }
-    return -1;
-}
-
-BOOL CMarkManager::IsMarkerInGroup(int nGroup, MarkID mid)
-{
-    int nGroupActual = FindMarkInMarkSet(mid);
+    size_t nGroupActual = FindMarkInMarkSet(mid);
     return nGroup == nGroupActual;
 }
 
-int CMarkManager::FindMarkInMarkSet(MarkID mid)
+size_t CMarkManager::FindMarkInMarkSet(MarkID mid) const
 {
-    for (int i = 0; i < GetNumMarkSets(); i++)
+    for (size_t i = 0; i < GetNumMarkSets(); i++)
     {
-        CMarkSet* pMSet = GetMarkSet(i);
-        if (pMSet->HasMarkID(mid))
+        const CMarkSet& pMSet = GetMarkSet(i);
+        if (pMSet.HasMarkID(mid))
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
-int CMarkManager::CreateMarkSet(const char* pszName)
+size_t CMarkManager::CreateMarkSet(const char* pszName)
 {
-    CMarkSet* pMSet = new CMarkSet;
-    pMSet->SetName(pszName);
-    m_MSetTbl.Add(pMSet);
-    return m_MSetTbl.GetSize() - 1;
+    m_MSetTbl.resize(m_MSetTbl.size() + 1);
+    m_MSetTbl.back().SetName(pszName);
+    return m_MSetTbl.size() - 1;
 }
 
-void CMarkManager::DeleteMarkSet(int nMSet, CGameElementStringMap* pMapString /* = NULL */)
+void CMarkManager::DeleteMarkSet(size_t nMSet, CGameElementStringMap* pMapString /* = NULL */)
 {
-    CMarkSet* pMSet = GetMarkSet(nMSet);
-    CWordArray* pMids = pMSet->GetMarkIDTable();
-    for (int i = 0; i < pMids->GetSize(); i++)
-        DeleteMark((MarkID)pMids->GetAt(i), pMapString, FALSE);
-    m_MSetTbl.RemoveAt(nMSet);
-    delete pMSet;
+    CMarkSet& pMSet = GetMarkSet(nMSet);
+    const std::vector<MarkID>& pMids = pMSet.GetMarkIDTable();
+    for (size_t i = 0; i < pMids.size(); i++)
+        DeleteMark(pMids.at(i), pMapString, FALSE);
+    m_MSetTbl.erase(m_MSetTbl.begin() + value_preserving_cast<ptrdiff_t>(nMSet));
 }
 
 ///////////////////////////////////////////////////////////////////////
-
-void CMarkManager::ResizeMarkTable(UINT nEntsNeeded)
-{
-    UINT nNewSize = CalcAllocSize(nEntsNeeded, tblBaseSize, tblIncrSize);
-    if (m_pMarkTbl != NULL)
-    {
-        MarkDef * pNewTbl = (MarkDef *)GlobalReAllocPtr(
-            m_pMarkTbl, (DWORD)nNewSize * sizeof(MarkDef), GHND);
-        if (pNewTbl == NULL)
-            AfxThrowMemoryException();
-        m_pMarkTbl = pNewTbl;
-    }
-    else
-    {
-        m_pMarkTbl = (MarkDef *)GlobalAllocPtr(GHND,
-            (DWORD)nNewSize * sizeof(MarkDef));
-        if (m_pMarkTbl == NULL)
-            AfxThrowMemoryException();
-    }
-    for (UINT i = m_nTblSize; i < nNewSize; i++)
-        m_pMarkTbl[i].SetEmpty();
-    m_nTblSize = nNewSize;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-MarkID CMarkManager::CreateMarkIDEntry()
-{
-    // Allocate from empty entry if possible
-    for (UINT i = 0; i < m_nTblSize; i++)
-    {
-        if (m_pMarkTbl[i].IsEmpty())
-            return (MarkID)i;
-    }
-    // Get TileID from end of table.
-    MarkID newMid = m_nTblSize;
-    ResizeMarkTable(m_nTblSize + 1);
-    return newMid;
-}
 
 void CMarkManager::RemoveMarkIDFromMarkSets(MarkID mid)
 {
-    for (int i = 0; i < GetNumMarkSets(); i++)
+    for (size_t i = 0; i < GetNumMarkSets(); i++)
     {
-        CMarkSet* pMSet = GetMarkSet(i);
-        if (pMSet->HasMarkID(mid))
+        CMarkSet& pMSet = GetMarkSet(i);
+        if (pMSet.HasMarkID(mid))
         {
-            pMSet->RemoveMarkID(mid);
+            pMSet.RemoveMarkID(mid);
             return;
         }
     }
@@ -278,9 +209,7 @@ void CMarkManager::Serialize(CArchive& ar)
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        ar << (WORD)m_nTblSize;
-        for (UINT i = 0; i < m_nTblSize; i++)
-            m_pMarkTbl[i].Serialize(ar);
+        ar << m_pMarkTbl;
     }
     else
     {
@@ -289,14 +218,7 @@ void CMarkManager::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        WORD wTmp;
-        ar >> wTmp;
-        if (wTmp > 0)
-        {
-            ResizeMarkTable((UINT)wTmp);
-            for (UINT i = 0; i < (UINT)wTmp; i++)
-                m_pMarkTbl[i].Serialize(ar);
-        }
+        ar >> m_pMarkTbl;
     }
 #ifdef GPLAY
     if (CGameBox::GetLoadingVersion() > NumVersion(0, 53))
@@ -306,26 +228,50 @@ void CMarkManager::Serialize(CArchive& ar)
 #endif
         SerializeMarkSets(ar);
     else
-        m_MSetTbl.Serialize(ar);
+    {
+        /* N.B.:  https://docs.microsoft.com/en-us/cpp/mfc/reference/cptrarray-class?view=msvc-160
+                    says CPtrArray can't be serialized */
+        ASSERT(!"untested code");
+        if (ar.IsStoring())
+        {
+            CPtrArray temp;
+            for (size_t i = 0 ; i < m_MSetTbl.size() ; ++i)
+            {
+                temp.Add(&m_MSetTbl[i]);
+            }
+            temp.Serialize(ar);
+        }
+        else
+        {
+            CPtrArray temp;
+            temp.Serialize(ar);
+            m_MSetTbl.resize(value_preserving_cast<size_t>(temp.GetSize()));
+            for (INT_PTR i = 0 ; i < temp.GetSize() ; ++i)
+            {
+                CMarkSet* pSet = static_cast<CMarkSet*>(temp[i]);
+                m_MSetTbl[value_preserving_cast<size_t>(i)] = std::move(CheckedDeref(pSet));
+                delete pSet;
+            }
+        }
+    }
 }
 
 void CMarkManager::SerializeMarkSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetNumMarkSets();
-        for (int i = 0; i < GetNumMarkSets(); i++)
-            GetMarkSet(i)->Serialize(ar);
+        ar << value_preserving_cast<WORD>(GetNumMarkSets());
+        for (size_t i = 0; i < GetNumMarkSets(); i++)
+            GetMarkSet(i).Serialize(ar);
     }
     else
     {
         WORD wSize;
         ar >> wSize;
-        for (int i = 0; i < (int)wSize; i++)
+        m_MSetTbl.resize(value_preserving_cast<size_t>(wSize));
+        for (size_t i = 0; i < m_MSetTbl.size(); i++)
         {
-            CMarkSet* pMSet = new CMarkSet;
-            pMSet->Serialize(ar);
-            m_MSetTbl.Add(pMSet);
+            m_MSetTbl[i].Serialize(ar);
         }
     }
 }
@@ -333,11 +279,11 @@ void CMarkManager::SerializeMarkSets(CArchive& ar)
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CMarkSet::HasMarkID(MarkID mid)
+BOOL CMarkSet::HasMarkID(MarkID mid) const
 {
-    for (int i = 0; i < m_midTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_midTbl.size(); i++)
     {
-        if ((MarkID)m_midTbl.GetAt(i) == mid)
+        if (m_midTbl.at(i) == mid)
             return TRUE;
     }
     return FALSE;
@@ -345,37 +291,38 @@ BOOL CMarkSet::HasMarkID(MarkID mid)
 
 void CMarkSet::RemoveMarkID(MarkID mid)
 {
-    for (int i = 0; i < m_midTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_midTbl.size(); i++)
     {
-        if ((MarkID)m_midTbl.GetAt(i) == mid)
+        if (m_midTbl.at(i) == mid)
         {
-            m_midTbl.RemoveAt(i);
+            m_midTbl.erase(m_midTbl.begin() + value_preserving_cast<ptrdiff_t>(i));
             return;
         }
     }
 }
 
-void CMarkSet::AddMarkID(MarkID mid, int nPos /* = -1 */)
+void CMarkSet::AddMarkID(MarkID mid, size_t nPos /* = Invalid_v<size_t> */)
 {
-    if (nPos < 0)
-        m_midTbl.Add((WORD)mid);
+    if (nPos == Invalid_v<size_t>)
+        m_midTbl.push_back(mid);
     else
     {
-        ASSERT(nPos <= m_midTbl.GetSize());
-        m_midTbl.InsertAt(nPos, (WORD)mid);
+        ASSERT(nPos <= m_midTbl.size());
+        m_midTbl.insert(m_midTbl.begin() + value_preserving_cast<ptrdiff_t>(nPos), mid);
     }
 }
 
 #ifdef GPLAY
 // Entries are appended to the table.
-void CMarkSet::GetRandomSelection(int nCount, CWordArray& tblIDs, CGamDoc* pDoc)
+void CMarkSet::GetRandomSelection(size_t nCount, std::vector<MarkID>& tblIDs, CGamDoc* pDoc)
 {
     UINT nRandSeed = pDoc->GetRandomNumberSeed();
+    tblIDs.reserve(tblIDs.size() + nCount);
     while (nCount--)
     {
-        int nRandNum = CalcRandomNumberUsingSeed(0, GetMarkIDTable()->GetSize(),
+        int nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(GetMarkIDTable().size()),
             nRandSeed, &nRandSeed);
-        tblIDs.Add(GetMarkIDTable()->GetAt(nRandNum));
+        tblIDs.push_back(GetMarkIDTable().at(value_preserving_cast<size_t>(nRandNum)));
     }
     pDoc->SetRandomNumberSeed(nRandSeed);
 }
@@ -387,7 +334,7 @@ void CMarkSet::Serialize(CArchive& ar)
     {
         ar << m_strName;
         ar << (WORD)m_eMarkViz;         // File Ver 2.0
-        m_midTbl.Serialize(ar);
+        ar << m_midTbl;
     }
     else
     {
@@ -402,7 +349,7 @@ void CMarkSet::Serialize(CArchive& ar)
             ar >> wTmp;
             m_eMarkViz = (MarkerTrayViz)wTmp;
         }
-        m_midTbl.Serialize(ar);
+        ar >> m_midTbl;
     }
 }
 
@@ -417,8 +364,7 @@ void MarkDef::Serialize(CArchive& ar)
     }
     else
     {
-        WORD wTmp;
-        ar >> wTmp; m_tid = (TileID)wTmp;
+        ar >> m_tid;
 #ifdef GPLAY
         if (CGameBox::GetLoadingVersion() >= NumVersion(2, 0)) // V2.0
 #else

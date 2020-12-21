@@ -119,14 +119,9 @@ void CPieceNewDialog::SetupTileListbox(CComboBox *pCombo, CTileListBox *pList)
         return;
     }
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-    {
-        pList->SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    pList->SetItemMap(pLstMap);
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    pList->SetItemMap(&pLstMap);
 }
 
 void CPieceNewDialog::SetupTileSetNames(CComboBox* pCombo)
@@ -134,9 +129,9 @@ void CPieceNewDialog::SetupTileSetNames(CComboBox* pCombo)
     ASSERT(m_pTMgr);
     pCombo->ResetContent();
 
-    for (int i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        pCombo->AddString(m_pTMgr->GetTileSet(i)->GetName());
-    if (m_pTMgr->GetNumTileSets() > 0)
+    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
+        pCombo->AddString(m_pTMgr->GetTileSet(i).GetName());
+    if (!m_pTMgr->IsEmpty())
         pCombo->SetCurSel(0);           // Select the first entry
 }
 
@@ -174,19 +169,18 @@ void CPieceNewDialog::CreatePiece()
             GameElement ge = MakePieceElement(pid, 1);
             m_pDoc->GetGameStringMap().SetAt(ge, strText);
         }
-        PieceDef* pPce = m_pPMgr->GetPiece(pid);
-        ASSERT(pPce != NULL);
+        PieceDef& pPce = m_pPMgr->GetPiece(pid);
         // Initially clear this
-        pPce->m_flags &= ~PieceDef::flagShowOnlyOwnersToo;
+        pPce.m_flags &= ~PieceDef::flagShowOnlyOwnersToo;
         if (m_chkTopOnlyVisible.GetCheck() != 0)
         {
-            pPce->m_flags |= PieceDef::flagShowOnlyVisibleSide;
+            pPce.m_flags |= PieceDef::flagShowOnlyVisibleSide;
             // only makes sense if show only is activated
             if (m_chkTopOnlyOwnersToo.GetCheck() != 0)
-                pPce->m_flags |= PieceDef::flagShowOnlyOwnersToo;
+                pPce.m_flags |= PieceDef::flagShowOnlyOwnersToo;
         }
         else
-            pPce->m_flags &= ~PieceDef::flagShowOnlyVisibleSide;
+            pPce.m_flags &= ~PieceDef::flagShowOnlyVisibleSide;
     }
 
     RefreshPieceList();
@@ -205,24 +199,17 @@ TileID CPieceNewDialog::GetTileID(CComboBox *pCombo, CTileListBox *pList)
     if (nCurTile < 0)
         return nullTid;
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-        return nullTid;
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    return (TileID)pLstMap->GetAt(nCurTile);
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
 }
 
 void CPieceNewDialog::RefreshPieceList()
 {
-    CPieceSet* pPSet = m_pPMgr->GetPieceSet(m_nPSet);
-    if (pPSet == NULL)
-    {
-        m_listPieces.SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pPSet->GetPieceIDTable();
-    m_listPieces.SetItemMap(pLstMap);
+    CPieceSet& pPSet = m_pPMgr->GetPieceSet(m_nPSet);
+    const std::vector<PieceID>& pLstMap = pPSet.GetPieceIDTable();
+    m_listPieces.SetItemMap(&pLstMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -289,7 +276,7 @@ BOOL CPieceNewDialog::OnInitDialog()
     CString strTitle;
     GetWindowText(strTitle);
     strTitle += " - ";
-    strTitle += m_pPMgr->GetPieceSet(m_nPSet)->GetName();
+    strTitle += m_pPMgr->GetPieceSet(m_nPSet).GetName();
     SetWindowText(strTitle);
 
     m_listPieces.SetDocument(m_pDoc);

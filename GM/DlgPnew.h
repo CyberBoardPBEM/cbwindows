@@ -58,7 +58,7 @@ public:
 
     // ..Must be set by caller..
     CGamDoc*    m_pDoc;             // Pointer to document
-    int         m_nPSet;            // Number of piece set
+    size_t      m_nPSet;            // Number of piece set
 
 // Implementation
 protected:

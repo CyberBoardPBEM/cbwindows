@@ -29,6 +29,10 @@
 #include    "GamDoc.h"
 #endif
 
+#ifndef     _BOARD_H
+#include    "Board.h"
+#endif
+
 //////////////////////////////////////////////////////////////////
 
 class CPieceTable;
@@ -43,14 +47,18 @@ class CPlayBoard
 {
 public:
     CPlayBoard();
-    ~CPlayBoard();
+    CPlayBoard(const CPlayBoard&) = delete;
+    CPlayBoard& operator=(const CPlayBoard&) = delete;
+    CPlayBoard(CPlayBoard&& other) noexcept = default;
+    CPlayBoard& operator=(CPlayBoard&& other) noexcept = default;
+    ~CPlayBoard() = default;
 
 // Attributes
 public:
     void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
 
-    CDrawList* GetPieceList() { return m_pPceList; }
-    CDrawList* GetIndicatorList() { return m_pIndList; }
+    CDrawList* GetPieceList() { return m_pPceList.get(); }
+    CDrawList* GetIndicatorList() { return m_pIndList.get(); }
     BOOL GetPlotMoveMode() { return m_bPlotMode; }
     void SetPlotMoveMode(BOOL bPlotMode) { m_bPlotMode = bPlotMode; }
     void InitPlotStartPoint() { m_ptPrevPlot = CPoint(-1, -1); }
@@ -72,15 +80,15 @@ public:
     void SetLocksEnforced(BOOL bEnforce = TRUE) { m_bEnforceLocks = bEnforce; }
     BOOL GetLocksEnforced() { return m_bEnforceLocks; }
 
-    void SetBoard(CGeomorphicBoard* pGeoBoard, BOOL bInheritSettings = FALSE);
-    void SetBoard(CBoard* pBoard, BOOL bInheritSettings = FALSE);
+    void SetBoard(CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings = FALSE);
+    void SetBoard(CBoard& pBoard, BOOL bInheritSettings = FALSE);
     CBoard* GetBoard() { return m_pBoard; }
 
     COLORREF GetLineColor() { return m_crLineColor; }
     UINT     GetLineWidth() { return m_nLineWidth; }
 
-    int GetSerialNumber() { return m_nSerialNum; }
-    void SetSerialNumber(int nSerialNum) { m_nSerialNum = nSerialNum; }
+    BoardID GetSerialNumber() const { return m_nSerialNum; }
+    void SetSerialNumber(BoardID nSerialNum) { m_nSerialNum = nSerialNum; }
 
     DWORD GetOwnerMask() { return m_dwOwnerMask; }
     void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
@@ -111,9 +119,9 @@ public:
     // ------- //
     void ExpungePieceList();
     // ------- //
-    CPlayBoard* Clone(CGamDoc *pDoc);
-    void Restore(CGamDoc *pDoc, CPlayBoard* pBrd);
-    BOOL Compare(CPlayBoard* pBrd);
+    CPlayBoard Clone(CGamDoc *pDoc);
+    void Restore(CGamDoc *pDoc, CPlayBoard& pBrd);
+    bool Compare(CPlayBoard& pBrd);
     // ------- //
     void Serialize(CArchive& ar);
 
@@ -134,7 +142,7 @@ public:
     int     m_xStackStagger;    // Stacking stagger in x direction
     int     m_yStackStagger;    // Stacking stagger in y direction
 
-    int     m_nSerialNum;       // GameBox board serial number
+    BoardID m_nSerialNum;       // GameBox board serial number
 
     BOOL    m_bLockedDrawnBeneath; // Locked objects are to rendered under other objects
     BOOL    m_bPVisible;        // Pieces are visible
@@ -153,26 +161,76 @@ public:
 
     COLORREF m_crTextColor;     // Text color
     COLORREF m_crTextBoxColor;  // Text box background color
-    FontID   m_fontID;          // Text font
+    // allow default move operations to work right
+private:
+    class UniqueFontID
+    {
+    public:
+        UniqueFontID() noexcept = default;
+        UniqueFontID(const UniqueFontID&) = delete;
+        UniqueFontID& operator=(const UniqueFontID&) = delete;
+        UniqueFontID(UniqueFontID&& other) noexcept { fid = other.fid; other.fid = 0; }
+        UniqueFontID& operator=(UniqueFontID&& other) noexcept { std::swap(fid, other.fid); return *this; }
+        ~UniqueFontID() { Reset(); }
+        void Reset(FontID f = 0);
+        FontID Get() const { return fid; }
+    private:
+        FontID fid = 0;
+    };
+public:
+    UniqueFontID m_fontID;          // Text font
 
     DWORD    m_dwOwnerMask;     // Who can change it
     BOOL     m_bNonOwnerAccess; // Allow non-owner access to owned stuff.
                                 // ..Visiblity is still enforced.
 
-    CGeomorphicBoard* m_pGeoBoard; // If not NULL. Board is generated on each load
+    // allow default move operations to work right
+private:
+    class UniqueGeoBoard
+    {
+    public:
+        UniqueGeoBoard() noexcept = default;
+        UniqueGeoBoard(const UniqueGeoBoard&) = delete;
+        UniqueGeoBoard& operator=(const UniqueGeoBoard&) = delete;
+        UniqueGeoBoard(UniqueGeoBoard&& other) noexcept
+        {
+            pGeoBoard = other.pGeoBoard;
+            other.pGeoBoard = nullptr;
+            pDoc = other.pDoc;
+        }
+        UniqueGeoBoard& operator=(UniqueGeoBoard&& other) noexcept
+        {
+            std::swap(pGeoBoard, other.pGeoBoard);
+            std::swap(pDoc, other.pDoc);
+            return *this;
+        }
+        ~UniqueGeoBoard() { Reset(); }
+
+        explicit operator bool() const { return pGeoBoard; }
+
+        void Reset(CGeomorphicBoard* p = nullptr, CGamDoc** gd = nullptr);
+
+        CGeomorphicBoard* Get() const { return pGeoBoard; }
+        CGeomorphicBoard* operator->() { return Get(); }
+    private:
+        CGeomorphicBoard* pGeoBoard = nullptr;
+        CGamDoc** pDoc;
+    };
+public:
+    UniqueGeoBoard m_pGeoBoard; // If not NULL. Board is generated on each load
 
 // Implementation
 protected:
     void Clear();
-    CBoard* CreateGeoBoard();
+    CBoard& CreateGeoBoard();
 
 // Implementation
 protected:
     CPoint  m_ptPrevPlot;       // Previous selected move point
     BOOL    m_bPlotMode;        // Plot move mode
 
-    CDrawList* m_pPceList;      // Piece draw list
-    CDrawList* m_pIndList;      // Indicator draw list.
+    std::unique_ptr<CDrawList> m_pPceList;      // Piece draw list
+    std::unique_ptr<CDrawList> m_pIndList;      // Indicator draw list.
 
     // For reference only...
     CBoard*     m_pBoard;       // Loaded from Game Box
@@ -181,7 +239,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////
 
-class CPBoardManager : public CPtrArray
+class CPBoardManager : private std::vector<CPlayBoard>
 {
 public:
     CPBoardManager();
@@ -192,26 +250,28 @@ public:
     void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
     void SetBoardManager(CBoardManager* pBMgr) { m_pBMgr = pBMgr; }
     CBoardManager* GetBoardManager() { return m_pBMgr; }
-    int GetNumPBoards() { return GetSize(); }
-    CPlayBoard* GetPBoard(int nBrd) { return (CPlayBoard*)GetAt(nBrd); }
-    int  IssueGeoSerialNumber() { return m_nNextGeoSerialNum++; }
+    size_t GetNumPBoards() const { return size(); }
+    bool IsEmpty() const { return empty(); }
+    const CPlayBoard& GetPBoard(size_t nBrd) const { return at(nBrd); }
+    CPlayBoard& GetPBoard(size_t nBrd) { return const_cast<CPlayBoard&>(std::as_const(*this).GetPBoard(nBrd)); }
+    BoardID IssueGeoSerialNumber();
 
 // Operations
 public:
-    BOOL GetPBoardList(CWordArray& tblBrds);
-    void SetPBoardList(CWordArray& tblBrds);
-    void AddBoard(int nSerialNum, BOOL bInheritSettings = TRUE);
+    bool GetPBoardList(std::vector<BoardID>& tblBrds) const;
+    void SetPBoardList(const std::vector<BoardID>& tblBrds);
+    void AddBoard(BoardID nSerialNum, BOOL bInheritSettings = TRUE);
     void AddBoard(CBoard* pBoard, BOOL bInheritSettings = TRUE);
     void AddBoard(CGeomorphicBoard* pGeoBoard, BOOL bInheritSettings = TRUE);
-    void DeletePBoard(int nBrd);
-    void FindPBoardsNotInList(CWordArray& tblBrdSerNum, CPtrArray& tblNotInList);
+    void DeletePBoard(size_t nBrd);
+    void FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerNum, std::vector<CPlayBoard*>& tblNotInList);
 
     void ClearAllOwnership();
     void PropagateOwnerMaskToAllPieces(CGamDoc* pDoc);
 
-    int FindPBoardByPtr(CPlayBoard *pPBrd);
-    int FindPBoardBySerial(int nSerialNum);
-    CPlayBoard* GetPBoardBySerial(int nSerialNum);
+    size_t FindPBoardByRef(const CPlayBoard& pPBrd) const;
+    size_t FindPBoardBySerial(BoardID nSerialNum) const;
+    CPlayBoard* GetPBoardBySerial(BoardID nSerialNum);
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
     CPlayBoard* FindObjectOnBoard(ObjectID oid, CDrawObj** ppObj);
     CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj** ppObj = NULL);
@@ -219,8 +279,8 @@ public:
     CDrawObj* RemoveObjectID(ObjectID oid);    // Doesn't delete it
     // ------- //
     CPBoardManager* Clone(CGamDoc *pDoc);
-    void Restore(CGamDoc *pDoc, CPBoardManager* pMgr);
-    BOOL Compare(CPBoardManager* pMgr);
+    void Restore(CGamDoc *pDoc, CPBoardManager& pMgr);
+    bool Compare(CPBoardManager& pMgr);
     // ------- //
     void Serialize(CArchive& ar);
 
@@ -233,7 +293,7 @@ protected:
     CGamDoc*        m_pDoc;
     CBoardManager*  m_pBMgr;
 
-    int     m_nNextGeoSerialNum;        // Next geomorphic board serial number to issue (WAS m_wReserved1)
+    BoardID m_nNextGeoSerialNum;        // Next geomorphic board serial number to issue (WAS m_wReserved1)
     // WORD m_wReserved1;           // For future need (set to 0) // Now is m_nNextGeoSerialNum
     WORD    m_wReserved2;           // For future need (set to 0)
     WORD    m_wReserved3;           // For future need (set to 0)

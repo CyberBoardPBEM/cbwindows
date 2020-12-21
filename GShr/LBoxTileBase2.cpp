@@ -57,7 +57,7 @@ CTileBaseListBox2::CTileBaseListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
+unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
 {
     ASSERT(tid1 != nullTid);        // At least one tile needs to exist
 
@@ -74,16 +74,16 @@ int CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
         nHt2 = tile.GetHeight();
     }
     // Listbox lines can only be 255 pixels high.
-    int nHt = min(2 * tileBorder + max(nHt1, nHt2), 255);
+    int nHt = CB::min(2 * tileBorder + CB::max(nHt1, nHt2), 255);
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
-        nHt = max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return nHt;
+        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+    return value_preserving_cast<unsigned>(nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, int nItem, UINT nAction, UINT nState,
+void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT nState,
     CRect rctItem, TileID tid1, TileID tid2)
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
@@ -146,7 +146,7 @@ void CTileBaseListBox2::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int
 // Optionally draw debug code string for item. If bDrawIt is false,
 // x is advanced the size of the string anyway but nothing is rendered
 
-void CTileBaseListBox2::DrawItemDebugIDCode(CDC* pDC, int nItem, CRect rctItem, BOOL bDrawIt, int& x)
+void CTileBaseListBox2::DrawItemDebugIDCode(CDC* pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x)
 {
     if (m_bDisplayIDs)
     {
@@ -202,20 +202,20 @@ void CTileBaseListBox2::DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, in
     }
 }
 
-void CTileBaseListBox2::OnGetItemDebugString(int nItem, CString& str)
+void CTileBaseListBox2::OnGetItemDebugString(size_t nItem, CString& str)
 {
     str.Format("[%d] ", (DWORD)OnGetItemDebugIDCode(nItem));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight,
+void CTileBaseListBox2::GetTileRectsForItem(size_t nItem, TileID tidLeft, TileID tidRight,
     CRect& rctLeft, CRect& rctRight)
 {
     ASSERT(tidLeft != nullTid);
 
     CRect rctItem;
-    GetItemRect(nItem, &rctItem);
+    GetItemRect(value_preserving_cast<int>(nItem), &rctItem);
 
     rctRight.SetRectEmpty();                    // Initially empty the right rect
 

@@ -67,10 +67,10 @@ public:
 // Operations
 public:
     void DeselectAll();
-    void SelectTrayPiece(int nGroup, PieceID pid, LPCTSTR pszNotificationTip = NULL);
-    void ShowTrayIndex(int nGroup, int nPos);
+    void SelectTrayPiece(size_t nGroup, PieceID pid, LPCTSTR pszNotificationTip = NULL);
+    void ShowTrayIndex(size_t nGroup, int nPos);
 
-    void UpdatePaletteContents(CTraySet* pTray = NULL);
+    void UpdatePaletteContents(const CTraySet* pTray = NULL);
     void Serialize(CArchive &ar);
 
 // Implementation - vars
@@ -88,7 +88,7 @@ protected:
     // when only single entry should be shown in the Tray listbox.
     // This is pretty much a hack but is was easier than reworking
     // CGrafixListBox to support this oddball situation.
-    CWordArray  m_dummyArray;
+    std::vector<PieceID> m_dummyArray;
 
     // Enclosed controls....
     CComboBox    m_comboYGrp;
@@ -98,8 +98,8 @@ protected:
 
     void LoadTrayNameList();
     void UpdateTrayList();
-    int  GetSelectedTray();
-    int  FindTrayIndex(int nTrayNum);
+    size_t GetSelectedTray();
+    int  FindTrayIndex(size_t nTrayNum);
 
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.

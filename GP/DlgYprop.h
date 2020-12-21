@@ -49,7 +49,7 @@ public:
     BOOL    m_bRandomSel;
     //}}AFX_DATA
 
-    int             m_nYSel;
+    size_t          m_nYSel;
     int             m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
     BOOL            m_bNonOwnerAccess;
     BOOL            m_bEnforceVizForOwnerToo;

@@ -35,9 +35,10 @@ class   CTile;
 
 ////////////////////////////////////////////////////////////////////
 
-typedef     unsigned short TileID;
+const size_t maxTiles = 32000;
+typedef XxxxID<'T'> TileID;
 
-const       TileID nullTid = 0xFFFF;
+const       TileID nullTid = TileID(0xFFFF);
 
 const       UINT maxSheetHeight = 8192;     // Max y pixels allowed in a tile sheet
 
@@ -50,10 +51,17 @@ enum TileScale { fullScale = 1, halfScale = 2, smallScale = 4 };
 
 const int AllTileScales = fullScale | halfScale | smallScale;
 
+///////////////////////////////////////////////////////////////////////
+
+const size_t tileTblBaseSize = 32;            // TileDef table allocation strategy
+const size_t tileTblIncrSize = 8;
+
 ////////////////////////////////////////////////////////////////////
 
 struct TileLoc
 {
+    /* TODO:  m_nSheet should be size_t, but that breaks file
+        format compatibility, so change this on next new format */
     WORD    m_nSheet;               // (2.91 BYTE->WORD)
     int     m_nOffset;
     // ------ //
@@ -86,12 +94,16 @@ class CTileSheet
 public:
     CTileSheet();
     CTileSheet(CSize size);
-    ~CTileSheet();
+    CTileSheet(const CTileSheet&) = delete;
+    CTileSheet& operator=(const CTileSheet&) = delete;
+    CTileSheet(CTileSheet&&) noexcept = default;
+    CTileSheet& operator=(CTileSheet&&) noexcept = default;
+    ~CTileSheet() = default;
 // Attributes
 public:
-    int GetWidth() { return m_size.cx; }
-    int GetHeight() { return m_size.cy; }
-    CSize GetSize() { return CSize(m_size.cx, m_size.cy); }
+    int GetWidth() const { return m_size.cx; }
+    int GetHeight() const { return m_size.cy; }
+    CSize GetSize() const { return CSize(m_size.cx, m_size.cy); }
     void SetSize(CSize size);
 
     BOOL IsSameDimensions(CSize size) const { return size == m_size; }
@@ -117,7 +129,7 @@ protected:
 
 // Implementation - vars...
 protected:
-    CBitmap*    m_pBMap;        // Pointer to DDB
+    std::unique_ptr<CBitmap> m_pBMap;        // Pointer to DDB
     LPBYTE      m_pMem;         // Ptr to DIB Memory (DIBSection)
 
     CSize       m_size;         // Tile sizes for this sheet
@@ -139,24 +151,31 @@ class CTileSet
     friend class CGamDoc;
 // Attributes
 public:
-    CWordArray* GetTileIDTable() { return &m_tidTbl; }
-    BOOL HasTileID(TileID tid);
+    CTileSet() = default;
+    CTileSet(const CTileSet&) = delete;
+    CTileSet& operator=(const CTileSet&) = delete;
+    CTileSet(CTileSet&&) noexcept = default;
+    CTileSet& operator=(CTileSet&&) noexcept = default;
+    ~CTileSet() = default;
 
-    const char* GetName() const { return m_strName; }
+    const std::vector<TileID>& GetTileIDTable() const { return m_tidTbl; }
+    BOOL HasTileID(TileID tid) const;
+
+    const char* GetName() const { return m_strName.c_str(); }
     void SetName(const char *pszName) { m_strName = pszName; }
 
 // Operations
 public:
-    void AddTileID(TileID tid, int nPos = -1);
+    void AddTileID(TileID tid, size_t nPos = Invalid_v<size_t>);
     void RemoveTileID(TileID tid);
-    int  FindTileID(TileID tid);
+    size_t FindTileID(TileID tid) const;
 
     void Serialize(CArchive& archive);
 
 // Implementation
 protected:
-    CString     m_strName;
-    CWordArray  m_tidTbl;       // TileIDs in this set.
+    std::string m_strName;
+    std::vector<TileID> m_tidTbl;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -166,7 +185,9 @@ class CTileManager
     friend class CGamDoc;
 public:
     CTileManager();
-    ~CTileManager();
+    CTileManager(const CTileManager&) = delete;
+    CTileManager& operator=(const CTileManager&) = delete;
+    ~CTileManager() = default;
 
 // Attributes
 public:
@@ -175,13 +196,16 @@ public:
     COLORREF GetTransparentColor() const { return m_crTrans; }
 
     // Tile Set attributes
-    int GetNumTileSets() const { return m_TSetTbl.GetSize(); }
-    CTileSet* GetTileSet(UINT nTSet)
+    size_t GetNumTileSets() const { return m_TSetTbl.size(); }
+    bool IsEmpty() const { return m_TSetTbl.empty(); }
+    const CTileSet& GetTileSet(size_t nTSet) const
     {
-        if (m_TSetTbl.GetSize() == 0)
-            return NULL;
-        else
-            return (CTileSet*)m_TSetTbl.GetAt(nTSet);
+        ASSERT(nTSet < m_TSetTbl.size());
+        return m_TSetTbl.at(nTSet);
+    }
+    CTileSet& GetTileSet(size_t nTSet)
+    {
+        return const_cast<CTileSet&>(std::as_const(*this).GetTileSet(nTSet));
     }
 
     // Access routines for all Tile Editor info...
@@ -200,27 +224,27 @@ public:
 public:
     // Tile Ops.
     void GetTile(TileID tid, CTile* pTile, TileScale eScale = fullScale);
-    TileID CreateTile(int nTSet, CSize sFull, CSize sHalf,
-        COLORREF crSmall, int nPos = -1);
+    TileID CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
+        COLORREF crSmall, size_t nPos = Invalid_v<size_t>);
     void DeleteTile(TileID tid, BOOL bFromSetAlso = TRUE);
     void SetSmallTileColor(TileID tid, COLORREF cr);
     BOOL IsTileIDValid(TileID tid);
-    int FindTileSetFromTileID(TileID tid);
-    void MoveTileIDsToTileSet(int nTSet, CWordArray& tidList, int nPos = -1);
+    size_t FindTileSetFromTileID(TileID tid) const;
+    void MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>& tidList, size_t nPos = Invalid_v<size_t>);
 
     // Nulls aren't updated...
     void UpdateTile(TileID tid, CBitmap* bmFull, CBitmap* bmHalf,
         COLORREF crSmall);
 
     // Tile Set Ops.
-    int CreateTileSet(const char* pszName);
-    int FindNamedTileSet(const char* pszName);
-    void DeleteTileSet(int nSet);
+    size_t CreateTileSet(const char* pszName);
+    size_t FindNamedTileSet(const char* pszName) const;
+    void DeleteTileSet(size_t nTSet);
 
     // ---------- //
-    void CopyTileImagesToArchive(CArchive& ar, CWordArray& tidsList);
-    void CreateTilesFromTileImageArchive(CArchive& ar, int nTSet,
-            CWordArray* pTidTbl  = NULL, int nPos = -1);
+    void CopyTileImagesToArchive(CArchive& ar, const std::vector<TileID>& tidsList);
+    void CreateTilesFromTileImageArchive(CArchive& ar, size_t nTSet,
+            std::vector<TileID>* pTidTbl  = NULL, size_t nPos = Invalid_v<size_t>);
     // ---------- //
     void Serialize(CArchive& archive);
     void SerializeTileSets(CArchive& ar);
@@ -233,8 +257,9 @@ public:
 
 // Implementation
 protected:
-    TileDef *   m_pTileTbl;         // Global def'ed
-    UINT        m_nTblSize;         // Number of alloc'ed ents in tile table
+    XxxxIDTable<TileID, TileDef,
+                maxTiles, tileTblBaseSize, tileTblIncrSize,
+                false> m_pTileTbl;
     COLORREF    m_crTrans;          // Transparency color for all tiles
     WORD        m_wReserved1;       // For future need (set to 0)
     WORD        m_wReserved2;       // For future need (set to 0)
@@ -248,19 +273,17 @@ protected:
     UINT        m_nLineWidth;       // Current line width
     FontID      m_fontID;           // Current font
     // ------- //
-    CPtrArray   m_TSetTbl;          // Table of tile set pointers
-    CPtrArray   m_TShtTbl;          // Table of tile sheet pointers
+    std::vector<CTileSet> m_TSetTbl;
+    std::vector<CTileSheet> m_TShtTbl;
     // ------- //
     void Clear();
-    TileID CreateTileIDEntry();
-    void ResizeTileTable(UINT nEntsNeeded);
-    void CreateTileOnSheet(CSize size, TileLoc* pLoc);
-    void DeleteTileFromSheet(TileLoc *pLoc);
-    void AdjustTileLoc(TileLoc *pLoc, int nSht, int yLoc, int cy);
-    int GetSheetForTile(CSize size);
+    void CreateTileOnSheet(CSize size, TileLoc& pLoc);
+    void DeleteTileFromSheet(TileLoc& pLoc);
+    void AdjustTileLoc(TileLoc& pLoc, size_t nSht, int yLoc, int cy);
+    size_t GetSheetForTile(CSize size);
     void RemoveTileIDFromTileSets(TileID tid);
-    CTileSheet* GetTileSheet(int nSheet)
-        { return (CTileSheet*)m_TShtTbl.GetAt(nSheet); }
+    CTileSheet& GetTileSheet(size_t nSheet)
+        { return m_TShtTbl.at(nSheet); }
 };
 
 ////////////////////////////////////////////////////////////////////

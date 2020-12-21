@@ -418,10 +418,10 @@ CRect CSelPoly::GetRect()
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
     for (int i = 0; i < m_nPnts; i++)
     {
-        xmin = min(xmin, m_pPnts[i].x);
-        xmax = max(xmax, m_pPnts[i].x);
-        ymin = min(ymin, m_pPnts[i].y);
-        ymax = max(ymax, m_pPnts[i].y);
+        xmin = CB::min(xmin, m_pPnts[i].x);
+        xmax = CB::max(xmax, m_pPnts[i].x);
+        ymin = CB::min(ymin, m_pPnts[i].y);
+        ymax = CB::max(ymax, m_pPnts[i].y);
     }
     rct.SetRect(xmin, ymin, xmax, ymax);
     return rct;
@@ -668,10 +668,10 @@ void CSelList::Open()
 // Assumes RECTs are normalized!!
 void CbUnionRect(RECT* pRctDst, RECT* pRctSrc1, RECT* pRctSrc2)
 {
-    pRctDst->left = min(pRctSrc1->left, pRctSrc2->left);
-    pRctDst->top = min(pRctSrc1->top, pRctSrc2->top);
-    pRctDst->right = max(pRctSrc1->right, pRctSrc2->right);
-    pRctDst->bottom = max(pRctSrc1->bottom, pRctSrc2->bottom);
+    pRctDst->left = CB::min(pRctSrc1->left, pRctSrc2->left);
+    pRctDst->top = CB::min(pRctSrc1->top, pRctSrc2->top);
+    pRctDst->right = CB::max(pRctSrc1->right, pRctSrc2->right);
+    pRctDst->bottom = CB::max(pRctSrc1->bottom, pRctSrc2->bottom);
 }
 
 void CSelList::CalcEnclosingRect()

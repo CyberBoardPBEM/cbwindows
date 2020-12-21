@@ -36,11 +36,11 @@ static char THIS_FILE[] = __FILE__;
 
 //////////////////////////////////////////////////////////////////
 
-BOOL CTileSet::HasTileID(TileID tid)
+BOOL CTileSet::HasTileID(TileID tid) const
 {
-    for (int i = 0; i < m_tidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_tidTbl.size(); i++)
     {
-        if ((TileID)m_tidTbl.GetAt(i) == tid)
+        if (m_tidTbl.at(i) == tid)
             return TRUE;
     }
     return FALSE;
@@ -48,44 +48,49 @@ BOOL CTileSet::HasTileID(TileID tid)
 
 void CTileSet::RemoveTileID(TileID tid)
 {
-    for (int i = 0; i < m_tidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_tidTbl.size(); i++)
     {
-        if ((TileID)m_tidTbl.GetAt(i) == tid)
+        if (m_tidTbl.at(i) == tid)
         {
-            m_tidTbl.RemoveAt(i);
+            m_tidTbl.erase(m_tidTbl.begin() + value_preserving_cast<ptrdiff_t>(i));
             return;
         }
     }
 }
 
-int CTileSet::FindTileID(TileID tid)
+size_t CTileSet::FindTileID(TileID tid) const
 {
-    for (int i = 0; i < m_tidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_tidTbl.size(); i++)
     {
-        if ((TileID)m_tidTbl.GetAt(i) == tid)
+        if (m_tidTbl.at(i) == tid)
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
-void CTileSet::AddTileID(TileID tid, int nPos /* = -1 */)
+void CTileSet::AddTileID(TileID tid, size_t nPos /* = Invalid_v<size_t> */)
 {
-    if (nPos < 0)
-        m_tidTbl.Add((WORD)tid);
+    if (nPos == Invalid_v<size_t>)
+        m_tidTbl.push_back(tid);
     else
     {
-        ASSERT(nPos <= m_tidTbl.GetSize());
-        m_tidTbl.InsertAt(nPos, (WORD)tid);
+        ASSERT(nPos <= m_tidTbl.size());
+        m_tidTbl.insert(m_tidTbl.begin() + value_preserving_cast<ptrdiff_t>(nPos), tid);
     }
 }
 
 void CTileSet::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
+    {
         ar << m_strName;
+        ar << m_tidTbl;
+    }
     else
+    {
         ar >> m_strName;
-    m_tidTbl.Serialize(ar);
+        ar >> m_tidTbl;
+    }
 }
 
 

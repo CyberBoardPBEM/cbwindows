@@ -923,8 +923,8 @@ void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
 {
     BITMAP bminfo;
     pBMap->GetObject(sizeof(BITMAP), &bminfo);
-    int iBltWd = min(iNewX, bminfo.bmWidth);
-    int iBltHt = min(iNewY, bminfo.bmHeight);
+    int iBltWd = CB::min(iNewX, bminfo.bmWidth);
+    int iBltHt = CB::min(iNewY, bminfo.bmHeight);
 
     CBitmap bmap;
     bminfo.bmHeight = iNewY;

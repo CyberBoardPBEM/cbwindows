@@ -104,8 +104,8 @@ public:
     void SetTileManager(CTileManager *pTsa) { m_pTsa = pTsa; }
     CTileManager *GetTileManager() { return m_pTsa; }
     // ------ //
-    int GetRows() { return m_nRows; }
-    int GetCols() { return m_nCols; }
+    int GetRows() const { return m_nRows; }
+    int GetCols() const { return m_nCols; }
     int GetWidth(TileScale eScale);     // Board's pixel width
     int GetHeight(TileScale eScale);    // Board's pixel height
     CSize GetSize(TileScale eScale);    // Board's pixel size

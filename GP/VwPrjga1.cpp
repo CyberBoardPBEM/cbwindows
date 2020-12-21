@@ -90,7 +90,7 @@ void CGamProjView::DoBoardProperty()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    int nBrd = m_listProj.GetItemSourceCode(nSel);
+    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
     pDoc->DoBoardProperties(nBrd);
 }
 
@@ -100,9 +100,9 @@ void CGamProjView::DoBoardView()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    int nBrd = m_listProj.GetItemSourceCode(nSel);
+    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard* pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
     CView* pView = pDoc->FindPBoardView(pPBoard);
     if (pView != NULL)
     {
@@ -115,7 +115,7 @@ void CGamProjView::DoBoardView()
     {
         CString strTitle;
         m_listProj.GetItemText(nSel, strTitle);
-        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, pPBoard);
+        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
 
@@ -187,7 +187,7 @@ void CGamProjView::DoHistoryReplay()
     }
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    int nHist = m_listProj.GetItemSourceCode(nSel);
+    size_t nHist = m_listProj.GetItemSourceCode(nSel);
     m_listProj.MarkGroupItem(grpHist, nHist);   // Pre mark line
     if (!pDoc->LoadAndActivateHistory(nHist))
     {
@@ -218,7 +218,7 @@ void CGamProjView::DoHistoryExport()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    int nHist = m_listProj.GetItemSourceCode(nSel);
+    size_t nHist = m_listProj.GetItemSourceCode(nSel);
     pDoc->SaveHistoryMovesInFile(nHist);
 }
 
@@ -245,12 +245,12 @@ void CGamProjView::DoUpdateHistoryInfo()
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    int nHist = m_listProj.GetItemSourceCode(nSel);
+    size_t nHist = m_listProj.GetItemSourceCode(nSel);
     CHistoryTable* pHistTbl = pDoc->GetHistoryTable();
     ASSERT(pHistTbl);
-    CHistRecord* pHRec = pHistTbl->GetHistRecord(nHist);
+    CHistRecord& pHRec = pHistTbl->GetHistRecord(nHist);
 
-    m_editInfo.SetWindowText(pHRec->m_strDescr);
+    m_editInfo.SetWindowText(pHRec.m_strDescr);
 }
 
 

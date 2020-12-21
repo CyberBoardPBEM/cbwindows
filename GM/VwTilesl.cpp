@@ -121,7 +121,7 @@ void CTileSelView::OnInitialUpdate()
     m_pTileMgr = GetDocument()->GetTileManager();
     ASSERT(m_pTileMgr != NULL);
     CScrollView::OnInitialUpdate();
-    m_tid = (TileID)(DWORD)GetDocument()->GetCreateParameter();
+    m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument()->GetCreateParameter()));
     ASSERT(m_tid != nullTid);
 
     CTile tile;
@@ -159,7 +159,7 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
     if (wHint == HINT_TILEDELETED)
     {
-        if ((TileID)HIWORD(lHint) == m_tid)
+        if (static_cast<TileID>(HIWORD(lHint)) == m_tid)
         {
             m_bNoUpdate = TRUE;
             CFrameWnd* pFrm = GetParentFrame();
@@ -297,7 +297,7 @@ void CTileSelView::UpdateDocumentTiles()
 
     // Finally handle various notifications
     pDoc->UpdateAllViews(this,
-        MAKELPARAM(HINT_TILEMODIFIED, m_tid), NULL);
+        MAKELPARAM(HINT_TILEMODIFIED, static_cast<WORD>(m_tid)), NULL);
     pDoc->SetModifiedFlag();
 }
 

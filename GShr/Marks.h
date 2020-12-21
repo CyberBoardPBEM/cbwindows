@@ -31,8 +31,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
-const int maxMarks = 32000;
-typedef unsigned short MarkID;
+const size_t maxMarks = 32000;
+typedef XxxxID<'M'> MarkID;
+
+const       MarkID nullMid = MarkID(0xFFFF);
+
+//////////////////////////////////////////////////////////////////////
+
+const size_t markTblBaseSize = 32;            // MarkDef table allocation strategy
+const size_t markTblIncrSize = 8;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -67,12 +74,17 @@ class CMarkSet
     friend class CGamDoc;
 // Attributes
 public:
-    CMarkSet() { m_eMarkViz = mtrayVizNormal; }
+    CMarkSet() noexcept { m_eMarkViz = mtrayVizNormal; }
+    CMarkSet(const CMarkSet&) = delete;
+    CMarkSet& operator=(const CMarkSet&) = delete;
+    CMarkSet(CMarkSet&&) noexcept = default;
+    CMarkSet& operator=(CMarkSet&&) noexcept = default;
+    ~CMarkSet() = default;
 
-    CWordArray* GetMarkIDTable() { return &m_midTbl; }
-    BOOL HasMarkID(MarkID mid);
+    const std::vector<MarkID>& GetMarkIDTable() const { return m_midTbl; }
+    BOOL HasMarkID(MarkID mid) const;
 
-    const char* GetName() const { return m_strName; }
+    const char* GetName() const { return m_strName.c_str(); }
     void SetName(const char *pszName) { m_strName = pszName; }
 
     BOOL IsRandomMarkerPull() { return m_eMarkViz != mtrayVizNormal; }
@@ -81,20 +93,20 @@ public:
 
 // Operations
 public:
-    void AddMarkID(MarkID mid, int nPos = -1);
+    void AddMarkID(MarkID mid, size_t nPos = Invalid_v<size_t>);
     void RemoveMarkID(MarkID mid);
 
 #ifdef GPLAY
     // Entries are appended to the table.
-    void GetRandomSelection(int nCount, CWordArray& tblIDs, CGamDoc* pDoc);
+    void GetRandomSelection(size_t nCount, std::vector<MarkID>& tblIDs, CGamDoc* pDoc);
 #endif
 
     void Serialize(CArchive& ar);
 
 // Implementation
 protected:
-    CString     m_strName;
-    CWordArray  m_midTbl;       // MarkIDs in this set.
+    std::string m_strName;
+    std::vector<MarkID> m_midTbl;
     MarkerTrayViz m_eMarkViz;   // Content visibility flags // V2.0
 };
 
@@ -107,37 +119,41 @@ class CMarkManager
     friend class CGamDoc;
 public:
     CMarkManager();
-    ~CMarkManager();
+    ~CMarkManager() = default;
 
 // Attributes
 public:
 
     // Mark Set attributes
-    int GetNumMarkSets() const { return m_MSetTbl.GetSize(); }
-    CMarkSet* GetMarkSet(UINT nMSet)
-        { return (CMarkSet*)m_MSetTbl.GetAt(nMSet); }
+    size_t GetNumMarkSets() const { return m_MSetTbl.size(); }
+    bool IsEmpty() const { return m_MSetTbl.empty(); }
+    const CMarkSet& GetMarkSet(size_t nMSet) const
+        { return m_MSetTbl.at(nMSet); }
+    CMarkSet& GetMarkSet(size_t nMSet)
+    {
+        return const_cast<CMarkSet&>(std::as_const(*this).GetMarkSet(nMSet));
+    }
     void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
     CTileManager* GetTileManager() { return m_pTMgr; }
 
 // Operations
 public:
-    MarkDef* GetMark(MarkID mid);
-    BOOL IsMarkIDValid(MarkID mid);
-    int FindMarkerSetFromPieceID(MarkID mid);
-    MarkID CreateMark(int nMSet, TileID tid, WORD wFlags = 0);
+    MarkDef& GetMark(MarkID mid);
+    BOOL IsMarkIDValid(MarkID mid) const;
+    MarkID CreateMark(size_t nMSet, TileID tid, WORD wFlags = 0);
     void DeleteMark(MarkID mid, CGameElementStringMap* pMapString = NULL,
         BOOL bFromSetAlso = TRUE);
     // ------- //
-    BOOL IsMarkerInGroup(int nGroup, MarkID mid);
-    int  FindMarkInMarkSet(MarkID mid);
+    bool IsMarkerInGroup(size_t nGroup, MarkID mid) const;
+    size_t FindMarkInMarkSet(MarkID mid) const;
     // ------- //
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapString = NULL);
     BOOL IsTileInUse(TileID tid);
     // ------- //
     CSize GetMarkSize(MarkID mid);
     // ------- //
-    int CreateMarkSet(const char* pszName);
-    void DeleteMarkSet(int nMSet, CGameElementStringMap* pMapString = NULL);
+    size_t CreateMarkSet(const char* pszName);
+    void DeleteMarkSet(size_t nMSet, CGameElementStringMap* pMapString = NULL);
     void Clear();
     // ---------- //
     void Serialize(CArchive& ar);
@@ -145,9 +161,10 @@ public:
 
 // Implementation
 protected:
-    MarkDef*    m_pMarkTbl; // Global def'ed
-    UINT        m_nTblSize;     // Number of alloc'ed ents in Mark table
-    CPtrArray   m_MSetTbl;      // Table of piece set pointers
+    XxxxIDTable<MarkID, MarkDef,
+                maxMarks, markTblBaseSize, markTblIncrSize,
+                true> m_pMarkTbl;
+    std::vector<CMarkSet> m_MSetTbl;
     WORD        m_wReserved1;   // For future need (set to 0)
     WORD        m_wReserved2;   // For future need (set to 0)
     WORD        m_wReserved3;   // For future need (set to 0)
@@ -155,8 +172,6 @@ protected:
     // ------- //
     CTileManager* m_pTMgr;          // Supporting tile manager
     // ------- //
-    MarkID CreateMarkIDEntry();
-    void ResizeMarkTable(UINT nEntsNeeded);
     void RemoveMarkIDFromMarkSets(MarkID mid);
 };
 

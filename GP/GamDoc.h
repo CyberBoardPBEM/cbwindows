@@ -57,9 +57,16 @@
 #include    "DrawObj.h"
 #endif
 
+#ifndef     _BOARD_H
+#include    "Board.h"
+#endif
+
+#ifndef     _MOVEMGR_H
+#include    "MoveMgr.h"
+#endif
+
 ////////////////////////////////////////////////////////////////
 
-class CMoveList;
 class CGameBox;
 class CTrayManager;
 class CPieceTable;
@@ -170,7 +177,7 @@ public:
 
     BOOL IsRecordingCompoundMove();
 
-    int  GetCurrentHistoryRecNum() { return m_nCurHist; }
+    size_t GetCurrentHistoryRecNum() const { return m_nCurHist; }
 
     // Called by view being constructed...
     void* GetNewViewParameter() { return m_pvParam; }
@@ -184,7 +191,7 @@ public:
     CTrayManager* GetTrayManager() { return m_pYMgr; }
     CPBoardManager* GetPBoardManager() { return m_pPBMgr; }
     CPlayerManager* GetPlayerManager() { return m_pPlayerMgr; }
-    CMoveList* GetRecordMoveList() { return m_pRcdMoves; }
+    CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
     CHistoryTable* GetHistoryTable() { return m_pHistTbl; }
     CGameElementStringMap* GetGameStringMap() { return &m_mapStrings; }
 
@@ -198,9 +205,9 @@ public:
 public:
     BOOL CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
         LPVOID lpvCreateParam);
-    CView* FindPBoardView(CPlayBoard* pPBoard);
-    CView* MakeSurePBoardVisible(CPlayBoard* pPBoard);
-    void GetDocumentFrameList(CPtrArray& tblFrames);
+    CView* FindPBoardView(const CPlayBoard& pPBoard);
+    CView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
+    void GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames);
 
     BOOL IsWindowStateAvailable() { return m_pWinState != NULL; }
     void RestoreWindowState();
@@ -242,7 +249,7 @@ public:
 
     // Recording support methods...
     void SaveRecordedMoves();
-    void SaveHistoryMovesInFile(int nHistRec);
+    void SaveHistoryMovesInFile(size_t nHistRec);
     void TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove = FALSE);
     void AddMovesToGameHistoryTable(CHistRecord* pHist);
     BOOL DiscardCurrentRecording(BOOL bPrompt = TRUE);
@@ -251,7 +258,7 @@ public:
 
     void RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, CPoint pnt,
         PlacePos ePos = placeDefault);
-    void RecordPieceMoveToTray(CTraySet* pYGrp, PieceID pid, int nPos);
+    void RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos);
     void RecordPieceSetSide(PieceID pid, BOOL bTopUp);
     void RecordPieceSetFacing(PieceID pid, int nFacingDegCW);
     void RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask);
@@ -267,21 +274,23 @@ public:
     void RecordCompoundMoveDiscard();
     void RecordObjectSetText(GameElement elem, LPCTSTR pszObjText);
     void RecordObjectLockdown(GameElement elem, BOOL bLockState);
-    void RecordEventMessage(CString strMsg, BOOL bIsBoardEvent, int nID,
-        int nVal1, int nVal2 = 0);
+    void RecordEventMessage(CString strMsg, BoardID nBoard,
+        int x, int y);
+    void RecordEventMessage(CString strMsg, size_t nTray,
+        PieceID pid);
 
     // Document data manipulations methods...
     void PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd);
-    void PlacePieceInTray(PieceID pid, CTraySet* pYGrp, int nPos = -1);
-    void PlacePieceListOnBoard(CPoint pnt, CWordArray *pTbl,
+    void PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
+    void PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
-    int  PlacePieceListInTray(CWordArray *pTbl, CTraySet* pYGrp, int nPos = -1);
-    int  PlaceObjectListInTray(CPtrList *pTbl, CTraySet* pYGrp, int nPos = -1);
+    size_t PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
+    size_t PlaceObjectListInTray(const CPtrList& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
     void PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
         CPlayBoard *pPBrd, PlacePos ePos = placeDefault);
-    void PlaceObjectTableOnBoard(CPoint pnt, CPtrArray *pTbl,
+    void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
-    void PlaceObjectTableOnBoard(CPtrArray *pTbl, CPlayBoard *pPBrd);
+    void PlaceObjectTableOnBoard(const std::vector<CDrawObj*>& pTbl, CPlayBoard *pPBrd);
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj* pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
@@ -297,7 +306,7 @@ public:
     void ChangeMarkerFacingOnBoard(CMarkObj* pObj, CPlayBoard* pPBrd,
         int nFacingDegCW);
     void SetPieceOwnership(PieceID pid, DWORD dwOwnerMask);
-    void SetPieceOwnershipTable(CWordArray* pTblPieces, DWORD dwOwnerMask);
+    void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask);
 
     CDrawObj* CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         ObjectID dwObjID = ObjectID());
@@ -327,13 +336,13 @@ public:
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
 
     // Support for playback...
-    void EnsureBoardVisible(CPlayBoard* pPBoard);
-    void EnsureBoardLocationVisible(CPlayBoard* pPBoard, CPoint point);
-    void EnsureTrayIndexVisible(CTraySet* pYSet, int nPos);
-    void SelectObjectOnBoard(CPlayBoard* pPBoard, CDrawObj* pObj);
-    void SelectObjectListOnBoard(CPlayBoard* pPBoard, CPtrList* pList);
-    void SelectTrayItem(CTraySet* pYSet, PieceID pid, UINT nResourceID);
-    void SelectTrayItem(CTraySet* pYSet, PieceID pid, LPCTSTR pszNotificationTip = NULL);
+    void EnsureBoardVisible(CPlayBoard& pPBoard);
+    void EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point);
+    void EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos);
+    void SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj);
+    void SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList);
+    void SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID);
+    void SelectTrayItem(const CTraySet& pYSet, PieceID pid, LPCTSTR pszNotificationTip = NULL);
     void SelectMarkerPaletteItem(MarkID mid);
     void RestartMoves();
     void FinishHistoryPlayback();
@@ -345,13 +354,13 @@ public:
     void IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size);
     void FlushAllSelections();
     void FlushAllIndicators();
-    void UpdateAllBoardIndicators(CPlayBoard* pPBrd);
-    void IndicateTextTipOnBoard(CPlayBoard* pPBoard, CPoint pointWorkspace, UINT nResID);
-    void IndicateTextTipOnBoard(CPlayBoard* pPBoard, CPoint pointWorkspace,LPCTSTR pszStr);
+    void UpdateAllBoardIndicators(CPlayBoard& pPBrd);
+    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace, UINT nResID);
+    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace,LPCTSTR pszStr);
 
     // Support for event notification messages (displayed as tool tips)
-    void EventShowBoardNotification(int nBrdSerNum, CPoint pntTipLoc, CString strMsg);
-    void EventShowTrayNotification(int nTrayNum, PieceID pid, CString strMsg);
+    void EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, CString strMsg);
+    void EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString strMsg);
 
     // Support for player messages
     void MsgSetMessageText(CString str);
@@ -389,17 +398,17 @@ public:
     CMoveList* DeserializeMovesFromFile(CFile* pFile, long lOffset);
     void LoadGameBoxFileForSerialize();
     void LoadAndActivateMoveFile(LPCSTR pszPathName);
-    BOOL LoadAndActivateHistory(int nHistRec);
+    BOOL LoadAndActivateHistory(size_t nHistRec);
     BOOL LoadVintageHistoryMoveLists(CFile& file);
-    BOOL LoadVintageHistoryRecord(CFile& file, CHistRecord* pHist);
+    BOOL LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist);
 
     // Other doc level doc changes...
     void DoScenarioProperties() { OnEditScenarioProperties(); }
     void DoSelectBoards() { OnEditSelectBoards(); }
     void DoCreateTray() { OnEditCreateTray(); }
     void DoLoadMoveFile() { OnFileLoadMoveFile(); }
-    void DoBoardProperties(int nBrd);
-    void DoBoardProperties(CPlayBoard* pPBoard);
+    void DoBoardProperties(size_t nBrd);
+    void DoBoardProperties(CPlayBoard& pPBoard);
     void DoAcceptPlayback();              // (exposed for project window access)
 
 // Implementation - methods
@@ -470,7 +479,7 @@ public:
     int         m_nCurMove;     // Index of current move (-1 is at end)
     POSITION    m_posCurMove;   // Shadow of m_nCurMove. (NOSAVE)
     int         m_nFirstMove;   // Index of first move record (usually 0 or 1)
-    int         m_nCurHist;     // History being viewed if state is "hist"
+    size_t      m_nCurHist;     // History being viewed if state is "hist"
     BOOL        m_bStepToNextHist; // If TRUE, step to next history record
     BOOL        m_bKeepSkipInd; // If TRUE skipped move indications aren't erased
     BOOL        m_bAutoStep;    // If TRUE next move kicks off auto playback
@@ -479,8 +488,8 @@ public:
     // when a move file has been loaded for playback.
     CHistRecord* m_pPlayHist;
 
-    CMoveList*  m_pRcdMoves;    // Moves being recorded or move file playback
-    CMoveList*  m_pHistMoves;   // Currently loaded history from hist table
+    std::unique_ptr<CMoveList> m_pRcdMoves;    // Moves being recorded or move file playback
+    std::unique_ptr<CMoveList> m_pHistMoves;   // Currently loaded history from hist table
 
     // m_pMoves is a shadow of either m_pRctMoves or m_pHistMoves depending on the
     // gamestate m_eState.  (NOSAVE)

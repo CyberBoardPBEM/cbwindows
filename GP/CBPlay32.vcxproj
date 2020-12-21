@@ -277,6 +277,7 @@ echo off
     <ResourceCompile Include="Cbplay.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\GShr\CyberBoard.h" />
     <ClInclude Include="Arrows.h" />
     <ClInclude Include="..\GShr\Atom.h" />
     <ClInclude Include="..\GShr\BarCbDock.h" />

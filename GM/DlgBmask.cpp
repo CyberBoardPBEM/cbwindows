@@ -85,7 +85,7 @@ void CBoardMaskDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CBoardMaskDialog::OnOK()
 {
     CDialog::OnOK();
-    m_nBrdNum = m_lboxBoard.GetCurSel();
+    m_nBrdNum = value_preserving_cast<size_t>(m_lboxBoard.GetCurSel());
 }
 
 BOOL CBoardMaskDialog::OnInitDialog()
@@ -94,8 +94,8 @@ BOOL CBoardMaskDialog::OnInitDialog()
 
     ASSERT(m_pBMgr);
 
-    for (int i = 0; i < m_pBMgr->GetNumBoards(); i++)
-        m_lboxBoard.AddString(m_pBMgr->GetBoard(i)->GetName());
+    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
+        m_lboxBoard.AddString(m_pBMgr->GetBoard(i).GetName());
 
     m_lboxBoard.SetCurSel(0);
 

@@ -157,7 +157,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         pHist->Serialize(ar);
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))
         {
-            pHist->m_pMList = new CMoveList;
+            pHist->m_pMList.reset(new CMoveList);
             pHist->m_pMList->Serialize(ar, FALSE);             // before Ver2.90
         }
 
@@ -185,7 +185,9 @@ void CGamDoc::SerializeGame(CArchive& ar)
         m_astrMsgHist.Serialize(ar);
         ar << (WORD)m_nCurMove;
         ar << (WORD)m_nFirstMove;
-        ar << (WORD)m_nCurHist;
+        ASSERT(m_nCurHist == Invalid_v<size_t> ||
+                m_nCurHist < size_t(0xFFFF));
+        ar << (m_nCurHist == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurHist));
         ar << (WORD)m_nMoveIdxAtBookMark;
 
         ar << (WORD)m_bStepToNextHist;
@@ -263,7 +265,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
             MsgParseLegacyHistory(m_strCurMsg, m_astrMsgHist, m_strCurMsg);
         ar >> wTmp; m_nCurMove = (int)wTmp;
         ar >> wTmp; m_nFirstMove = (int)wTmp;
-        ar >> wTmp; m_nCurHist = (int)wTmp;
+        ar >> wTmp; m_nCurHist = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
         ar >> wTmp; m_nMoveIdxAtBookMark = (int)wTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
@@ -285,7 +287,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar >> cTmp;
         if (cTmp != 0)
         {
-            m_pRcdMoves = new CMoveList;
+            m_pRcdMoves.reset(new CMoveList);
             m_pRcdMoves->Serialize(ar, TRUE);
         }
         else
@@ -300,7 +302,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar >> cTmp;
         if (cTmp != 0)
         {
-            m_pHistMoves = new CMoveList;
+            m_pHistMoves.reset(new CMoveList);
             m_pHistMoves->Serialize(ar, TRUE);
         }
 
@@ -330,9 +332,9 @@ void CGamDoc::SerializeGame(CArchive& ar)
 
         // Reconstitute various objects based on m_eState.
         if (m_eState == stateRecording || m_eState == stateMovePlay)
-            m_pMoves = m_pRcdMoves;
+            m_pMoves = m_pRcdMoves.get();
         else
-            m_pMoves = m_pHistMoves;
+            m_pMoves = m_pHistMoves.get();
 
         // If the file being loaded is pre V2.90 vintage then
         // we want to load all the history records into memory.
@@ -351,13 +353,13 @@ void CGamDoc::SerializeGame(CArchive& ar)
         // in trays. It will only fix the gamebox if the actual piece is
         // on a board somewhere.
 
-        if (GetPBoardManager()->FindPieceOnBoard((PieceID)0) != NULL)
+        if (GetPBoardManager()->FindPieceOnBoard(PieceID(0)) != NULL)
         {
             CTrayManager *pTMgr = GetTrayManager();
-            while (pTMgr->FindPieceIDInTraySet((PieceID)0) != NULL)
+            while (pTMgr->FindPieceIDInTraySet(PieceID(0)) != NULL)
             {
                 TRACE0("Removed bogus PieceID 0 from tray\n");
-                pTMgr->RemovePieceIDFromTraySets((PieceID)0);
+                pTMgr->RemovePieceIDFromTraySets(PieceID(0));
             }
         }
         GetTrayManager()->PropagateOwnerMaskToAllPieces(this);
@@ -392,13 +394,13 @@ void CGamDoc::SerializeScenario(CArchive& ar)
     // This code will repair a game containing extraneous ID 0 Pieces
     // in trays. It will only fix the gamebox if the actual piece is
     // on a board somewhere.
-    if (GetPBoardManager()->FindPieceOnBoard((PieceID)0) != NULL)
+    if (GetPBoardManager()->FindPieceOnBoard(PieceID(0)) != NULL)
     {
         CTrayManager *pTMgr = GetTrayManager();
-        while (pTMgr->FindPieceIDInTraySet((PieceID)0) != NULL)
+        while (pTMgr->FindPieceIDInTraySet(PieceID(0)) != NULL)
         {
             TRACE0("Removed bogus PieceID 0 from tray\n");
-            pTMgr->RemovePieceIDFromTraySets((PieceID)0);
+            pTMgr->RemovePieceIDFromTraySets(PieceID(0));
         }
     }
 }

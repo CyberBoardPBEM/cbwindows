@@ -148,7 +148,7 @@ int CGamProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // Save for list box construction...
     int xProjListRight = posBtn.x + (7 * sizeBtn.cx) / 2;
 
-    xProjListRight = max(xProjListRight, PROJ_LIST_WIDTH);
+    xProjListRight = CB::max(xProjListRight, PROJ_LIST_WIDTH);
 
     // The project list box.
     CRect rctList(XBORDER, YBORDER, xProjListRight, YBORDER);
@@ -181,14 +181,14 @@ void CGamProjView::OnInitialUpdate()
     // is disabled.
     if (!pDoc->m_bSaveWindowPositions)
     {
-        for (int i = 0; i < pPBMgr->GetNumPBoards(); i++)
+        for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
         {
-            CPlayBoard* pPBoard = pPBMgr->GetPBoard(i);
-            if (pPBoard->m_bOpenBoardOnLoad)
+            CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+            if (pPBoard.m_bOpenBoardOnLoad)
             {
                 // Defer opening the view until our view init
                 // in done.
-                PostMessage(WM_SHOWPLAYINGBOARD, (WPARAM)i);
+                PostMessage(WM_SHOWPLAYINGBOARD, value_preserving_cast<WPARAM>(i));
             }
         }
     }
@@ -427,25 +427,25 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
     ASSERT(pPBMgr);
-    for (int i = 0; i < pPBMgr->GetNumPBoards(); i++)
+    for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
     {
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
         {
             bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
         }
-        CPlayBoard* pPBoard = pPBMgr->GetPBoard(i);
-        str = pPBoard->GetBoard()->GetName();
+        CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+        str = pPBoard.GetBoard()->GetName();
         if (bDisplayIDs)
         {
             CString strTmp = str;
             str.Format("[%d] %s",
-                pPBMgr->GetPBoard(i)->GetBoard()->GetSerialNumber(), (LPCTSTR)strTmp);
+                static_cast<WORD>(pPBMgr->GetPBoard(i).GetBoard()->GetSerialNumber()), (LPCTSTR)strTmp);
         }
-        if (pPBoard->IsOwned())
+        if (pPBoard.IsOwned())
         {
             CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
-                pPBoard->GetOwnerMask()).m_strName;
+                pPBoard.GetOwnerMask()).m_strName;
             CString strOwnedBy;
             strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -494,13 +494,13 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     {
         CString strTimeFmt;
         strTimeFmt.LoadString(IDS_GAME_USA_TIMEFMT);
-        for (int i = 0; i < pHTbl->GetNumHistRecords(); i++)
+        for (size_t i = 0; i < pHTbl->GetNumHistRecords(); i++)
         {
-            CHistRecord* pRcd = pHTbl->GetHistRecord(i);
-            CString str = pRcd->m_timeAbsorbed.Format(strTimeFmt);
+            CHistRecord& pRcd = pHTbl->GetHistRecord(i);
+            CString str = pRcd.m_timeAbsorbed.Format(strTimeFmt);
             str += " - ";
-            str += pRcd->m_strTitle;
-            m_listProj.AddSeqItem(grpHist, str, i, i);
+            str += pRcd.m_strTitle;
+            m_listProj.AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);
             if (pDoc->IsPlayingHistory() &&
                 pDoc->GetCurrentHistoryRecNum() == i)
             {
@@ -767,11 +767,10 @@ void CGamProjView::OnUpdateProjItemExport(CCmdUI* pCmdUI)
 LRESULT CGamProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 {
     CGamDoc* pDoc = GetDocument();
-    CPlayBoard* pPBoard = pDoc->GetPBoardManager()->GetPBoard((int)wParam);
-    ASSERT(pPBoard != NULL);
-    ASSERT(pPBoard->m_bOpenBoardOnLoad);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(value_preserving_cast<size_t>(wParam));
+    ASSERT(pPBoard.m_bOpenBoardOnLoad);
     pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-        pPBoard->GetBoard()->GetName(), pPBoard);
+        pPBoard.GetBoard()->GetName(), &pPBoard);
     return (LRESULT)0;
 }
 

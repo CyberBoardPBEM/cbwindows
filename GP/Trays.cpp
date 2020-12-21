@@ -48,87 +48,87 @@ CTraySet::CTraySet()
     m_bEnforceVizForOwnerToo = FALSE;
 }
 
-BOOL CTraySet::HasPieceID(PieceID pid)
+BOOL CTraySet::HasPieceID(PieceID pid) const
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if ((PieceID)m_pidTbl.GetAt(i) == pid)
+        if (m_pidTbl.at(i) == pid)
             return TRUE;
     }
     return FALSE;
 }
 
-int CTraySet::GetPieceIDIndex(PieceID pid)
+size_t CTraySet::GetPieceIDIndex(PieceID pid) const
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if ((PieceID)m_pidTbl.GetAt(i) == pid)
+        if (m_pidTbl.at(i) == pid)
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
 void CTraySet::RemovePieceID(PieceID pid)
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if ((PieceID)m_pidTbl.GetAt(i) == pid)
+        if (m_pidTbl.at(i) == pid)
         {
-            m_pidTbl.RemoveAt(i);
+            m_pidTbl.erase(m_pidTbl.begin() + value_preserving_cast<ptrdiff_t>(i));
             return;
         }
     }
 }
 
-void CTraySet::AddPieceID(PieceID pid, int nPos /* = -1 */)
+void CTraySet::AddPieceID(PieceID pid, size_t nPos /* = Invalid_v<size_t> */)
 {
-    if (nPos < 0)
-        m_pidTbl.Add((WORD)pid);
+    if (nPos == Invalid_v<size_t>)
+        m_pidTbl.push_back(pid);
     else
     {
-        if (nPos > m_pidTbl.GetSize())          // Prevent indexing of the list
-            nPos = m_pidTbl.GetSize();
-        m_pidTbl.InsertAt(nPos, (WORD)pid);
+        if (nPos > m_pidTbl.size())          // Prevent indexing of the list
+            nPos = m_pidTbl.size();
+        m_pidTbl.insert(m_pidTbl.begin() + value_preserving_cast<ptrdiff_t>(nPos), pid);
     }
 }
 
-void CTraySet::AddPieceList(CWordArray *pTbl, int nPos)
+void CTraySet::AddPieceList(const std::vector<PieceID>& pTbl, size_t nPos)
 {
-    for (int i = 0; i < pTbl->GetSize(); i++)
+    for (size_t i = 0; i < pTbl.size(); i++)
     {
-        AddPieceID((PieceID)pTbl->GetAt(i), nPos);
-        if (nPos > 0) nPos++;                   // Move insertion position
+        AddPieceID(pTbl.at(i), nPos);
+        ASSERT(nPos == Invalid_v<size_t> || !"untested code");
+        if (nPos != Invalid_v<size_t>) nPos++;                   // Move insertion position
     }
 }
 
-void CTraySet::RemovePieceList(CWordArray *pTbl)
+void CTraySet::RemovePieceList(const std::vector<PieceID>& pTbl)
 {
-    for (int i = 0; i < pTbl->GetSize(); i++)
-        RemovePieceID((PieceID)pTbl->GetAt(i));
+    for (size_t i = 0; i < pTbl.size(); i++)
+        RemovePieceID(pTbl.at(i));
 }
 
-CTraySet* CTraySet::Clone(CGamDoc *pDoc)
+CTraySet CTraySet::Clone(CGamDoc *pDoc) const
 {
-    CTraySet* pSet = new CTraySet;
-    pSet->m_pidTbl.InsertAt(0, &m_pidTbl);
+    CTraySet pSet;
+    pSet.m_pidTbl = m_pidTbl;
     // Don't need to save the name.
     return pSet;
 }
 
-void CTraySet::Restore(CGamDoc *pDoc, CTraySet* pSet)
+void CTraySet::Restore(CGamDoc *pDoc, const CTraySet& pSet)
 {
-    m_pidTbl.RemoveAll();
-    m_pidTbl.InsertAt(0, &pSet->m_pidTbl);
+    m_pidTbl = pSet.m_pidTbl;
 }
 
-BOOL CTraySet::Compare(CTraySet* pYGrp)
+BOOL CTraySet::Compare(const CTraySet& pYGrp) const
 {
-    if (m_pidTbl.GetSize() != pYGrp->m_pidTbl.GetSize())
+    if (m_pidTbl.size() != pYGrp.m_pidTbl.size())
         return FALSE;
 
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        if (m_pidTbl.GetAt(i) != pYGrp->m_pidTbl.GetAt(i))
+        if (m_pidTbl.at(i) != pYGrp.m_pidTbl.at(i))
             return FALSE;
     }
     return TRUE;
@@ -141,10 +141,10 @@ BOOL CTraySet::IsOwnedButNotByCurrentPlayer(CGamDoc* pDoc)
 
 void CTraySet::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
 {
-    for (int i = 0; i < m_pidTbl.GetSize(); i++)
+    for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
         pDoc->GetPieceTable()->SetOwnerMask(
-            (PieceID)m_pidTbl[i], GetOwnerMask());
+            m_pidTbl[i], GetOwnerMask());
     }
 }
 
@@ -161,7 +161,7 @@ void CTraySet::Serialize(CArchive& ar)
         ar << m_dwOwnerMask;
         ar << (WORD)m_bNonOwnerAccess;
 
-        m_pidTbl.Serialize(ar);
+        ar << m_pidTbl;
     }
     else
     {
@@ -190,7 +190,7 @@ void CTraySet::Serialize(CArchive& ar)
                 ar >> m_dwOwnerMask;
             ar >> wTmp; m_bNonOwnerAccess = (BOOL)wTmp;
         }
-        m_pidTbl.Serialize(ar);
+        ar >> m_pidTbl;
     }
 }
 
@@ -205,122 +205,114 @@ CTrayManager::CTrayManager()
     m_pTMgr = NULL;
 }
 
-CTrayManager::~CTrayManager()
-{
-    Clear();
-}
-
 void CTrayManager::Clear()
 {
-    for (int i = 0; i < m_YSetTbl.GetSize(); i++)
-        delete (CTraySet*)m_YSetTbl.GetAt(i);
+    m_YSetTbl.clear();
 }
 
-int CTrayManager::CreateTraySet(const char* pszName)
+size_t CTrayManager::CreateTraySet(const char* pszName)
 {
-    CTraySet* pYSet = new CTraySet;
-    pYSet->SetName(pszName);
-    m_YSetTbl.Add(pYSet);
-    return m_YSetTbl.GetSize() - 1;
+    m_YSetTbl.resize(m_YSetTbl.size() + 1);
+    m_YSetTbl.back().SetName(pszName);
+    return m_YSetTbl.size() - 1;
 }
 
-void CTrayManager::DeleteTraySet(int nYSet)
+void CTrayManager::DeleteTraySet(size_t nYSet)
 {
-    CTraySet* pYSet = GetTraySet(nYSet);
-    m_YSetTbl.RemoveAt(nYSet);
-    delete pYSet;
+    m_YSetTbl.erase(m_YSetTbl.begin() + value_preserving_cast<ptrdiff_t>(nYSet));
 }
 
 CTraySet* CTrayManager::FindPieceIDInTraySet(PieceID pid)
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = GetTraySet(i);
-        if (pYSet->HasPieceID(pid))
-            return pYSet;
+        CTraySet& pYSet = GetTraySet(i);
+        if (pYSet.HasPieceID(pid))
+            return &pYSet;
     }
     return NULL;
 }
 
-int CTrayManager::FindTrayByName(const char* strName)
+size_t CTrayManager::FindTrayByName(const char* strName) const
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = GetTraySet(i);
-        if (lstrcmp(pYSet->GetName(), strName) == 0)
+        const CTraySet& pYSet = GetTraySet(i);
+        if (lstrcmp(pYSet.GetName(), strName) == 0)
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
 void CTrayManager::ClearAllOwnership()
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = GetTraySet(i);
-        pYSet->SetOwnerMask(0);
+        CTraySet& pYSet = GetTraySet(i);
+        pYSet.SetOwnerMask(0);
     }
 }
 
 void CTrayManager::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = GetTraySet(i);
-        pYSet->PropagateOwnerMaskToAllPieces(pDoc);
+        CTraySet& pYSet = GetTraySet(i);
+        pYSet.PropagateOwnerMaskToAllPieces(pDoc);
     }
 }
 
-int CTrayManager::FindTrayByPtr(CTraySet* pYSet)
+size_t CTrayManager::FindTrayByRef(const CTraySet& pYSet) const
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        if (GetTraySet(i) == pYSet)
+        if (&GetTraySet(i) == &pYSet)
             return i;
     }
-    return -1;
+    return Invalid_v<size_t>;
 }
 
 void CTrayManager::RemovePieceIDFromTraySets(PieceID pid)
 {
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = GetTraySet(i);
-        if (pYSet->HasPieceID(pid))
+        CTraySet& pYSet = GetTraySet(i);
+        if (pYSet.HasPieceID(pid))
         {
-            pYSet->RemovePieceID(pid);
+            pYSet.RemovePieceID(pid);
             return;
         }
     }
 }
 
-CTrayManager* CTrayManager::Clone(CGamDoc *pDoc)
+CTrayManager CTrayManager::Clone(CGamDoc *pDoc) const
 {
-    CTrayManager* pMgr = new CTrayManager;
+    CTrayManager pMgr;
 
-    for (int i = 0; i < GetNumTraySets(); i++)
+    pMgr.m_YSetTbl.reserve(GetNumTraySets());
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet* pSet = GetTraySet(i)->Clone(pDoc);
-        pMgr->m_YSetTbl.Add(pSet);
+        CTraySet pSet = GetTraySet(i).Clone(pDoc);
+        pMgr.m_YSetTbl.push_back(std::move(pSet));
     }
     return pMgr;
 }
 
-void CTrayManager::Restore(CGamDoc *pDoc, CTrayManager* pMgr)
+void CTrayManager::Restore(CGamDoc *pDoc, const CTrayManager& pMgr)
 {
-    int nTrayLimit = min(GetNumTraySets(), pMgr->GetNumTraySets());
-    for (int i = 0; i < nTrayLimit; i++)
-        GetTraySet(i)->Restore(pDoc, pMgr->GetTraySet(i));
+    size_t nTrayLimit = CB::min(GetNumTraySets(), pMgr.GetNumTraySets());
+    for (size_t i = 0; i < nTrayLimit; i++)
+        GetTraySet(i).Restore(pDoc, pMgr.GetTraySet(i));
 }
 
-BOOL CTrayManager::Compare(CTrayManager* pYMgr)
+BOOL CTrayManager::Compare(const CTrayManager& pYMgr) const
 {
-    if (pYMgr->GetNumTraySets() != GetNumTraySets())
+    if (pYMgr.GetNumTraySets() != GetNumTraySets())
         return FALSE;
 
-    for (int i = 0; i < GetNumTraySets(); i++)
+    for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        if (!GetTraySet(i)->Compare(pYMgr->GetTraySet(i)))
+        if (!GetTraySet(i).Compare(pYMgr.GetTraySet(i)))
             return FALSE;
     }
     return TRUE;
@@ -350,19 +342,20 @@ void CTrayManager::SerializeTraySets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetNumTraySets();
-        for (int i = 0; i < GetNumTraySets(); i++)
-            GetTraySet(i)->Serialize(ar);
+        ar << value_preserving_cast<WORD>(GetNumTraySets());
+        for (size_t i = 0; i < GetNumTraySets(); i++)
+            GetTraySet(i).Serialize(ar);
     }
     else
     {
         WORD wSize;
         ar >> wSize;
-        for (int i = 0; i < (int)wSize; i++)
+        m_YSetTbl.reserve(wSize);
+        for (size_t i = 0; i < wSize; i++)
         {
-            CTraySet* pYSet = new CTraySet;
-            pYSet->Serialize(ar);
-            m_YSetTbl.Add(pYSet);
+            CTraySet pYSet;
+            pYSet.Serialize(ar);
+            m_YSetTbl.push_back(std::move(pYSet));
         }
     }
 }

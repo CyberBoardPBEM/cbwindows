@@ -32,7 +32,7 @@ public:
     CTime   m_timeAbsorbed;         // Time record entered history
     CString m_strTitle;             // User title of move packet
     CString m_strDescr;             // User description of move packet
-    CMoveList* m_pMList;            // Move list for this record (>= Ver2.90)
+    std::unique_ptr<CMoveList> m_pMList;            // Move list for this record (>= Ver2.90)
     DWORD   m_dwFilePos;            // Location of move list in game file (< Ver2.90)
     // We need to save the version of the game file
     // when the moves were absorbed.
@@ -40,21 +40,22 @@ public:
 
 public:
     CHistRecord();
-    ~CHistRecord();
+    ~CHistRecord() = default;
     void Serialize(CArchive& ar);
 };
 
 // The history table stores a record of playback in
 // chronological order.
-class CHistoryTable : public CPtrArray
+// ptr since objects xfer between gamdoc and here
+class CHistoryTable : private std::vector<std::unique_ptr<CHistRecord>>
 {
 public:
     ~CHistoryTable() { Clear(); }
     // ------- //
-    int GetNumHistRecords() { return GetSize(); }
-    void AddNewHistRecord(CHistRecord* pHist) { Add(pHist); }
-    CHistRecord* GetHistRecord(int nIndex)
-        { return (CHistRecord*)GetAt(nIndex); }
+    size_t GetNumHistRecords() const { return size(); }
+    void AddNewHistRecord(CHistRecord* pHist) { ASSERT(pHist); push_back(std::unique_ptr<CHistRecord>(pHist)); }
+    CHistRecord& GetHistRecord(size_t nIndex)
+        { return *at(nIndex).get(); }
     // ------- //
     void Clear();
     void Serialize(CArchive& ar);

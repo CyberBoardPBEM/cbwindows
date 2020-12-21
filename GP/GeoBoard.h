@@ -30,19 +30,16 @@
 class CBoard;
 class CGamDoc;
 
-// The starting serial number for geomorpically created boards.
-const int GEO_BOARD_SERNUM_BASE = 1000;
-
 /////////////////////////////////////////////////////////////////////////////
 
 struct CGeoBoardElement
 {
-    int m_nBoardSerialNum;
+    BoardID m_nBoardSerialNum;
 
 public:
     CGeoBoardElement();
     CGeoBoardElement(CGeoBoardElement& geo);
-    CGeoBoardElement(int nBoardSerialNum);
+    CGeoBoardElement(BoardID nBoardSerialNum);
 
 public:
     void Serialize(CArchive& ar);
@@ -60,8 +57,8 @@ public:
 public:
     void SetName(LPCTSTR pszName) { m_strName = pszName; }
 
-    void SetSerialNumber(int nBoardSerialNumber) { m_nSerialNum = nBoardSerialNumber; }
-    int  GetSerialNumber() { return m_nSerialNum; }
+    void SetSerialNumber(BoardID nBoardSerialNumber) { m_nSerialNum = nBoardSerialNumber; }
+    BoardID GetSerialNumber() const { return m_nSerialNum; }
 
     void SetBoardRowCount(int nBoardRowCount) { m_nBoardRowCount = nBoardRowCount; }
     void SetBoardColCount(int nBoardColCount) { m_nBoardColCount = nBoardColCount; }
@@ -73,14 +70,14 @@ public:
 public:
     CBoard* CreateBoard(CGamDoc* pDoc);
 
-    int  AddElement(int nBoardSerialNum);
+    int  AddElement(BoardID nBoardSerialNum);
 
     void Serialize(CArchive& ar);
 
 // Implementation - methods
 protected:
-    CBoard* GetBoard(int nBoardRow, int nBoardCol);
-    CBoard* CloneBoard(CBoard* pOrigBoard);
+    CBoard& GetBoard(int nBoardRow, int nBoardCol);
+    CBoard* CloneBoard(CBoard& pOrigBoard);
     void    ComputeNewBoardDimensions(int& rnRows, int& rnCols);
     CPoint  ComputeGraphicalOffset(int nBoardRow, int nBoardCol);
     void    ComputeCellOffset(int nBoardRow, int nBoardCol, int& rnCellRow, int& rnCellCol);
@@ -91,12 +88,12 @@ protected:
                 CBoardArray* pBARight, int nRowLeft, int nColLeft, int nRowRight, int nColRight);
     void    CombineTopAndBottom(CBitmap& bmap, TileScale eScale, CBoardArray* pBATop,
                 CBoardArray* pBABottom, int nRowTop, int nColTop, int nRowBottom, int nColBottom);
-    int     GetSpecialTileSet();
+    size_t  GetSpecialTileSet();
 
 // Implementation - vars
 protected:
     CString m_strName;                  // The board's name
-    int     m_nSerialNum;               // The issued serial number
+    BoardID m_nSerialNum;               // The issued serial number
 
     int     m_nBoardRowCount;           // Number of boards vertically
     int     m_nBoardColCount;           // Number of boards horizontally

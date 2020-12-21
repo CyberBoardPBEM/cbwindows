@@ -38,7 +38,28 @@
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView view
 
-class CGsnProjView : public CView
+/* KLUDGE:  CProjListBox<T> uses Invalid<T>, so Invalid<T>
+    must be explicit instantiated before using CProjListBox<T>.
+    However, explicit instantiation can't be done in class
+    definition.  Therefore, T must be declared in a separate
+    class definition.  */
+namespace CB { namespace Impl
+{
+    class CGsnProjViewBase
+    {
+    public:
+        // Project list box grouping order.
+        enum { grpDoc, grpBrdHdr, grpBrd, grpTrayHdr, grpTray };
+    };
+
+    template<>
+    struct Invalid<decltype(CGsnProjViewBase::grpDoc)>
+    {
+        static constexpr decltype(CGsnProjViewBase::grpDoc) value = static_cast<decltype(CGsnProjViewBase::grpDoc)>(std::numeric_limits<std::underlying_type_t<decltype(CGsnProjViewBase::grpDoc)>>::max());
+    };
+}}
+
+class CGsnProjView : public CView, private CB::Impl::CGsnProjViewBase
 {
     DECLARE_DYNCREATE(CGsnProjView)
 protected:
@@ -46,13 +67,10 @@ protected:
 
 // Attributes
 public:
-    // Project list box grouping order.
-    enum { grpDoc, grpBrdHdr, grpBrd, grpTrayHdr, grpTray };
-
     CGamDoc* GetDocument() { return (CGamDoc*)m_pDocument; }
 
     // Various controls...
-    CProjListBox    m_listProj;         // Main project box
+    CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
 
     CEdit           m_editInfo;         // Used for various project info/help
     CTrayListBox    m_listTrays;        // For viewing tray contents

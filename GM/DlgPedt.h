@@ -60,7 +60,7 @@ public:
 
 // Implementation
 protected:
-    CWordArray      m_tbl;          // Need to use list box.
+    std::vector<PieceID> m_tbl;     // Need to use list box.
     CTileManager*   m_pTMgr;        // Set internally from m_pDoc
     CPieceManager*  m_pPMgr;        // Set internally from m_pDoc
     // -------- //

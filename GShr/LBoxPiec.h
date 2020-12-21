@@ -40,7 +40,7 @@ class CGamDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CPieceListBox : public CTileBaseListBox
+class CPieceListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
 {
 // Construction
 public:
@@ -50,7 +50,7 @@ public:
 public:
     void SetDocument(CGamDoc* pDoc);
 
-    virtual CTileManager* GetTileManager();
+    virtual CTileManager* GetTileManager() override;
 
 // Operations
 public:
@@ -61,16 +61,16 @@ protected:
     CPieceManager*  m_pPMgr;
 
     // Overrides
-    virtual int OnItemHeight(int nIndex);
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem);
-    virtual BOOL OnDragSetup(DragInfo* pDI);
+    virtual unsigned OnItemHeight(size_t nIndex) override;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) override;
+    virtual BOOL OnDragSetup(DragInfo* pDI) override;
 
     // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled();
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct);
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle);
-    virtual BOOL OnDoesItemHaveTipText(int nItem);
+    virtual BOOL OnIsToolTipsEnabled() override;
+    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
+    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
 
     //{{AFX_MSG(CPieceListBox)
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

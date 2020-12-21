@@ -35,43 +35,84 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CProjListBox : public CGrafixListBox
+/* Different views use different enumeration type values as the
+    group codes, so divide class into base and template.
+    However, the actual group code values are never actually
+    stored in a normal variable (they are encoded into the
+    strings in the list box), so the template is just a
+    type-safe wrapper on the base; it has no actual data. */
+
+class CProjListBoxBase : public CGrafixListBox
 {
 // Construction
 public:
-    CProjListBox() { m_nMarkGrp = -1; m_nMarkSourceCode = -1;
+    CProjListBoxBase() { m_nMarkGrp = -1; m_nMarkSourceCode = Invalid_v<size_t>;
         m_nHorzWidth = 0; }
 
 // Attributes
 public:
 
 // Operations
-public:
-    int AddItem(int nGroupCode, LPCSTR pszText, int nSourceCode = -1);
+protected:
+    int AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode);
     int AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
-        int nSourceCode = -1);
-    void MarkGroupItem(int nGroupCode = -1, int nSourceCode = -1)
+        size_t nSourceCode);
+    void MarkGroupItem(int nGroupCode, size_t nSourceCode)
         { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
     int GetItemGroupCode(int nIndex);
-    int GetItemSourceCode(int nIndex);
+public:
+    size_t GetItemSourceCode(int nIndex);
     void GetItemText(int nIndex, CString& str);
 
-    int CProjListBox::GetItemWidth(int nItem);
+    int GetItemWidth(int nItem);
+
+    /* N.B.:  CTileBaseListBox requires providing this, and it
+        doesn't hurt much to provide it in general. */
+    virtual int OnGetItemDebugIDCode(size_t nItem) override
+    {
+        ASSERT(!"not impl");
+        AfxThrowNotSupportedException();
+    }
 
 // Implementation
 protected:
     int     m_nMarkGrp;
-    int     m_nMarkSourceCode;
+    size_t  m_nMarkSourceCode;
     int     m_nHorzWidth;
 
     // Overrides
-    virtual int OnItemHeight(int nIndex);
-    virtual void OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
-        CRect rctItem);
+    virtual unsigned OnItemHeight(size_t nIndex) override;
+    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) override;
+
+    virtual void OnDragEnd(CPoint point) override { ASSERT(!"not used"); AfxThrowNotSupportedException(); }
 
     //{{AFX_MSG(CProjListBox)
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+};
+
+template<typename T>
+class CProjListBox : public CProjListBoxBase
+{
+public:
+    int AddItem(T nGroupCode, LPCSTR pszText, size_t nSourceCode = Invalid_v<size_t>)
+    {
+        return CProjListBoxBase::AddItem(value_preserving_cast<int>(nGroupCode), pszText, nSourceCode);
+    }
+    int AddSeqItem(T nGroupCode, LPCSTR pszText, int nSeqNum,
+        size_t nSourceCode = Invalid_v<size_t>)
+    {
+        return CProjListBoxBase::AddSeqItem(value_preserving_cast<int>(nGroupCode), pszText, nSeqNum, nSourceCode);
+    }
+    void MarkGroupItem(T nGroupCode = Invalid_v<T>, size_t nSourceCode = Invalid_v<size_t>)
+    {
+        CProjListBoxBase::MarkGroupItem(value_preserving_cast<int>(nGroupCode), nSourceCode);
+    }
+    T GetItemGroupCode(int nIndex)
+    {
+        return static_cast<T>(CProjListBoxBase::GetItemGroupCode(nIndex));
+    }
 };
 
 #endif

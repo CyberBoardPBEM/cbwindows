@@ -67,7 +67,7 @@ CMarkerPalette::CMarkerPalette()
     m_pDoc = NULL;
 
     m_listMark.EnableDrag(TRUE);
-    m_dummyArray.Add(0);
+    m_dummyArray.push_back(MarkID(0));
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
     m_pDockingFrame = NULL;
@@ -162,21 +162,21 @@ LRESULT CMarkerPalette::OnPaletteHide(WPARAM, LPARAM)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CMarkerPalette::GetSelectedMarkerGroup()
+size_t CMarkerPalette::GetSelectedMarkerGroup()
 {
     int nSel = m_comboMGrp.GetCurSel();
     if (nSel < 0)
-        return -1;
-    return (int)m_comboMGrp.GetItemData(nSel);
+        return Invalid_v<size_t>;
+    return value_preserving_cast<size_t>(m_comboMGrp.GetItemData(nSel));
 }
 
-int CMarkerPalette::FindMarkerGroupIndex(int nGroupNum)
+int CMarkerPalette::FindMarkerGroupIndex(size_t nGroupNum)
 {
     if (m_comboMGrp.GetCount() <= 0)
         return -1;
     for (int nIdx = 0; nIdx < m_comboMGrp.GetCount(); nIdx++)
     {
-        if ((int)m_comboMGrp.GetItemData(nIdx) == nGroupNum)
+        if (value_preserving_cast<size_t>(m_comboMGrp.GetItemData(nIdx)) == nGroupNum)
             return nIdx;
     }
     return -1;
@@ -186,23 +186,23 @@ int CMarkerPalette::FindMarkerGroupIndex(int nGroupNum)
 
 LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
 {
-    int nSel = GetSelectedMarkerGroup();
-    if (nSel < 0)
+    size_t nSel = GetSelectedMarkerGroup();
+    if (nSel == Invalid_v<size_t>)
         return (LRESULT)0;
 
     CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    CMarkSet* pMSet = pMMgr->GetMarkSet(nSel);
-    ASSERT(pMSet);
-    if (pMSet->IsRandomMarkerPull())
+    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+    if (pMSet.IsRandomMarkerPull())
     {
-        int* pMarkerID = (int*)wParam;
+        COverrideInfo<DRAG_MARKER>& oi = *reinterpret_cast<COverrideInfo<DRAG_MARKER>*>(wParam);
+        oi.CheckType();
 
         UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        int nRandNum = CalcRandomNumberUsingSeed(0, pMSet->GetMarkIDTable()->GetSize(),
+        int nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(pMSet.GetMarkIDTable().size()),
             nRandSeed, &nRandSeed);
 
-        *pMarkerID = pMSet->GetMarkIDTable()->GetAt(nRandNum);
+        oi.m_markID = pMSet.GetMarkIDTable().at(value_preserving_cast<size_t>(nRandNum));
 
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
@@ -214,9 +214,9 @@ LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
 
 void CMarkerPalette::SelectMarker(MarkID mid)
 {
-    int nGrp = m_pDoc->GetMarkManager()->FindMarkInMarkSet(mid);
-    ASSERT(nGrp >= 0);
-    int nSel = GetSelectedMarkerGroup();
+    size_t nGrp = m_pDoc->GetMarkManager()->FindMarkInMarkSet(mid);
+    ASSERT(nGrp != Invalid_v<size_t>);
+    size_t nSel = GetSelectedMarkerGroup();
     if (nSel != nGrp)
     {
         m_comboMGrp.SetCurSel(FindMarkerGroupIndex(nGrp));
@@ -285,10 +285,10 @@ void CMarkerPalette::LoadMarkerNameList()
     ASSERT(pMMgr != NULL);
 
     m_comboMGrp.ResetContent();
-    for (int i = 0; i < pMMgr->GetNumMarkSets(); i++)
+    for (size_t i = 0; i < pMMgr->GetNumMarkSets(); i++)
     {
-        int nIdx = m_comboMGrp.AddString(pMMgr->GetMarkSet(i)->GetName());
-        m_comboMGrp.SetItemData(nIdx, (DWORD)i);    // Store the marker index in the data item
+        int nIdx = m_comboMGrp.AddString(pMMgr->GetMarkSet(i).GetName());
+        m_comboMGrp.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(i));    // Store the marker index in the data item
     }
     m_comboMGrp.SetCurSel(0);
     UpdateMarkerList();
@@ -298,11 +298,11 @@ void CMarkerPalette::LoadMarkerNameList()
 
 void CMarkerPalette::UpdatePaletteContents()
 {
-    int nSel = GetSelectedMarkerGroup();
-    if (nSel < 0)
+    size_t nSel = GetSelectedMarkerGroup();
+    if (nSel == Invalid_v<size_t>)
         nSel = 0;               // Force first entry (if any)
     LoadMarkerNameList();
-    if (nSel < m_comboMGrp.GetCount())
+    if (value_preserving_cast<int>(nSel) < m_comboMGrp.GetCount())
         m_comboMGrp.SetCurSel(FindMarkerGroupIndex(nSel));
     UpdateMarkerList();
 }
@@ -315,32 +315,31 @@ void CMarkerPalette::UpdateMarkerList()
     CMarkManager* pMMgr = m_pDoc->GetMarkManager();
     ASSERT(pMMgr != NULL);
 
-    int nSel = GetSelectedMarkerGroup();
-    if (nSel < 0)
+    size_t nSel = GetSelectedMarkerGroup();
+    if (nSel == Invalid_v<size_t>)
     {
         m_listMark.SetItemMap(NULL);
         return;
     }
 
-    CMarkSet* pMSet = pMMgr->GetMarkSet(nSel);
-    CWordArray* pPieceTbl = pMSet->GetMarkIDTable();
-    ASSERT(pPieceTbl != NULL);
+    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+    const std::vector<MarkID>* pMarkTbl = &pMSet.GetMarkIDTable();
 
     CString str = "";
-    if (pMSet->GetMarkerTrayContentVisibility() == mtrayVizEachGenericRandPull)
+    if (pMSet.GetMarkerTrayContentVisibility() == mtrayVizEachGenericRandPull)
         str.LoadString(IDS_TRAY_RANDHIDDEN);
-    else if (pMSet->GetMarkerTrayContentVisibility() == mtrayVizNoneRandPull)
+    else if (pMSet.GetMarkerTrayContentVisibility() == mtrayVizNoneRandPull)
     {
         str.LoadString(IDS_TRAY_ALLRANDHIDDEN);
         // Set the first (and only) element in the dummy array
         // if there are any markers in the group
-        m_dummyArray.RemoveAll();
-        if (pPieceTbl->GetSize() > 0)
-            m_dummyArray.Add(pPieceTbl->GetAt(0));
-        pPieceTbl = &m_dummyArray;
+        m_dummyArray.clear();
+        if (!pMarkTbl->empty())
+            m_dummyArray.push_back(pMarkTbl->front());
+        pMarkTbl = &m_dummyArray;
     }
-    m_listMark.SetTrayContentVisibility(pMSet->GetMarkerTrayContentVisibility(), str);
-    m_listMark.SetItemMap(pPieceTbl);
+    m_listMark.SetTrayContentVisibility(pMSet.GetMarkerTrayContentVisibility(), str);
+    m_listMark.SetItemMap(pMarkTbl);
 }
 
 /////////////////////////////////////////////////////////////////////////////

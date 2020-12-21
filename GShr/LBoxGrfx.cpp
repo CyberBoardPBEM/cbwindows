@@ -31,10 +31,10 @@
 #define new DEBUG_NEW
 #endif
 
-static DragInfo di;
+DragInfo CGrafixListBox::di;
 
 const int TRIGGER_THRESHOLD = 3;
-const int defaultItemHeight = 16;
+const unsigned defaultItemHeight = 16;
 
 const int scrollZonePixels = 7;         // size of autoscroll trigger zone
 const int timerScrollStart = 180;
@@ -65,120 +65,6 @@ CGrafixListBox::CGrafixListBox()
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
-    m_pItemMap = NULL;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void CGrafixListBox::SetItemMap(CWordArray* pMap,
-    BOOL bKeepPosition /* = TRUE */)
-{
-    m_pItemMap = pMap;
-    UpdateList(bKeepPosition);
-}
-
-// bKeepPosition == TRUE means current selection is maintained.
-void CGrafixListBox::UpdateList(BOOL bKeepPosition /* = TRUE */)
-{
-    if (m_pItemMap == NULL)
-    {
-        ResetContent();
-        return;
-    }
-
-    SetRedraw(FALSE);
-    int nCurSel = IsMultiSelect() ? -1 : GetCurSel();
-    int nTopIdx = GetTopIndex();
-    int nFcsIdx = GetCaretIndex();
-    ResetContent();
-    int nItem;
-    for (nItem = 0; nItem < m_pItemMap->GetSize(); nItem++)
-        AddString(" ");             // Fill with dummy data
-    if (bKeepPosition)
-    {
-        if (nTopIdx >= 0)
-            SetTopIndex(min(nTopIdx, nItem - 1));
-        if (nFcsIdx >= 0)
-            SetCaretIndex(min(nFcsIdx, nItem - 1), FALSE);
-        if (nCurSel >= 0)
-            SetCurSel(min(nCurSel, nItem - 1));
-    }
-    SetRedraw(TRUE);
-    Invalidate();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-int CGrafixListBox::MapIndexToItem(int nIndex)
-{
-    ASSERT(m_pItemMap);
-    ASSERT(nIndex < m_pItemMap->GetSize());
-    return (int)m_pItemMap->GetAt(nIndex);
-}
-
-int CGrafixListBox::MapItemToIndex(int nItem)
-{
-    ASSERT(m_pItemMap);
-    for (int i = 0; i < m_pItemMap->GetSize(); i++)
-    {
-        if (nItem == (int)m_pItemMap->GetAt(i))
-            return i;
-    }
-    return -1;                  // Failed to find it
-}
-
-WORD CGrafixListBox::GetCurMapItem()
-{
-    ASSERT(!IsMultiSelect());
-    ASSERT(m_pItemMap);
-    int nItem = GetCurSel();
-    ASSERT(nItem >= 0);
-    ASSERT(nItem < m_pItemMap->GetSize());
-    return m_pItemMap->GetAt(nItem);
-}
-
-void CGrafixListBox::GetCurMappedItemList(CWordArray* pLst)
-{
-    pLst->RemoveAll();
-    ASSERT(IsMultiSelect());
-    int nSels = GetSelCount();
-    if (nSels == LB_ERR || nSels == 0)
-        return;
-    int* pSelTbl = new int[nSels];
-    GetSelItems(nSels, pSelTbl);
-    for (int i = 0; i < nSels; i++)
-        pLst->Add(MapIndexToItem(pSelTbl[i]));
-    delete pSelTbl;
-    return;
-}
-
-void CGrafixListBox::SetCurSelMapped(WORD nMapVal)
-{
-    ASSERT(m_pItemMap);
-    for (int i = 0; i < m_pItemMap->GetSize(); i++)
-    {
-        if (m_pItemMap->GetAt(i) == nMapVal)
-        {
-            SetCurSel(i);
-            SetTopIndex(i);
-        }
-    }
-}
-
-void CGrafixListBox::SetCurSelsMapped(CWordArray& items)
-{
-    ASSERT(m_pItemMap);
-    ASSERT(IsMultiSelect());
-
-    SetSel(-1, FALSE);      // Deselect all
-    for (int i = 0; i < items.GetSize(); i++)
-    {
-        for (int j = 0; j < m_pItemMap->GetSize(); j++)
-        {
-            if (m_pItemMap->GetAt(j) == items[i])
-                SetSel(j);
-        }
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -372,17 +258,17 @@ LRESULT CGrafixListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CGrafixListBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
 {
-    int nHt = OnItemHeight((int)lpMIS->itemID);
+    unsigned nHt = OnItemHeight(value_preserving_cast<size_t>(lpMIS->itemID));
 
     if (nHt >= 256) nHt = 255;
     if (nHt == 0) nHt = defaultItemHeight;
 
-    lpMIS->itemHeight = (UINT)nHt;
+    lpMIS->itemHeight = value_preserving_cast<UINT>(nHt);
 }
 
 void CGrafixListBox::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 {
-    int nIndex = (int)lpDIS->itemID;
+    size_t nIndex = value_preserving_cast<size_t>(lpDIS->itemID);
     CDC* pDC = CDC::FromHandle(lpDIS->hDC);
 
     CRect rct(lpDIS->rcItem);
@@ -419,61 +305,9 @@ void CGrafixListBox::OnLButtonUp(UINT nFlags, CPoint point)
         BOOL bWasDragging = CWnd::GetCapture() == this;
         CListBox::OnLButtonUp(nFlags, point);
 
-        // Get the final selection results after the mouse was released.
-        if (IsMultiSelect())
-            GetCurMappedItemList(&m_multiSelList);
-
         if (bWasDragging && m_triggeredCursor)
         {
-            if (IsMultiSelect())
-            {
-                CWnd *pWnd = GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, (WPARAM)&m_multiSelList);
-            }
-            else
-            {
-                // The parent may want to override the value.
-                if (di.m_dragType == DRAG_MARKER)
-                {
-                    int nValueOverride = di.GetSubInfo<DRAG_MARKER>().m_markID;
-                    CWnd* pWnd = GetParent();
-                    ASSERT(pWnd != NULL);
-                    pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, (WPARAM)&nValueOverride);
-                    di.GetSubInfo<DRAG_MARKER>().m_markID = nValueOverride;
-                }
-                else if (di.m_dragType == DRAG_TILE)
-                {
-                    int nValueOverride = di.GetSubInfo<DRAG_TILE>().m_tileID;
-                    CWnd* pWnd = GetParent();
-                    ASSERT(pWnd != NULL);
-                    pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, (WPARAM)&nValueOverride);
-                    di.GetSubInfo<DRAG_TILE>().m_tileID = nValueOverride;
-                }
-                else
-                {
-                    ASSERT(!"unexpected dragType");
-                }
-            }
-
-            ReleaseCapture();
-            SetCursor(LoadCursor(NULL, IDC_ARROW));
-
-            CWnd* pWnd = GetWindowFromPoint(point);
-            if (pWnd == NULL || (!m_bAllowSelfDrop && pWnd == this))
-            {
-                OnDragCleanup(&di);         // Tell subclass we're all done.
-                return;
-            }
-            di.m_point = point;
-            di.m_pointClient = point;       // list box relative
-            ClientToScreen(&di.m_point);
-            pWnd->ScreenToClient(&di.m_point);
-
-            pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
-                (LPARAM)(LPVOID)&di);
-            OnDragCleanup(&di);         // Tell subclass we're all done.
-            m_multiSelList.RemoveAll();
+            OnDragEnd(point);
         }
     }
     else
@@ -575,7 +409,6 @@ int CGrafixListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (CListBox::OnCreate(lpCreateStruct) == -1)
         return -1;
 
-    m_pItemMap = NULL;
     m_nTimerID = 0;
 
     return 0;

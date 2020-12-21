@@ -83,7 +83,7 @@ ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
 
 ObjectID::ObjectID(PieceID pid)
 {
-    id = pid;
+    id = static_cast<uint16_t>(pid);
     serial = 0;
     subtype = 0;
 }
@@ -437,10 +437,10 @@ void CPolyObj::ComputeExtent()
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
     for (int i = 0; i < m_nPnts; i++)
     {
-        xmin = min(xmin, m_pPnts[i].x);
-        xmax = max(xmax, m_pPnts[i].x);
-        ymin = min(ymin, m_pPnts[i].y);
-        ymax = max(ymax, m_pPnts[i].y);
+        xmin = CB::min(xmin, m_pPnts[i].x);
+        xmax = CB::max(xmax, m_pPnts[i].x);
+        ymin = CB::min(ymin, m_pPnts[i].y);
+        ymax = CB::max(ymax, m_pPnts[i].y);
     }
     m_rctExtent.SetRect(xmin, ymin, xmax, ymax);
 }
@@ -572,10 +572,10 @@ void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
     m_ptEnd.y = yEnd;
     // An enclosing rectangle *must* have some volume...
     int nWidth = m_nLineWidth / 2 ? m_nLineWidth / 2 : 1;
-    m_rctExtent.left = min(xBeg, xEnd) - nWidth;
-    m_rctExtent.top = min(yBeg, yEnd) - nWidth;
-    m_rctExtent.right = max(xBeg, xEnd) + nWidth;
-    m_rctExtent.bottom = max(yBeg, yEnd) +nWidth;
+    m_rctExtent.left = CB::min(xBeg, xEnd) - nWidth;
+    m_rctExtent.top = CB::min(yBeg, yEnd) - nWidth;
+    m_rctExtent.right = CB::max(xBeg, xEnd) + nWidth;
+    m_rctExtent.bottom = CB::max(yBeg, yEnd) +nWidth;
 }
 
 CRect CLine::GetEnclosingRect()
@@ -932,13 +932,12 @@ void CTileImage::Serialize(CArchive& ar)
     CDrawObj::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_tid;
+        ar << m_tid;
     }
     else
     {
-        WORD wTmp;
         m_pTMgr = ((CGamDoc*)ar.m_pDocument)->GetTileManager();
-        ar >> wTmp; m_tid = (TileID)wTmp;
+        ar >> m_tid;
     }
 }
 
@@ -1221,13 +1220,12 @@ void CPieceObj::Serialize(CArchive& ar)
     CDrawObj::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (WORD)m_pid;
+        ar << m_pid;
     }
     else
     {
-        WORD wTmp;
         m_pDoc = (CGamDoc*)ar.m_pDocument;
-        ar >> wTmp; m_pid = (PieceID)wTmp;
+        ar >> m_pid;
     }
 }
 
@@ -1260,8 +1258,8 @@ TileID CMarkObj::GetCurrentTileID()
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    MarkDef* pMark = pMMgr->GetMark(m_mid);
-    ASSERT(pMark->m_tid != nullTid);
+    MarkDef& pMark = pMMgr->GetMark(m_mid);
+    ASSERT(pMark.m_tid != nullTid);
 
     if (m_nFacingDegCW != 0)
     {
@@ -1270,11 +1268,11 @@ TileID CMarkObj::GetCurrentTileID()
         CTileFacingMap* pMapFacing = m_pDoc->GetFacingMap();
         TileID tidFacing = pMapFacing->GetFacingTileID(state);
         if (tidFacing == nullTid)
-            tidFacing = pMapFacing->CreateFacingTileID(state, pMark->m_tid);
+            tidFacing = pMapFacing->CreateFacingTileID(state, pMark.m_tid);
         return tidFacing;
     }
     else
-        return pMark->m_tid;
+        return pMark.m_tid;
 }
 
 void CMarkObj::ResyncExtentRect()
@@ -1336,7 +1334,7 @@ void CMarkObj::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_dwObjectID;
-        ar << (WORD)m_mid;
+        ar << m_mid;
         ar << (WORD)m_nFacingDegCW;                                 //Ver2.0
     }
     else
@@ -1344,7 +1342,7 @@ void CMarkObj::Serialize(CArchive& ar)
         WORD wTmp;
         m_pDoc = ((CGamDoc*)ar.m_pDocument);
         ar >> m_dwObjectID;
-        ar >> wTmp; m_mid = (MarkID)wTmp;
+        ar >> m_mid;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))       //Ver2.0
         {
             ar >> wTmp;
@@ -1540,12 +1538,13 @@ void CDrawList::ArrangeObjectListInVisualOrder(CPtrList* pLst)
 
 #ifdef GPLAY
 
-void CDrawList::ArrangePieceTableInDrawOrder(CWordArray* pTbl)
+void CDrawList::ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CWordArray tmpTbl;
+    std::vector<PieceID> tmpTbl;
+    tmpTbl.reserve(pTbl.size());
 
     POSITION pos;
     for (pos = GetHeadPosition(); pos != NULL; )
@@ -1553,27 +1552,27 @@ void CDrawList::ArrangePieceTableInDrawOrder(CWordArray* pTbl)
         CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
         if (pDObj->GetType() == CDrawObj::drawPieceObj)
         {
-            for (int i = 0; i < pTbl->GetSize(); i++)
+            for (size_t i = 0; i < pTbl.size(); i++)
             {
-                if ((PieceID)pTbl->GetAt(i)== ((CPieceObj*)pDObj)->m_pid)
+                if (pTbl.at(i)== static_cast<CPieceObj*>(pDObj)->m_pid)
                 {
-                    tmpTbl.Add(((CPieceObj*)pDObj)->m_pid);
+                    tmpTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
                     break;
                 }
             }
         }
     }
-    ASSERT(tmpTbl.GetSize() == pTbl->GetSize());
-    pTbl->RemoveAll();
-    pTbl->InsertAt(0, &tmpTbl);
+    ASSERT(tmpTbl.size() == pTbl.size());
+    pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangePieceTableInVisualOrder(CWordArray* pTbl)
+void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CWordArray tmpTbl;
+    std::vector<PieceID> tmpTbl;
+    tmpTbl.reserve(pTbl.size());
 
     POSITION pos;
     for (pos = GetTailPosition(); pos != NULL; )
@@ -1581,69 +1580,70 @@ void CDrawList::ArrangePieceTableInVisualOrder(CWordArray* pTbl)
         CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
         if (pDObj->GetType() == CDrawObj::drawPieceObj)
         {
-            for (int i = 0; i < pTbl->GetSize(); i++)
+            for (size_t i = 0; i < pTbl.size(); i++)
             {
-                if ((PieceID)pTbl->GetAt(i)== ((CPieceObj*)pDObj)->m_pid)
+                if (pTbl.at(i)== static_cast<CPieceObj*>(pDObj)->m_pid)
                 {
-                    tmpTbl.Add(((CPieceObj*)pDObj)->m_pid);
+                    tmpTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
                     break;
                 }
             }
         }
     }
-    ASSERT(tmpTbl.GetSize() == pTbl->GetSize());
-    pTbl->RemoveAll();
-    pTbl->InsertAt(0, &tmpTbl);
+    ASSERT(tmpTbl.size() == pTbl.size());
+    pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInDrawOrder(CPtrArray* pTbl)
+void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CPtrArray tmpTbl;
+    std::vector<CDrawObj*> tmpTbl;
+    tmpTbl.reserve(pTbl.size());
 
     POSITION pos;
     for (pos = GetHeadPosition(); pos != NULL; )
     {
         CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        for (int i = 0; i < pTbl->GetSize(); i++)
+        for (size_t i = 0; i < pTbl.size(); i++)
         {
-            if (pTbl->GetAt(i) == pDObj)
+            if (pTbl.at(i) == pDObj)
             {
-                tmpTbl.Add(pDObj);
+                tmpTbl.push_back(pDObj);
                 break;
             }
         }
     }
-    ASSERT(tmpTbl.GetSize() == pTbl->GetSize());
-    pTbl->RemoveAll();
-    pTbl->Copy(tmpTbl);
+    ASSERT(tmpTbl.size() == pTbl.size());
+    pTbl.clear();
+    pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInVisualOrder(CPtrArray* pTbl)
+void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CPtrArray tmpTbl;
+    std::vector<CDrawObj*> tmpTbl;
+    tmpTbl.reserve(pTbl.size());
 
     POSITION pos;
     for (pos = GetTailPosition(); pos != NULL; )
     {
         CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        for (int i = 0; i < pTbl->GetSize(); i++)
+        for (size_t i = 0; i < pTbl.size(); i++)
         {
-            if (pTbl->GetAt(i) == pDObj)
+            if (pTbl.at(i) == pDObj)
             {
-                tmpTbl.Add(pDObj);
+                tmpTbl.push_back(pDObj);
                 break;
             }
         }
     }
-    ASSERT(tmpTbl.GetSize() == pTbl->GetSize());
-    pTbl->RemoveAll();
-    pTbl->Copy(tmpTbl);
+    ASSERT(tmpTbl.size() == pTbl.size());
+    pTbl.clear();
+    pTbl = std::move(tmpTbl);
 }
 
 #endif // GPLAY
@@ -1724,42 +1724,42 @@ void CDrawList::GetPieceObjectPtrList(CPtrList* pLst)
     }
 }
 
-void CDrawList::GetPieceIDTable(CWordArray *pTbl)
+void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl)
 {
-    pTbl->RemoveAll();
+    pTbl.clear();
     POSITION pos;
     for (pos = GetHeadPosition(); pos != NULL; )
     {
         CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
         ASSERT(pDObj != NULL);
         if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl->Add(((CPieceObj*)pDObj)->m_pid);
+            pTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
     }
 }
 
-void CDrawList::GetObjectListFromPieceIDTable(CWordArray* pTbl, CPtrList* pLst)
+void CDrawList::GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList* pLst)
 {
     pLst->RemoveAll();
-    for (int i = 0; i < pTbl->GetSize(); i++)
+    for (size_t i = 0; i < pTbl.size(); i++)
     {
-        CPieceObj* pObj = FindPieceID((PieceID)pTbl->GetAt(i));
+        CPieceObj* pObj = FindPieceID(pTbl.at(i));
         ASSERT(pObj != NULL);
         if (pObj)
             pLst->AddTail(pObj);
     }
 }
 
-void CDrawList::GetPieceIDTableFromObjList(CPtrList* pLst, CWordArray* pTbl,
+void CDrawList::GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>& pTbl,
     BOOL bDeleteObjs /* = FALSE*/)
 {
-    pTbl->RemoveAll();
+    pTbl.clear();
     POSITION pos;
     for (pos = pLst->GetHeadPosition(); pos != NULL; )
     {
         CDrawObj* pDObj = (CDrawObj*)pLst->GetNext(pos);
         ASSERT(pDObj != NULL);
         if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl->Add(((CPieceObj*)pDObj)->m_pid);
+            pTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
         if (bDeleteObjs) delete pDObj;
     }
 }

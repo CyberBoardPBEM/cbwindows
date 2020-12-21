@@ -136,7 +136,7 @@ TileID CTilePalette::GetCurrentTileID()
         return nullTid;
     if (m_listTile.GetCurSel() == LB_ERR)
         return nullTid;
-    return (TileID)m_listTile.GetCurMapItem();
+    return m_listTile.GetCurMapItem();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -173,8 +173,8 @@ void CTilePalette::LoadTileNameList()
     ASSERT(pTMgr != NULL);
 
     m_comboTGrp.ResetContent();
-    for (int i = 0; i < pTMgr->GetNumTileSets(); i++)
-        m_comboTGrp.AddString(pTMgr->GetTileSet(i)->GetName());
+    for (size_t i = 0; i < pTMgr->GetNumTileSets(); i++)
+        m_comboTGrp.AddString(pTMgr->GetTileSet(i).GetName());
     m_comboTGrp.SetCurSel(0);
     UpdateTileList();
 }
@@ -206,9 +206,8 @@ void CTilePalette::UpdateTileList()
         m_listTile.SetItemMap(NULL);
         return;
     }
-    CWordArray* pPieceTbl = pTMgr->GetTileSet(nSel)->GetTileIDTable();
-    ASSERT(pPieceTbl != NULL);
-    m_listTile.SetItemMap(pPieceTbl);
+    const std::vector<TileID>& pPieceTbl = pTMgr->GetTileSet(value_preserving_cast<size_t>(nSel)).GetTileIDTable();
+    m_listTile.SetItemMap(&pPieceTbl);
 }
 
 /////////////////////////////////////////////////////////////////////////////

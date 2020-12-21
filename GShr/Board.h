@@ -37,6 +37,12 @@
 #include    "DrawObj.h"
 #endif
 
+typedef XxxxID<'B'> BoardID;
+const       BoardID nullBid = BoardID(0xFFFF);
+const size_t maxBoards = 32000;
+// The starting serial number for geomorpically created boards.
+const size_t GEO_BOARD_SERNUM_BASE = 1000;
+
 enum LAYER { LAYER_BASE = 1, LAYER_GRID = 2, LAYER_TOP = 3 };
 
 class CBoardBase
@@ -44,6 +50,8 @@ class CBoardBase
     friend class CGamDoc;
 public:
     CBoardBase();
+    CBoardBase(const CBoardBase&) = delete;
+    CBoardBase& operator=(const CBoardBase&) = delete;
     virtual ~CBoardBase();
 // Attributes
 public:
@@ -54,8 +62,8 @@ public:
     int m_xGridSnapOff;     // X grid offset (must be < m_xGridSnap) * 1000
     int m_yGridSnapOff;     // Y grid offset (must be < m_yGridSnap) * 1000
     // ------- //
-    int GetSerialNumber() { return m_nSerialNum; }
-    void SetSerialNumber(int nSerialNum) { m_nSerialNum = nSerialNum; }
+    BoardID GetSerialNumber() const { return m_nSerialNum; }
+    void SetSerialNumber(BoardID nSerialNum) { m_nSerialNum = nSerialNum; }
     // ------- //
     BOOL GetApplyVisible() { return m_bApplyVisibility; }
     void SetApplyVisible(BOOL bApply) { m_bApplyVisibility = bApply; }
@@ -69,7 +77,7 @@ public:
 
     int GetMaxDrawLayer() { return m_iMaxLayer; }
     CTileManager* GetTileManager() { return m_pTMgr; }
-    const char* GetName() { return m_strBoardName; }
+    const char* GetName() const { return m_strBoardName; }
 
 // Operations
 public:
@@ -89,7 +97,7 @@ public:
 protected:
     // Saved in file...
     BOOL        m_bApplyVisibility; // Show objects matching scale mask
-    int         m_nSerialNum;       // Board serial number
+    BoardID     m_nSerialNum;       // Board serial number
     CString     m_strBoardName;     // Name of board
     COLORREF    m_crBkGnd;          // Default color of the board
     int         m_iMaxLayer;        // Max layer to draw
@@ -116,23 +124,24 @@ public:
             ASSERT(m_pBrdAry!=NULL);
             return m_pBrdAry->GetSize(eScale);
         }
-    int GetWidth(TileScale eScale)
+    int GetWidth(TileScale eScale) const
         {
             ASSERT(m_pBrdAry!=NULL);
             return m_pBrdAry->GetWidth(eScale);
         }
-    int GetHeight(TileScale eScale)
+    int GetHeight(TileScale eScale) const
         {
             ASSERT(m_pBrdAry!=NULL);
             return m_pBrdAry->GetHeight(eScale);
         }
-    CSize GetCellSize(TileScale eScale)
+    CSize GetCellSize(TileScale eScale) const
         {
             ASSERT(m_pBrdAry!=NULL);
             return m_pBrdAry->GetCellSize(eScale);
         }
     void SetBoardArray(CBoardArray* pDwg);
-    CBoardArray* GetBoardArray() { return m_pBrdAry; }
+    const CBoardArray* GetBoardArray() const { return m_pBrdAry; }
+    CBoardArray* GetBoardArray() { return const_cast<CBoardArray*>(std::as_const(*this).GetBoardArray()); }
     void SetTopDrawing(CDrawList* pDwg);
     CDrawList* GetTopDrawing(BOOL bCreate = FALSE);
     virtual void SetTileManager(CTileManager* pTMgr)
@@ -185,7 +194,10 @@ protected:
 
 //////////////////////////////////////////////////////////////////////
 
-class CBoardManager : public CPtrArray
+/* N.B.:  this holds CBoard* instead of CBoard because CBoard
+    derives from CBoardBase, which is designed as a polymorphic
+    class */
+class CBoardManager : private std::vector<std::unique_ptr<CBoard>>
 {
     friend class CGamDoc;
 public:
@@ -194,8 +206,16 @@ public:
 
 // Attributes
 public:
-    int GetNumBoards() const { return GetSize(); }
-    CBoard* GetBoard(int i) { return (CBoard *)GetAt(i); }
+    size_t GetNumBoards() const { return size(); }
+    bool IsEmpty() const { return empty(); }
+    const CBoard& GetBoard(size_t i) const
+    {
+        return CheckedDeref(at(i).get());
+    }
+    CBoard& GetBoard(size_t i)
+    {
+        return const_cast<CBoard&>(std::as_const(*this).GetBoard(i));
+    }
 
     // Access routines for all Tile Editor info...
     void SetForeColor(COLORREF cr) { m_crFore = cr; }
@@ -210,29 +230,36 @@ public:
 
 // Operations
 public:
-    void Add(CBoard* pBoard) { CPtrArray::Add(pBoard); }
+    void Add(CBoard* pBoard)
+    {
+        if (!pBoard)
+        {
+            AfxThrowInvalidArgException();
+        }
+        push_back(std::unique_ptr<CBoard>(pBoard));
+    }
     // -------- //
-    void DeleteBoard(int nBoard) { DestroyElement(nBoard); }
-    int  IssueSerialNumber() { return m_nNextSerialNumber++; }
+    void DeleteBoard(size_t nBoard) { DestroyElement(nBoard); }
+    BoardID IssueSerialNumber();
 #ifndef GPLAY
     BOOL PurgeMissingTileIDs();
     BOOL IsTileInUse(TileID tid);
 #endif
     // -------- //
-    int FindBoardBySerial(int nSerialNum);
+    size_t FindBoardBySerial(BoardID nSerialNum) const;
     // -------- //
     void DestroyAllElements(void);
-    void DestroyElement(int iElementIdx)
-        { delete (CBoard*)GetAt(iElementIdx); RemoveAt(iElementIdx); }
-    CBoard* operator[](int nIndex) const
-        { return (CBoard*)GetAt(nIndex); }
-    CBoard*& operator[](int nIndex)
-        { return (CBoard*&)ElementAt(nIndex); }
+    void DestroyElement(size_t iElementIdx)
+        { erase(begin() + value_preserving_cast<ptrdiff_t>(iElementIdx)); }
+    const CBoard* operator[](size_t nIndex) const
+        { return at(nIndex).get(); }
+    std::unique_ptr<CBoard>& operator[](size_t nIndex)
+        { return at(nIndex); }
     // ------- //
     void Serialize(CArchive& ar);
 protected:
     // Saved in file...
-    int     m_nNextSerialNumber;    // Should be 1 or greater
+    BoardID m_nNextSerialNumber;    // Should be 1 or greater
     WORD    m_wReserved1;           // For future need (set to 0)
     WORD    m_wReserved2;           // For future need (set to 0)
     WORD    m_wReserved3;           // For future need (set to 0)

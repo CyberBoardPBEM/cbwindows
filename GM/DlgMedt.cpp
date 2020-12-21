@@ -99,14 +99,9 @@ void CMarkerEditDialog::SetupTileListbox()
         return;
     }
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-    {
-        m_listTiles.SetItemMap(NULL);
-        return;
-    }
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    m_listTiles.SetItemMap(pLstMap);
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    m_listTiles.SetItemMap(&pLstMap);
 }
 
 void CMarkerEditDialog::SetupTileSetNames()
@@ -114,9 +109,9 @@ void CMarkerEditDialog::SetupTileSetNames()
     ASSERT(m_pTMgr);
     m_comboTSet.ResetContent();
 
-    for (int i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        m_comboTSet.AddString(m_pTMgr->GetTileSet(i)->GetName());
-    if (m_pTMgr->GetNumTileSets() > 0)
+    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
+        m_comboTSet.AddString(m_pTMgr->GetTileSet(i).GetName());
+    if (!m_pTMgr->IsEmpty())
         m_comboTSet.SetCurSel(0);           // Select the first entry
 }
 
@@ -130,27 +125,24 @@ TileID CMarkerEditDialog::GetTileID()
     if (nCurTile < 0)
         return nullTid;
 
-    CTileSet* pTSet = m_pTMgr->GetTileSet(nCurSel);
-    if (pTSet == NULL)
-        return nullTid;
+    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
-    CWordArray* pLstMap = pTSet->GetTileIDTable();
-    return (TileID)pLstMap->GetAt(nCurTile);
+    const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
+    return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CMarkerEditDialog::SetupMarkerTile()
 {
-    MarkDef* pDef = m_pMMgr->GetMark(m_mid);
-    ASSERT(pDef);
+    MarkDef& pDef = m_pMMgr->GetMark(m_mid);
 
-    int nSet = m_pTMgr->FindTileSetFromTileID(pDef->m_tid);
-    ASSERT(nSet >= 0);
+    size_t nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tid);
+    ASSERT(nSet != Invalid_v<size_t>);
 
-    m_comboTSet.SetCurSel(nSet);
+    m_comboTSet.SetCurSel(value_preserving_cast<int>(nSet));
     SetupTileListbox();
-    m_listTiles.SetCurSelMapped(pDef->m_tid);
+    m_listTiles.SetCurSelMapped(pDef.m_tid);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -158,14 +150,13 @@ void CMarkerEditDialog::SetupMarkerTile()
 
 void CMarkerEditDialog::OnOK()
 {
-    MarkDef* pDef = m_pMMgr->GetMark(m_mid);
-    ASSERT(pDef);
+    MarkDef& pDef = m_pMMgr->GetMark(m_mid);
     TileID tid = GetTileID();
-    pDef->m_tid = tid;
+    pDef.m_tid = tid;
     if (m_chkPromptText.GetCheck() != 0)
-        pDef->m_flags |= MarkDef::flagPromptText;
+        pDef.m_flags |= MarkDef::flagPromptText;
     else
-        pDef->m_flags &= ~MarkDef::flagPromptText;
+        pDef.m_flags &= ~MarkDef::flagPromptText;
 
     CString strMarkText;
     m_editMarkerText.GetWindowText(strMarkText);
@@ -198,7 +189,7 @@ BOOL CMarkerEditDialog::OnInitDialog()
 
     m_listMarks.SetDocument(m_pDoc);
 
-    m_tbl.Add(m_mid);
+    m_tbl.push_back(m_mid);
     m_listMarks.SetItemMap(&m_tbl);
 
     CString strMarkText;
@@ -206,7 +197,7 @@ BOOL CMarkerEditDialog::OnInitDialog()
     if (!strMarkText.IsEmpty())
         m_editMarkerText.SetWindowText(strMarkText);
 
-    WORD wMarkFlags = m_pMMgr->GetMark(m_mid)->m_flags;
+    WORD wMarkFlags = m_pMMgr->GetMark(m_mid).m_flags;
     m_chkPromptText.SetCheck(wMarkFlags & MarkDef::flagPromptText ? 1 : 0);
 
     m_pTMgr = m_pDoc->GetTileManager();

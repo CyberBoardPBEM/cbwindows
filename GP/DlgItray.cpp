@@ -99,13 +99,13 @@ BOOL CImportTraysDlg::OnInitDialog()
     // already doesn't exist as a tray in the scenario, add it to the
     // listbox.
 
-    for (int nPSet = 0; nPSet < pPMgr->GetNumPieceSets(); nPSet++)
+    for (size_t nPSet = 0; nPSet < pPMgr->GetNumPieceSets(); nPSet++)
     {
-        CString strName = pPMgr->GetPieceSet(nPSet)->GetName();
-        int nTray;
+        CString strName = pPMgr->GetPieceSet(nPSet).GetName();
+        size_t nTray;
         for (nTray = 0; nTray < pYMgr->GetNumTraySets(); nTray++)
         {
-            if (strName.CompareNoCase(pYMgr->GetTraySet(nTray)->GetName()) == 0)
+            if (strName.CompareNoCase(pYMgr->GetTraySet(nTray).GetName()) == 0)
                 break;
         }
         if (nTray >= pYMgr->GetNumTraySets())
@@ -133,18 +133,18 @@ void CImportTraysDlg::OnOK()
         if (m_listGroups.GetCheck(i) > 0)
         {
             CString strTrayName;
-            int nPSet = (int)m_listGroups.GetItemData(i);
-            CPieceSet* pPSet = pPMgr->GetPieceSet(nPSet);
+            size_t nPSet = value_preserving_cast<size_t>(m_listGroups.GetItemData(i));
+            CPieceSet& pPSet = pPMgr->GetPieceSet(nPSet);
 
             // Create tray and add pieces...
-            int nTray = pYMgr->CreateTraySet(pPSet->GetName());
-            CTraySet* pYSet = pYMgr->GetTraySet(nTray);
+            size_t nTray = pYMgr->CreateTraySet(pPSet.GetName());
+            CTraySet& pYSet = pYMgr->GetTraySet(nTray);
 
             // Locate only those pieces that aren't currently being used.
-            CWordArray arrUnusedPieces;
-            pPTbl->LoadUnusedPieceList(&arrUnusedPieces, nPSet);
-            pPTbl->SetPieceListAsFrontUp(&arrUnusedPieces);
-            pYSet->AddPieceList(&arrUnusedPieces);
+            std::vector<PieceID> arrUnusedPieces;
+            pPTbl->LoadUnusedPieceList(arrUnusedPieces, nPSet);
+            pPTbl->SetPieceListAsFrontUp(arrUnusedPieces);
+            pYSet.AddPieceList(arrUnusedPieces);
         }
     }
     CDialog::OnOK();

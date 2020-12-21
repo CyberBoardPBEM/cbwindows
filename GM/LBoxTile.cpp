@@ -47,25 +47,26 @@ CTileListBox::CTileListBox()
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
 }
 
-int CTileListBox::OnItemHeight(int nIndex)
+unsigned CTileListBox::OnItemHeight(size_t nIndex)
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
     CTile tile;
-    pTMgr->GetTile((TileID)MapIndexToItem(nIndex), &tile, fullScale);
+    pTMgr->GetTile(MapIndexToItem(nIndex), &tile, fullScale);
 
-    int nHt = 2 * tileBorder + tile.GetHeight();
+    LONG nHt = 2 * tileBorder + tile.GetHeight();
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
-        nHt = max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return nHt;
+        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+    return value_preserving_cast<unsigned>(nHt);
 }
 
-void CTileListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
+void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
     CRect rctItem)
 {
-    if (nIndex < 0)
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
         return;
 
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
@@ -74,7 +75,7 @@ void CTileListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
         CTileManager* pTMgr = m_pDoc->GetTileManager();
         ASSERT(pTMgr != NULL);
 
-        TileID tid = (TileID)MapIndexToItem(nIndex);
+        TileID tid = MapIndexToItem(nIndex);
         CTile tile;
         CTile tileHalf;
         CTile tileSmall;
@@ -105,7 +106,7 @@ void CTileListBox::OnItemDraw(CDC* pDC, int nIndex, UINT nAction, UINT nState,
         if (m_bDisplayIDs)
         {
             CString str;
-            str.Format("[%d] ", MapIndexToItem(nIndex));
+            str.Format("[%d] ", static_cast<WORD>(MapIndexToItem(nIndex)));
             CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
             int y = rctItem.top + rctItem.Height() / 2 -
                 (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
@@ -140,14 +141,14 @@ BOOL CTileListBox::OnDragSetup(DragInfo* pDI)
     if (IsMultiSelect())
     {
         pDI->m_dragType = DRAG_TILELIST;
-        pDI->GetSubInfo<DRAG_TILELIST>().m_tileIDList = GetMappedMultiSelectList();// TileID array
+        pDI->GetSubInfo<DRAG_TILELIST>().m_tileIDList = &GetMappedMultiSelectList();
         pDI->GetSubInfo<DRAG_TILELIST>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
         pDI->m_dragType = DRAG_TILE;
-        pDI->GetSubInfo<DRAG_TILE>().m_tileID = GetCurMapItem();      // The TileID
+        pDI->GetSubInfo<DRAG_TILE>().m_tileID = GetCurMapItem();
         pDI->GetSubInfo<DRAG_TILE>().m_gamDoc = m_pDoc;
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }

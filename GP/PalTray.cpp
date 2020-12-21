@@ -96,7 +96,7 @@ CTrayPalette::CTrayPalette()
     m_listTray.EnableDropScroll();
     m_listTray.SetTrayContentVisibility(trayVizTwoSide);
 
-    m_dummyArray.Add(0);
+    m_dummyArray.push_back(PieceID(0));
 
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
@@ -194,29 +194,29 @@ void CTrayPalette::DoEditSelectedPieceText(BOOL bEditTop)
     int nSelItem;
     m_listTray.GetSelItems(1, &nSelItem);
 
-    PieceID pid = (PieceID)m_listTray.MapIndexToItem(nSelItem);
+    PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nSelItem));
 
     m_pDoc->DoEditPieceText(pid, bEditTop);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CTrayPalette::GetSelectedTray()
+size_t CTrayPalette::GetSelectedTray()
 {
     int nSel = m_comboYGrp.GetCurSel();
     if (nSel < 0)
-        return -1;
-    return (int)m_comboYGrp.GetItemData(nSel);
+        return Invalid_v<size_t>;
+    return value_preserving_cast<size_t>(m_comboYGrp.GetItemData(nSel));
 }
 
-int CTrayPalette::FindTrayIndex(int nTrayNum)
+int CTrayPalette::FindTrayIndex(size_t nTrayNum)
 {
     if (m_comboYGrp.GetCount() <= 0)
         return -1;
     // @@@@@ TRACE1("m_comboYGrp.GetCount() = %d\n",  m_comboYGrp.GetCount());
     for (int nIdx = 0; nIdx < m_comboYGrp.GetCount(); nIdx++)
     {
-        if ((int)m_comboYGrp.GetItemData(nIdx) == nTrayNum)
+        if (value_preserving_cast<size_t>(m_comboYGrp.GetItemData(nIdx)) == nTrayNum)
             return nIdx;
     }
     // CAN HAPPEN! ASSERT(nIdx < m_comboYGrp.GetCount());
@@ -283,25 +283,26 @@ void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
 
 LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
 {
-    int nSel = GetSelectedTray();
-    if (nSel < 0)
+    char prefix = value_preserving_cast<char>(lParam);
+    ASSERT(prefix == 'P' && wParam);
+    size_t nSel = GetSelectedTray();
+    if (nSel == Invalid_v<size_t> || !wParam || prefix != 'P')
         return (LRESULT)0;
 
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-    ASSERT(pYSet);
+    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
 
-    if (pYSet->IsRandomPiecePull())
+    if (pYSet.IsRandomPiecePull())
     {
-        CWordArray *pPceArray = (CWordArray *)wParam;
+        std::vector<PieceID>& pPceArray = *reinterpret_cast<std::vector<PieceID>*>(wParam);
 
         UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(pPceArray->GetSize(),
-            pYSet->GetPieceIDTable()->GetSize(), nRandSeed, &nRandSeed);
+        std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(pPceArray.size()),
+            value_preserving_cast<int>(pYSet.GetPieceIDTable().size()), nRandSeed, &nRandSeed);
 
-        for (int i = 0; i < pPceArray->GetSize(); i++)
-            pPceArray->SetAt(i, pYSet->GetPieceIDTable()->GetAt(pnIndices[i]));
+        for (size_t i = 0; i < pPceArray.size(); i++)
+            pPceArray.at(i) = pYSet.GetPieceIDTable().at(value_preserving_cast<size_t>(pnIndices[value_preserving_cast<int>(i)]));
 
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
@@ -375,18 +376,18 @@ void CTrayPalette::LoadTrayNameList()
     ASSERT(pYMgr != NULL);
 
     m_comboYGrp.ResetContent();
-    for (int i = 0; i < pYMgr->GetNumTraySets(); i++)
+    for (size_t i = 0; i < pYMgr->GetNumTraySets(); i++)
     {
-        CTraySet* pYSet = pYMgr->GetTraySet(i);
-        CString strTrayName = pYSet->GetName();
-        if (pYSet->IsOwned())
+        CTraySet& pYSet = pYMgr->GetTraySet(i);
+        CString strTrayName = pYSet.GetName();
+        if (pYSet.IsOwned())
         {
             CString strOwner = m_pDoc->GetPlayerManager()->GetPlayerUsingMask(
-                pYSet->GetOwnerMask()).m_strName;
+                pYSet.GetOwnerMask()).m_strName;
             strTrayName += " - " + strOwner;
         }
         int nIdx = m_comboYGrp.AddString(strTrayName);
-        m_comboYGrp.SetItemData(nIdx, (DWORD)i);    // Store the tray index in the data item
+        m_comboYGrp.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(i));    // Store the tray index in the data item
     }
     m_comboYGrp.SetCurSel(0);
     UpdateTrayList();
@@ -394,16 +395,16 @@ void CTrayPalette::LoadTrayNameList()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::UpdatePaletteContents(CTraySet* pTray)
+void CTrayPalette::UpdatePaletteContents(const CTraySet* pTray)
 {
-    int nSel = GetSelectedTray();
-    if (nSel >= 0 && pTray != NULL)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t> && pTray != NULL)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        if (pYMgr->GetTraySet(nSel) != pTray)
+        if (&pYMgr->GetTraySet(nSel) != pTray)
             return;             // Not visible in palette at present.
     }
-    if (nSel < 0)
+    if (nSel == Invalid_v<size_t>)
         nSel = 0;               // Force first entry (if any)
     if (pTray == NULL)
     {
@@ -418,9 +419,9 @@ void CTrayPalette::UpdatePaletteContents(CTraySet* pTray)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::ShowTrayIndex(int nGroup, int nPos)
+void CTrayPalette::ShowTrayIndex(size_t nGroup, int nPos)
 {
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
     {
         m_comboYGrp.SetCurSel(FindTrayIndex(nGroup));
@@ -437,10 +438,10 @@ void CTrayPalette::DeselectAll()
         m_listTray.DeselectAll();
 }
 
-void CTrayPalette::SelectTrayPiece(int nGroup, PieceID pid,
+void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
     LPCTSTR pszNotificationTip /* = NULL */)
 {
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
     {
         m_comboYGrp.SetCurSel(FindTrayIndex(nGroup));
@@ -448,8 +449,8 @@ void CTrayPalette::SelectTrayPiece(int nGroup, PieceID pid,
     }
     if (pszNotificationTip != NULL)
     {
-        int nItem = m_listTray.SelectTrayPiece(pid);
-        m_listTray.SetNotificationTip(nItem, pszNotificationTip);
+        size_t nItem = m_listTray.SelectTrayPiece(pid);
+        m_listTray.SetNotificationTip(value_preserving_cast<int>(nItem), pszNotificationTip);
     }
 }
 
@@ -463,8 +464,8 @@ void CTrayPalette::UpdateTrayList()
 
     m_toolTipCombo.DelTool(&m_comboYGrp);   // Always delete current tool
 
-    int nSel = GetSelectedTray();
-    if (nSel < 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel == Invalid_v<size_t>)
         return;
 
     // Get the name from the combo box since it has all the ownership
@@ -478,31 +479,30 @@ void CTrayPalette::UpdateTrayList()
     ti.lpszText = (LPTSTR)(LPCTSTR)strTrayName;
     m_toolTipCombo.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 
-    CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-    CWordArray* pPieceTbl = pYSet->GetPieceIDTable();
-    ASSERT(pPieceTbl != NULL);
+    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+    const std::vector<PieceID>* pPieceTbl = &pYSet.GetPieceIDTable();
 
     CString str = "";
     m_listTray.EnableDrag(TRUE);
     m_listTray.EnableSelfDrop(TRUE);
     m_listTray.SetTipsAllowed(TRUE);
 
-    TrayViz eViz = pYSet->GetTrayContentVisibility();
+    TrayViz eViz = pYSet.GetTrayContentVisibility();
 
     // If a tray is owned and the current player is the owner,
     // then the two sided view is forced. Otherwise the default
     // visibility is used. Also, if in scenario mode and if
     // a tray is owned it to will be fully visible.
 
-    if (pYSet->IsOwned() && (m_pDoc->IsScenario() ||
-         pYSet->IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
-        !pYSet->IsEnforcingVisibilityForOwnerToo()))
+    if (pYSet.IsOwned() && (m_pDoc->IsScenario() ||
+         pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
+        !pYSet.IsEnforcingVisibilityForOwnerToo()))
     {
         eViz = trayVizTwoSide;              // Override visibility
     }
     else if (eViz == trayVizEachGeneric)
     {
-        if (pYSet->IsRandomPiecePull())
+        if (pYSet.IsRandomPiecePull())
         {
             str.LoadString(IDS_TRAY_RANDHIDDEN);
             m_listTray.EnableSelfDrop(FALSE);
@@ -512,7 +512,7 @@ void CTrayPalette::UpdateTrayList()
     }
     else if (eViz == trayVizNone)
     {
-        if (pYSet->IsRandomPiecePull())
+        if (pYSet.IsRandomPiecePull())
         {
             str.LoadString(IDS_TRAY_ALLRANDHIDDEN);
             m_listTray.EnableSelfDrop(FALSE);
@@ -521,17 +521,17 @@ void CTrayPalette::UpdateTrayList()
             str.LoadString(IDS_TRAY_ALLHIDDEN);
         // Set the first (and only) element in the dummy array
         // to the first element in actual tray.
-        m_dummyArray.RemoveAll();
-        if (pPieceTbl->GetSize() > 0)
-            m_dummyArray.Add(pPieceTbl->GetAt(0));
+        m_dummyArray.clear();
+        if (!pPieceTbl->empty())
+            m_dummyArray.push_back(pPieceTbl->front());
         pPieceTbl = &m_dummyArray;
     }
-    if (!m_pDoc->IsScenario() && pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc))
+    if (!m_pDoc->IsScenario() && pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc))
         m_listTray.SetTipsAllowed(FALSE);
 
-    if (!m_pDoc->IsScenario() && pYSet->IsOwned() &&
-        !pYSet->IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
-        !pYSet->IsNonOwnerAccessAllowed())
+    if (!m_pDoc->IsScenario() && pYSet.IsOwned() &&
+        !pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
+        !pYSet.IsNonOwnerAccessAllowed())
     {
         m_listTray.EnableDrag(FALSE);
         m_listTray.EnableSelfDrop(FALSE);
@@ -565,8 +565,8 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             return 0;                   // Only piece drops allowed
     }
 
-    int nGrpSel = GetSelectedTray();
-    if (nGrpSel < 0)
+    size_t nGrpSel = GetSelectedTray();
+    if (nGrpSel == Invalid_v<size_t>)
         return 0;                       // No tray to drop on
 
     if (wParam == phaseDragOver)
@@ -574,15 +574,14 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
     else if (wParam == phaseDragDrop)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYGrp = pYMgr->GetTraySet(nGrpSel);
-        ASSERT(pYGrp != NULL);
+        CTraySet& pYGrp = pYMgr->GetTraySet(nGrpSel);
 
         // Force selection of item under the mouse
         m_listTray.SetSelFromPoint(pdi->m_point);
         int nSel = m_listTray.GetCount() <= 0 ? -1 : m_listTray.GetCurSel();
 
-        if (!m_pDoc->IsScenario() && pYGrp->IsOwnedButNotByCurrentPlayer(m_pDoc) &&
-                pYGrp->GetTrayContentVisibility() == trayVizNone)
+        if (!m_pDoc->IsScenario() && pYGrp.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+                pYGrp.GetTrayContentVisibility() == trayVizNone)
             nSel = -1;  // Always append pieces when dropping on single line view
 
         if (nSel >= 0)
@@ -597,15 +596,16 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         if (pdi->m_dragType == DRAG_PIECE)
         {
             m_pDoc->AssignNewMoveGroup();
-            m_pDoc->PlacePieceInTray(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel);
+            m_pDoc->PlacePieceInTray(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             // Select the last piece that was inserted
-            nSel = pYGrp->GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID);
+            nSel = value_preserving_cast<int>(pYGrp.GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID));
         }
         if (pdi->m_dragType == DRAG_PIECELIST)
         {
             m_pDoc->AssignNewMoveGroup();
-            nSel = m_pDoc->PlacePieceListInTray(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList,
-                pYGrp, nSel);
+            size_t temp = m_pDoc->PlacePieceListInTray(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList),
+                pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
+            nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
         }
         else        // DRAG_SELECTLIST
         {
@@ -614,8 +614,9 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             pSLst->LoadListWithObjectPtrs(&m_listPtr);
             pSLst->PurgeList(FALSE);
             m_pDoc->AssignNewMoveGroup();
-            nSel = m_pDoc->PlaceObjectListInTray(&m_listPtr,
-                pYGrp, nSel);
+            size_t temp = m_pDoc->PlaceObjectListInTray(m_listPtr,
+                pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
+            nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
         }
 
@@ -770,17 +771,17 @@ void CTrayPalette::OnTrayListDoubleClick()
     if (nIndex < 0 || nIndex > 65535)
         return;
 
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        if (pYSet->IsOwned() &&
-            !pYSet->IsOwnedBy(m_pDoc->GetCurrentPlayerMask()))
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        if (pYSet.IsOwned() &&
+            !pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()))
             return;
     }
 
-    PieceID pid = (PieceID)m_listTray.MapIndexToItem(nIndex);
+    PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nIndex));
     m_pDoc->DoEditPieceText(pid, TRUE);
 }
 
@@ -794,35 +795,36 @@ void CTrayPalette::OnPieceTrayShuffle()
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
-    CWordArray tblPids;
+    std::vector<PieceID> tblPids;
+    tblPids.reserve(value_preserving_cast<size_t>(nNumIndices));
     for (int i = 0; i < nNumIndices; i++)
-        tblPids.Add(m_listTray.MapIndexToItem(pnIndices[i]));
+        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(pnIndices[i])));
 
     m_pDoc->AssignNewMoveGroup();
 
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
 
     if (m_pDoc->IsRecording())
     {
         CString strMsg;
-        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.GetSize());
-        m_pDoc->RecordEventMessage(strMsg, FALSE, nSel, (int)tblPids[0]);
+        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
+        m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
-    m_pDoc->PlacePieceListInTray(&tblPids, pYMgr->GetTraySet(nSel), 0);
+    m_pDoc->PlacePieceListInTray(tblPids, pYMgr->GetTraySet(nSel), 0);
 }
 
 void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !(pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc) &&
-            !pYSet->IsNonOwnerAccessAllowed());
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+            !pYSet.IsNonOwnerAccessAllowed());
     }
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
         m_listTray.GetCount() > 1);
@@ -845,35 +847,36 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
-    CWordArray tblPids;
+    std::vector<PieceID> tblPids;
+    tblPids.reserve(value_preserving_cast<size_t>(nNumIndices));
     for (int i = 0; i < nNumIndices; i++)
-        tblPids.Add(m_listTray.MapIndexToItem(tblListSel[pnIndices[i]]));
+        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[i]])));
 
     m_pDoc->AssignNewMoveGroup();
 
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
 
     if (m_pDoc->IsRecording())
     {
         CString strMsg;
-        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.GetSize());
-        m_pDoc->RecordEventMessage(strMsg, FALSE, nSel, (int)tblPids[0]);
+        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
+        m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
-    m_pDoc->PlacePieceListInTray(&tblPids, pYMgr->GetTraySet(nSel), nTopSel);
+    m_pDoc->PlacePieceListInTray(tblPids, pYMgr->GetTraySet(nSel), value_preserving_cast<size_t>(nTopSel));
 }
 
 void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !(pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc) &&
-            !pYSet->IsNonOwnerAccessAllowed());
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+            !pYSet.IsNonOwnerAccessAllowed());
     }
 
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
@@ -888,12 +891,12 @@ void CTrayPalette::OnEditElementText()
 void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc);
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
     }
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
         m_listTray.GetSelCount() == 1 && m_listTray.IsShowingTileImages());
@@ -909,25 +912,25 @@ void CTrayPalette::OnActTurnOver()
     m_pDoc->AssignNewMoveGroup();
     for (int i = 0; i < tblListSel.GetSize(); i++)
     {
-        PieceID pid = (PieceID)m_listTray.MapIndexToItem(tblListSel[i]);
+        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[i]));
         m_pDoc->InvertPlayingPieceInTray(pid, FALSE);
     }
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
-    hint.m_pTray = pYMgr->GetTraySet(nSel);
+    hint.m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
 }
 
 void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc);
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
     }
 
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
@@ -939,25 +942,25 @@ void CTrayPalette::OnActTurnoverAllPieces()
     m_pDoc->AssignNewMoveGroup();
     for (int i = 0; i < m_listTray.GetCount(); i++)
     {
-        PieceID pid = (PieceID)m_listTray.MapIndexToItem(i);
+        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(i));
         m_pDoc->InvertPlayingPieceInTray(pid, FALSE);
     }
-    int nSel = GetSelectedTray();
+    size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
-    hint.m_pTray = pYMgr->GetTraySet(nSel);
+    hint.m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
 }
 
 void CTrayPalette::OnUpdateActTurnoverAllPieces(CCmdUI* pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
-    int nSel = GetSelectedTray();
-    if (nSel >= 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel != Invalid_v<size_t>)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet* pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet->IsOwnedButNotByCurrentPlayer(m_pDoc);
+        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
     }
 
     pCmdUI->Enable((m_pDoc->IsScenario() ||
@@ -966,16 +969,16 @@ void CTrayPalette::OnUpdateActTurnoverAllPieces(CCmdUI* pCmdUI)
 
 void CTrayPalette::OnPieceTrayAbout()
 {
-    int nSel = GetSelectedTray();
-    if (nSel < 0)
+    size_t nSel = GetSelectedTray();
+    if (nSel == Invalid_v<size_t>)
         return;
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CTraySet* pYSet = pYMgr->GetTraySet(nSel);
+    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
     CString strMsg;
     CString strTmp;
-    strMsg.Format(IDS_MSG_TRAY_INFO, pYSet->GetName());
+    strMsg.Format(IDS_MSG_TRAY_INFO, pYSet.GetName());
 
-    switch (pYSet->GetTrayContentVisibility())
+    switch (pYSet.GetTrayContentVisibility())
     {
         case trayVizTwoSide:
             strTmp.LoadString(IDS_MSG_TVIZ_TWO_SIDE);
@@ -996,30 +999,30 @@ void CTrayPalette::OnPieceTrayAbout()
 
     strMsg += strTmp + '\n';
 
-    if (pYSet->IsRandomPiecePull())
+    if (pYSet.IsRandomPiecePull())
     {
         strTmp.LoadString(IDS_MSG_RANDOM_PULL);
         strMsg += strTmp + '\n';
     }
 
-    if (pYSet->IsOwned())
+    if (pYSet.IsOwned())
     {
         strTmp.Format(IDS_MSG_OWNED_BY, (LPCTSTR)m_pDoc->GetPlayerManager()->
-            GetPlayerUsingMask(pYSet->GetOwnerMask()).m_strName);
+            GetPlayerUsingMask(pYSet.GetOwnerMask()).m_strName);
     }
     else
         strTmp.LoadString(IDS_MSG_NOT_OWNED);
 
     strMsg += strTmp;
-    if (pYSet->IsOwned())
+    if (pYSet.IsOwned())
     {
-        if (pYSet->IsNonOwnerAccessAllowed())
+        if (pYSet.IsNonOwnerAccessAllowed())
             strTmp.LoadString(IDS_MSG_NONOWN_ALLOWED);
         else
             strTmp.LoadString(IDS_MSG_NONOWN_NOT_ALLOWED);
         strMsg += '\n' + strTmp;
 
-        if (pYSet->IsEnforcingVisibilityForOwnerToo())
+        if (pYSet.IsEnforcingVisibilityForOwnerToo())
             strTmp.LoadString(IDS_MSG_TVIZ_OWNER_TOO);
         else
             strTmp.LoadString(IDS_MSG_TVIZ_OWNER_FULL);

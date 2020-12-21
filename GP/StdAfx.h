@@ -55,8 +55,7 @@
 #include <dde.h>
 #include <math.h>
 
-// use explicitly sized ints for portable file format control
-#include <cstdint>
+#include "CyberBoard.h"
 
 #ifdef _UNICODE
 #if defined _M_IX86

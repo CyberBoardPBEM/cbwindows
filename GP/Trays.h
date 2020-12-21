@@ -48,13 +48,18 @@ class CTraySet
 {
 public:
     CTraySet();
+    CTraySet(const CTraySet&) = delete;
+    CTraySet& operator=(const CTraySet&) = delete;
+    CTraySet(CTraySet&&) = default;
+    CTraySet& operator=(CTraySet&&) = default;
+    ~CTraySet() = default;
 
 // Attributes
 public:
-    CWordArray* GetPieceIDTable() { return &m_pidTbl; }
-    BOOL IsEmpty() { return m_pidTbl.GetSize() == 0; }
-    BOOL HasPieceID(PieceID pid);
-    int GetPieceIDIndex(PieceID pid);
+    const std::vector<PieceID>& GetPieceIDTable() const { return m_pidTbl; }
+    BOOL IsEmpty() const { return m_pidTbl.empty(); }
+    BOOL HasPieceID(PieceID pid) const;
+    size_t GetPieceIDIndex(PieceID pid) const;
 
     const char* GetName() const { return m_strName; }
     void SetName(const char *pszName) { m_strName = pszName; }
@@ -79,24 +84,24 @@ public:
 
 // Operations
 public:
-    void AddPieceID(PieceID pid, int nPos = -1);
+    void AddPieceID(PieceID pid, size_t nPos = Invalid_v<size_t>);
     void RemovePieceID(PieceID pid);
 
-    void AddPieceList(CWordArray *pTbl, int nPos = -1);
-    void RemovePieceList(CWordArray *pTbl);
+    void AddPieceList(const std::vector<PieceID>& pTbl, size_t nPos = Invalid_v<size_t>);
+    void RemovePieceList(const std::vector<PieceID>& pTbl);
 
     void PropagateOwnerMaskToAllPieces(CGamDoc* pDoc);
 
-    CTraySet* Clone(CGamDoc *pDoc);
-    void Restore(CGamDoc *pDoc, CTraySet* pTbl);
-    BOOL Compare(CTraySet* pYGrp);
+    CTraySet Clone(CGamDoc *pDoc) const;
+    void Restore(CGamDoc *pDoc, const CTraySet& pTbl);
+    BOOL Compare(const CTraySet& pYGrp) const;
 
     void Serialize(CArchive& ar);
 
 // Implementation
 protected:
     CString     m_strName;
-    CWordArray  m_pidTbl;           // PieceIDs in this set.
+    std::vector<PieceID> m_pidTbl;
 
     DWORD     m_dwOwnerMask;        // Who can change the tray (0=no owners)
     BOOL      m_bNonOwnerAccess;    // Allow non-owner access. Visiblity is still enforced.
@@ -111,40 +116,48 @@ class CTrayManager
 {
 public:
     CTrayManager();
-    ~CTrayManager();
+    CTrayManager(const CTrayManager&) = delete;
+    CTrayManager& operator=(const CTrayManager&) = delete;
+    CTrayManager(CTrayManager&&) = default;
+    CTrayManager& operator=(CTrayManager&&) = default;
+    ~CTrayManager() = default;
 
 // Attributes
 public:
-    int GetNumTraySets() const { return m_YSetTbl.GetSize(); }
-    CTraySet* GetTraySet(int nYSet)
-        { return (CTraySet*)m_YSetTbl.GetAt(nYSet); }
+    size_t GetNumTraySets() const { return m_YSetTbl.size(); }
+    const CTraySet& GetTraySet(size_t nYSet) const
+        { return m_YSetTbl.at(nYSet); }
+    CTraySet& GetTraySet(size_t nYSet)
+    {
+        return const_cast<CTraySet&>(std::as_const(*this).GetTraySet(nYSet));
+    }
     void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
     CTileManager* GetTileManager() { return m_pTMgr; }
 
 // Operations
 public:
-    int CreateTraySet(const char* pszName);
-    void DeleteTraySet(int nYSet);
+    size_t CreateTraySet(const char* pszName);
+    void DeleteTraySet(size_t nYSet);
     void RemovePieceIDFromTraySets(PieceID pid);
     CTraySet* FindPieceIDInTraySet(PieceID pid);
-    int FindTrayByName(const char* strName);
-    int FindTrayByPtr(CTraySet* pYSet);
+    size_t FindTrayByName(const char* strName) const;
+    size_t FindTrayByRef(const CTraySet& pYSet) const;
 
     void Clear();
 
     void ClearAllOwnership();
     void PropagateOwnerMaskToAllPieces(CGamDoc* pDoc);
 
-    CTrayManager* Clone(CGamDoc *pDoc);
-    void Restore(CGamDoc *pDoc, CTrayManager* pMgr);
-    BOOL Compare(CTrayManager* pYMgr);
+    CTrayManager Clone(CGamDoc *pDoc) const;
+    void Restore(CGamDoc *pDoc, const CTrayManager& pMgr);
+    BOOL Compare(const CTrayManager& pYMgr) const;
 
     void Serialize(CArchive& ar);
     void SerializeTraySets(CArchive& ar);
 
 // Implementation
 protected:
-    CPtrArray   m_YSetTbl;      // Table of tray set pointers
+    std::vector<CTraySet> m_YSetTbl;
     WORD        m_wReserved1;   // For future need (set to 0)
     WORD        m_wReserved2;   // For future need (set to 0)
     WORD        m_wReserved3;   // For future need (set to 0)
