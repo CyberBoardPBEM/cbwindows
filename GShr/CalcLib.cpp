@@ -109,14 +109,14 @@ void CalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed, int* pnIndic
 // zero based range. The caller must 'delete' the returned vector.
 // All indices will be unique.
 
-int* AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
+std::vector<int> AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
     UINT* pnNextSeed /* = NULL*/)
 {
     ASSERT(nNumIndices <= nRange);
     ASSERT(nSeed != 0);
 
-    int* pnIndices = new int[nNumIndices];
-    CalcRandomIndexVector(nNumIndices, nRange, nSeed, pnIndices, pnNextSeed);
+    std::vector<int> pnIndices(nNumIndices);
+    CalcRandomIndexVector(nNumIndices, nRange, nSeed, pnIndices.data(), pnNextSeed);
 
     return pnIndices;
 }

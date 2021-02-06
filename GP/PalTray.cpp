@@ -297,13 +297,12 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
 
         UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        int* pnIndices = AllocateAndCalcRandomIndexVector(pPceArray->GetSize(),
+        std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(pPceArray->GetSize(),
             pYSet->GetPieceIDTable()->GetSize(), nRandSeed, &nRandSeed);
 
         for (int i = 0; i < pPceArray->GetSize(); i++)
             pPceArray->SetAt(i, pYSet->GetPieceIDTable()->GetAt(pnIndices[i]));
 
-        delete [] pnIndices;
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
 
@@ -790,7 +789,7 @@ void CTrayPalette::OnPieceTrayShuffle()
     // Generate a shuffled index vector
     UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
     int nNumIndices = m_listTray.GetCount();
-    int* pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
+    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
@@ -798,8 +797,6 @@ void CTrayPalette::OnPieceTrayShuffle()
     CWordArray tblPids;
     for (int i = 0; i < nNumIndices; i++)
         tblPids.Add(m_listTray.MapIndexToItem(pnIndices[i]));
-
-    delete [] pnIndices;
 
     m_pDoc->AssignNewMoveGroup();
 
@@ -843,7 +840,7 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
     // Generate a shuffled index vector for the number of selected items
     UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
     int nNumIndices = tblListSel.GetSize();
-    int* pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
+    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
@@ -851,7 +848,6 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
     CWordArray tblPids;
     for (int i = 0; i < nNumIndices; i++)
         tblPids.Add(m_listTray.MapIndexToItem(tblListSel[pnIndices[i]]));
-    delete [] pnIndices;
 
     m_pDoc->AssignNewMoveGroup();
 

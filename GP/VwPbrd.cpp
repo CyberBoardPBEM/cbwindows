@@ -1437,7 +1437,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     // Generate a shuffled index vector for the number of selected items
     UINT nRandSeed = pDoc->GetRandomNumberSeed();
     int nNumIndices = tblObjs.GetSize();
-    int* pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
+    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
     pDoc->SetRandomNumberSeed(nRandSeed);
 
