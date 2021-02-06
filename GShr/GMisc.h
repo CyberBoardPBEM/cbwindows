@@ -25,6 +25,8 @@
 #ifndef _GMISC_H
 #define _GMISC_H
 
+#include <vector>
+
 #include "MD5.h"
 
 // *** CALCLIB.CPP *** //
@@ -43,7 +45,7 @@ int CalcRandomNumber(int nLow, UINT nRange,
 void CalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed, int* pnIndices,
     UINT* pnNextSeed = NULL);
 
-int* AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
+std::vector<int> AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
     UINT* pnNextSeed = NULL);
 
 #endif
