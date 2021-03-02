@@ -206,15 +206,14 @@ void CGamDoc::AddMovesToGameHistoryTable(CHistRecord* pHist)
     // contains the forced game state. There would be two in
     // the case of loading a move file so we can discard the
     // move file effects if the user didn't want the moves.
-    if (pHist->m_pMList->GetCount() > 1)
+    if (pHist->m_pMList->GetCount() > size_t(1))
     {
-        POSITION pos = pHist->m_pMList->FindIndex(1);
-        ASSERT(pos != NULL);
+        CMoveList::iterator pos = ++pHist->m_pMList->begin();
+        ASSERT(pos != pHist->m_pMList->end());
         CMoveRecord* pRcd = pHist->m_pMList->GetAt(pos);
         if (pRcd->GetType() == CMoveRecord::mrecState)
         {
-            CMoveRecord* pRcd = (CMoveRecord*)pHist->m_pMList->RemoveHead();
-            delete pRcd;
+            pHist->m_pMList->pop_front();
         }
     }
 
@@ -265,7 +264,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
         return FALSE;
     }
 
-    m_pRcdMoves.reset();
+    m_pRcdMoves = nullptr;
 
     m_eState = stateRecording;
     m_pMoves = NULL;        // Clear shadow pointer
@@ -305,9 +304,9 @@ void CGamDoc::RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, CPoint pnt,
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CBoardPieceMove* pRcd = new CBoardPieceMove(pPBrd->GetSerialNumber(),
+    OwnerPtr<CBoardPieceMove> pRcd = MakeOwner<CBoardPieceMove>(pPBrd->GetSerialNumber(),
         pid, pnt, ePos);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,9 +316,9 @@ void CGamDoc::RecordPlotList(CPlayBoard* pPBrd)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CMovePlotList* pRcd = new CMovePlotList(pPBrd->GetSerialNumber(),
+    OwnerPtr<CMovePlotList> pRcd = MakeOwner<CMovePlotList>(pPBrd->GetSerialNumber(),
         pPBrd->GetIndicatorList());
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,8 +330,8 @@ void CGamDoc::RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t n
     ASSERT(m_pRcdMoves != NULL);
     size_t nYGrp = GetTrayManager()->FindTrayByRef(pYGrp);
     ASSERT(nYGrp != Invalid_v<size_t>);
-    CTrayPieceMove* pRcd = new CTrayPieceMove(nYGrp, pid, nPos);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CTrayPieceMove> pRcd = MakeOwner<CTrayPieceMove>(nYGrp, pid, nPos);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -342,8 +341,8 @@ void CGamDoc::RecordPieceSetSide(PieceID pid, BOOL bTopUp)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CPieceSetSide* pRcd = new CPieceSetSide(pid, bTopUp);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CPieceSetSide> pRcd = MakeOwner<CPieceSetSide>(pid, bTopUp);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,8 +352,8 @@ void CGamDoc::RecordPieceSetFacing(PieceID pid, int nFacingDegCW)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CPieceSetFacing* pRcd = new CPieceSetFacing(pid, nFacingDegCW);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CPieceSetFacing> pRcd = MakeOwner<CPieceSetFacing>(pid, nFacingDegCW);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,8 +363,8 @@ void CGamDoc::RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CPieceSetOwnership* pRcd = new CPieceSetOwnership(pid, dwOwnerMask);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CPieceSetOwnership> pRcd = MakeOwner<CPieceSetOwnership>(pid, dwOwnerMask);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,8 +374,8 @@ void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDeg
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CMarkerSetFacing* pRcd = new CMarkerSetFacing(dwObjID, mid, nFacingDegCW);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CMarkerSetFacing> pRcd = MakeOwner<CMarkerSetFacing>(dwObjID, mid, nFacingDegCW);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,9 +386,9 @@ void CGamDoc::RecordEventMessage(CString strMsg,
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CEventMessageRcd* pRcd =
-        new CEventMessageRcd(strMsg, nBoard, x, y);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CEventMessageRcd> pRcd =
+        MakeOwner<CEventMessageRcd>(strMsg, nBoard, x, y);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 void CGamDoc::RecordEventMessage(CString strMsg,
@@ -398,9 +397,9 @@ void CGamDoc::RecordEventMessage(CString strMsg,
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CEventMessageRcd* pRcd =
-        new CEventMessageRcd(strMsg, nTray, pid);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CEventMessageRcd> pRcd =
+        MakeOwner<CEventMessageRcd>(strMsg, nTray, pid);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,9 +410,9 @@ void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CBoardMarkerMove* pRcd = new CBoardMarkerMove(pPBrd->GetSerialNumber(),
+    OwnerPtr<CBoardMarkerMove> pRcd = MakeOwner<CBoardMarkerMove>(pPBrd->GetSerialNumber(),
         dwObjID, mid, pnt, ePos);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,8 +422,8 @@ void CGamDoc::RecordObjectDelete(ObjectID dwObjID)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CObjectDelete* pRcd = new CObjectDelete(dwObjID);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CObjectDelete> pRcd = MakeOwner<CObjectDelete>(dwObjID);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,8 +433,8 @@ void CGamDoc::RecordObjectSetText(GameElement elem, LPCTSTR pszObjText)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CObjectSetText* pRcd = new CObjectSetText(elem, pszObjText);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CObjectSetText> pRcd = MakeOwner<CObjectSetText>(elem, pszObjText);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,8 +444,8 @@ void CGamDoc::RecordObjectLockdown(GameElement elem, BOOL bLockState)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CObjectLockdown* pRcd = new CObjectLockdown(elem, bLockState);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CObjectLockdown> pRcd = MakeOwner<CObjectLockdown>(elem, bLockState);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,8 +462,8 @@ void CGamDoc::RecordGameState()
         // DISPLAY MEMORY LOW ERROR
         return;                     // Can't add the record.
     }
-    CGameStateRcd* pRcd = new CGameStateRcd(pState);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CGameStateRcd> pRcd = MakeOwner<CGameStateRcd>(pState);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,8 +473,8 @@ void CGamDoc::RecordMessage(CString strMsg)
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    CMessageRcd* pRcd = new CMessageRcd(strMsg);
-    m_pRcdMoves->AppendMoveRecord(pRcd);
+    OwnerPtr<CMessageRcd> pRcd = MakeOwner<CMessageRcd>(strMsg);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,7 +518,7 @@ void CGamDoc::CreateRecordListIfRequired()
     // moves is started.
     m_nSeedCarryOver = (UINT)GetTickCount();
 
-    m_pRcdMoves.reset(new CMoveList);
+    m_pRcdMoves = MakeOwner<CMoveList>();
     if (m_eState == stateRecording)
         m_pMoves = m_pRcdMoves.get();         // Set up shadow pointer
 
@@ -541,7 +540,7 @@ void CGamDoc::DoAcceptPlayback()    // (exposed for project window access)
     if (m_nMoveInterlock) return;       // Not reentrant!
 
     BOOL bTruncateRemainingMoves = FALSE;
-    if (m_nCurMove != -1)
+    if (m_nCurMove != Invalid_v<size_t>)
     {
         CTruncatePlaybackDlg dlg;
         if (dlg.DoModal() != IDOK)

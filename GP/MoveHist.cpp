@@ -99,18 +99,18 @@ void CHistRecord::Serialize(CArchive& ar)
         ar >> m_strDescr;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
         {
-            m_pMList.reset();
+            m_pMList = nullptr;
             BYTE fMoveExist;
             ar >> fMoveExist;
             if (fMoveExist)
             {
-                m_pMList.reset(new CMoveList);
+                m_pMList = MakeOwner<CMoveList>();
                 m_pMList->Serialize(ar);
             }
         }
         else
         {
-            m_pMList.reset();
+            m_pMList = nullptr;
             ar >> m_dwFilePos;
             if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 59))
             {

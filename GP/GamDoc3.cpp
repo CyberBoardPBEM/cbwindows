@@ -158,7 +158,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         pHist->Serialize(ar);
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))
         {
-            pHist->m_pMList.reset(new CMoveList);
+            pHist->m_pMList = MakeOwner<CMoveList>();
             pHist->m_pMList->Serialize(ar, FALSE);             // before Ver2.90
         }
     }
@@ -182,12 +182,18 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (WORD)m_eState;
         ar << m_strCurMsg;
         m_astrMsgHist.Serialize(ar);
-        ar << (WORD)m_nCurMove;
-        ar << (WORD)m_nFirstMove;
+        ASSERT(m_nCurMove == Invalid_v<size_t> ||
+                m_nCurMove < size_t(0xFFFF));
+        ar << (m_nCurMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurMove));
+        ASSERT(m_nFirstMove == Invalid_v<size_t> ||
+                m_nFirstMove < size_t(0xFFFF));
+        ar << (m_nFirstMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nFirstMove));
         ASSERT(m_nCurHist == Invalid_v<size_t> ||
                 m_nCurHist < size_t(0xFFFF));
         ar << (m_nCurHist == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurHist));
-        ar << (WORD)m_nMoveIdxAtBookMark;
+        ASSERT(m_nMoveIdxAtBookMark == Invalid_v<size_t> ||
+                m_nMoveIdxAtBookMark < size_t(0xFFFF));
+        ar << (m_nMoveIdxAtBookMark == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nMoveIdxAtBookMark));
 
         ar << (WORD)m_bStepToNextHist;
         ar << (WORD)m_bKeepSkipInd;
@@ -262,10 +268,10 @@ void CGamDoc::SerializeGame(CArchive& ar)
             m_astrMsgHist.Serialize(ar);
         else
             MsgParseLegacyHistory(m_strCurMsg, m_astrMsgHist, m_strCurMsg);
-        ar >> wTmp; m_nCurMove = (int)wTmp;
-        ar >> wTmp; m_nFirstMove = (int)wTmp;
+        ar >> wTmp; m_nCurMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+        ar >> wTmp; m_nFirstMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
         ar >> wTmp; m_nCurHist = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
-        ar >> wTmp; m_nMoveIdxAtBookMark = (int)wTmp;
+        ar >> wTmp; m_nMoveIdxAtBookMark = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
         {
@@ -286,7 +292,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar >> cTmp;
         if (cTmp != 0)
         {
-            m_pRcdMoves.reset(new CMoveList);
+            m_pRcdMoves = MakeOwner<CMoveList>();
             m_pRcdMoves->Serialize(ar, TRUE);
         }
         else
@@ -301,7 +307,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar >> cTmp;
         if (cTmp != 0)
         {
-            m_pHistMoves.reset(new CMoveList);
+            m_pHistMoves = MakeOwner<CMoveList>();
             m_pHistMoves->Serialize(ar, TRUE);
         }
 

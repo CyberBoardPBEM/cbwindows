@@ -32,7 +32,7 @@ public:
     CTime   m_timeAbsorbed;         // Time record entered history
     CString m_strTitle;             // User title of move packet
     CString m_strDescr;             // User description of move packet
-    std::unique_ptr<CMoveList> m_pMList;            // Move list for this record (>= Ver2.90)
+    OwnerOrNullPtr<CMoveList> m_pMList;            // Move list for this record (>= Ver2.90)
     DWORD   m_dwFilePos;            // Location of move list in game file (< Ver2.90)
     // We need to save the version of the game file
     // when the moves were absorbed.

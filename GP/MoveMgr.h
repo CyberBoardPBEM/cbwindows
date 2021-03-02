@@ -25,6 +25,8 @@
 #ifndef _MOVEMGR_H
 #define _MOVEMGR_H
 
+#include <list>
+
 ///////////////////////////////////////////////////////////////////////
 
 class CMoveRecord
@@ -442,28 +444,41 @@ protected:
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-class CMoveList : public CPtrList
+// CMoveRecord is polymorphic
+class CMoveList : private std::list<OwnerPtr<CMoveRecord>>
 {
+    typedef std::list<OwnerPtr<CMoveRecord>> BASE;
 public:
+    using BASE::iterator;
+    using BASE::begin;
+    using BASE::end;
+    using BASE::erase;
+    using BASE::front;
+    using BASE::insert;
+    using BASE::pop_front;
+
     CMoveList();
+    CMoveList(const CMoveList&) = delete;
+    CMoveList& operator=(const CMoveList&) = delete;
     ~CMoveList();
 
 // Attributes
 public:
+    size_t GetCount() const { return size(); }
 
 // Operations
 public:
-    static CMoveList* CloneMoveList(CGamDoc* pDoc, CMoveList* pMoveList);
+    static CMoveList* CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList);
 
     void AssignNewMoveGroup() { m_nSeqNum++; }
-    POSITION AppendMoveRecord(CMoveRecord* pRec);
-    POSITION PrependMoveRecord(CMoveRecord* pRec, BOOL bSetSeqNum = TRUE);
+    iterator AppendMoveRecord(OwnerPtr<CMoveRecord> pRec);
+    iterator PrependMoveRecord(OwnerPtr<CMoveRecord> pRec, BOOL bSetSeqNum = TRUE);
 
-    void PushAndSetState(CGamDoc* pDoc, int nIndex);
+    void PushAndSetState(CGamDoc* pDoc, size_t nIndex);
     void PopAndRestoreState(CGamDoc* pDoc);
-    int  SetStartingState();
+    size_t SetStartingState();
 
-    int FindPreviousMove(CGamDoc* pDoc, int nIndex);
+    size_t FindPreviousMove(CGamDoc* pDoc, size_t nIndex);
 
     // Compound moves are a sequence of moves done one at a time.
     // For example: move piece, change facing, move again, change facing,
@@ -475,28 +490,40 @@ public:
     BOOL IsRecordingCompoundMove() { return m_bCompoundMove ; }
 
     BOOL IsSingleSteppingCompoundMoves() { return m_bCompoundSingleStep; }
-    BOOL IsThisMovePossible(int nIndex);
+    bool IsThisMovePossible(size_t nIndex);
     void SetCompoundSingleStep(BOOL bSingleStep = TRUE)
         { m_bCompoundSingleStep = bSingleStep; }
-    BOOL IsWithinCompoundMove(int nIndex);
-    BOOL IsMoveHidden(CGamDoc* pDoc, int nIndex);
+    bool IsWithinCompoundMove(size_t nIndex);
+    bool IsMoveHidden(CGamDoc* pDoc, size_t nIndex);
     BOOL IsDoMoveActive() { return m_nPlaybackLock != 0; }
 
-    void PurgeAfter(int nIndex);
+    void PurgeAfter(size_t nIndex);
 
     BOOL ValidatePieces(CGamDoc* pDoc);
 
-    int  DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove = TRUE);
+    size_t DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove = TRUE);
     void IncrementSkipCount(BOOL bKeepInd) { m_nSkipCount++; m_bSkipKeepInd = bKeepInd; }
 
-    CMoveRecord* GetAt(POSITION pos)
-        { return (CMoveRecord*)CPtrList::GetAt(pos); }
-    CMoveRecord* GetNext(POSITION& pos)
-        { return (CMoveRecord*)CPtrList::GetNext(pos); }
-    CMoveRecord* GetPrev(POSITION& pos)
-        { return (CMoveRecord*)CPtrList::GetPrev(pos); }
+    CMoveRecord* GetAt(iterator pos)
+        { return pos->get(); }
+    CMoveRecord* GetNext(iterator& pos)
+        { return pos++->get(); }
+    CMoveRecord* GetPrev(iterator& pos)
+    {
+        CMoveRecord* retval = pos->get();
+        // decrementing MFC head position --> null, so emulate that
+        if (pos != begin())
+        {
+            --pos;
+        }
+        else
+        {
+            pos = end();
+        }
+        return retval;
+    }
     CMoveRecord* GetFirstRecord()
-        { return (CMoveRecord*)CPtrList::GetHead(); }
+        { return front().get(); }
 
     void Clear();
     void Serialize(CArchive& ar, BOOL bSaveUndo = TRUE);
@@ -506,7 +533,7 @@ public:
 #endif
 // Implementation
 protected:
-    int  DoMoveGroup(CGamDoc* pDoc, POSITION posFirst);
+    iterator FindIndex(size_t nIndex);
 
 protected:
     int         m_nPlaybackLock;        // Lock count used to stop recursion
@@ -522,7 +549,7 @@ protected:
 
     BOOL        m_bCompoundMove;        // Recording a compound move.
     CGameState* m_pCompoundBaseBookMark;// Game state at start of compound move
-    int         m_nCompoundBaseIndex;   // Index of current compound move.
+    size_t      m_nCompoundBaseIndex;   // Index of current compound move.
 };
 
 #endif

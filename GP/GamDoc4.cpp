@@ -99,22 +99,24 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
             AfxThrowUserException();
         }
 
-        CGameStateRcd* pCurRcd = new CGameStateRcd(pState);
-        pCurRcd->SetSeqNum(-1);             // Special number
-        pHist->m_pMList->PrependMoveRecord(pCurRcd, FALSE);
+        {
+            OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
+            pCurRcd->SetSeqNum(-1);             // Special number
+            pHist->m_pMList->PrependMoveRecord(std::move(pCurRcd), FALSE);
+        }
 
         // Check if the move file contains a state record.
 
-        POSITION pos = pHist->m_pMList->FindIndex(1);
-        ASSERT(pos != NULL);
-        CGameStateRcd* pRcd = (CGameStateRcd*)pHist->m_pMList->GetAt(pos);
+        CMoveList::iterator pos = ++pHist->m_pMList->begin();
+        ASSERT(pos != pHist->m_pMList->end());
+        CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(pHist->m_pMList->GetAt(pos));
         BOOL bUpdatedGameState = FALSE;
 
         if (pRcd->GetType() != CMoveRecord::mrecState)
         {
             AfxMessageBox(IDS_MSG_NOGAMESTATE, MB_OK | MB_ICONINFORMATION);
-            m_nFirstMove = 0;           // Restart location (state rec)
-            m_nCurMove = 1;             // Set to start of actual moves
+            m_nFirstMove = size_t(0);           // Restart location (state rec)
+            m_nCurMove = size_t(1);             // Set to start of actual moves
         }
         else
         {
@@ -138,24 +140,23 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
                     bUpdatedGameState = TRUE;
                     // File's positions match current positions.
-                    m_nFirstMove = 1;       // Restart location (state rec)
-                    m_nCurMove = 2;         // Set to start of actual moves
+                    m_nFirstMove = size_t(1);       // Restart location (state rec)
+                    m_nCurMove = size_t(2);         // Set to start of actual moves
                 }
                 else
                 {
                     // Using current board state. Discard the move file's
                     // game state and replace with the current state of the game.
-                    pHist->m_pMList->RemoveAt(pos); // Delete file game state
-                    delete pRcd;
+                    pHist->m_pMList->erase(pos); // Delete file game state
                     // Create a current state object
-                    POSITION pos = pHist->m_pMList->FindIndex(0);
+                    CMoveList::iterator pos = pHist->m_pMList->begin();
                     CGameState* pState = new CGameState(this);
                     pState->SaveState();
-                    CGameStateRcd* pCurRcd = new CGameStateRcd(pState);
+                    OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
                     pCurRcd->SetSeqNum(0);
-                    pHist->m_pMList->InsertAfter(pos, pCurRcd);
-                    m_nFirstMove = 1;       // Restart location (state rec)
-                    m_nCurMove = 2;         // Set to start of actual moves
+                    pHist->m_pMList->insert(++CMoveList::iterator(pos), std::move(pCurRcd));
+                    m_nFirstMove = size_t(1);       // Restart location (state rec)
+                    m_nCurMove = size_t(2);         // Set to start of actual moves
                     // m_nFirstMove = 0;        // Restart location (state rec)
                     // m_nCurMove = 1;          // Set to start of actual moves
                 }
@@ -163,8 +164,8 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
             else
             {
                 // File's positions match current positions.
-                m_nFirstMove = 1;           // Restart location (state rec)
-                m_nCurMove = 2;             // Set to start of actual moves
+                m_nFirstMove = size_t(1);           // Restart location (state rec)
+                m_nCurMove = size_t(2);             // Set to start of actual moves
             }
         }
 
@@ -180,7 +181,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
         // a move file with no moves is being loaded.
         if (!m_pMoves->IsThisMovePossible(m_nCurMove))
         {
-            m_nCurMove = -1;                // No moves in move table
+            m_nCurMove = Invalid_v<size_t>;                // No moves in move table
             AfxMessageBox(IDS_MSG_NOMOVES, MB_OK);
         }
 
@@ -232,7 +233,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         m_nCurHist = nHistRec;                  // Set number of history playback
         // m_pHistMoves = pHist->m_pMList;      // Set pointer to history moves
         // Make a copy of the move list for playback
-        m_pHistMoves.reset(CMoveList::CloneMoveList(this, pHist.m_pMList.get()));
+        m_pHistMoves = CMoveList::CloneMoveList(this, *pHist.m_pMList);
         m_pMoves = m_pHistMoves.get();            // Shadow for playback
 
         // Insert the current state of the game in front of the
@@ -245,16 +246,18 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
             AfxThrowUserException();
         }
 
-        CGameStateRcd* pCurRcd = new CGameStateRcd(pState);
-        pCurRcd->SetSeqNum(-1);             // Special number
-        m_pMoves->PrependMoveRecord(pCurRcd, FALSE);
+        {
+            OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
+            pCurRcd->SetSeqNum(-1);             // Special number
+            m_pMoves->PrependMoveRecord(std::move(pCurRcd), FALSE);
+        }
 
         // The history moveset always contains a state record so
         // position to it.
 
-        POSITION pos = m_pMoves->FindIndex(1);
-        ASSERT(pos != NULL);
-        CGameStateRcd* pRcd = (CGameStateRcd*)m_pMoves->GetAt(pos);
+        CMoveList::iterator pos = ++m_pMoves->begin();
+        ASSERT(pos != m_pMoves->end());
+        CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(m_pMoves->GetAt(pos));
         ASSERT(pRcd->GetType() == CMoveRecord::mrecState);
 
         // Use the history game state
@@ -264,8 +267,8 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         // of pieces in move file (for crash resistance)
         GetPieceTable()->PurgeUndefinedPieceIDs();
 
-        m_nFirstMove = 1;       // Restart location (state rec)
-        m_nCurMove = 2;         // Set to start of actual moves
+        m_nFirstMove = size_t(1);       // Restart location (state rec)
+        m_nCurMove = size_t(2);         // Set to start of actual moves
 
         MsgDialogCancel(TRUE);
 
@@ -358,7 +361,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         GetPieceTable()->PurgeUndefinedPieceIDs();
 
         pHist.m_dwFilePos = 0;             // Just to be clean. Never used again
-        pHist.m_pMList.reset(pMoves);
+        pHist.m_pMList = pMoves;
     }
     CATCH_ALL(e)
     {
@@ -380,7 +383,7 @@ void CGamDoc::FinishHistoryPlayback()
     // Get the first record which contains the state of the board
     // prior to playback. Restore it
 
-    CGameStateRcd* pMove = (CGameStateRcd*)m_pHistMoves->RemoveHead();
+    CGameStateRcd* pMove = static_cast<CGameStateRcd*>(m_pHistMoves->front().get());
     ASSERT(pMove != NULL);
     ASSERT(pMove->GetType() == CMoveRecord::mrecState);
 
@@ -389,11 +392,11 @@ void CGamDoc::FinishHistoryPlayback()
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
     }
 
-    delete pMove;                   // Destroy the game state record.
+    m_pHistMoves->pop_front();                   // Destroy the game state record.
 
     // Delete the history  move list since it is a clone of the actual record
     // kept in the history database.
-    m_pHistMoves.reset();
+    m_pHistMoves = nullptr;
     m_nCurHist = Invalid_v<size_t>;
     m_eState = stateRecording;
     m_pMoves = m_pRcdMoves.get();         // Restore recording pointer
@@ -407,11 +410,11 @@ void CGamDoc::FinishHistoryPlayback()
 void CGamDoc::RestartMoves()
 {
     ASSERT(IsPlaying());
-    ASSERT(m_nFirstMove >= 0 && m_nFirstMove <= 1);
+    ASSERT(m_nFirstMove != Invalid_v<size_t> && m_nFirstMove <= size_t(1));
     m_nMoveInterlock++;
     m_nCurMove = m_pMoves->DoMove(this, m_nFirstMove);
     m_nMoveInterlock--;
-    ASSERT(m_nCurMove != -1 && m_nCurMove != m_nFirstMove);
+    ASSERT(m_nCurMove != Invalid_v<size_t> && m_nCurMove != m_nFirstMove);
     m_astrMsgHist.RemoveAll();
 }
 
@@ -434,7 +437,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
     {
         // Process to the last record.
         m_bQuietPlayback = TRUE;
-        while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != -1) ;
+        while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != Invalid_v<size_t>) ;
         FlushAllIndicators();
         m_bQuietPlayback = FALSE;
     }
