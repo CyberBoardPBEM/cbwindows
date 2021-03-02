@@ -183,20 +183,18 @@ CGamDoc::CGamDoc()
     m_pGbx = NULL;
     m_eState = stateNotRecording;
     m_pMoves = NULL;
-    m_nCurMove = -1;
-    m_nFirstMove = -1;
+    m_nCurMove = Invalid_v<size_t>;
+    m_nFirstMove = Invalid_v<size_t>;
     m_nCurHist = Invalid_v<size_t>;
     m_posCurMove = NULL;
-    m_pRcdMoves = NULL;
     m_pPlayHist = NULL;
-    m_pHistMoves = NULL;
     m_pHistTbl = NULL;
     m_pPBMgr = NULL;
     m_pYMgr = NULL;
     m_pPTbl = NULL;
     m_pMsgDialog = NULL;
     m_pntMsgReadPos = CPoint(INT_MIN, INT_MIN);
-    m_nMoveIdxAtBookMark = 0;
+    m_nMoveIdxAtBookMark = size_t(0);
     m_pBookMark = NULL;
     m_bTrayAVisible = FALSE;
     m_bTrayBVisible = FALSE;
@@ -361,8 +359,8 @@ void CGamDoc::DeleteContents()
     if (m_pPTbl != NULL) delete m_pPTbl;
     m_pPTbl = NULL;
 
-    m_pRcdMoves.reset();
-    m_pHistMoves.reset();
+    m_pRcdMoves = nullptr;
+    m_pHistMoves = nullptr;
 
     if (m_pPlayHist != NULL) delete m_pPlayHist;
     m_pPlayHist = NULL;
@@ -385,8 +383,8 @@ void CGamDoc::DeleteContents()
     m_pMoves = NULL;
     m_eState = stateNotRecording;
     m_posCurMove = NULL;
-    m_nCurMove = -1;
-    m_nFirstMove = -1;
+    m_nCurMove = Invalid_v<size_t>;
+    m_nFirstMove = Invalid_v<size_t>;
     m_nCurHist = Invalid_v<size_t>;
     m_nMoveInterlock = 0;
     m_bQuietPlayback = FALSE;
@@ -1152,7 +1150,7 @@ void CGamDoc::OnEditSetBookMark()
         m_pBookMark = NULL;
         return;
     }
-    m_nMoveIdxAtBookMark = m_pRcdMoves != NULL ? m_pRcdMoves->GetCount() : 0;
+    m_nMoveIdxAtBookMark = m_pRcdMoves != NULL ? m_pRcdMoves->GetCount() : size_t(0);
 }
 
 void CGamDoc::OnUpdateEditSetBookMark(CCmdUI* pCmdUI)
@@ -1227,7 +1225,7 @@ void CGamDoc::OnPbckEnd()
     m_nMoveInterlock++;
     m_bQuietPlayback = TRUE;
     FlushAllIndicators();
-    while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != -1)
+    while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != Invalid_v<size_t>)
     {
         FlushAllIndicators();
     }
@@ -1241,7 +1239,7 @@ void CGamDoc::OnUpdatePbckEnd(CCmdUI* pCmdUI)
     if (IsScenario() || m_bAutoPlayback)
         pCmdUI->Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlaying() && m_nCurMove != -1);
+        pCmdUI->Enable(IsPlaying() && m_nCurMove != Invalid_v<size_t>);
 }
 
 void CGamDoc::OnPbckFinish()
@@ -1264,7 +1262,7 @@ void CGamDoc::OnPbckNext()
     {
         m_nMoveInterlock++;
         FlushAllIndicators();
-        if (m_nCurMove != -1)
+        if (m_nCurMove != Invalid_v<size_t>)
         {
             if (m_bAutoStep)
                 m_bAutoPlayback = TRUE;     // Will be cleared during DoMove if aborted
@@ -1273,7 +1271,7 @@ void CGamDoc::OnPbckNext()
 
             if (m_bAutoStep && m_bAutoPlayback)
             {
-                if (m_nCurMove != -1 ||
+                if (m_nCurMove != Invalid_v<size_t> ||
                     (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()))
                 {
                     GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(ID_PBCK_NEXT, 0));
@@ -1309,7 +1307,7 @@ void CGamDoc::OnUpdatePbckNext(CCmdUI* pCmdUI)
         pCmdUI->Enable(FALSE);
     else
     {
-        pCmdUI->Enable((IsPlaying() && m_nCurMove != -1) ||
+        pCmdUI->Enable((IsPlaying() && m_nCurMove != Invalid_v<size_t>) ||
             (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()));
         pCmdUI->SetCheck(m_bAutoPlayback);
     }
@@ -1333,9 +1331,9 @@ void CGamDoc::OnUpdatePbckStart(CCmdUI* pCmdUI)
         pCmdUI->Enable(FALSE);
     else
     {
-        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - 1) > m_nFirstMove ||
-            (m_nCurMove == -1 &&
-             m_pMoves->IsThisMovePossible(m_nFirstMove + 1))));
+        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
+            (m_nCurMove == Invalid_v<size_t> &&
+             m_pMoves->IsThisMovePossible(m_nFirstMove + size_t(1)))));
     }
 }
 
@@ -1349,7 +1347,7 @@ void CGamDoc::OnPbckPrevious()
     m_nMoveInterlock++;
     m_bQuietPlayback = TRUE;
 
-    int nPrvMove = m_pMoves->FindPreviousMove(this, m_nCurMove);
+    size_t nPrvMove = m_pMoves->FindPreviousMove(this, m_nCurMove);
 
     MsgDialogCancel(TRUE);
     FlushAllIndicators();
@@ -1363,7 +1361,7 @@ void CGamDoc::OnPbckPrevious()
         // OK...we know there is at least one move to do PRIOR to the move
         // we are stepping up to. Find it so we can turn off silent mode for
         // that move.
-        int nPrvPrvMove = m_pMoves->FindPreviousMove(this, nPrvMove);
+        size_t nPrvPrvMove = m_pMoves->FindPreviousMove(this, nPrvMove);
         if (m_nCurMove == nPrvPrvMove)
         {
             m_bQuietPlayback = FALSE;
@@ -1375,7 +1373,7 @@ void CGamDoc::OnPbckPrevious()
         m_astrMsgHist.RemoveAll();
 
         while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove, FALSE)) < nPrvMove &&
-            m_nCurMove >= 0)
+            m_nCurMove != Invalid_v<size_t>)
         {
             if (m_nCurMove < nPrvPrvMove)
                 FlushAllIndicators();
@@ -1400,9 +1398,9 @@ void CGamDoc::OnUpdatePbckPrevious(CCmdUI* pCmdUI)
         pCmdUI->Enable(FALSE);
     else
     {
-        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - 1) > m_nFirstMove ||
-            (m_nCurMove == -1 &&
-             m_pMoves->IsThisMovePossible(m_nFirstMove + 1))));
+        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
+            (m_nCurMove == Invalid_v<size_t> &&
+             m_pMoves->IsThisMovePossible(m_nFirstMove + size_t(1)))));
     }
 }
 

@@ -481,9 +481,9 @@ public:
     CString     m_strCurMsg;    // Current user message under construction
     CStringArray m_astrMsgHist; // Current message history
 
-    int         m_nCurMove;     // Index of current move (-1 is at end)
+    size_t      m_nCurMove;     // Index of current move (Invalid_v<size_t> is at end)
     POSITION    m_posCurMove;   // Shadow of m_nCurMove. (NOSAVE)
-    int         m_nFirstMove;   // Index of first move record (usually 0 or 1)
+    size_t      m_nFirstMove;   // Index of first move record (usually 0 or 1)
     size_t      m_nCurHist;     // History being viewed if state is "hist"
     BOOL        m_bStepToNextHist; // If TRUE, step to next history record
     BOOL        m_bKeepSkipInd; // If TRUE skipped move indications aren't erased
@@ -493,8 +493,8 @@ public:
     // when a move file has been loaded for playback.
     CHistRecord* m_pPlayHist;
 
-    std::unique_ptr<CMoveList> m_pRcdMoves;    // Moves being recorded or move file playback
-    std::unique_ptr<CMoveList> m_pHistMoves;   // Currently loaded history from hist table
+    OwnerOrNullPtr<CMoveList> m_pRcdMoves;    // Moves being recorded or move file playback
+    OwnerOrNullPtr<CMoveList> m_pHistMoves;   // Currently loaded history from hist table
 
     // m_pMoves is a shadow of either m_pRctMoves or m_pHistMoves depending on the
     // gamestate m_eState.  (NOSAVE)
@@ -503,7 +503,7 @@ public:
 
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
 
-    int             m_nMoveIdxAtBookMark;// Move list index at bookmark
+    size_t          m_nMoveIdxAtBookMark;// Move list index at bookmark
     CGameState*     m_pBookMark;// The state of things at the bookmark
 
     CHistoryTable*  m_pHistTbl; // Table containing history of game

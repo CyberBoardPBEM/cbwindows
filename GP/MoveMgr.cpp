@@ -1185,7 +1185,7 @@ CMoveList::CMoveList()
     m_nSkipCount = 0;
     m_bSkipKeepInd = FALSE;
     m_bCompoundMove = FALSE;
-    m_nCompoundBaseIndex = -1;
+    m_nCompoundBaseIndex = Invalid_v<size_t>;
     m_nPlaybackLock = 0;
     m_pCompoundBaseBookMark = NULL;
     m_bCompoundSingleStep = FALSE;
@@ -1205,12 +1205,12 @@ CMoveList::~CMoveList()
 // C#. The whole reason for doing this is to patch over side effects
 // of switching to in-memory histories.
 
-CMoveList* CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList* pMoveList)
+CMoveList* CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList)
 {
     CMemFile memFile;
     CArchive arStore(&memFile, CArchive::store);
     arStore.m_pDocument = pDoc;
-    pMoveList->Serialize(arStore, FALSE);
+    pMoveList.Serialize(arStore, FALSE);
     arStore.Close();
 
     memFile.SeekToBegin();
@@ -1230,8 +1230,8 @@ BOOL CMoveList::ValidatePieces(CGamDoc* pDoc)
     if (m_nPlaybackLock != 0)
         return FALSE;
 
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    iterator pos;
+    for (pos = begin(); pos != end(); )
     {
         CMoveRecord* pRcd = GetNext(pos);
         ASSERT(pRcd != NULL);
@@ -1241,46 +1241,46 @@ BOOL CMoveList::ValidatePieces(CGamDoc* pDoc)
     return TRUE;
 }
 
-BOOL CMoveList::IsThisMovePossible(int nIndex)
+bool CMoveList::IsThisMovePossible(size_t nIndex)
 {
-    return nIndex < GetCount() && nIndex >= 0;
+    return nIndex < size() && nIndex != Invalid_v<size_t>;
 }
 
-BOOL CMoveList::IsWithinCompoundMove(int nIndex)
+bool CMoveList::IsWithinCompoundMove(size_t nIndex)
 {
-    if (nIndex < 0)
-        return FALSE;
+    if (nIndex == Invalid_v<size_t>)
+        return false;
 
-    POSITION posPrev = FindIndex(nIndex);
+    iterator posPrev = FindIndex(nIndex);
 
     // Start looking on previous record.
-    if (posPrev != NULL)
+    if (posPrev != end())
         GetPrev(posPrev);
-    while (posPrev != NULL)
+    while (posPrev != end())
     {
         CMoveRecord* pRcd = GetPrev(posPrev);
         ASSERT(pRcd != NULL);
         if (pRcd->GetType() == CMoveRecord::mrecCompoundMove)
             return ((CCompoundMove*)pRcd)->IsGroupBegin();
     }
-    return FALSE;
+    return false;
 }
 
 // Returns the starting move index
-int CMoveList::SetStartingState()
+size_t CMoveList::SetStartingState()
 {
-    POSITION pos = FindIndex(1);
-    ASSERT(pos != NULL);
-    CGameStateRcd* pRcd = (CGameStateRcd*)GetAt(pos);
-    int nStartIndex = 2;
+    iterator pos = ++begin();
+    ASSERT(pos != end());
+    CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(GetAt(pos));
+    size_t nStartIndex = size_t(2);
 
     if (pRcd->GetType() != CMoveRecord::mrecState)
     {
-        POSITION pos = FindIndex(0);
-        ASSERT(pos != NULL);
-        pRcd = (CGameStateRcd*)GetAt(pos);
+        iterator pos = begin();
+        ASSERT(pos != end());
+        pRcd = static_cast<CGameStateRcd*>(GetAt(pos));
         ASSERT(pRcd->GetType() == CMoveRecord::mrecState); // This *HAS* to be TRUE
-        nStartIndex = 1;
+        nStartIndex = size_t(1);
     }
     pRcd->GetGameState()->RestoreState();
     return nStartIndex;
@@ -1290,7 +1290,7 @@ int CMoveList::SetStartingState()
 // sets the playback state to what is should be at the specified
 // move index.
 
-void CMoveList::PushAndSetState(CGamDoc* pDoc, int nIndex)
+void CMoveList::PushAndSetState(CGamDoc* pDoc, size_t nIndex)
 {
     ASSERT(m_pStateSave == NULL); // Only one push allowed
     m_pStateSave = new CGameState(pDoc);
@@ -1299,7 +1299,7 @@ void CMoveList::PushAndSetState(CGamDoc* pDoc, int nIndex)
     m_bQuietPlaybackSave = pDoc->IsQuietPlayback();
     pDoc->SetQuietPlayback(TRUE);
 
-    int nCurIndex = SetStartingState();
+    size_t nCurIndex = SetStartingState();
     if (nCurIndex < nIndex)
     {
         while ((nCurIndex = DoMove(pDoc, nCurIndex)) < nIndex)
@@ -1319,11 +1319,11 @@ void CMoveList::PopAndRestoreState(CGamDoc* pDoc)
     pDoc->SetQuietPlayback(m_bQuietPlaybackSave);
 }
 
-int CMoveList::FindPreviousMove(CGamDoc* pDoc, int nIndex)
+size_t CMoveList::FindPreviousMove(CGamDoc* pDoc, size_t nIndex)
 {
     CMoveRecord* pRcd;
-    POSITION     posPrev;
-    int          nCurIndex;
+    iterator     posPrev;
+    size_t       nCurIndex;
 
     BOOL bWithinCompoundMove = IsWithinCompoundMove(nIndex);
     if (bWithinCompoundMove && !m_bCompoundSingleStep)
@@ -1346,26 +1346,26 @@ int CMoveList::FindPreviousMove(CGamDoc* pDoc, int nIndex)
     }
 
 CHECK_AGAIN:
-    if (nIndex >= 0)
+    if (nIndex != Invalid_v<size_t>)
     {
-        nCurIndex = nIndex - 1;
+        nCurIndex = nIndex - size_t(1);
         posPrev = FindIndex(nIndex);
-        ASSERT(posPrev);
-        if (posPrev == NULL)
-            return 0;
+        ASSERT(posPrev != end());
+        if (posPrev == end())
+            return size_t(0);
         CMoveRecord* pRcd = GetPrev(posPrev);// First GetPrev() gets current record
     }
     else
     {
         // We are past the end of the list. Last record is end
         // of previous move.
-        posPrev = GetTailPosition();
-        nCurIndex = GetCount() - 1;
+        posPrev = --end();
+        nCurIndex = size() - size_t(1);
     }
     pRcd = GetPrev(posPrev);
     ASSERT(pRcd != NULL);
     if (pRcd == NULL)
-        return 0;
+        return size_t(0);
 
     // Another weird special case...If the record is an end of compound
     // move record and we are in single step mode, then step back one more
@@ -1424,7 +1424,7 @@ CHECK_AGAIN:
             goto CHECK_AGAIN;       // Back another record
         }
     }
-    ASSERT(nCurIndex >= 0);
+    ASSERT(nCurIndex != Invalid_v<size_t>);
     return nCurIndex;
 }
 
@@ -1432,19 +1432,19 @@ CHECK_AGAIN:
 // has all hidden portions, the entire move will be
 // done in 'quiet' mode.
 
-BOOL CMoveList::IsMoveHidden(CGamDoc* pDoc, int nIndex)
+bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
 {
-    POSITION posFirst = FindIndex(nIndex);
-    ASSERT(posFirst);
-    if (posFirst == NULL)
-        return FALSE;
+    iterator posFirst = FindIndex(nIndex);
+    ASSERT(posFirst != end());
+    if (posFirst == end())
+        return false;
 
     int nGrp = INT_MIN;
-    int nNextIndex = nIndex;
+    size_t nNextIndex = nIndex;
 
-    POSITION pos = posFirst;
+    iterator pos = posFirst;
     int nElementInGroup = 0;
-    while (pos != NULL)
+    while (pos != end())
     {
         CMoveRecord* pRcd = GetNext(pos);
         if (nGrp == INT_MIN)
@@ -1467,15 +1467,15 @@ BOOL CMoveList::IsMoveHidden(CGamDoc* pDoc, int nIndex)
 // This routine plays back the moves for the group at the
 // specified index. Returns the index of the next move group.
 
-int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = TRUE*/)
+size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove /* = TRUE*/)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
-        return -1;
+        return Invalid_v<size_t>;
 
     m_nPlaybackLock++;                  // Stop recursion
 
-    int nNextIndex = nIndex;
+    size_t nNextIndex = nIndex;
 
     m_nSkipCount = 0;                   // Make sure we don't have any pent up skips
 
@@ -1500,12 +1500,12 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
         {
             bDoNextMove = FALSE;
 
-            if (nIndex >= GetCount() || nIndex < 0)
+            if (nIndex >= size() || nIndex == Invalid_v<size_t>)
                 break;
 
-            POSITION posFirst = FindIndex(nIndex);
-            ASSERT(posFirst);
-            if (posFirst == NULL)
+            iterator posFirst = FindIndex(nIndex);
+            ASSERT(posFirst != end());
+            if (posFirst == end())
                 break;
 
             // First check for compound move record...
@@ -1520,7 +1520,7 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
                     bCompoundMove = TRUE;
             }
 
-            POSITION pos = posFirst;
+            iterator pos = posFirst;
             int  nGrp = INT_MIN;
 
             if (bCompoundMove)
@@ -1542,7 +1542,7 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
 
             pos = posFirst;
             int nElementInGroup = 0;
-            while (pos != NULL)
+            while (pos != end())
             {
                 CMoveRecord* pRcd = GetNext(pos);
                 if (nGrp == INT_MIN)
@@ -1569,7 +1569,7 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
 
             pos = posFirst;
             nElementInGroup = 0;
-            while (pos != NULL)
+            while (pos != end())
             {
                 CMoveRecord* pRcd = GetNext(pos);
                 if (nGrp != pRcd->GetSeqNum())
@@ -1588,7 +1588,7 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
 
             pos = posFirst;
             nElementInGroup = 0;
-            while (pos != NULL)
+            while (pos != end())
             {
                 CMoveRecord* pRcd = GetNext(pos);
                 if (nGrp != pRcd->GetSeqNum())
@@ -1606,7 +1606,7 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
             // Restore quite mode playback if mode was initially different.
             pDoc->SetQuietPlayback(bQuietModeSave);
 
-            nIndex = nNextIndex >= GetCount() ? -1 : nNextIndex;
+            nIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
 
             // Short delay between moves in compound move.
             if (bCompoundMove && !pDoc->IsQuietPlayback())
@@ -1615,20 +1615,20 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
         } while (bCompoundMove || bDoNextMove);
 
 
-        nNextIndex = nNextIndex >= GetCount() ? -1 : nNextIndex;
+        nNextIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
 
-        if (nNextIndex >= 0 && m_bCompoundSingleStep)
+        if (nNextIndex != Invalid_v<size_t> && m_bCompoundSingleStep)
         {
             // If the next record to be executed is a compound move
             // end record AND we are single stepping the compound
             // records, we need to step to the next record.
-            POSITION pos = FindIndex(nNextIndex);
+            iterator pos = FindIndex(nNextIndex);
             CMoveRecord* pRcd = GetAt(pos);
             if (pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
                 !((CCompoundMove*)pRcd)->IsGroupBegin())
             {
                 nNextIndex++;
-                nNextIndex = nNextIndex >= GetCount() ? -1 : nNextIndex;
+                nNextIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
             }
         }
     } while (m_nSkipCount > 0);
@@ -1638,29 +1638,31 @@ int CMoveList::DoMove(CGamDoc* pDoc, int nIndex, BOOL bAutoStepHiddenMove /* = T
     return nNextIndex;
 }
 
-POSITION CMoveList::AppendMoveRecord(CMoveRecord* pRec)
+CMoveList::iterator CMoveList::AppendMoveRecord(OwnerPtr<CMoveRecord> pRec)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
-        return NULL;
+        return end();
 
     pRec->SetSeqNum(m_nSeqNum);
-    return AddTail(pRec);
+    push_back(std::move(pRec));
+    return --end();
 }
 
-POSITION CMoveList::PrependMoveRecord(CMoveRecord* pRec,
+CMoveList::iterator CMoveList::PrependMoveRecord(OwnerPtr<CMoveRecord> pRec,
     BOOL bSetSeqNum /* = TRUE */)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
-        return NULL;
+        return end();
 
     if (bSetSeqNum)
         pRec->SetSeqNum(m_nSeqNum);
-    return AddHead(pRec);
+    push_front(std::move(pRec));
+    return begin();
 }
 
-void CMoveList::PurgeAfter(int nIndex)
+void CMoveList::PurgeAfter(size_t nIndex)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
@@ -1674,18 +1676,15 @@ void CMoveList::PurgeAfter(int nIndex)
             m_pCompoundBaseBookMark = NULL;
         }
         m_bCompoundMove = FALSE;
-        m_nCompoundBaseIndex = -1;
+        m_nCompoundBaseIndex = Invalid_v<size_t>;
     }
 
-    POSITION pos = FindIndex(nIndex);
-    if (pos == NULL)
+    iterator pos = FindIndex(nIndex);
+    if (pos == end())
         return;             // Doesn't exist
-    while (pos != NULL)
+    while (pos != end())
     {
-        POSITION posPrev = pos;
-        CMoveRecord* pRcd = GetNext(pos);
-        delete pRcd;
-        RemoveAt(posPrev);
+        erase(pos++);
     }
 }
 
@@ -1699,11 +1698,10 @@ void CMoveList::Clear()
         delete m_pCompoundBaseBookMark;
     m_pCompoundBaseBookMark = NULL;
     m_bCompoundMove = FALSE;
-    m_nCompoundBaseIndex = -1;
+    m_nCompoundBaseIndex = Invalid_v<size_t>;
 
     m_nSeqNum = 0;
-    while (!IsEmpty())
-        delete (CMoveRecord*)RemoveHead();
+    clear();
 }
 
 void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
@@ -1714,7 +1712,7 @@ void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
 
     if (m_bCompoundMove)
     {
-        if (m_nCompoundBaseIndex == GetCount() - 1) // Check if any moves recorded
+        if (m_nCompoundBaseIndex == size() - size_t(1)) // Check if any moves recorded
             return;                             // Nope. Keep current marker record
         EndRecordingCompoundMove();             // Mark end of current block
     }
@@ -1730,8 +1728,8 @@ void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
     }
 
     AssignNewMoveGroup();
-    m_nCompoundBaseIndex = GetCount();
-    AppendMoveRecord(new CCompoundMove(TRUE));
+    m_nCompoundBaseIndex = size();
+    AppendMoveRecord(MakeOwner<CCompoundMove>(TRUE));
     m_bCompoundMove = TRUE;
 }
 
@@ -1762,7 +1760,7 @@ void CMoveList::CancelRecordingCompoundMove(CGamDoc* pDoc)
     }
     m_bCompoundMove = FALSE;
     PurgeAfter(m_nCompoundBaseIndex);
-    m_nCompoundBaseIndex = -1;
+    m_nCompoundBaseIndex = Invalid_v<size_t>;
     pDoc->UpdateAllViews(NULL, HINT_GAMESTATEUSED);
 }
 
@@ -1777,11 +1775,11 @@ void CMoveList::EndRecordingCompoundMove()
         return;                                 // Nothing to mark the end of
 
     AssignNewMoveGroup();
-    if (m_nCompoundBaseIndex < GetCount() - 1)  // Check if any moves recorded
+    if (m_nCompoundBaseIndex < size() - size_t(1))  // Check if any moves recorded
     {
-        AppendMoveRecord(new CCompoundMove(FALSE));
+        AppendMoveRecord(MakeOwner<CCompoundMove>(FALSE));
         m_bCompoundMove = FALSE;
-        m_nCompoundBaseIndex = -1;
+        m_nCompoundBaseIndex = Invalid_v<size_t>;
 
         if (m_pCompoundBaseBookMark)
         {
@@ -1806,14 +1804,14 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
 
         ar << (short)m_nSeqNum;
         ar << (WORD)m_bCompoundMove;
-        ar << (DWORD)m_nCompoundBaseIndex;
+        ar << value_preserving_cast<DWORD>(m_nCompoundBaseIndex);
         ar << (BYTE)(m_pCompoundBaseBookMark != NULL ? 1 : 0);
         if (m_pCompoundBaseBookMark)
             m_pCompoundBaseBookMark->Serialize(ar);
 
-        ar << (WORD)GetCount();
-        POSITION pos;
-        for (pos = GetHeadPosition(); pos != NULL; )
+        ar << value_preserving_cast<WORD>(size());
+        iterator pos;
+        for (pos = begin(); pos != end(); )
         {
             CMoveRecord* pRcd = GetNext(pos);
             ASSERT(pRcd != NULL);
@@ -1835,7 +1833,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             WORD  wTmp;
             DWORD dwTmp;
             ar >> wTmp; m_bCompoundMove = (BOOL)wTmp;
-            ar >> dwTmp; m_nCompoundBaseIndex = (int)dwTmp;
+            ar >> dwTmp; m_nCompoundBaseIndex = value_preserving_cast<size_t>(dwTmp);
             ar >> cTmp;             // Check for a bookmark
             if (cTmp)
             {
@@ -1850,62 +1848,62 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         ar >> wCount;
         for (WORD i = 0; i < wCount; i++)
         {
-            CMoveRecord* pRcd;
+            OwnerOrNullPtr<CMoveRecord> pRcd;
             short sType;
             ar >> sType;
             switch ((CMoveRecord::RcdType)sType)
             {
                 case CMoveRecord::mrecState:
-                    pRcd = new CGameStateRcd;
+                    pRcd = MakeOwner<CGameStateRcd>();
                     break;
                 case CMoveRecord::mrecPMove:
-                    pRcd = new CBoardPieceMove;
+                    pRcd = MakeOwner<CBoardPieceMove>();
                     break;
                 case CMoveRecord::mrecTMove:
-                    pRcd = new CTrayPieceMove;
+                    pRcd = MakeOwner<CTrayPieceMove>();
                     break;
                 case CMoveRecord::mrecPSide:
-                    pRcd = new CPieceSetSide;
+                    pRcd = MakeOwner<CPieceSetSide>();
                     break;
                 case CMoveRecord::mrecPFacing:
-                    pRcd = new CPieceSetFacing;
+                    pRcd = MakeOwner<CPieceSetFacing>();
                     break;
                 case CMoveRecord::mrecMMove:
-                    pRcd = new CBoardMarkerMove;
+                    pRcd = MakeOwner<CBoardMarkerMove>();
                     break;
                 case CMoveRecord::mrecMPlot:
-                    pRcd = new CMovePlotList;
+                    pRcd = MakeOwner<CMovePlotList>();
                     break;
                 case CMoveRecord::mrecMsg:
-                    pRcd = new CMessageRcd;
+                    pRcd = MakeOwner<CMessageRcd>();
                     break;
                 case CMoveRecord::mrecDelObj:
-                    pRcd = new CObjectDelete;
+                    pRcd = MakeOwner<CObjectDelete>();
                     break;
                 case CMoveRecord::mrecCompoundMove:
-                    pRcd = new CCompoundMove;
+                    pRcd = MakeOwner<CCompoundMove>();
                     break;
                 case CMoveRecord::mrecMFacing:
-                    pRcd = new CMarkerSetFacing;
+                    pRcd = MakeOwner<CMarkerSetFacing>();
                     break;
                 case CMoveRecord::mrecSetObjText:
-                    pRcd = new CObjectSetText;
+                    pRcd = MakeOwner<CObjectSetText>();
                     break;
                 case CMoveRecord::mrecLockObj:
-                    pRcd = new CObjectLockdown;
+                    pRcd = MakeOwner<CObjectLockdown>();
                     break;
                 case CMoveRecord::mrecEvtMsg:
-                    pRcd = new CEventMessageRcd;
+                    pRcd = MakeOwner<CEventMessageRcd>();
                     break;
                 case CMoveRecord::mrecPOwner:
-                    pRcd = new CPieceSetOwnership;
+                    pRcd = MakeOwner<CPieceSetOwnership>();
                     break;
                 default:
                     ASSERT(FALSE);
                     AfxThrowArchiveException(CArchiveException::badClass);
             }
             pRcd->Serialize(ar);
-            AddTail(pRcd);
+            push_back(std::move(pRcd));
             BYTE cUndoFlag;
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 0))
                 ar >> cUndoFlag;        // Eat UNDO flag info (never used)
@@ -1928,12 +1926,12 @@ void CMoveList::DumpToTextFile(CFile& file)
     char szBfr[256];
     wsprintf(szBfr, "Current Move Group: %d\r\n", m_nSeqNum);
     file.Write(szBfr, lstrlen(szBfr));
-    wsprintf(szBfr, "Number of move records: %d\r\n", GetCount());
+    wsprintf(szBfr, "Number of move records: %zu\r\n", size());
     file.Write(szBfr, lstrlen(szBfr));
 
-    POSITION pos;
+    iterator pos;
     int nIndex = 0;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (pos = begin(); pos != end(); )
     {
         CMoveRecord* pRcd = GetNext(pos);
         ASSERT(pRcd != NULL);
@@ -1948,3 +1946,17 @@ void CMoveList::DumpToTextFile(CFile& file)
 }
 #endif
 
+CMoveList::iterator CMoveList::FindIndex(size_t nIndex)
+{
+    if (nIndex >= size())
+    {
+        ASSERT(!"out of bounds");
+        return end();
+    }
+    iterator retval = begin();
+    for (size_t i = size_t(0) ; i < nIndex ; ++i)
+    {
+        ++retval;
+    }
+    return retval;
+}
