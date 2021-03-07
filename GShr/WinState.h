@@ -25,6 +25,8 @@
 #ifndef _WINSTATE_H
 #define _WINSTATE_H
 
+#include <list>
+
 ///////////////////////////////////////////////////////////////////////
 
 // This message is sent to each frame than holds document views.
@@ -49,10 +51,10 @@ struct CWinPlacement : public WINDOWPLACEMENT
 class CWinStateManager
 {
 public:
-    CWinStateManager() { m_pDoc = NULL; m_pList = NULL; }
-    CWinStateManager(CDocument* pDoc) { m_pDoc = pDoc; m_pList = NULL; }
+    CWinStateManager() { m_pDoc = NULL; }
+    CWinStateManager(CDocument* pDoc) { m_pDoc = pDoc; }
 
-    virtual ~CWinStateManager();
+    virtual ~CWinStateManager() = default;
 
 public:
     void SetDocument(CDocument* pDoc) { m_pDoc = pDoc; }
@@ -65,6 +67,41 @@ public:
     enum { wincodeUnknown = 0, wincodeMainFrame = 1, wincodeViewFrame = 2, wincodeToolPal = 3 };
 
 protected:
+    class Buffer
+    {
+    public:
+        Buffer() = default;
+        Buffer(const Buffer&) = delete;
+        Buffer& operator=(const Buffer&) = delete;
+        ~Buffer() = default;
+
+        size_t GetSize() const { return size; }
+        operator BYTE*()
+        {
+            static_assert(sizeof(ptr) == sizeof(BYTE*), "wasted space");
+            return ptr.get();
+        }
+
+        void Reset()
+        {
+            Reset(nullptr, size_t(0));
+        }
+        void Reset(BYTE* p, size_t s)
+        {
+            ptr.reset(p);
+            size = ptr ? s : size_t(0);
+        }
+
+    private:
+        class Free
+        {
+        public:
+            void operator()(BYTE* p) { free(p); }
+        };
+        std::unique_ptr<BYTE[], Free> ptr;
+        size_t size = size_t(0);
+    };
+
     struct CWinStateElement
     {
         WORD  m_wWinCode;           // Generic type of window
@@ -72,16 +109,15 @@ protected:
         WORD  m_wUserCode2;         // Used by subclass to refine WinCode
         CWinPlacement m_wndState;   // Window placement information
 
-        DWORD m_dwWinStateBfrSize;  // Size of serialized window data
-        BYTE* m_pWinStateBfr;       // Serialized window data
+        Buffer m_pWinStateBfr;       // Serialized window data
 
         CWinStateElement();
-        virtual ~CWinStateElement();
+        virtual ~CWinStateElement() = default;
         void Serialize(CArchive& ar);
     };
 
 protected:
-    CWinStateElement* GetWindowState(CWnd* pWnd);
+    OwnerPtr<CWinStateElement> GetWindowState(CWnd* pWnd);
     BOOL RestoreWindowState(CWnd* pWnd, CWinStateElement* pWse);
     void GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames);
     CWnd* GetDocumentFrameHavingRuntimeClass(CRuntimeClass* pClass);
@@ -90,21 +126,21 @@ protected:
     static BOOL CALLBACK EnumFrames(HWND hWnd, LPARAM dwTblFramePtr);
 
     void SetUpListIfNeedTo();
-    void DestroyList();
 
     // Required override used to locate or, if necessary, recreate frames.
     // This is called when window states are being restored.
     virtual CWnd* OnGetFrameForWinStateElement(CWinStateElement* pWse) = 0;
 
     // Allow subclass to create specialized version of CWinStateElement
-    virtual CWinStateElement* OnCreateWinStateElement() { return new CWinStateElement; }
+    virtual OwnerPtr<CWinStateElement> OnCreateWinStateElement() { return MakeOwner<CWinStateElement>(); }
 
     // Allow subclass to add more information.
     virtual void OnAnnotateWinStateElement(CWinStateElement* pWse, CWnd* pWnd) {}
 
 protected:
     CDocument*  m_pDoc;
-    CPtrList*   m_pList;            // Win state element list
+    typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;
+    OwnerOrNullPtr<CWinStateList> m_pList;            // Win state element list
 };
 
 #endif
