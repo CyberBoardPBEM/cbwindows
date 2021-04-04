@@ -55,6 +55,21 @@ public:
     BOOL IsULine(void) { return (taFlags & taULine) != 0; }
 };
 
+class UniqueFontID
+{
+public:
+    UniqueFontID() noexcept = default;
+    UniqueFontID(const UniqueFontID&) = delete;
+    UniqueFontID& operator=(const UniqueFontID&) = delete;
+    UniqueFontID(UniqueFontID&& other) noexcept { fid = other.fid; other.fid = 0; }
+    UniqueFontID& operator=(UniqueFontID&& other) noexcept { std::swap(fid, other.fid); return *this; }
+    ~UniqueFontID() { Reset(); }
+    void Reset(FontID f = 0);
+    FontID Get() const { return fid; }
+private:
+    FontID fid = 0;
+};
+
 class CFontTbl : public AtomList
 {
 protected:
@@ -83,6 +98,7 @@ public:
     FNameTbl* GetFontNameTable() { return &oFName; }
     // -------- //
     void Archive(CArchive& ar, FontID& rfontID);
+    void Archive(CArchive& ar, UniqueFontID& rfontID);
 };
 
 #endif

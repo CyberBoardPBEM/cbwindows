@@ -25,6 +25,12 @@
 #include    "stdafx.h"
 #include    "Font.h"
 
+#ifdef      GPLAY
+    #include    "GamDoc.h"
+#else
+    #include    "GmDoc.h"
+#endif
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -165,6 +171,21 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
     }
 }
 
+void CFontTbl::Archive(CArchive& ar, UniqueFontID& rfontID)
+{
+    if (ar.IsStoring())
+    {
+        FontID temp = rfontID.Get();
+        Archive(ar, temp);
+    }
+    else
+    {
+        FontID temp = 0;
+        Archive(ar, temp);
+        rfontID.Reset(temp);
+    }
+}
+
 // ===================================================== //
 // (protected)
 BOOL CbFont::AtomsEqual(Atom &atom)
@@ -174,3 +195,11 @@ BOOL CbFont::AtomsEqual(Atom &atom)
             oFnt.taFlags == taFlags;
 }
 
+void UniqueFontID::Reset(FontID f)
+{
+    if (fid != 0)
+    {
+        CGamDoc::GetFontManager()->DeleteFont(fid);
+    }
+    fid = f;
+}
