@@ -1276,10 +1276,10 @@ void CBitEditView::OnEditCopy()
     if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste.m_hObject != NULL &&
         !m_rctPaste.IsRectEmpty())
     {
-        SetClipboardBitmap(this, &m_bmPaste, GetAppPalette());
+        SetClipboardBitmap(this, m_bmPaste, GetAppPalette());
     }
     else
-        SetClipboardBitmap(this, &m_bmView, GetAppPalette());
+        SetClipboardBitmap(this, m_bmView, GetAppPalette());
 }
 
 void CBitEditView::OnEditPaste()
