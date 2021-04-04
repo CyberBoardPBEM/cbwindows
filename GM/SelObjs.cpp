@@ -645,7 +645,7 @@ void CSelList::CopyToClipboard()
     CBitmapImage* pDObj = (CBitmapImage*)pSel->m_pObj;
     ASSERT(pDObj != NULL);
     ASSERT(pDObj->GetType() == CDrawObj::drawBitmap);
-    SetClipboardBitmap(m_pView, &pDObj->m_bitmap);
+    SetClipboardBitmap(m_pView, pDObj->m_bitmap);
 }
 
 void CSelList::Open()

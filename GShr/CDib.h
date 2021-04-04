@@ -42,7 +42,7 @@ public:
     BOOL WriteDIBFile(CFile& file);
     BOOL WriteDIBtoPNGFile(LPCSTR pszName);
     BOOL CloneDIB(CDib *pDib);
-    BOOL BitmapToDIB(CBitmap* pBM, CPalette* pPal = NULL, int nBPP = 16);
+    BOOL BitmapToDIB(const CBitmap* pBM, CPalette* pPal = NULL, int nBPP = 16);
     std::unique_ptr<CBitmap> DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
     BOOL AppendDIB(CDib *pDib);
     BOOL RemoveDIBSlice(int y, int ht);

@@ -26,7 +26,7 @@
 #define _CLIPBRD_H
 
 BOOL IsClipboardBitmap();
-void SetClipboardBitmap(CWnd* pWnd, CBitmap *pBMap, CPalette *pPal = NULL);
+void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, CPalette *pPal = NULL);
 CBitmap* GetClipboardBitmap(CWnd* pWnd, CPalette *pPal = NULL);
 
 #endif

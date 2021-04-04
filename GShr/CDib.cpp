@@ -141,7 +141,7 @@ void CDib::SetDibHandle(HANDLE hDib)
     m_lpDib = (LPSTR)GlobalLock((HGLOBAL)m_hDib);
 }
 
-BOOL CDib::BitmapToDIB(CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
+BOOL CDib::BitmapToDIB(const CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
 {
     ClearDib();
     if (pBM->m_hObject != NULL)
