@@ -162,21 +162,6 @@ public:
     COLORREF m_crTextColor;     // Text color
     COLORREF m_crTextBoxColor;  // Text box background color
     // allow default move operations to work right
-private:
-    class UniqueFontID
-    {
-    public:
-        UniqueFontID() noexcept = default;
-        UniqueFontID(const UniqueFontID&) = delete;
-        UniqueFontID& operator=(const UniqueFontID&) = delete;
-        UniqueFontID(UniqueFontID&& other) noexcept { fid = other.fid; other.fid = 0; }
-        UniqueFontID& operator=(UniqueFontID&& other) noexcept { std::swap(fid, other.fid); return *this; }
-        ~UniqueFontID() { Reset(); }
-        void Reset(FontID f = 0);
-        FontID Get() const { return fid; }
-    private:
-        FontID fid = 0;
-    };
 public:
     UniqueFontID m_fontID;          // Text font
 

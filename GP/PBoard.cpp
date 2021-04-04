@@ -43,15 +43,6 @@ static char THIS_FILE[] = __FILE__;
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::UniqueFontID::Reset(FontID f)
-{
-    if (fid != 0)
-    {
-        CGamDoc::GetFontManager()->DeleteFont(fid);
-    }
-    fid = f;
-}
-
 void CPlayBoard::UniqueGeoBoard::Reset(CGeomorphicBoard* p, CGamDoc** gd)
 {
     if (p && !gd)
@@ -365,8 +356,7 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar << (DWORD)m_crTextBoxColor;
 
         CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        FontID temp = m_fontID.Get();
-        pFontMgr->Archive(ar, temp);
+        pFontMgr->Archive(ar, m_fontID);
 
         ar << (WORD)m_bGridRectCenters;
         ar << (WORD)m_bSnapMovePlot;
@@ -471,10 +461,7 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar >> dwTmp; m_crTextBoxColor = (COLORREF)dwTmp;
 
         CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        // CFontTbl::Archive assumes temp == 0
-        FontID temp = 0;
-        pFontMgr->Archive(ar, temp);
-        m_fontID.Reset(temp);
+        pFontMgr->Archive(ar, m_fontID);
 
         ar >> wTmp; m_bGridRectCenters = (BOOL)wTmp;
         ar >> wTmp; m_bSnapMovePlot = (BOOL)wTmp;
