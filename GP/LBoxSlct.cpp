@@ -135,13 +135,13 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
     {
-        CDrawObj* pObj = (CDrawObj*)MapIndexToItem(nIndex);
+        CDrawObj* pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
         rct = rctLeft;
     }
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
-        CDrawObj* pObj = (CDrawObj*)MapIndexToItem(nIndex);
+        CDrawObj* pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
         rct = rctRight;
     }
