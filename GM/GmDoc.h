@@ -47,6 +47,10 @@
 #include    "MapStrng.h"
 #endif
 
+#ifndef     __VERSIONS_H__
+#include    "Versions.h"
+#endif
+
 //////////////////////////////////////////////////////////////////////
 
 #define     KEY_PASS_POSTFIX        "BaDkArMa"
@@ -181,6 +185,7 @@ public:
     // Current Tile Manager. Only valid when Serializing
     static CTileManager* GetCurrentTileManager() { return c_pTileMgr; }
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
+    using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
     static int GetLoadingVersion() { return c_fileVersion; }
     // -------- //
     DWORD GetGameBoxID() { return m_dwGameID; }

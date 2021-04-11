@@ -138,7 +138,8 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
             AfxMessageBox(IDS_ERR_GAMENEWER, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
-        SetLoadingVersion(NumVersion(verMajor, verMinor));
+        SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor),
+                                                        NumVersion(fileGamVerMajor, fileGamVerMinor));
 
         BYTE byteBucket;        // Place to dump unused bytes
         ar >> byteBucket;       // Eat the program version
@@ -160,8 +161,6 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
             pHist->m_pMList.reset(new CMoveList);
             pHist->m_pMList->Serialize(ar, FALSE);             // before Ver2.90
         }
-
-        SetLoadingVersion(NumVersion(fileGamVerMajor, fileGamVerMinor));
     }
 }
 

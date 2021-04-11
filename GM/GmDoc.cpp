@@ -614,7 +614,8 @@ void CGamDoc::Serialize(CArchive& ar)
                     AfxThrowArchiveException(CArchiveException::genericException);
                 }
             }
-            SetLoadingVersion(NumVersion(verMajor, verMinor));
+            SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor),
+                                                            NumVersion(fileGbxVerMajor, fileGbxVerMinor));
             ar >> bucket;           // Eat program version
             ar >> bucket;
 
@@ -681,8 +682,6 @@ void CGamDoc::Serialize(CArchive& ar)
 
             if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))// Ver 2.90
                 CColorPalette::CustomColorsSerialize(ar, m_pCustomColors);
-
-            SetLoadingVersion(NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         }
         CATCH(CArchiveException, e)
         {

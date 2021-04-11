@@ -65,6 +65,10 @@
 #include    "MoveMgr.h"
 #endif
 
+#ifndef     __VERSIONS_H__
+#include    "Versions.h"
+#endif
+
 ////////////////////////////////////////////////////////////////
 
 class CGameBox;
@@ -144,6 +148,7 @@ public:
     static CFontTbl* GetFontManager()
         { return CGameBox::GetFontManager(); }
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
+    using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
     static int GetLoadingVersion() { return c_fileVersion; }
     // The version of the loaded file is used to determine
     // if the game histories need to be upgraded and written
