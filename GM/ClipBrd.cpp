@@ -70,7 +70,7 @@ CBitmap* GetClipboardBitmap(CWnd* pWnd, CPalette *pPal /* = NULL */)
         pWnd->EndWaitCursor();
         return NULL;
     }
-    CBitmap* pBMap = dib.DIBToBitmap(pPal);
+    CBitmap* pBMap = dib.DIBToBitmap(pPal).release();
     pWnd->EndWaitCursor();
     return pBMap;
 }

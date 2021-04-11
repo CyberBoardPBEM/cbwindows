@@ -845,10 +845,9 @@ void CBitmapImage::Serialize(CArchive& ar)
         ar >> dib;
         if (dib.m_hDib != NULL)
         {
-            CBitmap* pBMap = dib.DIBToBitmap(GetAppPalette());
+            std::unique_ptr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
             ASSERT(pBMap != NULL);
             m_bitmap.Attach(pBMap->Detach());
-            delete pBMap;
         }
     }
 }

@@ -367,17 +367,16 @@ void CTileSelView::DoTileRotation(int nAngle)
     ASSERT(pDib != NULL);
     if (pDib == NULL)
         return;             // MEMORY ERROR
-    CBitmap* pbmFull = pDib->DIBToBitmap(GetAppPalette());
+    std::unique_ptr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
     delete pDib;
 
     pDib = Rotate16BitDib(&dibHalf, nAngle, RGB(255, 255, 255));
     ASSERT(pDib != NULL);
     if (pDib == NULL)
     {
-        delete pbmFull;
         return;             // MEMORY ERROR
     }
-    CBitmap* pbmHalf = pDib->DIBToBitmap(GetAppPalette());
+    std::unique_ptr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
     delete pDib;
 
     if (pbmFull != NULL && pbmHalf != NULL)
@@ -393,8 +392,6 @@ void CTileSelView::DoTileRotation(int nAngle)
         m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
         Invalidate();
     }
-    if (pbmFull != NULL) delete pbmFull;
-    if (pbmHalf != NULL) delete pbmHalf;
 }
 
 /////////////////////////////////////////////////////////////////////////////

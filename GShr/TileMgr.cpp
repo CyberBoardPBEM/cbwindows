@@ -380,8 +380,8 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
     }
     for (DWORD i = 0; i < nTileCount; i++)
     {
-        CBitmap*    pBMapFull;
-        CBitmap*    pBMapHalf;
+        std::unique_ptr<CBitmap> pBMapFull;
+        std::unique_ptr<CBitmap> pBMapHalf;
         COLORREF    crSmall;
         BITMAP      bmInfoFull;
         BITMAP      bmInfoHalf;
@@ -407,12 +407,9 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
             crSmall, nPos);
         if (nPos != Invalid_v<size_t>)
             nPos++;             // Position to next insertion point
-        UpdateTile(tid, pBMapFull, pBMapHalf, crSmall);
+        UpdateTile(tid, pBMapFull.get(), pBMapHalf.get(), crSmall);
         if (pTidTbl)
             pTidTbl->push_back(tid);
-
-        delete pBMapFull;
-        delete pBMapHalf;
     }
 #endif
 }

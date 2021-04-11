@@ -120,7 +120,7 @@ void CRotateDialog::OnRotApply()
 
         if (pRDib != NULL)
         {
-            m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette());
+            m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette()).release();
             delete pRDib;
         }
     }

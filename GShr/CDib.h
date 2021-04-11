@@ -43,7 +43,7 @@ public:
     BOOL WriteDIBtoPNGFile(LPCSTR pszName);
     BOOL CloneDIB(CDib *pDib);
     BOOL BitmapToDIB(CBitmap* pBM, CPalette* pPal = NULL, int nBPP = 16);
-    CBitmap* DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
+    std::unique_ptr<CBitmap> DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
     BOOL AppendDIB(CDib *pDib);
     BOOL RemoveDIBSlice(int y, int ht);
     void AddColorsToPaletteEntryTable(LPPALETTEENTRY pLP, int nSize,

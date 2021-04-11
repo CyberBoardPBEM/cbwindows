@@ -155,7 +155,7 @@ BOOL CDib::BitmapToDIB(CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
     return m_hDib != NULL;
 }
 
-CBitmap* CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
+std::unique_ptr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
 {
     if (bDibSect)
     {
@@ -178,7 +178,7 @@ CBitmap* CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
 
         memDC.SelectPalette(prvPal, FALSE);
 
-        CBitmap* pBMap = new CBitmap;
+        std::unique_ptr<CBitmap> pBMap(new CBitmap);
         pBMap->Attach((HGDIOBJ)hDibSect);
         return pBMap;
 
@@ -190,7 +190,7 @@ CBitmap* CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
         ASSERT(hBMap != NULL);
         if (hBMap != NULL)
         {
-            CBitmap* pBMap = new CBitmap;
+            std::unique_ptr<CBitmap> pBMap(new CBitmap);
             pBMap->Attach((HGDIOBJ)hBMap);
             return pBMap;
         }
