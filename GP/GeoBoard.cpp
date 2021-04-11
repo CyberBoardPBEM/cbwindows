@@ -431,8 +431,7 @@ CBoard* CGeomorphicBoard::CloneBoard(CBoard& pOrigBoard)
     // we may be loading an earlier version game or scenario. In
     // this case the board data has already been upgraded. Make
     // a copy of the current loading version so we can restore it.
-    int nCurLoadingVersion = CGamDoc::GetLoadingVersion();
-    CGamDoc::SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
+    CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
 
     CBoard* pNewBoard = NULL;
     TRY
@@ -457,7 +456,6 @@ CBoard* CGeomorphicBoard::CloneBoard(CBoard& pOrigBoard)
     }
     END_CATCH_ALL
 
-    CGamDoc::SetLoadingVersion(nCurLoadingVersion);
     return pNewBoard;
 }
 

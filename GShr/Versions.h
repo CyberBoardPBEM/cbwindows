@@ -105,5 +105,28 @@ inline int NumVersion(int major, int minor) { return major * 256 + minor; }
 
 #define FILEEXT_GTLB        "gtl"   // File extension for tile library files
 
+/* This is an RAII helper for setting the current file format
+    version, and then changing it to a different version when
+    the need for the current version is done.  Defaults to
+    different version being the version in use before creating
+    this object, but that version can be overridden to set a
+    different version.  */
+template<typename T>
+class SetLoadingVersionGuard
+{
+public:
+    SetLoadingVersionGuard(int ctorVer, int dtorVer = T::GetLoadingVersion()) :
+        m_dtorVer(dtorVer)
+    {
+        T::SetLoadingVersion(ctorVer);
+    }
+    ~SetLoadingVersionGuard()
+    {
+        T::SetLoadingVersion(m_dtorVer);
+    }
+private:
+    const int m_dtorVer;
+};
+
 #endif
 

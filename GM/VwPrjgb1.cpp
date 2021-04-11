@@ -146,6 +146,7 @@ void CGbxProjView::DoBoardClone()
     CBoard* pNewBoard = NULL;
     TRY
     {
+        CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         CMemFile file;
         CArchive arSave(&file, CArchive::store);
         arSave.m_pDocument = pDoc;

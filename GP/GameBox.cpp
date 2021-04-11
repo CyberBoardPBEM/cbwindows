@@ -97,8 +97,6 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
     ar.m_pDocument = pDoc;
     ar.m_bForceFlat = FALSE;
 
-    int nSaveLoadingVersion = CGamDoc::GetLoadingVersion();
-
     TRY
     {
         GetMainFrame()->BeginWaitCursor();
@@ -123,7 +121,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
             return FALSE;
         }
         SetLoadingVersion(NumVersion(verMajor, verMinor));
-        CGamDoc::SetLoadingVersion(NumVersion(verMajor, verMinor));
+        CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor));
 
         ar >> cEatThis;         // Eat program version
         ar >> cEatThis;
@@ -194,12 +192,14 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar.Close();
         file.Close();
         GetMainFrame()->EndWaitCursor();
+        c_pTileMgr = NULL;
     }
     CATCH(CMemoryException, e)
     {
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
         strErr.LoadString(IDS_ERR_GBXNOMEM);
+        c_pTileMgr = NULL;
         return FALSE;
     }
     AND_CATCH_ALL(e)
@@ -207,10 +207,9 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
         strErr.LoadString(IDS_ERR_GBXREAD);
+        c_pTileMgr = NULL;
         return FALSE;
     }
     END_CATCH_ALL
-    c_pTileMgr = NULL;
-    CGamDoc::SetLoadingVersion(nSaveLoadingVersion);
     return TRUE;
 }
