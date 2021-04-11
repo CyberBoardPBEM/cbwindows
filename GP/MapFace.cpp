@@ -66,7 +66,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     CDib* pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
     if (pRDib == NULL)
         AfxThrowMemoryException();
-    CBitmap* pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
+    std::unique_ptr<CBitmap> pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
     ASSERT(pBMapFull != NULL);
     BITMAP bmapInfo;
     pBMapFull->GetObject(sizeof(BITMAP), &bmapInfo);
@@ -83,7 +83,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
     if (pRDib == NULL)
         AfxThrowMemoryException();
-    CBitmap* pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
+    std::unique_ptr<CBitmap> pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
 
     ASSERT(pBMapHalf != NULL);
     pBMapHalf->GetObject(sizeof(BITMAP), &bmapInfo);
@@ -97,10 +97,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     // Create the tile in our special tile set...
     TileID tidNew = m_pTMgr->CreateTile(m_nTileSet, sizeFull, sizeHalf, crSmall);
-    m_pTMgr->UpdateTile(tidNew, pBMapFull, pBMapHalf, crSmall);
-
-    delete pBMapFull;
-    delete pBMapHalf;
+    m_pTMgr->UpdateTile(tidNew, pBMapFull.get(), pBMapHalf.get(), crSmall);
 
     // Finally, add the piece facing mapping...
     SetAt(state, tidNew);

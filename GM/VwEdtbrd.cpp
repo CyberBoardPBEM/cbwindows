@@ -1666,13 +1666,11 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
         AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
         return;
     }
-    CBitmap* pBMap = dib.DIBToBitmap(GetAppPalette());
+    std::unique_ptr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
     ASSERT(pBMap != NULL);
 
     CBitmapImage* pDObj = new CBitmapImage;
     pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
-
-    delete pBMap;
 
     GetSelectList()->PurgeList(TRUE);           // Clear current select list
     AddDrawObject(pDObj);
