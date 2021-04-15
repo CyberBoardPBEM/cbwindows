@@ -91,41 +91,119 @@ class CPlayerManager;
 
 ////////////////////////////////////////////////////////////////
 
-#define     HINT_ALWAYSUPDATE       0   // Must be zero!
+enum EGamDocHint
+{
+    HINT_ALWAYSUPDATE =             0,       // Must be zero!
 
-#define     HINT_BOARDCHANGE        0x0001
-#define     HINT_CLEARINDTIP        0x0002  // Clear any tooltip based indicators
-#define     HINT_GSNPROPCHANGE      0x0004
-#define     HINT_GAMPROPCHANGE      0x0008
-#define     HINT_TRAYCHANGE         0x0010  // pHint->m_pTray
-#define     HINT_UPDATEOBJECT       0x0100  // pHint->m_pDrawObj, m_pPBoard
-#define     HINT_UPDATEOBJLIST      0x0200  // pHint->m_pPtrList, m_pPBoard
-#define     HINT_UPDATEBOARD        0x0300  // pHint->m_pPBoard
-#define     HINT_UPDATESELECT       0x0400  // pHint->m_pPBoard, m_pSelList
-#define     HINT_UPDATESELECTLIST   0x0500  // resync select list. sender ignores.
-#define     HINT_GAMESTATEUSED      0x1000
-#define     HINT_POINTINVIEW        0x2000  // pHint->m_point, m_pPBoard
-#define     HINT_SELECTOBJ          0x4000  // pHint->m_pDrawObj, m_pPBoard
-#define     HINT_SELECTOBJLIST      0x8000  // pHint->m_pPtrList, m_pPBoard
+    HINT_BOARDCHANGE =              0x0001,
+    HINT_CLEARINDTIP =              0x0002, // Clear any tooltip based indicators
+    HINT_GSNPROPCHANGE =            0x0004,
+    HINT_GAMPROPCHANGE =            0x0008,
+    HINT_TRAYCHANGE =               0x0010,
+    HINT_UPDATEOBJECT =             0x0100,
+    HINT_UPDATEOBJLIST =            0x0200,
+    HINT_UPDATEBOARD =              0x0300,
+    HINT_UPDATESELECT =             0x0400,
+    HINT_UPDATESELECTLIST =         0x0500, // resync select list. sender ignores.
+    HINT_GAMESTATEUSED =            0x1000,
+    HINT_POINTINVIEW =              0x2000,
+    HINT_SELECTOBJ =                0x4000,
+    HINT_SELECTOBJLIST =            0x8000,
+
+    HINT_INVALID =                  -1,     // uninitialized Args
+};
 
 class CGamDocHint : public CObject
 {
     DECLARE_DYNCREATE(CGamDocHint);
 public:
-    union
+    CGamDocHint() : hint(HINT_INVALID) {}
+
+    template<EGamDocHint HINT>
+    struct Args
     {
-        CPlayBoard* m_pPBoard;
+    };
+
+    template<>
+    struct Args<HINT_TRAYCHANGE>
+    {
         CTraySet*   m_pTray;
     };
-    union
+
+    template<>
+    struct Args<HINT_UPDATEOBJECT>
     {
-        CSelList*   m_pSelList;
+        CPlayBoard* m_pPBoard;
         CDrawObj*   m_pDrawObj;
+    };
+
+    template<>
+    struct Args<HINT_UPDATEOBJLIST>
+    {
+        CPlayBoard* m_pPBoard;
         CPtrList*   m_pPtrList;
-        void*       m_pVoid;
-        int         m_nVal;
+    };
+
+    template<>
+    struct Args<HINT_UPDATEBOARD>
+    {
+        CPlayBoard* m_pPBoard;
+    };
+
+    template<>
+    struct Args<HINT_UPDATESELECT>
+    {
+        CPlayBoard* m_pPBoard;
+        CSelList*   m_pSelList;
+    };
+
+    template<>
+    struct Args<HINT_POINTINVIEW>
+    {
+        CPlayBoard* m_pPBoard;
         POINT       m_point;
     };
+
+    template<>
+    struct Args<HINT_SELECTOBJ>
+    {
+        CPlayBoard* m_pPBoard;
+        CDrawObj*   m_pDrawObj;
+    };
+
+    template<>
+    struct Args<HINT_SELECTOBJLIST>
+    {
+        CPlayBoard* m_pPBoard;
+        CPtrList*   m_pPtrList;
+    };
+
+    template<EGamDocHint HINT>
+    Args<HINT>& GetArgs()
+    {
+        if (hint == HINT_INVALID)
+        {
+            hint = HINT;
+        }
+        else if (HINT != hint)
+        {
+            CbThrowBadCastException();
+        }
+        return reinterpret_cast<Args<HINT>&>(args);
+    }
+
+private:
+    EGamDocHint hint;
+    union {
+        Args<HINT_TRAYCHANGE>       m_trayChange;
+        Args<HINT_UPDATEOBJECT>     m_updateObject;
+        Args<HINT_UPDATEOBJLIST>    m_updateObjList;
+        Args<HINT_UPDATEBOARD>      m_updateBoard;
+        Args<HINT_UPDATESELECT>     m_updateSelect;
+        Args<HINT_POINTINVIEW>      m_pointInView;
+        Args<HINT_SELECTOBJ>        m_selectObj;
+        Args<HINT_SELECTOBJLIST>    m_selectObjList;
+    } args;
 };
 
 ////////////////////////////////////////////////////////////////

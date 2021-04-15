@@ -467,8 +467,8 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
     // Use hint to scroll board to make point visible somewhere
     // near the center of the view.
     CGamDocHint hint;
-    hint.m_pPBoard = &pPBoard;
-    hint.m_point = point;
+    hint.GetArgs<HINT_POINTINVIEW>().m_pPBoard = &pPBoard;
+    hint.GetArgs<HINT_POINTINVIEW>().m_point = point;
     UpdateAllViews(NULL, HINT_POINTINVIEW, &hint);
 }
 
@@ -506,8 +506,8 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
 
     // Use hint to add object to select list
     CGamDocHint hint;
-    hint.m_pPBoard = &pPBoard;
-    hint.m_pDrawObj = pObj;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = &pPBoard;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
 }
 
@@ -521,8 +521,8 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList)
 
     // Use hint to add object to select list
     CGamDocHint hint;
-    hint.m_pPBoard = &pPBoard;
-    hint.m_pPtrList = pList;
+    hint.GetArgs<HINT_SELECTOBJLIST>().m_pPBoard = &pPBoard;
+    hint.GetArgs<HINT_SELECTOBJLIST>().m_pPtrList = pList;
     UpdateAllViews(NULL, HINT_SELECTOBJLIST, &hint);
 }
 
@@ -608,8 +608,8 @@ void CGamDoc::IndicateBoardPlotLine(CPlayBoard* pPBrd, CPoint ptA, CPoint ptB)
     pPBrd->AddIndicatorObject(pObj);
 
     CGamDocHint hint;
-    hint.m_pPBoard = pPBrd;
-    hint.m_pDrawObj = pObj;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
 }
 
@@ -629,8 +629,8 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size)
     pPBrd->AddIndicatorObject(pObj);
 
     CGamDocHint hint;
-    hint.m_pPBoard = pPBrd;
-    hint.m_pDrawObj = pObj;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
 }
 
@@ -661,8 +661,8 @@ void CGamDoc::FlushAllSelections()
 
     // Use hint to flush select lists.
     CGamDocHint hint;
-    hint.m_pPBoard = NULL;
-    hint.m_pDrawObj = NULL;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
     UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
 }
 
@@ -685,11 +685,11 @@ void CGamDoc::FlushAllIndicators()
     }
     // Use hint to flush select lists.
     CGamDocHint hint;
-    hint.m_pPBoard = NULL;
-    hint.m_pDrawObj = NULL;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
+    hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
     UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
     // Use hint to flush tool tip indicators
-    UpdateAllViews(NULL, HINT_CLEARINDTIP, &hint);
+    UpdateAllViews(NULL, HINT_CLEARINDTIP);
 }
 
 void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
@@ -701,8 +701,8 @@ void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
     {
         CDrawObj& pObj = **pos;
         CGamDocHint hint;
-        hint.m_pPBoard = &pPBrd;
-        hint.m_pDrawObj = &pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
 }

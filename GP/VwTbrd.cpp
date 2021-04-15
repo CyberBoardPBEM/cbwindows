@@ -94,24 +94,24 @@ void CTinyBoardView::OnInitialUpdate()
 void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     CGamDocHint* ph = (CGamDocHint*)pHint;
-    if (lHint == HINT_UPDATEOBJECT && ph->m_pPBoard == m_pPBoard)
+    if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         CRect rct;
-        rct = ph->m_pDrawObj->GetEnclosingRect();   // In board coords.
+        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(&rct);
     }
-    else if (lHint == HINT_UPDATEOBJLIST && ph->m_pPBoard == m_pPBoard)
+    else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
         POSITION pos;
-        for (pos = ph->m_pPtrList->GetHeadPosition(); pos != NULL; )
+        for (pos = ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->m_pPtrList->GetNext(pos);
+            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetNext(pos);
             ASSERT(pDObj != NULL);
             CRect rct = pDObj->GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(&rct);
         }
     }
-    else if (lHint == HINT_UPDATEBOARD && ph->m_pPBoard == m_pPBoard)
+    else if (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard)
     {
         if (m_pBMap != NULL) delete m_pBMap;
         m_pBMap = NULL;

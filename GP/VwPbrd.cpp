@@ -206,9 +206,9 @@ void CPlayBoardView::OnInitialUpdate()
 void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     CGamDocHint* ph = (CGamDocHint*)pHint;
-    if (lHint == HINT_POINTINVIEW && ph->m_pPBoard == m_pPBoard)
+    if (lHint == HINT_POINTINVIEW && ph->GetArgs<HINT_POINTINVIEW>().m_pPBoard == m_pPBoard)
     {
-        ScrollWorkspacePointIntoView(ph->m_point);
+        ScrollWorkspacePointIntoView(ph->GetArgs<HINT_POINTINVIEW>().m_point);
     }
     else if (lHint == HINT_BOARDCHANGE)
     {
@@ -220,18 +220,18 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             pFrm->PostMessage(WM_CLOSE, 0, 0L);
         }
     }
-    else if (lHint == HINT_UPDATEOBJECT && ph->m_pPBoard == m_pPBoard)
+    else if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         CRect rct;
-        rct = ph->m_pDrawObj->GetEnclosingRect();   // In board coords.
+        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(&rct);
     }
-    else if (lHint == HINT_UPDATEOBJLIST && ph->m_pPBoard == m_pPBoard)
+    else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
         POSITION pos;
-        for (pos = ph->m_pPtrList->GetHeadPosition(); pos != NULL; )
+        for (pos = ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->m_pPtrList->GetNext(pos);
+            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetNext(pos);
             ASSERT(pDObj != NULL);
             CRect rct = pDObj->GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(&rct);
@@ -239,27 +239,27 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_SELECTOBJ)
     {
-        if (ph->m_pPBoard != NULL && ph->m_pPBoard != m_pPBoard)
+        if (ph->GetArgs<HINT_SELECTOBJ>().m_pPBoard != NULL && ph->GetArgs<HINT_SELECTOBJ>().m_pPBoard != m_pPBoard)
             return;                     // Ignore in this case
-        if (ph->m_pDrawObj == NULL)     // NULL means deselect all
+        if (ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj == NULL)     // NULL means deselect all
         {
             m_selList.PurgeList(TRUE);
             return;
         }
-        m_selList.AddObject(ph->m_pDrawObj, TRUE);
-        if (ph->m_pDrawObj->GetType() == CDrawObj::drawPieceObj ||
-                ph->m_pDrawObj->GetType() == CDrawObj::drawMarkObj)
+        m_selList.AddObject(ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj, TRUE);
+        if (ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj->GetType() == CDrawObj::drawPieceObj ||
+                ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj->GetType() == CDrawObj::drawMarkObj)
             NotifySelectListChange();
     }
-    else if (lHint == HINT_SELECTOBJLIST && ph->m_pPBoard == m_pPBoard)
+    else if (lHint == HINT_SELECTOBJLIST && ph->GetArgs<HINT_SELECTOBJLIST>().m_pPBoard == m_pPBoard)
     {
-        ASSERT(ph->m_pPtrList != NULL);
+        ASSERT(ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList != NULL);
         m_selList.PurgeList(TRUE);
 
         POSITION pos;
-        for (pos = ph->m_pPtrList->GetHeadPosition(); pos != NULL; )
+        for (pos = ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->m_pPtrList->GetNext(pos);
+            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList->GetNext(pos);
             ASSERT(pDObj != NULL);
             m_selList.AddObject(pDObj, TRUE);
             NotifySelectListChange();
@@ -291,7 +291,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         EndWaitCursor();
     }
     else if (lHint == HINT_ALWAYSUPDATE ||
-        (lHint == HINT_UPDATEBOARD && ph->m_pPBoard == m_pPBoard))
+        (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard))
     {
         Invalidate(FALSE);
         BeginWaitCursor();
@@ -309,8 +309,8 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CPlayBoardView::NotifySelectListChange()
 {
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
-    hint.m_pSelList = &m_selList;
+    hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATESELECT>().m_pSelList = &m_selList;
     GetDocument()->UpdateAllViews(this, HINT_UPDATESELECT, &hint);
 }
 
@@ -1342,7 +1342,7 @@ void CPlayBoardView::OnViewBoardRotate180()
 {
    m_pPBoard->SetRotateBoard180(!m_pPBoard->IsBoardRotated180());
    CGamDocHint hint;
-   hint.m_pPBoard = m_pPBoard;
+   hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
    GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -1931,7 +1931,7 @@ void CPlayBoardView::OnViewPieces()
 {
     GetPlayBoard()->SetPiecesVisible(!GetPlayBoard()->GetPiecesVisible());
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
     GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -2096,7 +2096,7 @@ void CPlayBoardView::OnViewDrawIndOnTop()
 {
     GetPlayBoard()->SetIndicatorsOnTop(!GetPlayBoard()->GetIndicatorsOnTop());
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
     GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -2218,7 +2218,7 @@ void CPlayBoardView::OnActTakeOwnership()
     pDoc->SetPieceOwnershipTable(tblPieces, pDoc->GetCurrentPlayerMask());
 
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
@@ -2268,7 +2268,7 @@ void CPlayBoardView::OnActReleaseOwnership()
     pDoc->SetPieceOwnershipTable(tblPieces, 0);
 
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
@@ -2326,7 +2326,7 @@ void CPlayBoardView::OnActSetOwner()
     pDoc->SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
 
     CGamDocHint hint;
-    hint.m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
