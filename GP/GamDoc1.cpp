@@ -63,8 +63,8 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = &pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -100,7 +100,7 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pTray = &pYGrp;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYGrp;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     }
     SetModifiedFlag();
@@ -138,8 +138,8 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
         {
             // Cause it's former location to be invalidated...
             CGamDocHint hint;
-            hint.m_pPBoard = pPBrd;
-            hint.m_pDrawObj = &pObj;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
     }
@@ -171,8 +171,8 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     {
         // Cause object to be drawn
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = &pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -224,8 +224,8 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
             {
                 // Cause it's former location to be invalidated...
                 CGamDocHint hint;
-                hint.m_pPBoard = pPBrd;
-                hint.m_pDrawObj = pObj;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
                 UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
             }
         }
@@ -249,8 +249,8 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
         {
             // Cause object to be drawn
             CGamDocHint hint;
-            hint.m_pPBoard = pPBrd;
-            hint.m_pDrawObj = pObj;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
         SetModifiedFlag();
@@ -380,8 +380,8 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd)
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
 
@@ -394,8 +394,8 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd)
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -428,7 +428,7 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray /* = TR
     if (!IsQuietPlayback() && bOkToNotifyTray)
     {
         CGamDocHint hint;
-        hint.m_pTray = pYGrp;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     }
     SetModifiedFlag();
@@ -442,8 +442,8 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     m_pPTbl->SetPieceFacing(pObj->m_pid, nFacingDegCW);
@@ -455,8 +455,8 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -491,7 +491,7 @@ void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW)
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pTray = pYGrp;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     }
     SetModifiedFlag();
@@ -506,8 +506,8 @@ void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj *pObj, CPlayBoard* pPBrd,
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     pObj->SetFacing(nFacingDegCW);
@@ -519,8 +519,8 @@ void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj *pObj, CPlayBoard* pPBrd,
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -551,8 +551,8 @@ void CGamDoc::DeleteObjectsInList(CPtrList *pLst)
             if (!IsQuietPlayback())
             {
                 CGamDocHint hint;
-                hint.m_pPBoard = pPBrd;
-                hint.m_pDrawObj = pObj;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
                 UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
             }
             SetModifiedFlag();
@@ -662,8 +662,8 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = &pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -696,8 +696,8 @@ CDrawObj& CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = &pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -716,8 +716,8 @@ void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     {
         // Cause invalidation of current positions....
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
 
@@ -730,8 +730,8 @@ void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     {
         // Refresh drawing of object.
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -764,8 +764,8 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
-        hint.m_pPBoard = pPBrd;
-        hint.m_pPtrList = pList;
+        hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList = pList;
         UpdateAllViews(NULL, HINT_UPDATEOBJLIST, &hint);
     }
     SetModifiedFlag();
@@ -813,8 +813,8 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
         {
             // Cause it's former location to be invalidated...
             CGamDocHint hint;
-            hint.m_pPBoard = pPBoard;
-            hint.m_pDrawObj = pObj;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBoard;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
         if (bDeleteIfBoard)
@@ -829,7 +829,7 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
         if (bTrayHintAllowed && !IsQuietPlayback())
         {
             CGamDocHint hint;
-            hint.m_pTray = pYGrp;
+            hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
             UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
             return FALSE;
         }
@@ -867,8 +867,8 @@ void CGamDoc::RemoveObjectFromCurrentLocation(CDrawObj* pObj)
         {
             // Cause it's former location to be invalidated...
             CGamDocHint hint;
-            hint.m_pPBoard = pPBoard;
-            hint.m_pDrawObj = pObj;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBoard;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
     }
@@ -916,8 +916,8 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
                 {
                     // Cause object display area to be invalidated
                     CGamDocHint hint;
-                    hint.m_pPBoard = &pPBrd;
-                    hint.m_pDrawObj = pObj;
+                    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
+                    hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
                     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
                 }
 

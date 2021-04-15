@@ -917,7 +917,7 @@ void CTrayPalette::OnActTurnOver()
     size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
-    hint.m_pTray = &pYMgr->GetTraySet(nSel);
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
 }
 
@@ -947,7 +947,7 @@ void CTrayPalette::OnActTurnoverAllPieces()
     size_t nSel = GetSelectedTray();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
-    hint.m_pTray = &pYMgr->GetTraySet(nSel);
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
 }
 

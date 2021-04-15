@@ -130,10 +130,10 @@ void CSelectedPieceView::OnInitialUpdate()
 void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     CGamDocHint* ph = (CGamDocHint*)pHint;
-    if (lHint == HINT_UPDATESELECT && ph->m_pPBoard == m_pPBoard)
+    if (lHint == HINT_UPDATESELECT && ph->GetArgs<HINT_UPDATESELECT>().m_pPBoard == m_pPBoard)
     {
-        ASSERT(ph->m_pSelList != NULL);
-        CSelList* pSLst = ph->m_pSelList;
+        ASSERT(ph->GetArgs<HINT_UPDATESELECT>().m_pSelList != NULL);
+        CSelList* pSLst = ph->GetArgs<HINT_UPDATESELECT>().m_pSelList;
 
         if (!pSLst->HasPieces() && !pSLst->HasMarkers())
         {

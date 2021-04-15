@@ -180,7 +180,7 @@ void CGsnProjView::DoTrayProperty()
         }
 
         CGamDocHint hint;
-        hint.m_pTray = NULL;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
         pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
         pDoc->SetModifiedFlag();
     }
@@ -206,7 +206,7 @@ void CGsnProjView::DoTrayEdit()
 
     // Notify all visible trays
     CGamDocHint hint;
-    hint.m_pTray = NULL;
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
     pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     pDoc->SetModifiedFlag();
 }
@@ -233,7 +233,7 @@ void CGsnProjView::DoTrayDelete()
     }
     pYMgr->DeleteTraySet(nGrp);
     CGamDocHint hint;
-    hint.m_pTray = NULL;
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
     pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     pDoc->SetModifiedFlag();
 }

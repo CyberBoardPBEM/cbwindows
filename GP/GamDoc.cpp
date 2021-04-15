@@ -462,11 +462,11 @@ void CGamDoc::DoInitialUpdate()
 
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    CGamDocHint* ph = (CGamDocHint*)pHint;
+    CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
     if (lHint == HINT_TRAYCHANGE)
     {
-        m_palTrayA.UpdatePaletteContents(ph->m_pTray);
-        m_palTrayB.UpdatePaletteContents(ph->m_pTray);
+        m_palTrayA.UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        m_palTrayB.UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
@@ -1557,7 +1557,7 @@ void CGamDoc::OnEditCreateTray()
         dlg.m_pYMgr->CreateTraySet(dlg.m_strName);
 
         CGamDocHint hint;
-        hint.m_pTray = NULL;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
         SetModifiedFlag();
     }
@@ -1643,7 +1643,7 @@ void CGamDoc::OnEditImportPieceGroups()
     if (dlg.DoModal() == IDOK)
     {
         CGamDocHint hint;
-        hint.m_pTray = NULL;
+        hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
         UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
         SetModifiedFlag();
     }
@@ -1669,7 +1669,7 @@ void CGamDoc::OnEditSelectGamePieces()
 
     // Notify all visible trays
     CGamDocHint hint;
-    hint.m_pTray = NULL;
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
     UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
     SetModifiedFlag();
 }
