@@ -99,8 +99,21 @@ constexpr T Invalid_v = Invalid<T>::value;
 
 /////////////////////////////////////////////////////////////////////////////
 
+/* TODO:  The checks could be removed to improve release
+    build performance if we trust ourselves to always
+    catch any mistakes in testing.  */
 template<typename T>
-T& CheckedDeref(T* p)
+decltype(*std::declval<T>()) CheckedDeref(T& p)
+{
+    ASSERT(p);
+    if (!p) {
+        AfxThrowInvalidArgException();
+    }
+    return *p;
+}
+
+template<typename T>
+decltype(*std::declval<const T>()) CheckedDeref(const T& p)
 {
     ASSERT(p);
     if (!p) {
