@@ -44,6 +44,43 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+namespace CB
+{
+    // adapters for different container types
+    // TODO:  add support for std::vector::reserve?
+    // TODO:  avoid need for these since they're runtime overhead
+    template<typename LEFT, typename RIGHT>
+    void Copy(LEFT& left, const RIGHT& right)
+    {
+        left.clear();
+        for (RIGHT::const_iterator it = right.begin() ; it != right.end() ; ++it)
+        {
+            left.push_back(*it);
+        }
+    }
+
+    template<typename RIGHT>
+    void Copy(CPtrList& left, const RIGHT& right)
+    {
+        left.RemoveAll();
+        for (RIGHT::const_iterator it = right.begin() ; it != right.end() ; ++it) {
+            left.AddTail(&**it);
+        }
+    }
+
+    template<typename LEFT, typename RIGHT>
+    void Move(LEFT& left, RIGHT&& right)
+    {
+        left.clear();
+        for (RIGHT::iterator it = right.begin() ; it != right.end() ; ++it)
+        {
+            left.push_back(std::move(*it));
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 /* Invalid_v<T> is used as the "no-value" value for type T.
     It will probably be set to std::numeric_limits<T>::max(). */
 
