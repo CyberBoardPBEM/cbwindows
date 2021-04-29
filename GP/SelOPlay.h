@@ -81,33 +81,33 @@ public:
     RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
     CRect     m_rect;           // Enclosing rect for selected object
 
-    virtual HCURSOR GetHandleCursor(int nHandle)
+    virtual HCURSOR GetHandleCursor(int nHandle) /* override */
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
-    virtual CRect GetRect() { return m_rect; }
+    virtual CRect GetRect() /* override */ { return m_rect; }
 
 // Operations
 public:
-    virtual int  HitTestHandles(CPoint point);
+    virtual int  HitTestHandles(CPoint point) /* override */;
     // ------- //
-    virtual void MoveHandle(int m_nHandle, CPoint point) {}
-    virtual void Offset(CPoint ptDelta) { m_rect += ptDelta; }
+    virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
+    virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
     // ------- //
-    virtual void DrawTracker(CDC *pDC, TrackMode eMode);
-    virtual void InvalidateHandles();
-    virtual void Invalidate();
+    virtual void DrawTracker(CDC *pDC, TrackMode eMode) /* override */;
+    virtual void InvalidateHandles() /* override */;
+    virtual void Invalidate() /* override */;
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
-        BOOL bUpdateObjectExtent = TRUE) {}
-    virtual void Open();
-    virtual void Close() {}
-    virtual void AddHandles(CHandleList& listHandles) = 0;
+        BOOL bUpdateObjectExtent = TRUE) /* override */ {}
+    virtual void Open() /* override */;
+    virtual void Close() /* override */ {}
+    virtual void AddHandles(CHandleList& listHandles) /* override */ = 0;
 
 // Miscellaneous Implementer's Overrides
 protected:
-    virtual CRect GetHandleRect(int nHandleID);
-    virtual CPoint GetHandleLoc(int nHandleID) = 0;
-    virtual int GetHandleCount() = 0;
-    virtual void DrawHandles(CDC* pDC);
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) = 0;
+    virtual CRect GetHandleRect(int nHandleID) /* override */;
+    virtual CPoint GetHandleLoc(int nHandleID) /* override */ = 0;
+    virtual int GetHandleCount() /* override */ = 0;
+    virtual void DrawHandles(CDC* pDC) /* override */;
+    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) /* override */ = 0;
 
 // Implementation
 protected:
@@ -134,20 +134,20 @@ public:
 
 // Attributes
 public:
-    virtual CRect GetRect();
+    virtual CRect GetRect() override;
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID);
-    virtual void MoveHandle(int m_nHandle, CPoint point);
+    virtual HCURSOR GetHandleCursor(int nHandleID) override;
+    virtual void MoveHandle(int m_nHandle, CPoint point) override;
 
 protected:
-    virtual void AddHandles(CHandleList& listHandles);
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode);
-    virtual CPoint GetHandleLoc(int nHandleID);
-    virtual int GetHandleCount() { return 2; }
+    virtual void AddHandles(CHandleList& listHandles) override;
+    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) override;
+    virtual CPoint GetHandleLoc(int nHandleID) override;
+    virtual int GetHandleCount() override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
-        BOOL bUpdateObjectExtent = TRUE);
+        BOOL bUpdateObjectExtent = TRUE) override;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -164,17 +164,17 @@ public:
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID)
+    virtual HCURSOR GetHandleCursor(int nHandleID) override
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
-    virtual void MoveHandle(int m_nHandle, CPoint point) {}
+    virtual void MoveHandle(int m_nHandle, CPoint point) override {}
 
 protected:
-    virtual void AddHandles(CHandleList& listHandles);
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode);
-    virtual CPoint GetHandleLoc(int nHandleID);
-    virtual int GetHandleCount() { return 4; }
+    virtual void AddHandles(CHandleList& listHandles) override;
+    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) override;
+    virtual CPoint GetHandleLoc(int nHandleID) override;
+    virtual int GetHandleCount() override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
-        BOOL bUpdateObjectExtent = TRUE);
+        BOOL bUpdateObjectExtent = TRUE) override;
 };
 
 /////////////////////////////////////////////////////////////////////
