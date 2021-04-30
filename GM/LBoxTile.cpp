@@ -115,13 +115,13 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
             pDC->SelectObject(prvFont);
         }
 
-        tile.BitBlt(pDC, x, y);
+        tile.BitBlt(*pDC, x, y);
 
         if (m_bDrawAllScales)
         {
             x += tile.GetWidth() + 2 * tileBorder;
             y += tile.GetHeight() / 4;
-            tileHalf.BitBlt(pDC, x, y);
+            tileHalf.BitBlt(*pDC, x, y);
             x += tileHalf.GetWidth() + 2 * tileBorder;
             y = rctItem.CenterPoint().y - 4;
             CBrush brSmall(tileSmall.GetSmallColor());

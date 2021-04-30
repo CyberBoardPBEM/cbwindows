@@ -350,7 +350,7 @@ void CBoardBase::DrawDrawingList(CDrawList* pDwg, CDC* pDC, CRect* pDrawRct,
 {
     if (pDwg == NULL)
         return;
-    pDwg->Draw(pDC, pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
+    pDwg->Draw(CheckedDeref(pDC), pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
 }
 
 // ----------------------------------------------------- //

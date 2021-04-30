@@ -135,9 +135,9 @@ void CTileBaseListBox2::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int
     if (bDrawIt)
     {
         if (tile.GetHeight() >= 255)
-            tile.BitBlt(pDC, x, rctItem.top + tileBorder);// Too large. Don't draw vertically centered
+            tile.BitBlt(CheckedDeref(pDC), x, rctItem.top + tileBorder);// Too large. Don't draw vertically centered
         else
-            tile.BitBlt(pDC, x, (rctItem.Height() - tile.GetHeight()) / 2 + rctItem.top);
+            tile.BitBlt(CheckedDeref(pDC), x, (rctItem.Height() - tile.GetHeight()) / 2 + rctItem.top);
     }
     x += tile.GetWidth() + tileGap;
 }

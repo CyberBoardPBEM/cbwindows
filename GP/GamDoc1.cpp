@@ -131,7 +131,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
         RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
             GetMidRect(rctMrk) + sizeDelta, ePos);
     }
-    BOOL bOnBoard = pDwg->HasObject(&pObj);
+    BOOL bOnBoard = pDwg->HasObject(pObj);
     if (ePos == placeDefault && bOnBoard)
     {
         if (!IsQuietPlayback())
@@ -217,7 +217,7 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
                 GetMidRect(rctMrk) + size, ePos);
         }
 
-        BOOL bOnBoard = pDwg->HasObject(pObj);
+        BOOL bOnBoard = pDwg->HasObject(*pObj);
         if (ePos == placeDefault && bOnBoard)
         {
             if (!IsQuietPlayback())
@@ -745,8 +745,8 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
 
-    pDwg->ArrangeObjectListInDrawOrder(pList);
-    pDwg->RemoveObjectsInList(pList);
+    pDwg->ArrangeObjectListInDrawOrder(CheckedDeref(pList));
+    pDwg->RemoveObjectsInList(*pList);
     if (bToFront)
     {
         POSITION pos = pList->GetHeadPosition();
@@ -901,7 +901,7 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
         CDrawList* pDwg = pPBrd.GetPieceList();
 
         CPtrList listPtr;
-        pDwg->GetPieceObjectPtrList(&listPtr);
+        pDwg->GetPieceObjectPtrList(listPtr);
 
         POSITION pos;
         for (pos = listPtr.GetHeadPosition(); pos != NULL; )

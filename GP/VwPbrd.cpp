@@ -246,7 +246,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             m_selList.PurgeList(TRUE);
             return;
         }
-        m_selList.AddObject(ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj, TRUE);
+        m_selList.AddObject(*ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj, TRUE);
         if (ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj->GetType() == CDrawObj::drawPieceObj ||
                 ph->GetArgs<HINT_SELECTOBJ>().m_pDrawObj->GetType() == CDrawObj::drawMarkObj)
             NotifySelectListChange();
@@ -261,7 +261,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         {
             CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList->GetNext(pos);
             ASSERT(pDObj != NULL);
-            m_selList.AddObject(pDObj, TRUE);
+            m_selList.AddObject(*pDObj, TRUE);
             NotifySelectListChange();
         }
     }
@@ -394,7 +394,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
             else
                 pObj = m_pPBoard->FindObjectID(GetObjectIDFromElement(elem));
             if (pObj != NULL)
-                m_selList.AddObject(pObj, TRUE);
+                m_selList.AddObject(*pObj, TRUE);
         }
     }
     return (LRESULT)1;
@@ -476,7 +476,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     m_pPBoard->Draw(&dcMem, &rct, m_nZoom);
 
     if (!pDC->IsPrinting() && GetPlayBoard()->GetPiecesVisible())
-        m_selList.OnDraw(&dcMem);       // Handle selections.
+        m_selList.OnDraw(dcMem);       // Handle selections.
 
     RestoreDrawListDC(&dcMem);
 
@@ -586,7 +586,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
             CPtrList pceList;
-            pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), &pceList);
+            pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), pceList);
             SelectAllObjectsInList(&pceList);   // Reselect pieces dropped on board
         }
 
@@ -682,7 +682,7 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
                 CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard, tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
-                m_selList.AddObject(&pObj, TRUE);
+                m_selList.AddObject(pObj, TRUE);
             }
             NotifySelectListChange();
             return 0;
@@ -734,7 +734,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         wParam == phaseDragOver)
     {
         // Remove previous drag image.
-        pSLst->DrawTracker(pDC, trkMoving);
+        pSLst->DrawTracker(CheckedDeref(pDC), trkMoving);
     }
     if (wParam == phaseDragExit)
         DragKillAutoScroll();
@@ -772,7 +772,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
     {
         m_pDragSelList = pSLst;
         // Draw new drag image.
-        pSLst->DrawTracker(pDC, trkMoving);
+        pSLst->DrawTracker(CheckedDeref(pDC), trkMoving);
     }
     ReleaseDC(pDC);
 
@@ -788,7 +788,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         // Whoooopppp...Whoooopppp!!! Drop occurred here....
         DragKillAutoScroll();
         CPtrList listObjs;
-        pSLst->LoadListWithObjectPtrs(&listObjs);
+        pSLst->LoadListWithObjectPtrs(listObjs);
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc->AssignNewMoveGroup();
@@ -825,7 +825,7 @@ void CPlayBoardView::DragDoAutoScroll()
         pDC = GetDC();
         pDC->SaveDC();
         OnPrepareScaledDC(pDC, TRUE);
-        m_pDragSelList->DrawTracker(pDC, trkMoving);
+        m_pDragSelList->DrawTracker(*pDC, trkMoving);
         pDC->RestoreDC(-1);
     }
     CPoint point;
@@ -856,7 +856,7 @@ void CPlayBoardView::DragDoAutoScroll()
     if (m_pDragSelList != NULL)
     {
         // Restore drag image.
-        m_pDragSelList->DrawTracker(pDC, trkMoving);
+        m_pDragSelList->DrawTracker(*pDC, trkMoving);
     }
     if (pDC != NULL)
         ReleaseDC(pDC);
@@ -1198,7 +1198,7 @@ void CPlayBoardView::OnEditClear()
         return;
 
     CPtrList listPtr;
-    m_selList.LoadListWithObjectPtrs(&listPtr);
+    m_selList.LoadListWithObjectPtrs(listPtr);
     m_selList.PurgeList(TRUE);                  // Purge selections
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->DeleteObjectsInList(&listPtr);
@@ -1479,7 +1479,7 @@ void CPlayBoardView::OnActToFront()
         return;
 
     CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(&listObjs);
+    m_selList.LoadListWithObjectPtrs(listObjs);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1505,7 +1505,7 @@ void CPlayBoardView::OnActToBack()
         return;
 
     CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(&listObjs);
+    m_selList.LoadListWithObjectPtrs(listObjs);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1527,7 +1527,7 @@ void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
 void CPlayBoardView::OnActTurnOver()
 {
     CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(&listObjs);
+    m_selList.LoadListWithObjectPtrs(listObjs);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1592,7 +1592,7 @@ void CPlayBoardView::OnActPlotDone()
         AdjustPoint(ptPrev);
 
         CPtrList listObjs;
-        m_selList.LoadListWithObjectPtrs(&listObjs);
+        m_selList.LoadListWithObjectPtrs(listObjs);
         m_selList.PurgeList(TRUE);
 
         GetDocument()->AssignNewMoveGroup();
@@ -1696,7 +1696,7 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
 {
     int nFacing5DegCW = nID - ID_ACT_ROTATE_0;
     CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(&listObjs);
+    m_selList.LoadListWithObjectPtrs(listObjs);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1798,7 +1798,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     m_tblXMidPnt.RemoveAll();
     m_tblYMidPnt.RemoveAll();
 
-    m_selList.LoadListWithObjectPtrs(&m_tblCurPieces);
+    m_selList.LoadListWithObjectPtrs(m_tblCurPieces);
 
     CRect rctGroupRect = m_selList.GetPiecesEnclosingRect();
     m_pntWheelMid = GetMidRect(rctGroupRect);
@@ -2138,7 +2138,7 @@ void CPlayBoardView::OnActLockObject()
     BOOL bLockState = nSet != 0 ? FALSE : TRUE;
 
     CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(&listObjs);
+    m_selList.LoadListWithObjectPtrs(listObjs);
 
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->SetObjectLockdownList(&listObjs, bLockState);
