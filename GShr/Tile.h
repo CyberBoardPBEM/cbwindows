@@ -308,9 +308,9 @@ public:
 
 // Operations
 public:
-    void BitBlt(CDC *pDC, int x, int y, DWORD dwRop = SRCCOPY);
-    void StretchBlt(CDC *pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY);
-    void TransBlt(CDC *pDC, int x, int y, BITMAP* pMaskBMapInfo = NULL);
+    void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY);
+    void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY);
+    void TransBlt(CDC& pDC, int x, int y, BITMAP* pMaskBMapInfo = NULL);
     void Update(CBitmap *pBMap);
     void CreateBitmapOfTile(CBitmap *pBMap);
 

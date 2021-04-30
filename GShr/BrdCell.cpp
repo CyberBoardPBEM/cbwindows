@@ -263,7 +263,7 @@ void CBoardArray::FillCell(CDC *pDC, int row, int col, TileScale eScale)
         {
             CBitmap *pBMap = pCF->GetMask();
             if (pBMap != NULL && m_bTransparentCells)
-                tile.TransBlt(pDC, rct.left, rct.top, pCF->GetMaskMemoryInfo());
+                tile.TransBlt(*pDC, rct.left, rct.top, pCF->GetMaskMemoryInfo());
             else if (pBMap != NULL)
             {
                 g_gt.mDC1.SelectObject(pBMap);
@@ -271,14 +271,14 @@ void CBoardArray::FillCell(CDC *pDC, int row, int col, TileScale eScale)
                 pDC->SetBkColor(RGB(255, 255, 255));
                 pDC->SetTextColor(RGB(0, 0, 0));
 
-                tile.BitBlt(pDC, rct.left, rct.top, SRCINVERT);
+                tile.BitBlt(*pDC, rct.left, rct.top, SRCINVERT);
                 pDC->BitBlt(rct.left, rct.top, rct.right, rct.bottom,
                     &g_gt.mDC1, 0, 0, SRCAND);
-                tile.BitBlt(pDC, rct.left, rct.top, SRCINVERT);
+                tile.BitBlt(*pDC, rct.left, rct.top, SRCINVERT);
                 g_gt.SelectSafeObjectsForDC1();
             }
             else
-                tile.BitBlt(pDC, rct.left, rct.top, SRCCOPY);
+                tile.BitBlt(*pDC, rct.left, rct.top, SRCCOPY);
         }
         else    // Handle small scale tiles here.
         {

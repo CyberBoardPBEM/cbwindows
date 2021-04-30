@@ -111,14 +111,14 @@ CDrawObj::CDrawObj()
     SetScaleVisibility(AllTileScales);
 }
 
-BOOL CDrawObj::IsVisible(RECT* pClipRct)
+BOOL CDrawObj::IsVisible(const RECT& pClipRct) const
 {
     CRect rct = GetEnclosingRect();
-    return rct.IntersectRect(&rct, pClipRct);
+    return rct.IntersectRect(&rct, &pClipRct);
 }
 
 #ifdef GPLAY
-ObjectID CDrawObj::GetObjectID()
+ObjectID CDrawObj::GetObjectID() const
 {
     return ObjectID();
 }
@@ -137,7 +137,7 @@ void CDrawObj::OffsetObject(CPoint offset)
 }
 //DFM991129
 
-BOOL CDrawObj::IsExtentOutOfZone(CRect* pRctZone, CPoint& pnt)
+BOOL CDrawObj::IsExtentOutOfZone(const CRect& pRctZone, CPoint& pnt) const
 {
     CRect rct;
     rct.UnionRect(pRctZone, &m_rctExtent);
@@ -145,10 +145,10 @@ BOOL CDrawObj::IsExtentOutOfZone(CRect* pRctZone, CPoint& pnt)
     {
         pnt.x = pnt.y = 0;
         // Calc offset needed to push the rect onto the pRctZone
-        if (m_rctExtent.right > pRctZone->right)
-            pnt.x = pRctZone->right - m_rctExtent.right;
-        if (m_rctExtent.bottom > pRctZone->bottom)
-            pnt.y = pRctZone->bottom - m_rctExtent.bottom;
+        if (m_rctExtent.right > pRctZone.right)
+            pnt.x = pRctZone.right - m_rctExtent.right;
+        if (m_rctExtent.bottom > pRctZone.bottom)
+            pnt.y = pRctZone.bottom - m_rctExtent.bottom;
         return TRUE;
     }
     return FALSE;
@@ -157,38 +157,38 @@ BOOL CDrawObj::IsExtentOutOfZone(CRect* pRctZone, CPoint& pnt)
 // Sets up pen and brush for drawing. The previous pen
 // and brush are saved in class variables.
 
-void CDrawObj::SetUpDraw(CDC* pDC, CPen* pPen, CBrush* pBrush)
+void CDrawObj::SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const
 {
     if (c_bHitTestDraw)
-        pPen->CreateStockObject(BLACK_PEN);
+        pPen.CreateStockObject(BLACK_PEN);
     else
     {
         if (GetLineColor() != noColor)
         {
-            pPen->CreatePen(PS_SOLID, GetLineWidth(), GetLineColor());
+            pPen.CreatePen(PS_SOLID, GetLineWidth(), GetLineColor());
         }
         else
-            pPen->CreateStockObject(NULL_PEN);
+            pPen.CreateStockObject(NULL_PEN);
     }
 
     if (GetFillColor() != noColor)
     {
         if (c_bHitTestDraw)
-            pBrush->CreateStockObject(BLACK_BRUSH);
+            pBrush.CreateStockObject(BLACK_BRUSH);
         else
-            pBrush->CreateSolidBrush(GetFillColor());
+            pBrush.CreateSolidBrush(GetFillColor());
     }
     else
-        pBrush->CreateStockObject(NULL_BRUSH);
+        pBrush.CreateStockObject(NULL_BRUSH);
 
-    c_pPrvPen = pDC->SelectObject(pPen);
-    c_pPrvBrush = pDC->SelectObject(pBrush);
+    c_pPrvPen = pDC.SelectObject(&pPen);
+    c_pPrvBrush = pDC.SelectObject(&pBrush);
 }
 
-void CDrawObj::CleanUpDraw(CDC *pDC)
+void CDrawObj::CleanUpDraw(CDC& pDC) const
 {
-    pDC->SelectObject(c_pPrvPen);
-    pDC->SelectObject(c_pPrvBrush);
+    pDC.SelectObject(c_pPrvPen);
+    pDC.SelectObject(c_pPrvBrush);
 }
 
 const int hitZone = 5;          // Must be odd and <= 15
@@ -210,7 +210,7 @@ BOOL CDrawObj::BitBlockHitTest(CPoint pt)
     dcmem.SetViewportOrg(-(pt.x - hitZone/2), -(pt.y - hitZone/2));
 
     c_bHitTestDraw = TRUE;
-    Draw(&dcmem, fullScale);
+    Draw(dcmem, fullScale);
     c_bHitTestDraw = FALSE;
 
     BOOL bHit = FALSE;
@@ -261,27 +261,27 @@ void CDrawObj::Serialize(CArchive& ar)
 }
 
 //DFM19991213
-void CDrawObj::CopyAttributes(CDrawObj *source)
+void CDrawObj::CopyAttributes(const CDrawObj& source)
 {
-    m_dwDObjFlags = source->m_dwDObjFlags;
-    m_rctExtent   = source->m_rctExtent;
+    m_dwDObjFlags = source.m_dwDObjFlags;
+    m_rctExtent   = source.m_rctExtent;
 }
 //DFM19991213
 
 ////////////////////////////////////////////////////////////////////
 // CRectObject methods
 
-void CRectObj::Draw(CDC *pDC, TileScale)
+void CRectObj::Draw(CDC& pDC, TileScale)
 {
     CPen   penEdge;
     CBrush brushFill;
 
-    SetUpDraw(pDC, &penEdge, &brushFill);
-    pDC->Rectangle(&m_rctExtent);
+    SetUpDraw(pDC, penEdge, brushFill);
+    pDC.Rectangle(&m_rctExtent);
     CleanUpDraw(pDC);
 }
 
-CRect CRectObj::GetEnclosingRect()
+CRect CRectObj::GetEnclosingRect() const
 {
     CRect rct = m_rctExtent;
     rct.InflateRect(m_nLineWidth / 2 + 1, m_nLineWidth / 2 + 1);
@@ -301,7 +301,7 @@ BOOL CRectObj::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CRectObj::ForceIntoZone(CRect* pRctZone)
+void CRectObj::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -315,11 +315,11 @@ CSelection* CRectObj::CreateSelectProxy(CBrdEditView& pView)
 #endif
 
 //DFM19991210
-CDrawObj::OwnerPtr CRectObj::Clone()
+CDrawObj::OwnerPtr CRectObj::Clone() const
 {
     ::OwnerPtr<CRectObj> returnValue = MakeOwner<CRectObj>();
 
-    returnValue->CopyAttributes(this);
+    returnValue->CopyAttributes(*this);
 
     return (returnValue);
 }
@@ -345,26 +345,26 @@ void CRectObj::Serialize(CArchive& ar)
 }
 
 //DFM19991213
-void CRectObj::CopyAttributes (CRectObj *source)
+void CRectObj::CopyAttributes (const CRectObj& source)
 {
     CDrawObj::CopyAttributes (source);
 
-    m_crFill     = source->m_crFill;
-    m_crLine     = source->m_crLine;
-    m_nLineWidth = source->m_nLineWidth;
+    m_crFill     = source.m_crFill;
+    m_crLine     = source.m_crLine;
+    m_nLineWidth = source.m_nLineWidth;
 }
 //DFM19991213
 
 ////////////////////////////////////////////////////////////////////
 // CEllipse methods
 
-void CEllipse::Draw(CDC *pDC, TileScale)
+void CEllipse::Draw(CDC& pDC, TileScale)
 {
     CPen   penEdge;
     CBrush brushFill;
 
-    SetUpDraw(pDC, &penEdge, &brushFill);
-    pDC->Ellipse(&m_rctExtent);
+    SetUpDraw(pDC, penEdge, brushFill);
+    pDC.Ellipse(&m_rctExtent);
     CleanUpDraw(pDC);
 }
 
@@ -376,11 +376,11 @@ CSelection* CEllipse::CreateSelectProxy(CBrdEditView& pView)
 #endif
 
 //DFM19991213
-CDrawObj::OwnerPtr CEllipse::Clone()
+CDrawObj::OwnerPtr CEllipse::Clone() const
 {
     ::OwnerPtr<CEllipse> returnValue = MakeOwner<CEllipse>();
 
-    returnValue->CRectObj::CopyAttributes(this);
+    returnValue->CRectObj::CopyAttributes(*this);
 
     return (returnValue);
 }
@@ -389,18 +389,18 @@ CDrawObj::OwnerPtr CEllipse::Clone()
 ////////////////////////////////////////////////////////////////////
 // CPolyObj methods
 
-void CPolyObj::Draw(CDC *pDC, TileScale)
+void CPolyObj::Draw(CDC& pDC, TileScale)
 {
     if (m_pPnts == NULL)
         return;
     CPen   penEdge;
     CBrush brushFill;
-    SetUpDraw(pDC, &penEdge, &brushFill);
+    SetUpDraw(pDC, penEdge, brushFill);
 
     if (m_crFill == noColor)
-        pDC->Polyline(m_pPnts, m_nPnts);
+        pDC.Polyline(m_pPnts, m_nPnts);
     else
-        pDC->Polygon(m_pPnts, m_nPnts);
+        pDC.Polygon(m_pPnts, m_nPnts);
 
     CleanUpDraw(pDC);
 }
@@ -445,7 +445,7 @@ void CPolyObj::ComputeExtent()
     m_rctExtent.SetRect(xmin, ymin, xmax, ymax);
 }
 
-CRect CPolyObj::GetEnclosingRect()
+CRect CPolyObj::GetEnclosingRect() const
 {
     CRect rct = m_rctExtent;
     rct.InflateRect(m_nLineWidth + 1, m_nLineWidth + 1);
@@ -464,7 +464,7 @@ BOOL CPolyObj::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CPolyObj::ForceIntoZone(CRect* pRctZone)
+void CPolyObj::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -499,23 +499,23 @@ void CPolyObj::OffsetObject (CPoint offset)
     }
 }
 
-CDrawObj::OwnerPtr CPolyObj::Clone()
+CDrawObj::OwnerPtr CPolyObj::Clone() const
 {
     ::OwnerPtr<CPolyObj> pObj = MakeOwner<CPolyObj>();
-    pObj->CopyAttributes(this);
+    pObj->CopyAttributes(*this);
     return pObj;
 }
 
-void CPolyObj::CopyAttributes(CPolyObj *source)
+void CPolyObj::CopyAttributes(const CPolyObj& source)
 {
     CDrawObj::CopyAttributes(source);
 
-    m_crFill     = source->m_crFill;
-    m_crLine     = source->m_crLine;
-    m_nLineWidth = source->m_nLineWidth;
-    m_nPnts      = source->m_nPnts;
+    m_crFill     = source.m_crFill;
+    m_crLine     = source.m_crLine;
+    m_nLineWidth = source.m_nLineWidth;
+    m_nPnts      = source.m_nPnts;
     m_pPnts      = new POINT[m_nPnts];
-    memcpy(m_pPnts, source->m_pPnts, m_nPnts * sizeof(POINT));
+    memcpy(m_pPnts, source.m_pPnts, m_nPnts * sizeof(POINT));
 }
 
 void CPolyObj::Serialize(CArchive& ar)
@@ -549,19 +549,19 @@ void CPolyObj::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CLine
 
-void CLine::Draw(CDC* pDC, TileScale)
+void CLine::Draw(CDC& pDC, TileScale)
 {
     CPen pen;
     if (c_bHitTestDraw)
         pen.CreateStockObject(BLACK_PEN);
     else
         pen.CreatePen(PS_SOLID, m_nLineWidth, m_crLine);
-    CPen* pPrvPen = pDC->SelectObject(&pen);
+    CPen* pPrvPen = pDC.SelectObject(&pen);
 
-    pDC->MoveTo(m_ptBeg);
-    pDC->LineTo(m_ptEnd);
+    pDC.MoveTo(m_ptBeg);
+    pDC.LineTo(m_ptEnd);
 
-    pDC->SelectObject(pPrvPen);
+    pDC.SelectObject(pPrvPen);
 }
 
 void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
@@ -578,7 +578,7 @@ void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
     m_rctExtent.bottom = CB::max(yBeg, yEnd) +nWidth;
 }
 
-CRect CLine::GetEnclosingRect()
+CRect CLine::GetEnclosingRect() const
 {
     CRect rct = m_rctExtent;
     rct.NormalizeRect();
@@ -597,7 +597,7 @@ BOOL CLine::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CLine::ForceIntoZone(CRect* pRctZone)
+void CLine::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -629,43 +629,47 @@ void CLine::OffsetObject(CPoint offset)
 
 }
 
-CDrawObj::OwnerPtr CLine::Clone()
+CDrawObj::OwnerPtr CLine::Clone() const
 {
     ::OwnerPtr<CLine> pObj = MakeOwner<CLine>();
-    pObj->CopyAttributes(this);
+    pObj->CopyAttributes(*this);
     return pObj;
 }
 //DFM19991213
 
 #ifdef GPLAY
-CDrawObj::OwnerPtr CLine::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CLine::Clone(CGamDoc* pDoc) const
 {
     ::OwnerPtr<CLine> pObj = MakeOwner<CLine>();
-    pObj->CopyAttributes(this);    //DFM19991214
+    pObj->CopyAttributes(*this);    //DFM19991214
     return pObj;
 }
 
-BOOL CLine::Compare(CDrawObj* pObj)
+BOOL CLine::Compare(const CDrawObj& pObj) const
 {
-    CLine* pLine = (CLine*)pObj;
-    if (m_ptBeg != pLine->m_ptBeg)
+    if (pObj.GetType() != GetType())
+    {
+        AfxThrowInvalidArgException();
+    }
+    const CLine& pLine = static_cast<const CLine&>(pObj);
+    if (m_ptBeg != pLine.m_ptBeg)
         return FALSE;
-    if (m_ptEnd != pLine->m_ptEnd)
+    if (m_ptEnd != pLine.m_ptEnd)
         return FALSE;
     return TRUE;
 }
 #endif      // GPLAY
 
 //DFM19991214
-void CLine::CopyAttributes(CLine *source)
+void CLine::CopyAttributes(const CLine& source)
 {
     CDrawObj::CopyAttributes(source);
 
-    m_ptBeg = source->m_ptBeg;
-    m_ptEnd = source->m_ptEnd;
+    m_ptBeg = source.m_ptBeg;
+    m_ptEnd = source.m_ptEnd;
 
-    m_crLine = source->m_crLine;
-    m_nLineWidth = source->m_nLineWidth;
+    m_crLine = source.m_crLine;
+    m_nLineWidth = source.m_nLineWidth;
 }
 //DFM19991214
 
@@ -702,7 +706,7 @@ void CLine::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CBitmapImage
 
-void CBitmapImage::Draw(CDC* pDC, TileScale eScale)
+void CBitmapImage::Draw(CDC& pDC, TileScale eScale)
 {
     g_gt.mTileDC.SelectObject(&m_bitmap);
     SetupPalette(&g_gt.mTileDC);
@@ -711,8 +715,8 @@ void CBitmapImage::Draw(CDC* pDC, TileScale eScale)
 
     if ((GetDObjFlags() & dobjFlgLayerNatural) == 0)
     {
-        pDC->SetStretchBltMode(COLORONCOLOR);
-        pDC->StretchBlt(pnt.x, pnt.y, m_rctExtent.Width(),  m_rctExtent.Height(), &g_gt.mTileDC,
+        pDC.SetStretchBltMode(COLORONCOLOR);
+        pDC.StretchBlt(pnt.x, pnt.y, m_rctExtent.Width(),  m_rctExtent.Height(), &g_gt.mTileDC,
             0, 0, m_rctExtent.Width(), m_rctExtent.Height(), SRCCOPY);
 
         g_gt.SelectSafeObjectsForTileDC();
@@ -728,18 +732,18 @@ void CBitmapImage::Draw(CDC* pDC, TileScale eScale)
         BITMAP bmInfo;
         m_bitmap.GetObject(sizeof(bmInfo), &bmInfo);
 
-        CSize sizeWorld = pDC->GetWindowExt();
-        CSize sizeView = pDC->GetViewportExt();
+        CSize sizeWorld = pDC.GetWindowExt();
+        CSize sizeView = pDC.GetViewportExt();
         CPoint pnt = m_rctExtent.TopLeft();
         ScalePoint(pnt, sizeView, sizeWorld);
 
         SynchronizeExtentRect(sizeWorld, sizeView); // Only time we can find true scale
 
-        pDC->SaveDC();
-        pDC->SetMapMode(MM_TEXT);
-        pDC->BitBlt(pnt.x, pnt.y, bmInfo.bmWidth, bmInfo.bmHeight,
+        pDC.SaveDC();
+        pDC.SetMapMode(MM_TEXT);
+        pDC.BitBlt(pnt.x, pnt.y, bmInfo.bmWidth, bmInfo.bmHeight,
                     &g_gt.mTileDC, 0, 0, SRCCOPY);
-        pDC->RestoreDC(-1);
+        pDC.RestoreDC(-1);
     }
 }
 
@@ -783,7 +787,7 @@ void CBitmapImage::SynchronizeExtentRect(CSize sizeWorld, CSize sizeView)
 }
 
 #ifndef     GPLAY
-void CBitmapImage::ForceIntoZone(CRect* pRctZone)
+void CBitmapImage::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -805,20 +809,20 @@ void CBitmapImage::OffsetObject(CPoint offset)
     m_rctExtent += offset;
 }
 
-CDrawObj::OwnerPtr CBitmapImage::Clone()
+CDrawObj::OwnerPtr CBitmapImage::Clone() const
 {
     ::OwnerPtr<CBitmapImage> pObj = MakeOwner<CBitmapImage>();
-    pObj->CopyAttributes(this);
+    pObj->CopyAttributes(*this);
     return pObj;
 }
 
-void CBitmapImage::CopyAttributes(CBitmapImage *source)
+void CBitmapImage::CopyAttributes(const CBitmapImage& source)
 {
     CDrawObj::CopyAttributes(source);
 
-    m_eBaseScale = source->m_eBaseScale;
+    m_eBaseScale = source.m_eBaseScale;
     CDib dib;
-    dib.BitmapToDIB(&source->m_bitmap, GetAppPalette());
+    dib.BitmapToDIB(&source.m_bitmap, GetAppPalette());
     m_bitmap.Attach(dib.DIBToBitmap(GetAppPalette())->Detach());
 }
 
@@ -854,7 +858,7 @@ void CBitmapImage::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CTileImage
 
-void CTileImage::Draw(CDC* pDC, TileScale eScale)
+void CTileImage::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pTMgr != NULL);
     CTile tile;
@@ -863,13 +867,13 @@ void CTileImage::Draw(CDC* pDC, TileScale eScale)
     CPoint pnt = m_rctExtent.TopLeft();
     if (eScale == halfScale)
     {
-        ScalePoint(pnt, pDC->GetViewportExt(), pDC->GetWindowExt());
-        pDC->SaveDC();
-        pDC->SetMapMode(MM_TEXT);
+        ScalePoint(pnt, pDC.GetViewportExt(), pDC.GetWindowExt());
+        pDC.SaveDC();
+        pDC.SetMapMode(MM_TEXT);
     }
     tile.TransBlt(pDC, pnt.x, pnt.y);
     if (eScale == halfScale)
-        pDC->RestoreDC(-1);
+        pDC.RestoreDC(-1);
 }
 
 void CTileImage::SetTile(int x, int y, TileID tid)
@@ -891,7 +895,7 @@ BOOL CTileImage::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CTileImage::ForceIntoZone(CRect* pRctZone)
+void CTileImage::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -911,18 +915,18 @@ void CTileImage::OffsetObject(CPoint offset)
     m_rctExtent += offset;
 }
 
-CDrawObj::OwnerPtr CTileImage::Clone()
+CDrawObj::OwnerPtr CTileImage::Clone() const
 {
     ::OwnerPtr<CTileImage> pObj = MakeOwner<CTileImage>();
-    pObj->CopyAttributes(this);
+    pObj->CopyAttributes(*this);
     return pObj;
 }
 
-void CTileImage::CopyAttributes(CTileImage *source)
+void CTileImage::CopyAttributes(const CTileImage& source)
 {
     CDrawObj::CopyAttributes(source);
-    m_tid = source->m_tid;
-    m_pTMgr = source->m_pTMgr;
+    m_tid = source.m_tid;
+    m_pTMgr = source.m_pTMgr;
 }
 
 void CTileImage::Serialize(CArchive& ar)
@@ -947,18 +951,18 @@ CText::~CText()
     CGamDoc::GetFontManager()->DeleteFont(m_fontID);
 }
 
-void CText::Draw(CDC* pDC, TileScale eScale)
+void CText::Draw(CDC& pDC, TileScale eScale)
 {
     if (eScale == smallScale && m_rctExtent.Height() < 16)
         return;
 
     HFONT hFont = CGamDoc::GetFontManager()->GetFontHandle(m_fontID);
-    CFont* pPrvFont = pDC->SelectObject(CFont::FromHandle(hFont));
-    pDC->SetBkMode(TRANSPARENT);
-    COLORREF crPrev = pDC->SetTextColor(m_crText);
-    pDC->ExtTextOut(m_rctExtent.left, m_rctExtent.top,
+    CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(hFont));
+    pDC.SetBkMode(TRANSPARENT);
+    COLORREF crPrev = pDC.SetTextColor(m_crText);
+    pDC.ExtTextOut(m_rctExtent.left, m_rctExtent.top,
         0, NULL, m_text, m_text.GetLength(), NULL);
-    pDC->SetTextColor(crPrev);
+    pDC.SetTextColor(crPrev);
 }
 
 void CText::SetText(int x, int y, const char* pszText, FontID fntID,
@@ -1003,7 +1007,7 @@ BOOL CText::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CText::ForceIntoZone(CRect* pRctZone)
+void CText::ForceIntoZone(const CRect& pRctZone)
 {
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
@@ -1023,25 +1027,25 @@ CSelection* CText::CreateSelectProxy(CBrdEditView& pView)
 }
 #endif
 
-CDrawObj::OwnerPtr CText::Clone()
+CDrawObj::OwnerPtr CText::Clone() const
 {
     ::OwnerPtr<CText> pObj = MakeOwner<CText>();
-    pObj->CopyAttributes(this);
+    pObj->CopyAttributes(*this);
     return pObj;
 }
 
-void CText::CopyAttributes(CText *source)
+void CText::CopyAttributes(const CText& source)
 {
     CFontTbl* pFontMgr = CGamDoc::GetFontManager();
 
     CDrawObj::CopyAttributes(source);
 
-    m_nAngle = source->m_nAngle;
-    m_crText = source->m_crText;
-    m_text = source->m_text;
+    m_nAngle = source.m_nAngle;
+    m_crText = source.m_crText;
+    m_text = source.m_text;
 
     if (m_fontID != 0) pFontMgr->DeleteFont(m_fontID);
-    m_fontID = source->m_fontID;
+    m_fontID = source.m_fontID;
     pFontMgr->AddFont(m_fontID);            // make sure font reference count is in sync
 }
 
@@ -1077,7 +1081,7 @@ void CText::Serialize(CArchive& ar)
 
 // Tile drawing helper func...
 
-static void DrawObjTile(CDC* pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
+static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
     TileScale eScale)
 {
     CTile tile;
@@ -1085,19 +1089,19 @@ static void DrawObjTile(CDC* pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
 
     if (eScale == halfScale)
     {
-        ScalePoint(pnt, pDC->GetViewportExt(), pDC->GetWindowExt());
-        pDC->SaveDC();
-        pDC->SetMapMode(MM_TEXT);
+        ScalePoint(pnt, pDC.GetViewportExt(), pDC.GetWindowExt());
+        pDC.SaveDC();
+        pDC.SetMapMode(MM_TEXT);
     }
     tile.TransBlt(pDC, pnt.x, pnt.y);
     if (eScale == halfScale)
-        pDC->RestoreDC(-1);
+        pDC.RestoreDC(-1);
 }
 
 //////////////////////////////////////////////////////////////////
 // Class CPieceObj
 
-void CPieceObj::Draw(CDC* pDC, TileScale eScale)
+void CPieceObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -1193,7 +1197,7 @@ CSelection* CPieceObj::CreateSelectProxy(CPlayBoardView& pView)
     return new CSelGeneric(pView, *this);
 }
 
-CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc) const
 {
     ::OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
@@ -1203,12 +1207,16 @@ CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc)
     return pObj;
 }
 
-BOOL CPieceObj::Compare(CDrawObj* pObj)
+BOOL CPieceObj::Compare(const CDrawObj& pObj) const
 {
-    CPieceObj* pPce = (CPieceObj*)pObj;
-    if (m_pid != pPce->m_pid)
+    if (pObj.GetType() != GetType())
+    {
+        AfxThrowInvalidArgException();
+    }
+    const CPieceObj& pPce = static_cast<const CPieceObj&>(pObj);
+    if (m_pid != pPce.m_pid)
         return FALSE;
-    if (m_rctExtent != pPce->m_rctExtent)
+    if (m_rctExtent != pPce.m_rctExtent)
         return FALSE;
     return TRUE;
 }
@@ -1230,7 +1238,7 @@ void CPieceObj::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CMarkObj
 
-void CMarkObj::Draw(CDC* pDC, TileScale eScale)
+void CMarkObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -1300,7 +1308,7 @@ CSelection* CMarkObj::CreateSelectProxy(CPlayBoardView& pView)
     return new CSelGeneric(pView, *this);
 }
 
-CDrawObj::OwnerPtr CMarkObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CMarkObj::Clone(CGamDoc* pDoc) const
 {
     ::OwnerPtr<CMarkObj> pObj = MakeOwner<CMarkObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
@@ -1312,16 +1320,20 @@ CDrawObj::OwnerPtr CMarkObj::Clone(CGamDoc* pDoc)
     return pObj;
 }
 
-BOOL CMarkObj::Compare(CDrawObj* pObj)
+BOOL CMarkObj::Compare(const CDrawObj& pObj) const
 {
-    CMarkObj* pMrk = (CMarkObj*)pObj;
-    if (m_mid != pMrk->m_mid)
+    if (pObj.GetType() != GetType())
+    {
+        AfxThrowInvalidArgException();
+    }
+    const CMarkObj& pMrk = static_cast<const CMarkObj&>(pObj);
+    if (m_mid != pMrk.m_mid)
         return FALSE;
-    if (m_dwObjectID != pMrk->m_dwObjectID)
+    if (m_dwObjectID != pMrk.m_dwObjectID)
         return FALSE;
-    if (m_nFacingDegCW != pMrk->m_nFacingDegCW)
+    if (m_nFacingDegCW != pMrk.m_nFacingDegCW)
         return FALSE;
-    if (m_rctExtent != pMrk->m_rctExtent)
+    if (m_rctExtent != pMrk.m_rctExtent)
         return FALSE;
     return TRUE;
 }
@@ -1356,7 +1368,7 @@ void CMarkObj::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CLineObj
 
-CDrawObj::OwnerPtr CLineObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CLineObj::Clone(CGamDoc* pDoc) const
 {
     ::OwnerPtr<CLineObj> pObj = MakeOwner<CLineObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
@@ -1369,14 +1381,18 @@ CDrawObj::OwnerPtr CLineObj::Clone(CGamDoc* pDoc)
     return pObj;
 }
 
-BOOL CLineObj::Compare(CDrawObj* pObj)
+BOOL CLineObj::Compare(const CDrawObj& pObj) const
 {
-    CLineObj* pLine = (CLineObj*)pObj;
-    if (m_dwObjectID != pLine->m_dwObjectID)
+    if (pObj.GetType() != GetType())
+    {
+        AfxThrowInvalidArgException();
+    }
+    const CLineObj& pLine = static_cast<const CLineObj&>(pObj);
+    if (m_dwObjectID != pLine.m_dwObjectID)
         return FALSE;
-    if (m_ptBeg != pLine->m_ptBeg)
+    if (m_ptBeg != pLine.m_ptBeg)
         return FALSE;
-    if (m_ptEnd != pLine->m_ptEnd)
+    if (m_ptEnd != pLine.m_ptEnd)
         return FALSE;
     return TRUE;
 }
@@ -1408,7 +1424,7 @@ void CLineObj::Serialize(CArchive& ar)
 // bHideUnlocked - If this is set if all unlocked objects are to
 //      be hidden. The user might do this to see the map's terrain.
 
-void CDrawList::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+void CDrawList::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
     BOOL bApplyVisibility /* = TRUE */, BOOL bDrawPass2Objects /* = FALSE */,
     BOOL bHideUnlocked /* = FALSE */, BOOL bDrawLockedFirst /* = FALSE */)
 {
@@ -1477,7 +1493,7 @@ CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
     return NULL;
 }
 
-void CDrawList::DrillDownHitTest(CPoint point, CPtrList* selLst,
+void CDrawList::DrillDownHitTest(CPoint point, CPtrList& selLst,
     TileScale eScale, BOOL bApplyVisibility /* = TRUE */)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
@@ -1487,11 +1503,11 @@ void CDrawList::DrillDownHitTest(CPoint point, CPtrList* selLst,
         if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
             continue;                   // Doesn't qualify
         if (pDObj.HitTest(point))
-            selLst->AddTail(&pDObj);
+            selLst.AddTail(&pDObj);
     }
 }
 
-void CDrawList::ArrangeObjectListInDrawOrder(CPtrList* pLst)
+void CDrawList::ArrangeObjectListInDrawOrder(CPtrList& pLst)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1501,14 +1517,14 @@ void CDrawList::ArrangeObjectListInDrawOrder(CPtrList* pLst)
     for (iterator pos = begin(); pos != end(); ++pos)
     {
         CDrawObj& pDObj = **pos;
-        if (pLst->Find(&pDObj) != NULL)
+        if (pLst.Find(&pDObj) != NULL)
             tmpLst.AddTail(&pDObj);
     }
-    pLst->RemoveAll();
-    pLst->AddTail(&tmpLst);
+    pLst.RemoveAll();
+    pLst.AddTail(&tmpLst);
 }
 
-void CDrawList::ArrangeObjectListInVisualOrder(CPtrList* pLst)
+void CDrawList::ArrangeObjectListInVisualOrder(CPtrList& pLst)
 {
     // Loop backwards through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1518,11 +1534,11 @@ void CDrawList::ArrangeObjectListInVisualOrder(CPtrList* pLst)
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
         CDrawObj& pDObj = **pos;
-        if (pLst->Find(&pDObj) != NULL)
+        if (pLst.Find(&pDObj) != NULL)
             tmpLst.AddTail(&pDObj);
     }
-    pLst->RemoveAll();
-    pLst->AddTail(&tmpLst);
+    pLst.RemoveAll();
+    pLst.AddTail(&tmpLst);
 }
 
 #ifdef GPLAY
@@ -1644,19 +1660,19 @@ CDrawList::iterator CDrawList::Find(const CDrawObj& drawObj)
 }
 
 // NOTE:  RemoveObject* do not erase
-void CDrawList::RemoveObjectsInList(CPtrList* pLst)
+void CDrawList::RemoveObjectsInList(const CPtrList& pLst)
 {
     POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (pos = pLst.GetHeadPosition(); pos != NULL; )
     {
-        CDrawObj& pDObj = CheckedDeref((CDrawObj*)pLst->GetNext(pos));
-        RemoveObject(&pDObj);
+        CDrawObj& pDObj = CheckedDeref((CDrawObj*)pLst.GetNext(pos));
+        RemoveObject(pDObj);
     }
 }
 
-void CDrawList::RemoveObject(CDrawObj* pDrawObj)
+void CDrawList::RemoveObject(const CDrawObj& pDrawObj)
 {
-    iterator pos = Find(*pDrawObj);
+    iterator pos = Find(pDrawObj);
     if (pos != end())
     {
         /* NOTE:  RemoveObject* do not destroy obj, so we must
@@ -1710,18 +1726,18 @@ CDrawObj* CDrawList::FindObjectID(ObjectID oid)
     return NULL;
 }
 
-void CDrawList::GetPieceObjectPtrList(CPtrList* pLst)
+void CDrawList::GetPieceObjectPtrList(CPtrList& pLst)
 {
-    pLst->RemoveAll();
+    pLst.RemoveAll();
     for (iterator pos = begin(); pos != end(); ++pos)
     {
         CDrawObj& pDObj = **pos;
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pLst->AddTail(&pDObj);
+            pLst.AddTail(&pDObj);
     }
 }
 
-void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl)
+void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl) const
 {
     pTbl.clear();
     for (const_iterator pos = begin(); pos != end(); ++pos)
@@ -1732,26 +1748,26 @@ void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl)
     }
 }
 
-void CDrawList::GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList* pLst)
+void CDrawList::GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList& pLst)
 {
-    pLst->RemoveAll();
-    for (size_t i = 0; i < pTbl.size(); i++)
+    pLst.RemoveAll();
+    for (size_t i = size_t(0); i < pTbl.size(); i++)
     {
         CPieceObj* pObj = FindPieceID(pTbl.at(i));
         ASSERT(pObj != NULL);
         if (pObj)
-            pLst->AddTail(pObj);
+            pLst.AddTail(pObj);
     }
 }
 
-void CDrawList::GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>& pTbl,
+void CDrawList::GetPieceIDTableFromObjList(CPtrList& pLst, std::vector<PieceID>& pTbl,
     BOOL bDeleteObjs /* = FALSE*/)
 {
     pTbl.clear();
     POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (pos = pLst.GetHeadPosition(); pos != NULL; )
     {
-        CDrawObj* pDObj = (CDrawObj*)pLst->GetNext(pos);
+        CDrawObj* pDObj = (CDrawObj*)pLst.GetNext(pos);
         ASSERT(pDObj != NULL);
         if (pDObj->GetType() == CDrawObj::drawPieceObj)
             pTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
@@ -1759,7 +1775,7 @@ void CDrawList::GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>&
     }
 }
 
-BOOL CDrawList::HasMarker()
+BOOL CDrawList::HasMarker() const
 {
     for (const_iterator pos = begin(); pos != end(); ++pos)
     {
@@ -1794,7 +1810,7 @@ BOOL CDrawList::PurgeMissingTileIDs(CTileManager* pTMgr)
     return bPurged;
 }
 
-BOOL CDrawList::IsTileInUse(TileID tid)
+BOOL CDrawList::IsTileInUse(TileID tid) const
 {
     for (const_iterator pos = begin(); pos != end(); ++pos)
     {
@@ -1822,7 +1838,7 @@ BOOL CDrawList::IsTileInUse(TileID tid)
 #endif
 }
 
-void CDrawList::ForceIntoZone(CRect* pRctZone)
+void CDrawList::ForceIntoZone(const CRect& pRctZone)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
@@ -1834,53 +1850,53 @@ void CDrawList::ForceIntoZone(CRect* pRctZone)
 #endif  // !GPLAY
 
 #ifdef GPLAY
-CDrawList CDrawList::Clone(CGamDoc* pDoc)
+CDrawList CDrawList::Clone(CGamDoc* pDoc) const
 {
     CDrawList pLst;
-    for (iterator pos = begin(); pos != end(); ++pos)
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj& pDObj = **pos;
+        const CDrawObj& pDObj = **pos;
         pLst.push_back(pDObj.Clone(pDoc));
     }
     return pLst;
 }
 
-void CDrawList::Restore(CGamDoc* pDoc, CDrawList* pLst)
+void CDrawList::Restore(CGamDoc* pDoc, const CDrawList& pLst)
 {
     clear();
-    for (iterator pos = pLst->begin(); pos != pLst->end(); ++pos)
+    for (const_iterator pos = pLst.begin(); pos != pLst.end(); ++pos)
     {
-        CDrawObj& pDObj = **pos;
+        const CDrawObj& pDObj = **pos;
         push_back(pDObj.Clone(pDoc));    // Clone it back
     }
 }
 
-BOOL CDrawList::Compare(CDrawList* pLst)
+BOOL CDrawList::Compare(const CDrawList& pLst) const
 {
-    if (size() != pLst->size())
+    if (size() != pLst.size())
         return FALSE;
 
-    iterator pos1 = begin();
-    iterator pos2 = pLst->begin();
+    const_iterator pos1 = begin();
+    const_iterator pos2 = pLst.begin();
 
-    for ( ; pos1 != end() && pos2 != pLst->end() ; ++pos1, ++pos2)
+    for ( ; pos1 != end() && pos2 != pLst.end() ; ++pos1, ++pos2)
     {
-        CDrawObj& pDObj1 = **pos1;
-        CDrawObj& pDObj2 = **pos2;
+        const CDrawObj& pDObj1 = **pos1;
+        const CDrawObj& pDObj2 = **pos2;
         if (pDObj1.GetType() != pDObj2.GetType())
             return FALSE;
-        if (!pDObj1.Compare(&pDObj2))
+        if (!pDObj1.Compare(pDObj2))
             return FALSE;
     }
-    ASSERT(pos1 == end() && pos2 == pLst->end());
+    ASSERT(pos1 == end() && pos2 == pLst.end());
     return TRUE;
 }
 
-void CDrawList::AppendWithOffset(CDrawList* pSourceLst, CPoint pntOffet)
+void CDrawList::AppendWithOffset(const CDrawList& pSourceLst, CPoint pntOffet)
 {
-    for (iterator pos = pSourceLst->begin(); pos != pSourceLst->end(); ++pos)
+    for (const_iterator pos = pSourceLst.begin(); pos != pSourceLst.end(); ++pos)
     {
-        CDrawObj& pDObj = **pos;
+        const CDrawObj& pDObj = **pos;
         CDrawObj::OwnerPtr pObjClone = pDObj.Clone();
         pObjClone->OffsetObject(pntOffet);
         push_back(std::move(pObjClone));

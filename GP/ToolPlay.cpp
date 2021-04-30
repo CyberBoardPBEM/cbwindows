@@ -151,7 +151,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
     }
     // Object is under mouse. See if also selected. If not,
     // add to list.
-    if (!pSLst->IsObjectSelected(pObj))
+    if (!pSLst->IsObjectSelected(*pObj))
     {
         if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
             pSLst->PurgeList(TRUE);         // Clear current select list
@@ -159,7 +159,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
             pView->SelectAllUnderPoint(point);
         else
         {
-            pSLst->AddObject(pObj, TRUE);
+            pSLst->AddObject(*pObj, TRUE);
             if (pObj->GetType() == CDrawObj::drawPieceObj ||
                     pObj->GetType() == CDrawObj::drawMarkObj)
                 pView->NotifySelectListChange();
@@ -178,7 +178,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
     // wont start until it expires.
     if ((nFlags & MK_SHIFT) != 0)
     {
-        pSLst->RemoveObject(pObj, TRUE);
+        pSLst->RemoveObject(*pObj, TRUE);
         return;
     }
     CPlayTool::OnLButtonDown(pView, nFlags, point);
@@ -254,11 +254,11 @@ void CPSelectTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
         CClientDC dc(pView);
         pView->OnPrepareScaledDC(&dc, TRUE);
 
-        pSLst->DrawTracker(&dc, trkSizing); // Erase previous tracker
+        pSLst->DrawTracker(dc, trkSizing); // Erase previous tracker
 
         MoveSelections(pSLst, point);
 
-        pSLst->DrawTracker(&dc, trkSizing); // Erase previous tracker
+        pSLst->DrawTracker(dc, trkSizing); // Erase previous tracker
     }
     c_ptLast = point;               // Save new 'last' position
 }
@@ -327,7 +327,7 @@ void CPSelectTool::OnTimer(CPlayBoardView* pView, UINT nIDEvent)
 
         CClientDC dc(pView);
         pView->OnPrepareScaledDC(&dc, TRUE);
-        pSLst->DrawTracker(&dc, trkSelected);   // Turn off handles
+        pSLst->DrawTracker(dc, trkSelected);   // Turn off handles
 
         CPoint point;
         GetCursorPos(&point);
@@ -395,7 +395,7 @@ void CPSelectTool::StartSizingOperation(CPlayBoardView* pView, UINT nFlags,
     CPlayTool::OnLButtonDown(pView, nFlags, point);
     CClientDC dc(pView);
     pView->OnPrepareScaledDC(&dc, TRUE);
-    pSLst->DrawTracker(&dc, trkSizing);
+    pSLst->DrawTracker(dc, trkSizing);
 }
 
 void CPSelectTool::DrawSelectionRect(CDC* pDC, CRect* pRct)
@@ -467,7 +467,7 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView* pView)
                 DrawSelectionRect(&dc, &rect);
             }
             else
-                pSLst->DrawTracker(&dc);    // Turn off tracker
+                pSLst->DrawTracker(dc);    // Turn off tracker
 
             pView->OnScroll(nScrollID, 0, TRUE);
             pView->UpdateWindow();          // Redraw image content.
@@ -493,7 +493,7 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView* pView)
             {
                 MoveSelections(pSLst, point);// Offset the tracking data
                 c_ptLast = point;            // Save new 'last' position
-                pSLst->DrawTracker(&dc);    // Turn off tracker
+                pSLst->DrawTracker(dc);    // Turn off tracker
             }
             return TRUE;
         }
@@ -641,7 +641,7 @@ void CPShapeTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point
     int nDragHandle;
     pView->AdjustPoint(point);
     m_pObj = CreateDrawObj(pView, point, nDragHandle);
-    pSLst->AddObject(m_pObj, TRUE);
+    pSLst->AddObject(*m_pObj, TRUE);
     s_plySelectTool.StartSizingOperation(pView, nFlags, point, nDragHandle);
 }
 
@@ -735,7 +735,7 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
     {
         // Draw a line for each piece to the opening location
         CPtrList listObjs;
-        pView->GetSelectList()->LoadListWithObjectPtrs(&listObjs, FALSE);
+        pView->GetSelectList()->LoadListWithObjectPtrs(listObjs, FALSE);
         POSITION pos = listObjs.GetHeadPosition();
         while (pos != NULL)
         {

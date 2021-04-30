@@ -54,7 +54,7 @@ CBrush* NEAR CSelection::c_pPrvBrush = NULL;
 
 /////////////////////////////////////////////////////////////////////
 
-void CSelection::DrawTracker(CDC* pDC, TrackMode eMode)
+void CSelection::DrawTracker(CDC& pDC, TrackMode eMode) const
 {
     if (eMode == trkSelected)
         DrawHandles(pDC);
@@ -62,17 +62,17 @@ void CSelection::DrawTracker(CDC* pDC, TrackMode eMode)
         DrawTrackingImage(pDC, eMode);
 }
 
-void CSelection::DrawHandles(CDC* pDC)
+void CSelection::DrawHandles(CDC& pDC) const
 {
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
         CRect rect = GetHandleRect(i);
-        pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), DSTINVERT);
+        pDC.PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), DSTINVERT);
     }
 }
 
-int CSelection::HitTestHandles(CPoint point)
+int CSelection::HitTestHandles(CPoint point) const
 {
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
@@ -94,7 +94,7 @@ void CSelection::InvalidateHandles()
 }
 
 // Returns handle rectangle in logical coords.
-CRect CSelection::GetHandleRect(int nHandleID)
+CRect CSelection::GetHandleRect(int nHandleID) const
 {
     // Get the center of the handle in logical coords
     CPoint point = GetHandleLoc(nHandleID);
@@ -120,31 +120,31 @@ void CSelection::Invalidate()
 //=---------------------------------------------------=//
 // Static methods...
 
-void CSelection::SetupTrackingDraw(CDC* pDC)
+void CSelection::SetupTrackingDraw(CDC& pDC)
 {
-    c_nPrvROP2 = pDC->SetROP2(R2_XORPEN);
-    c_pPrvPen = pDC->SelectObject(&c_penDot);
-    c_pPrvBrush = (CBrush*)pDC->SelectStockObject(NULL_BRUSH);
+    c_nPrvROP2 = pDC.SetROP2(R2_XORPEN);
+    c_pPrvPen = pDC.SelectObject(&c_penDot);
+    c_pPrvBrush = static_cast<CBrush*>(pDC.SelectStockObject(NULL_BRUSH));
 }
 
-void CSelection::CleanUpTrackingDraw(CDC* pDC)
+void CSelection::CleanUpTrackingDraw(CDC& pDC)
 {
-    pDC->SetROP2(c_nPrvROP2);
-    pDC->SelectObject(c_pPrvPen);
-    pDC->SelectObject(c_pPrvBrush);
+    pDC.SetROP2(c_nPrvROP2);
+    pDC.SelectObject(c_pPrvPen);
+    pDC.SelectObject(c_pPrvBrush);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Rectangle Selection Processing
 
-void CSelRect::DrawTrackingImage(CDC* pDC, TrackMode eMode)
+void CSelRect::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
     SetupTrackingDraw(pDC);
-    pDC->Rectangle(m_rect);
+    pDC.Rectangle(m_rect);
     CleanUpTrackingDraw(pDC);
 }
 
-HCURSOR CSelRect::GetHandleCursor(int nHandleID)
+HCURSOR CSelRect::GetHandleCursor(int nHandleID) const
 {
     LPCSTR id;
     switch (nHandleID)
@@ -163,7 +163,7 @@ HCURSOR CSelRect::GetHandleCursor(int nHandleID)
 }
 
 // Returns handle location in logical coords.
-CPoint CSelRect::GetHandleLoc(int nHandleID)
+CPoint CSelRect::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -247,25 +247,25 @@ void CSelRect::UpdateObject(BOOL bInvalidate,
 /////////////////////////////////////////////////////////////////////
 // Ellipse Selection Processing
 
-void CSelEllipse::DrawTrackingImage(CDC* pDC, TrackMode eMode)
+void CSelEllipse::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
     SetupTrackingDraw(pDC);
-    pDC->Ellipse(m_rect);
+    pDC.Ellipse(m_rect);
     CleanUpTrackingDraw(pDC);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Line Selection Processing
 
-void CSelLine::DrawTrackingImage(CDC* pDC, TrackMode eMode)
+void CSelLine::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
     SetupTrackingDraw(pDC);
-    pDC->MoveTo(m_rect.left, m_rect.top);
-    pDC->LineTo(m_rect.right, m_rect.bottom);
+    pDC.MoveTo(m_rect.left, m_rect.top);
+    pDC.LineTo(m_rect.right, m_rect.bottom);
     CleanUpTrackingDraw(pDC);
 }
 
-HCURSOR CSelLine::GetHandleCursor(int nHandleID)
+HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
 {
     LPCSTR id;
     switch (nHandleID)
@@ -281,7 +281,7 @@ HCURSOR CSelLine::GetHandleCursor(int nHandleID)
 }
 
 // Returns handle location in logical coords.
-CPoint CSelLine::GetHandleLoc(int nHandleID)
+CPoint CSelLine::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -317,7 +317,7 @@ void CSelLine::MoveHandle(int nHandle, CPoint point)
     }
 }
 
-CRect CSelLine::GetRect()
+CRect CSelLine::GetRect() const
 {
     CRect rct = m_rect;
     rct.NormalizeRect();
@@ -371,21 +371,21 @@ CSelPoly::CSelPoly(CBrdEditView& pView, CPolyObj& pObj) :
     m_nPnts = pObj.m_nPnts;
 }
 
-void CSelPoly::DrawTrackingImage(CDC* pDC, TrackMode eMode)
+void CSelPoly::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
     ASSERT(m_pPnts);
     SetupTrackingDraw(pDC);
-    pDC->Polyline(m_pPnts, m_nPnts);
+    pDC.Polyline(m_pPnts, m_nPnts);
     CleanUpTrackingDraw(pDC);
 }
 
-HCURSOR CSelPoly::GetHandleCursor(int nHandleID)
+HCURSOR CSelPoly::GetHandleCursor(int nHandleID) const
 {
     return AfxGetApp()->LoadStandardCursor(IDC_CROSS);
 }
 
 // Returns handle location in logical coords.
-CPoint CSelPoly::GetHandleLoc(int nHandleID)
+CPoint CSelPoly::GetHandleLoc(int nHandleID) const
 {
     ASSERT(m_pPnts);
     return CPoint(m_pPnts[nHandleID]);
@@ -407,7 +407,7 @@ void CSelPoly::Offset(CPoint ptDelta)
     }
 }
 
-CRect CSelPoly::GetRect()
+CRect CSelPoly::GetRect() const
 {
     CRect rct;
     rct.SetRectEmpty();
@@ -463,15 +463,15 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
 /////////////////////////////////////////////////////////////////////
 // Generic Object Selection Processing
 
-void CSelGeneric::DrawTrackingImage(CDC* pDC, TrackMode eMode)
+void CSelGeneric::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
     SetupTrackingDraw(pDC);
-    pDC->Rectangle(m_rect);
+    pDC.Rectangle(m_rect);
     CleanUpTrackingDraw(pDC);
 }
 
 // Returns handle location in logical coords.
-CPoint CSelGeneric::GetHandleLoc(int nHandleID)
+CPoint CSelGeneric::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -526,7 +526,7 @@ int CSelList::HitTestHandles(CPoint point)
     return GetCount() == 1 ? GetHead()->HitTestHandles(point) : hitNothing;
 }
 
-void CSelList::MoveHandle(UINT m_nHandle, CPoint point)
+void CSelList::MoveHandle(int m_nHandle, CPoint point)
 {
     // No support for multiselect handles.
     if (GetCount() == 1)
@@ -534,9 +534,9 @@ void CSelList::MoveHandle(UINT m_nHandle, CPoint point)
     CalcEnclosingRect();
 }
 
-CSelection* CSelList::AddObject(CDrawObj* pObj, BOOL bInvalidate)
+CSelection* CSelList::AddObject(CDrawObj& pObj, BOOL bInvalidate)
 {
-    CSelection* pSel = pObj->CreateSelectProxy(*m_pView);
+    CSelection* pSel = pObj.CreateSelectProxy(*m_pView);
     ASSERT(pSel != NULL);
     AddHead(pSel);
     CalcEnclosingRect();
@@ -545,7 +545,7 @@ CSelection* CSelList::AddObject(CDrawObj* pObj, BOOL bInvalidate)
     return pSel;
 }
 
-void CSelList::RemoveObject(CDrawObj* pObj, BOOL bInvalidate)
+void CSelList::RemoveObject(const CDrawObj& pObj, BOOL bInvalidate)
 {
     POSITION pos1, pos2;
     pos1 = GetHeadPosition();
@@ -553,7 +553,7 @@ void CSelList::RemoveObject(CDrawObj* pObj, BOOL bInvalidate)
     {
         pos2 = pos1;
         CSelection* pSel = (CSelection*)GetNext(pos1);
-        if (pSel->m_pObj == pObj)
+        if (pSel->m_pObj == &pObj)
         {
             if (bInvalidate)
                 pSel->InvalidateHandles();  // So view updates
@@ -566,13 +566,13 @@ void CSelList::RemoveObject(CDrawObj* pObj, BOOL bInvalidate)
     ASSERT(FALSE);                      //// Object wasn't in list ////
 }
 
-BOOL CSelList::IsObjectSelected(CDrawObj* pObj) const
+BOOL CSelList::IsObjectSelected(const CDrawObj& pObj) const
 {
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
-        if (pSel->m_pObj == pObj)
+        if (pSel->m_pObj == &pObj)
             return TRUE;
     }
     return FALSE;
@@ -602,9 +602,9 @@ BOOL CSelList::IsDObjFlagSetInSomeSelectedObjects(DWORD dwFlag) const
     return FALSE;
 }
 
-static void SetDObjFlags(CDrawObj* pObj, DWORD dwFlags)
+static void SetDObjFlags(CDrawObj& pObj, DWORD dwFlags)
 {
-    pObj->SetDObjFlags(dwFlags);
+    pObj.SetDObjFlags(dwFlags);
 }
 
 void CSelList::SetDObjFlagInAllSelectedObjects(DWORD dwFlag)
@@ -612,9 +612,9 @@ void CSelList::SetDObjFlagInAllSelectedObjects(DWORD dwFlag)
     ForAllSelections(SetDObjFlags, dwFlag);
 }
 
-static void ClearDObjFlags(CDrawObj* pObj, DWORD dwFlags)
+static void ClearDObjFlags(CDrawObj& pObj, DWORD dwFlags)
 {
-    pObj->ClearDObjFlags(dwFlags);
+    pObj.ClearDObjFlags(dwFlags);
 }
 
 void CSelList::ClearDObjFlagInAllSelectedObjects(DWORD dwFlag)
@@ -661,12 +661,12 @@ void CSelList::Open()
 }
 
 // Assumes RECTs are normalized!!
-void CbUnionRect(RECT* pRctDst, RECT* pRctSrc1, RECT* pRctSrc2)
+void CbUnionRect(RECT& pRctDst, const RECT& pRctSrc1, const RECT& pRctSrc2)
 {
-    pRctDst->left = CB::min(pRctSrc1->left, pRctSrc2->left);
-    pRctDst->top = CB::min(pRctSrc1->top, pRctSrc2->top);
-    pRctDst->right = CB::max(pRctSrc1->right, pRctSrc2->right);
-    pRctDst->bottom = CB::max(pRctSrc1->bottom, pRctSrc2->bottom);
+    pRctDst.left = CB::min(pRctSrc1.left, pRctSrc2.left);
+    pRctDst.top = CB::min(pRctSrc1.top, pRctSrc2.top);
+    pRctDst.right = CB::max(pRctSrc1.right, pRctSrc2.right);
+    pRctDst.bottom = CB::max(pRctSrc1.bottom, pRctSrc2.bottom);
 }
 
 void CSelList::CalcEnclosingRect()
@@ -679,7 +679,7 @@ void CSelList::CalcEnclosingRect()
         if (m_rctEncl.IsRectNull())
             m_rctEncl = pSel->GetRect();
         else
-            CbUnionRect(&m_rctEncl, &m_rctEncl, &pSel->GetRect());
+            CbUnionRect(m_rctEncl, m_rctEncl, pSel->GetRect());
     }
 }
 
@@ -697,13 +697,13 @@ void CSelList::Offset(CPoint ptDelta)
 // Called by view OnDraw(). This entry makes it possible
 // to turn off handles during a drag operation.
 
-void CSelList::OnDraw(CDC *pDC)
+void CSelList::OnDraw(CDC& pDC)
 {
     if (m_eTrkMode == trkSelected)
         DrawTracker(pDC);
 }
 
-void CSelList::DrawTracker(CDC *pDC, TrackMode eTrkMode)
+void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
 {
     if (eTrkMode != trkCurrent)
         m_eTrkMode = eTrkMode;
@@ -768,7 +768,7 @@ void CSelList::UpdateObjects(BOOL bInvalidate,
     }
 }
 
-void CSelList::ForAllSelections(void (*pFunc)(CDrawObj* pObj, DWORD dwUser),
+void CSelList::ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
     DWORD dwUserVal)
 {
     POSITION pos = GetHeadPosition();
@@ -776,7 +776,7 @@ void CSelList::ForAllSelections(void (*pFunc)(CDrawObj* pObj, DWORD dwUser),
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
-        pFunc(pSel->m_pObj.get(), dwUserVal);
+        pFunc(*pSel->m_pObj, dwUserVal);
     }
 }
 

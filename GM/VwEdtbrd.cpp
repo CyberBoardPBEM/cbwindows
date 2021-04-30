@@ -249,7 +249,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
     if (!pDC->IsPrinting())
     {
         PrepareScaledDC(pDC);
-        m_selList.OnDraw(pDC);
+        m_selList.OnDraw(*pDC);
     }
     ResetPalette(pDC);
 }
@@ -383,14 +383,14 @@ void CBrdEditView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
         if (m_pBoard->GetApplyVisible() && (pObj.GetDObjFlags() && m_nZoom == 0))
             continue;                   // Doesn't qualify
 
-        if (!m_selList.IsObjectSelected(&pObj))
+        if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
                 ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
                 (bInclIntersects &&
                 (!(pObj.GetEnclosingRect() & rctNet).IsRectEmpty())))
             {
-                m_selList.AddObject(&pObj, TRUE);
+                m_selList.AddObject(pObj, TRUE);
             }
         }
     }
@@ -403,7 +403,7 @@ void CBrdEditView::SelectAllUnderPoint(CPoint point)
         return;
 
     CPtrList selLst;
-    pDwg->DrillDownHitTest(point, &selLst, m_nZoom,
+    pDwg->DrillDownHitTest(point, selLst, m_nZoom,
         m_pBoard->GetApplyVisible());
 
     POSITION pos;
@@ -411,8 +411,8 @@ void CBrdEditView::SelectAllUnderPoint(CPoint point)
     {
         CDrawObj* pObj = (CDrawObj*)selLst.GetNext(pos);
         ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(pObj))
-            m_selList.AddObject(pObj, TRUE);
+        if (!m_selList.IsObjectSelected(*pObj))
+            m_selList.AddObject(*pObj, TRUE);
     }
 }
 
@@ -429,7 +429,7 @@ void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
     while (!m_selList.IsEmpty())
     {
         CSelection* pSel = (CSelection*)m_selList.RemoveHead();
-        pDwg->RemoveObject(pSel->m_pObj.get());
+        pDwg->RemoveObject(*pSel->m_pObj);
         if (bInvalidate)
             pSel->Invalidate();
         delete pSel->m_pObj.get();
@@ -454,7 +454,7 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(pSel->m_pObj.get());
+        pDwg->RemoveObject(*pSel->m_pObj);
         m_tmpLst.AddTail(pSel->m_pObj.get());
     }
     if (bToFront)
@@ -1027,7 +1027,7 @@ void CBrdEditView::DeleteDrawObject(CDrawObj* pObj)
 
     if (pDwg != NULL)
     {
-        pDwg->RemoveObject(pObj);
+        pDwg->RemoveObject(CheckedDeref(pObj));
         delete pObj;
         GetDocument()->SetModifiedFlag();
     }
@@ -1232,16 +1232,16 @@ struct ColorSetting
     BOOL     m_bColorAccepted;  // TRUE if at least one object accepted the color
 };
 
-static void SetObjForeColor(CDrawObj* pObj, DWORD dwUser)
+static void SetObjForeColor(CDrawObj& pObj, DWORD dwUser)
 {
     ColorSetting* pSet = (ColorSetting*)dwUser;
-    pSet->m_bColorAccepted |= pObj->SetForeColor(pSet->m_cr);
+    pSet->m_bColorAccepted |= pObj.SetForeColor(pSet->m_cr);
 }
 
-static void SetObjBackColor(CDrawObj* pObj, DWORD dwUser)
+static void SetObjBackColor(CDrawObj& pObj, DWORD dwUser)
 {
     ColorSetting* pSet = (ColorSetting*)dwUser;
-    pSet->m_bColorAccepted |= pObj->SetBackColor(pSet->m_cr);
+    pSet->m_bColorAccepted |= pObj.SetBackColor(pSet->m_cr);
 }
 
 
@@ -1286,10 +1286,10 @@ struct WidthSetting
     BOOL m_bWidthAccepted;  // TRUE if at least one object accepted the color
 };
 
-static void SetObjLineWidth(CDrawObj* pObj, DWORD dwUser)
+static void SetObjLineWidth(CDrawObj& pObj, DWORD dwUser)
 {
     WidthSetting* pSet = (WidthSetting*)dwUser;
-    pSet->m_bWidthAccepted |= pObj->SetLineWidth(pSet->m_nWidth);
+    pSet->m_bWidthAccepted |= pObj.SetLineWidth(pSet->m_nWidth);
 }
 
 LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
@@ -1307,8 +1307,8 @@ LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 
 // ------------------------------------------------------ //
 
-static void SetObjFont(CDrawObj* pObj, DWORD dwUser)
-    { pObj->SetFont((FontID)dwUser); }
+static void SetObjFont(CDrawObj& pObj, DWORD dwUser)
+    { pObj.SetFont((FontID)dwUser); }
 
 void CBrdEditView::OnDwgFont()
 {
@@ -1554,13 +1554,13 @@ void CBrdEditView::OnToolsBrdProps()
     GetDocument()->DoBoardPropertyDialog(*m_pBoard);
 }
 
-static void SetObjVisibility(CDrawObj* pObj, DWORD dwUser)
-    { pObj->SetScaleVisibility((int)dwUser); }
+static void SetObjVisibility(CDrawObj& pObj, DWORD dwUser)
+    { pObj.SetScaleVisibility((int)dwUser); }
 
-static void SetObjectFlags(CDrawObj* pObj, DWORD dwUser)
-    { pObj->SetDObjFlags(dwUser); }
-static void ClearObjectFlags(CDrawObj* pObj, DWORD dwUser)
-    { pObj->ClearDObjFlags(dwUser); }
+static void SetObjectFlags(CDrawObj& pObj, DWORD dwUser)
+    { pObj.SetDObjFlags(dwUser); }
+static void ClearObjectFlags(CDrawObj& pObj, DWORD dwUser)
+    { pObj.ClearDObjFlags(dwUser); }
 
 void CBrdEditView::OnToolSetVisibleScale()
 {
@@ -1615,7 +1615,7 @@ void CBrdEditView::OnEditPaste()
         AddDrawObject(std::move(pDObj));
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
-    GetSelectList()->AddObject(&pDObj, TRUE);
+    GetSelectList()->AddObject(pDObj, TRUE);
     CRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(&rct);
 }
@@ -1682,7 +1682,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
         AddDrawObject(std::move(pDObj));
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
-    GetSelectList()->AddObject(&pDObj, TRUE);
+    GetSelectList()->AddObject(pDObj, TRUE);
     CRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(&rct);
 }

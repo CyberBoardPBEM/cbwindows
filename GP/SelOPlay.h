@@ -81,18 +81,18 @@ public:
     RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
     CRect     m_rect;           // Enclosing rect for selected object
 
-    virtual HCURSOR GetHandleCursor(int nHandle) /* override */
+    virtual HCURSOR GetHandleCursor(int nHandle) const /* override */
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
-    virtual CRect GetRect() /* override */ { return m_rect; }
+    virtual CRect GetRect() const /* override */ { return m_rect; }
 
 // Operations
 public:
-    virtual int  HitTestHandles(CPoint point) /* override */;
+    virtual int HitTestHandles(CPoint point) const /* override */;
     // ------- //
     virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
     virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
     // ------- //
-    virtual void DrawTracker(CDC *pDC, TrackMode eMode) /* override */;
+    virtual void DrawTracker(CDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
     virtual void Invalidate() /* override */;
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -103,18 +103,18 @@ public:
 
 // Miscellaneous Implementer's Overrides
 protected:
-    virtual CRect GetHandleRect(int nHandleID) /* override */;
-    virtual CPoint GetHandleLoc(int nHandleID) /* override */ = 0;
-    virtual int GetHandleCount() /* override */ = 0;
-    virtual void DrawHandles(CDC* pDC) /* override */;
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) /* override */ = 0;
+    virtual CRect GetHandleRect(int nHandleID) const /* override */;
+    virtual CPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
+    virtual int GetHandleCount() const /* override */ = 0;
+    virtual void DrawHandles(CDC& pDC) const /* override */;
+    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const /* override */ = 0;
 
 // Implementation
 protected:
     RefPtr<CPlayBoardView> m_pView;            // Selection's view
     // -- Class level support methods -- //
-    static void SetupTrackingDraw(CDC* pDC);
-    static void CleanUpTrackingDraw(CDC* pDC);
+    static void SetupTrackingDraw(CDC& pDC);
+    static void CleanUpTrackingDraw(CDC& pDC);
     // -- Class variables -- //
     static CPen     NEAR c_penDot;
     static int      NEAR c_nPrvROP2;
@@ -134,18 +134,18 @@ public:
 
 // Attributes
 public:
-    virtual CRect GetRect() override;
+    virtual CRect GetRect() const override;
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) override;
+    virtual HCURSOR GetHandleCursor(int nHandleID) const override;
     virtual void MoveHandle(int m_nHandle, CPoint point) override;
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) override;
-    virtual CPoint GetHandleLoc(int nHandleID) override;
-    virtual int GetHandleCount() override { return 2; }
+    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual int GetHandleCount() const override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
 };
@@ -164,15 +164,15 @@ public:
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) override
+    virtual HCURSOR GetHandleCursor(int nHandleID) const override
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
     virtual void MoveHandle(int m_nHandle, CPoint point) override {}
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
-    virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode) override;
-    virtual CPoint GetHandleLoc(int nHandleID) override;
-    virtual int GetHandleCount() override { return 4; }
+    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual int GetHandleCount() const override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
 };
@@ -196,7 +196,7 @@ public:
     BOOL IsMultipleSelects() const { return GetCount() > 1; }
     BOOL IsSingleSelect() const { return GetCount() == 1; }
     BOOL IsAnySelects() const { return GetCount() > 0; }
-    BOOL IsObjectSelected(const CDrawObj* pObj) const;
+    BOOL IsObjectSelected(const CDrawObj& pObj) const;
     BOOL HasPieces() const;
     BOOL HasOwnedPieces() const;
     BOOL HasNonOwnedPieces() const;
@@ -206,25 +206,25 @@ public:
     BOOL IsMarkerSelected() const;
     // -------- //
     void SetMouseOffset(CSize size) { m_sizeMseOffset = size; }
-    CSize GetMouseOffset() { return m_sizeMseOffset; }
+    CSize GetMouseOffset() const { return m_sizeMseOffset; }
     // -------- //
     void SetSnapReferenceObject(CDrawObj* pObj);
-    CRect GetSnapReferenceRect();
+    CRect GetSnapReferenceRect() const;
     // -------- //
     CPlayBoardView& GetView() { return *m_pView; }
     void SetTrackingMode(TrackMode eTrkMode) { m_eTrkMode = eTrkMode; }
     TrackMode GetTrackingMode() const { return m_eTrkMode; }
-    CRect GetEnclosingRect() { return m_rctEncl; }
-    CRect GetPiecesEnclosingRect(BOOL bIncludeMarkers = TRUE);
+    CRect GetEnclosingRect() const { return m_rctEncl; }
+    CRect GetPiecesEnclosingRect(BOOL bIncludeMarkers = TRUE) const;
 
 // Operations
 public:
     CSelection* GetHead() { return (CSelection*)CPtrList::GetHead(); }
-    CSelection* AddObject(CDrawObj* pObj, BOOL bInvalidate = FALSE);
-    void RemoveObject(CDrawObj* pObj, BOOL bInvalidate = FALSE);
-    CSelection* FindObject(CDrawObj* pObj) const;
+    CSelection* AddObject(CDrawObj& pObj, BOOL bInvalidate = FALSE);
+    void RemoveObject(const CDrawObj& pObj, BOOL bInvalidate = FALSE);
+    CSelection* FindObject(const CDrawObj& pObj) const;
     // -------- //
-    void LoadListWithObjectPtrs(CPtrList* pList, BOOL bPiecesOnly = FALSE,
+    void LoadListWithObjectPtrs(CPtrList& pList, BOOL bPiecesOnly = FALSE,
         BOOL bVisualOrder = FALSE);
     void LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder = TRUE);
     void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, BOOL bVisualOrder = TRUE);
@@ -242,15 +242,15 @@ public:
     int  HitTestHandles(CPoint point);
     // -------- //
     void Offset(CPoint ptDelta);
-    void MoveHandle(UINT m_nHandle, CPoint point);
+    void MoveHandle(int m_nHandle, CPoint point);
     // -------- //
-    void OnDraw(CDC *pDC);  // Called by view OnDraw()
-    void DrawTracker(CDC *pDC, TrackMode eTrkMode = trkCurrent);
+    void OnDraw(CDC& pDC);  // Called by view OnDraw()
+    void DrawTracker(CDC& pDC, TrackMode eTrkMode = trkCurrent);
     // -------- //
     void UpdateObjects(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE );
     // -------- //
-    void ForAllSelections(void (*pFunc)(CDrawObj* pObj, DWORD dwUser),
+    void ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
         DWORD dwUserVal);
 
     void Open();

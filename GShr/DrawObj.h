@@ -92,25 +92,25 @@ public:
 
     void SetScaleVisibility(int fTileScale)
         { m_dwDObjFlags = ChangeBits(m_dwDObjFlags, fTileScale, dobjFlgLayerMask); }
-    int GetScaleVisibility() { return (int)(GetDObjFlags() & dobjFlgLayerMask); }
-    DWORD GetDObjFlags() { return m_dwDObjFlags; }
+    int GetScaleVisibility() const { return (int)(GetDObjFlags() & dobjFlgLayerMask); }
+    DWORD GetDObjFlags() const { return m_dwDObjFlags; }
     void  SetDObjFlags(DWORD dwFlags) { m_dwDObjFlags |= dwFlags; }
     void  ClearDObjFlags(DWORD dwFlags) { m_dwDObjFlags &= ~dwFlags; }
     void  ModifyDObjFlags(DWORD dwFlags, BOOL bState)
         { if (bState) SetDObjFlags(dwFlags); else ClearDObjFlags(dwFlags); }
 
     virtual CRect& GetRect() /* override */ { return m_rctExtent; }
-    virtual const void SetRect(const CRect& rct) /* override */ { m_rctExtent = rct; }
+    virtual void SetRect(const CRect& rct) /* override */ { m_rctExtent = rct; }
 
-    virtual CRect GetEnclosingRect() /* override */ { return m_rctExtent; }
+    virtual CRect GetEnclosingRect() const /* override */ { return m_rctExtent; }
     virtual BOOL HitTest(CPoint pt) /* override */ { return FALSE; }
 #ifdef GPLAY
-    virtual ObjectID GetObjectID() /* override */;
+    virtual ObjectID GetObjectID() const /* override */;
     virtual void MoveObject(CPoint ptUpLeft) /* override */;
 #endif
     virtual void OffsetObject(CPoint offset) /* override */;
     // ----- //
-    virtual BOOL IsVisible(RECT* pClipRct) /* override */;
+    virtual BOOL IsVisible(const RECT& pClipRct) const /* override */;
     virtual CDrawObjType GetType() const /* override */ = 0;
     // ----- //
     // Some functions that may or may not mean anything to the
@@ -123,7 +123,7 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) /* override */ = 0;
+    virtual void Draw(CDC& pDC, TileScale eScale) /* override */ = 0;
     // Support required by selection objects
 #ifdef GPLAY
     virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) /* override */ { return NULL; }
@@ -132,28 +132,28 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) /* override */ = 0;
+    virtual void ForceIntoZone(const CRect& pRctZone) /* override */ = 0;
 #endif
-    virtual OwnerPtr Clone() /* override */ { AfxThrowInvalidArgException(); }
+    virtual OwnerPtr Clone() const /* override */ { AfxThrowInvalidArgException(); }
 #ifdef GPLAY
-    virtual OwnerPtr Clone(CGamDoc* pDoc) /* override */ { AfxThrowInvalidArgException(); }
-    virtual BOOL Compare(CDrawObj* pObj) /* override */ { AfxThrowInvalidArgException(); }
+    virtual OwnerPtr Clone(CGamDoc* pDoc) const /* override */ { AfxThrowInvalidArgException(); }
+    virtual BOOL Compare(const CDrawObj& pObj) const /* override */ { AfxThrowInvalidArgException(); }
 #endif
     // ------- //
     virtual void Serialize(CArchive& ar) /* override */;
 
 // Implementation - methods
 protected:
-    BOOL IsExtentOutOfZone(CRect* pRctZone, CPoint& pntOffset);
+    BOOL IsExtentOutOfZone(const CRect& pRctZone, CPoint& pntOffset) const;
     // ------- //
-    virtual void SetUpDraw(CDC* pDC, CPen* pPen, CBrush* pBrush) /* override */;
-    virtual void CleanUpDraw(CDC *pDC) /* override */;
+    virtual void SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const /* override */;
+    virtual void CleanUpDraw(CDC& pDC) const /* override */;
     virtual BOOL BitBlockHitTest(CPoint pt) /* override */;
-    virtual UINT GetLineWidth() /* override */ { return 0; }
-    virtual COLORREF GetLineColor() /* override */ { return noColor; }
-    virtual COLORREF GetFillColor() /* override */ { return noColor; }
+    virtual UINT GetLineWidth() const /* override */ { return 0; }
+    virtual COLORREF GetLineColor() const /* override */ { return noColor; }
+    virtual COLORREF GetFillColor() const /* override */ { return noColor; }
 
-    void CopyAttributes (CDrawObj* source);    //DFM19991213
+    void CopyAttributes (const CDrawObj& source);    //DFM19991213
 
 // Implementation - vars
 protected:
@@ -239,7 +239,7 @@ public:
     COLORREF m_crLine;
     UINT     m_nLineWidth;
 
-    virtual CRect GetEnclosingRect() override;
+    virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawRect; }
 
     void SetRect(RECT* rect) { m_rctExtent = rect; }
@@ -251,7 +251,7 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -260,19 +260,19 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     // ------- //
-    virtual OwnerPtr Clone() override;                  //DFM19991210
+    virtual OwnerPtr Clone() const override;                  //DFM19991210
 
     virtual void Serialize(CArchive& ar) override;
 // Implementation
 protected:
-    virtual UINT GetLineWidth() override { return m_nLineWidth; }
-    virtual COLORREF GetLineColor() override { return m_crLine; }
-    virtual COLORREF GetFillColor() override { return m_crFill; }
+    virtual UINT GetLineWidth() const override { return m_nLineWidth; }
+    virtual COLORREF GetLineColor() const override { return m_crLine; }
+    virtual COLORREF GetFillColor() const override { return m_crFill; }
 
-    void CopyAttributes (CRectObj* source);     //DFM19991213
+    void CopyAttributes (const CRectObj& source);     //DFM19991213
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -287,11 +287,11 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
 #ifndef GPLAY
     virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
 #endif
-    virtual OwnerPtr Clone() override;  //DFM19991210
+    virtual OwnerPtr Clone() const override;  //DFM19991210
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -318,7 +318,7 @@ public:
     void GetLine(POINT& ptBeg, POINT& ptEnd)
         { ptBeg = m_ptBeg; ptEnd = m_ptEnd; }
 
-    virtual CRect GetEnclosingRect() override;
+    virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawLine; }
 
     virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
@@ -327,7 +327,7 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifdef GPLAY
@@ -337,19 +337,19 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     virtual void OffsetObject(CPoint offset) override;       //DFM19991221
     // ------- //
-    virtual OwnerPtr Clone(void) override;                  //DFM19991210
+    virtual OwnerPtr Clone(void) const override;                  //DFM19991210
 #ifdef GPLAY
-    virtual OwnerPtr Clone(CGamDoc* pDoc) override;
-    virtual BOOL Compare(CDrawObj* pObj) override;
+    virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
+    virtual BOOL Compare(const CDrawObj& pObj) const override;
 #endif
     virtual void Serialize(CArchive& ar) override;
 
 protected:
-    void CopyAttributes (CLine *source);            //DFM19991214
+    void CopyAttributes (const CLine& source);            //DFM19991214
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -371,7 +371,7 @@ public:
     POINT*   m_pPnts;
     int      m_nPnts;
 
-    virtual CRect GetEnclosingRect() override;
+    virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawPolygon; }
 
     virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
@@ -386,7 +386,7 @@ public:
 
 // Overrides
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -395,23 +395,23 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     virtual void OffsetObject(CPoint offset) override; //DFM19991221
     // ------- //
-    virtual OwnerPtr Clone() override;
+    virtual OwnerPtr Clone() const override;
 
     virtual void Serialize(CArchive& ar) override;
 // Implementation
 protected:
     void ComputeExtent();
 
-    void CopyAttributes(CPolyObj *source);
+    void CopyAttributes(const CPolyObj& source);
 
     // ------- //
-    virtual UINT GetLineWidth() override { return m_nLineWidth; }
-    virtual COLORREF GetLineColor() override { return m_crLine; }
-    virtual COLORREF GetFillColor() override { return m_crFill; }
+    virtual UINT GetLineWidth() const override { return m_nLineWidth; }
+    virtual COLORREF GetLineColor() const override { return m_crLine; }
+    virtual COLORREF GetFillColor() const override { return m_crFill; }
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -438,7 +438,7 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -446,13 +446,13 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     virtual void OffsetObject(CPoint offset) override;
     // ------- //
-    virtual OwnerPtr Clone() override;
+    virtual OwnerPtr Clone() const override;
 
-    void CopyAttributes(CText *source);
+    void CopyAttributes(const CText& source);
 
     virtual void Serialize(CArchive& ar) override;
 };
@@ -475,7 +475,7 @@ public:
 // Operations
 public:
 
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -483,13 +483,13 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     virtual void OffsetObject(CPoint offset) override;
     // ------- //
-    virtual OwnerPtr Clone() override;
+    virtual OwnerPtr Clone() const override;
 
-    void CopyAttributes(CBitmapImage *source);
+    void CopyAttributes(const CBitmapImage& source);
 
     virtual void Serialize(CArchive& ar) override;
 
@@ -514,7 +514,7 @@ public:
     virtual enum CDrawObjType GetType() const override { return drawTile; }
 // Operations
 public:
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -522,13 +522,13 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(CRect* pRctZone) override;
+    virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
     virtual void OffsetObject(CPoint offset) override;
     // ------- //
-    virtual OwnerPtr Clone() override;
+    virtual OwnerPtr Clone() const override;
 
-    void CopyAttributes(CTileImage *source);
+    void CopyAttributes(const CTileImage& source);
 
     virtual void Serialize(CArchive& ar) override;
 };
@@ -562,19 +562,19 @@ public:
     void SetOwnerMask(DWORD dwMask);
 
     virtual enum CDrawObjType GetType() const override { return drawPieceObj; }
-    virtual ObjectID GetObjectID() override { return static_cast<ObjectID>(m_pid); }
+    virtual ObjectID GetObjectID() const override { return static_cast<ObjectID>(m_pid); }
 
 // Operations
 public:
     void ResyncExtentRect();
 
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
     virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
-    virtual OwnerPtr Clone(CGamDoc* pDoc) override;
-    virtual BOOL Compare(CDrawObj* pObj) override;
+    virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
+    virtual BOOL Compare(const CDrawObj& pObj) const override;
     virtual void Serialize(CArchive& ar) override;
 };
 
@@ -591,11 +591,11 @@ protected:
 
     ObjectID    m_dwObjectID;
 public:
-    virtual ObjectID GetObjectID() override { return m_dwObjectID; }
+    virtual ObjectID GetObjectID() const override { return m_dwObjectID; }
     void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
     // ------ //
-    virtual OwnerPtr Clone(CGamDoc* pDoc) override;
-    virtual BOOL Compare(CDrawObj* pObj) override;
+    virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
+    virtual BOOL Compare(const CDrawObj& pObj) const override;
     virtual void Serialize(CArchive& ar) override;
 };
 
@@ -620,7 +620,7 @@ public:
     int  GetFacing() { return m_nFacingDegCW; }
 
     void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
-    virtual ObjectID GetObjectID() override { return m_dwObjectID; }
+    virtual ObjectID GetObjectID() const override { return m_dwObjectID; }
 
     void ResyncExtentRect();
 
@@ -633,13 +633,13 @@ protected:
 public:
     TileID GetCurrentTileID();
     // ------- //
-    virtual void Draw(CDC* pDC, TileScale eScale) override;
+    virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
     virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
-    virtual OwnerPtr Clone(CGamDoc* pDoc) override;
-    virtual BOOL Compare(CDrawObj* pObj) override;
+    virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
+    virtual BOOL Compare(const CDrawObj& pObj) const override;
     virtual void Serialize(CArchive& ar) override;
 };
 
@@ -678,28 +678,26 @@ public:
 public:
     const_iterator Find(const CDrawObj& drawObj) const;
     iterator Find(const CDrawObj& drawObj);
-    void AddObject(CDrawObj* pDrawObj) { AddToFront(pDrawObj); }
     // NOTE:  See WARNING: above
-    void RemoveObject(CDrawObj* pDrawObj);
-    void RemoveObjectsInList(CPtrList* pLst);
-    void AddToEnd(CDrawObj* pDrawObj) { AddToBack(CDrawObj::OwnerPtr(pDrawObj)); }
+    void RemoveObject(const CDrawObj& pDrawObj);
+    void RemoveObjectsInList(const CPtrList& pLst);
     void AddToBack(CDrawObj::OwnerPtr pDrawObj) { push_front(std::move(pDrawObj)); }
     void AddToFront(CDrawObj::OwnerPtr pDrawObj) { push_back(std::move(pDrawObj)); }
     CDrawObj& Front() { return *back(); }
     CDrawObj& Back() { return *front(); }
-    void Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+    void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
     CDrawObj* HitTest(CPoint pt, TileScale eScale = (TileScale)AllTileScales,
         BOOL bApplyVisibility = TRUE);
-    void DrillDownHitTest(CPoint point, CPtrList* selLst,
+    void DrillDownHitTest(CPoint point, CPtrList& selLst,
         TileScale eScale = (TileScale)AllTileScales, BOOL bApplyVisibility = TRUE);
 #ifdef GPLAY
     void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const;
     void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const;
 #endif
-    void ArrangeObjectListInDrawOrder(CPtrList* pLst);
-    void ArrangeObjectListInVisualOrder(CPtrList* pLst);
+    void ArrangeObjectListInDrawOrder(CPtrList& pLst);
+    void ArrangeObjectListInVisualOrder(CPtrList& pLst);
     void ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
     void ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
 #ifdef GPLAY
@@ -707,23 +705,23 @@ public:
 
     CPieceObj* FindPieceID(PieceID pid);
     CDrawObj* FindObjectID(ObjectID oid);
-    BOOL HasObject(CDrawObj* pObj) { return Find(*pObj) != end(); }
-    BOOL HasMarker();
-    void GetPieceObjectPtrList(CPtrList* pLst);
-    void GetPieceIDTable(std::vector<PieceID>& pTbl);
-    void GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList* pLst);
-    static void GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>& pTbl,
+    BOOL HasObject(const CDrawObj& pObj) const { return Find(pObj) != end(); }
+    BOOL HasMarker() const;
+    void GetPieceObjectPtrList(CPtrList& pLst);
+    void GetPieceIDTable(std::vector<PieceID>& pTbl) const;
+    void GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList& pLst);
+    static void GetPieceIDTableFromObjList(CPtrList& pLst, std::vector<PieceID>& pTbl,
         BOOL bDeleteObjs = FALSE);
     // ------- //
-    CDrawList Clone(CGamDoc* pDoc);
-    void Restore(CGamDoc* pDoc, CDrawList* pLst);
-    BOOL Compare(CDrawList* pLst);
-    void AppendWithOffset(CDrawList* pSourceLst, CPoint pntOffet);
+    CDrawList Clone(CGamDoc* pDoc) const;
+    void Restore(CGamDoc* pDoc, const CDrawList& pLst);
+    BOOL Compare(const CDrawList& pLst) const;
+    void AppendWithOffset(const CDrawList& pSourceLst, CPoint pntOffet);
 #else
     BOOL PurgeMissingTileIDs(CTileManager* pTMgr);
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
     // ------- //
-    void ForceIntoZone(CRect* pRctZone);
+    void ForceIntoZone(const CRect& pRctZone);
 #endif
     // -------- //
     void Serialize(CArchive& ar);

@@ -611,7 +611,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         {
             CPtrList m_listPtr;
             CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
-            pSLst->LoadListWithObjectPtrs(&m_listPtr);
+            pSLst->LoadListWithObjectPtrs(m_listPtr);
             pSLst->PurgeList(FALSE);
             m_pDoc->AssignNewMoveGroup();
             size_t temp = m_pDoc->PlaceObjectListInTray(m_listPtr,

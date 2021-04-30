@@ -156,12 +156,12 @@ void CPlayBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale)
     ASSERT(m_pPceList);
 
     if (m_bIVisible && !m_bIndOnTop)
-        m_pIndList->Draw(pDC, pDrawRct, eScale);
+        m_pIndList->Draw(CheckedDeref(pDC), pDrawRct, eScale);
 
-    m_pPceList->Draw(pDC, pDrawRct, eScale, TRUE, FALSE, !m_bPVisible, m_bLockedDrawnBeneath);
+    m_pPceList->Draw(CheckedDeref(pDC), pDrawRct, eScale, TRUE, FALSE, !m_bPVisible, m_bLockedDrawnBeneath);
 
     if (m_bIVisible && m_bIndOnTop)
-        m_pIndList->Draw(pDC, pDrawRct, eScale);
+        m_pIndList->Draw(CheckedDeref(pDC), pDrawRct, eScale);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ BOOL CPlayBoard::IsObjectOnBoard(CDrawObj *pObj)
 
 void CPlayBoard::RemoveObject(CDrawObj* pObj)
 {
-    m_pPceList->RemoveObject(pObj);
+    m_pPceList->RemoveObject(CheckedDeref(pObj));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -302,8 +302,8 @@ CPlayBoard CPlayBoard::Clone(CGamDoc *pDoc)
 
 void CPlayBoard::Restore(CGamDoc *pDoc, CPlayBoard& pBrd)
 {
-    m_pPceList->Restore(pDoc, pBrd.m_pPceList.get());
-    m_pIndList->Restore(pDoc, pBrd.m_pIndList.get());
+    m_pPceList->Restore(pDoc, *pBrd.m_pPceList);
+    m_pIndList->Restore(pDoc, *pBrd.m_pIndList);
     m_bPlotMode = pBrd.m_bPlotMode;
     m_ptPrevPlot = pBrd.m_ptPrevPlot;
     m_nSerialNum = pBrd.m_nSerialNum;
@@ -316,11 +316,11 @@ bool CPlayBoard::Compare(CPlayBoard& pBrd)
         return FALSE;
     if (m_pPceList == NULL || pBrd.m_pPceList == NULL)
         return FALSE;
-    if (!m_pPceList->Compare(pBrd.m_pPceList.get()))
+    if (!m_pPceList->Compare(*pBrd.m_pPceList))
         return FALSE;
     if (m_pIndList == NULL || pBrd.m_pIndList == NULL)
         return FALSE;
-    return m_pIndList->Compare(pBrd.m_pIndList.get());
+    return m_pIndList->Compare(*pBrd.m_pIndList);
 }
 
 void CPlayBoard::Serialize(CArchive& ar)

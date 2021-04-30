@@ -155,14 +155,14 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
             if (pDwgList != NULL)
             {
                 CDrawList* pDwgListNewBase = pBrdNew->GetBaseDrawing(TRUE);
-                pDwgListNewBase->AppendWithOffset(pDwgList, pntOffset);
+                pDwgListNewBase->AppendWithOffset(*pDwgList, pntOffset);
             }
 
             pDwgList = pBrd.GetTopDrawing();
             if (pDwgList != NULL)
             {
                 CDrawList* pDwgListNewTop = pBrdNew->GetTopDrawing(TRUE);
-                pDwgListNewTop->AppendWithOffset(pDwgList, pntOffset);
+                pDwgListNewTop->AppendWithOffset(*pDwgList, pntOffset);
             }
         }
     }

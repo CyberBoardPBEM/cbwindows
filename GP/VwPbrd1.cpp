@@ -237,7 +237,7 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
     for (CDrawList::iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
         CDrawObj& pObj = **pos;
-        if (!m_selList.IsObjectSelected(&pObj))
+        if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
                 ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
@@ -269,7 +269,7 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
                 // (the last three conditions were checked above.)
                 if (pDoc->IsScenario() || bOwnedByCurrentPlayer)
                 {
-                    m_selList.AddObject(&pObj, TRUE);
+                    m_selList.AddObject(pObj, TRUE);
                     bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
                         pObj.GetType() == CDrawObj::drawMarkObj;
                 }
@@ -288,14 +288,14 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
     BOOL bPieceSelected = FALSE;
 
     CPtrList selLst;
-    pDwg->DrillDownHitTest(point, &selLst);
+    pDwg->DrillDownHitTest(point, selLst);
 
     POSITION pos;
     for (pos = selLst.GetHeadPosition(); pos != NULL; )
     {
         CDrawObj* pObj = (CDrawObj*)selLst.GetNext(pos);
         ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(pObj))
+        if (!m_selList.IsObjectSelected(*pObj))
         {
             BOOL bOwnedByCurrentPlayer = TRUE;
             if (pObj->GetType() == CDrawObj::drawPieceObj)
@@ -313,7 +313,7 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
                 (!m_pPBoard->GetLocksEnforced() ||
                  !(pObj->GetDObjFlags() & dobjFlgLockDown)))
             {
-                m_selList.AddObject(pObj, TRUE);
+                m_selList.AddObject(*pObj, TRUE);
                 bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
                     pObj->GetType() == CDrawObj::drawMarkObj;
             }
@@ -331,9 +331,9 @@ void CPlayBoardView::SelectAllObjectsInList(CPtrList* pLst)
     {
         CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
         ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(pObj))
+        if (!m_selList.IsObjectSelected(*pObj))
         {
-            m_selList.AddObject(pObj, TRUE);
+            m_selList.AddObject(*pObj, TRUE);
             bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
                 pObj->GetType() == CDrawObj::drawMarkObj;
         }
@@ -349,9 +349,9 @@ void CPlayBoardView::SelectAllObjectsInTable(const std::vector<CB::not_null<CDra
     for (size_t i = 0; i < pTbl.size(); i++)
     {
         CDrawObj& pObj = *pTbl.at(i);
-        if (!m_selList.IsObjectSelected(&pObj))
+        if (!m_selList.IsObjectSelected(pObj))
         {
-            m_selList.AddObject(&pObj, TRUE);
+            m_selList.AddObject(pObj, TRUE);
             bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
                 pObj.GetType() == CDrawObj::drawMarkObj;
         }
@@ -373,10 +373,10 @@ void CPlayBoardView::SelectAllMarkers()
         CDrawObj& pObj = **pos;
         if (m_pPBoard->GetLocksEnforced() && (pObj.GetDObjFlags() & dobjFlgLockDown))
             continue;           // Ignore this object since it's locked
-        if (!m_selList.IsObjectSelected(&pObj))
+        if (!m_selList.IsObjectSelected(pObj))
         {
             if (pObj.GetType() == CDrawObj::drawMarkObj)
-                m_selList.AddObject(&pObj, TRUE);
+                m_selList.AddObject(pObj, TRUE);
         }
     }
     NotifySelectListChange();
@@ -396,12 +396,12 @@ void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
         CDrawObj& pObj = **pos;
         if (m_pPBoard->GetLocksEnforced() && (pObj.GetDObjFlags() & dobjFlgLockDown))
             continue;           // Ignore this object since it's locked
-        if (!m_selList.IsObjectSelected(&pObj))
+        if (!m_selList.IsObjectSelected(pObj))
         {
             if (pObj.GetType() == CDrawObj::drawMarkObj)
             {
                 if (pMgr.IsMarkerInGroup(nGroup, static_cast<CMarkObj&>(pObj).m_mid))
-                    m_selList.AddObject(&pObj, TRUE);
+                    m_selList.AddObject(pObj, TRUE);
             }
         }
     }
@@ -437,7 +437,7 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(pSel->m_pObj.get());
+        pDwg->RemoveObject(*pSel->m_pObj);
         m_tmpLst.AddTail(pSel->m_pObj.get());
     }
     if (bToFront)
