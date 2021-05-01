@@ -231,34 +231,31 @@ CDrawObj* CPlayBoardView::ObjectHitTest(CPoint point)
 void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
 {
     CGamDoc* pDoc = GetDocument();
-    CDrawList* pDwg = m_pPBoard->GetPieceList();
-    ASSERT(pDwg);
+    CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
 
     BOOL bPieceSelected = FALSE;
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(pObj))
+        CDrawObj& pObj = **pos;
+        if (!m_selList.IsObjectSelected(&pObj))
         {
             if ((!bInclIntersects &&
-                ((pObj->GetEnclosingRect() | rctNet) == rctNet)) ||
+                ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
                 (bInclIntersects &&
-                (!(pObj->GetEnclosingRect() & rctNet).IsRectEmpty())))
+                (!(pObj.GetEnclosingRect() & rctNet).IsRectEmpty())))
             {
                 BOOL bOwnedByCurrentPlayer = TRUE;
-                if (pObj->GetType() == CDrawObj::drawPieceObj)
+                if (pObj.GetType() == CDrawObj::drawPieceObj)
                 {
-                    CPieceObj* pPObj = (CPieceObj*)pObj;
+                    CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
                     DWORD dwCurrentPlayer = pDoc->GetCurrentPlayerMask();
                     bOwnedByCurrentPlayer =
-                        !pPObj->IsOwned() || pPObj->IsOwnedBy(dwCurrentPlayer) ||
+                        !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer) ||
                         m_pPBoard->IsNonOwnerAccessAllowed();
                 }
 
                 if (m_pPBoard->GetLocksEnforced() &&
-                    (pObj->GetDObjFlags() & dobjFlgLockDown) != 0)
+                    (pObj.GetDObjFlags() & dobjFlgLockDown) != 0)
                 {
                     // Don't select this object because locks are enforced
                     // and the object is locked.
@@ -272,9 +269,9 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
                 // (the last three conditions were checked above.)
                 if (pDoc->IsScenario() || bOwnedByCurrentPlayer)
                 {
-                    m_selList.AddObject(pObj, TRUE);
-                    bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
-                        pObj->GetType() == CDrawObj::drawMarkObj;
+                    m_selList.AddObject(&pObj, TRUE);
+                    bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
+                        pObj.GetType() == CDrawObj::drawMarkObj;
                 }
             }
         }
@@ -368,22 +365,19 @@ void CPlayBoardView::SelectAllObjectsInTable(const std::vector<CDrawObj*>& pTbl)
 
 void CPlayBoardView::SelectAllMarkers()
 {
-    CDrawList* pDwg = m_pPBoard->GetPieceList();
-    ASSERT(pDwg);
+    CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
 
     m_selList.PurgeList();
 
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (m_pPBoard->GetLocksEnforced() && (pObj->GetDObjFlags() & dobjFlgLockDown))
+        CDrawObj& pObj = **pos;
+        if (m_pPBoard->GetLocksEnforced() && (pObj.GetDObjFlags() & dobjFlgLockDown))
             continue;           // Ignore this object since it's locked
-        if (!m_selList.IsObjectSelected(pObj))
+        if (!m_selList.IsObjectSelected(&pObj))
         {
-            if (pObj->GetType() == CDrawObj::drawMarkObj)
-                m_selList.AddObject(pObj, TRUE);
+            if (pObj.GetType() == CDrawObj::drawMarkObj)
+                m_selList.AddObject(&pObj, TRUE);
         }
     }
     NotifySelectListChange();
@@ -393,26 +387,22 @@ void CPlayBoardView::SelectAllMarkers()
 
 void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
 {
-    CDrawList* pDwg = m_pPBoard->GetPieceList();
-    ASSERT(pDwg);
-    CMarkManager* pMgr = GetDocument()->GetMarkManager();
-    ASSERT(pMgr);
+    CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
+    CMarkManager& pMgr = CheckedDeref(GetDocument()->GetMarkManager());
 
     m_selList.PurgeList();
 
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (m_pPBoard->GetLocksEnforced() && (pObj->GetDObjFlags() & dobjFlgLockDown))
+        CDrawObj& pObj = **pos;
+        if (m_pPBoard->GetLocksEnforced() && (pObj.GetDObjFlags() & dobjFlgLockDown))
             continue;           // Ignore this object since it's locked
-        if (!m_selList.IsObjectSelected(pObj))
+        if (!m_selList.IsObjectSelected(&pObj))
         {
-            if (pObj->GetType() == CDrawObj::drawMarkObj)
+            if (pObj.GetType() == CDrawObj::drawMarkObj)
             {
-                if (pMgr->IsMarkerInGroup(nGroup, ((CMarkObj*)pObj)->m_mid))
-                    m_selList.AddObject(pObj, TRUE);
+                if (pMgr.IsMarkerInGroup(nGroup, static_cast<CMarkObj&>(pObj).m_mid))
+                    m_selList.AddObject(&pObj, TRUE);
             }
         }
     }
@@ -422,13 +412,13 @@ void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::AddDrawObject(CDrawObj* pObj)
+void CPlayBoardView::AddDrawObject(CDrawObj::OwnerPtr pObj)
 {
     CDrawList* pDwg = m_pPBoard->GetPieceList();
     ASSERT(pDwg);
     if (pDwg != NULL)
     {
-        pDwg->AddObject(pObj);
+        pDwg->AddToFront(std::move(pObj));
         GetDocument()->SetModifiedFlag();
     }
 }
@@ -455,13 +445,13 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     {
         pos = m_tmpLst.GetHeadPosition();
         while (pos != NULL)
-            pDwg->AddToFront((CDrawObj*)m_tmpLst.GetNext(pos));
+            pDwg->AddToFront(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetNext(pos)));
     }
     else
     {
         pos = m_tmpLst.GetTailPosition();
         while (pos != NULL)
-            pDwg->AddToEnd((CDrawObj*)m_tmpLst.GetPrev(pos));
+            pDwg->AddToBack(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetPrev(pos)));
     }
     if (bInvalidate)
         m_selList.InvalidateList();

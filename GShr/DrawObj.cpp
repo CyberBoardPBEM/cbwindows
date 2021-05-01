@@ -315,9 +315,9 @@ CSelection* CRectObj::CreateSelectProxy(CBrdEditView* pView)
 #endif
 
 //DFM19991210
-CDrawObj* CRectObj::Clone()
+CDrawObj::OwnerPtr CRectObj::Clone()
 {
-    CRectObj *returnValue = new CRectObj();
+    ::OwnerPtr<CRectObj> returnValue = MakeOwner<CRectObj>();
 
     returnValue->CopyAttributes(this);
 
@@ -376,9 +376,9 @@ CSelection* CEllipse::CreateSelectProxy(CBrdEditView* pView)
 #endif
 
 //DFM19991213
-CDrawObj* CEllipse::Clone()
+CDrawObj::OwnerPtr CEllipse::Clone()
 {
-    CEllipse *returnValue = new CEllipse();
+    ::OwnerPtr<CEllipse> returnValue = MakeOwner<CEllipse>();
 
     returnValue->CRectObj::CopyAttributes(this);
 
@@ -499,9 +499,9 @@ void CPolyObj::OffsetObject (CPoint offset)
     }
 }
 
-CDrawObj* CPolyObj::Clone()
+CDrawObj::OwnerPtr CPolyObj::Clone()
 {
-    CPolyObj* pObj = new CPolyObj();
+    ::OwnerPtr<CPolyObj> pObj = MakeOwner<CPolyObj>();
     pObj->CopyAttributes(this);
     return pObj;
 }
@@ -629,18 +629,18 @@ void CLine::OffsetObject(CPoint offset)
 
 }
 
-CDrawObj* CLine::Clone()
+CDrawObj::OwnerPtr CLine::Clone()
 {
-    CLine* pObj = new CLine;
+    ::OwnerPtr<CLine> pObj = MakeOwner<CLine>();
     pObj->CopyAttributes(this);
     return pObj;
 }
 //DFM19991213
 
 #ifdef GPLAY
-CDrawObj* CLine::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CLine::Clone(CGamDoc* pDoc)
 {
-    CLine* pObj = new CLine;
+    ::OwnerPtr<CLine> pObj = MakeOwner<CLine>();
     pObj->CopyAttributes(this);    //DFM19991214
     return pObj;
 }
@@ -805,9 +805,9 @@ void CBitmapImage::OffsetObject(CPoint offset)
     m_rctExtent += offset;
 }
 
-CDrawObj* CBitmapImage::Clone()
+CDrawObj::OwnerPtr CBitmapImage::Clone()
 {
-    CBitmapImage* pObj = new CBitmapImage;
+    ::OwnerPtr<CBitmapImage> pObj = MakeOwner<CBitmapImage>();
     pObj->CopyAttributes(this);
     return pObj;
 }
@@ -912,9 +912,9 @@ void CTileImage::OffsetObject(CPoint offset)
     m_rctExtent += offset;
 }
 
-CDrawObj* CTileImage::Clone()
+CDrawObj::OwnerPtr CTileImage::Clone()
 {
-    CTileImage* pObj = new CTileImage;
+    ::OwnerPtr<CTileImage> pObj = MakeOwner<CTileImage>();
     pObj->CopyAttributes(this);
     return pObj;
 }
@@ -1024,9 +1024,9 @@ CSelection* CText::CreateSelectProxy(CBrdEditView* pView)
 }
 #endif
 
-CDrawObj* CText::Clone()
+CDrawObj::OwnerPtr CText::Clone()
 {
-    CText* pObj = new CText;
+    ::OwnerPtr<CText> pObj = MakeOwner<CText>();
     pObj->CopyAttributes(this);
     return pObj;
 }
@@ -1194,9 +1194,9 @@ CSelection* CPieceObj::CreateSelectProxy(CPlayBoardView* pView)
     return new CSelGeneric(pView, this);
 }
 
-CDrawObj* CPieceObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc)
 {
-    CPieceObj* pObj = new CPieceObj;
+    ::OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
     pObj->m_dwDObjFlags = m_dwDObjFlags;    // From base class
     pObj->m_pDoc = pDoc;
@@ -1301,9 +1301,9 @@ CSelection* CMarkObj::CreateSelectProxy(CPlayBoardView* pView)
     return new CSelGeneric(pView, this);
 }
 
-CDrawObj* CMarkObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CMarkObj::Clone(CGamDoc* pDoc)
 {
-    CMarkObj* pObj = new CMarkObj;
+    ::OwnerPtr<CMarkObj> pObj = MakeOwner<CMarkObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
     pObj->m_dwDObjFlags = m_dwDObjFlags;    // From base class
     pObj->m_pDoc = pDoc;
@@ -1357,9 +1357,9 @@ void CMarkObj::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CLineObj
 
-CDrawObj* CLineObj::Clone(CGamDoc* pDoc)
+CDrawObj::OwnerPtr CLineObj::Clone(CGamDoc* pDoc)
 {
-    CLineObj* pObj = new CLineObj;
+    ::OwnerPtr<CLineObj> pObj = MakeOwner<CLineObj>();
     pObj->m_rctExtent = m_rctExtent;        // From base class
     pObj->m_dwDObjFlags = m_dwDObjFlags;    // From base class
     pObj->m_ptBeg = m_ptBeg;                // CLine class
@@ -1413,72 +1413,67 @@ void CDrawList::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
     BOOL bApplyVisibility /* = TRUE */, BOOL bDrawPass2Objects /* = FALSE */,
     BOOL bHideUnlocked /* = FALSE */, BOOL bDrawLockedFirst /* = FALSE */)
 {
-    POSITION pos;
     // We might need to draw locked objects first so they
     // show up under other object which are unlocked. This is
     // only valid in a non-pass 2 call.
     if (!bDrawPass2Objects && bDrawLockedFirst)
     {
-        for (pos = GetHeadPosition(); pos != NULL; )
+        for (iterator pos = begin(); pos != end(); ++pos)
         {
-            CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-            ASSERT(pDObj != NULL);
+            CDrawObj& pDObj = **pos;
 
             // Check if the object should be drawn in this scaling
-            if (bApplyVisibility && ((pDObj->GetDObjFlags() & eScale) == 0))
+            if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
                 continue;                   // Doesn't qualify
 
-            ASSERT(!((pDObj->GetDObjFlags() & dobjFlgLockDown) != 0 &&
-                (pDObj->GetDObjFlags() & dobjFlgDrawPass2) != 0));// We'll never have a locked pass 2 object
+            ASSERT(!((pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 &&
+                (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0));// We'll never have a locked pass 2 object
 
-            if ((pDObj->GetDObjFlags() & dobjFlgLockDown) == 0)
+            if ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0)
                 continue;                  // Only process locked objects
 
-            if (pDObj->IsVisible(pDrawRct))
-                pDObj->Draw(pDC, eScale);
+            if (pDObj.IsVisible(pDrawRct))
+                pDObj.Draw(pDC, eScale);
         }
     }
 
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
+        CDrawObj& pDObj = **pos;
 
         // Check if the object should be drawn in this scaling
-        if (bApplyVisibility && ((pDObj->GetDObjFlags() & eScale) == 0))
+        if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
             continue;                   // Doesn't qualify
 
         // Check if unlocked objects should be hidden
-        if (bHideUnlocked && ((pDObj->GetDObjFlags() & dobjFlgLockDown) == 0))
+        if (bHideUnlocked && ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0))
             continue;                   // Doesn't qualify
 
         // Only draw objects in their proper passes
-        if (bDrawLockedFirst && (pDObj->GetDObjFlags() & dobjFlgLockDown) != 0 ||
-            bDrawPass2Objects && (pDObj->GetDObjFlags() & dobjFlgDrawPass2) == 0 ||
-           !bDrawPass2Objects && (pDObj->GetDObjFlags() & dobjFlgDrawPass2) != 0)
+        if (bDrawLockedFirst && (pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 ||
+            bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) == 0 ||
+           !bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0)
         {
             continue;                   // Doesn't qualify
         }
 
-        if (pDObj->IsVisible(pDrawRct))
-            pDObj->Draw(pDC, eScale);
+        if (pDObj.IsVisible(pDrawRct))
+            pDObj.Draw(pDC, eScale);
     }
 }
 
 CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
     BOOL bApplyVisibility /* = TRUE */)
 {
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        ASSERT(pDObj != NULL);
+        CDrawObj& pDObj = **pos;
 
-        if (bApplyVisibility && ((pDObj->GetDObjFlags() & eScale) == 0))
+        if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
             continue;                   // Doesn't qualify
 
-        if (pDObj->HitTest(pt))
-            return pDObj;
+        if (pDObj.HitTest(pt))
+            return &pDObj;
     }
     return NULL;
 }
@@ -1486,16 +1481,14 @@ CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
 void CDrawList::DrillDownHitTest(CPoint point, CPtrList* selLst,
     TileScale eScale, BOOL bApplyVisibility /* = TRUE */)
 {
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        ASSERT(pDObj != NULL);
+        CDrawObj& pDObj = **pos;
 
-        if (bApplyVisibility && ((pDObj->GetDObjFlags() & eScale) == 0))
+        if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
             continue;                   // Doesn't qualify
-        if (pDObj->HitTest(point))
-            selLst->AddTail(pDObj);
+        if (pDObj.HitTest(point))
+            selLst->AddTail(&pDObj);
     }
 }
 
@@ -1506,12 +1499,11 @@ void CDrawList::ArrangeObjectListInDrawOrder(CPtrList* pLst)
     // list and transfer temp list to the callers list.
     CPtrList tmpLst;
 
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        if (pLst->Find(pDObj) != NULL)
-            tmpLst.AddTail(pDObj);
+        CDrawObj& pDObj = **pos;
+        if (pLst->Find(&pDObj) != NULL)
+            tmpLst.AddTail(&pDObj);
     }
     pLst->RemoveAll();
     pLst->AddTail(&tmpLst);
@@ -1524,12 +1516,11 @@ void CDrawList::ArrangeObjectListInVisualOrder(CPtrList* pLst)
     // list and transfer temp list to the callers list.
     CPtrList tmpLst;
 
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        if (pLst->Find(pDObj) != NULL)
-            tmpLst.AddTail(pDObj);
+        CDrawObj& pDObj = **pos;
+        if (pLst->Find(&pDObj) != NULL)
+            tmpLst.AddTail(&pDObj);
     }
     pLst->RemoveAll();
     pLst->AddTail(&tmpLst);
@@ -1537,7 +1528,7 @@ void CDrawList::ArrangeObjectListInVisualOrder(CPtrList* pLst)
 
 #ifdef GPLAY
 
-void CDrawList::ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl)
+void CDrawList::ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1545,17 +1536,16 @@ void CDrawList::ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl)
     std::vector<PieceID> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
+        const CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             for (size_t i = 0; i < pTbl.size(); i++)
             {
-                if (pTbl.at(i)== static_cast<CPieceObj*>(pDObj)->m_pid)
+                if (pTbl.at(i)== static_cast<const CPieceObj&>(pDObj).m_pid)
                 {
-                    tmpTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
+                    tmpTbl.push_back(static_cast<const CPieceObj&>(pDObj).m_pid);
                     break;
                 }
             }
@@ -1565,7 +1555,7 @@ void CDrawList::ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl)
     pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl)
+void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1573,17 +1563,16 @@ void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl)
     std::vector<PieceID> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (const_reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
+        const CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             for (size_t i = 0; i < pTbl.size(); i++)
             {
-                if (pTbl.at(i)== static_cast<CPieceObj*>(pDObj)->m_pid)
+                if (pTbl.at(i)== static_cast<const CPieceObj&>(pDObj).m_pid)
                 {
-                    tmpTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
+                    tmpTbl.push_back(static_cast<const CPieceObj&>(pDObj).m_pid);
                     break;
                 }
             }
@@ -1593,7 +1582,7 @@ void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl)
     pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl)
+void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1601,15 +1590,14 @@ void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl)
     std::vector<CDrawObj*> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
+        const CDrawObj& pDObj = **pos;
         for (size_t i = 0; i < pTbl.size(); i++)
         {
-            if (pTbl.at(i) == pDObj)
+            if (pTbl.at(i) == &pDObj)
             {
-                tmpTbl.push_back(pDObj);
+                tmpTbl.push_back(pTbl.at(i));
                 break;
             }
         }
@@ -1619,7 +1607,7 @@ void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl)
     pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl)
+void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
@@ -1627,15 +1615,14 @@ void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl)
     std::vector<CDrawObj*> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (const_reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
+        const CDrawObj& pDObj = **pos;
         for (size_t i = 0; i < pTbl.size(); i++)
         {
-            if (pTbl.at(i) == pDObj)
+            if (pTbl.at(i) == &pDObj)
             {
-                tmpTbl.push_back(pDObj);
+                tmpTbl.push_back(pTbl.at(i));
                 break;
             }
         }
@@ -1647,65 +1634,79 @@ void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl)
 
 #endif // GPLAY
 
+CDrawList::const_iterator CDrawList::Find(const CDrawObj& drawObj) const
+{
+    return std::find_if(begin(), end(), [&drawObj](const CDrawObj::OwnerPtr& p) { return p == &drawObj; });
+}
+
+CDrawList::iterator CDrawList::Find(const CDrawObj& drawObj)
+{
+    return std::find_if(begin(), end(), [&drawObj](const CDrawObj::OwnerPtr& p) { return p == &drawObj; });
+}
+
+// NOTE:  RemoveObject* do not erase
 void CDrawList::RemoveObjectsInList(CPtrList* pLst)
 {
     POSITION pos;
     for (pos = pLst->GetHeadPosition(); pos != NULL; )
     {
-        CDrawObj* pDObj = (CDrawObj*)pLst->GetNext(pos);
-        POSITION pos = Find(pDObj);
-        if (pos != NULL)
-            RemoveAt(pos);
+        CDrawObj& pDObj = CheckedDeref((CDrawObj*)pLst->GetNext(pos));
+        RemoveObject(&pDObj);
     }
-}
-
-void CDrawList::Flush(void)
-{
-    while (!IsEmpty())
-        delete (CDrawObj*)RemoveHead();
 }
 
 void CDrawList::RemoveObject(CDrawObj* pDrawObj)
 {
-    POSITION pos = Find(pDrawObj);
-    if (pos != NULL)
-        RemoveAt(pos);
+    iterator pos = Find(*pDrawObj);
+    if (pos != end())
+    {
+        /* NOTE:  RemoveObject* do not destroy obj, so we must
+                    call unique_ptr::release.  This violates
+                    not_null, but we'll live with it since we
+                    clean up by destroying  the invalid
+                    not_null. */
+        /* rref required.  Otherwise, compiler selects
+            get_underlying(const propagate_const&), which
+            prevents calling release() */
+        CB::propagate_const<std::unique_ptr<CDrawObj>>&& rref = CB::get_underlying(std::move(*pos));
+        CB::get_underlying(rref).release();
+        erase(pos);
+    }
 }
 
 #ifdef GPLAY
 
 void CDrawList::SetOwnerMasks(DWORD dwOwnerMask)
 {
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CPieceObj* pObj = (CPieceObj*)GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (pObj->GetType() == CDrawObj::drawPieceObj)
-            pObj->SetOwnerMask(dwOwnerMask);
+        CDrawObj& pObj = **pos;
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
+        {
+            CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
+            pPObj.SetOwnerMask(dwOwnerMask);
+        }
     }
 }
 
 CPieceObj* CDrawList::FindPieceID(PieceID pid)
 {
-    CPieceObj* pObj = (CPieceObj*)FindObjectID(static_cast<ObjectID>(pid));
+    CDrawObj* pObj = FindObjectID(static_cast<ObjectID>(pid));
     if (pObj != NULL)
     {
         ASSERT(pObj->GetType() == CDrawObj::drawPieceObj);
-        return (CPieceObj*)pObj;
+        return static_cast<CPieceObj*>(pObj);
     }
     return NULL;
 }
 
 CDrawObj* CDrawList::FindObjectID(ObjectID oid)
 {
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetObjectID() == oid)
-             return pDObj;
+        CDrawObj& pDObj = **pos;
+        if (pDObj.GetObjectID() == oid)
+             return &pDObj;
     }
     return NULL;
 }
@@ -1713,26 +1714,22 @@ CDrawObj* CDrawList::FindObjectID(ObjectID oid)
 void CDrawList::GetPieceObjectPtrList(CPtrList* pLst)
 {
     pLst->RemoveAll();
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pLst->AddTail(pDObj);
+        CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
+            pLst->AddTail(&pDObj);
     }
 }
 
 void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl)
 {
     pTbl.clear();
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
+        const CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
+            pTbl.push_back(static_cast<const CPieceObj&>(pDObj).m_pid);
     }
 }
 
@@ -1765,12 +1762,10 @@ void CDrawList::GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>&
 
 BOOL CDrawList::HasMarker()
 {
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawMarkObj)
+        const CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawMarkObj)
             return TRUE;
     }
     return FALSE;
@@ -1782,19 +1777,17 @@ BOOL CDrawList::HasMarker()
 
 BOOL CDrawList::PurgeMissingTileIDs(CTileManager* pTMgr)
 {
-    POSITION pos1, pos2;
     BOOL bPurged = FALSE;
-    for (pos1 = GetHeadPosition(); (pos2 = pos1) != NULL; )
+    /* NOTE:  extra complexity due to
+            erase invalidating all iterators to erased object */
+    for (iterator pos1 = begin(), pos2; (pos2 = pos1) != end(); )
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos1);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawTile)
+        CDrawObj& pDObj = **pos1++;
+        if (pDObj.GetType() == CDrawObj::drawTile)
         {
-            if (!pTMgr->IsTileIDValid(((CTileImage*)pDObj)->m_tid))
+            if (!pTMgr->IsTileIDValid(static_cast<CTileImage&>(pDObj).m_tid))
             {
-                GetAt(pos2);
-                RemoveAt(pos2);
-                delete pDObj;
+                erase(pos2);
                 bPurged = TRUE;
             }
         }
@@ -1804,14 +1797,12 @@ BOOL CDrawList::PurgeMissingTileIDs(CTileManager* pTMgr)
 
 BOOL CDrawList::IsTileInUse(TileID tid)
 {
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawTile)
+        const CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawTile)
         {
-            if (((CTileImage*)pDObj)->m_tid == tid)
+            if (static_cast<const CTileImage&>(pDObj).m_tid == tid)
                 return TRUE;
         }
     }
@@ -1834,70 +1825,66 @@ BOOL CDrawList::IsTileInUse(TileID tid)
 
 void CDrawList::ForceIntoZone(CRect* pRctZone)
 {
-    POSITION pos;
-    for (pos = GetTailPosition(); pos != NULL; )
+    for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetPrev(pos);
-        ASSERT(pDObj != NULL);
-        pDObj->ForceIntoZone(pRctZone);
+        CDrawObj& pDObj = **pos;
+        pDObj.ForceIntoZone(pRctZone);
     }
 }
 
 #endif  // !GPLAY
 
 #ifdef GPLAY
-CDrawList* CDrawList::Clone(CGamDoc* pDoc)
+CDrawList CDrawList::Clone(CGamDoc* pDoc)
 {
-    CDrawList* pLst = new CDrawList;
-    POSITION pos;
-    for (pos = GetHeadPosition(); pos != NULL; )
+    CDrawList pLst;
+    for (iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-        pLst->AddTail(pDObj->Clone(pDoc));
+        CDrawObj& pDObj = **pos;
+        pLst.push_back(pDObj.Clone(pDoc));
     }
     return pLst;
 }
 
 void CDrawList::Restore(CGamDoc* pDoc, CDrawList* pLst)
 {
-    Flush();
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    clear();
+    for (iterator pos = pLst->begin(); pos != pLst->end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)pLst->GetNext(pos);
-        AddTail(pDObj->Clone(pDoc));    // Clone it back
+        CDrawObj& pDObj = **pos;
+        push_back(pDObj.Clone(pDoc));    // Clone it back
     }
 }
 
 BOOL CDrawList::Compare(CDrawList* pLst)
 {
-    if (GetCount() != pLst->GetCount())
+    if (size() != pLst->size())
         return FALSE;
 
-    POSITION pos1 = GetHeadPosition();
-    POSITION pos2 = pLst->GetHeadPosition();
+    iterator pos1 = begin();
+    iterator pos2 = pLst->begin();
 
-    while (pos1 != NULL && pos2 != NULL)
+    for ( ; pos1 != end() && pos2 != pLst->end() ; ++pos1, ++pos2)
     {
-        CDrawObj* pDObj1 = (CDrawObj*)GetNext(pos1);
-        CDrawObj* pDObj2 = (CDrawObj*)pLst->GetNext(pos2);
-        if (pDObj1->GetType() != pDObj2->GetType())
+        CDrawObj& pDObj1 = **pos1;
+        CDrawObj& pDObj2 = **pos2;
+        if (pDObj1.GetType() != pDObj2.GetType())
             return FALSE;
-        if (!pDObj1->Compare(pDObj2))
+        if (!pDObj1.Compare(&pDObj2))
             return FALSE;
     }
+    ASSERT(pos1 == end() && pos2 == pLst->end());
     return TRUE;
 }
 
 void CDrawList::AppendWithOffset(CDrawList* pSourceLst, CPoint pntOffet)
 {
-    POSITION pos;
-    for (pos = pSourceLst->GetHeadPosition(); pos != NULL; )
+    for (iterator pos = pSourceLst->begin(); pos != pSourceLst->end(); ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)pSourceLst->GetNext(pos);
-        CDrawObj* pObjClone = pDObj->Clone();
+        CDrawObj& pDObj = **pos;
+        CDrawObj::OwnerPtr pObjClone = pDObj.Clone();
         pObjClone->OffsetObject(pntOffet);
-        AddTail(pObjClone);
+        push_back(std::move(pObjClone));
     }
 }
 
@@ -1907,75 +1894,72 @@ void CDrawList::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetCount();
+        ar << value_preserving_cast<WORD>(size());
 #ifdef _DEBUG
-        int nObjects = GetCount();
+        size_t nObjects = size();
 #endif
-        POSITION pos;
-        for (pos = GetHeadPosition(); pos != NULL; )
+        for (iterator pos = begin(); pos != end(); ++pos)
         {
-            CDrawObj* pDObj = (CDrawObj*)GetNext(pos);
-            ASSERT(pDObj != NULL);
-            ASSERT(pDObj->GetType() < CDrawObj::drawUnknown);
-            ar << (WORD)pDObj->GetType();
-            pDObj->Serialize(ar);
+            CDrawObj& pDObj = **pos;
+            ASSERT(pDObj.GetType() < CDrawObj::drawUnknown);
+            ar << static_cast<WORD>(pDObj.GetType());
+            pDObj.Serialize(ar);
 #ifdef _DEBUG
             nObjects--;
 #endif
         }
-        ASSERT(nObjects == 0);
+        ASSERT(nObjects == size_t(0));
     }
     else
     {
-        Flush();
+        clear();
         WORD wCount;
         ar >> wCount;
-        for (WORD i = 0; i < wCount; i++)
+        for (WORD i = 0; i < wCount; ++i)
         {
-            CDrawObj* pDObj = NULL;
+            OwnerOrNullPtr<CDrawObj> pDObj;
             WORD wType;
             ar >> wType;
-            switch ((CDrawObj::CDrawObjType)wType)
+            switch (static_cast<CDrawObj::CDrawObjType>(wType))
             {
                 case CDrawObj::drawRect:
-                    pDObj = new CRectObj;
+                    pDObj = MakeOwner<CRectObj>();
                     break;
                 case CDrawObj::drawEllipse:
-                    pDObj = new CEllipse;
+                    pDObj = MakeOwner<CEllipse>();
                     break;
                 case CDrawObj::drawLine:
-                    pDObj = new CLine;
+                    pDObj = MakeOwner<CLine>();
                     break;
                 case CDrawObj::drawTile:
-                    pDObj = new CTileImage;
+                    pDObj = MakeOwner<CTileImage>();
                     break;
                 case CDrawObj::drawText:
-                    pDObj = new CText;
+                    pDObj = MakeOwner<CText>();
                     break;
                 case CDrawObj::drawPolygon:
-                    pDObj = new CPolyObj;
+                    pDObj = MakeOwner<CPolyObj>();
                     break;
                 case CDrawObj::drawBitmap:
-                    pDObj = new CBitmapImage;
+                    pDObj = MakeOwner<CBitmapImage>();
                     break;
 #ifdef GPLAY
                 case CDrawObj::drawPieceObj:
-                    pDObj = new CPieceObj;
+                    pDObj = MakeOwner<CPieceObj>();
                     break;
                 case CDrawObj::drawMarkObj:
-                    pDObj = new CMarkObj;
+                    pDObj = MakeOwner<CMarkObj>();
                     break;
                 case CLineObj::drawLineObj:
-                    pDObj = new CLineObj;
+                    pDObj = MakeOwner<CLineObj>();
                     break;
 #endif
                 default:
                     ASSERT(FALSE);
                     AfxThrowArchiveException(CArchiveException::badClass);
             }
-            ASSERT(pDObj != NULL);
             pDObj->Serialize(ar);
-            AddTail(pDObj);
+            push_back(std::move(pDObj));
         }
     }
 }

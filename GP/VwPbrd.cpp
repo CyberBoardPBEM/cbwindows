@@ -679,10 +679,10 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
                 CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
-                CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, tblMarks[value_preserving_cast<size_t>(i)],
+                CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard, tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
-                m_selList.AddObject(pObj, TRUE);
+                m_selList.AddObject(&pObj, TRUE);
             }
             NotifySelectListChange();
             return 0;
@@ -698,7 +698,7 @@ NASTY_GOTO_TARGET:
         pnt = GetMidRect(rct);
 
         pDoc->AssignNewMoveGroup();
-        CDrawObj* pObj = pDoc->CreateMarkerObject(m_pPBoard, mid, pnt, ObjectID());
+        CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard, mid, pnt, ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
@@ -710,7 +710,7 @@ NASTY_GOTO_TARGET:
 
             if (dlg.DoModal() == IDOK)
             {
-                GameElement elem = pDoc->GetGameElementCodeForObject(pObj);
+                GameElement elem = pDoc->GetGameElementCodeForObject(&pObj);
                 pDoc->SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL :
                     (LPCTSTR)dlg.m_strText);
             }

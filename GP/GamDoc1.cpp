@@ -53,7 +53,7 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
     RecordPieceMoveToBoard(pPBrd, pid, pnt, placeTop);// Record processing
 
     RemovePieceFromCurrentLocation(pid, TRUE);
-    CPieceObj* pObj = pPBrd->AddPiece(pnt, pid);
+    CPieceObj& pObj = pPBrd->AddPiece(pnt, pid);
 
     // If the destination is owned, force the piece to take on the
     // same ownership. Otherwise, leave it's ownership state alone.
@@ -64,7 +64,7 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
     {
         CGamDocHint hint;
         hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -109,28 +109,29 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj* pObj,
+void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     CSize sizeDelta, PlacePos ePos /* = placeDefault */)
 {
+    CDrawObj& pObj = *opObj;
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
 
     // Record processing
-    if (pObj->GetType() == CDrawObj::drawPieceObj)
+    if (pObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceObj* pPObj = (CPieceObj*)pObj;
-        CRect rctPce = pPObj->GetRect();
-        RecordPieceMoveToBoard(pPBrd, pPObj->m_pid, GetMidRect(rctPce) +
+        CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
+        CRect rctPce = pPObj.GetRect();
+        RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
             sizeDelta, ePos);
     }
-    else if (pObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pObj.GetType() == CDrawObj::drawMarkObj)
     {
-        CMarkObj* pMObj = (CMarkObj*)pObj;
-        CRect rctMrk = pMObj->GetRect();
-        RecordMarkMoveToBoard(pPBrd, pMObj->GetObjectID(), pMObj->m_mid,
+        CMarkObj& pMObj = static_cast<CMarkObj&>(pObj);
+        CRect rctMrk = pMObj.GetRect();
+        RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
             GetMidRect(rctMrk) + sizeDelta, ePos);
     }
-    BOOL bOnBoard = pDwg->HasObject(pObj);
+    BOOL bOnBoard = pDwg->HasObject(&pObj);
     if (ePos == placeDefault && bOnBoard)
     {
         if (!IsQuietPlayback())
@@ -138,24 +139,32 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj* pObj,
             // Cause it's former location to be invalidated...
             CGamDocHint hint;
             hint.m_pPBoard = pPBrd;
-            hint.m_pDrawObj = pObj;
+            hint.m_pDrawObj = &pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
     }
     else
-        RemoveObjectFromCurrentLocation(pObj);
+        RemoveObjectFromCurrentLocation(&pObj);
 
-    pObj->MoveObject(pObj->GetRect().TopLeft() + sizeDelta);
+    pObj.MoveObject(pObj.GetRect().TopLeft() + sizeDelta);
 
     if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
-        pDwg->AddToFront(pObj);
+        pDwg->AddToFront(std::move(opObj));
     else if (ePos == placeBack)
-        pDwg->AddToBack(pObj);
-
-    if (pPBrd->IsOwned() && pObj->GetType() == CDrawObj::drawPieceObj)
+        pDwg->AddToBack(std::move(opObj));
+    else
     {
-        CPieceObj* pPObj = (CPieceObj*)pObj;
-        GetPieceTable()->SetOwnerMask(pPObj->m_pid, pPBrd->GetOwnerMask());
+        // object must already be in this list
+        ASSERT(pDwg->Find(*opObj) != pDwg->end());
+        // don't let the object get deleted
+        OwnerOrNullPtr<CDrawObj> temp = CB::get_underlying(std::move(opObj));
+        CB::get_underlying(temp).release();
+    }
+
+    if (pPBrd->IsOwned() && pObj.GetType() == CDrawObj::drawPieceObj)
+    {
+        CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
+        GetPieceTable()->SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
     }
 
     if (!IsQuietPlayback())
@@ -163,7 +172,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj* pObj,
         // Cause object to be drawn
         CGamDocHint hint;
         hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -615,7 +624,7 @@ void CGamDoc::SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWO
 //////////////////////////////////////////////////////////////////////
 // pnt is center of mark image
 
-CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
+CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     ObjectID dwObjID)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
@@ -637,21 +646,24 @@ CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     pPBrd->LimitRectToBoard(rct);
 
     // Create the marker object
-    CMarkObj* pObj = new CMarkObj(this);
-    pObj->SetObjectID(dwObjID);
-    pObj->SetMark(rct, mid);
+    {
+        OwnerPtr<CMarkObj> pObj(MakeOwner<CMarkObj>(this));
+        pObj->SetObjectID(dwObjID);
+        pObj->SetMark(rct, mid);
 
-    RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(rct), placeTop);
+        RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(rct), placeTop);
 
-    // Finally add it to the board's object list.
-    pDwg->AddObject(pObj);
+        // Finally add it to the board's object list.
+        pDwg->AddToFront(std::move(pObj));
+    }
+    CDrawObj& pObj = pDwg->Front();
     SetModifiedFlag();
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -661,7 +673,7 @@ CDrawObj* CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
 
 //////////////////////////////////////////////////////////////////////
 
-CDrawObj* CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
+CDrawObj& CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
@@ -669,20 +681,23 @@ CDrawObj* CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
     if (dwObjID == ObjectID())
         dwObjID = CreateObjectID(CDrawObj::drawLineObj);
 
-    CLineObj* pObj = new CLineObj;
-    pObj->SetObjectID(dwObjID);
-    pObj->SetLine(ptBeg.x, ptBeg.y, ptEnd.x, ptEnd.y);
-    pObj->SetForeColor(pPBrd->GetLineColor());
-    pObj->SetLineWidth(pPBrd->GetLineWidth());
+    {
+        OwnerPtr<CLineObj> pObj = MakeOwner<CLineObj>();
+        pObj->SetObjectID(dwObjID);
+        pObj->SetLine(ptBeg.x, ptBeg.y, ptEnd.x, ptEnd.y);
+        pObj->SetForeColor(pPBrd->GetLineColor());
+        pObj->SetLineWidth(pPBrd->GetLineWidth());
 
-    pDwg->AddObject(pObj);
+        pDwg->AddToFront(std::move(pObj));
+    }
+    CDrawObj& pObj = pDwg->Front();
     SetModifiedFlag();
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.m_pPBoard = pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -742,7 +757,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
     {
         POSITION pos = pList->GetTailPosition();
         while (pos != NULL)
-            pDwg->AddToEnd((CDrawObj*)pList->GetPrev(pos));
+            pDwg->AddToBack((CDrawObj*)pList->GetPrev(pos));
     }
     SetModifiedFlag();
 
