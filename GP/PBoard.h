@@ -105,12 +105,12 @@ public:
 public:
     void Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale);
     // ------- //
-    CPieceObj* AddPiece(CPoint pnt, PieceID pid);
+    CPieceObj& AddPiece(CPoint pnt, PieceID pid);
     CPieceObj* FindPieceID(PieceID pid);
     CDrawObj* FindObjectID(ObjectID oid);
     //  void RemovePiece(CPieceObj* pObj);
     // ------- //
-    void AddIndicatorObject(CDrawObj* pObj);
+    void AddIndicatorObject(CDrawObj::OwnerPtr pObj);
     void FlushAllIndicators();
     // ------- //
     BOOL IsObjectOnBoard(CDrawObj *pObj);
@@ -214,8 +214,8 @@ protected:
     CPoint  m_ptPrevPlot;       // Previous selected move point
     BOOL    m_bPlotMode;        // Plot move mode
 
-    std::unique_ptr<CDrawList> m_pPceList;      // Piece draw list
-    std::unique_ptr<CDrawList> m_pIndList;      // Indicator draw list.
+    OwnerOrNullPtr<CDrawList> m_pPceList;      // Piece draw list
+    OwnerOrNullPtr<CDrawList> m_pIndList;      // Indicator draw list.
 
     // For reference only...
     CBoard*     m_pBoard;       // Loaded from Game Box

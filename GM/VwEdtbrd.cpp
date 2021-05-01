@@ -377,23 +377,21 @@ void CBrdEditView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
     if (pDwg == NULL)
         return;
 
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg->begin(); pos != pDwg->end(); ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
-        ASSERT(pObj != NULL);
+        CDrawObj& pObj = **pos;
 
-        if (m_pBoard->GetApplyVisible() && (pObj->GetDObjFlags() && m_nZoom == 0))
+        if (m_pBoard->GetApplyVisible() && (pObj.GetDObjFlags() && m_nZoom == 0))
             continue;                   // Doesn't qualify
 
-        if (!m_selList.IsObjectSelected(pObj))
+        if (!m_selList.IsObjectSelected(&pObj))
         {
             if ((!bInclIntersects &&
-                ((pObj->GetEnclosingRect() | rctNet) == rctNet)) ||
+                ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
                 (bInclIntersects &&
-                (!(pObj->GetEnclosingRect() & rctNet).IsRectEmpty())))
+                (!(pObj.GetEnclosingRect() & rctNet).IsRectEmpty())))
             {
-                m_selList.AddObject(pObj, TRUE);
+                m_selList.AddObject(&pObj, TRUE);
             }
         }
     }
@@ -464,13 +462,13 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     {
         pos = m_tmpLst.GetHeadPosition();
         while (pos != NULL)
-            pDwg->AddToFront((CDrawObj*)m_tmpLst.GetNext(pos));
+            pDwg->AddToFront(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetNext(pos)));
     }
     else
     {
         pos = m_tmpLst.GetTailPosition();
         while (pos != NULL)
-            pDwg->AddToEnd((CDrawObj*)m_tmpLst.GetPrev(pos));
+            pDwg->AddToBack(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetPrev(pos)));
     }
     if (bInvalidate)
         m_selList.InvalidateList();
@@ -915,22 +913,24 @@ void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,
     BOOL bUpdate)
 {
     CTileManager* pTMgr = GetDocument()->GetTileManager();
-    CTileImage* pTileImage = new CTileImage(pTMgr);
+    {
+        OwnerPtr<CTileImage> pTileImage(MakeOwner<CTileImage>(pTMgr));
 
-    // Center the image on the drop point.
-    CTile tile;
-    pTMgr->GetTile(tid, &tile);
-    CRect rct(CPoint(pnt.x, pnt.y), tile.GetSize());
-    rct.OffsetRect(-rct.Width() / 2, -rct.Height() / 2);
-    AdjustRect(rct);
+        // Center the image on the drop point.
+        CTile tile;
+        pTMgr->GetTile(tid, &tile);
+        CRect rct(CPoint(pnt.x, pnt.y), tile.GetSize());
+        rct.OffsetRect(-rct.Width() / 2, -rct.Height() / 2);
+        AdjustRect(rct);
 
-    pTileImage->SetTile(rct.left, rct.top, tid);
+        pTileImage->SetTile(rct.left, rct.top, tid);
 
-    pDwg->AddToFront(pTileImage);
+        pDwg->AddToFront(std::move(pTileImage));
+    }
     if (bUpdate)
     {
         CRect rct;
-        rct = pTileImage->GetEnclosingRect();   // In board coords.
+        rct = pDwg->Front().GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(&rct);
     }
     GetDocument()->SetModifiedFlag();
@@ -1007,12 +1007,12 @@ CDrawList* CBrdEditView::GetDrawList(BOOL bCanCreateList)
         return NULL;
 }
 
-void CBrdEditView::AddDrawObject(CDrawObj* pObj)
+void CBrdEditView::AddDrawObject(CDrawObj::OwnerPtr pObj)
 {
     CDrawList* pDwg = GetDrawList(TRUE);
     if (pDwg != NULL)
     {
-        pDwg->AddObject(pObj);
+        pDwg->AddToFront(std::move(pObj));
         GetDocument()->SetModifiedFlag();
     }
 }
@@ -1081,19 +1081,21 @@ void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
 void CBrdEditView::CreateTextDrawingObject(CPoint pnt, FontID fid,
     COLORREF crText, CString& strText, BOOL bInvalidate /* = TRUE */)
 {
-    CText* pText = new CText;
-    AdjustPoint(pnt);
-    pText->SetText(pnt.x, pnt.y, strText, fid, crText);
+    {
+        OwnerPtr<CText> pText = MakeOwner<CText>();
+        AdjustPoint(pnt);
+        pText->SetText(pnt.x, pnt.y, strText, fid, crText);
 
-    CRect rct = pText->GetRect();
-    AdjustRect(rct);
-    pText->SetRect(rct);
+        CRect rct = pText->GetRect();
+        AdjustRect(rct);
+        pText->SetRect(rct);
 
-    GetDrawList(TRUE)->AddToFront(pText);
+        GetDrawList(TRUE)->AddToFront(std::move(pText));
+    }
     GetDocument()->SetModifiedFlag();
     if (bInvalidate)
     {
-        CRect rct = pText->GetEnclosingRect();
+        CRect rct = GetDrawList(TRUE)->Front().GetEnclosingRect();
         InvalidateWorkspaceRect(&rct);
     }
 }

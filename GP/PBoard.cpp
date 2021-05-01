@@ -77,8 +77,8 @@ CPlayBoard::CPlayBoard()
     m_bShowSelListAndTinyMap = TRUE;
     // m_wReserved4 = 0;                // Replaced by m_bOpenBoardOnLoad
     // ------- //
-    m_pPceList.reset(new CDrawList);
-    m_pIndList.reset(new CDrawList);
+    m_pPceList = MakeOwner<CDrawList>();
+    m_pIndList = MakeOwner<CDrawList>();
     // ------- //
     m_bPlotMode = FALSE;
     m_ptPrevPlot = CPoint(-1, -1);
@@ -125,8 +125,8 @@ CPlayBoard::CPlayBoard()
 
 void CPlayBoard::Clear()
 {
-    m_pPceList.reset();
-    m_pIndList.reset();
+    m_pPceList = nullptr;
+    m_pIndList = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ void CPlayBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale)
 //////////////////////////////////////////////////////////////////////
 // Piece is centered on point.
 
-CPieceObj* CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
+CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 {
     ASSERT(m_pDoc);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -186,24 +186,26 @@ CPieceObj* CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
     rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
     LimitRectToBoard(rct);
 
-    CPieceObj* pObj = new CPieceObj(m_pDoc);
-    pObj->SetPiece(rct, pid);
-    m_pPceList->AddToFront(pObj);
-    return pObj;
+    {
+        OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>(m_pDoc);
+        pObj->SetPiece(rct, pid);
+        m_pPceList->AddToFront(std::move(pObj));
+    }
+    return static_cast<CPieceObj&>(m_pPceList->Front());
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::AddIndicatorObject(CDrawObj* pObj)
+void CPlayBoard::AddIndicatorObject(CDrawObj::OwnerPtr pObj)
 {
     ASSERT(m_pIndList != NULL);
-    m_pIndList->AddToFront(pObj);
+    m_pIndList->AddToFront(std::move(pObj));
 }
 
 void CPlayBoard::FlushAllIndicators()
 {
     ASSERT(m_pIndList != NULL);
-    m_pIndList->Flush();
+    m_pIndList->clear();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -223,7 +225,7 @@ CDrawObj* CPlayBoard::FindObjectID(ObjectID oid)
 BOOL CPlayBoard::IsObjectOnBoard(CDrawObj *pObj)
 {
     ASSERT(m_pPceList != NULL);
-    return m_pPceList->Find(pObj) != NULL;
+    return m_pPceList->Find(*pObj) != m_pPceList->end();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -289,8 +291,8 @@ void CPlayBoard::SetBoard(CBoard& pBoard, BOOL bInheritSettings /* = FALSE */)
 CPlayBoard CPlayBoard::Clone(CGamDoc *pDoc)
 {
     CPlayBoard pBrd;
-    pBrd.m_pPceList.reset(m_pPceList->Clone(pDoc));
-    pBrd.m_pIndList.reset(m_pIndList->Clone(pDoc));
+    pBrd.m_pPceList = MakeOwner<CDrawList>(m_pPceList->Clone(pDoc));
+    pBrd.m_pIndList = MakeOwner<CDrawList>(m_pIndList->Clone(pDoc));
     pBrd.m_bPlotMode = m_bPlotMode;
     pBrd.m_ptPrevPlot = m_ptPrevPlot;
     pBrd.m_nSerialNum = m_nSerialNum;
@@ -494,11 +496,11 @@ void CPlayBoard::Serialize(CArchive& ar)
         }
 
         ASSERT(m_pPceList == NULL);
-        m_pPceList.reset(new CDrawList);
+        m_pPceList = MakeOwner<CDrawList>();
         m_pPceList->Serialize(ar);  // Board's piece and annotation list
 
         ASSERT(m_pIndList == NULL);
-        m_pIndList.reset(new CDrawList);
+        m_pIndList = MakeOwner<CDrawList>();
         m_pIndList->Serialize(ar);  // Board's indicator list
     }
 }

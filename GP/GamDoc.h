@@ -296,7 +296,7 @@ public:
     void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
     void PlaceObjectTableOnBoard(const std::vector<CDrawObj*>& pTbl, CPlayBoard *pPBrd);
-    void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj* pObj,
+    void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
     void InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard *pPBrd);
@@ -313,9 +313,9 @@ public:
     void SetPieceOwnership(PieceID pid, DWORD dwOwnerMask);
     void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask);
 
-    CDrawObj* CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
+    CDrawObj& CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         ObjectID dwObjID = ObjectID());
-    CDrawObj* CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
+    CDrawObj& CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
         CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID = ObjectID());
     void ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg, CPoint ptEnd,
         UINT nLineWd, COLORREF crLine, CLine* pObj);

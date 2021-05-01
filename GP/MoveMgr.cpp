@@ -623,7 +623,7 @@ void CBoardMarkerMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     else
     {
         // Need to create since doesn't currently exist
-        pObj = pDoc->CreateMarkerObject(pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
+        pObj = &pDoc->CreateMarkerObject(pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -985,15 +985,14 @@ void CGameStateRcd::DumpToTextFile(CFile& file)
 void CMovePlotList::SavePlotList(CDrawList* pDwg)
 {
     m_tblPlot.RemoveAll();
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg->begin(); pos != pDwg->end(); ++pos)
     {
-        CLine* pObj = (CLine*)pDwg->GetNext(pos);
-        ASSERT(pObj);
-        if (pObj->GetType() == CDrawObj::drawLine)
+        CDrawObj& pObj = **pos;
+        if (pObj.GetType() == CDrawObj::drawLine)
         {
-            m_tblPlot.Add((DWORD)MAKELONG(pObj->m_ptBeg.x, pObj->m_ptBeg.y));
-            m_tblPlot.Add((DWORD)MAKELONG(pObj->m_ptEnd.x, pObj->m_ptEnd.y));
+            CLine& pLObj = static_cast<CLine&>(pObj);
+            m_tblPlot.Add((DWORD)MAKELONG(pLObj.m_ptBeg.x, pLObj.m_ptBeg.y));
+            m_tblPlot.Add((DWORD)MAKELONG(pLObj.m_ptEnd.x, pLObj.m_ptEnd.y));
         }
     }
 }

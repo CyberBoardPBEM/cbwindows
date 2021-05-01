@@ -70,7 +70,7 @@ public:
     CSelList* GetSelectList() { return &m_selList; }
     CPoint GetWorkspaceDim();
 
-    void AddDrawObject(CDrawObj* pObj);
+    void AddDrawObject(CDrawObj::OwnerPtr pObj);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
 
     void PrepareScaledDC(CDC *pDC, CRect* pRct = NULL, BOOL bHonor180Flip = FALSE);

@@ -25,6 +25,8 @@
 #ifndef _DRAWOBJ_H
 #define _DRAWOBJ_H
 
+#include <list>
+
 #ifndef  _FONT_H
 #include "Font.h"
 #endif
@@ -72,8 +74,12 @@ inline DWORD ChangeBits(DWORD dwBase, DWORD dwValue, DWORD dwMask)
 class CDrawObj
 {
 public:
+    using OwnerPtr = OwnerPtr<CDrawObj>;
+
     CDrawObj();
-    virtual ~CDrawObj() {}
+    CDrawObj(const CDrawObj&) = delete;
+    CDrawObj& operator=(const CDrawObj&) = delete;
+    virtual ~CDrawObj() = default;
 // Attributes
 public:
     // IMPORTANT:
@@ -128,10 +134,10 @@ public:
 #ifndef GPLAY
     virtual void ForceIntoZone(CRect* pRctZone) = 0;
 #endif
-    virtual CDrawObj* Clone() { return NULL; }
+    virtual OwnerPtr Clone() { AfxThrowInvalidArgException(); }
 #ifdef GPLAY
-    virtual CDrawObj* Clone(CGamDoc* pDoc) { return NULL; }
-    virtual BOOL Compare(CDrawObj* pObj) { return FALSE; }
+    virtual OwnerPtr Clone(CGamDoc* pDoc) { AfxThrowInvalidArgException(); }
+    virtual BOOL Compare(CDrawObj* pObj) { AfxThrowInvalidArgException(); }
 #endif
     // ------- //
     virtual void Serialize(CArchive& ar);
@@ -257,7 +263,7 @@ public:
     virtual void ForceIntoZone(CRect* pRctZone);
 #endif
     // ------- //
-    virtual CDrawObj* Clone();                  //DFM19991210
+    virtual OwnerPtr Clone();                  //DFM19991210
 
     virtual void Serialize(CArchive& ar);
 // Implementation
@@ -285,7 +291,7 @@ public:
 #ifndef GPLAY
     virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
 #endif
-    virtual CDrawObj* Clone();  //DFM19991210
+    virtual OwnerPtr Clone();  //DFM19991210
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -335,9 +341,9 @@ public:
 #endif
     virtual void OffsetObject(CPoint offset);       //DFM19991221
     // ------- //
-    virtual CDrawObj* Clone(void);                  //DFM19991210
+    virtual OwnerPtr Clone(void);                  //DFM19991210
 #ifdef GPLAY
-    virtual CDrawObj* Clone(CGamDoc* pDoc);
+    virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
 #endif
     virtual void Serialize(CArchive& ar);
@@ -393,7 +399,7 @@ public:
 #endif
     virtual void OffsetObject(CPoint offset); //DFM19991221
     // ------- //
-    virtual CDrawObj* Clone();
+    virtual OwnerPtr Clone();
 
     virtual void Serialize(CArchive& ar);
 // Implementation
@@ -444,7 +450,7 @@ public:
 #endif
     virtual void OffsetObject(CPoint offset);
     // ------- //
-    virtual CDrawObj* Clone();
+    virtual OwnerPtr Clone();
 
     void CopyAttributes(CText *source);
 
@@ -481,7 +487,7 @@ public:
 #endif
     virtual void OffsetObject(CPoint offset);
     // ------- //
-    virtual CDrawObj* Clone();
+    virtual OwnerPtr Clone();
 
     void CopyAttributes(CBitmapImage *source);
 
@@ -520,7 +526,7 @@ public:
 #endif
     virtual void OffsetObject(CPoint offset);
     // ------- //
-    virtual CDrawObj* Clone();
+    virtual OwnerPtr Clone();
 
     void CopyAttributes(CTileImage *source);
 
@@ -567,7 +573,7 @@ public:
     virtual BOOL HitTest(CPoint pt);
     virtual CSelection* CreateSelectProxy(CPlayBoardView* pView);
     // ------- //
-    virtual CDrawObj* Clone(CGamDoc* pDoc);
+    virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
     virtual void Serialize(CArchive& ar);
 };
@@ -588,7 +594,7 @@ public:
     virtual ObjectID GetObjectID() { return m_dwObjectID; }
     void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
     // ------ //
-    virtual CDrawObj* Clone(CGamDoc* pDoc);
+    virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
     virtual void Serialize(CArchive& ar);
 };
@@ -632,7 +638,7 @@ public:
     virtual BOOL HitTest(CPoint pt);
     virtual CSelection* CreateSelectProxy(CPlayBoardView* pView);
     // ------- //
-    virtual CDrawObj* Clone(CGamDoc* pDoc);
+    virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
     virtual void Serialize(CArchive& ar);
 };
@@ -643,19 +649,37 @@ public:
 ///////////////////////////////////////////////////////////////////////
 // The DrawList manager class
 
-class CDrawList : public CPtrList
+class CDrawList : private std::list<CDrawObj::OwnerPtr>
 {
+    using BASE = std::list<CDrawObj::OwnerPtr>;
     friend class CGamDoc;
 public:
-    ~CDrawList() { Flush(); }
+    /* N.B.:  as in CB 3.1, begin/end are in terms of underlying
+                list, but Front/Back are in terms of display,
+                which is in opposite order of
+                begin/end/front/back */
+    using BASE::iterator;
+    using BASE::begin;
+    using BASE::clear;
+    using BASE::end;
+
+    CDrawList() = default;
+    CDrawList(const CDrawList&) = delete;
+    CDrawList& operator=(const CDrawList&) = delete;
+    CDrawList(CDrawList&&) = default;
+    CDrawList& operator=(CDrawList&&) = default;
+    ~CDrawList() = default;
 public:
+    const_iterator Find(const CDrawObj& drawObj) const;
+    iterator Find(const CDrawObj& drawObj);
     void AddObject(CDrawObj* pDrawObj) { AddToFront(pDrawObj); }
     void RemoveObject(CDrawObj* pDrawObj);
     void RemoveObjectsInList(CPtrList* pLst);
-    void AddToEnd(CDrawObj* pDrawObj) { AddHead(pDrawObj); }
-    void AddToBack(CDrawObj* pDrawObj) { AddHead(pDrawObj); }
-    void AddToFront(CDrawObj* pDrawObj) { AddTail(pDrawObj); }
-    void Flush();
+    void AddToEnd(CDrawObj* pDrawObj) { AddToBack(CDrawObj::OwnerPtr(pDrawObj)); }
+    void AddToBack(CDrawObj::OwnerPtr pDrawObj) { push_front(std::move(pDrawObj)); }
+    void AddToFront(CDrawObj::OwnerPtr pDrawObj) { push_back(std::move(pDrawObj)); }
+    CDrawObj& Front() { return *back(); }
+    CDrawObj& Back() { return *front(); }
     void Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
@@ -664,19 +688,19 @@ public:
     void DrillDownHitTest(CPoint point, CPtrList* selLst,
         TileScale eScale = (TileScale)AllTileScales, BOOL bApplyVisibility = TRUE);
 #ifdef GPLAY
-    void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl);
-    void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl);
+    void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const;
+    void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const;
 #endif
     void ArrangeObjectListInDrawOrder(CPtrList* pLst);
     void ArrangeObjectListInVisualOrder(CPtrList* pLst);
-    void ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl);
-    void ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl);
+    void ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl) const;
+    void ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl) const;
 #ifdef GPLAY
     void SetOwnerMasks(DWORD dwOwnerMask);
 
     CPieceObj* FindPieceID(PieceID pid);
     CDrawObj* FindObjectID(ObjectID oid);
-    BOOL HasObject(CDrawObj* pObj) { return Find(pObj) != NULL; }
+    BOOL HasObject(CDrawObj* pObj) { return Find(*pObj) != end(); }
     BOOL HasMarker();
     void GetPieceObjectPtrList(CPtrList* pLst);
     void GetPieceIDTable(std::vector<PieceID>& pTbl);
@@ -684,7 +708,7 @@ public:
     static void GetPieceIDTableFromObjList(CPtrList* pLst, std::vector<PieceID>& pTbl,
         BOOL bDeleteObjs = FALSE);
     // ------- //
-    CDrawList* Clone(CGamDoc* pDoc);
+    CDrawList Clone(CGamDoc* pDoc);
     void Restore(CGamDoc* pDoc, CDrawList* pLst);
     BOOL Compare(CDrawList* pLst);
     void AppendWithOffset(CDrawList* pSourceLst, CPoint pntOffet);

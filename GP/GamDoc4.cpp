@@ -673,10 +673,9 @@ void CGamDoc::FlushAllIndicators()
 
         UpdateAllBoardIndicators(pPBrd);
 
-        CDrawList* pDwg = pPBrd.GetIndicatorList();
-        ASSERT(pDwg != NULL);
+        CDrawList& pDwg = CheckedDeref(pPBrd.GetIndicatorList());
 
-        pDwg->Flush();
+        pDwg.clear();
 
         pPBrd.SetPlotMoveMode(FALSE);
     }
@@ -692,17 +691,14 @@ void CGamDoc::FlushAllIndicators()
 void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
 {
     if (IsQuietPlayback()) return;
-    CDrawList* pDwg = pPBrd.GetIndicatorList();
-    ASSERT(pDwg != NULL);
+    CDrawList& pDwg = CheckedDeref(pPBrd.GetIndicatorList());
 
-    POSITION pos;
-    for (pos = pDwg->GetHeadPosition(); pos != NULL; )
+    for (CDrawList::iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pDwg->GetNext(pos);
-        ASSERT(pObj);
+        CDrawObj& pObj = **pos;
         CGamDocHint hint;
         hint.m_pPBoard = &pPBrd;
-        hint.m_pDrawObj = pObj;
+        hint.m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
 }

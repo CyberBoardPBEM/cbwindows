@@ -97,7 +97,7 @@ public:
     void AdjustRect(CRect& rct);
 
     CDrawObj* ObjectHitTest(CPoint point);
-    void AddDrawObject(CDrawObj* pObj);         // Add to active layer
+    void AddDrawObject(CDrawObj::OwnerPtr pObj);         // Add to active layer
     void DeleteDrawObject(CDrawObj* pObj);      // Delete from active layer
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(CPoint point);
