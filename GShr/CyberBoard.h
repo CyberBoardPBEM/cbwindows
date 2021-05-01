@@ -211,6 +211,151 @@ namespace CB
 
 /////////////////////////////////////////////////////////////////////////////
 
+/* NOTE:  this is significantly different from gsl::not_null
+    (see https://github.com/microsoft/GSL/blob/main/include/gsl/pointers)
+    because gsl::not_null and std::experimental::propagate_const
+    don't nest well, and gsl::not_null provides no non-const ref
+    to wrapped pointer */
+namespace CB
+{
+    template<typename PT>
+    class not_null
+    {
+    public:
+        typedef std::remove_reference_t<decltype(*std::declval<PT>())> deref_ptr_type;
+        typedef std::remove_reference_t<decltype(*std::declval<const PT>())> deref_ptr_const_type;
+
+        not_null(PT&& pt) :
+            p(std::forward<PT>(pt))
+        {
+            CheckValid();
+        }
+
+        template<typename PU>
+        not_null(PU* pu) :
+            p(pu)
+        {
+            CheckValid();
+        }
+
+#if 1   // TODO:  remove
+        template<typename PU, typename std::enable_if_t<!std::is_convertible_v<PU, not_null>, bool> = true>
+        not_null(PU&& pu) :
+            p(std::forward<PU>(pu))
+        {
+            CheckValid();
+        }
+#endif
+
+        /* N.B.:  causes u to violate not_null, but moved-from
+                objects are in an undefined state, so let's
+                allow this */
+        template<typename PU>
+        not_null(not_null<PU>&& pu) :
+            p(std::forward<PU>(get_underlying(std::move(pu))))
+        {
+            // see get()
+            //CheckValid();
+        }
+
+        /* ctor check means we can probably skip CheckValid when
+            reading, but dirty cast or move tricks could still
+            clear p.  Opinions? */
+        deref_ptr_const_type* get() const
+        {
+            //CheckValid();
+            return &*p;
+        }
+        deref_ptr_type* get()
+        {
+            //CheckValid();
+            return &*p;
+        }
+
+        deref_ptr_const_type& operator*() const
+        {
+            return *get();
+        }
+        deref_ptr_type& operator*()
+        {
+            return *get();
+        }
+
+        deref_ptr_const_type* operator->() const
+        {
+            return get();
+        }
+        deref_ptr_type* operator->()
+        {
+            return get();
+        }
+
+        // never makes sense to check for nullptr
+        operator bool() const = delete;
+        bool operator==(nullptr_t) const = delete;
+        bool operator==(int) const = delete;
+        bool operator!=(nullptr_t) const = delete;
+        bool operator!=(int) const = delete;
+
+        template<typename U>
+        bool operator==(const U& u) const
+        {
+            if (!u) {
+                AfxThrowInvalidArgException();
+            }
+            return get() == u;
+        }
+
+        template<typename U>
+        bool operator==(const CB::not_null<U>& u) const
+        {
+            return get() == u.get();
+        }
+
+        template<typename U>
+        bool operator!=(const U& u) const
+        {
+            return !(*this == u);
+        }
+
+    private:
+        void CheckValid() const
+        {
+            ASSERT(p);
+            if (!p) {
+                AfxThrowInvalidArgException();
+            }
+        }
+
+        PT p;
+
+        template<typename PU>
+        friend const PU& get_underlying(const not_null<PU>& p);
+    };
+
+    template<typename PT>
+    const PT& get_underlying(const not_null<PT>& p)
+    {
+        return p.p;
+    }
+
+    /* NOTE:  This allows violating p.p != nullptr, so is
+                restricted to rvalue refs */
+    template<typename PT>
+    PT&& get_underlying(not_null<PT>&& p)
+    {
+        return std::move(const_cast<PT&>(get_underlying(std::as_const(p))));
+    }
+
+    template<typename T, typename U>
+    bool operator==(const U& u, const not_null<T>& t)
+    {
+        return t == u;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 /* Invalid_v<T> is used as the "no-value" value for type T.
     It will probably be set to std::numeric_limits<T>::max(). */
 
@@ -288,6 +433,12 @@ decltype(*std::declval<const T>()) CheckedDeref(const T& p)
     }
     return *p;
 }
+
+template<typename T>
+decltype(*std::declval<CB::not_null<T>>()) CheckedDeref(CB::not_null<T>& p) = delete;
+
+template<typename T>
+decltype(*std::declval<const CB::not_null<T>>()) CheckedDeref(const CB::not_null<T>& p) = delete;
 
 /////////////////////////////////////////////////////////////////////////////
 
