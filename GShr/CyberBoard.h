@@ -79,6 +79,136 @@ namespace CB
     }
 }
 
+/* simple(r) version of TS v2 experimental::propagate_const
+    (see http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4388.html
+    and https://gcc.gnu.org/onlinedocs/gcc-6.2.0/libstdc++/api/a01497_source.html) */
+namespace CB
+{
+    template<typename PT>
+    class propagate_const
+    {
+    public:
+        typedef std::remove_reference_t<decltype(*PT())> element_type;
+
+        propagate_const() = default;
+        propagate_const(nullptr_t) : p(nullptr) {}
+        propagate_const(int i) : p(nullptr)
+        {
+            if (i) {
+                AfxThrowInvalidArgException();
+            }
+        }
+
+        template<typename PU>
+        propagate_const(PU* pu) : p(pu) {}
+
+#if 1   // TODO:  remove
+        template<typename PU>
+        propagate_const(PU&& pu) :
+            p(std::forward<PU>(pu))
+        {
+        }
+#endif
+
+        template<typename PU>
+        propagate_const(propagate_const<PU>&& pu) : p(std::move(get_underlying(pu))) {}
+
+        propagate_const(const propagate_const&) = delete;
+        propagate_const& operator=(propagate_const&) = delete;
+        propagate_const(propagate_const&&) = default;
+        propagate_const& operator=(propagate_const&&) = default;
+        ~propagate_const() = default;
+
+        propagate_const& operator=(nullptr_t)
+        {
+            return *this = propagate_const(nullptr);
+        }
+        propagate_const& operator=(int i)
+        {
+            return *this = propagate_const(i);
+        }
+
+        template<typename PU>
+        propagate_const& operator=(PU* pu)
+        {
+            return *this = propagate_const(pu);
+        }
+
+        template<typename PU>
+        propagate_const& operator=(propagate_const<PU>&& pu)
+        {
+            p = std::move(get_underlying(pu));
+            return *this;
+        }
+
+        explicit operator bool() const { return bool(p); }
+
+        element_type* get() { return raw(p); }
+        const element_type* get() const { return raw(p); }
+
+        element_type* operator->() { return get(); }
+        const element_type* operator->() const { return get(); }
+
+        element_type& operator*() { return *get(); }
+        const element_type& operator*() const { return *get(); }
+
+    private:
+        template<typename U>
+        static U* raw(U* p) { return p; }
+
+        template<typename U>
+        static U* raw(const std::unique_ptr<U>& p) { return p.get(); }
+
+        PT p = nullptr;
+
+        template<typename PU>
+        friend const PU& get_underlying(const propagate_const<PU>& p);
+
+        template<typename PU>
+        friend PU& get_underlying(propagate_const<PU>& p);
+    };
+
+    template<typename PT>
+    const PT& get_underlying(const propagate_const<PT>& p)
+    {
+        return p.p;
+    }
+
+    template<typename PT>
+    PT& get_underlying(propagate_const<PT>& p)
+    {
+        return const_cast<PT&>(get_underlying(std::as_const(p)));
+    }
+
+    template<typename T>
+    bool operator==(const CB::propagate_const<T>& left, int i)
+    {
+        if (i) {
+            AfxThrowInvalidArgException();
+        }
+        return left.get() == nullptr;
+    }
+
+    template<typename T, typename U>
+    bool operator==(const CB::propagate_const<T>& left, const U& right)
+    {
+        return left.get() == right;
+    }
+
+    template<typename T, typename U>
+    bool operator!=(const CB::propagate_const<T>& left, const U& right)
+    {
+        return !(left == right);
+    }
+
+    // like c++14 std::make_unique<>
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args&&... args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 /* Invalid_v<T> is used as the "no-value" value for type T.
