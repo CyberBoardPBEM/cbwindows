@@ -49,14 +49,12 @@ CTileSheet::CTileSheet()
 {
     m_size = CSize(0, 0);
     m_sheetHt = 0;
-    m_pBMap = NULL;
 }
 
 CTileSheet::CTileSheet(CSize size)
 {
     m_size = size;
     m_sheetHt = 0;
-    m_pBMap = NULL;
     m_pMem = NULL;
 }
 
@@ -177,13 +175,13 @@ void CTileSheet::CreateTile()
 
         m_sheetHt = bmInfo.bmHeight;
 
-        m_pBMap.reset(pBMap);
+        m_pBMap = std::unique_ptr<CBitmap>(pBMap);
     }
     else
     {
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        m_pBMap.reset(new CBitmap);
+        m_pBMap = CB::make_unique<CBitmap>();
         SetupPalette(&g_gt.mDC1);
         m_pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             m_size.cx, m_size.cy));
@@ -204,7 +202,7 @@ void CTileSheet::DeleteTile(int yLoc)
         TRACE("CTileSheet::DeleteTile - Deleting TileSheet bitmap\n");
         // Single tile is all that's left...
         ASSERT(yLoc == 0);
-        m_pBMap.reset();
+        m_pBMap = nullptr;
         m_sheetHt = 0;
     }
     else
@@ -240,7 +238,7 @@ void CTileSheet::DeleteTile(int yLoc)
 
         m_sheetHt = bmInfo.bmHeight;
 
-        m_pBMap.reset(pBMap);
+        m_pBMap = std::unique_ptr<CBitmap>(pBMap);
     }
 }
 
@@ -431,7 +429,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int y
 void CTileSheet::ClearSheet()
 {
     m_size = CSize(0, 0);
-    m_pBMap.reset();
+    m_pBMap = nullptr;
     m_pMem = NULL;
 }
 

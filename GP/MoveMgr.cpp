@@ -944,12 +944,6 @@ void CObjectLockdown::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CGameStateRcd methods....
 
-CGameStateRcd::~CGameStateRcd()
-{
-    if (m_pState != NULL)
-        delete m_pState;
-}
-
 void CGameStateRcd::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     if (!m_pState->RestoreState())
@@ -963,8 +957,7 @@ void CGameStateRcd::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (!ar.IsStoring())
     {
-        if (m_pState != NULL) delete m_pState;
-        m_pState = new CGameState((CGamDoc*)ar.m_pDocument);
+        m_pState = MakeOwner<CGameState>((CGamDoc*)ar.m_pDocument);
     }
     ASSERT(m_pState != NULL);
     m_pState->Serialize(ar);
@@ -1204,7 +1197,7 @@ CMoveList::~CMoveList()
 // C#. The whole reason for doing this is to patch over side effects
 // of switching to in-memory histories.
 
-CMoveList* CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList)
+OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList)
 {
     CMemFile memFile;
     CArchive arStore(&memFile, CArchive::store);
@@ -1215,7 +1208,7 @@ CMoveList* CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList)
     memFile.SeekToBegin();
     CArchive arLoad(&memFile, CArchive::load);
     arLoad.m_pDocument = pDoc;
-    CMoveList* pNewMoveList = new CMoveList();
+    OwnerPtr<CMoveList> pNewMoveList = MakeOwner<CMoveList>();
     pNewMoveList->Serialize(arLoad, FALSE);
     return pNewMoveList;
 }
@@ -1281,7 +1274,7 @@ size_t CMoveList::SetStartingState()
         ASSERT(pRcd->GetType() == CMoveRecord::mrecState); // This *HAS* to be TRUE
         nStartIndex = size_t(1);
     }
-    pRcd->GetGameState()->RestoreState();
+    pRcd->GetGameState().RestoreState();
     return nStartIndex;
 }
 

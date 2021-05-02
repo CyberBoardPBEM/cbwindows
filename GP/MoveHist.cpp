@@ -59,9 +59,9 @@ void CHistoryTable::Serialize(CArchive& ar)
         ar >> wSize;
         for (WORD i = 0; i < wSize; i++)
         {
-            CHistRecord* pRcd = new CHistRecord;
+            OwnerPtr<CHistRecord> pRcd = new CHistRecord;
             pRcd->Serialize(ar);
-            AddNewHistRecord(pRcd);
+            AddNewHistRecord(std::move(pRcd));
         }
     }
 }
@@ -72,7 +72,7 @@ CHistRecord::CHistRecord()
 {
     m_nGamFileVersion = NumVersion(fileGamVerMajor, fileGamVerMinor);
     m_dwFilePos = 0;
-    m_pMList = NULL;
+    m_pMList = nullptr;
 }
 
 void CHistRecord::Serialize(CArchive& ar)

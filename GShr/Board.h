@@ -197,7 +197,7 @@ protected:
 /* N.B.:  this holds CBoard* instead of CBoard because CBoard
     derives from CBoardBase, which is designed as a polymorphic
     class */
-class CBoardManager : private std::vector<std::unique_ptr<CBoard>>
+class CBoardManager : private std::vector<OwnerPtr<CBoard>>
 {
     friend class CGamDoc;
 public:
@@ -230,13 +230,9 @@ public:
 
 // Operations
 public:
-    void Add(CBoard* pBoard)
+    void Add(OwnerPtr<CBoard> pBoard)
     {
-        if (!pBoard)
-        {
-            AfxThrowInvalidArgException();
-        }
-        push_back(std::unique_ptr<CBoard>(pBoard));
+        push_back(std::move(pBoard));
     }
     // -------- //
     void DeleteBoard(size_t nBoard) { DestroyElement(nBoard); }
@@ -253,7 +249,7 @@ public:
         { erase(begin() + value_preserving_cast<ptrdiff_t>(iElementIdx)); }
     const CBoard* operator[](size_t nIndex) const
         { return at(nIndex).get(); }
-    std::unique_ptr<CBoard>& operator[](size_t nIndex)
+    OwnerPtr<CBoard>& operator[](size_t nIndex)
         { return at(nIndex); }
     // ------- //
     void Serialize(CArchive& ar);

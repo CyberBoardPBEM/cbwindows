@@ -572,11 +572,11 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
         ar >> wTmp;
-        resize(value_preserving_cast<size_t>(wTmp));
-        for (size_t i = 0; i < size(); i++)
+        reserve(wTmp);
+        for (size_t i = 0; i < wTmp; i++)
         {
-            (*this)[i].reset(new CBoard);
-            (*this)[i]->Serialize(ar);
+            push_back(MakeOwner<CBoard>());
+            back()->Serialize(ar);
         }
     }
 }
