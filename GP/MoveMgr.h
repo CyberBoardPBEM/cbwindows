@@ -25,7 +25,8 @@
 #ifndef _MOVEMGR_H
 #define _MOVEMGR_H
 
-#include <list>
+//#include <list>
+#include "GamState.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -319,12 +320,14 @@ class CGameState;
 class CGameStateRcd : public CMoveRecord
 {
 public:
-    CGameStateRcd() { m_eType = mrecState; m_pState = NULL; }
-    CGameStateRcd(CGameState* pState)
-        { m_eType = mrecState; m_pState = pState; }
-    ~CGameStateRcd();
+    CGameStateRcd() { m_eType = mrecState; }
+    CGameStateRcd(CGameState* pState) :
+        m_pState(pState)
+    { m_eType = mrecState; }
+    ~CGameStateRcd() = default;
     // -------- //
-    CGameState* GetGameState() { return m_pState; }
+    // m_pState should only be null in CMoveList::Serialize
+    CGameState& GetGameState() { return *m_pState; }
 
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
 
@@ -334,7 +337,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    CGameState*     m_pState;
+    OwnerOrNullPtr<CGameState> m_pState;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -468,7 +471,7 @@ public:
 
 // Operations
 public:
-    static CMoveList* CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList);
+    static OwnerPtr<CMoveList> CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList);
 
     void AssignNewMoveGroup() { m_nSeqNum++; }
     iterator AppendMoveRecord(OwnerPtr<CMoveRecord> pRec);

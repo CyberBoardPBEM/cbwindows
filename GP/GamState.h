@@ -26,6 +26,7 @@
 #define _GAMSTATE_H
 
 #include "MapStrng.h"
+#include "Trays.h"
 
 class CTrayManager;
 class CPieceTable;

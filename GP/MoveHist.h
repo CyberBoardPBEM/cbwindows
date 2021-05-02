@@ -46,14 +46,14 @@ public:
 
 // The history table stores a record of playback in
 // chronological order.
-// ptr since objects xfer between gamdoc and here
-class CHistoryTable : private std::vector<std::unique_ptr<CHistRecord>>
+// ptr since objects xfer between gamdoc and here (TODO:  maybe switch ptr to obj?)
+class CHistoryTable : private std::vector<OwnerPtr<CHistRecord>>
 {
 public:
     ~CHistoryTable() { Clear(); }
     // ------- //
     size_t GetNumHistRecords() const { return size(); }
-    void AddNewHistRecord(CHistRecord* pHist) { ASSERT(pHist); push_back(std::unique_ptr<CHistRecord>(pHist)); }
+    void AddNewHistRecord(OwnerPtr<CHistRecord> pHist) { push_back(std::move(pHist)); }
     CHistRecord& GetHistRecord(size_t nIndex)
         { return *at(nIndex).get(); }
     // ------- //

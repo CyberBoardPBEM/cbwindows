@@ -256,7 +256,7 @@ public:
     void SaveRecordedMoves();
     void SaveHistoryMovesInFile(size_t nHistRec);
     void TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove = FALSE);
-    void AddMovesToGameHistoryTable(CHistRecord* pHist);
+    void AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist);
     BOOL DiscardCurrentRecording(BOOL bPrompt = TRUE);
     void AssignNewMoveGroup();
     void CreateRecordListIfRequired();

@@ -129,7 +129,7 @@ protected:
 
 // Implementation - vars...
 protected:
-    std::unique_ptr<CBitmap> m_pBMap;        // Pointer to DDB
+    CB::propagate_const<std::unique_ptr<CBitmap>> m_pBMap;        // Pointer to DDB
     LPBYTE      m_pMem;         // Ptr to DIB Memory (DIBSection)
 
     CSize       m_size;         // Tile sizes for this sheet

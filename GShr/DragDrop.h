@@ -125,7 +125,7 @@ struct DragInfo
     template<>
     struct SubInfo<DRAG_SELECTVIEW>
     {
-        std::vector<CDrawObj*>* m_ptrArray;
+        const std::vector<CB::propagate_const<CDrawObj*>>* m_ptrArray;
         CGamDoc* m_gamDoc;
     };
     // TODO:  when upgrade to c++ 17, use std::variant

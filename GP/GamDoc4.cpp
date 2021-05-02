@@ -122,8 +122,8 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
         {
             // See if the file's game state matches the current game
             // state. If not, give option to update game to file's state.
-            pRcd->GetGameState()->SetDocument(this);
-            if (!pRcd->GetGameState()->CompareState())
+            pRcd->GetGameState().SetDocument(this);
+            if (!pRcd->GetGameState().CompareState())
             {
                 // File's positions don't match current games' positions.
                 CSelectStateDialog dlg;
@@ -133,7 +133,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
                 if (dlg.m_nState == 0)
                 {
                     // Use the current game state
-                    pRcd->GetGameState()->RestoreState();
+                    pRcd->GetGameState().RestoreState();
                     // Make sure we account for possible deletions
                     // of pieces in move file (for crash resistance)
                     GetPieceTable()->PurgeUndefinedPieceIDs();
@@ -261,7 +261,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         ASSERT(pRcd->GetType() == CMoveRecord::mrecState);
 
         // Use the history game state
-        pRcd->GetGameState()->RestoreState();
+        pRcd->GetGameState().RestoreState();
 
         // Make sure we account for possible deletions
         // of pieces in move file (for crash resistance)
@@ -305,8 +305,6 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
 {
     ASSERT(file.m_hFile != NULL);
 
-    CMoveList* pMoves = NULL;
-
     TRY
     {
         ASSERT(pHist.m_dwFilePos > 0);
@@ -315,7 +313,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         ar.m_pDocument = this;
         ar.m_bForceFlat = FALSE;
 
-        pMoves = new CMoveList;
+        OwnerPtr<CMoveList> pMoves = MakeOwner<CMoveList>();
 
         // HACKO----RAMA!!!!!!! //
         SetLoadingVersion(pHist.m_nGamFileVersion);
@@ -361,11 +359,10 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         GetPieceTable()->PurgeUndefinedPieceIDs();
 
         pHist.m_dwFilePos = 0;             // Just to be clean. Never used again
-        pHist.m_pMList = pMoves;
+        pHist.m_pMList = std::move(pMoves);
     }
     CATCH_ALL(e)
     {
-        if (pMoves != NULL) delete pMoves;
         SetLoadingVersion(NumVersion(fileGamVerMajor, fileGamVerMinor));
         return FALSE;
     }
@@ -382,12 +379,17 @@ void CGamDoc::FinishHistoryPlayback()
 
     // Get the first record which contains the state of the board
     // prior to playback. Restore it
+    /* QUESTION:  Why does this code remove pMove from
+        m_pHistMoves, and then separately destroy pMove and
+        m_pHistMoves?  Why not leave pMove on m_pHistMoves,
+        not destroy pMove, and then let destroying m_pHistMoves
+        take care of destroying pMove? */
 
     CGameStateRcd* pMove = static_cast<CGameStateRcd*>(m_pHistMoves->front().get());
     ASSERT(pMove != NULL);
     ASSERT(pMove->GetType() == CMoveRecord::mrecState);
 
-    if (!pMove->GetGameState()->RestoreState())
+    if (!pMove->GetGameState().RestoreState())
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
     }

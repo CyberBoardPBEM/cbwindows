@@ -138,7 +138,7 @@ CDrawObj* CGrafixListBox2::GetCurMapItem()
     return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
 }
 
-void CGrafixListBox2::GetCurMappedItemList(std::vector<CDrawObj*>& pLst)
+void CGrafixListBox2::GetCurMappedItemList(std::vector<CB::propagate_const<CDrawObj*>>& pLst)
 {
     pLst.clear();
     ASSERT(IsMultiSelect());

@@ -199,7 +199,7 @@ void CGamDoc::SaveRecordedMoves()
     m_nSeedCarryOver = (UINT)GetTickCount();
 }
 
-void CGamDoc::AddMovesToGameHistoryTable(CHistRecord* pHist)
+void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
 {
     // If there are two game state records in the front of
     // the move list, remove the first since the second
@@ -219,7 +219,7 @@ void CGamDoc::AddMovesToGameHistoryTable(CHistRecord* pHist)
 
     if (m_pHistTbl == NULL)
         m_pHistTbl = new CHistoryTable;
-    m_pHistTbl->AddNewHistRecord(pHist);
+    m_pHistTbl->AddNewHistRecord(std::move(pHist));
 
     m_eState = stateRecording;
     m_pMoves = NULL;            // Clear shadow pointer
@@ -258,7 +258,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     ASSERT(pMove != NULL);
     ASSERT(pMove->GetType() == CMoveRecord::mrecState);
 
-    if (!pMove->GetGameState()->RestoreState())
+    if (!pMove->GetGameState().RestoreState())
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;

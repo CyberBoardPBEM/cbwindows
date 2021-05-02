@@ -60,7 +60,7 @@ public:
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
     const std::vector<CDrawObj*>* GetItemMap() { return m_pItemMap; }
     CDrawObj* GetCurMapItem();
-    void GetCurMappedItemList(std::vector<CDrawObj*>& pLst);
+    void GetCurMappedItemList(std::vector<CB::propagate_const<CDrawObj*>>& pLst);
     BOOL IsMultiSelect()
         { return (GetStyle() & (LBS_EXTENDEDSEL | LBS_MULTIPLESEL)) != 0; }
     // Note: the following pointer is only good during drag and drop.
@@ -70,7 +70,7 @@ public:
     // data in the case of a shift click isn't valid until the button
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
-    std::vector<CDrawObj*>& GetMappedMultiSelectList() { return m_multiSelList; }
+    std::vector<CB::propagate_const<CDrawObj*>>& GetMappedMultiSelectList() { return m_multiSelList; }
 
 // Operations
 public:
@@ -106,7 +106,7 @@ protected:
     /* N.B.:  this class could be templatized to hold any pointer,
                 but that generality isn't actually needed yet */
     const std::vector<CDrawObj*>* m_pItemMap;          // Maps index to item
-    std::vector<CDrawObj*> m_multiSelList;      // Holds mapped multi select items on drop
+    std::vector<CB::propagate_const<CDrawObj*>> m_multiSelList;      // Holds mapped multi select items on drop
 
     // Tool tip support
     CToolTipCtrl m_toolTip;
