@@ -806,9 +806,6 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         CFrameWnd* pFrame = GetParentFrame();
         pFrame->SetActiveView(this);
 
-        CGamDocHint hint;
-        hint.m_pPBoard = m_pPBoard;
-        hint.m_pSelList = &m_selList;
         pDoc->UpdateAllViews(this, HINT_UPDATESELECTLIST);
 
         NotifySelectListChange();
