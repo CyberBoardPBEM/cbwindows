@@ -50,7 +50,6 @@ CTileSheet::CTileSheet()
     m_size = CSize(0, 0);
     m_sheetHt = 0;
     m_pBMap = NULL;
-    m_pDC = NULL;
 }
 
 CTileSheet::CTileSheet(CSize size)
@@ -58,7 +57,6 @@ CTileSheet::CTileSheet(CSize size)
     m_size = size;
     m_sheetHt = 0;
     m_pBMap = NULL;
-    m_pDC = NULL;
     m_pMem = NULL;
 }
 
@@ -297,18 +295,16 @@ void CTileSheet::CreateBitmapOfTile(CBitmap *pBMap, int yLoc)
 
 void CTileSheet::TileBlt(CDC *pDC, int xDst, int yDst, int ySrc, DWORD dwRop)
 {
-    CreateSheetDC();
-    pDC->BitBlt(xDst, yDst, m_size.cx, m_size.cy, m_pDC, 0, ySrc, dwRop);
-    DeleteSheetDC();
+    SheetDC sheetDC(*this);
+    pDC->BitBlt(xDst, yDst, m_size.cx, m_size.cy, sheetDC, 0, ySrc, dwRop);
 }
 
 void CTileSheet::StretchBlt(CDC *pDC, int xDst, int yDst,
     int xWid, int yWid, int ySrc, DWORD dwRop)
 {
-    CreateSheetDC();
-    pDC->StretchBlt(xDst, yDst, xWid, yWid, m_pDC, 0, ySrc,
+    SheetDC sheetDC(*this);
+    pDC->StretchBlt(xDst, yDst, xWid, yWid, sheetDC, 0, ySrc,
         m_size.cx, m_size.cy, dwRop);
-    DeleteSheetDC();
 }
 
 void CTileSheet::TransBlt(CDC *pDC, int xDst, int yDst, int ySrc,
@@ -436,28 +432,22 @@ void CTileSheet::ClearSheet()
 {
     m_size = CSize(0, 0);
     m_pBMap.reset();
-    if (m_pDC) delete m_pDC;
-    m_pDC = NULL;
     m_pMem = NULL;
 }
 
-void CTileSheet::CreateSheetDC()
+CTileSheet::SheetDC::SheetDC(CTileSheet& sheet)
 {
-    ASSERT(m_pBMap);
-    if (m_pDC == NULL)
-    {
-        m_pDC = &g_gt.mTileDC;
-        m_pDC->SelectObject(m_pBMap.get());
-        m_pDC->SelectPalette(GetAppPalette(), TRUE);
-    }
+    ASSERT(sheet.m_pBMap);
+    g_gt.mTileDC.SelectObject(sheet.m_pBMap.get());
+    g_gt.mTileDC.SelectPalette(GetAppPalette(), TRUE);
 }
 
-void CTileSheet::DeleteSheetDC(void)
+CTileSheet::SheetDC::~SheetDC()
 {
-    if (m_pDC != NULL)
-    {
-        g_gt.SelectSafeObjectsForTileDC();
-        m_pDC = NULL;
-    }
+    g_gt.SelectSafeObjectsForTileDC();
 }
 
+CTileSheet::SheetDC::operator CDC*() const
+{
+    return &g_gt.mTileDC;
+}

@@ -135,12 +135,17 @@ protected:
     CSize       m_size;         // Tile sizes for this sheet
     int         m_sheetHt;      // Total height of sheet
 
-    CDC*        m_pDC;
-
 // Implementation - methods...
 protected:
-    void CreateSheetDC();
-    void DeleteSheetDC();
+    class SheetDC
+    {
+    public:
+        SheetDC(CTileSheet& sheet);
+        ~SheetDC();
+
+        operator CDC*() const;
+    };
+
     void ClearSheet();
 };
 
