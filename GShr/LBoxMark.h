@@ -73,7 +73,6 @@ protected:
     CGamDoc*        m_pDoc;
     MarkerTrayViz   m_eTrayViz;
     CString         m_strHiddenString;
-    int             m_bDisplayIDs;      // Set to prop [Settings]:DisplayIDs
 
     // Overrides
     virtual unsigned OnItemHeight(size_t nIndex) override;
