@@ -758,8 +758,7 @@ void CTrayPalette::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
 
 void CTrayPalette::OnTrayNameCbnSelchange()
 {
-    if (!m_comboYGrp.GetDroppedState())
-        UpdateTrayList();
+    UpdateTrayList();
 }
 
 void CTrayPalette::OnTrayListDoubleClick()
