@@ -354,6 +354,38 @@ namespace CB
     }
 }
 
+template<typename T>
+using OwnerPtr = CB::not_null<CB::propagate_const<std::unique_ptr<T>>>;
+
+// like c++14 std::make_unique<>
+template<typename T, typename... Args>
+OwnerPtr<T> MakeOwner(Args&&... args)
+{
+    return OwnerPtr<T>(new T(std::forward<Args>(args)...));
+}
+
+template<typename T>
+class OwnerOrNullPtr : public CB::propagate_const<std::unique_ptr<T>>
+{
+    using BASE = CB::propagate_const<std::unique_ptr<T>>;
+
+public:
+    using BASE::BASE;
+    using BASE::operator=;
+
+    OwnerOrNullPtr() = default;
+
+    template<typename U>
+    OwnerOrNullPtr(OwnerPtr<U>&& pu) : BASE(CB::get_underlying(std::move(pu))) {}
+
+    template<typename U>
+    OwnerOrNullPtr& operator=(OwnerPtr<U>&& pu)
+    {
+        *this = CB::get_underlying(std::move(pu));
+        return *this;
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////
 
 /* Invalid_v<T> is used as the "no-value" value for type T.
