@@ -380,8 +380,6 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
     }
     for (DWORD i = 0; i < nTileCount; i++)
     {
-        std::unique_ptr<CBitmap> pBMapFull;
-        std::unique_ptr<CBitmap> pBMapHalf;
         COLORREF    crSmall;
         BITMAP      bmInfoFull;
         BITMAP      bmInfoHalf;
@@ -391,12 +389,10 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
         ar >> dwTmp; crSmall = (COLORREF)dwTmp;
 
         ar >> dib;
-        pBMapFull = dib.DIBToBitmap(GetAppPalette());
-        ASSERT(pBMapFull != NULL);
+        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap(GetAppPalette()));
 
         ar >> dib;
-        pBMapHalf = dib.DIBToBitmap(GetAppPalette());
-        ASSERT(pBMapHalf != NULL);
+        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap(GetAppPalette()));
 
         VERIFY(pBMapFull->GetObject(sizeof(BITMAP), &bmInfoFull) > 0);
         VERIFY(pBMapHalf->GetObject(sizeof(BITMAP), &bmInfoHalf) > 0);

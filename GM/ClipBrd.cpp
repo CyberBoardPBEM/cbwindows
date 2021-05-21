@@ -55,7 +55,7 @@ void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, CPalette *pPal /* = NU
     }
 }
 
-CBitmap* GetClipboardBitmap(CWnd* pWnd, CPalette *pPal /* = NULL */)
+OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, CPalette *pPal /* = NULL */)
 {
     if (!pWnd->OpenClipboard())
         return NULL;
@@ -70,7 +70,7 @@ CBitmap* GetClipboardBitmap(CWnd* pWnd, CPalette *pPal /* = NULL */)
         pWnd->EndWaitCursor();
         return NULL;
     }
-    CBitmap* pBMap = dib.DIBToBitmap(pPal).release();
+    OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(pPal);
     pWnd->EndWaitCursor();
     return pBMap;
 }

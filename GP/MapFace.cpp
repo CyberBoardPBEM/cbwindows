@@ -63,16 +63,11 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     tile.CreateBitmapOfTile(&bmap);
     dibSrc.BitmapToDIB(&bmap, GetAppPalette());
 
-    CDib* pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
-    if (pRDib == NULL)
-        AfxThrowMemoryException();
-    std::unique_ptr<CBitmap> pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
-    ASSERT(pBMapFull != NULL);
+    OwnerPtr<CDib> pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
+    OwnerPtr<CBitmap> pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
     BITMAP bmapInfo;
     pBMapFull->GetObject(sizeof(BITMAP), &bmapInfo);
     CSize sizeFull(bmapInfo.bmWidth, bmapInfo.bmHeight);
-
-    delete pRDib;
 
     // Generate rotated halfScale scale bitmap of tile...
 
@@ -81,15 +76,10 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     dibSrc.BitmapToDIB(&bmap, GetAppPalette());
 
     pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
-    if (pRDib == NULL)
-        AfxThrowMemoryException();
-    std::unique_ptr<CBitmap> pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
+    OwnerPtr<CBitmap> pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
 
-    ASSERT(pBMapHalf != NULL);
     pBMapHalf->GetObject(sizeof(BITMAP), &bmapInfo);
     CSize sizeHalf(bmapInfo.bmWidth, bmapInfo.bmHeight);
-
-    delete pRDib;
 
     // Fetch color of small scale tile
     m_pTMgr->GetTile(baseTileID, &tile, smallScale);

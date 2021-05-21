@@ -1606,7 +1606,7 @@ void CBrdEditView::OnUpdateToolSuspendScaleVsibility(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnEditPaste()
 {
-    CBitmap* pBMap = GetClipboardBitmap(this, GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this, GetAppPalette());
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
@@ -1664,13 +1664,16 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
         return;
     }
     CDib dib;
-    if (!dib.ReadDIBFile(file))
+    try
+    {
+        dib.ReadDIBFile(file);
+    }
+    catch (...)
     {
         AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
         return;
     }
-    std::unique_ptr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
-    ASSERT(pBMap != NULL);
+    OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();

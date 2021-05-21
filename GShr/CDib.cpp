@@ -87,23 +87,38 @@ void CDib::ClearDib()
     }
 }
 
-BOOL CDib::CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
+void CDib::CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
 {
     ClearDib();
     m_hDib = ::CreateDIB(dwWidth, dwHeight, wBPP);
-    ASSERT(m_hDib != NULL);
-    if (m_hDib != NULL)
-        m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
-    return m_hDib != NULL;
+    if (!m_hDib)
+    {
+        AfxThrowMemoryException();
+    }
+    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    if (!m_lpDib)
+    {
+        GlobalFree((HGLOBAL)m_hDib);
+        m_hDib = NULL;
+        AfxThrowMemoryException();
+    }
 }
 
-BOOL CDib::ReadDIBFile(CFile& file)
+void CDib::ReadDIBFile(CFile& file)
 {
     ClearDib();
     m_hDib = ::ReadDIBFile(file);
-    if (m_hDib != NULL)
-        m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
-    return m_hDib != NULL;
+    if (!m_hDib)
+    {
+        AfxThrowMemoryException();
+    }
+    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    if (!m_lpDib)
+    {
+        GlobalFree((HGLOBAL)m_hDib);
+        m_hDib = NULL;
+        AfxThrowMemoryException();
+    }
 }
 
 BOOL CDib::WriteDIBFile(CFile& file)
@@ -114,22 +129,21 @@ BOOL CDib::WriteDIBFile(CFile& file)
         return FALSE;
 }
 
-BOOL CDib::WriteDIBtoPNGFile(LPCSTR pszName)
-{
-    //TODO: WIPE THIS OUT? 20200618
-    //TBD??? Formally used as part of experimental XML exporter.
-    return FALSE;
-}
-
-BOOL CDib::CloneDIB(CDib *pDib)
+void CDib::CloneDIB(CDib *pDib)
 {
     ClearDib();
     m_hDib = (HDIB)CopyHandle(pDib->m_hDib);
-    ASSERT(m_hDib != NULL);
-    if (m_hDib == NULL)
-        return FALSE;
-    m_lpDib = (LPSTR)GlobalLock((HGLOBAL)m_hDib);
-    return TRUE;
+    if (!m_hDib)
+    {
+        AfxThrowMemoryException();
+    }
+    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    if (!m_lpDib)
+    {
+        GlobalFree((HGLOBAL)m_hDib);
+        m_hDib = NULL;
+        AfxThrowMemoryException();
+    }
 }
 
 void CDib::SetDibHandle(HANDLE hDib)
@@ -138,7 +152,13 @@ void CDib::SetDibHandle(HANDLE hDib)
     m_hDib = (HDIB)hDib;
     if (m_hDib == NULL)
         return;
-    m_lpDib = (LPSTR)GlobalLock((HGLOBAL)m_hDib);
+    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    if (!m_lpDib)
+    {
+        GlobalFree((HGLOBAL)m_hDib);
+        m_hDib = NULL;
+        AfxThrowMemoryException();
+    }
 }
 
 BOOL CDib::BitmapToDIB(const CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
@@ -148,14 +168,22 @@ BOOL CDib::BitmapToDIB(const CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
     {
         m_hDib = (HDIB)::BitmapToDIB((HBITMAP)(pBM->m_hObject),
             (HPALETTE)(pPal ? pPal->m_hObject : NULL), nBPP);
-        ASSERT(m_hDib != NULL);
-        if (m_hDib != NULL)
-            m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+        if (!m_hDib)
+        {
+            AfxThrowMemoryException();
+        }
+        m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+        if (!m_lpDib)
+        {
+            GlobalFree((HGLOBAL)m_hDib);
+            m_hDib = NULL;
+            AfxThrowMemoryException();
+        }
     }
     return m_hDib != NULL;
 }
 
-std::unique_ptr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
+OwnerPtr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
 {
     if (bDibSect)
     {
@@ -178,7 +206,7 @@ std::unique_ptr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TR
 
         memDC.SelectPalette(prvPal, FALSE);
 
-        std::unique_ptr<CBitmap> pBMap(new CBitmap);
+        OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
         pBMap->Attach((HGDIOBJ)hDibSect);
         return pBMap;
 
@@ -190,12 +218,12 @@ std::unique_ptr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TR
         ASSERT(hBMap != NULL);
         if (hBMap != NULL)
         {
-            std::unique_ptr<CBitmap> pBMap(new CBitmap);
+            OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
             pBMap->Attach((HGDIOBJ)hBMap);
             return pBMap;
         }
         else
-            return NULL;
+            AfxThrowInvalidArgException();
     }
 }
 

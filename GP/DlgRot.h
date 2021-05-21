@@ -48,7 +48,7 @@ public:
     CDib*       m_pDib;         //??
     CBitmap*    m_pRotBMap;     //??
 
-    CBitmap*    m_bmapTbl[12];  //!!testing
+    OwnerOrNullPtr<CBitmap> m_bmapTbl[12];  //!!testing
 
     void DeleteBMaps();
 
