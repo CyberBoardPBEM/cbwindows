@@ -112,7 +112,7 @@ struct ImgEdge
 
 static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts);
 static void RotatePoint(POINT& pt, int nSin, int nCos);
-static CDib* CreateTransparentColorDIB(CSize size, COLORREF crTrans);
+static OwnerPtr<CDib> CreateTransparentColorDIB(CSize size, COLORREF crTrans);
 static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSDib,
     CDib* pDDib);
 
@@ -126,7 +126,7 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSD
 
 /////////////////////////////////////////////////////////////////////
 
-CDib* Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
+OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
 {
     POINT   pntSrc[numPnts];
     POINT   pntDst[numPnts];
@@ -139,9 +139,7 @@ CDib* Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
 
     CSize sizeSrc(pSDib->Width(), pSDib->Height());
     CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
-    CDib* pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
-    if (pDDib == NULL)
-        return NULL;
+    OwnerPtr<CDib> pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
     // Find top and bottom point indexes
     int nTopPnt;
@@ -163,7 +161,7 @@ CDib* Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
 
     while (1)
     {
-        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, pDDib);
+        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, pDDib.get());
         if (!lftEdge.NextScanLine())
             break;
         if (!rgtEdge.NextScanLine())
@@ -206,14 +204,10 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSD
 
 /////////////////////////////////////////////////////////////////////
 
-static CDib* CreateTransparentColorDIB(CSize size, COLORREF crTrans)
+static OwnerPtr<CDib> CreateTransparentColorDIB(CSize size, COLORREF crTrans)
 {
-    CDib* pDib = new CDib;
-    if (!pDib->CreateDIB(size.cx, size.cy, 16))
-    {
-        delete pDib;
-        return NULL;
-    }
+    OwnerPtr<CDib> pDib = MakeOwner<CDib>();
+    pDib->CreateDIB(size.cx, size.cy, 16);
     WORD cr16Trans = RGB565(crTrans);
     // Number of pixels (words) to fill
     long nBfrLen = (pDib->Height() * DIBWIDTHBYTES(*pDib->GetBmiHdr())) / 2;

@@ -363,35 +363,22 @@ void CTileSelView::DoTileRotation(int nAngle)
     if(!dibHalf.BitmapToDIB(&m_bmHalf, GetAppPalette()))
         return;             // MEMORY ERROR
 
-    CDib *pDib = Rotate16BitDib(&dibFull, nAngle, RGB(255, 255, 255));
-    ASSERT(pDib != NULL);
-    if (pDib == NULL)
-        return;             // MEMORY ERROR
-    std::unique_ptr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
-    delete pDib;
+    OwnerPtr<CDib> pDib = Rotate16BitDib(&dibFull, nAngle, RGB(255, 255, 255));
+    OwnerPtr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
 
     pDib = Rotate16BitDib(&dibHalf, nAngle, RGB(255, 255, 255));
-    ASSERT(pDib != NULL);
-    if (pDib == NULL)
-    {
-        return;             // MEMORY ERROR
-    }
-    std::unique_ptr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
-    delete pDib;
+    OwnerPtr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
 
-    if (pbmFull != NULL && pbmHalf != NULL)
-    {
-        m_bmFull.DeleteObject();
-        m_bmFull.Attach(pbmFull->Detach());
-        m_bmHalf.DeleteObject();
-        m_bmHalf.Attach(pbmHalf->Detach());
-        // Recompute selection window layout.
-        CalcViewLayout();
-        // Finally hand the full size tile to the bit editor.
-        SelectCurrentBitmap(fullScale);
-        m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
-        Invalidate();
-    }
+    m_bmFull.DeleteObject();
+    m_bmFull.Attach(pbmFull->Detach());
+    m_bmHalf.DeleteObject();
+    m_bmHalf.Attach(pbmHalf->Detach());
+    // Recompute selection window layout.
+    CalcViewLayout();
+    // Finally hand the full size tile to the bit editor.
+    SelectCurrentBitmap(fullScale);
+    m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+    Invalidate();
 }
 
 /////////////////////////////////////////////////////////////////////////////

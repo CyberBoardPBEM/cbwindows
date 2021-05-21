@@ -36,14 +36,13 @@ public:
     ~CDib() { ClearDib(); }
     void ClearDib();
     // ---------- /
-    BOOL CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
+    void CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
     // ---------- /
-    BOOL ReadDIBFile(CFile& file);
+    void ReadDIBFile(CFile& file);
     BOOL WriteDIBFile(CFile& file);
-    BOOL WriteDIBtoPNGFile(LPCSTR pszName);
-    BOOL CloneDIB(CDib *pDib);
+    void CloneDIB(CDib *pDib);
     BOOL BitmapToDIB(const CBitmap* pBM, CPalette* pPal = NULL, int nBPP = 16);
-    std::unique_ptr<CBitmap> DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
+    OwnerPtr<CBitmap> DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
     BOOL AppendDIB(CDib *pDib);
     BOOL RemoveDIBSlice(int y, int ht);
     void AddColorsToPaletteEntryTable(LPPALETTEENTRY pLP, int nSize,

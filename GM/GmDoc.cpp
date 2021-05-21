@@ -516,7 +516,7 @@ TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
     int yTile = pDib->Height();
     TileID tid = m_pTMgr->CreateTile(nTSet, CSize(xTile, yTile),
         CSize(xTile/2, yTile/2), RGB(255, 255, 255));
-    std::unique_ptr<CBitmap> pBMap = pDib->DIBToBitmap(GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = pDib->DIBToBitmap(GetAppPalette());
     CBitmap bmHalf;
     CloneScaledBitmap(&bmHalf, pBMap.get(), CSize(xTile/2, yTile/2),
         COLORONCOLOR);

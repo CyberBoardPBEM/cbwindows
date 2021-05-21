@@ -46,15 +46,12 @@ CRotateDialog::CRotateDialog(CWnd* pParent /*=NULL*/)
     m_pDib = NULL;
     m_pRotBMap = NULL;
     m_crTrans = RGB(0, 0, 0);
-    for (int i = 0; i < 12; i++)
-        m_bmapTbl[i] = NULL;
 }
 
 CRotateDialog::~CRotateDialog()
 {
     if (m_pRotBMap) delete m_pRotBMap;
     if (m_pDib) delete m_pDib;
-    DeleteBMaps();
 }
 
 void CRotateDialog::DoDataExchange(CDataExchange* pDX)
@@ -81,8 +78,6 @@ void CRotateDialog::DeleteBMaps()
 {
     for (int i = 0; i < 12; i++)
     {
-        if (m_bmapTbl[i] != NULL)
-            delete m_bmapTbl[i];
         m_bmapTbl[i] = NULL;
     }
 }
@@ -111,18 +106,11 @@ void CRotateDialog::OnRotApply()
     CDib dibSrc;
     dibSrc.BitmapToDIB(m_pBMap, GetAppPalette());
 
-    CDib* pRDib;
-
     static int angTbl[12] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 };
     for (int i = 0; i < 12; i++)
     {
-        pRDib = Rotate16BitDib(&dibSrc, angTbl[i], m_crTrans);
-
-        if (pRDib != NULL)
-        {
-            m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette()).release();
-            delete pRDib;
-        }
+        OwnerPtr<CDib> pRDib = Rotate16BitDib(&dibSrc, angTbl[i], m_crTrans);
+        m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette());
     }
 
     CRect rct;
@@ -147,7 +135,7 @@ void CRotateDialog::OnPaint()
         int x = (i % 4) * 45;
         int y = (i / 4) * 45;
         if (m_bmapTbl[i])
-            BitmapBlt(&dc, rct.TopLeft() + CSize(x, y), m_bmapTbl[i]);
+            BitmapBlt(&dc, rct.TopLeft() + CSize(x, y), m_bmapTbl[i].get());
     }
     ResetPalette(&dc);
 

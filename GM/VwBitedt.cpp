@@ -1284,8 +1284,7 @@ void CBitEditView::OnEditCopy()
 
 void CBitEditView::OnEditPaste()
 {
-    CBitmap* pBMap = GetClipboardBitmap(this, GetAppPalette());
-    ASSERT(pBMap);
+    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this, GetAppPalette());
 
     SetUndoFromView();
 
@@ -1303,7 +1302,6 @@ void CBitEditView::OnEditPaste()
         dlg.m_nPasteAction = nRescale;
         if (dlg.DoModal() != IDOK)
         {
-            delete pBMap;
             return;
         }
         nRescale = dlg.m_nPasteAction;
@@ -1316,16 +1314,14 @@ void CBitEditView::OnEditPaste()
 
     if (nRescale > 0)
     {
-        CloneScaledBitmap(&m_bmPaste, pBMap, m_size, STRETCH_DELETESCANS);
+        CloneScaledBitmap(&m_bmPaste, pBMap.get(), m_size, STRETCH_DELETESCANS);
         m_rctPaste.SetRect(0, 0, m_size.cx, m_size.cy);
     }
     else
     {
-        CloneBitmap(&m_bmPaste, pBMap);
+        CloneBitmap(&m_bmPaste, pBMap.get());
         m_rctPaste.SetRect(0, 0, bmInfo.bmWidth, bmInfo.bmHeight);
     }
-
-    delete pBMap;
 
 
     m_nLastToolID = m_nCurToolID;

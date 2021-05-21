@@ -27,7 +27,7 @@
 
 BOOL IsClipboardBitmap();
 void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, CPalette *pPal = NULL);
-CBitmap* GetClipboardBitmap(CWnd* pWnd, CPalette *pPal = NULL);
+OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, CPalette *pPal = NULL);
 
 #endif
 

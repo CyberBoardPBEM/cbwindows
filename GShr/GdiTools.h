@@ -125,7 +125,7 @@ typedef DELTAGEN *PDELTAGEN;
 ////////////////////////////////////////////////////////////////////
 // From ROTATE.CPP
 
-CDib* Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans);
+OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans);
 void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
 void  OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff);
 

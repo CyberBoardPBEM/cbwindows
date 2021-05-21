@@ -160,11 +160,11 @@ void CTileSheet::CreateTile()
         SetupPalette(&g_gt.mDC1);
         SetupPalette(&g_gt.mDC2);
 
-        CBitmap* pBMap = new CBitmap;
+        OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
         pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             bmInfo.bmWidth, bmInfo.bmHeight));
         ASSERT(pBMap->m_hObject != NULL);
-        g_gt.mDC1.SelectObject(pBMap);          // Dest bitmap
+        g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
 
         g_gt.mDC1.BitBlt(0, 0, m_size.cx, m_sheetHt, &g_gt.mDC2, 0, 0, SRCCOPY);
@@ -175,13 +175,13 @@ void CTileSheet::CreateTile()
 
         m_sheetHt = bmInfo.bmHeight;
 
-        m_pBMap = std::unique_ptr<CBitmap>(pBMap);
+        m_pBMap = std::move(pBMap);
     }
     else
     {
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        m_pBMap = CB::make_unique<CBitmap>();
+        m_pBMap = MakeOwner<CBitmap>();
         SetupPalette(&g_gt.mDC1);
         m_pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             m_size.cx, m_size.cy));
@@ -212,14 +212,14 @@ void CTileSheet::DeleteTile(int yLoc)
         bmInfo.bmBits = NULL;
         bmInfo.bmHeight -= m_size.cy;           // Decrease size.
 
-        CBitmap* pBMap = new CBitmap;
+        OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
         SetupPalette(&g_gt.mDC2);
 
         pBMap->Attach(Create16BitDIBSection(g_gt.mDC2.m_hDC,
             bmInfo.bmWidth, bmInfo.bmHeight));
 
-        g_gt.mDC1.SelectObject(pBMap);          // Dest bitmap
+        g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
         SetupPalette(&g_gt.mDC1);
 
         if (yLoc > 0)
@@ -238,7 +238,7 @@ void CTileSheet::DeleteTile(int yLoc)
 
         m_sheetHt = bmInfo.bmHeight;
 
-        m_pBMap = std::unique_ptr<CBitmap>(pBMap);
+        m_pBMap = std::move(pBMap);
     }
 }
 
