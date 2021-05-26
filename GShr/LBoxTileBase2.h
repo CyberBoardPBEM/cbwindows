@@ -76,7 +76,7 @@ protected:
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) /* override */ { return FALSE; }
 
     // Subclass should only override one of these if any...
-    virtual const void* OnGetItemDebugIDCode(size_t nItem) /* override */ { return MapIndexToItem(nItem); }
+    virtual const void* OnGetItemDebugIDCode(size_t nItem) /* override */ { return &MapIndexToItem(nItem); }
     virtual void  OnGetItemDebugString(size_t nItem, CString& str) /* override */;
 
     //{{AFX_MSG(CTileBaseListBox)

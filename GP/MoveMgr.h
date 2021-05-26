@@ -507,13 +507,13 @@ public:
     size_t DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove = TRUE);
     void IncrementSkipCount(BOOL bKeepInd) { m_nSkipCount++; m_bSkipKeepInd = bKeepInd; }
 
-    CMoveRecord* GetAt(iterator pos)
-        { return pos->get(); }
-    CMoveRecord* GetNext(iterator& pos)
-        { return pos++->get(); }
-    CMoveRecord* GetPrev(iterator& pos)
+    CMoveRecord& GetAt(iterator pos)
+        { return **pos; }
+    CMoveRecord& GetNext(iterator& pos)
+        { return **pos++; }
+    CMoveRecord& GetPrev(iterator& pos)
     {
-        CMoveRecord* retval = pos->get();
+        CMoveRecord& retval = **pos;
         // decrementing MFC head position --> null, so emulate that
         if (pos != begin())
         {
@@ -525,8 +525,8 @@ public:
         }
         return retval;
     }
-    CMoveRecord* GetFirstRecord()
-        { return front().get(); }
+    CMoveRecord& GetFirstRecord()
+        { return *front(); }
 
     void Clear();
     void Serialize(CArchive& ar, BOOL bSaveUndo = TRUE);

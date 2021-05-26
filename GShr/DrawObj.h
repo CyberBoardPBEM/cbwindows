@@ -649,6 +649,12 @@ public:
 ///////////////////////////////////////////////////////////////////////
 // The DrawList manager class
 
+/* WARNING:  Ownership of objects in CDrawList is hard to
+    determine.  CB 3.1 code deletes objects in this list when
+    list is destroyed, which implies list owns its content, but
+    RemoveObject* doesn't delete object, so in that case there
+    must be another owner somewhere.  CB 3.5 doesn't do anything
+    to clarify this. */
 class CDrawList : private std::list<CDrawObj::OwnerPtr>
 {
     using BASE = std::list<CDrawObj::OwnerPtr>;
@@ -673,6 +679,7 @@ public:
     const_iterator Find(const CDrawObj& drawObj) const;
     iterator Find(const CDrawObj& drawObj);
     void AddObject(CDrawObj* pDrawObj) { AddToFront(pDrawObj); }
+    // NOTE:  See WARNING: above
     void RemoveObject(CDrawObj* pDrawObj);
     void RemoveObjectsInList(CPtrList* pLst);
     void AddToEnd(CDrawObj* pDrawObj) { AddToBack(CDrawObj::OwnerPtr(pDrawObj)); }
@@ -693,8 +700,8 @@ public:
 #endif
     void ArrangeObjectListInDrawOrder(CPtrList* pLst);
     void ArrangeObjectListInVisualOrder(CPtrList* pLst);
-    void ArrangeObjectPtrTableInDrawOrder(std::vector<CDrawObj*>& pTbl) const;
-    void ArrangeObjectPtrTableInVisualOrder(std::vector<CDrawObj*>& pTbl) const;
+    void ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
+    void ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
 #ifdef GPLAY
     void SetOwnerMasks(DWORD dwOwnerMask);
 

@@ -542,7 +542,7 @@ bool CPBoardManager::GetPBoardList(std::vector<BoardID>& tblBrds) const
 }
 
 // Find all existing play boards are not in the caller's list.
-void CPBoardManager::FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerNum, std::vector<CPlayBoard*>& tblNotInList)
+void CPBoardManager::FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerNum, std::vector<CB::not_null<CPlayBoard*>>& tblNotInList)
 {
     for (size_t i = 0; i < GetNumPBoards(); i++)
     {

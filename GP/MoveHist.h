@@ -55,7 +55,7 @@ public:
     size_t GetNumHistRecords() const { return size(); }
     void AddNewHistRecord(OwnerPtr<CHistRecord> pHist) { push_back(std::move(pHist)); }
     CHistRecord& GetHistRecord(size_t nIndex)
-        { return *at(nIndex).get(); }
+        { return *at(nIndex); }
     // ------- //
     void Clear();
     void Serialize(CArchive& ar);

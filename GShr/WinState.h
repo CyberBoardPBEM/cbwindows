@@ -76,11 +76,12 @@ protected:
         ~Buffer() = default;
 
         size_t GetSize() const { return size; }
-        operator BYTE*()
+        operator const BYTE*() const
         {
             static_assert(sizeof(ptr) == sizeof(BYTE*), "wasted space");
             return ptr.get();
         }
+        operator BYTE*() { return const_cast<BYTE*>(static_cast<const BYTE*>(std::as_const(*this))); }
 
         void Reset()
         {
@@ -96,7 +97,7 @@ protected:
         class Free
         {
         public:
-            void operator()(BYTE* p) { free(p); }
+            void operator()(BYTE* p) const { free(p); }
         };
         std::unique_ptr<BYTE[], Free> ptr;
         size_t size = size_t(0);
@@ -118,24 +119,24 @@ protected:
 
 protected:
     OwnerPtr<CWinStateElement> GetWindowState(CWnd* pWnd);
-    BOOL RestoreWindowState(CWnd* pWnd, CWinStateElement* pWse);
-    void GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames);
+    BOOL RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse);
+    void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
     CWnd* GetDocumentFrameHavingRuntimeClass(CRuntimeClass* pClass);
 
-    void ArrangeFrameListInZOrder(std::vector<CFrameWnd*>& tblFrames);
+    void ArrangeFrameListInZOrder(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
     static BOOL CALLBACK EnumFrames(HWND hWnd, LPARAM dwTblFramePtr);
 
     void SetUpListIfNeedTo();
 
     // Required override used to locate or, if necessary, recreate frames.
     // This is called when window states are being restored.
-    virtual CWnd* OnGetFrameForWinStateElement(CWinStateElement* pWse) = 0;
+    virtual CWnd* OnGetFrameForWinStateElement(const CWinStateElement& pWse) /* override */ = 0;
 
     // Allow subclass to create specialized version of CWinStateElement
-    virtual OwnerPtr<CWinStateElement> OnCreateWinStateElement() { return MakeOwner<CWinStateElement>(); }
+    virtual OwnerPtr<CWinStateElement> OnCreateWinStateElement() /* override */ { return MakeOwner<CWinStateElement>(); }
 
     // Allow subclass to add more information.
-    virtual void OnAnnotateWinStateElement(CWinStateElement* pWse, CWnd* pWnd) {}
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd* pWnd) /* override */ {}
 
 protected:
     CDocument*  m_pDoc;

@@ -259,7 +259,7 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& pTbl,
+void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
     int xStagger, int yStagger, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
@@ -280,9 +280,9 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& 
     }
     for (size_t i = pTbl.size(); i > 0; i--)
     {
-        CDrawObj* pDObj = pTbl.at(i - 1);
-        CSize sizeDelta = pnt - pDObj->GetRect().CenterPoint();
-        PlaceObjectOnBoard(pPBrd, pDObj, sizeDelta, placeTop);
+        CDrawObj& pDObj = *pTbl.at(i - size_t(1));
+        CSize sizeDelta = pnt - pDObj.GetRect().CenterPoint();
+        PlaceObjectOnBoard(pPBrd, &pDObj, sizeDelta, placeTop);
         pnt -= CSize(xStagger, yStagger);
     }
 }
@@ -291,14 +291,14 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& 
 // Places that objects in there current coordinates but changes
 // their Z-order.
 
-void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CDrawObj*>& pTbl, CPlayBoard *pPBrd)
+void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pTbl, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
     // in the view, we'll walk the array from bottom to top.
     for (size_t i = pTbl.size(); i > 0; i--)
     {
-        CDrawObj* pDObj = pTbl.at(i - 1);
-        PlaceObjectOnBoard(pPBrd, pDObj, CSize(0,0), placeTop);
+        CDrawObj& pDObj = *pTbl.at(i - size_t(1));
+        PlaceObjectOnBoard(pPBrd, &pDObj, CSize(0,0), placeTop);
     }
 }
 

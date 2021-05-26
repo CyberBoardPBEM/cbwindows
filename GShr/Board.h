@@ -210,7 +210,7 @@ public:
     bool IsEmpty() const { return empty(); }
     const CBoard& GetBoard(size_t i) const
     {
-        return CheckedDeref(at(i).get());
+        return *at(i);
     }
     CBoard& GetBoard(size_t i)
     {

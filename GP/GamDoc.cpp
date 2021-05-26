@@ -516,7 +516,7 @@ CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames)
+void CGamDoc::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames)
 {
     tblFrames.clear();
 
@@ -1608,7 +1608,7 @@ void CGamDoc::OnEditSelectBoards()
     {
         // First close all the views of boards that are going
         // to be removed from the play list.
-        std::vector<CPlayBoard*> tblNotInList;
+        std::vector<CB::not_null<CPlayBoard*>> tblNotInList;
         pPBMgr->FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
         for (size_t i = 0; i < tblNotInList.size(); i++)
         {

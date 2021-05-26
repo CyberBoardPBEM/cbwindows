@@ -342,19 +342,18 @@ void CPlayBoardView::SelectAllObjectsInList(CPtrList* pLst)
         NotifySelectListChange();
 }
 
-void CPlayBoardView::SelectAllObjectsInTable(const std::vector<CDrawObj*>& pTbl)
+void CPlayBoardView::SelectAllObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pTbl)
 {
     BOOL bPieceSelected = FALSE;
 
     for (size_t i = 0; i < pTbl.size(); i++)
     {
-        CDrawObj* pObj = pTbl.at(i);
-        ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(pObj))
+        CDrawObj& pObj = *pTbl.at(i);
+        if (!m_selList.IsObjectSelected(&pObj))
         {
-            m_selList.AddObject(pObj, TRUE);
-            bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
-                pObj->GetType() == CDrawObj::drawMarkObj;
+            m_selList.AddObject(&pObj, TRUE);
+            bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
+                pObj.GetType() == CDrawObj::drawMarkObj;
         }
     }
     if (bPieceSelected)

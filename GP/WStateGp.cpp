@@ -33,21 +33,21 @@
 
 enum { gpFrmProject = 0, gpFrmPlayBoard = 1 };
 
-CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(CWinStateElement* pWse)
+CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
 {
-    ASSERT(pWse->m_wWinCode == wincodeViewFrame);
+    ASSERT(pWse.m_wWinCode == wincodeViewFrame);
     CGamDoc* pDoc = GetDocument();
 
-    if (pWse->m_wUserCode1 == gpFrmProject)
+    if (pWse.m_wUserCode1 == gpFrmProject)
     {
         CWnd* pWnd = GetDocumentFrameHavingRuntimeClass(RUNTIME_CLASS(CProjFrame));
         ASSERT(pWnd != NULL);           // Must be open.
         return pWnd;
     }
-    else if (pWse->m_wUserCode1 == gpFrmPlayBoard)
+    else if (pWse.m_wUserCode1 == gpFrmPlayBoard)
     {
         // The second user code is the board's serial number.
-        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager()->GetPBoardBySerial(static_cast<BoardID>(pWse->m_wUserCode2)));
+        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager()->GetPBoardBySerial(static_cast<BoardID>(pWse.m_wUserCode2)));
         CView* pView = pDoc->FindPBoardView(pPBoard);
         if (pView == NULL)
         {
@@ -63,15 +63,15 @@ CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(CWinStateElement* pWse)
         return NULL;
 }
 
-void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement *pWse, CWnd *pWnd)
+void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd *pWnd)
 {
     if (pWnd->IsKindOf(RUNTIME_CLASS(CProjFrame)))
-        pWse->m_wUserCode1 = gpFrmProject;
+        pWse.m_wUserCode1 = gpFrmProject;
     else if (pWnd->IsKindOf(RUNTIME_CLASS(CPlayBoardFrame)))
     {
         CPlayBoardFrame* pFrame = (CPlayBoardFrame*)pWnd;
-        pWse->m_wUserCode1 = gpFrmPlayBoard;
-        pWse->m_wUserCode2 = static_cast<WORD>(pFrame->m_pPBoard->GetSerialNumber());
+        pWse.m_wUserCode1 = gpFrmPlayBoard;
+        pWse.m_wUserCode2 = static_cast<WORD>(pFrame->m_pPBoard->GetSerialNumber());
     }
 }
 

@@ -36,8 +36,8 @@ public:
 protected:
     CGamDoc* GetDocument() { return (CGamDoc*)m_pDoc; }
 
-    virtual CWnd* OnGetFrameForWinStateElement(CWinStateElement *pWse);
-    virtual void OnAnnotateWinStateElement(CWinStateElement *pState, CWnd *pWnd);
+    virtual CWnd* OnGetFrameForWinStateElement(const CWinStateElement& pWse) override;
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pState, CWnd *pWnd) override;
 };
 
 #endif

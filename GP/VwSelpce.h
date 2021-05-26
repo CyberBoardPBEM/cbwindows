@@ -49,7 +49,7 @@ protected:
     CPlayBoard*     m_pPBoard;      // Board that contains selections
 
     CSelectListBox  m_listSel;
-    std::vector<CDrawObj*> m_tblSel;
+    std::vector<CB::not_null<CDrawObj*>> m_tblSel;
     CToolTipCtrl    m_toolTip;
 
 // Implementation

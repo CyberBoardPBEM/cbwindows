@@ -70,7 +70,7 @@ BOOL CSelectListBox::OnDragSetup(DragInfo* pDI)
     if (!IsMultiSelect())
     {
         m_multiSelList.clear();
-        m_multiSelList.push_back(GetCurMapItem());
+        m_multiSelList.push_back(&GetCurMapItem());
     }
     pDI->m_dragType = DRAG_SELECTVIEW;
     pDI->GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
@@ -135,14 +135,14 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
     {
-        CDrawObj* pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
+        CDrawObj& pObj = MapIndexToItem(nIndex);
+        elem = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj);
         rct = rctLeft;
     }
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
-        CDrawObj* pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
+        CDrawObj& pObj = MapIndexToItem(nIndex);
+        elem = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, TRUE);
         rct = rctRight;
     }
     else
@@ -164,9 +164,9 @@ void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
 
 BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 {
-    CDrawObj* pObj = (CDrawObj*)MapIndexToItem(nItem);
-    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
-    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
+    CDrawObj& pObj = MapIndexToItem(nItem);
+    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, FALSE);
+    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, TRUE);
     return elem1 != (GameElement)-1 || elem2 != (GameElement)-1;
 }
 
@@ -174,15 +174,15 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 
 void CSelectListBox::OnGetItemDebugString(size_t nIndex, CString& str)
 {
-    CDrawObj* pDObj = (CDrawObj*)MapIndexToItem(nIndex);
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    CDrawObj& pDObj = MapIndexToItem(nIndex);
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        PieceID pid = ((CPieceObj*)pDObj)->m_pid;
+        PieceID pid = static_cast<CPieceObj&>(pDObj).m_pid;
         str.Format("[pid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(pid)));
     }
-    else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        MarkID mid = ((CMarkObj*)pDObj)->m_mid;
+        MarkID mid = static_cast<CMarkObj&>(pDObj).m_mid;
         str.Format("[mid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(mid)));
     }
 }
@@ -217,14 +217,14 @@ void CSelectListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nSta
 
 TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
 {
-    CDrawObj* pDObj = (CDrawObj*)MapIndexToItem(nIndex);
+    CDrawObj& pDObj = MapIndexToItem(nIndex);
 
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         CPieceTable* pPTbl = m_pDoc->GetPieceTable();
         ASSERT(pPTbl != NULL);
 
-        PieceID pid = ((CPieceObj*)pDObj)->m_pid;
+        PieceID pid = static_cast<CPieceObj&>(pDObj).m_pid;
 
         if (!m_pDoc->IsScenario() && pPTbl->IsPieceOwned(pid) &&
             !pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
@@ -248,11 +248,11 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
             pPTbl->GetInactiveTileID(pid);
 
     }
-    else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
         if (!bActiveIfApplies) return nullTid;      // Inactive side doesn't apply
 
-        MarkID mid = ((CMarkObj*)pDObj)->m_mid;
+        MarkID mid = static_cast<CMarkObj&>(pDObj).m_mid;
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
         ASSERT(pMMgr != NULL);
         return pMMgr->GetMark(mid).m_tid;
