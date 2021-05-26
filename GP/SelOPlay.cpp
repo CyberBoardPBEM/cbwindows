@@ -847,7 +847,7 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
 }
 
 // Loads the table with the CDrawObj pointers of playing pieces and markers.
-void CSelList::LoadTableWithObjectPtrs(std::vector<CDrawObj*>& pTbl, BOOL bVisualOrder /* = TRUE */)
+void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, BOOL bVisualOrder /* = TRUE */)
 {
     pTbl.clear();
     POSITION pos = GetHeadPosition();

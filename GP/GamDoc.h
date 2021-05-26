@@ -212,7 +212,7 @@ public:
         LPVOID lpvCreateParam);
     CView* FindPBoardView(const CPlayBoard& pPBoard);
     CView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
-    void GetDocumentFrameList(std::vector<CFrameWnd*>& tblFrames);
+    void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
 
     BOOL IsWindowStateAvailable() { return m_pWinState != NULL; }
     void RestoreWindowState();
@@ -293,9 +293,9 @@ public:
     size_t PlaceObjectListInTray(const CPtrList& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
     void PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
         CPlayBoard *pPBrd, PlacePos ePos = placeDefault);
-    void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CDrawObj*>& pTbl,
+    void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
-    void PlaceObjectTableOnBoard(const std::vector<CDrawObj*>& pTbl, CPlayBoard *pPBrd);
+    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pTbl, CPlayBoard *pPBrd);
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 

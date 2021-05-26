@@ -223,7 +223,7 @@ public:
     void LoadListWithObjectPtrs(CPtrList* pList, BOOL bPiecesOnly = FALSE,
         BOOL bVisualOrder = FALSE);
     void LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder = TRUE);
-    void LoadTableWithObjectPtrs(std::vector<CDrawObj*>& pTbl, BOOL bVisualOrder = TRUE);
+    void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, BOOL bVisualOrder = TRUE);
     // -------- //
     enum LoadFilter { LF_NOTOWNED, LF_OWNED, LF_BOTH };
     void LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned, BOOL bVisualOrder = TRUE);

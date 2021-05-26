@@ -237,12 +237,12 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
         if (bRemoveSelectedItems && nSelItem == tblListBoxSel.GetSize())
         {
             // Not a listbox selection so add it to new select list.
-            listDObj.AddTail(m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
+            listDObj.AddTail(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
         }
         else if (!bRemoveSelectedItems && nSelItem < tblListBoxSel.GetSize())
         {
             // It is a listbox selection so add it to new select list.
-            listDObj.AddTail(m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
+            listDObj.AddTail(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
         }
     }
     CPlayBoardFrame* pFrame = (CPlayBoardFrame*)GetParentFrame();

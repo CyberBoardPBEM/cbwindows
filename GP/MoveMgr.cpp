@@ -1225,9 +1225,8 @@ BOOL CMoveList::ValidatePieces(CGamDoc* pDoc)
     iterator pos;
     for (pos = begin(); pos != end(); )
     {
-        CMoveRecord* pRcd = GetNext(pos);
-        ASSERT(pRcd != NULL);
-        if (!pRcd->ValidatePieces(pDoc))
+        CMoveRecord& pRcd = GetNext(pos);
+        if (!pRcd.ValidatePieces(pDoc))
             return FALSE;
     }
     return TRUE;
@@ -1250,10 +1249,9 @@ bool CMoveList::IsWithinCompoundMove(size_t nIndex)
         GetPrev(posPrev);
     while (posPrev != end())
     {
-        CMoveRecord* pRcd = GetPrev(posPrev);
-        ASSERT(pRcd != NULL);
-        if (pRcd->GetType() == CMoveRecord::mrecCompoundMove)
-            return ((CCompoundMove*)pRcd)->IsGroupBegin();
+        CMoveRecord& pRcd = GetPrev(posPrev);
+        if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
+            return static_cast<CCompoundMove&>(pRcd).IsGroupBegin();
     }
     return false;
 }
@@ -1263,18 +1261,19 @@ size_t CMoveList::SetStartingState()
 {
     iterator pos = ++begin();
     ASSERT(pos != end());
-    CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(GetAt(pos));
+    CB::not_null<CMoveRecord*> temp = &GetAt(pos);
     size_t nStartIndex = size_t(2);
 
-    if (pRcd->GetType() != CMoveRecord::mrecState)
+    if (temp->GetType() != CMoveRecord::mrecState)
     {
         iterator pos = begin();
         ASSERT(pos != end());
-        pRcd = static_cast<CGameStateRcd*>(GetAt(pos));
-        ASSERT(pRcd->GetType() == CMoveRecord::mrecState); // This *HAS* to be TRUE
+        temp = &GetAt(pos);
+        ASSERT(temp->GetType() == CMoveRecord::mrecState); // This *HAS* to be TRUE
         nStartIndex = size_t(1);
     }
-    pRcd->GetGameState().RestoreState();
+    CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(*temp);
+    pRcd.GetGameState().RestoreState();
     return nStartIndex;
 }
 
@@ -1313,7 +1312,6 @@ void CMoveList::PopAndRestoreState(CGamDoc* pDoc)
 
 size_t CMoveList::FindPreviousMove(CGamDoc* pDoc, size_t nIndex)
 {
-    CMoveRecord* pRcd;
     iterator     posPrev;
     size_t       nCurIndex;
 
@@ -1329,10 +1327,9 @@ size_t CMoveList::FindPreviousMove(CGamDoc* pDoc, size_t nIndex)
         GetPrev(posPrev);           // Point to previous record.
         while (TRUE)
         {
-            pRcd = GetPrev(posPrev);
+            CMoveRecord& pRcd = GetPrev(posPrev);
             nCurIndex--;
-            ASSERT(pRcd);       // NULL WOULD MEAN DATA IS DAMAGED!!!
-            if (pRcd->GetType() == CMoveRecord::mrecCompoundMove)
+            if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
                 return nCurIndex;           // Found it.
         }
     }
@@ -1345,7 +1342,7 @@ CHECK_AGAIN:
         ASSERT(posPrev != end());
         if (posPrev == end())
             return size_t(0);
-        CMoveRecord* pRcd = GetPrev(posPrev);// First GetPrev() gets current record
+        CMoveRecord& pRcd = GetPrev(posPrev);// First GetPrev() gets current record
     }
     else
     {
@@ -1354,19 +1351,16 @@ CHECK_AGAIN:
         posPrev = --end();
         nCurIndex = size() - size_t(1);
     }
-    pRcd = GetPrev(posPrev);
-    ASSERT(pRcd != NULL);
-    if (pRcd == NULL)
-        return size_t(0);
+    CB::not_null<CMoveRecord*> pRcd = &GetPrev(posPrev);
 
     // Another weird special case...If the record is an end of compound
     // move record and we are in single step mode, then step back one more
     // record.
     if (m_bCompoundSingleStep &&
         pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
-        !((CCompoundMove*)pRcd)->IsGroupBegin())
+        !static_cast<CCompoundMove&>(*pRcd).IsGroupBegin())
     {
-        pRcd = GetPrev(posPrev);
+        pRcd = &GetPrev(posPrev);
         nCurIndex--;
     }
 
@@ -1375,15 +1369,14 @@ CHECK_AGAIN:
 
     ASSERT(nCurIndex >= 0);
     if (pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
-        !((CCompoundMove*)pRcd)->IsGroupBegin() && !m_bCompoundSingleStep)
+        !static_cast<CCompoundMove&>(*pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
     {
         // Previous move ended a compound move. Search for
         // starting record of this compound move grouping.
         while (TRUE)
         {
-            pRcd = GetPrev(posPrev);
+            pRcd = &GetPrev(posPrev);
             nCurIndex--;
-            ASSERT(pRcd);       // NULL WOULD MEAN DATA IS DAMAGED!!!
             if (pRcd->GetType() == CMoveRecord::mrecCompoundMove)
                 break;          // Found it.
         }
@@ -1394,10 +1387,10 @@ CHECK_AGAIN:
         int nSeqNum = pRcd->GetSeqNum();
         do
         {
-            pRcd = GetPrev(posPrev);
+            pRcd = &GetPrev(posPrev);
             nCurIndex--;
         }
-        while (pRcd != NULL && pRcd->GetSeqNum() == nSeqNum);
+        while (pRcd->GetSeqNum() == nSeqNum);
         nCurIndex++;
         if ((pRcd->GetType() == CMoveRecord::mrecCompoundMove && m_bCompoundSingleStep))
         {
@@ -1438,17 +1431,17 @@ bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
     int nElementInGroup = 0;
     while (pos != end())
     {
-        CMoveRecord* pRcd = GetNext(pos);
+        CMoveRecord& pRcd = GetNext(pos);
         if (nGrp == INT_MIN)
-            nGrp = pRcd->GetSeqNum();
-        if (nGrp != pRcd->GetSeqNum())
+            nGrp = pRcd.GetSeqNum();
+        if (nGrp != pRcd.GetSeqNum())
             break;
         nNextIndex++;                       // Determine for caller
         // For purposes of this scan certain records aren't considered
         // when determining whether a move is entirely hidden.
-        if (pRcd->GetType() != CMoveRecord::mrecEvtMsg)
+        if (pRcd.GetType() != CMoveRecord::mrecEvtMsg)
         {
-            if (!pRcd->IsMoveHidden(pDoc, nElementInGroup))
+            if (!pRcd.IsMoveHidden(pDoc, nElementInGroup))
                 return FALSE;
         }
         nElementInGroup++;
@@ -1501,12 +1494,12 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
                 break;
 
             // First check for compound move record...
-            CMoveRecord* pRcd = GetAt(posFirst);
-            if (pRcd->GetType() == CMoveRecord::mrecCompoundMove)
+            CMoveRecord& pRcd = GetAt(posFirst);
+            if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
             {
                 GetNext(posFirst);              // Step past record
                 nNextIndex++;                   // calc'ed for caller
-                if (!((CCompoundMove*)pRcd)->IsGroupBegin() && !m_bCompoundSingleStep)
+                if (!static_cast<CCompoundMove&>(pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
                     break;
                 if (!m_bCompoundSingleStep)
                     bCompoundMove = TRUE;
@@ -1536,17 +1529,17 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             int nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord* pRcd = GetNext(pos);
+                CMoveRecord& pRcd = GetNext(pos);
                 if (nGrp == INT_MIN)
-                    nGrp = pRcd->GetSeqNum();
-                if (nGrp != pRcd->GetSeqNum())
+                    nGrp = pRcd.GetSeqNum();
+                if (nGrp != pRcd.GetSeqNum())
                     break;
                 nNextIndex++;                   // Determine for caller
-                BOOL bHidden = pRcd->IsMoveHidden(pDoc, nElementInGroup);
+                BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
                 BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
                 if (bHidden)
                     pDoc->SetQuietPlayback(TRUE);
-                pRcd->DoMoveSetup(pDoc, nElementInGroup);
+                pRcd.DoMoveSetup(pDoc, nElementInGroup);
                 if (bHidden)
                     pDoc->SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
@@ -1563,14 +1556,14 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord* pRcd = GetNext(pos);
-                if (nGrp != pRcd->GetSeqNum())
+                CMoveRecord& pRcd = GetNext(pos);
+                if (nGrp != pRcd.GetSeqNum())
                     break;
-                BOOL bHidden = pRcd->IsMoveHidden(pDoc, nElementInGroup);
+                BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
                 BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
                 if (bHidden)
                     pDoc->SetQuietPlayback(TRUE);
-                pRcd->DoMove(pDoc, nElementInGroup);
+                pRcd.DoMove(pDoc, nElementInGroup);
                 if (bHidden)
                     pDoc->SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
@@ -1582,14 +1575,14 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord* pRcd = GetNext(pos);
-                if (nGrp != pRcd->GetSeqNum())
+                CMoveRecord& pRcd = GetNext(pos);
+                if (nGrp != pRcd.GetSeqNum())
                     break;
-                BOOL bHidden = pRcd->IsMoveHidden(pDoc, nElementInGroup);
+                BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
                 BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
                 if (bHidden)
                     pDoc->SetQuietPlayback(TRUE);
-                pRcd->DoMoveCleanup(pDoc, nElementInGroup);
+                pRcd.DoMoveCleanup(pDoc, nElementInGroup);
                 if (bHidden)
                     pDoc->SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
@@ -1615,9 +1608,9 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             // end record AND we are single stepping the compound
             // records, we need to step to the next record.
             iterator pos = FindIndex(nNextIndex);
-            CMoveRecord* pRcd = GetAt(pos);
-            if (pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
-                !((CCompoundMove*)pRcd)->IsGroupBegin())
+            CMoveRecord& pRcd = GetAt(pos);
+            if (pRcd.GetType() == CMoveRecord::mrecCompoundMove &&
+                !static_cast<CCompoundMove&>(pRcd).IsGroupBegin())
             {
                 nNextIndex++;
                 nNextIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
@@ -1805,10 +1798,9 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         iterator pos;
         for (pos = begin(); pos != end(); )
         {
-            CMoveRecord* pRcd = GetNext(pos);
-            ASSERT(pRcd != NULL);
-            ar << (short)pRcd->GetType();
-            pRcd->Serialize(ar);
+            CMoveRecord& pRcd = GetNext(pos);
+            ar << (short)pRcd.GetType();
+            pRcd.Serialize(ar);
         }
     }
     else
@@ -1925,14 +1917,13 @@ void CMoveList::DumpToTextFile(CFile& file)
     int nIndex = 0;
     for (pos = begin(); pos != end(); )
     {
-        CMoveRecord* pRcd = GetNext(pos);
-        ASSERT(pRcd != NULL);
-        CMoveRecord::RcdType eType = pRcd->GetType();
+        CMoveRecord& pRcd = GetNext(pos);
+        CMoveRecord::RcdType eType = pRcd.GetType();
         ASSERT(eType >= 0 && eType < CMoveRecord::mrecMax);
-        wsprintf(szBfr, "[Index=%04d; Seq=%04d: %s]\r\n", nIndex, pRcd->GetSeqNum(),
+        wsprintf(szBfr, "[Index=%04d; Seq=%04d: %s]\r\n", nIndex, pRcd.GetSeqNum(),
             (LPCSTR)tblTypes[eType]);
         file.Write(szBfr, lstrlen(szBfr));
-        pRcd->DumpToTextFile(file);
+        pRcd.DumpToTextFile(file);
         nIndex++;
     }
 }

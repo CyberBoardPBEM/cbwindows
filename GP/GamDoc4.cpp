@@ -109,10 +109,10 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
         CMoveList::iterator pos = ++pHist->m_pMList->begin();
         ASSERT(pos != pHist->m_pMList->end());
-        CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(pHist->m_pMList->GetAt(pos));
+        CMoveRecord& temp = pHist->m_pMList->GetAt(pos);
         BOOL bUpdatedGameState = FALSE;
 
-        if (pRcd->GetType() != CMoveRecord::mrecState)
+        if (temp.GetType() != CMoveRecord::mrecState)
         {
             AfxMessageBox(IDS_MSG_NOGAMESTATE, MB_OK | MB_ICONINFORMATION);
             m_nFirstMove = size_t(0);           // Restart location (state rec)
@@ -120,10 +120,11 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
         }
         else
         {
+            CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(temp);
             // See if the file's game state matches the current game
             // state. If not, give option to update game to file's state.
-            pRcd->GetGameState().SetDocument(this);
-            if (!pRcd->GetGameState().CompareState())
+            pRcd.GetGameState().SetDocument(this);
+            if (!pRcd.GetGameState().CompareState())
             {
                 // File's positions don't match current games' positions.
                 CSelectStateDialog dlg;
@@ -133,7 +134,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
                 if (dlg.m_nState == 0)
                 {
                     // Use the current game state
-                    pRcd->GetGameState().RestoreState();
+                    pRcd.GetGameState().RestoreState();
                     // Make sure we account for possible deletions
                     // of pieces in move file (for crash resistance)
                     GetPieceTable()->PurgeUndefinedPieceIDs();
@@ -257,11 +258,12 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         CMoveList::iterator pos = ++m_pMoves->begin();
         ASSERT(pos != m_pMoves->end());
-        CGameStateRcd* pRcd = static_cast<CGameStateRcd*>(m_pMoves->GetAt(pos));
-        ASSERT(pRcd->GetType() == CMoveRecord::mrecState);
+        CMoveRecord& temp = m_pMoves->GetAt(pos);
+        ASSERT(temp.GetType() == CMoveRecord::mrecState);
+        CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(temp);
 
         // Use the history game state
-        pRcd->GetGameState().RestoreState();
+        pRcd.GetGameState().RestoreState();
 
         // Make sure we account for possible deletions
         // of pieces in move file (for crash resistance)
@@ -385,11 +387,11 @@ void CGamDoc::FinishHistoryPlayback()
         not destroy pMove, and then let destroying m_pHistMoves
         take care of destroying pMove? */
 
-    CGameStateRcd* pMove = static_cast<CGameStateRcd*>(m_pHistMoves->front().get());
-    ASSERT(pMove != NULL);
-    ASSERT(pMove->GetType() == CMoveRecord::mrecState);
+    CMoveRecord& temp = *m_pHistMoves->front();
+    ASSERT(temp.GetType() == CMoveRecord::mrecState);
+    CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
-    if (!pMove->GetGameState().RestoreState())
+    if (!pMove.GetGameState().RestoreState())
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
     }

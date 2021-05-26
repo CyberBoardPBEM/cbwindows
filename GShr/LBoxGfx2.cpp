@@ -71,7 +71,7 @@ CGrafixListBox2::CGrafixListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::SetItemMap(const std::vector<CDrawObj*>* pMap,
+void CGrafixListBox2::SetItemMap(const std::vector<CB::not_null<CDrawObj*>>* pMap,
     BOOL bKeepPosition /* = TRUE */)
 {
     m_pItemMap = pMap;
@@ -110,11 +110,11 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDrawObj* CGrafixListBox2::MapIndexToItem(size_t nIndex)
+CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex)
 {
     ASSERT(m_pItemMap);
     ASSERT(nIndex < m_pItemMap->size());
-    return m_pItemMap->at(nIndex);
+    return *m_pItemMap->at(nIndex);
 }
 
 size_t CGrafixListBox2::MapItemToIndex(CDrawObj* pItem)
@@ -128,17 +128,17 @@ size_t CGrafixListBox2::MapItemToIndex(CDrawObj* pItem)
     return Invalid_v<size_t>;                  // Failed to find it
 }
 
-CDrawObj* CGrafixListBox2::GetCurMapItem()
+CDrawObj& CGrafixListBox2::GetCurMapItem()
 {
     ASSERT(!IsMultiSelect());
     ASSERT(m_pItemMap);
     int nItem = GetCurSel();
     ASSERT(nItem >= 0);
     ASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
-    return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
+    return *m_pItemMap->at(value_preserving_cast<size_t>(nItem));
 }
 
-void CGrafixListBox2::GetCurMappedItemList(std::vector<CB::propagate_const<CDrawObj*>>& pLst)
+void CGrafixListBox2::GetCurMappedItemList(std::vector<CB::not_null<CB::propagate_const<CDrawObj*>>>& pLst)
 {
     pLst.clear();
     ASSERT(IsMultiSelect());
@@ -148,8 +148,8 @@ void CGrafixListBox2::GetCurMappedItemList(std::vector<CB::propagate_const<CDraw
     std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
     GetSelItems(nSels, pSelTbl.data());
     pLst.reserve(pSelTbl.size());
-    for (size_t i = 0; i < pSelTbl.size(); i++)
-        pLst.push_back(MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
+    for (size_t i = size_t(0); i < pSelTbl.size(); i++)
+        pLst.push_back(&MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
     return;
 }
 
@@ -166,7 +166,7 @@ void CGrafixListBox2::SetCurSelMapped(CDrawObj* nMapVal)
     }
 }
 
-void CGrafixListBox2::SetCurSelsMapped(const std::vector<CDrawObj*>& items)
+void CGrafixListBox2::SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items)
 {
     ASSERT(m_pItemMap);
     ASSERT(IsMultiSelect());

@@ -58,9 +58,9 @@ public:
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-    const std::vector<CDrawObj*>* GetItemMap() { return m_pItemMap; }
-    CDrawObj* GetCurMapItem();
-    void GetCurMappedItemList(std::vector<CB::propagate_const<CDrawObj*>>& pLst);
+    const std::vector<CB::not_null<CDrawObj*>>* GetItemMap() { return m_pItemMap; }
+    CDrawObj& GetCurMapItem();
+    void GetCurMappedItemList(std::vector<CB::not_null<CB::propagate_const<CDrawObj*>>>& pLst);
     BOOL IsMultiSelect()
         { return (GetStyle() & (LBS_EXTENDEDSEL | LBS_MULTIPLESEL)) != 0; }
     // Note: the following pointer is only good during drag and drop.
@@ -70,17 +70,17 @@ public:
     // data in the case of a shift click isn't valid until the button
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
-    std::vector<CB::propagate_const<CDrawObj*>>& GetMappedMultiSelectList() { return m_multiSelList; }
+    std::vector<CB::not_null<CB::propagate_const<CDrawObj*>>>& GetMappedMultiSelectList() { return m_multiSelList; }
 
 // Operations
 public:
-    void SetItemMap(const std::vector<CDrawObj*>* pMap, BOOL bKeepPosition = TRUE);
+    void SetItemMap(const std::vector<CB::not_null<CDrawObj*>>* pMap, BOOL bKeepPosition = TRUE);
     void UpdateList(BOOL bKeepPosition = TRUE);
     void SetCurSelMapped(CDrawObj* pMapVal);
-    void SetCurSelsMapped(const std::vector<CDrawObj*>& items);
+    void SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items);
     void SetSelFromPoint(CPoint point);
     void ShowFirstSelection();
-    CDrawObj* MapIndexToItem(size_t nIndex);
+    CDrawObj& MapIndexToItem(size_t nIndex);
     size_t MapItemToIndex(CDrawObj* pItem);
     void MakeItemVisible(int nItem);
 
@@ -105,8 +105,8 @@ public:
 protected:
     /* N.B.:  this class could be templatized to hold any pointer,
                 but that generality isn't actually needed yet */
-    const std::vector<CDrawObj*>* m_pItemMap;          // Maps index to item
-    std::vector<CB::propagate_const<CDrawObj*>> m_multiSelList;      // Holds mapped multi select items on drop
+    const std::vector<CB::not_null<CDrawObj*>>* m_pItemMap;          // Maps index to item
+    std::vector<CB::not_null<CB::propagate_const<CDrawObj*>>> m_multiSelList;      // Holds mapped multi select items on drop
 
     // Tool tip support
     CToolTipCtrl m_toolTip;

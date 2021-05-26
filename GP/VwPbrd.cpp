@@ -355,13 +355,13 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         // Save the select list
         if (m_selList.GetCount() > 0)
         {
-            std::vector<CDrawObj*> tblObjPtrs;
+            std::vector<CB::not_null<CDrawObj*>> tblObjPtrs;
             m_selList.LoadTableWithObjectPtrs(tblObjPtrs);
             ar << value_preserving_cast<DWORD>(tblObjPtrs.size());
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
-                CDrawObj* pObj = tblObjPtrs.at(i);
-                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(pObj));
+                CDrawObj& pObj = *tblObjPtrs.at(i);
+                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(&pObj));
             }
         }
         else
@@ -1387,7 +1387,7 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    std::vector<CDrawObj*> tblObjs;
+    std::vector<CB::not_null<CDrawObj*>> tblObjs;
     m_selList.LoadTableWithObjectPtrs(tblObjs);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
@@ -1428,7 +1428,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    std::vector<CDrawObj*> tblObjs;
+    std::vector<CB::not_null<CDrawObj*>> tblObjs;
     m_selList.LoadTableWithObjectPtrs(tblObjs);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
@@ -1441,7 +1441,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Create a shuffled table of objects...
-    std::vector<CDrawObj*> tblRandObjs;
+    std::vector<CB::not_null<CDrawObj*>> tblRandObjs;
     tblRandObjs.reserve(tblObjs.size());
     for (int i = 0; i < value_preserving_cast<int>(tblObjs.size()); i++)
         tblRandObjs.push_back(tblObjs[value_preserving_cast<size_t>(pnIndices[i])]);

@@ -210,8 +210,8 @@ void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
     {
         CMoveList::iterator pos = ++pHist->m_pMList->begin();
         ASSERT(pos != pHist->m_pMList->end());
-        CMoveRecord* pRcd = pHist->m_pMList->GetAt(pos);
-        if (pRcd->GetType() == CMoveRecord::mrecState)
+        CMoveRecord& pRcd = pHist->m_pMList->GetAt(pos);
+        if (pRcd.GetType() == CMoveRecord::mrecState)
         {
             pHist->m_pMList->pop_front();
         }
@@ -254,11 +254,11 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     // Get the first record which contains the starting positions
     // of the recording. Restore it.
 
-    CGameStateRcd* pMove = (CGameStateRcd*)m_pRcdMoves->GetFirstRecord();
-    ASSERT(pMove != NULL);
-    ASSERT(pMove->GetType() == CMoveRecord::mrecState);
+    CMoveRecord& temp = m_pRcdMoves->GetFirstRecord();
+    ASSERT(temp.GetType() == CMoveRecord::mrecState);
+    CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
-    if (!pMove->GetGameState().RestoreState())
+    if (!pMove.GetGameState().RestoreState())
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
