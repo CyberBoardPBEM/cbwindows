@@ -1608,15 +1608,16 @@ void CBrdEditView::OnEditPaste()
 {
     CBitmap* pBMap = GetClipboardBitmap(this, GetAppPalette());
 
-    CBitmapImage* pDObj = new CBitmapImage;
-    pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
+    {
+        OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
+        pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
-    delete pBMap;
-
-    GetSelectList()->PurgeList(TRUE);           // Clear current select list
-    AddDrawObject(pDObj);
-    GetSelectList()->AddObject(pDObj, TRUE);
-    CRect rct = pDObj->GetEnclosingRect();
+        GetSelectList()->PurgeList(TRUE);           // Clear current select list
+        AddDrawObject(std::move(pDObj));
+    }
+    CDrawObj& pDObj = GetDrawList(FALSE)->Front();
+    GetSelectList()->AddObject(&pDObj, TRUE);
+    CRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(&rct);
 }
 
@@ -1671,13 +1672,16 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     std::unique_ptr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
     ASSERT(pBMap != NULL);
 
-    CBitmapImage* pDObj = new CBitmapImage;
-    pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
+    {
+        OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
+        pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
-    GetSelectList()->PurgeList(TRUE);           // Clear current select list
-    AddDrawObject(pDObj);
-    GetSelectList()->AddObject(pDObj, TRUE);
-    CRect rct = pDObj->GetEnclosingRect();
+        GetSelectList()->PurgeList(TRUE);           // Clear current select list
+        AddDrawObject(std::move(pDObj));
+    }
+    CDrawObj& pDObj = GetDrawList(FALSE)->Front();
+    GetSelectList()->AddObject(&pDObj, TRUE);
+    CRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(&rct);
 }
 
