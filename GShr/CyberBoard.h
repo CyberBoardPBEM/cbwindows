@@ -102,14 +102,6 @@ namespace CB
         template<typename PU>
         propagate_const(PU* pu) : p(pu) {}
 
-#if 1   // TODO:  remove
-        template<typename PU>
-        propagate_const(PU&& pu) :
-            p(std::forward<PU>(pu))
-        {
-        }
-#endif
-
         template<typename PU>
         propagate_const(propagate_const<PU>&& pu) : p(std::move(get_underlying(pu))) {}
 
@@ -237,15 +229,6 @@ namespace CB
         {
             CheckValid();
         }
-
-#if 1   // TODO:  remove
-        template<typename PU, typename std::enable_if_t<!std::is_convertible_v<PU, not_null>, bool> = true>
-        not_null(PU&& pu) :
-            p(std::forward<PU>(pu))
-        {
-            CheckValid();
-        }
-#endif
 
         /* N.B.:  causes u to violate not_null, but moved-from
                 objects are in an undefined state, so let's
