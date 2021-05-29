@@ -532,10 +532,12 @@ BoardID CPBoardManager::IssueGeoSerialNumber()
 
 bool CPBoardManager::GetPBoardList(std::vector<BoardID>& tblBrds) const
 {
+    ASSERT(tblBrds.empty());
     if (IsEmpty())
         return false;
 
-    for (size_t i = 0; i < GetNumPBoards(); i++)
+    tblBrds.reserve(tblBrds.size() + GetNumPBoards());
+    for (size_t i = size_t(0); i < GetNumPBoards(); i++)
         tblBrds.push_back(GetPBoard(i).GetSerialNumber());
 
     return true;
@@ -544,7 +546,8 @@ bool CPBoardManager::GetPBoardList(std::vector<BoardID>& tblBrds) const
 // Find all existing play boards are not in the caller's list.
 void CPBoardManager::FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerNum, std::vector<CB::not_null<CPlayBoard*>>& tblNotInList)
 {
-    for (size_t i = 0; i < GetNumPBoards(); i++)
+    ASSERT(tblNotInList.empty());
+    for (size_t i = size_t(0); i < GetNumPBoards(); i++)
     {
         if (std::find(tblBrdSerNum.begin(), tblBrdSerNum.end(), GetPBoard(i).GetSerialNumber()) == tblBrdSerNum.end())
         {
