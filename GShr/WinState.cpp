@@ -272,7 +272,8 @@ void CWinStateManager::ArrangeFrameListInZOrder(std::vector<CB::not_null<CFrameW
     // Now copy the remaining frame pointers into the caller's list
     // in Z order (top to bottom)
     tblFrames.clear();
-    for (size_t i = 0; i < tblZFrames.size(); i++)
+    tblFrames.reserve(tblZFrames.size());
+    for (size_t i = size_t(0); i < tblZFrames.size(); i++)
     {
         if (tblZFrames.at(i) != NULL)
             tblFrames.push_back(tblZFrames.at(i));
