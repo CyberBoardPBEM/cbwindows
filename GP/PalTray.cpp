@@ -609,9 +609,9 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         }
         else        // DRAG_SELECTLIST
         {
-            CPtrList m_listPtr;
+            std::vector<CB::not_null<CDrawObj*>> m_listPtr;
             CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
-            pSLst->LoadListWithObjectPtrs(m_listPtr);
+            pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
             pSLst->PurgeList(FALSE);
             m_pDoc->AssignNewMoveGroup();
             size_t temp = m_pDoc->PlaceObjectListInTray(m_listPtr,
