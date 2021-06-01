@@ -125,48 +125,48 @@ void CGamDoc::SetGameElementString(GameElement gelem, LPCTSTR pszString)
     }
 }
 
-GameElement CGamDoc::GetGameElementCodeForObject(CDrawObj* pDObj,
+GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
     BOOL bBottomSide /* = FALSE */)
 {
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceObj* pObj = (CPieceObj*)pDObj;
-        PieceID pid = pObj->m_pid;
+        const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
+        PieceID pid = pObj.m_pid;
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
         if (bBottomSide) nSide ^= 1;        // Toggle the side
         return MakePieceElement(pid, nSide);
     }
-    else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        CMarkObj* pObj = (CMarkObj*)pDObj;
-        return MakeObjectIDElement(pObj->GetObjectID());
+        const CMarkObj& pObj = static_cast<const CMarkObj&>(pDObj);
+        return MakeObjectIDElement(pObj.GetObjectID());
     }
     return (GameElement)0;
 }
 
-GameElement CGamDoc::GetVerifiedGameElementCodeForObject(CDrawObj* pDObj,
+GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
     BOOL bBottomSide /* = FALSE */)
 {
     GameElement elem = (GameElement)-1;
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceObj* pObj = (CPieceObj*)pDObj;
-        PieceID pid = pObj->m_pid;
+        const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
+        PieceID pid = pObj.m_pid;
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
         if (bBottomSide) nSide ^= 1;        // Toggle the side
 
         elem = MakePieceElement(pid, nSide);
-        if (!HasGameElementString(elem) || pObj->IsOwnedButNotByCurrentPlayer())
+        if (!HasGameElementString(elem) || pObj.IsOwnedButNotByCurrentPlayer())
             elem = (GameElement)-1;
     }
-    else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        CMarkObj* pObj = (CMarkObj*)pDObj;
-        elem = MakeObjectIDElement(pObj->GetObjectID());
+        const CMarkObj& pObj = static_cast<const CMarkObj&>(pDObj);
+        elem = MakeObjectIDElement(pObj.GetObjectID());
         if (!HasGameElementString(elem))
         {
             // Try the actual marker ID for string existance.
-            elem = MakeMarkerElement(pObj->m_mid);
+            elem = MakeMarkerElement(pObj.m_mid);
             if (!HasGameElementString(elem))
                 elem = (GameElement)-1;
         }
@@ -174,22 +174,22 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(CDrawObj* pDObj,
     return elem;
 }
 
-void CGamDoc::GetTipTextForObject(CDrawObj* pDObj, CString &strTip,
+void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
     CString* pStrTitle /* = NULL */)
 {
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceObj* pObj = (CPieceObj*)pDObj;
-        PieceID pid = pObj->m_pid;
+        const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
+        PieceID pid = pObj.m_pid;
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
         strTip = GetGameElementString(MakePieceElement(pid, nSide));
     }
-    else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+    else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        CMarkObj* pObj = (CMarkObj*)pDObj;
-        strTip = GetGameElementString(MakeObjectIDElement(pObj->GetObjectID()));
+        const CMarkObj& pObj = static_cast<const CMarkObj&>(pDObj);
+        strTip = GetGameElementString(MakeObjectIDElement(pObj.GetObjectID()));
         if (strTip.IsEmpty())
-            strTip = GetGameElementString(MakeMarkerElement(pObj->m_mid));
+            strTip = GetGameElementString(MakeMarkerElement(pObj.m_mid));
     }
 }
 
@@ -224,7 +224,7 @@ void CGamDoc::DoEditPieceText(PieceID pid, BOOL bEditTop)
         SetObjectText(elemDown, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
 }
 
-void CGamDoc::DoEditObjectText(CDrawObj* pDObj)
+void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
 {
     CEditElementTextDialog dlg;
 
@@ -233,9 +233,9 @@ void CGamDoc::DoEditObjectText(CDrawObj* pDObj)
 
     dlg.m_strText = strTip;
 
-    if (pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        PieceID pid = ((CPieceObj*)pDObj)->m_pid;
+        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
         if (GetPieceTable()->Is2Sided(pid))
         {
             dlg.m_bDoubleSided = TRUE;
@@ -253,9 +253,9 @@ void CGamDoc::DoEditObjectText(CDrawObj* pDObj)
     AssignNewMoveGroup();
 
     SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
-    if (dlg.m_bSetBothSides && pDObj->GetType() == CDrawObj::drawPieceObj)
+    if (dlg.m_bSetBothSides && pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        PieceID pid = ((CPieceObj*)pDObj)->m_pid;
+        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
         if (GetPieceTable()->Is2Sided(pid))
         {
             int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;

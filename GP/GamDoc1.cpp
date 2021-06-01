@@ -459,29 +459,29 @@ size_t CGamDoc::PlaceObjectTableInTray(const std::vector<CB::not_null<CDrawObj*>
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
-void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd)
+void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd)
 {
-    if (!m_pPTbl->Is2Sided(pObj->m_pid))
+    if (!m_pPTbl->Is2Sided(pObj.m_pid))
         return;
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
 
-    m_pPTbl->FlipPieceOver(pObj->m_pid);
-    pObj->ResyncExtentRect();
+    m_pPTbl->FlipPieceOver(pObj.m_pid);
+    pObj.ResyncExtentRect();
 
     // Record processing
-    RecordPieceSetSide(pObj->m_pid, GetPieceTable()->IsFrontUp(pObj->m_pid));
+    RecordPieceSetSide(pObj.m_pid, GetPieceTable()->IsFrontUp(pObj.m_pid));
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -494,7 +494,7 @@ void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDra
         CDrawObj& pObj = **pos;
         // Only pieces are flipped. Others are left as they are.
         if (pObj.GetType() == CDrawObj::drawPieceObj)
-            InvertPlayingPieceOnBoard(&static_cast<CPieceObj&>(pObj), pPBrd);
+            InvertPlayingPieceOnBoard(static_cast<CPieceObj&>(pObj), pPBrd);
     }
 }
 
@@ -521,27 +521,27 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray /* = TR
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
-void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd,
+void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
     int nFacingDegCW)
 {
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
-    m_pPTbl->SetPieceFacing(pObj->m_pid, nFacingDegCW);
-    pObj->ResyncExtentRect();
+    m_pPTbl->SetPieceFacing(pObj.m_pid, nFacingDegCW);
+    pObj.ResyncExtentRect();
 
     // Record processing
-    RecordPieceSetFacing(pObj->m_pid, nFacingDegCW);
+    RecordPieceSetFacing(pObj.m_pid, nFacingDegCW);
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -555,9 +555,9 @@ void CGamDoc::ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_nul
         CDrawObj& pObj = **pos;
         // Only pieces and markers are rotated. Others are left as they are.
         if (pObj.GetType() == CDrawObj::drawPieceObj)
-            ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pObj), pPBrd, nFacingDegCW);
+            ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pObj), pPBrd, nFacingDegCW);
         else if (pObj.GetType() == CDrawObj::drawMarkObj)
-            ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pObj), pPBrd, nFacingDegCW);
+            ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pObj), pPBrd, nFacingDegCW);
     }
 }
 
@@ -584,27 +584,27 @@ void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW)
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj *pObj, CPlayBoard* pPBrd,
+void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
     int nFacingDegCW)
 {
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
-    pObj->SetFacing(nFacingDegCW);
-    pObj->ResyncExtentRect();
+    pObj.SetFacing(nFacingDegCW);
+    pObj.ResyncExtentRect();
 
     // Record processing
-    RecordMarkerSetFacing(pObj->GetObjectID(), pObj->m_mid, nFacingDegCW);
+    RecordMarkerSetFacing(pObj.GetObjectID(), pObj.m_mid, nFacingDegCW);
 
     if (!IsQuietPlayback())
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     SetModifiedFlag();
@@ -667,16 +667,16 @@ void CGamDoc::SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>&
     for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
         CDrawObj& pObj = **pos;
-        SetObjectLockdown(&pObj, bLockState);
+        SetObjectLockdown(pObj, bLockState);
     }
 }
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::SetObjectLockdown(CDrawObj* pDObj, BOOL bLockState)
+void CGamDoc::SetObjectLockdown(CDrawObj& pDObj, BOOL bLockState)
 {
-    pDObj->ModifyDObjFlags(dobjFlgLockDown, bLockState);
+    pDObj.ModifyDObjFlags(dobjFlgLockDown, bLockState);
 
     // Record processing
     RecordObjectLockdown(GetGameElementCodeForObject(pDObj), bLockState);

@@ -1130,7 +1130,7 @@ void CPieceObj::SetOwnerMask(DWORD dwMask)
     pPTbl->SetOwnerMask(m_pid, dwMask);
 }
 
-BOOL CPieceObj::IsOwned()
+BOOL CPieceObj::IsOwned() const
 {
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
@@ -1138,7 +1138,7 @@ BOOL CPieceObj::IsOwned()
     return pPTbl->IsPieceOwned(m_pid);
 }
 
-BOOL CPieceObj::IsOwnedBy(DWORD dwMask)
+BOOL CPieceObj::IsOwnedBy(DWORD dwMask) const
 {
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
@@ -1146,7 +1146,7 @@ BOOL CPieceObj::IsOwnedBy(DWORD dwMask)
     return pPTbl->IsPieceOwnedBy(m_pid, dwMask);
 }
 
-BOOL CPieceObj::IsOwnedButNotByCurrentPlayer()
+BOOL CPieceObj::IsOwnedButNotByCurrentPlayer() const
 {
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();

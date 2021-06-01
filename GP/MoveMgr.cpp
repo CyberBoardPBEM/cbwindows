@@ -322,7 +322,7 @@ void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CPieceObj* pObj;
 
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
-        pDoc->InvertPlayingPieceOnBoard(pObj, pPBoard);
+        pDoc->InvertPlayingPieceOnBoard(*pObj, pPBoard);
     else
         pDoc->InvertPlayingPieceInTray(m_pid);
 }
@@ -393,7 +393,7 @@ void CPieceSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CPieceObj* pObj;
 
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
-        pDoc->ChangePlayingPieceFacingOnBoard(pObj, pPBoard, m_nFacingDegCW);
+        pDoc->ChangePlayingPieceFacingOnBoard(*pObj, pPBoard, m_nFacingDegCW);
     else
         pDoc->ChangePlayingPieceFacingInTray(m_pid, m_nFacingDegCW);
 }
@@ -533,7 +533,7 @@ void CMarkerSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
 
     if (pPBoard != NULL)
-        pDoc->ChangeMarkerFacingOnBoard((CMarkObj*)pObj, pPBoard, m_nFacingDegCW);
+        pDoc->ChangeMarkerFacingOnBoard(*static_cast<CMarkObj*>(pObj), pPBoard, m_nFacingDegCW);
     else
         ASSERT(FALSE);          // SHOULDN'T HAPPEN
 }
