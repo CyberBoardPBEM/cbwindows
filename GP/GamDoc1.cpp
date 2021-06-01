@@ -180,44 +180,131 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS) { EVENTUALLY USE ABOVE CODE!!!??? }
-void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
+void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPoint pntUpLeft,
     CPlayBoard *pPBrd, PlacePos ePos /* = placeDefault */)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
     CRect rct;
-    FindObjectListUnionRect(pLst, rct);
+    FindObjectTableUnionRect(pLst, rct);
     CSize size(pntUpLeft.x - rct.left, pntUpLeft.y - rct.top);
 
     if (pPBrd->GetPlotMoveMode())
         RecordPlotList(pPBrd);
 
-    POSITION pos;
-    pos = ePos != placeBack ? pLst->GetHeadPosition() : pLst->GetTailPosition();
-    while (pos != NULL)
+    /* this should be relatively easy to template<>-ize if it
+        seems useful elsewhere */
+    class Vect
     {
-        CDrawObj* pObj;
-        pObj = (CDrawObj*)(ePos != placeBack ? pLst->GetNext(pos) :
-            pLst->GetPrev(pos));
-        ASSERT(pObj != NULL);
+        using Underlying = const std::vector<CB::not_null<CDrawObj*>>;
+    public:
+        class iterator
+        {
+        public:
+            bool operator==(const iterator& rhs) const
+            {
+                ASSERT(&vect == &rhs.vect);
+                return it == rhs.it;
+            }
+            bool operator!=(const iterator& rhs) const { return !(*this == rhs); }
+
+            iterator& operator++()
+            {
+                if (vect.ePos != placeBack)
+                {
+                    ++it;
+                }
+                else
+                {
+                    --it;
+                }
+                return *this;
+            }
+
+            const Underlying::value_type& operator*() const
+            {
+                if (vect.ePos != placeBack)
+                {
+                    return *it;
+                }
+                else
+                {
+                    return *(it - 1);
+                }
+            }
+
+        private:
+            iterator(const Vect& v) :
+                vect(v)
+            {
+            }
+
+            const Vect& vect;
+            Vect::Underlying::const_iterator it;
+
+            friend Vect;
+        };
+
+        Vect(Underlying& v, PlacePos p) :
+            pLst(v),
+            ePos(p)
+        {
+        }
+
+        iterator begin() const
+        {
+            iterator retval(*this);
+            if (ePos != placeBack)
+            {
+                retval.it = pLst.begin();
+            }
+            else
+            {
+                retval.it = pLst.end();
+            }
+            return retval;
+        }
+        iterator end() const
+        {
+            iterator retval(*this);
+            if (ePos != placeBack)
+            {
+                retval.it = pLst.end();
+            }
+            else
+            {
+                retval.it = pLst.begin();
+            }
+            return retval;
+        }
+
+    private:
+        Underlying& pLst;
+        PlacePos ePos;
+    };
+    Vect vect(pLst, ePos);
+
+    for (Vect::iterator pos = vect.begin() ; pos != vect.end() ; ++pos)
+    {
+        CDrawObj& pObj = **pos;
 
         // Record processing
-        if (pObj->GetType() == CDrawObj::drawPieceObj)
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pObj;
-            CRect rctPce = pPObj->GetRect();
-            RecordPieceMoveToBoard(pPBrd, pPObj->m_pid, GetMidRect(rctPce) +
+            CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
+            CRect rctPce = pPObj.GetRect();
+            RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
                 size, ePos);
         }
-        else if (pObj->GetType() == CDrawObj::drawMarkObj)
+        else if (pObj.GetType() == CDrawObj::drawMarkObj)
         {
-            CMarkObj* pMObj = (CMarkObj*)pObj;
-            CRect rctMrk = pMObj->GetRect();
-            RecordMarkMoveToBoard(pPBrd, pMObj->GetObjectID(), pMObj->m_mid,
+            CMarkObj& pMObj = static_cast<CMarkObj&>(pObj);
+            CRect rctMrk = pMObj.GetRect();
+            RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
                 GetMidRect(rctMrk) + size, ePos);
         }
 
-        BOOL bOnBoard = pDwg->HasObject(*pObj);
+        BOOL bOnBoard = pDwg->HasObject(pObj);
         if (ePos == placeDefault && bOnBoard)
         {
             if (!IsQuietPlayback())
@@ -225,24 +312,24 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
                 // Cause it's former location to be invalidated...
                 CGamDocHint hint;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
                 UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
             }
         }
         else
-            RemoveObjectFromCurrentLocation(pObj);
+            RemoveObjectFromCurrentLocation(&pObj);
 
-        pObj->MoveObject(pObj->GetRect().TopLeft() + size);
+        pObj.MoveObject(pObj.GetRect().TopLeft() + size);
 
         if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
-            pDwg->AddToFront(pObj);
+            pDwg->AddToFront(&pObj);
         else if (ePos == placeBack)
-            pDwg->AddToBack(pObj);
+            pDwg->AddToBack(&pObj);
 
-        if (pPBrd->IsOwned() && pObj->GetType() == CDrawObj::drawPieceObj)
+        if (pPBrd->IsOwned() && pObj.GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pObj;
-            GetPieceTable()->SetOwnerMask(pPObj->m_pid, pPBrd->GetOwnerMask());
+            CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
+            GetPieceTable()->SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
         }
 
         if (!IsQuietPlayback())
@@ -250,7 +337,7 @@ void CGamDoc::PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
             // Cause object to be drawn
             CGamDocHint hint;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+            hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
             UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
         }
         SetModifiedFlag();
@@ -352,18 +439,17 @@ size_t CGamDoc::PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet&
 
 //////////////////////////////////////////////////////////////////////
 // Returns index of last piece inserted.
-size_t CGamDoc::PlaceObjectListInTray(const CPtrList& pLst, CTraySet& pYGrp, size_t nPos)
+size_t CGamDoc::PlaceObjectTableInTray(const std::vector<CB::not_null<CDrawObj*>>& pLst, CTraySet& pYGrp, size_t nPos)
 {
     // Scan this list in reverse order so they show up in the
     // same visual order.
-    POSITION pos;
-    for (pos = pLst.GetTailPosition(); pos != NULL; )
+    for (size_t i = pLst.size() ; i != size_t(0) ; --i)
     {
-        CPieceObj* pObj = (CPieceObj*)pLst.GetPrev(pos);
+        CDrawObj& pObj = *pLst[i - size_t(1)];
         // Only pieces are placed. Other objects are left as they were.
-        if (pObj->GetType() == CDrawObj::drawPieceObj)
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
         {
-            PlacePieceInTray(pObj->m_pid, pYGrp, nPos);
+            PlacePieceInTray(static_cast<CPieceObj&>(pObj).m_pid, pYGrp, nPos);
             if (nPos != Invalid_v<size_t>)
                 nPos++;
         }
@@ -401,15 +487,14 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd)
     SetModifiedFlag();
 }
 
-void CGamDoc::InvertPlayingPieceListOnBoard(CPtrList *pLst, CPlayBoard* pPBrd)
+void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd)
 {
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
+        CDrawObj& pObj = **pos;
         // Only pieces are flipped. Others are left as they are.
-        if (pObj->GetType() == CDrawObj::drawPieceObj)
-            InvertPlayingPieceOnBoard((CPieceObj*)pObj, pPBrd);
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
+            InvertPlayingPieceOnBoard(&static_cast<CPieceObj&>(pObj), pPBrd);
     }
 }
 
@@ -462,18 +547,17 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd
     SetModifiedFlag();
 }
 
-void CGamDoc::ChangePlayingPieceFacingListOnBoard(CPtrList *pLst,
+void CGamDoc::ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
     CPlayBoard* pPBrd, int nFacingDegCW)
 {
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
+        CDrawObj& pObj = **pos;
         // Only pieces and markers are rotated. Others are left as they are.
-        if (pObj->GetType() == CDrawObj::drawPieceObj)
-            ChangePlayingPieceFacingOnBoard((CPieceObj*)pObj, pPBrd, nFacingDegCW);
-        else if (pObj->GetType() == CDrawObj::drawMarkObj)
-            ChangeMarkerFacingOnBoard((CMarkObj*)pObj, pPBrd, nFacingDegCW);
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
+            ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pObj), pPBrd, nFacingDegCW);
+        else if (pObj.GetType() == CDrawObj::drawMarkObj)
+            ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pObj), pPBrd, nFacingDegCW);
     }
 }
 
@@ -529,35 +613,34 @@ void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj *pObj, CPlayBoard* pPBrd,
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::DeleteObjectsInList(CPtrList *pLst)
+void CGamDoc::DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pLst)
 {
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
+        CDrawObj& pObj = **pos;
         // Only nonpieces are deleted. Pieces are left as they were.
-        if (pObj->GetType() != CDrawObj::drawPieceObj)
+        if (pObj.GetType() != CDrawObj::drawPieceObj)
         {
-            if (pObj->GetType() == CDrawObj::drawMarkObj)
-                RecordObjectDelete(pObj->GetObjectID());
+            if (pObj.GetType() == CDrawObj::drawMarkObj)
+                RecordObjectDelete(pObj.GetObjectID());
 
-            CPlayBoard* pPBrd = FindObjectOnBoard(pObj);
+            CPlayBoard* pPBrd = FindObjectOnBoard(&pObj);
             ASSERT(pPBrd != NULL);
-            pPBrd->RemoveObject(pObj);
+            pPBrd->RemoveObject(&pObj);
 
             // Erase any associated text
-            SetGameElementString(MakeObjectIDElement(pObj->GetObjectID()), NULL);
+            SetGameElementString(MakeObjectIDElement(pObj.GetObjectID()), NULL);
 
             if (!IsQuietPlayback())
             {
                 CGamDocHint hint;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
-                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+                hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
                 UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
             }
             SetModifiedFlag();
 
-            delete pObj;
+            delete &pObj;
         }
     }
     UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
@@ -579,13 +662,12 @@ void CGamDoc::SetObjectText(GameElement elem, LPCTSTR pszObjText)
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::SetObjectLockdownList(CPtrList *pLst, BOOL bLockState)
+void CGamDoc::SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState)
 {
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
-        SetObjectLockdown(pObj, bLockState);
+        CDrawObj& pObj = **pos;
+        SetObjectLockdown(&pObj, bLockState);
     }
 }
 
@@ -876,18 +958,17 @@ void CGamDoc::RemoveObjectFromCurrentLocation(CDrawObj* pObj)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::FindObjectListUnionRect(CPtrList* pLst, CRect& rct)
+void CGamDoc::FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct)
 {
     rct.SetRectEmpty();
 
-    POSITION pos;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
+        CDrawObj& pObj = **pos;
         if (rct.IsRectEmpty())
-            rct = pObj->GetRect();
+            rct = pObj.GetRect();
         else
-            rct |= pObj->GetRect();
+            rct |= pObj.GetRect();
     }
 }
 

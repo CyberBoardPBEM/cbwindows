@@ -614,7 +614,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
             pSLst->PurgeList(FALSE);
             m_pDoc->AssignNewMoveGroup();
-            size_t temp = m_pDoc->PlaceObjectListInTray(m_listPtr,
+            size_t temp = m_pDoc->PlaceObjectTableInTray(m_listPtr,
                 pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
