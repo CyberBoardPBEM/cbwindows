@@ -608,32 +608,46 @@ CRect CSelList::GetPiecesEnclosingRect(BOOL bIncludeMarkers /* = TRUE */) const
     return rct;
 }
 
-void CSelList::LoadListWithObjectPtrs(CPtrList& pList,
-    BOOL bPiecesOnly /* = FALSE*/, BOOL bVisualOrder /* = FALSE */)
+// Loads the table with the CDrawObj pointers of playing pieces and markers.
+void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl,
+    CSelList::ObjTypes objTypes, BOOL bVisualOrder)
 {
-    pList.RemoveAll();
+    pTbl.clear();
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
-        if (bPiecesOnly)
-        {
-            if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
-                pList.AddTail(pSel->m_pObj.get());
+        bool match;
+        switch (objTypes) {
+            case otPieces:
+                match = pSel->m_pObj->GetType() == CDrawObj::drawPieceObj;
+                break;
+            case otPiecesMarks: {
+                CDrawObj::CDrawObjType type = pSel->m_pObj->GetType();
+                match = type == CDrawObj::drawPieceObj || type == CDrawObj::drawMarkObj;
+                break;
+            }
+            case otAll:
+                match = true;
+                break;
+            default:
+                AfxThrowInvalidArgException();
         }
-        else
-            pList.AddTail(pSel->m_pObj.get());
+        if (match)
+            pTbl.push_back(pSel->m_pObj.get());
     }
-    // This is a backdoor cheat....Since we know the original view and
-    // hence the board associated, we can call the draw list
+    if (pTbl.empty())
+        return;
+    // This is a bit of a cheat....Since we know the originating view and
+    // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
     CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
-        pDwg->ArrangeObjectListInVisualOrder(pList);
+        pDwg->ArrangeObjectPtrTableInVisualOrder(pTbl);
     else
-        pDwg->ArrangeObjectListInDrawOrder(pList);
+        pDwg->ArrangeObjectPtrTableInDrawOrder(pTbl);
 }
 
 BOOL CSelList::HasPieces() const
@@ -840,31 +854,5 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
         pDwg->ArrangePieceTableInVisualOrder(pTbl);
     else
         pDwg->ArrangePieceTableInDrawOrder(pTbl);
-}
-
-// Loads the table with the CDrawObj pointers of playing pieces and markers.
-void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, BOOL bVisualOrder /* = TRUE */)
-{
-    pTbl.clear();
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
-    {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        ASSERT(pSel != NULL);
-        CDrawObj::CDrawObjType type = pSel->m_pObj->GetType();
-        if (type == CDrawObj::drawPieceObj || type == CDrawObj::drawMarkObj)
-            pTbl.push_back(pSel->m_pObj.get());
-    }
-    if (pTbl.empty())
-        return;
-    // This is a bit of a cheat....Since we know the originating view and
-    // thus the board associated with it, we can call the draw list
-    // method the arrange the pieces in the proper visual order.
-    CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
-    ASSERT(pDwg != NULL);
-    if (bVisualOrder)
-        pDwg->ArrangeObjectPtrTableInVisualOrder(pTbl);
-    else
-        pDwg->ArrangeObjectPtrTableInDrawOrder(pTbl);
 }
 

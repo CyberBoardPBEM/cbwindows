@@ -734,15 +734,14 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
     if (pntPrev == CPoint(-1, -1))
     {
         // Draw a line for each piece to the opening location
-        CPtrList listObjs;
-        pView->GetSelectList()->LoadListWithObjectPtrs(listObjs, FALSE);
-        POSITION pos = listObjs.GetHeadPosition();
-        while (pos != NULL)
+        std::vector<CB::not_null<CDrawObj*>> listObjs;
+        pView->GetSelectList()->LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
+        for (auto pos = listObjs.begin() ; pos != listObjs.end() ; ++pos)
         {
-            CPieceObj* pObj = (CPieceObj*)listObjs.GetNext(pos);
-            ASSERT(pObj->GetType() == CDrawObj::drawPieceObj ||
-                pObj->GetType() == CDrawObj::drawMarkObj);
-            CRect rct = pObj->GetRect();
+            CDrawObj& pObj = **pos;
+            ASSERT(pObj.GetType() == CDrawObj::drawPieceObj ||
+                pObj.GetType() == CDrawObj::drawMarkObj);
+            CRect rct = pObj.GetRect();
             CPoint pnt = GetMidRect(rct);
             pDoc->IndicateBoardPlotLine(pPBrd, pnt, point);
         }

@@ -224,10 +224,10 @@ public:
     void RemoveObject(const CDrawObj& pObj, BOOL bInvalidate = FALSE);
     CSelection* FindObject(const CDrawObj& pObj) const;
     // -------- //
-    void LoadListWithObjectPtrs(CPtrList& pList, BOOL bPiecesOnly = FALSE,
-        BOOL bVisualOrder = FALSE);
+    enum ObjTypes { otInvalid, otPieces, otPiecesMarks, otAll };
+    void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, ObjTypes objTypes,
+        BOOL bVisualOrder);
     void LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder = TRUE);
-    void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, BOOL bVisualOrder = TRUE);
     // -------- //
     enum LoadFilter { LF_NOTOWNED, LF_OWNED, LF_BOTH };
     void LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned, BOOL bVisualOrder = TRUE);

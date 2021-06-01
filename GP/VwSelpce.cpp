@@ -141,7 +141,7 @@ void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             m_tblSel.clear();
             return;
         }
-        pSLst->LoadTableWithObjectPtrs(m_tblSel);
+        pSLst->LoadTableWithObjectPtrs(m_tblSel, CSelList::otPiecesMarks, TRUE);
 
         m_listSel.SetItemMap(&m_tblSel);
     }

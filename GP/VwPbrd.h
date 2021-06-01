@@ -153,7 +153,7 @@ protected:
     BOOL        m_bWheelRotation;   // Indicates the type of rotation being done
     CPoint      m_pntWheelMid;      // The wheel rotation point
     CUIntArray  m_tblCurAngles;     // Original angles of pieces
-    CPtrList    m_tblCurPieces;     // Pieces being rotated
+    std::vector<CB::not_null<CDrawObj*>> m_tblCurPieces;     // Pieces being rotated
     CUIntArray  m_tblXMidPnt;       // X coord of piece midpoint
     CUIntArray  m_tblYMidPnt;       // Y coord of piece midpoint
 

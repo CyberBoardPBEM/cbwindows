@@ -356,7 +356,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         if (m_selList.GetCount() > 0)
         {
             std::vector<CB::not_null<CDrawObj*>> tblObjPtrs;
-            m_selList.LoadTableWithObjectPtrs(tblObjPtrs);
+            m_selList.LoadTableWithObjectPtrs(tblObjPtrs, CSelList::otPiecesMarks, TRUE);
             ar << value_preserving_cast<DWORD>(tblObjPtrs.size());
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
@@ -787,12 +787,12 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
 
         // Whoooopppp...Whoooopppp!!! Drop occurred here....
         DragKillAutoScroll();
-        CPtrList listObjs;
-        pSLst->LoadListWithObjectPtrs(listObjs);
+        std::vector<CB::not_null<CDrawObj*>> listObjs;
+        pSLst->LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc->AssignNewMoveGroup();
-        pDoc->PlaceObjectListOnBoard(&listObjs, rctObjs.TopLeft(), m_pPBoard);
+        pDoc->PlaceObjectListOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard);
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -800,7 +800,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
             m_pPBoard->IsNonOwnerAccessAllowed() ||
             m_pPBoard->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
         {
-            SelectAllObjectsInList(&listObjs);  // Reselect on this board.
+            SelectAllObjectsInTable(listObjs);  // Reselect on this board.
         }
 
         CFrameWnd* pFrame = GetParentFrame();
@@ -1197,11 +1197,11 @@ void CPlayBoardView::OnEditClear()
     if (AfxMessageBox(IDS_WARN_DELETEMARKERS, MB_YESNO | MB_ICONQUESTION) != IDYES)
         return;
 
-    CPtrList listPtr;
-    m_selList.LoadListWithObjectPtrs(listPtr);
+    std::vector<CB::not_null<CDrawObj*>> listPtr;
+    m_selList.LoadTableWithObjectPtrs(listPtr, CSelList::otAll, FALSE);
     m_selList.PurgeList(TRUE);                  // Purge selections
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->DeleteObjectsInList(&listPtr);
+    GetDocument()->DeleteObjectsInList(listPtr);
 }
 
 void CPlayBoardView::OnUpdateEditClear(CCmdUI* pCmdUI)
@@ -1388,7 +1388,7 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
     std::vector<CB::not_null<CDrawObj*>> tblObjs;
-    m_selList.LoadTableWithObjectPtrs(tblObjs);
+    m_selList.LoadTableWithObjectPtrs(tblObjs, CSelList::otPiecesMarks, TRUE);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
 
@@ -1429,7 +1429,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
     std::vector<CB::not_null<CDrawObj*>> tblObjs;
-    m_selList.LoadTableWithObjectPtrs(tblObjs);
+    m_selList.LoadTableWithObjectPtrs(tblObjs, CSelList::otPiecesMarks, TRUE);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
 
@@ -1478,16 +1478,16 @@ void CPlayBoardView::OnActToFront()
     if (rct.IsRectEmpty())
         return;
 
-    CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(listObjs);
+    std::vector<CB::not_null<CDrawObj*>> listObjs;
+    m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectListOnBoard(&listObjs, rct.TopLeft(),
+    GetDocument()->PlaceObjectListOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard, placeTop);
 
-    SelectAllObjectsInList(&listObjs);  // Reselect pieces
+    SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
 
 void CPlayBoardView::OnUpdateActToFront(CCmdUI* pCmdUI)
@@ -1504,16 +1504,16 @@ void CPlayBoardView::OnActToBack()
     if (rct.IsRectEmpty())
         return;
 
-    CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(listObjs);
+    std::vector<CB::not_null<CDrawObj*>> listObjs;
+    m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectListOnBoard(&listObjs, rct.TopLeft(),
+    GetDocument()->PlaceObjectListOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard, placeBack);
 
-    SelectAllObjectsInList(&listObjs);  // Reselect pieces
+    SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
 
 void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
@@ -1526,15 +1526,15 @@ void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
 
 void CPlayBoardView::OnActTurnOver()
 {
-    CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(listObjs);
+    std::vector<CB::not_null<CDrawObj*>> listObjs;
+    m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceListOnBoard(&listObjs, m_pPBoard);
+    GetDocument()->InvertPlayingPieceListOnBoard(listObjs, m_pPBoard);
 
-    SelectAllObjectsInList(&listObjs);  // Reselect pieces
+    SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
 
 void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
@@ -1591,17 +1591,17 @@ void CPlayBoardView::OnActPlotDone()
         ptPrev -= CSize(rct.Width() / 2, rct.Height() / 2);
         AdjustPoint(ptPrev);
 
-        CPtrList listObjs;
-        m_selList.LoadListWithObjectPtrs(listObjs);
+        std::vector<CB::not_null<CDrawObj*>> listObjs;
+        m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         m_selList.PurgeList(TRUE);
 
         GetDocument()->AssignNewMoveGroup();
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument()->PlaceObjectListOnBoard(&listObjs, ptPrev, m_pPBoard);
+        GetDocument()->PlaceObjectListOnBoard(listObjs, ptPrev, m_pPBoard);
         m_selList.PurgeList(TRUE);          // Purge former selections
-        SelectAllObjectsInList(&listObjs);  // Select on this board.
+        SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
     m_pPBoard->SetPlotMoveMode(FALSE);
     GetDocument()->UpdateAllBoardIndicators(*m_pPBoard);
@@ -1695,16 +1695,16 @@ void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
 void CPlayBoardView::OnRotatePiece(UINT nID)
 {
     int nFacing5DegCW = nID - ID_ACT_ROTATE_0;
-    CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(listObjs);
+    std::vector<CB::not_null<CDrawObj*>> listObjs;
+    m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->ChangePlayingPieceFacingListOnBoard(&listObjs, m_pPBoard,
+    GetDocument()->ChangePlayingPieceFacingListOnBoard(listObjs, m_pPBoard,
         5 * nFacing5DegCW);             // Convert to degrees
 
-    SelectAllObjectsInList(&listObjs);  // Reselect pieces
+    SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
 
 void CPlayBoardView::OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID)
@@ -1745,29 +1745,29 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
 {
     CGamDoc* pDoc = GetDocument();
     int nRelativeRotation = (int)wParam;
-    ASSERT(m_tblCurPieces.GetCount() > 0);
-    ASSERT(m_tblCurAngles.GetSize() == m_tblCurPieces.GetCount());
+    ASSERT(!m_tblCurPieces.empty());
+    ASSERT(value_preserving_cast<size_t>(m_tblCurAngles.GetSize()) == m_tblCurPieces.size());
 
-    POSITION pos = m_tblCurPieces.GetHeadPosition();
-    for (int i = 0; pos != NULL; i++)
+    auto pos = m_tblCurPieces.begin();
+    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
     {
         int nAngle = m_tblCurAngles[i] + nRelativeRotation;
         nAngle += nAngle < 0 ? 360 : 0;     // Shift to positive values
         nAngle %= 360;                      // Keep to within a circle
 
-        CDrawObj* pDObj = (CDrawObj*)m_tblCurPieces.GetNext(pos);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pDoc->ChangePlayingPieceFacingOnBoard((CPieceObj*)pDObj, m_pPBoard, nAngle);
-        else if (pDObj->GetType() == CDrawObj::drawMarkObj)
-            pDoc->ChangeMarkerFacingOnBoard((CMarkObj*)pDObj, m_pPBoard, nAngle);
+        CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
+            pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
+        else if (pDObj.GetType() == CDrawObj::drawMarkObj)
+            pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
         if (m_bWheelRotation &&
-            (pDObj->GetType() == CDrawObj::drawPieceObj || pDObj->GetType() == CDrawObj::drawMarkObj))
+            (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Calculate new rotated mid-point for object.
             CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                 CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]), nRelativeRotation);
-            CSize sizeDelta = pntRotate - GetMidRect(pDObj->GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard, pDObj, sizeDelta);
+            CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
+            pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
         }
     }
     return (LRESULT)0;
@@ -1794,33 +1794,33 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     // Get a list of the selected pieces and save their current
     // rotations.
     m_tblCurAngles.RemoveAll();
-    m_tblCurPieces.RemoveAll();
+    m_tblCurPieces.clear();
     m_tblXMidPnt.RemoveAll();
     m_tblYMidPnt.RemoveAll();
 
-    m_selList.LoadListWithObjectPtrs(m_tblCurPieces);
+    m_selList.LoadTableWithObjectPtrs(m_tblCurPieces, CSelList::otAll, FALSE);
 
     CRect rctGroupRect = m_selList.GetPiecesEnclosingRect();
     m_pntWheelMid = GetMidRect(rctGroupRect);
 
-    POSITION pos = m_tblCurPieces.GetHeadPosition();
-    for (int i = 0; pos != NULL; i++)
+    auto pos = m_tblCurPieces.begin();
+    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
     {
-        CDrawObj* pDObj = (CDrawObj*)m_tblCurPieces.GetNext(pos);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
+        CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pObj = (CPieceObj*)pDObj;
-            m_tblCurAngles.Add(pPTbl->GetPieceFacing(pObj->m_pid));
+            CPieceObj& pObj = static_cast<CPieceObj&>(pDObj);
+            m_tblCurAngles.Add(pPTbl->GetPieceFacing(pObj.m_pid));
         }
-        else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+        else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
-            CMarkObj* pObj = (CMarkObj*)pDObj;
-            m_tblCurAngles.Add(pObj->GetFacing());
+            CMarkObj& pObj = static_cast<CMarkObj&>(pDObj);
+            m_tblCurAngles.Add(pObj.GetFacing());
         }
         if (m_bWheelRotation &&
-            (pDObj->GetType() == CDrawObj::drawPieceObj || pDObj->GetType() == CDrawObj::drawMarkObj))
+            (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
-            CPoint midPoint = GetMidRect(pDObj->GetEnclosingRect());
+            CPoint midPoint = GetMidRect(pDObj.GetEnclosingRect());
             m_tblXMidPnt.Add((UINT)midPoint.x);
             m_tblYMidPnt.Add((UINT)midPoint.y);
         }
@@ -1834,27 +1834,27 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     INT_PTR nDlgResult = dlg.DoModal();
 
     // Restore angles before possibly recording the operation.
-    pos = m_tblCurPieces.GetHeadPosition();
-    for (int i = 0; pos != NULL; i++)
+    pos = m_tblCurPieces.begin();
+    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++)
     {
-        CDrawObj* pDObj = (CDrawObj*)m_tblCurPieces.GetNext(pos);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
+        CDrawObj& pDObj = **pos;
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
-            pDoc->ChangePlayingPieceFacingOnBoard((CPieceObj*)pDObj,
+            pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj),
                 m_pPBoard, m_tblCurAngles[i]);
         }
-        else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+        else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
-            pDoc->ChangeMarkerFacingOnBoard((CMarkObj*)pDObj, m_pPBoard,
+            pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard,
                 m_tblCurAngles[i]);
         }
         if (m_bWheelRotation &&
-            (pDObj->GetType() == CDrawObj::drawPieceObj || pDObj->GetType() == CDrawObj::drawMarkObj))
+            (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Restore original position
             CSize sizeDelta = CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]) -
-                GetMidRect(pDObj->GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard, pDObj, sizeDelta);
+                GetMidRect(pDObj.GetEnclosingRect());
+            pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
         }
     }
     // Restore recording mode if it was active.
@@ -1864,31 +1864,31 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     {
         // Rotation was accepted. Make the final changes.
         pDoc->AssignNewMoveGroup();
-        POSITION pos = m_tblCurPieces.GetHeadPosition();
-        for (int i = 0; pos != NULL; i++)
+        auto pos = m_tblCurPieces.begin();
+        for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
         {
             int nAngle = m_tblCurAngles[i] + dlg.m_nRelativeRotation;
             nAngle += nAngle < 0 ? 360 : 0;
             nAngle %= 360;                      // Keep to within a circle
 
-            CDrawObj* pDObj = (CDrawObj*)m_tblCurPieces.GetNext(pos);
+            CDrawObj& pDObj = **pos;
 
-            if (pDObj->GetType() == CDrawObj::drawPieceObj)
+            if (pDObj.GetType() == CDrawObj::drawPieceObj)
             {
-                pDoc->ChangePlayingPieceFacingOnBoard((CPieceObj*)pDObj, m_pPBoard, nAngle);
+                pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
             }
-            else if (pDObj->GetType() == CDrawObj::drawMarkObj)
+            else if (pDObj.GetType() == CDrawObj::drawMarkObj)
             {
-                pDoc->ChangeMarkerFacingOnBoard((CMarkObj*)pDObj, m_pPBoard, nAngle);
+                pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
             }
             if (m_bWheelRotation &&
-                (pDObj->GetType() == CDrawObj::drawPieceObj || pDObj->GetType() == CDrawObj::drawMarkObj))
+                (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
             {
                 // Calculate new rotated mid-point for object.
                 CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                     CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]), dlg.m_nRelativeRotation);
-                CSize sizeDelta = pntRotate - GetMidRect(pDObj->GetEnclosingRect());
-                pDoc->PlaceObjectOnBoard(m_pPBoard, pDObj, sizeDelta);
+                CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
+                pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
             }
         }
         m_selList.UpdateObjects(TRUE, FALSE);
@@ -1897,7 +1897,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         InvalidateRect(rctGroupRect, FALSE);
     }
     m_tblCurAngles.RemoveAll();
-    m_tblCurPieces.RemoveAll();
+    m_tblCurPieces.clear();
     m_tblXMidPnt.RemoveAll();
     m_tblYMidPnt.RemoveAll();
 }
@@ -2137,11 +2137,11 @@ void CPlayBoardView::OnActLockObject()
     // to do a lock.
     BOOL bLockState = nSet != 0 ? FALSE : TRUE;
 
-    CPtrList listObjs;
-    m_selList.LoadListWithObjectPtrs(listObjs);
+    std::vector<CB::not_null<CDrawObj*>> listObjs;
+    m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->SetObjectLockdownList(&listObjs, bLockState);
+    GetDocument()->SetObjectLockdownList(listObjs, bLockState);
 
     if (m_pPBoard->GetLocksEnforced() && bLockState)
         m_selList.PurgeList(TRUE);          // Purge former selections
