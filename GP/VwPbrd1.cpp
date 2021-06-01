@@ -100,11 +100,11 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             CString strTip;
             CString strTitle;
             if (pDoc->IsShowingObjectTips())
-                pDoc->GetTipTextForObject(pDObj, strTip, &strTitle);
+                pDoc->GetTipTextForObject(*pDObj, strTip, &strTitle);
 
             // All this stuff is used to annotate tips with owner names
             // when player accounts are active.
-            if (pDoc->HasPlayers() && pDObj != NULL && pDObj->GetType() == CDrawObj::drawPieceObj)
+            if (pDoc->HasPlayers() && pDObj->GetType() == CDrawObj::drawPieceObj)
             {
                 CPieceObj* pPObj = (CPieceObj*)pDObj;
                 if (pPObj->IsOwned() &&

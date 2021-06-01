@@ -316,11 +316,11 @@ public:
     CString     GetGameElementString(GameElement gelem);
     BOOL        HasGameElementString(GameElement gelem);
     void        SetGameElementString(GameElement gelem, LPCTSTR pszString);
-    void        GetTipTextForObject(CDrawObj* pDObj, CString &strTip, CString* pStrTitle = NULL);
-    GameElement GetGameElementCodeForObject(CDrawObj* pDObj, BOOL bBottomSide = FALSE);
-    GameElement GetVerifiedGameElementCodeForObject(CDrawObj* pDObj, BOOL bBottomSide = FALSE);
+    void        GetTipTextForObject(const CDrawObj& pDObj, CString &strTip, CString* pStrTitle = NULL);
+    GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
+    GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
     void        DoEditPieceText(PieceID pid, BOOL bEditTop);
-    void        DoEditObjectText(CDrawObj* pDObj);
+    void        DoEditObjectText(const CDrawObj& pDObj);
 
     void DoInitialUpdate();
     // Forced override of this (NOTE not virtual)
@@ -378,16 +378,16 @@ public:
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
-    void InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard *pPBrd);
+    void InvertPlayingPieceOnBoard(CPieceObj& pObj, CPlayBoard *pPBrd);
     void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd);
     void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
 
-    void ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd,
+    void ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
         int nFacingDegCW);
     void ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
         CPlayBoard* pPBrd, int nFacingDegCW);
     void ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW);
-    void ChangeMarkerFacingOnBoard(CMarkObj* pObj, CPlayBoard* pPBrd,
+    void ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
         int nFacingDegCW);
     void SetPieceOwnership(PieceID pid, DWORD dwOwnerMask);
     void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask);
@@ -402,7 +402,7 @@ public:
     void DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SetObjectText(GameElement elem, LPCTSTR pszObjText);
     void SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState);
-    void SetObjectLockdown(CDrawObj* pDObj, BOOL bLockState);
+    void SetObjectLockdown(CDrawObj& pDObj, BOOL bLockState);
 
     BOOL RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
         BOOL bTrayHintAllowed = TRUE);

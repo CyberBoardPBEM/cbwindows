@@ -556,9 +556,9 @@ public:
 
     void SetPiece(CRect& rct, PieceID pid);
 
-    BOOL IsOwned();
-    BOOL IsOwnedBy(DWORD dwMask);
-    BOOL IsOwnedButNotByCurrentPlayer();
+    BOOL IsOwned() const;
+    BOOL IsOwnedBy(DWORD dwMask) const;
+    BOOL IsOwnedButNotByCurrentPlayer() const;
     void SetOwnerMask(DWORD dwMask);
 
     virtual enum CDrawObjType GetType() const override { return drawPieceObj; }

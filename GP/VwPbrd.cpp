@@ -361,7 +361,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
                 CDrawObj& pObj = *tblObjPtrs.at(i);
-                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(&pObj));
+                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(pObj));
             }
         }
         else
@@ -710,7 +710,7 @@ NASTY_GOTO_TARGET:
 
             if (dlg.DoModal() == IDOK)
             {
-                GameElement elem = pDoc->GetGameElementCodeForObject(&pObj);
+                GameElement elem = pDoc->GetGameElementCodeForObject(pObj);
                 pDoc->SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL :
                     (LPCTSTR)dlg.m_strText);
             }
@@ -1757,9 +1757,9 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
 
         CDrawObj& pDObj = **pos;
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
+            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
-            pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
+            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
@@ -1840,12 +1840,12 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         CDrawObj& pDObj = **pos;
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
-            pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj),
+            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
                 m_pPBoard, m_tblCurAngles[i]);
         }
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
-            pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard,
+            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard,
                 m_tblCurAngles[i]);
         }
         if (m_bWheelRotation &&
@@ -1875,11 +1875,11 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
             if (pDObj.GetType() == CDrawObj::drawPieceObj)
             {
-                pDoc->ChangePlayingPieceFacingOnBoard(&static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
+                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
             }
             else if (pDObj.GetType() == CDrawObj::drawMarkObj)
             {
-                pDoc->ChangeMarkerFacingOnBoard(&static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
+                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
             }
             if (m_bWheelRotation &&
                 (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
@@ -2110,7 +2110,7 @@ void CPlayBoardView::OnEditElementText()
     ASSERT(m_selList.IsSingleSelect() && (m_selList.HasMarkers() || m_selList.HasPieces()));
 
     CDrawObj& pDObj = *m_selList.GetHead()->m_pObj;
-    GetDocument()->DoEditObjectText(&pDObj);
+    GetDocument()->DoEditObjectText(pDObj);
     NotifySelectListChange();       // Make sure indicators are updated
 }
 

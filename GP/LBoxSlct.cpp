@@ -136,13 +136,13 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
     {
         CDrawObj& pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj);
+        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
         rct = rctLeft;
     }
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         CDrawObj& pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, TRUE);
+        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
         rct = rctRight;
     }
     else
@@ -165,8 +165,8 @@ void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
 BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 {
     CDrawObj& pObj = MapIndexToItem(nItem);
-    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, FALSE);
-    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(&pObj, TRUE);
+    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
+    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
     return elem1 != (GameElement)-1 || elem2 != (GameElement)-1;
 }
 
