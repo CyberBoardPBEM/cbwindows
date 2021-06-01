@@ -695,9 +695,9 @@ void CObjectDelete::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
     if (pPBoard != NULL)
     {
-        CPtrList list;
-        list.AddHead(pObj);
-        pDoc->DeleteObjectsInList(&list);
+        std::vector<CB::not_null<CDrawObj*>> list;
+        list.push_back(pObj);
+        pDoc->DeleteObjectsInTable(list);
     }
 }
 

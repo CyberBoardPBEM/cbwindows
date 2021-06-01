@@ -369,49 +369,23 @@ public:
     void PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
     size_t PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
-    size_t PlaceObjectListInTray(const CPtrList& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
-    size_t PlaceObjectListInTray(std::vector<CB::not_null<CDrawObj*>>& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pTbl);
-        return PlaceObjectListInTray(temp, pYGrp, nPos);
-    }
-    void PlaceObjectListOnBoard(CPtrList *pLst, CPoint pntUpLeft,
-        CPlayBoard *pPBrd, PlacePos ePos = placeDefault);
-    void PlaceObjectListOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPoint pntUpLeft,
-        CPlayBoard* pPBrd, PlacePos ePos = placeDefault)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pLst);
-        PlaceObjectListOnBoard(&temp, pntUpLeft, pPBrd, ePos);
-    }
+    size_t PlaceObjectTableInTray(const std::vector<CB::not_null<CDrawObj*>> & pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
+    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPoint pntUpLeft,
+        CPlayBoard* pPBrd, PlacePos ePos = placeDefault);
     void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
-    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pTbl, CPlayBoard *pPBrd);
+    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pTbl, CPlayBoard* pPBrd);
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
     void InvertPlayingPieceOnBoard(CPieceObj *pObj, CPlayBoard *pPBrd);
-    void InvertPlayingPieceListOnBoard(CPtrList* pLst, CPlayBoard* pPBrd);
-    void InvertPlayingPieceListOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pLst);
-        InvertPlayingPieceListOnBoard(&temp, pPBrd);
-    }
+    void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd);
     void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
 
     void ChangePlayingPieceFacingOnBoard(CPieceObj *pObj, CPlayBoard* pPBrd,
         int nFacingDegCW);
-    void ChangePlayingPieceFacingListOnBoard(CPtrList *pLst,
+    void ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
         CPlayBoard* pPBrd, int nFacingDegCW);
-    void ChangePlayingPieceFacingListOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
-        CPlayBoard* pPBrd, int nFacingDegCW)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pLst);
-        ChangePlayingPieceFacingListOnBoard(&temp, pPBrd, nFacingDegCW);
-    }
     void ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW);
     void ChangeMarkerFacingOnBoard(CMarkObj* pObj, CPlayBoard* pPBrd,
         int nFacingDegCW);
@@ -425,21 +399,9 @@ public:
     void ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg, CPoint ptEnd,
         UINT nLineWd, COLORREF crLine, CLine* pObj);
     void ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList, BOOL bToFront);
-    void DeleteObjectsInList(CPtrList *pList);
-    void DeleteObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pList)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pList);
-        DeleteObjectsInList(&temp);
-    }
+    void DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SetObjectText(GameElement elem, LPCTSTR pszObjText);
-    void SetObjectLockdownList(CPtrList* pLst, BOOL bLockState);
-    void SetObjectLockdownList(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState)
-    {
-        CPtrList temp;
-        CB::Copy(temp, pLst);
-        SetObjectLockdownList(&temp, bLockState);
-    }
+    void SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState);
     void SetObjectLockdown(CDrawObj* pDObj, BOOL bLockState);
 
     BOOL RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
@@ -447,7 +409,7 @@ public:
     void RemoveObjectFromCurrentLocation(CDrawObj* pObj);
     void ExpungeUnusedPiecesFromBoards();
 
-    void FindObjectListUnionRect(CPtrList* pLst, CRect& rct);
+    void FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct);
 
     // Object and piece locator methods...
     BOOL FindPieceCurrentLocation(PieceID pid, CTraySet*& pTraySet,

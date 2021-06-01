@@ -792,7 +792,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc->AssignNewMoveGroup();
-        pDoc->PlaceObjectListOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard);
+        pDoc->PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard);
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1201,7 +1201,7 @@ void CPlayBoardView::OnEditClear()
     m_selList.LoadTableWithObjectPtrs(listPtr, CSelList::otAll, FALSE);
     m_selList.PurgeList(TRUE);                  // Purge selections
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->DeleteObjectsInList(listPtr);
+    GetDocument()->DeleteObjectsInTable(listPtr);
 }
 
 void CPlayBoardView::OnUpdateEditClear(CCmdUI* pCmdUI)
@@ -1484,7 +1484,7 @@ void CPlayBoardView::OnActToFront()
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectListOnBoard(listObjs, rct.TopLeft(),
+    GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard, placeTop);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1510,7 +1510,7 @@ void CPlayBoardView::OnActToBack()
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectListOnBoard(listObjs, rct.TopLeft(),
+    GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard, placeBack);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1532,7 +1532,7 @@ void CPlayBoardView::OnActTurnOver()
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceListOnBoard(listObjs, m_pPBoard);
+    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, m_pPBoard);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
@@ -1599,7 +1599,7 @@ void CPlayBoardView::OnActPlotDone()
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument()->PlaceObjectListOnBoard(listObjs, ptPrev, m_pPBoard);
+        GetDocument()->PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard);
         m_selList.PurgeList(TRUE);          // Purge former selections
         SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
@@ -1701,7 +1701,7 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->ChangePlayingPieceFacingListOnBoard(listObjs, m_pPBoard,
+    GetDocument()->ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard,
         5 * nFacing5DegCW);             // Convert to degrees
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -2141,7 +2141,7 @@ void CPlayBoardView::OnActLockObject()
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->SetObjectLockdownList(listObjs, bLockState);
+    GetDocument()->SetObjectLockdownTable(listObjs, bLockState);
 
     if (m_pPBoard->GetLocksEnforced() && bLockState)
         m_selList.PurgeList(TRUE);          // Purge former selections
