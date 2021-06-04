@@ -386,6 +386,16 @@ public:
     }
 };
 
+/* Like pointers, references do not propagate const.
+    However, unlike operator->(), it is not possible to declare
+    operator.(), so a wrapper like propagate_const can't be
+    created for refs.  Therefore, let's define RefPtr,
+    i.e., a pointer that is not-null, has a constant value,
+    and doesn't own the target, to approximate a ref, and
+    use propagate_const on it.  */
+template<typename T>
+using RefPtr = CB::not_null<CB::propagate_const<T* const>>;
+
 /////////////////////////////////////////////////////////////////////////////
 
 /* Invalid_v<T> is used as the "no-value" value for type T.
