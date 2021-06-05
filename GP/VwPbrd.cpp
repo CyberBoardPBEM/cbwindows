@@ -151,9 +151,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView construction/destruction
 
-CPlayBoardView::CPlayBoardView()
+CPlayBoardView::CPlayBoardView() :
+    m_selList(*this)
 {
-    m_selList.SetView(this);
     m_pPBoard = NULL;
     m_nZoom = fullScale;
     m_nCurToolID = ID_PTOOL_SELECT;
