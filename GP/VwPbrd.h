@@ -51,7 +51,8 @@ protected: // create from serialization only
 
 // Attributes
 public:
-    CGamDoc* GetDocument();
+    const CGamDoc* GetDocument() const;
+    CGamDoc* GetDocument() { return const_cast<CGamDoc*>(std::as_const(*this).GetDocument()); }
     CPlayBoard* GetPlayBoard() { return m_pPBoard; }
 
 // Operations
@@ -94,10 +95,10 @@ public:
 
 // Coordinate scaling...
 public:
-    void WorkspaceToClient(CPoint& point);
-    void WorkspaceToClient(CRect& rect);
-    void ClientToWorkspace(CPoint& point);
-    void ClientToWorkspace(CRect& rect);
+    void WorkspaceToClient(CPoint& point) const;
+    void WorkspaceToClient(CRect& rect) const;
+    void ClientToWorkspace(CPoint& point) const;
+    void ClientToWorkspace(CRect& rect) const;
     void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
 
 // View support
@@ -284,7 +285,7 @@ public:
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
-inline CGamDoc* CPlayBoardView::GetDocument()
+inline const CGamDoc* CPlayBoardView::GetDocument() const
    { return (CGamDoc*)m_pDocument; }
 #endif
 

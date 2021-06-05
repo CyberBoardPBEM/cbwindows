@@ -296,7 +296,7 @@ void CBrdEditView::OnPrepareScaledDC(CDC *pDC)
     PrepareScaledDC(pDC);
 }
 
-void CBrdEditView::ClientToWorkspace(CPoint& point)
+void CBrdEditView::ClientToWorkspace(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     point += (CSize)dpnt;
@@ -305,7 +305,7 @@ void CBrdEditView::ClientToWorkspace(CPoint& point)
     ScalePoint(point, wsize, vsize);
 }
 
-void CBrdEditView::ClientToWorkspace(CRect& rect)
+void CBrdEditView::ClientToWorkspace(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;
@@ -314,7 +314,7 @@ void CBrdEditView::ClientToWorkspace(CRect& rect)
     ScaleRect(rect, wsize, vsize);
 }
 
-void CBrdEditView::WorkspaceToClient(CPoint& point)
+void CBrdEditView::WorkspaceToClient(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -323,7 +323,7 @@ void CBrdEditView::WorkspaceToClient(CPoint& point)
     point -= (CSize)dpnt;
 }
 
-void CBrdEditView::WorkspaceToClient(CRect& rect)
+void CBrdEditView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;

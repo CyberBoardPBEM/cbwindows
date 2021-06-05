@@ -54,22 +54,22 @@ class Piece
     friend CPieceTable;     // For debug access
 
 public:
-    BOOL IsUsed()               { return m_nSide != 0xFF; }
+    BOOL IsUsed() const         { return m_nSide != 0xFF; }
     void SetUnused();
 
     void SetSide(int nSide)     { m_nSide = (BYTE)nSide; }
     void InvertSide()           { m_nSide ^= 1; }
-    int  GetSide()              { return (int)m_nSide; }
-    BOOL IsFrontUp()            { return m_nSide == 0; }
-    BOOL IsBackUp()             { return m_nSide == 1; }
+    int  GetSide() const        { return (int)m_nSide; }
+    BOOL IsFrontUp() const      { return m_nSide == 0; }
+    BOOL IsBackUp() const       { return m_nSide == 1; }
 
     void SetFacing(int nFacing) { m_nFacing = (WORD)nFacing; }
-    int  GetFacing()            { return (int)m_nFacing; }
+    int  GetFacing() const      { return (int)m_nFacing; }
 
-    DWORD GetOwnerMask()        { return m_dwOwnerMask; }
+    DWORD GetOwnerMask() const  { return m_dwOwnerMask; }
     void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned()              { return m_dwOwnerMask != 0; }
-    BOOL IsOwnedBy(DWORD dwMask)  { return (BOOL)(m_dwOwnerMask & dwMask); }
+    BOOL IsOwned() const        { return m_dwOwnerMask != 0; }
+    BOOL IsOwnedBy(DWORD dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
 
     BOOL operator != (const Piece& pce) const
         { return m_nSide != pce.m_nSide || m_nFacing != pce.m_nFacing; }
@@ -118,13 +118,13 @@ public:
     int  GetPieceFacing(PieceID pid);
 
     BOOL IsFrontUp(PieceID pid);
-    BOOL Is2Sided(PieceID pid);
+    BOOL Is2Sided(PieceID pid) const;
     BOOL IsPieceUsed(PieceID pid);
 
-    BOOL IsPieceOwned(PieceID pid);
-    BOOL IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask);
-    BOOL IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc);
-    DWORD GetOwnerMask(PieceID pid);
+    BOOL IsPieceOwned(PieceID pid) const;
+    BOOL IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask) const;
+    BOOL IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc) const;
+    DWORD GetOwnerMask(PieceID pid) const;
     void SetOwnerMask(PieceID pid, DWORD wwMask);
     void ClearAllOwnership();
 
@@ -171,9 +171,16 @@ protected:
     CPieceManager* m_pPMgr;         // To get access to piece defs.
     CGamDoc*       m_pDoc;          // Used for serialize fixups
     // ------- //
-    Piece& GetPiece(PieceID pid);
+    const Piece& GetPiece(PieceID pid) const;
+    Piece& GetPiece(PieceID pid) { return const_cast<Piece&>(std::as_const(*this).GetPiece(pid)); }
     const PieceDef& GetPieceDef(PieceID pid) const;
-    void GetPieceDefinitionPair(PieceID pid, Piece*& pPce, const PieceDef*& pDef);
+    void GetPieceDefinitionPair(PieceID pid, const Piece*& pPce, const PieceDef*& pDef) const;
+    void GetPieceDefinitionPair(PieceID pid, Piece*& pPce, const PieceDef*& pDef)
+    {
+        const Piece* temp;
+        GetPieceDefinitionPair(pid, temp, pDef);
+        pPce = const_cast<Piece*>(temp);
+    }
 
     TileID GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide) const;
 };
