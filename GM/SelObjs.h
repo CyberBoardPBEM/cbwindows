@@ -59,14 +59,14 @@ class CSelection
 {
 // Constructors
 public:
-    CSelection(CBrdEditView* pView, CDrawObj* pObj)
-        : m_pView (pView), m_pObj (pObj), m_rect (pObj->GetRect())     //DFM19991221
+    CSelection(CBrdEditView& pView, CDrawObj& pObj)
+        : m_pView (&pView), m_pObj (&pObj), m_rect (pObj.GetRect())     //DFM19991221
     {}                                                                 //DFM19991221
     virtual ~CSelection() {}
 
 // Attributes
 public:
-    CDrawObj* m_pObj;           // Associated object that is selected
+    RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
     CRect     m_rect;           // Enclosing rect for selected object
 
     virtual HCURSOR GetHandleCursor(int nHandle)
@@ -98,7 +98,7 @@ protected:
 
 // Implementation
 protected:
-    CBrdEditView*   m_pView;            // Selection's view
+    RefPtr<CBrdEditView> m_pView;            // Selection's view
     // -- Class level support methods -- //
     static void SetupTrackingDraw(CDC* pDC);
     static void CleanUpTrackingDraw(CDC* pDC);
@@ -116,8 +116,8 @@ class CSelRect : public CSelection
 {
 // Constructors
 public:
-    CSelRect(CBrdEditView* pView, CRectObj* pObj) : CSelection(pView, pObj)
-        { m_rect = pObj->GetRect(); }
+    CSelRect(CBrdEditView& pView, CRectObj& pObj) : CSelection(pView, pObj)
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:
@@ -139,7 +139,7 @@ class CSelEllipse : public CSelRect
 {
 // Constructors
 public:
-    CSelEllipse(CBrdEditView* pView, CRectObj* pObj) : CSelRect(pView, pObj) {}
+    CSelEllipse(CBrdEditView& pView, CRectObj& pObj) : CSelRect(pView, pObj) {}
 
 // Overrides
 protected:
@@ -153,8 +153,8 @@ class CSelLine : public CSelection
 {
 // Constructors
 public:
-    CSelLine(CBrdEditView* pView, CLine* pObj) : CSelection(pView, pObj)
-        { pObj->GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
+    CSelLine(CBrdEditView& pView, CLine& pObj) : CSelection(pView, pObj)
+        { pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
 
 // Attributes
 public:
@@ -180,7 +180,7 @@ class CSelPoly : public CSelection
 {
 // Constructors
 public:
-    CSelPoly(CBrdEditView* pView, CPolyObj* pObj);
+    CSelPoly(CBrdEditView& pView, CPolyObj& pObj);
     virtual ~CSelPoly() { if (m_pPnts) delete m_pPnts; }
 
 // Attributes
@@ -200,7 +200,7 @@ protected:
     virtual void DrawTrackingImage(CDC* pDC, TrackMode eMode);
     virtual CPoint GetHandleLoc(int nHandleID);
     virtual int GetHandleCount()
-        { return ((CPolyObj*)m_pObj)->m_nPnts; }
+        { return static_cast<const CPolyObj&>(*m_pObj).m_nPnts; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE);
 };
@@ -214,8 +214,8 @@ class CSelGeneric : public CSelection
 {
 // Constructors
 public:
-    CSelGeneric(CBrdEditView* pView, CDrawObj* pObj) : CSelection(pView, pObj)
-        { m_rect = pObj->GetRect(); }
+    CSelGeneric(CBrdEditView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:
@@ -237,8 +237,11 @@ class CSelList : public CPtrList
 {
 // Constructors
 public:
-    CSelList(CBrdEditView* pView) { m_pView = pView; }
-    CSelList() { m_pView = NULL; m_eTrkMode = trkSelected; }
+    CSelList(CBrdEditView& pView) :
+        m_pView(&pView),
+        m_eTrkMode(trkSelected)
+    {
+    }
     ~CSelList() { PurgeList(FALSE); }
 
 // Attributes
@@ -255,7 +258,6 @@ public:
     void CopyToClipboard();
     void Open();
     // -------- //
-    void SetView(CBrdEditView* pView) { m_pView = pView; }
     void SetTrackingMode(TrackMode eTrkMode) { m_eTrkMode = eTrkMode; }
     TrackMode GetTrackingMode() const { return m_eTrkMode; }
     CRect GetEnclosingRect() const { return m_rctEncl; }
@@ -291,7 +293,7 @@ public:
 
 // Implementation
 protected:
-    CBrdEditView* m_pView;          // Selection's view
+    RefPtr<CBrdEditView> m_pView;          // Selection's view
     TrackMode     m_eTrkMode;       // Current list tracking mode.
     CRect         m_rctEncl;        // Enclosing rect.
     // -------- //

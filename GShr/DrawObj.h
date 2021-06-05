@@ -126,9 +126,9 @@ public:
     virtual void Draw(CDC* pDC, TileScale eScale) = 0;
     // Support required by selection objects
 #ifdef GPLAY
-    virtual CSelection* CreateSelectProxy(CPlayBoardView* pView) { return NULL;}
+    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) { return NULL;}
 #else
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView) { return NULL;}
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) { return NULL;}
 #endif
     // ------- //
 #ifndef GPLAY
@@ -256,7 +256,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -289,7 +289,7 @@ public:
 public:
     virtual void Draw(CDC* pDC, TileScale eScale);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     virtual OwnerPtr Clone();  //DFM19991210
 };
@@ -331,9 +331,9 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifdef GPLAY
-    virtual CSelection* CreateSelectProxy(CPlayBoardView* pView);
+    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView);
 #else
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -391,7 +391,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -442,7 +442,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -479,7 +479,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -518,7 +518,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView* pView);
+    virtual CSelection* CreateSelectProxy(CBrdEditView& pView);
 #endif
     // ------- //
 #ifndef GPLAY
@@ -571,7 +571,7 @@ public:
     virtual void Draw(CDC* pDC, TileScale eScale);
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
-    virtual CSelection* CreateSelectProxy(CPlayBoardView* pView);
+    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView);
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);
@@ -636,7 +636,7 @@ public:
     virtual void Draw(CDC* pDC, TileScale eScale);
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt);
-    virtual CSelection* CreateSelectProxy(CPlayBoardView* pView);
+    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView);
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc);
     virtual BOOL Compare(CDrawObj* pObj);

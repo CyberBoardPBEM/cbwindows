@@ -96,8 +96,6 @@ void CSelection::InvalidateHandles()
 // Returns handle rectangle in logical coords.
 CRect CSelection::GetHandleRect(int nHandleID)
 {
-    ASSERT(m_pView != NULL);
-
     // Get the center of the handle in logical coords
     CPoint point = GetHandleLoc(nHandleID);
 
@@ -216,11 +214,11 @@ void CSelRect::MoveHandle(int nHandle, CPoint point)
 void CSelRect::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CRectObj* pObj = (CRectObj*)m_pObj;
+    CRectObj& pObj = static_cast<CRectObj&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj->GetEnclosingRect();
-        CRect rctB = pObj->GetRect();
+        CRect rctA = pObj.GetEnclosingRect();
+        CRect rctB = pObj.GetRect();
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
@@ -231,17 +229,17 @@ void CSelRect::UpdateObject(BOOL bInvalidate,
     {
         // Normal case is when object needs to be updated.
         m_rect.NormalizeRect();
-        pObj->SetRect(m_rect);
+        pObj.SetRect(m_rect);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = pObj->GetRect();
+        m_rect = pObj.GetRect();
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -329,12 +327,12 @@ CRect CSelLine::GetRect()
 void CSelLine::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CLine* pObj = (CLine*)m_pObj;
+    CLine& pObj = static_cast<CLine&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj->GetEnclosingRect();
+        CRect rctA = pObj.GetEnclosingRect();
         CRect rctB;
-        pObj->GetLine(rctB.left, rctB.top, rctB.right, rctB.bottom);
+        pObj.GetLine(rctB.left, rctB.top, rctB.right, rctB.bottom);
         rctB.NormalizeRect();
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
@@ -342,21 +340,21 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
         rctA |= rctB;       // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
     }
-    pObj->SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+    pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj->SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+        pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        pObj->GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+        pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -364,13 +362,13 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
 /////////////////////////////////////////////////////////////////////
 // Polygon Selection Processing
 
-CSelPoly::CSelPoly(CBrdEditView* pView, CPolyObj* pObj) :
+CSelPoly::CSelPoly(CBrdEditView& pView, CPolyObj& pObj) :
     CSelection(pView, pObj)
 {
-    ASSERT(pObj->m_pPnts);
-    m_pPnts = new POINT[pObj->m_nPnts];
-    memcpy(m_pPnts, pObj->m_pPnts, pObj->m_nPnts * sizeof(POINT));
-    m_nPnts = pObj->m_nPnts;
+    ASSERT(pObj.m_pPnts);
+    m_pPnts = new POINT[pObj.m_nPnts];
+    memcpy(m_pPnts, pObj.m_pPnts, pObj.m_nPnts * sizeof(POINT));
+    m_nPnts = pObj.m_nPnts;
 }
 
 void CSelPoly::DrawTrackingImage(CDC* pDC, TrackMode eMode)
@@ -430,11 +428,11 @@ CRect CSelPoly::GetRect()
 void CSelPoly::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CPolyObj* pObj = (CPolyObj*)m_pObj;
+    CPolyObj& pObj = static_cast<CPolyObj&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj->GetEnclosingRect();
-        CRect rctB = pObj->GetRect();
+        CRect rctA = pObj.GetEnclosingRect();
+        CRect rctB = pObj.GetRect();
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
@@ -444,20 +442,20 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj->SetNewPolygon(m_pPnts, m_nPnts);
+        pObj.SetNewPolygon(m_pPnts, m_nPnts);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
         if (m_nPnts) delete m_pPnts;
-        m_pPnts = new POINT[pObj->m_nPnts];
-        memcpy(m_pPnts, pObj->m_pPnts, pObj->m_nPnts * sizeof(POINT));
-        m_nPnts = pObj->m_nPnts;
+        m_pPnts = new POINT[pObj.m_nPnts];
+        memcpy(m_pPnts, pObj.m_pPnts, pObj.m_nPnts * sizeof(POINT));
+        m_nPnts = pObj.m_nPnts;
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -491,10 +489,10 @@ CPoint CSelGeneric::GetHandleLoc(int nHandleID)
 void CSelGeneric::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CDrawObj* pObj = (CRectObj*)m_pObj;
+    CDrawObj& pObj = static_cast<CRectObj&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rct = pObj->GetRect();
+        CRect rct = pObj.GetRect();
         m_pView->WorkspaceToClient(rct);
         rct.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rct);
@@ -504,17 +502,17 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     {
         // Normal case is when object needs to be updated.
         m_rect.NormalizeRect();
-        pObj->SetRect(m_rect);
+        pObj.SetRect(m_rect);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = pObj->GetRect();
+        m_rect = pObj.GetRect();
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -538,7 +536,7 @@ void CSelList::MoveHandle(UINT m_nHandle, CPoint point)
 
 CSelection* CSelList::AddObject(CDrawObj* pObj, BOOL bInvalidate)
 {
-    CSelection* pSel = pObj->CreateSelectProxy(m_pView);
+    CSelection* pSel = pObj->CreateSelectProxy(*m_pView);
     ASSERT(pSel != NULL);
     AddHead(pSel);
     CalcEnclosingRect();
@@ -631,9 +629,8 @@ BOOL CSelList::IsCopyToClipboardPossible() const
         return FALSE;
     CSelection* pSel = ((CSelList*)this)->GetHead();
     ASSERT(pSel != NULL);
-    CDrawObj* pDObj = pSel->m_pObj;
-    ASSERT(pDObj != NULL);
-    return pDObj->GetType() == CDrawObj::drawBitmap;
+    CDrawObj& pDObj = *pSel->m_pObj;
+    return pDObj.GetType() == CDrawObj::drawBitmap;
 }
 
 void CSelList::CopyToClipboard()
@@ -642,10 +639,9 @@ void CSelList::CopyToClipboard()
 
     CSelection* pSel = ((CSelList*)this)->GetHead();
     ASSERT(pSel != NULL);
-    CBitmapImage* pDObj = (CBitmapImage*)pSel->m_pObj;
-    ASSERT(pDObj != NULL);
-    ASSERT(pDObj->GetType() == CDrawObj::drawBitmap);
-    SetClipboardBitmap(m_pView, pDObj->m_bitmap);
+    ASSERT(pSel->m_pObj->GetType() == CDrawObj::drawBitmap);
+    CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel->m_pObj);
+    SetClipboardBitmap(m_pView.get(), pDObj.m_bitmap);
 }
 
 void CSelList::Open()
@@ -654,14 +650,13 @@ void CSelList::Open()
         return;
     CSelection* pSel = ((CSelList*)this)->GetHead();
     ASSERT(pSel != NULL);
-    CText* pDObj = (CText*)pSel->m_pObj;
-    ASSERT(pDObj != NULL);
+    CText& pDObj = static_cast<CText&>(*pSel->m_pObj);
     // AT THIS POINT..THIS ONLY SUPPORTS EDITTING TEXT
-    if (pDObj->GetType() != CDrawObj::drawText)
+    if (pDObj.GetType() != CDrawObj::drawText)
         return;
-    m_pView->DoEditTextDrawingObject(pDObj);
+    m_pView->DoEditTextDrawingObject(&pDObj);
     pSel->InvalidateHandles();
-    pSel->m_rect = pDObj->GetEnclosingRect();
+    pSel->m_rect = pDObj.GetEnclosingRect();
     pSel->InvalidateHandles();
 }
 
@@ -781,7 +776,7 @@ void CSelList::ForAllSelections(void (*pFunc)(CDrawObj* pObj, DWORD dwUser),
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
-        pFunc(pSel->m_pObj, dwUserVal);
+        pFunc(pSel->m_pObj.get(), dwUserVal);
     }
 }
 

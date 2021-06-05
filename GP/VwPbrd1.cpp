@@ -437,8 +437,8 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(pSel->m_pObj);
-        m_tmpLst.AddTail(pSel->m_pObj);
+        pDwg->RemoveObject(pSel->m_pObj.get());
+        m_tmpLst.AddTail(pSel->m_pObj.get());
     }
     if (bToFront)
     {

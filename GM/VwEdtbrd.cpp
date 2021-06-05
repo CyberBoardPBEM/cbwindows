@@ -142,10 +142,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView construction/destruction
 
-CBrdEditView::CBrdEditView()
+CBrdEditView::CBrdEditView() :
+    m_selList(*this)
 {
-    m_selList.SetView(this);
-
     m_bOffScreen = TRUE;
     m_pBoard = NULL;
     m_pBMgr = NULL;
@@ -430,10 +429,10 @@ void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
     while (!m_selList.IsEmpty())
     {
         CSelection* pSel = (CSelection*)m_selList.RemoveHead();
-        pDwg->RemoveObject(pSel->m_pObj);
+        pDwg->RemoveObject(pSel->m_pObj.get());
         if (bInvalidate)
             pSel->Invalidate();
-        delete pSel->m_pObj;
+        delete pSel->m_pObj.get();
         delete pSel;
     }
     GetDocument()->SetModifiedFlag();
@@ -455,8 +454,8 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(pSel->m_pObj);
-        m_tmpLst.AddTail(pSel->m_pObj);
+        pDwg->RemoveObject(pSel->m_pObj.get());
+        m_tmpLst.AddTail(pSel->m_pObj.get());
     }
     if (bToFront)
     {

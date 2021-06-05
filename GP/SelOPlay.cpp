@@ -125,8 +125,6 @@ void CSelection::InvalidateHandles()
 // Returns handle rectangle in logical coords.
 CRect CSelection::GetHandleRect(int nHandleID)
 {
-    ASSERT(m_pView != NULL);
-
     // Get the center of the handle in logical coords
     CPoint point = GetHandleLoc(nHandleID);
 
@@ -242,12 +240,12 @@ CRect CSelLine::GetRect()
 void CSelLine::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CLine* pObj = (CLine*)m_pObj;
+    CLine& pObj = static_cast<CLine&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj->GetEnclosingRect();
+        CRect rctA = pObj.GetEnclosingRect();
         CRect rctB;
-        pObj->GetLine(rctB);
+        pObj.GetLine(rctB);
         rctB.NormalizeRect();
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
@@ -255,21 +253,21 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
         rctA |= rctB;       // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
     }
-    pObj->SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+    pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj->SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+        pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        pObj->GetLine(m_rect);
+        pObj.GetLine(m_rect);
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -311,10 +309,9 @@ CPoint CSelGeneric::GetHandleLoc(int nHandleID)
 void CSelGeneric::UpdateObject(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    CDrawObj* pObj = (CRectObj*)m_pObj;
     if (bInvalidate)
     {
-        CRect rct = pObj->GetRect();
+        CRect rct = m_pObj->GetRect();
         m_pView->WorkspaceToClient(rct);
         rct.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rct);
@@ -324,17 +321,17 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     {
         // Normal case is when object needs to be updated.
         m_rect.NormalizeRect();
-        pObj->SetRect(m_rect);
+        m_pObj->SetRect(m_rect);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = pObj->GetRect();
+        m_rect = m_pObj->GetRect();
     }
     if (bInvalidate)
     {
-        CRect rct = pObj->GetEnclosingRect();
+        CRect rct = m_pObj->GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
     }
 }
@@ -384,7 +381,7 @@ CSelection* CSelList::AddObject(CDrawObj* pObj, BOOL bInvalidate)
     // remove it and then add the new definition.
     if (FindObject(pObj) != NULL)
         RemoveObject(pObj, TRUE);
-    CSelection* pSel = pObj->CreateSelectProxy(m_pView);
+    CSelection* pSel = pObj->CreateSelectProxy(*m_pView);
     ASSERT(pSel != NULL);
     AddHead(pSel);
     CalcEnclosingRect();
@@ -447,7 +444,8 @@ CRect CSelList::GetSnapReferenceRect()
     while (pos != NULL)
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
-        if (pSel->m_pObj == m_pobjSnapReference)
+        if (m_pobjSnapReference &&
+            pSel->m_pObj == m_pobjSnapReference)
         {
             rct = pSel->GetRect();
             break;
@@ -590,7 +588,7 @@ void CSelList::ForAllSelections(void (*pFunc)(CDrawObj* pObj, DWORD dwUser),
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
-        pFunc(pSel->m_pObj, dwUserVal);
+        pFunc(pSel->m_pObj.get(), dwUserVal);
     }
 }
 
@@ -622,15 +620,14 @@ void CSelList::LoadListWithObjectPtrs(CPtrList* pList,
         if (bPiecesOnly)
         {
             if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
-                pList->AddTail(pSel->m_pObj);
+                pList->AddTail(pSel->m_pObj.get());
         }
         else
-            pList->AddTail(pSel->m_pObj);
+            pList->AddTail(pSel->m_pObj.get());
     }
     // This is a backdoor cheat....Since we know the original view and
     // hence the board associated, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    ASSERT(m_pView != NULL);
     CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
@@ -654,7 +651,7 @@ BOOL CSelList::HasPieces() const
 
 BOOL CSelList::HasNonOwnedPieces() const
 {
-    CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
@@ -662,8 +659,8 @@ BOOL CSelList::HasNonOwnedPieces() const
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pSel->m_pObj;
-            if (pPTbl->GetOwnerMask(pPObj->m_pid) == 0)
+            CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel->m_pObj);
+            if (pPTbl->GetOwnerMask(pPObj.m_pid) == 0)
                 return TRUE;
         }
     }
@@ -672,7 +669,7 @@ BOOL CSelList::HasNonOwnedPieces() const
 
 BOOL CSelList::HasOwnedPieces() const
 {
-    CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
@@ -680,8 +677,8 @@ BOOL CSelList::HasOwnedPieces() const
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pSel->m_pObj;
-            if (pPTbl->GetOwnerMask(pPObj->m_pid) != 0)
+            CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel->m_pObj);
+            if (pPTbl->GetOwnerMask(pPObj.m_pid) != 0)
                 return TRUE;
         }
     }
@@ -690,7 +687,7 @@ BOOL CSelList::HasOwnedPieces() const
 
 BOOL CSelList::HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const
 {
-    CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
     POSITION pos = GetHeadPosition();
     while (pos != NULL)
     {
@@ -698,9 +695,9 @@ BOOL CSelList::HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pSel->m_pObj;
-            if (pPTbl->IsPieceOwned(pPObj->m_pid) &&
-               !pPTbl->IsPieceOwnedBy(pPObj->m_pid, dwOwnerMask))
+            CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel->m_pObj);
+            if (pPTbl->IsPieceOwned(pPObj.m_pid) &&
+               !pPTbl->IsPieceOwnedBy(pPObj.m_pid, dwOwnerMask))
             {
                 return TRUE;
             }
@@ -732,7 +729,7 @@ BOOL CSelList::Has2SidedPieces() const
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             if (m_pView->GetDocument()->GetPieceTable()->Is2Sided(
-                    ((CPieceObj*)(pSel->m_pObj))->m_pid))
+                    static_cast<CPieceObj&>(*pSel->m_pObj).m_pid))
                 return TRUE;
         }
     }
@@ -763,7 +760,7 @@ void CSelList::DeselectIfDObjFlagsSet(DWORD dwFlagBits)
     {
         CSelection* pSel = (CSelection*)GetNext(pos);
         if (pSel->m_pObj->GetDObjFlags() & dwFlagBits)
-            tblDeselObjs.push_back(pSel->m_pObj);
+            tblDeselObjs.push_back(pSel->m_pObj.get());
     }
     // Then deselect them...
     for (size_t i = 0; i < tblDeselObjs.size(); i++)
@@ -794,14 +791,13 @@ void CSelList::LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrd
         CSelection* pSel = (CSelection*)GetNext(pos);
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl.push_back(static_cast<CPieceObj*>(pSel->m_pObj)->m_pid);
+            pTbl.push_back(static_cast<CPieceObj&>(*pSel->m_pObj).m_pid);
     }
     if (pTbl.empty())
         return;
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    ASSERT(m_pView != NULL);
     CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
@@ -824,12 +820,12 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
         ASSERT(pSel != NULL);
         if (pSel->m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            CPieceObj* pPObj = (CPieceObj*)pSel->m_pObj;
-            if (eWantOwned == LF_OWNED    && pPTbl->GetOwnerMask(pPObj->m_pid) != 0 ||
-                eWantOwned == LF_NOTOWNED && pPTbl->GetOwnerMask(pPObj->m_pid) == 0 ||
+            CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel->m_pObj);
+            if (eWantOwned == LF_OWNED    && pPTbl->GetOwnerMask(pPObj.m_pid) != 0 ||
+                eWantOwned == LF_NOTOWNED && pPTbl->GetOwnerMask(pPObj.m_pid) == 0 ||
                 eWantOwned == LF_BOTH)
             {
-                pTbl.push_back(pPObj->m_pid);
+                pTbl.push_back(pPObj.m_pid);
             }
         }
     }
@@ -857,14 +853,13 @@ void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTb
         ASSERT(pSel != NULL);
         CDrawObj::CDrawObjType type = pSel->m_pObj->GetType();
         if (type == CDrawObj::drawPieceObj || type == CDrawObj::drawMarkObj)
-            pTbl.push_back(pSel->m_pObj);
+            pTbl.push_back(pSel->m_pObj.get());
     }
     if (pTbl.empty())
         return;
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    ASSERT(m_pView != NULL);
     CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)

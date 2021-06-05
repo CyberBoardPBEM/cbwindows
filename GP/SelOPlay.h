@@ -72,12 +72,13 @@ class CSelection
 {
 // Constructors
 public:
-    CSelection(CPlayBoardView* pView, CDrawObj* pObj)
-        { m_pView = pView; m_pObj = pObj; }
+    CSelection(CPlayBoardView& pView, CDrawObj& pObj) :
+        m_pView(&pView), m_pObj(&pObj)
+    {}
 
 // Attributes
 public:
-    CDrawObj* m_pObj;           // Associated object that is selected
+    RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
     CRect     m_rect;           // Enclosing rect for selected object
 
     virtual HCURSOR GetHandleCursor(int nHandle)
@@ -110,7 +111,7 @@ protected:
 
 // Implementation
 protected:
-    CPlayBoardView* m_pView;            // Selection's view
+    RefPtr<CPlayBoardView> m_pView;            // Selection's view
     // -- Class level support methods -- //
     static void SetupTrackingDraw(CDC* pDC);
     static void CleanUpTrackingDraw(CDC* pDC);
@@ -128,8 +129,8 @@ class CSelLine : public CSelection
 {
 // Constructors
 public:
-    CSelLine(CPlayBoardView* pView, CLine* pObj) : CSelection(pView, pObj)
-        { pObj->GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
+    CSelLine(CPlayBoardView& pView, CLine& pObj) : CSelection(pView, pObj)
+        { pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
 
 // Attributes
 public:
@@ -158,8 +159,8 @@ class CSelGeneric : public CSelection
 {
 // Constructors
 public:
-    CSelGeneric(CPlayBoardView* pView, CDrawObj* pObj) : CSelection(pView, pObj)
-        { m_rect = pObj->GetRect(); }
+    CSelGeneric(CPlayBoardView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:
@@ -182,8 +183,12 @@ class CSelList : public CPtrList
 {
 // Constructors
 public:
-    CSelList(CPlayBoardView* pView) { m_pView = pView; m_pobjSnapReference = NULL; }
-    CSelList() { m_pView = NULL; m_eTrkMode = trkSelected; }
+    CSelList(CPlayBoardView& pView) :
+        m_pView(&pView),
+        m_eTrkMode(trkSelected),
+        m_pobjSnapReference(NULL)
+    {
+    }
     ~CSelList() { PurgeList(FALSE); }
 
 // Attributes
@@ -206,8 +211,7 @@ public:
     void SetSnapReferenceObject(CDrawObj* pObj);
     CRect GetSnapReferenceRect();
     // -------- //
-    void SetView(CPlayBoardView* pView) { m_pView = pView; }
-    CPlayBoardView* GetView() { return m_pView; }
+    CPlayBoardView& GetView() { return *m_pView; }
     void SetTrackingMode(TrackMode eTrkMode) { m_eTrkMode = eTrkMode; }
     TrackMode GetTrackingMode() const { return m_eTrkMode; }
     CRect GetEnclosingRect() { return m_rctEncl; }
@@ -259,7 +263,7 @@ protected:
 
 // Implementation - vars
 protected:
-    CPlayBoardView* m_pView;        // Selection's view
+    RefPtr<CPlayBoardView> m_pView;        // Selection's view
     TrackMode       m_eTrkMode;     // Current list tracking mode.
     CRect           m_rctEncl;      // Enclosing rect.
     CSize           m_sizeMseOffset;// Mouse offset from upper left m_rctEncl
