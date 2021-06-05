@@ -200,9 +200,9 @@ BOOL CPieceTable::IsFrontUp(PieceID pid)
     return GetPiece(pid).IsFrontUp();
 }
 
-BOOL CPieceTable::Is2Sided(PieceID pid)
+BOOL CPieceTable::Is2Sided(PieceID pid) const
 {
-    Piece* pPce;
+    const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     return pDef->Is2Sided();
@@ -216,22 +216,22 @@ void CPieceTable::ClearAllOwnership()
         m_pPieceTbl[static_cast<PieceID>(i)].SetOwnerMask(0);
 }
 
-BOOL CPieceTable::IsPieceOwned(PieceID pid)
+BOOL CPieceTable::IsPieceOwned(PieceID pid) const
 {
     return GetPiece(pid).IsOwned();
 }
 
-BOOL CPieceTable::IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask)
+BOOL CPieceTable::IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask) const
 {
     return GetPiece(pid).IsOwnedBy(dwOwnerMask);
 }
 
-BOOL CPieceTable::IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc)
+BOOL CPieceTable::IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc) const
 {
     return IsPieceOwned(pid) && !IsPieceOwnedBy(pid, pDoc->GetCurrentPlayerMask());
 }
 
-DWORD CPieceTable::GetOwnerMask(PieceID pid)
+DWORD CPieceTable::GetOwnerMask(PieceID pid) const
 {
     return GetPiece(pid).GetOwnerMask();
 }
@@ -290,7 +290,7 @@ CSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, 
 
 TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
 {
-    Piece* pPce;
+    const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
@@ -305,7 +305,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
 
 TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
 {
-    Piece* pPce;
+    const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
@@ -332,7 +332,7 @@ BOOL CPieceTable::IsPieceInvisible(PieceID pid)
 
 TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
 {
-    Piece* pPce;
+    const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     TileID tidBase = pPce->IsFrontUp() ? pDef->GetFrontTID() : pDef->GetBackTID();
@@ -346,7 +346,7 @@ TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
 
 TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 {
-    Piece* pPce;
+    const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     TileID tidBase = pPce->IsFrontUp() ? pDef->GetBackTID() : pDef->GetFrontTID();
@@ -381,7 +381,7 @@ void CPieceTable::Clear()
 
 ///////////////////////////////////////////////////////////////////////
 
-Piece& CPieceTable::GetPiece(PieceID pid)
+const Piece& CPieceTable::GetPiece(PieceID pid) const
 {
     ASSERT(m_pPieceTbl != NULL);
     ASSERT(m_pPieceTbl.Valid(pid));
@@ -394,8 +394,8 @@ const PieceDef& CPieceTable::GetPieceDef(PieceID pid) const
     return m_pPMgr->GetPiece(pid);
 }
 
-void CPieceTable::GetPieceDefinitionPair(PieceID pid, Piece*& pPce,
-    const PieceDef*& pDef)
+void CPieceTable::GetPieceDefinitionPair(PieceID pid, const Piece*& pPce,
+    const PieceDef*& pDef) const
 {
     pPce = &GetPiece(pid);
 
@@ -536,7 +536,7 @@ void CPieceTable::DumpToTextFile(CFile& file)
     char szBfr[256];
     for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
-        Piece* pPce;
+        const Piece* pPce;
         const PieceDef* pDef;
         GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
         wsprintf(szBfr, "PieceID %5.5d: m_nSide=%02X, m_nFacing=%3u, "

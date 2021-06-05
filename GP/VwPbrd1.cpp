@@ -472,7 +472,7 @@ CPoint CPlayBoardView::GetWorkspaceDim()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::WorkspaceToClient(CPoint& point)
+void CPlayBoardView::WorkspaceToClient(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -484,7 +484,7 @@ void CPlayBoardView::WorkspaceToClient(CPoint& point)
     point -= (CSize)dpnt;
 }
 
-void CPlayBoardView::WorkspaceToClient(CRect& rect)
+void CPlayBoardView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -508,7 +508,7 @@ void CPlayBoardView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
     InvalidateRect(&rct, bErase);
 }
 
-void CPlayBoardView::ClientToWorkspace(CPoint& point)
+void CPlayBoardView::ClientToWorkspace(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     point += (CSize)dpnt;
@@ -520,7 +520,7 @@ void CPlayBoardView::ClientToWorkspace(CPoint& point)
         point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
 }
 
-void CPlayBoardView::ClientToWorkspace(CRect& rect)
+void CPlayBoardView::ClientToWorkspace(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;

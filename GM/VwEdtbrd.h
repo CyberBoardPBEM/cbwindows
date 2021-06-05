@@ -85,10 +85,10 @@ public:
 
     CSelList* GetSelectList() { return &m_selList; }
 
-    void ClientToWorkspace(CPoint& point);
-    void ClientToWorkspace(CRect& rect);
-    void WorkspaceToClient(CPoint& point);
-    void WorkspaceToClient(CRect& rect);
+    void ClientToWorkspace(CPoint& point) const;
+    void ClientToWorkspace(CRect& rect) const;
+    void WorkspaceToClient(CPoint& point) const;
+    void WorkspaceToClient(CRect& rect) const;
     void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
     CPoint GetWorkspaceDim();
     void OnPrepareScaledDC(CDC *pDC);

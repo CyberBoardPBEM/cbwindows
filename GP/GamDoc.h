@@ -192,7 +192,8 @@ public:
     CMarkManager* GetMarkManager();
     CBoardManager* GetBoardManager();
     CPieceManager* GetPieceManager();
-    CPieceTable* GetPieceTable() { return m_pPTbl; }
+    const CPieceTable* GetPieceTable() const { return m_pPTbl; }
+    CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
     CTrayManager* GetTrayManager() { return m_pYMgr; }
     CPBoardManager* GetPBoardManager() { return m_pPBMgr; }
     CPlayerManager* GetPlayerManager() { return m_pPlayerMgr; }

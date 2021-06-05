@@ -274,9 +274,9 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         POSITION pos = m_selList.GetHeadPosition();
         while (pos != NULL)
         {
-            CDrawObj* pObj = ((CSelection*)m_selList.GetNext(pos))->m_pObj;
-            if (m_pPBoard->IsObjectOnBoard(pObj))
-                listSelectedObjs.AddTail(pObj);
+            CDrawObj& pObj = *static_cast<CSelection*>(m_selList.GetNext(pos))->m_pObj;
+            if (m_pPBoard->IsObjectOnBoard(&pObj))
+                listSelectedObjs.AddTail(&pObj);
         }
         m_selList.PurgeList();          // Clear former selection indications
         // Reselect any object that are still on the board.
@@ -964,7 +964,7 @@ void CPlayBoardView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEBUG
-CGamDoc* CPlayBoardView::GetDocument() // non-debug version is inline
+const CGamDoc* CPlayBoardView::GetDocument() const // non-debug version is inline
 {
     ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CGamDoc)));
     return (CGamDoc*)m_pDocument;
@@ -2109,8 +2109,8 @@ void CPlayBoardView::OnEditElementText()
 {
     ASSERT(m_selList.IsSingleSelect() && (m_selList.HasMarkers() || m_selList.HasPieces()));
 
-    CDrawObj* pDObj = m_selList.GetHead()->m_pObj;
-    GetDocument()->DoEditObjectText(pDObj);
+    CDrawObj& pDObj = *m_selList.GetHead()->m_pObj;
+    GetDocument()->DoEditObjectText(&pDObj);
     NotifySelectListChange();       // Make sure indicators are updated
 }
 
