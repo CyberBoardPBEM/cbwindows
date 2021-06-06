@@ -365,17 +365,15 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
 CSelPoly::CSelPoly(CBrdEditView& pView, CPolyObj& pObj) :
     CSelection(pView, pObj)
 {
-    ASSERT(pObj.m_pPnts);
-    m_pPnts = new POINT[pObj.m_nPnts];
-    memcpy(m_pPnts, pObj.m_pPnts, pObj.m_nPnts * sizeof(POINT));
-    m_nPnts = pObj.m_nPnts;
+    ASSERT(!pObj.m_Pnts.empty());
+    m_Pnts = pObj.m_Pnts;
 }
 
 void CSelPoly::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 {
-    ASSERT(m_pPnts);
+    ASSERT(!m_Pnts.empty());
     SetupTrackingDraw(pDC);
-    pDC.Polyline(m_pPnts, m_nPnts);
+    pDC.Polyline(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
     CleanUpTrackingDraw(pDC);
 }
 
@@ -387,23 +385,23 @@ HCURSOR CSelPoly::GetHandleCursor(int nHandleID) const
 // Returns handle location in logical coords.
 CPoint CSelPoly::GetHandleLoc(int nHandleID) const
 {
-    ASSERT(m_pPnts);
-    return CPoint(m_pPnts[nHandleID]);
+    ASSERT(m_Pnts.size() > value_preserving_cast<size_t>(nHandleID));
+    return CPoint(m_Pnts[value_preserving_cast<size_t>(nHandleID)]);
 }
 
 void CSelPoly::MoveHandle(int nHandle, CPoint point)
 {
-    ASSERT(m_pPnts);
-    m_pPnts[nHandle] = point;
+    ASSERT(m_Pnts.size() > value_preserving_cast<size_t>(nHandle));
+    m_Pnts[value_preserving_cast<size_t>(nHandle)] = point;
 }
 
 void CSelPoly::Offset(CPoint ptDelta)
 {
-    ASSERT(m_pPnts);
-    for (int i = 0; i < m_nPnts; i++)
+    ASSERT(!m_Pnts.empty());
+    for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
     {
-        m_pPnts[i].x += ptDelta.x;
-        m_pPnts[i].y += ptDelta.y;
+        m_Pnts[i].x += ptDelta.x;
+        m_Pnts[i].y += ptDelta.y;
     }
 }
 
@@ -411,15 +409,15 @@ CRect CSelPoly::GetRect() const
 {
     CRect rct;
     rct.SetRectEmpty();
-    if (m_pPnts == NULL)
+    if (m_Pnts.empty())
         return rct;
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
-    for (int i = 0; i < m_nPnts; i++)
+    for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
     {
-        xmin = CB::min(xmin, m_pPnts[i].x);
-        xmax = CB::max(xmax, m_pPnts[i].x);
-        ymin = CB::min(ymin, m_pPnts[i].y);
-        ymax = CB::max(ymax, m_pPnts[i].y);
+        xmin = CB::min(xmin, m_Pnts[i].x);
+        xmax = CB::max(xmax, m_Pnts[i].x);
+        ymin = CB::min(ymin, m_Pnts[i].y);
+        ymax = CB::max(ymax, m_Pnts[i].y);
     }
     rct.SetRect(xmin, ymin, xmax, ymax);
     return rct;
@@ -442,16 +440,13 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj.SetNewPolygon(m_pPnts, m_nPnts);
+        pObj.SetNewPolygon(m_Pnts);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        if (m_nPnts) delete m_pPnts;
-        m_pPnts = new POINT[pObj.m_nPnts];
-        memcpy(m_pPnts, pObj.m_pPnts, pObj.m_nPnts * sizeof(POINT));
-        m_nPnts = pObj.m_nPnts;
+        m_Pnts = pObj.m_Pnts;
     }
     if (bInvalidate)
     {
