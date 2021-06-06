@@ -359,17 +359,15 @@ class CPolyObj : public CDrawObj
 // Constructors
 public:
     CPolyObj()
-    { m_crLine = RGB(0,0,0); m_crFill = noColor; m_nLineWidth = 0;
-      m_nPnts = 0; m_pPnts = NULL; }
-    ~CPolyObj() { if (m_pPnts != NULL) delete m_pPnts; }
+    { m_crLine = RGB(0,0,0); m_crFill = noColor; m_nLineWidth = 0; }
+    ~CPolyObj() = default;
 
 // Attributes
 public:
     COLORREF m_crFill;
     COLORREF m_crLine;
     UINT     m_nLineWidth;
-    POINT*   m_pPnts;
-    int      m_nPnts;
+    std::vector<POINT> m_Pnts;
 
     virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawPolygon; }
@@ -382,7 +380,7 @@ public:
 // Operations
 public:
     void AddPoint(CPoint pnt);
-    void SetNewPolygon(POINT* pPnts, int nPnts);
+    void SetNewPolygon(const std::vector<POINT>& pnts);
 
 // Overrides
 public:

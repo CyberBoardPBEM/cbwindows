@@ -762,7 +762,7 @@ void CPolyTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point)
             DrawRubberLine(&dc);            // Turn off last rubber line
 
             // Check if back at the original point
-            CPoint pnt(m_pObj->m_pPnts[0]);
+            CPoint pnt(m_pObj->m_Pnts[size_t(0)]);
             if (pnt == point)
             {
                 FinalizePolygon(pView);
@@ -814,7 +814,7 @@ void CPolyTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
 
         pView->AdjustPoint(point);
         // Check if back at the original point
-        CPoint pnt(m_pObj->m_pPnts[0]);
+        CPoint pnt(m_pObj->m_Pnts[size_t(0)]);
         if (pnt == point)
         {
             FinalizePolygon(pView);
@@ -873,7 +873,7 @@ void CPolyTool::FinalizePolygon(CBrdEditView* pView,
     if (m_pObj == NULL)
         return;         // Nothing to do.
 
-    if (m_pObj->m_nPnts >= 2 && !bForceDestroy)
+    if (m_pObj->m_Pnts.size() >= size_t(2) && !bForceDestroy)
     {
         // Update the "dummy" object to make it the real thing.
         m_pObj->SetForeColor(pView->GetForeColor());

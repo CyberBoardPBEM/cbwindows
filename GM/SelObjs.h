@@ -181,14 +181,13 @@ class CSelPoly : public CSelection
 // Constructors
 public:
     CSelPoly(CBrdEditView& pView, CPolyObj& pObj);
-    virtual ~CSelPoly() { if (m_pPnts) delete m_pPnts; }
+    virtual ~CSelPoly() = default;
 
 // Attributes
 public:
     virtual CRect GetRect() const override;
     // -------- //
-    POINT*   m_pPnts;
-    int      m_nPnts;
+    std::vector<POINT> m_Pnts;
 
 // Overrides
 public:
@@ -200,7 +199,7 @@ protected:
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
     virtual CPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override
-        { return static_cast<const CPolyObj&>(*m_pObj).m_nPnts; }
+        { return value_preserving_cast<int>(static_cast<const CPolyObj&>(*m_pObj).m_Pnts.size()); }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
 };

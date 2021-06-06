@@ -391,56 +391,44 @@ CDrawObj::OwnerPtr CEllipse::Clone() const
 
 void CPolyObj::Draw(CDC& pDC, TileScale)
 {
-    if (m_pPnts == NULL)
+    if (m_Pnts.empty())
         return;
     CPen   penEdge;
     CBrush brushFill;
     SetUpDraw(pDC, penEdge, brushFill);
 
     if (m_crFill == noColor)
-        pDC.Polyline(m_pPnts, m_nPnts);
+        pDC.Polyline(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
     else
-        pDC.Polygon(m_pPnts, m_nPnts);
+        pDC.Polygon(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
 
     CleanUpDraw(pDC);
 }
 
 void CPolyObj::AddPoint(CPoint pnt)
 {
-    POINT* pNew = new POINT[m_nPnts + 1];
-    if (m_pPnts != NULL)
-    {
-        memcpy(pNew, m_pPnts, sizeof(POINT) * m_nPnts);
-        delete m_pPnts;
-    }
-    m_pPnts = pNew;
-    m_pPnts[m_nPnts] = pnt;
-    m_nPnts++;
+    m_Pnts.push_back(pnt);
     ComputeExtent();
 }
 
-void CPolyObj::SetNewPolygon(POINT* pPnts, int nPnts)
+void CPolyObj::SetNewPolygon(const std::vector<POINT>& pnts)
 {
-    if (m_pPnts != NULL)
-        delete m_pPnts;
-    m_pPnts = new POINT[nPnts];
-    m_nPnts = nPnts;
-    memcpy(m_pPnts, pPnts, sizeof(POINT) * nPnts);
+    m_Pnts = pnts;
     ComputeExtent();
 }
 
 void CPolyObj::ComputeExtent()
 {
     m_rctExtent.SetRectEmpty();
-    if (m_pPnts == NULL)
+    if (m_Pnts.empty())
         return;
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
-    for (int i = 0; i < m_nPnts; i++)
+    for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
     {
-        xmin = CB::min(xmin, m_pPnts[i].x);
-        xmax = CB::max(xmax, m_pPnts[i].x);
-        ymin = CB::min(ymin, m_pPnts[i].y);
-        ymax = CB::max(ymax, m_pPnts[i].y);
+        xmin = CB::min(xmin, m_Pnts[i].x);
+        xmax = CB::max(xmax, m_Pnts[i].x);
+        ymin = CB::min(ymin, m_Pnts[i].y);
+        ymax = CB::max(ymax, m_Pnts[i].y);
     }
     m_rctExtent.SetRect(xmin, ymin, xmax, ymax);
 }
@@ -469,10 +457,10 @@ void CPolyObj::ForceIntoZone(const CRect& pRctZone)
     CPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
     {
-        for (int i = 0; i < m_nPnts; i++)
+        for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
         {
-            m_pPnts[i].x += pntOffset.x;
-            m_pPnts[i].y += pntOffset.y;
+            m_Pnts[i].x += pntOffset.x;
+            m_Pnts[i].y += pntOffset.y;
         }
         ComputeExtent();
     }
@@ -492,10 +480,10 @@ void CPolyObj::OffsetObject (CPoint offset)
     CDrawObj::OffsetObject (offset);
 
     //  now we handle our part
-    for (int i = 0; i < m_nPnts; i++)
+    for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
     {
-        m_pPnts[i].x += offset.x;
-        m_pPnts[i].y += offset.y;
+        m_Pnts[i].x += offset.x;
+        m_Pnts[i].y += offset.y;
     }
 }
 
@@ -513,9 +501,7 @@ void CPolyObj::CopyAttributes(const CPolyObj& source)
     m_crFill     = source.m_crFill;
     m_crLine     = source.m_crLine;
     m_nLineWidth = source.m_nLineWidth;
-    m_nPnts      = source.m_nPnts;
-    m_pPnts      = new POINT[m_nPnts];
-    memcpy(m_pPnts, source.m_pPnts, m_nPnts * sizeof(POINT));
+    m_Pnts       = source.m_Pnts;
 }
 
 void CPolyObj::Serialize(CArchive& ar)
@@ -526,9 +512,9 @@ void CPolyObj::Serialize(CArchive& ar)
         ar << (DWORD)m_crFill;
         ar << (DWORD)m_crLine;
         ar << (WORD)m_nLineWidth;
-        ar << (WORD)m_nPnts;
-        if (m_nPnts > 0)
-            WriteArchivePoints(ar, m_pPnts, m_nPnts);
+        ar << value_preserving_cast<WORD>(m_Pnts.size());
+        if (!m_Pnts.empty())
+            WriteArchivePoints(ar, m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
     }
     else
     {
@@ -537,11 +523,10 @@ void CPolyObj::Serialize(CArchive& ar)
         ar >> dwTmp; m_crFill = (COLORREF)dwTmp;
         ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
         ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
-        ar >> wTmp; m_nPnts = (int)wTmp;
-        if (m_nPnts > 0)
+        ar >> wTmp; m_Pnts.resize(wTmp);
+        if (!m_Pnts.empty())
         {
-            m_pPnts = new POINT[m_nPnts];
-            ReadArchivePoints(ar, m_pPnts, m_nPnts);
+            ReadArchivePoints(ar, m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
         }
     }
 }
