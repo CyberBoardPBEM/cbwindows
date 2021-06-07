@@ -179,8 +179,16 @@ protected:
 
 /////////////////////////////////////////////////////////////////////
 
-class CSelList : public CPtrList
+class CSelList : private std::list<OwnerPtr<CSelection>>
 {
+    using BASE = std::list<OwnerPtr<CSelection>>;
+public:
+    using BASE::iterator;
+    using BASE::begin;
+    using BASE::empty;
+    using BASE::end;
+    using BASE::front;
+
 // Constructors
 public:
     CSelList(CPlayBoardView& pView) :
@@ -189,13 +197,15 @@ public:
         m_pobjSnapReference(NULL)
     {
     }
+    CSelList(const CSelList&) = delete;
+    CSelList& operator=(const CSelList&) = delete;
     ~CSelList() { PurgeList(FALSE); }
 
 // Attributes
 public:
-    BOOL IsMultipleSelects() const { return GetCount() > 1; }
-    BOOL IsSingleSelect() const { return GetCount() == 1; }
-    BOOL IsAnySelects() const { return GetCount() > 0; }
+    BOOL IsMultipleSelects() const { return size() > size_t(1); }
+    BOOL IsSingleSelect() const { return size() == size_t(1); }
+    BOOL IsAnySelects() const { return !empty(); }
     BOOL IsObjectSelected(const CDrawObj& pObj) const;
     BOOL HasPieces() const;
     BOOL HasOwnedPieces() const;
@@ -219,10 +229,9 @@ public:
 
 // Operations
 public:
-    CSelection* GetHead() { return (CSelection*)CPtrList::GetHead(); }
-    CSelection* AddObject(CDrawObj& pObj, BOOL bInvalidate = FALSE);
+    CSelection& AddObject(CDrawObj& pObj, BOOL bInvalidate = FALSE);
     void RemoveObject(const CDrawObj& pObj, BOOL bInvalidate = FALSE);
-    CSelection* FindObject(const CDrawObj& pObj) const;
+    const CSelection* FindObject(const CDrawObj& pObj) const;
     // -------- //
     enum ObjTypes { otInvalid, otPieces, otPiecesMarks, otAll };
     void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, ObjTypes objTypes,
@@ -236,10 +245,10 @@ public:
     void InvalidateList(BOOL bUpdate = FALSE);
     void PurgeList(BOOL bInvalidate = TRUE);
     // -------- //
-    void CountDObjFlags(DWORD dwFlagBits, int& nSet, int& nCleared);
+    void CountDObjFlags(DWORD dwFlagBits, int& nSet, int& nCleared) const;
     void DeselectIfDObjFlagsSet(DWORD dwFlagBits);
     // -------- //
-    int  HitTestHandles(CPoint point);
+    int  HitTestHandles(CPoint point) const;
     // -------- //
     void Offset(CPoint ptDelta);
     void MoveHandle(int m_nHandle, CPoint point);

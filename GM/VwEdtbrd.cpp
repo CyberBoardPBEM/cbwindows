@@ -426,14 +426,14 @@ void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
         m_selList.InvalidateListHandles();
 
     CRect rct;
-    while (!m_selList.IsEmpty())
+    while (!m_selList.empty())
     {
-        CSelection* pSel = (CSelection*)m_selList.RemoveHead();
+        OwnerPtr<CSelection> pSel = std::move(m_selList.front());
+        m_selList.pop_front();
         pDwg->RemoveObject(*pSel->m_pObj);
         if (bInvalidate)
             pSel->Invalidate();
         delete pSel->m_pObj.get();
-        delete pSel;
     }
     GetDocument()->SetModifiedFlag();
 }
@@ -448,26 +448,28 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     // selected. Remove and add them to a local list. Then take
     // the objects and add them to the front or back. The reason for
     // the temp list is to maintain ordering of selected objects.
-    CPtrList m_tmpLst;
+    std::vector<CB::not_null<CDrawObj*>> m_tmpLst;
+    m_tmpLst.reserve(m_selList.size());
 
-    POSITION pos = m_selList.GetHeadPosition();
-    while (pos != NULL)
+    for (CSelList::iterator pos = m_selList.begin() ; pos != m_selList.end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(*pSel->m_pObj);
-        m_tmpLst.AddTail(pSel->m_pObj.get());
+        CSelection& pSel = **pos;
+        pDwg->RemoveObject(*pSel.m_pObj);
+        m_tmpLst.push_back(pSel.m_pObj.get());
     }
     if (bToFront)
     {
-        pos = m_tmpLst.GetHeadPosition();
-        while (pos != NULL)
-            pDwg->AddToFront(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetNext(pos)));
+        for (auto pos = m_tmpLst.begin() ; pos != m_tmpLst.end() ; ++pos)
+        {
+            pDwg->AddToFront(pos->get());
+        }
     }
     else
     {
-        pos = m_tmpLst.GetTailPosition();
-        while (pos != NULL)
-            pDwg->AddToBack(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetPrev(pos)));
+        for (auto pos = m_tmpLst.rbegin() ; pos != m_tmpLst.rend() ; ++pos)
+        {
+            pDwg->AddToBack(pos->get());
+        }
     }
     if (bInvalidate)
         m_selList.InvalidateList();
@@ -1397,7 +1399,7 @@ void CBrdEditView::OnUpdateToolPalette(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_selList.GetCount() != 0);
+    pCmdUI->Enable(!m_selList.empty());
 }
 
 void CBrdEditView::OnDwgToBack()
@@ -1412,7 +1414,7 @@ void CBrdEditView::OnDwgToFront()
 
 void CBrdEditView::OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI)
 {
-    if (m_pBoard->GetMaxDrawLayer() == LAYER_TOP && m_selList.GetCount() != 0)
+    if (m_pBoard->GetMaxDrawLayer() == LAYER_TOP && !m_selList.empty())
     {
         pCmdUI->Enable(TRUE);
         if (m_selList.IsDObjFlagSetInAllSelectedObjects(dobjFlgDrawPass2))
@@ -1432,7 +1434,7 @@ void CBrdEditView::OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnDwgDrawAboveGrid()
 {
-    ASSERT(m_selList.GetCount() != 0);
+    ASSERT(!m_selList.empty());
     if (m_selList.IsDObjFlagSetInAllSelectedObjects(dobjFlgDrawPass2))
         m_selList.ClearDObjFlagInAllSelectedObjects(dobjFlgDrawPass2);
     else
@@ -2130,13 +2132,13 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
     //  the selected items isn't going to bump into the edge of the
     //  board
     //---------------------------------------------------------------
-    POSITION pos = m_selList.GetHeadPosition();
-    CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-    CRect selectRegion(pSel->m_rect);
-    while (pos != NULL)
+    CSelList::iterator pos = m_selList.begin();
+    CSelection& pSel = **pos;
+    CRect selectRegion(pSel.m_rect);
+    for ( ; pos != m_selList.end() ; ++pos)
     {
-        pSel = (CSelection*)m_selList.GetNext(pos);
-        selectRegion.UnionRect (pSel->m_rect,selectRegion);
+        CSelection& pSel = **pos;
+        selectRegion.UnionRect (pSel.m_rect,selectRegion);
     }
 
     AdjustRect (selectRegion);
@@ -2155,16 +2157,15 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
     m_selList.InvalidateList();
     m_selList.InvalidateListHandles();
 
-    pos = m_selList.GetHeadPosition();
-    while (pos != NULL)
+    for (pos = m_selList.begin() ; pos != m_selList.end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
+        CSelection& pSel = **pos;
 
-        pSel->Offset(offset);
-        AdjustRect(pSel->m_rect);
+        pSel.Offset(offset);
+        AdjustRect(pSel.m_rect);
 
-        pSel->m_pObj->OffsetObject(offset);
-        AdjustRect(pSel->m_pObj->GetRect());
+        pSel.m_pObj->OffsetObject(offset);
+        AdjustRect(pSel.m_pObj->GetRect());
     }
 
     m_selList.InvalidateList();

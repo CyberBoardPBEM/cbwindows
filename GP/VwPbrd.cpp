@@ -270,17 +270,16 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         // Resync the select list to ensure that all objects still exist
         // and that the handles track objct movements for those that still
         // exist.
-        CPtrList listSelectedObjs;
-        POSITION pos = m_selList.GetHeadPosition();
-        while (pos != NULL)
+        std::vector<CB::not_null<CDrawObj*>> listSelectedObjs;
+        for (CSelList::iterator pos = m_selList.begin() ; pos != m_selList.end() ; ++pos)
         {
-            CDrawObj& pObj = *static_cast<CSelection*>(m_selList.GetNext(pos))->m_pObj;
+            CDrawObj& pObj = *(*pos)->m_pObj;
             if (m_pPBoard->IsObjectOnBoard(&pObj))
-                listSelectedObjs.AddTail(&pObj);
+                listSelectedObjs.push_back(&pObj);
         }
         m_selList.PurgeList();          // Clear former selection indications
         // Reselect any object that are still on the board.
-        SelectAllObjectsInList(&listSelectedObjs);
+        SelectAllObjectsInTable(listSelectedObjs);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
@@ -353,7 +352,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         ar << (DWORD)pnt.x;
         ar << (DWORD)pnt.y;
         // Save the select list
-        if (m_selList.GetCount() > 0)
+        if (!m_selList.empty())
         {
             std::vector<CB::not_null<CDrawObj*>> tblObjPtrs;
             m_selList.LoadTableWithObjectPtrs(tblObjPtrs, CSelList::otPiecesMarks, TRUE);
@@ -2109,7 +2108,7 @@ void CPlayBoardView::OnEditElementText()
 {
     ASSERT(m_selList.IsSingleSelect() && (m_selList.HasMarkers() || m_selList.HasPieces()));
 
-    CDrawObj& pDObj = *m_selList.GetHead()->m_pObj;
+    CDrawObj& pDObj = *m_selList.front()->m_pObj;
     GetDocument()->DoEditObjectText(pDObj);
     NotifySelectListChange();       // Make sure indicators are updated
 }
@@ -2166,7 +2165,7 @@ void CPlayBoardView::OnUpdateActLockObject(CCmdUI* pCmdUI)
         pCmdUI->SetCheck(1);
     else
         pCmdUI->SetCheck(0);
-    pCmdUI->Enable(m_selList.GetCount() > 0);
+    pCmdUI->Enable(!m_selList.empty());
 }
 
 void CPlayBoardView::OnActLockSuspend()

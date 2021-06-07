@@ -126,9 +126,9 @@ public:
     virtual void Draw(CDC& pDC, TileScale eScale) /* override */ = 0;
     // Support required by selection objects
 #ifdef GPLAY
-    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) /* override */ { return NULL; }
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) /* override */ { AfxThrowInvalidArgException(); }
 #else
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) /* override */ { return NULL; }
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) /* override */ { AfxThrowInvalidArgException(); }
 #endif
     // ------- //
 #ifndef GPLAY
@@ -256,7 +256,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -289,7 +289,7 @@ public:
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     virtual OwnerPtr Clone() const override;  //DFM19991210
 };
@@ -331,9 +331,9 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifdef GPLAY
-    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
 #else
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -389,7 +389,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -440,7 +440,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -477,7 +477,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -516,7 +516,7 @@ public:
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
-    virtual CSelection* CreateSelectProxy(CBrdEditView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
@@ -569,7 +569,7 @@ public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
-    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
     virtual BOOL Compare(const CDrawObj& pObj) const override;
@@ -634,7 +634,7 @@ public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
-    virtual CSelection* CreateSelectProxy(CPlayBoardView& pView) override;
+    virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
     virtual BOOL Compare(const CDrawObj& pObj) const override;
