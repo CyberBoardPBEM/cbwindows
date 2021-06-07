@@ -515,45 +515,43 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
 /////////////////////////////////////////////////////////////////////
 // Selection List Processing
 
-int CSelList::HitTestHandles(CPoint point)
+int CSelList::HitTestHandles(CPoint point) const
 {
     // No support for multiselect handles.
-    return GetCount() == 1 ? GetHead()->HitTestHandles(point) : hitNothing;
+    return IsSingleSelect() ? front()->HitTestHandles(point) : hitNothing;
 }
 
 void CSelList::MoveHandle(int m_nHandle, CPoint point)
 {
     // No support for multiselect handles.
-    if (GetCount() == 1)
-        GetHead()->MoveHandle(m_nHandle, point);
+    if (IsSingleSelect())
+        front()->MoveHandle(m_nHandle, point);
     CalcEnclosingRect();
 }
 
-CSelection* CSelList::AddObject(CDrawObj& pObj, BOOL bInvalidate)
+CSelection& CSelList::AddObject(CDrawObj& pObj, BOOL bInvalidate)
 {
-    CSelection* pSel = pObj.CreateSelectProxy(*m_pView);
-    ASSERT(pSel != NULL);
-    AddHead(pSel);
+    {
+        OwnerPtr<CSelection> pSel = pObj.CreateSelectProxy(*m_pView);
+        push_front(std::move(pSel));
+    }
+    CSelection& pSel = *front();
     CalcEnclosingRect();
     if (bInvalidate)
-        pSel->InvalidateHandles();
+        pSel.InvalidateHandles();
     return pSel;
 }
 
 void CSelList::RemoveObject(const CDrawObj& pObj, BOOL bInvalidate)
 {
-    POSITION pos1, pos2;
-    pos1 = GetHeadPosition();
-    while (pos1 != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        pos2 = pos1;
-        CSelection* pSel = (CSelection*)GetNext(pos1);
-        if (pSel->m_pObj == &pObj)
+        CSelection& pSel = **pos;
+        if (pSel.m_pObj == &pObj)
         {
             if (bInvalidate)
-                pSel->InvalidateHandles();  // So view updates
-            RemoveAt(pos2);
-            delete pSel;
+                pSel.InvalidateHandles();  // So view updates
+            erase(pos);
             CalcEnclosingRect();
             return;                     // Success
         }
@@ -563,11 +561,10 @@ void CSelList::RemoveObject(const CDrawObj& pObj, BOOL bInvalidate)
 
 BOOL CSelList::IsObjectSelected(const CDrawObj& pObj) const
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        if (pSel->m_pObj == &pObj)
+        const CSelection& pSel = **pos;
+        if (pSel.m_pObj == &pObj)
             return TRUE;
     }
     return FALSE;
@@ -575,11 +572,10 @@ BOOL CSelList::IsObjectSelected(const CDrawObj& pObj) const
 
 BOOL CSelList::IsDObjFlagSetInAllSelectedObjects(DWORD dwFlag) const
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        if ((pSel->m_pObj->GetDObjFlags() & dwFlag) == 0)
+        const CSelection& pSel = **pos;
+        if ((pSel.m_pObj->GetDObjFlags() & dwFlag) == 0)
             return FALSE;
     }
     return TRUE;
@@ -587,11 +583,10 @@ BOOL CSelList::IsDObjFlagSetInAllSelectedObjects(DWORD dwFlag) const
 
 BOOL CSelList::IsDObjFlagSetInSomeSelectedObjects(DWORD dwFlag) const
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        if ((pSel->m_pObj->GetDObjFlags() & dwFlag) != 0)
+        const CSelection& pSel = **pos;
+        if ((pSel.m_pObj->GetDObjFlags() & dwFlag) != 0)
             return TRUE;
     }
     return FALSE;
@@ -622,9 +617,8 @@ BOOL CSelList::IsCopyToClipboardPossible() const
     // AT THIS POINT..THIS ONLY SUPPORTS COPYING A BITMAP TO THE CLIPBOARD
     if (!IsSingleSelect())
         return FALSE;
-    CSelection* pSel = ((CSelList*)this)->GetHead();
-    ASSERT(pSel != NULL);
-    CDrawObj& pDObj = *pSel->m_pObj;
+    const CSelection& pSel = *front();
+    const CDrawObj& pDObj = *pSel.m_pObj;
     return pDObj.GetType() == CDrawObj::drawBitmap;
 }
 
@@ -632,10 +626,9 @@ void CSelList::CopyToClipboard()
 {
     ASSERT(IsCopyToClipboardPossible());
 
-    CSelection* pSel = ((CSelList*)this)->GetHead();
-    ASSERT(pSel != NULL);
-    ASSERT(pSel->m_pObj->GetType() == CDrawObj::drawBitmap);
-    CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel->m_pObj);
+    CSelection& pSel = *front();
+    ASSERT(pSel.m_pObj->GetType() == CDrawObj::drawBitmap);
+    CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel.m_pObj);
     SetClipboardBitmap(m_pView.get(), pDObj.m_bitmap);
 }
 
@@ -643,16 +636,15 @@ void CSelList::Open()
 {
     if (!IsSingleSelect())
         return;
-    CSelection* pSel = ((CSelList*)this)->GetHead();
-    ASSERT(pSel != NULL);
-    CText& pDObj = static_cast<CText&>(*pSel->m_pObj);
+    CSelection& pSel = *front();
     // AT THIS POINT..THIS ONLY SUPPORTS EDITTING TEXT
-    if (pDObj.GetType() != CDrawObj::drawText)
+    if (pSel.m_pObj->GetType() != CDrawObj::drawText)
         return;
+    CText& pDObj = static_cast<CText&>(*pSel.m_pObj);
     m_pView->DoEditTextDrawingObject(&pDObj);
-    pSel->InvalidateHandles();
-    pSel->m_rect = pDObj.GetEnclosingRect();
-    pSel->InvalidateHandles();
+    pSel.InvalidateHandles();
+    pSel.m_rect = pDObj.GetEnclosingRect();
+    pSel.InvalidateHandles();
 }
 
 // Assumes RECTs are normalized!!
@@ -667,24 +659,22 @@ void CbUnionRect(RECT& pRctDst, const RECT& pRctSrc1, const RECT& pRctSrc2)
 void CSelList::CalcEnclosingRect()
 {
     m_rctEncl.SetRectEmpty();
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
+        CSelection& pSel = **pos;
         if (m_rctEncl.IsRectNull())
-            m_rctEncl = pSel->GetRect();
+            m_rctEncl = pSel.GetRect();
         else
-            CbUnionRect(m_rctEncl, m_rctEncl, pSel->GetRect());
+            CbUnionRect(m_rctEncl, m_rctEncl, pSel.GetRect());
     }
 }
 
 void CSelList::Offset(CPoint ptDelta)
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        pSel->Offset(ptDelta);
+        CSelection& pSel = **pos;
+        pSel.Offset(ptDelta);
     }
     CalcEnclosingRect();
 }
@@ -703,11 +693,10 @@ void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
     if (eTrkMode != trkCurrent)
         m_eTrkMode = eTrkMode;
 
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        pSel->DrawTracker(pDC, m_eTrkMode);
+        CSelection& pSel = **pos;
+        pSel.DrawTracker(pDC, m_eTrkMode);
     }
 }
 
@@ -715,11 +704,10 @@ void CSelList::InvalidateListHandles(BOOL bUpdate)
 {
     BOOL bFoundOne = FALSE;
 
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        pSel->InvalidateHandles();
+        CSelection& pSel = **pos;
+        pSel.InvalidateHandles();
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
@@ -730,11 +718,10 @@ void CSelList::InvalidateList(BOOL bUpdate)
 {
     BOOL bFoundOne = FALSE;
 
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        pSel->Invalidate();
+        CSelection& pSel = **pos;
+        pSel.Invalidate();
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
@@ -745,8 +732,7 @@ void CSelList::PurgeList(BOOL bInvalidate)
 {
     if (bInvalidate)
         InvalidateListHandles();
-    while (!IsEmpty())
-        delete (CSelection*)RemoveHead();
+    clear();
 }
 
 // Called after a move or size operation to change underlying
@@ -755,23 +741,20 @@ void CSelList::PurgeList(BOOL bInvalidate)
 void CSelList::UpdateObjects(BOOL bInvalidate,
     BOOL bUpdateObjectExtent /* = TRUE */)
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        pSel->UpdateObject(bInvalidate, bUpdateObjectExtent);
+        CSelection& pSel = **pos;
+        pSel.UpdateObject(bInvalidate, bUpdateObjectExtent);
     }
 }
 
 void CSelList::ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
     DWORD dwUserVal)
 {
-    POSITION pos = GetHeadPosition();
-    while (pos != NULL)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)GetNext(pos);
-        ASSERT(pSel != NULL);
-        pFunc(*pSel->m_pObj, dwUserVal);
+        CSelection& pSel = **pos;
+        pFunc(*pSel.m_pObj, dwUserVal);
     }
 }
 

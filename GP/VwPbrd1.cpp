@@ -431,26 +431,27 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     // selected. Remove and add them to a local list. Then take
     // the objects and add them to the front or back. The reason for
     // the temp list is to maintain ordering of selected objects.
-    CPtrList m_tmpLst;
+    std::vector<CB::not_null<CDrawObj*>> m_tmpLst;
 
-    POSITION pos = m_selList.GetHeadPosition();
-    while (pos != NULL)
+    for (CSelList::iterator pos = m_selList.begin() ; pos != m_selList.end() ; ++pos)
     {
-        CSelection* pSel = (CSelection*)m_selList.GetNext(pos);
-        pDwg->RemoveObject(*pSel->m_pObj);
-        m_tmpLst.AddTail(pSel->m_pObj.get());
+        CSelection& pSel = **pos;
+        pDwg->RemoveObject(*pSel.m_pObj);
+        m_tmpLst.push_back(pSel.m_pObj.get());
     }
     if (bToFront)
     {
-        pos = m_tmpLst.GetHeadPosition();
-        while (pos != NULL)
-            pDwg->AddToFront(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetNext(pos)));
+        for (auto pos = m_tmpLst.begin() ; pos != m_tmpLst.end() ; ++pos)
+        {
+            pDwg->AddToFront(pos->get());
+        }
     }
     else
     {
-        pos = m_tmpLst.GetTailPosition();
-        while (pos != NULL)
-            pDwg->AddToBack(CDrawObj::OwnerPtr((CDrawObj*)m_tmpLst.GetPrev(pos)));
+        for (auto pos = m_tmpLst.rbegin() ; pos != m_tmpLst.rend() ; ++pos)
+        {
+            pDwg->AddToBack(pos->get());
+        }
     }
     if (bInvalidate)
         m_selList.InvalidateList();

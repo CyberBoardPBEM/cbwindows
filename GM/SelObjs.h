@@ -232,8 +232,18 @@ protected:
 
 /////////////////////////////////////////////////////////////////////
 
-class CSelList : public CPtrList
+class CSelList : private std::list<OwnerPtr<CSelection>>
 {
+    using BASE = std::list<OwnerPtr<CSelection>>;
+public:
+    using BASE::iterator;
+    using BASE::begin;
+    using BASE::empty;
+    using BASE::end;
+    using BASE::front;
+    using BASE::pop_front;
+    using BASE::size;
+
 // Constructors
 public:
     CSelList(CBrdEditView& pView) :
@@ -241,13 +251,15 @@ public:
         m_eTrkMode(trkSelected)
     {
     }
-    ~CSelList() { PurgeList(FALSE); }
+    CSelList(const CSelList&) = delete;
+    CSelList& operator=(const CSelList&) = delete;
+    ~CSelList() = default;
 
 // Attributes
 public:
-    BOOL IsMultipleSelects() const { return GetCount() > 1; }
-    BOOL IsSingleSelect() const { return GetCount() == 1; }
-    BOOL IsAnySelects() const { return GetCount() > 0; }
+    BOOL IsMultipleSelects() const { return size() > size_t(1); }
+    BOOL IsSingleSelect() const { return size() == size_t(1); }
+    BOOL IsAnySelects() const { return !empty(); }
     BOOL IsObjectSelected(const CDrawObj& pObj) const;
     BOOL IsCopyToClipboardPossible() const;
 
@@ -263,15 +275,14 @@ public:
 
 // Operations
 public:
-    CSelection* GetHead() { return (CSelection*)CPtrList::GetHead(); }
-    CSelection* AddObject(CDrawObj& pObj, BOOL bInvalidate = FALSE);
+    CSelection& AddObject(CDrawObj& pObj, BOOL bInvalidate = FALSE);
     void RemoveObject(const CDrawObj& pObj, BOOL bInvalidate = FALSE);
     // -------- //
     void InvalidateListHandles(BOOL bUpdate = FALSE);
     void InvalidateList(BOOL bUpdate = FALSE);
     void PurgeList(BOOL bInvalidate = TRUE);
     // -------- //
-    int HitTestHandles(CPoint point);
+    int HitTestHandles(CPoint point) const;
     // -------- //
     void Offset(CPoint ptDelta);
     void MoveHandle(int m_nHandle, CPoint point);

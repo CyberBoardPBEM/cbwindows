@@ -417,11 +417,11 @@ BOOL CSelectTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
     {
         // Check if cursor is over a handle. If it is,
         // get handle cursor.
-        CSelection* pSelObj = (CSelection*)pSLst->GetHead();
-        int nHandle = pSelObj->HitTestHandles(point);
+        CSelection& pSelObj = *pSLst->front();
+        int nHandle = pSelObj.HitTestHandles(point);
         if (nHandle >= 0)
         {
-            SetCursor(pSelObj->GetHandleCursor(nHandle));
+            SetCursor(pSelObj.GetHandleCursor(nHandle));
             return TRUE;
         }
     }

@@ -308,9 +308,9 @@ void CRectObj::ForceIntoZone(const CRect& pRctZone)
         m_rctExtent += pntOffset;
 }
 
-CSelection* CRectObj::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CRectObj::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelRect(pView, *this);
+    return MakeOwner<CSelRect>(pView, *this);
 }
 #endif
 
@@ -369,9 +369,9 @@ void CEllipse::Draw(CDC& pDC, TileScale)
 }
 
 #ifndef     GPLAY
-CSelection* CEllipse::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CEllipse::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelEllipse(pView, *this);
+    return MakeOwner<CSelEllipse>(pView, *this);
 }
 #endif
 
@@ -468,9 +468,9 @@ void CPolyObj::ForceIntoZone(const CRect& pRctZone)
 #endif
 
 #ifndef     GPLAY
-CSelection* CPolyObj::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CPolyObj::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelPoly(pView, *this);
+    return MakeOwner<CSelPoly>(pView, *this);
 }
 #endif
 
@@ -594,12 +594,12 @@ void CLine::ForceIntoZone(const CRect& pRctZone)
 #endif
 
 #ifdef GPLAY
-CSelection* CLine::CreateSelectProxy(CPlayBoardView& pView)
+OwnerPtr<CSelection> CLine::CreateSelectProxy(CPlayBoardView& pView)
 #else
-CSelection* CLine::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CLine::CreateSelectProxy(CBrdEditView& pView)
 #endif
 {
-    return new CSelLine(pView, *this);
+    return MakeOwner<CSelLine>(pView, *this);
 }
 
 //DFM19991221
@@ -781,9 +781,9 @@ void CBitmapImage::ForceIntoZone(const CRect& pRctZone)
 #endif
 
 #ifndef GPLAY
-CSelection* CBitmapImage::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CBitmapImage::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelGeneric(pView, *this);
+    return MakeOwner<CSelGeneric>(pView, *this);
 }
 #endif
 
@@ -889,9 +889,9 @@ void CTileImage::ForceIntoZone(const CRect& pRctZone)
 #endif
 
 #ifndef GPLAY
-CSelection* CTileImage::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CTileImage::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelGeneric(pView, *this);
+    return MakeOwner<CSelGeneric>(pView, *this);
 }
 #endif
 
@@ -1006,9 +1006,9 @@ void CText::OffsetObject(CPoint offset)
 }
 
 #ifndef GPLAY
-CSelection* CText::CreateSelectProxy(CBrdEditView& pView)
+OwnerPtr<CSelection> CText::CreateSelectProxy(CBrdEditView& pView)
 {
-    return new CSelGeneric(pView, *this);
+    return MakeOwner<CSelGeneric>(pView, *this);
 }
 #endif
 
@@ -1177,9 +1177,9 @@ BOOL CPieceObj::HitTest(CPoint pt)
     return rct.PtInRect(pt);
 }
 
-CSelection* CPieceObj::CreateSelectProxy(CPlayBoardView& pView)
+OwnerPtr<CSelection> CPieceObj::CreateSelectProxy(CPlayBoardView& pView)
 {
-    return new CSelGeneric(pView, *this);
+    return MakeOwner<CSelGeneric>(pView, *this);
 }
 
 CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc) const
@@ -1288,9 +1288,9 @@ BOOL CMarkObj::HitTest(CPoint pt)
     return rct.PtInRect(pt);
 }
 
-CSelection* CMarkObj::CreateSelectProxy(CPlayBoardView& pView)
+OwnerPtr<CSelection> CMarkObj::CreateSelectProxy(CPlayBoardView& pView)
 {
-    return new CSelGeneric(pView, *this);
+    return MakeOwner<CSelGeneric>(pView, *this);
 }
 
 CDrawObj::OwnerPtr CMarkObj::Clone(CGamDoc* pDoc) const
