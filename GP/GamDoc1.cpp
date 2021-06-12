@@ -821,25 +821,27 @@ void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
+void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<CB::not_null<CDrawObj*>>& pList,
     BOOL bToFront)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
     ASSERT(pDwg);
 
-    pDwg->ArrangeObjectListInDrawOrder(CheckedDeref(pList));
-    pDwg->RemoveObjectsInList(*pList);
+    pDwg->ArrangeObjectListInDrawOrder(pList);
+    pDwg->RemoveObjectsInList(pList);
     if (bToFront)
     {
-        POSITION pos = pList->GetHeadPosition();
-        while (pos != NULL)
-            pDwg->AddToFront((CDrawObj*)pList->GetNext(pos));
+        for (size_t i = size_t(0) ; i < pList.size() ; ++i)
+        {
+            pDwg->AddToFront(pList[i].get());
+        }
     }
     else
     {
-        POSITION pos = pList->GetTailPosition();
-        while (pos != NULL)
-            pDwg->AddToBack((CDrawObj*)pList->GetPrev(pos));
+        for (size_t i = pList.size() ; i != size_t(0) ; --i)
+        {
+            pDwg->AddToBack(pList[i - size_t(1)].get());
+        }
     }
     SetModifiedFlag();
 
@@ -847,7 +849,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList,
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard = pPBrd;
-        hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList = pList;
+        hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList = &pList;
         UpdateAllViews(NULL, HINT_UPDATEOBJLIST, &hint);
     }
     SetModifiedFlag();
@@ -981,29 +983,27 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
         CPlayBoard& pPBrd = m_pPBMgr->GetPBoard(i);
         CDrawList* pDwg = pPBrd.GetPieceList();
 
-        CPtrList listPtr;
+        std::vector<CB::not_null<CPieceObj*>> listPtr;
         pDwg->GetPieceObjectPtrList(listPtr);
 
-        POSITION pos;
-        for (pos = listPtr.GetHeadPosition(); pos != NULL; )
+        for (size_t i = size_t(0) ; i < listPtr.size() ; ++i)
         {
-            CPieceObj* pObj = (CPieceObj*)listPtr.GetNext(pos);
-            ASSERT(pObj != NULL);
-            if (!m_pPTbl->IsPieceUsed(pObj->m_pid))
+            CPieceObj& pObj = *listPtr[i];
+            if (!m_pPTbl->IsPieceUsed(pObj.m_pid))
             {
-                pPBrd.RemoveObject(pObj);
+                pPBrd.RemoveObject(&pObj);
 
                 if (!IsQuietPlayback())
                 {
                     // Cause object display area to be invalidated
                     CGamDocHint hint;
                     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
-                    hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
+                    hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
                     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
                 }
 
                 // Destroy to object
-                delete pObj;
+                delete &pObj;
             }
         }
     }

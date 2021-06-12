@@ -287,23 +287,21 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
 
     BOOL bPieceSelected = FALSE;
 
-    CPtrList selLst;
+    std::vector<CB::not_null<CDrawObj*>> selLst;
     pDwg->DrillDownHitTest(point, selLst);
 
-    POSITION pos;
-    for (pos = selLst.GetHeadPosition(); pos != NULL; )
+    for (size_t i = size_t(0) ; i < selLst.size() ; ++i)
     {
-        CDrawObj* pObj = (CDrawObj*)selLst.GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(*pObj))
+        CDrawObj& pObj = *selLst[i];
+        if (!m_selList.IsObjectSelected(pObj))
         {
             BOOL bOwnedByCurrentPlayer = TRUE;
-            if (pObj->GetType() == CDrawObj::drawPieceObj)
+            if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
-                CPieceObj* pPObj = (CPieceObj*)pObj;
+                CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
                 DWORD dwCurrentPlayer = GetDocument()->GetCurrentPlayerMask();
                 bOwnedByCurrentPlayer =
-                    !pPObj->IsOwned() || pPObj->IsOwnedBy(dwCurrentPlayer);
+                    !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer);
             }
 
             // Only add to the list if the object is either unlocked or locks
@@ -311,11 +309,11 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
             // than the current player.
             if (bOwnedByCurrentPlayer &&
                 (!m_pPBoard->GetLocksEnforced() ||
-                 !(pObj->GetDObjFlags() & dobjFlgLockDown)))
+                 !(pObj.GetDObjFlags() & dobjFlgLockDown)))
             {
-                m_selList.AddObject(*pObj, TRUE);
-                bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
-                    pObj->GetType() == CDrawObj::drawMarkObj;
+                m_selList.AddObject(pObj, TRUE);
+                bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
+                    pObj.GetType() == CDrawObj::drawMarkObj;
             }
         }
     }
@@ -323,19 +321,17 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
         NotifySelectListChange();
 }
 
-void CPlayBoardView::SelectAllObjectsInList(CPtrList* pLst)
+void CPlayBoardView::SelectAllObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst)
 {
-    POSITION pos;
     BOOL bPieceSelected = FALSE;
-    for (pos = pLst->GetHeadPosition(); pos != NULL; )
+    for (size_t i = size_t(0) ; i < pLst.size() ; ++i)
     {
-        CDrawObj* pObj = (CDrawObj*)pLst->GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(*pObj))
+        CDrawObj& pObj = *pLst[i];
+        if (!m_selList.IsObjectSelected(pObj))
         {
-            m_selList.AddObject(*pObj, TRUE);
-            bPieceSelected |= pObj->GetType() == CDrawObj::drawPieceObj ||
-                pObj->GetType() == CDrawObj::drawMarkObj;
+            m_selList.AddObject(pObj, TRUE);
+            bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
+                pObj.GetType() == CDrawObj::drawMarkObj;
         }
     }
     if (bPieceSelected)

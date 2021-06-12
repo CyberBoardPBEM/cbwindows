@@ -1478,7 +1478,7 @@ CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
     return NULL;
 }
 
-void CDrawList::DrillDownHitTest(CPoint point, CPtrList& selLst,
+void CDrawList::DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
     TileScale eScale, BOOL bApplyVisibility /* = TRUE */)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
@@ -1488,42 +1488,40 @@ void CDrawList::DrillDownHitTest(CPoint point, CPtrList& selLst,
         if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
             continue;                   // Doesn't qualify
         if (pDObj.HitTest(point))
-            selLst.AddTail(&pDObj);
+            selLst.push_back(&pDObj);
     }
 }
 
-void CDrawList::ArrangeObjectListInDrawOrder(CPtrList& pLst)
+void CDrawList::ArrangeObjectListInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pLst)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CPtrList tmpLst;
+    std::vector<CB::not_null<CDrawObj*>> tmpLst;
 
-    for (iterator pos = begin(); pos != end(); ++pos)
+    for (iterator pos = begin() ; pos != end() ; ++pos)
     {
         CDrawObj& pDObj = **pos;
-        if (pLst.Find(&pDObj) != NULL)
-            tmpLst.AddTail(&pDObj);
+        if (std::find(pLst.begin(), pLst.end(), &pDObj) != pLst.end())
+            tmpLst.push_back(&pDObj);
     }
-    pLst.RemoveAll();
-    pLst.AddTail(&tmpLst);
+    pLst = std::move(tmpLst);
 }
 
-void CDrawList::ArrangeObjectListInVisualOrder(CPtrList& pLst)
+void CDrawList::ArrangeObjectListInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pLst)
 {
     // Loop backwards through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    CPtrList tmpLst;
+    std::vector<CB::not_null<CDrawObj*>> tmpLst;
 
-    for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
+    for (reverse_iterator pos = rbegin() ; pos != rend() ; ++pos)
     {
         CDrawObj& pDObj = **pos;
-        if (pLst.Find(&pDObj) != NULL)
-            tmpLst.AddTail(&pDObj);
+        if (std::find(pLst.begin(), pLst.end(), &pDObj) != pLst.end())
+            tmpLst.push_back(&pDObj);
     }
-    pLst.RemoveAll();
-    pLst.AddTail(&tmpLst);
+    pLst = std::move(tmpLst);
 }
 
 #ifdef GPLAY
@@ -1645,12 +1643,11 @@ CDrawList::iterator CDrawList::Find(const CDrawObj& drawObj)
 }
 
 // NOTE:  RemoveObject* do not erase
-void CDrawList::RemoveObjectsInList(const CPtrList& pLst)
+void CDrawList::RemoveObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst)
 {
-    POSITION pos;
-    for (pos = pLst.GetHeadPosition(); pos != NULL; )
+    for (size_t i = size_t(0) ; i < pLst.size() ; ++i)
     {
-        CDrawObj& pDObj = CheckedDeref((CDrawObj*)pLst.GetNext(pos));
+        CDrawObj& pDObj = *pLst[i];
         RemoveObject(pDObj);
     }
 }
@@ -1711,14 +1708,14 @@ CDrawObj* CDrawList::FindObjectID(ObjectID oid)
     return NULL;
 }
 
-void CDrawList::GetPieceObjectPtrList(CPtrList& pLst)
+void CDrawList::GetPieceObjectPtrList(std::vector<CB::not_null<CPieceObj*>>& pLst)
 {
-    pLst.RemoveAll();
+    pLst.clear();
     for (iterator pos = begin(); pos != end(); ++pos)
     {
         CDrawObj& pDObj = **pos;
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pLst.AddTail(&pDObj);
+            pLst.push_back(&static_cast<CPieceObj&>(pDObj));
     }
 }
 
@@ -1733,30 +1730,29 @@ void CDrawList::GetPieceIDTable(std::vector<PieceID>& pTbl) const
     }
 }
 
-void CDrawList::GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList& pLst)
+void CDrawList::GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, std::vector<CB::not_null<CPieceObj*>>& pLst)
 {
-    pLst.RemoveAll();
+    pLst.clear();
+    pLst.reserve(pTbl.size());
     for (size_t i = size_t(0); i < pTbl.size(); i++)
     {
         CPieceObj* pObj = FindPieceID(pTbl.at(i));
         ASSERT(pObj != NULL);
         if (pObj)
-            pLst.AddTail(pObj);
+            pLst.push_back(pObj);
     }
 }
 
-void CDrawList::GetPieceIDTableFromObjList(CPtrList& pLst, std::vector<PieceID>& pTbl,
+void CDrawList::GetPieceIDTableFromObjList(const std::vector<CB::not_null<CDrawObj*>>& pLst, std::vector<PieceID>& pTbl,
     BOOL bDeleteObjs /* = FALSE*/)
 {
     pTbl.clear();
-    POSITION pos;
-    for (pos = pLst.GetHeadPosition(); pos != NULL; )
+    for (size_t i = size_t(0) ; i < pLst.size() ; ++i)
     {
-        CDrawObj* pDObj = (CDrawObj*)pLst.GetNext(pos);
-        ASSERT(pDObj != NULL);
-        if (pDObj->GetType() == CDrawObj::drawPieceObj)
-            pTbl.push_back(static_cast<CPieceObj*>(pDObj)->m_pid);
-        if (bDeleteObjs) delete pDObj;
+        CDrawObj& pDObj = *pLst[i];
+        if (pDObj.GetType() == CDrawObj::drawPieceObj)
+            pTbl.push_back(static_cast<CPieceObj&>(pDObj).m_pid);
+        if (bDeleteObjs) delete &pDObj;
     }
 }
 

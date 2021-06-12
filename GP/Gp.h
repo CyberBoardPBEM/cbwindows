@@ -50,7 +50,7 @@
 #define WM_CENTERBOARDONPOINT   (WM_USER + 211) // WPARAM = POINT* in board coords
 #define WM_SHOWPLAYINGBOARD     (WM_USER + 212) // WPARAM = size_t Playing Board Index
 #define WM_WINSTATE_RESTORE     (WM_USER + 213) // No Args. Posted to project window
-#define WM_SELECT_BOARD_OBJLIST (WM_USER + 214) // WPARAM = CPlayBoard*, LPARAM = CPtrList*
+#define WM_SELECT_BOARD_OBJLIST (WM_USER + 214) // WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
 
 #define WM_MESSAGEBOX           (WM_USER + 215) // WPARAM = Opts. LPARAM = Msg ID or Ptr
 enum

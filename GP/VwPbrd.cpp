@@ -228,12 +228,11 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
-        POSITION pos;
-        for (pos = ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
+        const std::vector<CB::not_null<CDrawObj*>>& pPtrList = CheckedDeref(ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList);
+        for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetNext(pos);
-            ASSERT(pDObj != NULL);
-            CRect rct = pDObj->GetEnclosingRect();  // In board coords.
+            CDrawObj& pDObj = *pPtrList[i];
+            CRect rct = pDObj.GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(&rct);
         }
     }
@@ -324,13 +323,13 @@ void CPlayBoardView::OnActivateView(BOOL bActivate, CView* pActivateView, CView*
 
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
-// WPARAM = CPlayBoard*, LPARAM = CPtrList* of CDrawObj*
+// WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
 
 LRESULT CPlayBoardView::OnMessageSelectBoardObjectList(WPARAM wParam, LPARAM lParam)
 {
     if ((CPlayBoard*)wParam != m_pPBoard)
         return (LRESULT)0;
-    CPtrList* pList = (CPtrList*)lParam;
+    const std::vector<CB::not_null<CDrawObj*>>& pList = *(const std::vector<CB::not_null<CDrawObj*>>*)lParam;
     m_selList.PurgeList();                  // Deselect current set of selections
     SelectAllObjectsInList(pList);          // Select the new set
     return (LRESULT)1;
@@ -584,9 +583,11 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
             m_pPBoard->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
-            CPtrList pceList;
+            std::vector<CB::not_null<CPieceObj*>> pceList;
             pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), pceList);
-            SelectAllObjectsInList(&pceList);   // Reselect pieces dropped on board
+            std::vector<CB::not_null<CDrawObj*>> temp;
+            CB::Move(temp, std::move(pceList));
+            SelectAllObjectsInList(temp);   // Reselect pieces dropped on board
         }
 
         DragKillAutoScroll();

@@ -678,7 +678,7 @@ public:
     iterator Find(const CDrawObj& drawObj);
     // NOTE:  See WARNING: above
     void RemoveObject(const CDrawObj& pDrawObj);
-    void RemoveObjectsInList(const CPtrList& pLst);
+    void RemoveObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst);
     void AddToBack(CDrawObj::OwnerPtr pDrawObj) { push_front(std::move(pDrawObj)); }
     void AddToFront(CDrawObj::OwnerPtr pDrawObj) { push_back(std::move(pDrawObj)); }
     CDrawObj& Front() { return *back(); }
@@ -688,14 +688,14 @@ public:
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
     CDrawObj* HitTest(CPoint pt, TileScale eScale = (TileScale)AllTileScales,
         BOOL bApplyVisibility = TRUE);
-    void DrillDownHitTest(CPoint point, CPtrList& selLst,
+    void DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
         TileScale eScale = (TileScale)AllTileScales, BOOL bApplyVisibility = TRUE);
 #ifdef GPLAY
     void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const;
     void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const;
 #endif
-    void ArrangeObjectListInDrawOrder(CPtrList& pLst);
-    void ArrangeObjectListInVisualOrder(CPtrList& pLst);
+    void ArrangeObjectListInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pLst);
+    void ArrangeObjectListInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pLst);
     void ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
     void ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
 #ifdef GPLAY
@@ -705,10 +705,10 @@ public:
     CDrawObj* FindObjectID(ObjectID oid);
     BOOL HasObject(const CDrawObj& pObj) const { return Find(pObj) != end(); }
     BOOL HasMarker() const;
-    void GetPieceObjectPtrList(CPtrList& pLst);
+    void GetPieceObjectPtrList(std::vector<CB::not_null<CPieceObj*>>& pLst);
     void GetPieceIDTable(std::vector<PieceID>& pTbl) const;
-    void GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, CPtrList& pLst);
-    static void GetPieceIDTableFromObjList(CPtrList& pLst, std::vector<PieceID>& pTbl,
+    void GetObjectListFromPieceIDTable(const std::vector<PieceID>& pTbl, std::vector<CB::not_null<CPieceObj*>>& pLst);
+    static void GetPieceIDTableFromObjList(const std::vector<CB::not_null<CDrawObj*>>& pLst, std::vector<PieceID>& pTbl,
         BOOL bDeleteObjs = FALSE);
     // ------- //
     CDrawList Clone(CGamDoc* pDoc) const;

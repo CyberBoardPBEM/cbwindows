@@ -141,7 +141,7 @@ public:
     struct Args<HINT_UPDATEOBJLIST>
     {
         CPlayBoard* m_pPBoard;
-        CPtrList*   m_pPtrList;
+        const std::vector<CB::not_null<CDrawObj*>>* m_pPtrList;
     };
 
     template<>
@@ -398,7 +398,7 @@ public:
         CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID = ObjectID());
     void ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg, CPoint ptEnd,
         UINT nLineWd, COLORREF crLine, CLine* pObj);
-    void ReorgObjsInDrawList(CPlayBoard *pPBrd, CPtrList* pList, BOOL bToFront);
+    void ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<CB::not_null<CDrawObj*>>& pList, BOOL bToFront);
     void DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SetObjectText(GameElement elem, LPCTSTR pszObjText);
     void SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState);

@@ -102,12 +102,11 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
-        POSITION pos;
-        for (pos = ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
+        const std::vector<CB::not_null<CDrawObj*>>& pPtrList = *ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList;
+        for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList->GetNext(pos);
-            ASSERT(pDObj != NULL);
-            CRect rct = pDObj->GetEnclosingRect();  // In board coords.
+            CDrawObj& pDObj = *pPtrList[i];
+            CRect rct = pDObj.GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(&rct);
         }
     }
