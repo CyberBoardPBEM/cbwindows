@@ -224,7 +224,7 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
 
     // Create a list containing all items that are *not* selected.
     // Rather than try to be real clever I'll just brute force the search.
-    CPtrList listDObj;
+    std::vector<CB::not_null<CDrawObj*>> listDObj;
     for (int nItem = 0; nItem < m_listSel.GetCount(); nItem++)
     {
         // Loop and see if item is in selected list.
@@ -237,12 +237,12 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
         if (bRemoveSelectedItems && nSelItem == tblListBoxSel.GetSize())
         {
             // Not a listbox selection so add it to new select list.
-            listDObj.AddTail(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
+            listDObj.push_back(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
         }
         else if (!bRemoveSelectedItems && nSelItem < tblListBoxSel.GetSize())
         {
             // It is a listbox selection so add it to new select list.
-            listDObj.AddTail(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
+            listDObj.push_back(&m_listSel.MapIndexToItem(value_preserving_cast<size_t>(nItem)));
         }
     }
     CPlayBoardFrame* pFrame = (CPlayBoardFrame*)GetParentFrame();

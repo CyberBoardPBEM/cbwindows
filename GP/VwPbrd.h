@@ -83,7 +83,7 @@ public:
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(CPoint point);
     CDrawObj* ObjectHitTest(CPoint point);
-    void SelectAllObjectsInList(CPtrList* pLst);
+    void SelectAllObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst);
     void SelectAllObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pTbl);
     void SelectMarkersInGroup(size_t nGroup);
     void SelectAllMarkers();

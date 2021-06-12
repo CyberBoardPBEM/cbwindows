@@ -402,17 +402,15 @@ void CBrdEditView::SelectAllUnderPoint(CPoint point)
     if (pDwg == NULL)
         return;
 
-    CPtrList selLst;
+    std::vector<CB::not_null<CDrawObj*>> selLst;
     pDwg->DrillDownHitTest(point, selLst, m_nZoom,
         m_pBoard->GetApplyVisible());
 
-    POSITION pos;
-    for (pos = selLst.GetHeadPosition(); pos != NULL; )
+    for (size_t i = size_t(0) ; i < selLst.size() ; ++i)
     {
-        CDrawObj* pObj = (CDrawObj*)selLst.GetNext(pos);
-        ASSERT(pObj != NULL);
-        if (!m_selList.IsObjectSelected(*pObj))
-            m_selList.AddObject(*pObj, TRUE);
+        CDrawObj& pObj = *selLst[i];
+        if (!m_selList.IsObjectSelected(pObj))
+            m_selList.AddObject(pObj, TRUE);
     }
 }
 
