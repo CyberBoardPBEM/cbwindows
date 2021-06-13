@@ -49,7 +49,7 @@ const int scrollZone = 16;      // From INI?
 /////////////////////////////////////////////////////////////////
 // Class variables
 
-CPtrList CPlayTool::c_toolLib;          // Tool library
+std::vector<CPlayTool*> CPlayTool::c_toolLib;          // Tool library
 
 CPoint CPlayTool::c_ptDown;             // Mouse down location
 CPoint CPlayTool::c_ptLast;             // Last mouse location
@@ -64,22 +64,22 @@ static CPPlotTool       s_plyMovePlotTool;
 ////////////////////////////////////////////////////////////////////////
 // CPlayTool - Basic tool support (abstract class)
 
-CPlayTool::CPlayTool(PToolType eType)
+CPlayTool::CPlayTool(PToolType eType) :
+    m_eToolType(eType)
 {
-    m_eToolType = eType;
-    c_toolLib.AddTail(this);
+    size_t i = static_cast<size_t>(eType);
+    c_toolLib.resize(std::max(i + size_t(1), c_toolLib.size()));
+    ASSERT(!c_toolLib[i]);
+    c_toolLib[i] = this;
 }
 
-CPlayTool* CPlayTool::GetTool(PToolType eToolType)
+CPlayTool& CPlayTool::GetTool(PToolType eToolType)
 {
-    POSITION pos = c_toolLib.GetHeadPosition();
-    while (pos != NULL)
-    {
-        CPlayTool* pTool = (CPlayTool*)c_toolLib.GetNext(pos);
-        if (pTool->m_eToolType == eToolType)
-            return pTool;
-    }
-    return NULL;
+    size_t i = static_cast<size_t>(eToolType);
+    ASSERT(i < c_toolLib.size());
+    CPlayTool& retval = CheckedDeref(c_toolLib[i]);
+    ASSERT(retval.m_eToolType == eToolType);
+    return retval;
 }
 
 void CPlayTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point)

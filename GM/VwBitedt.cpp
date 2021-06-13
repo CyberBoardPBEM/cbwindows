@@ -959,40 +959,25 @@ void CBitEditView::OnContextMenu(CWnd* pWnd, CPoint point)
 void CBitEditView::OnLButtonDown(UINT nFlags, CPoint point)
 {
     IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool* pTool = CImageTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonDown(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonDown(nFlags, point);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnLButtonDown(this, nFlags, point);
 }
 
 void CBitEditView::OnMouseMove(UINT nFlags, CPoint point)
 {
     IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool* pTool = CImageTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnMouseMove(this, nFlags, point);
-    }
-    else
-        CScrollView::OnMouseMove(nFlags, point);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnMouseMove(this, nFlags, point);
 }
 
 void CBitEditView::OnLButtonUp(UINT nFlags, CPoint point)
 {
     IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool* pTool = CImageTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonUp(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonUp(nFlags, point);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnLButtonUp(this, nFlags, point);
 }
 
 BOOL CBitEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -1000,8 +985,8 @@ BOOL CBitEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     IToolType eToolType = MapToolType(m_nCurToolID);
     if (pWnd == this && eToolType != itoolUnknown)
     {
-        CImageTool* pTool = CImageTool::GetTool(eToolType);
-        if(pTool != NULL && pTool->OnSetCursor(this, nHitTest))
+        CImageTool& pTool = CImageTool::GetTool(eToolType);
+        if(pTool.OnSetCursor(this, nHitTest))
             return TRUE;
     }
     return CScrollView::OnSetCursor(pWnd, nHitTest, message);

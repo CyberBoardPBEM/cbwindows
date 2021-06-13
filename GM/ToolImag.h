@@ -41,11 +41,11 @@ public:
 
 // Attributes
 public:
-    IToolType m_eToolType;
+    const IToolType m_eToolType;
 
 // Operations
 public:
-    static CImageTool* GetTool(IToolType eType);
+    static CImageTool& GetTool(IToolType eType);
     // ----------- //
     virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
@@ -54,9 +54,10 @@ public:
         { return FALSE; }
 
 // Implementation
-public:
+private:
     // -- Class variables -- //
-    static CPtrList c_toolLib;
+    static std::vector<CImageTool*> c_toolLib;
+protected:
     // Drag related vars....
     static CPoint c_ptDown;         // Document coords.
     static CPoint c_ptLast;

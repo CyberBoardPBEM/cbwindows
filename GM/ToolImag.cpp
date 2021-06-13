@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////
 // Class variables
 
-CPtrList CImageTool::c_toolLib;     // Bit Image Tool library
+std::vector<CImageTool*> CImageTool::c_toolLib;     // Bit Image Tool library
 
 CPoint CImageTool::c_ptDown;        // Mouse down location
 CPoint CImageTool::c_ptLast;        // Last mouse location
@@ -67,24 +67,24 @@ static CBitDropperTool      s_bitDropperTool;
 ////////////////////////////////////////////////////////////////////////
 // CImageTool - Basic tool support (abstract class)
 
-CImageTool::CImageTool(IToolType eType)
+CImageTool::CImageTool(IToolType eType) :
+    m_eToolType(eType)
 {
-    m_eToolType = eType;
-    c_toolLib.AddTail(this);
+    size_t i = static_cast<size_t>(eType);
+    c_toolLib.resize(std::max(i + size_t(1), c_toolLib.size()));
+    ASSERT(!c_toolLib[i]);
+    c_toolLib[i] = this;
 }
 
-CImageTool* CImageTool::GetTool(IToolType eToolType)
+CImageTool& CImageTool::GetTool(IToolType eToolType)
 {
     if (eToolType == itoolPencil)
-        return &s_bitPencilTool;            // Optimization
-    POSITION pos = c_toolLib.GetHeadPosition();
-    while (pos != NULL)
-    {
-        CImageTool* pTool = (CImageTool*)c_toolLib.GetNext(pos);
-        if (pTool->m_eToolType == eToolType)
-            return pTool;
-    }
-    return NULL;
+        return s_bitPencilTool;            // Optimization
+    size_t i = static_cast<size_t>(eToolType);
+    ASSERT(i < c_toolLib.size());
+    CImageTool& retval = CheckedDeref(c_toolLib[i]);
+    ASSERT(retval.m_eToolType == eToolType);
+    return retval;
 }
 
 void CImageTool::OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point)

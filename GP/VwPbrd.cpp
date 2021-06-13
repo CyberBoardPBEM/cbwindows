@@ -1026,15 +1026,10 @@ void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
     }
 
     PToolType eToolType = MapToolType(m_nCurToolID);
-    CPlayTool* pTool = CPlayTool::GetTool(eToolType);
+    CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonDown(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonDown(nFlags, point);
+    ClientToWorkspace(point);
+    pTool.OnLButtonDown(this, nFlags, point);
 }
 
 void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
@@ -1047,12 +1042,12 @@ void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
 
     DoToolTipHitProcessing(point);
 
-    PToolType eToolType = MapToolType(m_nCurToolID);
-    CPlayTool* pTool = CPlayTool::GetTool(eToolType);
-    if (!GetDocument()->IsPlaying() && pTool != NULL)
+    if (!GetDocument()->IsPlaying())
     {
+        PToolType eToolType = MapToolType(m_nCurToolID);
+        CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         ClientToWorkspace(point);
-        pTool->OnMouseMove(this, nFlags, point);
+        pTool.OnMouseMove(this, nFlags, point);
     }
     else
         CScrollView::OnMouseMove(nFlags, point);
@@ -1067,15 +1062,10 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     }
 
     PToolType eToolType = MapToolType(m_nCurToolID);
-    CPlayTool* pTool = CPlayTool::GetTool(eToolType);
+    CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonUp(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonUp(nFlags, point);
+    ClientToWorkspace(point);
+    pTool.OnLButtonUp(this, nFlags, point);
 }
 
 void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
@@ -1086,12 +1076,12 @@ void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
         return;
     }
 
-    PToolType eToolType = MapToolType(m_nCurToolID);
-    CPlayTool* pTool = CPlayTool::GetTool(eToolType);
-    if (!GetDocument()->IsPlaying() && pTool != NULL)
+    if (!GetDocument()->IsPlaying())
     {
+        PToolType eToolType = MapToolType(m_nCurToolID);
+        CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         ClientToWorkspace(point);
-        pTool->OnLButtonDblClk(this, nFlags, point);
+        pTool.OnLButtonDblClk(this, nFlags, point);
     }
     else
         CScrollView::OnLButtonDblClk(nFlags, point);
@@ -1114,10 +1104,12 @@ void CPlayBoardView::OnTimer(UINT nIDEvent)
     }
     else
     {
-        PToolType eToolType = MapToolType(m_nCurToolID);
-        CPlayTool* pTool = CPlayTool::GetTool(eToolType);
-        if (!GetDocument()->IsPlaying() && pTool != NULL)
-            pTool->OnTimer(this, nIDEvent);
+        if (!GetDocument()->IsPlaying())
+        {
+            PToolType eToolType = MapToolType(m_nCurToolID);
+            CPlayTool& pTool = CPlayTool::GetTool(eToolType);
+            pTool.OnTimer(this, nIDEvent);
+        }
         else
             CScrollView::OnTimer(nIDEvent);
     }
@@ -1131,8 +1123,8 @@ BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     PToolType eToolType = MapToolType(m_nCurToolID);
     if (pWnd == this && eToolType != ptypeUnknown)
     {
-        CPlayTool* pTool = CPlayTool::GetTool(eToolType);
-        if (pTool != NULL && pTool->OnSetCursor(this, nHitTest))
+        CPlayTool& pTool = CPlayTool::GetTool(eToolType);
+        if (pTool.OnSetCursor(this, nHitTest))
             return TRUE;
     }
     if (GetDocument()->IsRecordingCompoundMove())

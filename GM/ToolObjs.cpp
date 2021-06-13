@@ -47,7 +47,7 @@ const int scrollZone = 8;                   //From INI?
 /////////////////////////////////////////////////////////////////
 // Class variables
 
-CPtrList CTool::c_toolLib;          // Tool library
+std::vector<CTool*> CTool::c_toolLib;          // Tool library
 
 CPoint CTool::c_ptDown;             // Mouse down location
 CPoint CTool::c_ptLast;             // Last mouse location
@@ -69,22 +69,22 @@ static CCellEraserTool  s_eraserCellTool;
 ////////////////////////////////////////////////////////////////////////
 // CTool - Basic tool support (abstract class)
 
-CTool::CTool(ToolType eType)
+CTool::CTool(ToolType eType) :
+    m_eToolType(eType)
 {
-    m_eToolType = eType;
-    c_toolLib.AddTail(this);
+    size_t i = static_cast<size_t>(eType);
+    c_toolLib.resize(std::max(i + size_t(1), c_toolLib.size()));
+    ASSERT(!c_toolLib[i]);
+    c_toolLib[i] = this;
 }
 
-CTool* CTool::GetTool(ToolType eToolType)
+CTool& CTool::GetTool(ToolType eToolType)
 {
-    POSITION pos = c_toolLib.GetHeadPosition();
-    while (pos != NULL)
-    {
-        CTool* pTool = (CTool*)c_toolLib.GetNext(pos);
-        if (pTool->m_eToolType == eToolType)
-            return pTool;
-    }
-    return NULL;
+    size_t i = static_cast<size_t>(eToolType);
+    ASSERT(i < c_toolLib.size());
+    CTool& retval = CheckedDeref(c_toolLib[i]);
+    ASSERT(retval.m_eToolType == eToolType);
+    return retval;
 }
 
 void CTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point)
