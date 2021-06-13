@@ -623,63 +623,40 @@ void CBrdEditView::OnContextMenu(CWnd* pWnd, CPoint point)
 void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CTool* pTool = CTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonDown(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonDown(nFlags, point);
+    CTool& pTool = CTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnLButtonDown(this, nFlags, point);
 }
 
 void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CTool* pTool = CTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnMouseMove(this, nFlags, point);
-    }
-    else
-        CScrollView::OnMouseMove(nFlags, point);
+    CTool& pTool = CTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnMouseMove(this, nFlags, point);
 }
 
 void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CTool* pTool = CTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonUp(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonUp(nFlags, point);
+    CTool& pTool = CTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnLButtonUp(this, nFlags, point);
 }
 
 void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CTool* pTool = CTool::GetTool(eToolType);
-    if (pTool != NULL)
-    {
-        ClientToWorkspace(point);
-        pTool->OnLButtonDblClk(this, nFlags, point);
-    }
-    else
-        CScrollView::OnLButtonDblClk(nFlags, point);
+    CTool& pTool = CTool::GetTool(eToolType);
+    ClientToWorkspace(point);
+    pTool.OnLButtonDblClk(this, nFlags, point);
 }
 
 void CBrdEditView::OnTimer(UINT nIDEvent)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CTool* pTool = CTool::GetTool(eToolType);
-    if (pTool != NULL)
-        pTool->OnTimer(this, nIDEvent);
-    else
-        CScrollView::OnTimer(nIDEvent);
+    CTool& pTool = CTool::GetTool(eToolType);
+    pTool.OnTimer(this, nIDEvent);
 }
 
 BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -687,8 +664,8 @@ BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     ToolType eToolType = MapToolType(m_nCurToolID);
     if (pWnd == this && eToolType != ttypeUnknown)
     {
-        CTool* pTool = CTool::GetTool(eToolType);
-        if(pTool != NULL && pTool->OnSetCursor(this, nHitTest))
+        CTool& pTool = CTool::GetTool(eToolType);
+        if(pTool.OnSetCursor(this, nHitTest))
             return TRUE;
     }
     return CScrollView::OnSetCursor(pWnd, nHitTest, message);
@@ -699,18 +676,19 @@ BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 void CBrdEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    CPolyTool* pTool = (CPolyTool*)CTool::GetTool(eToolType);
-    if (pTool != NULL && pTool->m_eToolType == ttypePolygon)
+    CTool& pTool = CTool::GetTool(eToolType);
+    if (pTool.m_eToolType == ttypePolygon)
     {
+        CPolyTool& pPolyTool = static_cast<CPolyTool&>(pTool);
         if (nChar == VK_ESCAPE)
         {
-            pTool->RemoveRubberBand(this);
-            pTool->FinalizePolygon(this, TRUE);
+            pPolyTool.RemoveRubberBand(this);
+            pPolyTool.FinalizePolygon(this, TRUE);
         }
         else if (nChar == VK_RETURN)
         {
-            pTool->RemoveRubberBand(this);
-            pTool->FinalizePolygon(this, FALSE);
+            pPolyTool.RemoveRubberBand(this);
+            pPolyTool.FinalizePolygon(this, FALSE);
         }
     }
     CScrollView::OnChar(nChar, nRepCnt, nFlags);
@@ -1334,11 +1312,12 @@ BOOL CBrdEditView::OnToolPalette(UINT id)
             // If we're changing away from the polygon tool
             // we need to act as if the escape key was hit.
             ToolType eToolType = MapToolType(m_nCurToolID);
-            CPolyTool* pTool = (CPolyTool*)CTool::GetTool(eToolType);
-            if (pTool != NULL && pTool->m_eToolType == ttypePolygon)
+            CTool& pTool = CTool::GetTool(eToolType);
+            if (pTool.m_eToolType == ttypePolygon)
             {
-                pTool->RemoveRubberBand(this);
-                pTool->FinalizePolygon(this, TRUE);
+                CPolyTool& pPolyTool = static_cast<CPolyTool&>(pTool);
+                pPolyTool.RemoveRubberBand(this);
+                pPolyTool.FinalizePolygon(this, TRUE);
             }
         }
         m_nLastToolID = m_nCurToolID;
