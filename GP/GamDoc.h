@@ -175,7 +175,7 @@ public:
     struct Args<HINT_SELECTOBJLIST>
     {
         CPlayBoard* m_pPBoard;
-        CPtrList*   m_pPtrList;
+        const std::vector<CB::not_null<CDrawObj*>>* m_pPtrList;
     };
 
     template<EGamDocHint HINT>
@@ -424,7 +424,7 @@ public:
     void EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point);
     void EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos);
     void SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj);
-    void SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList);
+    void SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID);
     void SelectTrayItem(const CTraySet& pYSet, PieceID pid, LPCTSTR pszNotificationTip = NULL);
     void SelectMarkerPaletteItem(MarkID mid);
