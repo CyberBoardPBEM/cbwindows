@@ -513,8 +513,9 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList)
+void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList)
 {
+    ASSERT(!"this appears to be dead code");
     if (IsQuietPlayback()) return;
     // If board isn't visible, open it.
     MakeSurePBoardVisible(pPBoard);
@@ -522,7 +523,7 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, CPtrList* pList)
     // Use hint to add object to select list
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJLIST>().m_pPBoard = &pPBoard;
-    hint.GetArgs<HINT_SELECTOBJLIST>().m_pPtrList = pList;
+    hint.GetArgs<HINT_SELECTOBJLIST>().m_pPtrList = &pList;
     UpdateAllViews(NULL, HINT_SELECTOBJLIST, &hint);
 }
 

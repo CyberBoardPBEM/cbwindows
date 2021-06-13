@@ -252,15 +252,13 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_SELECTOBJLIST && ph->GetArgs<HINT_SELECTOBJLIST>().m_pPBoard == m_pPBoard)
     {
-        ASSERT(ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList != NULL);
+        const std::vector<CB::not_null<CDrawObj*>>& pPtrList = CheckedDeref(ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList);
         m_selList.PurgeList(TRUE);
 
-        POSITION pos;
-        for (pos = ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList->GetHeadPosition(); pos != NULL; )
+        for (size_t i = size_t(0) ; i < pPtrList.size() ; ++i)
         {
-            CDrawObj* pDObj = (CDrawObj*)ph->GetArgs<HINT_SELECTOBJLIST>().m_pPtrList->GetNext(pos);
-            ASSERT(pDObj != NULL);
-            m_selList.AddObject(*pDObj, TRUE);
+            CDrawObj& pDObj = *pPtrList[i];
+            m_selList.AddObject(pDObj, TRUE);
             NotifySelectListChange();
         }
     }
