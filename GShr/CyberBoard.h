@@ -59,15 +59,6 @@ namespace CB
         }
     }
 
-    template<typename RIGHT>
-    void Copy(CPtrList& left, const RIGHT& right)
-    {
-        left.RemoveAll();
-        for (RIGHT::const_iterator it = right.begin() ; it != right.end() ; ++it) {
-            left.AddTail(&**it);
-        }
-    }
-
     template<typename LEFT, typename RIGHT>
     void Move(LEFT& left, RIGHT&& right)
     {
