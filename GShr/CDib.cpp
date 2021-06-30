@@ -161,7 +161,7 @@ void CDib::SetDibHandle(HANDLE hDib)
     }
 }
 
-BOOL CDib::BitmapToDIB(const CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
+BOOL CDib::BitmapToDIB(const CBitmap* pBM, const CPalette* pPal, int nBPP/* = 16*/)
 {
     ClearDib();
     if (pBM->m_hObject != NULL)
@@ -183,7 +183,7 @@ BOOL CDib::BitmapToDIB(const CBitmap* pBM, CPalette* pPal, int nBPP/* = 16*/)
     return m_hDib != NULL;
 }
 
-OwnerPtr<CBitmap> CDib::DIBToBitmap(CPalette *pPal, BOOL bDibSect /* = TRUE */)
+OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */)
 {
     if (bDibSect)
     {
