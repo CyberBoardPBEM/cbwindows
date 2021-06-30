@@ -39,7 +39,7 @@ BOOL IsClipboardBitmap()
     return IsClipboardFormatAvailable(CF_DIB);
 }
 
-void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, CPalette *pPal /* = NULL */)
+void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, const CPalette *pPal /* = NULL */)
 {
     if (pWnd->OpenClipboard())
     {
@@ -55,7 +55,7 @@ void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, CPalette *pPal /* = NU
     }
 }
 
-OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, CPalette *pPal /* = NULL */)
+OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, const CPalette *pPal /* = NULL */)
 {
     if (!pWnd->OpenClipboard())
         return NULL;

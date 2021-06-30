@@ -41,8 +41,8 @@ public:
     void ReadDIBFile(CFile& file);
     BOOL WriteDIBFile(CFile& file);
     void CloneDIB(CDib *pDib);
-    BOOL BitmapToDIB(const CBitmap* pBM, CPalette* pPal = NULL, int nBPP = 16);
-    OwnerPtr<CBitmap> DIBToBitmap(CPalette *pPal, BOOL bDibSect = TRUE);
+    BOOL BitmapToDIB(const CBitmap* pBM, const CPalette* pPal = NULL, int nBPP = 16);
+    OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE);
     BOOL AppendDIB(CDib *pDib);
     BOOL RemoveDIBSlice(int y, int ht);
     void AddColorsToPaletteEntryTable(LPPALETTEENTRY pLP, int nSize,
