@@ -221,28 +221,24 @@ namespace CB
             CheckValid();
         }
 
-        /* N.B.:  causes u to violate not_null, but moved-from
+        /* N.B.:  causes pu to violate not_null, but moved-from
                 objects are in an undefined state, so let's
                 allow this */
         template<typename PU>
         not_null(not_null<PU>&& pu) :
             p(std::forward<PU>(get_underlying(std::move(pu))))
         {
-            // see get()
-            //CheckValid();
+            CheckValid();
         }
 
-        /* ctor check means we can probably skip CheckValid when
-            reading, but dirty cast or move tricks could still
-            clear p.  Opinions? */
         deref_ptr_const_type* get() const
         {
-            //CheckValid();
+            CheckValid();
             return &*p;
         }
         deref_ptr_type* get()
         {
-            //CheckValid();
+            CheckValid();
             return &*p;
         }
 
@@ -427,9 +423,6 @@ constexpr T Invalid_v = Invalid<T>::value;
 
 /////////////////////////////////////////////////////////////////////////////
 
-/* TODO:  The checks could be removed to improve release
-    build performance if we trust ourselves to always
-    catch any mistakes in testing.  */
 template<typename T>
 decltype(*std::declval<T>()) CheckedDeref(T& p)
 {
