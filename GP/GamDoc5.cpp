@@ -141,7 +141,8 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
         const CMarkObj& pObj = static_cast<const CMarkObj&>(pDObj);
         return MakeObjectIDElement(pObj.GetObjectID());
     }
-    return (GameElement)0;
+    ASSERT(!"invalid CDrawObj subtype");
+    return (GameElement)-1;
 }
 
 GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
