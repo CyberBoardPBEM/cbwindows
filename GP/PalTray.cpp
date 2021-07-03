@@ -447,9 +447,9 @@ void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
         m_comboYGrp.SetCurSel(FindTrayIndex(nGroup));
         UpdateTrayList();
     }
+    size_t nItem = m_listTray.SelectTrayPiece(pid);
     if (pszNotificationTip != NULL)
     {
-        size_t nItem = m_listTray.SelectTrayPiece(pid);
         m_listTray.SetNotificationTip(value_preserving_cast<int>(nItem), pszNotificationTip);
     }
 }
@@ -620,7 +620,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
             if (nSel >= 0)
             {
-                for (no_demote<size_t> i = size_t(0) ; i < m_listPtr.size() ; ++i)
+                for (size_t i = size_t(0) ; i < m_listPtr.size() ; ++i)
                 {
                     m_listTray.SetSel(nSel - value_preserving_cast<int>(i));
                 }
