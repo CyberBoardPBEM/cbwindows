@@ -81,7 +81,7 @@ public:
     void SetSelFromPoint(CPoint point);
     void ShowFirstSelection();
     CDrawObj& MapIndexToItem(size_t nIndex);
-    size_t MapItemToIndex(CDrawObj* pItem);
+    size_t MapItemToIndex(const CDrawObj& pItem);
     void MakeItemVisible(int nItem);
 
 // Overrides - the subclass of this class must override these

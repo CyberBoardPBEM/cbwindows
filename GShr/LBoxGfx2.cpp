@@ -117,12 +117,12 @@ CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex)
     return *m_pItemMap->at(nIndex);
 }
 
-size_t CGrafixListBox2::MapItemToIndex(CDrawObj* pItem)
+size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem)
 {
     ASSERT(m_pItemMap);
     for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
-        if (pItem == m_pItemMap->at(i))
+        if (&pItem == m_pItemMap->at(i))
             return i;
     }
     return Invalid_v<size_t>;                  // Failed to find it
