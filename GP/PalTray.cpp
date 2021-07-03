@@ -618,6 +618,13 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
                 pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
+            if (nSel >= 0)
+            {
+                for (no_demote<size_t> i = size_t(0) ; i < m_listPtr.size() ; ++i)
+                {
+                    m_listTray.SetSel(nSel - value_preserving_cast<int>(i));
+                }
+            }
         }
 
         m_listTray.SetCurSel(nSel);
