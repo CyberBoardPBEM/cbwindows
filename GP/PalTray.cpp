@@ -593,37 +593,44 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             if (pdi->m_point.y > (rct.top + rct.bottom) / 2)
                 nSel++;
         }
+        size_t dropCount;
         if (pdi->m_dragType == DRAG_PIECE)
         {
+            ASSERT(!"untested code");
+            dropCount = size_t(1);
             m_pDoc->AssignNewMoveGroup();
             m_pDoc->PlacePieceInTray(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             // Select the last piece that was inserted
             nSel = value_preserving_cast<int>(pYGrp.GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID));
         }
-        if (pdi->m_dragType == DRAG_PIECELIST)
+        else if (pdi->m_dragType == DRAG_PIECELIST)
         {
             m_pDoc->AssignNewMoveGroup();
-            size_t temp = m_pDoc->PlacePieceListInTray(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList),
+            const std::vector<PieceID>& pieceIDList = CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
+            dropCount = pieceIDList.size();
+            size_t temp = m_pDoc->PlacePieceListInTray(pieceIDList,
                 pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
         }
         else        // DRAG_SELECTLIST
         {
+            ASSERT(pdi->m_dragType == DRAG_SELECTLIST);
             std::vector<CB::not_null<CDrawObj*>> m_listPtr;
             CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
             pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
             pSLst->PurgeList(FALSE);
+            dropCount = m_listPtr.size();
             m_pDoc->AssignNewMoveGroup();
             size_t temp = m_pDoc->PlaceObjectTableInTray(m_listPtr,
                 pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
-            if (nSel >= 0)
+        }
+        if (nSel >= 0)
+        {
+            for (size_t i = size_t(0) ; i < dropCount ; ++i)
             {
-                for (size_t i = size_t(0) ; i < m_listPtr.size() ; ++i)
-                {
-                    m_listTray.SetSel(nSel - value_preserving_cast<int>(i));
-                }
+                m_listTray.SetSel(nSel - value_preserving_cast<int>(i));
             }
         }
 
