@@ -420,8 +420,6 @@ void CGamDoc::PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl
 
 size_t CGamDoc::PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet& pYGrp, size_t nPos)
 {
-    //TODO: This code will have to get smarter when dropping pieces
-    //TODO that originate from the same tray.
     for (size_t i = 0; i < pTbl.size(); i++)
     {
         PieceID pid = pTbl.at(i);
@@ -431,6 +429,15 @@ size_t CGamDoc::PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet&
         CTraySet *pCurYGrp = FindPieceInTray(pid);
 
         PlacePieceInTray(pid, pYGrp, nPos);
+        if (pCurYGrp == &pYGrp && nPos != Invalid_v<size_t>)
+        {
+            // May need to mess with 'nPos' if moving the piece
+            // to a location higher up in the list.
+            size_t nIdx = pCurYGrp->GetPieceIDIndex(pid);
+            ASSERT(nIdx != Invalid_v<size_t>);
+            if (nPos > nIdx)
+                nPos--;
+        }
         if (nPos != Invalid_v<size_t>)
             nPos++;
     }
