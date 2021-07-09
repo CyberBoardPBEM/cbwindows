@@ -357,7 +357,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
                 CDrawObj& pObj = *tblObjPtrs.at(i);
-                ar << value_preserving_cast<DWORD>(GetDocument()->GetGameElementCodeForObject(pObj));
+                ar << GetDocument()->GetGameElementCodeForObject(pObj);
             }
         }
         else
@@ -383,7 +383,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         while (dwSelCount--)
         {
             GameElement elem;
-            ar >> dwTmp; elem = (GameElement)dwTmp;
+            ar >> elem;
             CDrawObj* pObj = NULL;
             if (IsGameElementAPiece(elem))
                 pObj = m_pPBoard->FindPieceID(GetPieceIDFromElement(elem));

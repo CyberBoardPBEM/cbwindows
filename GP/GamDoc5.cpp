@@ -142,13 +142,13 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
         return MakeObjectIDElement(pObj.GetObjectID());
     }
     ASSERT(!"invalid CDrawObj subtype");
-    return (GameElement)-1;
+    return Invalid_v<GameElement>;
 }
 
 GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
     BOOL bBottomSide /* = FALSE */)
 {
-    GameElement elem = (GameElement)-1;
+    GameElement elem = Invalid_v<GameElement>;
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
@@ -158,7 +158,7 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
 
         elem = MakePieceElement(pid, nSide);
         if (!HasGameElementString(elem) || pObj.IsOwnedButNotByCurrentPlayer())
-            elem = (GameElement)-1;
+            elem = Invalid_v<GameElement>;
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
@@ -169,7 +169,7 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
             // Try the actual marker ID for string existance.
             elem = MakeMarkerElement(pObj.m_mid);
             if (!HasGameElementString(elem))
-                elem = (GameElement)-1;
+                elem = Invalid_v<GameElement>;
         }
     }
     return elem;

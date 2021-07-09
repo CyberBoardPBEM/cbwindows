@@ -27,6 +27,19 @@
 
 ///////////////////////////////////////////////////////////////////////
 
+namespace {
+    class GameElementCheck
+    {
+    public:
+        GameElementCheck()
+        {
+            GameElement test(MarkID(0x1234));
+            static_assert(sizeof(test) == sizeof(uint32_t), "size mismatch");
+            ASSERT(reinterpret_cast<uint32_t&>(test) == 0xF0001234 || !"non-Microsoft field layout");
+        }
+    } gameElementCheck;
+}
+
 void CGameElementStringMap::Clone(CGameElementStringMap* pMapToCopy)
 {
     RemoveAll();
@@ -76,7 +89,7 @@ void CGameElementStringMap::Serialize(CArchive& ar)
             GameElement elem;
             CString str;
             GetNextAssoc(pos, elem, str);
-            ar << (DWORD)elem;
+            ar << elem;
             ar << str;
         }
     }
@@ -87,11 +100,11 @@ void CGameElementStringMap::Serialize(CArchive& ar)
         ar >> dwCount;
         while (dwCount--)
         {
-            DWORD dwElem;
+            GameElement dwElem;
             ar >> dwElem;
             CString str;
             ar >> str;
-            SetAt((GameElement)dwElem, str);
+            SetAt(dwElem, str);
         }
     }
 }

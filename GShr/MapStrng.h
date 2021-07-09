@@ -38,41 +38,325 @@
 
 //////////////////////////////////////////////////////////////////////
 
-typedef DWORD GameElement;
+typedef DWORD GameElementOld;
+class alignas(uint32_t) GameElement
+{
+public:
+    GameElement() = default;
+    GameElement(PieceID pid, int nSide = 0)
+        { new (&u.pieceElement) U::PieceElement(pid, nSide); }
+    GameElement(MarkID mid)
+        { new (&u.markerElement) U::MarkerElement(mid); }
+#if defined(GPLAY)
+    GameElement(ObjectID oid)
+        { new (&u.objectElement) U::ObjectElement(oid); }
+#endif
+    GameElement(const GameElement&) = default;
+    GameElement& operator=(const GameElement&) = default;
+    ~GameElement() = default;
 
+    bool operator==(const GameElement& rhs) const
+    {
+        if (u.tag.tag != rhs.u.tag.tag) {
+            return false;
+        }
+        switch (u.tag.tag)
+        {
+            case PIECE:
+                return u.pieceElement.pid == rhs.u.pieceElement.pid &&
+                        u.pieceElement.nSide == rhs.u.pieceElement.nSide;
+            case MARKER:
+                return u.markerElement.mid == rhs.u.markerElement.mid;
+            default:
+#if defined(GPLAY)
+                return u.objectElement.oid == rhs.u.objectElement.oid;
+#else
+                CbThrowBadCastException();
+#endif
+        }
+    }
+    bool operator!=(const GameElement& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    bool IsAPiece() const
+    {
+        return u.tag.tag == PIECE;
+    }
+    bool IsAMarker() const
+    {
+        return u.tag.tag == MARKER;
+    }
+    bool IsAnObject() const
+    {
+        return u.tag.tag != PIECE &&
+                u.tag.tag != MARKER;
+    }
+
+    explicit operator PieceID() const
+    {
+        if (!IsAPiece()) {
+            CbThrowBadCastException();
+        }
+        return u.pieceElement.pid;
+    }
+
+#if defined(GPLAY)
+    explicit operator ObjectID() const
+    {
+        if (!IsAnObject()) {
+            CbThrowBadCastException();
+        }
+        return u.objectElement.oid;
+    }
+#endif
+
+    void Serialize(CArchive& ar)
+    {
+        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+        if (ar.IsStoring())
+        {
+            ar << u.buf;
+        }
+        else
+        {
+            ar >> u.buf;
+        }
+    }
+
+    UINT Hash() const
+    {
+        return HashKey(u.buf);
+    }
+
+private:
+    // Top 4 bits set if a marker, else a piece
+    // else...top 15 bits nonzero if objectID
+    // otherwise it's a piece ID with side code
+    enum {
+        PIECE = 0,
+        MARKER = 0x7800,
+    };
+    // Invalid_v<GameElement> helper
+    struct Invalid_t {};
+
+    /* constexpr GameElement --> constexpr union
+        constexpr union --> union can't be anonymous */
+    union U {
+        // WARNING:  bitfield layout is MS-specific
+        struct Tag
+        {
+            uint32_t : 17;
+            uint32_t tag : 15;
+        // Invalid_v<GameElement> helper
+        private:
+            constexpr Tag() = default;
+        } tag;
+        struct PieceElement
+        {
+            PieceID pid;
+            uint16_t nSide : 1;
+            uint16_t tag : 15;
+
+            PieceElement(PieceID p, int s) :
+                pid(p),
+                nSide(s),
+                tag(PIECE)
+            {
+                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
+                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAPiece());
+            }
+        // Invalid_v<GameElement> helper
+        private:
+            constexpr PieceElement() = default;
+        } pieceElement;
+        struct MarkerElement
+        {
+            MarkID mid;
+            uint16_t pad : 1;
+            uint16_t tag : 15;
+
+            MarkerElement(MarkID m) :
+                mid(m),
+                pad(0),
+                tag(MARKER)
+            {
+                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
+                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAMarker());
+            }
+        // Invalid_v<GameElement> helper
+        private:
+            constexpr MarkerElement() = default;
+        } markerElement;
+#if defined(GPLAY)
+        struct ObjectElement
+        {
+            ObjectID oid;
+
+            ObjectElement(ObjectID o) :
+                oid(o)
+            {
+                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
+                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAnObject());
+            }
+        // Invalid_v<GameElement> helper
+        private:
+            constexpr ObjectElement() = default;
+        } objectElement;
+#endif
+        uint32_t buf;
+
+        U() {}
+        constexpr U(Invalid_t) : buf(uint32_t(-1)) {};
+        U(const U&) = default;
+        U& operator=(const U&) = default;
+        ~U() = default;
+    } u;
+
+    // helper for Invalid_v<GameElement>
+    constexpr GameElement(Invalid_t) : u(Invalid_t()) {}
+
+    void Test()
+    {
+        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(GameElementOld), "size mismatch");
+        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(GameElementOld), "align mismatch");
+    }
+
+    friend Invalid<GameElement>;
+};
+
+template<>
+struct Invalid<GameElement>
+{
+    static constexpr GameElement value = GameElement(GameElement::Invalid_t());
+};
+
+inline CArchive& operator<<(CArchive& ar, GameElement& ge)
+{
+    ge.Serialize(ar);
+    return ar;
+}
+
+inline CArchive& operator>>(CArchive& ar, GameElement& ge)
+{
+    ge.Serialize(ar);
+    return ar;
+}
+
+template<>
+inline UINT HashKey(GameElement key)
+{
+    return key.Hash();
+}
+
+#if !defined(NDEBUG)
+// TODO:  remove the *Old functions after testing replacements for a while
 const DWORD GAMEELEM_MARKERID_FLAG = 0xF0000000L; // Top 4 bits set if a marker, else a piece
 const DWORD GAMEELEM_OBJECTID_MASK = 0xFFFE0000L; // else...top 15 bits nonzero if objectID
                                                   // otherwise it's a piece ID with side code
-
-inline GameElement MakePieceElement(PieceID pid, int nSide = 0)
-    { return (GameElement)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
-
-inline GameElement MakeMarkerElement(MarkID mid)
-    { return (GameElement)((DWORD)static_cast<WORD>(mid) | GAMEELEM_MARKERID_FLAG); }
-
-#if defined(GPLAY)
-inline GameElement MakeObjectIDElement(ObjectID dwObjectID)
-    { return (GameElement)reinterpret_cast<uint32_t&>(dwObjectID); }
 #endif
 
-inline BOOL IsGameElementAPiece(GameElement elem)
+#if !defined(NDEBUG)
+inline GameElementOld MakePieceElementOld(PieceID pid, int nSide = 0)
+    { return (GameElementOld)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
+#endif
+inline GameElement MakePieceElement(PieceID pid, int nSide = 0)
+    {
+        GameElement retval = GameElement(pid, nSide);
+#if !defined(NDEBUG)
+        GameElementOld old = MakePieceElementOld(pid, nSide);
+        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+#endif
+        return retval;
+    }
+
+#if !defined(NDEBUG)
+inline GameElementOld MakeMarkerElementOld(MarkID mid)
+    { return (GameElementOld)((DWORD)static_cast<WORD>(mid) | GAMEELEM_MARKERID_FLAG); }
+#endif
+inline GameElement MakeMarkerElement(MarkID mid)
+    {
+        GameElement retval = GameElement(mid);
+#if !defined(NDEBUG)
+        GameElementOld old = MakeMarkerElementOld(mid);
+        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+#endif
+        return retval;
+    }
+
+#if defined(GPLAY)
+inline GameElementOld MakeObjectIDElementOld(ObjectID dwObjectID)
+    { return (GameElementOld)reinterpret_cast<uint32_t&>(dwObjectID); }
+inline GameElement MakeObjectIDElement(ObjectID dwObjectID)
+    {
+        GameElement retval = GameElement(dwObjectID);
+        GameElementOld old = MakeObjectIDElementOld(dwObjectID);
+        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+        return retval;
+    }
+#endif
+
+#if !defined(NDEBUG)
+inline BOOL IsGameElementOldAPiece(GameElementOld elem)
     { return !(BOOL)(elem & GAMEELEM_MARKERID_FLAG); }
+#endif
+inline BOOL IsGameElementAPiece(GameElement elem)
+    {
+        BOOL retval = elem.IsAPiece();
+        ASSERT(retval == IsGameElementOldAPiece(reinterpret_cast<const GameElementOld&>(elem)));
+        return retval;
+    }
 
-inline BOOL IsGameElementAMarker(GameElement elem)
+#if !defined(NDEBUG)
+inline BOOL IsGameElementOldAMarker(GameElementOld elem)
     { return (BOOL)((elem & GAMEELEM_OBJECTID_MASK) == GAMEELEM_MARKERID_FLAG); }
+#endif
+inline BOOL IsGameElementAMarker(GameElement elem)
+    {
+        BOOL retval = elem.IsAMarker();
+        ASSERT(retval == IsGameElementOldAMarker(reinterpret_cast<const GameElementOld&>(elem)));
+        return retval;
+    }
 
-inline BOOL IsGameElementAnObjectID(GameElement elem)
+#if !defined(NDEBUG)
+inline BOOL IsGameElementOldAnObject(GameElementOld elem)
     {
         DWORD dwVal = elem & GAMEELEM_OBJECTID_MASK;
         return (BOOL)(dwVal != 0 && dwVal != GAMEELEM_MARKERID_FLAG);
     }
+#endif
+inline BOOL IsGameElementAnObjectID(GameElement elem)
+    {
+        BOOL retval = elem.IsAnObject();
+        ASSERT(retval == IsGameElementOldAnObject(reinterpret_cast<const GameElementOld&>(elem)));
+        return retval;
+    }
 
-inline PieceID GetPieceIDFromElement(GameElement elem)
+#if !defined(NDEBUG)
+inline PieceID GetPieceIDFromElementOld(GameElementOld elem)
     { return static_cast<PieceID>(elem & 0xFFFF); }
+#endif
+inline PieceID GetPieceIDFromElement(GameElement elem)
+    {
+        PieceID retval = static_cast<PieceID>(elem);
+        ASSERT(retval == GetPieceIDFromElementOld(reinterpret_cast<const GameElementOld&>(elem)));
+        return retval;
+    }
 
 #if defined(GPLAY)
-inline ObjectID GetObjectIDFromElement(GameElement elem)
+#if !defined(NDEBUG)
+inline ObjectID GetObjectIDFromElementOld(GameElementOld elem)
     { return static_cast<ObjectID>(elem); }
+#endif
+inline ObjectID GetObjectIDFromElement(GameElement elem)
+    {
+        ObjectID retval = static_cast<ObjectID>(elem);
+        ASSERT(retval == GetObjectIDFromElementOld(reinterpret_cast<const GameElementOld&>(elem)));
+        return retval;
+    }
 #endif
 
 
