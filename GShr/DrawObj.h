@@ -193,6 +193,9 @@ public:
     ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID(PieceID pid);
     explicit ObjectID(uint32_t dw);
+    ObjectID(const ObjectID&) = default;
+    ObjectID& operator=(const ObjectID&) = default;
+    ~ObjectID() = default;
 
     bool operator==(const ObjectID& rhs) const
     {

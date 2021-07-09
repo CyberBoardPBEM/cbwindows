@@ -581,6 +581,8 @@ public:
     template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
     explicit constexpr XxxxID(T i) : XxxxID(value_preserving_cast<uint32_t>(i)) {}
 
+    XxxxID(const XxxxID&) = default;
+    XxxxID& operator=(const XxxxID&) = default;
     ~XxxxID() = default;
 
     explicit constexpr operator WORD() const { return id; }
