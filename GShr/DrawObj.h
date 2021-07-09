@@ -189,7 +189,13 @@ protected:
 class alignas(uint32_t) ObjectID
 {
 public:
-    ObjectID();
+    // KLUDGE:  release link fails if impl is in .cpp
+    constexpr ObjectID() :
+        id(0),
+        serial(0),
+        subtype(0)
+    {
+    }
     ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID(PieceID pid);
     explicit ObjectID(uint32_t dw);

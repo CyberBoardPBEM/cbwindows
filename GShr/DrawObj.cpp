@@ -65,13 +65,6 @@ namespace {
     } objectIDCheck;
 }
 
-ObjectID::ObjectID()
-{
-    id = 0;
-    serial = 0;
-    subtype = 0;
-}
-
 ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
     id(i),
     serial(s & 0x0FFF),
