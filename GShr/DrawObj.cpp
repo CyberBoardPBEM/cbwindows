@@ -88,10 +88,11 @@ ObjectID::ObjectID(PieceID pid)
     subtype = 0;
 }
 
-ObjectID::ObjectID(DWORD dw)
+ObjectID::ObjectID(uint32_t dw)
 {
-    reinterpret_cast<DWORD&>(*this) = dw;
+    reinterpret_cast<uint32_t&>(*this) = dw;
 }
+
 #endif
 
 ////////////////////////////////////////////////////////////////////
