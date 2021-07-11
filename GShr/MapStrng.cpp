@@ -27,6 +27,8 @@
 
 ///////////////////////////////////////////////////////////////////////
 
+/* porting check:  verify that compiler generates GameElement
+that is binary-identical to Microsoft one */
 namespace {
     class GameElementCheck
     {
