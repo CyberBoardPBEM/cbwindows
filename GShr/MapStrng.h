@@ -38,7 +38,9 @@
 
 //////////////////////////////////////////////////////////////////////
 
-typedef DWORD GameElementOld;
+#if !defined(NDEBUG)
+typedef DWORD GameElementLegacyCheck;
+#endif
 class alignas(uint32_t) GameElement
 {
 public:
@@ -219,11 +221,13 @@ private:
     // helper for Invalid_v<GameElement>
     constexpr GameElement(Invalid_t) : u(Invalid_t()) {}
 
+#if !defined(NDEBUG)
     void Test()
     {
-        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(GameElementOld), "size mismatch");
-        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(GameElementOld), "align mismatch");
+        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(GameElementLegacyCheck), "size mismatch");
+        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(GameElementLegacyCheck), "align mismatch");
     }
+#endif
 
     friend Invalid<GameElement>;
 };
@@ -253,76 +257,80 @@ inline UINT HashKey(GameElement key)
 }
 
 #if !defined(NDEBUG)
-// TODO:  remove the *Old functions after testing replacements for a while
+// TODO:  remove the *LegacyCheck functions after testing replacements for a while
 const DWORD GAMEELEM_MARKERID_FLAG = 0xF0000000L; // Top 4 bits set if a marker, else a piece
 const DWORD GAMEELEM_OBJECTID_MASK = 0xFFFE0000L; // else...top 15 bits nonzero if objectID
                                                   // otherwise it's a piece ID with side code
 #endif
 
 #if !defined(NDEBUG)
-inline GameElementOld MakePieceElementOld(PieceID pid, int nSide = 0)
-    { return (GameElementOld)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
+inline GameElementLegacyCheck MakePieceElementLegacyCheck(PieceID pid, int nSide = 0)
+    { return (GameElementLegacyCheck)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
 #endif
 inline GameElement MakePieceElement(PieceID pid, int nSide = 0)
     {
         GameElement retval = GameElement(pid, nSide);
 #if !defined(NDEBUG)
-        GameElementOld old = MakePieceElementOld(pid, nSide);
-        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+        GameElementLegacyCheck legacyCheck = MakePieceElementLegacyCheck(pid, nSide);
+        ASSERT(reinterpret_cast<GameElementLegacyCheck&>(retval) == legacyCheck);
 #endif
         return retval;
     }
 
 #if !defined(NDEBUG)
-inline GameElementOld MakeMarkerElementOld(MarkID mid)
-    { return (GameElementOld)((DWORD)static_cast<WORD>(mid) | GAMEELEM_MARKERID_FLAG); }
+inline GameElementLegacyCheck MakeMarkerElementLegacyCheck(MarkID mid)
+    { return (GameElementLegacyCheck)((DWORD)static_cast<WORD>(mid) | GAMEELEM_MARKERID_FLAG); }
 #endif
 inline GameElement MakeMarkerElement(MarkID mid)
     {
         GameElement retval = GameElement(mid);
 #if !defined(NDEBUG)
-        GameElementOld old = MakeMarkerElementOld(mid);
-        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+        GameElementLegacyCheck legacyCheck = MakeMarkerElementLegacyCheck(mid);
+        ASSERT(reinterpret_cast<GameElementLegacyCheck&>(retval) == legacyCheck);
 #endif
         return retval;
     }
 
 #if defined(GPLAY)
-inline GameElementOld MakeObjectIDElementOld(ObjectID dwObjectID)
-    { return (GameElementOld)reinterpret_cast<uint32_t&>(dwObjectID); }
+#if !defined(NDEBUG)
+inline GameElementLegacyCheck MakeObjectIDElementLegacyCheck(ObjectID dwObjectID)
+    { return (GameElementLegacyCheck)reinterpret_cast<uint32_t&>(dwObjectID); }
+#endif
 inline GameElement MakeObjectIDElement(ObjectID dwObjectID)
     {
         GameElement retval = GameElement(dwObjectID);
-        GameElementOld old = MakeObjectIDElementOld(dwObjectID);
-        ASSERT(reinterpret_cast<GameElementOld&>(retval) == old);
+#if !defined(NDEBUG)
+        GameElementLegacyCheck legacyCheck = MakeObjectIDElementLegacyCheck(dwObjectID);
+        ASSERT(reinterpret_cast<GameElementLegacyCheck&>(retval) == legacyCheck);
+#endif
         return retval;
     }
 #endif
 
 #if !defined(NDEBUG)
-inline BOOL IsGameElementOldAPiece(GameElementOld elem)
+inline BOOL IsGameElementLegacyCheckAPiece(GameElementLegacyCheck elem)
     { return !(BOOL)(elem & GAMEELEM_MARKERID_FLAG); }
 #endif
 inline BOOL IsGameElementAPiece(GameElement elem)
     {
         BOOL retval = elem.IsAPiece();
-        ASSERT(retval == IsGameElementOldAPiece(reinterpret_cast<const GameElementOld&>(elem)));
+        ASSERT(retval == IsGameElementLegacyCheckAPiece(reinterpret_cast<const GameElementLegacyCheck&>(elem)));
         return retval;
     }
 
 #if !defined(NDEBUG)
-inline BOOL IsGameElementOldAMarker(GameElementOld elem)
+inline BOOL IsGameElementLegacyCheckAMarker(GameElementLegacyCheck elem)
     { return (BOOL)((elem & GAMEELEM_OBJECTID_MASK) == GAMEELEM_MARKERID_FLAG); }
 #endif
 inline BOOL IsGameElementAMarker(GameElement elem)
     {
         BOOL retval = elem.IsAMarker();
-        ASSERT(retval == IsGameElementOldAMarker(reinterpret_cast<const GameElementOld&>(elem)));
+        ASSERT(retval == IsGameElementLegacyCheckAMarker(reinterpret_cast<const GameElementLegacyCheck&>(elem)));
         return retval;
     }
 
 #if !defined(NDEBUG)
-inline BOOL IsGameElementOldAnObject(GameElementOld elem)
+inline BOOL IsGameElementLegacyCheckAnObject(GameElementLegacyCheck elem)
     {
         DWORD dwVal = elem & GAMEELEM_OBJECTID_MASK;
         return (BOOL)(dwVal != 0 && dwVal != GAMEELEM_MARKERID_FLAG);
@@ -331,30 +339,30 @@ inline BOOL IsGameElementOldAnObject(GameElementOld elem)
 inline BOOL IsGameElementAnObjectID(GameElement elem)
     {
         BOOL retval = elem.IsAnObject();
-        ASSERT(retval == IsGameElementOldAnObject(reinterpret_cast<const GameElementOld&>(elem)));
+        ASSERT(retval == IsGameElementLegacyCheckAnObject(reinterpret_cast<const GameElementLegacyCheck&>(elem)));
         return retval;
     }
 
 #if !defined(NDEBUG)
-inline PieceID GetPieceIDFromElementOld(GameElementOld elem)
+inline PieceID GetPieceIDFromElementLegacyCheck(GameElementLegacyCheck elem)
     { return static_cast<PieceID>(elem & 0xFFFF); }
 #endif
 inline PieceID GetPieceIDFromElement(GameElement elem)
     {
         PieceID retval = static_cast<PieceID>(elem);
-        ASSERT(retval == GetPieceIDFromElementOld(reinterpret_cast<const GameElementOld&>(elem)));
+        ASSERT(retval == GetPieceIDFromElementLegacyCheck(reinterpret_cast<const GameElementLegacyCheck&>(elem)));
         return retval;
     }
 
 #if defined(GPLAY)
 #if !defined(NDEBUG)
-inline ObjectID GetObjectIDFromElementOld(GameElementOld elem)
+inline ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
     { return static_cast<ObjectID>(elem); }
 #endif
 inline ObjectID GetObjectIDFromElement(GameElement elem)
     {
         ObjectID retval = static_cast<ObjectID>(elem);
-        ASSERT(retval == GetObjectIDFromElementOld(reinterpret_cast<const GameElementOld&>(elem)));
+        ASSERT(retval == GetObjectIDFromElementLegacyCheck(reinterpret_cast<const GameElementLegacyCheck&>(elem)));
         return retval;
     }
 #endif
