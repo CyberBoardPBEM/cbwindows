@@ -189,10 +189,19 @@ protected:
 class alignas(uint32_t) ObjectID
 {
 public:
-    ObjectID();
+    // KLUDGE:  release link fails if impl is in .cpp
+    constexpr ObjectID() :
+        id(0),
+        serial(0),
+        subtype(0)
+    {
+    }
     ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID(PieceID pid);
-    explicit ObjectID(DWORD dw);
+    explicit ObjectID(uint32_t dw);
+    ObjectID(const ObjectID&) = default;
+    ObjectID& operator=(const ObjectID&) = default;
+    ~ObjectID() = default;
 
     bool operator==(const ObjectID& rhs) const
     {
@@ -201,6 +210,12 @@ public:
     bool operator!=(const ObjectID& rhs) const
     {
         return !operator==(rhs);
+    }
+
+    explicit operator uint32_t() const
+    {
+        static_assert(sizeof(uint32_t) == sizeof(*this), "sizeof error");
+        return reinterpret_cast<const uint32_t&>(*this);
     }
 
 private:

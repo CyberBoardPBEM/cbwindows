@@ -799,13 +799,12 @@ void CObjectSetText::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_elem;
+        ar << m_elem;
         ar << m_strObjText;
     }
     else
     {
-        DWORD dwTmp;
-        ar >> dwTmp; m_elem = (GameElement)dwTmp;
+        ar >> m_elem;
         ar >> m_strObjText;
     }
 }
@@ -920,14 +919,13 @@ void CObjectLockdown::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_elem;
+        ar << m_elem;
         ar << (WORD)m_bLockState;
     }
     else
     {
-        DWORD dwTmp;
         WORD wTmp;
-        ar >> dwTmp; m_elem = (GameElement)dwTmp;
+        ar >> m_elem;
         ar >> wTmp; m_bLockState = (BOOL)wTmp;
     }
 }

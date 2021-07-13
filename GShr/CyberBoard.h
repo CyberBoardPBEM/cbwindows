@@ -578,9 +578,11 @@ public:
     // goal is 32bit ids, but currently ids are 16 bit
     explicit constexpr XxxxID(uint32_t i) : id(value_preserving_cast<uint16_t>(i)) {}
 
-    template<typename T>
-    explicit constexpr XxxxID(T i) : XxxxID(value_preserving_cast<uint32_t>(i)) { static_assert(std::is_integral_v<T>, "id must be an integer"); }
+    template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+    explicit constexpr XxxxID(T i) : XxxxID(value_preserving_cast<uint32_t>(i)) {}
 
+    XxxxID(const XxxxID&) = default;
+    XxxxID& operator=(const XxxxID&) = default;
     ~XxxxID() = default;
 
     explicit constexpr operator WORD() const { return id; }

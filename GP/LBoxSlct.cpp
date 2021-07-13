@@ -131,7 +131,7 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     CRect rctRight;
     GetTileRectsForItem(nIndex, tidLeft, tidRight, rctLeft, rctRight);
 
-    GameElement elem = (GameElement)-1;
+    GameElement elem = Invalid_v<GameElement>;
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
     {
@@ -148,7 +148,8 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     else
         return -1;
 
-    return (int)elem;
+    static_assert(sizeof(elem) == sizeof(int), "size mismatch");
+    return reinterpret_cast<int&>(elem);
 }
 
 void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
@@ -156,7 +157,8 @@ void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
 {
     if (nItemCode == -1)
         return;
-    GameElement elem = (GameElement)nItemCode;
+    static_assert(sizeof(GameElement) == sizeof(nItemCode), "size mismatch");
+    GameElement& elem = reinterpret_cast<GameElement&>(nItemCode);
     strTip = m_pDoc->GetGameElementString(elem);
 }
 
@@ -167,7 +169,7 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
     CDrawObj& pObj = MapIndexToItem(nItem);
     GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
     GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
-    return elem1 != (GameElement)-1 || elem2 != (GameElement)-1;
+    return elem1 != Invalid_v<GameElement> || elem2 != Invalid_v<GameElement>;
 }
 
 /////////////////////////////////////////////////////////////////////////////

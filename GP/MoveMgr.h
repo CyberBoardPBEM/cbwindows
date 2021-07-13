@@ -287,7 +287,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    DWORD       m_elem;
+    GameElement m_elem;
     CString     m_strObjText;
 };
 
@@ -309,7 +309,7 @@ public:
     virtual void DumpToTextFile(CFile& file);
 #endif
 protected:
-    DWORD       m_elem;
+    GameElement m_elem;
     BOOL        m_bLockState;
 };
 

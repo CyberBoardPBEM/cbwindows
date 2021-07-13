@@ -65,13 +65,6 @@ namespace {
     } objectIDCheck;
 }
 
-ObjectID::ObjectID()
-{
-    id = 0;
-    serial = 0;
-    subtype = 0;
-}
-
 ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
     id(i),
     serial(s & 0x0FFF),
@@ -88,10 +81,11 @@ ObjectID::ObjectID(PieceID pid)
     subtype = 0;
 }
 
-ObjectID::ObjectID(DWORD dw)
+ObjectID::ObjectID(uint32_t dw)
 {
-    reinterpret_cast<DWORD&>(*this) = dw;
+    reinterpret_cast<uint32_t&>(*this) = dw;
 }
+
 #endif
 
 ////////////////////////////////////////////////////////////////////
