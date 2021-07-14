@@ -122,9 +122,11 @@ void CMarkListBox::SelectMarker(MarkID mid)
         if (GetCount() >= 1)
             SetCurSel(0);           // Just select the first one.
     }
-
-    ShowListIndex(value_preserving_cast<int>(nIndex));
-    SetCurSel(value_preserving_cast<int>(nIndex));
+    else
+    {
+        ShowListIndex(value_preserving_cast<int>(nIndex));
+        SetCurSel(value_preserving_cast<int>(nIndex));
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
