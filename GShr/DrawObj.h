@@ -179,63 +179,196 @@ protected:
     number.  Since we're just playing games, not running
     critical infrastructure, this is good enough.
 
+    N.B.:  ObjectID is sometimes reinterpreted as GameElement
+
     Currently, the only CBPlay-created objects are markers.
-    However, the subtype field permits 13 more additional types
+    However, the subtype field permits 12 more additional types
     (subtype 0xF is used up by GameElement's
-    GAMEELEM_MARKERID_FLAG, subtype 0x2 is markers, and
-    subtype 0x0 is used up as the invalid subtype code).
+    GAMEELEM_MARKERID_FLAG, subtype 0x0 is pieceObjs,
+    subtype 0x2 is markerOjbs, and subtype 0x1 is used up as the
+    invalid subtype code).
     Possible future objects:  lines showing moves (subtype 0x3
     already reserved), textual notes, multimedia clips, ... */
+/* WARNING:  Strictly speaking, I believe this code is depending
+        on undefined behavior (it reads from elements of the
+        union other than the one that was most recently
+        written). However, I think the code is a lot more
+        readable this way rather than doing this work using bit
+        twiddling within an uintXX_t, which would be the
+        well-defined approach.  */
 class alignas(uint32_t) ObjectID
 {
 public:
-    // KLUDGE:  release link fails if impl is in .cpp
-    constexpr ObjectID() :
-        id(0),
-        serial(0),
-        subtype(0)
-    {
-    }
+    /* N.B.:  CB3.1 always seemed to init ObjectID so this is
+                the invalid value, not uninitialized data */
+    constexpr ObjectID() = default;
     ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID(PieceID pid);
-    explicit ObjectID(uint32_t dw);
+#if !defined(NDEBUG)
+    [[deprecated("only for GetObjectIDFromElementLegacyCheck()")]] explicit ObjectID(uint32_t dw);
+#endif
     ObjectID(const ObjectID&) = default;
     ObjectID& operator=(const ObjectID&) = default;
     ~ObjectID() = default;
 
     bool operator==(const ObjectID& rhs) const
     {
-        return reinterpret_cast<const uint32_t&>(*this) == reinterpret_cast<const uint32_t&>(rhs);
+        if (u.tag.subtype != rhs.u.tag.subtype)
+        {
+            return false;
+        }
+
+        switch (u.tag.subtype)
+        {
+            case stPieceObj:
+                return u.pieceObj.pid == rhs.u.pieceObj.pid;
+            case stInvalid:
+                return true;
+            case stMarkObj:
+                return u.markObj.id == rhs.u.markObj.id &&
+                        u.markObj.serial == rhs.u.markObj.serial;
+            case stMarkerID:
+                ASSERT(!"conflicts with GameElement(MarkID)");
+                // fall through
+            default:
+                CbThrowBadCastException();
+        }
     }
     bool operator!=(const ObjectID& rhs) const
     {
         return !operator==(rhs);
     }
 
-    explicit operator uint32_t() const
+    void Serialize(CArchive& ar) const
     {
-        static_assert(sizeof(uint32_t) == sizeof(*this), "sizeof error");
-        return reinterpret_cast<const uint32_t&>(*this);
+        if (!ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+        switch (u.tag.subtype)
+        {
+            case stPieceObj:
+            case stMarkObj:
+            case stMarkerID:
+                break;
+            case stLineObj:
+                ASSERT(!"future feature");
+                break;
+            default:
+                CbThrowBadCastException();
+        }
+        ar << u.buf;
+    }
+    void Serialize(CArchive& ar)
+    {
+        if (ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::writeOnly);
+        }
+        ar >> u.buf;
+        switch (u.tag.subtype)
+        {
+            case stPieceObj:
+            case stMarkObj:
+            case stMarkerID:
+                break;
+            case stLineObj:
+                ASSERT(!"future feature");
+                break;
+            default:
+                CbThrowBadCastException();
+        }
     }
 
 private:
-    // a random number (seeded by time in seconds)
-    uint16_t id;
-    /* serial number to avoid equality of two ObjectID values
-        created in the same second */
-    uint16_t serial : 12;
-    // cooked version of CDrawObj::CDrawObjType
-    uint16_t subtype : 4;
+    /* N.B.:  currently only 4 bits (values 0 - 15) available!
+                but, declare underlying type uint16_t to
+                let it fit in the bit fields better */
+    enum Subtype : uint16_t {
+        stPieceObj = 0,
+        stInvalid = 1,
+        stMarkObj = 2,
+        stLineObj = 3,
+        stMarkerID = 0xf,
+    };
+    union U {
+        struct Tag
+        {
+            uint16_t : 16;
+            uint16_t : 12;
+            Subtype subtype : 4;
+        private:
+            constexpr Tag() = default;
+        } tag;
+        struct MarkObj
+        {
+            // a random number (seeded by time in seconds)
+            uint16_t id;
+            /* serial number to avoid equality of two ObjectID values
+                created in the same second */
+            uint16_t serial : 12;
+            Subtype subtype : 4;
+
+            constexpr MarkObj(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+                id(i),
+                serial(s),
+                subtype((ASSERT(t == CDrawObj::drawMarkObj), stMarkObj))
+            {
+            }
+        } markObj;
+        struct PieceObj
+        {
+            PieceID pid;
+            uint16_t pad : 12;
+            Subtype subtype : 4;
+
+            constexpr PieceObj(PieceID p) :
+                pid(p),
+                pad(0),
+                subtype(stPieceObj)
+            {
+            }
+        } pieceObj;
+        struct Invalid
+        {
+            uint16_t pad1 : 16;
+            uint16_t pad2 : 12;
+            Subtype subtype : 4;
+
+            constexpr Invalid() :
+                pad1(0),
+                pad2(0),
+                subtype(stInvalid)
+            {
+            }
+        } invalid;
+        uint32_t buf;
+
+        constexpr U() : invalid() {}
+        U(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+            markObj(i, s, t)
+        {
+        }
+        U(PieceID p) :
+            pieceObj(p)
+        {
+        }
+        U(const U&) = default;
+        U& operator=(const U&) = default;
+        ~U() = default;
+    } u;
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID& oid)
 {
-    return ar << reinterpret_cast<const uint32_t&>(oid);
+    oid.Serialize(ar);
+    return ar;
 }
 
 inline CArchive& operator>>(CArchive& ar, ObjectID& oid)
 {
-    return ar >> reinterpret_cast<uint32_t&>(oid);
+    oid.Serialize(ar);
+    return ar;
 }
 #endif
 

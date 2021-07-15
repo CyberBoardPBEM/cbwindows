@@ -35,9 +35,17 @@ namespace {
     public:
         GameElementCheck()
         {
-            GameElement test(MarkID(0x1234));
-            static_assert(sizeof(test) == sizeof(uint32_t), "size mismatch");
-            ASSERT(reinterpret_cast<uint32_t&>(test) == 0xF0001234 || !"non-Microsoft field layout");
+            {
+                GameElement test(MarkID(0x1234));
+                static_assert(sizeof(test) == sizeof(uint32_t), "size mismatch");
+                ASSERT(reinterpret_cast<uint32_t&>(test) == 0xF0001234 || !"non-Microsoft field layout");
+            }
+            {
+                GameElement test = Invalid_v<GameElement>;
+                ASSERT(!test.IsAPiece() && !test.IsAMarker() && !test.IsAnObject());
+                static_assert(sizeof(int) == sizeof(test), "need to adjust cast");
+                ASSERT(reinterpret_cast<int&>(test) == -1);
+            }
         }
     } gameElementCheck;
 }
