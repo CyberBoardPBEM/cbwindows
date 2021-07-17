@@ -490,7 +490,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
             AfxMessageBox(IDS_ERR_SCENARIONEWER, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
-        if (NumVersion(verMajor, verMinor) < NumVersion(2, 90))
+        if (NumVersion(verMajor, verMinor) < NumVersion(fileGbxVerMajor, fileGbxVerMinor))
         {
             if (AfxMessageBox(IDS_WARN_FILE_UPGRADE,
                 MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONWARNING) != IDOK)
