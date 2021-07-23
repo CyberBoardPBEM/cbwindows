@@ -212,7 +212,7 @@ void CGrafixListBox::DoToolTipHitProcessing(CPoint point)
         // Object changed so delete previous tool definition
         m_toolTip.DelTool(this, ID_TIP_LISTITEM_HIT);
         m_nCurItemCode = nItemCode;
-        if (nItemCode >= 0)
+        if (nItemCode != -1)
         {
             // New object found so create a new tip
             CString strTip;
