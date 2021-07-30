@@ -41,17 +41,41 @@
 #if !defined(NDEBUG)
 typedef DWORD GameElementLegacyCheck;
 #endif
+// N.B.:  ObjectID is sometimes reinterpreted as GameElement
+/* WARNING:  Strictly speaking, I believe this code is depending
+        on undefined behavior (it reads from elements of the
+        union other than the one that was most recently
+        written). However, I think the code is a lot more
+        readable this way rather than doing this work using bit
+        twiddling within an uintXX_t, which would be the
+        well-defined approach.  */
 class alignas(uint32_t) GameElement
 {
 public:
+    // uninitialized data
     GameElement() = default;
     GameElement(PieceID pid, int nSide = 0)
-        { new (&u.pieceElement) U::PieceElement(pid, nSide); }
+        {
+            new (&u.pieceElement) U::PieceElement(pid, nSide);
+            ASSERT(IsAPiece() && !IsAMarker() && !IsAnObject());
+            static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+            ASSERT(reinterpret_cast<int&>(*this) != -1);
+        }
     GameElement(MarkID mid)
-        { new (&u.markerElement) U::MarkerElement(mid); }
+        {
+            new (&u.markerElement) U::MarkerElement(mid);
+            ASSERT(!IsAPiece() && IsAMarker() && !IsAnObject());
+            static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+            ASSERT(reinterpret_cast<int&>(*this) != -1);
+        }
 #if defined(GPLAY)
     GameElement(ObjectID oid)
-        { new (&u.objectElement) U::ObjectElement(oid); }
+        {
+            new (&u.objectElement) U::ObjectElement(oid);
+            ASSERT(!IsAPiece() && !IsAMarker() && IsAnObject());
+            static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+            ASSERT(reinterpret_cast<int&>(*this) != -1);
+        }
 #endif
     GameElement(const GameElement&) = default;
     GameElement& operator=(const GameElement&) = default;
@@ -62,6 +86,12 @@ public:
         if (u.tag.tag != rhs.u.tag.tag) {
             return false;
         }
+        else if (u.buf == GameElement(Invalid_t()).u.buf &&
+                rhs.u.buf == GameElement(Invalid_t()).u.buf)
+        {
+            return true;
+        }
+
         switch (u.tag.tag)
         {
             case PIECE:
@@ -93,7 +123,8 @@ public:
     bool IsAnObject() const
     {
         return u.tag.tag != PIECE &&
-                u.tag.tag != MARKER;
+                u.tag.tag != MARKER &&
+                *this != GameElement(Invalid_t());
     }
 
     explicit operator PieceID() const
@@ -168,8 +199,6 @@ private:
                 nSide(s),
                 tag(PIECE)
             {
-                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
-                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAPiece());
             }
         // Invalid_v<GameElement> helper
         private:
@@ -186,8 +215,6 @@ private:
                 pad(0),
                 tag(MARKER)
             {
-                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
-                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAMarker());
             }
         // Invalid_v<GameElement> helper
         private:
@@ -201,8 +228,6 @@ private:
             ObjectElement(ObjectID o) :
                 oid(o)
             {
-                ASSERT(reinterpret_cast<U*>(this)->buf != uint32_t(-1));
-                ASSERT(reinterpret_cast<const GameElement&>(*this).IsAnObject());
             }
         // Invalid_v<GameElement> helper
         private:
@@ -356,8 +381,7 @@ inline PieceID GetPieceIDFromElement(GameElement elem)
 
 #if defined(GPLAY)
 #if !defined(NDEBUG)
-inline ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
-    { return static_cast<ObjectID>(elem); }
+ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem);
 #endif
 inline ObjectID GetObjectIDFromElement(GameElement elem)
     {

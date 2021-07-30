@@ -59,32 +59,42 @@ namespace {
     public:
         ObjectIDCheck()
         {
-            ObjectID test(4, 3, CDrawObj::drawMarkObj);
-            ASSERT(reinterpret_cast<uint32_t&>(test) == 0x20030004 || !"non-Microsoft field layout");
+            {
+                ObjectID test(4, 3, CDrawObj::drawMarkObj);
+                ASSERT(reinterpret_cast<uint32_t&>(test) == 0x20030004 || !"non-Microsoft field layout");
+            }
+            {
+                ObjectID test(PieceID(0x1234));
+                ASSERT(reinterpret_cast<uint32_t&>(test) == 0x00001234 || !"non-Microsoft field layout");
+            }
         }
     } objectIDCheck;
 }
 
 ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
-    id(i),
-    serial(s & 0x0FFF),
-    subtype((t + 1) & 0x000F)
+    u(i, s, t)
 {
     ASSERT((t & 0xFFF0) == 0x0080 || !"unexpected CDrawObjType value");
     ASSERT((t & 0x000F) < 0x000E || !"conflict with GameElement marker tag");
+    static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int&>(*this) != -1);
 }
 
-ObjectID::ObjectID(PieceID pid)
+ObjectID::ObjectID(PieceID pid) :
+    u(pid)
 {
-    id = static_cast<uint16_t>(pid);
-    serial = 0;
-    subtype = 0;
+    static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int&>(*this) != -1);
 }
 
+#if !defined(NDEBUG)
 ObjectID::ObjectID(uint32_t dw)
 {
     reinterpret_cast<uint32_t&>(*this) = dw;
+    static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int&>(*this) != -1);
 }
+#endif
 
 #endif
 
