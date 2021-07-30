@@ -50,6 +50,15 @@ namespace {
     } gameElementCheck;
 }
 
+#if defined(GPLAY)
+#if !defined(NDEBUG)
+ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
+{
+    return static_cast<ObjectID>(elem);
+}
+#endif
+#endif
+
 void CGameElementStringMap::Clone(CGameElementStringMap* pMapToCopy)
 {
     RemoveAll();

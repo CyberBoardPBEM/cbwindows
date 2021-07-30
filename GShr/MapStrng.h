@@ -381,8 +381,7 @@ inline PieceID GetPieceIDFromElement(GameElement elem)
 
 #if defined(GPLAY)
 #if !defined(NDEBUG)
-inline ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
-    { return static_cast<ObjectID>(elem); }
+ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem);
 #endif
 inline ObjectID GetObjectIDFromElement(GameElement elem)
     {
