@@ -76,6 +76,12 @@ IMPLEMENT_DYNCREATE(CGmBoxHint, CObject)
 #define new DEBUG_NEW
 #endif
 
+// KLUDGE:  get access to CGamDoc::GetLoadingVersion
+int GetLoadingVersion()
+{
+    return CGamDoc::GetLoadingVersion();
+}
+
 ///////////////////////////////////////////////////////////////////////
 // CGamDoc - message dispatch table
 

@@ -30,6 +30,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -573,53 +574,44 @@ namespace CB
 
 /////////////////////////////////////////////////////////////////////////////
 
-template<char PREFIX_>
-class XxxxID
+template<char PREFIX_, typename UNDERLYING_TYPE_, std::enable_if_t<std::is_integral_v<UNDERLYING_TYPE_> && std::is_unsigned_v<UNDERLYING_TYPE_>, bool> = true>
+class XxxxIDExt
 {
 public:
     static constexpr char PREFIX = PREFIX_;
+    using UNDERLYING_TYPE = UNDERLYING_TYPE_;
 
-    XxxxID() = default;
-    // goal is 32bit ids, but currently ids are 16 bit
-    explicit constexpr XxxxID(uint32_t i) : id(value_preserving_cast<uint16_t>(i)) {}
+    XxxxIDExt() = default;
+    explicit constexpr XxxxIDExt(uint32_t i) : id(value_preserving_cast<UNDERLYING_TYPE>(i)) {}
 
     template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-    explicit constexpr XxxxID(T i) : XxxxID(value_preserving_cast<uint32_t>(i)) {}
+    explicit constexpr XxxxIDExt(T i) : XxxxIDExt(value_preserving_cast<uint32_t>(i)) {}
 
-    XxxxID(const XxxxID&) = default;
-    XxxxID& operator=(const XxxxID&) = default;
-    ~XxxxID() = default;
+    template<typename OTHER_UL>
+    explicit constexpr XxxxIDExt(XxxxIDExt<PREFIX, OTHER_UL> other) : XxxxIDExt(value_preserving_cast<UNDERLYING_TYPE>(static_cast<OTHER_UL>(other))) {}
 
-    explicit constexpr operator WORD() const { return id; }
+    XxxxIDExt(const XxxxIDExt&) = default;
+    XxxxIDExt& operator=(const XxxxIDExt&) = default;
+    ~XxxxIDExt() = default;
 
-    bool operator==(const XxxxID& rhs) const { return id == rhs.id; }
-    bool operator!=(const XxxxID& rhs) const { return !operator==(rhs); }
+    explicit constexpr operator UNDERLYING_TYPE() const { return id; }
+
+    bool operator==(const XxxxIDExt& rhs) const { return id == rhs.id; }
+    bool operator!=(const XxxxIDExt& rhs) const { return !operator==(rhs); }
 
 private:
-    uint16_t id;
+    UNDERLYING_TYPE id;
 };
 
+// goal is 32bit ids, but currently ids are 16 bit
 template<char PREFIX>
-CArchive& operator<<(CArchive& ar, const XxxxID<PREFIX>& oid)
-{
-    if (!ar.IsStoring())
-    {
-        AfxThrowArchiveException(CArchiveException::readOnly);
-    }
-    static_assert(sizeof(uint16_t) == sizeof(oid), "wrong serialize type");
-    return ar << reinterpret_cast<const uint16_t&>(oid);
-}
+using XxxxID16 = XxxxIDExt<PREFIX, uint16_t>;
 
 template<char PREFIX>
-CArchive& operator>>(CArchive& ar, XxxxID<PREFIX>& oid)
-{
-    if (ar.IsStoring())
-    {
-        AfxThrowArchiveException(CArchiveException::writeOnly);
-    }
-    static_assert(sizeof(uint16_t) == sizeof(oid), "wrong serialize type");
-    return ar >> reinterpret_cast<uint16_t&>(oid);
-}
+using XxxxID32 = XxxxIDExt<PREFIX, uint32_t>;
+
+template<char PREFIX>
+using XxxxID = XxxxID16<PREFIX>;
 
 // KLUDGE:  use unique_ptr since CWordArray doesn't have move operators
 template<char PREFIX>
@@ -629,7 +621,7 @@ std::unique_ptr<const CWordArray> ToCWordArray(const std::vector<XxxxID<PREFIX>>
     retval->SetSize(value_preserving_cast<INT_PTR>(v.size()));
     for (INT_PTR i = 0; i < retval->GetSize(); ++i)
     {
-        (*retval)[i] = static_cast<WORD>(v[value_preserving_cast<size_t>(i)]);
+        (*retval)[i] = static_cast<XxxxID16<PREFIX>::UNDERLYING_TYPE>(v[value_preserving_cast<size_t>(i)]);
     }
     return retval;
 }
@@ -637,7 +629,7 @@ std::unique_ptr<const CWordArray> ToCWordArray(const std::vector<XxxxID<PREFIX>>
 template<typename T>
 std::vector<T> ToVector(const CWordArray& a)
 {
-    static_assert(std::is_same_v<T, XxxxID<T::PREFIX>>, "requires XxxxID<>");
+    static_assert(std::is_same_v<T, XxxxID16<T::PREFIX>>, "requires XxxxID16<>");
     std::vector<T> retval;
     retval.resize(value_preserving_cast<size_t>(a.GetSize()));
     for (INT_PTR i = 0; i < a.GetSize(); ++i)
@@ -648,7 +640,7 @@ std::vector<T> ToVector(const CWordArray& a)
 }
 
 template<char PREFIX>
-CArchive& operator<<(CArchive& ar, const std::vector<XxxxID<PREFIX>>& v)
+CArchive& operator<<(CArchive& ar, const std::vector<XxxxID16<PREFIX>>& v)
 {
     if (!ar.IsStoring())
     {
@@ -660,7 +652,7 @@ CArchive& operator<<(CArchive& ar, const std::vector<XxxxID<PREFIX>>& v)
 }
 
 template<char PREFIX>
-CArchive& operator>>(CArchive& ar, std::vector<XxxxID<PREFIX>>& v)
+CArchive& operator>>(CArchive& ar, std::vector<XxxxID16<PREFIX>>& v)
 {
     if (ar.IsStoring())
     {
@@ -669,24 +661,24 @@ CArchive& operator>>(CArchive& ar, std::vector<XxxxID<PREFIX>>& v)
     // KLUDGE:  current file format uses MFC CWordArray
     CWordArray temp;
     temp.Serialize(ar);
-    v = ToVector<XxxxID<PREFIX>>(temp);
+    v = ToVector<XxxxID16<PREFIX>>(temp);
     return ar;
 }
 
-template<typename DEST, char PREFIX>
-constexpr std::enable_if_t<is_always_value_preserving_v<DEST, WORD>, DEST> value_preserving_cast(XxxxID<PREFIX> src)
+template<typename DEST, char PREFIX, typename UNDERLYING_TYPE>
+constexpr std::enable_if_t<is_always_value_preserving_v<DEST, UNDERLYING_TYPE>, DEST> value_preserving_cast(XxxxIDExt<PREFIX, UNDERLYING_TYPE> src)
 {
-    return static_cast<DEST>(static_cast<WORD>(src));
+    return static_cast<DEST>(static_cast<UNDERLYING_TYPE>(src));
 }
 
-template<typename DEST, char PREFIX>
-constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, WORD>, DEST> value_preserving_cast(XxxxID<PREFIX> src)
+template<typename DEST, char PREFIX, typename UNDERLYING_TYPE>
+constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, UNDERLYING_TYPE>, DEST> value_preserving_cast(XxxxIDExt<PREFIX, UNDERLYING_TYPE> src)
 {
-    if (!is_value_preserving<DEST>(static_cast<WORD>(src)))
+    if (!is_value_preserving<DEST>(static_cast<UNDERLYING_TYPE>(src)))
     {
         CbThrowBadCastException();
     }
-    return static_cast<DEST>(static_cast<WORD>(src));
+    return static_cast<DEST>(static_cast<UNDERLYING_TYPE>(src));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -698,7 +690,7 @@ template<typename KEY, typename ELEMENT,
         bool saveInGPlay>
 class XxxxIDTable
 {
-    static_assert(std::is_same_v<KEY, XxxxID<KEY::PREFIX>>, "requires XxxxID<>");
+    static_assert(std::is_same_v<KEY, XxxxIDExt<KEY::PREFIX, KEY::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     /* data is stored in memory that may be realloc()'ed, so data must be memcpy()'able
         (if ELEMENT is not trivially copyable, use std::vector) */
     static_assert(std::is_trivially_copyable_v<ELEMENT>, "ELEMENT must be trivially copyable");
@@ -750,9 +742,9 @@ public:
     bool operator!=(nullptr_t) const { return !operator==(nullptr); }
     bool Empty() const { return !m_pTbl; }
     size_t GetSize() const { return m_nTblSize; }
-    bool Valid(KEY tid) const { return static_cast<WORD>(tid) < m_nTblSize; }
+    bool Valid(KEY tid) const { return static_cast<KEY::UNDERLYING_TYPE>(tid) < m_nTblSize; }
 
-    const ELEMENT& operator[](KEY tid) const { return m_pTbl[static_cast<WORD>(tid)]; }
+    const ELEMENT& operator[](KEY tid) const { return m_pTbl[static_cast<KEY::UNDERLYING_TYPE>(tid)]; }
     ELEMENT& operator[](KEY tid) { return const_cast<ELEMENT&>(std::as_const(*this)[tid]); }
 
     void Clear()
@@ -815,6 +807,10 @@ public:
 
     void Serialize(CArchive& ar)
     {
+        /* m_nTblSize is serialized in key format to match
+            file v3.90, and size will become new key whenever
+            adding to a full table, so treating it as a key
+            here doesn't seem all that peculiar */
         if (ar.IsStoring())
         {
             constexpr bool inGplay =
@@ -826,20 +822,20 @@ public:
                 ;
             if (!inGplay || saveInGPlay)
             {
-                ar << value_preserving_cast<WORD>(m_nTblSize);
+                ar << static_cast<KEY>(m_nTblSize);
                 for (size_t i = 0; i < m_nTblSize; i++)
                     m_pTbl[i].Serialize(ar);
             }
         }
         else
         {
-            WORD wTmp;
+            KEY wTmp;
             ar >> wTmp;
-            if (wTmp > 0)
+            if (static_cast<KEY::UNDERLYING_TYPE>(wTmp) > size_t(0))
             {
-                ResizeTable(value_preserving_cast<size_t>(wTmp), nullptr);
-                for (size_t i = 0; i < wTmp; i++)
-                    m_pTbl[i].Serialize(ar);
+                ResizeTable(value_preserving_cast<size_t>(static_cast<KEY::UNDERLYING_TYPE>(wTmp)), nullptr);
+                for (size_t i = size_t(0); i < m_nTblSize; i++)
+                    m_pTbl[value_preserving_cast<ptrdiff_t>(i)].Serialize(ar);
             }
         }
     }
@@ -896,4 +892,35 @@ inline CArchive& operator>>(CArchive& ar, std::string& s)
 
 static_assert(std::is_same_v<std::vector<int>::size_type, size_t>, "std::vector index is not size_t");
 static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdiff_t>, "std::vector iterator offset is not ptrdiff_t");
+
+/////////////////////////////////////////////////////////////////////////////
+
+/* AfxGetApp() docs say it may return NULL during process
+    startup, so declare a function that we will guarantee returns
+    an object during startup */
+CWinApp& CbGetApp();
+
+/////////////////////////////////////////////////////////////////////////////
+
+// emulate c++20 std::remove_cvref_t
+#if !defined(__cpp_lib_remove_cvref)
+    namespace CB
+    {
+        template<typename T>
+        struct remove_cvref {
+            typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+        };
+
+        template<typename T>
+        using remove_cvref_t = typename remove_cvref<T>::type;
+    }
+#else
+    // untested
+    namespace CB
+    {
+        using std::remove_cvref;
+        using std::remove_cvref_t;
+    }
+#endif
+
 #endif

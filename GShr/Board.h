@@ -37,6 +37,8 @@
 #include    "DrawObj.h"
 #endif
 
+typedef XxxxID16<'B'> BoardID16;
+typedef XxxxID32<'B'> BoardID32;
 typedef XxxxID<'B'> BoardID;
 const       BoardID nullBid = BoardID(0xFFFF);
 const size_t maxBoards = 32000;

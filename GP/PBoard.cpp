@@ -521,12 +521,12 @@ CPBoardManager::CPBoardManager()
 
 BoardID CPBoardManager::IssueGeoSerialNumber()
 {
-    if (static_cast<WORD>(m_nNextGeoSerialNum) > maxBoards)
+    if (static_cast<BoardID::UNDERLYING_TYPE>(m_nNextGeoSerialNum) > maxBoards)
     {
         AfxThrowMemoryException();
     }
     BoardID retval = m_nNextGeoSerialNum;
-    m_nNextGeoSerialNum = static_cast<BoardID>(static_cast<WORD>(m_nNextGeoSerialNum) + 1);
+    m_nNextGeoSerialNum = static_cast<BoardID>(static_cast<BoardID::UNDERLYING_TYPE>(m_nNextGeoSerialNum) + 1);
     return retval;
 }
 

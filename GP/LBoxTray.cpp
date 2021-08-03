@@ -129,7 +129,7 @@ int  CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     else
         return -1;
 
-    return value_preserving_cast<int>(static_cast<WORD>(nPid) | flags);
+    return value_preserving_cast<int>(static_cast<PieceID::UNDERLYING_TYPE>(nPid) | flags);
 }
 
 void CTrayListBox::OnGetTipTextForItemCode(int nItemCode,

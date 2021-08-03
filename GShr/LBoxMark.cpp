@@ -92,7 +92,7 @@ int  CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     GetTileRectsForItem(value_preserving_cast<int>(nIndex), tid, nullTid, rct, rct);
 
-    return rct.PtInRect(point) ? value_preserving_cast<int>(static_cast<WORD>(mid)) : -1;
+    return rct.PtInRect(point) ? value_preserving_cast<int>(static_cast<MarkID::UNDERLYING_TYPE>(mid)) : -1;
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(int nItemCode,

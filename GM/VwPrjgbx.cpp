@@ -578,8 +578,8 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         if (bDisplayIDs)
         {
             CString strTmp = str;
-            str.Format("[%d] %s",
-                value_preserving_cast<int>(static_cast<WORD>(pBMgr->GetBoard(i).GetSerialNumber())), (LPCTSTR)strTmp);
+            str.Format("[%u] %s",
+                value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(pBMgr->GetBoard(i).GetSerialNumber())), (LPCTSTR)strTmp);
         }
         m_listProj.AddItem(grpBrd, str, i);
     }
@@ -874,8 +874,9 @@ void CGbxProjView::OnEditPaste()
         }
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        for (size_t i = 0; i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidtbl[i])), NULL);
+        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
+        for (size_t i = size_t(0); i < tidtbl.size(); i++)
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
     }
@@ -1109,8 +1110,9 @@ void CGbxProjView::OnProjectLoadTileFile()
 
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        for (size_t i = 0; i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidtbl[i])), NULL);
+        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
+        for (size_t i = size_t(0); i < tidtbl.size(); i++)
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
         EndWaitCursor();

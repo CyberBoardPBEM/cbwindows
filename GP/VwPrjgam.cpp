@@ -439,8 +439,8 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         if (bDisplayIDs)
         {
             CString strTmp = str;
-            str.Format("[%d] %s",
-                static_cast<WORD>(pPBMgr->GetPBoard(i).GetBoard()->GetSerialNumber()), (LPCTSTR)strTmp);
+            str.Format("[%u] %s",
+                value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(pPBMgr->GetPBoard(i).GetBoard()->GetSerialNumber())), (LPCTSTR)strTmp);
         }
         if (pPBoard.IsOwned())
         {

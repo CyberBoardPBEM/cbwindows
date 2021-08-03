@@ -68,7 +68,10 @@ enum { MENU_BV_DRAWING = 0, MENU_IV_BITEDIT, MENU_PJ_DEFAULT,
 class CGmApp : public CWinAppEx
 {
 public:
+    static CGmApp& Get();
+private:
     CGmApp();
+public:
 
 // Atrributes
 public:

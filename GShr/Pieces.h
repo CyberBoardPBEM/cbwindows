@@ -32,6 +32,8 @@
 //////////////////////////////////////////////////////////////////////
 
 const size_t maxPieces = 32000;
+typedef XxxxID16<'P'> PieceID16;
+typedef XxxxID32<'P'> PieceID32;
 typedef XxxxID<'P'> PieceID;
 
 const       PieceID nullPid = PieceID(0xFFFF);

@@ -542,8 +542,8 @@ void CPieceTable::DumpToTextFile(CFile& file)
         wsprintf(szBfr, "PieceID %5.5d: m_nSide=%02X, m_nFacing=%3u, "
             "m_tidFront=%5u, m_tidBack=%5u\r\n", i,
             (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing,
-            (UINT)static_cast<WORD>(pDef->m_tidFront),
-            (UINT)static_cast<WORD>(pDef->m_tidBack));
+            (UINT)static_cast<TileID::UNDERLYING_TYPE>(pDef->m_tidFront),
+            (UINT)static_cast<TileID::UNDERLYING_TYPE>(pDef->m_tidBack));
         file.Write(szBfr, lstrlen(szBfr));
     }
 }
