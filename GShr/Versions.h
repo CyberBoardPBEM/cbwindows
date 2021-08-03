@@ -2,8 +2,11 @@
 //
 // Copyright (c) 1994-2010 By Dale L. Larson, All Rights Reserved.
 //
+// wsu20210731
+//      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
+//
 // DLL20100103
-//      4.00 - Stripped out XtremeToolkit C++ code. MORE TO COME.
+//      3.90 - Stripped out XtremeToolkit C++ code. MORE TO COME.
 //
 // DLL20091229
 //      3.10 - Added multiplayer support far 32 players.
@@ -79,23 +82,46 @@
 const int progVerMajor = 3;         // Current program version
 const int progVerMinor = 50;        // (Number is divided by 100. ex: 10 is .10)
 
-// File versions
-const int fileGbxVerMajor = 3;      // Current GBOX file version supported
-const int fileGbxVerMinor = 90;
-
-const int fileGtlVerMajor = 3;      // Current GTLB file version supported
-const int fileGtlVerMinor = 90;
-
-const int fileGsnVerMajor = 3;      // Current GSCN file version supported
-const int fileGsnVerMinor = 90;
-
-const int fileGamVerMajor = 3;      // Current GAME file version supported
-const int fileGamVerMinor = 90;
-
-const int fileGmvVerMajor = 3;      // Current GMOV file version supported
-const int fileGmvVerMinor = 90;
-
 inline int NumVersion(int major, int minor) { return major * 256 + minor; }
+inline int VersionMajor(int numVer) { return numVer / 256; }
+inline int VersionMinor(int numVer) { return numVer % 256; }
+
+inline int GetSaveFileVersion()
+{
+    static const int retval = [] {
+        struct FileFlagParser : public CCommandLineInfo
+        {
+            bool id32 = false;
+            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            {
+                if (bFlag && strcmp(pszParam, "id32") == 0)
+                {
+                    id32 = true;
+                }
+            }
+        };
+        FileFlagParser ffp;
+        CbGetApp().ParseCommandLine(ffp);
+        return ffp.id32 ? NumVersion(4, 0) : NumVersion(3, 90);
+    }();
+    return retval;
+}
+
+// File versions
+const int fileGbxVerMajor = VersionMajor(GetSaveFileVersion());      // Current GBOX file version supported
+const int fileGbxVerMinor = VersionMinor(GetSaveFileVersion());
+
+const int fileGtlVerMajor = VersionMajor(GetSaveFileVersion());      // Current GTLB file version supported
+const int fileGtlVerMinor = VersionMinor(GetSaveFileVersion());
+
+const int fileGsnVerMajor = VersionMajor(GetSaveFileVersion());      // Current GSCN file version supported
+const int fileGsnVerMinor = VersionMinor(GetSaveFileVersion());
+
+const int fileGamVerMajor = VersionMajor(GetSaveFileVersion());      // Current GAME file version supported
+const int fileGamVerMinor = VersionMinor(GetSaveFileVersion());
+
+const int fileGmvVerMajor = VersionMajor(GetSaveFileVersion());      // Current GMOV file version supported
+const int fileGmvVerMinor = VersionMinor(GetSaveFileVersion());
 
 #define FILEGBXSIGNATURE    "GBOX"  // File signature for game boxes
 #define FILEGTLSIGNATURE    "GTLB"  // File signature for tile library files
@@ -127,6 +153,104 @@ public:
 private:
     const int m_dtorVer;
 };
+
+// KLUDGE:  get access to CGamDoc::GetLoadingVersion
+extern int GetLoadingVersion();
+
+/* cope with varying file versions
+by getting sizeof(XxxxID<>) for file */
+/*  N.B.:  making this a template allows us the option to use
+different sizes for different id types */
+template<typename T>
+size_t GetXxxxIDSize(const CArchive& ar)
+{
+    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt");
+    /* if .gbx/.gsn/.gam/.gmv versions become unequal,
+        the version logic here will need to rebuilt */
+    ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+    ASSERT(NumVersion(fileGamVerMajor, fileGamVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+    ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+    int ver = ar.IsStoring() ?
+                    NumVersion(fileGbxVerMajor, fileGbxVerMinor)
+                :
+                    GetLoadingVersion();
+    if (ver <= NumVersion(3, 90))
+    {
+        // ASSERT(ver < NumVersion(3, 90) --> ar.IsLoading());
+        ASSERT(ver == NumVersion(3, 90) || ar.IsLoading());
+        return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
+    }
+    else
+    {
+        ASSERT(ver == NumVersion(4, 0));
+        if (sizeof(XxxxID<T::PREFIX>::UNDERLYING_TYPE) != sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE))
+        {
+            ASSERT(!"not ready for 32bit ids");
+            AfxThrowNotSupportedException();
+        }
+        return sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE);
+    }
+}
+
+template<char PREFIX, typename UNDERLYING_TYPE>
+CArchive& operator<<(CArchive& ar, const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
+{
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSize<CB::remove_cvref_t<decltype(oid)>>(ar);
+    if (fileIDSize == sizeof(oid))
+    {
+        return ar << reinterpret_cast<const UNDERLYING_TYPE&>(oid);
+    }
+    else
+    {
+        switch (fileIDSize)
+        {
+            case 2:
+                return ar << value_preserving_cast<XxxxID16<PREFIX>::UNDERLYING_TYPE>(static_cast<UNDERLYING_TYPE>(oid));
+            case 4:
+                return ar << value_preserving_cast<XxxxID32<PREFIX>::UNDERLYING_TYPE>(static_cast<UNDERLYING_TYPE>(oid));
+            default:
+                CbThrowBadCastException();
+        }
+    }
+}
+
+template<char PREFIX, typename UNDERLYING_TYPE>
+CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
+{
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::writeOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSize<CB::remove_cvref_t<decltype(oid)>>(ar);
+    if (fileIDSize == sizeof(oid))
+    {
+        return ar >> reinterpret_cast<UNDERLYING_TYPE&>(oid);
+    }
+    else
+    {
+        switch (fileIDSize)
+        {
+            case 2: {
+                uint16_t temp;
+                ar >> temp;
+                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(static_cast<XxxxID16<PREFIX>>(temp));
+                return ar;
+            }
+            case 4: {
+                uint32_t temp;
+                ar >> temp;
+                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(static_cast<XxxxID32<PREFIX>>(temp));
+                return ar;
+            }
+            default:
+                CbThrowBadCastException();
+        }
+    }
+}
 
 #endif
 

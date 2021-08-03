@@ -500,7 +500,7 @@ size_t CBoardManager::FindBoardBySerial(BoardID nSerialNum) const
 {
     for (size_t i = 0; i < GetNumBoards(); i++)
     {
-        TRACE2("Board %zu has serial number %d\n", i, value_preserving_cast<int>(static_cast<WORD>(GetBoard(i).GetSerialNumber())));
+        TRACE2("Board %zu has serial number %u\n", i, value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(GetBoard(i).GetSerialNumber())));
         if (GetBoard(i).GetSerialNumber() == nSerialNum)
             return i;
     }
@@ -521,12 +521,12 @@ BOOL CBoardManager::DoBoardFontDialog()
 
 BoardID CBoardManager::IssueSerialNumber()
 {
-    if (static_cast<WORD>(m_nNextSerialNumber) == GEO_BOARD_SERNUM_BASE)
+    if (static_cast<BoardID::UNDERLYING_TYPE>(m_nNextSerialNumber) == GEO_BOARD_SERNUM_BASE)
     {
         AfxThrowMemoryException();
     }
     BoardID retval = m_nNextSerialNumber;
-    m_nNextSerialNumber = static_cast<BoardID>(static_cast<WORD>(m_nNextSerialNumber) + 1);
+    m_nNextSerialNumber = static_cast<BoardID>(static_cast<BoardID::UNDERLYING_TYPE>(m_nNextSerialNumber) + WORD(1));
     return retval;
 }
 

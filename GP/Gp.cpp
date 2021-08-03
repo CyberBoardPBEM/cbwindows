@@ -121,7 +121,17 @@ CGpApp::CGpApp()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGpApp object
 
-CGpApp NEAR theApp;
+CGpApp& CGpApp::Get()
+{
+    /* make this a function variable to ensure
+        it's constructed before use */
+    static CGpApp theApp;
+    return theApp;
+}
+CWinApp& CbGetApp()
+{
+    return CGpApp::Get();
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp initialization
@@ -158,7 +168,7 @@ BOOL CGpApp::InitInstance()
 
     CMFCToolTipInfo ttParams;
     ttParams.m_bVislManagerTheme = TRUE;
-    theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
+    CGpApp::Get().GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
         RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
     //////////////////////////////////////////////////////////////////////

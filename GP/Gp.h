@@ -78,7 +78,10 @@ enum { MENU_PV_MOVEMODE = 0, MENU_PV_PLAYMODE, MENU_PV_SCNMODE,
 class CGpApp : public CWinAppEx
 {
 public:
+    static CGpApp& Get();
+private:
     CGpApp();
+public:
 
 // Operations
 public:

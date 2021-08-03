@@ -83,7 +83,7 @@ BOOL CBoardPieceMove::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
+        TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -171,8 +171,8 @@ void CBoardPieceMove::Serialize(CArchive& ar)
 void CBoardPieceMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    board = %d, pos = %d, pid = %d, @(%d, %d)\r\n",
-        value_preserving_cast<int>(static_cast<WORD>(m_nBrdNum)), m_ePos, value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_ptCtr.x, m_ptCtr.y);
+    wsprintf(szBfr, "    board = %u, pos = %d, pid = %u, @(%d, %d)\r\n",
+        value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBrdNum)), m_ePos, value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_ptCtr.x, m_ptCtr.y);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -194,7 +194,7 @@ BOOL CTrayPieceMove::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
+        TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -255,7 +255,7 @@ void CTrayPieceMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
     wsprintf(szBfr, "    tray = %zu, nPos = %zu, pid = %u\r\n",
-        m_nTrayNum, m_nPos, static_cast<WORD>(m_pid));
+        m_nTrayNum, m_nPos, static_cast<PieceID::UNDERLYING_TYPE>(m_pid));
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -268,7 +268,7 @@ BOOL CPieceSetSide::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
+        TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -347,8 +347,8 @@ void CPieceSetSide::Serialize(CArchive& ar)
 void CPieceSetSide::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    Piece %d is set to %s visible.\r\n",
-        value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_bTopUp ? "top" : "bottom");
+    wsprintf(szBfr, "    Piece %u is set to %s visible.\r\n",
+        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_bTopUp ? "top" : "bottom");
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -361,7 +361,7 @@ BOOL CPieceSetFacing::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
+        TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -428,7 +428,7 @@ void CPieceSetFacing::Serialize(CArchive& ar)
 void CPieceSetFacing::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    Piece %d is rotated %d degrees.\r\n", value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_nFacingDegCW);
+    wsprintf(szBfr, "    Piece %u is rotated %d degrees.\r\n", value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_nFacingDegCW);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -441,7 +441,7 @@ BOOL CPieceSetOwnership::ValidatePieces(CGamDoc* pDoc)
 #ifdef _DEBUG
     BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
-        TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<WORD>(m_pid)));
+        TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
     return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
@@ -493,8 +493,8 @@ void CPieceSetOwnership::Serialize(CArchive& ar)
 void CPieceSetOwnership::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    Piece %d has ownership changed to 0x%X.\r\n",
-        value_preserving_cast<int>(static_cast<WORD>(m_pid)), m_dwOwnerMask);
+    wsprintf(szBfr, "    Piece %u has ownership changed to 0x%X.\r\n",
+        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_dwOwnerMask);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -562,8 +562,8 @@ void CMarkerSetFacing::Serialize(CArchive& ar)              // VER2.0 is first t
 void CMarkerSetFacing::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    Marker dwObjID = %lX, mid = %d is rotated %d degrees.\r\n",
-        m_dwObjID, value_preserving_cast<int>(static_cast<WORD>(m_mid)), m_nFacingDegCW);
+    wsprintf(szBfr, "    Marker dwObjID = %lX, mid = %u is rotated %d degrees.\r\n",
+        m_dwObjID, value_preserving_cast<unsigned>(static_cast<MarkID::UNDERLYING_TYPE>(m_mid)), m_nFacingDegCW);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -659,8 +659,8 @@ void CBoardMarkerMove::Serialize(CArchive& ar)
 void CBoardMarkerMove::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "    board = %d, pos = %d, dwObjID = %lX, mid = %d, @(%d, %d)\r\n",
-        value_preserving_cast<int>(static_cast<WORD>(m_nBrdNum)), m_ePos, m_dwObjID, value_preserving_cast<int>(static_cast<WORD>(m_mid)), m_ptCtr.x, m_ptCtr.y);
+    wsprintf(szBfr, "    board = %u, pos = %d, dwObjID = %lX, mid = %u, @(%d, %d)\r\n",
+        value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBrdNum)), m_ePos, m_dwObjID, value_preserving_cast<unsigned>(static_cast<MarkID::UNDERLYING_TYPE>(m_mid)), m_ptCtr.x, m_ptCtr.y);
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif
@@ -1099,7 +1099,7 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         else
         {
             ar << value_preserving_cast<WORD>(m_nTray);
-            ar << value_preserving_cast<DWORD>(static_cast<WORD>(m_pieceID));
+            ar << value_preserving_cast<DWORD>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID));
             ar << (DWORD)0;
         }
         ar << m_strMsg;
@@ -1131,13 +1131,13 @@ void CEventMessageRcd::DumpToTextFile(CFile& file)
     char szBfr[256];
     if (m_bIsBoardEvent)
     {
-        wsprintf(szBfr, "    BoardEvt = %s, nBoard = %d, (x, y) = (%d, %d)\r\n",
-                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), value_preserving_cast<int>(static_cast<WORD>(m_nBoard)), m_x, m_y);
+        wsprintf(szBfr, "    BoardEvt = %s, nBoard = %u, (x, y) = (%d, %d)\r\n",
+                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBoard)), m_x, m_y);
     }
     else
     {
-        wsprintf(szBfr, "    BoardEvt = %s, nTray = %zu, pieceID = %d\r\n",
-                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), m_nTray, value_preserving_cast<int>(static_cast<WORD>(m_pieceID)));
+        wsprintf(szBfr, "    BoardEvt = %s, nTray = %zu, pieceID = %u\r\n",
+                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), m_nTray, value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID)));
     }
     file.Write(szBfr, lstrlen(szBfr));
 }

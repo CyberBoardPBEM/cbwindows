@@ -106,7 +106,7 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         if (m_bDisplayIDs)
         {
             CString str;
-            str.Format("[%d] ", static_cast<WORD>(MapIndexToItem(nIndex)));
+            str.Format("[%u] ", static_cast<TileID::UNDERLYING_TYPE>(MapIndexToItem(nIndex)));
             CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
             int y = rctItem.top + rctItem.Height() / 2 -
                 (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;

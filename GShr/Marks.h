@@ -32,6 +32,8 @@
 //////////////////////////////////////////////////////////////////////
 
 const size_t maxMarks = 32000;
+typedef XxxxID16<'M'> MarkID16;
+typedef XxxxID32<'M'> MarkID32;
 typedef XxxxID<'M'> MarkID;
 
 const       MarkID nullMid = MarkID(0xFFFF);

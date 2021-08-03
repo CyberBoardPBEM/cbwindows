@@ -71,7 +71,7 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd *pWn
     {
         CPlayBoardFrame* pFrame = (CPlayBoardFrame*)pWnd;
         pWse.m_wUserCode1 = gpFrmPlayBoard;
-        pWse.m_wUserCode2 = static_cast<WORD>(pFrame->m_pPBoard->GetSerialNumber());
+        pWse.m_wUserCode2 = static_cast<BoardID::UNDERLYING_TYPE>(pFrame->m_pPBoard->GetSerialNumber());
     }
 }
 

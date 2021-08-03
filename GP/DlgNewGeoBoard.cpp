@@ -121,7 +121,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         if (!(pCellForm->GetCellType() == cformHexFlat && (pBArray->GetCols() & 1) != 0 ||
               pCellForm->GetCellType() == cformHexPnt && (pBArray->GetRows() & 1) != 0))
             continue;                           // These maps aren't compliant at all
-        if (static_cast<WORD>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
+        if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
 
         if (m_pRootMapCellForm != NULL)
@@ -136,7 +136,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
                 continue;
         }
         int nItem = m_listBoard.AddString(pBrd.GetName());
-        m_listBoard.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(pBrd.GetSerialNumber())));
+        m_listBoard.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber())));
     }
     if (m_listBoard.GetCount() > 0)
         m_listBoard.SetCurSel(0);
@@ -224,7 +224,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     CString strLabel = pBrd.GetName();
 
     int nItem = m_listGeo.AddString(strLabel);
-    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(dwItemData)));
+    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(dwItemData)));
 
     m_nCurrentColumn++;
     if (m_nCurrentColumn == m_nMaxColumns)
@@ -245,7 +245,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
     str.LoadString(IDS_ROW_BREAK);
 
     int nItem = m_listGeo.AddString(str);
-    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<WORD>(nullBid)));
+    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(nullBid)));
 
     m_nMaxColumns = m_tblColWidth.GetSize();
     m_nRowNumber++;

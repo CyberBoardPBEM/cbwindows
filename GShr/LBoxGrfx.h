@@ -386,7 +386,7 @@ protected:
 
     /* N.B.:  Only CTileBaseListBox requires providing this, but
         it doesn't hurt much to provide it in general.  */
-    virtual int OnGetItemDebugIDCode(size_t nItem) override { return value_preserving_cast<int>(static_cast<WORD>(MapIndexToItem(nItem))); }
+    virtual int OnGetItemDebugIDCode(size_t nItem) override { return value_preserving_cast<int>(static_cast<T::UNDERLYING_TYPE>(MapIndexToItem(nItem))); }
 
 private:
     const std::vector<T>* m_pItemMap;         // Maps index to item

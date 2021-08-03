@@ -127,7 +127,17 @@ CGmApp::CGmApp()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGmApp object
 
-CGmApp theApp;
+CGmApp& CGmApp::Get()
+{
+    /* make this a function variable to ensure
+        it's constructed before use */
+    static CGmApp theApp;
+    return theApp;
+}
+CWinApp& CbGetApp()
+{
+    return CGmApp::Get();
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGmApp initialization
@@ -164,7 +174,7 @@ BOOL CGmApp::InitInstance()
 
     CMFCToolTipInfo ttParams;
     ttParams.m_bVislManagerTheme = TRUE;
-    theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
+    CGmApp::Get().GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
         RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
     //////////////////////////////////////////////////////////////////////

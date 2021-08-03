@@ -613,7 +613,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
         WriteFileString(hFile, szBfr);
         for (size_t i = 0; i < pTSet.GetTileIDTable().size(); i++)
         {
-            wsprintf(szBfr, " %u", static_cast<WORD>(pTSet.GetTileIDTable().at(i)));
+            wsprintf(szBfr, " %u", static_cast<TileID::UNDERLYING_TYPE>(pTSet.GetTileIDTable().at(i)));
             WriteFileString(hFile, szBfr);
         }
         WriteFileString(hFile, "\r\n");

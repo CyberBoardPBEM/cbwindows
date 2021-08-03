@@ -71,6 +71,12 @@ IMPLEMENT_DYNCREATE(CGamDocHint, CObject);
 #define new DEBUG_NEW
 #endif
 
+// KLUDGE:  get access to CGamDoc::GetLoadingVersion
+int GetLoadingVersion()
+{
+    return CGamDoc::GetLoadingVersion();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 int CGamDoc::c_fileVersion = 0;

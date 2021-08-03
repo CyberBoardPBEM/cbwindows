@@ -304,7 +304,8 @@ void CGbxProjView::DoTileNew()
             CSize(dlg.m_nWidth, dlg.m_nHeight),
             CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight),
             RGB(255, 255, 255));
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidNew)), NULL);
+        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
+        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidNew)), NULL);
         pDoc->CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
         pDoc->SetModifiedFlag();
@@ -384,7 +385,8 @@ void CGbxProjView::DoTileClone()
         pTMgr->GetTile(tidNew, &tileHalf, halfScale);
         tileHalf.Update(&bmap);
 
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<WORD>(tidNew)), NULL);
+        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
+        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidNew)), NULL);
 
         pDoc->CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
@@ -416,7 +418,8 @@ void CGbxProjView::DoTileDelete()
     for (size_t i = 0; i < tidtbl.size(); i++)
     {
         pTMgr->DeleteTile(tidtbl[i]);
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILEDELETED, static_cast<WORD>(tidtbl[i])), NULL);
+        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
+        pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILEDELETED, static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
     }
     pDoc->NotifyTileDatabaseChange();
     pDoc->SetModifiedFlag();

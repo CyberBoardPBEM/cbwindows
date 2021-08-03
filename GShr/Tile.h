@@ -36,6 +36,8 @@ class   CTile;
 ////////////////////////////////////////////////////////////////////
 
 const size_t maxTiles = 32000;
+typedef XxxxID16<'T'> TileID16;
+typedef XxxxID32<'T'> TileID32;
 typedef XxxxID<'T'> TileID;
 
 const       TileID nullTid = TileID(0xFFFF);

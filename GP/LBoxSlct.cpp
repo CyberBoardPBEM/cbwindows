@@ -180,12 +180,12 @@ void CSelectListBox::OnGetItemDebugString(size_t nIndex, CString& str)
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         PieceID pid = static_cast<CPieceObj&>(pDObj).m_pid;
-        str.Format("[pid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(pid)));
+        str.Format("[pid:%u] ", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(pid)));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
         MarkID mid = static_cast<CMarkObj&>(pDObj).m_mid;
-        str.Format("[mid:%d] ", value_preserving_cast<UINT>(static_cast<WORD>(mid)));
+        str.Format("[mid:%u] ", value_preserving_cast<UINT>(static_cast<MarkID::UNDERLYING_TYPE>(mid)));
     }
 }
 
