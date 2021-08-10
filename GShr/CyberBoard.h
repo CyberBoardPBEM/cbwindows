@@ -462,8 +462,13 @@ struct is_always_value_preserving
                     "only integral types supported");
     static constexpr bool value = std::is_integral_v<DEST> &&
                                     std::is_integral_v<SRC> &&
-                                    std::is_signed_v<DEST> == std::is_signed_v<SRC> &&
-                                    sizeof(DEST) >= sizeof(SRC);
+                                    (
+                                        (std::is_signed_v<DEST> == std::is_signed_v<SRC> &&
+                                        sizeof(DEST) >= sizeof(SRC))
+                                    ||
+                                        (std::is_unsigned_v<SRC> &&
+                                        sizeof(DEST) > sizeof(SRC))
+                                    );
 };
 
 // convenience helper
