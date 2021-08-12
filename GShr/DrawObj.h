@@ -44,7 +44,9 @@ class CSelection;
 #ifdef GPLAY
 class CPlayBoardView;
 class CGamDoc;
-class ObjectID;
+class ObjectID32;
+class ObjectID64;
+using ObjectID = std::conditional_t<std::is_same_v<PieceID, PieceID16>, ObjectID32, ObjectID64>;
 #else
 class CBrdEditView;
 #endif
@@ -196,22 +198,22 @@ protected:
         readable this way rather than doing this work using bit
         twiddling within an uintXX_t, which would be the
         well-defined approach.  */
-class alignas(uint32_t) ObjectID
+class alignas(uint32_t) ObjectID32
 {
 public:
     /* N.B.:  CB3.1 always seemed to init ObjectID so this is
                 the invalid value, not uninitialized data */
-    constexpr ObjectID() = default;
-    ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
-    explicit ObjectID(PieceID pid);
+    constexpr ObjectID32() = default;
+    ObjectID32(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
+    explicit ObjectID32(PieceID16 pid);
 #if !defined(NDEBUG)
-    [[deprecated("only for GetObjectIDFromElementLegacyCheck()")]] explicit ObjectID(uint32_t dw);
+    [[deprecated("only for GetObjectIDFromElementLegacyCheck()")]] explicit ObjectID32(uint32_t dw);
 #endif
-    ObjectID(const ObjectID&) = default;
-    ObjectID& operator=(const ObjectID&) = default;
-    ~ObjectID() = default;
+    ObjectID32(const ObjectID32&) = default;
+    ObjectID32& operator=(const ObjectID32&) = default;
+    ~ObjectID32() = default;
 
-    bool operator==(const ObjectID& rhs) const
+    bool operator==(const ObjectID32& rhs) const
     {
         if (u.tag.subtype != rhs.u.tag.subtype)
         {
@@ -234,51 +236,13 @@ public:
                 CbThrowBadCastException();
         }
     }
-    bool operator!=(const ObjectID& rhs) const
+    bool operator!=(const ObjectID32& rhs) const
     {
         return !operator==(rhs);
     }
 
-    void Serialize(CArchive& ar) const
-    {
-        if (!ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-        switch (u.tag.subtype)
-        {
-            case stPieceObj:
-            case stMarkObj:
-            case stMarkerID:
-                break;
-            case stLineObj:
-                ASSERT(!"future feature");
-                break;
-            default:
-                CbThrowBadCastException();
-        }
-        ar << u.buf;
-    }
-    void Serialize(CArchive& ar)
-    {
-        if (ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::writeOnly);
-        }
-        ar >> u.buf;
-        switch (u.tag.subtype)
-        {
-            case stPieceObj:
-            case stMarkObj:
-            case stMarkerID:
-                break;
-            case stLineObj:
-                ASSERT(!"future feature");
-                break;
-            default:
-                CbThrowBadCastException();
-        }
-    }
+    void Serialize(CArchive& ar) const;
+    void Serialize(CArchive& ar);
 
 private:
     /* N.B.:  currently only 4 bits (values 0 - 15) available!
@@ -318,11 +282,11 @@ private:
         } markObj;
         struct PieceObj
         {
-            PieceID pid;
+            PieceID16 pid;
             uint16_t pad : 12;
             Subtype subtype : 4;
 
-            constexpr PieceObj(PieceID p) :
+            constexpr PieceObj(PieceID16 p) :
                 pid(p),
                 pad(0),
                 subtype(stPieceObj)
@@ -349,7 +313,7 @@ private:
             markObj(i, s, t)
         {
         }
-        U(PieceID p) :
+        U(PieceID16 p) :
             pieceObj(p)
         {
         }
@@ -357,15 +321,165 @@ private:
         U& operator=(const U&) = default;
         ~U() = default;
     } u;
+
+    // Serialize conversion helpers
+    explicit operator ObjectID64() const;
+    // KLUDGE:  can't friend members of an incomplete class
+    friend ObjectID64;
 };
 
-inline CArchive& operator<<(CArchive& ar, const ObjectID& oid)
+inline CArchive& operator<<(CArchive& ar, const ObjectID32& oid)
 {
     oid.Serialize(ar);
     return ar;
 }
 
-inline CArchive& operator>>(CArchive& ar, ObjectID& oid)
+inline CArchive& operator>>(CArchive& ar, ObjectID32& oid)
+{
+    oid.Serialize(ar);
+    return ar;
+}
+
+class alignas(uint64_t) ObjectID64
+{
+public:
+    constexpr ObjectID64() = default;
+    ObjectID64(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
+    explicit ObjectID64(PieceID32 pid);
+    ObjectID64(const ObjectID64&) = default;
+    ObjectID64& operator=(const ObjectID64&) = default;
+    ~ObjectID64() = default;
+
+    bool operator==(const ObjectID64& rhs) const
+    {
+        if (u.tag.subtype != rhs.u.tag.subtype)
+        {
+            return false;
+        }
+
+        switch (u.tag.subtype)
+        {
+            case stPieceObj:
+                return u.pieceObj.pid == rhs.u.pieceObj.pid;
+            case stInvalid:
+                return true;
+            case stMarkObj:
+                return u.markObj.id == rhs.u.markObj.id &&
+                    u.markObj.serial == rhs.u.markObj.serial;
+            case stMarkerID:
+                ASSERT(!"conflicts with GameElement(MarkID)");
+                // fall through
+            default:
+                CbThrowBadCastException();
+        }
+    }
+    bool operator!=(const ObjectID64& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
+    void Serialize(CArchive& ar) const;
+    void Serialize(CArchive& ar);
+
+private:
+    /* N.B.:  currently only 4 bits (values 0 - 15) available!
+                but, declare underlying type uint16_t to
+                let it fit in the bit fields better */
+    enum Subtype : uint16_t {
+        stPieceObj = 0,
+        stInvalid = 1,
+        stMarkObj = 2,
+        stLineObj = 3,
+        stMarkerID = 0xf,
+    };
+    union U {
+        struct Tag
+        {
+            uint32_t : 32;
+            uint16_t : 16;
+            uint16_t : 12;
+            Subtype subtype : 4;
+        private:
+            constexpr Tag() = default;
+        } tag;
+        struct MarkObj
+        {
+            // TODO:  since we have more space, more random bits?
+            // a random number (seeded by time in seconds)
+            uint16_t id;
+            /* serial number to avoid equality of two ObjectID values
+                created in the same second */
+            uint16_t serial : 12;
+            uint16_t pad1 : 4;
+            uint16_t pad2 : 16;
+            uint16_t pad3 : 12;
+            Subtype subtype : 4;
+
+            constexpr MarkObj(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+                id(i),
+                serial(s),
+                pad1(0),
+                pad2(0),
+                pad3(0),
+                subtype((ASSERT(t == CDrawObj::drawMarkObj), stMarkObj))
+            {
+            }
+        } markObj;
+        struct PieceObj
+        {
+            PieceID32 pid;
+            uint16_t pad1 : 16;
+            uint16_t pad2 : 12;
+            Subtype subtype : 4;
+
+            constexpr PieceObj(PieceID32 p) :
+                pid(p),
+                pad1(0),
+                pad2(0),
+                subtype(stPieceObj)
+            {
+            }
+        } pieceObj;
+        struct Invalid
+        {
+            uint32_t : 32;
+            uint16_t : 16;
+            uint16_t : 12;
+            Subtype subtype : 4;
+
+            constexpr Invalid() :
+                subtype(stInvalid)
+            {
+            }
+        } invalid;
+        uint64_t buf;
+
+        constexpr U() : invalid() {}
+        U(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+            markObj(i, s, t)
+        {
+        }
+        U(PieceID32 p) :
+            pieceObj(p)
+        {
+        }
+        U(const U&) = default;
+        U& operator=(const U&) = default;
+        ~U() = default;
+    } u;
+
+    // Serialize conversion helpers
+    explicit operator ObjectID32() const;
+    friend void ObjectID32::Serialize(CArchive& ar);
+};
+
+inline CArchive& operator<<(CArchive& ar, const ObjectID64& oid)
+{
+    oid.Serialize(ar);
+    return ar;
+}
+
+inline CArchive& operator>>(CArchive& ar, ObjectID64& oid)
 {
     oid.Serialize(ar);
     return ar;

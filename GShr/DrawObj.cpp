@@ -50,9 +50,11 @@
 #endif
 
 #if defined(GPLAY)
-static_assert(sizeof(ObjectID) == sizeof(uint32_t), "size error");
-static_assert(sizeof(ObjectID) == sizeof(DWORD), "size error");
-static_assert(alignof(ObjectID) == alignof(uint32_t), "align error");
+static_assert(sizeof(ObjectID32) == sizeof(uint32_t), "size error");
+static_assert(sizeof(ObjectID32) == sizeof(DWORD), "size error");
+static_assert(alignof(ObjectID32) == alignof(uint32_t), "align error");
+static_assert(sizeof(ObjectID64) == sizeof(uint64_t), "size error");
+static_assert(alignof(ObjectID64) == alignof(uint64_t), "align error");
 namespace {
     class ObjectIDCheck
     {
@@ -60,41 +62,65 @@ namespace {
         ObjectIDCheck()
         {
             {
-                ObjectID test(4, 3, CDrawObj::drawMarkObj);
+                ObjectID32 test(4, 3, CDrawObj::drawMarkObj);
                 ASSERT(reinterpret_cast<uint32_t&>(test) == 0x20030004 || !"non-Microsoft field layout");
             }
             {
-                ObjectID test(PieceID(0x1234));
+                ObjectID32 test(PieceID16(0x1234));
                 ASSERT(reinterpret_cast<uint32_t&>(test) == 0x00001234 || !"non-Microsoft field layout");
+            }
+            {
+                ObjectID64 test(4, 3, CDrawObj::drawMarkObj);
+                ASSERT(reinterpret_cast<uint64_t&>(test) == 0x2000000000030004 || !"non-Microsoft field layout");
+            }
+            {
+                ObjectID64 test(PieceID32(0x12345678));
+                ASSERT(reinterpret_cast<uint64_t&>(test) == 0x0000000012345678 || !"non-Microsoft field layout");
             }
         }
     } objectIDCheck;
 }
 
-ObjectID::ObjectID(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+ObjectID32::ObjectID32(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
     u(i, s, t)
 {
     ASSERT((t & 0xFFF0) == 0x0080 || !"unexpected CDrawObjType value");
     ASSERT((t & 0x000F) < 0x000E || !"conflict with GameElement marker tag");
-    static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
-    ASSERT(reinterpret_cast<int&>(*this) != -1);
+    static_assert(sizeof(int32_t) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int32_t&>(*this) != INT32_C(-1));
 }
 
-ObjectID::ObjectID(PieceID pid) :
+ObjectID32::ObjectID32(PieceID16 pid) :
     u(pid)
 {
-    static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
-    ASSERT(reinterpret_cast<int&>(*this) != -1);
+    static_assert(sizeof(int32_t) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int32_t&>(*this) != INT32_C(-1));
 }
 
 #if !defined(NDEBUG)
-ObjectID::ObjectID(uint32_t dw)
+ObjectID32::ObjectID32(uint32_t dw)
 {
     reinterpret_cast<uint32_t&>(*this) = dw;
     static_assert(sizeof(int) == sizeof(*this), "need to adjust cast");
-    ASSERT(reinterpret_cast<int&>(*this) != -1);
+    ASSERT(reinterpret_cast<int&>(*this) != INT32_C(-1));
 }
 #endif
+
+ObjectID64::ObjectID64(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
+    u(i, s, t)
+{
+    ASSERT((t & 0xFFF0) == 0x0080 || !"unexpected CDrawObjType value");
+    ASSERT((t & 0x000F) < 0x000E || !"conflict with GameElement marker tag");
+    static_assert(sizeof(int64_t) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int64_t&>(*this) != INT64_C(-1));
+}
+
+ObjectID64::ObjectID64(PieceID32 pid) :
+    u(pid)
+{
+    static_assert(sizeof(int64_t) == sizeof(*this), "need to adjust cast");
+    ASSERT(reinterpret_cast<int64_t&>(*this) != INT64_C(-1));
+}
 
 #endif
 
@@ -271,6 +297,179 @@ void CDrawObj::CopyAttributes(const CDrawObj& source)
     m_rctExtent   = source.m_rctExtent;
 }
 //DFM19991213
+
+#ifdef GPLAY
+void ObjectID32::Serialize(CArchive& ar) const
+{
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+        case stMarkObj:
+        case stMarkerID:
+            break;
+        case stLineObj:
+            ASSERT(!"future feature");
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+
+    switch (GetXxxxIDSerializeSize<PieceID>(ar))
+    {
+        case 2:
+            ar << u.buf;
+            break;
+        case 4:
+            ASSERT(!"will probably never be used");
+            ar << static_cast<ObjectID64>(*this);
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+void ObjectID32::Serialize(CArchive& ar)
+{
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+
+    switch (GetXxxxIDSerializeSize<PieceID>(ar))
+    {
+        case 2:
+            ar >> u.buf;
+            break;
+        case 4: {
+            ASSERT(!"probably should never be used");
+            ObjectID64 temp;
+            ar >> temp;
+            *this = static_cast<ObjectID32>(temp);
+            break;
+        }
+        default:
+            CbThrowBadCastException();
+    }
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+        case stMarkObj:
+        case stMarkerID:
+            break;
+        case stLineObj:
+            ASSERT(!"future feature");
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+ObjectID32::operator ObjectID64() const
+{
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+            return ObjectID64(static_cast<PieceID32>(u.pieceObj.pid));
+        case stInvalid:
+            return ObjectID64();
+        case stMarkObj:
+            return ObjectID64(u.markObj.id, u.markObj.serial, CDrawObj::drawMarkObj);
+        case stLineObj:
+            ASSERT(!"future feature");
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+void ObjectID64::Serialize(CArchive& ar) const
+{
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+        case stMarkObj:
+        case stMarkerID:
+            break;
+        case stLineObj:
+            ASSERT(!"future feature");
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+
+    switch (GetXxxxIDSerializeSize<PieceID>(ar))
+    {
+        case 2:
+            ar << static_cast<ObjectID32>(*this);
+            break;
+        case 4:
+            ar << u.buf;
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+void ObjectID64::Serialize(CArchive& ar)
+{
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+
+    switch (GetXxxxIDSerializeSize<PieceID>(ar))
+    {
+        case 2: {
+            ObjectID32 temp;
+            ar >> temp;
+            *this = static_cast<ObjectID64>(temp);
+            break;
+        }
+        case 4:
+            ar >> u.buf;
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+        case stMarkObj:
+        case stMarkerID:
+            break;
+        case stLineObj:
+            ASSERT(!"future feature");
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+ObjectID64::operator ObjectID32() const
+{
+    switch (u.tag.subtype)
+    {
+        case stPieceObj:
+            return ObjectID32(static_cast<PieceID16>(u.pieceObj.pid));
+        case stInvalid:
+            return ObjectID32();
+        case stMarkObj:
+            return ObjectID32(u.markObj.id, u.markObj.serial, CDrawObj::drawMarkObj);
+        case stLineObj:
+            ASSERT(!"future feature");
+            // fall through
+        default:
+            CbThrowBadCastException();
+    }
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // CRectObject methods
