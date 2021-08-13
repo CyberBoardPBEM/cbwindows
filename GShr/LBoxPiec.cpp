@@ -94,7 +94,7 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     ASSERT(m_pDoc != NULL);
 
     PieceID nPid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    int side = 0;
+    unsigned side = 0u;
 
     TileID tidLeft = m_pPMgr->GetPiece(nPid).GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
@@ -109,7 +109,7 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         rct = rctRight;
-        side = 1;
+        side = 1u;
     }
     else
         return Invalid_v<GameElement>;

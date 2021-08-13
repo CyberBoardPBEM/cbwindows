@@ -104,7 +104,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     ASSERT(pPTbl != NULL);
 
     PieceID nPid = MapIndexToItem(nIndex);
-    int side = 0;
+    unsigned side = 0u;
 
     TileID tidLeft = pPTbl->GetActiveTileID(nPid);
     ASSERT(tidLeft != nullTid);            // Should exist
@@ -123,7 +123,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         rct = rctRight;
-        side = 1;
+        side = 1u;
     }
     else
         return Invalid_v<GameElement>;

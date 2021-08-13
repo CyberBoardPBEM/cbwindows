@@ -112,7 +112,12 @@ protected:
 
 //////////////////////////////////////////////////////////////////////
 
-class CGameElementStringMap;
+class GameElement32;
+class GameElement64;
+using GameElement = std::conditional_t<std::is_same_v<TileID, TileID16>, GameElement32, GameElement64>;
+template<typename KEY>
+class CGameElementStringMapT;
+using CGameElementStringMap = CGameElementStringMapT<GameElement>;
 
 class CPieceManager
 {
