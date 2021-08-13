@@ -36,15 +36,26 @@ namespace {
         GameElementCheck()
         {
             {
-                GameElement test(MarkID(0x1234));
+                GameElement32 test(MarkID16(0x1234));
                 static_assert(sizeof(test) == sizeof(uint32_t), "size mismatch");
                 ASSERT(reinterpret_cast<uint32_t&>(test) == 0xF0001234 || !"non-Microsoft field layout");
             }
             {
-                GameElement test = Invalid_v<GameElement>;
+                GameElement32 test = Invalid_v<GameElement32>;
                 ASSERT(!test.IsAPiece() && !test.IsAMarker() && !test.IsAnObject());
                 static_assert(sizeof(int) == sizeof(test), "need to adjust cast");
                 ASSERT(reinterpret_cast<int&>(test) == -1);
+            }
+            {
+                GameElement64 test(MarkID32(0x12345678));
+                static_assert(sizeof(test) == sizeof(uint64_t), "size mismatch");
+                ASSERT(reinterpret_cast<uint64_t&>(test) == UINT64_C(0xF000000012345678) || !"non-Microsoft field layout");
+            }
+            {
+                GameElement64 test = Invalid_v<GameElement64>;
+                ASSERT(!test.IsAPiece() && !test.IsAMarker() && !test.IsAnObject());
+                static_assert(sizeof(int64_t) == sizeof(test), "need to adjust cast");
+                ASSERT(reinterpret_cast<int64_t&>(test) == INT64_C(-1));
             }
         }
     } gameElementCheck;
@@ -52,79 +63,10 @@ namespace {
 
 #if defined(GPLAY)
 #if !defined(NDEBUG)
-ObjectID GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
+ObjectID32 GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
 {
-    return static_cast<ObjectID>(elem);
+    return static_cast<ObjectID32>(elem);
 }
 #endif
 #endif
-
-void CGameElementStringMap::Clone(CGameElementStringMap* pMapToCopy)
-{
-    RemoveAll();
-
-    POSITION pos = pMapToCopy->GetStartPosition();
-    while (pos != NULL)
-    {
-        CString str;
-        GameElement elem;
-        pMapToCopy->GetNextAssoc(pos, elem, str);
-        SetAt(elem, str);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////
-
-BOOL CGameElementStringMap::Compare(CGameElementStringMap* pMapToCompare)
-{
-    if (GetCount() != pMapToCompare->GetCount())
-        return FALSE;                       // Different sizes so no match
-    POSITION pos = pMapToCompare->GetStartPosition();
-    while (pos != NULL)
-    {
-        CString strToCompare;
-        CString strOurs;
-        GameElement elem;
-        pMapToCompare->GetNextAssoc(pos, elem, strToCompare);
-        if (!Lookup(elem, strOurs))
-            return FALSE;                   // Not found so no match
-        if (strToCompare != strOurs)
-            return FALSE;                   // values don't match
-    }
-    return TRUE;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void CGameElementStringMap::Serialize(CArchive& ar)
-{
-    if (ar.IsStoring())
-    {
-        DWORD dwCount = GetCount();
-        ar << dwCount;
-        POSITION pos = GetStartPosition();
-        while (pos != NULL)
-        {
-            GameElement elem;
-            CString str;
-            GetNextAssoc(pos, elem, str);
-            ar << elem;
-            ar << str;
-        }
-    }
-    else
-    {
-        this->RemoveAll();
-        DWORD dwCount;
-        ar >> dwCount;
-        while (dwCount--)
-        {
-            GameElement dwElem;
-            ar >> dwElem;
-            CString str;
-            ar >> str;
-            SetAt(dwElem, str);
-        }
-    }
-}
 
