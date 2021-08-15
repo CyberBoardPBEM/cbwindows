@@ -779,7 +779,7 @@ BOOL CGamDoc::OnNewGame()
                 strFileList += strFName;
             }
             CString strMsg;
-            strMsg.Format(IDS_MSG_PLAYER_FILES, strFileList);
+            strMsg.Format(IDS_MSG_PLAYER_FILES, strFileList.GetString());
             AfxMessageBox(strMsg, MB_OK | MB_ICONINFORMATION);
 
             return FALSE;
@@ -2012,7 +2012,7 @@ void CGamDoc::OnFileCreateReferee()
     {
         // File already exists. Prompt for overwrite.
         CString str;
-        str.Format(IDS_WARN_REF_EXISTS, strFName);
+        str.Format(IDS_WARN_REF_EXISTS, strFName.GetString());
         if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2) != IDOK)
             return;
     }
@@ -2031,7 +2031,7 @@ void CGamDoc::OnFileCreateReferee()
     if (bOK)
     {
         CString str;
-        str.Format(IDS_INFO_REF_CREATED, strFName);
+        str.Format(IDS_INFO_REF_CREATED, strFName.GetString());
         AfxMessageBox(str);
     }
 }
@@ -2095,7 +2095,7 @@ void CGamDoc::OnFileChangeGameOwner()
     {
         // File already exists. Prompt for overwrite.
         CString str;
-        str.Format(IDS_WARN_REF_EXISTS, strFName);
+        str.Format(IDS_WARN_REF_EXISTS, strFName.GetString());
         if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2) != IDOK)
             return;
     }
@@ -2114,7 +2114,7 @@ void CGamDoc::OnFileChangeGameOwner()
     if (bOK)
     {
         CString str;
-        str.Format(IDS_INFO_GAME_CREATED, strFName);
+        str.Format(IDS_INFO_GAME_CREATED, strFName.GetString());
         AfxMessageBox(str);
     }
 }

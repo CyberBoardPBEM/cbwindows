@@ -1675,7 +1675,7 @@ void CBrdEditView::OnUpdateEditPasteBitmapFromFile(CCmdUI* pCmdUI)
 
 //DFM 19991014...
 //GetKeyState()
-static const short KEY_STATE_VALUE = (short)0x8000;
+static const short KEY_STATE_VALUE = static_cast<short>(static_cast<unsigned short>(0x8000));
 
 void CBrdEditView::HandleKeyDown ()
 {

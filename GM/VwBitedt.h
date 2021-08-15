@@ -59,7 +59,7 @@ public:
         { return CSize(m_size.cx * m_nZoom, m_size.cy * m_nZoom); }
     CRect GetZoomedSelectBorderRect();
     CRect GetZoomedSelectRect();
-    void SetSelectRect(CRect& rct) { m_rctPaste = rct; }
+    void SetSelectRect(const CRect& rct) { m_rctPaste = rct; }
     CRect GetSelectRect() { return m_rctPaste; }
     void OffsetSelectRect(CSize size) { m_rctPaste += (CPoint)size; }
     void SetSelectToolControl(BOOL bCapture) { m_bSelectCapture = bCapture; }

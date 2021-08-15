@@ -76,7 +76,7 @@ LRESULT CEditNoChevron::OnPasteMessage(WPARAM, LPARAM)
             while (*pText)
             {
                 // Replace chevrons and paragraph chars with spaces
-                if (*pText == (char)0xBB || *pText == (char)0xB6)
+                if (*pText == static_cast<unsigned char>(0xBB) || *pText == static_cast<unsigned char>(0xB6))
                     *pText = ' ';
                 pText++;
             }

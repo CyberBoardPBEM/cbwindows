@@ -440,7 +440,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pPBoard.GetOwnerMask()).m_strName;
             CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
+            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
             str += strOwnedBy;
         }
         m_listProj.AddItem(grpBrd, str, i);
@@ -466,7 +466,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pYSet.GetOwnerMask()).m_strName;
             CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
+            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
             str += strOwnedBy;
         }
         m_listProj.AddItem(grpTray, str, i);
