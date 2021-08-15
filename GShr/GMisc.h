@@ -51,7 +51,7 @@ std::vector<int> AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, U
 #endif
 
 inline int MidPnt(int a, int b) { return a+(b-a)/2; }
-CPoint GetMidRect(CRect& rct);
+CPoint GetMidRect(const CRect& rct);
 CPoint RotatePointAroundPoint(CPoint pntOrigin, CPoint pntXlate, int nAngleDeg);
 
 int GridizeClosest1000(int nVal, int nMultiple, int nOffset);

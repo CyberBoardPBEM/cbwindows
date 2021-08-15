@@ -36,6 +36,18 @@
 
 #include <WinExt.h>
 
+// warning C4239 : nonstandard extension used : 'argument' : conversion from 'xxx' to 'xxx &'
+#pragma warning(error:  4239)
+// warning C4310 : cast truncates constant value
+#pragma warning(error:  4310)
+// warning C4840 : non - portable use of class 'xxx' as an argument to a variadic function
+#pragma warning(error:  4840)
+// warning C5205 : delete of an abstract class 'xxx' that has a non - virtual destructor results in undefined behavior
+// WARNING:  for some reason, this won't change level!
+#pragma warning(1:  5205)
+// WARNING:  for some reason, this won't become an error, even at level 4!
+#pragma warning(error:  5205)
+
 #if defined(max)
     #undef max
 #endif

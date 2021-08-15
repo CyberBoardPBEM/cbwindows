@@ -145,6 +145,18 @@ public:
     }
 #endif
 
+    void Serialize(CArchive& ar) const
+    {
+        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+        if (!ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+        ar << u.buf;
+    }
+
     void Serialize(CArchive& ar)
     {
         static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
@@ -152,12 +164,9 @@ public:
         static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
         if (ar.IsStoring())
         {
-            ar << u.buf;
+            AfxThrowArchiveException(CArchiveException::readOnly);
         }
-        else
-        {
-            ar >> u.buf;
-        }
+        ar >> u.buf;
     }
 
     UINT Hash() const
@@ -263,7 +272,7 @@ struct Invalid<GameElement>
     static constexpr GameElement value = GameElement(GameElement::Invalid_t());
 };
 
-inline CArchive& operator<<(CArchive& ar, GameElement& ge)
+inline CArchive& operator<<(CArchive& ar, const GameElement& ge)
 {
     ge.Serialize(ar);
     return ar;

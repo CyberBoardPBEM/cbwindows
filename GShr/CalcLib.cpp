@@ -273,7 +273,7 @@ DWORD GetStringHash(LPCSTR str)
 
 // ----------------------------------------------- //
 
-CPoint GetMidRect(CRect& rct)
+CPoint GetMidRect(const CRect& rct)
 {
     return CPoint(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 }

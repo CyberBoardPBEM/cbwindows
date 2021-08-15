@@ -75,6 +75,7 @@ public:
     CSelection(CPlayBoardView& pView, CDrawObj& pObj) :
         m_pView(&pView), m_pObj(&pObj)
     {}
+    virtual ~CSelection() = default;
 
 // Attributes
 public:
