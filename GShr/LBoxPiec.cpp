@@ -84,17 +84,17 @@ BOOL CPieceListBox::OnIsToolTipsEnabled()
 #endif
 }
 
-int  CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
-        return -1;
+        return Invalid_v<GameElement>;
 
     ASSERT(m_pDoc != NULL);
 
     PieceID nPid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    uint32_t flags = 0;
+    int side = 0;
 
     TileID tidLeft = m_pPMgr->GetPiece(nPid).GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
@@ -109,24 +109,20 @@ int  CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         rct = rctRight;
-        static_assert(sizeof(nPid) <= 2, "flags and PieceID bits overlap");
-        flags |= 0x10000;             // Set flag bit indicating right side rect
+        side = 1;
     }
     else
-        return -1;
+        return Invalid_v<GameElement>;
 
-    return value_preserving_cast<int>(static_cast<PieceID::UNDERLYING_TYPE>(nPid) | flags);
+    return GameElement(nPid, side);
 }
 
-void CPieceListBox::OnGetTipTextForItemCode(int nItemCode,
+void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CString& strTip, CString& strTitle)
 {
-    if (nItemCode < 0)
+    if (nItemCode == Invalid_v<GameElement>)
         return;
-    PieceID pid = static_cast<PieceID>(nItemCode & 0xFFFF);
-    BOOL bRightRect = (nItemCode & 0x10000) != 0;
-    GameElement elem = MakePieceElement(pid, bRightRect ? 1 : 0);
-    strTip = m_pDoc->GetGameElementString(elem);
+    strTip = m_pDoc->GetGameElementString(nItemCode);
 }
 
 /////////////////////////////////////////////////////////////////////////////

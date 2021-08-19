@@ -77,12 +77,12 @@ BOOL CMarkListBox::OnIsToolTipsEnabled()
 #endif
 }
 
-int  CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
-        return -1;
+        return Invalid_v<GameElement>;
 
     CMarkManager* pMMgr = m_pDoc->GetMarkManager();
 
@@ -92,10 +92,10 @@ int  CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     GetTileRectsForItem(value_preserving_cast<int>(nIndex), tid, nullTid, rct, rct);
 
-    return rct.PtInRect(point) ? value_preserving_cast<int>(static_cast<MarkID::UNDERLYING_TYPE>(mid)) : -1;
+    return rct.PtInRect(point) ? GameElement(mid) : Invalid_v<GameElement>;
 }
 
-void CMarkListBox::OnGetTipTextForItemCode(int nItemCode,
+void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CString& strTip, CString& strTitle)
 {
     MarkID mid = static_cast<MarkID>(nItemCode);

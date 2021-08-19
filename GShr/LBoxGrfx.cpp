@@ -57,9 +57,9 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGrafixListBox::CGrafixListBox()
+CGrafixListBox::CGrafixListBox() :
+    m_nCurItemCode(Invalid_v<GameElement>)
 {
-    m_nCurItemCode = -1;
     m_nLastInsert = -1;
     m_nTimerID = 0;
     m_bAllowDrag = FALSE;
@@ -205,14 +205,14 @@ void CGrafixListBox::DoToolTipHitProcessing(CPoint point)
     }
 
     CRect rctTool;
-    int nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
+    GameElement nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
 
     if (nItemCode != m_nCurItemCode) // && nItemCode >= 0)
     {
         // Object changed so delete previous tool definition
         m_toolTip.DelTool(this, ID_TIP_LISTITEM_HIT);
         m_nCurItemCode = nItemCode;
-        if (nItemCode != -1)
+        if (nItemCode != Invalid_v<GameElement>)
         {
             // New object found so create a new tip
             CString strTip;
