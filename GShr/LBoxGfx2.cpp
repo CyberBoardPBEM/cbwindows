@@ -253,14 +253,14 @@ void CGrafixListBox2::DoToolTipHitProcessing(CPoint point)
     }
 
     CRect rctTool;
-    int nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
+    GameElement nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
 
     if (nItemCode != m_nCurItemCode)
     {
         // Object changed so delete previous tool definition
         m_toolTip.DelTool(this, ID_TIP_LISTITEM_HIT);
         m_nCurItemCode = nItemCode;
-        if (nItemCode != -1)
+        if (nItemCode != Invalid_v<GameElement>)
         {
             // New object found so create a new tip
             CString strTip;

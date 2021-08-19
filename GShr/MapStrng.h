@@ -127,12 +127,28 @@ public:
                 *this != GameElement(Invalid_t());
     }
 
+    explicit operator MarkID() const
+    {
+        if (!IsAMarker()) {
+            CbThrowBadCastException();
+        }
+        return u.markerElement.mid;
+    }
+
     explicit operator PieceID() const
     {
         if (!IsAPiece()) {
             CbThrowBadCastException();
         }
         return u.pieceElement.pid;
+    }
+
+    int GetSide() const
+    {
+        if (!IsAPiece()) {
+            CbThrowBadCastException();
+        }
+        return u.pieceElement.nSide;
     }
 
 #if defined(GPLAY)

@@ -29,6 +29,8 @@
 #include    "DragDrop.h"
 #endif
 
+#include    "MapStrng.h"
+
 /////////////////////////////////////////////////////////////////////////////
 
 #define     ID_TIP_LISTITEM_HIT             1       // ID used for normal tips
@@ -145,8 +147,8 @@ public:
 
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() /* override */ { return FALSE; }
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return -1; }
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) /* override */ { }
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return Invalid_v<GameElement>; }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) /* override */ { }
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it
@@ -159,7 +161,7 @@ protected:
     // Tool tip support
     CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
     CToolTipCtrl m_toolTip;         // Tooltip of tile text popups
-    int     m_nCurItemCode;         // current active tip item code
+    GameElement m_nCurItemCode;         // current active tip item code
 
     // Drag and scroll support vars
     static DragInfo di;

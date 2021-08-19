@@ -116,12 +116,12 @@ BOOL CSelectListBox::OnIsToolTipsEnabled()
     return m_pDoc->IsShowingObjectTips();
 }
 
-int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
-        return -1;
+        return Invalid_v<GameElement>;
 
     TileID tidLeft = GetTileID(TRUE, nIndex);
     ASSERT(tidLeft != nullTid);
@@ -145,17 +145,14 @@ int  CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
         rct = rctRight;
     }
-    else
-        return -1;
 
-    static_assert(sizeof(elem) == sizeof(int), "size mismatch");
-    return reinterpret_cast<int&>(elem);
+    return elem;
 }
 
-void CSelectListBox::OnGetTipTextForItemCode(int nItemCode,
+void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CString& strTip, CString& strTitle)
 {
-    if (nItemCode == -1)
+    if (nItemCode == Invalid_v<GameElement>)
         return;
     static_assert(sizeof(GameElement) == sizeof(nItemCode), "size mismatch");
     GameElement& elem = reinterpret_cast<GameElement&>(nItemCode);

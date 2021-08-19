@@ -92,8 +92,8 @@ protected:
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() override;
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) override;
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
 
     // Misc

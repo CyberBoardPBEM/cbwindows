@@ -29,6 +29,8 @@
 #include    "DragDrop.h"
 #endif
 
+#include    "MapStrng.h"
+
 class CDrawObj;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,8 +100,8 @@ public:
 
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() /* override */ { return FALSE; }
-    virtual int  OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return -1; }
-    virtual void OnGetTipTextForItemCode(int nItemCode, CString& strTip, CString& strTitle) /* override */ { }
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return Invalid_v<GameElement>; }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) /* override */ { }
 
 // Implementation
 protected:
@@ -110,7 +112,7 @@ protected:
 
     // Tool tip support
     CToolTipCtrl m_toolTip;
-    int     m_nCurItemCode;
+    GameElement m_nCurItemCode;
 
     // Drag and scroll support vars
     BOOL    m_bAllowDrag;
