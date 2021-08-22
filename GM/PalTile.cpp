@@ -242,8 +242,7 @@ void CTilePalette::PostNcDestroy()
 
 void CTilePalette::OnTileNameCbnSelchange()
 {
-    if (!m_comboTGrp.GetDroppedState())
-        UpdateTileList();
+    UpdateTileList();
 }
 
 BOOL CTilePalette::OnHelpInfo(HELPINFO* pHelpInfo)
