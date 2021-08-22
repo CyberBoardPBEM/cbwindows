@@ -57,6 +57,43 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+// emulate c++20 std::remove_cvref_t
+#if !defined(__cpp_lib_remove_cvref)
+namespace CB
+{
+    template<typename T>
+    struct remove_cvref {
+        typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+    };
+
+    template<typename T>
+    using remove_cvref_t = typename remove_cvref<T>::type;
+}
+#else
+    // untested
+namespace CB
+{
+    using std::remove_cvref;
+    using std::remove_cvref_t;
+}
+#endif
+
+//#define MAKELONG(a, b) ***poison***      ((LONG)(((WORD)(((DWORD_PTR)(a)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(b)) & 0xffff))) << 16))
+#undef MAKELONG
+template<typename ARG1, typename ARG2>
+constexpr int32_t MAKELONG(ARG1 a, ARG2 b)
+{
+    static_assert(sizeof(a) <= sizeof(uint16_t), "arg too large");
+    static_assert(sizeof(b) <= sizeof(uint16_t), "arg too large");
+    // avoid sign extension
+    return static_cast<int32_t>(
+            static_cast<uint32_t>(std::make_unsigned_t<CB::remove_cvref_t<decltype(a)>>(a)) |
+            (static_cast<uint32_t>(std::make_unsigned_t<CB::remove_cvref_t<decltype(b)>>(b)) << 16)
+        );
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 namespace CB
 {
     // adapters for different container types
@@ -911,28 +948,5 @@ static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdif
     startup, so declare a function that we will guarantee returns
     an object during startup */
 CWinApp& CbGetApp();
-
-/////////////////////////////////////////////////////////////////////////////
-
-// emulate c++20 std::remove_cvref_t
-#if !defined(__cpp_lib_remove_cvref)
-    namespace CB
-    {
-        template<typename T>
-        struct remove_cvref {
-            typedef std::remove_cv_t<std::remove_reference_t<T>> type;
-        };
-
-        template<typename T>
-        using remove_cvref_t = typename remove_cvref<T>::type;
-    }
-#else
-    // untested
-    namespace CB
-    {
-        using std::remove_cvref;
-        using std::remove_cvref_t;
-    }
-#endif
 
 #endif

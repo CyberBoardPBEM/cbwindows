@@ -982,8 +982,8 @@ void CMovePlotList::SavePlotList(CDrawList* pDwg)
         if (pObj.GetType() == CDrawObj::drawLine)
         {
             CLine& pLObj = static_cast<CLine&>(pObj);
-            m_tblPlot.Add((DWORD)MAKELONG(pLObj.m_ptBeg.x, pLObj.m_ptBeg.y));
-            m_tblPlot.Add((DWORD)MAKELONG(pLObj.m_ptEnd.x, pLObj.m_ptEnd.y));
+            m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptBeg.x), static_cast<int16_t>(pLObj.m_ptBeg.y)));
+            m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptEnd.x), static_cast<int16_t>(pLObj.m_ptEnd.y)));
         }
     }
 }

@@ -109,7 +109,7 @@ void CGrafixListBox::SetNotificationTip(int nItem, LPCTSTR pszTip)
     m_toolMsgTip.Activate(TRUE);
     m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
     m_toolMsgTip.SendMessage(TTM_TRACKPOSITION, 0,
-        (LPARAM)MAKELONG(pntScreen.x, pntScreen.y));
+        (LPARAM)MAKELONG(static_cast<int16_t>(pntScreen.x), static_cast<int16_t>(pntScreen.y)));
 
     SetTimer(ID_TIP_LISTITEM_MSG_TIMER, MAX_TIP_LISTITEM_MSG_TIME,
         NotificationTipTimeoutHandler);
@@ -185,9 +185,9 @@ void CGrafixListBox::SetSelFromPoint(CPoint point)
     // Short circuit drag processing
     m_bAllowDrag = FALSE;
     SendMessage(WM_LBUTTONDOWN, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(point.x, point.y));
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
     SendMessage(WM_LBUTTONUP, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(point.x, point.y));
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
     m_bAllowDrag = TRUE;
 }
 
