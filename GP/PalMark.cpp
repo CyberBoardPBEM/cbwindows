@@ -382,8 +382,7 @@ void CMarkerPalette::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
 
 void CMarkerPalette::OnMarkerNameCbnSelchange()
 {
-    if (!m_comboMGrp.GetDroppedState())
-        UpdateMarkerList();
+    UpdateMarkerList();
 }
 
 BOOL CMarkerPalette::OnHelpInfo(HELPINFO* pHelpInfo)
