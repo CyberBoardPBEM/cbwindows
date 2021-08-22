@@ -876,7 +876,7 @@ void CGbxProjView::OnEditPaste()
         pDoc->NotifyTileDatabaseChange();
         static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
     }
@@ -1112,7 +1112,7 @@ void CGbxProjView::OnProjectLoadTileFile()
         pDoc->NotifyTileDatabaseChange();
         static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(HINT_TILECREATED, static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
+            pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
         EndWaitCursor();

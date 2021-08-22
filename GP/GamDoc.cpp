@@ -1280,7 +1280,7 @@ void CGamDoc::OnPbckNext()
                 if (m_nCurMove != Invalid_v<size_t> ||
                     (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()))
                 {
-                    GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(ID_PBCK_NEXT, 0));
+                    GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
                 }
                 else
                     m_bAutoPlayback = FALSE;    // Make sure FALSE in case auto step turned off
@@ -1293,7 +1293,7 @@ void CGamDoc::OnPbckNext()
             // Force switch to next history record.
             OnPbckNextHistory();
             // Queue up the next move command
-            GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(ID_PBCK_NEXT, 0));
+            GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
         }
 
         m_nMoveInterlock--;

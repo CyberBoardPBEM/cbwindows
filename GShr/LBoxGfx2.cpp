@@ -233,9 +233,9 @@ void CGrafixListBox2::SetSelFromPoint(CPoint point)
     // Short circuit drag processing
     m_bAllowDrag = FALSE;
     SendMessage(WM_LBUTTONDOWN, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(point.x, point.y));
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
     SendMessage(WM_LBUTTONUP, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(point.x, point.y));
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
     m_bAllowDrag = TRUE;
 }
 

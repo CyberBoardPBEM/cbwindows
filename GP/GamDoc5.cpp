@@ -443,7 +443,7 @@ void CGamDoc::MsgDialogCancel(BOOL bDiscardHistory /* = FALSE */)
 void CGamDoc::MsgDialogForceDefer()
 {
     if (m_pMsgDialog != NULL)
-        m_pMsgDialog->SendMessage(WM_COMMAND, MAKEWPARAM(IDC_D_SMSG_CLOSE, BN_CLICKED));
+        m_pMsgDialog->SendMessage(WM_COMMAND, MAKEWPARAM(uint16_t(IDC_D_SMSG_CLOSE), uint16_t(BN_CLICKED)));
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -151,7 +151,7 @@ void CSelection::Open()
     if (m_pObj->GetType() == CDrawObj::drawMarkObj ||
         m_pObj->GetType() == CDrawObj::drawPieceObj)
     {
-        m_pView->SendMessage(WM_COMMAND, MAKEWPARAM(ID_EDIT_ELEMENT_TEXT, 0));
+        m_pView->SendMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_EDIT_ELEMENT_TEXT), uint16_t(0)));
     }
 }
 

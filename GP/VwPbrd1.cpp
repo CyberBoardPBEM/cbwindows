@@ -193,7 +193,7 @@ void CPlayBoardView::SetNotificationTip(CPoint pointClient, LPCTSTR pszTip)
     m_toolMsgTip.Activate(TRUE);
     m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
     m_toolMsgTip.SendMessage(TTM_TRACKPOSITION, 0,
-        (LPARAM)MAKELONG(pointScreen.x, pointScreen.y));
+        (LPARAM)MAKELONG(static_cast<int16_t>(pointScreen.x), static_cast<int16_t>(pointScreen.y)));
 
     SetTimer(ID_TIP_MSG_TIMER, MAX_TIP_MSG_TIME, NotificationTipTimeoutHandler);
 }

@@ -246,7 +246,7 @@ BOOL CSendMsgDialog::OnInitDialog()
 
     if (m_bShowDieRoller)
     {
-        PostMessage(WM_COMMAND, MAKEWPARAM(IDC_D_SMSG_ROLLDICE, BN_CLICKED),
+        PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(IDC_D_SMSG_ROLLDICE), uint16_t(BN_CLICKED)),
             (LPARAM)::GetDlgItem(m_hWnd, IDC_D_SMSG_ROLLDICE));
     }
 

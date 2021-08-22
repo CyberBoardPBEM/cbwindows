@@ -264,7 +264,7 @@ BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar)
     }
     if (nSBCode != (UINT)-1)
     {
-        pWnd->SendMessage(nCmd, MAKELONG(nSBCode, 0));
+        pWnd->SendMessage(nCmd, MAKELONG(uint16_t(nSBCode), uint16_t(0)));
         return TRUE;
     }
     return FALSE;

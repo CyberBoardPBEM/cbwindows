@@ -298,7 +298,7 @@ void CTileSelView::UpdateDocumentTiles()
     // Finally handle various notifications
     static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
     pDoc->UpdateAllViews(this,
-        MAKELPARAM(HINT_TILEMODIFIED, static_cast<TileID::UNDERLYING_TYPE>(m_tid)), NULL);
+        MAKELPARAM(uint16_t(HINT_TILEMODIFIED), static_cast<TileID::UNDERLYING_TYPE>(m_tid)), NULL);
     pDoc->SetModifiedFlag();
 }
 
