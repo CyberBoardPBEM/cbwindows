@@ -25,7 +25,7 @@
 #ifndef _WINSTATE_H
 #define _WINSTATE_H
 
-#include <list>
+#include "Board.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -107,7 +107,7 @@ protected:
     {
         WORD  m_wWinCode;           // Generic type of window
         WORD  m_wUserCode1;         // Used by subclass to refine WinCode
-        WORD  m_wUserCode2;         // Used by subclass to refine WinCode
+        BoardID m_boardID;          // Used by subclass to refine WinCode
         CWinPlacement m_wndState;   // Window placement information
 
         Buffer m_pWinStateBfr;       // Serialized window data

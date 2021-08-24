@@ -47,7 +47,7 @@ CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
     else if (pWse.m_wUserCode1 == gpFrmPlayBoard)
     {
         // The second user code is the board's serial number.
-        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager()->GetPBoardBySerial(static_cast<BoardID>(pWse.m_wUserCode2)));
+        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager()->GetPBoardBySerial(pWse.m_boardID));
         CView* pView = pDoc->FindPBoardView(pPBoard);
         if (pView == NULL)
         {
@@ -71,7 +71,7 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd *pWn
     {
         CPlayBoardFrame* pFrame = (CPlayBoardFrame*)pWnd;
         pWse.m_wUserCode1 = gpFrmPlayBoard;
-        pWse.m_wUserCode2 = static_cast<BoardID::UNDERLYING_TYPE>(pFrame->m_pPBoard->GetSerialNumber());
+        pWse.m_boardID = pFrame->m_pPBoard->GetSerialNumber();
     }
 }
 
