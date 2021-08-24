@@ -24,6 +24,7 @@
 
 #include    "stdafx.h"
 #include    "WinState.h"
+#include    "Versions.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Returns FALSE if no frame restoration data is supplied by frames.
@@ -305,7 +306,7 @@ CWinStateManager::CWinStateElement::CWinStateElement()
 {
     m_wWinCode = 0;
     m_wUserCode1 = 0;
-    m_wUserCode2 = 0;
+    m_boardID = nullBid;
 }
 
 void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
@@ -314,7 +315,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
     {
         ar << m_wWinCode;
         ar << m_wUserCode1;
-        ar << m_wUserCode2;
+        ar << m_boardID;
         ar << m_wndState;
         ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
         if (m_pWinStateBfr.GetSize() > size_t(0))
@@ -326,7 +327,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
 
         ar >> m_wWinCode;
         ar >> m_wUserCode1;
-        ar >> m_wUserCode2;
+        ar >> m_boardID;
         ar >> m_wndState;
         DWORD size;
         ar >> size;
