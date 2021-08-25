@@ -168,8 +168,13 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    if (lHint & HINT_TILEGROUP || lHint & HINT_TILESETDELETED ||
-        lHint & HINT_TILESETPROPCHANGE || lHint == HINT_ALWAYSUPDATE)
+    WORD wHint = LOWORD(lHint);
+    if (
+        ((wHint & HINT_TILEGROUP) && !(wHint & ~HINT_TILEGROUP)) ||
+        wHint == HINT_TILESETDELETED ||
+        wHint == HINT_TILESETPROPCHANGE ||
+        wHint == HINT_ALWAYSUPDATE
+        )
         m_palTile.UpdatePaletteContents();
     CDocument::UpdateAllViews(pSender, lHint, pHint);
 }
