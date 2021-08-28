@@ -244,20 +244,72 @@ CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
         switch (fileIDSize)
         {
             case 2: {
-                uint16_t temp;
-                ar >> temp;
-                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(static_cast<XxxxID16<PREFIX>>(temp));
+                XxxxID16<PREFIX> temp;
+                ar >> reinterpret_cast<decltype(temp)::UNDERLYING_TYPE&>(temp);
+                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
                 return ar;
             }
             case 4: {
-                uint32_t temp;
-                ar >> temp;
-                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(static_cast<XxxxID32<PREFIX>>(temp));
+                XxxxID32<PREFIX> temp;
+                ar >> reinterpret_cast<decltype(temp)::UNDERLYING_TYPE&>(temp);
+                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
                 return ar;
             }
             default:
                 CbThrowBadCastException();
         }
+    }
+}
+
+template<char PREFIX, typename UNDERLYING_TYPE>
+CArchive& operator<<(CArchive& ar, const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
+{
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(ar);
+    switch (fileIDSize)
+    {
+        case 2:
+            // CB3.1 file format uses MFC CWordArray
+            const_cast<CWordArray*>(ToCWordArray(v).get())->Serialize(ar);
+            return ar;
+        case 4:
+            // CB3.1 file format uses MFC CWordArray
+            const_cast<CDWordArray*>(ToCDWordArray(v).get())->Serialize(ar);
+            return ar;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+template<char PREFIX, typename UNDERLYING_TYPE>
+CArchive& operator>>(CArchive& ar, std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
+{
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::writeOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(ar);
+    switch (fileIDSize)
+    {
+        case 2: {
+            // CB3.1 file format uses MFC CWordArray
+            CWordArray temp;
+            temp.Serialize(ar);
+            v = ToVector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
+            return ar;
+        }
+        case 4: {
+            // CB3.1 file format uses MFC CWordArray
+            CDWordArray temp;
+            temp.Serialize(ar);
+            v = ToVector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
+            return ar;
+        }
+        default:
+            CbThrowBadCastException();
     }
 }
 

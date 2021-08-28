@@ -668,15 +668,15 @@ using XxxxID32 = XxxxIDExt<PREFIX, uint32_t>;
 template<char PREFIX>
 using XxxxID = XxxxID16<PREFIX>;
 
-// KLUDGE:  use unique_ptr since CWordArray doesn't have move operators
-template<char PREFIX>
-std::unique_ptr<const CWordArray> ToCWordArray(const std::vector<XxxxID<PREFIX>>& v)
+// KLUDGE:  use OwnerPtr since CWordArray doesn't have move operators
+template<char PREFIX, typename UNDERLYING_TYPE>
+const OwnerPtr<CWordArray> ToCWordArray(const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
-    std::unique_ptr<CWordArray> retval(new CWordArray);
+    OwnerPtr<CWordArray> retval = MakeOwner<CWordArray>();
     retval->SetSize(value_preserving_cast<INT_PTR>(v.size()));
-    for (INT_PTR i = 0; i < retval->GetSize(); ++i)
+    for (INT_PTR i = 0 ; i < retval->GetSize() ; ++i)
     {
-        (*retval)[i] = static_cast<XxxxID16<PREFIX>::UNDERLYING_TYPE>(v[value_preserving_cast<size_t>(i)]);
+        (*retval)[i] = value_preserving_cast<uint16_t>(static_cast<UNDERLYING_TYPE>(v[value_preserving_cast<size_t>(i)]));
     }
     return retval;
 }
@@ -684,40 +684,40 @@ std::unique_ptr<const CWordArray> ToCWordArray(const std::vector<XxxxID<PREFIX>>
 template<typename T>
 std::vector<T> ToVector(const CWordArray& a)
 {
-    static_assert(std::is_same_v<T, XxxxID16<T::PREFIX>>, "requires XxxxID16<>");
+    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     std::vector<T> retval;
-    retval.resize(value_preserving_cast<size_t>(a.GetSize()));
-    for (INT_PTR i = 0; i < a.GetSize(); ++i)
+    retval.reserve(value_preserving_cast<size_t>(a.GetSize()));
+    for (INT_PTR i = 0 ; i < a.GetSize() ; ++i)
     {
-        retval[value_preserving_cast<size_t>(i)] = static_cast<T>(a[i]);
+        retval.push_back(static_cast<T>(a[i]));
     }
     return retval;
 }
 
-template<char PREFIX>
-CArchive& operator<<(CArchive& ar, const std::vector<XxxxID16<PREFIX>>& v)
+// KLUDGE:  use OwnerPtr since CWordArray doesn't have move operators
+template<char PREFIX, typename UNDERLYING_TYPE>
+const OwnerPtr<CDWordArray> ToCDWordArray(const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
-    if (!ar.IsStoring())
+    OwnerPtr<CDWordArray> retval = MakeOwner<CDWordArray>();
+    retval->SetSize(value_preserving_cast<INT_PTR>(v.size()));
+    for (INT_PTR i = 0 ; i < retval->GetSize() ; ++i)
     {
-        AfxThrowArchiveException(CArchiveException::readOnly);
+        (*retval)[i] = value_preserving_cast<uint32_t>(static_cast<UNDERLYING_TYPE>(v[value_preserving_cast<size_t>(i)]));
     }
-    // KLUDGE:  current file format uses MFC CWordArray
-    const_cast<CWordArray*>(ToCWordArray(v).get())->Serialize(ar);
-    return ar;
+    return retval;
 }
 
-template<char PREFIX>
-CArchive& operator>>(CArchive& ar, std::vector<XxxxID16<PREFIX>>& v)
+template<typename T>
+std::vector<T> ToVector(const CDWordArray& a)
 {
-    if (ar.IsStoring())
+    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
+    std::vector<T> retval;
+    retval.reserve(value_preserving_cast<size_t>(a.GetSize()));
+    for (INT_PTR i = 0; i < a.GetSize(); ++i)
     {
-        AfxThrowArchiveException(CArchiveException::writeOnly);
+        retval.push_back(static_cast<T>(a[i]));
     }
-    // KLUDGE:  current file format uses MFC CWordArray
-    CWordArray temp;
-    temp.Serialize(ar);
-    v = ToVector<XxxxID16<PREFIX>>(temp);
-    return ar;
+    return retval;
 }
 
 template<typename DEST, char PREFIX, typename UNDERLYING_TYPE>

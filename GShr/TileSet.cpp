@@ -24,6 +24,7 @@
 
 #include    "stdafx.h"
 #include    "Tile.h"
+#include    "Versions.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
