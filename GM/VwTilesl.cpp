@@ -159,7 +159,7 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
     if (wHint == HINT_TILEDELETED)
     {
-        if (static_cast<TileID>(HIWORD(lHint)) == m_tid)
+        if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEDELETED>().m_tid == m_tid)
         {
             m_bNoUpdate = TRUE;
             CFrameWnd* pFrm = GetParentFrame();
@@ -296,9 +296,9 @@ void CTileSelView::UpdateDocumentTiles()
     m_pTileMgr->UpdateTile(m_tid, &m_bmFull, &m_bmHalf, crSmall);
 
     // Finally handle various notifications
-    static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
-    pDoc->UpdateAllViews(this,
-        MAKELPARAM(uint16_t(HINT_TILEMODIFIED), static_cast<TileID::UNDERLYING_TYPE>(m_tid)), NULL);
+    CGmBoxHint hint;
+    hint.GetArgs<HINT_TILEMODIFIED>().m_tid = m_tid;
+    pDoc->UpdateAllViews(this, HINT_TILEMODIFIED, &hint);
     pDoc->SetModifiedFlag();
 }
 

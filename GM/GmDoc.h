@@ -62,9 +62,9 @@ enum CGamDocHint
 {
     HINT_ALWAYSUPDATE =     0,      // Must be zero!
 
-    HINT_TILECREATED =      1,      // HIWORD = TileID
-    HINT_TILEMODIFIED =     2,      // HIWORD = TileID
-    HINT_TILEDELETED =      3,      // HIWORD = TileID
+    HINT_TILECREATED =      1,      // pHint->m_tid
+    HINT_TILEMODIFIED =     2,      // pHint->m_tid
+    HINT_TILEDELETED =      3,      // pHint->m_tid
     HINT_TILEGROUP =        0x0F,   // Mask for all tile hints
 
     HINT_BOARDDELETED =     0x10,   // pHint->m_pBoard;
@@ -100,6 +100,24 @@ public:
     };
 
     template<>
+    struct Args<HINT_TILECREATED>
+    {
+        TileID m_tid;
+    };
+
+    template<>
+    struct Args<HINT_TILEMODIFIED>
+    {
+        TileID m_tid;
+    };
+
+    template<>
+    struct Args<HINT_TILEDELETED>
+    {
+        TileID m_tid;
+    };
+
+    template<>
     struct Args<HINT_BOARDDELETED>
     {
         CBoard*     m_pBoard;
@@ -132,6 +150,9 @@ public:
 private:
     CGamDocHint hint;
     union {
+        Args<HINT_TILECREATED> m_tileCreated;
+        Args<HINT_TILEMODIFIED> m_tileModified;
+        Args<HINT_TILEDELETED> m_tileDeleted;
         Args<HINT_BOARDDELETED> m_boardDeleted;
         Args<HINT_TILESETDELETED> m_tileSetDeleted;
         Args<HINT_PIECESETDELETED> m_pieceSetDeleted;

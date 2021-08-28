@@ -874,9 +874,12 @@ void CGbxProjView::OnEditPaste()
         }
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
+        {
+            CGmBoxHint hint;
+            hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
+            pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
+        }
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
     }
@@ -1110,9 +1113,12 @@ void CGbxProjView::OnProjectLoadTileFile()
 
         DoUpdateTileList();
         pDoc->NotifyTileDatabaseChange();
-        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
-            pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
+        {
+            CGmBoxHint hint;
+            hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
+            pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
+        }
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
         EndWaitCursor();
