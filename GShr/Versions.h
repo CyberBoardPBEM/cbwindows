@@ -161,35 +161,44 @@ extern int GetLoadingVersion();
 by getting sizeof(XxxxID<>) for file */
 /*  N.B.:  making this a template allows us the option to use
 different sizes for different id types */
-template<typename T>
-size_t GetXxxxIDSize(const CArchive& ar)
+namespace CB { namespace Impl
 {
-    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt");
-    /* if .gbx/.gsn/.gam/.gmv versions become unequal,
-        the version logic here will need to rebuilt */
-    ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
-    ASSERT(NumVersion(fileGamVerMajor, fileGamVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
-    ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
-    int ver = ar.IsStoring() ?
-                    NumVersion(fileGbxVerMajor, fileGbxVerMinor)
-                :
-                    GetLoadingVersion();
-    if (ver <= NumVersion(3, 90))
+    template<typename T>
+    size_t GetXxxxIDSerializeSize(const CArchive& ar)
     {
-        // ASSERT(ver < NumVersion(3, 90) --> ar.IsLoading());
-        ASSERT(ver == NumVersion(3, 90) || ar.IsLoading());
-        return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
-    }
-    else
-    {
-        ASSERT(ver == NumVersion(4, 0));
-        if (sizeof(XxxxID<T::PREFIX>::UNDERLYING_TYPE) != sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE))
+        static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt");
+        /* if .gbx/.gsn/.gam/.gmv versions become unequal,
+            the version logic here will need to rebuilt */
+        ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+        ASSERT(NumVersion(fileGamVerMajor, fileGamVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+        ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
+        int ver = ar.IsStoring() ?
+                        NumVersion(fileGbxVerMajor, fileGbxVerMinor)
+                    :
+                        GetLoadingVersion();
+        if (ver <= NumVersion(3, 90))
         {
-            ASSERT(!"not ready for 32bit ids");
-            AfxThrowNotSupportedException();
+            // ASSERT(ver < NumVersion(3, 90) --> ar.IsLoading());
+            ASSERT(ver == NumVersion(3, 90) || ar.IsLoading());
+            return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
         }
-        return sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE);
+        else
+        {
+            ASSERT(ver == NumVersion(4, 0));
+            if (sizeof(XxxxID<T::PREFIX>::UNDERLYING_TYPE) != sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE))
+            {
+                ASSERT(!"not ready for 32bit ids");
+                AfxThrowNotSupportedException();
+            }
+            return sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE);
+        }
     }
+}}
+
+template<typename T>
+size_t GetXxxxIDSerializeSize(const CArchive& ar)
+{
+    return CB::Impl::GetXxxxIDSerializeSize<CB::remove_cvref_t<T>>(ar);
 }
 
 template<char PREFIX, typename UNDERLYING_TYPE>
@@ -199,7 +208,7 @@ CArchive& operator<<(CArchive& ar, const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid
     {
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
-    size_t fileIDSize = GetXxxxIDSize<CB::remove_cvref_t<decltype(oid)>>(ar);
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(oid)>(ar);
     if (fileIDSize == sizeof(oid))
     {
         return ar << reinterpret_cast<const UNDERLYING_TYPE&>(oid);
@@ -225,7 +234,7 @@ CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
     {
         AfxThrowArchiveException(CArchiveException::writeOnly);
     }
-    size_t fileIDSize = GetXxxxIDSize<CB::remove_cvref_t<decltype(oid)>>(ar);
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(oid)>(ar);
     if (fileIDSize == sizeof(oid))
     {
         return ar >> reinterpret_cast<UNDERLYING_TYPE&>(oid);
