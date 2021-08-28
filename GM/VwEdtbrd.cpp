@@ -180,8 +180,7 @@ void CBrdEditView::OnInitialUpdate()
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     WORD wHint = LOWORD(lHint);
-    TileID tid = static_cast<TileID>(HIWORD(lHint));
-    if ((wHint == HINT_TILEMODIFIED && m_pBoard->IsTileInUse(tid)) ||
+    if ((wHint == HINT_TILEMODIFIED && m_pBoard->IsTileInUse(static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEMODIFIED>().m_tid)) ||
         wHint == HINT_TILEDELETED || wHint == HINT_TILESETDELETED)
     {
         Invalidate(FALSE);          // Do redraw

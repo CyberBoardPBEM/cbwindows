@@ -304,8 +304,9 @@ void CGbxProjView::DoTileNew()
             CSize(dlg.m_nWidth, dlg.m_nHeight),
             CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight),
             RGB(255, 255, 255));
-        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidNew)), NULL);
+        CGmBoxHint hint;
+        hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
+        pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
         pDoc->CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
         pDoc->SetModifiedFlag();
@@ -385,8 +386,9 @@ void CGbxProjView::DoTileClone()
         pTMgr->GetTile(tidNew, &tileHalf, halfScale);
         tileHalf.Update(&bmap);
 
-        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILECREATED), static_cast<TileID::UNDERLYING_TYPE>(tidNew)), NULL);
+        CGmBoxHint hint;
+        hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
+        pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
 
         pDoc->CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
@@ -418,8 +420,9 @@ void CGbxProjView::DoTileDelete()
     for (size_t i = 0; i < tidtbl.size(); i++)
     {
         pTMgr->DeleteTile(tidtbl[i]);
-        static_assert(sizeof(TileID::UNDERLYING_TYPE) <= sizeof(WORD), "makelparam can't hold full arg");
-        pDoc->UpdateAllViews(NULL, MAKELPARAM(uint16_t(HINT_TILEDELETED), static_cast<TileID::UNDERLYING_TYPE>(tidtbl[i])), NULL);
+        CGmBoxHint hint;
+        hint.GetArgs<HINT_TILEDELETED>().m_tid = tidtbl[i];
+        pDoc->UpdateAllViews(NULL, HINT_TILEDELETED, &hint);
     }
     pDoc->NotifyTileDatabaseChange();
     pDoc->SetModifiedFlag();
