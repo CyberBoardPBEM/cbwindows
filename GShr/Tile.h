@@ -35,12 +35,23 @@ class   CTile;
 
 ////////////////////////////////////////////////////////////////////
 
-const size_t maxTiles = 32000;
 typedef XxxxID16<'T'> TileID16;
 typedef XxxxID32<'T'> TileID32;
 typedef XxxxID<'T'> TileID;
 
-const       TileID nullTid = TileID(0xFFFF);
+template<>
+struct Invalid<TileID16>
+{
+    static constexpr TileID16 value = TileID16(0xFFFF);
+};
+
+template<>
+struct Invalid<TileID32>
+{
+    static constexpr TileID32 value = TileID32(0xFFFFFFFF);
+};
+
+constexpr TileID nullTid = Invalid_v<TileID>;
 
 const       UINT maxSheetHeight = 8192;     // Max y pixels allowed in a tile sheet
 
@@ -265,7 +276,7 @@ public:
 // Implementation
 protected:
     XxxxIDTable<TileID, TileDef,
-                maxTiles, tileTblBaseSize, tileTblIncrSize,
+                tileTblBaseSize, tileTblIncrSize,
                 false> m_pTileTbl;
     COLORREF    m_crTrans;          // Transparency color for all tiles
     WORD        m_wReserved1;       // For future need (set to 0)

@@ -637,7 +637,13 @@ public:
     explicit constexpr XxxxIDExt(T i) : XxxxIDExt(value_preserving_cast<uint32_t>(i)) {}
 
     template<typename OTHER_UL>
-    explicit constexpr XxxxIDExt(XxxxIDExt<PREFIX, OTHER_UL> other) : XxxxIDExt(value_preserving_cast<UNDERLYING_TYPE>(static_cast<OTHER_UL>(other))) {}
+    explicit constexpr XxxxIDExt(XxxxIDExt<PREFIX, OTHER_UL> other) :
+        XxxxIDExt(other != Invalid_v<XxxxIDExt<PREFIX, OTHER_UL>> ?
+                        value_preserving_cast<UNDERLYING_TYPE>(static_cast<OTHER_UL>(other))
+                    :
+                        static_cast<UNDERLYING_TYPE>(Invalid_v<XxxxIDExt>))
+    {
+    }
 
     XxxxIDExt(const XxxxIDExt&) = default;
     XxxxIDExt& operator=(const XxxxIDExt&) = default;
@@ -735,7 +741,7 @@ constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, UNDERLYING_TYPE>,
 /* Factor some repetitive code for tables indexed by ID values
     into a new XxxxIDTable<>. */
 template<typename KEY, typename ELEMENT,
-        size_t maxSize, size_t baseSize, size_t incrSize,
+        size_t baseSize, size_t incrSize,
         bool saveInGPlay>
 class XxxxIDTable
 {
@@ -743,7 +749,10 @@ class XxxxIDTable
     /* data is stored in memory that may be realloc()'ed, so data must be memcpy()'able
         (if ELEMENT is not trivially copyable, use std::vector) */
     static_assert(std::is_trivially_copyable_v<ELEMENT>, "ELEMENT must be trivially copyable");
+
 public:
+    constexpr static size_t maxSize = std::min(value_preserving_cast<size_t>(std::numeric_limits<ptrdiff_t>::max()/sizeof(ELEMENT)), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()));
+
     XxxxIDTable() noexcept
     {
         m_pTbl = NULL;
@@ -895,22 +904,22 @@ private:
 };
 
 template<typename KEY, typename ELEMENT,
-        size_t maxSize, size_t baseSize, size_t incrSize,
+        size_t baseSize, size_t incrSize,
         bool saveInGPlay>
-CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, maxSize, baseSize, incrSize, saveInGPlay>& v)
+CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>& v)
 {
     if (!ar.IsStoring())
     {
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
-    const_cast<XxxxIDTable<KEY, ELEMENT, maxSize, baseSize, incrSize, saveInGPlay>&>(v).Serialize(ar);
+    const_cast<XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>&>(v).Serialize(ar);
     return ar;
 }
 
 template<typename KEY, typename ELEMENT,
-        size_t maxSize, size_t baseSize, size_t incrSize,
+        size_t baseSize, size_t incrSize,
         bool saveInGPlay>
-CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, maxSize, baseSize, incrSize, saveInGPlay>& v)
+CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>& v)
 {
     if (ar.IsStoring())
     {
