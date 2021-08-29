@@ -40,8 +40,20 @@
 typedef XxxxID16<'B'> BoardID16;
 typedef XxxxID32<'B'> BoardID32;
 typedef XxxxID<'B'> BoardID;
-const       BoardID nullBid = BoardID(0xFFFF);
-const size_t maxBoards = 32000;
+
+template<>
+struct Invalid<BoardID16>
+{
+    static constexpr BoardID16 value = BoardID16(0xFFFF);
+};
+
+template<>
+struct Invalid<BoardID32>
+{
+    static constexpr BoardID32 value = BoardID32(0xFFFFFFFF);
+};
+
+constexpr BoardID nullBid = Invalid_v<BoardID>;
 // The starting serial number for geomorpically created boards.
 const size_t GEO_BOARD_SERNUM_BASE = 1000;
 

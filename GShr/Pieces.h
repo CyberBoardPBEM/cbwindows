@@ -31,12 +31,23 @@
 
 //////////////////////////////////////////////////////////////////////
 
-const size_t maxPieces = 32000;
 typedef XxxxID16<'P'> PieceID16;
 typedef XxxxID32<'P'> PieceID32;
 typedef XxxxID<'P'> PieceID;
 
-const       PieceID nullPid = PieceID(0xFFFF);
+template<>
+struct Invalid<PieceID16>
+{
+    static constexpr PieceID16 value = PieceID16(0xFFFF);
+};
+
+template<>
+struct Invalid<PieceID32>
+{
+    static constexpr PieceID32 value = PieceID32(0xFFFFFFFF);
+};
+
+constexpr PieceID nullPid = Invalid_v<PieceID>;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -151,7 +162,7 @@ public:
 // Implementation
 protected:
     XxxxIDTable<PieceID, PieceDef,
-                maxPieces, pieceTblBaseSize, pieceTblIncrSize,
+                pieceTblBaseSize, pieceTblIncrSize,
                 true> m_pPieceTbl;
     std::vector<CPieceSet> m_PSetTbl;
     WORD        m_wReserved1;       // For future need (set to 0)

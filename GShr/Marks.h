@@ -31,12 +31,23 @@
 
 //////////////////////////////////////////////////////////////////////
 
-const size_t maxMarks = 32000;
 typedef XxxxID16<'M'> MarkID16;
 typedef XxxxID32<'M'> MarkID32;
 typedef XxxxID<'M'> MarkID;
 
-const       MarkID nullMid = MarkID(0xFFFF);
+template<>
+struct Invalid<MarkID16>
+{
+    static constexpr MarkID16 value = MarkID16(0xFFFF);
+};
+
+template<>
+struct Invalid<MarkID32>
+{
+    static constexpr MarkID32 value = MarkID32(0xFFFFFFFF);
+};
+
+constexpr MarkID nullMid = Invalid_v<MarkID>;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -164,7 +175,7 @@ public:
 // Implementation
 protected:
     XxxxIDTable<MarkID, MarkDef,
-                maxMarks, markTblBaseSize, markTblIncrSize,
+                markTblBaseSize, markTblIncrSize,
                 true> m_pMarkTbl;
     std::vector<CMarkSet> m_MSetTbl;
     WORD        m_wReserved1;   // For future need (set to 0)

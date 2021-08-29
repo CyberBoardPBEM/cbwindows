@@ -160,7 +160,7 @@ public:
 // Implementation
 protected:
     XxxxIDTable<PieceID, Piece,
-                maxPieces, pieceTblBaseSize, pieceTblIncrSize,
+                pieceTblBaseSize, pieceTblIncrSize,
                 true> m_pPieceTbl;
 
     WORD        m_wReserved1;       // For future need (set to 0)

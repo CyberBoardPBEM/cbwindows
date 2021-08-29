@@ -159,8 +159,8 @@ void CPieceTable::CreatePlayingPieceTable()
     ASSERT(m_pPMgr != NULL);
     Clear();
     size_t nPieces = m_pPMgr->GetPieceTableSize();
-    ASSERT(nPieces < maxPieces);
-    if (nPieces == 0)
+    ASSERT(nPieces < decltype(m_pPieceTbl)::maxSize);
+    if (nPieces == size_t(0))
         return;
     m_pPieceTbl.ResizeTable(nPieces, &Piece::SetUnused);
 }

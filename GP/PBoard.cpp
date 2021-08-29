@@ -521,7 +521,8 @@ CPBoardManager::CPBoardManager()
 
 BoardID CPBoardManager::IssueGeoSerialNumber()
 {
-    if (static_cast<BoardID::UNDERLYING_TYPE>(m_nNextGeoSerialNum) > maxBoards)
+    size_t maxBoards = std::min(max_size(), value_preserving_cast<size_t>(std::numeric_limits<BoardID::UNDERLYING_TYPE>::max()));
+    if (static_cast<BoardID::UNDERLYING_TYPE>(m_nNextGeoSerialNum) >= maxBoards)
     {
         AfxThrowMemoryException();
     }
