@@ -802,7 +802,7 @@ public:
     size_t GetSize() const { return m_nTblSize; }
     bool Valid(KEY tid) const { return static_cast<KEY::UNDERLYING_TYPE>(tid) < m_nTblSize; }
 
-    const ELEMENT& operator[](KEY tid) const { return m_pTbl[static_cast<KEY::UNDERLYING_TYPE>(tid)]; }
+    const ELEMENT& operator[](KEY tid) const { return m_pTbl[value_preserving_cast<ptrdiff_t>(static_cast<KEY::UNDERLYING_TYPE>(tid))]; }
     ELEMENT& operator[](KEY tid) { return const_cast<ELEMENT&>(std::as_const(*this)[tid]); }
 
     void Clear()
