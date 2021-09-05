@@ -209,21 +209,15 @@ CArchive& operator<<(CArchive& ar, const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(oid)>(ar);
+    ASSERT(fileIDSize == 2 || fileIDSize == 4);
     if (fileIDSize == sizeof(oid))
     {
         return ar << reinterpret_cast<const UNDERLYING_TYPE&>(oid);
     }
     else
     {
-        switch (fileIDSize)
-        {
-            case 2:
-                return ar << value_preserving_cast<XxxxID16<PREFIX>::UNDERLYING_TYPE>(static_cast<UNDERLYING_TYPE>(oid));
-            case 4:
-                return ar << value_preserving_cast<XxxxID32<PREFIX>::UNDERLYING_TYPE>(static_cast<UNDERLYING_TYPE>(oid));
-            default:
-                CbThrowBadCastException();
-        }
+        SerializeBackdoor sb;
+        return ar << SerializeBackdoor::Convert(oid);
     }
 }
 
@@ -235,29 +229,18 @@ CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
         AfxThrowArchiveException(CArchiveException::writeOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(oid)>(ar);
+    ASSERT(fileIDSize == 2 || fileIDSize == 4);
     if (fileIDSize == sizeof(oid))
     {
         return ar >> reinterpret_cast<UNDERLYING_TYPE&>(oid);
     }
     else
     {
-        switch (fileIDSize)
-        {
-            case 2: {
-                XxxxID16<PREFIX> temp;
-                ar >> reinterpret_cast<decltype(temp)::UNDERLYING_TYPE&>(temp);
-                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
-                return ar;
-            }
-            case 4: {
-                XxxxID32<PREFIX> temp;
-                ar >> reinterpret_cast<decltype(temp)::UNDERLYING_TYPE&>(temp);
-                oid = static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
-                return ar;
-            }
-            default:
-                CbThrowBadCastException();
-        }
+        SerializeBackdoor sb;
+        XxxxIDExt<PREFIX, std::conditional_t<sizeof(oid) == 2, uint32_t, uint16_t>> temp;
+        ar >> temp;
+        oid = SerializeBackdoor::Convert(temp);
+        return ar;
     }
 }
 
