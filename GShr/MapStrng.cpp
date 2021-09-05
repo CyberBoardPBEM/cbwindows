@@ -24,6 +24,7 @@
 
 #include    <stdafx.h>
 #include    "MapStrng.h"
+#include    "Versions.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -61,6 +62,85 @@ namespace {
     } gameElementCheck;
 }
 
+void GameElement32::Serialize(CArchive& ar) const
+{
+    static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+    static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+    static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    switch (fileIDSize)
+    {
+        case 2:
+            ar << u.buf;
+            break;
+        case 4:
+        {
+            ASSERT(!"will probably never be used");
+            SerializeBackdoor sb;
+            ar << SerializeBackdoorGameElement::Convert(*this);
+            break;
+        }
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+void GameElement32::Serialize(CArchive& ar)
+{
+    static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+    static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+    static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    switch (fileIDSize)
+    {
+        case 2:
+            ar >> u.buf;
+            break;
+        case 4:
+        {
+            ASSERT(!"will probably never be used");
+            SerializeBackdoor sb;
+            GameElement64 temp;
+            ar >> temp;
+            *this = SerializeBackdoorGameElement::Convert(temp);
+            break;
+        }
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+GameElement32::operator GameElement64() const
+{
+    if (IsAPiece())
+    {
+        return GameElement64(SerializeBackdoor::Convert(static_cast<PieceID16>(*this)), GetSide());
+    }
+    else if (IsAMarker())
+    {
+        return GameElement64(SerializeBackdoor::Convert(static_cast<MarkID16>(*this)));
+    }
+#if defined(GPLAY)
+    else if (IsAnObject())
+    {
+        return GameElement64(SerializeBackdoorObjectID::Convert(static_cast<ObjectID32>(*this)));
+    }
+#endif
+    else
+    {
+        // Serialize shouldn't produce uninitialized objects
+        CbThrowBadCastException();
+    }
+}
+
 #if defined(GPLAY)
 #if !defined(NDEBUG)
 ObjectID32 GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
@@ -69,4 +149,101 @@ ObjectID32 GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
 }
 #endif
 #endif
+
+void GameElement64::Serialize(CArchive& ar) const
+{
+    static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+    static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+    static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    switch (fileIDSize)
+    {
+        case 2:
+        {
+            SerializeBackdoor sb;
+            ar << SerializeBackdoorGameElement::Convert(*this);
+            break;
+        }
+        case 4:
+            ar << u.buf;
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+void GameElement64::Serialize(CArchive& ar)
+{
+    static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
+    static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
+    static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
+    if (ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+    size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    switch (fileIDSize)
+    {
+        case 2:
+        {
+            SerializeBackdoor sb;
+            GameElement32 temp;
+            ar >> temp;
+            *this = SerializeBackdoorGameElement::Convert(temp);
+            break;
+        }
+        case 4:
+            ar >> u.buf;
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+}
+
+GameElement64::operator GameElement32() const
+{
+    if (IsAPiece())
+    {
+        return GameElement32(SerializeBackdoor::Convert(static_cast<PieceID32>(*this)), GetSide());
+    }
+    else if (IsAMarker())
+    {
+        return GameElement32(SerializeBackdoor::Convert(static_cast<MarkID32>(*this)));
+    }
+#if defined(GPLAY)
+    else if (IsAnObject())
+    {
+        return GameElement32(SerializeBackdoorObjectID::Convert(static_cast<ObjectID64>(*this)));
+    }
+#endif
+    else
+    {
+        // Serialize shouldn't produce uninitialized objects
+        CbThrowBadCastException();
+    }
+}
+
+GameElement64 SerializeBackdoorGameElement::Convert(const GameElement32& ge)
+{
+    if (!Depth())
+    {
+        ASSERT(!"only for serialize use");
+        AfxThrowNotSupportedException();
+    }
+    return static_cast<GameElement64>(ge);
+}
+
+GameElement32 SerializeBackdoorGameElement::Convert(const GameElement64& ge)
+{
+    if (!Depth())
+    {
+        ASSERT(!"only for serialize use");
+        AfxThrowNotSupportedException();
+    }
+    return static_cast<GameElement32>(ge);
+}
 

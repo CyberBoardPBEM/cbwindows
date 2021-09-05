@@ -165,29 +165,8 @@ public:
     }
 #endif
 
-    void Serialize(CArchive& ar) const
-    {
-        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
-        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
-        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
-        if (!ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-        ar << u.buf;
-    }
-
-    void Serialize(CArchive& ar)
-    {
-        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
-        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
-        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
-        if (ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-        ar >> u.buf;
-    }
+    void Serialize(CArchive& ar) const;
+    void Serialize(CArchive& ar);
 
     UINT Hash() const
     {
@@ -287,6 +266,10 @@ private:
         static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(GameElementLegacyCheck), "align mismatch");
     }
 #endif
+
+    // Serialize conversion helpers
+    explicit operator GameElement64() const;
+    friend class SerializeBackdoorGameElement;
 
     friend Invalid<GameElement32>;
 };
@@ -537,29 +520,8 @@ public:
     }
 #endif
 
-    void Serialize(CArchive& ar) const
-    {
-        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
-        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
-        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
-        if (!ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-        ar << u.buf;
-    }
-
-    void Serialize(CArchive& ar)
-    {
-        static_assert(sizeof(std::remove_reference_t<decltype(*this)>) == sizeof(u.buf), "size mismatch");
-        static_assert(alignof(std::remove_reference_t<decltype(*this)>) == alignof(decltype(u.buf)), "align mismatch");
-        static_assert(std::is_trivially_copyable_v<std::remove_reference_t<decltype(*this)>>, "needs more complex serialize");
-        if (ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-        ar >> u.buf;
-    }
+    void Serialize(CArchive& ar) const;
+    void Serialize(CArchive& ar);
 
     UINT Hash() const
     {
@@ -660,6 +622,10 @@ private:
     // helper for Invalid_v<GameElement>
     constexpr GameElement64(Invalid_t) : u(Invalid_t()) {}
 
+    // Serialize conversion helpers
+    explicit operator GameElement32() const;
+    friend class SerializeBackdoorGameElement;
+
     friend Invalid<GameElement64>;
 };
 
@@ -738,6 +704,14 @@ inline ObjectID64 GetObjectIDFromElement(GameElement64 elem)
     return retval;
 }
 #endif
+
+class SerializeBackdoorGameElement : public SerializeBackdoor
+{
+public:
+    using SerializeBackdoor::Convert;
+    static GameElement64 Convert(const GameElement32& ge);
+    static GameElement32 Convert(const GameElement64& ge);
+};
 
 
 //////////////////////////////////////////////////////////////////////

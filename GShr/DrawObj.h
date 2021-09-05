@@ -323,9 +323,11 @@ private:
     } u;
 
     // Serialize conversion helpers
+    /* use ObjectID32::operator ObjectID64() const instead of
+        ObjectID64::ObjectID64(const ObjectID32&) to preserve
+        privacy of ObjectID32's content */
     explicit operator ObjectID64() const;
-    // KLUDGE:  can't friend members of an incomplete class
-    friend ObjectID64;
+    friend class SerializeBackdoorObjectID;
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID32& oid)
@@ -470,7 +472,7 @@ private:
 
     // Serialize conversion helpers
     explicit operator ObjectID32() const;
-    friend void ObjectID32::Serialize(CArchive& ar);
+    friend class SerializeBackdoorObjectID;
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID64& oid)
@@ -484,6 +486,14 @@ inline CArchive& operator>>(CArchive& ar, ObjectID64& oid)
     oid.Serialize(ar);
     return ar;
 }
+
+class SerializeBackdoorObjectID : public SerializeBackdoor
+{
+public:
+    using SerializeBackdoor::Convert;
+    static ObjectID64 Convert(const ObjectID32& oid);
+    static ObjectID32 Convert(const ObjectID64& oid);
+};
 #endif
 
 ///////////////////////////////////////////////////////////////////////

@@ -346,9 +346,10 @@ void ObjectID32::Serialize(CArchive& ar)
             break;
         case 4: {
             ASSERT(!"probably should never be used");
+            SerializeBackdoor sb;
             ObjectID64 temp;
             ar >> temp;
-            *this = static_cast<ObjectID32>(temp);
+            *this = SerializeBackdoorObjectID::Convert(temp);
             break;
         }
         default:
@@ -373,13 +374,14 @@ ObjectID32::operator ObjectID64() const
     switch (u.tag.subtype)
     {
         case stPieceObj:
-            return ObjectID64(static_cast<PieceID32>(u.pieceObj.pid));
+            return ObjectID64(SerializeBackdoor::Convert(u.pieceObj.pid));
         case stInvalid:
             return ObjectID64();
         case stMarkObj:
             return ObjectID64(u.markObj.id, u.markObj.serial, CDrawObj::drawMarkObj);
         case stLineObj:
             ASSERT(!"future feature");
+            // fall through
         default:
             CbThrowBadCastException();
     }
@@ -427,9 +429,10 @@ void ObjectID64::Serialize(CArchive& ar)
     switch (GetXxxxIDSerializeSize<PieceID>(ar))
     {
         case 2: {
+            SerializeBackdoor sb;
             ObjectID32 temp;
             ar >> temp;
-            *this = static_cast<ObjectID64>(temp);
+            *this = SerializeBackdoorObjectID::Convert(temp);
             break;
         }
         case 4:
@@ -457,7 +460,7 @@ ObjectID64::operator ObjectID32() const
     switch (u.tag.subtype)
     {
         case stPieceObj:
-            return ObjectID32(static_cast<PieceID16>(u.pieceObj.pid));
+            return ObjectID32(SerializeBackdoor::Convert(u.pieceObj.pid));
         case stInvalid:
             return ObjectID32();
         case stMarkObj:
@@ -468,6 +471,26 @@ ObjectID64::operator ObjectID32() const
         default:
             CbThrowBadCastException();
     }
+}
+
+ObjectID64 SerializeBackdoorObjectID::Convert(const ObjectID32& oid)
+{
+    if (!Depth())
+    {
+        ASSERT(!"only for serialize use");
+        AfxThrowNotSupportedException();
+    }
+    return static_cast<ObjectID64>(oid);
+}
+
+ObjectID32 SerializeBackdoorObjectID::Convert(const ObjectID64& oid)
+{
+    if (!Depth())
+    {
+        ASSERT(!"only for serialize use");
+        AfxThrowNotSupportedException();
+    }
+    return static_cast<ObjectID32>(oid);
 }
 #endif
 

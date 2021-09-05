@@ -636,15 +636,6 @@ public:
     template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
     explicit constexpr XxxxIDExt(T i) : XxxxIDExt(value_preserving_cast<uint32_t>(i)) {}
 
-    template<typename OTHER_UL>
-    explicit constexpr XxxxIDExt(XxxxIDExt<PREFIX, OTHER_UL> other) :
-        XxxxIDExt(other != Invalid_v<XxxxIDExt<PREFIX, OTHER_UL>> ?
-                        value_preserving_cast<UNDERLYING_TYPE>(static_cast<OTHER_UL>(other))
-                    :
-                        static_cast<UNDERLYING_TYPE>(Invalid_v<XxxxIDExt>))
-    {
-    }
-
     XxxxIDExt(const XxxxIDExt&) = default;
     XxxxIDExt& operator=(const XxxxIDExt&) = default;
     ~XxxxIDExt() = default;
@@ -656,6 +647,18 @@ public:
 
 private:
     UNDERLYING_TYPE id;
+
+    // serialize conversion helpers
+    template<typename OTHER_UL>
+    explicit constexpr XxxxIDExt(XxxxIDExt<PREFIX, OTHER_UL> other) :
+        XxxxIDExt(other != Invalid_v<XxxxIDExt<PREFIX, OTHER_UL>> ?
+                        value_preserving_cast<UNDERLYING_TYPE>(static_cast<OTHER_UL>(other))
+                    :
+                        static_cast<UNDERLYING_TYPE>(Invalid_v<XxxxIDExt>))
+    {
+    }
+
+    friend class SerializeBackdoor;
 };
 
 // goal is 32bit ids, but currently ids are 16 bit
@@ -945,6 +948,42 @@ inline CArchive& operator>>(CArchive& ar, std::string& s)
     s = cs;
     return ar;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+/* Some operations should only be used to support handling file
+    format differences.  Make them available here. */
+class SerializeBackdoor
+{
+public:
+    // use RAII to turn on/off these back doors
+    SerializeBackdoor()
+    {
+        ++Depth();
+    }
+    ~SerializeBackdoor()
+    {
+        --Depth();
+    }
+
+    template<char PREFIX, typename UNDERLYING_TYPE_SRC, typename UNDERLYING_TYPE_DEST = std::conditional_t<std::is_same_v<UNDERLYING_TYPE_SRC, uint16_t>, uint32_t, uint16_t>>
+    static XxxxIDExt<PREFIX, UNDERLYING_TYPE_DEST> Convert(const XxxxIDExt<PREFIX, UNDERLYING_TYPE_SRC>& xid)
+    {
+        if (!Depth())
+        {
+            ASSERT(!"only for serialize use");
+            AfxThrowNotSupportedException();
+        }
+        return static_cast<XxxxIDExt<PREFIX, UNDERLYING_TYPE_DEST>>(xid);
+    }
+
+protected:
+    static int& Depth()
+    {
+        static int retval = 0;
+        return retval;
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////
 
