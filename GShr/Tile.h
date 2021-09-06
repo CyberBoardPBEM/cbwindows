@@ -73,14 +73,13 @@ const size_t tileTblIncrSize = 8;
 
 struct TileLoc
 {
-    /* TODO:  m_nSheet should be size_t, but that breaks file
-        format compatibility, so change this on next new format */
-    WORD    m_nSheet;               // (2.91 BYTE->WORD)
+    size_t  m_nSheet;               // (2.91 BYTE->WORD), (4.0 WORD->size_t)
     int     m_nOffset;
     // ------ //
-    enum { noSheet = 0xFFFF };
+    constexpr static size_t noSheet = Invalid_v<size_t>;
+    constexpr static uint16_t noSheet16 = uint16_t(0xFFFF);
 
-    BOOL IsEmpty() const { return m_nSheet == noSheet; }
+    bool IsEmpty() const { return m_nSheet == noSheet; }
     void SetEmpty() { m_nSheet = noSheet; m_nOffset = 0;  } // (clear offset too)
 
     void Serialize(CArchive& archive);

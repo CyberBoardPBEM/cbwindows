@@ -84,13 +84,13 @@ void CTileManager::GetTile(TileID tid, CTile* pTile,
     if (eScale == fullScale)
     {
         TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
-        pTile->m_pTS  = &GetTileSheet(value_preserving_cast<size_t>(pLoc->m_nSheet));
+        pTile->m_pTS  = &GetTileSheet(pLoc->m_nSheet);
         pTile->m_yLoc = pLoc->m_nOffset;
     }
     else if (eScale == halfScale)
     {
         TileLoc *pLoc = &m_pTileTbl[tid].m_tileHalf;
-        pTile->m_pTS  = &GetTileSheet(value_preserving_cast<size_t>(pLoc->m_nSheet));
+        pTile->m_pTS  = &GetTileSheet(pLoc->m_nSheet);
         pTile->m_yLoc = pLoc->m_nOffset;
     }
     else
@@ -98,7 +98,7 @@ void CTileManager::GetTile(TileID tid, CTile* pTile,
         pTile->m_pTS = NULL;
         pTile->m_crSmall = pDef->m_tileSmall;
         TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
-        pTile->m_size = GetTileSheet(value_preserving_cast<size_t>(pLoc->m_nSheet)).GetSize();
+        pTile->m_size = GetTileSheet(pLoc->m_nSheet).GetSize();
     }
     pTile->m_crTrans = m_crTrans;
 }
@@ -302,7 +302,7 @@ void CTileManager::CreateTileOnSheet(CSize size, TileLoc& pLoc)
 {
     size_t nSht = GetSheetForTile(size);
     CTileSheet& pSht = m_TShtTbl.at(nSht);
-    pLoc.m_nSheet = value_preserving_cast<uint16_t>(nSht);
+    pLoc.m_nSheet = nSht;
     pLoc.m_nOffset = pSht.GetSheetHeight();
     ASSERT(pLoc.m_nOffset < (int)65535U);
     pSht.CreateTile();         // Always creates tile at end filled white
@@ -314,16 +314,16 @@ void CTileManager::DeleteTileFromSheet(TileLoc& pLoc)
     pSht.DeleteTile(pLoc.m_nOffset);
     for (size_t i = 0; i < m_pTileTbl.GetSize(); i++)
     {
-        AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileFull, value_preserving_cast<size_t>(pLoc.m_nSheet),
+        AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileFull, pLoc.m_nSheet,
             pLoc.m_nOffset, pSht.GetHeight());
-        AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileHalf, value_preserving_cast<size_t>(pLoc.m_nSheet),
+        AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileHalf, pLoc.m_nSheet,
             pLoc.m_nOffset, pSht.GetHeight());
     }
 }
 
 void CTileManager::AdjustTileLoc(TileLoc& pLoc, size_t nSht, int yLoc, int cy)
 {
-    if (value_preserving_cast<size_t>(pLoc.m_nSheet) == nSht && pLoc.m_nOffset > yLoc)
+    if (pLoc.m_nSheet == nSht && pLoc.m_nOffset > yLoc)
         pLoc.m_nOffset -= cy;
 }
 
@@ -522,7 +522,7 @@ BOOL CTileManager::PruneTilesOnSheet255()
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
         TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
-        if (tp.m_tileFull.m_nSheet == uint16_t(0xFF) || tp.m_tileHalf.m_nSheet == uint16_t(0xFF))
+        if (tp.m_tileFull.m_nSheet == size_t(0xFF) || tp.m_tileHalf.m_nSheet == size_t(0xFF))
         {
             size_t nSet = FindTileSetFromTileID(static_cast<TileID>(tid));
             if (nSet != Invalid_v<size_t>)
@@ -691,9 +691,9 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
         TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
-        wsprintf(szBfr, "| %5zu | %04zX %5u | %04zX %5u | 0x%08X  |", tid,
-            value_preserving_cast<size_t>(tp.m_tileFull.m_nSheet), tp.m_tileFull.m_nOffset,
-            value_preserving_cast<size_t>(tp.m_tileHalf.m_nSheet), tp.m_tileHalf.m_nOffset,
+        wsprintf(szBfr, "| %10zu | %08zX %5u | %08zX %5u | 0x%08X  |", tid,
+            tp.m_tileFull.m_nSheet, tp.m_tileFull.m_nOffset,
+            tp.m_tileHalf.m_nSheet, tp.m_tileHalf.m_nOffset,
             tp.m_tileSmall);
         WriteFileString(hFile, szBfr);
 
@@ -760,9 +760,15 @@ void TileLoc::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << m_nSheet;
-        ASSERT(m_nOffset < (int)65535U);
-        ar << (WORD)m_nOffset;
+        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) <= NumVersion(3, 90))
+        {
+            ar << (m_nSheet == noSheet ? noSheet16 : value_preserving_cast<uint16_t>(m_nSheet));
+        }
+        else
+        {
+            ar << m_nSheet;
+        }
+        ar << value_preserving_cast<uint16_t>(m_nOffset);
     }
     else
     {
@@ -770,12 +776,18 @@ void TileLoc::Serialize(CArchive& ar)
         {
             BYTE chTmp;
             ar >> chTmp;
-            m_nSheet = (chTmp == 0xFF) ? TileLoc::noSheet : value_preserving_cast<uint16_t>(chTmp);
+            m_nSheet = (chTmp == 0xFF) ? noSheet : value_preserving_cast<size_t>(chTmp);
+        }
+        else if (CGamDoc::GetLoadingVersion() <= NumVersion(3, 90))   // V3.90
+        {
+            uint16_t wTmp;
+            ar >> wTmp;
+            m_nSheet = (wTmp == noSheet16) ? noSheet : value_preserving_cast<size_t>(wTmp);
         }
         else
             ar >> m_nSheet;
-        WORD wTmp;
-        ar >> wTmp; m_nOffset = (int)wTmp;
+        uint16_t wTmp;
+        ar >> wTmp; m_nOffset = value_preserving_cast<int>(wTmp);
     }
 }
 
