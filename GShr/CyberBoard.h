@@ -669,7 +669,7 @@ template<char PREFIX>
 using XxxxID32 = XxxxIDExt<PREFIX, uint32_t>;
 
 template<char PREFIX>
-using XxxxID = XxxxID16<PREFIX>;
+using XxxxID = XxxxID32<PREFIX>;
 
 // KLUDGE:  use OwnerPtr since CWordArray doesn't have move operators
 template<char PREFIX, typename UNDERLYING_TYPE>
