@@ -42,6 +42,8 @@
 #pragma warning(error:  4244)
 // warning C4245 : 'initializing' : conversion from 'xxx' to 'yyy', signed / unsigned mismatch
 #pragma warning(error:  4245)
+// warning C4302 : 'type cast' : truncation from 'xxx' to 'yyy'
+#pragma warning(error:  4302)
 // warning C4310 : cast truncates constant value
 #pragma warning(error:  4310)
 // warning C4311 : 'type cast' : pointer truncation from 'xxx' to 'yyy'
