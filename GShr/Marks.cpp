@@ -115,7 +115,7 @@ BOOL CMarkManager::PurgeMissingTileIDs(CGameElementStringMap* pMapString)
 MarkID CMarkManager::CreateMark(size_t nMSet, TileID tid, WORD wFlags /* = 0 */)
 {
     ASSERT(nMSet < m_MSetTbl.size());
-    MarkID mid = m_pMarkTbl.CreateIDEntry(nullptr);
+    MarkID mid = m_pMarkTbl.CreateIDEntry(&MarkDef::SetEmpty);
 
     MarkDef& pDef = m_pMarkTbl[mid];
     pDef.m_tid = tid;

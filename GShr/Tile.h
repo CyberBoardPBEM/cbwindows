@@ -92,7 +92,7 @@ struct TileDef
     COLORREF    m_tileSmall;        // Color for reduced scale maps
     // ------ //
     BOOL IsEmpty() const { return m_tileFull.IsEmpty(); }
-    void SetEmpty() { m_tileFull.SetEmpty(); }
+    void SetEmpty() { m_tileFull.SetEmpty(); m_tileHalf.SetEmpty(); }
 
     void Serialize(CArchive& archive);
 };

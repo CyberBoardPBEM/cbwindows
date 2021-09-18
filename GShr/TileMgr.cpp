@@ -109,7 +109,7 @@ TileID CTileManager::CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
     COLORREF crSmall, size_t nPos /* = Invalid_v<size_t> */)
 {
     ASSERT(nTSet < m_TSetTbl.size());
-    TileID tid = m_pTileTbl.CreateIDEntry(nullptr);
+    TileID tid = m_pTileTbl.CreateIDEntry(&TileDef::SetEmpty);
 
     TileDef* pDef = &m_pTileTbl[tid];
     pDef->m_tileSmall = crSmall;

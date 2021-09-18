@@ -106,7 +106,7 @@ BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = 
 PieceID CPieceManager::CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack)
 {
     ASSERT(nPSet < m_PSetTbl.size());
-    PieceID pid = m_pPieceTbl.CreateIDEntry(nullptr);
+    PieceID pid = m_pPieceTbl.CreateIDEntry(&PieceDef::SetEmpty);
 
     PieceDef* pDef = &m_pPieceTbl[pid];
     pDef->m_tidFront = tidFront;

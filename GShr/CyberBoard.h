@@ -819,6 +819,7 @@ public:
         without IsEmpty() wants to use this */
     KEY CreateIDEntry(void (ELEMENT::*initializer)())
     {
+        ASSERT(initializer);
         // Allocate from empty entry if possible
         for (size_t i = 0; i < m_nTblSize; i++)
         {
