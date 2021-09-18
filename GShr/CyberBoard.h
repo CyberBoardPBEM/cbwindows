@@ -36,6 +36,7 @@
 
 #include <WinExt.h>
 
+#if defined(_MSC_VER)
 // warning C4239 : nonstandard extension used : 'argument' : conversion from 'xxx' to 'xxx &'
 #pragma warning(error:  4239)
 // warning C4244 : 'initializing' : conversion from 'xxx' to 'yyy', possible loss of data
@@ -65,6 +66,14 @@
 #pragma warning(1:  5205)
 // WARNING:  for some reason, this won't become an error, even at level 4!
 #pragma warning(error:  5205)
+
+// warning C4100 : 'xxx' : unreferenced formal parameter
+#pragma warning(disable:  4100)
+// warning C4189 : 'xxx' : local variable is initialized but not referenced
+#pragma warning(disable:  4189)
+// warning C4456 : declaration of 'xxx' hides previous local declaration
+#pragma warning(disable:  4456)
+#endif
 
 #if defined(max)
     #undef max
