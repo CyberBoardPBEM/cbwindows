@@ -38,8 +38,24 @@
 
 // warning C4239 : nonstandard extension used : 'argument' : conversion from 'xxx' to 'xxx &'
 #pragma warning(error:  4239)
+// warning C4244 : 'initializing' : conversion from 'xxx' to 'yyy', possible loss of data
+#pragma warning(error:  4244)
+// warning C4245 : 'initializing' : conversion from 'xxx' to 'yyy', signed / unsigned mismatch
+#pragma warning(error:  4245)
 // warning C4310 : cast truncates constant value
 #pragma warning(error:  4310)
+// warning C4311 : 'type cast' : pointer truncation from 'xxx' to 'yyy'
+#pragma warning(error:  4311)
+// warning C4312 : 'type cast' : conversion from 'xxx' to 'yyy' of greater size
+#pragma warning(error:  4312)
+// warning C4701 : potentially uninitialized local variable 'xxx' used
+#pragma warning(error:  4701)
+// warning C4703 : potentially uninitialized local pointer variable 'xxx' used
+#pragma warning(error:  4703)
+// warning C4715 : 'xxx' : not all control paths return a value
+#pragma warning(error:  4715)
+// warning C4805 : '|=' : unsafe mix of type 'bool' and type 'BOOL' in operation
+#pragma warning(error:  4805)
 // warning C4840 : non - portable use of class 'xxx' as an argument to a variadic function
 #pragma warning(error:  4840)
 // warning C5205 : delete of an abstract class 'xxx' that has a non - virtual destructor results in undefined behavior
