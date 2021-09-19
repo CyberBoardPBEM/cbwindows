@@ -562,7 +562,7 @@ void CPBoardManager::SetPBoardList(const std::vector<BoardID>& tblBrds)
 {
     ASSERT(m_pDoc != NULL);
     ASSERT(m_pBMgr != NULL);
-    ASSERT(!tblBrds.empty());
+    ASSERT(tblBrds.size() >= 0);
     // First all existing play boards are checked to see if they
     // are in the new list. If they are not, they are removed. Any
     // playing pieces that are on the board(s) will need to be
