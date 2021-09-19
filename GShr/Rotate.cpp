@@ -279,7 +279,7 @@ static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts
     CopyRectVector(pSPnts, pDPnts);
     int xHalf = size.cx / 2;
     int yHalf = size.cy / 2;
-    OffsetRectVector(pDPnts, -xHalf, -xHalf);
+    OffsetRectVector(pDPnts, -xHalf, -yHalf);
     RotateRectVector(pDPnts, angle);
 
     CPoint pntMin;
