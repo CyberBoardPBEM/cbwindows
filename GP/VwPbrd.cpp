@@ -1827,7 +1827,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     pos = m_tblCurPieces.begin();
     for (int i = 0 ; pos != m_tblCurPieces.end() ; i++)
     {
-        CDrawObj& pDObj = **pos;
+        CDrawObj& pDObj = **pos++;
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
