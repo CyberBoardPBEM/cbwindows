@@ -200,6 +200,7 @@ HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
             id = IDC_CROSS;
             break;
         default: ASSERT(FALSE);
+            id = nullptr;
     }
     return AfxGetApp()->LoadStandardCursor(id);
 }
@@ -214,6 +215,7 @@ CPoint CSelLine::GetHandleLoc(int nHandleID) const
         case hitPtA: x = m_rect.left;  y = m_rect.top;    break;
         case hitPtB: x = m_rect.right; y = m_rect.bottom; break;
         default: ASSERT(FALSE);
+            x = -1; y = -1;
     }
     return CPoint(x, y);
 }
@@ -302,6 +304,7 @@ CPoint CSelGeneric::GetHandleLoc(int nHandleID) const
         case hitBottomRight: x = m_rect.right; y = m_rect.bottom; break;
         case hitBottomLeft:  x = m_rect.left;  y = m_rect.bottom; break;
         default: ASSERT(FALSE);
+            x = -1; y = -1;
     }
     return CPoint(x, y);
 }

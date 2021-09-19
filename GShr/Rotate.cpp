@@ -142,8 +142,8 @@ OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
     OwnerPtr<CDib> pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
     // Find top and bottom point indexes
-    int nTopPnt;
-    int nBotPnt;
+    int nTopPnt = 0;
+    int nBotPnt = 0;
     for (int i = 0; i < numPnts; i++)
     {
         if (pntDst[i].y == 0)

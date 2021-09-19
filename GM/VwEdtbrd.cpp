@@ -216,7 +216,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
     CBitmap bmMem;
     CRect oRct;
     CDC* pDrawDC = pDC;
-    CBitmap* pPrvBMap;
+    CBitmap* pPrvBMap = nullptr;
 
     pDC->GetClipBox(&oRct);
     if (oRct.IsRectEmpty())
@@ -1343,6 +1343,9 @@ void CBrdEditView::OnUpdateToolPalette(CCmdUI* pCmdUI)
         case ID_TOOL_OVAL:
             bEnable = iLayer == LAYER_BASE || iLayer == LAYER_TOP;
             break;
+        default:
+            ASSERT(!"unexpected tool id");
+            bEnable = false;
     }
     if (pCmdUI->m_pSubMenu != NULL)
     {
