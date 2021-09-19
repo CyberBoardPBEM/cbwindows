@@ -764,7 +764,7 @@ void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
-    CDrawObj* pObj;
+    CDrawObj* pObj = nullptr;
     CPieceObj* pPObj;
 
     pDoc->SetGameElementString(m_elem,

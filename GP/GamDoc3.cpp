@@ -480,7 +480,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
     {
         BYTE verMajor, verMinor;
         WORD wTmp;
-        DWORD dwCurFileSlot;
+        DWORD dwCurFileSlot = DWORD(0xffffffff);
 
         ar >> verMajor;
         ar >> verMinor;
