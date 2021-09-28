@@ -170,7 +170,6 @@ echo off
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\GShr\Arclib.cpp" />
-    <ClCompile Include="..\GShr\Atom.cpp" />
     <ClCompile Include="..\GShr\Board.cpp" />
     <ClCompile Include="..\GShr\BrdCell.cpp" />
     <ClCompile Include="..\GShr\CalcLib.cpp" />

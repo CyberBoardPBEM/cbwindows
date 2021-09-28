@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    <sstream>
 #include    "Font.h"
 
 #ifdef      GPLAY
@@ -44,14 +45,6 @@ static char THIS_FILE[] = __FILE__;
 
 CFontTbl::~CFontTbl(void)
 {
-    CbFont *opFLst = (CbFont *)opAList;
-    while (opFLst != NULL)
-    {
-        CbFont *opFNxt = (CbFont *)opFLst->next;    // Pick up next since we'll delete
-        Destroy(opFLst);
-        opFLst = opFNxt;                            // Chain to next entry
-    }
-    opAList = NULL;
 }
 
 // ----------------------------------------------------- //
@@ -62,30 +55,66 @@ FontID CFontTbl::AddFont(int iSize, int taFlgs, int iFamily,
     FNameID fnID = oFName.AddFaceName(pszFName, iFamily);
 
     CbFont oFont(iSize, taFlgs, fnID);
-    FontID id;
-    if ((id = AddIfExists(&oFont)) == 0)
-        id = AddAtom(new CbFont(iSize, taFlgs, fnID)); // (use fnID)
-    else    // Delete local fnID since we didn't use it.
-        oFName.DelFaceName(fnID);
-    return id;
+    return Register(std::move(oFont));
 }
 
 // ----------------------------------------------------- //
 
-void CFontTbl::Destroy(Atom *opAtom)
+CbFont::~CbFont()
 {
-    CbFont *opFnt = (CbFont*)opAtom;
-    oFName.DelFaceName(opFnt->fnID);
-    if (opFnt->hFnt)
-        DeleteObject(opFnt->hFnt);
-    delete opFnt;
+    if (hFnt)
+        DeleteObject(hFnt);
+}
+
+std::string CbFont::ToString() const
+{
+    std::ostringstream str;
+    str << "CbFont(" <<
+        (*fnID)->ToString() << ", "
+        "size:" << std::to_string(iTypeSize) << ", "
+        "flags:";
+
+    const static struct
+    {
+        int flag;
+        const char* name;
+    } flags[] =
+    {
+        taBold, "Bold",
+        taItalic, "Italic",
+        taULine, "ULine",
+    };
+    if (taFlags)
+    {
+        int temp = taFlags;
+        for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(sizeof(flags) / sizeof(flags[0])); ++i)
+        {
+            if (temp & flags[i].flag)
+            {
+                temp &= ~flags[i].flag;
+                str << flags[i].name;
+                if (temp)
+                {
+                    str << '|';
+                }
+            }
+        }
+        ASSERT(!temp);
+    }
+    else
+    {
+        str << "<none>";
+    }
+
+    str << ')';
+    return str.str();
 }
 
 // ----------------------------------------------------- //
 
 void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF)
 {
-    CbFont *opFnt = (CbFont *)id;
+    const CbFont *opFnt = &**id;
     const char *pszFace;
 
     memset(pLF, 0, sizeof(LOGFONT));
@@ -94,7 +123,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF)
     pLF->lfItalic = opFnt->IsItalic();
     pLF->lfUnderline = opFnt->IsULine();
     pLF->lfCharSet = DEFAULT_CHARSET;
-    pLF->lfPitchAndFamily = oFName.GetFaceFamily(opFnt->fnID);
+    pLF->lfPitchAndFamily = value_preserving_cast<BYTE>(oFName.GetFaceFamily(opFnt->fnID));
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
         strcpy(pLF->lfFaceName, pszFace);
@@ -107,7 +136,7 @@ HFONT CFontTbl::GetFontHandle(FontID id)
 {
     if (id == 0)
         return NULL;
-    CbFont *opFnt = (CbFont *)id;
+    const CbFont* opFnt = &**id;
     if (opFnt->hFnt)
         return opFnt->hFnt;
 
@@ -124,7 +153,7 @@ void CFontTbl::ReleaseFontHandle(FontID id)
 {
     if (id == 0) return;
 
-    CbFont *opFnt = (CbFont *)id;
+    const CbFont* opFnt = &**id;
 
     if (opFnt->hFnt)
     {
@@ -136,16 +165,7 @@ void CFontTbl::ReleaseFontHandle(FontID id)
 
 void CFontTbl::ReleaseAllFontHandles(void)
 {
-    CbFont *opFnt = (CbFont *)opAList;
-    while (opFnt != NULL)
-    {
-        if (opFnt->hFnt)
-        {
-            DeleteObject(opFnt->hFnt);
-            opFnt->hFnt = NULL;
-        }
-        opFnt = (CbFont *)(opFnt->next);
-    }
+    clear();
 }
 
 void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
@@ -171,35 +191,9 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
     }
 }
 
-void CFontTbl::Archive(CArchive& ar, UniqueFontID& rfontID)
-{
-    if (ar.IsStoring())
-    {
-        FontID temp = rfontID.Get();
-        Archive(ar, temp);
-    }
-    else
-    {
-        FontID temp = 0;
-        Archive(ar, temp);
-        rfontID.Reset(temp);
-    }
-}
-
 // ===================================================== //
-// (protected)
-BOOL CbFont::AtomsEqual(Atom &atom)
+bool CbFont::operator==(const CbFont& rhs) const
 {
-    CbFont& oFnt = (CbFont&)atom;
-    return oFnt.fnID == fnID && oFnt.iTypeSize == iTypeSize &&
-            oFnt.taFlags == taFlags;
-}
-
-void UniqueFontID::Reset(FontID f)
-{
-    if (fid != 0)
-    {
-        CGamDoc::GetFontManager()->DeleteFont(fid);
-    }
-    fid = f;
+    return rhs.fnID == fnID && rhs.iTypeSize == iTypeSize &&
+            rhs.taFlags == taFlags;
 }

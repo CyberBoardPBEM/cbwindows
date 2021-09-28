@@ -18,9 +18,6 @@
     <ClCompile Include="..\GShr\Arclib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GShr\Atom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\GShr\Board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

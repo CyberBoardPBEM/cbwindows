@@ -1159,7 +1159,6 @@ void CTileImage::Serialize(CArchive& ar)
 
 CText::~CText()
 {
-    CGamDoc::GetFontManager()->DeleteFont(m_fontID);
 }
 
 void CText::Draw(CDC& pDC, TileScale eScale)
@@ -1190,11 +1189,6 @@ void CText::SetText(int x, int y, const char* pszText, FontID fntID,
 BOOL CText::SetFont(FontID fid)
 {
     CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-    pFontMgr->AddFont(fid);             // Incr font usage count
-
-    // Discard previous font ID
-    if (m_fontID != 0)
-        pFontMgr->DeleteFont(m_fontID);
 
     m_fontID = fid;
 
@@ -1255,9 +1249,7 @@ void CText::CopyAttributes(const CText& source)
     m_crText = source.m_crText;
     m_text = source.m_text;
 
-    if (m_fontID != 0) pFontMgr->DeleteFont(m_fontID);
     m_fontID = source.m_fontID;
-    pFontMgr->AddFont(m_fontID);            // make sure font reference count is in sync
 }
 
 void CText::Serialize(CArchive& ar)
@@ -1275,7 +1267,6 @@ void CText::Serialize(CArchive& ar)
     {
         WORD wTmp;
         DWORD dwTmp;
-        if (m_fontID != 0) pFontMgr->DeleteFont(m_fontID);
         m_fontID = 0;
         ar >> wTmp; m_nAngle = (int)wTmp;
         ar >> dwTmp; m_crText = (COLORREF)dwTmp;

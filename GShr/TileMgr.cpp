@@ -445,7 +445,9 @@ void CTileManager::Serialize(CArchive& ar)
         SetBackColor((COLORREF)dwTmp);      // So brushes are created
 
         ar >> wTmp; m_nLineWidth = (UINT)wTmp;
-        m_fontID = 0;
+        /* delay font deletion in case archive read adds a
+            reference */
+        FontID tempRef = std::move(m_fontID);
 
         CFontTbl* pFontMgr = CGamDoc::GetFontManager();
         pFontMgr->Archive(ar, m_fontID);
@@ -717,7 +719,6 @@ BOOL CTileManager::DoBitFontDialog()
     FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, TRUE);
     if (newFontID != (FontID)0)
     {
-        CGamDoc::GetFontManager()->DeleteFont(m_fontID);
         m_fontID = newFontID;
         return TRUE;
     }

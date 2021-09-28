@@ -101,8 +101,8 @@ CPlayBoard::CPlayBoard()
     m_nLineWidth = 1;
     m_crTextColor = RGB(0, 0, 0);
     m_crTextBoxColor = RGB(255, 255, 255);
-    m_fontID.Reset(CGameBox::GetFontManager()->AddFont(
-        TenthPointsToScreenPixels(100), taBold, FF_SWISS, "Arial"));
+    m_fontID = CGameBox::GetFontManager()->AddFont(
+        TenthPointsToScreenPixels(100), taBold, FF_SWISS, "Arial");
 
     m_bLockedDrawnBeneath = TRUE;
     m_bPVisible = TRUE;
@@ -463,6 +463,7 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar >> dwTmp; m_crTextBoxColor = (COLORREF)dwTmp;
 
         CFontTbl* pFontMgr = CGamDoc::GetFontManager();
+        m_fontID = 0;
         pFontMgr->Archive(ar, m_fontID);
 
         ar >> wTmp; m_bGridRectCenters = (BOOL)wTmp;
