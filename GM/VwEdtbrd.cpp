@@ -1285,15 +1285,16 @@ LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 // ------------------------------------------------------ //
 
 static void SetObjFont(CDrawObj& pObj, DWORD dwUser)
-    { pObj.SetFont((FontID)dwUser); }
+    { pObj.SetFont(*reinterpret_cast<FontID*>(dwUser)); }
 
 void CBrdEditView::OnDwgFont()
 {
     if (m_pBMgr->DoBoardFontDialog())
     {
         m_selList.UpdateObjects();
+        FontID fontID = m_pBMgr->GetFontID();
         m_selList.ForAllSelections(SetObjFont,
-            (DWORD)m_pBMgr->GetFontID());
+            reinterpret_cast<DWORD>(&fontID));
         m_selList.UpdateObjects(TRUE, FALSE);
     }
 }

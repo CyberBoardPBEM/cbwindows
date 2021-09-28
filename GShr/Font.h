@@ -29,76 +29,61 @@
 #include    "FontName.h"
 #endif
 
-typedef AtomID FontID;          // Redefine for clarity
+class CbFont;
+typedef AtomList<CbFont>::AtomID FontID;
 
 const int taBold   = 0x0001;
 const int taItalic = 0x0002;
 const int taULine  = 0x0004;
 
-class CbFont : public Atom
+class CbFont
 {
     friend class CFontTbl;
 protected:
     FNameID fnID;
     int     iTypeSize;          // Type height in 0.5 pt units
     int     taFlags;            // See ta* defs above
-    HFONT   hFnt;               // Handle of font in system
-    // ---------- //
-    virtual BOOL AtomsEqual(Atom &atom);
+    // mutable since it's a lazy evaluation of ctor
+    mutable HFONT hFnt;         // Handle of font in system
 public:
+    // ---------- //
+    bool operator==(const CbFont& rhs) const;
+
     CbFont(void) : fnID(0), iTypeSize(0), taFlags(0), hFnt(NULL) {}
     CbFont(int iSize, int taFlgs, FNameID id) :
         fnID(id), iTypeSize(iSize), taFlags(taFlgs), hFnt(NULL) {}
+    ~CbFont();
     // --------- //
-    BOOL IsBold(void) { return (taFlags & taBold) != 0; }
-    BOOL IsItalic(void) { return (taFlags & taItalic) != 0; }
-    BOOL IsULine(void) { return (taFlags & taULine) != 0; }
+    bool IsBold(void) const { return (taFlags & taBold) != 0; }
+    bool IsItalic(void) const { return (taFlags & taItalic) != 0; }
+    bool IsULine(void) const { return (taFlags & taULine) != 0; }
+    std::string ToString() const;
 };
 
-class UniqueFontID
-{
-public:
-    UniqueFontID() noexcept = default;
-    UniqueFontID(const UniqueFontID&) = delete;
-    UniqueFontID& operator=(const UniqueFontID&) = delete;
-    UniqueFontID(UniqueFontID&& other) noexcept { fid = other.fid; other.fid = 0; }
-    UniqueFontID& operator=(UniqueFontID&& other) noexcept { std::swap(fid, other.fid); return *this; }
-    ~UniqueFontID() { Reset(); }
-    void Reset(FontID f = 0);
-    FontID Get() const { return fid; }
-private:
-    FontID fid = 0;
-};
-
-class CFontTbl : public AtomList
+class CFontTbl : private AtomList<CbFont>
 {
 protected:
     FNameTbl oFName;
-    // -------- //
-    virtual void Destroy(Atom *opAtom);
 public:
     virtual ~CFontTbl(void);
     // -------- //
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
-    void DeleteFont(FontID id) { DeleteAtom((AtomID)id); }
-    FontID AddFont(FontID id) { return AddAtom((AtomID)id); }
     FontID AddFont(int iSize, int taFlgs, int iFamily, const char *pszFName);
     void FillLogFontStruct(FontID id, LPLOGFONT pLF);
     HFONT GetFontHandle(FontID id);
     void ReleaseFontHandle(FontID id);
     void ReleaseAllFontHandles(void);
     // -------- //
-    int GetFlags(FontID id) const { return id != 0 ? ((CbFont *)id)->taFlags : 0; }
-    int GetSize(FontID id) const { return id != 0 ? ((CbFont *)id)->iTypeSize : 0; }
+    int GetFlags(FontID id) const { return id != 0 ? (*id)->taFlags : 0; }
+    int GetSize(FontID id) const { return id != 0 ? (*id)->iTypeSize : 0; }
     int GetFamily(FontID id) const
-        { return oFName.GetFaceFamily(((CbFont *)id)->fnID); }
+        { return oFName.GetFaceFamily((*id)->fnID); }
     const char* GetFaceName(FontID id) const
-        { return oFName.GetFaceName(((CbFont *)id)->fnID); }
+        { return oFName.GetFaceName((*id)->fnID); }
     FNameTbl* GetFontNameTable() { return &oFName; }
     // -------- //
     void Archive(CArchive& ar, FontID& rfontID);
-    void Archive(CArchive& ar, UniqueFontID& rfontID);
 };
 
 #endif

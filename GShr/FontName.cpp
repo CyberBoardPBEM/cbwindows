@@ -44,10 +44,7 @@ static char THIS_FILE[] = __FILE__;
 FNameID FNameTbl::AddFaceName(const char *pszFName, int iFamily)
 {
     FName oFName(pszFName, iFamily);
-    FNameID id;
-    if ((id = AddIfExists(&oFName)) == 0)
-        id = AddAtom(new FName(pszFName, iFamily));
-    return id;
+    return Register(std::move(oFName));
 }
 
 // ----------------------------------------------------- //
@@ -55,30 +52,30 @@ FNameID FNameTbl::AddFaceName(const char *pszFName, int iFamily)
 // if iFaceName >= 0 && pszFName == NULL, return stringlength.
 // else return the face name and family id
 
-int FNameTbl::GetFaceInfo(int iFaceNum, char *pszFName, int* iFamily)
+size_t FNameTbl::GetFaceInfo(int iFaceNum, char *pszFName, int* iFamily)
 {
-    FName* pFAtom = (FName*)opAList;
-    if (pFAtom == NULL) return 0;
-
     if (iFaceNum < 0)
     {
-        int i;
-        for (i = 0; pFAtom != NULL; pFAtom = (FName*)pFAtom->next, i++);
-        return i;
+        return size();
     }
     else
     {
-        for (int i=0; i < iFaceNum && pFAtom != NULL; pFAtom=(FName*)pFAtom->next, i++);
-        ASSERT(pFAtom != NULL);
+        if (value_preserving_cast<size_t>(iFaceNum) >= size())
+        {
+            AfxThrowInvalidArgException();
+        }
+        iterator it = std::next(begin(), iFaceNum);
+        ASSERT(!it->expired());
+        const FName& fname = **it->lock();
         if (pszFName)
         {
-            lstrcpy(pszFName, pFAtom->szFName);
-            *iFamily = pFAtom->iFamily;
-            return TRUE;
+            lstrcpy(pszFName, fname.szFName);
+            *iFamily = fname.iFamily;
+            return size_t(TRUE);
         }
-        return lstrlen(pFAtom->szFName);
+        return value_preserving_cast<size_t>(lstrlen(fname.szFName));
     }
-    return FALSE;
+    return size_t(FALSE);
 }
 
 // ====================================================== //
@@ -90,12 +87,11 @@ FName::FName(const char *pszFName, int iFamily)
 }
 
 // ----------------------------------------------------- //
-// (protected)
-BOOL FName::AtomsEqual(Atom &atom)
+bool FName::operator==(const FName& rhs) const
 {
-    if (iFamily == ((FName&)atom).iFamily)
+    if (iFamily == rhs.iFamily)
     {
-        if (strcmp(szFName, ((FName&)atom).szFName) == 0)
+        if (strcmp(szFName, rhs.szFName) == 0)
             return TRUE;
     }
     return FALSE;

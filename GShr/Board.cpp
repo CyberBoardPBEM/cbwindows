@@ -471,7 +471,6 @@ CBoardManager::CBoardManager()
 void CBoardManager::DestroyAllElements(void)
 {
     clear();
-    CGamDoc::GetFontManager()->DeleteFont(m_fontID);
     m_fontID = 0;
 }
 
@@ -512,7 +511,6 @@ BOOL CBoardManager::DoBoardFontDialog()
     FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, TRUE);
     if (newFontID != (FontID)0)
     {
-        CGamDoc::GetFontManager()->DeleteFont(m_fontID);
         m_fontID = newFontID;
         return TRUE;
     }
@@ -554,6 +552,9 @@ void CBoardManager::Serialize(CArchive& ar)
     }
     else
     {
+        /* delay font deletion in case archive read adds a
+            reference */
+        FontID tempRef = std::move(m_fontID);
         DestroyAllElements();
         WORD wTmp;
         ar >> m_nNextSerialNumber;
@@ -562,7 +563,6 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> dwTmp; m_crFore = (COLORREF)dwTmp;
         ar >> dwTmp; m_crBack = (COLORREF)dwTmp;
         ar >> wTmp; m_nLineWidth = (UINT)wTmp;
-        m_fontID = 0;
 
         CFontTbl* pFontMgr = CGamDoc::GetFontManager();
         pFontMgr->Archive(ar, m_fontID);

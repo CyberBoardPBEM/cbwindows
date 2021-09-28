@@ -49,8 +49,6 @@ CTextObjDialog::CTextObjDialog(CWnd* pParent /*=NULL*/)
 
 CTextObjDialog::~CTextObjDialog()
 {
-    if (m_fontID != (FontID)0)
-        m_pFontMgr->DeleteFont(m_fontID);
 }
 
 void CTextObjDialog::DoDataExchange(CDataExchange* pDX)
@@ -96,10 +94,6 @@ void CTextObjDialog::SetFontID(FontID fontID)
 {
     if (fontID != (FontID)0)
     {
-        if (m_fontID != (FontID)0)
-            m_pFontMgr->DeleteFont(m_fontID);
-
-        m_pFontMgr->AddFont(fontID);            // Incr font usage count
         m_fontID = fontID;
     }
 }

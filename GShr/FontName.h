@@ -29,39 +29,38 @@
 #include    "Atom.h"
 #endif
 
-typedef AtomID FNameID;     // Redefine for clarity
+class FName;
+typedef AtomList<FName>::AtomID FNameID;
 
-class FName : public Atom
+class FName
 {
     friend class FNameTbl;
 protected:
     int iFamily;                    // See LOGFONT FF_*
     char szFName[LF_FACESIZE];      // Name of font
-    // ---------- //
-    virtual BOOL FName::AtomsEqual(Atom &atom);
-    // ---------- //
 public:
+    // ---------- //
+    bool operator==(const FName& rhs) const;
+    // ---------- //
     FName(void) { iFamily = 0; *szFName = 0; }
     FName(const char *pszFName, int iFamily);
+    std::string ToString() const { return szFName; }
 };
 
 // ------------------------------------------------------ //
 
-class FNameTbl : public AtomList
+class FNameTbl : private AtomList<FName>
 {
 public:
-    FNameID AddFaceName(FNameID id) { return AddAtom((AtomID)id); }
     FNameID AddFaceName(const char *pszFName, int iFamily);
     const char *GetFaceName(FNameID id) const
-        { return id == NULL ? NULL : ((FName *)id)->szFName;}
+        { return id == NULL ? NULL : (*id)->szFName;}
     int GetFaceFamily(FNameID id) const
-        { return id == NULL ? 0 : ((FName *)id)->iFamily;}
-    void DelFaceName(FNameID id) { DeleteAtom((AtomID)id); }
-    void DestroyFaceName(FNameID id) { DestroyAtom((AtomID)id); }
+        { return id == NULL ? 0 : (*id)->iFamily;}
     // if iFaceName == -1, return number of face names
     // if iFaceName >= 0 && pszFName == NULL, return stringlength.
     // else return the face name and family id
-    int GetFaceInfo(int iFaceNum, char *pszFName=NULL, int* iFamily=0);
+    size_t GetFaceInfo(int iFaceNum, char *pszFName=NULL, int* iFamily=0);
 };
 
 #endif

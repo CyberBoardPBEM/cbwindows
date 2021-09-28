@@ -163,7 +163,7 @@ public:
     COLORREF m_crTextBoxColor;  // Text box background color
     // allow default move operations to work right
 public:
-    UniqueFontID m_fontID;          // Text font
+    FontID   m_fontID;          // Text font
 
     DWORD    m_dwOwnerMask;     // Who can change it
     BOOL     m_bNonOwnerAccess; // Allow non-owner access to owned stuff.
