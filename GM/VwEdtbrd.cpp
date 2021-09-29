@@ -1272,8 +1272,13 @@ void CBrdEditView::OnDwgFont()
     {
         m_selList.UpdateObjects();
         FontID fontID = m_pBMgr->GetFontID();
-        m_selList.ForAllSelections([&fontID](CDrawObj& pObj) { pObj.SetFont(fontID); });
+        BOOL fontAccepted = false;
+        m_selList.ForAllSelections([&fontID, &fontAccepted](CDrawObj& pObj) { fontAccepted |= pObj.SetFont(fontID); });
         m_selList.UpdateObjects(TRUE, FALSE);
+        if (fontAccepted)
+        {
+            GetDocument()->SetModifiedFlag();
+        }
     }
 }
 
