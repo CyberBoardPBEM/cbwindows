@@ -26,6 +26,8 @@
 #ifndef _SELOPLAY_H
 #define _SELOPLAY_H
 
+#include    <functional>
+
 #ifndef     _DRAWOBJ_H
 #include    "DrawObj.h"
 #endif
@@ -260,8 +262,7 @@ public:
     void UpdateObjects(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE );
     // -------- //
-    void ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
-        DWORD dwUserVal);
+    void ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc);
 
     void Open();
 

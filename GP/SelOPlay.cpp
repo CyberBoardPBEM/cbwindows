@@ -563,13 +563,12 @@ void CSelList::UpdateObjects(BOOL bInvalidate,
     RegenerateHandleList();
 }
 
-void CSelList::ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
-    DWORD dwUserVal)
+void CSelList::ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc)
 {
     for (iterator pos = begin() ; pos != end() ; ++pos)
     {
         CSelection& pSel = **pos;
-        pFunc(*pSel.m_pObj, dwUserVal);
+        pFunc(*pSel.m_pObj);
     }
 }
 

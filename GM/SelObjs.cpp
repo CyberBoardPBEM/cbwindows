@@ -592,24 +592,14 @@ BOOL CSelList::IsDObjFlagSetInSomeSelectedObjects(DWORD dwFlag) const
     return FALSE;
 }
 
-static void SetDObjFlags(CDrawObj& pObj, DWORD dwFlags)
-{
-    pObj.SetDObjFlags(dwFlags);
-}
-
 void CSelList::SetDObjFlagInAllSelectedObjects(DWORD dwFlag)
 {
-    ForAllSelections(SetDObjFlags, dwFlag);
-}
-
-static void ClearDObjFlags(CDrawObj& pObj, DWORD dwFlags)
-{
-    pObj.ClearDObjFlags(dwFlags);
+    ForAllSelections([dwFlag](CDrawObj& pObj) { pObj.SetDObjFlags(dwFlag); });
 }
 
 void CSelList::ClearDObjFlagInAllSelectedObjects(DWORD dwFlag)
 {
-    ForAllSelections(ClearDObjFlags, dwFlag);
+    ForAllSelections([dwFlag](CDrawObj& pObj) { pObj.ClearDObjFlags(dwFlag); });
 }
 
 BOOL CSelList::IsCopyToClipboardPossible() const
@@ -748,13 +738,12 @@ void CSelList::UpdateObjects(BOOL bInvalidate,
     }
 }
 
-void CSelList::ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
-    DWORD dwUserVal)
+void CSelList::ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc)
 {
     for (iterator pos = begin() ; pos != end() ; ++pos)
     {
         CSelection& pSel = **pos;
-        pFunc(*pSel.m_pObj, dwUserVal);
+        pFunc(*pSel.m_pObj);
     }
 }
 

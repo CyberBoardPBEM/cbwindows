@@ -1203,40 +1203,28 @@ void CBrdEditView::OnUpdateLineWidth(CCmdUI* pCmdUI)
 
 //////////////////////////////////////////////////////////////////////
 
-struct ColorSetting
-{
-    COLORREF m_cr;              // Color to set
-    BOOL     m_bColorAccepted;  // TRUE if at least one object accepted the color
-};
-
-static void SetObjForeColor(CDrawObj& pObj, DWORD dwUser)
-{
-    ColorSetting* pSet = (ColorSetting*)dwUser;
-    pSet->m_bColorAccepted |= pObj.SetForeColor(pSet->m_cr);
-}
-
-static void SetObjBackColor(CDrawObj& pObj, DWORD dwUser)
-{
-    ColorSetting* pSet = (ColorSetting*)dwUser;
-    pSet->m_bColorAccepted |= pObj.SetBackColor(pSet->m_cr);
-}
-
 
 LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 {
+    struct ColorSetting
+    {
+        COLORREF m_cr;              // Color to set
+        BOOL     m_bColorAccepted;  // TRUE if at least one object accepted the color
+    };
     ColorSetting cset = { RGB(0,0,0), FALSE };
+
     if ((UINT)wParam == ID_COLOR_FOREGROUND)
     {
         m_pBMgr->SetForeColor((COLORREF)lParam);
         cset.m_cr = m_pBMgr->GetForeColor();
-        m_selList.ForAllSelections(SetObjForeColor, (DWORD)&cset);
+        m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetForeColor(cset.m_cr); });
         m_selList.UpdateObjects();
     }
     else if ((UINT)wParam == ID_COLOR_BACKGROUND)
     {
         m_pBMgr->SetBackColor((COLORREF)lParam);
         cset.m_cr = m_pBMgr->GetBackColor();
-        m_selList.ForAllSelections(SetObjBackColor, (DWORD)&cset);
+        m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetBackColor(cset.m_cr); });
         m_selList.UpdateObjects();
     }
     else
@@ -1257,25 +1245,19 @@ LRESULT CBrdEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////////////////
 
-struct WidthSetting
-{
-    UINT m_nWidth;          // Width to set
-    BOOL m_bWidthAccepted;  // TRUE if at least one object accepted the color
-};
-
-static void SetObjLineWidth(CDrawObj& pObj, DWORD dwUser)
-{
-    WidthSetting* pSet = (WidthSetting*)dwUser;
-    pSet->m_bWidthAccepted |= pObj.SetLineWidth(pSet->m_nWidth);
-}
-
 LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 {
+    struct WidthSetting
+    {
+        UINT m_nWidth;          // Width to set
+        BOOL m_bWidthAccepted;  // TRUE if at least one object accepted the color
+    };
     WidthSetting wset = { 1, FALSE };
+
     m_pBMgr->SetLineWidth((UINT)wParam);
     m_selList.UpdateObjects();
     wset.m_nWidth = m_pBMgr->GetLineWidth();
-    m_selList.ForAllSelections(SetObjLineWidth, (DWORD)&wset);
+    m_selList.ForAllSelections([&wset](CDrawObj& pObj) { wset.m_bWidthAccepted |= pObj.SetLineWidth(wset.m_nWidth); });
     m_selList.UpdateObjects(TRUE, FALSE);
     if (wset.m_bWidthAccepted)
         GetDocument()->SetModifiedFlag();
@@ -1284,17 +1266,13 @@ LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 
 // ------------------------------------------------------ //
 
-static void SetObjFont(CDrawObj& pObj, DWORD dwUser)
-    { pObj.SetFont(*reinterpret_cast<FontID*>(dwUser)); }
-
 void CBrdEditView::OnDwgFont()
 {
     if (m_pBMgr->DoBoardFontDialog())
     {
         m_selList.UpdateObjects();
         FontID fontID = m_pBMgr->GetFontID();
-        m_selList.ForAllSelections(SetObjFont,
-            reinterpret_cast<DWORD>(&fontID));
+        m_selList.ForAllSelections([&fontID](CDrawObj& pObj) { pObj.SetFont(fontID); });
         m_selList.UpdateObjects(TRUE, FALSE);
     }
 }
@@ -1533,14 +1511,6 @@ void CBrdEditView::OnToolsBrdProps()
     GetDocument()->DoBoardPropertyDialog(*m_pBoard);
 }
 
-static void SetObjVisibility(CDrawObj& pObj, DWORD dwUser)
-    { pObj.SetScaleVisibility((int)dwUser); }
-
-static void SetObjectFlags(CDrawObj& pObj, DWORD dwUser)
-    { pObj.SetDObjFlags(dwUser); }
-static void ClearObjectFlags(CDrawObj& pObj, DWORD dwUser)
-    { pObj.ClearDObjFlags(dwUser); }
-
 void CBrdEditView::OnToolSetVisibleScale()
 {
     CSetScaleVisibilityDialog dlg;
@@ -1556,11 +1526,11 @@ void CBrdEditView::OnToolSetVisibleScale()
             (dlg.m_bHalfScale ? halfScale : 0) |
             (dlg.m_bSmallScale ? smallScale : 0);
 
-        m_selList.ForAllSelections(SetObjVisibility, (DWORD)mask);
+        m_selList.ForAllSelections([mask](CDrawObj& pObj) { pObj.SetScaleVisibility(mask); });
         if (dlg.m_bNaturalScale)
-            m_selList.ForAllSelections(SetObjectFlags, (DWORD)dobjFlgLayerNatural);
+            m_selList.ForAllSelections([](CDrawObj& pObj) { pObj.SetDObjFlags(dobjFlgLayerNatural); });
         else
-            m_selList.ForAllSelections(ClearObjectFlags, (DWORD)dobjFlgLayerNatural);
+            m_selList.ForAllSelections([](CDrawObj& pObj) { pObj.ClearDObjFlags(dobjFlgLayerNatural); });
 
         m_selList.UpdateObjects(TRUE, FALSE);
     }
