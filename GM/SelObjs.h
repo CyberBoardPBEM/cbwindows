@@ -26,6 +26,8 @@
 #ifndef _SELOBJS_H
 #define _SELOBJS_H
 
+#include    <functional>
+
 #ifndef     _DRAWOBJ_H
 #include    "DrawObj.h"
 #endif
@@ -297,8 +299,7 @@ public:
     void UpdateObjects(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE );
     // -------- //
-    void ForAllSelections(void (*pFunc)(CDrawObj& pObj, DWORD dwUser),
-        DWORD dwUserVal);
+    void ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc);
     // -------- //
 
 // Implementation
