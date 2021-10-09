@@ -40,13 +40,16 @@ private:
 public:
     using AtomID = std::shared_ptr<Node>;
     using iterator = typename List::iterator;
+    using const_iterator = typename List::const_iterator;
 
     AtomList() = default;
     AtomList(const AtomList&) = delete;
     AtomList& operator=(const AtomList&) = delete;
     ~AtomList() = default;
 
+    const_iterator begin() const { return list.begin(); }
     iterator begin() { return list.begin(); }
+    const_iterator end() const { return list.end(); }
     iterator end() { return list.end(); }
     size_t size() const
     {
