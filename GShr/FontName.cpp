@@ -47,35 +47,15 @@ FNameID FNameTbl::AddFaceName(const char *pszFName, int iFamily)
     return Register(std::move(oFName));
 }
 
-// ----------------------------------------------------- //
-// if iFaceName == -1, return number of face names
-// if iFaceName >= 0 && pszFName == NULL, return stringlength.
-// else return the face name and family id
-
-size_t FNameTbl::GetFaceInfo(int iFaceNum, char *pszFName, int* iFamily)
+FNameID FNameTbl::operator[](size_t iFaceNum) const
 {
-    if (iFaceNum < 0)
+    if (iFaceNum >= size())
     {
-        return size();
+        AfxThrowInvalidArgException();
     }
-    else
-    {
-        if (value_preserving_cast<size_t>(iFaceNum) >= size())
-        {
-            AfxThrowInvalidArgException();
-        }
-        iterator it = std::next(begin(), iFaceNum);
-        ASSERT(!it->expired());
-        const FName& fname = **it->lock();
-        if (pszFName)
-        {
-            lstrcpy(pszFName, fname.szFName);
-            *iFamily = fname.iFamily;
-            return size_t(TRUE);
-        }
-        return value_preserving_cast<size_t>(lstrlen(fname.szFName));
-    }
-    return size_t(FALSE);
+    const_iterator it = std::next(begin(), value_preserving_cast<ptrdiff_t>(iFaceNum));
+    ASSERT(!it->expired());
+    return it->lock();
 }
 
 // ====================================================== //

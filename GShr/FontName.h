@@ -57,10 +57,8 @@ public:
         { return id == NULL ? NULL : (*id)->szFName;}
     int GetFaceFamily(FNameID id) const
         { return id == NULL ? 0 : (*id)->iFamily;}
-    // if iFaceName == -1, return number of face names
-    // if iFaceName >= 0 && pszFName == NULL, return stringlength.
-    // else return the face name and family id
-    size_t GetFaceInfo(int iFaceNum, char *pszFName=NULL, int* iFamily=0);
+    size_t GetSize() const { return size(); }
+    FNameID operator[](size_t iFaceNum) const;
 };
 
 #endif
