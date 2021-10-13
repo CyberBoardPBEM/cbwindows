@@ -1012,12 +1012,15 @@ void CMovePlotList::Serialize(CArchive& ar)
 {
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
+    {
         ar << m_nBrdNum;
+        ar << m_tblPlot;
+    }
     else
     {
         ar >> m_nBrdNum;
+        ar >> m_tblPlot;
     }
-    m_tblPlot.Serialize(ar);
 }
 
 #ifdef _DEBUG

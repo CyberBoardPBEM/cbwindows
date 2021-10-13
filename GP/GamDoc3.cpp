@@ -181,7 +181,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
         ar << (WORD)m_eState;
         ar << m_strCurMsg;
-        m_astrMsgHist.Serialize(ar);
+        ar << m_astrMsgHist;
         ASSERT(m_nCurMove == Invalid_v<size_t> ||
                 m_nCurMove < size_t(0xFFFF));
         ar << (m_nCurMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurMove));
@@ -265,7 +265,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
         ar >> m_strCurMsg;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
-            m_astrMsgHist.Serialize(ar);
+            ar >> m_astrMsgHist;
         else
             MsgParseLegacyHistory(m_strCurMsg, m_astrMsgHist, m_strCurMsg);
         ar >> wTmp; m_nCurMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));

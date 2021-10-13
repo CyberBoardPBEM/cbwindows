@@ -256,11 +256,11 @@ CArchive& operator<<(CArchive& ar, const std::vector<XxxxIDExt<PREFIX, UNDERLYIN
     {
         case 2:
             // CB3.1 file format uses MFC CWordArray
-            const_cast<CWordArray*>(ToCWordArray(v).get())->Serialize(ar);
+            ar << *ToCWordArray(v);
             return ar;
         case 4:
             // CB3.1 file format uses MFC CWordArray
-            const_cast<CDWordArray*>(ToCDWordArray(v).get())->Serialize(ar);
+            ar << *ToCDWordArray(v);
             return ar;
         default:
             CbThrowBadCastException();
@@ -280,14 +280,14 @@ CArchive& operator>>(CArchive& ar, std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE
         case 2: {
             // CB3.1 file format uses MFC CWordArray
             CWordArray temp;
-            temp.Serialize(ar);
+            ar >> temp;
             v = ToVector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
             return ar;
         }
         case 4: {
             // CB3.1 file format uses MFC CWordArray
             CDWordArray temp;
-            temp.Serialize(ar);
+            ar >> temp;
             v = ToVector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>(temp);
             return ar;
         }
@@ -296,5 +296,110 @@ CArchive& operator>>(CArchive& ar, std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE
     }
 }
 
+namespace CB
+{
+    inline void WriteCount(CArchive& ar, size_t s)
+    {
+        if (!ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+        int ver = NumVersion(fileGbxVerMajor, fileGbxVerMinor);
+
+        if (ver <= NumVersion(3, 90))
+        {
+            if (s < uint16_t(0xFFFF))
+            {
+                ar << static_cast<uint16_t>(s);
+                return;
+            }
+            ar << uint16_t(0xFFFF);
+            ar << static_cast<uint32_t>(s);
+            return;
+        }
+        else
+        {
+            ASSERT(ver == NumVersion(4, 0));
+            AfxThrowNotSupportedException();
+        }
+    }
+
+    inline size_t ReadCount(CArchive& ar)
+    {
+        if (ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+
+        int ver = GetLoadingVersion();
+        if (ver <= NumVersion(3, 90))
+        {
+            uint16_t u16;
+            ar >> u16;
+            if (u16 != 0xFFFF)
+            {
+                return u16;
+            }
+
+            uint32_t u32;
+            ar >> u32;
+            return u32;
+        }
+        else
+        {
+            ASSERT(ver == NumVersion(4, 0));
+            AfxThrowNotSupportedException();
+        }
+    }
+}
+
+template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
+                                        std::is_same_v<T, CDWordArray> ||
+                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+inline CArchive& operator<<(CArchive& ar, const T& v)
+{
+    CB::WriteCount(ar, value_preserving_cast<size_t>(v.GetSize()));
+    intptr_t expected = v.GetSize()*int(sizeof(v[0]));
+    ar.Write(v.GetData(), value_preserving_cast<unsigned>(expected));
+    return ar;
+}
+
+template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
+                                        std::is_same_v<T, CDWordArray> ||
+                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+inline CArchive& operator>>(CArchive& ar, T& v)
+{
+    size_t size = CB::ReadCount(ar);
+    v.SetSize(value_preserving_cast<intptr_t>(size));
+    unsigned expected = value_preserving_cast<unsigned>(size*sizeof(v[0]));
+    unsigned actual = ar.Read(v.GetData(), expected);
+    if (actual != expected)
+    {
+        CFile* file = ar.GetFile();
+        AfxThrowArchiveException(CArchiveException::endOfFile, file ? file->GetFilePath() : nullptr);
+    }
+    return ar;
+}
+
+inline CArchive& operator<<(CArchive& ar, const CStringArray& v)
+{
+    CB::WriteCount(ar, value_preserving_cast<size_t>(v.GetSize()));
+    for (intptr_t i = 0 ; i < v.GetSize() ; ++i)
+    {
+        ar << v[i];
+    }
+    return ar;
+}
+
+inline CArchive& operator>>(CArchive& ar, CStringArray& v)
+{
+    size_t size = CB::ReadCount(ar);
+    v.SetSize(value_preserving_cast<intptr_t>(size));
+    for (intptr_t i = 0 ; i < v.GetSize() ; ++i)
+    {
+        ar >> v[i];
+    }
+    return ar;
+}
 #endif
 

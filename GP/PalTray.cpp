@@ -325,7 +325,7 @@ void CTrayPalette::Serialize(CArchive& ar)
         int nNumSelected = m_listTray.GetSelCount();
         m_tblListBoxSel.SetSize(nNumSelected);
         m_listTray.GetSelItems(nNumSelected, m_tblListBoxSel.GetData());
-        m_tblListBoxSel.Serialize(ar);
+        ar << m_tblListBoxSel;
     }
     else
     {
@@ -334,7 +334,7 @@ void CTrayPalette::Serialize(CArchive& ar)
             DWORD dwTmp;
             ar >> dwTmp; m_nComboIndex = (int)dwTmp;
             ar >> dwTmp; m_nListTopindex = (int)dwTmp;
-            m_tblListBoxSel.Serialize(ar);
+            ar >> m_tblListBoxSel;
             m_bStateVarsArmed = TRUE;           // Inform Create() data is good
         }
         else if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))  // V2.0
@@ -342,7 +342,7 @@ void CTrayPalette::Serialize(CArchive& ar)
             DWORD dwTmp;
             ar >> dwTmp; m_nComboIndex = (int)dwTmp;
             ar >> dwTmp; m_nListTopindex = (int)dwTmp;
-            m_tblListBoxSel.Serialize(ar);
+            ar >> m_tblListBoxSel;
             CWinPlacement wndSink;
             ar >> wndSink;                      // Eat this puppy
             m_bStateVarsArmed = TRUE;           // Inform Create() data is good
