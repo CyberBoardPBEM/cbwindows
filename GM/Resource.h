@@ -17,6 +17,7 @@
 #define IDS_ERR_BOARDNAME               129
 #define IDS_ERR_NOTAGAMEBOX             130
 #define IDS_ERR_GAMEBOXNEWER            131
+#define IDS_ERR_PIECESETSIZE            132
 #define IDP_DELETEBOARD                 133
 #define IDP_DELETETILESET               134
 #define IDP_DELETEPIECESET              135

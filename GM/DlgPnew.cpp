@@ -148,6 +148,15 @@ void CPieceNewDialog::CreatePiece()
     int nNumPieces = atoi(str);
     if (nNumPieces <= 0)
         return;
+    // due to LB_ITEMFROMPOINT limit
+    CPieceSet& pPSet = m_pPMgr->GetPieceSet(m_nPSet);
+    // value_preserving_cast unnecessary due to <= 0 check above
+    if (static_cast<size_t>(nNumPieces) > size_t(0xFFFF) - pPSet.GetPieceIDTable().size())
+    {
+        AfxMessageBox(IDS_ERR_PIECESETSIZE, MB_OK | MB_ICONEXCLAMATION);
+        m_editQty.SetFocus();
+        return;
+    }
 
     BOOL bBackChecked = m_chkBack.GetCheck() == 1;
 

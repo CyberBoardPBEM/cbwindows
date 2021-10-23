@@ -250,6 +250,7 @@ public:
 
     void SetItemMap(const std::vector<T>* pMap, BOOL bKeepPosition = TRUE)
     {
+        ASSERT(!pMap || pMap->size() < size_t(0x10000) || !"LB_ITEMFROMPOINT/ItemFromPoint() is WORD-limited");
         m_pItemMap = pMap;
         UpdateList(bKeepPosition);
     }

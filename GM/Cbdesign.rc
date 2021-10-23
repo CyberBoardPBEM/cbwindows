@@ -1187,6 +1187,7 @@ BEGIN
     IDS_ERR_BOARDNAME       "You must provide a unique board name."
     IDS_ERR_NOTAGAMEBOX     "The file is not a Game Box."
     IDS_ERR_GAMEBOXNEWER    "The Game Box file was created by a newer version of the program. You must upgrade your CyberBoard software to load it."
+    IDS_ERR_PIECESETSIZE    "Piece Set max size is 65535."
     IDP_DELETEBOARD         "You are about to delete board:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
     IDP_DELETETILESET       "You are about to delete tile group:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
     IDP_DELETEPIECESET      "You are about to delete piece group:\n\n   ""%1""\n\nThis may render current games and scenarios unplayable. Are you sure you want to do this?"
