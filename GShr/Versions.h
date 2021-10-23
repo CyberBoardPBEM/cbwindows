@@ -308,19 +308,35 @@ namespace CB
 
         if (ver <= NumVersion(3, 90))
         {
+            /* this matches the
+            MFC CArchive::WriteCount()/ReadCount() format.  Note
+            that MFC 32bit and 64bit processes use the same
+            format for size < 0xFFFFFFFF, but have different
+            formats for 0xFFFFFFFF.  This uses the 64bit format
+            for both 32bit and 64bit since we might pass files
+            between computers with different bit sizes, so we
+            need a single format.  */
             if (s < uint16_t(0xFFFF))
             {
                 ar << static_cast<uint16_t>(s);
                 return;
             }
+            ASSERT(!"untested code");
+
             ar << uint16_t(0xFFFF);
-            ar << static_cast<uint32_t>(s);
+            if (s < uint32_t(0xFFFFFFFF))
+            {
+                ar << static_cast<uint32_t>(s);
+                return;
+            }
+
+            ar << uint32_t(0xFFFFFFFF);
+            ar << static_cast<uint64_t>(s);
             return;
         }
         else
         {
-            ASSERT(ver == NumVersion(4, 0));
-            AfxThrowNotSupportedException();
+            ar << static_cast<uint64_t>(s);
         }
     }
 
@@ -340,15 +356,24 @@ namespace CB
             {
                 return u16;
             }
+            ASSERT(!"untested code");
 
             uint32_t u32;
             ar >> u32;
-            return u32;
+            if (u32 != uint32_t(0xFFFFFFFF))
+            {
+                return u32;
+            }
+
+            uint64_t u64;
+            ar >> u64;
+            return value_preserving_cast<size_t>(u64);
         }
         else
         {
-            ASSERT(ver == NumVersion(4, 0));
-            AfxThrowNotSupportedException();
+            uint64_t u64;
+            ar >> u64;
+            return value_preserving_cast<size_t>(u64);
         }
     }
 }
