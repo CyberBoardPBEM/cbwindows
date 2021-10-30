@@ -47,11 +47,11 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CGeomorphicBoard : public CArray< CGeoBoardElement, CGeoBoardElement& >
+class CGeomorphicBoard : public CArray< CGeoBoardElement >
 {
 public:
     CGeomorphicBoard();
-    CGeomorphicBoard(CGeomorphicBoard* pGeoBoard);
+    CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard);
 
 // Atributes...
 public:

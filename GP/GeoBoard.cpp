@@ -72,18 +72,17 @@ CGeomorphicBoard::CGeomorphicBoard()
     m_pDoc = NULL;
 }
 
-CGeomorphicBoard::CGeomorphicBoard(CGeomorphicBoard* pGeoBoard)
+CGeomorphicBoard::CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard)
 {
-    ASSERT(pGeoBoard != NULL);
-    m_strName = pGeoBoard->m_strName;
-    m_nSerialNum = pGeoBoard->m_nSerialNum;
-    m_nBoardRowCount = pGeoBoard->m_nBoardRowCount;
-    m_nBoardColCount = pGeoBoard->m_nBoardColCount;
-    m_pDoc = pGeoBoard->m_pDoc;
+    m_strName = pGeoBoard.m_strName;
+    m_nSerialNum = pGeoBoard.m_nSerialNum;
+    m_nBoardRowCount = pGeoBoard.m_nBoardRowCount;
+    m_nBoardColCount = pGeoBoard.m_nBoardColCount;
+    m_pDoc = pGeoBoard.m_pDoc;
 
     RemoveAll();
-    for (int i = 0; i < pGeoBoard->GetSize(); i++)
-         Add(pGeoBoard->GetAt(i));
+    for (int i = 0; i < pGeoBoard.GetSize(); i++)
+         Add(pGeoBoard.GetAt(i));
 }
 
 /////////////////////////////////////////////////////////////////////////////

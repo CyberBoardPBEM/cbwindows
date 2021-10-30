@@ -80,7 +80,7 @@ public:
     void SetLocksEnforced(BOOL bEnforce = TRUE) { m_bEnforceLocks = bEnforce; }
     BOOL GetLocksEnforced() { return m_bEnforceLocks; }
 
-    void SetBoard(CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings = FALSE);
+    void SetBoard(const CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings = FALSE);
     void SetBoard(CBoard& pBoard, BOOL bInheritSettings = FALSE);
     CBoard* GetBoard() { return m_pBoard; }
 

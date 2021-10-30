@@ -252,10 +252,10 @@ void CPlayBoard::LimitRectToBoard(CRect& rct)
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::SetBoard(CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings /* = FALSE */)
+void CPlayBoard::SetBoard(const CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings /* = FALSE */)
 {
     ASSERT(!m_pGeoBoard);
-    m_pGeoBoard.Reset(new CGeomorphicBoard(&pGeoBoard), &m_pDoc);
+    m_pGeoBoard.Reset(new CGeomorphicBoard(pGeoBoard), &m_pDoc);
     CBoard& pBrd = CreateGeoBoard();
     SetBoard(pBrd, bInheritSettings);
 }
