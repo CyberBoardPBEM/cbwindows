@@ -166,7 +166,7 @@ BOOL StrDecimalChecked(const char **psp, int *pnVal, int *pnScale)
 {
     int nWholePart = 0;
     int nFracPart = 0;
-    int nFracDigs = 0;
+    ptrdiff_t nFracDigs = 0;
 
     BOOL bMinus = **psp == '-';
     if (bMinus) (*psp)++;       // Step past minus character

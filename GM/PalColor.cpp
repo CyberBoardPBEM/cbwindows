@@ -299,7 +299,7 @@ void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, LPCTSTR pszT
     ti.cbSize = sizeof(TOOLINFO);
     ti.uFlags |= TTF_IDISHWND | TTF_SUBCLASS | nFlags;
     ti.hwnd = m_hWnd;
-    ti.uId = (UINT)pWnd->GetSafeHwnd();
+    ti.uId = reinterpret_cast<uintptr_t>(pWnd->GetSafeHwnd());
     if (pszText == NULL)
         ti.lpszText = (LPTSTR)MAKEINTRESOURCE(nID);
     else

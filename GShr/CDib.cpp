@@ -306,8 +306,8 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
 {
     if (dib.m_hDib)
     {
-        DWORD dwSize = GlobalSize(dib.m_hDib);
-        ASSERT(dwSize > 0);
+        uint32_t dwSize = value_preserving_cast<uint32_t>(GlobalSize(dib.m_hDib));
+        ASSERT(dwSize > uint32_t(0));
         ASSERT(dib.m_nCompressLevel >= Z_NO_COMPRESSION
             && dib.m_nCompressLevel <= Z_BEST_COMPRESSION);
         if (dib.m_nCompressLevel > Z_NO_COMPRESSION)
@@ -315,21 +315,25 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
             // Store size of the uncompressed dib bfr with upper bit set.
             // The set upper bit allows us to detect loading of uncompressed
             // bitmaps.
-            ar << (dwSize | 0x80000000);
+            if (dwSize & uint32_t(0x80000000))
+            {
+                AfxThrowMemoryException();
+            }
+            ar << (dwSize | uint32_t(0x80000000));
 
             // Use zlib to compress the dib before writing it out the the archive.
-            DWORD dwDestLen = MulDiv(dwSize, 1001, 1000) + 12;
+            uLongf dwDestLen = value_preserving_cast<uLongf>(MulDiv(value_preserving_cast<int>(dwSize), 1001, 1000) + 12);
             LPVOID pDestBfr = GlobalAlloc(GPTR, dwDestLen);
             if (pDestBfr == NULL)
                 AfxThrowMemoryException();
             int err = compress2((LPBYTE)pDestBfr, &dwDestLen, (LPBYTE)dib.m_lpDib,
-                dwSize, dib.m_nCompressLevel);
+                value_preserving_cast<uLong>(dwSize), dib.m_nCompressLevel);
             if (err != Z_OK)
             {
                 GlobalFree(GlobalHandle(pDestBfr));
                 AfxThrowMemoryException();
             }
-            ar << dwDestLen;                    // Store the compressed size of the bitmap
+            ar << value_preserving_cast<uint32_t>(dwDestLen);                    // Store the compressed size of the bitmap
             ar.Write(pDestBfr, dwDestLen);      // Store the compressed bitmap
             GlobalFree(GlobalHandle(pDestBfr));
         }
@@ -337,7 +341,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
         {
             // Store size of the raw dib
             ar << dwSize;
-            ar.Write(dib.m_lpDib, dwSize);      // Store the uncompressed bitmap
+            ar.Write(dib.m_lpDib, value_preserving_cast<UINT>(dwSize));      // Store the uncompressed bitmap
         }
     }
     else
@@ -348,14 +352,14 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
 CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
 {
     dib.ClearDib();
-    DWORD dwSize;
+    uint32_t dwSize;
     ar >> dwSize;
-    if ((dwSize & 0x80000000) != 0)
+    if ((dwSize & uint32_t(0x80000000)) != uint32_t(0))
     {
         // Load compressed bitmap...
-        dwSize &= 0x7FFFFFFF;       // Remove flag bit
+        dwSize &= uint32_t(0x7FFFFFFF);       // Remove flag bit
 
-        DWORD dwCompSize;
+        uint32_t dwCompSize;
         ar >> dwCompSize;           // Get compressed data size
 
         LPVOID pCompBfr = GlobalAlloc(GPTR, dwCompSize);
@@ -368,14 +372,16 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
 
         ar.Read(pCompBfr, dwCompSize);
 
-        int err = uncompress((LPBYTE)dib.m_lpDib, &dwSize,
+        uLongf temp = dwSize;
+        int err = uncompress((LPBYTE)dib.m_lpDib, &temp,
             (LPBYTE)pCompBfr, dwCompSize);
+        ASSERT(temp == dwSize);
 
         GlobalFree(GlobalHandle(pCompBfr));
         if (err != Z_OK)
             AfxThrowMemoryException();
     }
-    else if (dwSize > 0)
+    else if (dwSize > uint32_t(0))
     {
         // Load uncompressed bitmap...
         if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)

@@ -854,16 +854,16 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
 
     // Generate a shuffled index vector for the number of selected items
     UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
-    int nNumIndices = tblListSel.GetSize();
-    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
-        nNumIndices, nRandSeed, &nRandSeed);
+    ASSERT(nNumSelected == tblListSel.GetSize());
+    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumSelected,
+        nNumSelected, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
     std::vector<PieceID> tblPids;
-    tblPids.reserve(value_preserving_cast<size_t>(nNumIndices));
-    for (int i = 0; i < nNumIndices; i++)
-        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[i]])));
+    tblPids.reserve(value_preserving_cast<size_t>(nNumSelected));
+    for (int i = 0; i < nNumSelected; i++)
+        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[value_preserving_cast<size_t>(i)]])));
 
     m_pDoc->AssignNewMoveGroup();
 

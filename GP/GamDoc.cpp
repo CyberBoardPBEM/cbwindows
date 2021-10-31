@@ -1868,7 +1868,7 @@ void CGamDoc::OnUpdateViewSaveWinState(CCmdUI* pCmdUI)
 void CGamDoc::OnEditCreatePlayers()
 {
     CCreatePlayersDialog dlg;
-    dlg.m_nPlayerCount = m_pPlayerMgr != NULL ? m_pPlayerMgr->GetSize() : 0;
+    dlg.m_nPlayerCount = value_preserving_cast<size_t>(m_pPlayerMgr != NULL ? m_pPlayerMgr->GetSize() : 0);
     if (dlg.DoModal() != IDOK)
         return;
 
@@ -1878,14 +1878,14 @@ void CGamDoc::OnEditCreatePlayers()
         m_pPlayerMgr = NULL;
     }
     ClearAllOwnership();            // Start with clean slate
-    if (dlg.m_nPlayerCount > 0)
+    if (dlg.m_nPlayerCount > size_t(0))
     {
         m_pPlayerMgr = new CPlayerManager;
         char szBfr[2];
         szBfr[1] = 0;
-        for (int i = 0; i < dlg.m_nPlayerCount; i++)
+        for (size_t i = size_t(0) ; i < dlg.m_nPlayerCount ; ++i)
         {
-            szBfr[0] = value_preserving_cast<char>('A' + i);
+            szBfr[0] = value_preserving_cast<char>(size_t('A') + i);
             CString str;
             str.Format(IDS_BASE_PLAYER_NAME, szBfr);
             m_pPlayerMgr->AddPlayer(str);

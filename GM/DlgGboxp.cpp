@@ -106,7 +106,7 @@ void CGmBoxPropsDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CGmBoxPropsDialog::OnOK()
 {
     CDialog::OnOK();
-    m_nCompressLevel = m_comboCompress.GetItemData(m_comboCompress.GetCurSel());
+    m_nCompressLevel = value_preserving_cast<int>(m_comboCompress.GetItemData(m_comboCompress.GetCurSel()));
 }
 
 

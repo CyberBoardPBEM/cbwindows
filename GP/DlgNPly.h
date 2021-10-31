@@ -41,7 +41,7 @@ public:
 // Dialog Data
     //{{AFX_DATA(CCreatePlayersDialog)
     enum { IDD = IDD_CREATE_PLAYERS };
-    int     m_nPlayerCount;
+    size_t m_nPlayerCount;
     //}}AFX_DATA
 
 

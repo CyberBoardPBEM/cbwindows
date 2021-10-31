@@ -44,7 +44,7 @@ struct Player
 class CPlayerManager : public CArray< Player, Player& >
 {
 public:
-    int AddPlayer(LPCTSTR pszName);
+    intptr_t AddPlayer(LPCTSTR pszName);
     Player& GetPlayerUsingMask(DWORD dwMask);
 
     static DWORD GetMaskFromPlayerNum(int nPlayerNumber);

@@ -39,7 +39,7 @@ CCreatePlayersDialog::CCreatePlayersDialog(CWnd* pParent /*=NULL*/)
     : CDialog(CCreatePlayersDialog::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CCreatePlayersDialog)
-    m_nPlayerCount = 0;
+    m_nPlayerCount = size_t(0);
     //}}AFX_DATA_INIT
 }
 
@@ -48,7 +48,7 @@ void CCreatePlayersDialog::DoDataExchange(CDataExchange* pDX)
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CCreatePlayersDialog)
     DDX_Text(pDX, IDC_D_CPLAY_NUM_PLAYERS, m_nPlayerCount);
-    DDV_MinMaxInt(pDX, m_nPlayerCount, 0, 26);
+    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_nPlayerCount), 0, 26);
     //}}AFX_DATA_MAP
 }
 

@@ -215,7 +215,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
             if (!rct.PtInRect(pt))
             {
                 // It's in the scroll zone
-                if (m_nTimerID == 0)        // Only start if not scrolling
+                if (m_nTimerID == uintptr_t(0))        // Only start if not scrolling
                     StartScrollTimer(pView);
             }
             else
@@ -306,7 +306,7 @@ void CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
     CPlayTool::OnLButtonUp(pView, nFlags, point);
 }
 
-void CPSelectTool::OnTimer(CPlayBoardView* pView, UINT nIDEvent)
+void CPSelectTool::OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent)
 {
     if (CWnd::GetCapture() != pView)
     {
@@ -541,10 +541,10 @@ void CPSelectTool::StartDragTimer(CPlayBoardView* pView)
 
 void CPSelectTool::KillDragTimer(CPlayBoardView* pView)
 {
-    if (m_nTimerID != 0)
+    if (m_nTimerID != uintptr_t(0))
     {
         pView->KillTimer(m_nTimerID);
-        m_nTimerID = 0;
+        m_nTimerID = uintptr_t(0);
     }
 }
 
@@ -555,10 +555,10 @@ void CPSelectTool::StartScrollTimer(CPlayBoardView* pView)
 
 void CPSelectTool::KillScrollTimer(CPlayBoardView* pView)
 {
-    if (m_nTimerID != 0)
+    if (m_nTimerID != uintptr_t(0))
     {
         pView->KillTimer(m_nTimerID);
-        m_nTimerID = 0;
+        m_nTimerID = uintptr_t(0);
     }
 }
 
@@ -666,7 +666,7 @@ void CPShapeTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
         s_plySelectTool.OnMouseMove(pView, nFlags, point);
 }
 
-void CPShapeTool::OnTimer(CPlayBoardView* pView, UINT nIDEvent)
+void CPShapeTool::OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent)
 {
     s_plySelectTool.OnTimer(pView, nIDEvent);
 }

@@ -73,10 +73,10 @@ protected:
 
     CCellForm*  m_pRootMapCellForm;
     int         m_nCurrentRowHeight;                    // Height of current row maps
-    int         m_nRowNumber;
+    size_t      m_nRowNumber;
 
-    int         m_nCurrentColumn;
-    int         m_nMaxColumns;                          // Set when first row break added
+    size_t      m_nCurrentColumn;
+    size_t      m_nMaxColumns;                       // Set when first row break added
     CArray< int, int > m_tblColWidth;
 
     CGeomorphicBoard*   m_pGeoBoard;                    // Set if OK pressed

@@ -49,9 +49,9 @@ CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CWnd* pParent /*=NULL
     m_pGeoBoard = NULL;
     m_pRootMapCellForm = NULL;
     m_nCurrentRowHeight = 0;
-    m_nCurrentColumn = 0;
-    m_nMaxColumns = 0;
-    m_nRowNumber = 0;
+    m_nCurrentColumn = size_t(0);
+    m_nMaxColumns = size_t(0);
+    m_nRowNumber = size_t(0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ static DWORD adwHelpMap[] =
 void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
 {
     m_listBoard.ResetContent();
-    if (m_nMaxColumns != 0 && m_nCurrentColumn == m_nMaxColumns)
+    if (m_nMaxColumns != size_t(0) && m_nCurrentColumn == m_nMaxColumns)
         return;               // No boards allowed since row break is only option
 
     // All boards must use hexes and have an odd number of columns
@@ -130,9 +130,9 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             // comply with the geometry of the root one.
             if (!m_pRootMapCellForm->CompareEqual(*pCellForm))
                 continue;
-            if (m_nMaxColumns != 0 && m_tblColWidth[m_nCurrentColumn] != pBArray->GetCols())
+            if (m_nMaxColumns != size_t(0) && m_tblColWidth[value_preserving_cast<INT_PTR>(m_nCurrentColumn)] != pBArray->GetCols())
                 continue;
-            if (m_nCurrentColumn > 0 && pBArray->GetRows() != m_nCurrentRowHeight)
+            if (m_nCurrentColumn > size_t(0) && pBArray->GetRows() != m_nCurrentRowHeight)
                 continue;
         }
         int nItem = m_listBoard.AddString(pBrd.GetName());
@@ -144,9 +144,9 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
 
 void CCreateGeomorphicBoardDialog::UpdateButtons()
 {
-    BOOL bEnableOK = m_editBoardName.GetWindowTextLength() > 0 &&
-         m_listGeo.GetCount() > 0 &&
-        (m_nCurrentColumn == m_nMaxColumns || m_nMaxColumns == 0);
+    BOOL bEnableOK = m_editBoardName.GetWindowTextLength() > size_t(0) &&
+         m_listGeo.GetCount() > size_t(0) &&
+        (m_nCurrentColumn == m_nMaxColumns || m_nMaxColumns == size_t(0));
     m_btnOK.EnableWindow(bEnableOK);
 
     if (m_pRootMapCellForm == NULL)
@@ -155,13 +155,13 @@ void CCreateGeomorphicBoardDialog::UpdateButtons()
         m_btnAddBreak.EnableWindow(FALSE);
         m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
     }
-    else if (m_nMaxColumns == 0 && m_tblColWidth.GetSize() > 0)
+    else if (m_nMaxColumns == size_t(0) && m_tblColWidth.GetSize() > 0)
     {
         // At least one column but no row break yet. Allow anything.
         m_btnAddBreak.EnableWindow(TRUE);
         m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
     }
-    else if (m_nMaxColumns > 0 && m_nCurrentColumn == m_nMaxColumns)
+    else if (m_nMaxColumns > size_t(0) && m_nCurrentColumn == m_nMaxColumns)
     {
         m_btnAddBreak.EnableWindow(TRUE);
         m_btnAddBoard.EnableWindow(FALSE);
@@ -215,7 +215,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     CBoardArray* pBArray = pBrd.GetBoardArray();
     m_pRootMapCellForm = pBArray->GetCellForm(fullScale);
 
-    if (m_nMaxColumns == 0)
+    if (m_nMaxColumns == size_t(0))
         m_tblColWidth.Add(pBArray->GetCols());
 
     if (m_nCurrentRowHeight == 0)
@@ -232,7 +232,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
         m_btnAddBoard.EnableWindow(FALSE);
         m_btnAddBreak.EnableWindow(TRUE);
     }
-    else if (m_nMaxColumns == 0 && m_tblColWidth.GetSize() > 0)
+    else if (m_nMaxColumns == size_t(0) && m_tblColWidth.GetSize() > 0)
         m_btnAddBreak.EnableWindow(TRUE);
 
     LoadBoardListWithCompliantBoards();
@@ -247,9 +247,9 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
     int nItem = m_listGeo.AddString(str);
     m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(nullBid)));
 
-    m_nMaxColumns = m_tblColWidth.GetSize();
+    m_nMaxColumns = value_preserving_cast<size_t>(m_tblColWidth.GetSize());
     m_nRowNumber++;
-    m_nCurrentColumn = 0;
+    m_nCurrentColumn = size_t(0);
     m_nCurrentRowHeight = 0;
 
     LoadBoardListWithCompliantBoards();
@@ -259,10 +259,10 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
 void CCreateGeomorphicBoardDialog::OnBtnPressClear()
 {
     m_listGeo.ResetContent();
-    m_nMaxColumns = 0;
-    m_nCurrentColumn = 0;
+    m_nMaxColumns = size_t(0);
+    m_nCurrentColumn = size_t(0);
     m_nCurrentRowHeight = 0;
-    m_nRowNumber = 0;
+    m_nRowNumber = size_t(0);
     m_pRootMapCellForm = NULL;
     m_tblColWidth.RemoveAll();
 
@@ -291,8 +291,8 @@ void CCreateGeomorphicBoardDialog::OnOK()
     m_pGeoBoard->SetName(strName);
     m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager()->IssueGeoSerialNumber());
 
-    m_pGeoBoard->SetBoardRowCount(m_nRowNumber + 1);
-    m_pGeoBoard->SetBoardColCount(m_tblColWidth.GetSize());
+    m_pGeoBoard->SetBoardRowCount(m_nRowNumber + size_t(1));
+    m_pGeoBoard->SetBoardColCount(value_preserving_cast<size_t>(m_tblColWidth.GetSize()));
 
     for (int i = 0; i < m_listGeo.GetCount(); i++)
     {

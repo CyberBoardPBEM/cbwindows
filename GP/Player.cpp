@@ -25,7 +25,7 @@
 #include    "stdafx.h"
 #include    "Player.h"
 
-int CPlayerManager::AddPlayer(LPCTSTR pszName)
+intptr_t CPlayerManager::AddPlayer(LPCTSTR pszName)
 {
     Player player(pszName);
     return Add(player);

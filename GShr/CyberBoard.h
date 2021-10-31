@@ -75,6 +75,8 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 #pragma warning(error:  4244)
 // warning C4245 : 'initializing' : conversion from 'xxx' to 'yyy', signed / unsigned mismatch
 #pragma warning(error:  4245)
+// warning C4267 : 'initializing' : conversion from 'xxx' to 'yyy', possible loss of data
+#pragma warning(error:  4267)
 // warning C4302 : 'type cast' : truncation from 'xxx' to 'yyy'
 #pragma warning(error:  4302)
 // warning C4310 : cast truncates constant value

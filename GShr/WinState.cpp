@@ -164,7 +164,7 @@ BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse)
 
     TRY
     {
-        CMemFile file(pWse.m_pWinStateBfr, pWse.m_pWinStateBfr.GetSize());
+        CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
         CArchive ar(&file, CArchive::load);
         bOK = (BOOL)pWnd->SendMessage(WM_WINSTATE, (WPARAM)&ar, 1);
         ar.Close();
@@ -319,7 +319,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar << m_wndState;
         ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
         if (m_pWinStateBfr.GetSize() > size_t(0))
-            ar.Write(m_pWinStateBfr, m_pWinStateBfr.GetSize());
+            ar.Write(m_pWinStateBfr, value_preserving_cast<unsigned>(m_pWinStateBfr.GetSize()));
     }
     else
     {
@@ -339,7 +339,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
             {
                 AfxThrowMemoryException();
             }
-            ar.Read(m_pWinStateBfr, m_pWinStateBfr.GetSize());
+            ar.Read(m_pWinStateBfr, value_preserving_cast<unsigned>(m_pWinStateBfr.GetSize()));
         }
     }
 }

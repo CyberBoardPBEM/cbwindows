@@ -204,7 +204,7 @@ void CTileBaseListBox2::DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, in
 
 void CTileBaseListBox2::OnGetItemDebugString(size_t nItem, CString& str)
 {
-    str.Format("[%d] ", (DWORD)OnGetItemDebugIDCode(nItem));
+    str.Format("[%p] ", OnGetItemDebugIDCode(nItem));
 }
 
 /////////////////////////////////////////////////////////////////////////////

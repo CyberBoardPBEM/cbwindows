@@ -50,7 +50,7 @@ public:
 // Implementation - variables
 protected:
     CGamDoc*        m_pDoc;                 // Doc of current messages
-    int             m_nMsgCount;            // Number of messages already processed
+    size_t          m_nMsgCount;            // Number of messages already processed
 
     CRichEditCtrl   m_editCtrl;
 

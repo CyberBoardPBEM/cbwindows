@@ -159,7 +159,7 @@ CPlayBoardView::CPlayBoardView() :
     m_nCurToolID = ID_PTOOL_SELECT;
     m_bInDrag = FALSE;
     m_pDragSelList = NULL;
-    m_nTimerID = 0;
+    m_nTimerID = uintptr_t(0);
 }
 
 CPlayBoardView::~CPlayBoardView()
@@ -868,14 +868,14 @@ void CPlayBoardView::DragCheckAutoScroll()
     ScreenToClient(&point);
     if (CheckAutoScroll(point))
     {
-        if (m_nTimerID == 0)
+        if (m_nTimerID == uintptr_t(0))
             m_nTimerID = SetTimer(timerIDAutoScroll, timerAutoScroll, NULL);
     }
-    else if (m_nTimerID != 0)
+    else if (m_nTimerID != uintptr_t(0))
     {
-        if (m_nTimerID != 0)
+        if (m_nTimerID != uintptr_t(0))
             KillTimer(m_nTimerID);
-        m_nTimerID = 0;
+        m_nTimerID = uintptr_t(0);
     }
 }
 
@@ -883,9 +883,9 @@ void CPlayBoardView::DragKillAutoScroll()
 {
     m_bInDrag = FALSE;
     m_pDragSelList = NULL;
-    if (m_nTimerID != 0)
+    if (m_nTimerID != uintptr_t(0))
         KillTimer(m_nTimerID);
-    m_nTimerID = 0;
+    m_nTimerID = uintptr_t(0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1085,7 +1085,7 @@ void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
         CScrollView::OnLButtonDblClk(nFlags, point);
 }
 
-void CPlayBoardView::OnTimer(UINT nIDEvent)
+void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
 {
     if (m_nTimerID == nIDEvent)
     {
@@ -2072,7 +2072,7 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
             MF_BYPOSITION));
         VERIFY(pCmdUI->m_pMenu->ModifyMenu(pCmdUI->m_nIndex,
             MF_BYPOSITION | MF_ENABLED | MF_POPUP | MF_STRING,
-            (UINT)menu.Detach(), str));
+            reinterpret_cast<UINT_PTR>(menu.Detach()), str));
     }
     else
         pCmdUI->Enable();

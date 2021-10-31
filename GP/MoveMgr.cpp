@@ -1787,7 +1787,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
 
         ar << (short)m_nSeqNum;
         ar << (WORD)m_bCompoundMove;
-        ar << value_preserving_cast<DWORD>(m_nCompoundBaseIndex);
+        ar << (m_nCompoundBaseIndex != Invalid_v<size_t> ? value_preserving_cast<uint32_t>(m_nCompoundBaseIndex) : uint32_t(INT32_C(-1)));
         ar << (BYTE)(m_pCompoundBaseBookMark != NULL ? 1 : 0);
         if (m_pCompoundBaseBookMark)
             m_pCompoundBaseBookMark->Serialize(ar);
@@ -1813,9 +1813,9 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         {
             BYTE  cTmp;
             WORD  wTmp;
-            DWORD dwTmp;
+            uint32_t dwTmp;
             ar >> wTmp; m_bCompoundMove = (BOOL)wTmp;
-            ar >> dwTmp; m_nCompoundBaseIndex = value_preserving_cast<size_t>(dwTmp);
+            ar >> dwTmp; m_nCompoundBaseIndex = (dwTmp != uint32_t(INT32_C(-1)) ? value_preserving_cast<size_t>(dwTmp) : Invalid_v<size_t>);
             ar >> cTmp;             // Check for a bookmark
             if (cTmp)
             {

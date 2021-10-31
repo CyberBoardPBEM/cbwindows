@@ -161,7 +161,7 @@ BOOL CGmApp::InitInstance()
 
     m_bDisableHtmlHelp = GetProfileInt(szSectSettings, szSectDisableHtmlHelp, 0);
     if (!m_bDisableHtmlHelp)
-        ::HtmlHelp(NULL, NULL, HH_INITIALIZE, (DWORD)&m_dwHtmlHelpCookie);
+        ::HtmlHelp(NULL, NULL, HH_INITIALIZE, reinterpret_cast<uintptr_t>(&m_dwHtmlHelpCookie));
 
     g_gt.InitGdiTools();
     g_res.InitResourceTable(m_hInstance);
@@ -324,7 +324,7 @@ void CGmApp::DoHelpContents()
         DoHelpShellLaunch();
 }
 
-void CGmApp::DoHelpContext(DWORD dwContextData)
+void CGmApp::DoHelpContext(uintptr_t dwContextData)
 {
     if (!m_bDisableHtmlHelp)
         ::HtmlHelp(0, m_pszHelpFilePath, HH_HELP_CONTEXT, dwContextData);
@@ -352,7 +352,7 @@ BOOL CGmApp::DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray)
         CString strHelpPath = m_pszHelpFilePath;
         strHelpPath += HELP_TIP_CONTEXT_FILE;
         return ::HtmlHelp((HWND)pHelpInfo->hItemHandle,
-            strHelpPath, HH_TP_HELP_WM_HELP, (DWORD)(LPVOID)dwIDArray) != NULL;
+            strHelpPath, HH_TP_HELP_WM_HELP, reinterpret_cast<uintptr_t>(dwIDArray)) != NULL;
     }
     return TRUE;
 }
@@ -368,7 +368,7 @@ void CGmApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
     CString strHelpPath = m_pszHelpFilePath;
     strHelpPath += HELP_TIP_CONTEXT_FILE;
     ::HtmlHelp(pWndCtrl->GetSafeHwnd(), strHelpPath,
-        HH_TP_HELP_CONTEXTMENU, (DWORD)(LPVOID)dwIDArray);
+        HH_TP_HELP_CONTEXTMENU, reinterpret_cast<uintptr_t>(dwIDArray));
 }
 
 /////////////////////////////////////////////////////////////////////////////

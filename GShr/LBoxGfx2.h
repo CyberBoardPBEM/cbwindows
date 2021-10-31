@@ -120,7 +120,7 @@ protected:
     BOOL    m_bAllowDropScroll;     // Scroll on OnDragItem
 
     CPoint  m_clickPoint;
-    int     m_nTimerID;
+    uintptr_t m_nTimerID;
     BOOL    m_triggeredCursor;
     HWND    m_hLastWnd;
 
@@ -144,7 +144,7 @@ protected:
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnTimer(UINT nIDEvent);
+    afx_msg void OnTimer(uintptr_t nIDEvent);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     //}}AFX_MSG

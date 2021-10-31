@@ -729,10 +729,21 @@ public:
 
     void Serialize(CArchive& ar)
     {
+        int ver = ar.IsStoring() ?
+                        NumVersion(fileGbxVerMajor, fileGbxVerMinor)
+                    :
+                        GetLoadingVersion();
         if (ar.IsStoring())
         {
-            DWORD dwCount = GetCount();
-            ar << dwCount;
+            if (ver <= NumVersion(3, 90))
+            {
+                uint32_t dwCount = value_preserving_cast<uint32_t>(GetCount());
+                ar << dwCount;
+            }
+            else
+            {
+                CB::WriteCount(ar, value_preserving_cast<size_t>(GetCount()));
+            }
             POSITION pos = GetStartPosition();
             while (pos != NULL)
             {
@@ -746,9 +757,18 @@ public:
         else
         {
             this->RemoveAll();
-            DWORD dwCount;
-            ar >> dwCount;
-            while (dwCount--)
+            size_t count;
+            if (ver <= NumVersion(3, 90))
+            {
+                uint32_t dwCount;
+                ar >> dwCount;
+                count = dwCount;
+            }
+            else
+            {
+                count = CB::ReadCount(ar);
+            }
+            while (count--)
             {
                 KEY dwElem;
                 ar >> dwElem;

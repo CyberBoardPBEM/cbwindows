@@ -97,7 +97,7 @@ END_MESSAGE_MAP()
 CReadMsgWnd::CReadMsgWnd()
 {
     m_pDoc = NULL;
-    m_nMsgCount = 0;
+    m_nMsgCount = size_t(0);
 }
 
 CReadMsgWnd::~CReadMsgWnd()
@@ -177,7 +177,7 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
     {
         m_editCtrl.SetWindowText("");
         m_pDoc = pDoc;
-        m_nMsgCount = 0;
+        m_nMsgCount = size_t(0);
     }
     if (m_pDoc != NULL)
         ProcessMessages();
@@ -188,22 +188,22 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
 void CReadMsgWnd::ProcessMessages()
 {
     CStringArray& astrHist = m_pDoc->MsgGetMessageHistory();
-    if (astrHist.GetSize() <= 0 || astrHist.GetSize() < m_nMsgCount)
+    if (astrHist.GetSize() <= 0 || astrHist.GetSize() < value_preserving_cast<intptr_t>(m_nMsgCount))
     {
-        m_nMsgCount = 0;
+        m_nMsgCount = size_t(0);
         m_editCtrl.SetWindowText("");
     }
 
-    int nOldCount = m_nMsgCount;            // Save previous length for a moment
-    m_nMsgCount = astrHist.GetSize();       // Set new high water mark
-    for (int i = nOldCount; i < m_nMsgCount; i++)
+    size_t nOldCount = m_nMsgCount;            // Save previous length for a moment
+    m_nMsgCount = value_preserving_cast<size_t>(astrHist.GetSize());       // Set new high water mark
+    for (size_t i = nOldCount ; i < m_nMsgCount ; ++i)
     {
-        CString strBfr = astrHist.GetAt(i);
+        CString strBfr = astrHist.GetAt(value_preserving_cast<intptr_t>(i));
         if (strBfr.IsEmpty() || strBfr.GetAt(strBfr.GetLength()-1) != '\n')
         {
             strBfr += "\r\n";
         }
-        if (i > 0)
+        if (i > size_t(0))
         {
             SetTextStyle(MSG_DIVIDER_COLOR, MSG_DIVIDER_EFFECT);
             InsertText(STR_MESSAGE_DIVIDER);
