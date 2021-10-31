@@ -859,7 +859,7 @@ HANDLE CopyHandle (HANDLE h)
     BYTE*       lpCopy;
     BYTE*       lp;
     HANDLE      hCopy;
-    DWORD       dwLen;
+    size_t      dwLen;
 
     if (h == NULL)
         return NULL;

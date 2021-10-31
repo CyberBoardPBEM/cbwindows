@@ -650,17 +650,17 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     // Sort the tile sheet table by CX and CY and dump it again...
 
-    UINT *pShtTbl = new UINT[4 * m_TShtTbl.size()];
-    UINT* pTbl = pShtTbl;
-    for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
+    uintmax_t *pShtTbl = new uintmax_t[size_t(4) * m_TShtTbl.size()];
+    uintmax_t* pTbl = pShtTbl;
+    for (size_t nSheet = size_t(0) ; nSheet < m_TShtTbl.size() ; nSheet++)
     {
         CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
         *pTbl++ = nSheet;
-        *pTbl++ = value_preserving_cast<UINT>(pTSheet.GetWidth());
-        *pTbl++ = value_preserving_cast<UINT>(pTSheet.GetHeight());
-        *pTbl++ = value_preserving_cast<UINT>(pTSheet.GetSheetHeight());
+        *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetWidth());
+        *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetHeight());
+        *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetSheetHeight());
     }
-    qsort(pShtTbl, m_TShtTbl.size(), sizeof(UINT) * 4, compsheets);
+    qsort(pShtTbl, m_TShtTbl.size(), sizeof(uintmax_t) * 4, compsheets);
 
     WriteFileString(hFile,
         "     Tile Sheet Table\r\n"
@@ -672,7 +672,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     pTbl = pShtTbl;
     for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
     {
-        wsprintf(szBfr, "| %04X  | %3u | %3u | %5u |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
+        wsprintf(szBfr, "| %04jX  | %3ju | %3ju | %5ju |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
         pTbl += 4;
         WriteFileString(hFile, szBfr);
     }

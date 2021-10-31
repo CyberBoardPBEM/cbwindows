@@ -95,7 +95,7 @@ public:
 
 // Generated message map functions
 protected:
-    void WinHelp(DWORD dwData, UINT nCmd);
+    void WinHelp(DWORD_PTR dwData, UINT nCmd) override;
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnClose();

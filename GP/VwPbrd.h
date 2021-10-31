@@ -141,7 +141,7 @@ protected:
     // -------- //
     BOOL        m_bInDrag;          // Currently being dragged over
     CSelList*   m_pDragSelList;     // Pointer the select list being dragged
-    UINT        m_nTimerID;         // Used to control autoscrolls
+    uintptr_t    m_nTimerID;         // Used to control autoscrolls
     // -------- //
     UINT        m_nCurToolID;       // Current tool ID
     // -------- //
@@ -208,7 +208,7 @@ protected:
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnTimer(UINT nIDEvent);
+    afx_msg void OnTimer(uintptr_t nIDEvent);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);

@@ -103,7 +103,7 @@ public:
 public:
     void DoHelpShellLaunch();
     void DoHelpContents();
-    void DoHelpContext(DWORD dwContextData);
+    void DoHelpContext(uintptr_t dwContextData);
     void DoHelpTopic(LPCTSTR pszTopic);
     BOOL DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray);
     void DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray);

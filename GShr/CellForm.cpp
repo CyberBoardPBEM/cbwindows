@@ -446,7 +446,7 @@ void CCellForm::GetCellNumberStr(CellNumStyle eStyle, int row, int col,
         case cns0101ByRows:
             _itoa(row, szNum1, 10);
             _itoa(col, szNum2, 10);
-            nTmp = CB::max(strlen(szNum1), strlen(szNum2));
+            nTmp = value_preserving_cast<int>(CB::max(strlen(szNum1), strlen(szNum2)));
             nTmp = CB::max(nTmp, 2);            // Make sure at least 2 digits
             StrLeadZeros(szNum1, nTmp);
             StrLeadZeros(szNum2, nTmp);

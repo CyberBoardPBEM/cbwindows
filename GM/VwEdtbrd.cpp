@@ -651,7 +651,7 @@ void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
     pTool.OnLButtonDblClk(this, nFlags, point);
 }
 
-void CBrdEditView::OnTimer(UINT nIDEvent)
+void CBrdEditView::OnTimer(uintptr_t nIDEvent)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     CTool& pTool = CTool::GetTool(eToolType);

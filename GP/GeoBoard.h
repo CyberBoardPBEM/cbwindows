@@ -60,27 +60,27 @@ public:
     void SetSerialNumber(BoardID nBoardSerialNumber) { m_nSerialNum = nBoardSerialNumber; }
     BoardID GetSerialNumber() const { return m_nSerialNum; }
 
-    void SetBoardRowCount(int nBoardRowCount) { m_nBoardRowCount = nBoardRowCount; }
-    void SetBoardColCount(int nBoardColCount) { m_nBoardColCount = nBoardColCount; }
+    void SetBoardRowCount(size_t nBoardRowCount) { m_nBoardRowCount = nBoardRowCount; }
+    void SetBoardColCount(size_t nBoardColCount) { m_nBoardColCount = nBoardColCount; }
 
-    int  GetBoardRowCount() { return m_nBoardRowCount; }
-    int  GetBoardColCount() { return m_nBoardColCount; }
+    size_t GetBoardRowCount() { return m_nBoardRowCount; }
+    size_t GetBoardColCount() { return m_nBoardColCount; }
 
 // Methods...
 public:
     CBoard* CreateBoard(CGamDoc* pDoc);
 
-    int  AddElement(BoardID nBoardSerialNum);
+    intptr_t  AddElement(BoardID nBoardSerialNum);
 
     void Serialize(CArchive& ar);
 
 // Implementation - methods
 protected:
-    CBoard& GetBoard(int nBoardRow, int nBoardCol);
+    CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol);
     CBoard* CloneBoard(CBoard& pOrigBoard);
     void    ComputeNewBoardDimensions(int& rnRows, int& rnCols);
-    CPoint  ComputeGraphicalOffset(int nBoardRow, int nBoardCol);
-    void    ComputeCellOffset(int nBoardRow, int nBoardCol, int& rnCellRow, int& rnCellCol);
+    CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol);
+    void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, int& rnCellRow, int& rnCellCol);
     void    CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 int nCellRowOffset, int nCellColOffset);
     void    CreateBitmap(CBitmap& m_bmap, CSize size);
@@ -92,11 +92,11 @@ protected:
 
 // Implementation - vars
 protected:
-    CString m_strName;                  // The board's name
-    BoardID m_nSerialNum;               // The issued serial number
+    CString  m_strName;                 // The board's name
+    BoardID  m_nSerialNum;              // The issued serial number
 
-    int     m_nBoardRowCount;           // Number of boards vertically
-    int     m_nBoardColCount;           // Number of boards horizontally
+    size_t m_nBoardRowCount;          // Number of boards vertically
+    size_t m_nBoardColCount;          // Number of boards horizontally
 
     CGamDoc* m_pDoc;                    // Used internally
 };

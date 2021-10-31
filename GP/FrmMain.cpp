@@ -321,7 +321,7 @@ BOOL CMainFrame::OnHelpInfo(HELPINFO* pHelpInfo)
     return TRUE;
 }
 
-void CMainFrame::WinHelp(DWORD dwData, UINT nCmd)
+void CMainFrame::WinHelp(DWORD_PTR dwData, UINT nCmd)
 {
     if (dwData != 0)
         GetApp()->DoHelpContext(dwData);

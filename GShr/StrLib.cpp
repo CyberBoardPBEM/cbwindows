@@ -111,11 +111,13 @@ void StrLeadZeros(char* szVal, int nWidth)
 {
     char szTmp[20];
     int i;
+    ASSERT(nWidth < sizeof(szTmp));
     for (i = 0; i < nWidth; i++)
         szTmp[i] = '0';
     szTmp[i] = 0;           // Terminate
-    int nLen = strlen(szVal);
-    memcpy(szTmp + nWidth - nLen, szVal, nLen);
+    size_t nLen = strlen(szVal);
+    ASSERT(nLen < sizeof(szTmp));
+    memcpy(szTmp + nWidth - value_preserving_cast<ptrdiff_t>(nLen), szVal, nLen);
     strcpy(szVal, szTmp);
 }
 

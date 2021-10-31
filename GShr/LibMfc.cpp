@@ -40,13 +40,13 @@ static char THIS_FILE[] = __FILE__;
 
 static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
-    LPDWORD pdwPidOrHandle = (LPDWORD)lParam;
+    uintptr_t* pdwPidOrHandle = reinterpret_cast<uintptr_t*>(lParam);
     DWORD dwPid;
     GetWindowThreadProcessId(hwnd, &dwPid);
 
     if (dwPid == *pdwPidOrHandle)
     {
-        *pdwPidOrHandle = (DWORD)hwnd;
+        *pdwPidOrHandle = reinterpret_cast<uintptr_t>(hwnd);
         return FALSE;
     }
     return TRUE;
@@ -54,10 +54,10 @@ static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 HWND FindWindowForProcessID(DWORD dwProcessID)
 {
-    DWORD dwProcIDorHandle = dwProcessID;
-    if (EnumWindows(EnumWindowsProc, (LPARAM)&dwProcIDorHandle) != 0)
+    uintptr_t dwProcIDorHandle = dwProcessID;
+    if (EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&dwProcIDorHandle)) != 0)
         return NULL;                // Didn't find one
-    return (HWND)dwProcIDorHandle;
+    return reinterpret_cast<HWND>(dwProcIDorHandle);
 }
 
 // Returns TRUE if succeeded
@@ -220,18 +220,18 @@ void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblName
 {
     if (tblNames.GetSize() > 0)
     {
-        int nMenuEntries = pTblSelections != NULL ? pTblSelections->GetSize() :
+        intptr_t nMenuEntries = pTblSelections != NULL ? pTblSelections->GetSize() :
             tblNames.GetSize();
-        for (int i = 0; i < nMenuEntries; i++)
+        for (intptr_t i = 0; i < nMenuEntries; i++)
         {
-            int nNameIdx = pTblSelections != NULL ? pTblSelections->GetAt(i) : i;
+            intptr_t nNameIdx = pTblSelections != NULL ? value_preserving_cast<intptr_t>(pTblSelections->GetAt(i)) : i;
             ASSERT(nNameIdx < tblNames.GetSize());
             // Break the menu every 'nBreaksAt' lines since Windows
             // won't automatically break the menu if it is
             // too tall.
-            UINT nFlags = MF_ENABLED | MF_STRING |
-                (i % nBreaksAt == 0 && i != 0 ? MF_MENUBARBREAK : 0);
-            VERIFY(menu.AppendMenu(nFlags, nBaseID + i, tblNames.GetAt(nNameIdx)));
+            UINT nFlags = value_preserving_cast<UINT>(MF_ENABLED | MF_STRING |
+                (i % value_preserving_cast<intptr_t>(nBreaksAt) == 0 && i != 0 ? MF_MENUBARBREAK : 0));
+            VERIFY(menu.AppendMenu(nFlags, nBaseID + value_preserving_cast<uintptr_t>(i), tblNames.GetAt(nNameIdx)));
         }
     }
 }

@@ -91,18 +91,19 @@ inline int GetSaveFileVersion()
     static const int retval = [] {
         struct FileFlagParser : public CCommandLineInfo
         {
-            bool id32 = false;
+            bool id32cb64 = false;
             virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
             {
-                if (bFlag && strcmp(pszParam, "id32") == 0)
+                if (bFlag && strcmp(pszParam, "id32cb64") == 0)
                 {
-                    id32 = true;
+                    ASSERT(!"not ready yet");
+                    id32cb64 = true;
                 }
             }
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        return ffp.id32 ? NumVersion(4, 0) : NumVersion(3, 90);
+        return ffp.id32cb64 ? NumVersion(4, 0) : NumVersion(3, 90);
     }();
     return retval;
 }

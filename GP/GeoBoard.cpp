@@ -66,8 +66,8 @@ void CGeoBoardElement::Serialize(CArchive& ar)
 
 CGeomorphicBoard::CGeomorphicBoard()
 {
-    m_nBoardRowCount = 0;
-    m_nBoardColCount = 0;
+    m_nBoardRowCount = size_t(0);
+    m_nBoardColCount = size_t(0);
     m_nSerialNum = BoardID(0);
     m_pDoc = NULL;
 }
@@ -87,7 +87,7 @@ CGeomorphicBoard::CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CGeomorphicBoard::AddElement(BoardID nBoardSerialNum)
+intptr_t CGeomorphicBoard::AddElement(BoardID nBoardSerialNum)
 {
     CGeoBoardElement geo(nBoardSerialNum);
     return Add(geo);
@@ -103,7 +103,7 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     // Procedure:
     // 1) Clone the root board to use as template
 
-    CBoard& pBrd = GetBoard(0, 0);
+    CBoard& pBrd = GetBoard(size_t(0), size_t(0));
     CBoard* pBrdNew = CloneBoard(pBrd);
 
     pBrdNew->SetName(m_strName);
@@ -120,11 +120,11 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     pBrdArrayNew->ReshapeBoard(nRows, nCols, -1, -1, -1);
 
     // 3) Fill cells with content of cells from other boards.
-    for (int nBoardRow = 0; nBoardRow < m_nBoardRowCount; nBoardRow++)
+    for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
-        for (int nBoardCol = 0; nBoardCol < m_nBoardColCount; nBoardCol++)
+        for (size_t nBoardCol = size_t(0); nBoardCol < m_nBoardColCount ; ++nBoardCol)
         {
-            if (nBoardCol == 0 && nBoardRow == 0)
+            if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
             int nCellRowOffset;
             int nCellColOffset;
@@ -140,11 +140,11 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     // 4) Copy in drawing layers from other board. Offset them
     //    as required based on their board positions.
 
-    for (int nBoardRow = 0; nBoardRow < m_nBoardRowCount; nBoardRow++)
+    for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
-        for (int nBoardCol = 0; nBoardCol < m_nBoardColCount; nBoardCol++)
+        for (size_t nBoardCol = size_t(0); nBoardCol < m_nBoardColCount ; ++nBoardCol)
         {
-            if (nBoardCol == 0 && nBoardRow == 0)
+            if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
             CPoint pntOffset = ComputeGraphicalOffset(nBoardRow, nBoardCol);
 
@@ -340,27 +340,27 @@ void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size)
     dc.SelectPalette(prvPal, FALSE);
 }
 
-CPoint CGeomorphicBoard::ComputeGraphicalOffset(int nBoardRow, int nBoardCol)
+CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol)
 {
-    CBoard& pBrdRoot = GetBoard(0, 0);
+    CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
     CSize sizeCell = pBrdRoot.GetBoardArray()->GetCellSize(fullScale);
     CPoint pnt(0, 0);
-    for (int nCol = 0; nCol < nBoardCol; nCol++)
+    for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        CBoard& pBrd = GetBoard(0, nCol);
+        CBoard& pBrd = GetBoard(size_t(0), nCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
         pnt.x += pBArray->GetWidth(fullScale);
-        if (nBoardCol != 0 && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
             pnt.x -= sizeCell.cx;               // A column is shared
         else
             pnt.x -= sizeCell.cx / 2;           // A column is half shared
     }
-    for (int nRow = 0; nRow < nBoardRow; nRow++)
+    for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        CBoard& pBrd = GetBoard(nRow, 0);
+        CBoard& pBrd = GetBoard(nRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
         pnt.y += pBArray->GetHeight(fullScale);
-        if (nBoardRow != 0 && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
+        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
             pnt.y -= sizeCell.cy;               // A row is shared
         else
             pnt.y -= sizeCell.cy / 2;           // A row is half shared
@@ -373,40 +373,40 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(int& rnRows, int& rnCols)
 {
     rnRows = 0;
     rnCols = 0;
-    for (int nBoardCol = 0; nBoardCol < m_nBoardColCount; nBoardCol++)
+    for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
     {
-        CBoard& pBrd = GetBoard(0, nBoardCol);
+        CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnCols += pBArray->GetCols();
-        if (nBoardCol != 0 && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
             rnCols--;                   // A column is shared
     }
-    for (int nBoardRow = 0; nBoardRow < m_nBoardRowCount; nBoardRow++)
+    for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
-        CBoard& pBrd = GetBoard(nBoardRow, 0);
+        CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnRows += pBArray->GetRows();
-        if (nBoardRow != 0 && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
+        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
             rnRows--;                   // A row is shared
     }
 }
 
-void CGeomorphicBoard::ComputeCellOffset(int nBoardRow, int nBoardCol,
+void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     int& rnCellRow, int& rnCellCol)
 {
     rnCellRow = 0;
     rnCellCol = 0;
-    for (int nCol = 0; nCol < nBoardCol; nCol++)
+    for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        CBoard& pBrd = GetBoard(0, nCol);
+        CBoard& pBrd = GetBoard(size_t(0), nCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnCellCol += pBArray->GetCols();
         if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
             rnCellCol--;
     }
-    for (int nRow = 0; nRow < nBoardRow; nRow++)
+    for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        CBoard& pBrd = GetBoard(nRow, 0);
+        CBoard& pBrd = GetBoard(nRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnCellRow += pBArray->GetRows();
         if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
@@ -414,11 +414,11 @@ void CGeomorphicBoard::ComputeCellOffset(int nBoardRow, int nBoardCol,
     }
 }
 
-CBoard& CGeomorphicBoard::GetBoard(int nBoardRow, int nBoardCol)
+CBoard& CGeomorphicBoard::GetBoard(size_t nBoardRow, size_t nBoardCol)
 {
-    int nGeoIndex = nBoardRow * m_nBoardColCount + nBoardCol;
+    size_t nGeoIndex = nBoardRow * m_nBoardColCount + nBoardCol;
     ASSERT(nGeoIndex < m_nBoardRowCount * m_nBoardColCount);
-    CGeoBoardElement geo = GetAt(nGeoIndex);
+    CGeoBoardElement geo = GetAt(value_preserving_cast<intptr_t>(nGeoIndex));
     size_t nBrdIndex = m_pDoc->GetBoardManager()->FindBoardBySerial(geo.m_nBoardSerialNum);
     CBoard& pBrd = m_pDoc->GetBoardManager()->GetBoard(nBrdIndex);
     return pBrd;
@@ -467,10 +467,10 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar << m_strName;
 
         ar << m_nSerialNum;
-        ar << (WORD)m_nBoardRowCount;
-        ar << (WORD)m_nBoardColCount;
+        ar << value_preserving_cast<WORD>(m_nBoardRowCount);
+        ar << value_preserving_cast<WORD>(m_nBoardColCount);
 
-        ar << (WORD)GetSize();
+        ar << value_preserving_cast<WORD>(GetSize());
         for (int i = 0; i < GetSize(); i++)
             ElementAt(i).Serialize(ar);
     }
@@ -481,8 +481,8 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar >> m_strName;
 
         ar >> m_nSerialNum;
-        ar >> wTmp; m_nBoardRowCount = (int)wTmp;
-        ar >> wTmp; m_nBoardColCount = (int)wTmp;
+        ar >> wTmp; m_nBoardRowCount = value_preserving_cast<size_t>(wTmp);
+        ar >> wTmp; m_nBoardColCount = value_preserving_cast<size_t>(wTmp);
 
         RemoveAll();
         WORD wCount;

@@ -74,7 +74,7 @@ extern "C" {            /* Assume C declarations for C++ */
 #define     GlobalReAllocPtr(lp, cbNew, flags)       \
                 (GlobalUnlockPtr(lp), GlobalLock(GlobalReAlloc(GlobalPtrHandle(lp) , (cbNew), (flags))))
 #define     GlobalFreePtr(lp)                \
-                (GlobalUnlockPtr(lp), (BOOL)GlobalFree(GlobalPtrHandle(lp)))
+                (GlobalUnlockPtr(lp), (bool)GlobalFree(GlobalPtrHandle(lp)))
 
 #ifdef __cplusplus
 }                       /* End of extern "C" { */

@@ -41,7 +41,7 @@ const unsigned defaultItemHeight = 16;
 const int scrollZonePixels = 7;         // size of autoscroll trigger zone
 const int timerScrollStart = 180;
 const int timerScroll = 125;
-const int timerScrollIDStart = 900;
+const uintptr_t timerScrollIDStart = 900;
 const int timerScrollID = 901;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ END_MESSAGE_MAP()
 CGrafixListBox2::CGrafixListBox2()
 {
     m_nLastInsert = -1;
-    m_nTimerID = 0;
+    m_nTimerID = uintptr_t(0);
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
@@ -345,7 +345,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
     if (m_nTimerID)
     {
         KillTimer(m_nTimerID);
-        m_nTimerID = 0;
+        m_nTimerID = uintptr_t(0);
     }
     if (m_bAllowDrag)
     {
@@ -500,7 +500,7 @@ int CGrafixListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
 
     m_pItemMap = NULL;
-    m_nTimerID = 0;
+    m_nTimerID = uintptr_t(0);
 
     return 0;
 }
@@ -535,7 +535,7 @@ void CGrafixListBox2::DoInsertLineProcessing(UINT nPhase, DragInfo* pdi)
 
 void CGrafixListBox2::DoAutoScrollProcessing(DragInfo* pdi)
 {
-    if (m_bAllowDropScroll && m_nTimerID == 0)
+    if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
     {
         CRect rct;
         GetClientRect(&rct);
@@ -565,9 +565,9 @@ LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
     return lResult;
 }
 
-void CGrafixListBox2::OnTimer(UINT nIDEvent)
+void CGrafixListBox2::OnTimer(uintptr_t nIDEvent)
 {
-    if (nIDEvent != (UINT)m_nTimerID)
+    if (nIDEvent != m_nTimerID)
         return;
 
     CPoint point;
@@ -623,7 +623,7 @@ void CGrafixListBox2::OnTimer(UINT nIDEvent)
     else
     {
         KillTimer(m_nTimerID);
-        m_nTimerID = 0;
+        m_nTimerID = uintptr_t(0);
     }
 }
 
