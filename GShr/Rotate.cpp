@@ -61,7 +61,7 @@ void Stepper::Setup(int nStart, int nEnd, int nSteps)
     m_nVal = nStart;
     m_nRem = 0;
     int nDiff = nEnd - nStart;
-    if ((m_bNeg = nDiff < 0))
+    if ((m_bNeg = nDiff < 0) != false)
         nDiff = -nDiff;
     m_step = nSteps > 0 ? div(nDiff, nSteps) : div(0,1);
 }
