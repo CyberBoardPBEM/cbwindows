@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 
 CBoardArray::CBoardArray()
 {
-    m_nRows = m_nCols = 0;
+    m_nRows = m_nCols = size_t(0);
     m_pMap = NULL;
     m_pTsa = NULL;
     m_bTransparentCells = FALSE;
@@ -65,7 +65,7 @@ CBoardArray::CBoardArray()
 
 ///////////////////////////////////////////////////////////////////////
 
-void CBoardArray::CreateBoard(CellFormType eType, int nRows, int nCols,
+void CBoardArray::CreateBoard(CellFormType eType, size_t nRows, size_t nCols,
     int nParm1, int nParm2, int nStagger)
 {
     BoardCell* pMap = (BoardCell*)GlobalAllocPtr(GHND,
@@ -73,15 +73,15 @@ void CBoardArray::CreateBoard(CellFormType eType, int nRows, int nCols,
     if (pMap == NULL)
         AfxThrowMemoryException();
 
-    for (int i = 0; i < nRows * nCols; i++)
-        pMap[i].Clear();
+    for (size_t i = size_t(0) ; i < nRows * nCols ; ++i)
+        pMap[value_preserving_cast<ptrdiff_t>(i)].Clear();
 
     GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, pMap);
 }
 
 // ----------------------------------------------------- //
 
-void CBoardArray::ReshapeBoard(int nRows, int nCols, int nParm1, int nParm2,
+void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm2,
         int nStagger)
 {
     ASSERT(m_pMap != NULL);
@@ -92,16 +92,16 @@ void CBoardArray::ReshapeBoard(int nRows, int nCols, int nParm1, int nParm2,
         (DWORD)sizeof(BoardCell) * nRows * nCols);
     if (pMap == NULL)
         AfxThrowMemoryException();
-    for (int i = 0; i < nRows * nCols; i++)
-        pMap[i].Clear();
+    for (size_t i = size_t(0) ; i < nRows * nCols ; ++i)
+        pMap[value_preserving_cast<ptrdiff_t>(i)].Clear();
 
-    int maxRows = CB::min(m_nRows, nRows);
-    int maxCols = CB::min(m_nCols, nCols);
+    size_t maxRows = CB::min(m_nRows, nRows);
+    size_t maxCols = CB::min(m_nCols, nCols);
 
-    for (int r = 0; r < maxRows; r++)
+    for (size_t r = size_t(0) ; r < maxRows ; ++r)
     {
-        for (int c = 0; c < maxCols; c++)
-            pMap[r*nCols + c] = m_pMap[r*m_nCols + c];
+        for (size_t c = size_t(0) ; c < maxCols ; ++c)
+            pMap[value_preserving_cast<ptrdiff_t>(r*nCols + c)] = m_pMap[value_preserving_cast<ptrdiff_t>(r*m_nCols + c)];
     }
 
     // OK we've copied over the old data destroy the old and
@@ -125,7 +125,7 @@ void CBoardArray::ReshapeBoard(int nRows, int nCols, int nParm1, int nParm2,
 
 // ----------------------------------------------------- //
 
-void CBoardArray::GenerateBoard(CellFormType eType, int nRows, int nCols,
+void CBoardArray::GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
     int nParm1, int nParm2, int nStagger, BoardCell* pMap)
 {
     DestroyBoard();             // Wipe out current board info.
@@ -198,8 +198,8 @@ void CBoardArray::GetBoardScaling(TileScale eScale, CSize& worldSize,
 void CBoardArray::DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale)
 {
     // Fill the cells with tile bitmaps or solid color or nothing
-    for (int row = pCellRct->top; row <= pCellRct->bottom; row++)
-        for (int col = pCellRct->left; col <= pCellRct->right; col++)
+    for (size_t row = value_preserving_cast<size_t>(pCellRct->top) ; row <= value_preserving_cast<size_t>(pCellRct->bottom) ; ++row)
+        for (size_t col = value_preserving_cast<size_t>(pCellRct->left) ; col <= value_preserving_cast<size_t>(pCellRct->right) ; ++col)
             FillCell(pDC, row, col, eScale);
 }
 
@@ -209,8 +209,8 @@ void CBoardArray::DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale)
 {
 //  CPen* pPrvPen = (CPen*)pDC->SelectStockObject(BLACK_PEN);
     CPen* pPrvPen = pDC->SelectObject(&m_pnCellFrame);
-    for (int row = pCellRct->top; row <= pCellRct->bottom; row++)
-        for (int col = pCellRct->left; col <= pCellRct->right; col++)
+    for (size_t row = value_preserving_cast<size_t>(pCellRct->top) ; row <= value_preserving_cast<size_t>(pCellRct->bottom) ; ++row)
+        for (size_t col = value_preserving_cast<size_t>(pCellRct->left) ; col <= value_preserving_cast<size_t>(pCellRct->right) ; ++col)
             FrameCell(pDC, row, col, eScale);
     pDC->SelectObject(pPrvPen);
 }
@@ -221,35 +221,35 @@ BOOL CBoardArray::MapPixelsToCellBounds(CRect* pPxlRct, CRect* pCellRct,
     TileScale eScale)
 {
     BOOL bOutOfRange;
-    int row, col;
+    size_t row, col;
     bOutOfRange = !FindCell(pPxlRct->left, pPxlRct->top, row, col, eScale);
-    pCellRct->top = row;
-    pCellRct->left = col;
+    pCellRct->top = value_preserving_cast<LONG>(row);
+    pCellRct->left = value_preserving_cast<LONG>(col);
     bOutOfRange |= !FindCell(pPxlRct->right, pPxlRct->bottom, row, col, eScale);
-    pCellRct->bottom = row;
-    pCellRct->right = col;
+    pCellRct->bottom = value_preserving_cast<LONG>(row);
+    pCellRct->right = value_preserving_cast<LONG>(col);
 
     // Expand the rectangle for good measure.
     pCellRct->left--;
     if (pCellRct->left < 0) pCellRct->left = 0;
     pCellRct->right++;
-    if (pCellRct->right >= m_nCols) pCellRct->right = m_nCols - 1;
+    if (pCellRct->right >= value_preserving_cast<LONG>(m_nCols)) pCellRct->right = value_preserving_cast<LONG>(m_nCols - size_t(1));
     pCellRct->top--;
     if (pCellRct->top < 0) pCellRct->top = 0;
     pCellRct->bottom++;
-    if (pCellRct->bottom >= m_nRows) pCellRct->bottom = m_nRows - 1;
+    if (pCellRct->bottom >= value_preserving_cast<LONG>(m_nRows)) pCellRct->bottom = value_preserving_cast<LONG>(m_nRows - size_t(1));
     return !bOutOfRange;
 }
 
 // ----------------------------------------------------- //
 
-void CBoardArray::FillCell(CDC *pDC, int row, int col, TileScale eScale)
+void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 {
     BoardCell* pCell = GetCell(row, col);
     CCellForm* pCF = GetCellForm(eScale);
 
     CRect rct;
-    pCF->GetRect(row, col, &rct);
+    pCF->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
 
     if (!pDC->RectVisible(&rct))
         return;
@@ -306,9 +306,9 @@ void CBoardArray::FillCell(CDC *pDC, int row, int col, TileScale eScale)
 
 // ----------------------------------------------------- //
 
-void CBoardArray::GetCellRect(int row, int col, CRect* pRct, TileScale eScale)
+void CBoardArray::GetCellRect(size_t row, size_t col, CRect* pRct, TileScale eScale)
 {
-    GetCellForm(eScale)->GetRect(row, col, pRct);
+    GetCellForm(eScale)->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), pRct);
 }
 
 // ----------------------------------------------------- //
@@ -320,12 +320,12 @@ CSize CBoardArray::GetCellSize(TileScale eScale)
 
 // ----------------------------------------------------- //
 
-void CBoardArray::FrameCell(CDC *pDC, int row, int col, TileScale eScale)
+void CBoardArray::FrameCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 {
     BoardCell* pCell = GetCell(row, col);
     CRect rct;
     CCellForm *pCF = GetCellForm(eScale);
-    pCF->GetRect(row, col, &rct);
+    pCF->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
     if (!pDC->RectVisible(&rct))
         return;
     pCF->FrameCell(pDC, rct.left, rct.top);
@@ -356,67 +356,70 @@ int CBoardArray::GetHeight(TileScale eScale)
 
 // ----------------------------------------------------- //
 
-void CBoardArray::SetCellColor(int row, int col, COLORREF cr)
+void CBoardArray::SetCellColor(size_t row, size_t col, COLORREF cr)
 {
-    int nCellIdx = CellIndex(row, col);
-    m_pMap[nCellIdx].SetColor(cr);
+    size_t nCellIdx = CellIndex(row, col);
+    m_pMap[value_preserving_cast<ptrdiff_t>(nCellIdx)].SetColor(cr);
 }
 
 // ----------------------------------------------------- //
 
-void CBoardArray::SetCellTile(int row, int col, TileID tid)
+void CBoardArray::SetCellTile(size_t row, size_t col, TileID tid)
 {
-    int nCellIdx = CellIndex(row, col);
-    m_pMap[nCellIdx].SetTID(tid);
+    size_t nCellIdx = CellIndex(row, col);
+    m_pMap[value_preserving_cast<ptrdiff_t>(nCellIdx)].SetTID(tid);
 }
 
 // ----------------------------------------------------- //
 
-void CBoardArray::SetCellColorInRange(int rowBeg, int colBeg, int rowEnd,
-    int colEnd, COLORREF cr)
+void CBoardArray::SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
+    size_t colEnd, COLORREF cr)
 {
-    for (int r = rowBeg; r <= rowEnd; r++)
-        for (int c = colBeg; c <= colEnd; c++)
+    for (size_t r = rowBeg ; r <= rowEnd ; ++r)
+        for (size_t c = colBeg ; c <= colEnd ; ++c)
             SetCellColor(r, c, cr);
 }
 
 // ----------------------------------------------------- //
 
-BoardCell* CBoardArray::GetCell(int row, int col)
+BoardCell* CBoardArray::GetCell(size_t row, size_t col)
 {
     ASSERT(m_pMap != NULL);
-    return &m_pMap[CellIndex(row, col)];
+    return &m_pMap[value_preserving_cast<ptrdiff_t>(CellIndex(row, col))];
 }
 
 // ----------------------------------------------------- //
 // X and Y is in pixels
 
-BOOL CBoardArray::FindCell(int x, int y, int& rRow, int& rCol, TileScale eScale)
+BOOL CBoardArray::FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale)
 {
+    CB::ssize_t sRow, sCol;
     BOOL bRet = TRUE;
-    GetCellForm(eScale)->FindCell(x, y, rRow, rCol);
+    GetCellForm(eScale)->FindCell(x, y, sRow, sCol);
     // Make sure result is in bounds. Return FALSE if row and
     // column is forced to be in range.
-    if (rRow < 0)
+    if (sRow < 0)
     {
-        rRow = 0;
+        sRow = 0;
         bRet = FALSE;
     }
-    else if (rRow >= m_nRows)
+    else if (sRow >= value_preserving_cast<CB::ssize_t>(m_nRows))
     {
-        rRow = m_nRows - 1;
+        sRow = value_preserving_cast<CB::ssize_t>(m_nRows) - 1;
         bRet = FALSE;
     }
-    if (rCol < 0)
+    if (sCol < 0)
     {
-        rCol = 0;
+        sCol = 0;
         bRet = FALSE;
     }
-    else if (rCol >= m_nCols)
+    else if (sCol >= value_preserving_cast<CB::ssize_t>(m_nCols))
     {
-        rCol = m_nCols - 1;
+        sCol = value_preserving_cast<CB::ssize_t>(m_nCols) - 1;
         bRet = FALSE;
     }
+    rRow = value_preserving_cast<size_t>(sRow);
+    rCol = value_preserving_cast<size_t>(sCol);
     return bRet;
 }
 
@@ -425,9 +428,9 @@ BOOL CBoardArray::FindCell(int x, int y, int& rRow, int& rCol, TileScale eScale)
 BOOL CBoardArray::PurgeMissingTileIDs()
 {
     BOOL bPurged = FALSE;
-    for (int r = 0; r < m_nRows; r++)
+    for (size_t r = size_t(0) ; r < m_nRows ; ++r)
     {
-        for (int c = 0; c < m_nCols; c++)
+        for (size_t c = size_t(0) ; c < m_nCols ; ++c)
         {
             BoardCell *pCell = GetCell(r, c);
             if (pCell->IsTileID())
@@ -447,9 +450,9 @@ BOOL CBoardArray::PurgeMissingTileIDs()
 
 BOOL CBoardArray::IsTileInUse(TileID tid)
 {
-    for (int r = 0; r < m_nRows; r++)
+    for (size_t r = size_t(0) ; r < m_nRows ; ++r)
     {
-        for (int c = 0; c < m_nCols; c++)
+        for (size_t c = size_t(0) ; c < m_nCols ; ++c)
         {
             BoardCell *pCell = GetCell(r, c);
             if (pCell->IsTileID() && pCell->GetTID() == tid)
@@ -484,27 +487,27 @@ void CBoardArray::SetCellFrameColor(COLORREF cr)
 
 void CBoardArray::GetCellNumberStr(CPoint pnt, CString& str, TileScale eScale)
 {
-    int row, col;
+    size_t row, col;
     str.Empty();
     if (!FindCell(pnt.x, pnt.y, row, col, eScale))
         return;
     GetCellNumberStr(row, col, str);
 }
 
-void CBoardArray::GetCellNumberStr(int row, int col, CString& str)
+void CBoardArray::GetCellNumberStr(size_t row, size_t col, CString& str)
 {
     str.Empty();
-    if (row < 0 || row >= m_nRows || col < 0 || col >= m_nCols)
+    if (row >= m_nRows || col >= m_nCols)
         return;
 
     if (m_bRowTrkInvert)
-        row = m_nRows - row - 1;
+        row = m_nRows - row - size_t(1);
     if (m_bColTrkInvert)
-        col = m_nCols - col - 1;
+        col = m_nCols - col - size_t(1);
 
     // Only computer wonks start counting at zero...
-    CCellForm::GetCellNumberStr(m_eNumStyle, row + m_nRowTrkOffset + 1,
-        col + m_nColTrkOffset + 1, str);
+    CCellForm::GetCellNumberStr(m_eNumStyle, row + value_preserving_cast<size_t>(m_nRowTrkOffset + 1),
+        col + value_preserving_cast<size_t>(m_nColTrkOffset + 1), str);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -576,12 +579,12 @@ void CBoardArray::Serialize(CArchive& ar)
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        ar << (WORD)m_nRowTrkOffset;
-        ar << (WORD)m_nColTrkOffset;
+        ar << value_preserving_cast<WORD>(m_nRowTrkOffset);
+        ar << value_preserving_cast<WORD>(m_nColTrkOffset);
         ar << (WORD)m_bRowTrkInvert;
         ar << (WORD)m_bColTrkInvert;
-        ar << (WORD)m_nRows;
-        ar << (WORD)m_nCols;
+        ar << value_preserving_cast<WORD>(m_nRows);
+        ar << value_preserving_cast<WORD>(m_nCols);
         ar << (WORD)m_bTransparentCells;
         ar << (WORD)m_eNumStyle;
         ar << (WORD)m_bTrackCellNum;
@@ -598,14 +601,14 @@ void CBoardArray::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        ar >> wVal; m_nRowTrkOffset = (short)wVal;  // (was int cast)
-        ar >> wVal; m_nColTrkOffset = (short)wVal;  // (was int cast)
+        ar >> wVal; m_nRowTrkOffset = wVal;  // (was int cast)
+        ar >> wVal; m_nColTrkOffset = wVal;  // (was int cast)
         ar >> wVal; m_bRowTrkInvert = (BOOL)wVal;
         ar >> wVal; m_bColTrkInvert = (BOOL)wVal;
-        ar >> wVal; m_nRows = (int)wVal;
-        ar >> wVal; m_nCols = (int)wVal;
+        ar >> wVal; m_nRows = wVal;
+        ar >> wVal; m_nCols = wVal;
         ar >> wVal; m_bTransparentCells = (BOOL)wVal;
-        ar >> wVal; m_eNumStyle = (CellNumStyle)wVal;
+        ar >> wVal; m_eNumStyle = static_cast<CellNumStyle>(wVal);
         ar >> wVal; m_bTrackCellNum = (BOOL)wVal;
 
 #ifdef GPLAY
@@ -630,9 +633,9 @@ void CBoardArray::Serialize(CArchive& ar)
     m_cfHalf.Serialize(ar);
     m_cfSmall.Serialize(ar);
 
-    for (int r = 0; r < m_nRows; r++)
+    for (size_t r = size_t(0) ; r < m_nRows ; ++r)
     {
-        for (int c = 0; c < m_nCols; c++)
+        for (size_t c = size_t(0) ; c < m_nCols ; ++c)
             GetCell(r, c)->Serialize(ar);
     }
 }

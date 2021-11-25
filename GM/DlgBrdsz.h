@@ -41,8 +41,8 @@ public:
     CEdit   m_editCellHt;
     UINT    m_nCellHt;
     UINT    m_nCellWd;
-    UINT    m_nCols;
-    UINT    m_nRows;
+    size_t  m_nCols;
+    size_t  m_nRows;
     BOOL    m_bStaggerIn;
     //}}AFX_DATA
 

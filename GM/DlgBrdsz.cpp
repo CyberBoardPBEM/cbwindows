@@ -42,8 +42,8 @@ CBoardReshapeDialog::CBoardReshapeDialog(CWnd* pParent /*=NULL*/)
     //{{AFX_DATA_INIT(CBoardReshapeDialog)
     m_nCellHt = 0;
     m_nCellWd = 0;
-    m_nCols = 0;
-    m_nRows = 0;
+    m_nCols = size_t(0);
+    m_nRows = size_t(0);
     m_bStaggerIn = FALSE;
     //}}AFX_DATA_INIT
     m_eCellStyle = cformRect;
@@ -61,9 +61,9 @@ void CBoardReshapeDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_D_BRDSHP_CELLWD, m_nCellWd);
     DDV_MinMaxUInt(pDX, m_nCellWd, 4, 32000);
     DDX_Text(pDX, IDC_D_BRDSHP_COLS, m_nCols);
-    DDV_MinMaxUInt(pDX, m_nCols, 1, 1000);
+    DDV_MinMaxUInt(pDX, value_preserving_cast<UINT>(m_nCols), 1, 1000);
     DDX_Text(pDX, IDC_D_BRDSHP_ROWS, m_nRows);
-    DDV_MinMaxUInt(pDX, m_nRows, 1, 1000);
+    DDV_MinMaxUInt(pDX, value_preserving_cast<UINT>(m_nRows), 1, 1000);
     DDX_Check(pDX, IDC_D_BRDSHP_STAGGERIN, m_bStaggerIn);
     //}}AFX_DATA_MAP
 }

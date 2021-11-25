@@ -78,16 +78,16 @@ public:
 protected:
     CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol);
     CBoard* CloneBoard(CBoard& pOrigBoard);
-    void    ComputeNewBoardDimensions(int& rnRows, int& rnCols);
+    void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols);
     CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol);
-    void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, int& rnCellRow, int& rnCellCol);
+    void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol);
     void    CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
-                int nCellRowOffset, int nCellColOffset);
+                size_t nCellRowOffset, size_t nCellColOffset);
     void    CreateBitmap(CBitmap& m_bmap, CSize size);
     void    CombineLeftAndRight(CBitmap& bmap, TileScale eScale, CBoardArray* pBALeft,
-                CBoardArray* pBARight, int nRowLeft, int nColLeft, int nRowRight, int nColRight);
+                CBoardArray* pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight);
     void    CombineTopAndBottom(CBitmap& bmap, TileScale eScale, CBoardArray* pBATop,
-                CBoardArray* pBABottom, int nRowTop, int nColTop, int nRowBottom, int nColBottom);
+                CBoardArray* pBABottom, size_t nRowTop, size_t nColTop, size_t nRowBottom, size_t nColBottom);
     size_t  GetSpecialTileSet();
 
 // Implementation - vars

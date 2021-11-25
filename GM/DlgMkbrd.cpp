@@ -41,8 +41,8 @@ CGridType::CGridType(CWnd* pParent /*=NULL*/)
     //{{AFX_DATA_INIT(CGridType)
     m_iCellWd = 0;
     m_iCellHt = 0;
-    m_iCols = 0;
-    m_iRows = 0;
+    m_iCols = size_t(0);
+    m_iRows = size_t(0);
     m_strBoardName = "";
     m_bStagerIn = FALSE;
     m_nBoardType = -1;
@@ -64,9 +64,9 @@ void CGridType::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_D_NEWBRD_CELLHEIGHT, m_iCellHt);
     DDV_MinMaxInt(pDX, m_iCellHt, 4, 32000);
     DDX_Text(pDX, IDC_D_NEWBRD_GRIDCOLS, m_iCols);
-    DDV_MinMaxInt(pDX, m_iCols, 1, 1000);
+    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_iCols), 1, 1000);
     DDX_Text(pDX, IDC_D_NEWBRD_GRIDROWS, m_iRows);
-    DDV_MinMaxInt(pDX, m_iRows, 1, 1000);
+    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_iRows), 1, 1000);
     DDX_Text(pDX, IDC_D_NEWBRD_BOARDNAME, m_strBoardName);
     DDV_MaxChars(pDX, m_strBoardName, 32);
     DDX_Check(pDX, IDC_D_NEWBRD_STAGGERIN, m_bStagerIn);
@@ -207,7 +207,7 @@ void CGridType::UpdateBoardDimensions()
     if (m_nBoardType == cformHexPnt)    // Only first param is used
         m_iCellHt = m_iCellWd;
 
-    if (!(m_iRows > 0 && m_iCols > 0 && m_iCellHt >= 4 && m_iCellWd >= 4))
+    if (!(m_iRows > size_t(0) && m_iCols > size_t(0) && m_iCellHt >= 4 && m_iCellWd >= 4))
     {
         CString str;
         VERIFY(str.LoadString(IDS_BSIZE_INVALID));

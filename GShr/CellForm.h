@@ -60,7 +60,7 @@ public:
     BITMAP*  GetMaskMemoryInfo() { return m_pMask != NULL ? &m_bmapMask : NULL; }
     BOOL     HasMask() { return m_pMask != NULL; }
 
-    CRect* GetRect(int row, int col, CRect* pRct);
+    CRect* GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct);
     CSize GetCellSize() { return CSize(m_rct.right, m_rct.bottom); }
     CellFormType GetCellType() { return m_eType; }
     BOOL GetCellStagger() { return m_nStagger != 0; }
@@ -70,16 +70,16 @@ public:
     void Clear();
     void CreateCell(CellFormType eType, int nParm1, int nParm2 = 0,
         int nStagger = 0);
-    void FindCell(int x, int y, int& row, int& col);
+    void FindCell(LONG x, LONG y, CB::ssize_t& row, CB::ssize_t& col);
     void FillCell(CDC* pDC, int xPos, int yPos);
     void FrameCell(CDC* pDC, int xPos, int yPos);
-    CSize CalcBoardSize(int nRows, int nCols);
-    BOOL CalcTrialBoardSize(int nRows, int nCols);
+    CSize CalcBoardSize(size_t nRows, size_t nCols);
+    BOOL CalcTrialBoardSize(size_t nRows, size_t nCols);
 
     BOOL CompareEqual(CCellForm& cf);
 
     // ------- //
-    static void GetCellNumberStr(CellNumStyle eStyle, int row, int col,
+    static void GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
         CString& str);
     // ------- //
     void Serialize(CArchive& ar);
@@ -97,7 +97,7 @@ protected:
     // ------- //
     void OffsetPoly(POINT* pPoly, int nPts, int xOff, int yOff);
     // ------- //
-    int CellPhase(int val) { return ((val ^ m_nStagger) & 1); }
+    CB::ssize_t CellPhase(CB::ssize_t val) { return ((val ^ m_nStagger) & 1); }
     void CreateHexMask();
 };
 

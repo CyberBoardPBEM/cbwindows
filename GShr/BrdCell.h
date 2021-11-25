@@ -71,9 +71,9 @@ public:
 
 // Attributes
 public:
-    COLORREF GetCellColor(int row, int col)
+    COLORREF GetCellColor(size_t row, size_t col)
         { return GetCell(row, col)->m_crCell; }
-    TileID GetCellTile(int row, int col)
+    TileID GetCellTile(size_t row, size_t col)
         { return GetCell(row, col)->GetTID(); }
     BOOL IsTransparentCellTilesEnabled()
         { return m_bTransparentCells; }
@@ -94,18 +94,18 @@ public:
     CellNumStyle GetCellNumStyle() { return m_eNumStyle; }
     // ------ //
     void GetCellNumberStr(CPoint pnt, CString& str, TileScale eScale);
-    void GetCellNumberStr(int row, int col, CString& str);
+    void GetCellNumberStr(size_t row, size_t col, CString& str);
     // ------ //
     COLORREF GetCellFrameColor() { return m_crCellFrame; }
     void SetCellFrameColor(COLORREF cr);
     // ------ //
-    BoardCell* GetCell(int row, int col);
+    BoardCell* GetCell(size_t row, size_t col);
     CCellForm* GetCellForm(TileScale eScale);
     void SetTileManager(CTileManager *pTsa) { m_pTsa = pTsa; }
     CTileManager *GetTileManager() { return m_pTsa; }
     // ------ //
-    int GetRows() const { return m_nRows; }
-    int GetCols() const { return m_nCols; }
+    size_t GetRows() const { return m_nRows; }
+    size_t GetCols() const { return m_nCols; }
     int GetWidth(TileScale eScale);     // Board's pixel width
     int GetHeight(TileScale eScale);    // Board's pixel height
     CSize GetSize(TileScale eScale);    // Board's pixel size
@@ -113,29 +113,29 @@ public:
 
 // Operations
 public:
-    void CreateBoard(CellFormType eType, int nRows, int nCols, int nParm1,
+    void CreateBoard(CellFormType eType, size_t nRows, size_t nCols, int nParm1,
         int nParm2, int nStagger);
-    void ReshapeBoard(int nRows, int nCols, int nParm1, int nParm2,
+    void ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm2,
         int nStagger);
     void DestroyBoard();
-    void GenerateBoard(CellFormType eType, int nRows, int nCols,
+    void GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
         int nParm1, int nParm2, int nStagger, BoardCell* pMap);
     static void GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
         int nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
     void DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale);
     void DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale);
-    void FillCell(CDC *pDC, int row, int col, TileScale eScale);
-    void FrameCell(CDC *pDC, int row, int col, TileScale eScale);
+    void FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale);
+    void FrameCell(CDC *pDC, size_t row, size_t col, TileScale eScale);
     // ------- //
-    void SetCellTile(int row, int col, TileID tid);
-    void SetCellColor(int row, int col, COLORREF cr);
-    void SetCellColorInRange(int rowBeg, int colBeg, int rowEnd,
-        int colEnd, COLORREF cr);
+    void SetCellTile(size_t row, size_t col, TileID tid);
+    void SetCellColor(size_t row, size_t col, COLORREF cr);
+    void SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
+        size_t colEnd, COLORREF cr);
     // ------- //
     void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize);
-    BOOL FindCell(int x, int y, int& rRow, int& rCol, TileScale eScale);
-    void GetCellRect(int row, int col, CRect* pRct, TileScale eScale);
+    BOOL FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale);
+    void GetCellRect(size_t row, size_t col, CRect* pRct, TileScale eScale);
     BOOL MapPixelsToCellBounds(CRect* pPxlRct, CRect* pCellRct,
         TileScale eScale);
     // ------- //
@@ -154,8 +154,8 @@ protected:
     int     m_nColTrkOffset;    // Col track num offset
     int     m_bRowTrkInvert;    // Row track num invert direction
     int     m_bColTrkInvert;    // Col track num invert direction
-    int     m_nRows;            // Number of cell rows in board
-    int     m_nCols;            // Number of cell columns in board
+    size_t  m_nRows;            // Number of cell rows in board
+    size_t  m_nCols;            // Number of cell columns in board
     BOOL    m_bTransparentCells;// (Not currently used)
     BOOL    m_bTrackCellNum;    // Mouse traking of cell number
     CellNumStyle m_eNumStyle;   // Cell numbering style
@@ -171,7 +171,7 @@ protected:
     // -------- //
     CTileManager* m_pTsa;       // For reference only! Don't destroy!
     // -------- //
-    int CellIndex(int row, int col) { return row*m_nCols + col; }
+    size_t CellIndex(size_t row, size_t col) { return row*m_nCols + col; }
 };
 
 ////////////////////////////////////////////////////////////////////

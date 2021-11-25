@@ -39,8 +39,8 @@ public:
     CEdit   m_editCellHt;
     int     m_iCellWd;
     int     m_iCellHt;
-    int     m_iCols;
-    int     m_iRows;
+    size_t  m_iCols;
+    size_t  m_iRows;
     CString m_strBoardName;
     BOOL    m_bStagerIn;
     int     m_nBoardType;

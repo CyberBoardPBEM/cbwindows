@@ -96,28 +96,35 @@ BOOL StrIsIdentifier(const char* sp)
     return TRUE;
 }
 
-void StrGetAAAFormat(char *szVal, int n)
+void StrGetAAAFormat(char *szVal, size_t n)
 {
     memset(szVal, 0, 8);
-    char ch = (char)(((n - 1) % 26) + 'A');
-    while (n > 0)
+    char ch = value_preserving_cast<char>(((n - size_t(1)) % size_t(26)) + size_t('A'));
+    for ( ; ; )
     {
         *szVal++ = ch;
-        n -= 26;
+        if (n > size_t(26))
+        {
+            n -= size_t(26);
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
-void StrLeadZeros(char* szVal, int nWidth)
+void StrLeadZeros(char* szVal, size_t nWidth)
 {
-    char szTmp[20];
-    int i;
+    char szTmp[_MAX_I64TOSTR_BASE10_COUNT];
+    size_t i;
     ASSERT(nWidth < sizeof(szTmp));
-    for (i = 0; i < nWidth; i++)
-        szTmp[i] = '0';
-    szTmp[i] = 0;           // Terminate
+    for (i = size_t(0) ; i < nWidth ; ++i)
+        szTmp[value_preserving_cast<ptrdiff_t>(i)] = '0';
+    szTmp[value_preserving_cast<ptrdiff_t>(i)] = 0;           // Terminate
     size_t nLen = strlen(szVal);
     ASSERT(nLen < sizeof(szTmp));
-    memcpy(szTmp + nWidth - value_preserving_cast<ptrdiff_t>(nLen), szVal, nLen);
+    memcpy(szTmp + value_preserving_cast<ptrdiff_t>(nWidth - nLen), szVal, nLen);
     strcpy(szVal, szTmp);
 }
 
