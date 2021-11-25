@@ -73,9 +73,9 @@ int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
     str += value_preserving_cast<char>(nGroupCode + 'A');
     str += nSourceCode == Invalid_v<size_t> ? '*' : '+';
 
-    char szNum[16];
+    char szNum[_MAX_ITOSTR_BASE10_COUNT];
     _itoa(nSeqNum, szNum, 10);
-    StrLeadZeros(szNum, 3);
+    StrLeadZeros(szNum, size_t(3));
     str += szNum;
 
     str += pszText;

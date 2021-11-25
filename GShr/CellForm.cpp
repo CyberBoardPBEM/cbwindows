@@ -172,15 +172,15 @@ void CCellForm::CreateHexMask()
     //mskFile.Close();
 }
 
-void CCellForm::FindCell(int x, int y, int& row, int& col)
+void CCellForm::FindCell(LONG x, LONG y, CB::ssize_t& row, CB::ssize_t& col)
 {
     if (m_eType == cformHexPnt)
     {
         CRect rct;
         row = y / m_pPoly[3].y;
 
-        int xBase = CellPhase(row) * m_pPoly[1].x;
-        col = x < xBase ? -1 : (x - xBase) / m_pPoly[2].x;
+        CB::ssize_t xBase = CellPhase(row) * m_pPoly[1].x;
+        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_pPoly[2].x;
 
         GetRect(row, col, &rct);
         g_gt.mDC1.SelectObject(m_pMask);
@@ -199,8 +199,8 @@ void CCellForm::FindCell(int x, int y, int& row, int& col)
     {
         CRect rct;
         col = x / m_pPoly[2].x;
-        int yBase = CellPhase(col) * m_pPoly[3].y;
-        row = y < yBase ? -1 : (y - yBase) / m_pPoly[4].y;
+        CB::ssize_t yBase = CellPhase(col) * m_pPoly[3].y;
+        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_pPoly[4].y;
 
         GetRect(row, col, &rct);
 
@@ -224,102 +224,102 @@ void CCellForm::FindCell(int x, int y, int& row, int& col)
     else if (m_eType == cformBrickHorz)
     {
         row = y / m_rct.bottom;
-        int xBase = (CellPhase(row) * m_rct.right) / 2;
-        col = x < xBase ? -1 : (x - xBase) / m_rct.right;
+        CB::ssize_t xBase = (CellPhase(row) * m_rct.right) / 2;
+        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_rct.right;
     }
     else    // m_eType == cformBrickVert
     {
         col = x / m_rct.right;
-        int yBase = (CellPhase(col) * m_rct.bottom) / 2;
-        row = y < yBase ? -1 : (y - yBase) / m_rct.bottom;
+        CB::ssize_t yBase = (CellPhase(col) * m_rct.bottom) / 2;
+        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_rct.bottom;
     }
 }
 
 // Trial calculate the size of a board to see if it exceeds
 // 32k. Return FALSE if too large.
 
-BOOL CCellForm::CalcTrialBoardSize(int nRows, int nCols)
+BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols)
 {
-    long x, y;
+    size_t x, y;
     if (m_eType == cformRect)
     {
-        x = (long)nCols * m_rct.right;
-        y = (long)nRows * m_rct.bottom;
+        x = nCols * value_preserving_cast<size_t>(m_rct.right);
+        y = nRows * value_preserving_cast<size_t>(m_rct.bottom);
     }
     else if (m_eType == cformBrickHorz)
     {
-        x = (long)nCols * m_rct.right + m_rct.right / 2;
-        y = (long)nRows * m_rct.bottom;
+        x = nCols * value_preserving_cast<size_t>(m_rct.right) + value_preserving_cast<size_t>(m_rct.right / 2);
+        y = nRows * value_preserving_cast<size_t>(m_rct.bottom);
     }
     else if (m_eType == cformBrickVert)
     {
-        x = (long)nCols * m_rct.right;
-        y = (long)nRows * m_rct.bottom + m_rct.bottom / 2;
+        x = nCols * value_preserving_cast<size_t>(m_rct.right);
+        y = nRows * value_preserving_cast<size_t>(m_rct.bottom) + value_preserving_cast<size_t>(m_rct.bottom / 2);
     }
     else if (m_eType == cformHexPnt)
     {
-        x = (long)nCols * m_pPoly[2].x + m_pPoly[1].x;
-        y = (long)nRows * m_pPoly[3].y + m_pPoly[0].y;
+        x = nCols * value_preserving_cast<size_t>(m_pPoly[2].x) + value_preserving_cast<size_t>(m_pPoly[1].x);
+        y = nRows * value_preserving_cast<size_t>(m_pPoly[3].y) + value_preserving_cast<size_t>(m_pPoly[0].y);
     }
     else
     {
-        x = (long)nCols * m_pPoly[2].x + m_pPoly[1].x;
-        y = (long)nRows * m_pPoly[4].y + m_pPoly[3].y;
+        x = nCols * value_preserving_cast<size_t>(m_pPoly[2].x) + value_preserving_cast<size_t>(m_pPoly[1].x);
+        y = nRows * value_preserving_cast<size_t>(m_pPoly[4].y) + value_preserving_cast<size_t>(m_pPoly[3].y);
     }
-    return x < 32000 && y < 32000;
+    return x < size_t(32000) && y < size_t(32000);
 }
 
-CSize CCellForm::CalcBoardSize(int nRows, int nCols)
+CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols)
 {
     if (m_eType == cformRect)
-        return CSize(nCols * m_rct.right, nRows * m_rct.bottom);
+        return CSize(value_preserving_cast<long>(nCols) * m_rct.right, value_preserving_cast<long>(nRows) * m_rct.bottom);
     else if (m_eType == cformBrickHorz)
     {
-        return CSize(nCols * m_rct.right + m_rct.right / 2,
-            nRows * m_rct.bottom);
+        return CSize(value_preserving_cast<long>(nCols) * m_rct.right + m_rct.right / 2,
+            value_preserving_cast<long>(nRows) * m_rct.bottom);
     }
     else if (m_eType == cformBrickVert)
     {
-        return CSize(nCols * m_rct.right,
-            nRows * m_rct.bottom + m_rct.bottom / 2);
+        return CSize(value_preserving_cast<long>(nCols) * m_rct.right,
+            value_preserving_cast<long>(nRows) * m_rct.bottom + m_rct.bottom / 2);
     }
     else if (m_eType == cformHexPnt)
     {
-        return CSize(nCols * m_pPoly[2].x + m_pPoly[1].x,
-            nRows * m_pPoly[3].y + m_pPoly[0].y);
+        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[2].x + m_pPoly[1].x,
+            value_preserving_cast<long>(nRows) * m_pPoly[3].y + m_pPoly[0].y);
     }
     else
     {
-        return CSize(nCols * m_pPoly[2].x + m_pPoly[1].x,
-            nRows * m_pPoly[4].y + m_pPoly[3].y);
+        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[2].x + m_pPoly[1].x,
+            value_preserving_cast<long>(nRows) * m_pPoly[4].y + m_pPoly[3].y);
     }
 }
 
-CRect* CCellForm::GetRect(int row, int col, CRect* pRct)
+CRect* CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct)
 {
     *pRct = m_rct;          // Copy master rect
     if (m_eType == cformRect)
-        pRct->OffsetRect(col * m_rct.right, row * m_rct.bottom);
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right), value_preserving_cast<int>(row * m_rct.bottom));
     else if (m_eType == cformBrickHorz)
     {
-        pRct->OffsetRect(col * m_rct.right + (CellPhase(row) * m_rct.right) / 2,
-            row * m_rct.bottom);
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right + (CellPhase(row) * m_rct.right) / 2),
+            value_preserving_cast<int>(row * m_rct.bottom));
     }
     else if (m_eType == cformBrickVert)
     {
-        pRct->OffsetRect(col * m_rct.right,
-            row * m_rct.bottom + (CellPhase(col) * m_rct.bottom) / 2);
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right),
+            value_preserving_cast<int>(row * m_rct.bottom + (CellPhase(col) * m_rct.bottom) / 2));
     }
     else if (m_eType == cformHexPnt)
     {
 
-        pRct->OffsetRect(col * m_pPoly[2].x + CellPhase(row) * m_pPoly[1].x,
-            row * m_pPoly[3].y);
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[2].x + CellPhase(row) * m_pPoly[1].x),
+            value_preserving_cast<int>(row * m_pPoly[3].y));
     }
     else
     {
-        pRct->OffsetRect(col * m_pPoly[2].x,
-            row * m_pPoly[4].y + CellPhase(col) * m_pPoly[3].y);
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[2].x),
+            value_preserving_cast<int>(row * m_pPoly[4].y + CellPhase(col) * m_pPoly[3].y));
     }
     return pRct;
 }
@@ -417,12 +417,12 @@ void CCellForm::Serialize(CArchive& ar)
     }
 }
 
-void CCellForm::GetCellNumberStr(CellNumStyle eStyle, int row, int col,
+void CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
     CString& str)
 {
-    int nTmp;
-    char szNum1[20];
-    char szNum2[20];
+    size_t nTmp;
+    char szNum1[_MAX_U64TOSTR_BASE10_COUNT];
+    char szNum2[_MAX_U64TOSTR_BASE10_COUNT];
     str.Empty();
     switch (eStyle)
     {
@@ -432,8 +432,8 @@ void CCellForm::GetCellNumberStr(CellNumStyle eStyle, int row, int col,
             col = nTmp;
             // Fall through to cnsRowCol processing.
         case cnsRowCol:
-            _itoa(row, szNum1, 10);
-            _itoa(col, szNum2, 10);
+            _ui64toa(row, szNum1, 10);
+            _ui64toa(col, szNum2, 10);
             str = szNum1;
             str += ", ";
             str += szNum2;
@@ -444,10 +444,10 @@ void CCellForm::GetCellNumberStr(CellNumStyle eStyle, int row, int col,
             col = nTmp;
             // Fall through to cns0101ByRows processing.
         case cns0101ByRows:
-            _itoa(row, szNum1, 10);
-            _itoa(col, szNum2, 10);
-            nTmp = value_preserving_cast<int>(CB::max(strlen(szNum1), strlen(szNum2)));
-            nTmp = CB::max(nTmp, 2);            // Make sure at least 2 digits
+            _ui64toa(row, szNum1, 10);
+            _ui64toa(col, szNum2, 10);
+            nTmp = CB::max(strlen(szNum1), strlen(szNum2));
+            nTmp = CB::max(nTmp, size_t(2));            // Make sure at least 2 digits
             StrLeadZeros(szNum1, nTmp);
             StrLeadZeros(szNum2, nTmp);
             str = szNum1;
@@ -460,7 +460,7 @@ void CCellForm::GetCellNumberStr(CellNumStyle eStyle, int row, int col,
             // Fall through to cnsAA01ByRows processing.
         case cnsAA01ByRows:
             StrGetAAAFormat(szNum1, row);
-            _itoa(col, szNum2, 10);
+            _ui64toa(col, szNum2, 10);
             str = szNum1;
             str += szNum2;
             break;

@@ -113,8 +113,8 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
 
     CBoardArray* pBrdArrayNew = pBrdNew->GetBoardArray();
 
-    int nRows;
-    int nCols;
+    size_t nRows;
+    size_t nCols;
     ComputeNewBoardDimensions(nRows, nCols);
 
     pBrdArrayNew->ReshapeBoard(nRows, nCols, -1, -1, -1);
@@ -122,12 +122,12 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     // 3) Fill cells with content of cells from other boards.
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
-        for (size_t nBoardCol = size_t(0); nBoardCol < m_nBoardColCount ; ++nBoardCol)
+        for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
         {
             if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
-            int nCellRowOffset;
-            int nCellColOffset;
+            size_t nCellRowOffset;
+            size_t nCellColOffset;
             ComputeCellOffset(nBoardRow, nBoardCol, nCellRowOffset, nCellColOffset);
 
             CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
@@ -180,23 +180,23 @@ size_t CGeomorphicBoard::GetSpecialTileSet()
 }
 
 void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
-    int nCellRowOffset, int nCellColOffset)
+    size_t nCellRowOffset, size_t nCellColOffset)
 {
     CTileManager* pTMgr = m_pDoc->GetTileManager();
-    for (int nRow = 0; nRow < pBArryFrom->GetRows(); nRow++)
+    for (size_t nRow = size_t(0) ; nRow < pBArryFrom->GetRows() ; ++nRow)
     {
-        for (int nCol = 0; nCol < pBArryFrom->GetCols(); nCol++)
+        for (size_t nCol = size_t(0) ; nCol < pBArryFrom->GetCols() ; ++nCol)
         {
-            int nRowTo = nRow + nCellRowOffset;
-            int nColTo = nCol + nCellColOffset;
+            size_t nRowTo = nRow + nCellRowOffset;
+            size_t nColTo = nCol + nCellColOffset;
 
             BoardCell* pCellFrom = pBArryFrom->GetCell(nRow, nCol);
             BoardCell* pCellTo = pBArryTo->GetCell(nRowTo, nColTo);
             BOOL bMergeTheCell = FALSE;
             if (pBArryTo->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
-                bMergeTheCell = nCol == 0 && nColTo != 0;
+                bMergeTheCell = nCol == size_t(0) && nColTo != size_t(0);
             else
-                bMergeTheCell = nRow == 0 && nRowTo != 0;
+                bMergeTheCell = nRow == size_t(0) && nRowTo != size_t(0);
 
             if (bMergeTheCell && memcmp(pCellFrom, pCellTo, sizeof(BoardCell)) != 0)
             {
@@ -244,8 +244,8 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
 }
 
 void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
-    CBoardArray* pBALeft, CBoardArray* pBARight, int nRowLeft, int nColLeft,
-    int nRowRight, int nColRight)
+    CBoardArray* pBALeft, CBoardArray* pBARight, size_t nRowLeft, size_t nColLeft,
+    size_t nRowRight, size_t nColRight)
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
@@ -282,8 +282,8 @@ void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
 }
 
 void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
-    CBoardArray* pBATop, CBoardArray* pBABottom, int nRowTop, int nColTop,
-    int nRowBottom, int nColBottom)
+    CBoardArray* pBATop, CBoardArray* pBABottom, size_t nRowTop, size_t nColTop,
+    size_t nRowBottom, size_t nColBottom)
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
@@ -369,10 +369,10 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
     return pnt;
 }
 
-void CGeomorphicBoard::ComputeNewBoardDimensions(int& rnRows, int& rnCols)
+void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
 {
-    rnRows = 0;
-    rnCols = 0;
+    rnRows = size_t(0);
+    rnCols = size_t(0);
     for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
     {
         CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
@@ -392,14 +392,15 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(int& rnRows, int& rnCols)
 }
 
 void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
-    int& rnCellRow, int& rnCellCol)
+    size_t& rnCellRow, size_t& rnCellCol)
 {
-    rnCellRow = 0;
-    rnCellCol = 0;
+    rnCellRow = size_t(0);
+    rnCellCol = size_t(0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
         CBoard& pBrd = GetBoard(size_t(0), nCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
+        ASSERT(pBArray->GetCols() >= size_t(1));
         rnCellCol += pBArray->GetCols();
         if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
             rnCellCol--;
@@ -408,6 +409,7 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     {
         CBoard& pBrd = GetBoard(nRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
+        ASSERT(pBArray->GetRows() >= size_t(1));
         rnCellRow += pBArray->GetRows();
         if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
             rnCellRow--;

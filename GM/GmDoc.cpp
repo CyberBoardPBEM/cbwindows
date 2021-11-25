@@ -785,8 +785,8 @@ void CGamDoc::OnEditCreateBoard()
     dlg.m_iCellWd = 55;
     dlg.m_iCellHt = 55;
     dlg.m_nBoardType = (int)cformHexPnt;
-    dlg.m_iRows = 30;
-    dlg.m_iCols = 30;
+    dlg.m_iRows = size_t(30);
+    dlg.m_iCols = size_t(30);
 
     if (dlg.DoModal() == IDOK)
     {

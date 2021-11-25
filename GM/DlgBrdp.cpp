@@ -242,10 +242,10 @@ void CBoardPropDialog::OnReshape()
 
 void CBoardPropDialog::UpdateInfoArea()
 {
-    char szNum[40];
-    _itoa(m_nRows, szNum, 10);
+    char szNum[std::max(_MAX_U64TOSTR_BASE10_COUNT, _MAX_ITOSTR_BASE10_COUNT)];
+    _ui64toa(m_nRows, szNum, 10);
     m_staticRows.SetWindowText(szNum);
-    _itoa(m_nCols, szNum, 10);
+    _ui64toa(m_nCols, szNum, 10);
     m_staticCols.SetWindowText(szNum);
 
     if (m_bShapeChanged && m_eCellStyle == cformHexPnt)

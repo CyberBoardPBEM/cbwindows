@@ -116,6 +116,12 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
     #undef min
 #endif
 
+namespace CB
+{
+    // unfortunately, some, but not all, systems declare ssize_t
+    using ssize_t = std::make_signed_t<size_t>;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 // emulate c++20 std::remove_cvref_t

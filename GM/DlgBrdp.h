@@ -76,8 +76,8 @@ public:
     UINT            m_yGridSnapOff;
 
     CellFormType    m_eCellStyle;   // Used to disable cell a cell dimension
-    int             m_nRows;
-    int             m_nCols;
+    size_t          m_nRows;
+    size_t          m_nCols;
     int             m_nCellHt;
     int             m_nCellWd;
     BOOL            m_bStaggerIn;

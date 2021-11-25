@@ -914,7 +914,7 @@ void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,
 
 void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
 {
-    int row, col;
+    size_t row, col;
 
     CBoardArray* pBa = m_pBoard->GetBoardArray();
     ASSERT(pBa != NULL);
@@ -924,7 +924,7 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
 
     if (!pBa->FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
-    if (tid != pBa->GetCellTile(row, col))
+    if (tid != pBa->GetCellTile(value_preserving_cast<size_t>(row), value_preserving_cast<size_t>(col)))
     {
         pBa->SetCellTile(row, col, tid);
         if (bUpdate)
@@ -940,7 +940,7 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
 
 void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
 {
-    int row, col;
+    size_t row, col;
 
     CBoardArray* pBa = m_pBoard->GetBoardArray();
     ASSERT(pBa != NULL);
