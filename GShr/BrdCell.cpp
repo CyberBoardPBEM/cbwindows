@@ -583,8 +583,16 @@ void CBoardArray::Serialize(CArchive& ar)
         ar << value_preserving_cast<WORD>(m_nColTrkOffset);
         ar << (WORD)m_bRowTrkInvert;
         ar << (WORD)m_bColTrkInvert;
-        ar << value_preserving_cast<WORD>(m_nRows);
-        ar << value_preserving_cast<WORD>(m_nCols);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(m_nRows);
+            ar << value_preserving_cast<WORD>(m_nCols);
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nRows);
+            CB::WriteCount(ar, m_nCols);
+        }
         ar << (WORD)m_bTransparentCells;
         ar << (WORD)m_eNumStyle;
         ar << (WORD)m_bTrackCellNum;
@@ -605,8 +613,16 @@ void CBoardArray::Serialize(CArchive& ar)
         ar >> wVal; m_nColTrkOffset = wVal;  // (was int cast)
         ar >> wVal; m_bRowTrkInvert = (BOOL)wVal;
         ar >> wVal; m_bColTrkInvert = (BOOL)wVal;
-        ar >> wVal; m_nRows = wVal;
-        ar >> wVal; m_nCols = wVal;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wVal; m_nRows = wVal;
+            ar >> wVal; m_nCols = wVal;
+        }
+        else
+        {
+            m_nRows = CB::ReadCount(ar);
+            m_nCols = CB::ReadCount(ar);
+        }
         ar >> wVal; m_bTransparentCells = (BOOL)wVal;
         ar >> wVal; m_eNumStyle = static_cast<CellNumStyle>(wVal);
         ar >> wVal; m_bTrackCellNum = (BOOL)wVal;

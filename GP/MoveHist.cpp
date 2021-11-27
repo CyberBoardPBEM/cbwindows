@@ -48,16 +48,32 @@ void CHistoryTable::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(size());
-        for (size_t i = 0; i < size(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(size());
+        }
+        else
+        {
+            CB::WriteCount(ar, size());
+        }
+        for (size_t i = size_t(0); i < size(); i++)
             GetHistRecord(i).Serialize(ar);
     }
     else
     {
         Clear();
-        WORD wSize;
-        ar >> wSize;
-        for (WORD i = 0; i < wSize; i++)
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
+        for (size_t i = size_t(0) ; i < wSize ; ++i)
         {
             OwnerPtr<CHistRecord> pRcd = new CHistRecord;
             pRcd->Serialize(ar);

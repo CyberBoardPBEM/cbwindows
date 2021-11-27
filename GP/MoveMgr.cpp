@@ -56,11 +56,27 @@ void CMoveRecord::Serialize(CArchive& ar)
     // The type code is stored seperately and are reconstituted
     // by the object's constructor.
     if (ar.IsStoring())
-        ar << (m_nSeqNum == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nSeqNum));
+    {
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << (m_nSeqNum == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nSeqNum));
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nSeqNum);
+        }
+    }
     else
     {
-        uint16_t sTmp;
-        ar >> sTmp; m_nSeqNum = (sTmp == uint16_t(0xFFFF) ? Invalid_v<size_t> : sTmp);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            uint16_t sTmp;
+            ar >> sTmp; m_nSeqNum = (sTmp == uint16_t(0xFFFF) ? Invalid_v<size_t> : sTmp);
+        }
+        else
+        {
+            m_nSeqNum = CB::ReadCount(ar);
+        }
     }
 }
 
@@ -236,17 +252,33 @@ void CTrayPieceMove::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_pid;
-        ar << value_preserving_cast<int16_t>(m_nTrayNum);
-        ASSERT(m_nPos == Invalid_v<size_t> ||
-                m_nPos < size_t(int16_t(-1)));
-        ar << (m_nPos == Invalid_v<size_t> ? int16_t(-1) : value_preserving_cast<int16_t>(m_nPos));
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<int16_t>(m_nTrayNum);
+            ASSERT(m_nPos == Invalid_v<size_t> ||
+                    m_nPos < size_t(uint16_t(int16_t(-1))));
+            ar << (m_nPos == Invalid_v<size_t> ? int16_t(-1) : value_preserving_cast<int16_t>(m_nPos));
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nTrayNum);
+            CB::WriteCount(ar, m_nPos);
+        }
     }
     else
     {
-        int16_t sTmp;
         ar >> m_pid;
-        ar >> sTmp; m_nTrayNum = value_preserving_cast<size_t>(sTmp);
-        ar >> sTmp; m_nPos = sTmp == int16_t(-1) ? Invalid_v<size_t> : value_preserving_cast<size_t>(sTmp);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            int16_t sTmp;
+            ar >> sTmp; m_nTrayNum = value_preserving_cast<size_t>(sTmp);
+            ar >> sTmp; m_nPos = sTmp == int16_t(-1) ? Invalid_v<size_t> : value_preserving_cast<size_t>(sTmp);
+        }
+        else
+        {
+            m_nTrayNum = CB::ReadCount(ar);
+            m_nPos = CB::ReadCount(ar);
+        }
     }
 }
 
@@ -1098,9 +1130,17 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         }
         else
         {
-            ar << value_preserving_cast<WORD>(m_nTray);
-            ar << value_preserving_cast<DWORD>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID));
-            ar << (DWORD)0;
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            {
+                ar << value_preserving_cast<WORD>(m_nTray);
+                ar << value_preserving_cast<DWORD>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID));
+                ar << (DWORD)0;
+            }
+            else
+            {
+                CB::WriteCount(ar, m_nTray);
+                ar << m_pieceID;
+            }
         }
         ar << m_strMsg;
     }
@@ -1117,9 +1157,17 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         }
         else
         {
-            ar >> wTmp; m_nTray = value_preserving_cast<size_t>(wTmp);
-            ar >> dwTmp; m_pieceID = static_cast<PieceID>(dwTmp);
-            ar >> dwTmp;
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            {
+                ar >> wTmp; m_nTray = value_preserving_cast<size_t>(wTmp);
+                ar >> dwTmp; m_pieceID = static_cast<PieceID>(dwTmp);
+                ar >> dwTmp;
+            }
+            else
+            {
+                m_nTray = CB::ReadCount(ar);
+                ar >> m_pieceID;
+            }
         }
         ar >> m_strMsg;
     }
@@ -1785,14 +1833,35 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
     {
         ASSERT(m_pStateSave == NULL); // Should never save with this active!
 
-        ar << value_preserving_cast<uint16_t>(m_nSeqNum);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<uint16_t>(m_nSeqNum);
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nSeqNum);
+        }
         ar << (WORD)m_bCompoundMove;
-        ar << (m_nCompoundBaseIndex != Invalid_v<size_t> ? value_preserving_cast<uint32_t>(m_nCompoundBaseIndex) : uint32_t(INT32_C(-1)));
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << (m_nCompoundBaseIndex != Invalid_v<size_t> ? value_preserving_cast<uint32_t>(m_nCompoundBaseIndex) : uint32_t(INT32_C(-1)));
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nCompoundBaseIndex);
+        }
         ar << (BYTE)(m_pCompoundBaseBookMark != NULL ? 1 : 0);
         if (m_pCompoundBaseBookMark)
             m_pCompoundBaseBookMark->Serialize(ar);
 
-        ar << value_preserving_cast<WORD>(size());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(size());
+        }
+        else
+        {
+            CB::WriteCount(ar, size());
+        }
         iterator pos;
         for (pos = begin(); pos != end(); )
         {
@@ -1804,10 +1873,17 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
     else
     {
         Clear();
-        WORD wCount;
+        size_t wCount;
         uint16_t sTmp;
 
-        ar >> sTmp; m_nSeqNum = sTmp;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> sTmp; m_nSeqNum = sTmp;
+        }
+        else
+        {
+            m_nSeqNum = CB::ReadCount(ar);
+        }
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 60))
         {
@@ -1815,7 +1891,14 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             WORD  wTmp;
             uint32_t dwTmp;
             ar >> wTmp; m_bCompoundMove = (BOOL)wTmp;
-            ar >> dwTmp; m_nCompoundBaseIndex = (dwTmp != uint32_t(INT32_C(-1)) ? value_preserving_cast<size_t>(dwTmp) : Invalid_v<size_t>);
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            {
+                ar >> dwTmp; m_nCompoundBaseIndex = (dwTmp != uint32_t(INT32_C(-1)) ? value_preserving_cast<size_t>(dwTmp) : Invalid_v<size_t>);
+            }
+            else
+            {
+                m_nCompoundBaseIndex = CB::ReadCount(ar);
+            }
             ar >> cTmp;             // Check for a bookmark
             if (cTmp)
             {
@@ -1827,8 +1910,17 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             }
         }
 
-        ar >> wCount;
-        for (WORD i = 0; i < wCount; i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wCount = temp;
+        }
+        else
+        {
+            wCount = CB::ReadCount(ar);
+        }
+        for (size_t i = size_t(0) ; i < wCount ; ++i)
         {
             OwnerOrNullPtr<CMoveRecord> pRcd;
             short sType;

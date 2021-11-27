@@ -546,8 +546,15 @@ void CBoardManager::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        ar << value_preserving_cast<WORD>(GetNumBoards());
-        for (size_t i = 0; i < GetNumBoards(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumBoards());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumBoards());
+        }
+        for (size_t i = size_t(0); i < GetNumBoards(); i++)
             GetBoard(i).Serialize(ar);
     }
     else
@@ -571,9 +578,19 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        ar >> wTmp;
-        reserve(wTmp);
-        for (size_t i = 0; i < wTmp; i++)
+        size_t count;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp;
+            count = wTmp;
+        }
+        else
+        {
+            ASSERT(CB::GetVersion(ar) == NumVersion(4, 0));
+            count = CB::ReadCount(ar);
+        }
+        reserve(count);
+        for (size_t i = size_t(0) ; i < count ; i++)
         {
             push_back(MakeOwner<CBoard>());
             back()->Serialize(ar);

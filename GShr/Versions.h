@@ -96,7 +96,6 @@ inline int GetSaveFileVersion()
             {
                 if (bFlag && strcmp(pszParam, "id32cb64") == 0)
                 {
-                    ASSERT(!"not ready yet");
                     id32cb64 = true;
                 }
             }
@@ -157,6 +156,16 @@ private:
 
 // KLUDGE:  get access to CGamDoc::GetLoadingVersion
 extern int GetLoadingVersion();
+namespace CB
+{
+    inline int GetVersion(const CArchive& ar)
+    {
+        return ar.IsStoring() ?
+                    NumVersion(fileGbxVerMajor, fileGbxVerMinor)
+                :
+                    GetLoadingVersion();
+    }
+}
 
 /* cope with varying file versions
 by getting sizeof(XxxxID<>) for file */
@@ -173,19 +182,15 @@ namespace CB { namespace Impl
         ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         ASSERT(NumVersion(fileGamVerMajor, fileGamVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
-        int ver = ar.IsStoring() ?
-                        NumVersion(fileGbxVerMajor, fileGbxVerMinor)
-                    :
-                        GetLoadingVersion();
-        if (ver <= NumVersion(3, 90))
+        if (GetVersion(ar) <= NumVersion(3, 90))
         {
-            // ASSERT(ver < NumVersion(3, 90) --> ar.IsLoading());
-            ASSERT(ver == NumVersion(3, 90) || ar.IsLoading());
+            // ASSERT(GetVersion(ar) < NumVersion(3, 90) --> ar.IsLoading());
+            ASSERT(GetVersion(ar) == NumVersion(3, 90) || ar.IsLoading());
             return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
         }
         else
         {
-            ASSERT(ver == NumVersion(4, 0));
+            ASSERT(GetVersion(ar) == NumVersion(4, 0));
             if (sizeof(XxxxID<T::PREFIX>::UNDERLYING_TYPE) != sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE))
             {
                 ASSERT(!"not ready for 32bit ids");
@@ -305,9 +310,8 @@ namespace CB
         {
             AfxThrowArchiveException(CArchiveException::readOnly);
         }
-        int ver = NumVersion(fileGbxVerMajor, fileGbxVerMinor);
 
-        if (ver <= NumVersion(3, 90))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             /* this matches the
             MFC CArchive::WriteCount()/ReadCount() format.  Note
@@ -348,8 +352,7 @@ namespace CB
             AfxThrowArchiveException(CArchiveException::readOnly);
         }
 
-        int ver = GetLoadingVersion();
-        if (ver <= NumVersion(3, 90))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             uint16_t u16;
             ar >> u16;

@@ -467,16 +467,32 @@ void CTileManager::SerializeTileSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(GetNumTileSets());
-        for (size_t i = 0; i < GetNumTileSets(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumTileSets());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumTileSets());
+        }
+        for (size_t i = size_t(0); i < GetNumTileSets(); i++)
             GetTileSet(i).Serialize(ar);
     }
     else
     {
-        WORD wSize;
-        ar >> wSize;
-        m_TSetTbl.resize(value_preserving_cast<size_t>(wSize));
-        for (size_t i = 0; i < m_TSetTbl.size(); i++)
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
+        m_TSetTbl.resize(wSize);
+        for (size_t i = size_t(0); i < m_TSetTbl.size(); i++)
         {
             m_TSetTbl[i].Serialize(ar);
         }
@@ -487,16 +503,32 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(m_TShtTbl.size());
-        for (size_t i = 0; i < m_TShtTbl.size(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(m_TShtTbl.size());
+        }
+        else
+        {
+            CB::WriteCount(ar, m_TShtTbl.size());
+        }
+        for (size_t i = size_t(0); i < m_TShtTbl.size(); i++)
             m_TShtTbl.at(i).Serialize(ar);
     }
     else
     {
-        WORD wSize;
-        ar >> wSize;
-        m_TShtTbl.resize(value_preserving_cast<size_t>(wSize));
-        for (size_t i = 0; i < m_TShtTbl.size(); i++)
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
+        m_TShtTbl.resize(wSize);
+        for (size_t i = size_t(0); i < m_TShtTbl.size(); i++)
         {
             CTileSheet& pTSht = m_TShtTbl[i];
             pTSht.Serialize(ar);
@@ -761,32 +793,32 @@ void TileLoc::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) <= NumVersion(3, 90))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             ar << (m_nSheet == noSheet ? noSheet16 : value_preserving_cast<uint16_t>(m_nSheet));
         }
         else
         {
-            ar << m_nSheet;
+            CB::WriteCount(ar, m_nSheet);
         }
         ar << value_preserving_cast<uint16_t>(m_nOffset);
     }
     else
     {
-        if (CGamDoc::GetLoadingVersion() < NumVersion(2, 91))   // V2.91
+        if (CB::GetVersion(ar) < NumVersion(2, 91))   // V2.91
         {
             BYTE chTmp;
             ar >> chTmp;
             m_nSheet = (chTmp == 0xFF) ? noSheet : value_preserving_cast<size_t>(chTmp);
         }
-        else if (CGamDoc::GetLoadingVersion() <= NumVersion(3, 90))   // V3.90
+        else if (CB::GetVersion(ar) <= NumVersion(3, 90))   // V3.90
         {
             uint16_t wTmp;
             ar >> wTmp;
             m_nSheet = (wTmp == noSheet16) ? noSheet : value_preserving_cast<size_t>(wTmp);
         }
         else
-            ar >> m_nSheet;
+            m_nSheet = CB::ReadCount(ar);
         uint16_t wTmp;
         ar >> wTmp; m_nOffset = value_preserving_cast<int>(wTmp);
     }

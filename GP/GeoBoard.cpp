@@ -469,10 +469,25 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar << m_strName;
 
         ar << m_nSerialNum;
-        ar << value_preserving_cast<WORD>(m_nBoardRowCount);
-        ar << value_preserving_cast<WORD>(m_nBoardColCount);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(m_nBoardRowCount);
+            ar << value_preserving_cast<WORD>(m_nBoardColCount);
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nBoardRowCount);
+            CB::WriteCount(ar, m_nBoardColCount);
+        }
 
-        ar << value_preserving_cast<WORD>(GetSize());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetSize());
+        }
+        else
+        {
+            CB::WriteCount(ar, value_preserving_cast<size_t>(GetSize()));
+        }
         for (int i = 0; i < GetSize(); i++)
             ElementAt(i).Serialize(ar);
     }
@@ -483,12 +498,28 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar >> m_strName;
 
         ar >> m_nSerialNum;
-        ar >> wTmp; m_nBoardRowCount = value_preserving_cast<size_t>(wTmp);
-        ar >> wTmp; m_nBoardColCount = value_preserving_cast<size_t>(wTmp);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp; m_nBoardRowCount = value_preserving_cast<size_t>(wTmp);
+            ar >> wTmp; m_nBoardColCount = value_preserving_cast<size_t>(wTmp);
+        }
+        else
+        {
+            m_nBoardRowCount = CB::ReadCount(ar);
+            m_nBoardColCount = CB::ReadCount(ar);
+        }
 
         RemoveAll();
-        WORD wCount;
-        ar >> wCount;
+        size_t wCount;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp;
+            wCount = wTmp;
+        }
+        else
+        {
+            wCount = CB::ReadCount(ar);
+        }
         while (wCount--)
         {
              CGeoBoardElement geo;

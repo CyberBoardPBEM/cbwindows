@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    "Versions.h"
 #include    "Player.h"
 
 intptr_t CPlayerManager::AddPlayer(LPCTSTR pszName)
@@ -63,17 +64,32 @@ void CPlayerManager::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetSize();
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetSize());
+        }
+        else
+        {
+            CB::WriteCount(ar, value_preserving_cast<size_t>(GetSize()));
+        }
         for (int i = 0; i < GetSize(); i++)
             GetAt(i).Serialize(ar);
     }
     else
     {
         RemoveAll();
-        int nCount;
+        size_t nCount;
         WORD wTmp;
 
-        ar >> wTmp; nCount = (int)wTmp;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp;
+            nCount = wTmp;
+        }
+        else
+        {
+            nCount = CB::ReadCount(ar);
+        }
         while (nCount--)
         {
             Player player;

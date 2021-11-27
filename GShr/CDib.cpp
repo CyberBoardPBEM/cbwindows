@@ -304,8 +304,11 @@ BOOL CDib::AppendDIB(CDib *pDib)
 
 CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
 {
+    /* TODO:  Are bmps >= 2g possible?  If so, and we support
+                them, then file format must change */
     if (dib.m_hDib)
     {
+        static_assert(sizeof(uLongf) == sizeof(uint32_t), "compress can support large blobs");
         uint32_t dwSize = value_preserving_cast<uint32_t>(GlobalSize(dib.m_hDib));
         ASSERT(dwSize > uint32_t(0));
         ASSERT(dib.m_nCompressLevel >= Z_NO_COMPRESSION

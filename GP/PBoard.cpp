@@ -769,13 +769,20 @@ void CPBoardManager::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        ar << value_preserving_cast<WORD>(GetNumPBoards());
-        for (size_t i = 0; i < GetNumPBoards(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumPBoards());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumPBoards());
+        }
+        for (size_t i = size_t(0); i < GetNumPBoards(); i++)
             GetPBoard(i).Serialize(ar);
     }
     else
     {
-        WORD wTmp;
+        size_t wTmp;
         DestroyAllElements();
         m_pDoc = (CGamDoc*)ar.m_pDocument;
 
@@ -788,9 +795,18 @@ void CPBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
 
-        ar >> wTmp;
-        resize(value_preserving_cast<size_t>(wTmp));
-        for (size_t i = 0; i < size(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD tmp;
+            ar >> tmp;
+            wTmp = tmp;
+        }
+        else
+        {
+            wTmp = CB::ReadCount(ar);
+        }
+        resize(wTmp);
+        for (size_t i = size_t(0); i < size(); i++)
         {
             GetPBoard(i).SetDocument(m_pDoc);
             GetPBoard(i).Serialize(ar);

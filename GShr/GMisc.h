@@ -80,8 +80,8 @@ inline DWORD UPGRADE_OWNER_MASK(WORD wOldMask)
     return dwNewMask;
 }
 
-void WriteArchivePoints(CArchive& ar, POINT* pPnts, int nPnts);
-void ReadArchivePoints(CArchive& ar, POINT* pPnts, int nPnts);
+void WriteArchivePoints(CArchive& ar, const POINT* pPnts, size_t nPnts);
+void ReadArchivePoints(CArchive& ar, POINT* pPnts, size_t nPnts);
 
 #endif
 

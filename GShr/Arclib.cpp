@@ -29,7 +29,7 @@
 #define new DEBUG_NEW
 #endif
 
-void ReadArchivePoints(CArchive& ar, POINT* pPnts, int nPnts)
+void ReadArchivePoints(CArchive& ar, POINT* pPnts, size_t nPnts)
 {
     while (nPnts--)
     {
@@ -40,7 +40,7 @@ void ReadArchivePoints(CArchive& ar, POINT* pPnts, int nPnts)
     }
 }
 
-void WriteArchivePoints(CArchive& ar, POINT* pPnts, int nPnts)
+void WriteArchivePoints(CArchive& ar, const POINT* pPnts, size_t nPnts)
 {
     while (nPnts--)
     {

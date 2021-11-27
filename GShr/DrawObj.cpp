@@ -738,9 +738,16 @@ void CPolyObj::Serialize(CArchive& ar)
         ar << (DWORD)m_crFill;
         ar << (DWORD)m_crLine;
         ar << (WORD)m_nLineWidth;
-        ar << value_preserving_cast<WORD>(m_Pnts.size());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(m_Pnts.size());
+        }
+        else
+        {
+            CB::WriteCount(ar, m_Pnts.size());
+        }
         if (!m_Pnts.empty())
-            WriteArchivePoints(ar, m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
+            WriteArchivePoints(ar, m_Pnts.data(), m_Pnts.size());
     }
     else
     {
@@ -749,10 +756,17 @@ void CPolyObj::Serialize(CArchive& ar)
         ar >> dwTmp; m_crFill = (COLORREF)dwTmp;
         ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
         ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
-        ar >> wTmp; m_Pnts.resize(wTmp);
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp; m_Pnts.resize(wTmp);
+        }
+        else
+        {
+            m_Pnts.resize(CB::ReadCount(ar));
+        }
         if (!m_Pnts.empty())
         {
-            ReadArchivePoints(ar, m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
+            ReadArchivePoints(ar, m_Pnts.data(), m_Pnts.size());
         }
     }
 }
@@ -2105,7 +2119,14 @@ void CDrawList::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(size());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(size());
+        }
+        else
+        {
+            CB::WriteCount(ar, size());
+        }
 #ifdef _DEBUG
         size_t nObjects = size();
 #endif
@@ -2124,9 +2145,18 @@ void CDrawList::Serialize(CArchive& ar)
     else
     {
         clear();
-        WORD wCount;
-        ar >> wCount;
-        for (WORD i = 0; i < wCount; ++i)
+        size_t count;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD wCount;
+            ar >> wCount;
+            count = wCount;
+        }
+        else
+        {
+            count = CB::ReadCount(ar);
+        }
+        for (size_t i = size_t(0); i < count; ++i)
         {
             OwnerOrNullPtr<CDrawObj> pDObj;
             WORD wType;
