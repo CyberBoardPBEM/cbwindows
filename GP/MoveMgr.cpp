@@ -56,11 +56,11 @@ void CMoveRecord::Serialize(CArchive& ar)
     // The type code is stored seperately and are reconstituted
     // by the object's constructor.
     if (ar.IsStoring())
-        ar << (short)m_nSeqNum;
+        ar << (m_nSeqNum == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nSeqNum));
     else
     {
-        short sTmp;
-        ar >> sTmp; m_nSeqNum = (int)sTmp;
+        uint16_t sTmp;
+        ar >> sTmp; m_nSeqNum = (sTmp == uint16_t(0xFFFF) ? Invalid_v<size_t> : sTmp);
     }
 }
 
@@ -1171,7 +1171,7 @@ void CCompoundMove::DumpToTextFile(CFile& file)
 
 CMoveList::CMoveList()
 {
-    m_nSeqNum = 0;
+    m_nSeqNum = size_t(0);
     m_nSkipCount = 0;
     m_bSkipKeepInd = FALSE;
     m_bCompoundMove = FALSE;
@@ -1382,7 +1382,7 @@ CHECK_AGAIN:
     else
     {
         // Search for starting record with this sequence number.
-        int nSeqNum = pRcd->GetSeqNum();
+        size_t nSeqNum = pRcd->GetSeqNum();
         do
         {
             pRcd = &GetPrev(posPrev);
@@ -1422,7 +1422,7 @@ bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
     if (posFirst == end())
         return false;
 
-    int nGrp = INT_MIN;
+    size_t nGrp = Invalid_v<size_t>;
     size_t nNextIndex = nIndex;
 
     iterator pos = posFirst;
@@ -1430,7 +1430,7 @@ bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
     while (pos != end())
     {
         CMoveRecord& pRcd = GetNext(pos);
-        if (nGrp == INT_MIN)
+        if (nGrp == Invalid_v<size_t>)
             nGrp = pRcd.GetSeqNum();
         if (nGrp != pRcd.GetSeqNum())
             break;
@@ -1504,7 +1504,7 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             }
 
             iterator pos = posFirst;
-            int  nGrp = INT_MIN;
+            size_t nGrp = Invalid_v<size_t>;
 
             if (bCompoundMove)
                 pDoc->FlushAllSelections();
@@ -1528,7 +1528,7 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             while (pos != end())
             {
                 CMoveRecord& pRcd = GetNext(pos);
-                if (nGrp == INT_MIN)
+                if (nGrp == Invalid_v<size_t>)
                     nGrp = pRcd.GetSeqNum();
                 if (nGrp != pRcd.GetSeqNum())
                     break;
@@ -1683,7 +1683,7 @@ void CMoveList::Clear()
     m_bCompoundMove = FALSE;
     m_nCompoundBaseIndex = Invalid_v<size_t>;
 
-    m_nSeqNum = 0;
+    m_nSeqNum = size_t(0);
     clear();
 }
 
@@ -1785,7 +1785,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
     {
         ASSERT(m_pStateSave == NULL); // Should never save with this active!
 
-        ar << (short)m_nSeqNum;
+        ar << value_preserving_cast<uint16_t>(m_nSeqNum);
         ar << (WORD)m_bCompoundMove;
         ar << (m_nCompoundBaseIndex != Invalid_v<size_t> ? value_preserving_cast<uint32_t>(m_nCompoundBaseIndex) : uint32_t(INT32_C(-1)));
         ar << (BYTE)(m_pCompoundBaseBookMark != NULL ? 1 : 0);
@@ -1805,9 +1805,9 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
     {
         Clear();
         WORD wCount;
-        short sTmp;
+        uint16_t sTmp;
 
-        ar >> sTmp; m_nSeqNum = (int)sTmp;
+        ar >> sTmp; m_nSeqNum = sTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 60))
         {
@@ -1906,7 +1906,7 @@ static char *tblTypes[CMoveRecord::mrecMax] =
 void CMoveList::DumpToTextFile(CFile& file)
 {
     char szBfr[256];
-    wsprintf(szBfr, "Current Move Group: %d\r\n", m_nSeqNum);
+    wsprintf(szBfr, "Current Move Group: %zu\r\n", m_nSeqNum);
     file.Write(szBfr, lstrlen(szBfr));
     wsprintf(szBfr, "Number of move records: %zu\r\n", size());
     file.Write(szBfr, lstrlen(szBfr));
@@ -1918,7 +1918,7 @@ void CMoveList::DumpToTextFile(CFile& file)
         CMoveRecord& pRcd = GetNext(pos);
         CMoveRecord::RcdType eType = pRcd.GetType();
         ASSERT(eType >= 0 && eType < CMoveRecord::mrecMax);
-        wsprintf(szBfr, "[Index=%04d; Seq=%04d: %s]\r\n", nIndex, pRcd.GetSeqNum(),
+        wsprintf(szBfr, "[Index=%04d; Seq=%04zu: %s]\r\n", nIndex, pRcd.GetSeqNum(),
             (LPCSTR)tblTypes[eType]);
         file.Write(szBfr, lstrlen(szBfr));
         pRcd.DumpToTextFile(file);
