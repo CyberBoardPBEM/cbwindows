@@ -101,7 +101,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
         {
             OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
-            pCurRcd->SetSeqNum(-1);             // Special number
+            pCurRcd->SetSeqNum(Invalid_v<size_t>);             // Special number
             pHist->m_pMList->PrependMoveRecord(std::move(pCurRcd), FALSE);
         }
 
@@ -154,7 +154,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
                     CGameState* pState = new CGameState(this);
                     pState->SaveState();
                     OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
-                    pCurRcd->SetSeqNum(0);
+                    pCurRcd->SetSeqNum(size_t(0));
                     pHist->m_pMList->insert(++CMoveList::iterator(pos), std::move(pCurRcd));
                     m_nFirstMove = size_t(1);       // Restart location (state rec)
                     m_nCurMove = size_t(2);         // Set to start of actual moves
@@ -249,7 +249,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         {
             OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
-            pCurRcd->SetSeqNum(-1);             // Special number
+            pCurRcd->SetSeqNum(Invalid_v<size_t>);             // Special number
             m_pMoves->PrependMoveRecord(std::move(pCurRcd), FALSE);
         }
 

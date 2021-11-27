@@ -46,14 +46,14 @@ public:
         mrecMax };
 
 public:
-    CMoveRecord() { m_nSeqNum = -1; m_eType = mrecUnknown; }
+    CMoveRecord() { m_nSeqNum = Invalid_v<size_t>; m_eType = mrecUnknown; }
     virtual ~CMoveRecord() {}
 
 public:
     RcdType GetType() { return m_eType; }
     // -------- //
-    void SetSeqNum(int nSeq) { m_nSeqNum = nSeq; }
-    int  GetSeqNum() { return m_nSeqNum; }
+    void   SetSeqNum(size_t nSeq) { m_nSeqNum = nSeq; }
+    size_t GetSeqNum() { return m_nSeqNum; }
 
 public:
     virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup) { return FALSE; }
@@ -69,7 +69,7 @@ public:
     virtual void DumpToTextFile(CFile& file) = 0;
 #endif
 protected:
-    int     m_nSeqNum;              // Used to group move records
+    size_t  m_nSeqNum;              // Used to group move records
     RcdType m_eType;                // Type of record
 };
 
@@ -548,7 +548,7 @@ protected:
     BOOL        m_bQuietPlaybackSave;
 
     // Serialize the following...
-    int         m_nSeqNum;
+    size_t      m_nSeqNum;
 
     BOOL        m_bCompoundMove;        // Recording a compound move.
     CGameState* m_pCompoundBaseBookMark;// Game state at start of compound move
