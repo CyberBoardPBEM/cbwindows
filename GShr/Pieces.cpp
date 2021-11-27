@@ -215,14 +215,30 @@ void CPieceManager::SerializePieceSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(GetNumPieceSets());
-        for (size_t i = 0; i < GetNumPieceSets(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumPieceSets());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumPieceSets());
+        }
+        for (size_t i = size_t(0); i < GetNumPieceSets(); i++)
             GetPieceSet(i).Serialize(ar);
     }
     else
     {
-        WORD wSize;
-        ar >> wSize;
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
         m_PSetTbl.resize(wSize);
         for (size_t i = 0; i < m_PSetTbl.size(); i++)
         {

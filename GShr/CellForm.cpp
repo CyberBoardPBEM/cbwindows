@@ -386,7 +386,7 @@ void CCellForm::Serialize(CArchive& ar)
         ar << (short)m_rct.right;
         ar << (short)m_rct.bottom;
         WriteArchivePoints(ar, m_pPoly, (m_eType == cformHexFlat ||
-            m_eType == cformHexPnt) ? 7 : 5);
+            m_eType == cformHexPnt) ? size_t(7) : size_t(5));
     }
     else
     {
@@ -405,13 +405,13 @@ void CCellForm::Serialize(CArchive& ar)
         {
             m_pPoly = new POINT[7];
             m_pWrk  = new POINT[7];
-            ReadArchivePoints(ar, m_pPoly, 7);
+            ReadArchivePoints(ar, m_pPoly, size_t(7));
         }
         else
         {
             m_pPoly = new POINT[5];
             m_pWrk  = new POINT[5];
-            ReadArchivePoints(ar, m_pPoly, 5);
+            ReadArchivePoints(ar, m_pPoly, size_t(5));
         }
         CreateHexMask();
     }

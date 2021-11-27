@@ -182,18 +182,28 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (WORD)m_eState;
         ar << m_strCurMsg;
         ar << m_astrMsgHist;
-        ASSERT(m_nCurMove == Invalid_v<size_t> ||
-                m_nCurMove < size_t(0xFFFF));
-        ar << (m_nCurMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurMove));
-        ASSERT(m_nFirstMove == Invalid_v<size_t> ||
-                m_nFirstMove < size_t(0xFFFF));
-        ar << (m_nFirstMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nFirstMove));
-        ASSERT(m_nCurHist == Invalid_v<size_t> ||
-                m_nCurHist < size_t(0xFFFF));
-        ar << (m_nCurHist == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurHist));
-        ASSERT(m_nMoveIdxAtBookMark == Invalid_v<size_t> ||
-                m_nMoveIdxAtBookMark < size_t(0xFFFF));
-        ar << (m_nMoveIdxAtBookMark == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nMoveIdxAtBookMark));
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ASSERT(m_nCurMove == Invalid_v<size_t> ||
+                    m_nCurMove < size_t(0xFFFF));
+            ar << (m_nCurMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurMove));
+            ASSERT(m_nFirstMove == Invalid_v<size_t> ||
+                    m_nFirstMove < size_t(0xFFFF));
+            ar << (m_nFirstMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nFirstMove));
+            ASSERT(m_nCurHist == Invalid_v<size_t> ||
+                    m_nCurHist < size_t(0xFFFF));
+            ar << (m_nCurHist == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurHist));
+            ASSERT(m_nMoveIdxAtBookMark == Invalid_v<size_t> ||
+                    m_nMoveIdxAtBookMark < size_t(0xFFFF));
+            ar << (m_nMoveIdxAtBookMark == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nMoveIdxAtBookMark));
+        }
+        else
+        {
+            CB::WriteCount(ar, m_nCurMove);
+            CB::WriteCount(ar, m_nFirstMove);
+            CB::WriteCount(ar, m_nCurHist);
+            CB::WriteCount(ar, m_nMoveIdxAtBookMark);
+        }
 
         ar << (WORD)m_bStepToNextHist;
         ar << (WORD)m_bKeepSkipInd;
@@ -268,10 +278,20 @@ void CGamDoc::SerializeGame(CArchive& ar)
             ar >> m_astrMsgHist;
         else
             MsgParseLegacyHistory(m_strCurMsg, m_astrMsgHist, m_strCurMsg);
-        ar >> wTmp; m_nCurMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
-        ar >> wTmp; m_nFirstMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
-        ar >> wTmp; m_nCurHist = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
-        ar >> wTmp; m_nMoveIdxAtBookMark = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar >> wTmp; m_nCurMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+            ar >> wTmp; m_nFirstMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+            ar >> wTmp; m_nCurHist = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+            ar >> wTmp; m_nMoveIdxAtBookMark = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
+        }
+        else
+        {
+            m_nCurMove = CB::ReadCount(ar);
+            m_nFirstMove = CB::ReadCount(ar);
+            m_nCurHist = CB::ReadCount(ar);
+            m_nMoveIdxAtBookMark = CB::ReadCount(ar);
+        }
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
         {

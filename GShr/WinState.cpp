@@ -223,7 +223,14 @@ void CWinStateManager::Serialize(CArchive& ar)
             ar << (DWORD)0;
             return;
         }
-        ar << value_preserving_cast<DWORD>(m_pList->size());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<DWORD>(m_pList->size());
+        }
+        else
+        {
+            CB::WriteCount(ar, m_pList->size());
+        }
         for (CWinStateList::iterator pos = m_pList->begin() ; pos != m_pList->end() ; ++pos)
         {
             CWinStateElement& pWse = **pos;
@@ -233,9 +240,18 @@ void CWinStateManager::Serialize(CArchive& ar)
     else
     {
         m_pList = nullptr;
-        DWORD dwCount;
-        ar >> dwCount;
-        if (dwCount == 0)
+        size_t dwCount;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            DWORD temp;
+            ar >> temp;
+            dwCount = temp;
+        }
+        else
+        {
+            dwCount = CB::ReadCount(ar);
+        }
+        if (dwCount == size_t(0))
             return;
         m_pList = MakeOwner<CWinStateList>();
         while (dwCount--)
@@ -317,7 +333,14 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar << m_wUserCode1;
         ar << m_boardID;
         ar << m_wndState;
-        ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
+        }
+        else
+        {
+            CB::WriteCount(ar, m_pWinStateBfr.GetSize());
+        }
         if (m_pWinStateBfr.GetSize() > size_t(0))
             ar.Write(m_pWinStateBfr, value_preserving_cast<unsigned>(m_pWinStateBfr.GetSize()));
     }
@@ -329,8 +352,17 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar >> m_wUserCode1;
         ar >> m_boardID;
         ar >> m_wndState;
-        DWORD size;
-        ar >> size;
+        size_t size;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            DWORD dwSize;
+            ar >> dwSize;
+            size = dwSize;
+        }
+        else
+        {
+            size = CB::ReadCount(ar);
+        }
         if (size > size_t(0))
         {
             m_pWinStateBfr.Reset(static_cast<BYTE*>(malloc(size)), size);

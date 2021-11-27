@@ -729,13 +729,9 @@ public:
 
     void Serialize(CArchive& ar)
     {
-        int ver = ar.IsStoring() ?
-                        NumVersion(fileGbxVerMajor, fileGbxVerMinor)
-                    :
-                        GetLoadingVersion();
         if (ar.IsStoring())
         {
-            if (ver <= NumVersion(3, 90))
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
             {
                 uint32_t dwCount = value_preserving_cast<uint32_t>(GetCount());
                 ar << dwCount;
@@ -758,7 +754,7 @@ public:
         {
             this->RemoveAll();
             size_t count;
-            if (ver <= NumVersion(3, 90))
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
             {
                 uint32_t dwCount;
                 ar >> dwCount;

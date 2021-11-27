@@ -260,16 +260,32 @@ void CMarkManager::SerializeMarkSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(GetNumMarkSets());
-        for (size_t i = 0; i < GetNumMarkSets(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumMarkSets());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumMarkSets());
+        }
+        for (size_t i = size_t(0); i < GetNumMarkSets(); i++)
             GetMarkSet(i).Serialize(ar);
     }
     else
     {
-        WORD wSize;
-        ar >> wSize;
-        m_MSetTbl.resize(value_preserving_cast<size_t>(wSize));
-        for (size_t i = 0; i < m_MSetTbl.size(); i++)
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
+        m_MSetTbl.resize(wSize);
+        for (size_t i = size_t(0); i < m_MSetTbl.size(); i++)
         {
             m_MSetTbl[i].Serialize(ar);
         }

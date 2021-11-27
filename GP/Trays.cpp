@@ -342,14 +342,30 @@ void CTrayManager::SerializeTraySets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << value_preserving_cast<WORD>(GetNumTraySets());
-        for (size_t i = 0; i < GetNumTraySets(); i++)
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ar << value_preserving_cast<WORD>(GetNumTraySets());
+        }
+        else
+        {
+            CB::WriteCount(ar, GetNumTraySets());
+        }
+        for (size_t i = size_t(0); i < GetNumTraySets(); i++)
             GetTraySet(i).Serialize(ar);
     }
     else
     {
-        WORD wSize;
-        ar >> wSize;
+        size_t wSize;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            WORD temp;
+            ar >> temp;
+            wSize = temp;
+        }
+        else
+        {
+            wSize = CB::ReadCount(ar);
+        }
         m_YSetTbl.reserve(wSize);
         for (size_t i = 0; i < wSize; i++)
         {
