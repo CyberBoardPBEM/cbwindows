@@ -622,6 +622,11 @@ void CBrdEditView::OnContextMenu(CWnd* pWnd, CPoint point)
 void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType == ttypeUnknown)
+    {
+        CScrollView::OnMouseMove(nFlags, point);
+        return;
+    }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
     pTool.OnLButtonDown(this, nFlags, point);
@@ -630,6 +635,11 @@ void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
 void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType == ttypeUnknown)
+    {
+        CScrollView::OnMouseMove(nFlags, point);
+        return;
+    }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
     pTool.OnMouseMove(this, nFlags, point);
@@ -638,6 +648,11 @@ void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
 void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType == ttypeUnknown)
+    {
+        CScrollView::OnMouseMove(nFlags, point);
+        return;
+    }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
     pTool.OnLButtonUp(this, nFlags, point);
@@ -646,6 +661,11 @@ void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
 void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType == ttypeUnknown)
+    {
+        CScrollView::OnMouseMove(nFlags, point);
+        return;
+    }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
     pTool.OnLButtonDblClk(this, nFlags, point);
