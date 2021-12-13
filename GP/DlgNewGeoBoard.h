@@ -101,8 +101,11 @@ protected:
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnBtnPressedHelp();
+    afx_msg void OnDestroy();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+    static void ResetContent(CListBox& lb);
 };
 
 #endif

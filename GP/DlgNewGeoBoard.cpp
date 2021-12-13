@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CCreateGeomorphicBoardDialog, CDialog)
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
     ON_BN_CLICKED(IDC_D_NEWGEO_HELP, OnBtnPressedHelp)
+    ON_WM_DESTROY()
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -104,7 +105,7 @@ static DWORD adwHelpMap[] =
 
 void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
 {
-    m_listBoard.ResetContent();
+    ResetContent(m_listBoard);
     if (m_nMaxColumns != size_t(0) && m_nCurrentColumn == m_nMaxColumns)
         return;               // No boards allowed since row break is only option
 
@@ -153,8 +154,13 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
                 continue;
         }
-        int nItem = m_listBoard.AddString(pBrd.GetName());
-        m_listBoard.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber())));
+        for (auto r : { Rotation90::r0, Rotation90::r180 })
+        {
+            static const char* const suffix[] = { "", " - 90°", " - 180°", " - 270°" };
+            int nItem = m_listBoard.AddString((std::string(pBrd.GetName()) + suffix[ptrdiff_t(r)]).c_str());
+            std::unique_ptr<CGeoBoardElement> ge(new CGeoBoardElement(size_t(0), size_t(0), pBrd.GetSerialNumber(), r));
+            m_listBoard.SetItemDataPtr(nItem, ge.release());
+        }
     }
     if (m_listBoard.GetCount() > 0)
         m_listBoard.SetCurSel(0);
@@ -224,10 +230,10 @@ void CCreateGeomorphicBoardDialog::OnDblClickBoardList()
 void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
 {
     ASSERT(m_listBoard.GetCurSel() >= 0);
-    BoardID dwItemData = static_cast<BoardID>(m_listBoard.GetItemData(m_listBoard.GetCurSel()));
+    CGeoBoardElement& ge = *static_cast<CGeoBoardElement*>(m_listBoard.GetItemDataPtr(m_listBoard.GetCurSel()));
 
     CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-    size_t nBrdNum = pBMgr->FindBoardBySerial(dwItemData);
+    size_t nBrdNum = pBMgr->FindBoardBySerial(ge.m_nBoardSerialNum);
     ASSERT(nBrdNum != Invalid_v<size_t>);
     CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
     CBoardArray& pBArray = pBrd.GetBoardArray();
@@ -239,10 +245,11 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     if (m_nCurrentRowHeight == size_t(0))
         m_nCurrentRowHeight = pBArray.GetRows();
 
-    CString strLabel = pBrd.GetName();
+    CString strLabel;
+    m_listBoard.GetText(m_listBoard.GetCurSel(), strLabel);
 
     int nItem = m_listGeo.AddString(strLabel);
-    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(dwItemData)));
+    m_listGeo.SetItemDataPtr(nItem, new CGeoBoardElement(ge));
 
     m_nCurrentColumn++;
     if (m_nCurrentColumn == m_nMaxColumns)
@@ -263,7 +270,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
     str.LoadString(IDS_ROW_BREAK);
 
     int nItem = m_listGeo.AddString(str);
-    m_listGeo.SetItemData(nItem, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(nullBid)));
+    m_listGeo.SetItemDataPtr(nItem, nullptr);
 
     m_nMaxColumns = m_tblColWidth.size();
     m_nRowNumber++;
@@ -276,7 +283,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
 
 void CCreateGeomorphicBoardDialog::OnBtnPressClear()
 {
-    m_listGeo.ResetContent();
+    ResetContent(m_listGeo);
     m_nMaxColumns = size_t(0);
     m_nCurrentColumn = size_t(0);
     m_nCurrentRowHeight = size_t(0);
@@ -313,10 +320,10 @@ void CCreateGeomorphicBoardDialog::OnOK()
 
     for (int i = 0; i < m_listGeo.GetCount(); i++)
     {
-        BoardID dwItemData = static_cast<BoardID>(m_listGeo.GetItemData(i));
-        if (nullBid == dwItemData)
+        CGeoBoardElement* ge = static_cast<CGeoBoardElement*>(m_listGeo.GetItemDataPtr(i));
+        if (!ge)
             continue;                       // Skip the row break
-        m_pGeoBoard->AddElement(dwItemData);
+        m_pGeoBoard->AddElement(ge->m_nBoardSerialNum, ge->m_rotation);
     }
 
     CDialog::OnOK();
@@ -337,3 +344,17 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedHelp()
     GetApp()->DoHelpTopic("gp-adv-geomorphic.htm");
 }
 
+void CCreateGeomorphicBoardDialog::OnDestroy()
+{
+    ResetContent(m_listBoard);
+    ResetContent(m_listGeo);
+}
+
+void CCreateGeomorphicBoardDialog::ResetContent(CListBox& lb)
+{
+    for (int i = 0; i < lb.GetCount(); ++i)
+    {
+        delete static_cast<CGeoBoardElement*>(lb.GetItemDataPtr(i));
+    }
+    lb.ResetContent();
+}

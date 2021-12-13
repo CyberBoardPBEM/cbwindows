@@ -33,8 +33,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 CGeoBoardElement::CGeoBoardElement(size_t row, size_t col,
-                                    BoardID nBoardSerialNum /*= BoardID(0)*/) :
+                                    BoardID nBoardSerialNum, Rotation90 r) :
     m_nBoardSerialNum(nBoardSerialNum),
+    m_rotation(r),
     m_row(row),
     m_col(col)
 {
@@ -49,14 +50,14 @@ void CGeoBoardElement::Serialize(CArchive& ar)
         ar << m_nBoardSerialNum;
         if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
-            if (m_nReserved != uint8_t(0))
+            if (m_rotation != Rotation90::r0)
             {
                 AfxThrowArchiveException(CArchiveException::badSchema);
             }
         }
         else
         {
-            ar << m_nReserved;
+            ar << value_preserving_cast<uint8_t>(m_rotation);
         }
     }
     else
@@ -64,11 +65,13 @@ void CGeoBoardElement::Serialize(CArchive& ar)
         ar >> m_nBoardSerialNum;
         if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
-            m_nReserved = uint8_t(0);
+            m_rotation = Rotation90::r0;
         }
         else
         {
-            ar >> m_nReserved;
+            uint8_t temp;
+            ar >> temp;
+            m_rotation = static_cast<Rotation90>(temp);
         }
     }
 }
@@ -86,10 +89,10 @@ CGeomorphicBoard::CGeomorphicBoard(CGamDoc& pDoc) :
 
 /////////////////////////////////////////////////////////////////////////////
 
-size_t CGeomorphicBoard::AddElement(BoardID nBoardSerialNum)
+size_t CGeomorphicBoard::AddElement(BoardID nBoardSerialNum, Rotation90 rot)
 {
     CGeoBoardElement geo(size() / GetBoardColCount(), size() % GetBoardColCount(),
-                        nBoardSerialNum);
+                        nBoardSerialNum, rot);
     push_back(geo);
     return size() - size_t(1);
 }
@@ -637,7 +640,8 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         while (wCount--)
         {
              CGeoBoardElement geo(size() / GetBoardColCount(),
-                                    size() % GetBoardColCount());
+                                    size() % GetBoardColCount(),
+                                    BoardID(0), Rotation90::r0);
              geo.Serialize(ar);
              push_back(geo);
         }

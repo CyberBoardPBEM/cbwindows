@@ -211,4 +211,11 @@ void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
 
 OwnerPtr<CBrush> Clone(const CBrush& brush);
 
+// geomorphic board support
+// based on incremental piece rotation, positive rotation is clockwise
+enum class Rotation90
+{
+    rInvalid = -1, r0 = 0, r90 = 1, r180 = 2, r270 = 3
+};
+
 #endif
