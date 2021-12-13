@@ -171,38 +171,12 @@ public:
 
     // allow default move operations to work right
 private:
-    class UniqueGeoBoard
+    class DeleteGeoBoard
     {
     public:
-        UniqueGeoBoard() noexcept = default;
-        UniqueGeoBoard(const UniqueGeoBoard&) = delete;
-        UniqueGeoBoard& operator=(const UniqueGeoBoard&) = delete;
-        UniqueGeoBoard(UniqueGeoBoard&& other) noexcept
-        {
-            pGeoBoard = other.pGeoBoard;
-            other.pGeoBoard = nullptr;
-            pDoc = other.pDoc;
-        }
-        UniqueGeoBoard& operator=(UniqueGeoBoard&& other) noexcept
-        {
-            std::swap(pGeoBoard, other.pGeoBoard);
-            std::swap(pDoc, other.pDoc);
-            return *this;
-        }
-        ~UniqueGeoBoard() { Reset(); }
-
-        explicit operator bool() const { return pGeoBoard; }
-
-        void Reset(CGeomorphicBoard* p = nullptr, CGamDoc** gd = nullptr);
-
-        CGeomorphicBoard* Get() const { return pGeoBoard; }
-        CGeomorphicBoard* operator->() { return Get(); }
-    private:
-        CGeomorphicBoard* pGeoBoard = nullptr;
-        CGamDoc** pDoc;
+        void operator()(CGeomorphicBoard* p) const;
     };
-public:
-    UniqueGeoBoard m_pGeoBoard; // If not NULL. Board is generated on each load
+    std::unique_ptr<CGeomorphicBoard, DeleteGeoBoard> m_pGeoBoard; // If not NULL. Board is generated on each load
 
 // Implementation
 protected:
