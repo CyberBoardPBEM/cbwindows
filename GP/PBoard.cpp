@@ -43,29 +43,6 @@ static char THIS_FILE[] = __FILE__;
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::UniqueGeoBoard::Reset(CGeomorphicBoard* p, CGamDoc** gd)
-{
-    if (p && !gd)
-    {
-        AfxThrowInvalidArgException();
-    }
-
-    if (pGeoBoard != NULL)
-    {
-        // Delete the auto created geomorphic board.
-        CBoardManager* pBMgr = (*pDoc)->GetBoardManager();
-        if (pBMgr != NULL)
-        {
-            size_t nBrd = pBMgr->FindBoardBySerial(pGeoBoard->GetSerialNumber());
-            pBMgr->DeleteBoard(nBrd);
-        }
-        delete pGeoBoard;
-    }
-
-    pGeoBoard = p;
-    pDoc = gd;
-}
-
 CPlayBoard::CPlayBoard()
 {
     //  m_wReserved1 = 0;
@@ -117,8 +94,6 @@ CPlayBoard::CPlayBoard()
     m_pBoard = NULL;                            // Loaded from Game Box
     m_pDoc = NULL;                              // Set by document code.
     m_nSerialNum = nullBid;                 // Initially set from game box.
-
-    m_pGeoBoard.Reset();                         // Normal board
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -255,7 +230,7 @@ void CPlayBoard::LimitRectToBoard(CRect& rct)
 void CPlayBoard::SetBoard(const CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings /* = FALSE */)
 {
     ASSERT(!m_pGeoBoard);
-    m_pGeoBoard.Reset(new CGeomorphicBoard(pGeoBoard), &m_pDoc);
+    m_pGeoBoard.reset(new CGeomorphicBoard(pGeoBoard));
     CBoard& pBrd = CreateGeoBoard();
     SetBoard(pBrd, bInheritSettings);
 }
@@ -391,13 +366,13 @@ void CPlayBoard::Serialize(CArchive& ar)
             ar >> cTmp;
             if (cTmp != 0)
             {
-                m_pGeoBoard.Reset(new CGeomorphicBoard, &m_pDoc);
+                m_pGeoBoard.reset(new CGeomorphicBoard);
                 m_pGeoBoard->Serialize(ar);
                 CreateGeoBoard();
             }
         }
         else
-            m_pGeoBoard.Reset();
+            m_pGeoBoard.reset();
 
         ar >> m_nSerialNum;
 
@@ -503,6 +478,16 @@ void CPlayBoard::Serialize(CArchive& ar)
         ASSERT(m_pIndList == NULL);
         m_pIndList = MakeOwner<CDrawList>();
         m_pIndList->Serialize(ar);  // Board's indicator list
+    }
+}
+
+void CPlayBoard::DeleteGeoBoard::operator()(CGeomorphicBoard* p) const
+{
+    if (p)
+    {
+        // Delete the auto created geomorphic board.
+        p->DeleteFromBoardManager();
+        delete p;
     }
 }
 

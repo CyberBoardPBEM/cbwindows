@@ -69,6 +69,7 @@ public:
 // Methods...
 public:
     CBoard* CreateBoard(CGamDoc* pDoc);
+    void DeleteFromBoardManager();
 
     intptr_t  AddElement(BoardID nBoardSerialNum);
 

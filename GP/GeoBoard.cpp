@@ -169,6 +169,16 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     return pBrdNew;
 }
 
+void CGeomorphicBoard::DeleteFromBoardManager()
+{
+    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
+    if (pBMgr != NULL)
+    {
+        size_t nBrd = pBMgr->FindBoardBySerial(GetSerialNumber());
+        pBMgr->DeleteBoard(nBrd);
+    }
+}
+
 size_t CGeomorphicBoard::GetSpecialTileSet()
 {
     CTileManager* pTMgr = m_pDoc->GetTileManager();
