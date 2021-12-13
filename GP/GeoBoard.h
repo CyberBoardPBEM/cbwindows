@@ -35,13 +35,14 @@ class CGamDoc;
 struct CGeoBoardElement
 {
     BoardID m_nBoardSerialNum;
-    uint8_t m_nReserved = uint8_t(0);    // for board rotation
+    Rotation90 m_rotation;
 
 public:
     CGeoBoardElement(size_t row, size_t col,
-                    BoardID nBoardSerialNum = BoardID(0));
+                    BoardID nBoardSerialNum, Rotation90 r);
     CGeoBoardElement(const CGeoBoardElement&) = default;
     CGeoBoardElement& operator=(const CGeoBoardElement&) = delete;
+    ~CGeoBoardElement() = default;
 
     /* we could find out the row,col by searching for this in
         the containing CGeomorphicBoard, but caching it isn't
@@ -85,7 +86,7 @@ public:
     OwnerPtr<CBoard> CreateBoard();
     void DeleteFromBoardManager();
 
-    size_t  AddElement(BoardID nBoardSerialNum);
+    size_t  AddElement(BoardID nBoardSerialNum, Rotation90 rot);
 
     void Serialize(CArchive& ar);
 
