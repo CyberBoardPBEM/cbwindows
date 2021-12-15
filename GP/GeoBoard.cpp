@@ -190,21 +190,21 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
             size_t nRowTo = nRow + nCellRowOffset;
             size_t nColTo = nCol + nCellColOffset;
 
-            BoardCell* pCellFrom = pBArryFrom->GetCell(nRow, nCol);
-            BoardCell* pCellTo = pBArryTo->GetCell(nRowTo, nColTo);
+            BoardCell& pCellFrom = pBArryFrom->GetCell(nRow, nCol);
+            BoardCell& pCellTo = pBArryTo->GetCell(nRowTo, nColTo);
             BOOL bMergeTheCell = FALSE;
-            if (pBArryTo->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+            if (pBArryTo->GetCellForm(fullScale).GetCellType() == cformHexFlat)
                 bMergeTheCell = nCol == size_t(0) && nColTo != size_t(0);
             else
                 bMergeTheCell = nRow == size_t(0) && nRowTo != size_t(0);
 
-            if (bMergeTheCell && memcmp(pCellFrom, pCellTo, sizeof(BoardCell)) != 0)
+            if (bMergeTheCell && pCellFrom != pCellTo)
             {
                 // We need to create a tile that has the half images of the
                 // two hex cells joined as one.
                 CBitmap bmapFull;
                 CBitmap bmapHalf;
-                if (pBArryTo->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+                if (pBArryTo->GetCellForm(fullScale).GetCellType() == cformHexFlat)
                 {
                     // Handle left and right halves
                     CombineLeftAndRight(bmapFull, fullScale, pBArryTo, pBArryFrom,
@@ -222,23 +222,23 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 }
                 // Determine small cell color. Use the 'To' cell as value;
                 COLORREF crSmall;
-                if (pCellTo->IsTileID())
+                if (pCellTo.IsTileID())
                 {
                     CTile tile;
-                    pTMgr->GetTile(pCellTo->GetTID(), &tile, smallScale);
+                    pTMgr->GetTile(pCellTo.GetTID(), &tile, smallScale);
                     crSmall = tile.GetSmallColor();
                 }
                 else
-                    crSmall = pCellTo->GetColor();
+                    crSmall = pCellTo.GetColor();
                 CSize sizeFull = pBArryTo->GetCellSize(fullScale);
                 CSize sizeHalf = pBArryTo->GetCellSize(halfScale);
                 TileID tidNew = pTMgr->CreateTile(GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
                 pTMgr->UpdateTile(tidNew, &bmapFull, &bmapHalf, crSmall);
-                pCellTo->SetTID(tidNew);
+                pCellTo.SetTID(tidNew);
             }
             else
-                memcpy(pCellTo, pCellFrom, sizeof(BoardCell));
+                pCellTo = pCellFrom;
         }
     }
 }
@@ -350,7 +350,7 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
         CBoard& pBrd = GetBoard(size_t(0), nCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
         pnt.x += pBArray->GetWidth(fullScale);
-        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
             pnt.x -= sizeCell.cx;               // A column is shared
         else
             pnt.x -= sizeCell.cx / 2;           // A column is half shared
@@ -360,7 +360,7 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
         CBoard& pBrd = GetBoard(nRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
         pnt.y += pBArray->GetHeight(fullScale);
-        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
+        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
             pnt.y -= sizeCell.cy;               // A row is shared
         else
             pnt.y -= sizeCell.cy / 2;           // A row is half shared
@@ -378,7 +378,7 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
         CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnCols += pBArray->GetCols();
-        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
             rnCols--;                   // A column is shared
     }
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
@@ -386,7 +386,7 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
         CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
         CBoardArray* pBArray = pBrd.GetBoardArray();
         rnRows += pBArray->GetRows();
-        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
+        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
             rnRows--;                   // A row is shared
     }
 }
@@ -402,7 +402,7 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
         CBoardArray* pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray->GetCols() >= size_t(1));
         rnCellCol += pBArray->GetCols();
-        if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexFlat)
+        if (pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
             rnCellCol--;
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
@@ -411,7 +411,7 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
         CBoardArray* pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray->GetRows() >= size_t(1));
         rnCellRow += pBArray->GetRows();
-        if (pBArray->GetCellForm(fullScale)->GetCellType() == cformHexPnt)
+        if (pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
             rnCellRow--;
     }
 }

@@ -35,17 +35,23 @@
 
 struct BoardCell
 {
+    bool m_tile;
     union
     {
-        COLORREF    m_crCell;   // 0xFFFFxxxx is TileID, 0xFF000000 is noColor
-        struct TID
-        {
-            TileID  m_tidCell;  // Typically terrain bitmap
-            WORD    m_key;
-        } tid;
+        COLORREF    m_crCell;   // 0xFF000000 is noColor
+        TileID      m_tidCell;  // Typically terrain bitmap
     };
     // -------- //
     BoardCell();
+    bool operator==(const BoardCell& rhs) const
+    {
+        return m_tile == rhs.m_tile &&
+                (m_tile ?
+                    m_tidCell == rhs.m_tidCell
+                :
+                    m_crCell == rhs.m_crCell);
+    }
+    bool operator!=(const BoardCell& rhs) const { return !(*this == rhs); }
     // -------- //
     BOOL IsTileID();
     BOOL IsEmpty();
@@ -72,9 +78,11 @@ public:
 // Attributes
 public:
     COLORREF GetCellColor(size_t row, size_t col)
-        { return GetCell(row, col)->m_crCell; }
+    {
+        return GetCell(row, col).m_crCell;
+    }
     TileID GetCellTile(size_t row, size_t col)
-        { return GetCell(row, col)->GetTID(); }
+        { return GetCell(row, col).GetTID(); }
     BOOL IsTransparentCellTilesEnabled()
         { return m_bTransparentCells; }
     void SetTransparentCellTilesEnabled(BOOL bEnabled = TRUE)
@@ -99,8 +107,12 @@ public:
     COLORREF GetCellFrameColor() { return m_crCellFrame; }
     void SetCellFrameColor(COLORREF cr);
     // ------ //
-    BoardCell* GetCell(size_t row, size_t col);
-    CCellForm* GetCellForm(TileScale eScale);
+    const BoardCell& GetCell(size_t row, size_t col) const;
+    BoardCell& GetCell(size_t row, size_t col)
+    {
+        return const_cast<BoardCell&>(std::as_const(*this).GetCell(row, col));
+    }
+    CCellForm& GetCellForm(TileScale eScale);
     void SetTileManager(CTileManager *pTsa) { m_pTsa = pTsa; }
     CTileManager *GetTileManager() { return m_pTsa; }
     // ------ //
@@ -171,23 +183,23 @@ protected:
     // -------- //
     CTileManager* m_pTsa;       // For reference only! Don't destroy!
     // -------- //
-    size_t CellIndex(size_t row, size_t col) { return row*m_nCols + col; }
+    size_t CellIndex(size_t row, size_t col) const { return row*m_nCols + col; }
 };
 
 ////////////////////////////////////////////////////////////////////
 
 #ifndef _DEBUG
 inline  BoardCell::BoardCell() { Clear(); }
-inline  void BoardCell::Clear() { m_crCell = noColor; }
+inline  void BoardCell::Clear() { m_tile = false; m_crCell = noColor; }
 inline  BOOL BoardCell::IsTileID()
-    { return tid.m_key == 0xFFFF && tid.m_tidCell != nullTid; }
-inline  BOOL BoardCell::IsEmpty()  { return m_crCell == noColor; }
+    { return m_tile && m_tidCell != nullTid; }
+inline  BOOL BoardCell::IsEmpty()  { return !m_tile && m_crCell == noColor; }
 inline  TileID BoardCell::GetTID()
-    { return tid.m_key == 0xFFFF ? tid.m_tidCell : nullTid; }
+    { return m_tile ? m_tidCell : nullTid; }
 inline  void BoardCell::SetTID(TileID id)
-    { tid.m_tidCell = id; tid.m_key = 0xFFFF; }
-inline  COLORREF BoardCell::GetColor() { return m_crCell; }
-inline  void BoardCell::SetColor(COLORREF cr) { m_crCell = cr; }
+    { m_tile = true; m_tidCell = id; }
+inline  COLORREF BoardCell::GetColor() { ASSERT(!m_tile); return !m_tile ? m_crCell : noColor; }
+inline  void BoardCell::SetColor(COLORREF cr) { m_tile = false; m_crCell = cr; }
 #endif
 
 #endif

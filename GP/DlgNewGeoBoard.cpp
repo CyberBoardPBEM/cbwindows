@@ -116,10 +116,10 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
     {
         CBoard& pBrd = pBMgr->GetBoard(i);
         CBoardArray* pBArray = pBrd.GetBoardArray();
-        CCellForm* pCellForm = pBArray->GetCellForm(fullScale);
+        CCellForm& pCellForm = pBArray->GetCellForm(fullScale);
 
-        if (!(pCellForm->GetCellType() == cformHexFlat && (pBArray->GetCols() & size_t(1)) != size_t(0) ||
-              pCellForm->GetCellType() == cformHexPnt && (pBArray->GetRows() & size_t(1)) != size_t(0)))
+        if (!(pCellForm.GetCellType() == cformHexFlat && (pBArray->GetCols() & size_t(1)) != size_t(0) ||
+              pCellForm.GetCellType() == cformHexPnt && (pBArray->GetRows() & size_t(1)) != size_t(0)))
             continue;                           // These maps aren't compliant at all
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
@@ -128,7 +128,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         {
             // Already have at least one map selected. The rest must
             // comply with the geometry of the root one.
-            if (!m_pRootMapCellForm->CompareEqual(*pCellForm))
+            if (!m_pRootMapCellForm->CompareEqual(pCellForm))
                 continue;
             if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray->GetCols())
                 continue;
@@ -213,7 +213,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     ASSERT(nBrdNum != Invalid_v<size_t>);
     CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
     CBoardArray* pBArray = pBrd.GetBoardArray();
-    m_pRootMapCellForm = pBArray->GetCellForm(fullScale);
+    m_pRootMapCellForm = &pBArray->GetCellForm(fullScale);
 
     if (m_nMaxColumns == size_t(0))
         m_tblColWidth.push_back(pBArray->GetCols());
