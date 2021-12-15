@@ -480,9 +480,9 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     CSize size = pBrdAry->GetCellSize(fullScale);
     dlg.m_nCellHt = size.cy;
     dlg.m_nCellWd = size.cx;
-    CCellForm* pcf = pBrdAry->GetCellForm(fullScale);
-    dlg.m_eCellStyle = pcf->GetCellType();
-    dlg.m_bStaggerIn = pcf->GetCellStagger();
+    CCellForm& pcf = pBrdAry->GetCellForm(fullScale);
+    dlg.m_eCellStyle = pcf.GetCellType();
+    dlg.m_bStaggerIn = pcf.GetCellStagger();
 
     if (dlg.DoModal() == IDOK)
     {

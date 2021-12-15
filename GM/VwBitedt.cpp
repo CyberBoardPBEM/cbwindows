@@ -1142,14 +1142,13 @@ void CBitEditView::OnImageBoardMask()
 
     CBoard& pBoard = pBMgr->GetBoard(dlg.m_nBrdNum);
 
-    CCellForm* pcf = pBoard.GetBoardArray()->
+    CCellForm& pcf = pBoard.GetBoardArray()->
         GetCellForm(m_pSelView->GetCurrentScale());
-    ASSERT(pcf);
 
-    CSize size = pcf->GetCellSize();
+    CSize size = pcf.GetCellSize();
     g_gt.mDC1.SelectObject(&m_bmView);
 
-    CBitmap* pMask = pcf->GetMask();
+    CBitmap* pMask = pcf.GetMask();
 
     if (pMask != NULL)
     {

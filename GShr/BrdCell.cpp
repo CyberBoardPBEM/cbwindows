@@ -187,7 +187,7 @@ void CBoardArray::GetBoardScaling(TileScale eScale, CSize& worldSize,
     CSize& viewSize)
 {
     worldSize = m_cfFull.CalcBoardSize(m_nRows, m_nCols);
-    viewSize = GetCellForm(eScale)->CalcBoardSize(m_nRows, m_nCols);
+    viewSize = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
 }
 
 // ----------------------------------------------------- //
@@ -245,25 +245,25 @@ BOOL CBoardArray::MapPixelsToCellBounds(CRect* pPxlRct, CRect* pCellRct,
 
 void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 {
-    BoardCell* pCell = GetCell(row, col);
-    CCellForm* pCF = GetCellForm(eScale);
+    BoardCell& pCell = GetCell(row, col);
+    CCellForm& pCF = GetCellForm(eScale);
 
     CRect rct;
-    pCF->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
+    pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
 
     if (!pDC->RectVisible(&rct))
         return;
 
-    if (pCell->IsTileID())
+    if (pCell.IsTileID())
     {
         CTile tile;
-        m_pTsa->GetTile(pCell->GetTID(), &tile, eScale);
+        m_pTsa->GetTile(pCell.GetTID(), &tile, eScale);
 
         if (eScale != smallScale)
         {
-            CBitmap *pBMap = pCF->GetMask();
+            CBitmap *pBMap = pCF.GetMask();
             if (pBMap != NULL && m_bTransparentCells)
-                tile.TransBlt(*pDC, rct.left, rct.top, pCF->GetMaskMemoryInfo());
+                tile.TransBlt(*pDC, rct.left, rct.top, pCF.GetMaskMemoryInfo());
             else if (pBMap != NULL)
             {
                 g_gt.mDC1.SelectObject(pBMap);
@@ -294,12 +294,12 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
     else
     {
         CBrush oBrsh;
-        if (pCell->GetColor() == noColor)
+        if (pCell.GetColor() == noColor)
             return;                 // Let base color show through
 
-        oBrsh.CreateSolidBrush(pCell->GetColor());
+        oBrsh.CreateSolidBrush(pCell.GetColor());
         CBrush* pPrvBrsh = pDC->SelectObject(&oBrsh);
-        pCF->FillCell(pDC, rct.left, rct.top);
+        pCF.FillCell(pDC, rct.left, rct.top);
         pDC->SelectObject(pPrvBrsh);
     }
 }
@@ -308,41 +308,40 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 
 void CBoardArray::GetCellRect(size_t row, size_t col, CRect* pRct, TileScale eScale)
 {
-    GetCellForm(eScale)->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), pRct);
+    GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), pRct);
 }
 
 // ----------------------------------------------------- //
 
 CSize CBoardArray::GetCellSize(TileScale eScale)
 {
-    return GetCellForm(eScale)->GetCellSize();
+    return GetCellForm(eScale).GetCellSize();
 }
 
 // ----------------------------------------------------- //
 
 void CBoardArray::FrameCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 {
-    BoardCell* pCell = GetCell(row, col);
     CRect rct;
-    CCellForm *pCF = GetCellForm(eScale);
-    pCF->GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
+    CCellForm& pCF = GetCellForm(eScale);
+    pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
     if (!pDC->RectVisible(&rct))
         return;
-    pCF->FrameCell(pDC, rct.left, rct.top);
+    pCF.FrameCell(pDC, rct.left, rct.top);
 }
 
 // ----------------------------------------------------- //
 
 CSize CBoardArray::GetSize(TileScale eScale)
 {
-    return GetCellForm(eScale)->CalcBoardSize(m_nRows, m_nCols);
+    return GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
 }
 
 // ----------------------------------------------------- //
 
 int CBoardArray::GetWidth(TileScale eScale)
 {
-    CSize size = GetCellForm(eScale)->CalcBoardSize(m_nRows, m_nCols);
+    CSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
     return size.cx;
 }
 
@@ -350,7 +349,7 @@ int CBoardArray::GetWidth(TileScale eScale)
 
 int CBoardArray::GetHeight(TileScale eScale)
 {
-    CSize size = GetCellForm(eScale)->CalcBoardSize(m_nRows, m_nCols);
+    CSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
     return size.cy;
 }
 
@@ -382,10 +381,10 @@ void CBoardArray::SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEn
 
 // ----------------------------------------------------- //
 
-BoardCell* CBoardArray::GetCell(size_t row, size_t col)
+const BoardCell& CBoardArray::GetCell(size_t row, size_t col) const
 {
     ASSERT(m_pMap != NULL);
-    return &m_pMap[value_preserving_cast<ptrdiff_t>(CellIndex(row, col))];
+    return m_pMap[value_preserving_cast<ptrdiff_t>(CellIndex(row, col))];
 }
 
 // ----------------------------------------------------- //
@@ -395,7 +394,7 @@ BOOL CBoardArray::FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale
 {
     CB::ssize_t sRow, sCol;
     BOOL bRet = TRUE;
-    GetCellForm(eScale)->FindCell(x, y, sRow, sCol);
+    GetCellForm(eScale).FindCell(x, y, sRow, sCol);
     // Make sure result is in bounds. Return FALSE if row and
     // column is forced to be in range.
     if (sRow < 0)
@@ -432,12 +431,12 @@ BOOL CBoardArray::PurgeMissingTileIDs()
     {
         for (size_t c = size_t(0) ; c < m_nCols ; ++c)
         {
-            BoardCell *pCell = GetCell(r, c);
-            if (pCell->IsTileID())
+            BoardCell& pCell = GetCell(r, c);
+            if (pCell.IsTileID())
             {
-                if (!m_pTsa->IsTileIDValid(pCell->GetTID()))
+                if (!m_pTsa->IsTileIDValid(pCell.GetTID()))
                 {
-                    pCell->Clear();
+                    pCell.Clear();
                     bPurged = TRUE;
                 }
             }
@@ -454,8 +453,8 @@ BOOL CBoardArray::IsTileInUse(TileID tid)
     {
         for (size_t c = size_t(0) ; c < m_nCols ; ++c)
         {
-            BoardCell *pCell = GetCell(r, c);
-            if (pCell->IsTileID() && pCell->GetTID() == tid)
+            BoardCell& pCell = GetCell(r, c);
+            if (pCell.IsTileID() && pCell.GetTID() == tid)
                 return TRUE;
         }
     }
@@ -464,13 +463,13 @@ BOOL CBoardArray::IsTileInUse(TileID tid)
 
 // ----------------------------------------------------- //
 
-CCellForm* CBoardArray::GetCellForm(TileScale eScale)
+CCellForm& CBoardArray::GetCellForm(TileScale eScale)
 {
     switch (eScale)
     {
-        case fullScale: return &m_cfFull;
-        case halfScale: return &m_cfHalf;
-        default:        return &m_cfSmall;
+        case fullScale: return m_cfFull;
+        case halfScale: return m_cfHalf;
+        default:        return m_cfSmall;
     }
 }
 
@@ -514,12 +513,81 @@ void CBoardArray::GetCellNumberStr(size_t row, size_t col, CString& str)
 
 void BoardCell::Serialize(CArchive& ar)
 {
+    // file format <= 3.90
+    union
+    {
+        COLORREF    m_crCell;   // 0xFFFFxxxx is TileID, 0xFF000000 is noColor
+        struct TID
+        {
+            TileID16  m_tidCell;  // Typically terrain bitmap
+            WORD    m_key;
+        } tid;
+    } temp;
+    static_assert(sizeof(temp) == sizeof(DWORD), "file v3.90 mixup");
+    static_assert(sizeof(temp.m_crCell) == sizeof(DWORD), "file v3.90 mixup");
     if (ar.IsStoring())
-        ar << (DWORD)m_crCell;
+    {
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            if (IsTileID())
+            {
+                SerializeBackdoor sb;
+                temp.tid.m_tidCell = SerializeBackdoor::Convert(m_tidCell);
+                temp.tid.m_key = 0xFFFF;
+            }
+            else
+            {
+                temp.m_crCell = m_crCell;
+            }
+            ar << (DWORD)temp.m_crCell;
+        }
+        else
+        {
+            if (IsTileID())
+            {
+                ar << (uint8_t)1;
+                ar << m_tidCell;
+            }
+            else
+            {
+                ar << (uint8_t)0;
+                ar << m_crCell;
+            }
+        }
+    }
     else
     {
-        DWORD dwTmp;
-        ar >> dwTmp; m_crCell = (COLORREF)dwTmp;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            DWORD dwTmp;
+            ar >> dwTmp; temp.m_crCell = (COLORREF)dwTmp;
+            if (temp.tid.m_key == 0xFFFF && temp.tid.m_tidCell != Invalid_v<TileID16>)
+            {
+                SerializeBackdoor sb;
+                m_tidCell = SerializeBackdoor::Convert(temp.tid.m_tidCell);
+                m_tile = true;
+            }
+            else
+            {
+                m_crCell = temp.m_crCell;
+                m_tile = false;
+            }
+        }
+        else
+        {
+            uint8_t isTileID;
+            ar >> isTileID;
+            if (isTileID)
+            {
+                ar >> m_tidCell;
+                m_tile = true;
+            }
+            else
+            {
+                ar >> m_crCell;
+                m_tile = false;
+            }
+        }
     }
 }
 
@@ -534,37 +602,40 @@ BoardCell::BoardCell()
 
 void BoardCell::Clear()
 {
+    m_tile = false;
     m_crCell = noColor;
 }
 
 BOOL BoardCell::IsTileID()
 {
-    return tid.m_key == 0xFFFF && tid.m_tidCell != nullTid;
+    return m_tile && m_tidCell != nullTid;
 }
 
 BOOL BoardCell::IsEmpty()
 {
-    return m_crCell == noColor;
+    return !m_tile && m_crCell == noColor;
 }
 
 TileID BoardCell::GetTID()
 {
-    return tid.m_key == 0xFFFF ? tid.m_tidCell : nullTid;
+    return m_tile ? m_tidCell : nullTid;
 }
 
 void BoardCell::SetTID(TileID id)
 {
-    tid.m_tidCell = id;
-    tid.m_key = 0xFFFF;
+    m_tile = true;
+    m_tidCell = id;
 }
 
 COLORREF BoardCell::GetColor()
 {
-    return m_crCell;
+    ASSERT(!m_tile);
+    return !m_tile ? m_crCell : noColor;
 }
 
 void BoardCell::SetColor(COLORREF cr)
 {
+    m_tile = false;
     m_crCell = cr;
 }
 #endif
@@ -652,7 +723,7 @@ void CBoardArray::Serialize(CArchive& ar)
     for (size_t r = size_t(0) ; r < m_nRows ; ++r)
     {
         for (size_t c = size_t(0) ; c < m_nCols ; ++c)
-            GetCell(r, c)->Serialize(ar);
+            GetCell(r, c).Serialize(ar);
     }
 }
 
