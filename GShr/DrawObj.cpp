@@ -1029,11 +1029,6 @@ OwnerPtr<CSelection> CBitmapImage::CreateSelectProxy(CBrdEditView& pView)
 
 //DFM19991221
 
-void CBitmapImage::OffsetObject(CPoint offset)
-{
-    m_rctExtent += offset;
-}
-
 CDrawObj::OwnerPtr CBitmapImage::Clone() const
 {
     ::OwnerPtr<CBitmapImage> pObj = MakeOwner<CBitmapImage>();
@@ -1135,11 +1130,6 @@ OwnerPtr<CSelection> CTileImage::CreateSelectProxy(CBrdEditView& pView)
 }
 #endif
 
-void CTileImage::OffsetObject(CPoint offset)
-{
-    m_rctExtent += offset;
-}
-
 CDrawObj::OwnerPtr CTileImage::Clone() const
 {
     ::OwnerPtr<CTileImage> pObj = MakeOwner<CTileImage>();
@@ -1233,11 +1223,6 @@ void CText::ForceIntoZone(const CRect& pRctZone)
         m_rctExtent += pntOffset;
 }
 #endif
-
-void CText::OffsetObject(CPoint offset)
-{
-    m_rctExtent += offset;
-}
 
 #ifndef GPLAY
 OwnerPtr<CSelection> CText::CreateSelectProxy(CBrdEditView& pView)
