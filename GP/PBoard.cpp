@@ -587,16 +587,16 @@ void CPBoardManager::AddBoard(BoardID nSerialNum, BOOL bInheritSettings)
 
 void CPBoardManager::AddBoard(CBoard* pBoard, BOOL bInheritSettings)
 {
-    resize(size() + size_t(1));
-    back().SetDocument(m_pDoc);
-    back().SetBoard(CheckedDeref(pBoard), bInheritSettings);
+    push_back(new CPlayBoard);
+    back()->SetDocument(m_pDoc);
+    back()->SetBoard(CheckedDeref(pBoard), bInheritSettings);
 }
 
 void CPBoardManager::AddBoard(CGeomorphicBoard* pGeoBoard, BOOL bInheritSettings)
 {
-    resize(size() + size_t(1));
-    back().SetDocument(m_pDoc);
-    back().SetBoard(CheckedDeref(pGeoBoard), bInheritSettings);
+    push_back(new CPlayBoard);
+    back()->SetDocument(m_pDoc);
+    back()->SetBoard(CheckedDeref(pGeoBoard), bInheritSettings);
 }
 
 void CPBoardManager::DeletePBoard(size_t nBrd)
@@ -718,8 +718,9 @@ CPBoardManager* CPBoardManager::Clone(CGamDoc *pDoc)
 {
     CPBoardManager* pMgr = new CPBoardManager;
     pMgr->reserve(GetNumPBoards());
-    for (size_t i = 0; i < GetNumPBoards(); i++)
-        pMgr->push_back(GetPBoard(i).Clone(pDoc));
+    for (size_t i = size_t(0); i < GetNumPBoards(); i++)
+        // Clone() returns obj, not pointer
+        pMgr->push_back(new CPlayBoard(GetPBoard(i).Clone(pDoc)));
     return pMgr;
 }
 
@@ -790,9 +791,9 @@ void CPBoardManager::Serialize(CArchive& ar)
         {
             wTmp = CB::ReadCount(ar);
         }
-        resize(wTmp);
-        for (size_t i = size_t(0); i < size(); i++)
+        for (size_t i = size_t(0); i < wTmp; i++)
         {
+            push_back(new CPlayBoard);
             GetPBoard(i).SetDocument(m_pDoc);
             GetPBoard(i).Serialize(ar);
         }
