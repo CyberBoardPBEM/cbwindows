@@ -517,8 +517,6 @@ public:
     virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawRect; }
 
-    void SetRect(RECT* rect) { m_rctExtent = rect; }
-
     virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
     virtual BOOL SetBackColor(COLORREF cr) override { m_crFill = cr; return TRUE; }
     virtual BOOL SetLineWidth(UINT nLineWidth) override
@@ -721,7 +719,6 @@ public:
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
-    virtual void OffsetObject(CPoint offset) override;
     // ------- //
     virtual OwnerPtr Clone() const override;
 
@@ -758,7 +755,6 @@ public:
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
-    virtual void OffsetObject(CPoint offset) override;
     // ------- //
     virtual OwnerPtr Clone() const override;
 
@@ -797,7 +793,6 @@ public:
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
 #endif
-    virtual void OffsetObject(CPoint offset) override;
     // ------- //
     virtual OwnerPtr Clone() const override;
 
