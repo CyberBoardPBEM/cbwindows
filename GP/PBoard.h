@@ -198,7 +198,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////
 
-class CPBoardManager : private std::vector<CPlayBoard>
+class CPBoardManager : private std::vector<OwnerPtr<CPlayBoard>>
 {
 public:
     CPBoardManager();
@@ -211,7 +211,7 @@ public:
     CBoardManager* GetBoardManager() { return m_pBMgr; }
     size_t GetNumPBoards() const { return size(); }
     bool IsEmpty() const { return empty(); }
-    const CPlayBoard& GetPBoard(size_t nBrd) const { return at(nBrd); }
+    const CPlayBoard& GetPBoard(size_t nBrd) const { return *at(nBrd); }
     CPlayBoard& GetPBoard(size_t nBrd) { return const_cast<CPlayBoard&>(std::as_const(*this).GetPBoard(nBrd)); }
     BoardID IssueGeoSerialNumber();
 
