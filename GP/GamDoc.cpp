@@ -398,22 +398,31 @@ void CGamDoc::DeleteContents()
     if (m_palTrayA.m_hWnd != NULL)
     {
         CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayA.GetDockingFrame();
-        ASSERT_KINDOF(CDockTrayPalette, pFrame);
-        pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
+        if (pFrame)
+        {
+            ASSERT_KINDOF(CDockTrayPalette, pFrame);
+            pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
+        }
         m_palTrayA.DestroyWindow();
     }
     if (m_palTrayB.m_hWnd != NULL)
     {
         CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayB.GetDockingFrame();
-        ASSERT_KINDOF(CDockTrayPalette, pFrame);
-        pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
+        if (pFrame)
+        {
+            ASSERT_KINDOF(CDockTrayPalette, pFrame);
+            pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
+        }
         m_palTrayB.DestroyWindow();
     }
     if (m_palMark.m_hWnd != NULL)
     {
         CDockMarkPalette* pFrame = (CDockMarkPalette*)m_palMark.GetDockingFrame();
-        ASSERT_KINDOF(CDockMarkPalette, pFrame);
-        pFrame->SetChild(NULL);         // Need to remove pointer from Marker's UI Frame.
+        if (pFrame)
+        {
+            ASSERT_KINDOF(CDockMarkPalette, pFrame);
+            pFrame->SetChild(NULL);         // Need to remove pointer from Marker's UI Frame.
+        }
         m_palMark.DestroyWindow();
     }
 
