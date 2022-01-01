@@ -104,8 +104,12 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
     // Procedure:
     // 1) Clone the root board to use as template
 
-    const CBoard& pBrd = GetBoard(size_t(0), size_t(0));
-    OwnerPtr<CBoard> pBrdNew = CloneBoard(pBrd);
+    // CBoard::Rotate() requires unrotated source
+    const CGeoBoardElement& gbe = GetBoardElt(size_t(0), size_t(0));
+    CBoardManager& boardMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    size_t index = boardMgr.FindBoardBySerial(gbe.m_nBoardSerialNum);
+    const CBoard& pBrd0 = boardMgr.GetBoard(index);
+    OwnerPtr<CBoard> pBrdNew = pBrd0.Clone(*m_pDoc, gbe.m_rotation);
 
     pBrdNew->SetName(m_strName);
     pBrdNew->SetSerialNumber(m_nSerialNum);
@@ -151,14 +155,14 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             if (pDwgList != NULL)
             {
                 CDrawList* pDwgListNewBase = pBrdNew->GetBaseDrawing(TRUE);
-                pDwgListNewBase->AppendWithOffset(*pDwgList, pntOffset);
+                pDwgListNewBase->AppendWithRotOffset(*pDwgList, Rotation90::r0, pntOffset);
             }
 
             pDwgList = pBrd.GetTopDrawing();
             if (pDwgList != NULL)
             {
                 CDrawList* pDwgListNewTop = pBrdNew->GetTopDrawing(TRUE);
-                pDwgListNewTop->AppendWithOffset(*pDwgList, pntOffset);
+                pDwgListNewTop->AppendWithRotOffset(*pDwgList, Rotation90::r0, pntOffset);
             }
         }
     }
@@ -176,12 +180,11 @@ void CGeomorphicBoard::DeleteFromBoardManager()
     }
 }
 
-size_t CGeomorphicBoard::GetSpecialTileSet()
+size_t CTileManager::GetSpecialTileSet()
 {
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    size_t nTSet = pTMgr->FindNamedTileSet(GEOTILESET_NAME);
+    size_t nTSet = FindNamedTileSet(GEOTILESET_NAME);
     if (nTSet == Invalid_v<size_t>)
-        nTSet = pTMgr->CreateTileSet(GEOTILESET_NAME);
+        nTSet = CreateTileSet(GEOTILESET_NAME);
     ASSERT(nTSet != Invalid_v<size_t>);
     return nTSet;
 }
@@ -304,7 +307,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                     crSmall = pCellTo.GetColor();
                 CSize sizeFull = pBArryTo.GetCellSize(fullScale);
                 CSize sizeHalf = pBArryTo.GetCellSize(halfScale);
-                TileID tidNew = pTMgr->CreateTile(GetSpecialTileSet(),
+                TileID tidNew = pTMgr->CreateTile(pTMgr->GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
                 pTMgr->UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
                 pCellTo.SetTID(tidNew);
@@ -494,22 +497,24 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     rnCellCol = size_t(0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        const CGeoBoardElement& pBrd = GetBoardElt(size_t(0), nCol);
-        const CBoardArray& pBArray = GetBoard(pBrd).GetBoardArray();
+        const CGeoBoardElement& gbe = GetBoardElt(size_t(0), nCol);
+        const CBoard& pBrd = GetBoard(gbe);
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray.GetCols() >= size_t(1));
         rnCellCol += pBArray.GetCols();
-        if (NeedsMerge(pBrd, Edge::Right))
+        if (NeedsMerge(gbe, Edge::Right))
         {
             --rnCellCol;
         }
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        const CGeoBoardElement& pBrd = GetBoardElt(nRow, size_t(0));
-        const CBoardArray& pBArray = GetBoard(pBrd).GetBoardArray();
+        const CGeoBoardElement& gbe = GetBoardElt(nRow, size_t(0));
+        const CBoard& pBrd = GetBoard(gbe);
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray.GetRows() >= size_t(1));
         rnCellRow += pBArray.GetRows();
-        if (NeedsMerge(pBrd, Edge::Bottom))
+        if (NeedsMerge(gbe, Edge::Bottom))
         {
             --rnCellRow;
         }
@@ -526,12 +531,65 @@ const CGeoBoardElement& CGeomorphicBoard::GetBoardElt(size_t nBoardRow, size_t n
 
 const CBoard& CGeomorphicBoard::GetBoard(const CGeoBoardElement& geo) const
 {
-    size_t nBrdIndex = m_pDoc->GetBoardManager()->FindBoardBySerial(geo.m_nBoardSerialNum);
-    const CBoard& pBrd = m_pDoc->GetBoardManager()->GetBoard(nBrdIndex);
-    return pBrd;
+    return m_pDoc->GetBoardManager()->Get(geo);
 }
 
-OwnerPtr<CBoard> CGeomorphicBoard::CloneBoard(const CBoard& pOrigBoard) const
+namespace
+{
+    OwnerOrNullPtr<CDrawList> Rotate(const CBoard& board, const CDrawList* (CBoard::*drawlist)() const, Rotation90 r)
+    {
+        const CDrawList* src = (board.*drawlist)();
+        if (!src)
+        {
+            return nullptr;
+        }
+
+        CPoint offset;
+        switch (r)
+        {
+            case Rotation90::r180:
+            {
+                offset = CPoint(board.GetWidth(fullScale), board.GetHeight(fullScale));
+                const CBoardArray& ba = board.GetBoardArray();
+                const CCellForm& cf = ba.GetCellForm(fullScale);
+                if (cf.GetCellType() == cformHexFlat &&
+                    cf.GetCellStagger() == CellStagger::Out)
+                {
+                    if (board.IsGEVStyle(Edge::Top))
+                    {
+                        offset += CSize(0, cf.GetCellSize().cy / 2);
+                    }
+                    else if (board.IsGEVStyle(Edge::Bottom))
+                    {
+                        offset += CSize(0, -cf.GetCellSize().cy/2);
+                    }
+                }
+                else if (cf.GetCellType() == cformHexPnt &&
+                    cf.GetCellStagger() == CellStagger::Out)
+                {
+                    if (board.IsGEVStyle(Edge::Right))
+                    {
+                        offset += CSize(-cf.GetCellSize().cx/2, 0);
+                    }
+                    if (board.IsGEVStyle(Edge::Left))
+                    {
+                        offset += CSize(cf.GetCellSize().cx/2, 0);
+                    }
+                }
+                break;
+            }
+            default:
+                AfxThrowInvalidArgException();
+        }
+
+        std::unique_ptr<CDrawList> dest(new CDrawList);
+        dest->AppendWithRotOffset(*src, r, offset);
+        return dest.release();
+    }
+}
+
+// WARNING:  only supported on unrotated boards
+OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
 {
     // We need to force the current version at this point because
     // we may be loading an earlier version game or scenario. In
@@ -541,21 +599,163 @@ OwnerPtr<CBoard> CGeomorphicBoard::CloneBoard(const CBoard& pOrigBoard) const
 
     CMemFile file;
     CArchive arSave(&file, CArchive::store);
-    /* save should not modify src, and restore is modifying new
-        object, so const_cast should be safe */
-    CGamDoc& doc = const_cast<CGamDoc&>(*m_pDoc);
     arSave.m_pDocument = &doc;
     // save should not modify src, so should be safe
-    const_cast<CBoard&>(pOrigBoard).Serialize(arSave);      // Make a copy of the board
+    const_cast<CBoard&>(*this).Serialize(arSave);      // Make a copy of the board
     arSave.Close();
 
     file.SeekToBegin();
     CArchive arRestore(&file, CArchive::load);
     arRestore.m_pDocument = &doc;
-    OwnerPtr<CBoard> pNewBoard = new CBoard();
+    OwnerPtr<CBoard> pNewBoard = MakeOwner<CBoard>();
     pNewBoard->Serialize(arRestore);
+    pNewBoard->m_nSerialNum = Invalid_v<BoardID>;
 
-    return pNewBoard;
+    if (r == Rotation90::r0)
+    {
+        return pNewBoard;
+    }
+
+    static const auto Odd = [](size_t x)
+    {
+        return bool(x & size_t(1));
+    };
+
+    switch (r)
+    {
+        case Rotation90::r180:
+        {
+            pNewBoard->SetBaseDrawing(Rotate(*this, &CBoard::GetBaseDrawing, r));
+
+            const CBoardArray& srcBoardArray = GetBoardArray();
+            const CCellForm& srcCellForm = srcBoardArray.GetCellForm(fullScale);
+            CBoardArray& dstBoardArray = pNewBoard->GetBoardArray();
+            CellStagger dstStagger = srcCellForm.GetCellStagger();
+            int parm1, parm2 = 0;
+            switch (srcCellForm.GetCellType())
+            {
+                case cformHexFlat:
+                    if (Odd(srcBoardArray.GetCols()) &&
+                        !(IsGEVStyle(Edge::Top) || IsGEVStyle(Edge::Bottom)))
+                    {
+                        dstStagger = ~dstStagger;
+                    }
+                    parm1 = srcCellForm.GetCellSize().cy;
+                    break;
+                case cformHexPnt:
+                    if (Odd(srcBoardArray.GetRows()) &&
+                        !(IsGEVStyle(Edge::Left) || IsGEVStyle(Edge::Right)))
+                    {
+                        dstStagger = ~dstStagger;
+                    }
+                    parm1 = srcCellForm.GetCellSize().cx;
+                    break;
+                default:
+                    AfxThrowInvalidArgException();
+            }
+            dstBoardArray.CreateBoard(srcCellForm.GetCellType(),
+                                        srcBoardArray.GetRows(), srcBoardArray.GetCols(),
+                                        parm1, parm2,
+                                        dstStagger);
+            CTileManager& tileMgr = *pNewBoard->m_pTMgr;
+            for (size_t srcY = size_t(0) ; srcY < srcBoardArray.GetRows() ; ++srcY)
+            {
+                for (size_t srcX = size_t(0) ; srcX < srcBoardArray.GetCols(); ++srcX)
+                {
+                    size_t destX = srcBoardArray.GetCols() - size_t(1) - srcX;
+                    size_t destY = srcBoardArray.GetRows() - size_t(1) - srcY;
+                    // preserve the GEVStyle edge
+                    if (srcCellForm.GetCellType() == cformHexFlat)
+                    {
+                        if (srcCellForm.GetCellStagger() == CellStagger::Out)
+                        {
+                            if (IsGEVStyle(Edge::Bottom) &&
+                                Odd(destX))
+                            {
+                                // avoid arithmetic overflow trouble
+                                destY = (destY + dstBoardArray.GetRows() - size_t(1)) % dstBoardArray.GetRows();
+                            }
+                            else if (IsGEVStyle(Edge::Top) &&
+                                !Odd(destX))
+                            {
+                                destY = (destY + size_t(1)) % dstBoardArray.GetRows();
+                            }
+                        }
+                        else
+                        {
+                            ASSERT(!"untested code");
+                            ASSERT(srcCellForm.GetCellStagger() == CellStagger::In);
+                            if (IsGEVStyle(Edge::Bottom) &&
+                                !Odd(destX))
+                            {
+                                // avoid arithmetic overflow trouble
+                                destY = (destY + dstBoardArray.GetRows() - size_t(1)) % dstBoardArray.GetRows();
+                            }
+                            else if (IsGEVStyle(Edge::Top) &&
+                                Odd(destX))
+                            {
+                                destY = (destY + size_t(1)) % dstBoardArray.GetRows();
+                            }
+                        }
+                    }
+                    else if (srcCellForm.GetCellType() == cformHexPnt)
+                    {
+                        if (srcCellForm.GetCellStagger() == CellStagger::Out)
+                        {
+                            if (IsGEVStyle(Edge::Right) &&
+                                Odd(destY))
+                            {
+                                // avoid arithmetic overflow trouble
+                                destX = (destX + dstBoardArray.GetCols() - size_t(1)) % dstBoardArray.GetCols();
+                            }
+                            else if (IsGEVStyle(Edge::Left) &&
+                                !Odd(destY))
+                            {
+                                destX = (destX + size_t(1)) % dstBoardArray.GetCols();
+                            }
+                        }
+                        else
+                        {
+                            ASSERT(srcCellForm.GetCellStagger() == CellStagger::In);
+                            if (IsGEVStyle(Edge::Right) &&
+                                !Odd(destY))
+                            {
+                                // avoid arithmetic overflow trouble
+                                destX = (destX + dstBoardArray.GetCols() - size_t(1)) % dstBoardArray.GetCols();
+                            }
+                            else if (IsGEVStyle(Edge::Left) &&
+                                Odd(destY))
+                            {
+                                destX = (destX + size_t(1)) % dstBoardArray.GetCols();
+                            }
+                        }
+                    }
+
+                    const BoardCell& cell = srcBoardArray.GetCell(srcY, srcX);
+                    if (!cell.IsTileID())
+                    {
+                        dstBoardArray.GetCell(destY, destX) = cell;
+                    }
+                    else
+                    {
+                        TileID tid = cell.GetTID();
+                        ASSERT(tid != nullTid);
+                        dstBoardArray.GetCell(destY, destX).SetTID(tileMgr.Get(tid, r));
+                    }
+                }
+            }
+            for (Edge e : { Edge::Top, Edge::Bottom, Edge::Left, Edge::Right })
+            {
+                ASSERT(pNewBoard->IsGEVStyle(e) == IsGEVStyle(e));
+            }
+
+            pNewBoard->SetTopDrawing(Rotate(*this, &CBoard::GetTopDrawing, r));
+
+            return pNewBoard;
+        }
+        default:
+            AfxThrowInvalidArgException();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////

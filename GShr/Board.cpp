@@ -29,6 +29,7 @@
 #ifdef      GPLAY
     #include    "Gp.h"
     #include    "GamDoc.h"
+    #include    "GeoBoard.h"
 #else
     #include    "Gm.h"
     #include    "GmDoc.h"
@@ -50,8 +51,6 @@ static char THIS_FILE[] = __FILE__;
 
 CBoard::CBoard()
 {
-    m_pBrdAry = NULL;
-    m_pTopDwg = NULL;
     m_iMaxLayer = -1;
     // --------- //
     m_nSerialNum = BoardID(0);           // Needs to be set by creator
@@ -70,9 +69,10 @@ CBoard::CBoard()
 void CBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
     int nCellBorder /* = -1 */, int nApplyVisible /* = -1 */)// -1 means use internal
 {
+    const CBoardArray& brdAry = GetBoardArray();
 
     CSize wsize, vsize;
-    GetBoardArray().GetBoardScaling(eScale, wsize, vsize);
+    brdAry.GetBoardScaling(eScale, wsize, vsize);
 
     DrawBackground(pDC, pDrawRct);  // Moved here so don't need to scale rect
     if (m_pBaseDwg != NULL)
@@ -95,14 +95,13 @@ void CBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
 
     CRect rCellRct;
     if (IsDrawGridLines(nCellBorder))
-        m_pBrdAry->MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
+        brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
 
     if (m_iMaxLayer < 0 || m_iMaxLayer >= 2)
     {
         if (!IsDrawGridLines(nCellBorder))
         {
-            ASSERT(m_pBrdAry != NULL);
-            m_pBrdAry->MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
+            brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
         }
         DrawCells(pDC, rCellRct, eScale);
     }
@@ -265,6 +264,7 @@ bool CBoard::IsGEVStyle(Edge e) const
         it's so weird that our code will probably not handle
         it correctly, so reject it until someone presents a
         use case worth analyzing */
+    ASSERT(!(IsGEVStyleHelper(e) && IsGEVStyleHelper(~e)));
     return IsGEVStyleHelper(e) && !IsGEVStyleHelper(~e);
 }
 
@@ -448,8 +448,7 @@ BOOL CBoard::IsTileInUse(TileID tid) const
 
 void CBoard::ForceObjectsOntoBoard()
 {
-    ASSERT(m_pBrdAry != NULL);
-    CSize sizeBrd = m_pBrdAry->GetSize(fullScale);
+    CSize sizeBrd = GetBoardArray().GetSize(fullScale);
     CRect rctZone(CPoint(0,0), sizeBrd);
     if (m_pBaseDwg != NULL)
         m_pBaseDwg->ForceIntoZone(&rctZone);
@@ -656,7 +655,37 @@ void CBoardBase::Serialize(CArchive& ar)
 
 ///////////////////////////////////////////////////////////////////
 
-CBoardManager::CBoardManager()
+#if defined(GPLAY)
+class CBoardManager::GeoBoardManager
+{
+public:
+    GeoBoardManager(CBoardManager& o, CGamDoc& doc);
+    GeoBoardManager(const GeoBoardManager&) = delete;
+    GeoBoardManager& operator=(const GeoBoardManager&) = delete;
+    ~GeoBoardManager() = default;
+
+    const CBoard& Get(const CGeoBoardElement& gelem) const;
+
+private:
+    RefPtr<CBoardManager> outer;
+    CGamDoc& doc;
+
+    class LessCGBE
+    {
+    public:
+        bool operator()(const CGeoBoardElement& lhs, const CGeoBoardElement& rhs) const;
+    };
+    typedef std::map<CGeoBoardElement, OwnerPtr<CBoard>, LessCGBE> BoardRots;
+    // allow lazy eval of ctor
+    mutable BoardRots m_boardRots;
+};
+#endif
+
+CBoardManager::CBoardManager(CGamDoc& doc)
+#if defined(GPLAY)
+    :
+    geoBoardManager(new GeoBoardManager(*this, doc))
+#endif
 {
     m_nNextSerialNumber = BoardID(1);
     // ------ //
@@ -670,6 +699,11 @@ CBoardManager::CBoardManager()
     m_wReserved2 = 0;
     m_wReserved3 = 0;
     m_wReserved4 = 0;
+}
+
+CBoardManager::~CBoardManager()
+{
+    DestroyAllElements();
 }
 
 void CBoardManager::DestroyAllElements(void)
@@ -802,3 +836,33 @@ void CBoardManager::Serialize(CArchive& ar)
     }
 }
 
+#if defined(GPLAY)
+const CBoard& CBoardManager::Get(const CGeoBoardElement& gelem) const
+{
+    return geoBoardManager->Get(gelem);
+}
+
+CBoardManager::GeoBoardManager::GeoBoardManager(CBoardManager& o, CGamDoc& d) :
+    outer(&o),
+    doc(d)
+{
+}
+
+const CBoard& CBoardManager::GeoBoardManager::Get(const CGeoBoardElement& gelem) const
+{
+    BoardRots::const_iterator it = m_boardRots.find(gelem);
+    if (it == m_boardRots.end())
+    {
+        size_t nBrdIndex = outer->FindBoardBySerial(gelem.m_nBoardSerialNum);
+        const CBoard& pBrd = outer->GetBoard(nBrdIndex);
+        it = m_boardRots.insert(std::make_pair(gelem, pBrd.Clone(doc, gelem.m_rotation))).first;
+    }
+    return *it->second;
+}
+
+bool CBoardManager::GeoBoardManager::LessCGBE::operator()(const CGeoBoardElement& lhs, const CGeoBoardElement& rhs) const
+{
+    return static_cast<BoardID::UNDERLYING_TYPE>(lhs.m_nBoardSerialNum) < static_cast<BoardID::UNDERLYING_TYPE>(rhs.m_nBoardSerialNum) ||
+            (lhs.m_nBoardSerialNum == rhs.m_nBoardSerialNum && lhs.m_rotation < rhs.m_rotation);
+}
+#endif

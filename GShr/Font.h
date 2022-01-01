@@ -25,6 +25,8 @@
 #ifndef _FONT_H
 #define _FONT_H
 
+#include    <map>
+
 #ifndef     _FONTNAME_H
 #include    "FontName.h"
 #endif
@@ -43,21 +45,22 @@ protected:
     FNameID fnID;
     int     iTypeSize;          // Type height in 0.5 pt units
     int     taFlags;            // See ta* defs above
-    // mutable since it's a lazy evaluation of ctor
-    mutable HFONT hFnt;         // Handle of font in system
+    // mutable since it's approximately a lazy evaluation of ctor
+    typedef std::map<int /* angle */, HFONT> HFonts;
+    mutable HFonts hFnt;        // Handle of font in system
 public:
     // ---------- //
     bool operator==(const CbFont& rhs) const;
 
-    CbFont(void) : fnID(0), iTypeSize(0), taFlags(0), hFnt(NULL) {}
+    CbFont(void) : fnID(0), iTypeSize(0), taFlags(0) {}
     CbFont(int iSize, int taFlgs, FNameID id) :
-        fnID(id), iTypeSize(iSize), taFlags(taFlgs), hFnt(NULL) {}
+        fnID(id), iTypeSize(iSize), taFlags(taFlgs) {}
     ~CbFont();
     // --------- //
     bool IsBold(void) const { return (taFlags & taBold) != 0; }
     bool IsItalic(void) const { return (taFlags & taItalic) != 0; }
     bool IsULine(void) const { return (taFlags & taULine) != 0; }
-    std::string ToString() const;
+    std::string ToString(int angle = 0) const;
 };
 
 class CFontTbl : private AtomList<CbFont>
@@ -70,9 +73,9 @@ public:
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
     FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const char *pszFName);
-    void FillLogFontStruct(FontID id, LPLOGFONT pLF);
-    HFONT GetFontHandle(FontID id);
-    void ReleaseFontHandle(FontID id);
+    // N.B.:  angle is clockwise per CB convention
+    void FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle = 0);
+    HFONT GetFontHandle(FontID id, int angle = 0);
     void ReleaseAllFontHandles(void);
     // -------- //
     int GetFlags(FontID id) const { return id != 0 ? (*id)->taFlags : 0; }

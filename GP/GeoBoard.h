@@ -44,6 +44,7 @@ public:
     CGeoBoardElement& operator=(const CGeoBoardElement&) = delete;
     ~CGeoBoardElement() = default;
 
+    // position within CGeoBoard
     /* we could find out the row,col by searching for this in
         the containing CGeomorphicBoard, but caching it isn't
         too difficult, and will be faster */
@@ -98,7 +99,6 @@ protected:
     }
     const CBoard& GetBoard(const CGeoBoardElement& geo) const;
     const CGeoBoardElement& GetBoardElt(size_t nBoardRow, size_t nBoardCol) const;
-    OwnerPtr<CBoard> CloneBoard(const CBoard& pOrigBoard) const;
     void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const;
     CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const;
     void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;

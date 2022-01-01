@@ -332,7 +332,6 @@ int CBoardArray::GetWidth(TileScale eScale) const
 // ----------------------------------------------------- //
 
 int CBoardArray::GetHeight(TileScale eScale) const
-
 {
     CSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
     return size.cy;

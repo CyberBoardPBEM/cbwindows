@@ -62,11 +62,13 @@ FontID CFontTbl::AddFont(int iSize, int taFlgs, uint8_t iFamily,
 
 CbFont::~CbFont()
 {
-    if (hFnt)
-        DeleteObject(hFnt);
+    for (HFonts::value_type& v : hFnt)
+    {
+        DeleteObject(v.second);
+    }
 }
 
-std::string CbFont::ToString() const
+std::string CbFont::ToString(int angle /* = 0 */) const
 {
     std::ostringstream str;
     str << "CbFont(" <<
@@ -106,18 +108,25 @@ std::string CbFont::ToString() const
         str << "<none>";
     }
 
+    if (angle)
+    {
+        str << ' ' << angle << '°';
+    }
+
     str << ')';
     return str.str();
 }
 
 // ----------------------------------------------------- //
 
-void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF)
+// N.B.:  angle is clockwise per CB convention
+void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
 {
     const CbFont *opFnt = &**id;
     const char *pszFace;
 
     memset(pLF, 0, sizeof(LOGFONT));
+    pLF->lfOrientation = pLF->lfEscapement = -angle*10;
     pLF->lfHeight = -(opFnt->iTypeSize);
     pLF->lfWeight = opFnt->IsBold() ? FW_BOLD : FW_NORMAL;
     pLF->lfItalic = opFnt->IsItalic();
@@ -132,35 +141,22 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF)
 
 // ----------------------------------------------------- //
 
-HFONT CFontTbl::GetFontHandle(FontID id)
+HFONT CFontTbl::GetFontHandle(FontID id, int angle /* = 0 */)
 {
     if (id == 0)
         return NULL;
     const CbFont* opFnt = &**id;
-    if (opFnt->hFnt)
-        return opFnt->hFnt;
+    CbFont::HFonts::iterator it = opFnt->hFnt.find(angle);
+    if (it != opFnt->hFnt.end())
+        return it->second;
 
     LOGFONT lf;
-    FillLogFontStruct(id, &lf);
+    FillLogFontStruct(id, &lf, angle);
 
-    opFnt->hFnt = CreateFontIndirect(&lf);
-    return opFnt->hFnt;
+    it = opFnt->hFnt.insert(std::make_pair(angle, CreateFontIndirect(&lf))).first;
+    return it->second;
 }
 
-// ----------------------------------------------------- //
-
-void CFontTbl::ReleaseFontHandle(FontID id)
-{
-    if (id == 0) return;
-
-    const CbFont* opFnt = &**id;
-
-    if (opFnt->hFnt)
-    {
-        DeleteObject(opFnt->hFnt);
-        opFnt->hFnt = NULL;
-    }
-}
 // ----------------------------------------------------- //
 
 void CFontTbl::ReleaseAllFontHandles(void)
