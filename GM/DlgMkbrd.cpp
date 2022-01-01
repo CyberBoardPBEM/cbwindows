@@ -44,7 +44,7 @@ CGridType::CGridType(CWnd* pParent /*=NULL*/)
     m_iCols = size_t(0);
     m_iRows = size_t(0);
     m_strBoardName = "";
-    m_bStagerIn = FALSE;
+    m_bStagger = CellStagger::Invalid;
     m_nBoardType = -1;
     //}}AFX_DATA_INIT
 }
@@ -69,7 +69,9 @@ void CGridType::DoDataExchange(CDataExchange* pDX)
     DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_iRows), 1, 1000);
     DDX_Text(pDX, IDC_D_NEWBRD_BOARDNAME, m_strBoardName);
     DDV_MaxChars(pDX, m_strBoardName, 32);
-    DDX_Check(pDX, IDC_D_NEWBRD_STAGGERIN, m_bStagerIn);
+    int temp = static_cast<int>(m_bStagger);
+    DDX_Check(pDX, IDC_D_NEWBRD_STAGGERIN, temp);
+    m_bStagger = static_cast<CellStagger>(temp);
     DDX_Radio(pDX, IDC_D_NEWBRD_RECT, m_nBoardType);
     //}}AFX_DATA_MAP
 }
@@ -201,8 +203,15 @@ void CGridType::UpdateBoardDimensions()
     m_iCols = GetDlgItemInt(IDC_D_NEWBRD_GRIDCOLS);
 
     CDataExchange dx(this, TRUE);
-    DDX_Check(&dx, IDC_D_NEWBRD_STAGGERIN, m_bStagerIn);
+    int temp = static_cast<int>(m_bStagger);
+    DDX_Check(&dx, IDC_D_NEWBRD_STAGGERIN, temp);
+    m_bStagger = static_cast<CellStagger>(temp);
     DDX_Radio(&dx, IDC_D_NEWBRD_RECT, m_nBoardType);
+
+    if (m_nBoardType == cformRect)
+    {
+        m_bStagger = CellStagger::Invalid;
+    }
 
     if (m_nBoardType == cformHexPnt)    // Only first param is used
         m_iCellHt = m_iCellWd;
@@ -217,7 +226,7 @@ void CGridType::UpdateBoardDimensions()
 
     CCellForm cf;
     cf.CreateCell((CellFormType)m_nBoardType, m_iCellHt, m_iCellWd,
-        m_bStagerIn ? staggerIn : staggerOut);
+        m_bStagger);
     if (cf.CalcTrialBoardSize(m_iRows, m_iCols))
     {
         CString str;

@@ -119,7 +119,7 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
     size_t nCols;
     ComputeNewBoardDimensions(nRows, nCols);
 
-    pBrdArrayNew->ReshapeBoard(nRows, nCols, -1, -1, -1);
+    pBrdArrayNew->ReshapeBoard(nRows, nCols, -1, -1, CellStagger::Invalid);
 
     // 3) Fill cells with content of cells from other boards.
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)

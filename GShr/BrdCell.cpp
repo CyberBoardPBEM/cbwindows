@@ -65,7 +65,7 @@ CBoardArray::CBoardArray()
 ///////////////////////////////////////////////////////////////////////
 
 void CBoardArray::CreateBoard(CellFormType eType, size_t nRows, size_t nCols,
-    int nParm1, int nParm2, int nStagger)
+    int nParm1, int nParm2, CellStagger nStagger)
 {
     std::vector<BoardCell> pMap(nRows * nCols);
 
@@ -75,7 +75,7 @@ void CBoardArray::CreateBoard(CellFormType eType, size_t nRows, size_t nCols,
 // ----------------------------------------------------- //
 
 void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm2,
-        int nStagger)
+        CellStagger nStagger)
 {
     ASSERT(!m_pMap.empty());
 
@@ -95,7 +95,7 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
     // OK we've copied over the old data destroy the old and
     // use the new.
 
-    if (nStagger == -1)
+    if (nStagger == CellStagger::Invalid)
         nStagger = m_cfFull.GetCellStagger();
 
     CellFormType eType = m_cfFull.GetCellType();    // Get cell type
@@ -114,7 +114,7 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
 // ----------------------------------------------------- //
 
 void CBoardArray::GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
-    int nParm1, int nParm2, int nStagger, std::vector<BoardCell>&& pMap)
+    int nParm1, int nParm2, CellStagger nStagger, std::vector<BoardCell>&& pMap)
 {
     DestroyBoard();             // Wipe out current board info.
 
@@ -130,7 +130,7 @@ void CBoardArray::GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
 
 /* static */
 void CBoardArray::GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
-    int nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall)
+    CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall)
 {
     // Set up cell geometry. There are 3 CCellForm objects. One
     // for each scaling. When scaling the view port, GetBoardScaling()

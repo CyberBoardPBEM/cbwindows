@@ -42,7 +42,7 @@ public:
     size_t  m_iCols;
     size_t  m_iRows;
     CString m_strBoardName;
-    BOOL    m_bStagerIn;
+    CellStagger m_bStagger;
     int     m_nBoardType;
     //}}AFX_DATA
 

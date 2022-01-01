@@ -126,14 +126,14 @@ public:
 // Operations
 public:
     void CreateBoard(CellFormType eType, size_t nRows, size_t nCols, int nParm1,
-        int nParm2, int nStagger);
+        int nParm2, CellStagger nStagger);
     void ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm2,
-        int nStagger);
+        CellStagger nStagger);
     void DestroyBoard();
     void GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
-        int nParm1, int nParm2, int nStagger, std::vector<BoardCell>&& pMap);
+        int nParm1, int nParm2, CellStagger nStagger, std::vector<BoardCell>&& pMap);
     static void GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
-        int nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
+        CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
     void DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale);
     void DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale);
