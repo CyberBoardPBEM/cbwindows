@@ -52,11 +52,11 @@ class CCellForm
 // Constructors / Destructors
 public:
     CCellForm();
-    ~CCellForm() { Clear(); }
+    ~CCellForm() = default;
 
 // Attributes
 public:
-    CBitmap* GetMask() { return m_pMask; }
+    CBitmap* GetMask() { return m_pMask ? &*m_pMask : nullptr; }
     BITMAP*  GetMaskMemoryInfo() { return m_pMask != NULL ? &m_bmapMask : NULL; }
     BOOL     HasMask() { return m_pMask != NULL; }
 
@@ -89,13 +89,13 @@ protected:
     CellFormType m_eType;       // Format of cell
     int          m_nStagger;    // 0 = normal. 1 = alternate
     CRect        m_rct;         // Rectangle enclosing cell
-    POINT*       m_pPoly;       // Zero based set of points
-    CBitmap*     m_pMask;       // Only defined for hexes
+    std::vector<POINT> m_pPoly;  // Zero based set of points
+    OwnerOrNullPtr<CBitmap> m_pMask; // Only defined for hexes
     BITMAP       m_bmapMask;    // Only filled if m_pMask is defined
     // ------- //
-    POINT*       m_pWrk;        // Scratch copy of m_pPoly
+    std::vector<POINT> m_pWrk;   // Scratch copy of m_pPoly
     // ------- //
-    void OffsetPoly(POINT* pPoly, int nPts, int xOff, int yOff);
+    static void OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff);
     // ------- //
     CB::ssize_t CellPhase(CB::ssize_t val) { return ((val ^ m_nStagger) & 1); }
     void CreateHexMask();

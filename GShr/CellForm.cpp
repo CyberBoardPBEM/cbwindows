@@ -44,9 +44,6 @@ inline int RoundHalf(int x) { return x / 2 + (x & 1); }
 
 CCellForm::CCellForm()
 {
-    m_pPoly = NULL;
-    m_pMask = NULL;
-    m_pWrk = NULL;
     m_nStagger = 0;
     memset(&m_bmapMask, 0, sizeof(BITMAP));
 }
@@ -73,15 +70,14 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
     if (eType == cformRect || eType == cformBrickHorz ||
         eType == cformBrickVert)
     {
-        m_pPoly = new POINT[5];     // Last point repeats first
-        m_pWrk  = new POINT[5];
+        m_pPoly.resize(size_t(5));     // Last point repeats first
 
         m_rct.SetRect(0, 0, nParm2, nParm1);
-        m_pPoly[0].x = m_pPoly[3].x = m_pPoly[4].x =
-            m_pPoly[0].y = m_pPoly[1].y = 0;
-        m_pPoly[1].x = m_pPoly[2].x = m_rct.right;
-        m_pPoly[2].y = m_pPoly[3].y = m_rct.bottom;
-        m_pPoly[4] = m_pPoly[0];    // Wrap around
+        m_pPoly[size_t(0)].x = m_pPoly[size_t(3)].x = m_pPoly[size_t(4)].x =
+            m_pPoly[size_t(0)].y = m_pPoly[size_t(1)].y = 0;
+        m_pPoly[size_t(1)].x = m_pPoly[size_t(2)].x = m_rct.right;
+        m_pPoly[size_t(2)].y = m_pPoly[size_t(3)].y = m_rct.bottom;
+        m_pPoly[size_t(4)] = m_pPoly[size_t(0)];    // Wrap around
 
         return;                     // No mask is required.
     }
@@ -91,8 +87,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
         nFace = MulDiv(nParm1, 1000, 1732);
         nLeg = MulDiv(nParm1, 1000, 3464);
 
-        m_pPoly = new POINT[7];     // Extra pnt-> last point repeats first
-        m_pWrk  = new POINT[7];
+        m_pPoly.resize(size_t(7));     // Extra pnt-> last point repeats first
 
         if (eType == cformHexPnt)
         {
@@ -101,18 +96,18 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
             //       |   |
             //       5\ /3
             //         4
-            m_pPoly[0].x = m_pPoly[5].x = 0;
-            m_pPoly[1].x = m_pPoly[4].x = nWide / 2;
-            m_pPoly[2].x = m_pPoly[3].x = nWide;
+            m_pPoly[size_t(0)].x = m_pPoly[size_t(5)].x = 0;
+            m_pPoly[size_t(1)].x = m_pPoly[size_t(4)].x = nWide / 2;
+            m_pPoly[size_t(2)].x = m_pPoly[size_t(3)].x = nWide;
 
-            m_pPoly[1].y = 0;
-            m_pPoly[0].y = m_pPoly[2].y = nLeg;
-            m_pPoly[3].y = m_pPoly[5].y = nLeg + nFace;
-            m_pPoly[4].y = 2 * nLeg + nFace;
+            m_pPoly[size_t(1)].y = 0;
+            m_pPoly[size_t(0)].y = m_pPoly[size_t(2)].y = nLeg;
+            m_pPoly[size_t(3)].y = m_pPoly[size_t(5)].y = nLeg + nFace;
+            m_pPoly[size_t(4)].y = 2 * nLeg + nFace;
 
-            m_pPoly[6] = m_pPoly[0];    // Wrap around
+            m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(0, 0, m_pPoly[2].x + 1, m_pPoly[4].y + 1);
+            m_rct.SetRect(0, 0, m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         else
         {
@@ -121,18 +116,18 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
             //    0/    \3
             //     \    /
             //     5\--/4
-            m_pPoly[0].x = 0;
-            m_pPoly[1].x = m_pPoly[5].x = nLeg;
-            m_pPoly[2].x = m_pPoly[4].x = nLeg + nFace;
-            m_pPoly[3].x = 2 * nLeg + nFace;
+            m_pPoly[size_t(0)].x = 0;
+            m_pPoly[size_t(1)].x = m_pPoly[size_t(5)].x = nLeg;
+            m_pPoly[size_t(2)].x = m_pPoly[size_t(4)].x = nLeg + nFace;
+            m_pPoly[size_t(3)].x = 2 * nLeg + nFace;
 
-            m_pPoly[1].y = m_pPoly[2].y = 0;
-            m_pPoly[0].y = m_pPoly[3].y = nWide / 2;
-            m_pPoly[5].y = m_pPoly[4].y = nWide;
+            m_pPoly[size_t(1)].y = m_pPoly[size_t(2)].y = 0;
+            m_pPoly[size_t(0)].y = m_pPoly[size_t(3)].y = nWide / 2;
+            m_pPoly[size_t(5)].y = m_pPoly[size_t(4)].y = nWide;
 
-            m_pPoly[6] = m_pPoly[0];    // Wrap around
+            m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(0, 0, m_pPoly[3].x + 1, m_pPoly[4].y + 1);
+            m_rct.SetRect(0, 0, m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         // Create a monochrome mask for hexes.
         CreateHexMask();
@@ -150,13 +145,13 @@ void CCellForm::CreateHexMask()
         m_rct.right, m_rct.bottom));
     ResetPalette(&dcMask);
 
-    CBitmap *prvbmMask = dcMask.SelectObject(m_pMask);
+    CBitmap *prvbmMask = dcMask.SelectObject(&*m_pMask);
 
     // Make a black hex with white exterior
     dcMask.PatBlt(0, 0, m_rct.right, m_rct.bottom, WHITENESS);
     dcMask.SelectStockObject(BLACK_BRUSH);
     dcMask.SelectStockObject(BLACK_PEN);
-    dcMask.Polygon(m_pPoly, 6);
+    dcMask.Polygon(m_pPoly.data(), value_preserving_cast<int>(m_pPoly.size()));
     dcMask.SelectObject(prvbmMask);
 
     m_pMask->GetObject(sizeof(BITMAP), &m_bmapMask);
@@ -177,13 +172,13 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
     if (m_eType == cformHexPnt)
     {
         CRect rct;
-        row = y / m_pPoly[3].y;
+        row = y / m_pPoly[size_t(3)].y;
 
-        CB::ssize_t xBase = CellPhase(row) * m_pPoly[1].x;
-        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_pPoly[2].x;
+        CB::ssize_t xBase = CellPhase(row) * m_pPoly[size_t(1)].x;
+        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_pPoly[size_t(2)].x;
 
         GetRect(row, col, &rct);
-        g_gt.mDC1.SelectObject(m_pMask);
+        g_gt.mDC1.SelectObject(&*m_pMask);
         COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
         g_gt.SelectSafeObjectsForDC1();
         if (cr != RGB(0, 0, 0))
@@ -198,13 +193,13 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
     else if (m_eType == cformHexFlat)
     {
         CRect rct;
-        col = x / m_pPoly[2].x;
-        CB::ssize_t yBase = CellPhase(col) * m_pPoly[3].y;
-        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_pPoly[4].y;
+        col = x / m_pPoly[size_t(2)].x;
+        CB::ssize_t yBase = CellPhase(col) * m_pPoly[size_t(3)].y;
+        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_pPoly[size_t(4)].y;
 
         GetRect(row, col, &rct);
 
-        g_gt.mDC1.SelectObject(m_pMask);
+        g_gt.mDC1.SelectObject(&*m_pMask);
         COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
         g_gt.SelectSafeObjectsForDC1();
         if (cr != RGB(0, 0, 0))
@@ -258,13 +253,13 @@ BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols)
     }
     else if (m_eType == cformHexPnt)
     {
-        x = nCols * value_preserving_cast<size_t>(m_pPoly[2].x) + value_preserving_cast<size_t>(m_pPoly[1].x);
-        y = nRows * value_preserving_cast<size_t>(m_pPoly[3].y) + value_preserving_cast<size_t>(m_pPoly[0].y);
+        x = nCols * value_preserving_cast<size_t>(m_pPoly[size_t(2)].x) + value_preserving_cast<size_t>(m_pPoly[size_t(1)].x);
+        y = nRows * value_preserving_cast<size_t>(m_pPoly[size_t(3)].y) + value_preserving_cast<size_t>(m_pPoly[size_t(0)].y);
     }
     else
     {
-        x = nCols * value_preserving_cast<size_t>(m_pPoly[2].x) + value_preserving_cast<size_t>(m_pPoly[1].x);
-        y = nRows * value_preserving_cast<size_t>(m_pPoly[4].y) + value_preserving_cast<size_t>(m_pPoly[3].y);
+        x = nCols * value_preserving_cast<size_t>(m_pPoly[size_t(2)].x) + value_preserving_cast<size_t>(m_pPoly[size_t(1)].x);
+        y = nRows * value_preserving_cast<size_t>(m_pPoly[size_t(4)].y) + value_preserving_cast<size_t>(m_pPoly[size_t(3)].y);
     }
     return x < size_t(32000) && y < size_t(32000);
 }
@@ -285,13 +280,13 @@ CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols)
     }
     else if (m_eType == cformHexPnt)
     {
-        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[2].x + m_pPoly[1].x,
-            value_preserving_cast<long>(nRows) * m_pPoly[3].y + m_pPoly[0].y);
+        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[size_t(2)].x + m_pPoly[size_t(1)].x,
+            value_preserving_cast<long>(nRows) * m_pPoly[size_t(3)].y + m_pPoly[size_t(0)].y);
     }
     else
     {
-        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[2].x + m_pPoly[1].x,
-            value_preserving_cast<long>(nRows) * m_pPoly[4].y + m_pPoly[3].y);
+        return CSize(value_preserving_cast<long>(nCols) * m_pPoly[size_t(2)].x + m_pPoly[size_t(1)].x,
+            value_preserving_cast<long>(nRows) * m_pPoly[size_t(4)].y + m_pPoly[size_t(3)].y);
     }
 }
 
@@ -313,13 +308,13 @@ CRect* CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct)
     else if (m_eType == cformHexPnt)
     {
 
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[2].x + CellPhase(row) * m_pPoly[1].x),
-            value_preserving_cast<int>(row * m_pPoly[3].y));
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x + CellPhase(row) * m_pPoly[size_t(1)].x),
+            value_preserving_cast<int>(row * m_pPoly[size_t(3)].y));
     }
     else
     {
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[2].x),
-            value_preserving_cast<int>(row * m_pPoly[4].y + CellPhase(col) * m_pPoly[3].y));
+        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x),
+            value_preserving_cast<int>(row * m_pPoly[size_t(4)].y + CellPhase(col) * m_pPoly[size_t(3)].y));
     }
     return pRct;
 }
@@ -327,11 +322,9 @@ CRect* CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct)
 // The pen is assumed to be selected at this point.
 void CCellForm::FrameCell(CDC* pDC, int xPos, int yPos)
 {
-    int nPts = (m_eType == cformRect || m_eType == cformBrickHorz ||
-        m_eType == cformBrickVert) ? 5 : 7;
-    memcpy(m_pWrk, m_pPoly, nPts * sizeof(POINT));
-    OffsetPoly(m_pWrk, nPts, xPos, yPos);
-    pDC->Polyline(m_pWrk, nPts);
+    m_pWrk = m_pPoly;
+    OffsetPoly(m_pWrk, xPos, yPos);
+    pDC->Polyline(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
 }
 
 void CCellForm::FillCell(CDC* pDC, int xPos, int yPos)
@@ -349,30 +342,26 @@ void CCellForm::FillCell(CDC* pDC, int xPos, int yPos)
     else
     {
         // Hexagonal shapes
-        memcpy(m_pWrk, m_pPoly, 6 * sizeof(POINT));
-        OffsetPoly(m_pWrk, 6, xPos, yPos);
-        pDC->Polygon(m_pWrk, 6);
+        m_pWrk = m_pPoly;
+        OffsetPoly(m_pWrk, xPos, yPos);
+        pDC->Polygon(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
     }
 }
 
-void CCellForm::OffsetPoly(POINT* pPoly, int nPts, int xOff, int yOff)
+void CCellForm::OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff)
 {
-    while (nPts--)
+    for (POINT& pt : pPoly)
     {
-        pPoly->x += xOff;
-        pPoly->y += yOff;
-        pPoly++;
+        pt.x += xOff;
+        pt.y += yOff;
     }
 }
 
 void CCellForm::Clear()
 {
-    if (m_pPoly) delete m_pPoly;
-    m_pPoly = NULL;
-    if (m_pWrk) delete m_pWrk;
-    m_pWrk = NULL;
-    if (m_pMask) delete m_pMask;
-    m_pMask = NULL;
+    m_pPoly.clear();
+    m_pWrk.clear();
+    m_pMask = nullptr;
 }
 
 void CCellForm::Serialize(CArchive& ar)
@@ -385,8 +374,7 @@ void CCellForm::Serialize(CArchive& ar)
         ar << (short)m_rct.top;
         ar << (short)m_rct.right;
         ar << (short)m_rct.bottom;
-        WriteArchivePoints(ar, m_pPoly, (m_eType == cformHexFlat ||
-            m_eType == cformHexPnt) ? size_t(7) : size_t(5));
+        WriteArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
     }
     else
     {
@@ -403,16 +391,13 @@ void CCellForm::Serialize(CArchive& ar)
 
         if (m_eType == cformHexFlat || m_eType == cformHexPnt)
         {
-            m_pPoly = new POINT[7];
-            m_pWrk  = new POINT[7];
-            ReadArchivePoints(ar, m_pPoly, size_t(7));
+            m_pPoly.resize(size_t(7));
         }
         else
         {
-            m_pPoly = new POINT[5];
-            m_pWrk  = new POINT[5];
-            ReadArchivePoints(ar, m_pPoly, size_t(5));
+            m_pPoly.resize(size_t(5));
         }
+        ReadArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
         CreateHexMask();
     }
 }

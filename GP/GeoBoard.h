@@ -39,7 +39,7 @@ struct CGeoBoardElement
 
 public:
     CGeoBoardElement();
-    CGeoBoardElement(CGeoBoardElement& geo);
+    CGeoBoardElement(const CGeoBoardElement&) = default;
     CGeoBoardElement(BoardID nBoardSerialNum);
 
 public:
@@ -48,11 +48,13 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CGeomorphicBoard : public CArray< CGeoBoardElement >
+class CGeomorphicBoard : public std::vector< CGeoBoardElement >
 {
 public:
     CGeomorphicBoard();
-    CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard);
+    CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard) = default;
+    CGeomorphicBoard& operator=(const CGeomorphicBoard& pGeoBoard) = default;
+    ~CGeomorphicBoard() = default;
 
 // Atributes...
 public:
@@ -72,7 +74,7 @@ public:
     CBoard* CreateBoard(CGamDoc* pDoc);
     void DeleteFromBoardManager();
 
-    intptr_t  AddElement(BoardID nBoardSerialNum);
+    size_t  AddElement(BoardID nBoardSerialNum);
 
     void Serialize(CArchive& ar);
 
