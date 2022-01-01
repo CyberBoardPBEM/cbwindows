@@ -131,7 +131,7 @@ public:
         int nStagger);
     void DestroyBoard();
     void GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
-        int nParm1, int nParm2, int nStagger, BoardCell* pMap);
+        int nParm1, int nParm2, int nStagger, std::vector<BoardCell>&& pMap);
     static void GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
         int nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
@@ -177,7 +177,7 @@ protected:
     CCellForm   m_cfHalf;       // Defines cell geometry of map (half scale)
     CCellForm   m_cfSmall;      // Defines cell geometry of map (small scale)
 
-    BoardCell* m_pMap;          // ** GlobalAlloc'ed
+    std::vector<BoardCell> m_pMap;
     // -------- //
     CPen    m_pnCellFrame;      // Cell frame color pen.
     // -------- //

@@ -46,7 +46,6 @@ static char THIS_FILE[] = __FILE__;
 CBoardArray::CBoardArray()
 {
     m_nRows = m_nCols = size_t(0);
-    m_pMap = NULL;
     m_pTsa = NULL;
     m_bTransparentCells = FALSE;
     m_bTrackCellNum = TRUE;
@@ -68,15 +67,9 @@ CBoardArray::CBoardArray()
 void CBoardArray::CreateBoard(CellFormType eType, size_t nRows, size_t nCols,
     int nParm1, int nParm2, int nStagger)
 {
-    BoardCell* pMap = (BoardCell*)GlobalAllocPtr(GHND,
-        (DWORD)sizeof(BoardCell) * nRows * nCols);
-    if (pMap == NULL)
-        AfxThrowMemoryException();
+    std::vector<BoardCell> pMap(nRows * nCols);
 
-    for (size_t i = size_t(0) ; i < nRows * nCols ; ++i)
-        pMap[value_preserving_cast<ptrdiff_t>(i)].Clear();
-
-    GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, pMap);
+    GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, std::move(pMap));
 }
 
 // ----------------------------------------------------- //
@@ -84,16 +77,11 @@ void CBoardArray::CreateBoard(CellFormType eType, size_t nRows, size_t nCols,
 void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm2,
         int nStagger)
 {
-    ASSERT(m_pMap != NULL);
+    ASSERT(!m_pMap.empty());
 
     // First allocate a new table and copy info from old map array to
     // new map array.
-    BoardCell* pMap = (BoardCell*)GlobalAllocPtr(GHND,
-        (DWORD)sizeof(BoardCell) * nRows * nCols);
-    if (pMap == NULL)
-        AfxThrowMemoryException();
-    for (size_t i = size_t(0) ; i < nRows * nCols ; ++i)
-        pMap[value_preserving_cast<ptrdiff_t>(i)].Clear();
+    std::vector<BoardCell> pMap(nRows * nCols);
 
     size_t maxRows = CB::min(m_nRows, nRows);
     size_t maxCols = CB::min(m_nCols, nCols);
@@ -101,7 +89,7 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
     for (size_t r = size_t(0) ; r < maxRows ; ++r)
     {
         for (size_t c = size_t(0) ; c < maxCols ; ++c)
-            pMap[value_preserving_cast<ptrdiff_t>(r*nCols + c)] = m_pMap[value_preserving_cast<ptrdiff_t>(r*m_nCols + c)];
+            pMap[r*nCols + c] = m_pMap[r*m_nCols + c];
     }
 
     // OK we've copied over the old data destroy the old and
@@ -120,17 +108,17 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
         nParm2 = 0;
     }
 
-    GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, pMap);
+    GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, std::move(pMap));
 }
 
 // ----------------------------------------------------- //
 
 void CBoardArray::GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
-    int nParm1, int nParm2, int nStagger, BoardCell* pMap)
+    int nParm1, int nParm2, int nStagger, std::vector<BoardCell>&& pMap)
 {
     DestroyBoard();             // Wipe out current board info.
 
-    m_pMap = pMap;
+    m_pMap = std::move(pMap);
     m_nRows = nRows;
     m_nCols = nCols;
 
@@ -173,9 +161,7 @@ void CBoardArray::GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
 
 void CBoardArray::DestroyBoard()
 {
-    if (m_pMap)
-        GlobalFreePtr(m_pMap);
-    m_pMap = NULL;
+    m_pMap.clear();
     m_cfFull.Clear();
     m_cfHalf.Clear();
     m_cfSmall.Clear();
@@ -358,7 +344,7 @@ int CBoardArray::GetHeight(TileScale eScale)
 void CBoardArray::SetCellColor(size_t row, size_t col, COLORREF cr)
 {
     size_t nCellIdx = CellIndex(row, col);
-    m_pMap[value_preserving_cast<ptrdiff_t>(nCellIdx)].SetColor(cr);
+    m_pMap[nCellIdx].SetColor(cr);
 }
 
 // ----------------------------------------------------- //
@@ -366,7 +352,7 @@ void CBoardArray::SetCellColor(size_t row, size_t col, COLORREF cr)
 void CBoardArray::SetCellTile(size_t row, size_t col, TileID tid)
 {
     size_t nCellIdx = CellIndex(row, col);
-    m_pMap[value_preserving_cast<ptrdiff_t>(nCellIdx)].SetTID(tid);
+    m_pMap[nCellIdx].SetTID(tid);
 }
 
 // ----------------------------------------------------- //
@@ -383,8 +369,8 @@ void CBoardArray::SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEn
 
 const BoardCell& CBoardArray::GetCell(size_t row, size_t col) const
 {
-    ASSERT(m_pMap != NULL);
-    return m_pMap[value_preserving_cast<ptrdiff_t>(CellIndex(row, col))];
+    ASSERT(!m_pMap.empty());
+    return m_pMap[CellIndex(row, col)];
 }
 
 // ----------------------------------------------------- //
@@ -710,11 +696,7 @@ void CBoardArray::Serialize(CArchive& ar)
             SetCellFrameColor((COLORREF)dwTmp);
         }
 
-        m_pMap = (BoardCell*)GlobalAllocPtr(GHND,
-            (DWORD)sizeof(BoardCell) * m_nRows * m_nCols);
-
-        if (m_pMap == NULL)
-            AfxThrowMemoryException();
+        m_pMap.resize(m_nRows * m_nCols);
     }
     m_cfFull.Serialize(ar);
     m_cfHalf.Serialize(ar);
