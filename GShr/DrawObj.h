@@ -109,6 +109,9 @@ public:
 #ifdef GPLAY
     virtual ObjectID GetObjectID() const /* override */;
     virtual void MoveObject(CPoint ptUpLeft) /* override */;
+    /* N.B.:  only for use in serializing GeoBoards,
+                not general purpose rotate */
+    virtual void Rotate(Rotation90 rot) /* override */;
 #endif
     virtual void OffsetObject(CPoint offset) /* override */;
     // ----- //
@@ -611,6 +614,8 @@ public:
     // ------- //
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
+#else
+    virtual void Rotate(Rotation90 rot) override;
 #endif
     virtual void OffsetObject(CPoint offset) override;       //DFM19991221
     // ------- //
@@ -667,6 +672,8 @@ public:
     // ------- //
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
+#else
+    virtual void Rotate(Rotation90 rot) override;
 #endif
     virtual void OffsetObject(CPoint offset) override; //DFM19991221
     // ------- //
@@ -718,6 +725,8 @@ public:
     // ------- //
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
+#else
+    virtual void Rotate(Rotation90 rot) override;
 #endif
     // ------- //
     virtual OwnerPtr Clone() const override;
@@ -725,6 +734,10 @@ public:
     void CopyAttributes(const CText& source);
 
     virtual void Serialize(CArchive& ar) override;
+
+private:
+    int m_geoRot = 0;
+    CSize m_geoOffset = CSize(0, 0);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -754,6 +767,8 @@ public:
     // ------- //
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
+#else
+    virtual void Rotate(Rotation90 rot) override;
 #endif
     // ------- //
     virtual OwnerPtr Clone() const override;
@@ -792,6 +807,8 @@ public:
     // ------- //
 #ifndef GPLAY
     virtual void ForceIntoZone(const CRect& pRctZone) override;
+#else
+    virtual void Rotate(Rotation90 rot) override;
 #endif
     // ------- //
     virtual OwnerPtr Clone() const override;
@@ -992,7 +1009,7 @@ public:
     CDrawList Clone(CGamDoc* pDoc) const;
     void Restore(CGamDoc* pDoc, const CDrawList& pLst);
     BOOL Compare(const CDrawList& pLst) const;
-    void AppendWithOffset(const CDrawList& pSourceLst, CPoint pntOffet);
+    void AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, CPoint pntOffet);
 #else
     BOOL PurgeMissingTileIDs(CTileManager* pTMgr);
     BOOL IsTileInUse(TileID tid) const;

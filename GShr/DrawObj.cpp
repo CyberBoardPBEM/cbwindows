@@ -158,6 +158,22 @@ void CDrawObj::MoveObject(CPoint ptUpLeft)
     m_rctExtent += CPoint(ptUpLeft.x - m_rctExtent.left,
         ptUpLeft.y - m_rctExtent.top);
 }
+
+void CDrawObj::Rotate(Rotation90 rot)
+{
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            break;
+        case Rotation90::r180:
+            m_rctExtent = CRect(-m_rctExtent.right, -m_rctExtent.bottom,
+                                -m_rctExtent.left, -m_rctExtent.top);
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 #endif
 
 //DFM991129
@@ -698,6 +714,28 @@ OwnerPtr<CSelection> CPolyObj::CreateSelectProxy(CBrdEditView& pView)
 {
     return MakeOwner<CSelPoly>(pView, *this);
 }
+#else
+void CPolyObj::Rotate(Rotation90 rot)
+{
+    //  let parent handle its part
+    CDrawObj::Rotate(rot);
+
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            break;
+        case Rotation90::r180:
+            for (POINT& pnt : m_Pnts)
+            {
+                pnt.x = -pnt.x;
+                pnt.y = -pnt.y;
+            }
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 #endif
 
 void CPolyObj::OffsetObject (CPoint offset)
@@ -841,6 +879,29 @@ OwnerPtr<CSelection> CLine::CreateSelectProxy(CBrdEditView& pView)
 {
     return MakeOwner<CSelLine>(pView, *this);
 }
+
+#ifdef GPLAY
+void CLine::Rotate(Rotation90 rot)
+{
+    //  let parent handle its part
+    CDrawObj::Rotate(rot);
+
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            break;
+        case Rotation90::r180:
+            m_ptBeg.x = -m_ptBeg.x;
+            m_ptBeg.y = -m_ptBeg.y;
+            m_ptEnd.x = -m_ptEnd.x;
+            m_ptEnd.y = -m_ptEnd.y;
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+#endif
 
 //DFM19991221
 void CLine::OffsetObject(CPoint offset)
@@ -1025,6 +1086,27 @@ OwnerPtr<CSelection> CBitmapImage::CreateSelectProxy(CBrdEditView& pView)
 {
     return MakeOwner<CSelGeneric>(pView, *this);
 }
+#else
+void CBitmapImage::Rotate(Rotation90 rot)
+{
+    //  let parent handle its part
+    CDrawObj::Rotate(rot);
+
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            break;
+        case Rotation90::r180: {
+            ::OwnerPtr<CBitmap> bmpRot = ::Rotate(m_bitmap, rot);
+            m_bitmap.DeleteObject();
+            m_bitmap.Attach(bmpRot->Detach());
+            break;
+        }
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 #endif
 
 //DFM19991221
@@ -1124,6 +1206,25 @@ OwnerPtr<CSelection> CTileImage::CreateSelectProxy(CBrdEditView& pView)
 {
     return MakeOwner<CSelGeneric>(pView, *this);
 }
+#else
+void CTileImage::Rotate(Rotation90 rot)
+{
+    //  let parent handle its part
+    CDrawObj::Rotate(rot);
+
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            break;
+        case Rotation90::r180:
+            // need to replace tile
+            m_tid = m_pTMgr->Get(m_tid, rot);
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 #endif
 
 CDrawObj::OwnerPtr CTileImage::Clone() const
@@ -1167,11 +1268,12 @@ void CText::Draw(CDC& pDC, TileScale eScale)
     if (eScale == smallScale && m_rctExtent.Height() < 16)
         return;
 
-    HFONT hFont = CGamDoc::GetFontManager()->GetFontHandle(m_fontID);
+    HFONT hFont = CGamDoc::GetFontManager()->GetFontHandle(m_fontID, m_geoRot);
     CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(hFont));
     pDC.SetBkMode(TRANSPARENT);
     COLORREF crPrev = pDC.SetTextColor(m_crText);
-    pDC.ExtTextOut(m_rctExtent.left, m_rctExtent.top,
+    CPoint topLeft = m_rctExtent.TopLeft() + m_geoOffset;
+    pDC.ExtTextOut(topLeft.x, topLeft.y,
         0, NULL, m_text, m_text.GetLength(), NULL);
     pDC.SetTextColor(crPrev);
 }
@@ -1226,6 +1328,27 @@ OwnerPtr<CSelection> CText::CreateSelectProxy(CBrdEditView& pView)
 {
     return MakeOwner<CSelGeneric>(pView, *this);
 }
+#else
+void CText::Rotate(Rotation90 rot)
+{
+    // let parent handle its part
+    CDrawObj::Rotate(rot);
+
+    switch (rot)
+    {
+        case Rotation90::r0:
+            ASSERT(!"no-op call");
+            m_geoRot = 0;
+            m_geoOffset = CSize(0, 0);
+            break;
+        case Rotation90::r180:
+            m_geoRot = 180;
+            m_geoOffset = m_rctExtent.BottomRight() - m_rctExtent.TopLeft();
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 #endif
 
 CDrawObj::OwnerPtr CText::Clone() const
@@ -1246,6 +1369,9 @@ void CText::CopyAttributes(const CText& source)
     m_text = source.m_text;
 
     m_fontID = source.m_fontID;
+
+    m_geoRot = source.m_geoRot;
+    m_geoOffset = source.m_geoOffset;
 }
 
 void CText::Serialize(CArchive& ar)
@@ -1254,6 +1380,11 @@ void CText::Serialize(CArchive& ar)
     CFontTbl* pFontMgr = CGamDoc::GetFontManager();
     if (ar.IsStoring())
     {
+        if (m_geoRot)
+        {
+            ASSERT(!"serializing rotated board not supported");
+            AfxThrowNotSupportedException();
+        }
         ar << (WORD)m_nAngle;
         ar << (DWORD)m_crText;
         ar << m_text;
@@ -2078,12 +2209,16 @@ BOOL CDrawList::Compare(const CDrawList& pLst) const
     return TRUE;
 }
 
-void CDrawList::AppendWithOffset(const CDrawList& pSourceLst, CPoint pntOffet)
+void CDrawList::AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, CPoint pntOffet)
 {
     for (const_iterator pos = pSourceLst.begin(); pos != pSourceLst.end(); ++pos)
     {
         const CDrawObj& pDObj = **pos;
         CDrawObj::OwnerPtr pObjClone = pDObj.Clone();
+        if (rot != Rotation90::r0)
+        {
+            pObjClone->Rotate(rot);
+        }
         pObjClone->OffsetObject(pntOffet);
         push_back(std::move(pObjClone));
     }

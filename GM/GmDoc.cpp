@@ -435,7 +435,7 @@ BOOL CGamDoc::SetupBlankBoard()
     m_strDescr = dlg.m_strDescr;
 
     m_pTMgr = new CTileManager;
-    m_pBMgr = new CBoardManager;
+    m_pBMgr = new CBoardManager(*this);
 
     m_pPMgr = new CPieceManager;
     m_pPMgr->SetTileManager(&*m_pTMgr);
@@ -633,7 +633,7 @@ void CGamDoc::Serialize(CArchive& ar)
             ar >> bucket;
 
             m_pTMgr = new CTileManager;
-            m_pBMgr = new CBoardManager;
+            m_pBMgr = new CBoardManager(*this);
 
             m_pPMgr = new CPieceManager;
             m_pPMgr->SetTileManager(&*m_pTMgr);
@@ -798,7 +798,7 @@ void CGamDoc::OnEditCreateBoard()
         pBoard->SetSerialNumber(pBMgr->IssueSerialNumber());
         pBoard->SetName(dlg.m_strBoardName);
 
-        CBoardArray* pBrdAry = new CBoardArray(*GetTileManager());
+        OwnerOrNullPtr<CBoardArray> pBrdAry = MakeOwner<CBoardArray>(CheckedDeref(GetTileManager()));
 
         if (dlg.m_nBoardType == cformRect)
         {
@@ -811,7 +811,7 @@ void CGamDoc::OnEditCreateBoard()
             dlg.m_iRows, dlg.m_iCols, dlg.m_iCellHt, dlg.m_iCellWd,
             dlg.m_bStagger);
 
-        pBoard->SetBoardArray(pBrdAry);
+        pBoard->SetBoardArray(std::move(pBrdAry));
         pBoard->SetBkColor(RGB(255, 255, 255));
         pBMgr->Add(pBoard);
         pBoard->SetMaxDrawLayer(LAYER_TOP);

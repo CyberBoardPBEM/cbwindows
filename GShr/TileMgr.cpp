@@ -775,6 +775,47 @@ void CTileManager::SetBackColor(COLORREF cr)
     m_brBack.CreateSolidBrush(crTemp);
 }
 
+#ifdef GPLAY
+bool operator<(const std::pair<TileID, Rotation90>& lhs,
+                const std::pair<TileID, Rotation90>& rhs)
+{
+    return static_cast<TileID::UNDERLYING_TYPE>(lhs.first) < static_cast<TileID::UNDERLYING_TYPE>(rhs.first) ||
+        lhs.first == rhs.first && lhs.second < rhs.second;
+}
+
+TileID CTileManager::Get(TileID tid, Rotation90 rot)
+{
+    if (rot == Rotation90::r0)
+    {
+        ASSERT(!"no-op call");
+        return tid;
+    }
+    GeoTiles::key_type key = std::make_pair(tid, rot);
+    GeoTiles::iterator it = geoTiles.find(key);
+    if (it == geoTiles.end())
+    {
+        CTile tile = GetTile(tid, fullScale);
+        OwnerPtr<CBitmap> bmp = tile.CreateBitmapOfTile();
+        OwnerPtr<CBitmap> rotBmpFull = Rotate(*bmp, rot);
+        CSize sizeFull(rotBmpFull->GetBitmapDimension());
+
+        tile = GetTile(tid, halfScale);
+        bmp = tile.CreateBitmapOfTile();
+        OwnerPtr<CBitmap> rotBmpHalf = Rotate(*bmp, rot);
+        CSize sizeHalf(rotBmpHalf->GetBitmapDimension());
+
+        tile = GetTile(tid, smallScale);
+        COLORREF crSmall = tile.GetSmallColor();
+
+        TileID tidNew = CreateTile(GetSpecialTileSet(),
+            sizeFull, sizeHalf, crSmall);
+        UpdateTile(tidNew, *rotBmpFull, *rotBmpHalf, crSmall);
+        it = geoTiles.insert(std::make_pair(key, tidNew)).first;
+    }
+    return it->second;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 
 void TileDef::Serialize(CArchive& ar)

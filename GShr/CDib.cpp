@@ -208,6 +208,9 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRU
 
         OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
         pBMap->Attach((HGDIOBJ)hDibSect);
+        ASSERT(Width() == pbmiDib->bmiHeader.biWidth &&
+                Height() == pbmiDib->bmiHeader.biHeight);
+        pBMap->SetBitmapDimension(Width(), Height());
         return pBMap;
 
     }
@@ -220,6 +223,7 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRU
         {
             OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
             pBMap->Attach((HGDIOBJ)hBMap);
+            pBMap->SetBitmapDimension(Width(), Height());
             return pBMap;
         }
         else

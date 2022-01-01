@@ -46,8 +46,6 @@ CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* p
 {
     //{{AFX_DATA_INIT(CCreateGeomorphicBoardDialog)
     //}}AFX_DATA_INIT
-    m_pGeoBoard = NULL;
-    m_pRootBoard = NULL;
     m_nCurrentRowHeight = size_t(0);
     m_nCurrentColumn = size_t(0);
     m_nMaxColumns = size_t(0);
@@ -125,40 +123,45 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
 
-        if (m_pRootBoard != NULL)
-        {
-            // Already have at least one map selected. The rest must
-            // comply with the geometry of the root one.
-            const CBoardArray& rootBArray = m_pRootBoard->GetBoardArray();
-            const CCellForm& rootCellForm = rootBArray.GetCellForm(fullScale);
-            if (!rootCellForm.CompareEqual(pCellForm))
-                continue;
-            /* probably could handle GEV mismatch by making the
-                row/col check smarter, but don't bother until
-                someone provides a use case worth analyzing */
-            bool gevMismatch = false;
-            for (Edge e : { Edge::Top, Edge::Bottom, Edge::Left, Edge::Right })
-            {
-                if (pBrd.IsGEVStyle(e) != m_pRootBoard->IsGEVStyle(e))
-                {
-                    gevMismatch = true;
-                    break;
-                }
-            }
-            if (gevMismatch)
-            {
-                continue;
-            }
-            if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray.GetCols())
-                continue;
-            if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
-                continue;
-        }
         for (auto r : { Rotation90::r0, Rotation90::r180 })
         {
+            std::unique_ptr<CGeoBoardElement> ge(new CGeoBoardElement(Invalid_v<size_t>, Invalid_v<size_t>, pBrd.GetSerialNumber(), r));
+            const CBoard& pBrd = pBMgr->Get(*ge);
+            const CBoardArray& pBArray = pBrd.GetBoardArray();
+            const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
+
+            if (m_pRootBoard != NULL)
+            {
+                // Already have at least one map selected. The rest must
+                // comply with the geometry of the root one.
+                const CBoard& rootBoard = pBMgr->Get(*m_pRootBoard);
+                const CBoardArray& rootBArray = rootBoard.GetBoardArray();
+                const CCellForm& rootCellForm = rootBArray.GetCellForm(fullScale);
+                if (!rootCellForm.CompareEqual(pCellForm))
+                    continue;
+                /* probably could handle GEV mismatch by making the
+                    row/col check smarter, but don't bother until
+                    someone provides a use case worth analyzing */
+                bool gevMismatch = false;
+                for (Edge e : { Edge::Top, Edge::Bottom, Edge::Left, Edge::Right })
+                {
+                    if (pBrd.IsGEVStyle(e) != rootBoard.IsGEVStyle(e))
+                    {
+                        gevMismatch = true;
+                        break;
+                    }
+                }
+                if (gevMismatch)
+                {
+                    continue;
+                }
+                if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray.GetCols())
+                    continue;
+                if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
+                    continue;
+            }
             static const char* const suffix[] = { "", " - 90°", " - 180°", " - 270°" };
             int nItem = m_listBoard.AddString((std::string(pBrd.GetName()) + suffix[ptrdiff_t(r)]).c_str());
-            std::unique_ptr<CGeoBoardElement> ge(new CGeoBoardElement(size_t(0), size_t(0), pBrd.GetSerialNumber(), r));
             m_listBoard.SetItemDataPtr(nItem, ge.release());
         }
     }
@@ -201,11 +204,9 @@ void CCreateGeomorphicBoardDialog::UpdateButtons()
     m_btnClearList.EnableWindow(m_listGeo.GetCount() > 0);
 }
 
-CGeomorphicBoard* CCreateGeomorphicBoardDialog::DetachGeomorphicBoard()
+OwnerPtr<CGeomorphicBoard> CCreateGeomorphicBoardDialog::DetachGeomorphicBoard()
 {
-    CGeomorphicBoard* pGeoBoard = m_pGeoBoard;
-    m_pGeoBoard = NULL;
-    return pGeoBoard;
+    return std::move(m_pGeoBoard);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -231,13 +232,10 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
 {
     ASSERT(m_listBoard.GetCurSel() >= 0);
     CGeoBoardElement& ge = *static_cast<CGeoBoardElement*>(m_listBoard.GetItemDataPtr(m_listBoard.GetCurSel()));
-
     CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-    size_t nBrdNum = pBMgr->FindBoardBySerial(ge.m_nBoardSerialNum);
-    ASSERT(nBrdNum != Invalid_v<size_t>);
-    CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
-    CBoardArray& pBArray = pBrd.GetBoardArray();
-    m_pRootBoard = &pBrd;
+    const CBoard& pBrd = pBMgr->Get(ge);
+    const CBoardArray& pBArray = pBrd.GetBoardArray();
+    m_pRootBoard.reset(new CGeoBoardElement(ge));
 
     if (m_nMaxColumns == size_t(0))
         m_tblColWidth.push_back(pBArray.GetCols());
@@ -308,7 +306,7 @@ BOOL CCreateGeomorphicBoardDialog::OnInitDialog()
 
 void CCreateGeomorphicBoardDialog::OnOK()
 {
-    m_pGeoBoard = new CGeomorphicBoard(*m_pDoc);
+    m_pGeoBoard = MakeOwner<CGeomorphicBoard>(*m_pDoc);
 
     CString strName;
     m_editBoardName.GetWindowText(strName);

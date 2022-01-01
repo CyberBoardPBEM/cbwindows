@@ -128,7 +128,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar >> cEatThis;
 
         m_pTMgr = new CTileManager;
-        m_pBMgr = new CBoardManager;
+        m_pBMgr = new CBoardManager(*pDoc);
 
         m_pPMgr = new CPieceManager;
         m_pPMgr->SetTileManager(&*m_pTMgr);

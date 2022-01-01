@@ -217,5 +217,6 @@ enum class Rotation90
 {
     rInvalid = -1, r0 = 0, r90 = 1, r180 = 2, r270 = 3
 };
+OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot);
 
 #endif

@@ -44,7 +44,7 @@ public:
 // Operations
 public:
     // Caller must delete the returned object when finished with it.
-    CGeomorphicBoard* DetachGeomorphicBoard();
+    OwnerPtr<CGeomorphicBoard> DetachGeomorphicBoard();
 
 // Dialog Data
     //{{AFX_DATA(CCreateGeomorphicBoardDialog)
@@ -73,7 +73,8 @@ public:
 // Implementation - vars
 protected:
 
-    const CBoard* m_pRootBoard;
+    // clone *ItemDataPtr so ResetContent doesn't destroy root info
+    std::unique_ptr<const CGeoBoardElement> m_pRootBoard;
     size_t      m_nCurrentRowHeight;                    // Height of current row maps
     size_t      m_nRowNumber;
 
@@ -81,7 +82,7 @@ protected:
     size_t      m_nMaxColumns;                       // Set when first row break added
     std::vector<size_t> m_tblColWidth;
 
-    CGeomorphicBoard*   m_pGeoBoard;                    // Set if OK pressed
+    OwnerOrNullPtr<CGeomorphicBoard> m_pGeoBoard;                    // Set if OK pressed
 
 // Implementation - methods
 protected:

@@ -37,6 +37,10 @@
 #include    "DrawObj.h"
 #endif
 
+#if defined(GPLAY)
+struct CGeoBoardElement;
+#endif
+
 typedef XxxxID16<'B'> BoardID16;
 typedef XxxxID32<'B'> BoardID32;
 typedef XxxxID<'B'> BoardID;
@@ -169,6 +173,8 @@ public:
         out" cells are empty, and rest of edge is filled */
     bool IsGEVStyle(Edge e) const;
     bool IsEmpty(const BoardCell& cell) const;
+    // WARNING:  only supported on unrotated boards
+    OwnerPtr<CBoard> Clone(CGamDoc& doc, Rotation90 r) const;
 #endif
 
 // Operations
@@ -218,8 +224,8 @@ class CBoardManager : private std::vector<OwnerPtr<CBoard>>
 {
     friend class CGamDoc;
 public:
-    CBoardManager();
-    ~CBoardManager() { DestroyAllElements(); }
+    CBoardManager(CGamDoc& doc);
+    ~CBoardManager();
 
 // Attributes
 public:
@@ -282,6 +288,18 @@ protected:
     COLORREF    m_crBack;           // Current background color
     UINT        m_nLineWidth;       // Current line width
     FontID      m_fontID;           // Current font
+
+#if defined(GPLAY)
+    // geomorphic board support
+    // share CBoards across CGeomorphicBoards
+public:
+    const CBoard& Get(const CGeoBoardElement& gelem) const;
+
+private:
+    // reduce need for #include "GeoBoard.h"
+    class GeoBoardManager;
+    OwnerPtr<GeoBoardManager> geoBoardManager;
+#endif
 };
 
 #endif

@@ -364,7 +364,6 @@ void CCellForm::OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff)
 void CCellForm::Clear()
 {
     m_pPoly.clear();
-    m_pWrk.clear();
     m_pMask = nullptr;
 }
 

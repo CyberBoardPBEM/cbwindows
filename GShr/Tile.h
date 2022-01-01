@@ -303,6 +303,19 @@ protected:
         { return m_TShtTbl.at(nSheet); }
     CTileSheet& GetTileSheet(size_t nSheet)
         { return const_cast<CTileSheet&>(std::as_const(*this).GetTileSheet(nSheet)); }
+
+#ifdef GPLAY
+    // geomorphic board support
+    /* rotated geomorphic boards get new tiles,
+        but reuse replacements when possible */
+public:
+    size_t GetSpecialTileSet();
+    TileID Get(TileID tid, Rotation90 rot);
+
+private:
+    typedef std::map<std::pair<TileID, Rotation90>, TileID> GeoTiles;
+    GeoTiles geoTiles;
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////
