@@ -220,7 +220,11 @@ void CBoardPropDialog::OnReshape()
         dlg.m_nCols = m_nCols;
         dlg.m_nCellHt = m_nCellHt;
         dlg.m_nCellWd = m_nCellWd;
-        dlg.m_bStaggerIn = m_bStaggerIn;
+        dlg.m_bStagger = m_bStagger;
+        if (m_eCellStyle == cformRect)
+        {
+            dlg.m_bStagger = CellStagger::Out;
+        }
 
         if (dlg.DoModal() == IDOK)
         {
@@ -231,7 +235,11 @@ void CBoardPropDialog::OnReshape()
             m_nCellHt = dlg.m_nCellHt;
             m_nCellWd = dlg.m_nCellWd;
 
-            m_bStaggerIn = dlg.m_bStaggerIn;
+            m_bStagger = dlg.m_bStagger;
+            if (m_eCellStyle == cformRect)
+            {
+                m_bStagger = CellStagger::Invalid;
+            }
 
             UpdateInfoArea();
         }
@@ -266,7 +274,7 @@ void CBoardPropDialog::UpdateInfoArea()
     CCellForm cfSmall;
 
     CBoardArray::GenerateCellDefs(m_eCellStyle,
-        m_eCellStyle == cformHexPnt ? m_nCellWd : m_nCellHt, m_nCellWd, m_bStaggerIn,
+        m_eCellStyle == cformHexPnt ? m_nCellWd : m_nCellHt, m_nCellWd, m_bStagger,
         cfFull, cfHalf, cfSmall);
 
     CSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);

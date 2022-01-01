@@ -80,7 +80,7 @@ public:
     size_t          m_nCols;
     int             m_nCellHt;
     int             m_nCellWd;
-    BOOL            m_bStaggerIn;
+    CellStagger     m_bStagger;
 
 // Implementation
 protected:

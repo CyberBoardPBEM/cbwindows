@@ -44,7 +44,7 @@ inline int RoundHalf(int x) { return x / 2 + (x & 1); }
 
 CCellForm::CCellForm()
 {
-    m_nStagger = 0;
+    m_nStagger = CellStagger::Out;
     memset(&m_bmapMask, 0, sizeof(BITMAP));
 }
 
@@ -59,12 +59,16 @@ BOOL CCellForm::CompareEqual(CCellForm& cf)
 //////////////////////////////////////////////////////////////////////
 
 void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
-    int nStagger)
+    CellStagger nStagger)
 {
     int nWide, nFace, nLeg;
 
     Clear();
     m_eType = eType;
+    if (m_eType == cformRect && nStagger != CellStagger::Invalid)
+    {
+        AfxThrowInvalidArgException();
+    }
     m_nStagger = nStagger;
 
     if (eType == cformRect || eType == cformBrickHorz ||
@@ -369,7 +373,24 @@ void CCellForm::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << (WORD)m_eType;
-        ar << (WORD)m_nStagger;
+        if (m_eType == cformRect)
+        {
+            ASSERT(m_nStagger == CellStagger::Invalid);
+            // for file v3.90 compatibility
+            ar << static_cast<WORD>(CellStagger::Out);
+        }
+        else
+        {
+            switch (m_nStagger)
+            {
+                case CellStagger::Out:
+                case CellStagger::In:
+                    ar << static_cast<WORD>(m_nStagger);
+                    break;
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        }
         ar << (short)m_rct.left;
         ar << (short)m_rct.top;
         ar << (short)m_rct.right;
@@ -382,7 +403,11 @@ void CCellForm::Serialize(CArchive& ar)
         Clear();
 
         ar >> wVal; m_eType = (CellFormType)wVal;
-        ar >> wVal; m_nStagger = (int)wVal;
+        ar >> wVal; m_nStagger = static_cast<CellStagger>(wVal);
+        if (m_eType == cformRect)
+        {
+            m_nStagger = CellStagger::Invalid;
+        }
         short sTmp;
         ar >> (short)sTmp; m_rct.left = sTmp;
         ar >> (short)sTmp; m_rct.top = sTmp;

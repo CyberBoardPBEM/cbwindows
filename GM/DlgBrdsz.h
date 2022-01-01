@@ -43,7 +43,7 @@ public:
     UINT    m_nCellWd;
     size_t  m_nCols;
     size_t  m_nRows;
-    BOOL    m_bStaggerIn;
+    CellStagger m_bStagger;
     //}}AFX_DATA
 
     CellFormType m_eCellStyle;  // Used to disable cell a cell dimension

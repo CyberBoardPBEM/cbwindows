@@ -34,7 +34,7 @@
 enum CellFormType { cformRect = 0, cformBrickHorz, cformBrickVert,
     cformHexFlat, cformHexPnt };
 
-enum CellStagger { staggerOut = 0, staggerIn = 1 };
+enum class CellStagger { Invalid = -1, Out = 0, In = 1 };
 
 enum CellNumStyle { cnsRowCol = 0, cnsColRow = 1, cns0101ByRows = 2,
     cns0101ByCols = 3, cnsAA01ByRows = 4, cnsAA01ByCols = 5};
@@ -63,13 +63,13 @@ public:
     CRect* GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct);
     CSize GetCellSize() { return CSize(m_rct.right, m_rct.bottom); }
     CellFormType GetCellType() { return m_eType; }
-    BOOL GetCellStagger() { return m_nStagger != 0; }
+    CellStagger GetCellStagger() const { return m_nStagger; }
 
 // Operations
 public:
     void Clear();
     void CreateCell(CellFormType eType, int nParm1, int nParm2 = 0,
-        int nStagger = 0);
+        CellStagger nStagger = CellStagger::Invalid);
     void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col);
     void FillCell(CDC* pDC, int xPos, int yPos);
     void FrameCell(CDC* pDC, int xPos, int yPos);
@@ -87,7 +87,7 @@ public:
 // Implementation
 protected:
     CellFormType m_eType;       // Format of cell
-    int          m_nStagger;    // 0 = normal. 1 = alternate
+    CellStagger  m_nStagger;    // 0 = normal. 1 = alternate
     CRect        m_rct;         // Rectangle enclosing cell
     std::vector<POINT> m_pPoly;  // Zero based set of points
     OwnerOrNullPtr<CBitmap> m_pMask; // Only defined for hexes
@@ -97,7 +97,7 @@ protected:
     // ------- //
     static void OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff);
     // ------- //
-    CB::ssize_t CellPhase(CB::ssize_t val) { return ((val ^ m_nStagger) & 1); }
+    CB::ssize_t CellPhase(CB::ssize_t val) const { return ((val ^ static_cast<int>(m_nStagger)) & 1); }
     void CreateHexMask();
 };
 

@@ -482,7 +482,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     dlg.m_nCellWd = size.cx;
     CCellForm& pcf = pBrdAry->GetCellForm(fullScale);
     dlg.m_eCellStyle = pcf.GetCellType();
-    dlg.m_bStaggerIn = pcf.GetCellStagger();
+    dlg.m_bStagger = pcf.GetCellStagger();
 
     if (dlg.DoModal() == IDOK)
     {
@@ -505,10 +505,14 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
 
         if (dlg.m_bShapeChanged)
         {
+            if (dlg.m_eCellStyle == cformRect)
+            {
+                dlg.m_bStagger = CellStagger::Invalid;
+            }
             if (dlg.m_eCellStyle == cformHexPnt) // Only first param is used
                 dlg.m_nCellHt = dlg.m_nCellWd;
             pBrdAry->ReshapeBoard(dlg.m_nRows, dlg.m_nCols,
-                dlg.m_nCellHt, dlg.m_nCellWd, dlg.m_bStaggerIn);
+                dlg.m_nCellHt, dlg.m_nCellWd, dlg.m_bStagger);
             pBoard.ForceObjectsOntoBoard();
         }
         CGmBoxHint hint;
@@ -800,12 +804,16 @@ void CGamDoc::OnEditCreateBoard()
 
         CBoardArray* pBrdAry = new CBoardArray;
 
+        if (dlg.m_nBoardType == cformRect)
+        {
+            dlg.m_bStagger = CellStagger::Invalid;
+        }
         if (dlg.m_nBoardType == cformHexPnt)    // Only first param is used
             dlg.m_iCellHt = dlg.m_iCellWd;
 
         pBrdAry->CreateBoard((CellFormType)dlg.m_nBoardType,
             dlg.m_iRows, dlg.m_iCols, dlg.m_iCellHt, dlg.m_iCellWd,
-            dlg.m_bStagerIn ? staggerIn : staggerOut);
+            dlg.m_bStagger);
 
         pBrdAry->SetTileManager(GetTileManager());
 
