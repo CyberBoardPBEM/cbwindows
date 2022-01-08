@@ -32,14 +32,12 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGeoBoardElement::CGeoBoardElement()
+CGeoBoardElement::CGeoBoardElement(size_t row, size_t col,
+                                    BoardID nBoardSerialNum /*= BoardID(0)*/) :
+    m_nBoardSerialNum(nBoardSerialNum),
+    m_row(row),
+    m_col(col)
 {
-    m_nBoardSerialNum = BoardID(0);
-}
-
-CGeoBoardElement::CGeoBoardElement(BoardID nBoardSerialNum)
-{
-    m_nBoardSerialNum = nBoardSerialNum;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -90,7 +88,8 @@ CGeomorphicBoard::CGeomorphicBoard(CGamDoc& pDoc) :
 
 size_t CGeomorphicBoard::AddElement(BoardID nBoardSerialNum)
 {
-    CGeoBoardElement geo(nBoardSerialNum);
+    CGeoBoardElement geo(size() / GetBoardColCount(), size() % GetBoardColCount(),
+                        nBoardSerialNum);
     push_back(geo);
     return size() - size_t(1);
 }
@@ -125,14 +124,10 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
         {
             if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
-            size_t nCellRowOffset;
-            size_t nCellColOffset;
-            ComputeCellOffset(nBoardRow, nBoardCol, nCellRowOffset, nCellColOffset);
 
-            const CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
-            const CBoardArray& pBArray = pBrd.GetBoardArray();
+            const CGeoBoardElement& geoBoardElt = GetBoardElt(nBoardRow, nBoardCol);
 
-            CopyCells(pBrdArrayNew, pBArray, nCellRowOffset, nCellColOffset);
+            CopyCells(pBrdArrayNew, geoBoardElt);
         }
     }
 
@@ -188,9 +183,15 @@ size_t CGeomorphicBoard::GetSpecialTileSet()
     return nTSet;
 }
 
-void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo, const CBoardArray& pBArryFrom,
-    size_t nCellRowOffset, size_t nCellColOffset)
+void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
+                                const CGeoBoardElement& gbeFrom)
 {
+    size_t nCellRowOffset;
+    size_t nCellColOffset;
+    ComputeCellOffset(gbeFrom.GetRow(), gbeFrom.GetCol(), nCellRowOffset, nCellColOffset);
+
+    const CBoardArray& pBArryFrom = GetBoard(gbeFrom).GetBoardArray();
+
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     for (size_t nRow = size_t(0) ; nRow < pBArryFrom.GetRows() ; ++nRow)
     {
@@ -422,11 +423,15 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     }
 }
 
-const CBoard& CGeomorphicBoard::GetBoard(size_t nBoardRow, size_t nBoardCol) const
+const CGeoBoardElement& CGeomorphicBoard::GetBoardElt(size_t nBoardRow, size_t nBoardCol) const
 {
     size_t nGeoIndex = nBoardRow * m_nBoardColCount + nBoardCol;
     ASSERT(nGeoIndex < m_nBoardRowCount * m_nBoardColCount);
-    const CGeoBoardElement& geo = (*this)[nGeoIndex];
+    return (*this)[nGeoIndex];
+}
+
+const CBoard& CGeomorphicBoard::GetBoard(const CGeoBoardElement& geo) const
+{
     size_t nBrdIndex = m_pDoc->GetBoardManager()->FindBoardBySerial(geo.m_nBoardSerialNum);
     const CBoard& pBrd = m_pDoc->GetBoardManager()->GetBoard(nBrdIndex);
     return pBrd;
@@ -521,7 +526,8 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         }
         while (wCount--)
         {
-             CGeoBoardElement geo;
+             CGeoBoardElement geo(size() / GetBoardColCount(),
+                                    size() % GetBoardColCount());
              geo.Serialize(ar);
              push_back(geo);
         }
