@@ -35,6 +35,7 @@ class CGamDoc;
 struct CGeoBoardElement
 {
     BoardID m_nBoardSerialNum;
+    uint8_t m_nReserved = uint8_t(0);    // for board rotation
 
 public:
     CGeoBoardElement();

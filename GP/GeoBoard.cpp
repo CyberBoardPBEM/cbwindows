@@ -54,10 +54,29 @@ void CGeoBoardElement::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_nBoardSerialNum;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            if (m_nReserved != uint8_t(0))
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+        }
+        else
+        {
+            ar << m_nReserved;
+        }
     }
     else
     {
         ar >> m_nBoardSerialNum;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            m_nReserved = uint8_t(0);
+        }
+        else
+        {
+            ar >> m_nReserved;
+        }
     }
 }
 
