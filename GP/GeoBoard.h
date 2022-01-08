@@ -38,17 +38,28 @@ struct CGeoBoardElement
     uint8_t m_nReserved = uint8_t(0);    // for board rotation
 
 public:
-    CGeoBoardElement();
+    CGeoBoardElement(size_t row, size_t col,
+                    BoardID nBoardSerialNum = BoardID(0));
     CGeoBoardElement(const CGeoBoardElement&) = default;
-    CGeoBoardElement(BoardID nBoardSerialNum);
+    CGeoBoardElement& operator=(const CGeoBoardElement&) = delete;
+
+    /* we could find out the row,col by searching for this in
+        the containing CGeomorphicBoard, but caching it isn't
+        too difficult, and will be faster */
+    size_t GetRow() const { return m_row; }
+    size_t GetCol() const { return m_col; }
 
 public:
     void Serialize(CArchive& ar);
+
+private:
+    const size_t m_row;
+    const size_t m_col;
 };
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CGeomorphicBoard : public std::vector< CGeoBoardElement >
+class CGeomorphicBoard : private std::vector< CGeoBoardElement >
 {
 public:
     CGeomorphicBoard(CGamDoc& pDoc);
@@ -80,14 +91,18 @@ public:
 
 // Implementation - methods
 protected:
-    const CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol) const;
+    const CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol) const
+    {
+        return GetBoard(GetBoardElt(nBoardRow, nBoardCol));
+    }
+    const CBoard& GetBoard(const CGeoBoardElement& geo) const;
+    const CGeoBoardElement& GetBoardElt(size_t nBoardRow, size_t nBoardCol) const;
     OwnerPtr<CBoard> CloneBoard(const CBoard& pOrigBoard) const;
     void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const;
     CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const;
     void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;
     // non-const because new tiles get added to CTileManager
-    void    CopyCells(CBoardArray& pBArryTo, const CBoardArray& pBArryFrom,
-                size_t nCellRowOffset, size_t nCellColOffset);
+    void    CopyCells(CBoardArray& pBArryTo, const CGeoBoardElement& gbeFrom);
     void    CreateBitmap(CBitmap& m_bmap, CSize size) const;
     void    CombineLeftAndRight(CBitmap& bmap, TileScale eScale, const CBoardArray& pBALeft,
                 const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight) const;
