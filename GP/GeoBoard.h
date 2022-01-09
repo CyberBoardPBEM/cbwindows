@@ -111,6 +111,8 @@ protected:
     // non-const because new tiles get added to CTileManager
     size_t  GetSpecialTileSet();
 
+    bool NeedsMerge(const CGeoBoardElement& gbe, Edge e) const;
+
 // Implementation - vars
 protected:
     CString  m_strName;                 // The board's name

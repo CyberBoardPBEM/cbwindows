@@ -188,6 +188,64 @@ void CBoard::SetTopDrawing(OwnerOrNullPtr<CDrawList> pDwg)
     m_pTopDwg = std::move(pDwg);
 }
 
+#if defined(GPLAY)
+CellStagger CBoard::GetStagger(Corner c) const
+{
+    static const auto Odd = [](size_t x)
+    {
+        return bool(x & size_t(1));
+    };
+
+    const CBoardArray& ba = GetBoardArray();
+    const CCellForm& cellform = ba.GetCellForm(fullScale);
+    switch (cellform.GetCellType())
+    {
+        case cformRect:
+            ASSERT(!"no stagger for rect boards");
+            return CellStagger::Invalid;
+        case cformBrickVert:
+            ASSERT(!"untested code");
+        case cformHexFlat:
+            switch (c)
+            {
+                case Corner::TL:
+                    return cellform.GetCellStagger();
+                case Corner::TR:
+                    return Odd(ba.GetCols()) ?
+                                GetStagger(Corner::TL)
+                            :
+                                ~GetStagger(Corner::TL);
+                case Corner::BL:
+                case Corner::BR:
+                    return ~GetStagger(c ^ Edge::MaskTB);
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        case cformBrickHorz:
+            ASSERT(!"untested code");
+        case cformHexPnt:
+            switch (c)
+            {
+                case Corner::TL:
+                    return cellform.GetCellStagger();
+                case Corner::BL:
+                    return Odd(ba.GetRows()) ?
+                                GetStagger(Corner::TL)
+                            :
+                                ~GetStagger(Corner::TL);
+                case Corner::TR:
+                case Corner::BR:
+                    return ~GetStagger(c ^ Edge::MaskLR);
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+
+#endif
+
 // ----------------------------------------------------- //
 #ifndef GPLAY
 BOOL CBoard::PurgeMissingTileIDs()

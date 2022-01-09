@@ -36,8 +36,84 @@ enum CellFormType { cformRect = 0, cformBrickHorz, cformBrickVert,
 
 enum class CellStagger { Invalid = -1, Out = 0, In = 1 };
 
+// impl could be in .cpp, but I'm putting it here so behavior is obvious
+inline CellStagger operator~(CellStagger e)
+{
+    switch (e)
+    {
+        case CellStagger::Out:
+        case CellStagger::In:
+            static_assert((static_cast<int>(CellStagger::In) ^ 1) == static_cast<int>(CellStagger::Out), "invalid invert logic");
+            return static_cast<CellStagger>(static_cast<int>(e) ^ 1);
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+
 enum CellNumStyle { cnsRowCol = 0, cnsColRow = 1, cns0101ByRows = 2,
     cns0101ByCols = 3, cnsAA01ByRows = 4, cnsAA01ByCols = 5};
+
+enum class Edge {
+    /* values are chosen that make edges unique (to allow
+        using switch) and to allow or'ing together to
+        create Corner values */
+    Invalid =   0x0000,
+
+    Top =       0x0001,
+    Bottom =    0x0011,
+    MaskTB =    0x0010,
+
+    Left =      0x0100,
+    Right =     0x1100,
+    MaskLR =    0x1000,
+};
+
+// impl could be in .cpp, but I'm putting it here so behavior is obvious
+inline Edge operator~(Edge e)
+{
+    switch (e)
+    {
+        case Edge::Top:
+        case Edge::Bottom:
+            return static_cast<Edge>(static_cast<int>(e) ^ static_cast<int>(Edge::MaskTB));
+        case Edge::Left:
+        case Edge::Right:
+            return static_cast<Edge>(static_cast<int>(e) ^ static_cast<int>(Edge::MaskLR));
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+
+enum class Corner {
+    Invalid = 0x000,
+    TL = static_cast<int>(Edge::Top) | static_cast<int>(Edge::Left),
+    TR = static_cast<int>(Edge::Top) | static_cast<int>(Edge::Right),
+    BL = static_cast<int>(Edge::Bottom) | static_cast<int>(Edge::Left),
+    BR = static_cast<int>(Edge::Bottom) | static_cast<int>(Edge::Right),
+};
+
+// impl could be in .cpp, but I'm putting it here so behavior is obvious
+inline Corner operator^(Corner c, Edge e)
+{
+    switch (c)
+    {
+        case Corner::TL:
+        case Corner::TR:
+        case Corner::BL:
+        case Corner::BR:
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+    switch (e)
+    {
+        case Edge::MaskTB:
+        case Edge::MaskLR:
+            return static_cast<Corner>(static_cast<int>(c) ^ static_cast<int>(e));
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
 
 ////////////////////////////////////////////////////////////////
 // Various create forms:
