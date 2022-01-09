@@ -192,6 +192,9 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
 
     const CBoardArray& pBArryFrom = GetBoard(gbeFrom).GetBoardArray();
 
+    bool mergeTop = NeedsMerge(gbeFrom, Edge::Top);
+    bool mergeLeft = NeedsMerge(gbeFrom, Edge::Left);
+
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     for (size_t nRow = size_t(0) ; nRow < pBArryFrom.GetRows() ; ++nRow)
     {
@@ -202,19 +205,17 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
 
             const BoardCell& pCellFrom = pBArryFrom.GetCell(nRow, nCol);
             BoardCell& pCellTo = pBArryTo.GetCell(nRowTo, nColTo);
-            BOOL bMergeTheCell = FALSE;
-            if (pBArryTo.GetCellForm(fullScale).GetCellType() == cformHexFlat)
-                bMergeTheCell = nCol == size_t(0) && nColTo != size_t(0);
-            else
-                bMergeTheCell = nRow == size_t(0) && nRowTo != size_t(0);
+            BOOL bMergeTheCell = (mergeLeft && nCol == size_t(0)) ||
+                                    (mergeTop && nRow == size_t(0));
 
             if (bMergeTheCell && pCellFrom != pCellTo)
             {
                 // We need to create a tile that has the half images of the
                 // two hex cells joined as one.
+                // We don't bother trying to perform 4-way merge for mergeLeft && mergeTop
                 CBitmap bmapFull;
                 CBitmap bmapHalf;
-                if (pBArryTo.GetCellForm(fullScale).GetCellType() == cformHexFlat)
+                if (mergeLeft)
                 {
                     // Handle left and right halves
                     CombineLeftAndRight(bmapFull, fullScale, pBArryTo, pBArryFrom,
@@ -354,48 +355,58 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
     CPoint pnt(0, 0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        const CBoard& pBrd = GetBoard(size_t(0), nCol);
+        const CGeoBoardElement& gbe = GetBoardElt(size_t(0), nCol);
+        const CBoard& pBrd = GetBoard(gbe);
         const CBoardArray& pBArray = pBrd.GetBoardArray();
         pnt.x += pBArray.GetWidth(fullScale);
-        if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        if (NeedsMerge(gbe, Edge::Right))
+        {
             pnt.x -= sizeCell.cx;               // A column is shared
-        else
+        }
+        else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        {
+            // +2 to round to nearest int
+            pnt.x -= (sizeCell.cx + 2) / 4;
+        }
+        else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        {
             pnt.x -= sizeCell.cx / 2;           // A column is half shared
+        }
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        const CBoard& pBrd = GetBoard(nRow, size_t(0));
+        const CGeoBoardElement& gbe = GetBoardElt(nRow, size_t(0));
+        const CBoard& pBrd = GetBoard(gbe);
         const CBoardArray& pBArray = pBrd.GetBoardArray();
         pnt.y += pBArray.GetHeight(fullScale);
-        if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        if (NeedsMerge(gbe, Edge::Bottom))
+        {
             pnt.y -= sizeCell.cy;               // A row is shared
-        else
+        }
+        else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        {
+            // +2 to round to nearest int
+            pnt.y -= (sizeCell.cy + 2) / 4;
+        }
+        else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        {
             pnt.y -= sizeCell.cy / 2;           // A row is half shared
-
+        }
     }
     return pnt;
 }
 
 void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const
 {
-    rnRows = size_t(0);
-    rnCols = size_t(0);
-    for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
-    {
-        const CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
-        const CBoardArray& pBArray = pBrd.GetBoardArray();
-        rnCols += pBArray.GetCols();
-        if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
-            rnCols--;                   // A column is shared
-    }
-    for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
-    {
-        const CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
-        const CBoardArray& pBArray = pBrd.GetBoardArray();
-        rnRows += pBArray.GetRows();
-        if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
-            rnRows--;                   // A row is shared
-    }
+    // size is offset of bottom right board, plus bottom right's size
+    const CGeoBoardElement& bottomRightGBE = GetBoardElt(GetBoardRowCount() - size_t(1), GetBoardColCount() - size_t(1));
+    size_t bottomRightRowOffset, bottomRightRowOffsetColOffset;
+    ComputeCellOffset(bottomRightGBE.GetRow(), bottomRightGBE.GetCol(),
+                        bottomRightRowOffset, bottomRightRowOffsetColOffset);
+    const CBoard& bottomRightBrd = GetBoard(bottomRightGBE);
+    const CBoardArray& bottomRightBArray = bottomRightBrd.GetBoardArray();
+    rnRows = bottomRightRowOffset + bottomRightBArray.GetRows();
+    rnCols = bottomRightRowOffsetColOffset + bottomRightBArray.GetCols();
 }
 
 void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
@@ -405,21 +416,25 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     rnCellCol = size_t(0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        const CBoard& pBrd = GetBoard(size_t(0), nCol);
-        const CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CGeoBoardElement& pBrd = GetBoardElt(size_t(0), nCol);
+        const CBoardArray& pBArray = GetBoard(pBrd).GetBoardArray();
         ASSERT(pBArray.GetCols() >= size_t(1));
         rnCellCol += pBArray.GetCols();
-        if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
-            rnCellCol--;
+        if (NeedsMerge(pBrd, Edge::Right))
+        {
+            --rnCellCol;
+        }
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        const CBoard& pBrd = GetBoard(nRow, size_t(0));
-        const CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CGeoBoardElement& pBrd = GetBoardElt(nRow, size_t(0));
+        const CBoardArray& pBArray = GetBoard(pBrd).GetBoardArray();
         ASSERT(pBArray.GetRows() >= size_t(1));
         rnCellRow += pBArray.GetRows();
-        if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
-            rnCellRow--;
+        if (NeedsMerge(pBrd, Edge::Bottom))
+        {
+            --rnCellRow;
+        }
     }
 }
 
@@ -493,7 +508,26 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
             CB::WriteCount(ar, value_preserving_cast<size_t>(size()));
         }
         for (size_t i = size_t(0); i < size(); ++i)
-            (*this)[i].Serialize(ar);
+        {
+            CGeoBoardElement& elt = (*this)[i];
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            {
+                /* old file format, so enforce old geoboard
+                    restrictions (see old DlgNewGeoBoard.cpp for
+                    old restrictions)
+                    (check here because CGeoBoardElement doesn't
+                    have access to CBoard) */
+                const CBoard& board = GetBoard(elt);
+                const CBoardArray& bArray = board.GetBoardArray();
+                CellFormType cellType = bArray.GetCellForm(fullScale).GetCellType();
+                if (!(cellType == cformHexFlat && (bArray.GetCols() & size_t(1)) != size_t(0) ||
+                        cellType == cformHexPnt && (bArray.GetRows() & size_t(1)) != size_t(0)))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+            }
+            elt.Serialize(ar);
+        }
     }
     else
     {
@@ -531,5 +565,67 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
              geo.Serialize(ar);
              push_back(geo);
         }
+    }
+}
+
+bool CGeomorphicBoard::NeedsMerge(const CGeoBoardElement& gbe, Edge e) const
+{
+    switch (e)
+    {
+        case Edge::Top:
+            if (gbe.GetRow() == size_t(0))
+            {
+                return false;
+            }
+            return NeedsMerge(GetBoardElt(gbe.GetRow() - size_t(1), gbe.GetCol()), Edge::Bottom);
+        case Edge::Bottom:
+        {
+            if (gbe.GetRow() + size_t(1) == GetBoardRowCount())
+            {
+                return false;
+            }
+            const CBoard& brd = GetBoard(gbe);
+            const CBoardArray& bArray = brd.GetBoardArray();
+            const CGeoBoardElement& nextGBE = GetBoardElt(gbe.GetRow() + size_t(1), gbe.GetCol());
+            const CBoard& nextBrd = GetBoard(nextGBE);
+            const CBoardArray& nextBArray = nextBrd.GetBoardArray();
+            switch (bArray.GetCellForm(fullScale).GetCellType())
+            {
+                case cformHexFlat:
+                case cformHexPnt:
+                    return brd.GetStagger(Corner::BL) == nextBrd.GetStagger(Corner::TL);
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        }
+        case Edge::Left:
+            if (gbe.GetCol() == size_t(0))
+            {
+                return false;
+            }
+            return NeedsMerge(GetBoardElt(gbe.GetRow(), gbe.GetCol() - size_t(1)), Edge::Right);
+        case Edge::Right:
+        {
+            if (gbe.GetCol() + size_t(1) == GetBoardColCount())
+            {
+                return false;
+            }
+            const CBoard& brd = GetBoard(gbe);
+            const CBoardArray& bArray = brd.GetBoardArray();
+            const CGeoBoardElement& nextGBE = GetBoardElt(gbe.GetRow(), gbe.GetCol() + size_t(1));
+            const CBoard& nextBrd = GetBoard(nextGBE);
+            const CBoardArray& nextBArray = nextBrd.GetBoardArray();
+            switch (bArray.GetCellForm(fullScale).GetCellType())
+            {
+                case cformHexFlat:
+                case cformHexPnt:
+                    return brd.GetStagger(Corner::TR) == nextBrd.GetStagger(Corner::TL);
+                default:
+                    AfxThrowInvalidArgException();
+            }
+            break;
+        }
+        default:
+            AfxThrowInvalidArgException();
     }
 }

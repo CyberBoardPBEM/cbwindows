@@ -118,8 +118,8 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         CBoardArray& pBArray = pBrd.GetBoardArray();
         const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
 
-        if (!(pCellForm.GetCellType() == cformHexFlat && (pBArray.GetCols() & size_t(1)) != size_t(0) ||
-              pCellForm.GetCellType() == cformHexPnt && (pBArray.GetRows() & size_t(1)) != size_t(0)))
+        if (!(pCellForm.GetCellType() == cformHexFlat ||
+              pCellForm.GetCellType() == cformHexPnt))
             continue;                           // These maps aren't compliant at all
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps

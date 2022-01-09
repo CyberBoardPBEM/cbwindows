@@ -160,6 +160,13 @@ public:
     BOOL GetCellBorderOnTop() const { return m_bCellBorderOnTop; }
     void SetCellBorderOnTop(BOOL bOnTop) { m_bCellBorderOnTop = bOnTop; }
 
+#if defined(GPLAY)
+    /* the more general geomorphic board stitching needs to know
+        stagger for all corners, not just top-left that
+        CCellForm can provide */
+    CellStagger GetStagger(Corner c) const;
+#endif
+
 // Operations
 public:
     void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
