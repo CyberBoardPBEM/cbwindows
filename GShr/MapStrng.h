@@ -225,7 +225,7 @@ private:
 
             MarkerElement(MarkID16 m) :
                 mid(m),
-                pad(0),
+                pad(0),     // Hash() won't work properly if bits uninitialized
                 tag(MARKER)
             {
             }
@@ -557,12 +557,13 @@ private:
             PieceID32 pid;
             // allow for 100 sides for future development
             uint32_t nSide : 7;
-            uint32_t : 10;
+            uint32_t pad : 10;
             uint32_t tag : 15;
 
             PieceElement(PieceID32 p, unsigned s) :
                 pid(p),
                 nSide(s),
+                pad(0),     // Hash() won't work properly if bits uninitialized
                 tag(PIECE)
             {
                 if (s > 1)
@@ -588,7 +589,7 @@ private:
 
             MarkerElement(MarkID32 m) :
                 mid(m),
-                pad(0),
+                pad(0),     // Hash() won't work properly if bits uninitialized
                 tag(MARKER)
             {
             }
