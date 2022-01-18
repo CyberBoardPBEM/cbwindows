@@ -55,7 +55,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     CDib    dibSrc;
     CTile   tile;
     CBitmap bmap;
-    int nAngleDegCW = GetElementFacingAngle(state);
+    uint16_t nAngleDegCW = state.GetFacing();
 
     // Generate rotated full scale bitmap of tile...
 

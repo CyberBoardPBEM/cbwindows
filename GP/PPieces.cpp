@@ -363,7 +363,7 @@ TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing, uint8_t nSide) const
 {
     // Handle rotated pieces...
-    ElementState state = MakePieceState(pid, nFacing, nSide);
+    ElementState state(pid, nFacing, nSide);
     CTileFacingMap* pMapFacing = m_pDoc->GetFacingMap();
     TileID tidFacing = pMapFacing->GetFacingTileID(state);
     if (tidFacing != nullTid)
