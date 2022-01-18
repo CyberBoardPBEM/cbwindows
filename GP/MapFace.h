@@ -37,30 +37,84 @@
 #include    "Marks.h"
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// ElementState's Bit Layout:
-//   3         2         1
-// 210987654321098765432109876543210
-// M----IIIIIIIIIIIIIIII--SAAAAAAAAA
-//
-// A = Facing Angle in degrees
-// S = Side up. 0=top/1=bottom. Markers = 0
-// I = Piece or Marker ID code
-// M = Marker flag. 1=marker
-
-typedef DWORD ElementState;
-
-const DWORD MARKER_ELEMENT_FLAG = 0x80000000L; // Top set if a marker, else a piece
-
-inline ElementState MakePieceState(PieceID pid, WORD nFacingDegCW, BYTE nSide)
-    { return ((DWORD)static_cast<PieceID::UNDERLYING_TYPE>(pid) << 12) | ((DWORD)nSide << 9) | (nFacingDegCW & 0x1FF); }
-
-inline ElementState MakeMarkerState(MarkID mid, WORD nFacingDegCW)
-    { return ((DWORD)static_cast<MarkID::UNDERLYING_TYPE>(mid) << 12) | (nFacingDegCW & 0x1FF) | MARKER_ELEMENT_FLAG; }
-
-inline int GetElementFacingAngle(ElementState elem)
+class alignas(uint64_t) ElementState
 {
-    return (int)(elem & 0x1FF);             // Degree angle is stored in LS nine bits
+public:
+    // uninitialized data
+    ElementState() = default;
+    ElementState(PieceID p, uint16_t nFacingDegCW, uint8_t nSide) :
+        marker(0),
+        side(nSide),
+        angle(nFacingDegCW),
+        pad(0),
+        pid(p)
+    {
+        if (nSide >= uint8_t(128) || nFacingDegCW >= uint16_t(360))
+        {
+            ASSERT(!"side or angle out of range");
+            AfxThrowInvalidArgException();
+        }
+    }
+    ElementState(MarkID m, uint16_t nFacingDegCW) :
+        marker(1),
+        angle(nFacingDegCW),
+        side(0),
+        pad(0),
+        mid(m)
+    {
+        if (nFacingDegCW >= uint16_t(360))
+        {
+            ASSERT(!"=angle out of range");
+            AfxThrowInvalidArgException();
+        }
+    }
+    ElementState(const ElementState&) = default;
+    ElementState& operator=(const ElementState&) = default;
+    ~ElementState() = default;
+
+    bool operator==(const ElementState& rhs) const
+    {
+        if (marker)
+        {
+            return rhs.marker &&
+                    angle == rhs.angle &&
+                    mid == rhs.mid;
+        }
+        else
+        {
+            return !rhs.marker &&
+                    angle == rhs.angle && side == rhs.side &&
+                    pid == rhs.pid;
+        }
+    }
+
+    uint16_t GetFacing() const
+    {
+        return value_preserving_cast<uint16_t>(angle);
+    }
+
+    unsigned int Hash() const
+    {
+        return HashKey(reinterpret_cast<const uint64_t&>(*this));
+    }
+
+private:
+    uint32_t marker : 1;
+    uint32_t angle : 9;
+    // allow for 100 sides for future development
+    uint32_t side : 7;
+    uint32_t pad : 15;
+    union {
+        PieceID pid;
+        MarkID mid;
+    };
+};
+static_assert(sizeof(ElementState) == sizeof(uint64_t) &&
+                alignof(ElementState) == alignof(uint64_t), "ElementState does not match uint64_t");
+template<>
+inline unsigned int HashKey(ElementState key)
+{
+    return key.Hash();
 }
 
 //////////////////////////////////////////////////////////////////////

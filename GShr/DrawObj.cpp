@@ -1486,7 +1486,7 @@ TileID CMarkObj::GetCurrentTileID()
     if (m_nFacingDegCW != 0)
     {
         // Handle rotated markers...
-        ElementState state = MakeMarkerState(m_mid, (WORD)m_nFacingDegCW);
+        ElementState state(m_mid, m_nFacingDegCW);
         CTileFacingMap* pMapFacing = m_pDoc->GetFacingMap();
         TileID tidFacing = pMapFacing->GetFacingTileID(state);
         if (tidFacing == nullTid)
