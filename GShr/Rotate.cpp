@@ -126,11 +126,71 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 
 /////////////////////////////////////////////////////////////////////
 
+namespace {
+    // angle is clockwise
+    CDib Rotate16BitDibFast(const CDib& sDib, int angle)
+    {
+        switch (angle)
+        {
+            case 90:
+            {
+                int width = sDib.Width(), height = sDib.Height();
+                CDib dDib(height, width, 16);
+                for (int srcY = 0, destX = height - 1 ; srcY < height ; ++srcY, --destX)
+                {
+                    // destY always has same value as srcX
+                    for (int srcX = 0 ; srcX < width ; ++srcX)
+                    {
+                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        dDib.Set16BitColorNumberAtXY(destX, srcX, color);
+                    }
+                }
+                return dDib;
+            }
+            case 180:
+            {
+                int width = sDib.Width(), height = sDib.Height();
+                CDib dDib(width, height, 16);
+                for (int srcY = 0, destY = height - 1 ; srcY < height ; ++srcY, --destY)
+                {
+                    for (int srcX = 0, destX = width - 1 ; srcX < width ; ++srcX, --destX)
+                    {
+                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        dDib.Set16BitColorNumberAtXY(destX, destY, color);
+                    }
+                }
+                return dDib;
+            }
+            case 270:
+            {
+                int width = sDib.Width(), height = sDib.Height();
+                CDib dDib(height, width, 16);
+                // destX always has same value as srcY
+                for (int srcY = 0 ; srcY < height ; ++srcY)
+                {
+                    for (int srcX = 0, destY = width - 1 ; srcX < width ; ++srcX, --destY)
+                    {
+                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        dDib.Set16BitColorNumberAtXY(srcY, destY, color);
+                    }
+                }
+                return dDib;
+            }
+            default:
+                AfxThrowInvalidArgException();
+        }
+    }
+}
+
 // angle is clockwise
 CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 {
     ASSERT(0 <= angle && angle < 360);
     ASSERT(angle != 0 || !"unnecessary call");
+    if (angle % 90 == 0)
+    {
+        return Rotate16BitDibFast(pSDib, angle);
+    }
     POINT   pntSrc[numPnts];
     POINT   pntDst[numPnts];
 
