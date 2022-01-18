@@ -300,7 +300,7 @@ private:
             Subtype subtype : 4;
 
             constexpr Invalid() :
-                pad1(0),
+                pad1(0),     // GameElement32 Hash() won't work properly if bits uninitialized
                 pad2(0),
                 subtype(stInvalid)
             {
@@ -444,12 +444,15 @@ private:
         } pieceObj;
         struct Invalid
         {
-            uint32_t : 32;
-            uint16_t : 16;
-            uint16_t : 12;
+            uint32_t pad1 : 32;
+            uint16_t pad2 : 16;
+            uint16_t pad3 : 12;
             Subtype subtype : 4;
 
             constexpr Invalid() :
+                pad1(0),     // GameElement64 Hash() won't work properly if bits uninitialized
+                pad2(0),
+                pad3(0),
                 subtype(stInvalid)
             {
             }
