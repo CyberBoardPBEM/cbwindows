@@ -57,14 +57,14 @@ public:
     BOOL IsUsed() const         { return m_nSide != 0xFF; }
     void SetUnused();
 
-    void SetSide(int nSide)     { m_nSide = (BYTE)nSide; }
-    void InvertSide()           { m_nSide ^= 1; }
-    int  GetSide() const        { return (int)m_nSide; }
+    void SetSide(uint8_t nSide) { m_nSide = nSide; }
+    void InvertSide()           { m_nSide ^= uint8_t(1); }
+    uint8_t GetSide() const     { return m_nSide; }
     BOOL IsFrontUp() const      { return m_nSide == 0; }
     BOOL IsBackUp() const       { return m_nSide == 1; }
 
-    void SetFacing(int nFacing) { m_nFacing = (WORD)nFacing; }
-    int  GetFacing() const      { return (int)m_nFacing; }
+    void SetFacing(uint16_t nFacing) { m_nFacing = nFacing; }
+    uint16_t GetFacing() const  { return m_nFacing; }
 
     DWORD GetOwnerMask() const  { return m_dwOwnerMask; }
     void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
@@ -114,8 +114,8 @@ public:
 
     void FlipPieceOver(PieceID pid);
 
-    void SetPieceFacing(PieceID pid, int nFacingDegCW);
-    int  GetPieceFacing(PieceID pid);
+    void SetPieceFacing(PieceID pid, uint16_t nFacingDegCW);
+    uint16_t GetPieceFacing(PieceID pid);
 
     BOOL IsFrontUp(PieceID pid);
     BOOL Is2Sided(PieceID pid) const;
@@ -140,7 +140,7 @@ public:
     CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing = FALSE);
 
     void CreatePlayingPieceTable();
-    void SetPiece(PieceID pid, int nSide = 0, int nFacing = 0);
+    void SetPiece(PieceID pid, uint8_t nSide = uint8_t(0), uint16_t nFacing = uint16_t(0));
     void SetPieceUnused(PieceID pid);
 
     void PurgeUndefinedPieceIDs();
@@ -182,7 +182,7 @@ protected:
         pPce = const_cast<Piece*>(temp);
     }
 
-    TileID GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide) const;
+    TileID GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing, uint8_t nSide) const;
 };
 
 #endif

@@ -1684,7 +1684,7 @@ void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
 
 void CPlayBoardView::OnRotatePiece(UINT nID)
 {
-    int nFacing5DegCW = nID - ID_ACT_ROTATE_0;
+    uint16_t nFacing5DegCW = value_preserving_cast<uint16_t>(nID - ID_ACT_ROTATE_0);
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
@@ -1692,7 +1692,7 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
 
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard,
-        5 * nFacing5DegCW);             // Convert to degrees
+        uint16_t(5) * nFacing5DegCW);       // Convert to degrees
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
@@ -1736,26 +1736,25 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
     CGamDoc* pDoc = GetDocument();
     int nRelativeRotation = (int)wParam;
     ASSERT(!m_tblCurPieces.empty());
-    ASSERT(value_preserving_cast<size_t>(m_tblCurAngles.GetSize()) == m_tblCurPieces.size());
+    ASSERT(m_tblCurAngles.size() == m_tblCurPieces.size());
 
-    auto pos = m_tblCurPieces.begin();
-    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
+    for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
     {
         int nAngle = m_tblCurAngles[i] + nRelativeRotation;
         nAngle += nAngle < 0 ? 360 : 0;     // Shift to positive values
         nAngle %= 360;                      // Keep to within a circle
 
-        CDrawObj& pDObj = **pos;
+        CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
+            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
-            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
+            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Calculate new rotated mid-point for object.
             CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
-                CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]), nRelativeRotation);
+                CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), nRelativeRotation);
             CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
             pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
         }
@@ -1783,7 +1782,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
     // Get a list of the selected pieces and save their current
     // rotations.
-    m_tblCurAngles.RemoveAll();
+    m_tblCurAngles.clear();
     m_tblCurPieces.clear();
     m_tblXMidPnt.RemoveAll();
     m_tblYMidPnt.RemoveAll();
@@ -1793,19 +1792,18 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     CRect rctGroupRect = m_selList.GetPiecesEnclosingRect();
     m_pntWheelMid = GetMidRect(rctGroupRect);
 
-    auto pos = m_tblCurPieces.begin();
-    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
+    for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
     {
-        CDrawObj& pDObj = **pos;
+        CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj& pObj = static_cast<CPieceObj&>(pDObj);
-            m_tblCurAngles.Add(pPTbl->GetPieceFacing(pObj.m_pid));
+            m_tblCurAngles.push_back(pPTbl->GetPieceFacing(pObj.m_pid));
         }
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
             CMarkObj& pObj = static_cast<CMarkObj&>(pDObj);
-            m_tblCurAngles.Add(pObj.GetFacing());
+            m_tblCurAngles.push_back(pObj.GetFacing());
         }
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
@@ -1824,10 +1822,9 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     INT_PTR nDlgResult = dlg.DoModal();
 
     // Restore angles before possibly recording the operation.
-    pos = m_tblCurPieces.begin();
-    for (int i = 0 ; pos != m_tblCurPieces.end() ; i++)
+    for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
     {
-        CDrawObj& pDObj = **pos++;
+        CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
@@ -1842,7 +1839,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Restore original position
-            CSize sizeDelta = CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]) -
+            CSize sizeDelta = CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]) -
                 GetMidRect(pDObj.GetEnclosingRect());
             pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
         }
@@ -1854,29 +1851,28 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     {
         // Rotation was accepted. Make the final changes.
         pDoc->AssignNewMoveGroup();
-        auto pos = m_tblCurPieces.begin();
-        for (int i = 0 ; pos != m_tblCurPieces.end() ; i++, ++pos)
+        for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
         {
             int nAngle = m_tblCurAngles[i] + dlg.m_nRelativeRotation;
             nAngle += nAngle < 0 ? 360 : 0;
             nAngle %= 360;                      // Keep to within a circle
 
-            CDrawObj& pDObj = **pos;
+            CDrawObj& pDObj = *m_tblCurPieces[i];
 
             if (pDObj.GetType() == CDrawObj::drawPieceObj)
             {
-                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, nAngle);
+                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
             }
             else if (pDObj.GetType() == CDrawObj::drawMarkObj)
             {
-                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, nAngle);
+                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
             }
             if (m_bWheelRotation &&
                 (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
             {
                 // Calculate new rotated mid-point for object.
                 CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
-                    CPoint(m_tblXMidPnt[i], m_tblYMidPnt[i]), dlg.m_nRelativeRotation);
+                    CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), dlg.m_nRelativeRotation);
                 CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
                 pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
             }
@@ -1886,7 +1882,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         rctGroupRect.InflateRect(16, 16);
         InvalidateRect(rctGroupRect, FALSE);
     }
-    m_tblCurAngles.RemoveAll();
+    m_tblCurAngles.clear();
     m_tblCurPieces.clear();
     m_tblXMidPnt.RemoveAll();
     m_tblYMidPnt.RemoveAll();
@@ -2031,7 +2027,7 @@ void CPlayBoardView::OnEditBoardToFile()
         dcMem.SelectObject(pPrvBMap);
 
         CDib dib;
-        dib.BitmapToDIB(&bmap, GetAppPalette(), 24);
+        dib.BitmapToDIB(&bmap, GetAppPalette(), uint16_t(24));
 
         if (!dib.WriteDIBFile(file))
             AfxThrowMemoryException();
@@ -2360,7 +2356,7 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
 
     if (bWin98 || bWinME)
     {
-        static UINT uWheelScrollLines = -1;
+        static unsigned uWheelScrollLines = unsigned(-1);
         if ((int)uWheelScrollLines < 0)
             ::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uWheelScrollLines, 0);
 

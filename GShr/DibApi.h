@@ -49,9 +49,9 @@ WORD    PaletteSize(LPSTR lpbi);
 WORD    DIBNumColors(LPSTR lpbi);
 HANDLE  CopyHandle(HANDLE h);
 HBITMAP DIBToBitmap(HANDLE hDIB, HPALETTE hPal);
-HANDLE  BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, int nBPP = 0);
+HANDLE  BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
 void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
-            DWORD dwWidth, DWORD dwHeight, int nBPP);
+            DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
 void    InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo);
 LPBYTE  DibXY(LPSTR lpbi, int x, int y);
 BOOL    IsColorNumInDIB(LPSTR lpbi, UINT iColor);

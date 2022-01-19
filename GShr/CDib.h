@@ -41,7 +41,7 @@ public:
     void ReadDIBFile(CFile& file);
     BOOL WriteDIBFile(CFile& file);
     void CloneDIB(CDib *pDib);
-    BOOL BitmapToDIB(const CBitmap* pBM, const CPalette* pPal = NULL, int nBPP = 16);
+    BOOL BitmapToDIB(const CBitmap* pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
     OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE);
     BOOL AppendDIB(CDib *pDib);
     BOOL RemoveDIBSlice(int y, int ht);

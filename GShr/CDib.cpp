@@ -161,7 +161,7 @@ void CDib::SetDibHandle(HANDLE hDib)
     }
 }
 
-BOOL CDib::BitmapToDIB(const CBitmap* pBM, const CPalette* pPal, int nBPP/* = 16*/)
+BOOL CDib::BitmapToDIB(const CBitmap* pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
 {
     ClearDib();
     if (pBM->m_hObject != NULL)

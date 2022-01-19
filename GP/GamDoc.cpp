@@ -1885,7 +1885,7 @@ void CGamDoc::OnEditCreatePlayers()
         szBfr[1] = 0;
         for (int i = 0; i < dlg.m_nPlayerCount; i++)
         {
-            szBfr[0] = 'A' + i;
+            szBfr[0] = value_preserving_cast<char>('A' + i);
             CString str;
             str.Format(IDS_BASE_PLAYER_NAME, szBfr);
             m_pPlayerMgr->AddPlayer(str);

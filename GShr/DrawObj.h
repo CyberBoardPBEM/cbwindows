@@ -875,9 +875,9 @@ class CMarkObj : public CDrawObj
 {
 // Constructors
 public:
-    CMarkObj() { m_mid = nullMid; m_pDoc = NULL; m_nFacingDegCW = 0; }
+    CMarkObj() { m_mid = nullMid; m_pDoc = NULL; m_nFacingDegCW = uint16_t(0); }
     CMarkObj(CGamDoc* pDoc)
-        { m_mid = nullMid; m_pDoc = pDoc; m_nFacingDegCW = 0; }
+        { m_mid = nullMid; m_pDoc = pDoc; m_nFacingDegCW = uint16_t(0); }
 
 // Attributes
 public:
@@ -886,8 +886,8 @@ public:
 
     void SetMark(CRect& rct, MarkID mid);
 
-    void SetFacing(int nFacingDegCW) { m_nFacingDegCW = nFacingDegCW; }
-    int  GetFacing() { return m_nFacingDegCW; }
+    void SetFacing(uint16_t nFacingDegCW) { m_nFacingDegCW = nFacingDegCW; }
+    uint16_t GetFacing() { return m_nFacingDegCW; }
 
     void    SetObjectID(ObjectID dwID) { m_dwObjectID = dwID; }
     virtual ObjectID GetObjectID() const override { return m_dwObjectID; }
@@ -897,7 +897,7 @@ public:
     virtual enum CDrawObjType GetType() const override { return drawMarkObj; }
 protected:
     ObjectID m_dwObjectID;
-    int      m_nFacingDegCW;           // Rotation of marker (degrees)
+    uint16_t m_nFacingDegCW;           // Rotation of marker (degrees)
 
 // Operations
 public:

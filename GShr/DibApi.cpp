@@ -624,7 +624,7 @@ HBITMAP DIBToBitmap (HANDLE hDIB, HPALETTE hPal)
 
 ///////////////////////////////////////////////////////////////////////
 
-HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, int nBPP)
+HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 {
     HANDLE hDIB = NULL;
     if (!hBitmap)
@@ -664,7 +664,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, int nBPP)
         BYTE bmapInfo[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)];
         BITMAPINFO* pbmi = (BITMAPINFO*)&bmapInfo;      // Convenience pointer
         InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi,
-            bmapSrc.bmWidth, bmapSrc.bmHeight, 16);
+            bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
         InitColorTableMasksIfReqd(pbmi);
 
         // We need a reference DC for palette bitmaps
@@ -725,7 +725,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, int nBPP)
 
         // Changed to allow forces bits per pixel.
         InitBitmapInfoHeader(&bmInfoHdr, Bitmap.bmWidth, Bitmap.bmHeight,
-            nBPP == 0 ? Bitmap.bmPlanes * Bitmap.bmBitsPixel : nBPP);
+            nBPP == 0 ? value_preserving_cast<uint16_t>(Bitmap.bmPlanes * Bitmap.bmBitsPixel) : nBPP);
 
         // Now allocate memory for the DIB.  Then, set the BITMAPINFOHEADER
         // into this memory, and find out where the bitmap bits go.
@@ -811,7 +811,7 @@ HANDLE ConvertDIBSectionToDIB(HBITMAP hDibSect)
 ///////////////////////////////////////////////////////////////////////
 
 void InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr, DWORD dwWidth,
-    DWORD dwHeight, int nBPP)
+    DWORD dwHeight, uint16_t nBPP)
 {
     memset(lpBmInfoHdr, 0, sizeof(BITMAPINFOHEADER));
 
@@ -820,19 +820,19 @@ void InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr, DWORD dwWidth,
     lpBmInfoHdr->biHeight    = dwHeight;
     lpBmInfoHdr->biPlanes    = 1;
 
-    if (nBPP <= 1)
-        nBPP = 1;
-    else if (nBPP <= 4)
-        nBPP = 4;
-    else if (nBPP <= 8)
-        nBPP = 8;
-    else if (nBPP <= 16)
+    if (nBPP <= uint16_t(1))
+        nBPP = uint16_t(1);
+    else if (nBPP <= uint16_t(4))
+        nBPP = uint16_t(4);
+    else if (nBPP <= uint16_t(8))
+        nBPP = uint16_t(8);
+    else if (nBPP <= uint16_t(16))
     {
-        nBPP = 16;
+        nBPP = uint16_t(16);
         lpBmInfoHdr->biCompression = BI_BITFIELDS;
     }
     else
-        nBPP = 24;
+        nBPP = uint16_t(24);
 
     lpBmInfoHdr->biBitCount  = nBPP;
     lpBmInfoHdr->biSizeImage = WIDTHBYTES(dwWidth * nBPP) * dwHeight;

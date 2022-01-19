@@ -98,7 +98,7 @@ void CPieceTable::SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl)
     for (size_t i = 0; i < pPTbl.size(); i++)
     {
         PieceID pid = pPTbl.at(i);
-        GetPiece(pid).SetSide(0);          // Front is up
+        GetPiece(pid).SetSide(uint8_t(0));          // Front is up
     }
 }
 
@@ -167,12 +167,12 @@ void CPieceTable::CreatePlayingPieceTable()
 
 ///////////////////////////////////////////////////////////////////////
 
-void CPieceTable::SetPieceFacing(PieceID pid, int nFacingDegCW)
+void CPieceTable::SetPieceFacing(PieceID pid, uint16_t nFacingDegCW)
 {
     GetPiece(pid).SetFacing(nFacingDegCW);
 }
 
-int  CPieceTable::GetPieceFacing(PieceID pid)
+uint16_t CPieceTable::GetPieceFacing(PieceID pid)
 {
     return GetPiece(pid).GetFacing();
 }
@@ -243,7 +243,7 @@ void CPieceTable::SetOwnerMask(PieceID pid, DWORD dwMask)
 
 ///////////////////////////////////////////////////////////////////////
 
-void CPieceTable::SetPiece(PieceID pid, int nSide, int nFacing)
+void CPieceTable::SetPiece(PieceID pid, uint8_t nSide, uint16_t nFacing)
 {
     Piece& pPce = GetPiece(pid);
     pPce.SetSide(nSide);
@@ -300,7 +300,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
         return tidBase;
 
     // Handle rotated pieces...
-    return GetFacedTileID(pid, tidBase, pPce->GetFacing(), 0);
+    return GetFacedTileID(pid, tidBase, pPce->GetFacing(), uint8_t(0));
 }
 
 TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
@@ -315,7 +315,7 @@ TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
         return tidBase;
 
     // Handle rotated pieces...
-    return GetFacedTileID(pid, tidBase, pPce->GetFacing(), 0);
+    return GetFacedTileID(pid, tidBase, pPce->GetFacing(), uint8_t(0));
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -360,7 +360,7 @@ TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 
 ///////////////////////////////////////////////////////////////////////
 
-TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, int nFacing, int nSide) const
+TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing, uint8_t nSide) const
 {
     // Handle rotated pieces...
     ElementState state = MakePieceState(pid, nFacing, nSide);
@@ -508,7 +508,7 @@ void Piece::Serialize(CArchive& ar)
             BYTE chVal;
             ar >> chVal;
             m_nFacing = chVal;
-            m_nFacing *= 5;             // Convert to new degree format
+            m_nFacing *= uint16_t(5);             // Convert to new degree format
         }
         else
             ar >> m_nFacing;
@@ -554,8 +554,8 @@ void CPieceTable::DumpToTextFile(CFile& file)
 
 void Piece::SetUnused()
 {
-    m_nSide = 0xFF;
-    m_nFacing = 0;
+    m_nSide = uint8_t(0xFF);
+    m_nFacing = uint16_t(0);
 }
 
 

@@ -157,7 +157,7 @@ class CPieceSetFacing : public CMoveRecord
 {
 public:
     CPieceSetFacing() { m_eType = mrecPFacing; }
-    CPieceSetFacing(PieceID pid, int nFacingDegCW)
+    CPieceSetFacing(PieceID pid, uint16_t nFacingDegCW)
         { m_eType = mrecPFacing; m_pid = pid; m_nFacingDegCW = nFacingDegCW; }
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -173,7 +173,7 @@ public:
 #endif
 protected:
     PieceID     m_pid;
-    int         m_nFacingDegCW;
+    uint16_t    m_nFacingDegCW;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ class CMarkerSetFacing : public CMoveRecord
 {
 public:
     CMarkerSetFacing() { m_eType = mrecMFacing; }
-    CMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW);
+    CMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
 
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -219,7 +219,7 @@ public:
 protected:
     ObjectID    m_dwObjID;
     MarkID      m_mid;
-    int         m_nFacingDegCW;
+    uint16_t    m_nFacingDegCW;
 };
 
 ///////////////////////////////////////////////////////////////////////

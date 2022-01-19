@@ -2184,7 +2184,7 @@ BOOL CBrdEditView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
 
     if (bWin98 || bWinME)
     {
-        static UINT uWheelScrollLines = -1;
+        static UINT uWheelScrollLines = UINT(-1);
         if ((int)uWheelScrollLines < 0)
             ::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uWheelScrollLines, 0);
 

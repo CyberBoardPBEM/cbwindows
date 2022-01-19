@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 // ====================================================== //
 
-FNameID FNameTbl::AddFaceName(const char *pszFName, int iFamily)
+FNameID FNameTbl::AddFaceName(const char *pszFName, uint8_t iFamily)
 {
     FName oFName(pszFName, iFamily);
     return Register(std::move(oFName));
@@ -60,7 +60,7 @@ FNameID FNameTbl::operator[](size_t iFaceNum) const
 
 // ====================================================== //
 
-FName::FName(const char *pszFName, int iFamily)
+FName::FName(const char *pszFName, uint8_t iFamily)
 {
     strcpy(szFName, pszFName);
     this->iFamily = iFamily;

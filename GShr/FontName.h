@@ -36,14 +36,14 @@ class FName
 {
     friend class FNameTbl;
 protected:
-    int iFamily;                    // See LOGFONT FF_*
+    uint8_t iFamily;                    // See LOGFONT FF_*
     char szFName[LF_FACESIZE];      // Name of font
 public:
     // ---------- //
     bool operator==(const FName& rhs) const;
     // ---------- //
-    FName(void) { iFamily = 0; *szFName = 0; }
-    FName(const char *pszFName, int iFamily);
+    FName(void) { iFamily = uint8_t(0); *szFName = 0; }
+    FName(const char *pszFName, uint8_t iFamily);
     std::string ToString() const { return szFName; }
 };
 
@@ -52,11 +52,11 @@ public:
 class FNameTbl : private AtomList<FName>
 {
 public:
-    FNameID AddFaceName(const char *pszFName, int iFamily);
+    FNameID AddFaceName(const char *pszFName, uint8_t iFamily);
     const char *GetFaceName(FNameID id) const
         { return id == NULL ? NULL : (*id)->szFName;}
-    int GetFaceFamily(FNameID id) const
-        { return id == NULL ? 0 : (*id)->iFamily;}
+    uint8_t GetFaceFamily(FNameID id) const
+        { return id == NULL ? uint8_t(0) : (*id)->iFamily;}
     size_t GetSize() const { return size(); }
     FNameID operator[](size_t iFaceNum) const;
 };

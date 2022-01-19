@@ -36,6 +36,38 @@
 
 #include <WinExt.h>
 
+static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
+static_assert(std::is_same_v<uint16_t, WORD>, "wrong standard replacement for WORD");
+static_assert(std::is_same_v<unsigned int, UINT>, "wrong standard replacement for UINT");
+static_assert(std::is_same_v<long, LONG>, "wrong standard replacement for LONG");
+static_assert(std::is_same_v<intptr_t, INT_PTR>, "wrong standard replacement for INT_PTR");
+static_assert(std::is_same_v<uintptr_t, UINT_PTR>, "wrong standard replacement for UINT_PTR");
+#if defined(_WIN64)
+// unfortunately, these aren't true in 32bit
+static_assert(std::is_same_v<UINT_PTR, DWORD_PTR>, "inconsistent unsigned *_PTR types");
+static_assert(std::is_same_v<uintptr_t, DWORD_PTR>, "wrong standard replacement for DWORD_PTR");
+#else
+/* best we can do in 32bit, but this means we can't always use
+    uintptr_t, e.g., virtual function override doesn't work when
+    types aren't same */
+static_assert(std::is_unsigned_v<uintptr_t> == std::is_unsigned_v<DWORD_PTR> &&
+                    sizeof(uintptr_t) == sizeof(DWORD_PTR),
+                "wrong standard replacement for DWORD_PTR");
+#endif
+#if 0
+// unfortunately, these aren't true
+static_assert(std::is_same_v<uint32_t, DWORD>, "wrong standard replacement for DWORD");
+static_assert(std::is_same_v<int32_t, LONG>, "wrong standard replacement for LONG");
+#else
+// best we can do
+static_assert(std::is_unsigned_v<uint32_t> == std::is_unsigned_v<DWORD> &&
+                    sizeof(uint32_t) == sizeof(DWORD),
+                "wrong standard replacement for DWORD");
+static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
+                    sizeof(int32_t) == sizeof(LONG),
+                "wrong standard replacement for DWORD");
+#endif
+
 #if defined(_MSC_VER)
 // warning C4239 : nonstandard extension used : 'argument' : conversion from 'xxx' to 'xxx &'
 #pragma warning(error:  4239)
