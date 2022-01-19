@@ -58,7 +58,7 @@ FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
         return (FontID)0;
     return pFontTbl->AddFont(TenthPointsToScreenPixels(dlg.GetSize()),
         (dlg.IsBold()?taBold:0)|(dlg.IsItalic()?taItalic:0),
-        lf.lfPitchAndFamily & 0xF0, dlg.GetFaceName());
+        static_cast<uint8_t>(lf.lfPitchAndFamily & 0xF0), dlg.GetFaceName());
 }
 
 /////////////////////////////////////////////////////////////////
@@ -152,7 +152,7 @@ HBITMAP Create16BitDIBSection(HDC hDC, int nWidth, int nHeight)
 {
     BYTE bih[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
     BITMAPINFO* pbmi = (BITMAPINFO*)&bih;
-    InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi, nWidth, nHeight, 16);
+    InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi, nWidth, nHeight, uint16_t(16));
     InitColorTableMasksIfReqd(pbmi);
 
     HDC hLocalDC = hDC == NULL ? GetDC(NULL) : hDC;   // Get a DC if one not supplied
@@ -173,7 +173,7 @@ HBITMAP Create16BitDIBSection(HDC hDC, int nWidth, int nHeight)
 HBITMAP CreateRGBDIBSection(HDC hDC, int nWidth, int nHeight)
 {
     BITMAPINFOHEADER bih;
-    InitBitmapInfoHeader(&bih, nWidth, nHeight, 24);
+    InitBitmapInfoHeader(&bih, nWidth, nHeight, uint16_t(24));
 
     HDC hLocalDC = hDC == NULL ? GetDC(NULL) : hDC;   // Get a DC if one not supplied
 
@@ -857,7 +857,7 @@ CPalette* GetAppPalette()
 CPalette* CreateMergedPalette(CPalette* palPri, CPalette* palSec)
 {
     short nSizePri, nSizeSec;
-    int nPalSize = 256;
+    uint16_t nPalSize = uint16_t(256);
 
     palSec->GetObject(sizeof(short), &nSizeSec);
     palPri->GetObject(sizeof(short), &nSizePri);
@@ -971,7 +971,7 @@ static BYTE sysColors[20*3] =
     255, 255, 255,
 };
 
-void SetupIdentityPalette(int nNumColors, LPLOGPALETTE pPal)
+void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal)
 {
     pPal->palVersion = 0x300;
     pPal->palNumEntries = nNumColors;

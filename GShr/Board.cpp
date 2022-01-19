@@ -460,7 +460,7 @@ CBoardManager::CBoardManager()
     SetBackColor(RGB(255, 255, 255));
     SetLineWidth(3);
     m_fontID = CGamDoc::GetFontManager()->AddFont(TenthPointsToScreenPixels(100),
-        taBold, FF_SWISS, "Arial");
+        taBold, uint8_t(FF_SWISS), "Arial");
     // ------ //
     m_wReserved1 = 0;
     m_wReserved2 = 0;

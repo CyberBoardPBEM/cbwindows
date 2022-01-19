@@ -69,7 +69,7 @@ public:
     // -------- //
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
-    FontID AddFont(int iSize, int taFlgs, int iFamily, const char *pszFName);
+    FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const char *pszFName);
     void FillLogFontStruct(FontID id, LPLOGFONT pLF);
     HFONT GetFontHandle(FontID id);
     void ReleaseFontHandle(FontID id);

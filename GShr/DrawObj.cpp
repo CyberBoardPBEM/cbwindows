@@ -1547,23 +1547,21 @@ void CMarkObj::Serialize(CArchive& ar)
     {
         ar << m_dwObjectID;
         ar << m_mid;
-        ar << (WORD)m_nFacingDegCW;                                 //Ver2.0
+        ar << m_nFacingDegCW;                                 //Ver2.0
     }
     else
     {
-        WORD wTmp;
         m_pDoc = ((CGamDoc*)ar.m_pDocument);
         ar >> m_dwObjectID;
         ar >> m_mid;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))       //Ver2.0
         {
-            ar >> wTmp;
-            m_nFacingDegCW = wTmp;
+            ar >> m_nFacingDegCW;
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
-                m_nFacingDegCW *= 5;                                // Convert old value to degrees
+                m_nFacingDegCW *= uint16_t(5);                                // Convert old value to degrees
         }
         else
-            m_nFacingDegCW = 0;
+            m_nFacingDegCW = uint16_t(0);
     }
 }
 

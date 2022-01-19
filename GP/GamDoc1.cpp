@@ -529,7 +529,7 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray /* = TR
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
-    int nFacingDegCW)
+    uint16_t nFacingDegCW)
 {
     if (!IsQuietPlayback())
     {
@@ -555,7 +555,7 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd
 }
 
 void CGamDoc::ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
-    CPlayBoard* pPBrd, int nFacingDegCW)
+    CPlayBoard* pPBrd, uint16_t nFacingDegCW)
 {
     for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
@@ -574,7 +574,7 @@ void CGamDoc::ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_nul
 // the move file's game state it can occur. Therefore, I don't do
 // any record processing here.
 
-void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW)
+void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, uint16_t nFacingDegCW)
 {
     m_pPTbl->SetPieceFacing(pid, nFacingDegCW);
     CTraySet* pYGrp = FindPieceInTray(pid);
@@ -592,7 +592,7 @@ void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW)
 // (RECORDS)
 
 void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
-    int nFacingDegCW)
+    uint16_t nFacingDegCW)
 {
     if (!IsQuietPlayback())
     {

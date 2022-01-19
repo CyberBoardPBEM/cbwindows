@@ -51,7 +51,7 @@ inline WORD RGB565(COLORREF cref)
 inline COLORREF RGB565_TO_24(WORD clr16)
 {
     BYTE r = (((clr16 & 0xF800) >> 11) * 0xFF) / 0x1F;
-    BYTE g = (((clr16 & 0x7E0) >> 5) * 0xFF) / 0x3F;
+    BYTE g = static_cast<BYTE>((((clr16 & 0x7E0) >> 5) * 0xFF) / 0x3F);
     BYTE b = (( clr16 & 0x1F) * 0xFF) / 0x1F;
     return RGB(r, g, b);
 }
@@ -201,7 +201,7 @@ void AppendBitmap(CBitmap *pBMapTo, CBitmap *pBMapFrm, CPalette *pPalTo,
 void RemoveBitmapSlice(CBitmap *pBMap, int yPos, int iHt, CPalette *pPal = NULL);
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
 CPalette* CreateMergedPalette(CPalette* palPri, CPalette* palSec);
-void SetupIdentityPalette(int nNumColors, LPLOGPALETTE pPal);
+void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
 void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, PALETTEENTRY& pe);
 void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
 void BltThruDIB(CDC* pDCDst, int xDst, int yDst, int cx, int cy,

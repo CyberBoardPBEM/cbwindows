@@ -854,7 +854,7 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if (m_nCurToolID == ID_ITOOL_TEXT)
     {
         if (nChar != VK_BACK)
-            AddChar(nChar);
+            AddChar(value_preserving_cast<char>(nChar));
         else
             DelChar();
     }

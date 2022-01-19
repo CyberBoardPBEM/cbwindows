@@ -56,7 +56,7 @@ CTileManager::CTileManager()
     SetBackColor(RGB(255, 255, 255));
     SetLineWidth(1);
     m_fontID = CGamDoc::GetFontManager()->AddFont(TenthPointsToScreenPixels(80),
-        0, FF_SWISS, "Arial");
+        0, uint8_t(FF_SWISS), "Arial");
     // --------- //
     m_wReserved1 = 0;
     m_wReserved2 = 0;

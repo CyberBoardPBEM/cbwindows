@@ -335,15 +335,15 @@ BOOL CMainFrame::BuildAppGDIPalette()
 {
     ClearSystemPalette();
 
-    int nPalSize = 256;
-    LPLOGPALETTE pLP = (LPLOGPALETTE) new char[sizeof(LOGPALETTE) +
-        nPalSize * sizeof(PALETTEENTRY)];
+    uint16_t nPalSize = uint16_t(256);
+    std::vector<char> v((sizeof(LOGPALETTE) +
+        value_preserving_cast<size_t>(nPalSize * sizeof(PALETTEENTRY))));
+    LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
     SetupIdentityPalette(nPalSize, pLP);    // Start with speedy identity pal
     GenerateColorWash(&pLP->palPalEntry[10]);
 
     m_appPalette.DeleteObject();
     VERIFY(m_appPalette.CreatePalette(pLP));
-    delete pLP;
 
     return TRUE;
 }

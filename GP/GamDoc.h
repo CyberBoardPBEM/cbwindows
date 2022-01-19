@@ -344,9 +344,9 @@ public:
         PlacePos ePos = placeDefault);
     void RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos);
     void RecordPieceSetSide(PieceID pid, BOOL bTopUp);
-    void RecordPieceSetFacing(PieceID pid, int nFacingDegCW);
+    void RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW);
     void RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask);
-    void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW);
+    void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
     void RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
         MarkID mid, CPoint pnt, PlacePos ePos = placeDefault);
     void RecordPlotList(CPlayBoard* pPBrd);
@@ -383,12 +383,12 @@ public:
     void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
 
     void ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
-        int nFacingDegCW);
+        uint16_t nFacingDegCW);
     void ChangePlayingPieceFacingTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst,
-        CPlayBoard* pPBrd, int nFacingDegCW);
-    void ChangePlayingPieceFacingInTray(PieceID pid, int nFacingDegCW);
+        CPlayBoard* pPBrd, uint16_t nFacingDegCW);
+    void ChangePlayingPieceFacingInTray(PieceID pid, uint16_t nFacingDegCW);
     void ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
-        int nFacingDegCW);
+        uint16_t nFacingDegCW);
     void SetPieceOwnership(PieceID pid, DWORD dwOwnerMask);
     void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask);
 

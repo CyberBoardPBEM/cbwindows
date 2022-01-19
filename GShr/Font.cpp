@@ -49,7 +49,7 @@ CFontTbl::~CFontTbl(void)
 
 // ----------------------------------------------------- //
 
-FontID CFontTbl::AddFont(int iSize, int taFlgs, int iFamily,
+FontID CFontTbl::AddFont(int iSize, int taFlgs, uint8_t iFamily,
     const char *pszFName)
 {
     FNameID fnID = oFName.AddFaceName(pszFName, iFamily);
@@ -123,7 +123,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF)
     pLF->lfItalic = opFnt->IsItalic();
     pLF->lfUnderline = opFnt->IsULine();
     pLF->lfCharSet = DEFAULT_CHARSET;
-    pLF->lfPitchAndFamily = value_preserving_cast<BYTE>(oFName.GetFaceFamily(opFnt->fnID));
+    pLF->lfPitchAndFamily = oFName.GetFaceFamily(opFnt->fnID);
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
         strcpy(pLF->lfFaceName, pszFace);
@@ -187,7 +187,7 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
         ar >> wFamily;
         CString str;
         ar >> str;
-        rfontID = AddFont((int)wSize, (int)wFlags, (int)wFamily, str);
+        rfontID = AddFont((int)wSize, (int)wFlags, value_preserving_cast<uint8_t>(wFamily), str);
     }
 }
 

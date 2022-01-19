@@ -404,22 +404,20 @@ void CPieceSetFacing::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_pid;
-        ar << (WORD)m_nFacingDegCW;
+        ar << m_nFacingDegCW;
     }
     else
     {
-        WORD wTmp;
         ar >> m_pid;
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
         {
             BYTE cTmp;
             ar >> cTmp;
-            m_nFacingDegCW = 5 * (int)cTmp;
+            m_nFacingDegCW = value_preserving_cast<uint16_t>(5 * cTmp);
         }
         else
         {
-            ar >> wTmp;
-            m_nFacingDegCW = (int)wTmp;
+            ar >> m_nFacingDegCW;
         }
     }
 }
@@ -502,7 +500,7 @@ void CPieceSetOwnership::DumpToTextFile(CFile& file)
 /////////////////////////////////////////////////////////////////////
 // CMarkerSetFacing methods....
 
-CMarkerSetFacing::CMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW)
+CMarkerSetFacing::CMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW)
 {
     m_eType = mrecMFacing;
     m_dwObjID = dwObjID;
@@ -545,16 +543,15 @@ void CMarkerSetFacing::Serialize(CArchive& ar)              // VER2.0 is first t
     {
         ar << m_dwObjID;
         ar << m_mid;
-        ar << value_preserving_cast<WORD>(m_nFacingDegCW);
+        ar << m_nFacingDegCW;
     }
     else
     {
         ar >> m_dwObjID;
-        WORD wTmp;
         ar >> m_mid;
-        ar >> wTmp; m_nFacingDegCW = value_preserving_cast<int>(wTmp);
+        ar >> m_nFacingDegCW;
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
-            m_nFacingDegCW *= 5;                                // Convert old values to degrees
+            m_nFacingDegCW *= uint16_t(5);                                // Convert old values to degrees
     }
 }
 

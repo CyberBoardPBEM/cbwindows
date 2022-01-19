@@ -347,7 +347,7 @@ void CGamDoc::RecordPieceSetSide(PieceID pid, BOOL bTopUp)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordPieceSetFacing(PieceID pid, int nFacingDegCW)
+void CGamDoc::RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
@@ -369,7 +369,7 @@ void CGamDoc::RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, int nFacingDegCW)
+void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
