@@ -186,11 +186,16 @@ size_t CGeomorphicBoard::GetSpecialTileSet()
 void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                                 const CGeoBoardElement& gbeFrom)
 {
+    static const auto Odd = [](size_t x) {
+        return bool(x & size_t(1));
+    };
+
     size_t nCellRowOffset;
     size_t nCellColOffset;
     ComputeCellOffset(gbeFrom.GetRow(), gbeFrom.GetCol(), nCellRowOffset, nCellColOffset);
 
-    const CBoardArray& pBArryFrom = GetBoard(gbeFrom).GetBoardArray();
+    const CBoard& pBrdFrom = GetBoard(gbeFrom);
+    const CBoardArray& pBArryFrom = pBrdFrom.GetBoardArray();
 
     bool mergeTop = NeedsMerge(gbeFrom, Edge::Top);
     bool mergeLeft = NeedsMerge(gbeFrom, Edge::Left);
@@ -204,18 +209,71 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
             size_t nColTo = nCol + nCellColOffset;
 
             const BoardCell& pCellFrom = pBArryFrom.GetCell(nRow, nCol);
+            if (pBrdFrom.IsEmpty(pCellFrom))
+            {
+                continue;
+            }
             BoardCell& pCellTo = pBArryTo.GetCell(nRowTo, nColTo);
-            BOOL bMergeTheCell = (mergeLeft && nCol == size_t(0)) ||
-                                    (mergeTop && nRow == size_t(0));
+            bool mergeTopBottom = false;
+            bool mergeLeftRight = false;
+            if (mergeTop && nRow == size_t(0))
+            {
+                switch (pBArryFrom.GetCellForm(fullScale).GetCellType())
+                {
+                    case cformHexFlat:
+                        switch (pBrdFrom.GetStagger(Corner::TL))
+                        {
+                            case CellStagger::Out:
+                                mergeTopBottom = !Odd(nCol);
+                                break;
+                            case CellStagger::In:
+                                mergeTopBottom = Odd(nCol);
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        break;
+                    case cformHexPnt:
+                        mergeTopBottom = true;
+                        break;
+                    default:
+                        AfxThrowInvalidArgException();
+                }
+            }
+            if (mergeLeft && nCol == size_t(0))
+            {
+                switch (pBArryFrom.GetCellForm(fullScale).GetCellType())
+                {
+                    case cformHexPnt:
+                        switch (pBrdFrom.GetStagger(Corner::TL))
+                        {
+                            case CellStagger::Out:
+                                mergeTopBottom = !Odd(nRow);
+                                break;
+                            case CellStagger::In:
+                                mergeTopBottom = Odd(nRow);
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        break;
+                    case cformHexFlat:
+                        mergeLeftRight = true;
+                        break;
+                    default:
+                        AfxThrowInvalidArgException();
+                }
+            }
 
-            if (bMergeTheCell && pCellFrom != pCellTo)
+            if ((mergeLeftRight || mergeTopBottom) &&
+                pCellFrom != pCellTo)
             {
                 // We need to create a tile that has the half images of the
                 // two hex cells joined as one.
                 // We don't bother trying to perform 4-way merge for mergeLeft && mergeTop
                 CBitmap bmapFull;
                 CBitmap bmapHalf;
-                if (mergeLeft)
+                if (mergeLeftRight)
                 {
                     // Handle left and right halves
                     CombineLeftAndRight(bmapFull, fullScale, pBArryTo, pBArryFrom,
@@ -225,6 +283,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 }
                 else
                 {
+                    ASSERT(mergeTopBottom);
                     // Handle top and bottom halves
                     CombineTopAndBottom(bmapFull, fullScale, pBArryTo, pBArryFrom,
                         nRowTo, nColTo, nRow, nCol);
@@ -361,6 +420,14 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
         pnt.x += pBArray.GetWidth(fullScale);
         if (NeedsMerge(gbe, Edge::Right))
         {
+            const CGeoBoardElement& nextGbe = GetBoardElt(size_t(0), nCol + size_t(1));
+            const CBoard& nextBrd = GetBoard(nextGbe);
+            if (pBrd.IsGEVStyle(Edge::Right) ||
+                nextBrd.IsGEVStyle(Edge::Left))
+            {
+                // remove the width provided by the empty half-cell col
+                pnt.x -= sizeCell.cx / 2;
+            }
             pnt.x -= sizeCell.cx;               // A column is shared
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
@@ -381,6 +448,14 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
         pnt.y += pBArray.GetHeight(fullScale);
         if (NeedsMerge(gbe, Edge::Bottom))
         {
+            const CGeoBoardElement& nextGbe = GetBoardElt(nRow + size_t(1), size_t(0));
+            const CBoard& nextBrd = GetBoard(nextGbe);
+            if (pBrd.IsGEVStyle(Edge::Bottom) ||
+                nextBrd.IsGEVStyle(Edge::Top))
+            {
+                // remove the height provided by the empty half-cell row
+                pnt.y -= sizeCell.cy / 2;
+            }
             pnt.y -= sizeCell.cy;               // A row is shared
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
@@ -440,8 +515,9 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
 
 const CGeoBoardElement& CGeomorphicBoard::GetBoardElt(size_t nBoardRow, size_t nBoardCol) const
 {
+    ASSERT(nBoardRow < GetBoardRowCount() &&
+            nBoardCol < GetBoardColCount());
     size_t nGeoIndex = nBoardRow * m_nBoardColCount + nBoardCol;
-    ASSERT(nGeoIndex < m_nBoardRowCount * m_nBoardColCount);
     return (*this)[nGeoIndex];
 }
 
