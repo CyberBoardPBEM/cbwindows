@@ -165,6 +165,10 @@ public:
         stagger for all corners, not just top-left that
         CCellForm can provide */
     CellStagger GetStagger(Corner c) const;
+    /* recognize the Peter Lomax Ogre/GEV board style where "sticking
+        out" cells are empty, and rest of edge is filled */
+    bool IsGEVStyle(Edge e) const;
+    bool IsEmpty(const BoardCell& cell) const;
 #endif
 
 // Operations
@@ -201,6 +205,8 @@ protected:
         return nOverride == -1 ? m_bShowCellBorder : nOverride;
     }
 
+private:
+    bool IsGEVStyleHelper(Edge e) const;
 };
 
 //////////////////////////////////////////////////////////////////////

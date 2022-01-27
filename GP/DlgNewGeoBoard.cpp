@@ -47,7 +47,7 @@ CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* p
     //{{AFX_DATA_INIT(CCreateGeomorphicBoardDialog)
     //}}AFX_DATA_INIT
     m_pGeoBoard = NULL;
-    m_pRootMapCellForm = NULL;
+    m_pRootBoard = NULL;
     m_nCurrentRowHeight = size_t(0);
     m_nCurrentColumn = size_t(0);
     m_nMaxColumns = size_t(0);
@@ -124,12 +124,30 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
 
-        if (m_pRootMapCellForm != NULL)
+        if (m_pRootBoard != NULL)
         {
             // Already have at least one map selected. The rest must
             // comply with the geometry of the root one.
-            if (!m_pRootMapCellForm->CompareEqual(pCellForm))
+            const CBoardArray& rootBArray = m_pRootBoard->GetBoardArray();
+            const CCellForm& rootCellForm = rootBArray.GetCellForm(fullScale);
+            if (!rootCellForm.CompareEqual(pCellForm))
                 continue;
+            /* probably could handle GEV mismatch by making the
+                row/col check smarter, but don't bother until
+                someone provides a use case worth analyzing */
+            bool gevMismatch = false;
+            for (Edge e : { Edge::Top, Edge::Bottom, Edge::Left, Edge::Right })
+            {
+                if (pBrd.IsGEVStyle(e) != m_pRootBoard->IsGEVStyle(e))
+                {
+                    gevMismatch = true;
+                    break;
+                }
+            }
+            if (gevMismatch)
+            {
+                continue;
+            }
             if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray.GetCols())
                 continue;
             if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
@@ -149,7 +167,7 @@ void CCreateGeomorphicBoardDialog::UpdateButtons()
         (m_nCurrentColumn == m_nMaxColumns || m_nMaxColumns == size_t(0));
     m_btnOK.EnableWindow(bEnableOK);
 
-    if (m_pRootMapCellForm == NULL)
+    if (m_pRootBoard == NULL)
     {
         // Nothing added yet. Don't allow row break.
         m_btnAddBreak.EnableWindow(FALSE);
@@ -213,7 +231,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     ASSERT(nBrdNum != Invalid_v<size_t>);
     CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
     CBoardArray& pBArray = pBrd.GetBoardArray();
-    m_pRootMapCellForm = &pBArray.GetCellForm(fullScale);
+    m_pRootBoard = &pBrd;
 
     if (m_nMaxColumns == size_t(0))
         m_tblColWidth.push_back(pBArray.GetCols());
@@ -263,7 +281,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressClear()
     m_nCurrentColumn = size_t(0);
     m_nCurrentRowHeight = size_t(0);
     m_nRowNumber = size_t(0);
-    m_pRootMapCellForm = NULL;
+    m_pRootBoard = NULL;
     m_tblColWidth.clear();
 
     LoadBoardListWithCompliantBoards();
