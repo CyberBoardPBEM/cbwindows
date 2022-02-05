@@ -172,7 +172,7 @@ void CCellForm::CreateHexMask()
     //mskFile.Close();
 }
 
-void CCellForm::FindCell(LONG x, LONG y, CB::ssize_t& row, CB::ssize_t& col)
+void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
 {
     if (m_eType == cformHexPnt)
     {
