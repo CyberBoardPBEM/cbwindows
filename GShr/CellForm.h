@@ -70,7 +70,7 @@ public:
     void Clear();
     void CreateCell(CellFormType eType, int nParm1, int nParm2 = 0,
         int nStagger = 0);
-    void FindCell(LONG x, LONG y, CB::ssize_t& row, CB::ssize_t& col);
+    void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col);
     void FillCell(CDC* pDC, int xPos, int yPos);
     void FrameCell(CDC* pDC, int xPos, int yPos);
     CSize CalcBoardSize(size_t nRows, size_t nCols);
