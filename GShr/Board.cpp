@@ -23,6 +23,9 @@
 //
 
 #include    "stdafx.h"
+
+#include <functional>
+
 #ifdef      GPLAY
     #include    "Gp.h"
     #include    "GamDoc.h"
@@ -277,215 +280,133 @@ bool CBoard::IsGEVStyleHelper(Edge e) const
     switch (cellform.GetCellType())
     {
         case cformHexFlat:
-            if (ba.GetRows() < size_t(2))
-            {
-                return false;
-            }
-            switch (e)
-            {
-                case Edge::Top:
-                    switch (ba.GetCellForm(fullScale).GetCellStagger())
-                    {
-                        case CellStagger::Out:
-                            for (size_t i = size_t(0) ; i < ba.GetCols() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (!(IsEmpty(ba.GetCell(size_t(0), i)) &&
-                                            !IsEmpty(ba.GetCell(size_t(1), i))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (IsEmpty(ba.GetCell(size_t(0), i)))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        case CellStagger::In:
-                            for (size_t i = size_t(0) ; i < ba.GetCols() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (IsEmpty(ba.GetCell(size_t(0), i)))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!(IsEmpty(ba.GetCell(size_t(0), i)) &&
-                                            !IsEmpty(ba.GetCell(size_t(1), i))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        default:
-                            AfxThrowInvalidArgException();
-                    }
-                case Edge::Bottom:
-                    switch (ba.GetCellForm(fullScale).GetCellStagger())
-                    {
-                        case CellStagger::Out:
-                            for (size_t i = size_t(0) ; i < ba.GetCols() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (IsEmpty(ba.GetCell(ba.GetRows() - size_t(1), i)))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!(IsEmpty(ba.GetCell(ba.GetRows() - size_t(1), i)) &&
-                                            !IsEmpty(ba.GetCell(ba.GetRows() - size_t(2), i))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        case CellStagger::In:
-                            for (size_t i = size_t(0) ; i < ba.GetCols() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (!(IsEmpty(ba.GetCell(ba.GetRows() - size_t(1), i)) &&
-                                            !IsEmpty(ba.GetCell(ba.GetRows() - size_t(2), i))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (IsEmpty(ba.GetCell(ba.GetRows() - size_t(1), i)))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        default:
-                            AfxThrowInvalidArgException();
-                    }
-                case Edge::Left:
-                case Edge::Right:
-                    return false;
-                default:
-                    AfxThrowInvalidArgException();
-            }
         case cformHexPnt:
-            if (ba.GetCols() < size_t(2))
+        {
+            bool gevIsOddEmpty;
+            size_t fixedAxisOuter, fixedAxisInner;
+            size_t iterEnd;
+            std::function<const BoardCell& (size_t /* fixedAxis */, size_t /* iterAxis */)> GetCell;
+            if (cellform.GetCellType() == cformHexFlat)
             {
-                return false;
-            }
-            switch (e)
-            {
-                case Edge::Left:
-                    switch (ba.GetCellForm(fullScale).GetCellStagger())
-                    {
-                        case CellStagger::Out:
-                            for (size_t i = size_t(0) ; i < ba.GetRows() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (!(IsEmpty(ba.GetCell(i, size_t(0))) &&
-                                            !IsEmpty(ba.GetCell(i, size_t(1)))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (IsEmpty(ba.GetCell(i, size_t(0))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        case CellStagger::In:
-                            for (size_t i = size_t(0) ; i < ba.GetRows() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (IsEmpty(ba.GetCell(i, size_t(0))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!(IsEmpty(ba.GetCell(i, size_t(0))) &&
-                                            !IsEmpty(ba.GetCell(i, size_t(1)))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        case CellStagger::Invalid:
-                            AfxThrowInvalidArgException();
-                    }
-                case Edge::Right:
-                    switch (ba.GetCellForm(fullScale).GetCellStagger())
-                    {
-                        case CellStagger::Out:
-                            for (size_t i = size_t(0) ; i < ba.GetRows() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(1))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!(IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(1))) &&
-                                            !IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(2)))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        case CellStagger::In:
-                            for (size_t i = size_t(0) ; i < ba.GetRows() ; ++i)
-                            {
-                                if (!Odd(i))
-                                {
-                                    if (!(IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(1))) &&
-                                            !IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(1)))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (IsEmpty(ba.GetCell(i, ba.GetCols() - size_t(1))))
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        default:
-                            AfxThrowInvalidArgException();
-                    }
-                case Edge::Top:
-                case Edge::Bottom:
+                if (ba.GetRows() < size_t(2))
+                {
                     return false;
-                default:
-                    AfxThrowInvalidArgException();
+                }
+                switch (e)
+                {
+                    case Edge::Top:
+                        switch (ba.GetCellForm(fullScale).GetCellStagger())
+                        {
+                            case CellStagger::Out:
+                                gevIsOddEmpty = false;
+                                break;
+                            case CellStagger::In:
+                                gevIsOddEmpty = true;
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        fixedAxisOuter = size_t(0);
+                        fixedAxisInner = size_t(1);
+                        break;
+                    case Edge::Bottom:
+                        switch (ba.GetCellForm(fullScale).GetCellStagger())
+                        {
+                            case CellStagger::Out:
+                                gevIsOddEmpty = true;
+                                break;
+                            case CellStagger::In:
+                                gevIsOddEmpty = false;
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        fixedAxisOuter = ba.GetRows() - size_t(1);
+                        fixedAxisInner = ba.GetRows() - size_t(2);
+                        break;
+                    case Edge::Left:
+                    case Edge::Right:
+                        return false;
+                    default:
+                        AfxThrowInvalidArgException();
+                }
+                iterEnd = ba.GetCols();
+                GetCell = [&ba](size_t fixedAxis, size_t iterAxis)
+                {
+                    return std::ref(ba.GetCell(fixedAxis, iterAxis));
+                };
             }
+            else
+            {
+                ASSERT(cellform.GetCellType() == cformHexPnt);
+                if (ba.GetCols() < size_t(2))
+                {
+                    return false;
+                }
+                switch (e)
+                {
+                    case Edge::Left:
+                        switch (ba.GetCellForm(fullScale).GetCellStagger())
+                        {
+                            case CellStagger::Out:
+                                gevIsOddEmpty = false;
+                                break;
+                            case CellStagger::In:
+                                gevIsOddEmpty = true;
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        fixedAxisOuter = size_t(0);
+                        fixedAxisInner = size_t(1);
+                        break;
+                    case Edge::Right:
+                        switch (ba.GetCellForm(fullScale).GetCellStagger())
+                        {
+                            case CellStagger::Out:
+                                gevIsOddEmpty = true;
+                                break;
+                            case CellStagger::In:
+                                gevIsOddEmpty = false;
+                                break;
+                            default:
+                                AfxThrowInvalidArgException();
+                        }
+                        fixedAxisOuter = ba.GetCols() - size_t(1);
+                        fixedAxisInner = ba.GetCols() - size_t(2);
+                        break;
+                    case Edge::Top:
+                    case Edge::Bottom:
+                        return false;
+                    default:
+                        AfxThrowInvalidArgException();
+                }
+                iterEnd = ba.GetRows();
+                GetCell = [&ba](size_t fixedAxis, size_t iterAxis)
+                {
+                    return std::ref(ba.GetCell(iterAxis, fixedAxis));
+                };
+            }
+            for (size_t i = size_t(0) ; i < iterEnd ; ++i)
+            {
+                if (Odd(i) == gevIsOddEmpty)
+                {
+                    if (!(IsEmpty(GetCell(fixedAxisOuter, i)) &&
+                            !IsEmpty(ba.GetCell(fixedAxisInner, i))))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (IsEmpty(ba.GetCell(fixedAxisOuter, i)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
         default:
             AfxThrowInvalidArgException();
     }
