@@ -109,6 +109,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
 
     // All boards must use hexes and have an odd number of columns
     // or rows along the flat side of the hex.
+    // New option:  cformRect
     CBoardManager* pBMgr = m_pDoc->GetBoardManager();
 
     for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
@@ -118,13 +119,27 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
         const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
 
         if (!(pCellForm.GetCellType() == cformHexFlat ||
-              pCellForm.GetCellType() == cformHexPnt))
+              pCellForm.GetCellType() == cformHexPnt ||
+              pCellForm.GetCellType() == cformRect))
             continue;                           // These maps aren't compliant at all
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
 
-        for (auto r : { Rotation90::r0, Rotation90::r180 })
+        for (auto r : { Rotation90::r0, Rotation90::r90, Rotation90::r180, Rotation90::r270 })
         {
+            /* boards with square cells can be rotated 90/270
+                because the rotated cells will match the
+                original, all others only match when rotated
+                180 */
+            if (r == Rotation90::r90 || r == Rotation90::r270)
+            {
+                if (!(pCellForm.GetCellType() == cformRect &&
+                    pCellForm.GetCellSize().cx == pCellForm.GetCellSize().cy))
+                {
+                    continue;
+                }
+            }
+
             std::unique_ptr<CGeoBoardElement> ge(new CGeoBoardElement(Invalid_v<size_t>, Invalid_v<size_t>, pBrd.GetSerialNumber(), r));
             const CBoard& pBrd = pBMgr->Get(*ge);
             const CBoardArray& pBArray = pBrd.GetBoardArray();
@@ -160,7 +175,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
                 if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
                     continue;
             }
-            static const char* const suffix[] = { "", " - 90°", " - 180°", " - 270°" };
+            static const char* const suffix[] = { "", " -  90°", " - 180°", " - 270°" };
             int nItem = m_listBoard.AddString((std::string(pBrd.GetName()) + suffix[ptrdiff_t(r)]).c_str());
             m_listBoard.SetItemDataPtr(nItem, ge.release());
         }

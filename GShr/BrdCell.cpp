@@ -103,9 +103,21 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
     if (nParm1 == -1)
     {
         CSize size = GetCellSize(fullScale);
-        // Only the first paramter is used for hex definitions.
-        nParm1 = (eType == cformHexFlat) ? size.cy : size.cx;
-        nParm2 = 0;
+        switch (eType)
+        {
+            case cformRect:
+                nParm1 = size.cy;
+                nParm2 = size.cx;
+                break;
+            case cformHexFlat:
+            case cformHexPnt:
+                // Only the first paramter is used for hex definitions.
+                nParm1 = (eType == cformHexFlat) ? size.cy : size.cx;
+                nParm2 = 0;
+                break;
+            default:
+                AfxThrowInvalidArgException();
+        }
     }
 
     GenerateBoard(eType, nRows, nCols, nParm1, nParm2, nStagger, std::move(pMap));

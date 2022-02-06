@@ -279,6 +279,8 @@ bool CBoard::IsGEVStyleHelper(Edge e) const
     const CCellForm& cellform = ba.GetCellForm(fullScale);
     switch (cellform.GetCellType())
     {
+        case cformRect:
+            return false;
         case cformHexFlat:
         case cformHexPnt:
         {

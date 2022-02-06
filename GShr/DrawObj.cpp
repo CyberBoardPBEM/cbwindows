@@ -166,9 +166,17 @@ void CDrawObj::Rotate(Rotation90 rot)
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
+        case Rotation90::r90:
+            m_rctExtent = CRect(-m_rctExtent.bottom, m_rctExtent.left,
+                                -m_rctExtent.top, m_rctExtent.right);
+            break;
         case Rotation90::r180:
             m_rctExtent = CRect(-m_rctExtent.right, -m_rctExtent.bottom,
                                 -m_rctExtent.left, -m_rctExtent.top);
+            break;
+        case Rotation90::r270:
+            m_rctExtent = CRect(m_rctExtent.top, -m_rctExtent.right,
+                                m_rctExtent.bottom, -m_rctExtent.left);
             break;
         default:
             AfxThrowInvalidArgException();
@@ -725,11 +733,27 @@ void CPolyObj::Rotate(Rotation90 rot)
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
+        case Rotation90::r90:
+            for (POINT& pnt : m_Pnts)
+            {
+                long temp = pnt.y;
+                pnt.y = pnt.x;
+                pnt.x = -temp;
+            }
+            break;
         case Rotation90::r180:
             for (POINT& pnt : m_Pnts)
             {
                 pnt.x = -pnt.x;
                 pnt.y = -pnt.y;
+            }
+            break;
+        case Rotation90::r270:
+            for (POINT& pnt : m_Pnts)
+            {
+                long temp = pnt.y;
+                pnt.y = -pnt.x;
+                pnt.x = temp;
             }
             break;
         default:
@@ -891,12 +915,32 @@ void CLine::Rotate(Rotation90 rot)
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
+        case Rotation90::r90:
+        {
+            long temp = m_ptBeg.y;
+            m_ptBeg.y = m_ptBeg.x;
+            m_ptBeg.x = -temp;
+            temp = m_ptEnd.y;
+            m_ptEnd.y = m_ptEnd.x;
+            m_ptEnd.x = -temp;
+            break;
+        }
         case Rotation90::r180:
             m_ptBeg.x = -m_ptBeg.x;
             m_ptBeg.y = -m_ptBeg.y;
             m_ptEnd.x = -m_ptEnd.x;
             m_ptEnd.y = -m_ptEnd.y;
             break;
+        case Rotation90::r270:
+        {
+            long temp = m_ptBeg.y;
+            m_ptBeg.y = -m_ptBeg.x;
+            m_ptBeg.x = temp;
+            temp = m_ptEnd.y;
+            m_ptEnd.y = -m_ptEnd.x;
+            m_ptEnd.x = temp;
+            break;
+        }
         default:
             AfxThrowInvalidArgException();
     }
@@ -1097,7 +1141,10 @@ void CBitmapImage::Rotate(Rotation90 rot)
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
-        case Rotation90::r180: {
+        case Rotation90::r90:
+        case Rotation90::r180:
+        case Rotation90::r270:
+        {
             ::OwnerPtr<CBitmap> bmpRot = ::Rotate(m_bitmap, rot);
             m_bitmap.DeleteObject();
             m_bitmap.Attach(bmpRot->Detach());
@@ -1217,7 +1264,9 @@ void CTileImage::Rotate(Rotation90 rot)
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
+        case Rotation90::r90:
         case Rotation90::r180:
+        case Rotation90::r270:
             // need to replace tile
             m_tid = m_pTMgr->Get(m_tid, rot);
             break;
@@ -1341,9 +1390,17 @@ void CText::Rotate(Rotation90 rot)
             m_geoRot = 0;
             m_geoOffset = CSize(0, 0);
             break;
+        case Rotation90::r90:
+            m_geoRot = 90;
+            m_geoOffset = CSize(m_rctExtent.right - m_rctExtent.left, 0);
+            break;
         case Rotation90::r180:
             m_geoRot = 180;
             m_geoOffset = m_rctExtent.BottomRight() - m_rctExtent.TopLeft();
+            break;
+        case Rotation90::r270:
+            m_geoRot = 270;
+            m_geoOffset = CSize(0, m_rctExtent.bottom - m_rctExtent.top);
             break;
         default:
             AfxThrowInvalidArgException();
@@ -2215,6 +2272,7 @@ void CDrawList::AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot,
     {
         const CDrawObj& pDObj = **pos;
         CDrawObj::OwnerPtr pObjClone = pDObj.Clone();
+        // order matters:  rotate, then offset
         if (rot != Rotation90::r0)
         {
             pObjClone->Rotate(rot);

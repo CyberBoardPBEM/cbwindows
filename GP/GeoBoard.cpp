@@ -226,6 +226,8 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
             {
                 switch (pBArryFrom.GetCellForm(fullScale).GetCellType())
                 {
+                    case CellFormType::cformRect:
+                        break;
                     case cformHexFlat:
                         switch (pBrdFrom.GetStagger(Corner::TL))
                         {
@@ -250,6 +252,8 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
             {
                 switch (pBArryFrom.GetCellForm(fullScale).GetCellType())
                 {
+                    case CellFormType::cformRect:
+                        break;
                     case cformHexPnt:
                         switch (pBrdFrom.GetStagger(Corner::TL))
                         {
@@ -547,6 +551,9 @@ namespace
         CPoint offset;
         switch (r)
         {
+            case Rotation90::r90:
+                offset = CPoint(board.GetHeight(fullScale), 0);
+                break;
             case Rotation90::r180:
             {
                 offset = CPoint(board.GetWidth(fullScale), board.GetHeight(fullScale));
@@ -578,6 +585,9 @@ namespace
                 }
                 break;
             }
+            case Rotation90::r270:
+                offset = CPoint(0, board.GetWidth(fullScale));
+                break;
             default:
                 AfxThrowInvalidArgException();
         }
@@ -623,17 +633,56 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
 
     switch (r)
     {
+        case Rotation90::r90:
         case Rotation90::r180:
+        case Rotation90::r270:
         {
             pNewBoard->SetBaseDrawing(Rotate(*this, &CBoard::GetBaseDrawing, r));
 
             const CBoardArray& srcBoardArray = GetBoardArray();
             const CCellForm& srcCellForm = srcBoardArray.GetCellForm(fullScale);
-            CBoardArray& dstBoardArray = pNewBoard->GetBoardArray();
-            CellStagger dstStagger = srcCellForm.GetCellStagger();
-            int parm1, parm2 = 0;
+            // should have been blocked by DglNewGeoBoard, but just in case...
             switch (srcCellForm.GetCellType())
             {
+                case cformRect:
+                    if (r != Rotation90::r180 &&
+                        srcCellForm.GetCellSize().cx != srcCellForm.GetCellSize().cy)
+                    {
+                        AfxThrowInvalidArgException();
+                    }
+                    break;
+                default:
+                    if (r != Rotation90::r180)
+                    {
+                        AfxThrowInvalidArgException();
+                    }
+            }
+            CBoardArray& dstBoardArray = pNewBoard->GetBoardArray();
+            CellStagger dstStagger = srcCellForm.GetCellStagger();
+            int parm1 = -1, parm2 = 0;
+            size_t rows = Invalid_v<size_t>, cols = Invalid_v<size_t>;
+            switch (srcCellForm.GetCellType())
+            {
+                case cformRect:
+                    switch (r)
+                    {
+                        case Rotation90::r90:
+                        case Rotation90::r270:
+                            parm1 = srcCellForm.GetCellSize().cx;
+                            parm2 = srcCellForm.GetCellSize().cy;
+                            rows = srcBoardArray.GetCols();
+                            cols = srcBoardArray.GetRows();
+                            break;
+                        case Rotation90::r180:
+                            parm1 = srcCellForm.GetCellSize().cy;
+                            parm2 = srcCellForm.GetCellSize().cx;
+                            rows = srcBoardArray.GetRows();
+                            cols = srcBoardArray.GetCols();
+                            break;
+                        default:
+                            ASSERT(!"impossible");
+                    }
+                    break;
                 case cformHexFlat:
                     if (Odd(srcBoardArray.GetCols()) &&
                         !(IsGEVStyle(Edge::Top) || IsGEVStyle(Edge::Bottom)))
@@ -641,6 +690,8 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                         dstStagger = ~dstStagger;
                     }
                     parm1 = srcCellForm.GetCellSize().cy;
+                    rows = srcBoardArray.GetRows();
+                    cols = srcBoardArray.GetCols();
                     break;
                 case cformHexPnt:
                     if (Odd(srcBoardArray.GetRows()) &&
@@ -649,12 +700,14 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                         dstStagger = ~dstStagger;
                     }
                     parm1 = srcCellForm.GetCellSize().cx;
+                    rows = srcBoardArray.GetRows();
+                    cols = srcBoardArray.GetCols();
                     break;
                 default:
                     AfxThrowInvalidArgException();
             }
             dstBoardArray.CreateBoard(srcCellForm.GetCellType(),
-                                        srcBoardArray.GetRows(), srcBoardArray.GetCols(),
+                                        rows, cols,
                                         parm1, parm2,
                                         dstStagger);
             CTileManager& tileMgr = *pNewBoard->m_pTMgr;
@@ -662,9 +715,26 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
             {
                 for (size_t srcX = size_t(0) ; srcX < srcBoardArray.GetCols(); ++srcX)
                 {
-                    size_t destX = srcBoardArray.GetCols() - size_t(1) - srcX;
-                    size_t destY = srcBoardArray.GetRows() - size_t(1) - srcY;
-                    // preserve the GEVStyle edge
+                    size_t destX = Invalid_v<size_t>;
+                    size_t destY = Invalid_v<size_t>;
+                    switch (r)
+                    {
+                        case Rotation90::r90:
+                            destY = srcX;
+                            destX = srcBoardArray.GetRows() - size_t(1) - srcY;
+                            break;
+                        case Rotation90::r180:
+                            destX = srcBoardArray.GetCols() - size_t(1) - srcX;
+                            destY = srcBoardArray.GetRows() - size_t(1) - srcY;
+                            break;
+                        case Rotation90::r270:
+                            destY = srcBoardArray.GetCols() - size_t(1) - srcX;
+                            destX = srcY;
+                            break;
+                        default:
+                            ASSERT(!"impossible");
+                    }
+                    // preserve the GEVStyle edge so the maps are compatible
                     if (srcCellForm.GetCellType() == cformHexFlat)
                     {
                         if (srcCellForm.GetCellStagger() == CellStagger::Out)
@@ -871,6 +941,8 @@ bool CGeomorphicBoard::NeedsMerge(const CGeoBoardElement& gbe, Edge e) const
             const CBoardArray& nextBArray = nextBrd.GetBoardArray();
             switch (bArray.GetCellForm(fullScale).GetCellType())
             {
+                case cformRect:
+                    return false;
                 case cformHexFlat:
                 case cformHexPnt:
                     return brd.GetStagger(Corner::BL) == nextBrd.GetStagger(Corner::TL);
@@ -897,6 +969,8 @@ bool CGeomorphicBoard::NeedsMerge(const CGeoBoardElement& gbe, Edge e) const
             const CBoardArray& nextBArray = nextBrd.GetBoardArray();
             switch (bArray.GetCellForm(fullScale).GetCellType())
             {
+                case cformRect:
+                    return false;
                 case cformHexFlat:
                 case cformHexPnt:
                     return brd.GetStagger(Corner::TR) == nextBrd.GetStagger(Corner::TL);
