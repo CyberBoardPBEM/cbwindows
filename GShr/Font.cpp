@@ -126,6 +126,8 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
     const char *pszFace;
 
     memset(pLF, 0, sizeof(LOGFONT));
+    // need TrueType for rotated text
+    pLF->lfOutPrecision = angle == 0 ? 0 : OUT_TT_ONLY_PRECIS;
     pLF->lfOrientation = pLF->lfEscapement = -angle*10;
     pLF->lfHeight = -(opFnt->iTypeSize);
     pLF->lfWeight = opFnt->IsBold() ? FW_BOLD : FW_NORMAL;
