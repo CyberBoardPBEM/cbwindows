@@ -612,7 +612,9 @@ void CGamDoc::Serialize(CArchive& ar)
             ar >> verMajor;
             ar >> verMinor;
             if (NumVersion(verMajor, verMinor) >
-                NumVersion(fileGbxVerMajor, fileGbxVerMinor))
+                NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
+                // file 3.90 is the same as 3.10
+                NumVersion(verMajor, verMinor) != NumVersion(3, 90))
             {
                 AfxMessageBox(IDS_ERR_GAMEBOXNEWER, MB_OK | MB_ICONEXCLAMATION);
                 AfxThrowArchiveException(CArchiveException::genericException);

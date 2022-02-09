@@ -133,7 +133,9 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         ar >> verMajor;
         ar >> verMinor;
         if (NumVersion(verMajor, verMinor) >
-            NumVersion(fileGmvVerMajor, fileGmvVerMinor))
+            NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
+            // file 3.90 is the same as 3.10
+            NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
             AfxMessageBox(IDS_ERR_GAMENEWER, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
@@ -505,7 +507,9 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
         ar >> verMajor;
         ar >> verMinor;
         if (NumVersion(verMajor, verMinor) >
-            NumVersion(fileGsnVerMajor, fileGsnVerMinor))
+            NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
+            // file 3.90 is the same as 3.10
+            NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
             AfxMessageBox(IDS_ERR_SCENARIONEWER, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);

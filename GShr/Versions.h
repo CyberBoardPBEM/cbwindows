@@ -5,6 +5,11 @@
 // wsu20210731
 //      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
 //
+// wsu20220208:  This version has been reverted.
+//                  (It is equivalent to 3.10, so we will no
+//                  longer create v 3.90 files to preserve
+//                  compatibility with released CB 3.10 unless
+//                  later features are enabled.)
 // DLL20100103
 //      3.90 - Stripped out XtremeToolkit C++ code. MORE TO COME.
 //
@@ -102,7 +107,7 @@ inline int GetSaveFileVersion()
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        return ffp.id32cb64 ? NumVersion(4, 0) : NumVersion(3, 90);
+        return ffp.id32cb64 ? NumVersion(4, 0) : NumVersion(3, 10);
     }();
     return retval;
 }
@@ -184,8 +189,8 @@ namespace CB { namespace Impl
         ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         if (GetVersion(ar) <= NumVersion(3, 90))
         {
-            // ASSERT(GetVersion(ar) < NumVersion(3, 90) --> ar.IsLoading());
-            ASSERT(GetVersion(ar) == NumVersion(3, 90) || ar.IsLoading());
+            // ASSERT(GetVersion(ar) < NumVersion(3, 10) --> ar.IsLoading());
+            ASSERT(GetVersion(ar) == NumVersion(3, 10) || ar.IsLoading());
             return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
         }
         else
