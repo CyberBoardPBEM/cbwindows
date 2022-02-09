@@ -115,7 +115,9 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar >> verMajor;
         ar >> verMinor;
         if (NumVersion(verMajor, verMinor) >
-            NumVersion(fileGbxVerMajor, fileGbxVerMinor))
+            NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
+            // file 3.90 is the same as 3.10
+            NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
             strErr.LoadString(IDS_ERR_GAMEBOXNEWER);
             return FALSE;
