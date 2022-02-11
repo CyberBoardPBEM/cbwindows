@@ -37,4 +37,7 @@ jobs:
         msbuild zlib\zLib.vcxproj /property:Configuration=Debug /target:build
         msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /target:build
         msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /target:build
+        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
+        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
+        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
 
