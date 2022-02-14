@@ -483,6 +483,19 @@ void CPlayBoard::Serialize(CArchive& ar)
     }
 }
 
+std::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+{
+    if (!m_pGeoBoard)
+    {
+        const CBoardArray& pba = GetBoard()->GetBoardArray();
+        return pba.GetCellNumberStr(pnt, eScale);
+    }
+    else
+    {
+        return m_pGeoBoard->GetCellNumberStr(pnt, eScale);
+    }
+}
+
 void CPlayBoard::DeleteGeoBoard::operator()(CGeomorphicBoard* p) const
 {
     if (p)

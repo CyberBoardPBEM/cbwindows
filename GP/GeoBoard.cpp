@@ -76,6 +76,118 @@ void CGeoBoardElement::Serialize(CArchive& ar)
     }
 }
 
+std::string CGeoBoardElement::GetCellNumberStr(const CBoardManager& brdMgr,
+                            size_t row, size_t col) const
+{
+    static const auto Odd = [](size_t x)
+    {
+        return bool(x & size_t(1));
+    };
+
+    // get the original board array
+    size_t index = brdMgr.FindBoardBySerial(m_nBoardSerialNum);
+    const CBoard& board = brdMgr.GetBoard(index);
+    const CBoardArray& ba = board.GetBoardArray();
+    const CCellForm& cellForm = ba.GetCellForm(fullScale);
+
+    // undo the Clone() GEV-style logic
+    if (m_rotation != Rotation90::r0)
+    {
+        if (cellForm.GetCellType() == cformHexFlat)
+        {
+            if (cellForm.GetCellStagger() == CellStagger::Out)
+            {
+                if (board.IsGEVStyle(Edge::Bottom) &&
+                    Odd(col))
+                {
+                    row = (row + size_t(1)) % ba.GetRows();
+                }
+                else if (board.IsGEVStyle(Edge::Top) &&
+                    !Odd(col))
+                {
+                    // avoid arithmetic overflow trouble
+                    row = (row + ba.GetRows() - size_t(1)) % ba.GetRows();
+                }
+            }
+            else
+            {
+                ASSERT(!"untested code");
+                ASSERT(cellForm.GetCellStagger() == CellStagger::In);
+                if (board.IsGEVStyle(Edge::Bottom) &&
+                    !Odd(col))
+                {
+                    row = (row + size_t(1)) % ba.GetRows();
+                }
+                else if (board.IsGEVStyle(Edge::Top) &&
+                    Odd(col))
+                {
+                    // avoid arithmetic overflow trouble
+                    row = (row + ba.GetRows() - size_t(1)) % ba.GetRows();
+                }
+            }
+        }
+        else if (cellForm.GetCellType() == cformHexPnt)
+        {
+            if (cellForm.GetCellStagger() == CellStagger::Out)
+            {
+                if (board.IsGEVStyle(Edge::Right) &&
+                    Odd(row))
+                {
+                    col = (col + size_t(1)) % ba.GetCols();
+                }
+                else if (board.IsGEVStyle(Edge::Left) &&
+                    !Odd(row))
+                {
+                    // avoid arithmetic overflow trouble
+                    col = (col + ba.GetCols() - size_t(1)) % ba.GetCols();
+                }
+            }
+            else
+            {
+                ASSERT(cellForm.GetCellStagger() == CellStagger::In);
+                if (board.IsGEVStyle(Edge::Right) &&
+                    !Odd(row))
+                {
+                    col = (col + size_t(1)) % ba.GetCols();
+                }
+                else if (board.IsGEVStyle(Edge::Left) &&
+                    Odd(row))
+                {
+                    // avoid arithmetic overflow trouble
+                    col = (col + ba.GetCols() - size_t(1)) % ba.GetCols();
+                }
+            }
+        }
+    }
+
+    // undo the Clone() rotation logic
+    size_t temp;
+    switch (m_rotation)
+    {
+        case Rotation90::r0:
+            break;
+        case Rotation90::r90:
+            temp = row;
+            row = ba.GetCols() - size_t(1) - col;
+            col = temp;
+            break;
+        case Rotation90::r180:
+            row = ba.GetRows() - size_t(1) - row;
+            col = ba.GetCols() - size_t(1) - col;
+            break;
+        case Rotation90::r270:
+            temp = row;
+            row = col;
+            col = ba.GetRows() - size_t(1) - temp;
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+
+    // return original cell's cell number
+    return ba.GetCellNumberStr(row, col);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -166,6 +278,98 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             }
         }
     }
+
+    // 5) fill in m_rowToBoardRow/m_colToBoardCol
+    size_t row, col;
+    ComputeNewBoardDimensions(row, col);
+    m_rowToBoardRow.resize(row);
+    m_colToBoardCol.resize(col);
+    for (size_t boardRow = size_t(0) ; boardRow < GetBoardRowCount() ; ++boardRow)
+    {
+        ComputeCellOffset(boardRow, size_t(0), row, col);
+        const CBoard& unit = GetBoard(boardRow, size_t(0));
+        const CBoardArray& ba = unit.GetBoardArray();
+        CellFormType cf = ba.GetCellForm(fullScale).GetCellType();
+        for (size_t i = size_t(0) ; i < ba.GetRows() ; ++i)
+        {
+            switch (cf)
+            {
+                case cformRect:
+                    m_rowToBoardRow[row + i][0].boardCoord = boardRow;
+                    m_rowToBoardRow[row + i][0].subBoardCoord = i;
+                    m_rowToBoardRow[row + i][1].boardCoord = boardRow;
+                    m_rowToBoardRow[row + i][1].subBoardCoord = i;
+                    break;
+                case cformHexFlat:
+                case cformHexPnt:
+                    if (i == size_t(0))
+                    {
+                        m_rowToBoardRow[row + i][1].boardCoord = boardRow;
+                        m_rowToBoardRow[row + i][1].subBoardCoord = i;
+                    }
+                    else if (i == ba.GetRows() - size_t(1))
+                    {
+                        m_rowToBoardRow[row + i][0].boardCoord = boardRow;
+                        m_rowToBoardRow[row + i][0].subBoardCoord = i;
+                    }
+                    else
+                    {
+                        m_rowToBoardRow[row + i][0].boardCoord = boardRow;
+                        m_rowToBoardRow[row + i][0].subBoardCoord = i;
+                        m_rowToBoardRow[row + i][1].boardCoord = boardRow;
+                        m_rowToBoardRow[row + i][1].subBoardCoord = i;
+                    }
+                    break;
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        }
+    }
+    m_rowToBoardRow.front()[0] = m_rowToBoardRow.front()[1];
+    m_rowToBoardRow.back()[1] = m_rowToBoardRow.back()[0];
+    for (size_t boardCol = size_t(0) ; boardCol < GetBoardColCount() ; ++boardCol)
+    {
+        ComputeCellOffset(size_t(0), boardCol, row, col);
+        const CBoard& unit = GetBoard(size_t(0), boardCol);
+        const CBoardArray& ba = unit.GetBoardArray();
+        CellFormType cf = ba.GetCellForm(fullScale).GetCellType();
+        for (size_t i = size_t(0) ; i < ba.GetCols() ; ++i)
+        {
+            switch (cf)
+            {
+                case cformRect:
+                    m_colToBoardCol[col + i][0].boardCoord = boardCol;
+                    m_colToBoardCol[col + i][0].subBoardCoord = i;
+                    m_colToBoardCol[col + i][1].boardCoord = boardCol;
+                    m_colToBoardCol[col + i][1].subBoardCoord = i;
+                    break;
+                case cformHexFlat:
+                case cformHexPnt:
+                    if (i == size_t(0))
+                    {
+                        m_colToBoardCol[col + i][1].boardCoord = boardCol;
+                        m_colToBoardCol[col + i][1].subBoardCoord = i;
+                    }
+                    else if (i == ba.GetCols() - size_t(1))
+                    {
+                        m_colToBoardCol[col + i][0].boardCoord = boardCol;
+                        m_colToBoardCol[col + i][0].subBoardCoord = i;
+                    }
+                    else
+                    {
+                        m_colToBoardCol[col + i][0].boardCoord = boardCol;
+                        m_colToBoardCol[col + i][0].subBoardCoord = i;
+                        m_colToBoardCol[col + i][1].boardCoord = boardCol;
+                        m_colToBoardCol[col + i][1].subBoardCoord = i;
+                    }
+                    break;
+                default:
+                    AfxThrowInvalidArgException();
+            }
+        }
+    }
+    m_colToBoardCol.front()[0] = m_colToBoardCol.front()[1];
+    m_colToBoardCol.back()[1] = m_colToBoardCol.back()[0];
 
     return pBrdNew;
 }
@@ -918,6 +1122,61 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
     }
 }
 
+std::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+{
+    // find sub-board containing pnt
+    const CBoardManager& brdMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    size_t index = brdMgr.FindBoardBySerial(m_nSerialNum);
+    const CBoard& brd = brdMgr.GetBoard(index);
+    const CBoardArray& ba = brd.GetBoardArray();
+    size_t overallRow, overallCol;
+    if (!ba.FindCell(pnt.x, pnt.y, overallRow, overallCol, eScale))
+    {
+        return std::string();
+    }
+    const CCellForm& cf = ba.GetCellForm(eScale);
+    // find which quadrant of cell
+    CRect rect = cf.GetRect(value_preserving_cast<CB::ssize_t>(overallRow),
+                            value_preserving_cast<CB::ssize_t>(overallCol));
+    ASSERT(PtInRect(rect, pnt));
+    Edge tb = pnt.y < (rect.top + rect.bottom)/2 ? Edge::Top : Edge::Bottom;
+    size_t tbCvt = tb == Edge::Top ? size_t(0) : size_t(1);
+    Edge lr = pnt.x < (rect.left + rect.right)/2 ? Edge::Left : Edge::Right;
+    size_t lrCvt = lr == Edge::Left ? size_t(0) : size_t(1);
+    // get subboard corresponding to quadrant
+    const CGeoBoardElement& gbe = GetBoardElt(m_rowToBoardRow[overallRow][tbCvt].boardCoord,
+                                                m_colToBoardCol[overallCol][lrCvt].boardCoord);
+    const CBoard& unitBoard = GetBoard(gbe);
+    const CBoardArray& unitBA = unitBoard.GetBoardArray();
+    /* if the cell is a GEV-style non-cell,
+                and another board shares the cell,
+            use the other board's cell instead */
+    size_t row = m_rowToBoardRow[overallRow][tbCvt].subBoardCoord;
+    size_t col = m_colToBoardCol[overallCol][lrCvt].subBoardCoord;
+    if (unitBoard.IsEmpty(unitBA.GetCell(row, col)))
+    {
+        if ((row == size_t(0) && unitBoard.IsGEVStyle(Edge::Top) ||
+                row == unitBA.GetRows() - size_t(1) && unitBoard.IsGEVStyle(Edge::Bottom)) &&
+            m_rowToBoardRow[overallRow][size_t(0)] != m_rowToBoardRow[overallRow][size_t(1)])
+        {
+            const CGeoBoardElement& otherGbe = GetBoardElt(m_rowToBoardRow[overallRow][size_t(1) - tbCvt].boardCoord,
+                                                            m_colToBoardCol[overallCol][lrCvt].boardCoord);
+            size_t otherRow = m_rowToBoardRow[overallRow][size_t(1) - tbCvt].subBoardCoord;
+            return otherGbe.GetCellNumberStr(brdMgr, otherRow, col);
+        }
+        else if ((col == size_t(0) && unitBoard.IsGEVStyle(Edge::Left) ||
+                    col == unitBA.GetCols() - size_t(1) && unitBoard.IsGEVStyle(Edge::Right)) &&
+            m_colToBoardCol[overallCol][size_t(1)] != m_colToBoardCol[overallCol][size_t(1)])
+        {
+            const CGeoBoardElement& otherGbe = GetBoardElt(m_rowToBoardRow[overallRow][tbCvt].boardCoord,
+                                                            m_colToBoardCol[overallCol][size_t(1) - lrCvt].boardCoord);
+            size_t otherCol = m_colToBoardCol[overallCol][size_t(1) - lrCvt].subBoardCoord;
+            return otherGbe.GetCellNumberStr(brdMgr, row, otherCol);
+        }
+    }
+    return gbe.GetCellNumberStr(brdMgr, row, col);
+}
+
 bool CGeomorphicBoard::NeedsMerge(const CGeoBoardElement& gbe, Edge e) const
 {
     switch (e)
@@ -982,4 +1241,10 @@ bool CGeomorphicBoard::NeedsMerge(const CGeoBoardElement& gbe, Edge e) const
         default:
             AfxThrowInvalidArgException();
     }
+}
+
+bool CGeomorphicBoard::BoardToSubBoard::operator==(const BoardToSubBoard& rhs) const
+{
+    return boardCoord == rhs.boardCoord &&
+            subBoardCoord == rhs.subBoardCoord;
 }

@@ -25,6 +25,8 @@
 #ifndef _GEOBOARD_H
 #define _GEOBOARD_H
 
+#include <array>
+
 /////////////////////////////////////////////////////////////////////////////
 
 class CBoard;
@@ -53,6 +55,8 @@ public:
 
 public:
     void Serialize(CArchive& ar);
+    std::string GetCellNumberStr(const CBoardManager& brdMgr,
+                                size_t row, size_t col) const;
 
 private:
     const size_t m_row;
@@ -91,6 +95,8 @@ public:
 
     void Serialize(CArchive& ar);
 
+    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+
 // Implementation - methods
 protected:
     const CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol) const
@@ -123,6 +129,28 @@ protected:
     size_t m_nBoardColCount;          // Number of boards horizontally
 
     RefPtr<CGamDoc> m_pDoc;                    // Used internally
+
+private:
+    // convert from overall row,col to GeoBoardElement row,col
+    // remember some cells are merged, so have two identities
+    struct BoardToSubBoard
+    {
+        size_t boardCoord = Invalid_v<size_t>;
+        size_t subBoardCoord = Invalid_v<size_t>;
+
+        BoardToSubBoard() = default;
+        ~BoardToSubBoard() = default;
+
+        bool operator==(const BoardToSubBoard& rhs) const;
+        bool operator!=(const BoardToSubBoard& rhs) const
+        {
+            return !(*this == rhs);
+        }
+    };
+    /* arr[x][0] is top or left half of hex,
+        arr[x][1] is right or bottom half of hex */
+    std::vector<std::array<BoardToSubBoard, 2>> m_rowToBoardRow;
+    std::vector<std::array<BoardToSubBoard, 2>> m_colToBoardCol;
 };
 
 #endif
