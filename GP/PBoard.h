@@ -134,6 +134,8 @@ public:
     // ------- //
     void Serialize(CArchive& ar);
 
+    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+
 // Vars...
 public:
     BOOL    m_bGridSnap;        // TRUE if snap grid is on
