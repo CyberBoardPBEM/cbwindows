@@ -125,24 +125,23 @@ public:
 public:
     void CreateTile();
     void DeleteTile(int yOffset);
-    void UpdateTile(CBitmap *pBMap, int yLoc);
-    void CreateBitmapOfTile(CBitmap *pBMap, int yLoc);
+    void UpdateTile(const CBitmap& pBMap, int yLoc);
+    OwnerPtr<CBitmap> CreateBitmapOfTile(int yLoc) const;
     // ---------- //
     void Serialize(CArchive& archive);
 
 // Friendly Access...
 protected:
-    void TileBlt(CDC *pDC, int xDst, int yDst, int ySrc, DWORD dwRop);
-    void StretchBlt(CDC *pDC, int xDst, int yDst, int xWid, int yWid,
-        int ySrc, DWORD dwRop);
-    void TransBlt(CDC *pDC, int xDst, int yDst, int ySrc, COLORREF crTrans);
-    void TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int ySrc,
-        COLORREF crTrans, BITMAP* pMaskBMapInfo);
+    void TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) const;
+    void StretchBlt(CDC& pDC, int xDst, int yDst, int xWid, int yWid,
+        int ySrc, DWORD dwRop) const;
+    void TransBlt(CDC& pDC, int xDst, int yDst, int ySrc, COLORREF crTrans) const;
+    void TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
+        COLORREF crTrans, const BITMAP& pMaskBMapInfo) const;
 
 // Implementation - vars...
 protected:
     OwnerOrNullPtr<CBitmap> m_pBMap;        // Pointer to DDB
-    LPBYTE      m_pMem;         // Ptr to DIB Memory (DIBSection)
 
     CSize       m_size;         // Tile sizes for this sheet
     int         m_sheetHt;      // Total height of sheet
@@ -152,7 +151,7 @@ protected:
     class SheetDC
     {
     public:
-        SheetDC(CTileSheet& sheet);
+        SheetDC(const CTileSheet& sheet);
         ~SheetDC();
 
         operator CDC*() const;
@@ -230,27 +229,28 @@ public:
     void SetBackColor(COLORREF cr);
     void SetLineWidth(int nWidth) { m_nLineWidth = nWidth; }
     BOOL DoBitFontDialog();
-    COLORREF GetForeColor() { return m_crFore; }
-    COLORREF GetBackColor() { return m_crBack; }
-    int GetLineWidth() { return m_nLineWidth; }
-    CBrush* GetForeBrush() { return &m_brFore; }
-    CBrush* GetBackBrush() { return &m_brBack; }
-    FontID GetFontID() { return m_fontID; }
+    COLORREF GetForeColor() const { return m_crFore; }
+    COLORREF GetBackColor() const { return m_crBack; }
+    int GetLineWidth() const { return m_nLineWidth; }
+    const CBrush& GetForeBrush() const { return m_brFore; }
+    const CBrush& GetBackBrush() const { return m_brBack; }
+    FontID GetFontID() const { return m_fontID; }
 
 // Operations
 public:
     // Tile Ops.
+    // pTile will point into this, so GetTile can't be const
     void GetTile(TileID tid, CTile* pTile, TileScale eScale = fullScale);
     TileID CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
         COLORREF crSmall, size_t nPos = Invalid_v<size_t>);
     void DeleteTile(TileID tid, BOOL bFromSetAlso = TRUE);
     void SetSmallTileColor(TileID tid, COLORREF cr);
-    BOOL IsTileIDValid(TileID tid);
+    BOOL IsTileIDValid(TileID tid) const;
     size_t FindTileSetFromTileID(TileID tid) const;
     void MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>& tidList, size_t nPos = Invalid_v<size_t>);
 
     // Nulls aren't updated...
-    void UpdateTile(TileID tid, CBitmap* bmFull, CBitmap* bmHalf,
+    void UpdateTile(TileID tid, const CBitmap& bmFull, const CBitmap& bmHalf,
         COLORREF crSmall);
 
     // Tile Set Ops.
@@ -269,7 +269,7 @@ public:
 
     // TOOL CODE //
     BOOL PruneTilesOnSheet255();
-    void DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile = TRUE);
+    void DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile = TRUE) const;
     // TOOL CODE //
 
 // Implementation
@@ -295,12 +295,14 @@ protected:
     // ------- //
     void Clear();
     void CreateTileOnSheet(CSize size, TileLoc& pLoc);
-    void DeleteTileFromSheet(TileLoc& pLoc);
+    void DeleteTileFromSheet(const TileLoc& pLoc);
     void AdjustTileLoc(TileLoc& pLoc, size_t nSht, int yLoc, int cy);
     size_t GetSheetForTile(CSize size);
     void RemoveTileIDFromTileSets(TileID tid);
-    CTileSheet& GetTileSheet(size_t nSheet)
+    const CTileSheet& GetTileSheet(size_t nSheet) const
         { return m_TShtTbl.at(nSheet); }
+    CTileSheet& GetTileSheet(size_t nSheet)
+        { return const_cast<CTileSheet&>(std::as_const(*this).GetTileSheet(nSheet)); }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -320,11 +322,11 @@ public:
 
 // Operations
 public:
-    void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY);
-    void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY);
-    void TransBlt(CDC& pDC, int x, int y, BITMAP* pMaskBMapInfo = NULL);
-    void Update(CBitmap *pBMap);
-    void CreateBitmapOfTile(CBitmap *pBMap);
+    void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY) const;
+    void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY) const;
+    void TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo = NULL) const;
+    void Update(const CBitmap *pBMap) const;
+    OwnerPtr<CBitmap> CreateBitmapOfTile() const;
 
 // Implementation
 protected:

@@ -54,10 +54,10 @@ CSize CTile::GetSize() const
     return m_pTS != NULL ? m_pTS->GetSize() : m_size;
 }
 
-void CTile::BitBlt(CDC& pDC, int x, int y, DWORD dwRop)
+void CTile::BitBlt(CDC& pDC, int x, int y, DWORD dwRop) const
 {
     if (m_pTS != NULL)
-        m_pTS->TileBlt(&pDC, x, y, m_yLoc, dwRop);
+        m_pTS->TileBlt(pDC, x, y, m_yLoc, dwRop);
     else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
@@ -69,10 +69,10 @@ void CTile::BitBlt(CDC& pDC, int x, int y, DWORD dwRop)
     }
 }
 
-void CTile::StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop)
+void CTile::StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop) const
 {
     if (m_pTS != NULL)
-        m_pTS->StretchBlt(&pDC, x, y, cx, cy, m_yLoc, dwRop);
+        m_pTS->StretchBlt(pDC, x, y, cx, cy, m_yLoc, dwRop);
     else if (m_crTrans != m_crSmall)
     {
         CBrush oBrsh;
@@ -84,7 +84,7 @@ void CTile::StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop)
 }
 
 // Transparent BitBlt
-void CTile::TransBlt(CDC& pDC, int x, int y, BITMAP* pMaskBMapInfo /* = NULL */)
+void CTile::TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo /* = NULL */) const
 {
     if (m_pTS != NULL)
     {
@@ -92,14 +92,14 @@ void CTile::TransBlt(CDC& pDC, int x, int y, BITMAP* pMaskBMapInfo /* = NULL */)
         {
             if (pMaskBMapInfo != NULL)
             {
-                m_pTS->TransBltThruDIBSectMonoMask(&pDC, x, y, m_yLoc,
-                    m_crTrans, pMaskBMapInfo);
+                m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, m_yLoc,
+                    m_crTrans, *pMaskBMapInfo);
             }
             else
-                m_pTS->TransBlt(&pDC, x, y, m_yLoc, m_crTrans);
+                m_pTS->TransBlt(pDC, x, y, m_yLoc, m_crTrans);
         }
         else
-            m_pTS->TileBlt(&pDC, x, y, m_yLoc, SRCCOPY);
+            m_pTS->TileBlt(pDC, x, y, m_yLoc, SRCCOPY);
     }
     else if (RGB565(m_crTrans) != RGB565(m_crSmall))
     {
@@ -113,15 +113,14 @@ void CTile::TransBlt(CDC& pDC, int x, int y, BITMAP* pMaskBMapInfo /* = NULL */)
 }
 
 // Updates the tile image in-place
-void CTile::Update(CBitmap *pBMap)
+void CTile::Update(const CBitmap *pBMap) const
 {
     ASSERT(m_pTS != NULL);
-    m_pTS->UpdateTile(pBMap, m_yLoc);
+    m_pTS->UpdateTile(*pBMap, m_yLoc);
 }
 
-void CTile::CreateBitmapOfTile(CBitmap *pBMap)
+OwnerPtr<CBitmap> CTile::CreateBitmapOfTile() const
 {
-    ASSERT(m_pTS != NULL);
-    m_pTS->CreateBitmapOfTile(pBMap, m_yLoc);
+    return CheckedDeref(m_pTS).CreateBitmapOfTile(m_yLoc);
 }
 

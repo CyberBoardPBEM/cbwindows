@@ -1205,6 +1205,19 @@ BOOL DeltaGen(PDELTAGEN pdg, int* px, int* py)
     return TRUE;
 }
 
+OwnerPtr<CBrush> Clone(const CBrush& brush)
+{
+    LOGBRUSH lb;
+/*  surely this is safe, but we'll avoid the const_cast
+    int rc = const_cast<CBrush&>(brush).GetLogBrush(&lb);
+*/
+    int rc = ::GetObject(brush, sizeof(lb), &lb);
+    ASSERT(rc == sizeof(lb));
+    OwnerPtr<CBrush> retval(MakeOwner<CBrush>());
+    VERIFY(retval->CreateBrushIndirect(&lb));
+    return retval;
+}
+
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////

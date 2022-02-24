@@ -246,7 +246,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 CSize sizeHalf = pBArryTo->GetCellSize(halfScale);
                 TileID tidNew = pTMgr->CreateTile(GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
-                pTMgr->UpdateTile(tidNew, &bmapFull, &bmapHalf, crSmall);
+                pTMgr->UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
                 pCellTo.SetTID(tidNew);
             }
             else

@@ -278,7 +278,7 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
 
     g_gt.mDC1.SelectObject(&m_bmView);
     SetupPalette(&g_gt.mDC1);
-    CBrush* pPrvBrush = g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush());
+    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
     if (nSize == 0)
         nSize = 1;          // Zero width is same as one width
@@ -349,8 +349,10 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
     rct.NormalizeRect();
     if (nSize == 0)
     {
-        g_gt.mDC1.FillRect(&rct, m_pTMgr->GetForeBrush());
-        g_gt.mDC1.FrameRect(&rct, m_pTMgr->GetForeBrush());
+        // const_cast would probably work, but this is guaranteed safe
+        OwnerPtr<CBrush> temp = Clone(m_pTMgr->GetForeBrush());
+        g_gt.mDC1.FillRect(&rct, &*temp);
+        g_gt.mDC1.FrameRect(&rct, &*temp);
     }
     else
     {
@@ -383,7 +385,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
     CPen pen(PS_SOLID, nSize, m_pTMgr->GetForeColor());
     CBrush* pPrvBrsh;
     if (nSize == 0)
-        pPrvBrsh = g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush());
+        pPrvBrsh = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
     else
         pPrvBrsh = (CBrush*)g_gt.mDC1.SelectStockObject(NULL_BRUSH);
     CPen* pPrvPen = g_gt.mDC1.SelectObject(&pen);
@@ -405,7 +407,7 @@ void CBitEditView::DrawImageFill(CPoint pt)
     g_gt.mDC1.SelectObject(&m_bmView);
     SetupPalette(&g_gt.mDC1);
 
-    CBrush* pBrush = g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush());
+    CBrush* pBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
     g_gt.mDC1.ExtFloodFill(pt.x, pt.y, g_gt.mDC1.GetPixel(pt), FLOODFILLSURFACE);
 
@@ -481,7 +483,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     CDC* pDC = GetDC();
 
     SetupPalette(pDC);
-    CBrush *pPrvBrush = pDC->SelectObject(m_pTMgr->GetForeBrush());
+    CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(m_pTMgr->GetForeBrush())));
     OnPrepareDC(pDC, NULL);
 
     if (nSize == 0)
@@ -517,11 +519,11 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     wy = point.y / m_nZoom;
     if (wx < m_size.cx && wy < m_size.cy)
     {
-        pPrvBrush = g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush());
+        pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
         g_gt.mDC1.PatBlt(wx - nSize / 2, wy - nSize / 2, nSize, nSize, PATCOPY);
         g_gt.mDC1.SelectObject(pPrvBrush);
 
-        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrush());
+        m_pSelView->UpdateViewPixel(bmapPt, nSize, &m_pTMgr->GetForeBrush());
     }
     g_gt.SelectSafeObjectsForDC1();
 }

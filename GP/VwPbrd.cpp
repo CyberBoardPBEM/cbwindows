@@ -1658,10 +1658,9 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
     TileID tid = pDoc->GetPieceTable()->GetActiveTileID(tbl.front());
     CTile tile;
     pDoc->GetTileManager()->GetTile(tid, &tile);
-    CBitmap bmap;
-    tile.CreateBitmapOfTile(&bmap);
+    OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     CRotateDialog dlg;
-    dlg.m_pBMap = &bmap;
+    dlg.m_pBMap = &*bmap;
     dlg.m_crTrans = pDoc->GetTileManager()->GetTransparentColor();
     dlg.DoModal();
 }

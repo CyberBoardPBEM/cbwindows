@@ -44,7 +44,9 @@ const int nBorderWidth = 5;
 
 IMPLEMENT_DYNCREATE(CTileSelView, CScrollView)
 
-CTileSelView::CTileSelView()
+CTileSelView::CTileSelView() :
+    m_bmFull(MakeOwner<CBitmap>()),
+    m_bmHalf(MakeOwner<CBitmap>())
 {
     m_pTileMgr = NULL;
     m_pEditView = NULL;
@@ -52,12 +54,6 @@ CTileSelView::CTileSelView()
     m_bNoUpdate = FALSE;
     m_pBmFullUndo = NULL;
     m_pBmHalfUndo = NULL;
-}
-
-CTileSelView::~CTileSelView()
-{
-    if (m_pBmFullUndo) delete m_pBmFullUndo;
-    if (m_pBmHalfUndo) delete m_pBmHalfUndo;
 }
 
 BEGIN_MESSAGE_MAP(CTileSelView, CScrollView)
@@ -128,12 +124,12 @@ void CTileSelView::OnInitialUpdate()
 
     // Fetch full scale tile
     m_pTileMgr->GetTile(m_tid, &tile, fullScale);
-    tile.CreateBitmapOfTile(&m_bmFull);
+    m_bmFull = tile.CreateBitmapOfTile();
     m_sizeFull = tile.GetSize();
 
     // Fetch half scale tile
     m_pTileMgr->GetTile(m_tid, &tile, halfScale);
-    tile.CreateBitmapOfTile(&m_bmHalf);
+    m_bmHalf = tile.CreateBitmapOfTile();
     m_sizeHalf = tile.GetSize();
 
     // Fetch small scale color and create bogus tile for color editing
@@ -148,7 +144,7 @@ void CTileSelView::OnInitialUpdate()
     // Finally hand the full size tile to the bit editor.
     ASSERT(m_pEditView != NULL);
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
 
     SetScrollSizes(MM_TEXT, m_sizeSelArea, CSize(64, 64), CSize(8, 8));
 }
@@ -209,12 +205,12 @@ void CTileSelView::OnDraw(CDC* pDC)
     CRect rctActive;
 
     if (m_eCurTile != fullScale)
-        DrawTile(pDC, &m_bmFull, m_rctFull);
+        DrawTile(pDC, &*m_bmFull, m_rctFull);
     else
         rctActive = m_rctFull;
 
     if (m_eCurTile != halfScale)
-        DrawTile(pDC, &m_bmHalf, m_rctHalf);
+        DrawTile(pDC, &*m_bmHalf, m_rctHalf);
     else
         rctActive = m_rctHalf;
 
@@ -237,7 +233,7 @@ void CTileSelView::OnDraw(CDC* pDC)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, CBrush *pBrush)
+void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBrush)
 {
     int nSize;
     int nSizeX;
@@ -248,7 +244,7 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, CBrush *pBrush)
 
     CPoint pnt = GetActiveTileLoc();
     CSize size = m_pEditView->GetBitmapSize();
-    CBrush* pPrvBrush = pDC->SelectObject(pBrush);
+    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(*pBrush)));
 
     nSizeX = pt.x - nBrushSize / 2;
     nSizeY = pt.y - nBrushSize / 2;
@@ -284,7 +280,7 @@ void CTileSelView::UpdateDocumentTiles()
 {
     CGamDoc *pDoc = GetDocument();
     // Make sure our bitmaps are up to date.
-    CloneBitmap(GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
 
     // Get small scale color from tiny bitmap and update tile
     g_gt.mDC1.SelectObject(&m_bmSmall);
@@ -293,7 +289,7 @@ void CTileSelView::UpdateDocumentTiles()
     g_gt.SelectSafeObjectsForDC1();
 
     // The update happens here...
-    m_pTileMgr->UpdateTile(m_tid, &m_bmFull, &m_bmHalf, crSmall);
+    m_pTileMgr->UpdateTile(m_tid, *m_bmFull, *m_bmHalf, crSmall);
 
     // Finally handle various notifications
     CGmBoxHint hint;
@@ -307,7 +303,7 @@ void CTileSelView::UpdateDocumentTiles()
 void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
-    CloneBitmap(GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
     dlg.m_pBMgr = GetDocument()->GetBoardManager();
     dlg.m_bRescaleBMaps = TRUE;
     dlg.m_nWidth = m_sizeFull.cx;
@@ -318,36 +314,34 @@ void CTileSelView::DoTileResizeDialog()
         PurgeUndo();            // Make sure no mem leaks.
         m_pBmFullUndo = new CBitmap;
         m_pBmHalfUndo = new CBitmap;
-        CloneBitmap(m_pBmFullUndo, &m_bmFull);
-        CloneBitmap(m_pBmHalfUndo, &m_bmHalf);
+        CloneBitmap(&*m_pBmFullUndo, &*m_bmFull);
+        CloneBitmap(&*m_pBmHalfUndo, &*m_bmHalf);
 
-        CBitmap bmFull;
-        CBitmap bmHalf;
+        OwnerOrNullPtr<CBitmap> bmFull(MakeOwner<CBitmap>());
+        OwnerOrNullPtr<CBitmap> bmHalf(MakeOwner<CBitmap>());
         m_sizeFull = CSize(dlg.m_nWidth, dlg.m_nHeight);
         m_sizeHalf = CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight);
 
         if (dlg.m_bRescaleBMaps)
         {
-            CloneScaledBitmap(&bmFull, &m_bmFull, m_sizeFull);
-            CloneScaledBitmap(&bmHalf, &m_bmHalf, m_sizeHalf);
+            CloneScaledBitmap(&*bmFull, &*m_bmFull, m_sizeFull);
+            CloneScaledBitmap(&*bmHalf, &*m_bmHalf, m_sizeHalf);
         }
         else
         {
-            CreateColorBitmap(&bmFull, m_sizeFull, RGB(255, 255, 255));
-            CreateColorBitmap(&bmHalf, m_sizeHalf, RGB(255, 255, 255));
-            MergeBitmap(&bmFull, &m_bmFull, CPoint(0,0), noColor);
-            MergeBitmap(&bmHalf, &m_bmHalf, CPoint(0,0), noColor);
+            CreateColorBitmap(&*bmFull, m_sizeFull, RGB(255, 255, 255));
+            CreateColorBitmap(&*bmHalf, m_sizeHalf, RGB(255, 255, 255));
+            MergeBitmap(&*bmFull, &*m_bmFull, CPoint(0,0), noColor);
+            MergeBitmap(&*bmHalf, &*m_bmHalf, CPoint(0,0), noColor);
         }
-        m_bmFull.DeleteObject();
-        m_bmHalf.DeleteObject();
-        m_bmFull.Attach(bmFull.Detach());
-        m_bmHalf.Attach(bmHalf.Detach());
+        m_bmFull = std::move(bmFull);
+        m_bmHalf = std::move(bmHalf);
         // Recompute selection window layout.
         CalcViewLayout();
 
         // Finally hand the full size tile to the bit editor.
         SelectCurrentBitmap(fullScale);
-        m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
         Invalidate();
     }
 }
@@ -358,27 +352,25 @@ void CTileSelView::DoTileRotation(int nAngle)
 {
     CDib dibFull;
     CDib dibHalf;
-    CloneBitmap(GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
-    if (!dibFull.BitmapToDIB(&m_bmFull, GetAppPalette()))
+    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    if (!dibFull.BitmapToDIB(&*m_bmFull, GetAppPalette()))
         return;             // MEMORY ERROR
-    if(!dibHalf.BitmapToDIB(&m_bmHalf, GetAppPalette()))
+    if(!dibHalf.BitmapToDIB(&*m_bmHalf, GetAppPalette()))
         return;             // MEMORY ERROR
 
     OwnerPtr<CDib> pDib = Rotate16BitDib(&dibFull, nAngle, RGB(255, 255, 255));
-    OwnerPtr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
+    OwnerOrNullPtr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
 
     pDib = Rotate16BitDib(&dibHalf, nAngle, RGB(255, 255, 255));
-    OwnerPtr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
+    OwnerOrNullPtr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
 
-    m_bmFull.DeleteObject();
-    m_bmFull.Attach(pbmFull->Detach());
-    m_bmHalf.DeleteObject();
-    m_bmHalf.Attach(pbmHalf->Detach());
+    m_bmFull = std::move(pbmFull);
+    m_bmHalf = std::move(pbmHalf);
     // Recompute selection window layout.
     CalcViewLayout();
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
     Invalidate();
 }
 
@@ -391,9 +383,7 @@ BOOL CTileSelView::IsUndoAvailable()
 
 void CTileSelView::PurgeUndo()
 {
-    if (m_pBmFullUndo) delete m_pBmFullUndo;
     m_pBmFullUndo = NULL;
-    if (m_pBmHalfUndo) delete m_pBmHalfUndo;
     m_pBmHalfUndo = NULL;
 }
 
@@ -404,10 +394,8 @@ void CTileSelView::RestoreFromUndo()
     if (m_pBmFullUndo == NULL)
         return;
 
-    m_bmFull.DeleteObject();
-    m_bmHalf.DeleteObject();
-    m_bmFull.Attach(m_pBmFullUndo->Detach());
-    m_bmHalf.Attach(m_pBmHalfUndo->Detach());
+    m_bmFull = std::move(m_pBmFullUndo);
+    m_bmHalf = std::move(m_pBmHalfUndo);
 
     PurgeUndo();            // Dump empty objects.
 
@@ -416,7 +404,7 @@ void CTileSelView::RestoreFromUndo()
 
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
     Invalidate();
 }
 
@@ -427,9 +415,9 @@ void CTileSelView::CalcViewLayout()
     // Redo sizes since some callers count on it.
 
     BITMAP bmi;
-    m_bmFull.GetObject(sizeof(bmi), &bmi);
+    m_bmFull->GetObject(sizeof(bmi), &bmi);
     m_sizeFull = CSize(bmi.bmWidth, bmi.bmHeight);
-    m_bmHalf.GetObject(sizeof(bmi), &bmi);
+    m_bmHalf->GetObject(sizeof(bmi), &bmi);
     m_sizeHalf = CSize(bmi.bmWidth, bmi.bmHeight);
 
     m_rctFull.SetRect(0, 0, m_sizeFull.cx, m_sizeFull.cy);
@@ -478,22 +466,22 @@ CPoint CTileSelView::GetActiveTileLoc()
         return m_rctSmall.TopLeft();
 }
 
-CBitmap* CTileSelView::GetActiveBitmap()
+CBitmap& CTileSelView::GetActiveBitmap()
 {
     if (m_eCurTile == fullScale)
-        return &m_bmFull;
+        return *m_bmFull;
     else if (m_eCurTile == halfScale)
-        return &m_bmHalf;
+        return *m_bmHalf;
     else
-        return &m_bmSmall;
+        return m_bmSmall;
 }
 
 void CTileSelView::SelectCurrentBitmap(TileScale eScale)
 {
     if (eScale == fullScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &m_bmFull);
+        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
     else if (eScale == halfScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &m_bmHalf);
+        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmHalf);
     else
         m_pEditView->SetCurrentBitmap(m_tid, &m_bmSmall, TRUE);
     m_eCurTile = eScale;
@@ -518,7 +506,7 @@ void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
         GetParentFrame()->SetActiveView(m_pEditView);
         return;
     }
-    CloneBitmap(GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
 
     SelectCurrentBitmap(eScale);
     Invalidate();
