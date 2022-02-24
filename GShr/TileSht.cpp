@@ -55,7 +55,6 @@ CTileSheet::CTileSheet(CSize size)
 {
     m_size = size;
     m_sheetHt = 0;
-    m_pMem = NULL;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -242,7 +241,7 @@ void CTileSheet::DeleteTile(int yLoc)
     }
 }
 
-void CTileSheet::UpdateTile(CBitmap *pBMap, int yLoc)
+void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
 {
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
@@ -257,14 +256,14 @@ void CTileSheet::UpdateTile(CBitmap *pBMap, int yLoc)
     g_gt.SelectSafeObjectsForDC2();
 }
 
-void CTileSheet::CreateBitmapOfTile(CBitmap *pBMap, int yLoc)
+OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 {
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
-    g_gt.mDC1.SelectObject(m_pBMap.get());        // Source bitmap
+    g_gt.mDC1.SelectObject(*m_pBMap);        // Source bitmap
     SetupPalette(&g_gt.mDC1);
 
-    pBMap->DeleteObject();                  // Flush any existing bitmap
+    OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
 
     BITMAP bmap;
     memset(&bmap, 0, sizeof(BITMAP));
@@ -280,36 +279,38 @@ void CTileSheet::CreateBitmapOfTile(CBitmap *pBMap, int yLoc)
         pBMap->CreateCompatibleBitmap(&g_gt.mDC1, m_size.cx, m_size.cy);
     }
 
-    g_gt.mDC2.SelectObject(pBMap);          // Activate dest bitmap
+    g_gt.mDC2.SelectObject(&*pBMap);          // Activate dest bitmap
     SetupPalette(&g_gt.mDC2);
 
     g_gt.mDC2.BitBlt(0, 0, m_size.cx, m_size.cy, &g_gt.mDC1, 0, yLoc, SRCCOPY);
 
     g_gt.SelectSafeObjectsForDC1();
     g_gt.SelectSafeObjectsForDC2();
+
+    return pBMap;
 }
 
 ////////////////////////////////////////////////////////////////////////
 
-void CTileSheet::TileBlt(CDC *pDC, int xDst, int yDst, int ySrc, DWORD dwRop)
+void CTileSheet::TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) const
 {
     SheetDC sheetDC(*this);
-    pDC->BitBlt(xDst, yDst, m_size.cx, m_size.cy, sheetDC, 0, ySrc, dwRop);
+    pDC.BitBlt(xDst, yDst, m_size.cx, m_size.cy, sheetDC, 0, ySrc, dwRop);
 }
 
-void CTileSheet::StretchBlt(CDC *pDC, int xDst, int yDst,
-    int xWid, int yWid, int ySrc, DWORD dwRop)
+void CTileSheet::StretchBlt(CDC& pDC, int xDst, int yDst,
+    int xWid, int yWid, int ySrc, DWORD dwRop) const
 {
     SheetDC sheetDC(*this);
-    pDC->StretchBlt(xDst, yDst, xWid, yWid, sheetDC, 0, ySrc,
+    pDC.StretchBlt(xDst, yDst, xWid, yWid, sheetDC, 0, ySrc,
         m_size.cx, m_size.cy, dwRop);
 }
 
-void CTileSheet::TransBlt(CDC *pDC, int xDst, int yDst, int ySrc,
-    COLORREF crTrans)
+void CTileSheet::TransBlt(CDC& pDC, int xDst, int yDst, int ySrc,
+    COLORREF crTrans) const
 {
     GdiFlush();
-    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC->m_hDC, OBJ_BITMAP);
+    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC.m_hDC, OBJ_BITMAP);
     ASSERT(hBMapDest != NULL);
 
     BITMAP  bmapTile;
@@ -327,7 +328,7 @@ void CTileSheet::TransBlt(CDC *pDC, int xDst, int yDst, int ySrc,
 
     WORD cr16Trans = RGB565(crTrans);
 
-    CPoint pntOrg = pDC->GetViewportOrg();
+    CPoint pntOrg = pDC.GetViewportOrg();
     xDst += pntOrg.x;
     yDst += pntOrg.y;
     int xDstBase = xDst;
@@ -360,12 +361,12 @@ void CTileSheet::TransBlt(CDC *pDC, int xDst, int yDst, int ySrc,
 
 ////////////////////////////////////////////////////////////////////////
 
-void CTileSheet::TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int ySrc,
-    COLORREF crTrans, BITMAP* pMaskBMapInfo)
+void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
+    COLORREF crTrans, const BITMAP& pMaskBMapInfo) const
 {
     GdiFlush();
 
-    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC->m_hDC, OBJ_BITMAP);
+    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC.m_hDC, OBJ_BITMAP);
     ASSERT(hBMapDest != NULL);
 
     BITMAP  bmapTile;
@@ -380,17 +381,17 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int y
 
     LPBYTE pTile = (LPBYTE)bmapTile.bmBits;
     LPBYTE pDest = (LPBYTE)bmapDest.bmBits;
-    LPBYTE pMask = (LPBYTE)pMaskBMapInfo->bmBits;
+    LPBYTE pMask = (LPBYTE)pMaskBMapInfo.bmBits;
 
     WORD cr16Trans = RGB565(crTrans);
-    CPoint pntOrg = pDC->GetViewportOrg();
+    CPoint pntOrg = pDC.GetViewportOrg();
     xDst += pntOrg.x;
     yDst += pntOrg.y;
     int xDstBase = xDst;
 
     int nBytesPerScanLineTile = WIDTHBYTES(bmapTile.bmWidth * 16);
     int nBytesPerScanLineDest = WIDTHBYTES(bmapDest.bmWidth * 16);
-    int nBytesPerScanLineMask = WIDTHBYTES(pMaskBMapInfo->bmWidth * 16);
+    int nBytesPerScanLineMask = WIDTHBYTES(pMaskBMapInfo.bmWidth * 16);
     for (int nScanLine = 0; nScanLine < m_size.cy; nScanLine++)
     {
         xDst = xDstBase;
@@ -399,13 +400,13 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC *pDC, int xDst, int yDst, int y
             nBytesPerScanLineTile);
         WORD* pPxlDest = (WORD*)(pDest + (bmapDest.bmHeight - yDst - 1) *
             nBytesPerScanLineDest + 2 * xDst); // Two bytes per pixel
-        WORD* pPxlMask = (WORD*)(pMask + (pMaskBMapInfo->bmHeight - nScanLine - 1) *
+        WORD* pPxlMask = (WORD*)(pMask + (pMaskBMapInfo.bmHeight - nScanLine - 1) *
             nBytesPerScanLineMask);
 
         for (int nPxl = 0; nPxl < m_size.cx; nPxl++)
         {
-            if (nScanLine < pMaskBMapInfo->bmHeight &&  // Still in mask?
-                nPxl < pMaskBMapInfo->bmWidth &&        // Still in mask?
+            if (nScanLine < pMaskBMapInfo.bmHeight &&  // Still in mask?
+                nPxl < pMaskBMapInfo.bmWidth &&        // Still in mask?
                 *pPxlMask == 0 &&                       // Only black mask bits get through
                 *pPxlTile != cr16Trans &&
                 xDst >= 0 && xDst < bmapDest.bmWidth &&
@@ -430,13 +431,12 @@ void CTileSheet::ClearSheet()
 {
     m_size = CSize(0, 0);
     m_pBMap = nullptr;
-    m_pMem = NULL;
 }
 
-CTileSheet::SheetDC::SheetDC(CTileSheet& sheet)
+CTileSheet::SheetDC::SheetDC(const CTileSheet& sheet)
 {
     ASSERT(sheet.m_pBMap);
-    g_gt.mTileDC.SelectObject(sheet.m_pBMap.get());
+    g_gt.mTileDC.SelectObject(*sheet.m_pBMap);
     g_gt.mTileDC.SelectPalette(GetAppPalette(), TRUE);
 }
 

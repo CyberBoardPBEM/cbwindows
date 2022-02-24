@@ -136,7 +136,7 @@ void CTileManager::DeleteTile(TileID tid, BOOL bFromSetAlso /* = TRUE */)
     pDef.SetEmpty();
 }
 
-void CTileManager::UpdateTile(TileID tid, CBitmap* pbmFull, CBitmap* pbmHalf,
+void CTileManager::UpdateTile(TileID tid, const CBitmap& pbmFull, const CBitmap& pbmHalf,
     COLORREF crSmall)
 {
     ASSERT(m_pTileTbl != NULL);
@@ -148,7 +148,7 @@ void CTileManager::UpdateTile(TileID tid, CBitmap* pbmFull, CBitmap* pbmHalf,
     CTile tile;
     BITMAP bmInfo;
 
-    pbmFull->GetObject(sizeof(bmInfo), &bmInfo);
+    pbmFull.GetObject(sizeof(bmInfo), &bmInfo);
     CSize bmSize(bmInfo.bmWidth, bmInfo.bmHeight);
     GetTile(tid, &tile, fullScale);
 
@@ -158,10 +158,10 @@ void CTileManager::UpdateTile(TileID tid, CBitmap* pbmFull, CBitmap* pbmHalf,
         CreateTileOnSheet(bmSize, pDef.m_tileFull);
         GetTile(tid, &tile, fullScale);
     }
-    tile.Update(pbmFull);
+    tile.Update(&pbmFull);
 
     // Half scale tile.
-    pbmHalf->GetObject(sizeof(bmInfo), &bmInfo);
+    pbmHalf.GetObject(sizeof(bmInfo), &bmInfo);
     bmSize = CSize(bmInfo.bmWidth, bmInfo.bmHeight);
     GetTile(tid, &tile, halfScale);
 
@@ -171,13 +171,13 @@ void CTileManager::UpdateTile(TileID tid, CBitmap* pbmFull, CBitmap* pbmHalf,
         CreateTileOnSheet(bmSize, pDef.m_tileHalf);
         GetTile(tid, &tile, halfScale);
     }
-    tile.Update(pbmHalf);
+    tile.Update(&pbmHalf);
 
     // Update small scale color...
     SetSmallTileColor(tid, crSmall);
 }
 
-BOOL CTileManager::IsTileIDValid(TileID tid)
+BOOL CTileManager::IsTileIDValid(TileID tid) const
 {
     for (size_t i = 0; i < GetNumTileSets(); i++)
     {
@@ -308,7 +308,7 @@ void CTileManager::CreateTileOnSheet(CSize size, TileLoc& pLoc)
     pSht.CreateTile();         // Always creates tile at end filled white
 }
 
-void CTileManager::DeleteTileFromSheet(TileLoc& pLoc)
+void CTileManager::DeleteTileFromSheet(const TileLoc& pLoc)
 {
     CTileSheet& pSht = m_TShtTbl.at(pLoc.m_nSheet);
     pSht.DeleteTile(pLoc.m_nOffset);
@@ -340,7 +340,6 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         CTile   tileFull;
         CTile   tileHalf;
         CTile   tileSmall;
-        CBitmap bitmap;
         CDib    dib;
 
         TileID tid = tidsList[i];
@@ -351,12 +350,12 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
 
         ar << (DWORD)tileSmall.GetSmallColor();
 
-        tileFull.CreateBitmapOfTile(&bitmap);
-        VERIFY(dib.BitmapToDIB(&bitmap, GetAppPalette()));
+        OwnerPtr<CBitmap> bitmap = tileFull.CreateBitmapOfTile();
+        VERIFY(dib.BitmapToDIB(&*bitmap, GetAppPalette()));
         ar << dib;
 
-        tileHalf.CreateBitmapOfTile(&bitmap);
-        VERIFY(dib.BitmapToDIB(&bitmap, GetAppPalette()));
+        bitmap = tileHalf.CreateBitmapOfTile();
+        VERIFY(dib.BitmapToDIB(&*bitmap, GetAppPalette()));
         ar << dib;
     }
 #endif
@@ -403,7 +402,7 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
             crSmall, nPos);
         if (nPos != Invalid_v<size_t>)
             nPos++;             // Position to next insertion point
-        UpdateTile(tid, pBMapFull.get(), pBMapHalf.get(), crSmall);
+        UpdateTile(tid, *pBMapFull, *pBMapHalf, crSmall);
         if (pTidTbl)
             pTidTbl->push_back(tid);
     }
@@ -613,7 +612,7 @@ static int compsheets(const void *elem1, const void *elem2)
         return 0;
 }
 
-void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile)
+void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile) const
 {
     char  szBfr[256];
 
@@ -641,7 +640,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     for (size_t nSet = 0; nSet < m_TSetTbl.size(); nSet++)
     {
-        CTileSet& pTSet = m_TSetTbl.at(nSet);
+        const CTileSet& pTSet = m_TSetTbl.at(nSet);
 
         wsprintf(szBfr, "| %2zu  | %-25s  |", nSet, pTSet.GetName());
         WriteFileString(hFile, szBfr);
@@ -668,7 +667,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
     {
-        CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
+        const CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
 
         wsprintf(szBfr, "| %04zX  | %3u | %3u | %5u |\r\n", nSheet,
             pTSheet.GetWidth(), pTSheet.GetHeight(),
@@ -686,7 +685,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     uintmax_t* pTbl = pShtTbl;
     for (size_t nSheet = size_t(0) ; nSheet < m_TShtTbl.size() ; nSheet++)
     {
-        CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
+        const CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
         *pTbl++ = nSheet;
         *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetWidth());
         *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetHeight());
@@ -724,7 +723,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
-        TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
+        const TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
         wsprintf(szBfr, "| %10zu | %08zX %5u | %08zX %5u | 0x%08X  |", tid,
             tp.m_tileFull.m_nSheet, tp.m_tileFull.m_nOffset,
             tp.m_tileHalf.m_nSheet, tp.m_tileHalf.m_nOffset,

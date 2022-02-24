@@ -52,7 +52,7 @@ public:
 
 // Operations
 public:
-    void UpdateViewPixel(CPoint pt, UINT nBrushSize, CBrush *pBrush);
+    void UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBrush);
     void UpdateViewImage(CRect* pRct, BOOL bImmed = FALSE);
     // ------------- //
     void DoTileResizeDialog();
@@ -69,11 +69,11 @@ protected:
 
     TileID      m_tid;
 
-    CBitmap*    m_pBmFullUndo;      // Save from previous resize
-    CBitmap*    m_pBmHalfUndo;      // Save from previous resize
+    OwnerOrNullPtr<CBitmap> m_pBmFullUndo;      // Save from previous resize
+    OwnerOrNullPtr<CBitmap> m_pBmHalfUndo;      // Save from previous resize
 
-    CBitmap     m_bmFull;
-    CBitmap     m_bmHalf;
+    OwnerPtr<CBitmap> m_bmFull;
+    OwnerPtr<CBitmap> m_bmHalf;
     CBitmap     m_bmSmall;
 
     COLORREF    m_crSmall;
@@ -96,12 +96,12 @@ protected:
     // ------- //
     CRect GetActiveTileRect();
     CPoint GetActiveTileLoc();
-    CBitmap* GetActiveBitmap();
+    CBitmap& GetActiveBitmap();
     void DrawTile(CDC* pDC, CBitmap* pBMap, CRect rct);
     void SelectCurrentBitmap(TileScale eScale);
     void CalcViewLayout();
     // ------- //
-    virtual ~CTileSelView();
+    virtual ~CTileSelView() = default;
     virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);

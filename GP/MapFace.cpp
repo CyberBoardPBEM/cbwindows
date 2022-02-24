@@ -54,14 +54,13 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     ASSERT(m_pTMgr != NULL);
     CDib    dibSrc;
     CTile   tile;
-    CBitmap bmap;
     uint16_t nAngleDegCW = state.GetFacing();
 
     // Generate rotated full scale bitmap of tile...
 
     m_pTMgr->GetTile(baseTileID, &tile, fullScale);
-    tile.CreateBitmapOfTile(&bmap);
-    dibSrc.BitmapToDIB(&bmap, GetAppPalette());
+    OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
+    dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
 
     OwnerPtr<CDib> pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
     OwnerPtr<CBitmap> pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
@@ -72,8 +71,8 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     // Generate rotated halfScale scale bitmap of tile...
 
     m_pTMgr->GetTile(baseTileID, &tile, halfScale);
-    tile.CreateBitmapOfTile(&bmap);
-    dibSrc.BitmapToDIB(&bmap, GetAppPalette());
+    bmap = tile.CreateBitmapOfTile();
+    dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
 
     pRDib = Rotate16BitDib(&dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
     OwnerPtr<CBitmap> pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
@@ -87,7 +86,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     // Create the tile in our special tile set...
     TileID tidNew = m_pTMgr->CreateTile(m_nTileSet, sizeFull, sizeHalf, crSmall);
-    m_pTMgr->UpdateTile(tidNew, pBMapFull.get(), pBMapHalf.get(), crSmall);
+    m_pTMgr->UpdateTile(tidNew, *pBMapFull, *pBMapHalf, crSmall);
 
     // Finally, add the piece facing mapping...
     SetAt(state, tidNew);

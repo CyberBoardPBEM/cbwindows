@@ -538,7 +538,7 @@ TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
 
     CTile tile;
     m_pTMgr->GetTile(tid, &tile, fullScale);
-    tile.Update(pBMap.get());
+    tile.Update(&*pBMap);
     m_pTMgr->GetTile(tid, &tile, halfScale);
     tile.Update(&bmHalf);
 

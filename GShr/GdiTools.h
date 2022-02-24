@@ -207,4 +207,6 @@ void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
 void BltThruDIB(CDC* pDCDst, int xDst, int yDst, int cx, int cy,
     CDC* pDCSrc, CPalette *pPalSrc, CBitmap* pBMap, int xSrc, int ySrc);
 
+OwnerPtr<CBrush> Clone(const CBrush& brush);
+
 #endif
