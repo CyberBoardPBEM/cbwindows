@@ -114,7 +114,7 @@ public:
     }
     CCellForm& GetCellForm(TileScale eScale);
     void SetTileManager(CTileManager *pTsa) { m_pTsa = pTsa; }
-    CTileManager *GetTileManager() { return m_pTsa; }
+    const CTileManager* GetTileManager() const { return &*m_pTsa; }
     // ------ //
     size_t GetRows() const { return m_nRows; }
     size_t GetCols() const { return m_nCols; }
@@ -181,7 +181,7 @@ protected:
     // -------- //
     CPen    m_pnCellFrame;      // Cell frame color pen.
     // -------- //
-    CTileManager* m_pTsa;       // For reference only! Don't destroy!
+    CB::propagate_const<CTileManager*> m_pTsa;       // For reference only! Don't destroy!
     // -------- //
     size_t CellIndex(size_t row, size_t col) const { return row*m_nCols + col; }
 };

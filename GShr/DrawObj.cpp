@@ -1081,8 +1081,7 @@ void CBitmapImage::Serialize(CArchive& ar)
 void CTileImage::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pTMgr != NULL);
-    CTile tile;
-    m_pTMgr->GetTile(m_tid, &tile, eScale);
+    CTile tile = m_pTMgr->GetTile(m_tid, eScale);
 
     CPoint pnt = m_rctExtent.TopLeft();
     if (eScale == halfScale)
@@ -1099,8 +1098,7 @@ void CTileImage::Draw(CDC& pDC, TileScale eScale)
 void CTileImage::SetTile(int x, int y, TileID tid)
 {
     ASSERT(m_pTMgr != NULL);
-    CTile tile;
-    m_pTMgr->GetTile(tid, &tile);
+    CTile tile = m_pTMgr->GetTile(tid);
     m_tid = tid;
     m_rctExtent.left = m_rctExtent.right = x;
     m_rctExtent.top = m_rctExtent.bottom = y;
@@ -1141,7 +1139,8 @@ void CTileImage::CopyAttributes(const CTileImage& source)
 {
     CDrawObj::CopyAttributes(source);
     m_tid = source.m_tid;
-    m_pTMgr = source.m_pTMgr;
+    // cloning isn't really violation of source's const
+    m_pTMgr = const_cast<CTileManager*>(&*source.m_pTMgr);
 }
 
 void CTileImage::Serialize(CArchive& ar)
@@ -1285,8 +1284,7 @@ void CText::Serialize(CArchive& ar)
 static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
     TileScale eScale)
 {
-    CTile tile;
-    pTMgr->GetTile(tid,  &tile, eScale);
+    CTile tile = pTMgr->GetTile(tid, eScale);
 
     if (eScale == halfScale)
     {
@@ -1379,8 +1377,7 @@ void CPieceObj::ResyncExtentRect()
         tid = pPTbl->GetActiveTileID(m_pid, TRUE);
     ASSERT(tid != nullTid);
 
-    CTile tile;
-    pTMgr->GetTile(tid, &tile);
+    CTile tile = pTMgr->GetTile(tid);
     CPoint pnt = m_rctExtent.CenterPoint();
     pnt.x -= tile.GetWidth() / 2;
     pnt.y -= tile.GetHeight() / 2;
@@ -1490,8 +1487,7 @@ void CMarkObj::ResyncExtentRect()
     TileID tid = GetCurrentTileID();
     ASSERT(tid != nullTid);
 
-    CTile tile;
-    pTMgr->GetTile(tid, &tile);
+    CTile tile = pTMgr->GetTile(tid);
     CPoint pnt = m_rctExtent.CenterPoint();
     pnt.x -= tile.GetWidth() / 2;
     pnt.y -= tile.GetHeight() / 2;

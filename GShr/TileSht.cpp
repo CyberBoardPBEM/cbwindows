@@ -51,12 +51,6 @@ CTileSheet::CTileSheet()
     m_sheetHt = 0;
 }
 
-CTileSheet::CTileSheet(CSize size)
-{
-    m_size = size;
-    m_sheetHt = 0;
-}
-
 //////////////////////////////////////////////////////////////////
 
 void CTileSheet::Serialize(CArchive& ar)

@@ -242,8 +242,7 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 
     if (pCell.IsTileID())
     {
-        CTile tile;
-        m_pTsa->GetTile(pCell.GetTID(), &tile, eScale);
+        CTile tile = m_pTsa->GetTile(pCell.GetTID(), eScale);
 
         if (eScale != smallScale)
         {

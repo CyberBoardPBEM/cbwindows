@@ -1656,8 +1656,7 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
     CGamDoc* pDoc = GetDocument();
     m_selList.LoadTableWithPieceIDs(tbl);
     TileID tid = pDoc->GetPieceTable()->GetActiveTileID(tbl.front());
-    CTile tile;
-    pDoc->GetTileManager()->GetTile(tid, &tile);
+    CTile tile = pDoc->GetTileManager()->GetTile(tid);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     CRotateDialog dlg;
     dlg.m_pBMap = &*bmap;

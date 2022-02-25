@@ -205,7 +205,7 @@ BOOL CBoard::PurgeMissingTileIDs()
     if (m_pBrdAry != NULL)
         bPurge |= m_pBrdAry->PurgeMissingTileIDs();
     if (m_pTopDwg != NULL)
-        bPurge |= m_pTopDwg->PurgeMissingTileIDs(m_pTMgr);
+        bPurge |= m_pTopDwg->PurgeMissingTileIDs(&*m_pTMgr);
     return bPurge;
 }
 
@@ -375,7 +375,7 @@ void CBoardBase::SetBaseDrawing(CDrawList* pDwg)
 BOOL CBoardBase::PurgeMissingTileIDs()
 {
     if (m_pBaseDwg != NULL)
-        return m_pBaseDwg->PurgeMissingTileIDs(m_pTMgr);
+        return m_pBaseDwg->PurgeMissingTileIDs(&*m_pTMgr);
     return FALSE;
 }
 

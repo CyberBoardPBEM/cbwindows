@@ -61,7 +61,6 @@
 #include    <comutil.h>
 
 CFontTbl CGamDoc::m_fontTbl;                // Global font table
-CTileManager* CGamDoc::c_pTileMgr = NULL;// Temp pointer to tile manager
 int CGamDoc::c_fileVersion = 0;
 
 #ifdef _DEBUG
@@ -136,7 +135,7 @@ CGamDoc::CGamDoc()
 CGamDoc::~CGamDoc()
 {
     CColorPalette::CustomColorsFree(m_pCustomColors);
-    if (m_pTMgr) delete m_pTMgr;
+    if (m_pTMgr) delete &*m_pTMgr;
     if (m_pBMgr) delete m_pBMgr;
     if (m_pPMgr) delete m_pPMgr;
     if (m_pMMgr) delete m_pMMgr;
@@ -249,7 +248,7 @@ BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
 
 void CGamDoc::DeleteContents()
 {
-    if (m_pTMgr) delete m_pTMgr;
+    if (m_pTMgr) delete &*m_pTMgr;
     m_pTMgr = NULL;
     if (m_pBMgr) delete m_pBMgr;
     m_pBMgr = NULL;
@@ -439,9 +438,9 @@ BOOL CGamDoc::SetupBlankBoard()
     m_pBMgr = new CBoardManager;
 
     m_pPMgr = new CPieceManager;
-    m_pPMgr->SetTileManager(m_pTMgr);
+    m_pPMgr->SetTileManager(&*m_pTMgr);
     m_pMMgr = new CMarkManager;
-    m_pMMgr->SetTileManager(m_pTMgr);
+    m_pMMgr->SetTileManager(&*m_pTMgr);
 
     // Setup tile palette.
     m_palTile.Create(GetMainFrame()->GetDockingTileWindow());
@@ -536,11 +535,10 @@ TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
     CloneScaledBitmap(&bmHalf, pBMap.get(), CSize(xTile/2, yTile/2),
         COLORONCOLOR);
 
-    CTile tile;
-    m_pTMgr->GetTile(tid, &tile, fullScale);
-    tile.Update(&*pBMap);
-    m_pTMgr->GetTile(tid, &tile, halfScale);
-    tile.Update(&bmHalf);
+    CTileUpdatable tile = m_pTMgr->GetTile(tid, fullScale);
+    tile.Update(*pBMap);
+    tile = m_pTMgr->GetTile(tid, halfScale);
+    tile.Update(bmHalf);
 
     return tid;
 }
@@ -640,9 +638,9 @@ void CGamDoc::Serialize(CArchive& ar)
             m_pBMgr = new CBoardManager;
 
             m_pPMgr = new CPieceManager;
-            m_pPMgr->SetTileManager(m_pTMgr);
+            m_pPMgr->SetTileManager(&*m_pTMgr);
             m_pMMgr = new CMarkManager;
-            m_pMMgr->SetTileManager(m_pTMgr);
+            m_pMMgr->SetTileManager(&*m_pTMgr);
 
             // Main serialization
             ar >> m_nBitsPerPixel;

@@ -55,7 +55,6 @@ static char THIS_FILE[] = __FILE__;
 //////////////////////////////////////////////////////////////////
 
 CFontTbl        CGameBox::m_fontTbl;        // Global font table
-CTileManager*   CGameBox::c_pTileMgr = NULL;// Temp pointer to tile manager
 int             CGameBox::c_gbxFileVersion = 0;
 
 //////////////////////////////////////////////////////////////////
@@ -73,7 +72,7 @@ CGameBox::CGameBox()
 
 CGameBox::~CGameBox()
 {
-    if (m_pTMgr != NULL) delete m_pTMgr;
+    if (m_pTMgr != NULL) delete &*m_pTMgr;
     if (m_pBMgr != NULL) delete m_pBMgr;
     if (m_pPMgr != NULL) delete m_pPMgr;
     if (m_pMMgr != NULL) delete m_pMMgr;
@@ -132,9 +131,9 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         m_pBMgr = new CBoardManager;
 
         m_pPMgr = new CPieceManager;
-        m_pPMgr->SetTileManager(m_pTMgr);
+        m_pPMgr->SetTileManager(&*m_pTMgr);
         m_pMMgr = new CMarkManager;
-        m_pMMgr->SetTileManager(m_pTMgr);
+        m_pMMgr->SetTileManager(&*m_pTMgr);
 
         // Main serialization
         WORD wEatThis;
@@ -194,14 +193,12 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar.Close();
         file.Close();
         GetMainFrame()->EndWaitCursor();
-        c_pTileMgr = NULL;
     }
     CATCH(CMemoryException, e)
     {
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
         strErr.LoadString(IDS_ERR_GBXNOMEM);
-        c_pTileMgr = NULL;
         return FALSE;
     }
     AND_CATCH_ALL(e)
@@ -209,7 +206,6 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
         strErr.LoadString(IDS_ERR_GBXREAD);
-        c_pTileMgr = NULL;
         return FALSE;
     }
     END_CATCH_ALL

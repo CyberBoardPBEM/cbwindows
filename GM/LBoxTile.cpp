@@ -53,8 +53,7 @@ unsigned CTileListBox::OnItemHeight(size_t nIndex)
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    CTile tile;
-    pTMgr->GetTile(MapIndexToItem(nIndex), &tile, fullScale);
+    CTile tile = pTMgr->GetTile(MapIndexToItem(nIndex), fullScale);
 
     LONG nHt = 2 * tileBorder + tile.GetHeight();
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
@@ -76,16 +75,8 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         ASSERT(pTMgr != NULL);
 
         TileID tid = MapIndexToItem(nIndex);
-        CTile tile;
-        CTile tileHalf;
-        CTile tileSmall;
 
-        pTMgr->GetTile(tid, &tile, fullScale);
-        if (m_bDrawAllScales)
-        {
-            pTMgr->GetTile(tid, &tileHalf, halfScale);
-            pTMgr->GetTile(tid, &tileSmall, smallScale);
-        }
+        CTile tile = pTMgr->GetTile(tid, fullScale);
 
         SetupPalette(pDC);
         pDC->SaveDC();
@@ -121,9 +112,11 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         {
             x += tile.GetWidth() + 2 * tileBorder;
             y += tile.GetHeight() / 4;
+            CTile tileHalf = pTMgr->GetTile(tid, halfScale);
             tileHalf.BitBlt(*pDC, x, y);
             x += tileHalf.GetWidth() + 2 * tileBorder;
             y = rctItem.CenterPoint().y - 4;
+            CTile tileSmall = pTMgr->GetTile(tid, smallScale);
             CBrush brSmall(tileSmall.GetSmallColor());
             CRect rctSmall(x, y, x + 8, y + 8);
             pDC->FillRect(&rctSmall, &brSmall);     // Fill background color

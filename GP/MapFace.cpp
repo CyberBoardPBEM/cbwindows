@@ -53,12 +53,11 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 {
     ASSERT(m_pTMgr != NULL);
     CDib    dibSrc;
-    CTile   tile;
     uint16_t nAngleDegCW = state.GetFacing();
 
     // Generate rotated full scale bitmap of tile...
 
-    m_pTMgr->GetTile(baseTileID, &tile, fullScale);
+    CTile tile = m_pTMgr->GetTile(baseTileID, fullScale);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
 
@@ -70,7 +69,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     // Generate rotated halfScale scale bitmap of tile...
 
-    m_pTMgr->GetTile(baseTileID, &tile, halfScale);
+    tile = m_pTMgr->GetTile(baseTileID, halfScale);
     bmap = tile.CreateBitmapOfTile();
     dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
 
@@ -81,7 +80,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     CSize sizeHalf(bmapInfo.bmWidth, bmapInfo.bmHeight);
 
     // Fetch color of small scale tile
-    m_pTMgr->GetTile(baseTileID, &tile, smallScale);
+    tile = m_pTMgr->GetTile(baseTileID, smallScale);
     COLORREF crSmall = tile.GetSmallColor();
 
     // Create the tile in our special tile set...

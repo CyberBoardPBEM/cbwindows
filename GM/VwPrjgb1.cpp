@@ -364,25 +364,22 @@ void CGbxProjView::DoTileClone()
 
     for (size_t i = 0; i < tidtbl.size(); i++)
     {
-        CTile tileFull;
-        CTile tileHalf;
-        CTile tileSmall;
         TileID tid = tidtbl[i];
 
-        pTMgr->GetTile(tid, &tileFull, fullScale);
-        pTMgr->GetTile(tid, &tileHalf, halfScale);
-        pTMgr->GetTile(tid, &tileSmall, smallScale);
+        CTileUpdatable tileFull = pTMgr->GetTile(tid, fullScale);
+        CTileUpdatable tileHalf = pTMgr->GetTile(tid, halfScale);
+        CTile tileSmall = pTMgr->GetTile(tid, smallScale);
 
         TileID tidNew = pTMgr->CreateTile(nGrp, tileFull.GetSize(),
             tileHalf.GetSize(), tileSmall.GetSmallColor());
 
         OwnerPtr<CBitmap> bmap = tileFull.CreateBitmapOfTile();
-        pTMgr->GetTile(tidNew, &tileFull, fullScale);
-        tileFull.Update(&*bmap);
+        tileFull = pTMgr->GetTile(tidNew, fullScale);
+        tileFull.Update(*bmap);
 
         bmap = tileHalf.CreateBitmapOfTile();
-        pTMgr->GetTile(tidNew, &tileHalf, halfScale);
-        tileHalf.Update(&*bmap);
+        tileHalf = pTMgr->GetTile(tidNew, halfScale);
+        tileHalf.Update(*bmap);
 
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;

@@ -236,8 +236,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 COLORREF crSmall;
                 if (pCellTo.IsTileID())
                 {
-                    CTile tile;
-                    pTMgr->GetTile(pCellTo.GetTID(), &tile, smallScale);
+                    CTile tile = pTMgr->GetTile(pCellTo.GetTID(), smallScale);
                     crSmall = tile.GetSmallColor();
                 }
                 else

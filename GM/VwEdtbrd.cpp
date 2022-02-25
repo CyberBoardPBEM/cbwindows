@@ -913,8 +913,7 @@ void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,
         OwnerPtr<CTileImage> pTileImage(MakeOwner<CTileImage>(pTMgr));
 
         // Center the image on the drop point.
-        CTile tile;
-        pTMgr->GetTile(tid, &tile);
+        CTile tile = pTMgr->GetTile(tid);
         CRect rct(CPoint(pnt.x, pnt.y), tile.GetSize());
         rct.OffsetRect(-rct.Width() / 2, -rct.Height() / 2);
         AdjustRect(rct);

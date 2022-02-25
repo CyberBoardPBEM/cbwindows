@@ -266,7 +266,8 @@ public:
     void* GetNewViewParameter() { return m_pvParam; }
 
     // Major game related objects...
-    CTileManager* GetTileManager();
+    const CTileManager* GetTileManager() const;
+    CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
     CMarkManager* GetMarkManager();
     CBoardManager* GetBoardManager();
     CPieceManager* GetPieceManager();
