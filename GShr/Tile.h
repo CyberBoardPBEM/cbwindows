@@ -32,6 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 
 class   CTile;
+class   CTileUpdatable;
 
 ////////////////////////////////////////////////////////////////////
 
@@ -105,7 +106,6 @@ class CTileSheet
     friend class CTile;
 public:
     CTileSheet();
-    CTileSheet(CSize size);
     CTileSheet(const CTileSheet&) = delete;
     CTileSheet& operator=(const CTileSheet&) = delete;
     CTileSheet(CTileSheet&&) noexcept = default;
@@ -239,8 +239,8 @@ public:
 // Operations
 public:
     // Tile Ops.
-    // pTile will point into this, so GetTile can't be const
-    void GetTile(TileID tid, CTile* pTile, TileScale eScale = fullScale);
+    CTile GetTile(TileID tid, TileScale eScale = fullScale) const;
+    CTileUpdatable GetTile(TileID tid, TileScale eScale = fullScale);
     TileID CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
         COLORREF crSmall, size_t nPos = Invalid_v<size_t>);
     void DeleteTile(TileID tid, BOOL bFromSetAlso = TRUE);
@@ -307,6 +307,7 @@ protected:
 
 ////////////////////////////////////////////////////////////////////
 // CTiles are the proxy objects used to manipulate single tiles.
+// CTile is like const_iterator and CTileUpdatable like iterator
 
 class CTile
 {
@@ -325,17 +326,32 @@ public:
     void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY) const;
     void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY) const;
     void TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo = NULL) const;
-    void Update(const CBitmap *pBMap) const;
     OwnerPtr<CBitmap> CreateBitmapOfTile() const;
 
 // Implementation
 protected:
-    CTileSheet* m_pTS;      // For Reference Only (DON'T DELETE!!!)
+    const CTileSheet* m_pTS;      // For Reference Only (DON'T DELETE!!!)
     int         m_yLoc;     // Y location in sheet
     CSize       m_size;     // size of bitmap of color patch
     COLORREF    m_crTrans;  // Transparency color in bitmaps
     COLORREF    m_crSmall;  // For smallScale (m_pTS == NULL)
+
+private:
+    friend CTile CTileManager::GetTile(TileID tid, TileScale eScale /*= fullScale*/) const;
+    CTile() = default;
 };
+
+class CTileUpdatable : public CTile
+{
+public:
+    void Update(const CBitmap& pBMap);
+};
+
+inline CTileUpdatable CTileManager::GetTile(TileID tid, TileScale eScale /*= fullScale*/)
+{
+    CTile temp = std::as_const(*this).GetTile(tid, eScale);
+    return reinterpret_cast<CTileUpdatable&>(temp);
+}
 
 #endif
 

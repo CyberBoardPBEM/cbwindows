@@ -48,17 +48,11 @@ class CMarkManager;
 class CGameBox
 {
     static CFontTbl m_fontTbl;
-    // Current Tile Manager. Only valid when Serializing
-    static CTileManager* c_pTileMgr;
     // Version of file being loaded
     static int c_gbxFileVersion;
 
 // Static class functions
 public:
-    // Current Tile Manager. Only valid when Serializing
-//  static void SetCurrentTileManager(CTileManager* pMgr) { c_pTileMgr = pMgr; }
-//  static CTileManager* GetCurrentTileManager() { return c_pTileMgr; }
-
     static CFontTbl* GetFontManager() { return &m_fontTbl; }
 
     static void SetLoadingVersion(int ver) { c_gbxFileVersion = ver; }
@@ -70,7 +64,8 @@ public:
 // Attributes
 public:
     CBoardManager* GetBoardManager() { return m_pBMgr; }
-    CTileManager* GetTileManager() { return m_pTMgr; }
+    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
+    CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
     CPieceManager* GetPieceManager() { return m_pPMgr; }
     CMarkManager* GetMarkManager() { return m_pMMgr; }
 
@@ -93,7 +88,7 @@ public:
 
     // Note...later we'll need to discard things not needed by
     // game play such as tile sets...
-    CTileManager*   m_pTMgr;        // Tiles
+    CB::propagate_const<CTileManager*>   m_pTMgr;        // Tiles
     CBoardManager*  m_pBMgr;        // Playing boards
     CPieceManager*  m_pPMgr;        // Playing pieces
     CMarkManager*   m_pMMgr;        // Annotation markers

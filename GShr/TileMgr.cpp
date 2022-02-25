@@ -73,34 +73,37 @@ void CTileManager::Clear()
 
 ///////////////////////////////////////////////////////////////////////
 
-void CTileManager::GetTile(TileID tid, CTile* pTile,
-    TileScale eScale /* = fullScale */)
+CTile CTileManager::GetTile(TileID tid,
+    TileScale eScale /* = fullScale */) const
 {
     ASSERT(m_pTileTbl != NULL);
     ASSERT(m_pTileTbl.Valid(tid));
     ASSERT(!m_pTileTbl[tid].IsEmpty());
 
-    TileDef *pDef = &m_pTileTbl[tid];
+    CTile pTile;
+    const TileDef *pDef = &m_pTileTbl[tid];
     if (eScale == fullScale)
     {
-        TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
-        pTile->m_pTS  = &GetTileSheet(pLoc->m_nSheet);
-        pTile->m_yLoc = pLoc->m_nOffset;
+        const TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
+        pTile.m_pTS  = &GetTileSheet(pLoc->m_nSheet);
+        pTile.m_yLoc = pLoc->m_nOffset;
     }
     else if (eScale == halfScale)
     {
-        TileLoc *pLoc = &m_pTileTbl[tid].m_tileHalf;
-        pTile->m_pTS  = &GetTileSheet(pLoc->m_nSheet);
-        pTile->m_yLoc = pLoc->m_nOffset;
+        const TileLoc *pLoc = &m_pTileTbl[tid].m_tileHalf;
+        pTile.m_pTS  = &GetTileSheet(pLoc->m_nSheet);
+        pTile.m_yLoc = pLoc->m_nOffset;
     }
     else
     {
-        pTile->m_pTS = NULL;
-        pTile->m_crSmall = pDef->m_tileSmall;
-        TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
-        pTile->m_size = GetTileSheet(pLoc->m_nSheet).GetSize();
+        pTile.m_pTS = NULL;
+        pTile.m_crSmall = pDef->m_tileSmall;
+        const TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
+        pTile.m_size = GetTileSheet(pLoc->m_nSheet).GetSize();
     }
-    pTile->m_crTrans = m_crTrans;
+    pTile.m_crTrans = m_crTrans;
+
+    return pTile;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -145,33 +148,32 @@ void CTileManager::UpdateTile(TileID tid, const CBitmap& pbmFull, const CBitmap&
     TileDef& pDef = m_pTileTbl[tid];
 
     // Update full and half scale tile bitmaps
-    CTile tile;
     BITMAP bmInfo;
 
     pbmFull.GetObject(sizeof(bmInfo), &bmInfo);
     CSize bmSize(bmInfo.bmWidth, bmInfo.bmHeight);
-    GetTile(tid, &tile, fullScale);
+    CTileUpdatable tile = GetTile(tid, fullScale);
 
     if (tile.GetSize() != bmSize)
     {
         DeleteTileFromSheet(pDef.m_tileFull);
         CreateTileOnSheet(bmSize, pDef.m_tileFull);
-        GetTile(tid, &tile, fullScale);
+        tile = GetTile(tid, fullScale);
     }
-    tile.Update(&pbmFull);
+    tile.Update(pbmFull);
 
     // Half scale tile.
     pbmHalf.GetObject(sizeof(bmInfo), &bmInfo);
     bmSize = CSize(bmInfo.bmWidth, bmInfo.bmHeight);
-    GetTile(tid, &tile, halfScale);
+    tile = GetTile(tid, halfScale);
 
     if (tile.GetSize() != bmSize)
     {
         DeleteTileFromSheet(pDef.m_tileHalf);
         CreateTileOnSheet(bmSize, pDef.m_tileHalf);
-        GetTile(tid, &tile, halfScale);
+        tile = GetTile(tid, halfScale);
     }
-    tile.Update(&pbmHalf);
+    tile.Update(pbmHalf);
 
     // Update small scale color...
     SetSmallTileColor(tid, crSmall);
@@ -344,9 +346,9 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
 
         TileID tid = tidsList[i];
 
-        GetTile(tid, &tileFull, fullScale);
-        GetTile(tid, &tileHalf, halfScale);
-        GetTile(tid, &tileSmall, smallScale);
+        tileFull = GetTile(tid, fullScale);
+        tileHalf = GetTile(tid, halfScale);
+        tileSmall = GetTile(tid, smallScale);
 
         ar << (DWORD)tileSmall.GetSmallColor();
 

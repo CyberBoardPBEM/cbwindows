@@ -63,14 +63,13 @@ unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
 
     SetupTipMarkerIfRequired();
 
-    CTile tile;
-    GetTileManager()->GetTile(tid1,  &tile, fullScale);
+    CTile tile = GetTileManager()->GetTile(tid1, fullScale);
     int nHt1 = tile.GetHeight();
     int nHt2 = 0;
 
     if (tid2 != nullTid)
     {
-        GetTileManager()->GetTile(tid2,  &tile, fullScale);
+        tile = GetTileManager()->GetTile(tid2, fullScale);
         nHt2 = tile.GetHeight();
     }
     // Listbox lines can only be 255 pixels high.
@@ -105,8 +104,7 @@ void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT 
         pDC->SetTextColor(GetSysColor(nState & ODS_SELECTED ?
             COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
 
-        CTile tile;
-        GetTileManager()->GetTile(tid1, &tile, fullScale);
+        CTile tile = GetTileManager()->GetTile(tid1, fullScale);
 
         int x = rctItem.left + tileBorder;
 
@@ -129,8 +127,7 @@ void CTileBaseListBox2::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int
     if (tid == nullTid)
         return;                             // Nothing to do
 
-    CTile tile;
-    GetTileManager()->GetTile(tid, &tile, fullScale);
+    CTile tile = GetTileManager()->GetTile(tid, fullScale);
 
     if (bDrawIt)
     {

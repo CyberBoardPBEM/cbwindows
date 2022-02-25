@@ -90,7 +90,7 @@ public:
     virtual void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
 
     int GetMaxDrawLayer() { return m_iMaxLayer; }
-    CTileManager* GetTileManager() { return m_pTMgr; }
+    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
     const char* GetName() const { return m_strBoardName; }
 
 // Operations
@@ -120,7 +120,7 @@ protected:
     CDrawList*  m_pBaseDwg;         // Various shapes to draw
 
     // ------- //
-    CTileManager* m_pTMgr;          // Tile manager
+    CB::propagate_const<CTileManager*> m_pTMgr;          // Tile manager
 };
 
 //////////////////////////////////////////////////////////////////////

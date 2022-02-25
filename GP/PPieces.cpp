@@ -255,8 +255,7 @@ void CPieceTable::SetPiece(PieceID pid, uint8_t nSide, uint16_t nFacing)
 CSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
 {
     ASSERT(m_pDoc != NULL);
-    CTile tile;
-    m_pDoc->GetTileManager()->GetTile(GetActiveTileID(pid, bWithFacing), &tile);
+    CTile tile = m_pDoc->GetTileManager()->GetTile(GetActiveTileID(pid, bWithFacing));
     return tile.GetSize();
 }
 
@@ -323,8 +322,7 @@ TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
 BOOL CPieceTable::IsPieceInvisible(PieceID pid)
 {
     TileID tid = GetActiveTileID(pid, FALSE);
-    CTile tile;
-    m_pDoc->GetTileManager()->GetTile(tid, &tile, smallScale);
+    CTile tile = m_pDoc->GetTileManager()->GetTile(tid, smallScale);
     return tile.GetTransparent() == tile.GetSmallColor();
 }
 

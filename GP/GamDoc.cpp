@@ -951,7 +951,7 @@ DWORD CGamDoc::IssueScenarioID()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTileManager* CGamDoc::GetTileManager()
+const CTileManager* CGamDoc::GetTileManager() const
 {
     if (m_pGbx == NULL) return NULL;
     return m_pGbx->GetTileManager();

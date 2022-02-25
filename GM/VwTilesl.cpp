@@ -120,20 +120,18 @@ void CTileSelView::OnInitialUpdate()
     m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument()->GetCreateParameter()));
     ASSERT(m_tid != nullTid);
 
-    CTile tile;
-
     // Fetch full scale tile
-    m_pTileMgr->GetTile(m_tid, &tile, fullScale);
+    CTile tile = m_pTileMgr->GetTile(m_tid, fullScale);
     m_bmFull = tile.CreateBitmapOfTile();
     m_sizeFull = tile.GetSize();
 
     // Fetch half scale tile
-    m_pTileMgr->GetTile(m_tid, &tile, halfScale);
+    tile = m_pTileMgr->GetTile(m_tid, halfScale);
     m_bmHalf = tile.CreateBitmapOfTile();
     m_sizeHalf = tile.GetSize();
 
     // Fetch small scale color and create bogus tile for color editing
-    m_pTileMgr->GetTile(m_tid, &tile, smallScale);
+    tile = m_pTileMgr->GetTile(m_tid, smallScale);
     m_crSmall = tile.GetSmallColor();
     m_sizeSmall = CSize(8, 8);
     CreateColorBitmap(&m_bmSmall, m_sizeSmall, m_crSmall);

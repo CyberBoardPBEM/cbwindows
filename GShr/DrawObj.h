@@ -777,7 +777,7 @@ public:
 // Attributes
 public:
     TileID          m_tid;
-    CTileManager*   m_pTMgr;
+    CB::propagate_const<CTileManager*>   m_pTMgr;
 
     void SetTile(int x, int y, TileID tid);
     virtual enum CDrawObjType GetType() const override { return drawTile; }

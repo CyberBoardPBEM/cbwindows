@@ -155,8 +155,7 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
     if (IsOwned())
         pPTbl->SetOwnerMask(pid, GetOwnerMask());// Force piece to be owned by this player
 
-    CTile tile;
-    pTMgr->GetTile(tid,  &tile, fullScale);
+    CTile tile = pTMgr->GetTile(tid, fullScale);
     CRect rct(pnt, tile.GetSize());
     rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
     LimitRectToBoard(rct);

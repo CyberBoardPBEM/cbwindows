@@ -113,10 +113,11 @@ void CTile::TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo /* = NU
 }
 
 // Updates the tile image in-place
-void CTile::Update(const CBitmap *pBMap) const
+void CTileUpdatable::Update(const CBitmap& pBMap)
 {
-    ASSERT(m_pTS != NULL);
-    m_pTS->UpdateTile(*pBMap, m_yLoc);
+    /* CTileSheet only ever gets created as non-const instances,
+        so const_cast is well-defined */
+    const_cast<CTileSheet&>(CheckedDeref(m_pTS)).UpdateTile(pBMap, m_yLoc);
 }
 
 OwnerPtr<CBitmap> CTile::CreateBitmapOfTile() const

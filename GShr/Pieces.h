@@ -139,7 +139,7 @@ public:
         return const_cast<CPieceSet&>(std::as_const(*this).GetPieceSet(nPSet));
     }
     void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
-    CTileManager* GetTileManager() { return m_pTMgr; }
+    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
 
 // Operations
 public:
@@ -175,7 +175,7 @@ protected:
     WORD        m_wReserved3;       // For future need (set to 0)
     WORD        m_wReserved4;       // For future need (set to 0)
     // ------- //
-    CTileManager* m_pTMgr;          // Supporting tile manager
+    CB::propagate_const<CTileManager*> m_pTMgr;          // Supporting tile manager
     // ------- //
     size_t GetPieceTableSize() const { return m_pPieceTbl.GetSize(); }
     void RemovePieceIDFromPieceSets(PieceID pid);
