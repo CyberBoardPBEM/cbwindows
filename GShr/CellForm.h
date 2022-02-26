@@ -52,17 +52,21 @@ class CCellForm
 // Constructors / Destructors
 public:
     CCellForm();
+    CCellForm(const CCellForm&) = delete;
+    CCellForm& operator=(const CCellForm&) = delete;
+    CCellForm(CCellForm&&) = default;
+    CCellForm& operator=(CCellForm&&) = default;
     ~CCellForm() = default;
 
 // Attributes
 public:
-    CBitmap* GetMask() { return m_pMask ? &*m_pMask : nullptr; }
-    BITMAP*  GetMaskMemoryInfo() { return m_pMask != NULL ? &m_bmapMask : NULL; }
-    BOOL     HasMask() { return m_pMask != NULL; }
+    const CBitmap* GetMask() const { return m_pMask ? &*m_pMask : nullptr; }
+    const BITMAP*  GetMaskMemoryInfo() const { return m_pMask != NULL ? &m_bmapMask : NULL; }
+    BOOL     HasMask() const { return m_pMask != NULL; }
 
-    CRect* GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct);
-    CSize GetCellSize() { return CSize(m_rct.right, m_rct.bottom); }
-    CellFormType GetCellType() { return m_eType; }
+    CRect GetRect(CB::ssize_t row, CB::ssize_t col) const;
+    CSize GetCellSize() const { return CSize(m_rct.right, m_rct.bottom); }
+    CellFormType GetCellType() const { return m_eType; }
     CellStagger GetCellStagger() const { return m_nStagger; }
 
 // Operations
@@ -70,13 +74,13 @@ public:
     void Clear();
     void CreateCell(CellFormType eType, int nParm1, int nParm2 = 0,
         CellStagger nStagger = CellStagger::Invalid);
-    void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col);
-    void FillCell(CDC* pDC, int xPos, int yPos);
-    void FrameCell(CDC* pDC, int xPos, int yPos);
-    CSize CalcBoardSize(size_t nRows, size_t nCols);
-    BOOL CalcTrialBoardSize(size_t nRows, size_t nCols);
+    void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const;
+    void FillCell(CDC& pDC, int xPos, int yPos) const;
+    void FrameCell(CDC& pDC, int xPos, int yPos) const;
+    CSize CalcBoardSize(size_t nRows, size_t nCols) const;
+    BOOL CalcTrialBoardSize(size_t nRows, size_t nCols) const;
 
-    BOOL CompareEqual(CCellForm& cf);
+    BOOL CompareEqual(const CCellForm& cf) const;
 
     // ------- //
     static void GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
@@ -93,7 +97,7 @@ protected:
     OwnerOrNullPtr<CBitmap> m_pMask; // Only defined for hexes
     BITMAP       m_bmapMask;    // Only filled if m_pMask is defined
     // ------- //
-    std::vector<POINT> m_pWrk;   // Scratch copy of m_pPoly
+    static std::vector<POINT> m_pWrk;   // Scratch copy of m_pPoly
     // ------- //
     static void OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff);
     // ------- //
