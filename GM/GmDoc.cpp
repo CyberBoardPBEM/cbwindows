@@ -454,8 +454,7 @@ BOOL CGamDoc::SetupBlankBoard()
 BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
 {
     CBoardPropDialog dlg;
-    CBoardArray* pBrdAry = pBoard.GetBoardArray();
-    ASSERT(pBrdAry);
+    CBoardArray& pBrdAry = pBoard.GetBoardArray();
 
     dlg.m_strName = pBoard.GetName();
     dlg.m_bGridSnap = pBoard.m_bGridSnap;
@@ -465,21 +464,21 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     dlg.m_yGridSnapOff = pBoard.m_yGridSnapOff;
     dlg.m_bCellLines = pBoard.GetCellBorder();
     dlg.m_bCellBorderOnTop = pBoard.GetCellBorderOnTop();
-    dlg.m_nStyleNum = (int)pBrdAry->GetCellNumStyle();
-    dlg.m_bTrackCellNum = pBrdAry->GetCellNumTracking();
-    dlg.m_nRowTrkOffset = pBrdAry->GetRowCellTrackingOffset();
-    dlg.m_nColTrkOffset = pBrdAry->GetColCellTrackingOffset();
-    dlg.m_bRowTrkInvert = pBrdAry->GetRowCellTrackingInvert();
-    dlg.m_bColTrkInvert = pBrdAry->GetColCellTrackingInvert();
-    dlg.m_crCellFrame = pBrdAry->GetCellFrameColor();
-    dlg.m_bEnableXParentCells = pBrdAry->IsTransparentCellTilesEnabled();
+    dlg.m_nStyleNum = (int)pBrdAry.GetCellNumStyle();
+    dlg.m_bTrackCellNum = pBrdAry.GetCellNumTracking();
+    dlg.m_nRowTrkOffset = pBrdAry.GetRowCellTrackingOffset();
+    dlg.m_nColTrkOffset = pBrdAry.GetColCellTrackingOffset();
+    dlg.m_bRowTrkInvert = pBrdAry.GetRowCellTrackingInvert();
+    dlg.m_bColTrkInvert = pBrdAry.GetColCellTrackingInvert();
+    dlg.m_crCellFrame = pBrdAry.GetCellFrameColor();
+    dlg.m_bEnableXParentCells = pBrdAry.IsTransparentCellTilesEnabled();
 
-    dlg.m_nRows = pBrdAry->GetRows();
-    dlg.m_nCols = pBrdAry->GetCols();
-    CSize size = pBrdAry->GetCellSize(fullScale);
+    dlg.m_nRows = pBrdAry.GetRows();
+    dlg.m_nCols = pBrdAry.GetCols();
+    CSize size = pBrdAry.GetCellSize(fullScale);
     dlg.m_nCellHt = size.cy;
     dlg.m_nCellWd = size.cx;
-    const CCellForm& pcf = pBrdAry->GetCellForm(fullScale);
+    const CCellForm& pcf = pBrdAry.GetCellForm(fullScale);
     dlg.m_eCellStyle = pcf.GetCellType();
     dlg.m_bStagger = pcf.GetCellStagger();
 
@@ -493,14 +492,14 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
         pBoard.m_yGridSnapOff = dlg.m_yGridSnapOff;
         pBoard.SetCellBorder(dlg.m_bCellLines);
         pBoard.SetCellBorderOnTop(dlg.m_bCellBorderOnTop);
-        pBrdAry->SetCellNumStyle((CellNumStyle)dlg.m_nStyleNum);
-        pBrdAry->SetCellNumTracking(dlg.m_bTrackCellNum);
-        pBrdAry->SetRowCellTrackingOffset(dlg.m_nRowTrkOffset);
-        pBrdAry->SetColCellTrackingOffset(dlg.m_nColTrkOffset);
-        pBrdAry->SetRowCellTrackingInvert(dlg.m_bRowTrkInvert);
-        pBrdAry->SetColCellTrackingInvert(dlg.m_bColTrkInvert);
-        pBrdAry->SetCellFrameColor(dlg.m_crCellFrame);
-        pBrdAry->SetTransparentCellTilesEnabled(dlg.m_bEnableXParentCells);
+        pBrdAry.SetCellNumStyle((CellNumStyle)dlg.m_nStyleNum);
+        pBrdAry.SetCellNumTracking(dlg.m_bTrackCellNum);
+        pBrdAry.SetRowCellTrackingOffset(dlg.m_nRowTrkOffset);
+        pBrdAry.SetColCellTrackingOffset(dlg.m_nColTrkOffset);
+        pBrdAry.SetRowCellTrackingInvert(dlg.m_bRowTrkInvert);
+        pBrdAry.SetColCellTrackingInvert(dlg.m_bColTrkInvert);
+        pBrdAry.SetCellFrameColor(dlg.m_crCellFrame);
+        pBrdAry.SetTransparentCellTilesEnabled(dlg.m_bEnableXParentCells);
 
         if (dlg.m_bShapeChanged)
         {
@@ -510,7 +509,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
             }
             if (dlg.m_eCellStyle == cformHexPnt) // Only first param is used
                 dlg.m_nCellHt = dlg.m_nCellWd;
-            pBrdAry->ReshapeBoard(dlg.m_nRows, dlg.m_nCols,
+            pBrdAry.ReshapeBoard(dlg.m_nRows, dlg.m_nCols,
                 dlg.m_nCellHt, dlg.m_nCellWd, dlg.m_bStagger);
             pBoard.ForceObjectsOntoBoard();
         }

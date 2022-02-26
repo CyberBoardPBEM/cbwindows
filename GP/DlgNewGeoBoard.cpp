@@ -115,11 +115,11 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
     for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
     {
         CBoard& pBrd = pBMgr->GetBoard(i);
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        const CCellForm& pCellForm = pBArray->GetCellForm(fullScale);
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
 
-        if (!(pCellForm.GetCellType() == cformHexFlat && (pBArray->GetCols() & size_t(1)) != size_t(0) ||
-              pCellForm.GetCellType() == cformHexPnt && (pBArray->GetRows() & size_t(1)) != size_t(0)))
+        if (!(pCellForm.GetCellType() == cformHexFlat && (pBArray.GetCols() & size_t(1)) != size_t(0) ||
+              pCellForm.GetCellType() == cformHexPnt && (pBArray.GetRows() & size_t(1)) != size_t(0)))
             continue;                           // These maps aren't compliant at all
         if (static_cast<BoardID::UNDERLYING_TYPE>(pBrd.GetSerialNumber()) >= GEO_BOARD_SERNUM_BASE)
             continue;                           // Can't build geo maps from geo maps
@@ -130,9 +130,9 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             // comply with the geometry of the root one.
             if (!m_pRootMapCellForm->CompareEqual(pCellForm))
                 continue;
-            if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray->GetCols())
+            if (m_nMaxColumns != size_t(0) && m_tblColWidth[m_nCurrentColumn] != pBArray.GetCols())
                 continue;
-            if (m_nCurrentColumn > size_t(0) && pBArray->GetRows() != m_nCurrentRowHeight)
+            if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
                 continue;
         }
         int nItem = m_listBoard.AddString(pBrd.GetName());
@@ -212,14 +212,14 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     size_t nBrdNum = pBMgr->FindBoardBySerial(dwItemData);
     ASSERT(nBrdNum != Invalid_v<size_t>);
     CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
-    CBoardArray* pBArray = pBrd.GetBoardArray();
-    m_pRootMapCellForm = &pBArray->GetCellForm(fullScale);
+    CBoardArray& pBArray = pBrd.GetBoardArray();
+    m_pRootMapCellForm = &pBArray.GetCellForm(fullScale);
 
     if (m_nMaxColumns == size_t(0))
-        m_tblColWidth.push_back(pBArray->GetCols());
+        m_tblColWidth.push_back(pBArray.GetCols());
 
     if (m_nCurrentRowHeight == size_t(0))
-        m_nCurrentRowHeight = pBArray->GetRows();
+        m_nCurrentRowHeight = pBArray.GetRows();
 
     CString strLabel = pBrd.GetName();
 

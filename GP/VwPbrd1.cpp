@@ -473,7 +473,7 @@ void CPlayBoardView::WorkspaceToClient(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
         point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
@@ -485,7 +485,7 @@ void CPlayBoardView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
     {
@@ -510,7 +510,7 @@ void CPlayBoardView::ClientToWorkspace(CPoint& point) const
     CPoint dpnt = GetDeviceScrollPosition();
     point += (CSize)dpnt;
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
@@ -522,7 +522,7 @@ void CPlayBoardView::ClientToWorkspace(CRect& rect) const
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())

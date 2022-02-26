@@ -62,21 +62,14 @@ CBoard::CBoard()
     m_wReserved4 = 0;
 }
 
-CBoard::~CBoard()
-{
-    if (m_pBrdAry) delete m_pBrdAry;
-    if (m_pTopDwg) delete m_pTopDwg;
-}
-
 // ----------------------------------------------------- //
 
-void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+void CBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
     int nCellBorder /* = -1 */, int nApplyVisible /* = -1 */)// -1 means use internal
 {
-    ASSERT(m_pBrdAry != NULL);
 
     CSize wsize, vsize;
-    m_pBrdAry->GetBoardScaling(eScale, wsize, vsize);
+    GetBoardArray().GetBoardScaling(eScale, wsize, vsize);
 
     DrawBackground(pDC, pDrawRct);  // Moved here so don't need to scale rect
     if (m_pBaseDwg != NULL)
@@ -84,17 +77,17 @@ void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
         CRect rct(pDrawRct);
         if (eScale != fullScale)
         {
-            pDC->SaveDC();
-            pDC->SetMapMode(MM_ANISOTROPIC);
-            pDC->SetWindowExt(wsize);
-            pDC->SetViewportExt(vsize);
+            pDC.SaveDC();
+            pDC.SetMapMode(MM_ANISOTROPIC);
+            pDC.SetWindowExt(wsize);
+            pDC.SetViewportExt(vsize);
             ScaleRect(rct, wsize, vsize);
         }
 
-        CBoardBase::Draw(pDC, &rct, eScale,  nApplyVisible);// Lower Layers
+        CBoardBase::Draw(pDC, rct, eScale,  nApplyVisible);// Lower Layers
 
         if (eScale != fullScale)
-            pDC->RestoreDC(-1);
+            pDC.RestoreDC(-1);
     }
 
     CRect rCellRct;
@@ -108,28 +101,28 @@ void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
             ASSERT(m_pBrdAry != NULL);
             m_pBrdAry->MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
         }
-        DrawCells(pDC, &rCellRct, eScale);
+        DrawCells(pDC, rCellRct, eScale);
     }
     if (!m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
-        DrawCellLines(pDC, &rCellRct, eScale);
+        DrawCellLines(pDC, rCellRct, eScale);
 
     if ((m_iMaxLayer < 0 || m_iMaxLayer >= 3) && m_pTopDwg != NULL)
     {
         CRect rct(pDrawRct);
         if (eScale != fullScale)
         {
-            pDC->SaveDC();
-            pDC->SetMapMode(MM_ANISOTROPIC);
-            pDC->SetWindowExt(wsize);
-            pDC->SetViewportExt(vsize);
+            pDC.SaveDC();
+            pDC.SetMapMode(MM_ANISOTROPIC);
+            pDC.SetWindowExt(wsize);
+            pDC.SetViewportExt(vsize);
             ScaleRect(rct, wsize, vsize);
         }
 
-        DrawDrawingList(m_pTopDwg, pDC, &rct, eScale,
+        DrawDrawingList(&*m_pTopDwg, pDC, rct, eScale,
             nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
 
         if (eScale != fullScale)
-            pDC->RestoreDC(-1);
+            pDC.RestoreDC(-1);
     }
 
     if (m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
@@ -140,44 +133,43 @@ void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
         CRect rct(pDrawRct);
         if (eScale != fullScale)
         {
-            pDC->SaveDC();
-            pDC->SetMapMode(MM_ANISOTROPIC);
-            pDC->SetWindowExt(wsize);
-            pDC->SetViewportExt(vsize);
+            pDC.SaveDC();
+            pDC.SetMapMode(MM_ANISOTROPIC);
+            pDC.SetWindowExt(wsize);
+            pDC.SetViewportExt(vsize);
             ScaleRect(rct, wsize, vsize);
         }
 
-        DrawDrawingList(m_pTopDwg, pDC, &rct, eScale,
+        DrawDrawingList(&*m_pTopDwg, pDC, &rct, eScale,
             nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible,
             TRUE);
 
         if (eScale != fullScale)
-            pDC->RestoreDC(-1);
+            pDC.RestoreDC(-1);
     }
 }
 
 // ----------------------------------------------------- //
 
-void CBoard::DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale)
+void CBoard::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
 {
     if (m_pBrdAry)
-        m_pBrdAry->DrawCellLines(*pDC, *pCellRct, eScale);
+        m_pBrdAry->DrawCellLines(pDC, pCellRct, eScale);
 }
 
 // ----------------------------------------------------- //
 
-void CBoard::DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale)
+void CBoard::DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
 {
     if (m_pBrdAry)
-        m_pBrdAry->DrawCells(*pDC, *pCellRct, eScale);
+        m_pBrdAry->DrawCells(pDC, pCellRct, eScale);
 }
 
 // ----------------------------------------------------- //
 
-void CBoard::SetBoardArray(CBoardArray* pBrdAry)
+void CBoard::SetBoardArray(OwnerOrNullPtr<CBoardArray> pDwg)
 {
-    if (m_pBrdAry) delete m_pBrdAry;
-    m_pBrdAry = pBrdAry;
+    m_pBrdAry = std::move(pDwg);
 }
 
 // ----------------------------------------------------- //
@@ -186,15 +178,14 @@ CDrawList* CBoard::GetTopDrawing(BOOL bCreate)
 {
     if (m_pTopDwg == NULL && bCreate)
         m_pTopDwg = new CDrawList;
-    return m_pTopDwg;
+    return &*m_pTopDwg;
 }
 
 // ----------------------------------------------------- //
 
-void CBoard::SetTopDrawing(CDrawList* pDwg)
+void CBoard::SetTopDrawing(OwnerOrNullPtr<CDrawList> pDwg)
 {
-    if (m_pTopDwg) delete m_pTopDwg;
-    m_pTopDwg = pDwg;
+    m_pTopDwg = std::move(pDwg);
 }
 
 // ----------------------------------------------------- //
@@ -211,7 +202,7 @@ BOOL CBoard::PurgeMissingTileIDs()
 
 // ----------------------------------------------------- //
 
-BOOL CBoard::IsTileInUse(TileID tid)
+BOOL CBoard::IsTileInUse(TileID tid) const
 {
     if (CBoardBase::IsTileInUse(tid))
         return TRUE;
@@ -257,16 +248,8 @@ void CBoard::Serialize(CArchive& ar)
     }
     else
     {
-        if (m_pBrdAry)
-        {
-            delete m_pBrdAry;
-            m_pBrdAry = NULL;
-        }
-        if (m_pTopDwg)
-        {
-            delete m_pTopDwg;
-            m_pTopDwg = NULL;
-        }
+        m_pBrdAry = NULL;
+        m_pTopDwg = NULL;
         WORD wTmp;
 #ifndef GPLAY
         if (CGamDoc::GetLoadingVersion() > NumVersion(0, 54))
@@ -317,41 +300,35 @@ CBoardBase::CBoardBase()
     m_yGridSnapOff = 0;
     // --------- //
     m_crBkGnd = RGB(128, 128, 128);
-    m_pBaseDwg = NULL;
-}
-
-CBoardBase::~CBoardBase()
-{
-    if (m_pBaseDwg) delete m_pBaseDwg;
 }
 
 // ----------------------------------------------------- //
 
-void CBoardBase::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+void CBoardBase::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
     int nApplyVisible /* = -1 */)
 {
     if (m_iMaxLayer < 0 || m_iMaxLayer >= 1)
-        DrawDrawingList(m_pBaseDwg, pDC, pDrawRct, eScale,
+        DrawDrawingList(&*m_pBaseDwg, pDC, pDrawRct, eScale,
             nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
 }
 
 // ----------------------------------------------------- //
 
-void CBoardBase::DrawBackground(CDC* pDC, CRect* pDrawRct)
+void CBoardBase::DrawBackground(CDC& pDC, const CRect& pDrawRct) const
 {
-    COLORREF crPrv = pDC->SetBkColor(m_crBkGnd);
-    pDC->ExtTextOut(0, 0, ETO_OPAQUE, pDrawRct, NULL, 0, NULL);
-    pDC->SetBkColor(crPrv);
+    COLORREF crPrv = pDC.SetBkColor(m_crBkGnd);
+    pDC.ExtTextOut(0, 0, ETO_OPAQUE, pDrawRct, NULL, 0, NULL);
+    pDC.SetBkColor(crPrv);
 }
 
 // ----------------------------------------------------- //
 
-void CBoardBase::DrawDrawingList(CDrawList* pDwg, CDC* pDC, CRect* pDrawRct,
+void CBoardBase::DrawDrawingList(CDrawList* pDwg, CDC& pDC, const CRect& pDrawRct,
     TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects)
 {
     if (pDwg == NULL)
         return;
-    pDwg->Draw(CheckedDeref(pDC), pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
+    pDwg->Draw(pDC, pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
 }
 
 // ----------------------------------------------------- //
@@ -360,15 +337,14 @@ CDrawList* CBoardBase::GetBaseDrawing(BOOL bCreate)
 {
     if (m_pBaseDwg == NULL && bCreate)
         m_pBaseDwg = new CDrawList;
-    return m_pBaseDwg;
+    return &*m_pBaseDwg;
 }
 
 // ----------------------------------------------------- //
 
-void CBoardBase::SetBaseDrawing(CDrawList* pDwg)
+void CBoardBase::SetBaseDrawing(OwnerOrNullPtr<CDrawList> pDwg)
 {
-    if (m_pBaseDwg) delete m_pBaseDwg;
-    m_pBaseDwg = pDwg;
+    m_pBaseDwg = std::move(pDwg);
 }
 
 // ----------------------------------------------------- //
@@ -382,7 +358,7 @@ BOOL CBoardBase::PurgeMissingTileIDs()
 
 // ----------------------------------------------------- //
 
-BOOL CBoardBase::IsTileInUse(TileID tid)
+BOOL CBoardBase::IsTileInUse(TileID tid) const
 {
     if (m_pBaseDwg != NULL && m_pBaseDwg->IsTileInUse(tid))
         return TRUE;
@@ -410,11 +386,7 @@ void CBoardBase::Serialize(CArchive& ar)
     else
     {
         m_pTMgr = ((CGamDoc*)ar.m_pDocument)->GetTileManager();
-        if (m_pBaseDwg)
-        {
-            delete m_pBaseDwg;
-            m_pBaseDwg = NULL;
-        }
+        m_pBaseDwg = NULL;
         uint16_t wTmp;
         DWORD dwTmp;
         ar >> m_nSerialNum;
@@ -484,7 +456,7 @@ BOOL CBoardManager::PurgeMissingTileIDs()
     return bPurged;
 }
 
-BOOL CBoardManager::IsTileInUse(TileID tid)
+BOOL CBoardManager::IsTileInUse(TileID tid) const
 {
     for (size_t i = 0; i < GetNumBoards(); i++)
     {

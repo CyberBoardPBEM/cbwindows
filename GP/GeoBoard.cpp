@@ -113,13 +113,13 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
 
     // 2) Reshape to size new master board.
 
-    CBoardArray* pBrdArrayNew = pBrdNew->GetBoardArray();
+    CBoardArray& pBrdArrayNew = pBrdNew->GetBoardArray();
 
     size_t nRows;
     size_t nCols;
     ComputeNewBoardDimensions(nRows, nCols);
 
-    pBrdArrayNew->ReshapeBoard(nRows, nCols, -1, -1, CellStagger::Invalid);
+    pBrdArrayNew.ReshapeBoard(nRows, nCols, -1, -1, CellStagger::Invalid);
 
     // 3) Fill cells with content of cells from other boards.
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
@@ -133,9 +133,9 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
             ComputeCellOffset(nBoardRow, nBoardCol, nCellRowOffset, nCellColOffset);
 
             CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
-            CBoardArray* pBArray = pBrd.GetBoardArray();
+            CBoardArray& pBArray = pBrd.GetBoardArray();
 
-            CopyCells(pBrdArrayNew, pBArray, nCellRowOffset, nCellColOffset);
+            CopyCells(&pBrdArrayNew, &pBArray, nCellRowOffset, nCellColOffset);
         }
     }
 
@@ -352,14 +352,14 @@ void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size)
 CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol)
 {
     CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
-    CSize sizeCell = pBrdRoot.GetBoardArray()->GetCellSize(fullScale);
+    CSize sizeCell = pBrdRoot.GetBoardArray().GetCellSize(fullScale);
     CPoint pnt(0, 0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
         CBoard& pBrd = GetBoard(size_t(0), nCol);
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        pnt.x += pBArray->GetWidth(fullScale);
-        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        pnt.x += pBArray.GetWidth(fullScale);
+        if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
             pnt.x -= sizeCell.cx;               // A column is shared
         else
             pnt.x -= sizeCell.cx / 2;           // A column is half shared
@@ -367,9 +367,9 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
         CBoard& pBrd = GetBoard(nRow, size_t(0));
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        pnt.y += pBArray->GetHeight(fullScale);
-        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        pnt.y += pBArray.GetHeight(fullScale);
+        if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
             pnt.y -= sizeCell.cy;               // A row is shared
         else
             pnt.y -= sizeCell.cy / 2;           // A row is half shared
@@ -385,17 +385,17 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
     for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
     {
         CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        rnCols += pBArray->GetCols();
-        if (nBoardCol != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        rnCols += pBArray.GetCols();
+        if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
             rnCols--;                   // A column is shared
     }
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
         CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        rnRows += pBArray->GetRows();
-        if (nBoardRow != size_t(0) && pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        rnRows += pBArray.GetRows();
+        if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
             rnRows--;                   // A row is shared
     }
 }
@@ -408,19 +408,19 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
         CBoard& pBrd = GetBoard(size_t(0), nCol);
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        ASSERT(pBArray->GetCols() >= size_t(1));
-        rnCellCol += pBArray->GetCols();
-        if (pBArray->GetCellForm(fullScale).GetCellType() == cformHexFlat)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        ASSERT(pBArray.GetCols() >= size_t(1));
+        rnCellCol += pBArray.GetCols();
+        if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
             rnCellCol--;
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
         CBoard& pBrd = GetBoard(nRow, size_t(0));
-        CBoardArray* pBArray = pBrd.GetBoardArray();
-        ASSERT(pBArray->GetRows() >= size_t(1));
-        rnCellRow += pBArray->GetRows();
-        if (pBArray->GetCellForm(fullScale).GetCellType() == cformHexPnt)
+        CBoardArray& pBArray = pBrd.GetBoardArray();
+        ASSERT(pBArray.GetRows() >= size_t(1));
+        rnCellRow += pBArray.GetRows();
+        if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
             rnCellRow--;
     }
 }

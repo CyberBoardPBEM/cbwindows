@@ -461,7 +461,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 
     // Draw base board image...
     pBoard->SetMaxDrawLayer();          // Make sure all layers are drawn
-    pBoard->Draw(&dcMem, &oRct, m_nZoom,
+    pBoard->Draw(dcMem, oRct, m_nZoom,
         m_nZoom == smallScale ? m_pPBoard->m_bSmallCellBorders : m_pPBoard->m_bCellBorders);
 
     // Draw pieces etc.....
@@ -917,7 +917,7 @@ void CPlayBoardView::PrepareScaledDC(CDC *pDC, CRect* pRct, BOOL bHonor180Flip)
 {
     CSize wsize, vsize;
 
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
 
     pDC->SetMapMode(MM_ANISOTROPIC);
@@ -1219,8 +1219,8 @@ PToolType CPlayBoardView::MapToolType(UINT nToolResID)
 
 void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
 {
-    CBoardArray* pba = m_pPBoard->GetBoard()->GetBoardArray();
-    if (pba->GetCellNumTracking())
+    CBoardArray& pba = m_pPBoard->GetBoard()->GetBoardArray();
+    if (pba.GetCellNumTracking())
     {
         CPoint point;
         GetCursorPos(&point);
@@ -1230,7 +1230,7 @@ void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            std::string str = pba->GetCellNumberStr(point, m_nZoom);
+            std::string str = pba.GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
             pCmdUI->SetText(str.c_str());
         }
@@ -1943,7 +1943,7 @@ void CPlayBoardView::OnEditCopy()
     CRect rct(0, 0, size.cx, size.cy);
 
     // Draw base board image...
-    pBoard->Draw(&dcMem, &rct, m_nZoom, m_pPBoard->m_bCellBorders);
+    pBoard->Draw(dcMem, rct, m_nZoom, m_pPBoard->m_bCellBorders);
 
     // Draw pieces etc.....
     SetupDrawListDC(&dcMem, &rct);
@@ -2013,7 +2013,7 @@ void CPlayBoardView::OnEditBoardToFile()
         CRect rct(0, 0, size.cx, size.cy);
 
         // Draw base board image...
-        pBoard->Draw(&dcMem, &rct, m_nZoom, m_pPBoard->m_bCellBorders);
+        pBoard->Draw(dcMem, rct, m_nZoom, m_pPBoard->m_bCellBorders);
 
         // Draw pieces etc.....
         SetupDrawListDC(&dcMem, &rct);

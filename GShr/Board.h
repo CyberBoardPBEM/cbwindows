@@ -66,7 +66,7 @@ public:
     CBoardBase();
     CBoardBase(const CBoardBase&) = delete;
     CBoardBase& operator=(const CBoardBase&) = delete;
-    virtual ~CBoardBase();
+    virtual ~CBoardBase() = default;
 // Attributes
 public:
     // (Saved in file...)
@@ -79,31 +79,30 @@ public:
     BoardID GetSerialNumber() const { return m_nSerialNum; }
     void SetSerialNumber(BoardID nSerialNum) { m_nSerialNum = nSerialNum; }
     // ------- //
-    BOOL GetApplyVisible() { return m_bApplyVisibility; }
+    BOOL GetApplyVisible() const { return m_bApplyVisibility; }
     void SetApplyVisible(BOOL bApply) { m_bApplyVisibility = bApply; }
     // ------- //
     void SetBkColor(COLORREF crBkGnd) { m_crBkGnd = crBkGnd; }
-    void SetBaseDrawing(CDrawList* pDwg);
+    void SetBaseDrawing(OwnerOrNullPtr<CDrawList> pDwg);
+    const CDrawList* GetBaseDrawing() const { return m_pBaseDwg ? &*m_pBaseDwg : nullptr; }
     CDrawList* GetBaseDrawing(BOOL bCreate = FALSE);
     void SetMaxDrawLayer(int iMaxLayer = -1) { m_iMaxLayer = iMaxLayer; }
     void SetName(const char *pszName) { m_strBoardName = pszName; }
-    virtual void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
 
-    int GetMaxDrawLayer() { return m_iMaxLayer; }
-    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
+    int GetMaxDrawLayer() const { return m_iMaxLayer; }
     const char* GetName() const { return m_strBoardName; }
 
 // Operations
 public:
-    void DrawBackground(CDC* pDC, CRect* pDrawRct);
-    void DrawDrawingList(CDrawList* pDwg, CDC* pDC, CRect* pDrawRct,
+    void DrawBackground(CDC& pDC, const CRect& pDrawRct) const;
+    static void DrawDrawingList(CDrawList* pDwg, CDC& pDC, const CRect& pDrawRct,
         TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects = FALSE);
 #ifndef GPLAY
     BOOL PurgeMissingTileIDs();
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
 #endif
     // ------- //
-    virtual void Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+    virtual void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
         int nApplyVisible = -1);
     // ------- //
     void Serialize(CArchive& ar);
@@ -117,7 +116,7 @@ protected:
     int         m_iMaxLayer;        // Max layer to draw
 
     // List of base layer drawing primitives (lines, polygons, text...);
-    CDrawList*  m_pBaseDwg;         // Various shapes to draw
+    OwnerOrNullPtr<CDrawList>  m_pBaseDwg;         // Various shapes to draw
 
     // ------- //
     CB::propagate_const<CTileManager*> m_pTMgr;          // Tile manager
@@ -130,52 +129,49 @@ class CBoard : public CBoardBase
     friend class CGamDoc;
 public:
     CBoard();
-    virtual ~CBoard();
+    virtual ~CBoard() = default;
 // Attributes
 public:
-    CSize GetSize(TileScale eScale)
+    CSize GetSize(TileScale eScale) const
         {
-            ASSERT(m_pBrdAry!=NULL);
-            return m_pBrdAry->GetSize(eScale);
+            return GetBoardArray().GetSize(eScale);
         }
     int GetWidth(TileScale eScale) const
         {
-            ASSERT(m_pBrdAry!=NULL);
-            return m_pBrdAry->GetWidth(eScale);
+            return GetBoardArray().GetWidth(eScale);
         }
     int GetHeight(TileScale eScale) const
         {
-            ASSERT(m_pBrdAry!=NULL);
-            return m_pBrdAry->GetHeight(eScale);
+            return GetBoardArray().GetHeight(eScale);
         }
     CSize GetCellSize(TileScale eScale) const
         {
-            ASSERT(m_pBrdAry!=NULL);
-            return m_pBrdAry->GetCellSize(eScale);
+            return GetBoardArray().GetCellSize(eScale);
         }
-    void SetBoardArray(CBoardArray* pDwg);
-    const CBoardArray* GetBoardArray() const { return m_pBrdAry; }
-    CBoardArray* GetBoardArray() { return const_cast<CBoardArray*>(std::as_const(*this).GetBoardArray()); }
-    void SetTopDrawing(CDrawList* pDwg);
+    void SetBoardArray(OwnerOrNullPtr<CBoardArray> pDwg);
+    const CBoardArray& GetBoardArray() const { return CheckedDeref(m_pBrdAry); }
+    CBoardArray& GetBoardArray() { return const_cast<CBoardArray&>(std::as_const(*this).GetBoardArray()); }
+    void SetTopDrawing(OwnerOrNullPtr<CDrawList> pDwg);
+    const CDrawList* GetTopDrawing() const { return m_pTopDwg ? &*m_pTopDwg : nullptr; }
     CDrawList* GetTopDrawing(BOOL bCreate = FALSE);
     // -------- //
-    BOOL GetCellBorder() { return m_bShowCellBorder; }
+    BOOL GetCellBorder() const { return m_bShowCellBorder; }
     void SetCellBorder(BOOL bShow) { m_bShowCellBorder = bShow; }
-    BOOL GetCellBorderOnTop() { return m_bCellBorderOnTop; }
+    BOOL GetCellBorderOnTop() const { return m_bCellBorderOnTop; }
     void SetCellBorderOnTop(BOOL bOnTop) { m_bCellBorderOnTop = bOnTop; }
 
 // Operations
 public:
-    void DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale);
-    void DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale);
+    void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
+    void DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
 #ifndef GPLAY
     BOOL PurgeMissingTileIDs();
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
     // ------- //
     void ForceObjectsOntoBoard();
 #endif
     // ------- //
-    virtual void Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
+    virtual void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
         int nCellBorder = -1, int nApplyVisible = -1);// -1 means use internal
     // ------- //
     void Serialize(CArchive& ar);
@@ -189,11 +185,11 @@ protected:
     WORD    m_wReserved3;           // For future need (set to 0)
     WORD    m_wReserved4;           // For future need (set to 0)
     // Saved in file...
-    CBoardArray* m_pBrdAry;     // Actual board definition
+    OwnerOrNullPtr<CBoardArray> m_pBrdAry;     // Actual board definition
     // List of outer layer drawing primitives (lines, polygons, text...);
-    CDrawList*  m_pTopDwg;
+    OwnerOrNullPtr<CDrawList>  m_pTopDwg;
     // -------- //
-    BOOL IsDrawGridLines(int nOverride)
+    BOOL IsDrawGridLines(int nOverride) const
     {
         return nOverride == -1 ? m_bShowCellBorder : nOverride;
     }
@@ -229,10 +225,10 @@ public:
     void SetForeColor(COLORREF cr) { m_crFore = cr; }
     void SetBackColor(COLORREF cr) { m_crBack = cr; }
     void SetLineWidth(int nWidth) { m_nLineWidth = nWidth; }
-    COLORREF GetForeColor() { return m_crFore; }
-    COLORREF GetBackColor() { return m_crBack; }
-    int GetLineWidth() { return m_nLineWidth; }
-    FontID GetFontID() { return m_fontID; }
+    COLORREF GetForeColor() const { return m_crFore; }
+    COLORREF GetBackColor() const { return m_crBack; }
+    int GetLineWidth() const { return m_nLineWidth; }
+    FontID GetFontID() const { return m_fontID; }
 
     BOOL DoBoardFontDialog();
 
@@ -247,7 +243,7 @@ public:
     BoardID IssueSerialNumber();
 #ifndef GPLAY
     BOOL PurgeMissingTileIDs();
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
 #endif
     // -------- //
     size_t FindBoardBySerial(BoardID nSerialNum) const;
