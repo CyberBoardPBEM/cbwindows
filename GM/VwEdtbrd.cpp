@@ -236,7 +236,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
         pDrawDC = &dcMem;
     }
 
-    m_pBoard->Draw(pDrawDC, &oRct, m_nZoom);
+    m_pBoard->Draw(*pDrawDC, oRct, m_nZoom);
 
     if (m_bOffScreen)
     {
@@ -282,7 +282,7 @@ void CBrdEditView::ResetPalette(CDC *pDC)
 void CBrdEditView::PrepareScaledDC(CDC *pDC)
 {
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     pDC->SetMapMode(MM_ANISOTROPIC);
     pDC->SetWindowExt(wsize);
     pDC->SetViewportExt(vsize);
@@ -299,7 +299,7 @@ void CBrdEditView::ClientToWorkspace(CPoint& point) const
     CPoint dpnt = GetDeviceScrollPosition();
     point += (CSize)dpnt;
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
 }
 
@@ -308,7 +308,7 @@ void CBrdEditView::ClientToWorkspace(CRect& rect) const
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
 }
 
@@ -316,7 +316,7 @@ void CBrdEditView::WorkspaceToClient(CPoint& point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, vsize, wsize);
     point -= (CSize)dpnt;
 }
@@ -325,7 +325,7 @@ void CBrdEditView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, vsize, wsize);
     rect -= dpnt;
 }
@@ -506,7 +506,7 @@ void CBrdEditView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 {
     CRect oRct;
     pDC->GetClipBox(&oRct);
-    m_pBoard->Draw(pDC, &oRct, m_nZoom);
+    m_pBoard->Draw(*pDC, oRct, m_nZoom);
 }
 
 void CBrdEditView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
@@ -935,20 +935,19 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
 {
     size_t row, col;
 
-    CBoardArray* pBa = m_pBoard->GetBoardArray();
-    ASSERT(pBa != NULL);
+    CBoardArray& pBa = m_pBoard->GetBoardArray();
 
     WorkspaceToClient(pnt);
     pnt += (CSize)GetDeviceScrollPosition();
 
-    if (!pBa->FindCell(pnt.x, pnt.y, row, col, m_nZoom))
+    if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
-    if (tid != pBa->GetCellTile(value_preserving_cast<size_t>(row), value_preserving_cast<size_t>(col)))
+    if (tid != pBa.GetCellTile(value_preserving_cast<size_t>(row), value_preserving_cast<size_t>(col)))
     {
-        pBa->SetCellTile(row, col, tid);
+        pBa.SetCellTile(row, col, tid);
         if (bUpdate)
         {
-            CRect rct = pBa->GetCellRect(row, col, m_nZoom);// In board coords
+            CRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
@@ -960,19 +959,18 @@ void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
 {
     size_t row, col;
 
-    CBoardArray* pBa = m_pBoard->GetBoardArray();
-    ASSERT(pBa != NULL);
+    CBoardArray& pBa = m_pBoard->GetBoardArray();
     WorkspaceToClient(pnt);
     pnt += (CSize)GetDeviceScrollPosition();
 
-    if (!pBa->FindCell(pnt.x, pnt.y, row, col, m_nZoom))
+    if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
-    if (crCell != pBa->GetCellColor(row, col))
+    if (crCell != pBa.GetCellColor(row, col))
     {
-        pBa->SetCellColor(row, col, crCell);
+        pBa.SetCellColor(row, col, crCell);
         if (bUpdate)
         {
-            CRect rct = pBa->GetCellRect(row, col, m_nZoom);// In board coords
+            CRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
@@ -1192,7 +1190,7 @@ void CBrdEditView::AdjustRect(CRect& rct)
 void CBrdEditView::PixelToWorkspace(CPoint& point)
 {
     CSize wsize, vsize;
-    m_pBoard->GetBoardArray()->GetBoardScaling(m_nZoom, wsize, vsize);
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
 }
 
@@ -1501,8 +1499,8 @@ void CBrdEditView::OnViewToggleScale()
 
 void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
 {
-    CBoardArray* pba = m_pBoard->GetBoardArray();
-    if (pba->GetCellNumTracking())
+    CBoardArray& pba = m_pBoard->GetBoardArray();
+    if (pba.GetCellNumTracking())
     {
         CPoint point;
         GetCursorPos(&point);
@@ -1512,7 +1510,7 @@ void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            std::string str = pba->GetCellNumberStr(point, m_nZoom);
+            std::string str = pba.GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
             pCmdUI->SetText(str.c_str());
         }

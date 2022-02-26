@@ -256,7 +256,7 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
 
     CRect rct(CPoint(0, 0), size);
     pBoard->SetMaxDrawLayer();                  // Make sure all layers are drawn
-    pBoard->Draw(&dcMem, &rct, smallScale, m_pPBoard->m_bSmallCellBorders);
+    pBoard->Draw(dcMem, rct, smallScale, m_pPBoard->m_bSmallCellBorders);
 
     ResetPalette(&dcMem);
     dcMem.SelectObject(pPrvBMap);
@@ -268,7 +268,7 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
 void CTinyBoardView::SetupDrawListDC(CDC* pDC, CRect& rct)
 {
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
 
     pDC->SaveDC();
@@ -290,7 +290,7 @@ void CTinyBoardView::WorkspaceToClient(CRect& rect)
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
     {
@@ -313,7 +313,7 @@ void CTinyBoardView::ClientToWorkspace(CPoint& pnt)
 {
     pnt += GetDeviceScrollPosition();
     CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
     ScalePoint(pnt, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
@@ -355,7 +355,7 @@ void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
     }
 
     pTBrd->m_pWnd = GetParentFrame();
-    m_pPBoard->GetBoard()->GetBoardArray()->
+    m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, pTBrd->m_wsize, pTBrd->m_vsize);
     pTBrd->m_bRotate180 = m_pPBoard->IsBoardRotated180();
     CRect rct;
