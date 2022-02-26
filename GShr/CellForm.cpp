@@ -427,13 +427,12 @@ void CCellForm::Serialize(CArchive& ar)
     }
 }
 
-void CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
-    CString& str)
+std::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col)
 {
     size_t nTmp;
     char szNum1[_MAX_U64TOSTR_BASE10_COUNT];
     char szNum2[_MAX_U64TOSTR_BASE10_COUNT];
-    str.Empty();
+    std::string str;
     switch (eStyle)
     {
         case cnsColRow:
@@ -476,5 +475,6 @@ void CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
             break;
         default:;
     }
+    return str;
 }
 

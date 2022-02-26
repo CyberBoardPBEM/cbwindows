@@ -99,14 +99,14 @@ void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
 
     CRect rCellRct;
     if (IsDrawGridLines(nCellBorder))
-        m_pBrdAry->MapPixelsToCellBounds(pDrawRct, &rCellRct, eScale);
+        m_pBrdAry->MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
 
     if (m_iMaxLayer < 0 || m_iMaxLayer >= 2)
     {
         if (!IsDrawGridLines(nCellBorder))
         {
             ASSERT(m_pBrdAry != NULL);
-            m_pBrdAry->MapPixelsToCellBounds(pDrawRct, &rCellRct, eScale);
+            m_pBrdAry->MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
         }
         DrawCells(pDC, &rCellRct, eScale);
     }
@@ -161,7 +161,7 @@ void CBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale,
 void CBoard::DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale)
 {
     if (m_pBrdAry)
-        m_pBrdAry->DrawCellLines(pDC, pCellRct, eScale);
+        m_pBrdAry->DrawCellLines(*pDC, *pCellRct, eScale);
 }
 
 // ----------------------------------------------------- //
@@ -169,7 +169,7 @@ void CBoard::DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale)
 void CBoard::DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale)
 {
     if (m_pBrdAry)
-        m_pBrdAry->DrawCells(pDC, pCellRct, eScale);
+        m_pBrdAry->DrawCells(*pDC, *pCellRct, eScale);
 }
 
 // ----------------------------------------------------- //
@@ -292,7 +292,8 @@ void CBoard::Serialize(CArchive& ar)
         ar >> wTmp;
         if (wTmp != 0)
         {
-            m_pBrdAry = new CBoardArray;
+            CGamDoc& doc = CheckedDeref((CGamDoc*)ar.m_pDocument);
+            m_pBrdAry = new CBoardArray(CheckedDeref(doc.GetTileManager()));
             m_pBrdAry->Serialize(ar);
         }
         ar >> wTmp;

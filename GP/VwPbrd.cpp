@@ -1230,10 +1230,9 @@ void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            CString str;
-            pba->GetCellNumberStr(point, str, m_nZoom);
+            std::string str = pba->GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
-            pCmdUI->SetText(str);
+            pCmdUI->SetText(str.c_str());
         }
     }
 }

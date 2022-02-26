@@ -948,8 +948,7 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
         pBa->SetCellTile(row, col, tid);
         if (bUpdate)
         {
-            CRect rct;
-            pBa->GetCellRect(row, col, &rct, m_nZoom);// In board coords
+            CRect rct = pBa->GetCellRect(row, col, m_nZoom);// In board coords
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
@@ -973,8 +972,7 @@ void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
         pBa->SetCellColor(row, col, crCell);
         if (bUpdate)
         {
-            CRect rct;
-            pBa->GetCellRect(row, col, &rct, m_nZoom);// In board coords
+            CRect rct = pBa->GetCellRect(row, col, m_nZoom);// In board coords
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
@@ -1514,10 +1512,9 @@ void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            CString str;
-            pba->GetCellNumberStr(point, str, m_nZoom);
+            std::string str = pba->GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
-            pCmdUI->SetText(str);
+            pCmdUI->SetText(str.c_str());
         }
     }
 }

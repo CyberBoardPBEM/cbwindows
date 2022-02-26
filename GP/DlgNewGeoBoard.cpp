@@ -116,7 +116,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
     {
         CBoard& pBrd = pBMgr->GetBoard(i);
         CBoardArray* pBArray = pBrd.GetBoardArray();
-        CCellForm& pCellForm = pBArray->GetCellForm(fullScale);
+        const CCellForm& pCellForm = pBArray->GetCellForm(fullScale);
 
         if (!(pCellForm.GetCellType() == cformHexFlat && (pBArray->GetCols() & size_t(1)) != size_t(0) ||
               pCellForm.GetCellType() == cformHexPnt && (pBArray->GetRows() & size_t(1)) != size_t(0)))

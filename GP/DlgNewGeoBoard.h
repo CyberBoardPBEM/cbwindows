@@ -71,7 +71,7 @@ public:
 // Implementation - vars
 protected:
 
-    CCellForm*  m_pRootMapCellForm;
+    const CCellForm* m_pRootMapCellForm;
     size_t      m_nCurrentRowHeight;                    // Height of current row maps
     size_t      m_nRowNumber;
 

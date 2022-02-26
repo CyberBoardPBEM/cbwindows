@@ -43,6 +43,7 @@ struct BoardCell
     };
     // -------- //
     BoardCell();
+    BoardCell& operator=(const BoardCell&) = default;
     bool operator==(const BoardCell& rhs) const
     {
         return m_tile == rhs.m_tile &&
@@ -53,11 +54,11 @@ struct BoardCell
     }
     bool operator!=(const BoardCell& rhs) const { return !(*this == rhs); }
     // -------- //
-    BOOL IsTileID();
-    BOOL IsEmpty();
+    BOOL IsTileID() const;
+    BOOL IsEmpty() const;
     // -------- //
-    TileID GetTID();
-    COLORREF GetColor();
+    TileID GetTID() const;
+    COLORREF GetColor() const;
     // -------- //
     void Clear();
     void SetTID(TileID id);
@@ -72,18 +73,20 @@ class CBoardArray
 {
     friend class CGamDoc;
 public:
-    CBoardArray();
-    virtual ~CBoardArray() { DestroyBoard(); }
+    CBoardArray(CTileManager& tileMgr);
+    CBoardArray(const CBoardArray&) = delete;
+    CBoardArray& operator=(const CBoardArray&) = delete;
+    virtual ~CBoardArray() = default;
 
 // Attributes
 public:
-    COLORREF GetCellColor(size_t row, size_t col)
+    COLORREF GetCellColor(size_t row, size_t col) const
     {
         return GetCell(row, col).m_crCell;
     }
-    TileID GetCellTile(size_t row, size_t col)
+    TileID GetCellTile(size_t row, size_t col) const
         { return GetCell(row, col).GetTID(); }
-    BOOL IsTransparentCellTilesEnabled()
+    BOOL IsTransparentCellTilesEnabled() const
         { return m_bTransparentCells; }
     void SetTransparentCellTilesEnabled(BOOL bEnabled = TRUE)
         { m_bTransparentCells = bEnabled; }
@@ -94,17 +97,17 @@ public:
     void SetRowCellTrackingInvert(BOOL bTrkInv) { m_bRowTrkInvert = bTrkInv; }
     void SetColCellTrackingInvert(BOOL bTrkInv) { m_bColTrkInvert = bTrkInv; }
     void SetCellNumStyle(CellNumStyle eStyle) { m_eNumStyle = eStyle; }
-    BOOL GetCellNumTracking() { return m_bTrackCellNum; }
-    int GetRowCellTrackingOffset() { return m_nRowTrkOffset; }
-    int GetColCellTrackingOffset() { return m_nColTrkOffset; }
-    BOOL GetRowCellTrackingInvert() { return m_bRowTrkInvert; }
-    BOOL GetColCellTrackingInvert() { return m_bColTrkInvert; }
-    CellNumStyle GetCellNumStyle() { return m_eNumStyle; }
+    BOOL GetCellNumTracking() const { return m_bTrackCellNum; }
+    int GetRowCellTrackingOffset() const { return m_nRowTrkOffset; }
+    int GetColCellTrackingOffset() const { return m_nColTrkOffset; }
+    BOOL GetRowCellTrackingInvert() const { return m_bRowTrkInvert; }
+    BOOL GetColCellTrackingInvert() const { return m_bColTrkInvert; }
+    CellNumStyle GetCellNumStyle() const { return m_eNumStyle; }
     // ------ //
-    void GetCellNumberStr(CPoint pnt, CString& str, TileScale eScale);
-    void GetCellNumberStr(size_t row, size_t col, CString& str);
+    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    std::string GetCellNumberStr(size_t row, size_t col) const;
     // ------ //
-    COLORREF GetCellFrameColor() { return m_crCellFrame; }
+    COLORREF GetCellFrameColor() const { return m_crCellFrame; }
     void SetCellFrameColor(COLORREF cr);
     // ------ //
     const BoardCell& GetCell(size_t row, size_t col) const;
@@ -112,16 +115,15 @@ public:
     {
         return const_cast<BoardCell&>(std::as_const(*this).GetCell(row, col));
     }
-    CCellForm& GetCellForm(TileScale eScale);
-    void SetTileManager(CTileManager *pTsa) { m_pTsa = pTsa; }
-    const CTileManager* GetTileManager() const { return &*m_pTsa; }
+    const CCellForm& GetCellForm(TileScale eScale) const;
+    const CTileManager& GetTileManager() const { return *m_pTsa; }
     // ------ //
     size_t GetRows() const { return m_nRows; }
     size_t GetCols() const { return m_nCols; }
-    int GetWidth(TileScale eScale);     // Board's pixel width
-    int GetHeight(TileScale eScale);    // Board's pixel height
-    CSize GetSize(TileScale eScale);    // Board's pixel size
-    CSize GetCellSize(TileScale eScale);// Cell's pixel size
+    int GetWidth(TileScale eScale) const;     // Board's pixel width
+    int GetHeight(TileScale eScale) const;    // Board's pixel height
+    CSize GetSize(TileScale eScale) const;    // Board's pixel size
+    CSize GetCellSize(TileScale eScale) const;// Cell's pixel size
 
 // Operations
 public:
@@ -135,24 +137,24 @@ public:
     static void GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
         CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
-    void DrawCells(CDC* pDC, CRect* pCellRct, TileScale eScale);
-    void DrawCellLines(CDC* pDC, CRect* pCellRct, TileScale eScale);
-    void FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale);
-    void FrameCell(CDC *pDC, size_t row, size_t col, TileScale eScale);
+    void DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
+    void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
+    void FillCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
+    void FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
     // ------- //
     void SetCellTile(size_t row, size_t col, TileID tid);
     void SetCellColor(size_t row, size_t col, COLORREF cr);
     void SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
         size_t colEnd, COLORREF cr);
     // ------- //
-    void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize);
-    BOOL FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale);
-    void GetCellRect(size_t row, size_t col, CRect* pRct, TileScale eScale);
-    BOOL MapPixelsToCellBounds(CRect* pPxlRct, CRect* pCellRct,
-        TileScale eScale);
+    void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize) const;
+    BOOL FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale) const;
+    CRect GetCellRect(size_t row, size_t col, TileScale eScale) const;
+    BOOL MapPixelsToCellBounds(const CRect& pPxlRct, CRect& pCellRct,
+        TileScale eScale) const;
     // ------- //
     BOOL PurgeMissingTileIDs();
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
     // ------- //
     void Serialize(CArchive& ar);
 // Implementation
@@ -181,7 +183,7 @@ protected:
     // -------- //
     CPen    m_pnCellFrame;      // Cell frame color pen.
     // -------- //
-    CB::propagate_const<CTileManager*> m_pTsa;       // For reference only! Don't destroy!
+    RefPtr<CTileManager> m_pTsa;
     // -------- //
     size_t CellIndex(size_t row, size_t col) const { return row*m_nCols + col; }
 };
@@ -191,14 +193,14 @@ protected:
 #ifndef _DEBUG
 inline  BoardCell::BoardCell() { Clear(); }
 inline  void BoardCell::Clear() { m_tile = false; m_crCell = noColor; }
-inline  BOOL BoardCell::IsTileID()
+inline  BOOL BoardCell::IsTileID() const
     { return m_tile && m_tidCell != nullTid; }
-inline  BOOL BoardCell::IsEmpty()  { return !m_tile && m_crCell == noColor; }
-inline  TileID BoardCell::GetTID()
+inline  BOOL BoardCell::IsEmpty() const { return !m_tile && m_crCell == noColor; }
+inline  TileID BoardCell::GetTID() const
     { return m_tile ? m_tidCell : nullTid; }
 inline  void BoardCell::SetTID(TileID id)
     { m_tile = true; m_tidCell = id; }
-inline  COLORREF BoardCell::GetColor() { ASSERT(!m_tile); return !m_tile ? m_crCell : noColor; }
+inline  COLORREF BoardCell::GetColor() const { ASSERT(!m_tile); return !m_tile ? m_crCell : noColor; }
 inline  void BoardCell::SetColor(COLORREF cr) { m_tile = false; m_crCell = cr; }
 #endif
 
