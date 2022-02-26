@@ -479,7 +479,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     CSize size = pBrdAry->GetCellSize(fullScale);
     dlg.m_nCellHt = size.cy;
     dlg.m_nCellWd = size.cx;
-    CCellForm& pcf = pBrdAry->GetCellForm(fullScale);
+    const CCellForm& pcf = pBrdAry->GetCellForm(fullScale);
     dlg.m_eCellStyle = pcf.GetCellType();
     dlg.m_bStagger = pcf.GetCellStagger();
 
@@ -800,7 +800,7 @@ void CGamDoc::OnEditCreateBoard()
         pBoard->SetSerialNumber(pBMgr->IssueSerialNumber());
         pBoard->SetName(dlg.m_strBoardName);
 
-        CBoardArray* pBrdAry = new CBoardArray;
+        CBoardArray* pBrdAry = new CBoardArray(*GetTileManager());
 
         if (dlg.m_nBoardType == cformRect)
         {
@@ -812,8 +812,6 @@ void CGamDoc::OnEditCreateBoard()
         pBrdAry->CreateBoard((CellFormType)dlg.m_nBoardType,
             dlg.m_iRows, dlg.m_iCols, dlg.m_iCellHt, dlg.m_iCellWd,
             dlg.m_bStagger);
-
-        pBrdAry->SetTileManager(GetTileManager());
 
         pBoard->SetBoardArray(pBrdAry);
         pBoard->SetBkColor(RGB(255, 255, 255));

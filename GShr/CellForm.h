@@ -83,8 +83,7 @@ public:
     BOOL CompareEqual(const CCellForm& cf) const;
 
     // ------- //
-    static void GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col,
-        CString& str);
+    static std::string GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col);
     // ------- //
     void Serialize(CArchive& ar);
 

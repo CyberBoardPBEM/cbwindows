@@ -1144,7 +1144,7 @@ void CBitEditView::OnImageBoardMask()
 
     CBoard& pBoard = pBMgr->GetBoard(dlg.m_nBrdNum);
 
-    CCellForm& pcf = pBoard.GetBoardArray()->
+    const CCellForm& pcf = pBoard.GetBoardArray()->
         GetCellForm(m_pSelView->GetCurrentScale());
 
     CSize size = pcf.GetCellSize();

@@ -158,12 +158,6 @@ public:
     CBoardArray* GetBoardArray() { return const_cast<CBoardArray*>(std::as_const(*this).GetBoardArray()); }
     void SetTopDrawing(CDrawList* pDwg);
     CDrawList* GetTopDrawing(BOOL bCreate = FALSE);
-    virtual void SetTileManager(CTileManager* pTMgr)
-        {
-            ASSERT(m_pBrdAry!=NULL);
-            CBoardBase::SetTileManager(pTMgr);
-            m_pBrdAry->SetTileManager(pTMgr);
-        }
     // -------- //
     BOOL GetCellBorder() { return m_bShowCellBorder; }
     void SetCellBorder(BOOL bShow) { m_bShowCellBorder = bShow; }

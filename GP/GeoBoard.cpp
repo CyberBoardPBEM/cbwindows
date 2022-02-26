@@ -269,24 +269,23 @@ void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
     // Handle left half...
     CBitmap* prvBMap = dc.SelectObject(&bmap);
 
-    CRect rct;
-    pBALeft->GetCellRect(nRowLeft, nColLeft, &rct, eScale);
+    CRect rct = pBALeft->GetCellRect(nRowLeft, nColLeft, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.right -= rct.Width() / 2 - (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBALeft->FillCell(&dc, nRowLeft, nColLeft, eScale);
+    pBALeft->FillCell(dc, nRowLeft, nColLeft, eScale);
     dc.SelectClipRgn(NULL);
 
     // Handle right half...
-    pBARight->GetCellRect(nRowRight, nColRight, &rct, eScale);
+    rct = pBARight->GetCellRect(nRowRight, nColRight, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.left += rct.Width() / 2 + (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBARight->FillCell(&dc, nRowRight, nColRight, eScale);
+    pBARight->FillCell(dc, nRowRight, nColRight, eScale);
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
@@ -307,24 +306,23 @@ void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
     // Handle top half...
     CBitmap* prvBMap = dc.SelectObject(&bmap);
 
-    CRect rct;
-    pBATop->GetCellRect(nRowTop, nColTop, &rct, eScale);
+    CRect rct = pBATop->GetCellRect(nRowTop, nColTop, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.bottom += rct.Height() / 2 - (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBATop->FillCell(&dc, nRowTop, nColTop, eScale);
+    pBATop->FillCell(dc, nRowTop, nColTop, eScale);
     dc.SelectClipRgn(NULL);
 
     // Handle bottom half...
-    pBABottom->GetCellRect(nRowBottom, nColBottom, &rct, eScale);
+    rct = pBABottom->GetCellRect(nRowBottom, nColBottom, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.top += rct.Height() / 2 + (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBABottom->FillCell(&dc, nRowBottom, nColBottom, eScale);
+    pBABottom->FillCell(dc, nRowBottom, nColBottom, eScale);
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
