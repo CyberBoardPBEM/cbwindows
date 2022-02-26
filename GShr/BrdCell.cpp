@@ -234,8 +234,7 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
     BoardCell& pCell = GetCell(row, col);
     CCellForm& pCF = GetCellForm(eScale);
 
-    CRect rct;
-    pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
+    CRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
 
     if (!pDC->RectVisible(&rct))
         return;
@@ -246,12 +245,12 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 
         if (eScale != smallScale)
         {
-            CBitmap *pBMap = pCF.GetMask();
+            const CBitmap *pBMap = pCF.GetMask();
             if (pBMap != NULL && m_bTransparentCells)
                 tile.TransBlt(*pDC, rct.left, rct.top, pCF.GetMaskMemoryInfo());
             else if (pBMap != NULL)
             {
-                g_gt.mDC1.SelectObject(pBMap);
+                g_gt.mDC1.SelectObject(*pBMap);
 
                 pDC->SetBkColor(RGB(255, 255, 255));
                 pDC->SetTextColor(RGB(0, 0, 0));
@@ -284,7 +283,7 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 
         oBrsh.CreateSolidBrush(pCell.GetColor());
         CBrush* pPrvBrsh = pDC->SelectObject(&oBrsh);
-        pCF.FillCell(pDC, rct.left, rct.top);
+        pCF.FillCell(*pDC, rct.left, rct.top);
         pDC->SelectObject(pPrvBrsh);
     }
 }
@@ -293,7 +292,7 @@ void CBoardArray::FillCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 
 void CBoardArray::GetCellRect(size_t row, size_t col, CRect* pRct, TileScale eScale)
 {
-    GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), pRct);
+    CheckedDeref(pRct) = GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
 }
 
 // ----------------------------------------------------- //
@@ -307,12 +306,11 @@ CSize CBoardArray::GetCellSize(TileScale eScale)
 
 void CBoardArray::FrameCell(CDC *pDC, size_t row, size_t col, TileScale eScale)
 {
-    CRect rct;
     CCellForm& pCF = GetCellForm(eScale);
-    pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col), &rct);
+    CRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
     if (!pDC->RectVisible(&rct))
         return;
-    pCF.FrameCell(pDC, rct.left, rct.top);
+    pCF.FrameCell(*pDC, rct.left, rct.top);
 }
 
 // ----------------------------------------------------- //

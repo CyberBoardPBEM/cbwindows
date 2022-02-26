@@ -1150,11 +1150,11 @@ void CBitEditView::OnImageBoardMask()
     CSize size = pcf.GetCellSize();
     g_gt.mDC1.SelectObject(&m_bmView);
 
-    CBitmap* pMask = pcf.GetMask();
+    const CBitmap* pMask = pcf.GetMask();
 
     if (pMask != NULL)
     {
-        g_gt.mDC2.SelectObject(pMask);
+        g_gt.mDC2.SelectObject(*pMask);
         g_gt.mDC1.BitBlt(0, 0, size.cx, size.cy, &g_gt.mDC2, 0, 0,
             0x00220326L /* DSna */);
         g_gt.SelectSafeObjectsForDC2();

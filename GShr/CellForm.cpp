@@ -40,6 +40,8 @@ static char THIS_FILE[] = __FILE__;
 
 inline int RoundHalf(int x) { return x / 2 + (x & 1); }
 
+std::vector<POINT> CCellForm::m_pWrk;
+
 //////////////////////////////////////////////////////////////////////
 
 CCellForm::CCellForm()
@@ -50,7 +52,7 @@ CCellForm::CCellForm()
 
 //////////////////////////////////////////////////////////////////////
 
-BOOL CCellForm::CompareEqual(CCellForm& cf)
+BOOL CCellForm::CompareEqual(const CCellForm& cf) const
 {
     return m_eType == cf.m_eType && m_nStagger == cf.m_nStagger &&
         m_rct == cf.m_rct;
@@ -171,18 +173,17 @@ void CCellForm::CreateHexMask()
     //mskFile.Close();
 }
 
-void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
+void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const
 {
     if (m_eType == cformHexPnt)
     {
-        CRect rct;
         row = y / m_pPoly[size_t(3)].y;
 
         CB::ssize_t xBase = CellPhase(row) * m_pPoly[size_t(1)].x;
         col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_pPoly[size_t(2)].x;
 
-        GetRect(row, col, &rct);
-        g_gt.mDC1.SelectObject(&*m_pMask);
+        CRect rct = GetRect(row, col);
+        g_gt.mDC1.SelectObject(*m_pMask);
         COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
         g_gt.SelectSafeObjectsForDC1();
         if (cr != RGB(0, 0, 0))
@@ -196,14 +197,13 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
     }
     else if (m_eType == cformHexFlat)
     {
-        CRect rct;
         col = x / m_pPoly[size_t(2)].x;
         CB::ssize_t yBase = CellPhase(col) * m_pPoly[size_t(3)].y;
         row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_pPoly[size_t(4)].y;
 
-        GetRect(row, col, &rct);
+        CRect rct = GetRect(row, col);
 
-        g_gt.mDC1.SelectObject(&*m_pMask);
+        g_gt.mDC1.SelectObject(*m_pMask);
         COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
         g_gt.SelectSafeObjectsForDC1();
         if (cr != RGB(0, 0, 0))
@@ -237,7 +237,7 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col)
 // Trial calculate the size of a board to see if it exceeds
 // 32k. Return FALSE if too large.
 
-BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols)
+BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols) const
 {
     size_t x, y;
     if (m_eType == cformRect)
@@ -268,7 +268,7 @@ BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols)
     return x < size_t(32000) && y < size_t(32000);
 }
 
-CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols)
+CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols) const
 {
     if (m_eType == cformRect)
         return CSize(value_preserving_cast<long>(nCols) * m_rct.right, value_preserving_cast<long>(nRows) * m_rct.bottom);
@@ -294,46 +294,46 @@ CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols)
     }
 }
 
-CRect* CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col, CRect* pRct)
+CRect CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col) const
 {
-    *pRct = m_rct;          // Copy master rect
+    CRect retval = m_rct;          // Copy master rect
     if (m_eType == cformRect)
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right), value_preserving_cast<int>(row * m_rct.bottom));
+        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right), value_preserving_cast<int>(row * m_rct.bottom));
     else if (m_eType == cformBrickHorz)
     {
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right + (CellPhase(row) * m_rct.right) / 2),
+        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right + (CellPhase(row) * m_rct.right) / 2),
             value_preserving_cast<int>(row * m_rct.bottom));
     }
     else if (m_eType == cformBrickVert)
     {
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_rct.right),
+        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right),
             value_preserving_cast<int>(row * m_rct.bottom + (CellPhase(col) * m_rct.bottom) / 2));
     }
     else if (m_eType == cformHexPnt)
     {
 
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x + CellPhase(row) * m_pPoly[size_t(1)].x),
+        retval.OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x + CellPhase(row) * m_pPoly[size_t(1)].x),
             value_preserving_cast<int>(row * m_pPoly[size_t(3)].y));
     }
     else
     {
-        pRct->OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x),
+        retval.OffsetRect(value_preserving_cast<int>(col * m_pPoly[size_t(2)].x),
             value_preserving_cast<int>(row * m_pPoly[size_t(4)].y + CellPhase(col) * m_pPoly[size_t(3)].y));
     }
-    return pRct;
+    return retval;
 }
 
 // The pen is assumed to be selected at this point.
-void CCellForm::FrameCell(CDC* pDC, int xPos, int yPos)
+void CCellForm::FrameCell(CDC& pDC, int xPos, int yPos) const
 {
     m_pWrk = m_pPoly;
     OffsetPoly(m_pWrk, xPos, yPos);
-    pDC->Polyline(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
+    pDC.Polyline(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
 }
 
-void CCellForm::FillCell(CDC* pDC, int xPos, int yPos)
+void CCellForm::FillCell(CDC& pDC, int xPos, int yPos) const
 {
-    CPen* pPrvPen = (CPen *)pDC->SelectStockObject(NULL_PEN);
+    CPen* pPrvPen = (CPen *)pDC.SelectStockObject(NULL_PEN);
     if (m_eType == cformRect || m_eType == cformBrickHorz ||
         m_eType == cformBrickVert)
     {
@@ -341,14 +341,14 @@ void CCellForm::FillCell(CDC* pDC, int xPos, int yPos)
         rct.OffsetRect(xPos, yPos);
         rct.right++;            // Adjust to include start of next rect
         rct.bottom++;
-        pDC->Rectangle(&rct);
+        pDC.Rectangle(&rct);
     }
     else
     {
         // Hexagonal shapes
         m_pWrk = m_pPoly;
         OffsetPoly(m_pWrk, xPos, yPos);
-        pDC->Polygon(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
+        pDC.Polygon(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
     }
 }
 
