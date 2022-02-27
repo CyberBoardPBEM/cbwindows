@@ -158,7 +158,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
         ASSERT(pDwg->Find(*opObj) != pDwg->end());
         // don't let the object get deleted
         OwnerOrNullPtr<CDrawObj> temp = CB::get_underlying(std::move(opObj));
-        CB::get_underlying(temp).release();
+        CB::get_underlying(std::move(temp)).release();
     }
 
     if (pPBrd->IsOwned() && pObj.GetType() == CDrawObj::drawPieceObj)
@@ -633,7 +633,7 @@ void CGamDoc::DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& p
 
             CPlayBoard* pPBrd = FindObjectOnBoard(&pObj);
             ASSERT(pPBrd != NULL);
-            pPBrd->RemoveObject(&pObj);
+            pPBrd->RemoveObject(pObj);
 
             // Erase any associated text
             SetGameElementString(MakeObjectIDElement(pObj.GetObjectID()), NULL);
@@ -863,7 +863,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<CB::not_null<CD
 
 ////////////////////////////////////////////////////////////////////
 
-CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, CDrawObj** ppObj)
+CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, CDrawObj*& ppObj)
 {
     ASSERT(m_pPBMgr != NULL);
     return m_pPBMgr->FindObjectOnBoard(dwObjID, ppObj);
@@ -872,10 +872,10 @@ CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, CDrawObj** ppObj)
 CPlayBoard* CGamDoc::FindObjectOnBoard(CDrawObj* pObj)
 {
     ASSERT(m_pPBMgr != NULL);
-    return m_pPBMgr->FindObjectOnBoard(pObj);
+    return m_pPBMgr->FindObjectOnBoard(*pObj);
 }
 
-CPlayBoard* CGamDoc::FindPieceOnBoard(PieceID pid, CPieceObj** ppObj)
+CPlayBoard* CGamDoc::FindPieceOnBoard(PieceID pid, CPieceObj*& ppObj)
 {
     ASSERT(m_pPBMgr != NULL);
     return m_pPBMgr->FindPieceOnBoard(pid, ppObj);
@@ -895,10 +895,10 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
     BOOL bTrayHintAllowed)
 {
     CPieceObj* pObj;
-    CPlayBoard* pPBoard = FindPieceOnBoard(pid, &pObj);
+    CPlayBoard* pPBoard = FindPieceOnBoard(pid, pObj);
     if (pPBoard != NULL)
     {
-        pPBoard->RemoveObject(pObj);
+        pPBoard->RemoveObject(*pObj);
         if (!IsQuietPlayback())
         {
             // Cause it's former location to be invalidated...
@@ -933,7 +933,7 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
 // TRUE if found on a board. FALSE if in tray.
 
 BOOL CGamDoc::FindPieceCurrentLocation(PieceID pid, CTraySet*& pTraySet,
-    CPlayBoard*& pPBoard, CPieceObj** ppObj /* = NULL */)
+    CPlayBoard*& pPBoard, CPieceObj*& ppObj)
 {
     pTraySet = NULL;
     pPBoard = FindPieceOnBoard(pid, ppObj);
@@ -952,7 +952,7 @@ void CGamDoc::RemoveObjectFromCurrentLocation(CDrawObj* pObj)
     CPlayBoard* pPBoard = FindObjectOnBoard(pObj);
     if (pPBoard != NULL)
     {
-        pPBoard->RemoveObject(pObj);
+        pPBoard->RemoveObject(*pObj);
         if (!IsQuietPlayback())
         {
             // Cause it's former location to be invalidated...
@@ -997,7 +997,7 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
             CPieceObj& pObj = *listPtr[i];
             if (!m_pPTbl->IsPieceUsed(pObj.m_pid))
             {
-                pPBrd.RemoveObject(&pObj);
+                pPBrd.RemoveObject(pObj);
 
                 if (!IsQuietPlayback())
                 {

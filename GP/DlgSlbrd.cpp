@@ -105,7 +105,7 @@ BOOL CSelectBoardsDialog::OnInitDialog()
 
     for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
     {
-        CBoard& pBoard = m_pBMgr->GetBoard(i);
+        const CBoard& pBoard = m_pBMgr->GetBoard(i);
         int nIdx = m_listBoards.AddString(pBoard.GetName());
         m_listBoards.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(pBoard.GetSerialNumber())));
         m_listBoards.SetCheck(nIdx, 0);

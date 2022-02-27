@@ -221,9 +221,8 @@ void CALLBACK CPlayBoardView::NotificationTipTimeoutHandler(HWND hwnd,
 
 CDrawObj* CPlayBoardView::ObjectHitTest(CPoint point)
 {
-    CDrawList* pDwg = m_pPBoard->GetPieceList();
-    ASSERT(pDwg);
-    return pDwg->HitTest(point);
+    CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
+    return pDwg.HitTest(point);
 }
 
 //////////////////////////////////////////////////////////////////////

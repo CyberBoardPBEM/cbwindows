@@ -189,7 +189,7 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     CRect rct(&oRct);
     SetupDrawListDC(&dcMem, rct);
 
-    m_pPBoard->Draw(&dcMem, &rct, smallScale);
+    m_pPBoard->Draw(dcMem, &rct, smallScale);
 
     RestoreDrawListDC(&dcMem);
 
@@ -231,7 +231,7 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
     CRect rct(CPoint(0,0), size);
     SetupDrawListDC(&dcMem, rct);
 
-    m_pPBoard->Draw(&dcMem, &rct, smallScale);
+    m_pPBoard->Draw(dcMem, &rct, smallScale);
 
     RestoreDrawListDC(&dcMem);
     dcMem.SelectObject(pPrvBMap);

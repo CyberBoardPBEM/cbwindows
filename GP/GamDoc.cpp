@@ -600,9 +600,7 @@ BOOL CGamDoc::OnNewScenario()
 
     // ....Create the scenario....
 
-    m_pPBMgr = new CPBoardManager;
-    m_pPBMgr->SetDocument(this);
-    m_pPBMgr->SetBoardManager(m_pGbx->GetBoardManager());
+    m_pPBMgr = new CPBoardManager(*this);
 
     // Create the playing piece table...
     m_pPTbl = new CPieceTable;
@@ -963,7 +961,7 @@ CMarkManager* CGamDoc::GetMarkManager()
     return m_pGbx->GetMarkManager();
 }
 
-CBoardManager* CGamDoc::GetBoardManager()
+const CBoardManager* CGamDoc::GetBoardManager() const
 {
     if (m_pGbx == NULL) return NULL;
     return m_pGbx->GetBoardManager();
@@ -1056,7 +1054,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
         if (dlg.m_pPlayerMgr && !dlg.m_bOwnerInfoIsReadOnly)
         {
             pPBoard.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
-            pPBoard.PropagateOwnerMaskToAllPieces(this);
+            pPBoard.PropagateOwnerMaskToAllPieces();
             pPBoard.SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
         }
 
@@ -1952,11 +1950,9 @@ void CGamDoc::OnEditCreateGeomorphic()
     dlg.m_pDoc = this;
     if (dlg.DoModal() != IDOK)
         return;
-    CGeomorphicBoard* pGeoBoard = dlg.DetachGeomorphicBoard();
+    OwnerPtr<CGeomorphicBoard> pGeoBoard = dlg.DetachGeomorphicBoard();
 
-    GetPBoardManager()->AddBoard(pGeoBoard);     // Add to list of active boards
-
-    if (pGeoBoard != NULL) delete pGeoBoard;
+    GetPBoardManager()->AddBoard(std::move(pGeoBoard));     // Add to list of active boards
 
     UpdateAllViews(NULL, HINT_BOARDCHANGE);
     SetModifiedFlag();

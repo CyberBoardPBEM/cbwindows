@@ -67,7 +67,16 @@ protected:
     CGamDoc*        m_pDoc;
     // --------- //
     CGameElementStringMap m_mapString; // Text set by player
-    CPBoardManager* m_pPBMgr;   // Playing boards in use.
+    /* can't use std::default_delete<CPBoardManager> because
+    default_delete<> requires a complete type, and we can't
+    #include "PBoard.h" due to circular dependencies */
+    class CPBoardManagerDelete
+    {
+    public:
+        void operator()(CPBoardManager* p) const;
+    };
+    using OwnerOrNullCPBoardManager = CB::propagate_const<std::unique_ptr<CPBoardManager, CPBoardManagerDelete>>;
+    OwnerOrNullCPBoardManager m_pPBMgr;   // Playing boards in use.
     CTrayManager    m_pYMgr;    // Content of trays manager
     CPieceTable*    m_pPTbl;    // The playing piece table.
 };
