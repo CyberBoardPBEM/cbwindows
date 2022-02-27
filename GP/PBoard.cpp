@@ -239,7 +239,7 @@ void CPlayBoard::SetBoard(OwnerPtr<CGeomorphicBoard> pGeoBoard, BOOL bInheritSet
 CBoard& CPlayBoard::CreateGeoBoard()
 {
     ASSERT(m_pGeoBoard);
-    OwnerPtr<CBoard> pBrd = m_pGeoBoard->CreateBoard(&*m_pDoc);
+    OwnerPtr<CBoard> pBrd = m_pGeoBoard->CreateBoard();
     CBoard& retval = *pBrd;
     m_pDoc->GetBoardManager()->Add(std::move(pBrd));
     return retval;
@@ -368,7 +368,7 @@ void CPlayBoard::Serialize(CArchive& ar)
             ar >> cTmp;
             if (cTmp != 0)
             {
-                m_pGeoBoard = new CGeomorphicBoard;
+                m_pGeoBoard = new CGeomorphicBoard(*m_pDoc);
                 m_pGeoBoard->Serialize(ar);
                 CreateGeoBoard();
             }

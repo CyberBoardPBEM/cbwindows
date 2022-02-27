@@ -51,9 +51,9 @@ public:
 class CGeomorphicBoard : public std::vector< CGeoBoardElement >
 {
 public:
-    CGeomorphicBoard();
-    CGeomorphicBoard(const CGeomorphicBoard& pGeoBoard) = default;
-    CGeomorphicBoard& operator=(const CGeomorphicBoard& pGeoBoard) = default;
+    CGeomorphicBoard(CGamDoc& pDoc);
+    CGeomorphicBoard(const CGeomorphicBoard&) = delete;
+    CGeomorphicBoard& operator=(const CGeomorphicBoard&) = delete;
     ~CGeomorphicBoard() = default;
 
 // Atributes...
@@ -66,12 +66,12 @@ public:
     void SetBoardRowCount(size_t nBoardRowCount) { m_nBoardRowCount = nBoardRowCount; }
     void SetBoardColCount(size_t nBoardColCount) { m_nBoardColCount = nBoardColCount; }
 
-    size_t GetBoardRowCount() { return m_nBoardRowCount; }
-    size_t GetBoardColCount() { return m_nBoardColCount; }
+    size_t GetBoardRowCount() const { return m_nBoardRowCount; }
+    size_t GetBoardColCount() const { return m_nBoardColCount; }
 
 // Methods...
 public:
-    CBoard* CreateBoard(CGamDoc* pDoc);
+    OwnerPtr<CBoard> CreateBoard();
     void DeleteFromBoardManager();
 
     size_t  AddElement(BoardID nBoardSerialNum);
@@ -80,18 +80,20 @@ public:
 
 // Implementation - methods
 protected:
-    CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol);
-    CBoard* CloneBoard(CBoard& pOrigBoard);
-    void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols);
-    CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol);
-    void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol);
-    void    CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
+    const CBoard& GetBoard(size_t nBoardRow, size_t nBoardCol) const;
+    OwnerPtr<CBoard> CloneBoard(const CBoard& pOrigBoard) const;
+    void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const;
+    CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const;
+    void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;
+    // non-const because new tiles get added to CTileManager
+    void    CopyCells(CBoardArray& pBArryTo, const CBoardArray& pBArryFrom,
                 size_t nCellRowOffset, size_t nCellColOffset);
-    void    CreateBitmap(CBitmap& m_bmap, CSize size);
-    void    CombineLeftAndRight(CBitmap& bmap, TileScale eScale, CBoardArray* pBALeft,
-                CBoardArray* pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight);
-    void    CombineTopAndBottom(CBitmap& bmap, TileScale eScale, CBoardArray* pBATop,
-                CBoardArray* pBABottom, size_t nRowTop, size_t nColTop, size_t nRowBottom, size_t nColBottom);
+    void    CreateBitmap(CBitmap& m_bmap, CSize size) const;
+    void    CombineLeftAndRight(CBitmap& bmap, TileScale eScale, const CBoardArray& pBALeft,
+                const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight) const;
+    void    CombineTopAndBottom(CBitmap& bmap, TileScale eScale, const CBoardArray& pBATop,
+                const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop, size_t nRowBottom, size_t nColBottom) const;
+    // non-const because new tiles get added to CTileManager
     size_t  GetSpecialTileSet();
 
 // Implementation - vars
@@ -102,7 +104,7 @@ protected:
     size_t m_nBoardRowCount;          // Number of boards vertically
     size_t m_nBoardColCount;          // Number of boards horizontally
 
-    CGamDoc* m_pDoc;                    // Used internally
+    RefPtr<CGamDoc> m_pDoc;                    // Used internally
 };
 
 #endif

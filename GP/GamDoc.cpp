@@ -1946,8 +1946,7 @@ void CGamDoc::OnUpdateActSimulateSpectator(CCmdUI* pCmdUI)
 
 void CGamDoc::OnEditCreateGeomorphic()
 {
-    CCreateGeomorphicBoardDialog dlg;
-    dlg.m_pDoc = this;
+    CCreateGeomorphicBoardDialog dlg(*this);
     if (dlg.DoModal() != IDOK)
         return;
     OwnerPtr<CGeomorphicBoard> pGeoBoard = dlg.DetachGeomorphicBoard();
