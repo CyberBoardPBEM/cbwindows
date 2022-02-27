@@ -78,12 +78,12 @@ void CGeoBoardElement::Serialize(CArchive& ar)
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-CGeomorphicBoard::CGeomorphicBoard()
+CGeomorphicBoard::CGeomorphicBoard(CGamDoc& pDoc) :
+    m_pDoc(&pDoc)
 {
     m_nBoardRowCount = size_t(0);
     m_nBoardColCount = size_t(0);
     m_nSerialNum = BoardID(0);
-    m_pDoc = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -97,16 +97,13 @@ size_t CGeomorphicBoard::AddElement(BoardID nBoardSerialNum)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
+OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
 {
-    m_pDoc = pDoc;
-    ASSERT(pDoc != NULL);
-
     // Procedure:
     // 1) Clone the root board to use as template
 
-    CBoard& pBrd = GetBoard(size_t(0), size_t(0));
-    CBoard* pBrdNew = CloneBoard(pBrd);
+    const CBoard& pBrd = GetBoard(size_t(0), size_t(0));
+    OwnerPtr<CBoard> pBrdNew = CloneBoard(pBrd);
 
     pBrdNew->SetName(m_strName);
     pBrdNew->SetSerialNumber(m_nSerialNum);
@@ -132,10 +129,10 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
             size_t nCellColOffset;
             ComputeCellOffset(nBoardRow, nBoardCol, nCellRowOffset, nCellColOffset);
 
-            CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
-            CBoardArray& pBArray = pBrd.GetBoardArray();
+            const CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
+            const CBoardArray& pBArray = pBrd.GetBoardArray();
 
-            CopyCells(&pBrdArrayNew, &pBArray, nCellRowOffset, nCellColOffset);
+            CopyCells(pBrdArrayNew, pBArray, nCellRowOffset, nCellColOffset);
         }
     }
 
@@ -150,9 +147,9 @@ CBoard* CGeomorphicBoard::CreateBoard(CGamDoc* pDoc)
                 continue;                       // Skip this one since it is done already
             CPoint pntOffset = ComputeGraphicalOffset(nBoardRow, nBoardCol);
 
-            CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
+            const CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
 
-            CDrawList* pDwgList = pBrd.GetBaseDrawing();
+            const CDrawList* pDwgList = pBrd.GetBaseDrawing();
             if (pDwgList != NULL)
             {
                 CDrawList* pDwgListNewBase = pBrdNew->GetBaseDrawing(TRUE);
@@ -191,21 +188,21 @@ size_t CGeomorphicBoard::GetSpecialTileSet()
     return nTSet;
 }
 
-void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
+void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo, const CBoardArray& pBArryFrom,
     size_t nCellRowOffset, size_t nCellColOffset)
 {
     CTileManager* pTMgr = m_pDoc->GetTileManager();
-    for (size_t nRow = size_t(0) ; nRow < pBArryFrom->GetRows() ; ++nRow)
+    for (size_t nRow = size_t(0) ; nRow < pBArryFrom.GetRows() ; ++nRow)
     {
-        for (size_t nCol = size_t(0) ; nCol < pBArryFrom->GetCols() ; ++nCol)
+        for (size_t nCol = size_t(0) ; nCol < pBArryFrom.GetCols() ; ++nCol)
         {
             size_t nRowTo = nRow + nCellRowOffset;
             size_t nColTo = nCol + nCellColOffset;
 
-            BoardCell& pCellFrom = pBArryFrom->GetCell(nRow, nCol);
-            BoardCell& pCellTo = pBArryTo->GetCell(nRowTo, nColTo);
+            const BoardCell& pCellFrom = pBArryFrom.GetCell(nRow, nCol);
+            BoardCell& pCellTo = pBArryTo.GetCell(nRowTo, nColTo);
             BOOL bMergeTheCell = FALSE;
-            if (pBArryTo->GetCellForm(fullScale).GetCellType() == cformHexFlat)
+            if (pBArryTo.GetCellForm(fullScale).GetCellType() == cformHexFlat)
                 bMergeTheCell = nCol == size_t(0) && nColTo != size_t(0);
             else
                 bMergeTheCell = nRow == size_t(0) && nRowTo != size_t(0);
@@ -216,7 +213,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 // two hex cells joined as one.
                 CBitmap bmapFull;
                 CBitmap bmapHalf;
-                if (pBArryTo->GetCellForm(fullScale).GetCellType() == cformHexFlat)
+                if (pBArryTo.GetCellForm(fullScale).GetCellType() == cformHexFlat)
                 {
                     // Handle left and right halves
                     CombineLeftAndRight(bmapFull, fullScale, pBArryTo, pBArryFrom,
@@ -241,8 +238,8 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
                 }
                 else
                     crSmall = pCellTo.GetColor();
-                CSize sizeFull = pBArryTo->GetCellSize(fullScale);
-                CSize sizeHalf = pBArryTo->GetCellSize(halfScale);
+                CSize sizeFull = pBArryTo.GetCellSize(fullScale);
+                CSize sizeHalf = pBArryTo.GetCellSize(halfScale);
                 TileID tidNew = pTMgr->CreateTile(GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
                 pTMgr->UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
@@ -255,81 +252,81 @@ void CGeomorphicBoard::CopyCells(CBoardArray* pBArryTo, CBoardArray* pBArryFrom,
 }
 
 void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
-    CBoardArray* pBALeft, CBoardArray* pBARight, size_t nRowLeft, size_t nColLeft,
-    size_t nRowRight, size_t nColRight)
+    const CBoardArray& pBALeft, const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft,
+    size_t nRowRight, size_t nColRight) const
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
     CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
     dc.RealizePalette();
 
-    CSize sizeCell = pBALeft->GetCellSize(eScale);
+    CSize sizeCell = pBALeft.GetCellSize(eScale);
     CreateBitmap(bmap, sizeCell);
 
     // Handle left half...
     CBitmap* prvBMap = dc.SelectObject(&bmap);
 
-    CRect rct = pBALeft->GetCellRect(nRowLeft, nColLeft, eScale);
+    CRect rct = pBALeft.GetCellRect(nRowLeft, nColLeft, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.right -= rct.Width() / 2 - (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBALeft->FillCell(dc, nRowLeft, nColLeft, eScale);
+    pBALeft.FillCell(dc, nRowLeft, nColLeft, eScale);
     dc.SelectClipRgn(NULL);
 
     // Handle right half...
-    rct = pBARight->GetCellRect(nRowRight, nColRight, eScale);
+    rct = pBARight.GetCellRect(nRowRight, nColRight, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.left += rct.Width() / 2 + (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBARight->FillCell(dc, nRowRight, nColRight, eScale);
+    pBARight.FillCell(dc, nRowRight, nColRight, eScale);
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
 }
 
 void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
-    CBoardArray* pBATop, CBoardArray* pBABottom, size_t nRowTop, size_t nColTop,
-    size_t nRowBottom, size_t nColBottom)
+    const CBoardArray& pBATop, const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop,
+    size_t nRowBottom, size_t nColBottom) const
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
     CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
     dc.RealizePalette();
 
-    CSize sizeCell = pBATop->GetCellSize(eScale);
+    CSize sizeCell = pBATop.GetCellSize(eScale);
     CreateBitmap(bmap, sizeCell);
 
     // Handle top half...
     CBitmap* prvBMap = dc.SelectObject(&bmap);
 
-    CRect rct = pBATop->GetCellRect(nRowTop, nColTop, eScale);
+    CRect rct = pBATop.GetCellRect(nRowTop, nColTop, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.bottom += rct.Height() / 2 - (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBATop->FillCell(dc, nRowTop, nColTop, eScale);
+    pBATop.FillCell(dc, nRowTop, nColTop, eScale);
     dc.SelectClipRgn(NULL);
 
     // Handle bottom half...
-    rct = pBABottom->GetCellRect(nRowBottom, nColBottom, eScale);
+    rct = pBABottom.GetCellRect(nRowBottom, nColBottom, eScale);
 
     dc.SetViewportOrg(-rct.left, -rct.top);
     rct.top += rct.Height() / 2 + (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 
-    pBABottom->FillCell(dc, nRowBottom, nColBottom, eScale);
+    pBABottom.FillCell(dc, nRowBottom, nColBottom, eScale);
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
 }
 
 // Create DIB Section bitmap that's filled with the transparent color.
-void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size)
+void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size) const
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
@@ -349,15 +346,15 @@ void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size)
     dc.SelectPalette(prvPal, FALSE);
 }
 
-CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol)
+CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const
 {
-    CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
+    const CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
     CSize sizeCell = pBrdRoot.GetBoardArray().GetCellSize(fullScale);
     CPoint pnt(0, 0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        CBoard& pBrd = GetBoard(size_t(0), nCol);
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(size_t(0), nCol);
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         pnt.x += pBArray.GetWidth(fullScale);
         if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
             pnt.x -= sizeCell.cx;               // A column is shared
@@ -366,8 +363,8 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        CBoard& pBrd = GetBoard(nRow, size_t(0));
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(nRow, size_t(0));
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         pnt.y += pBArray.GetHeight(fullScale);
         if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
             pnt.y -= sizeCell.cy;               // A row is shared
@@ -378,22 +375,22 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
     return pnt;
 }
 
-void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
+void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const
 {
     rnRows = size_t(0);
     rnCols = size_t(0);
     for (size_t nBoardCol = size_t(0) ; nBoardCol < m_nBoardColCount ; ++nBoardCol)
     {
-        CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(size_t(0), nBoardCol);
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         rnCols += pBArray.GetCols();
         if (nBoardCol != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
             rnCols--;                   // A column is shared
     }
     for (size_t nBoardRow = size_t(0) ; nBoardRow < m_nBoardRowCount ; ++nBoardRow)
     {
-        CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(nBoardRow, size_t(0));
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         rnRows += pBArray.GetRows();
         if (nBoardRow != size_t(0) && pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
             rnRows--;                   // A row is shared
@@ -401,14 +398,14 @@ void CGeomorphicBoard::ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols)
 }
 
 void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
-    size_t& rnCellRow, size_t& rnCellCol)
+    size_t& rnCellRow, size_t& rnCellCol) const
 {
     rnCellRow = size_t(0);
     rnCellCol = size_t(0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
-        CBoard& pBrd = GetBoard(size_t(0), nCol);
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(size_t(0), nCol);
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray.GetCols() >= size_t(1));
         rnCellCol += pBArray.GetCols();
         if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
@@ -416,8 +413,8 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
     {
-        CBoard& pBrd = GetBoard(nRow, size_t(0));
-        CBoardArray& pBArray = pBrd.GetBoardArray();
+        const CBoard& pBrd = GetBoard(nRow, size_t(0));
+        const CBoardArray& pBArray = pBrd.GetBoardArray();
         ASSERT(pBArray.GetRows() >= size_t(1));
         rnCellRow += pBArray.GetRows();
         if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
@@ -425,17 +422,17 @@ void CGeomorphicBoard::ComputeCellOffset(size_t nBoardRow, size_t nBoardCol,
     }
 }
 
-CBoard& CGeomorphicBoard::GetBoard(size_t nBoardRow, size_t nBoardCol)
+const CBoard& CGeomorphicBoard::GetBoard(size_t nBoardRow, size_t nBoardCol) const
 {
     size_t nGeoIndex = nBoardRow * m_nBoardColCount + nBoardCol;
     ASSERT(nGeoIndex < m_nBoardRowCount * m_nBoardColCount);
-    CGeoBoardElement& geo = (*this)[nGeoIndex];
+    const CGeoBoardElement& geo = (*this)[nGeoIndex];
     size_t nBrdIndex = m_pDoc->GetBoardManager()->FindBoardBySerial(geo.m_nBoardSerialNum);
-    CBoard& pBrd = m_pDoc->GetBoardManager()->GetBoard(nBrdIndex);
+    const CBoard& pBrd = m_pDoc->GetBoardManager()->GetBoard(nBrdIndex);
     return pBrd;
 }
 
-CBoard* CGeomorphicBoard::CloneBoard(CBoard& pOrigBoard)
+OwnerPtr<CBoard> CGeomorphicBoard::CloneBoard(const CBoard& pOrigBoard) const
 {
     // We need to force the current version at this point because
     // we may be loading an earlier version game or scenario. In
@@ -443,28 +440,21 @@ CBoard* CGeomorphicBoard::CloneBoard(CBoard& pOrigBoard)
     // a copy of the current loading version so we can restore it.
     CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
 
-    CBoard* pNewBoard = NULL;
-    TRY
-    {
-        CMemFile file;
-        CArchive arSave(&file, CArchive::store);
-        arSave.m_pDocument = m_pDoc;
-        pOrigBoard.Serialize(arSave);      // Make a copy of the board
-        arSave.Close();
+    CMemFile file;
+    CArchive arSave(&file, CArchive::store);
+    /* save should not modify src, and restore is modifying new
+        object, so const_cast should be safe */
+    CGamDoc& doc = const_cast<CGamDoc&>(*m_pDoc);
+    arSave.m_pDocument = &doc;
+    // save should not modify src, so should be safe
+    const_cast<CBoard&>(pOrigBoard).Serialize(arSave);      // Make a copy of the board
+    arSave.Close();
 
-        file.SeekToBegin();
-        CArchive arRestore(&file, CArchive::load);
-        arRestore.m_pDocument = m_pDoc;
-        pNewBoard = new CBoard();
-        pNewBoard->Serialize(arRestore);
-    }
-    CATCH_ALL(e)
-    {
-        if (pNewBoard != NULL)
-            delete pNewBoard;
-        pNewBoard = NULL;
-    }
-    END_CATCH_ALL
+    file.SeekToBegin();
+    CArchive arRestore(&file, CArchive::load);
+    arRestore.m_pDocument = &doc;
+    OwnerPtr<CBoard> pNewBoard = new CBoard();
+    pNewBoard->Serialize(arRestore);
 
     return pNewBoard;
 }

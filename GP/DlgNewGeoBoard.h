@@ -39,7 +39,7 @@ class CCreateGeomorphicBoardDialog : public CDialog
 {
 // Construction
 public:
-    CCreateGeomorphicBoardDialog(CWnd* pParent = NULL);   // standard constructor
+    CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* pParent = NULL);   // standard constructor
 
 // Operations
 public:
@@ -58,7 +58,9 @@ public:
     CListBox    m_listBoard;
     //}}AFX_DATA
 
-    CGamDoc*            m_pDoc;
+private:
+    RefPtr<CGamDoc> m_pDoc;
+public:
 
 
 // Overrides

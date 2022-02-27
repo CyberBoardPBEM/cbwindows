@@ -40,12 +40,12 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCreateGeomorphicBoardDialog dialog
 
-CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CCreateGeomorphicBoardDialog::IDD, pParent)
+CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
+    : CDialog(CCreateGeomorphicBoardDialog::IDD, pParent),
+    m_pDoc(&doc)
 {
     //{{AFX_DATA_INIT(CCreateGeomorphicBoardDialog)
     //}}AFX_DATA_INIT
-    m_pDoc = NULL;
     m_pGeoBoard = NULL;
     m_pRootMapCellForm = NULL;
     m_nCurrentRowHeight = size_t(0);
@@ -273,7 +273,6 @@ void CCreateGeomorphicBoardDialog::OnBtnPressClear()
 BOOL CCreateGeomorphicBoardDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    ASSERT(m_pDoc != NULL);
 
     LoadBoardListWithCompliantBoards();
     UpdateButtons();
@@ -284,7 +283,7 @@ BOOL CCreateGeomorphicBoardDialog::OnInitDialog()
 
 void CCreateGeomorphicBoardDialog::OnOK()
 {
-    m_pGeoBoard = new CGeomorphicBoard;
+    m_pGeoBoard = new CGeomorphicBoard(*m_pDoc);
 
     CString strName;
     m_editBoardName.GetWindowText(strName);
