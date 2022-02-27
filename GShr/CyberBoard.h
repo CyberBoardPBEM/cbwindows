@@ -211,7 +211,7 @@ namespace CB
         propagate_const(PU* pu) : p(pu) {}
 
         template<typename PU>
-        propagate_const(propagate_const<PU>&& pu) : p(std::move(get_underlying(pu))) {}
+        propagate_const(propagate_const<PU>&& pu) : p(get_underlying(std::move(pu))) {}
 
         propagate_const(const propagate_const&) = delete;
         propagate_const& operator=(propagate_const&) = delete;
@@ -237,7 +237,7 @@ namespace CB
         template<typename PU>
         propagate_const& operator=(propagate_const<PU>&& pu)
         {
-            p = std::move(get_underlying(pu));
+            p = get_underlying(std::move(pu));
             return *this;
         }
 
@@ -256,8 +256,8 @@ namespace CB
         template<typename U>
         static U* raw(U* p) { return p; }
 
-        template<typename U>
-        static U* raw(const std::unique_ptr<U>& p) { return p.get(); }
+        template<typename U, typename DELETER>
+        static U* raw(const std::unique_ptr<U, DELETER>& p) { return p.get(); }
 
         PT p = nullptr;
 
@@ -265,7 +265,7 @@ namespace CB
         friend const PU& get_underlying(const propagate_const<PU>& p);
 
         template<typename PU>
-        friend PU& get_underlying(propagate_const<PU>& p);
+        friend PU&& get_underlying(propagate_const<PU>&& p);
     };
 
     template<typename PT>
@@ -275,9 +275,9 @@ namespace CB
     }
 
     template<typename PT>
-    PT& get_underlying(propagate_const<PT>& p)
+    PT&& get_underlying(propagate_const<PT>&& p)
     {
-        return const_cast<PT&>(get_underlying(std::as_const(p)));
+        return std::move(const_cast<PT&>(get_underlying(std::as_const(p))));
     }
 
     template<typename T>
