@@ -971,8 +971,16 @@ public:
 #ifdef GPLAY
     void SetOwnerMasks(DWORD dwOwnerMask);
 
-    CPieceObj* FindPieceID(PieceID pid);
-    CDrawObj* FindObjectID(ObjectID oid);
+    const CPieceObj* FindPieceID(PieceID pid) const;
+    CPieceObj* FindPieceID(PieceID pid)
+    {
+        return const_cast<CPieceObj*>(std::as_const(*this).FindPieceID(pid));
+    }
+    const CDrawObj* FindObjectID(ObjectID oid) const;
+    CDrawObj* FindObjectID(ObjectID oid)
+    {
+        return const_cast<CDrawObj*>(std::as_const(*this).FindObjectID(oid));
+    }
     BOOL HasObject(const CDrawObj& pObj) const { return Find(pObj) != end(); }
     BOOL HasMarker() const;
     void GetPieceObjectPtrList(std::vector<CB::not_null<CPieceObj*>>& pLst);

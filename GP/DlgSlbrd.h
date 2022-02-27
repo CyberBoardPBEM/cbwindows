@@ -41,7 +41,7 @@ public:
     //}}AFX_DATA
 
     std::vector<BoardID> m_tblBrds;      // Table of board serial numbers
-    CBoardManager* m_pBMgr;     // Pointer to gamebox board manager.
+    const CBoardManager* m_pBMgr;     // Pointer to gamebox board manager.
 
 // Implementation
 protected:

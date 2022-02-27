@@ -271,7 +271,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         for (CSelList::iterator pos = m_selList.begin() ; pos != m_selList.end() ; ++pos)
         {
             CDrawObj& pObj = *(*pos)->m_pObj;
-            if (m_pPBoard->IsObjectOnBoard(&pObj))
+            if (m_pPBoard->IsObjectOnBoard(pObj))
                 listSelectedObjs.push_back(&pObj);
         }
         m_selList.PurgeList();          // Clear former selection indications
@@ -469,7 +469,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     CRect rct(&oRct);
     SetupDrawListDC(&dcMem, &rct);
 
-    m_pPBoard->Draw(&dcMem, &rct, m_nZoom);
+    m_pPBoard->Draw(dcMem, &rct, m_nZoom);
 
     if (!pDC->IsPrinting() && GetPlayBoard()->GetPiecesVisible())
         m_selList.OnDraw(dcMem);       // Handle selections.
@@ -1947,7 +1947,7 @@ void CPlayBoardView::OnEditCopy()
 
     // Draw pieces etc.....
     SetupDrawListDC(&dcMem, &rct);
-    m_pPBoard->Draw(&dcMem, &rct, m_nZoom);
+    m_pPBoard->Draw(dcMem, &rct, m_nZoom);
     RestoreDrawListDC(&dcMem);
 
     GdiFlush();
@@ -2017,7 +2017,7 @@ void CPlayBoardView::OnEditBoardToFile()
 
         // Draw pieces etc.....
         SetupDrawListDC(&dcMem, &rct);
-        m_pPBoard->Draw(&dcMem, &rct, m_nZoom);
+        m_pPBoard->Draw(dcMem, &rct, m_nZoom);
         RestoreDrawListDC(&dcMem);
 
         GdiFlush();

@@ -390,7 +390,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
             }
         }
         GetTrayManager()->PropagateOwnerMaskToAllPieces(this);
-        GetPBoardManager()->PropagateOwnerMaskToAllPieces(this);
+        GetPBoardManager()->PropagateOwnerMaskToAllPieces();
         GetMainFrame()->GetMessageWindow()->SetText(this);
     }
 }
@@ -629,9 +629,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
 
         // Create the scenario objects prior to restoration
 
-        m_pPBMgr = new CPBoardManager;
-        m_pPBMgr->SetDocument(this);
-        m_pPBMgr->SetBoardManager(m_pGbx->GetBoardManager());
+        m_pPBMgr = new CPBoardManager(*this);
 
         // Create the playing piece table...
         m_pPTbl = new CPieceTable;

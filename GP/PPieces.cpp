@@ -129,8 +129,7 @@ void CPieceTable::PurgeUndefinedPieceIDs()
                 TRACE1("ERROR: Piece %zu was defined but had no Tile Images. "
                        "Piece removed from game!\n", i);
                 pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
-                CDrawObj* pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
-                if (pObj != NULL) delete pObj;
+                OwnerPtr<CDrawObj> pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
                 pPce->SetUnused();      // Render it gone!
                 nPiecesDeleted++;
             }
@@ -480,8 +479,7 @@ void CPieceTable::Serialize(CArchive& ar)
             for (size_t i = m_pPieceTbl.GetSize(); i < nOldTblSize; i++)
             {
                 pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
-                CDrawObj* pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
-                if (pObj != NULL) delete pObj;
+                OwnerPtr<CDrawObj> pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
             }
         }
     }

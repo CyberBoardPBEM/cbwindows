@@ -269,7 +269,11 @@ public:
     const CTileManager* GetTileManager() const;
     CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
     CMarkManager* GetMarkManager();
-    CBoardManager* GetBoardManager();
+    const CBoardManager* GetBoardManager() const;
+    CBoardManager* GetBoardManager()
+    {
+        return const_cast<CBoardManager*>(std::as_const(*this).GetBoardManager());
+    }
     CPieceManager* GetPieceManager();
     const CPieceTable* GetPieceTable() const { return m_pPTbl; }
     CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
@@ -300,7 +304,7 @@ public:
 
     // Support for player accounts
     BOOL  HasPlayers() { return m_pPlayerMgr != NULL; }
-    DWORD  GetCurrentPlayerMask();
+    DWORD  GetCurrentPlayerMask() const;
     void  SetCurrentPlayerMask(WORD dwMask) { m_dwCurrentPlayer = dwMask; }
     BOOL  IsCurrentPlayerReferee();
     void  ClearAllOwnership();
@@ -414,10 +418,10 @@ public:
 
     // Object and piece locator methods...
     BOOL FindPieceCurrentLocation(PieceID pid, CTraySet*& pTraySet,
-        CPlayBoard*& pPBoard, CPieceObj** ppObj = NULL);
-    CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj** ppObj = NULL);
+        CPlayBoard*& pPBoard, CPieceObj*& ppObj);
+    CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj*& ppObj);
     CTraySet*   FindPieceInTray(PieceID pid);
-    CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, CDrawObj** ppObj = NULL);
+    CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, CDrawObj*& ppObj);
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
 
     // Support for playback...

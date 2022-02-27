@@ -52,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////////////////////////////////////////
 
-DWORD  CGamDoc::GetCurrentPlayerMask()
+DWORD  CGamDoc::GetCurrentPlayerMask() const
 {
     return m_bSimulateSpectator ? 0 :  m_dwCurrentPlayer;
 }

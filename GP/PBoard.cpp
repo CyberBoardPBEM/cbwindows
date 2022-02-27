@@ -43,7 +43,8 @@ static char THIS_FILE[] = __FILE__;
 
 //////////////////////////////////////////////////////////////////////
 
-CPlayBoard::CPlayBoard()
+CPlayBoard::CPlayBoard(CGamDoc& doc) :
+    m_pDoc(&doc)
 {
     //  m_wReserved1 = 0;
     m_bGridRectCenters = FALSE;         // Replaced m_wReserved1
@@ -92,7 +93,6 @@ CPlayBoard::CPlayBoard()
     m_dwOwnerMask = 0;                          // No player owns it
 
     m_pBoard = NULL;                            // Loaded from Game Box
-    m_pDoc = NULL;                              // Set by document code.
     m_nSerialNum = nullBid;                 // Initially set from game box.
 }
 
@@ -106,7 +106,7 @@ void CPlayBoard::Clear()
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
+void CPlayBoard::PropagateOwnerMaskToAllPieces()
 {
     // Make sure that if this board is owned, all pieces
     // have their ownership masks set appropriately!
@@ -116,27 +116,27 @@ void CPlayBoard::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
 
 //////////////////////////////////////////////////////////////////////
 
-BOOL CPlayBoard::IsOwnedButNotByCurrentPlayer(CGamDoc* pDoc)
+BOOL CPlayBoard::IsOwnedButNotByCurrentPlayer(const CGamDoc& pDoc) const
 {
-    return IsOwned() && !IsOwnedBy(pDoc->GetCurrentPlayerMask());
+    return IsOwned() && !IsOwnedBy(pDoc.GetCurrentPlayerMask());
 }
 
 //////////////////////////////////////////////////////////////////////
 // Draw stuff on top of a board. The actual board image is draw by
 // code outside of this object to easily support image caching.
 
-void CPlayBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale)
+void CPlayBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale)
 {
     ASSERT(m_pBoard);
     ASSERT(m_pPceList);
 
     if (m_bIVisible && !m_bIndOnTop)
-        m_pIndList->Draw(CheckedDeref(pDC), pDrawRct, eScale);
+        m_pIndList->Draw(pDC, pDrawRct, eScale);
 
-    m_pPceList->Draw(CheckedDeref(pDC), pDrawRct, eScale, TRUE, FALSE, !m_bPVisible, m_bLockedDrawnBeneath);
+    m_pPceList->Draw(pDC, pDrawRct, eScale, TRUE, FALSE, !m_bPVisible, m_bLockedDrawnBeneath);
 
     if (m_bIVisible && m_bIndOnTop)
-        m_pIndList->Draw(CheckedDeref(pDC), pDrawRct, eScale);
+        m_pIndList->Draw(pDC, pDrawRct, eScale);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -144,7 +144,6 @@ void CPlayBoard::Draw(CDC* pDC, CRect* pDrawRct, TileScale eScale)
 
 CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 {
-    ASSERT(m_pDoc);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
@@ -161,7 +160,7 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
     LimitRectToBoard(rct);
 
     {
-        OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>(m_pDoc);
+        OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>(&*m_pDoc);
         pObj->SetPiece(rct, pid);
         m_pPceList->AddToFront(std::move(pObj));
     }
@@ -184,35 +183,35 @@ void CPlayBoard::FlushAllIndicators()
 
 //////////////////////////////////////////////////////////////////////
 
-CPieceObj* CPlayBoard::FindPieceID(PieceID pid)
+const CPieceObj* CPlayBoard::FindPieceID(PieceID pid) const
 {
     ASSERT(m_pPceList != NULL);
     return m_pPceList->FindPieceID(pid);
 }
 
-CDrawObj* CPlayBoard::FindObjectID(ObjectID oid)
+const CDrawObj* CPlayBoard::FindObjectID(ObjectID oid) const
 {
     ASSERT(m_pPceList != NULL);
     return m_pPceList->FindObjectID(oid);
 }
 
-BOOL CPlayBoard::IsObjectOnBoard(CDrawObj *pObj)
+BOOL CPlayBoard::IsObjectOnBoard(const CDrawObj& pObj) const
 {
     ASSERT(m_pPceList != NULL);
-    return m_pPceList->Find(*pObj) != m_pPceList->end();
+    return m_pPceList->Find(pObj) != m_pPceList->end();
 }
 
 //////////////////////////////////////////////////////////////////////
 // Caller must delete the CPieceObj!
 
-void CPlayBoard::RemoveObject(CDrawObj* pObj)
+void CPlayBoard::RemoveObject(const CDrawObj& pObj)
 {
-    m_pPceList->RemoveObject(CheckedDeref(pObj));
+    m_pPceList->RemoveObject(pObj);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::LimitRectToBoard(CRect& rct)
+void CPlayBoard::LimitRectToBoard(CRect& rct) const
 {
     if (rct.right > m_pBoard->GetWidth(fullScale))
         rct.OffsetRect(m_pBoard->GetWidth(fullScale) - rct.right, 0);
@@ -226,10 +225,13 @@ void CPlayBoard::LimitRectToBoard(CRect& rct)
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::SetBoard(const CGeomorphicBoard& pGeoBoard, BOOL bInheritSettings /* = FALSE */)
+void CPlayBoard::SetBoard(OwnerPtr<CGeomorphicBoard> pGeoBoard, BOOL bInheritSettings /* = FALSE */)
 {
     ASSERT(!m_pGeoBoard);
-    m_pGeoBoard.reset(new CGeomorphicBoard(pGeoBoard));
+    CB::propagate_const<std::unique_ptr<CGeomorphicBoard>> temp1 = CB::get_underlying(std::move(pGeoBoard));
+    std::unique_ptr<CGeomorphicBoard> temp2 = CB::get_underlying(std::move(temp1));
+
+    m_pGeoBoard = temp2.release();
     CBoard& pBrd = CreateGeoBoard();
     SetBoard(pBrd, bInheritSettings);
 }
@@ -237,9 +239,10 @@ void CPlayBoard::SetBoard(const CGeomorphicBoard& pGeoBoard, BOOL bInheritSettin
 CBoard& CPlayBoard::CreateGeoBoard()
 {
     ASSERT(m_pGeoBoard);
-    CBoard* pBrd = m_pGeoBoard->CreateBoard(m_pDoc);
-    m_pDoc->GetBoardManager()->Add(pBrd);
-    return *pBrd;
+    OwnerPtr<CBoard> pBrd = m_pGeoBoard->CreateBoard(&*m_pDoc);
+    CBoard& retval = *pBrd;
+    m_pDoc->GetBoardManager()->Add(std::move(pBrd));
+    return retval;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -262,29 +265,29 @@ void CPlayBoard::SetBoard(CBoard& pBoard, BOOL bInheritSettings /* = FALSE */)
 
 //////////////////////////////////////////////////////////////////////
 
-CPlayBoard CPlayBoard::Clone(CGamDoc *pDoc)
+OwnerPtr<CPlayBoard> CPlayBoard::Clone(CGamDoc& pDoc) const
 {
-    CPlayBoard pBrd;
-    pBrd.m_pPceList = MakeOwner<CDrawList>(m_pPceList->Clone(pDoc));
-    pBrd.m_pIndList = MakeOwner<CDrawList>(m_pIndList->Clone(pDoc));
-    pBrd.m_bPlotMode = m_bPlotMode;
-    pBrd.m_ptPrevPlot = m_ptPrevPlot;
-    pBrd.m_nSerialNum = m_nSerialNum;
-    pBrd.m_bEnforceLocks = m_bEnforceLocks;
+    OwnerPtr<CPlayBoard> pBrd = MakeOwner<CPlayBoard>(pDoc);
+    pBrd->m_pPceList = MakeOwner<CDrawList>(m_pPceList->Clone(&pDoc));
+    pBrd->m_pIndList = MakeOwner<CDrawList>(m_pIndList->Clone(&pDoc));
+    pBrd->m_bPlotMode = m_bPlotMode;
+    pBrd->m_ptPrevPlot = m_ptPrevPlot;
+    pBrd->m_nSerialNum = m_nSerialNum;
+    pBrd->m_bEnforceLocks = m_bEnforceLocks;
     return pBrd;
 }
 
-void CPlayBoard::Restore(CGamDoc *pDoc, CPlayBoard& pBrd)
+void CPlayBoard::Restore(CGamDoc& pDoc, const CPlayBoard& pBrd)
 {
-    m_pPceList->Restore(pDoc, *pBrd.m_pPceList);
-    m_pIndList->Restore(pDoc, *pBrd.m_pIndList);
+    m_pPceList->Restore(&pDoc, *pBrd.m_pPceList);
+    m_pIndList->Restore(&pDoc, *pBrd.m_pIndList);
     m_bPlotMode = pBrd.m_bPlotMode;
     m_ptPrevPlot = pBrd.m_ptPrevPlot;
     m_nSerialNum = pBrd.m_nSerialNum;
     m_bEnforceLocks = pBrd.m_bEnforceLocks;
 }
 
-bool CPlayBoard::Compare(CPlayBoard& pBrd)
+bool CPlayBoard::Compare(const CPlayBoard& pBrd) const
 {
     if (m_nSerialNum != pBrd.m_nSerialNum)
         return FALSE;
@@ -355,7 +358,7 @@ void CPlayBoard::Serialize(CArchive& ar)
     else
     {
         Clear();
-        m_pDoc = (CGamDoc*)ar.m_pDocument;
+        ASSERT(m_pDoc == (CGamDoc*)ar.m_pDocument);
         BYTE cTmp;
         WORD wTmp;
         DWORD dwTmp;
@@ -365,13 +368,13 @@ void CPlayBoard::Serialize(CArchive& ar)
             ar >> cTmp;
             if (cTmp != 0)
             {
-                m_pGeoBoard.reset(new CGeomorphicBoard);
+                m_pGeoBoard = new CGeomorphicBoard;
                 m_pGeoBoard->Serialize(ar);
                 CreateGeoBoard();
             }
         }
         else
-            m_pGeoBoard.reset();
+            m_pGeoBoard = nullptr;
 
         ar >> m_nSerialNum;
 
@@ -493,10 +496,9 @@ void CPlayBoard::DeleteGeoBoard::operator()(CGeomorphicBoard* p) const
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-CPBoardManager::CPBoardManager()
+CPBoardManager::CPBoardManager(CGamDoc& doc) :
+    m_pDoc(&doc)
 {
-    m_pBMgr = NULL;
-    m_pDoc = NULL;
     m_nNextGeoSerialNum = BoardID(GEO_BOARD_SERNUM_BASE);
     //m_wReserved1 = 0;
     m_wReserved2 = 0;
@@ -545,8 +547,6 @@ void CPBoardManager::FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerN
 
 void CPBoardManager::SetPBoardList(const std::vector<BoardID>& tblBrds)
 {
-    ASSERT(m_pDoc != NULL);
-    ASSERT(m_pBMgr != NULL);
     ASSERT(tblBrds.size() >= 0);
     // First all existing play boards are checked to see if they
     // are in the new list. If they are not, they are removed. Any
@@ -578,24 +578,23 @@ void CPBoardManager::SetPBoardList(const std::vector<BoardID>& tblBrds)
 
 void CPBoardManager::AddBoard(BoardID nSerialNum, BOOL bInheritSettings)
 {
-    size_t nBrd = m_pBMgr->FindBoardBySerial(nSerialNum);
+    CBoardManager& m_pBMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    size_t nBrd = m_pBMgr.FindBoardBySerial(nSerialNum);
     ASSERT(nBrd != Invalid_v<size_t>);
-    CBoard& pBoard = m_pBMgr->GetBoard(nBrd);
-    AddBoard(&pBoard, bInheritSettings);
+    CBoard& pBoard = m_pBMgr.GetBoard(nBrd);
+    AddBoard(pBoard, bInheritSettings);
 }
 
-void CPBoardManager::AddBoard(CBoard* pBoard, BOOL bInheritSettings)
+void CPBoardManager::AddBoard(CBoard& pBoard, BOOL bInheritSettings)
 {
-    push_back(new CPlayBoard);
-    back()->SetDocument(m_pDoc);
-    back()->SetBoard(CheckedDeref(pBoard), bInheritSettings);
+    push_back(new CPlayBoard(*m_pDoc));
+    back()->SetBoard(pBoard, bInheritSettings);
 }
 
-void CPBoardManager::AddBoard(CGeomorphicBoard* pGeoBoard, BOOL bInheritSettings)
+void CPBoardManager::AddBoard(OwnerPtr<CGeomorphicBoard> pGeoBoard, BOOL bInheritSettings)
 {
-    push_back(new CPlayBoard);
-    back()->SetDocument(m_pDoc);
-    back()->SetBoard(CheckedDeref(pGeoBoard), bInheritSettings);
+    push_back(new CPlayBoard(*m_pDoc));
+    back()->SetBoard(std::move(pGeoBoard), bInheritSettings);
 }
 
 void CPBoardManager::DeletePBoard(size_t nBrd)
@@ -610,7 +609,7 @@ void CPBoardManager::DeletePBoard(size_t nBrd)
     erase(begin() + value_preserving_cast<ptrdiff_t>(nBrd));
 }
 
-CPlayBoard* CPBoardManager::GetPBoardBySerial(BoardID nSerialNum)
+const CPlayBoard* CPBoardManager::GetPBoardBySerial(BoardID nSerialNum) const
 {
     size_t nBrdNum = FindPBoardBySerial(nSerialNum);
     if (nBrdNum == Invalid_v<size_t>)
@@ -635,10 +634,10 @@ void CPBoardManager::ClearAllOwnership()
         GetPBoard(i).SetOwnerMask(0);
 }
 
-void CPBoardManager::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
+void CPBoardManager::PropagateOwnerMaskToAllPieces()
 {
     for (size_t i = 0; i < GetNumPBoards(); i++)
-        GetPBoard(i).PropagateOwnerMaskToAllPieces(pDoc);
+        GetPBoard(i).PropagateOwnerMaskToAllPieces();
 }
 
 size_t CPBoardManager::FindPBoardByRef(const CPlayBoard& pPBrd) const
@@ -651,53 +650,52 @@ size_t CPBoardManager::FindPBoardByRef(const CPlayBoard& pPBrd) const
     return Invalid_v<size_t>;
 }
 
-CDrawObj* CPBoardManager::RemoveObjectID(ObjectID oid)
+OwnerPtr<CDrawObj> CPBoardManager::RemoveObjectID(ObjectID oid)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBrd = FindObjectOnBoard(oid, &pObj);
+    CPlayBoard* pPBrd = FindObjectOnBoard(oid, pObj);
     if (pPBrd != NULL)
-        pPBrd->RemoveObject(pObj);
+        pPBrd->RemoveObject(*pObj);
     return pObj;
 }
 
-CPlayBoard* CPBoardManager::FindObjectOnBoard(ObjectID oid, CDrawObj** ppObj)
+const CPlayBoard* CPBoardManager::FindObjectOnBoard(ObjectID oid, const CDrawObj*& ppObj) const
 {
-    if (ppObj != NULL) *ppObj = NULL;
+    ppObj = NULL;
     for (size_t i = 0; i < GetNumPBoards(); i++)
     {
-        CPlayBoard& pPBrd = GetPBoard(i);
-        CDrawObj* pObj = pPBrd.FindObjectID(oid);
+        const CPlayBoard& pPBrd = GetPBoard(i);
+        const CDrawObj* pObj = pPBrd.FindObjectID(oid);
         if (pObj != NULL)
         {
-            if (ppObj != NULL) *ppObj = pObj;
+            ppObj = pObj;
             return &pPBrd;
         }
     }
     return NULL;
 }
 
-CPlayBoard* CPBoardManager::FindPieceOnBoard(PieceID pid, CPieceObj** ppObj)
+const CPlayBoard* CPBoardManager::FindPieceOnBoard(PieceID pid, const CPieceObj*& ppObj) const
 {
-    if (ppObj != NULL) *ppObj = NULL;
+    ppObj = NULL;
     for (size_t i = 0; i < GetNumPBoards(); i++)
     {
-        CPlayBoard& pPBrd = GetPBoard(i);
-        CPieceObj* pObj = pPBrd.FindPieceID(pid);
+        const CPlayBoard& pPBrd = GetPBoard(i);
+        const CPieceObj* pObj = pPBrd.FindPieceID(pid);
         if (pObj != NULL)
         {
-            if (ppObj != NULL) *ppObj = pObj;
+            ppObj = pObj;
             return &pPBrd;
         }
     }
     return NULL;
 }
 
-CPlayBoard* CPBoardManager::FindObjectOnBoard(CDrawObj* pObj)
+const CPlayBoard* CPBoardManager::FindObjectOnBoard(const CDrawObj& pObj) const
 {
-    ASSERT(pObj != NULL);
     for (size_t i = 0; i < GetNumPBoards(); i++)
     {
-        CPlayBoard& pPBrd = GetPBoard(i);
+        const CPlayBoard& pPBrd = GetPBoard(i);
         if (pPBrd.IsObjectOnBoard(pObj))
             return &pPBrd;
     }
@@ -713,24 +711,24 @@ void CPBoardManager::DestroyAllElements()
 
 //////////////////////////////////////////////////////////////////////
 
-CPBoardManager* CPBoardManager::Clone(CGamDoc *pDoc)
+OwnerPtr<CPBoardManager> CPBoardManager::Clone(CGamDoc& pDoc) const
 {
-    CPBoardManager* pMgr = new CPBoardManager;
+    ASSERT(&pDoc == m_pDoc);
+    OwnerPtr<CPBoardManager> pMgr = MakeOwner<CPBoardManager>(pDoc);
     pMgr->reserve(GetNumPBoards());
     for (size_t i = size_t(0); i < GetNumPBoards(); i++)
-        // Clone() returns obj, not pointer
-        pMgr->push_back(new CPlayBoard(GetPBoard(i).Clone(pDoc)));
+        pMgr->push_back(GetPBoard(i).Clone(pDoc));
     return pMgr;
 }
 
-void CPBoardManager::Restore(CGamDoc *pDoc, CPBoardManager& pMgr)
+void CPBoardManager::Restore(CGamDoc& pDoc, const CPBoardManager& pMgr)
 {
     size_t nBrdLimit = CB::min(GetNumPBoards(), pMgr.GetNumPBoards());
     for (size_t i = 0; i < nBrdLimit; i++)
         GetPBoard(i).Restore(pDoc, pMgr.GetPBoard(i));
 }
 
-bool CPBoardManager::Compare(CPBoardManager& pMgr)
+bool CPBoardManager::Compare(const CPBoardManager& pMgr) const
 {
     if (GetNumPBoards() != pMgr.GetNumPBoards())
         return false;
@@ -769,7 +767,7 @@ void CPBoardManager::Serialize(CArchive& ar)
     {
         size_t wTmp;
         DestroyAllElements();
-        m_pDoc = (CGamDoc*)ar.m_pDocument;
+        ASSERT(m_pDoc == ar.m_pDocument);
 
         // ar >> m_wReserved1;                                  // Ver2.01
         ar >> m_nNextGeoSerialNum;            // Ver2.01 (was m_wReserved1)
@@ -792,8 +790,7 @@ void CPBoardManager::Serialize(CArchive& ar)
         }
         for (size_t i = size_t(0); i < wTmp; i++)
         {
-            push_back(new CPlayBoard);
-            GetPBoard(i).SetDocument(m_pDoc);
+            push_back(new CPlayBoard(*m_pDoc));
             GetPBoard(i).Serialize(ar);
         }
     }

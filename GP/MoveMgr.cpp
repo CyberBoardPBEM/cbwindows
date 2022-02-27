@@ -112,7 +112,7 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -139,7 +139,7 @@ void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
     pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
     {
         CRect rct = pObj->GetRect();
         CSize size = m_ptCtr - GetMidRect(rct);
@@ -148,7 +148,7 @@ void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     else
     {
         pDoc->PlacePieceOnBoard(m_ptCtr, m_pid, pPBrdDest);
-        VERIFY(pDoc->FindPieceOnBoard(m_pid, &pObj) != NULL);
+        VERIFY(pDoc->FindPieceOnBoard(m_pid, pObj) != NULL);
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -223,7 +223,7 @@ void CTrayPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -316,9 +316,9 @@ BOOL CPieceSetSide::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, pDoc))
         return TRUE;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
-        if (pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
+        if (pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
             return TRUE;
     }
     else
@@ -335,7 +335,7 @@ void CPieceSetSide::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -353,7 +353,7 @@ void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
         pDoc->InvertPlayingPieceOnBoard(*pObj, pPBoard);
     else
         pDoc->InvertPlayingPieceInTray(m_pid);
@@ -406,7 +406,7 @@ void CPieceSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -424,7 +424,7 @@ void CPieceSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
         pDoc->ChangePlayingPieceFacingOnBoard(*pObj, pPBoard, m_nFacingDegCW);
     else
         pDoc->ChangePlayingPieceFacingInTray(m_pid, m_nFacingDegCW);
@@ -484,7 +484,7 @@ void CPieceSetOwnership::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, &pObj))
+    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
@@ -543,7 +543,7 @@ CMarkerSetFacing::CMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacin
 void CMarkerSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
@@ -560,7 +560,7 @@ void CMarkerSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 void CMarkerSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
         pDoc->ChangeMarkerFacingOnBoard(*static_cast<CMarkObj*>(pObj), pPBoard, m_nFacingDegCW);
@@ -615,7 +615,7 @@ CBoardMarkerMove::CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID 
 void CBoardMarkerMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
@@ -641,7 +641,7 @@ void CBoardMarkerMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
 
     CDrawObj* pObj;
-    CPlayBoard* pPBrdFrom = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBrdFrom = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBrdFrom != NULL)
     {
@@ -706,7 +706,7 @@ CObjectDelete::CObjectDelete(ObjectID dwObjID)
 void CObjectDelete::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
@@ -720,7 +720,7 @@ void CObjectDelete::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 void CObjectDelete::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, &pObj);
+    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
@@ -772,13 +772,13 @@ BOOL CObjectSetText::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
         if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
 
-        pDoc->FindPieceCurrentLocation(pid, pTray, pPBoard, &pPObj);
+        pDoc->FindPieceCurrentLocation(pid, pTray, pPBoard, pPObj);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
     if (pPBoard != NULL)
     {
-        if (pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
+        if (pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
             return TRUE;
     }
     else if (pTray != NULL)
@@ -802,13 +802,13 @@ void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     if (IsGameElementAPiece(m_elem))
     {
         if (pDoc->FindPieceCurrentLocation(GetPieceIDFromElement(m_elem),
-                pTray, pPBoard, &pPObj))
+                pTray, pPBoard, pPObj))
             pObj = pPObj;
         else
             pDoc->SelectTrayItem(*pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
     if (pPBoard != NULL)
     {
@@ -868,15 +868,15 @@ BOOL CObjectLockdown::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
         PieceID pid = GetPieceIDFromElement(m_elem);
         if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), &pPObj);
+        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
     ASSERT(pObj != NULL);
 
-    if (pPBoard != NULL && pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
+    if (pPBoard != NULL && pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
         return TRUE;
 
     return FALSE;
@@ -890,11 +890,11 @@ void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 
     if (IsGameElementAPiece(m_elem))
     {
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), &pPObj);
+        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
 
     ASSERT(pObj != NULL);
@@ -923,11 +923,11 @@ void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
     if (IsGameElementAPiece(m_elem))
     {
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), &pPObj);
+        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), &pObj);
+        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
 
     if (pPBoard != NULL)

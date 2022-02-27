@@ -1872,11 +1872,8 @@ void CDrawList::RemoveObject(const CDrawObj& pDrawObj)
                     not_null, but we'll live with it since we
                     clean up by destroying  the invalid
                     not_null. */
-        /* rref required.  Otherwise, compiler selects
-            get_underlying(const propagate_const&), which
-            prevents calling release() */
-        CB::propagate_const<std::unique_ptr<CDrawObj>>&& rref = CB::get_underlying(std::move(*pos));
-        CB::get_underlying(rref).release();
+        CB::propagate_const<std::unique_ptr<CDrawObj>> p = CB::get_underlying(std::move(*pos));
+        CB::get_underlying(std::move(p)).release();
         erase(pos);
     }
 }
@@ -1896,22 +1893,22 @@ void CDrawList::SetOwnerMasks(DWORD dwOwnerMask)
     }
 }
 
-CPieceObj* CDrawList::FindPieceID(PieceID pid)
+const CPieceObj* CDrawList::FindPieceID(PieceID pid) const
 {
-    CDrawObj* pObj = FindObjectID(static_cast<ObjectID>(pid));
+    const CDrawObj* pObj = FindObjectID(static_cast<ObjectID>(pid));
     if (pObj != NULL)
     {
         ASSERT(pObj->GetType() == CDrawObj::drawPieceObj);
-        return static_cast<CPieceObj*>(pObj);
+        return static_cast<const CPieceObj*>(pObj);
     }
     return NULL;
 }
 
-CDrawObj* CDrawList::FindObjectID(ObjectID oid)
+const CDrawObj* CDrawList::FindObjectID(ObjectID oid) const
 {
-    for (iterator pos = begin(); pos != end(); ++pos)
+    for (const_iterator pos = begin(); pos != end(); ++pos)
     {
-        CDrawObj& pDObj = **pos;
+        const CDrawObj& pDObj = **pos;
         if (pDObj.GetObjectID() == oid)
              return &pDObj;
     }
