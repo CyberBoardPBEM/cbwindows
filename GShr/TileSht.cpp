@@ -150,8 +150,8 @@ void CTileSheet::CreateTile()
         bmInfo.bmBits = NULL;
         bmInfo.bmHeight += m_size.cy;       // Increase size.
 
-        SetupPalette(&g_gt.mDC1);
-        SetupPalette(&g_gt.mDC2);
+        SetupPalette(g_gt.mDC1);
+        SetupPalette(g_gt.mDC2);
 
         OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
         pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
@@ -175,7 +175,7 @@ void CTileSheet::CreateTile()
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
         m_pBMap = MakeOwner<CBitmap>();
-        SetupPalette(&g_gt.mDC1);
+        SetupPalette(g_gt.mDC1);
         m_pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             m_size.cx, m_size.cy));
         g_gt.mDC1.SelectObject(m_pBMap.get());
@@ -207,13 +207,13 @@ void CTileSheet::DeleteTile(int yLoc)
 
         OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
-        SetupPalette(&g_gt.mDC2);
+        SetupPalette(g_gt.mDC2);
 
         pBMap->Attach(Create16BitDIBSection(g_gt.mDC2.m_hDC,
             bmInfo.bmWidth, bmInfo.bmHeight));
 
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
-        SetupPalette(&g_gt.mDC1);
+        SetupPalette(g_gt.mDC1);
 
         if (yLoc > 0)
         {
@@ -240,9 +240,9 @@ void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(m_pBMap.get());        // Dest bitmap
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
     g_gt.mDC2.SelectObject(pBMap);          // Source bitmap
-    SetupPalette(&g_gt.mDC2);
+    SetupPalette(g_gt.mDC2);
 
     g_gt.mDC1.BitBlt(0, yLoc, m_size.cx, m_size.cy, &g_gt.mDC2, 0, 0, SRCCOPY);
 
@@ -255,7 +255,7 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(*m_pBMap);        // Source bitmap
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
 
@@ -274,7 +274,7 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
     }
 
     g_gt.mDC2.SelectObject(&*pBMap);          // Activate dest bitmap
-    SetupPalette(&g_gt.mDC2);
+    SetupPalette(g_gt.mDC2);
 
     g_gt.mDC2.BitBlt(0, 0, m_size.cx, m_size.cy, &g_gt.mDC1, 0, yLoc, SRCCOPY);
 

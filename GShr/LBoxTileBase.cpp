@@ -91,7 +91,7 @@ void CTileBaseListBox::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT n
 
         BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
-        SetupPalette(pDC);
+        SetupPalette(*pDC);
 
         pDC->SaveDC();
         pDC->IntersectClipRect(&rctItem);
@@ -114,7 +114,7 @@ void CTileBaseListBox::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT n
         DrawTileImage(pDC, rctItem, TRUE, x, tid2);
 
         pDC->RestoreDC(-1);
-        ResetPalette(pDC);
+        ResetPalette(*pDC);
     }
     if (nAction & ODA_FOCUS)
         pDC->DrawFocusRect(&rctItem);

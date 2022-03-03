@@ -125,7 +125,7 @@ typedef DELTAGEN *PDELTAGEN;
 ////////////////////////////////////////////////////////////////////
 // From ROTATE.CPP
 
-OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans);
+OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
 void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
 void  OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff);
 
@@ -178,19 +178,19 @@ void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b);
 
 void ClearSystemPalette();
 void SetupColorTable(CDWordArray* pTbl, BOOL bInclBlackAndWhite = TRUE);
-void SetupPalette(CDC *pDC);
-void ResetPalette(CDC *pDC);
-void CloneBitmap(CBitmap *pbmDst, CBitmap *pbmSrc);
+void SetupPalette(CDC& pDC);
+void ResetPalette(CDC& pDC);
+OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
 void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
     COLORREF crVoided = noColor);
-void CloneScaledBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CSize size,
+OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     int nStretchMode = COLORONCOLOR);
-void MergeBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CPoint pntDst,
+void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst,
     COLORREF crTrans = noColor);
-void BitmapBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap);
-void TransBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap, COLORREF crTrans);
-void Draw25PctPatBorder(CWnd* pWnd, CDC* pDC, CRect rct, int nThick);
-void CreateColorBitmap(CBitmap *pBMap, CSize size, COLORREF cr);
+void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
+void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans);
+void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
+OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
 
 CPalette* GetAppPalette();
 
@@ -199,13 +199,15 @@ void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
 void AppendBitmap(CBitmap *pBMapTo, CBitmap *pBMapFrm, CPalette *pPalTo,
     CPalette *pPalFrm);
 void RemoveBitmapSlice(CBitmap *pBMap, int yPos, int iHt, CPalette *pPal = NULL);
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
-CPalette* CreateMergedPalette(CPalette* palPri, CPalette* palSec);
+#endif
+OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec);
 void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
 void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, PALETTEENTRY& pe);
 void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
-void BltThruDIB(CDC* pDCDst, int xDst, int yDst, int cx, int cy,
-    CDC* pDCSrc, CPalette *pPalSrc, CBitmap* pBMap, int xSrc, int ySrc);
+void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
+    CDC& pDCSrc, const CPalette *pPalSrc, const CBitmap& pBMap, int xSrc, int ySrc);
 
 OwnerPtr<CBrush> Clone(const CBrush& brush);
 

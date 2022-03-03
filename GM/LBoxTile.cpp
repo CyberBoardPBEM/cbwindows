@@ -78,7 +78,7 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
 
         CTile tile = pTMgr->GetTile(tid, fullScale);
 
-        SetupPalette(pDC);
+        SetupPalette(*pDC);
         pDC->SaveDC();
 
         pDC->IntersectClipRect(&rctItem);
@@ -123,7 +123,7 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         }
 
         pDC->RestoreDC(-1);
-        ResetPalette(pDC);
+        ResetPalette(*pDC);
     }
     if (nAction & ODA_FOCUS)
         pDC->DrawFocusRect(&rctItem);
