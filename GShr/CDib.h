@@ -59,8 +59,8 @@ public:
     }
     void SetDibHandle(HANDLE hDib);
     // ---------- //
-    int Height() { return (int)DIBHeight(m_lpDib); }
-    int Width()  { return (int)DIBWidth(m_lpDib); }
+    int Height() const { return (int)DIBHeight(m_lpDib); }
+    int Width() const { return (int)DIBWidth(m_lpDib); }
     int NumColors() { return ((LPBITMAPINFOHEADER)m_lpDib)->biBitCount; }
     int NumColorsInColorTable() { return DIBNumColors(m_lpDib); }
     LPBITMAPINFOHEADER GetBmiHdr() { return (LPBITMAPINFOHEADER)m_lpDib; }
@@ -70,7 +70,7 @@ public:
     BYTE Get256ColorNumberAtXY(int x, int y);
     void Set256ColorNumberAtXY(int x, int y, BYTE nColor);
     // ---------- for 16bit/pixel Dibs only -------------- //
-    WORD Get16BitColorNumberAtXY(int x, int y);
+    WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }

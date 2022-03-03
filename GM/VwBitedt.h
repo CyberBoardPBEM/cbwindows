@@ -25,6 +25,7 @@
 #ifndef _VWBITEDT_H
 #define _VWBITEDT_H
 
+#include    <deque>
 #ifndef     _TILE_H
 #include    "Tile.h"
 #endif
@@ -52,8 +53,8 @@ public:
     CTileSelView* GetTileSelectView() { return m_pSelView; }
     void SetCurrentBitmap(TileID tid, CBitmap *pBMap, BOOL bFillOnly = FALSE);
     CBitmap* GetCurrentViewBitmap();
-    CBitmap* GetCurrentMasterBitmap() { return &m_bmMaster; }
-    CBitmap* GetPasteBitmap() { return &m_bmPaste; }
+    CBitmap* GetCurrentMasterBitmap() { return &*m_bmMaster; }
+    CBitmap* GetPasteBitmap() { return &*m_bmPaste; }
     CSize GetBitmapSize() { return m_size; }
     CSize GetZoomedSize()
         { return CSize(m_size.cx * m_nZoom, m_size.cy * m_nZoom); }
@@ -83,7 +84,7 @@ public:
     void InvalidateFocusBorder(BOOL bUpdate = FALSE);
     BOOL IsPtInImage(CPoint point);
     BOOL IsPtInSelectRect(CPoint point);
-    BOOL IsPasteImage() { return m_bmPaste.m_hObject != NULL; }
+    BOOL IsPasteImage() { return m_bmPaste->m_hObject != NULL; }
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
 
     // Draw tools support
@@ -116,7 +117,7 @@ public:
     void SetUndoFromView();
     void RestoreUndoToView();
     void PurgeUndo();
-    BOOL IsUndoAvailable() { return m_listUndo.GetCount() > 0; }
+    BOOL IsUndoAvailable() { return !m_listUndo.empty(); }
 
 // Implementation
 protected:
@@ -143,15 +144,15 @@ protected:
     // ------ //
     CString     m_strText;      // Text editing.
     // ------ //
-    CBitmap     m_bmMaster;     // master (current) bitmap image
-    CBitmap     m_bmView;       // bitmap shown in edit window
+    OwnerPtr<CBitmap> m_bmMaster;     // master (current) bitmap image
+    OwnerPtr<CBitmap> m_bmView;       // bitmap shown in edit window
     // ------ //
-    CBitmap     m_bmPaste;      // bitmap being pasted or moved
+    OwnerPtr<CBitmap> m_bmPaste;      // bitmap being pasted or moved
     CRect       m_rctPaste;     // rect surrounding the paste bitmap
     BOOL        m_bSelectCapture;// Select tool has mouse captured
     // ------ //
     // Undo FIFO
-    CObList     m_listUndo;     // List of undo bitmaps
+    std::deque<OwnerPtr<CBitmap>> m_listUndo;     // List of undo bitmaps
     // ------ //
     CTileSelView* m_pSelView;
     CTileManager* m_pTMgr;

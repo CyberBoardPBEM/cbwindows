@@ -46,7 +46,8 @@ IMPLEMENT_DYNCREATE(CTileSelView, CScrollView)
 
 CTileSelView::CTileSelView() :
     m_bmFull(MakeOwner<CBitmap>()),
-    m_bmHalf(MakeOwner<CBitmap>())
+    m_bmHalf(MakeOwner<CBitmap>()),
+    m_bmSmall(MakeOwner<CBitmap>())
 {
     m_pTileMgr = NULL;
     m_pEditView = NULL;
@@ -134,7 +135,7 @@ void CTileSelView::OnInitialUpdate()
     tile = m_pTileMgr->GetTile(m_tid, smallScale);
     m_crSmall = tile.GetSmallColor();
     m_sizeSmall = CSize(8, 8);
-    CreateColorBitmap(&m_bmSmall, m_sizeSmall, m_crSmall);
+    m_bmSmall = CreateColorBitmap(m_sizeSmall, m_crSmall);
 
     // Setup rectangles
     CalcViewLayout();
@@ -199,7 +200,7 @@ void CTileSelView::DrawTile(CDC* pDC, CBitmap* pBMap, CRect rct)
 
 void CTileSelView::OnDraw(CDC* pDC)
 {
-    SetupPalette(pDC);
+    SetupPalette(*pDC);
     CRect rctActive;
 
     if (m_eCurTile != fullScale)
@@ -213,7 +214,7 @@ void CTileSelView::OnDraw(CDC* pDC)
         rctActive = m_rctHalf;
 
     if (m_eCurTile != smallScale)
-        DrawTile(pDC, &m_bmSmall, m_rctSmall);
+        DrawTile(pDC, &*m_bmSmall, m_rctSmall);
     else
         rctActive = m_rctSmall;
 
@@ -223,9 +224,9 @@ void CTileSelView::OnDraw(CDC* pDC)
     DrawTile(pDC, pbm, rctActive);
 
     rctActive.InflateRect(nBorderWidth + 1, nBorderWidth + 1);
-    Draw25PctPatBorder(this, pDC, rctActive, nBorderWidth);
+    Draw25PctPatBorder(*this, *pDC, rctActive, nBorderWidth);
 
-    ResetPalette(pDC);
+    ResetPalette(*pDC);
     g_gt.SelectSafeObjectsForDC1();
 }
 
@@ -238,7 +239,7 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
     int nSizeY;
 
     CDC* pDC = GetDC();
-    SetupPalette(pDC);
+    SetupPalette(*pDC);
 
     CPoint pnt = GetActiveTileLoc();
     CSize size = m_pEditView->GetBitmapSize();
@@ -256,7 +257,7 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
         PATCOPY);
 
     pDC->SelectObject(pPrvBrush);
-    ResetPalette(pDC);
+    ResetPalette(*pDC);
     ReleaseDC(pDC);
 }
 
@@ -278,11 +279,11 @@ void CTileSelView::UpdateDocumentTiles()
 {
     CGamDoc *pDoc = GetDocument();
     // Make sure our bitmaps are up to date.
-    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
 
     // Get small scale color from tiny bitmap and update tile
     g_gt.mDC1.SelectObject(&m_bmSmall);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
     COLORREF crSmall = g_gt.mDC1.GetPixel(0, 0);
     g_gt.SelectSafeObjectsForDC1();
 
@@ -301,7 +302,7 @@ void CTileSelView::UpdateDocumentTiles()
 void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
-    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
     dlg.m_pBMgr = GetDocument()->GetBoardManager();
     dlg.m_bRescaleBMaps = TRUE;
     dlg.m_nWidth = m_sizeFull.cx;
@@ -310,10 +311,8 @@ void CTileSelView::DoTileResizeDialog()
     {
         // Copy current bitmaps for undo
         PurgeUndo();            // Make sure no mem leaks.
-        m_pBmFullUndo = new CBitmap;
-        m_pBmHalfUndo = new CBitmap;
-        CloneBitmap(&*m_pBmFullUndo, &*m_bmFull);
-        CloneBitmap(&*m_pBmHalfUndo, &*m_bmHalf);
+        m_pBmFullUndo = CloneBitmap(*m_bmFull);
+        m_pBmHalfUndo = CloneBitmap(*m_bmHalf);
 
         OwnerOrNullPtr<CBitmap> bmFull(MakeOwner<CBitmap>());
         OwnerOrNullPtr<CBitmap> bmHalf(MakeOwner<CBitmap>());
@@ -322,15 +321,15 @@ void CTileSelView::DoTileResizeDialog()
 
         if (dlg.m_bRescaleBMaps)
         {
-            CloneScaledBitmap(&*bmFull, &*m_bmFull, m_sizeFull);
-            CloneScaledBitmap(&*bmHalf, &*m_bmHalf, m_sizeHalf);
+            bmFull = CloneScaledBitmap(*m_bmFull, m_sizeFull);
+            bmHalf = CloneScaledBitmap(*m_bmHalf, m_sizeHalf);
         }
         else
         {
-            CreateColorBitmap(&*bmFull, m_sizeFull, RGB(255, 255, 255));
-            CreateColorBitmap(&*bmHalf, m_sizeHalf, RGB(255, 255, 255));
-            MergeBitmap(&*bmFull, &*m_bmFull, CPoint(0,0), noColor);
-            MergeBitmap(&*bmHalf, &*m_bmHalf, CPoint(0,0), noColor);
+            bmFull = CreateColorBitmap(m_sizeFull, RGB(255, 255, 255));
+            bmHalf = CreateColorBitmap(m_sizeHalf, RGB(255, 255, 255));
+            MergeBitmap(*bmFull, *m_bmFull, CPoint(0,0), noColor);
+            MergeBitmap(*bmHalf, *m_bmHalf, CPoint(0,0), noColor);
         }
         m_bmFull = std::move(bmFull);
         m_bmHalf = std::move(bmHalf);
@@ -350,16 +349,16 @@ void CTileSelView::DoTileRotation(int nAngle)
 {
     CDib dibFull;
     CDib dibHalf;
-    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
     if (!dibFull.BitmapToDIB(&*m_bmFull, GetAppPalette()))
         return;             // MEMORY ERROR
     if(!dibHalf.BitmapToDIB(&*m_bmHalf, GetAppPalette()))
         return;             // MEMORY ERROR
 
-    OwnerPtr<CDib> pDib = Rotate16BitDib(&dibFull, nAngle, RGB(255, 255, 255));
+    OwnerPtr<CDib> pDib = Rotate16BitDib(dibFull, nAngle, RGB(255, 255, 255));
     OwnerOrNullPtr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
 
-    pDib = Rotate16BitDib(&dibHalf, nAngle, RGB(255, 255, 255));
+    pDib = Rotate16BitDib(dibHalf, nAngle, RGB(255, 255, 255));
     OwnerOrNullPtr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
 
     m_bmFull = std::move(pbmFull);
@@ -464,12 +463,12 @@ CPoint CTileSelView::GetActiveTileLoc()
         return m_rctSmall.TopLeft();
 }
 
-CBitmap& CTileSelView::GetActiveBitmap()
+OwnerPtr<CBitmap>& CTileSelView::GetActiveBitmap()
 {
     if (m_eCurTile == fullScale)
-        return *m_bmFull;
+        return m_bmFull;
     else if (m_eCurTile == halfScale)
-        return *m_bmHalf;
+        return m_bmHalf;
     else
         return m_bmSmall;
 }
@@ -481,7 +480,7 @@ void CTileSelView::SelectCurrentBitmap(TileScale eScale)
     else if (eScale == halfScale)
         m_pEditView->SetCurrentBitmap(m_tid, &*m_bmHalf);
     else
-        m_pEditView->SetCurrentBitmap(m_tid, &m_bmSmall, TRUE);
+        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmSmall, TRUE);
     m_eCurTile = eScale;
 }
 
@@ -504,7 +503,7 @@ void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
         GetParentFrame()->SetActiveView(m_pEditView);
         return;
     }
-    CloneBitmap(&GetActiveBitmap(), m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
 
     SelectCurrentBitmap(eScale);
     Invalidate();

@@ -113,8 +113,8 @@ struct ImgEdge
 static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts);
 static void RotatePoint(POINT& pt, int nSin, int nCos);
 static OwnerPtr<CDib> CreateTransparentColorDIB(CSize size, COLORREF crTrans);
-static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSDib,
-    CDib* pDDib);
+static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDib& pSDib,
+    CDib& pDDib);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -126,8 +126,11 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSD
 
 /////////////////////////////////////////////////////////////////////
 
-OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
+// angle is clockwise
+OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 {
+    ASSERT(0 <= angle && angle < 360);
+    ASSERT(angle != 0 || !"unnecessary call");
     POINT   pntSrc[numPnts];
     POINT   pntDst[numPnts];
 
@@ -137,7 +140,7 @@ OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
     // angle to maintain backward compatibility with existing games.
     angle = 360 - angle;
 
-    CSize sizeSrc(pSDib->Width(), pSDib->Height());
+    CSize sizeSrc(pSDib.Width(), pSDib.Height());
     CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
     OwnerPtr<CDib> pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
@@ -161,7 +164,7 @@ OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
 
     while (1)
     {
-        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, pDDib.get());
+        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, *pDDib);
         if (!lftEdge.NextScanLine())
             break;
         if (!rgtEdge.NextScanLine())
@@ -173,8 +176,8 @@ OwnerPtr<CDib> Rotate16BitDib(CDib* pSDib, int angle, COLORREF crTrans)
 
 /////////////////////////////////////////////////////////////////////
 
-static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSDib,
-    CDib* pDDib)
+static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDib& pSDib,
+    CDib& pDDib)
 {
     int dstX = lftEdge.m_dstX;
     int dstXMax = rgtEdge.m_dstX;
@@ -187,10 +190,10 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, CDib* pSD
     //  TRACE2("For Y = %d, Dest Width = %d\n", dstY, dstWd + 1);
     for (; dstX <= dstXMax; dstX++)
     {
-        WORD nColor = pSDib->Get16BitColorNumberAtXY(srcX.RoundedVal(),
+        WORD nColor = pSDib.Get16BitColorNumberAtXY(srcX.RoundedVal(),
             srcY.RoundedVal());
 
-        pDDib->Set16BitColorNumberAtXY(dstX, dstY, nColor);
+        pDDib.Set16BitColorNumberAtXY(dstX, dstY, nColor);
         // TEST CODE:
         //        char str[256];
         //        wsprintf(str, "dX=%d, dY=%d : sX=%d, sY=%d\n",

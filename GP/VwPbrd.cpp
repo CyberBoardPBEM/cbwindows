@@ -439,7 +439,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     CBitmap*    pPrvBMap;
 
     pDC->GetClipBox(&oRct);
-    SetupPalette(pDC);
+    SetupPalette(*pDC);
 
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
@@ -457,7 +457,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     }
     dcMem.SetViewportOrg(-oRct.left, -oRct.top);
 
-    SetupPalette(&dcMem);
+    SetupPalette(dcMem);
 
     // Draw base board image...
     pBoard->SetMaxDrawLayer();          // Make sure all layers are drawn
@@ -491,10 +491,10 @@ void CPlayBoardView::OnDraw(CDC* pDC)
             &dcMem, oRct.left, oRct.top, SRCCOPY);
     }
 
-    ResetPalette(&dcMem);
+    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
 
-    ResetPalette(pDC);
+    ResetPalette(*pDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1930,7 +1930,7 @@ void CPlayBoardView::OnEditCopy()
     CBoard* pBoard = m_pPBoard->GetBoard();
     CWindowDC scrnDC(this);
 
-    SetupPalette(&scrnDC);
+    SetupPalette(scrnDC);
     CSize size = pBoard->GetSize(m_nZoom);
 
     CBitmap bmap;
@@ -1938,7 +1938,7 @@ void CPlayBoardView::OnEditCopy()
     CDC dcMem;
     dcMem.CreateCompatibleDC(&scrnDC);
     CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
-    SetupPalette(&dcMem);
+    SetupPalette(dcMem);
 
     CRect rct(0, 0, size.cx, size.cy);
 
@@ -1999,7 +1999,7 @@ void CPlayBoardView::OnEditBoardToFile()
         CBoard* pBoard = m_pPBoard->GetBoard();
         CWindowDC scrnDC(this);
 
-        SetupPalette(&scrnDC);
+        SetupPalette(scrnDC);
         CSize size = pBoard->GetSize(m_nZoom);
 
         CBitmap bmap;
@@ -2008,7 +2008,7 @@ void CPlayBoardView::OnEditBoardToFile()
         CDC dcMem;
         dcMem.CreateCompatibleDC(&scrnDC);
         CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
-        SetupPalette(&dcMem);
+        SetupPalette(dcMem);
 
         CRect rct(0, 0, size.cx, size.cy);
 

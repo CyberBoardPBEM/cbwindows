@@ -74,7 +74,7 @@ protected:
 
     OwnerPtr<CBitmap> m_bmFull;
     OwnerPtr<CBitmap> m_bmHalf;
-    CBitmap     m_bmSmall;
+    OwnerPtr<CBitmap> m_bmSmall;
 
     COLORREF    m_crSmall;
 
@@ -96,7 +96,7 @@ protected:
     // ------- //
     CRect GetActiveTileRect();
     CPoint GetActiveTileLoc();
-    CBitmap& GetActiveBitmap();
+    OwnerPtr<CBitmap>& GetActiveBitmap();
     void DrawTile(CDC* pDC, CBitmap* pBMap, CRect rct);
     void SelectCurrentBitmap(TileScale eScale);
     void CalcViewLayout();

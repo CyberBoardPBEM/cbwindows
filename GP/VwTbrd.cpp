@@ -150,7 +150,7 @@ LRESULT CTinyBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 
 void CTinyBoardView::OnDraw(CDC* pDC)
 {
-    SetupPalette(pDC);          // (moved to top)
+    SetupPalette(*pDC);          // (moved to top)
     if (m_pBMap == NULL)
         RegenCachedMap(pDC);
     ASSERT(m_pBMap != NULL);
@@ -179,10 +179,10 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     }
 
     dcMem.SetViewportOrg(-oRct.left, -oRct.top);
-    SetupPalette(&dcMem);
+    SetupPalette(dcMem);
 
     // Draw updated part of board image
-    BitmapBlt(&dcMem, CPoint(0, 0), m_pBMap);
+    BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
 
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
@@ -208,7 +208,7 @@ void CTinyBoardView::OnDraw(CDC* pDC)
             &dcMem, oRct.left, oRct.top, SRCCOPY);
     }
 
-    ResetPalette(&dcMem);
+    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
 }
 
@@ -221,10 +221,10 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
     bmap.Attach(Create16BitDIBSection(pDC->m_hDC, size.cx, size.cy));
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&bmap);
-    SetupPalette(&dcMem);
+    SetupPalette(dcMem);
 
     // Draw updated part of board image
-    BitmapBlt(&dcMem, CPoint(0, 0), m_pBMap);
+    BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
 
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
@@ -240,7 +240,7 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
 void CTinyBoardView::RegenCachedMap(CDC* pDC)
 {
     BeginWaitCursor();
-    SetupPalette(pDC);
+    SetupPalette(*pDC);
 
     if (m_pBMap != NULL) delete m_pBMap;
     m_pBMap = new CBitmap;
@@ -252,13 +252,13 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(m_pBMap);
-    SetupPalette(&dcMem);
+    SetupPalette(dcMem);
 
     CRect rct(CPoint(0, 0), size);
     pBoard->SetMaxDrawLayer();                  // Make sure all layers are drawn
     pBoard->Draw(dcMem, rct, smallScale, m_pPBoard->m_bSmallCellBorders);
 
-    ResetPalette(&dcMem);
+    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
     EndWaitCursor();
 }
@@ -349,9 +349,9 @@ void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
 
     {
         CWindowDC dcRef(NULL);
-        SetupPalette(&dcRef);
+        SetupPalette(dcRef);
         DrawFullMap(&dcRef, pTBrd->m_bmap);
-        ResetPalette(&dcRef);
+        ResetPalette(dcRef);
     }
 
     pTBrd->m_pWnd = GetParentFrame();

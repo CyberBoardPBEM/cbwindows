@@ -58,7 +58,7 @@ void CDib::Set256ColorNumberAtXY(int x, int y, BYTE nColor)
     *::DibXY(m_lpDib, x, y) = nColor;
 }
 
-WORD CDib::Get16BitColorNumberAtXY(int x, int y)
+WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 {
     ASSERT(m_hDib != NULL);
     ASSERT(x >= 0 && x < Width());
@@ -269,13 +269,13 @@ BOOL CDib::AppendDIB(CDib *pDib)
     CPalette pal2;
     CreatePalette(&pal1);
     pDib->CreatePalette(&pal2);
-    CPalette* pMPal = CreateMergedPalette(&pal1, &pal2);
+    OwnerPtr<CPalette> pMPal = CreateMergedPalette(pal1, pal2);
 
     CWindowDC scrnDC(NULL);
     CDC memDC;
     memDC.CreateCompatibleDC(&scrnDC);
 
-    CPalette* prvPal = memDC.SelectPalette(pMPal, TRUE);
+    CPalette* prvPal = memDC.SelectPalette(&*pMPal, TRUE);
     memDC.RealizePalette();
 
     CBitmap bmap;
@@ -294,8 +294,7 @@ BOOL CDib::AppendDIB(CDib *pDib)
 
     ClearDib();
 
-    BitmapToDIB(&bmap, pMPal);
-    delete pMPal;
+    BitmapToDIB(&bmap, &*pMPal);
 
     return TRUE;
 }

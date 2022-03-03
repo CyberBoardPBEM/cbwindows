@@ -109,7 +109,7 @@ void CRotateDialog::OnRotApply()
     static int angTbl[12] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 };
     for (int i = 0; i < 12; i++)
     {
-        OwnerPtr<CDib> pRDib = Rotate16BitDib(&dibSrc, angTbl[i], m_crTrans);
+        OwnerPtr<CDib> pRDib = Rotate16BitDib(dibSrc, angTbl[i], m_crTrans);
         m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette());
     }
 
@@ -129,15 +129,15 @@ void CRotateDialog::OnPaint()
     ScreenToClient(&rct);
     rct.InflateRect(-4, -4);
 
-    SetupPalette(&dc);
+    SetupPalette(dc);
     for (int i = 0; i < 12; i++)
     {
         int x = (i % 4) * 45;
         int y = (i / 4) * 45;
         if (m_bmapTbl[i])
-            BitmapBlt(&dc, rct.TopLeft() + CSize(x, y), m_bmapTbl[i].get());
+            BitmapBlt(dc, rct.TopLeft() + CSize(x, y), *m_bmapTbl[i]);
     }
-    ResetPalette(&dc);
+    ResetPalette(dc);
 
     // Do not call CDialog::OnPaint() for painting messages
 }

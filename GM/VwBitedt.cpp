@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 const int xBorder = 6;
 const int yBorder = 6;
 
-const int maxUndoLevels = 8;
+const size_t maxUndoLevels = size_t(8);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +116,10 @@ END_MESSAGE_MAP()
 
 IMPLEMENT_DYNCREATE(CBitEditView, CScrollView)
 
-CBitEditView::CBitEditView()
+CBitEditView::CBitEditView() :
+    m_bmMaster(MakeOwner<CBitmap>()),
+    m_bmView(MakeOwner<CBitmap>()),
+    m_bmPaste(MakeOwner<CBitmap>())
 {
     m_pSelView = NULL;
     m_nZoom = 6;
@@ -173,11 +176,11 @@ void CBitEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CBitEditView::OnDraw(CDC* pDC)
 {
-    if (m_bmView.m_hObject == NULL)
+    if (m_bmView->m_hObject == NULL)
         return;                 // Nothing to draw.
 
-    SetupPalette(pDC);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(*pDC);
+    SetupPalette(g_gt.mDC1);
 
     CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
 
@@ -187,7 +190,7 @@ void CBitEditView::OnDraw(CDC* pDC)
         if (GetParentFrame()->GetActiveView() == this)
         {
             CRect rct(0, 0, 2 * xBorder + size.cx, 2 * yBorder + size.cy);
-            Draw25PctPatBorder(this, pDC, rct, xBorder);
+            Draw25PctPatBorder(*this, *pDC, rct, xBorder);
         }
     }
 
@@ -201,7 +204,7 @@ void CBitEditView::OnDraw(CDC* pDC)
         CBitmap bmTmp;
         bmTmp.Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
             size.cx + 1, size.cy + 1));
-        SetupPalette(&g_gt.mDC2);
+        SetupPalette(g_gt.mDC2);
         g_gt.mDC2.SelectObject(&bmTmp);
         g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1, 0, 0,
             m_size.cx, m_size.cy, SRCCOPY);
@@ -223,17 +226,17 @@ void CBitEditView::OnDraw(CDC* pDC)
         pDC->PatBlt(xBorder-1, yBorder + size.cy, size.cx + 2, 1, BLACKNESS);
     }
     if (m_nCurToolID == ID_ITOOL_SELECT && !m_bSelectCapture &&
-        m_bmPaste.m_hObject != NULL && !m_rctPaste.IsRectEmpty())
+        m_bmPaste->m_hObject != NULL && !m_rctPaste.IsRectEmpty())
     {
         // Handle fancy focus rect
         if (GetParentFrame()->GetActiveView() == this)
         {
             // Convert paste rect to view coordinates.
             CRect rct = GetZoomedSelectBorderRect();
-            Draw25PctPatBorder(this, pDC, rct, xBorder);
+            Draw25PctPatBorder(*this, *pDC, rct, xBorder);
         }
     }
-    ResetPalette(pDC);
+    ResetPalette(*pDC);
     g_gt.SelectSafeObjectsForDC1();  // This does ResetPalette for mDC1
 }
 
@@ -277,7 +280,7 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
     CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
     if (nSize == 0)
@@ -310,7 +313,7 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -329,9 +332,9 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
 
 void CBitEditView::DrawPastedImage()
 {
-    ASSERT(m_bmPaste.m_hObject != NULL);
+    ASSERT(m_bmPaste->m_hObject != NULL);
     SetViewImageFromMasterImage();          // Get fresh original
-    MergeBitmap(&m_bmView, &m_bmPaste, m_rctPaste.TopLeft());
+    MergeBitmap(*m_bmView, *m_bmPaste, m_rctPaste.TopLeft());
 
     InvalidateViewImage(NULL, TRUE);
     m_pSelView->UpdateViewImage(NULL, TRUE);
@@ -343,7 +346,7 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -378,7 +381,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -405,7 +408,7 @@ void CBitEditView::DrawImageFill(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     CBrush* pBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
@@ -426,7 +429,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     COLORREF crHit = g_gt.mDC1.GetPixel(pt);
     WORD crHit565 = MapWin9xRgbToWin9x565(crHit);
@@ -435,7 +438,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
 
     BITMAP bmap;
     memset(&bmap, 0, sizeof(BITMAP));
-    VERIFY(m_bmView.GetObject(sizeof(BITMAP), &bmap));
+    VERIFY(m_bmView->GetObject(sizeof(BITMAP), &bmap));
 
     ASSERT(bmap.bmBits != NULL);
     ASSERT(bmap.bmBitsPixel == 16);
@@ -482,7 +485,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
     CDC* pDC = GetDC();
 
-    SetupPalette(pDC);
+    SetupPalette(*pDC);
     CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(m_pTMgr->GetForeBrush())));
     OnPrepareDC(pDC, NULL);
 
@@ -508,12 +511,12 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
         }
     }
     pDC->SelectObject(pPrvBrush);
-    ResetPalette(pDC);
+    ResetPalette(*pDC);
     ReleaseDC(pDC);
 
     // Now set the point in the view bitmap...
     g_gt.mDC1.SelectObject(&m_bmView);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
 
     wx = point.x / m_nZoom;
     wy = point.y / m_nZoom;
@@ -532,7 +535,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
 CBitmap *CBitEditView::GetCurrentViewBitmap()
 {
-    return &m_bmView;
+    return &*m_bmView;
 }
 
 void CBitEditView::SetCurrentBitmap(TileID tid, CBitmap *pBMap,
@@ -548,11 +551,11 @@ void CBitEditView::SetCurrentBitmap(TileID tid, CBitmap *pBMap,
     ClearAllImages();               // clear undos etc...
     if (pBMap == NULL)
         return;
-    CloneBitmap(&m_bmMaster, pBMap);
+    m_bmMaster = CloneBitmap(*pBMap);
     SetViewImageFromMasterImage();
 
     BITMAP bmInfo;
-    m_bmMaster.GetObject(sizeof(bmInfo), &bmInfo);
+    m_bmMaster->GetObject(sizeof(bmInfo), &bmInfo);
     m_size = CSize(bmInfo.bmWidth, bmInfo.bmHeight);
 
     RecalcScrollLimits();
@@ -569,29 +572,29 @@ void CBitEditView::SetCurrentBitmap(TileID tid, CBitmap *pBMap,
 
 CBitmap* CBitEditView::SetViewImageFromMasterImage()
 {
-    CloneBitmap(&m_bmView, &m_bmMaster);
-    return &m_bmView;
+    m_bmView = CloneBitmap(*m_bmMaster);
+    return &*m_bmView;
 }
 
 CBitmap* CBitEditView::SetMasterImageFromViewImage()
 {
-    CloneBitmap(&m_bmMaster, &m_bmView);
-    return &m_bmView;
+    m_bmMaster = CloneBitmap(*m_bmView);
+    return &*m_bmView;
 }
 
 // Clear main image, undo images,  etc...
 void CBitEditView::ClearAllImages()
 {
     PurgeUndo();
-    m_bmMaster.DeleteObject();
-    m_bmView.DeleteObject();
+    m_bmMaster = MakeOwner<CBitmap>();
+    m_bmView = MakeOwner<CBitmap>();
     ClearPasteImage();
 }
 
 void CBitEditView::ClearPasteImage()
 {
     if (IsPasteImage())
-        m_bmPaste.DeleteObject();
+        m_bmPaste = MakeOwner<CBitmap>();
     m_rctPaste.SetRectEmpty();
 }
 
@@ -667,7 +670,7 @@ BOOL CBitEditView::IsPtInImage(CPoint point)
 CRect CBitEditView::GetImageRect()
 {
     CRect rct;
-    if (m_bmMaster.m_hObject != NULL)
+    if (m_bmMaster->m_hObject != NULL)
     {
         CSize size = GetZoomedSize();
         rct.SetRect(0, 0, size.cx, size.cy);
@@ -680,7 +683,7 @@ CRect CBitEditView::GetImageRect()
 
 void CBitEditView::RecalcScrollLimits()
 {
-    if (m_bmMaster.m_hObject != NULL)
+    if (m_bmMaster->m_hObject != NULL)
     {
         CSize size = GetZoomedSize();
         SetScrollSizes(MM_TEXT, CSize(size.cx + 2 * xBorder,
@@ -771,7 +774,7 @@ void CBitEditView::UpdateTextView()
         // the view with the master bitmap.
         SetViewImageFromMasterImage();          // Get fresh original
         g_gt.mDC1.SelectObject(&m_bmView);
-        SetupPalette(&g_gt.mDC1);
+        SetupPalette(g_gt.mDC1);
         g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
         CFontTbl* pFMgr = GetDocument()->GetFontManager();
@@ -860,7 +863,7 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         else
             DelChar();
     }
-    else if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste.m_hObject != NULL
+    else if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL
         && GetCapture() != this)
     {
         if (nChar == VK_ESCAPE || nChar == VK_RETURN)
@@ -880,14 +883,12 @@ void CBitEditView::SetUndoFromView()
 {
     m_pSelView->PurgeUndo();        // Resize undos are now not allowed!
 
-    while (m_listUndo.GetCount() >= maxUndoLevels)
+    while (m_listUndo.size() >= maxUndoLevels)
     {
-        CBitmap* pBMap = (CBitmap*)m_listUndo.RemoveTail();
-        delete pBMap;
+        m_listUndo.pop_back();
     }
-    CBitmap* pBMap = new CBitmap;
-    CloneBitmap(pBMap, &m_bmView);
-    m_listUndo.AddHead(pBMap);
+    OwnerPtr<CBitmap> pBMap = CloneBitmap(*m_bmView);
+    m_listUndo.push_front(std::move(pBMap));
 }
 
 void CBitEditView::RestoreUndoToView()
@@ -900,18 +901,13 @@ void CBitEditView::RestoreUndoToView()
 
     SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
     m_strText.Empty();
-    CBitmap* pBMap = (CBitmap*)m_listUndo.RemoveHead();
-    CloneBitmap(&m_bmView, pBMap);
-    delete pBMap;
+    m_bmView = CloneBitmap(*m_listUndo.front());
+    m_listUndo.pop_front();
 }
 
 void CBitEditView::PurgeUndo()
 {
-    while (!m_listUndo.IsEmpty())
-    {
-        CBitmap* pBMap = (CBitmap*)m_listUndo.RemoveHead();
-        delete pBMap;
-    }
+    m_listUndo.clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1029,7 +1025,7 @@ void CBitEditView::OnImageGridLines()
 
 void CBitEditView::OnUpdateImageGridLines(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(m_nZoom > 2 && m_bmMaster.m_hObject != NULL);
+    pCmdUI->Enable(m_nZoom > 2 && m_bmMaster->m_hObject != NULL);
     pCmdUI->SetCheck(m_bGridVisible);
 }
 
@@ -1069,7 +1065,7 @@ BOOL CBitEditView::OnToolPalette(UINT id)
             SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
             ::DestroyCaret();
         }
-        if (m_nLastToolID == ID_ITOOL_SELECT && m_bmPaste.m_hObject != NULL)
+        if (m_nLastToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL)
         {
             SetMasterImageFromViewImage();
             InvalidateFocusBorder();        // Erase previous focus
@@ -1259,13 +1255,13 @@ void CBitEditView::OnUpdateEditUndo(CCmdUI* pCmdUI)
 
 void CBitEditView::OnEditCopy()
 {
-    if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste.m_hObject != NULL &&
+    if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL &&
         !m_rctPaste.IsRectEmpty())
     {
-        SetClipboardBitmap(this, m_bmPaste, GetAppPalette());
+        SetClipboardBitmap(this, *m_bmPaste, GetAppPalette());
     }
     else
-        SetClipboardBitmap(this, m_bmView, GetAppPalette());
+        SetClipboardBitmap(this, *m_bmView, GetAppPalette());
 }
 
 void CBitEditView::OnEditPaste()
@@ -1300,12 +1296,12 @@ void CBitEditView::OnEditPaste()
 
     if (nRescale > 0)
     {
-        CloneScaledBitmap(&m_bmPaste, pBMap.get(), m_size, STRETCH_DELETESCANS);
+        m_bmPaste = CloneScaledBitmap(*pBMap, m_size, STRETCH_DELETESCANS);
         m_rctPaste.SetRect(0, 0, m_size.cx, m_size.cy);
     }
     else
     {
-        CloneBitmap(&m_bmPaste, pBMap.get());
+        m_bmPaste = CloneBitmap(*pBMap);
         m_rctPaste.SetRect(0, 0, bmInfo.bmWidth, bmInfo.bmHeight);
     }
 

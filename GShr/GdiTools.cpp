@@ -97,7 +97,7 @@ int GetCurrentVideoResolution()
 
 /////////////////////////////////////////////////////////////////
 
-void SetupPalette(CDC *pDC)
+void SetupPalette(CDC& pDC)
 {
     CPalette* pPal = GetAppPalette();
 
@@ -105,43 +105,43 @@ void SetupPalette(CDC *pDC)
         pPal = CPalette::FromHandle(
             (HPALETTE)::GetStockObject(DEFAULT_PALETTE));
     else
-        pDC->SelectPalette(pPal, FALSE);
-    pDC->RealizePalette();
+        pDC.SelectPalette(pPal, FALSE);
+    pDC.RealizePalette();
 }
 
-void ResetPalette(CDC *pDC)
+void ResetPalette(CDC& pDC)
 {
-    pDC->SelectPalette(CPalette::FromHandle(
+    pDC.SelectPalette(CPalette::FromHandle(
         (HPALETTE)::GetStockObject(DEFAULT_PALETTE)), TRUE);
 }
 
 /////////////////////////////////////////////////////////////////
 
-void Draw25PctPatBorder(CWnd* pWnd, CDC* pDC, CRect rct, int nThick)
+void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 {
-    pDC->SetBkColor(RGB(255, 255, 255));
-    pDC->SetTextColor(RGB(0, 255, 0));
+    pDC.SetBkColor(RGB(255, 255, 255));
+    pDC.SetTextColor(RGB(0, 255, 0));
 
     CPoint pt(0, 0);
-    pWnd->ClientToScreen(&pt);
+    pWnd.ClientToScreen(&pt);
 
     UnrealizeObject(g_res.hbr25Pct);
-    pDC->SetBrushOrg(pt.x, pt.y);
-    CBrush* pPrvBrush = pDC->SelectObject(CBrush::FromHandle(g_res.hbr25Pct));
+    pDC.SetBrushOrg(pt.x, pt.y);
+    CBrush* pPrvBrush = pDC.SelectObject(CBrush::FromHandle(g_res.hbr25Pct));
 
     // Top border
-    pDC->PatBlt(rct.left, rct.top, rct.Width(), nThick, PATCOPY);
+    pDC.PatBlt(rct.left, rct.top, rct.Width(), nThick, PATCOPY);
     // Left border
-    pDC->PatBlt(rct.left, rct.top + nThick, nThick, rct.Height() - nThick,
+    pDC.PatBlt(rct.left, rct.top + nThick, nThick, rct.Height() - nThick,
         PATCOPY);
     // Bottom border
-    pDC->PatBlt(rct.left + nThick, rct.bottom - nThick, rct.Width() - nThick,
+    pDC.PatBlt(rct.left + nThick, rct.bottom - nThick, rct.Width() - nThick,
         nThick, PATCOPY);
     // Right border
-    pDC->PatBlt(rct.right - nThick, rct.top + nThick, nThick,
+    pDC.PatBlt(rct.right - nThick, rct.top + nThick, nThick,
         rct.Height() - 2 * nThick, PATCOPY);
 
-    pDC->SelectObject(pPrvBrush);
+    pDC.SelectObject(pPrvBrush);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -578,13 +578,13 @@ void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b)
 
 /////////////////////////////////////////////////////////////////
 
-void CloneBitmap(CBitmap *pbmDst, CBitmap *pbmSrc)
+OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
 {
-    ASSERT(pbmSrc != NULL && pbmSrc->m_hObject != NULL);
-    pbmDst->DeleteObject();
+    ASSERT(pbmSrc.m_hObject != NULL);
+    OwnerPtr<CBitmap> pbmDst(MakeOwner<CBitmap>());
     BITMAP bmInfo;
     memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc->GetObject(sizeof(bmInfo), &bmInfo);
+    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
 
     if (bmInfo.bmBits != NULL)
     {
@@ -608,13 +608,15 @@ void CloneBitmap(CBitmap *pbmDst, CBitmap *pbmSrc)
     {
         g_gt.mDC1.SelectObject(pbmSrc);
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, bmInfo.bmWidth, bmInfo.bmHeight);
-        g_gt.mDC2.SelectObject(pbmDst);
+        g_gt.mDC2.SelectObject(&*pbmDst);
         // I don't select and realize the palettes since they aren't used
         // in memory to memory Bitblt operations.
         g_gt.mDC2.BitBlt(0, 0, bmInfo.bmWidth, bmInfo.bmHeight, &g_gt.mDC1, 0, 0,
             SRCCOPY);
         g_gt.ClearMemDCBitmaps();
     }
+
+    return pbmDst;
 }
 
 // The copy excludes the right and bottom edges of rctSrc.
@@ -653,9 +655,9 @@ void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
     if (crVoided != noColor)
     {
         CBrush brush(crVoided);
-        SetupPalette(&g_gt.mDC1);
+        SetupPalette(g_gt.mDC1);
         g_gt.mDC1.FillRect(&rct, &brush);
-        ResetPalette(&g_gt.mDC1);
+        ResetPalette(g_gt.mDC1);
     }
     g_gt.ClearMemDCBitmaps();
 }
@@ -664,38 +666,38 @@ void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
 // specified position. If crTrans is specified, a masked merge is
 // performed.
 
-void MergeBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CPoint pntDst,
+void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst,
     COLORREF crTrans)
 {
-    ASSERT(pbmSrc != NULL && pbmSrc->m_hObject != NULL);
-    ASSERT(pbmDst != NULL && pbmDst->m_hObject != NULL);
+    ASSERT(pbmSrc.m_hObject != NULL);
+    ASSERT(pbmDst.m_hObject != NULL);
 
     g_gt.mDC1.SelectObject(pbmDst);
-    SetupPalette(&g_gt.mDC1);
+    SetupPalette(g_gt.mDC1);
     if (crTrans == noColor)
     {
         BITMAP bmi;
-        pbmSrc->GetObject(sizeof(bmi), &bmi);
+        pbmSrc.GetObject(sizeof(bmi), &bmi);
         g_gt.mDC2.SelectObject(pbmSrc);
-        SetupPalette(&g_gt.mDC2);
+        SetupPalette(g_gt.mDC2);
         g_gt.mDC1.BitBlt(pntDst.x, pntDst.y, bmi.bmWidth, bmi.bmHeight,
             &g_gt.mDC2, 0, 0, SRCCOPY);
         g_gt.SelectSafeObjectsForDC2();
     }
     else
-        TransBlt(&g_gt.mDC1, pntDst, pbmSrc, crTrans);
+        TransBlt(g_gt.mDC1, pntDst, pbmSrc, crTrans);
 
     g_gt.SelectSafeObjectsForDC1();
 }
 
-void CloneScaledBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CSize size,
+OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     int nStretchMode /* = STRETCH_DELETESCANS */)
 {
-    ASSERT(pbmSrc != NULL && pbmSrc->m_hObject != NULL);
-    pbmDst->DeleteObject();
+    ASSERT(pbmSrc.m_hObject != NULL);
+    OwnerPtr<CBitmap> pbmDst(MakeOwner<CBitmap>());
     BITMAP bmInfo;
     memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc->GetObject(sizeof(bmInfo), &bmInfo);
+    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
 
     g_gt.mDC1.SelectObject(pbmSrc);
 
@@ -707,9 +709,9 @@ void CloneScaledBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CSize size,
     else
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, size.cx, size.cy);
 
-    g_gt.mDC2.SelectObject(pbmDst);
-    SetupPalette(&g_gt.mDC1);
-    SetupPalette(&g_gt.mDC2);
+    g_gt.mDC2.SelectObject(&*pbmDst);
+    SetupPalette(g_gt.mDC1);
+    SetupPalette(g_gt.mDC2);
 
     int nPrvMode = g_gt.mDC2.SetStretchBltMode(nStretchMode);
     g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1,
@@ -718,33 +720,37 @@ void CloneScaledBitmap(CBitmap *pbmDst, CBitmap *pbmSrc, CSize size,
 
     g_gt.ClearMemDCBitmaps();
     g_gt.ClearMemDCPalettes();
+
+    return pbmDst;
 }
 
-void CreateColorBitmap(CBitmap *pBMap, CSize size, COLORREF cr)
+OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
 {
-    pBMap->DeleteObject();
+    OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
     CBrush brush(cr);
 
     pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC, size.cx, size.cy));
-    g_gt.mDC1.SelectObject(pBMap);
-    SetupPalette(&g_gt.mDC1);
+    g_gt.mDC1.SelectObject(&*pBMap);
+    SetupPalette(g_gt.mDC1);
 
     CBrush* prvBrush = g_gt.mDC1.SelectObject(&brush);
     g_gt.mDC1.PatBlt(0, 0, size.cx, size.cy, PATCOPY);
     g_gt.mDC1.SelectObject(prvBrush);
 
     g_gt.SelectSafeObjectsForDC2();
+
+    return pBMap;
 }
 
 /////////////////////////////////////////////////////////////////
 // Transparent type bitblt. Uses global DC's mDC2 and mTileDC.
 // caller may use mDC1.
 
-void TransBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap, COLORREF crTrans)
+void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans)
 {
     GdiFlush();
 
-    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC->m_hDC, OBJ_BITMAP);
+    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC.m_hDC, OBJ_BITMAP);
     ASSERT(hBMapDest != NULL);
 
     BITMAP  bmapSrc;
@@ -753,7 +759,7 @@ void TransBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap, COLORREF crTrans)
     memset(&bmapSrc, 0, sizeof(BITMAP));
     memset(&bmapDest, 0, sizeof(BITMAP));
 
-    pBMap->GetObject(sizeof(BITMAP), &bmapSrc);
+    pBMap.GetObject(sizeof(BITMAP), &bmapSrc);
     ::GetObject(hBMapDest, sizeof(BITMAP), &bmapDest);
     ASSERT(bmapSrc.bmBits != NULL && bmapDest.bmBits != NULL);
     CSize size(bmapSrc.bmWidth, bmapSrc.bmHeight);
@@ -763,7 +769,7 @@ void TransBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap, COLORREF crTrans)
 
     WORD cr16Trans = RGB565(crTrans);
 
-    CPoint pntOrg = pDC->GetViewportOrg();
+    CPoint pntOrg = pDC.GetViewportOrg();
     int xDst = pntOrg.x + pntDst.x;
     int yDst = pntOrg.y + pntDst.y;
     int xDstBase = xDst;
@@ -807,7 +813,7 @@ void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono)
         bmapMInfo.bmWidth, bmapMInfo.bmHeight);
 
     SelectObject(g_gt.mTileDC.m_hDC, hBMapNew);
-    SetupPalette(&g_gt.mTileDC);
+    SetupPalette(g_gt.mTileDC);
     g_gt.mTileDC.SetBkColor(RGB(255, 255, 255));
     g_gt.mTileDC.SetTextColor(RGB(0, 0, 0));
 
@@ -823,10 +829,10 @@ void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono)
 // Bitmap type bitblt. Used global DC mTileDC.
 // Caller may use mDC1 or mDC2.
 
-void BitmapBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap)
+void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap)
 {
     BITMAP bmInfo;
-    pBMap->GetObject(sizeof(bmInfo), &bmInfo);
+    pBMap.GetObject(sizeof(bmInfo), &bmInfo);
     CSize size(bmInfo.bmWidth, bmInfo.bmHeight);
 
     g_gt.mTileDC.SelectObject(pBMap);
@@ -836,7 +842,7 @@ void BitmapBlt(CDC *pDC, CPoint pntDst, CBitmap* pBMap)
     // SetupPalette(&g_gt.mTileDC);
 
     // Now do the bitblt
-    pDC->BitBlt(pntDst.x, pntDst.y, size.cx, size.cy,
+    pDC.BitBlt(pntDst.x, pntDst.y, size.cx, size.cy,
         &g_gt.mTileDC, 0, 0, SRCCOPY);
 
     g_gt.SelectSafeObjectsForTileDC();
@@ -854,16 +860,17 @@ CPalette* GetAppPalette()
 // Palette. Also makes sure the resulting palette is an 'Identity'
 // palette for Realization speed.
 
-CPalette* CreateMergedPalette(CPalette* palPri, CPalette* palSec)
+OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec)
 {
     short nSizePri, nSizeSec;
     uint16_t nPalSize = uint16_t(256);
 
-    palSec->GetObject(sizeof(short), &nSizeSec);
-    palPri->GetObject(sizeof(short), &nSizePri);
+    palSec.GetObject(sizeof(short), &nSizeSec);
+    palPri.GetObject(sizeof(short), &nSizePri);
 
-    LPLOGPALETTE pLP = (LPLOGPALETTE) new char[sizeof(LOGPALETTE) +
-        nPalSize * sizeof(PALETTEENTRY)];
+    std::vector<char> v(size_t(sizeof(LOGPALETTE) +
+        nPalSize * sizeof(PALETTEENTRY)));
+    LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
 
     SetupIdentityPalette(nPalSize, pLP);
 
@@ -871,19 +878,18 @@ CPalette* CreateMergedPalette(CPalette* palPri, CPalette* palSec)
     for (int i = 0; i < nSizePri; i++)
     {
         PALETTEENTRY pe;
-        palPri->GetPaletteEntries(i, 1, &pe);
+        palPri.GetPaletteEntries(i, 1, &pe);
         AddEntryToPalette(pLP->palPalEntry, nPalSize, pe);
     }
     // Then merge secondary palette
     for (int i = 0; i < nSizeSec; i++)
     {
         PALETTEENTRY pe;
-        palSec->GetPaletteEntries(i, 1, &pe);
+        palSec.GetPaletteEntries(i, 1, &pe);
         AddEntryToPalette(pLP->palPalEntry, nPalSize, pe);
     }
-    CPalette* palNew = new CPalette;
+    OwnerPtr<CPalette> palNew(MakeOwner<CPalette>());
     palNew->CreatePalette(pLP);
-    delete (char*)pLP;
     return palNew;
 }
 
