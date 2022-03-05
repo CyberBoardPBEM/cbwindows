@@ -103,14 +103,13 @@ void CRotateDialog::OnRotApply()
 //  }
 
     DeleteBMaps();
-    CDib dibSrc;
-    dibSrc.BitmapToDIB(m_pBMap, GetAppPalette());
+    CDib dibSrc(*m_pBMap, GetAppPalette());
 
     static int angTbl[12] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 };
     for (int i = 0; i < 12; i++)
     {
-        OwnerPtr<CDib> pRDib = Rotate16BitDib(dibSrc, angTbl[i], m_crTrans);
-        m_bmapTbl[i] = pRDib->DIBToBitmap(GetAppPalette());
+        CDib pRDib = Rotate16BitDib(dibSrc, angTbl[i], m_crTrans);
+        m_bmapTbl[i] = pRDib.DIBToBitmap(GetAppPalette());
     }
 
     CRect rct;

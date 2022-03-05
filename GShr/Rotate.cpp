@@ -112,7 +112,7 @@ struct ImgEdge
 
 static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts);
 static void RotatePoint(POINT& pt, int nSin, int nCos);
-static OwnerPtr<CDib> CreateTransparentColorDIB(CSize size, COLORREF crTrans);
+static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
 static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDib& pSDib,
     CDib& pDDib);
 
@@ -127,7 +127,7 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 /////////////////////////////////////////////////////////////////////
 
 // angle is clockwise
-OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
+CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 {
     ASSERT(0 <= angle && angle < 360);
     ASSERT(angle != 0 || !"unnecessary call");
@@ -142,7 +142,7 @@ OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 
     CSize sizeSrc(pSDib.Width(), pSDib.Height());
     CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
-    OwnerPtr<CDib> pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
+    CDib pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
     // Find top and bottom point indexes
     int nTopPnt = 0;
@@ -164,7 +164,7 @@ OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 
     while (1)
     {
-        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, *pDDib);
+        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, pDDib);
         if (!lftEdge.NextScanLine())
             break;
         if (!rgtEdge.NextScanLine())
@@ -207,14 +207,13 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 
 /////////////////////////////////////////////////////////////////////
 
-static OwnerPtr<CDib> CreateTransparentColorDIB(CSize size, COLORREF crTrans)
+static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans)
 {
-    OwnerPtr<CDib> pDib = MakeOwner<CDib>();
-    pDib->CreateDIB(size.cx, size.cy, 16);
+    CDib pDib(size.cx, size.cy, 16);
     WORD cr16Trans = RGB565(crTrans);
     // Number of pixels (words) to fill
-    long nBfrLen = (pDib->Height() * DIBWIDTHBYTES(*pDib->GetBmiHdr())) / 2;
-    WORD* pwBfr = (WORD*)pDib->FindBits();
+    long nBfrLen = (pDib.Height() * DIBWIDTHBYTES(*pDib.GetBmiHdr())) / 2;
+    WORD* pwBfr = (WORD*)pDib.FindBits();
     while (--nBfrLen >= 0)
         *pwBfr++ = cr16Trans;
 

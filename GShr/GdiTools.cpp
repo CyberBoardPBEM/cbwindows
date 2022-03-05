@@ -899,9 +899,8 @@ OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& p
 void BltThruDIB(CDC* pDCDst, int xDst, int yDst, int cx, int cy,
     CDC* pDCSrc, CPalette *pPalSrc, CBitmap* pBMap, int xSrc, int ySrc)
 {
-    CDib dib;
-    dib.BitmapToDIB(pBMap, pPalSrc);
-    dib.StretchDIBits(pDCDst, xDst, yDst, cx, cy, xSrc, ySrc, cx, cy);
+    CDib dib(*pBMap, pPalSrc);
+    dib.StretchDIBits(*pDCDst, xDst, yDst, cx, cy, xSrc, ySrc, cx, cy);
 }
 
 // ----------------------------------------------------------- //
@@ -1024,7 +1023,7 @@ void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr)
 
 // ----------------------------------------------------------- //
 
-void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, PALETTEENTRY& pe)
+void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe)
 {
     LPPALETTEENTRY pPe;
     int iAvail = -1;

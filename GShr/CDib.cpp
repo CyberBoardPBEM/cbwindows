@@ -42,7 +42,7 @@ static UINT CalcSize(DWORD cbTotal, const void FAR* lpStart);
 
 ///////////////////////////////////////////////////////////////
 
-BYTE CDib::Get256ColorNumberAtXY(int x, int y)
+BYTE CDib::Get256ColorNumberAtXY(int x, int y) const
 {
     ASSERT(m_hDib != NULL);
     ASSERT(x >= 0 && x < Width());
@@ -76,6 +76,20 @@ void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
 
 ///////////////////////////////////////////////////////////////
 
+CDib::CDib(CDib&& rhs) noexcept :
+    m_hDib(nullptr),
+    m_lpDib(nullptr)
+{
+    *this = std::move(rhs);
+}
+
+CDib& CDib::operator=(CDib&& rhs) noexcept
+{
+    std::swap(m_hDib, rhs.m_hDib);
+    std::swap(m_lpDib, rhs.m_lpDib);
+    return *this;
+}
+
 void CDib::ClearDib()
 {
     if (m_hDib)
@@ -87,9 +101,8 @@ void CDib::ClearDib()
     }
 }
 
-void CDib::CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
+CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
 {
-    ClearDib();
     m_hDib = ::CreateDIB(dwWidth, dwHeight, wBPP);
     if (!m_hDib)
     {
@@ -104,9 +117,8 @@ void CDib::CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
     }
 }
 
-void CDib::ReadDIBFile(CFile& file)
+CDib::CDib(CFile& file)
 {
-    ClearDib();
     m_hDib = ::ReadDIBFile(file);
     if (!m_hDib)
     {
@@ -121,7 +133,7 @@ void CDib::ReadDIBFile(CFile& file)
     }
 }
 
-BOOL CDib::WriteDIBFile(CFile& file)
+BOOL CDib::WriteDIBFile(CFile& file) const
 {
     if (m_hDib)
         return ::SaveDIB(m_hDib, file);
@@ -129,29 +141,14 @@ BOOL CDib::WriteDIBFile(CFile& file)
         return FALSE;
 }
 
-void CDib::CloneDIB(CDib *pDib)
+CDib::CDib(HANDLE hDib)
 {
-    ClearDib();
-    m_hDib = (HDIB)CopyHandle(pDib->m_hDib);
-    if (!m_hDib)
-    {
-        AfxThrowMemoryException();
-    }
-    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
-    if (!m_lpDib)
-    {
-        GlobalFree((HGLOBAL)m_hDib);
-        m_hDib = NULL;
-        AfxThrowMemoryException();
-    }
-}
-
-void CDib::SetDibHandle(HANDLE hDib)
-{
-    ClearDib();
     m_hDib = (HDIB)hDib;
     if (m_hDib == NULL)
+    {
+        m_lpDib = nullptr;
         return;
+    }
     m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
     if (!m_lpDib)
     {
@@ -161,12 +158,11 @@ void CDib::SetDibHandle(HANDLE hDib)
     }
 }
 
-BOOL CDib::BitmapToDIB(const CBitmap* pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
+CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
 {
-    ClearDib();
-    if (pBM->m_hObject != NULL)
+    if (pBM.m_hObject != NULL)
     {
-        m_hDib = (HDIB)::BitmapToDIB((HBITMAP)(pBM->m_hObject),
+        m_hDib = (HDIB)::BitmapToDIB((HBITMAP)(pBM.m_hObject),
             (HPALETTE)(pPal ? pPal->m_hObject : NULL), nBPP);
         if (!m_hDib)
         {
@@ -180,10 +176,14 @@ BOOL CDib::BitmapToDIB(const CBitmap* pBM, const CPalette* pPal, uint16_t nBPP/*
             AfxThrowMemoryException();
         }
     }
-    return m_hDib != NULL;
+    else
+    {
+        m_hDib = nullptr;
+        m_lpDib = nullptr;
+    }
 }
 
-OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */)
+OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */) const
 {
     if (bDibSect)
     {
@@ -230,14 +230,13 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRU
 BOOL CDib::RemoveDIBSlice(int y, int ht)
 {
     //WE REALLY COULD DO THIS IN PLACE BUT I'M LAZY TODAY...
-    CPalette pal;
-    CreatePalette(&pal);
+    OwnerPtr<CPalette> pal = CreatePalette();
 
     CWindowDC scrnDC(NULL);
     CDC memDC;
     memDC.CreateCompatibleDC(&scrnDC);
 
-    CPalette* prvPal = memDC.SelectPalette(&pal, TRUE);
+    CPalette* prvPal = memDC.SelectPalette(&*pal, TRUE);
 
     CBitmap bmap;
     bmap.Attach(Create16BitDIBSection(memDC.m_hDC,
@@ -247,29 +246,25 @@ BOOL CDib::RemoveDIBSlice(int y, int ht)
     memDC.RealizePalette();
 
     if (y + ht < Height())
-        StretchDIBits(&memDC, 0, 0, Width(), Height() - (y + ht),
+        StretchDIBits(memDC, 0, 0, Width(), Height() - (y + ht),
             0, y + ht, Width(), Height() - (y + ht));
     if (y > 0)
-        StretchDIBits(&memDC, 0, Height() - (y + ht), Width(), y,
+        StretchDIBits(memDC, 0, Height() - (y + ht), Width(), y,
             0, 0, Width(), y);
 
     memDC.SelectPalette(prvPal, TRUE);
     memDC.SelectObject(prvBMap);
 
-    ClearDib();
-
-    BitmapToDIB(&bmap, &pal);
+    *this = CDib(bmap, &*pal);
     return TRUE;
 }
 
-BOOL CDib::AppendDIB(CDib *pDib)
+BOOL CDib::AppendDIB(const CDib& pDib)
 {
-    ASSERT(Width() == pDib->Width());
-    CPalette pal1;
-    CPalette pal2;
-    CreatePalette(&pal1);
-    pDib->CreatePalette(&pal2);
-    OwnerPtr<CPalette> pMPal = CreateMergedPalette(pal1, pal2);
+    ASSERT(Width() == pDib.Width());
+    OwnerPtr<CPalette> pal1 = CreatePalette();
+    OwnerPtr<CPalette> pal2 = pDib.CreatePalette();
+    OwnerPtr<CPalette> pMPal = CreateMergedPalette(*pal1, *pal2);
 
     CWindowDC scrnDC(NULL);
     CDC memDC;
@@ -280,21 +275,19 @@ BOOL CDib::AppendDIB(CDib *pDib)
 
     CBitmap bmap;
     bmap.Attach(Create16BitDIBSection(memDC.m_hDC,
-        Width(), Height() + pDib->Height()));
+        Width(), Height() + pDib.Height()));
 
     ASSERT(bmap.m_hObject != NULL);
 
     CBitmap* prvBMap = memDC.SelectObject(&bmap);
 
-    StretchDIBits(&memDC, 0, 0, Width(), Height(), 0, 0, Width(), Height());
-    pDib->StretchDIBits(&memDC, 0, Height(), Width(), pDib->Height(), 0, 0,
-        Width(), pDib->Height());
+    StretchDIBits(memDC, 0, 0, Width(), Height(), 0, 0, Width(), Height());
+    pDib.StretchDIBits(memDC, 0, Height(), Width(), pDib.Height(), 0, 0,
+        Width(), pDib.Height());
     memDC.SelectPalette(prvPal, TRUE);
     memDC.SelectObject(prvBMap);
 
-    ClearDib();
-
-    BitmapToDIB(&bmap, &*pMPal);
+    *this = CDib(bmap, &*pMPal);
 
     return TRUE;
 }

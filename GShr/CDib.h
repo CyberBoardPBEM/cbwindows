@@ -33,49 +33,58 @@ class CDib
 {
 public:
     CDib() { m_hDib = NULL; m_lpDib = NULL; m_nCompressLevel = 0; }
+    CDib(const CDib&) = delete;
+    CDib& operator=(const CDib&) = delete;
+    CDib(CDib&& rhs) noexcept;
+    CDib& operator=(CDib&& rhs) noexcept;
     ~CDib() { ClearDib(); }
     void ClearDib();
+    operator bool() const { return m_hDib; }
+    CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
     // ---------- /
-    void CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
-    // ---------- /
-    void ReadDIBFile(CFile& file);
-    BOOL WriteDIBFile(CFile& file);
-    void CloneDIB(CDib *pDib);
-    BOOL BitmapToDIB(const CBitmap* pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
-    OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE);
-    BOOL AppendDIB(CDib *pDib);
+    explicit CDib(CFile& file);
+    BOOL WriteDIBFile(CFile& file) const;
+    explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
+    OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
+    BOOL AppendDIB(const CDib& pDib);
     BOOL RemoveDIBSlice(int y, int ht);
-    void AddColorsToPaletteEntryTable(LPPALETTEENTRY pLP, int nSize,
+    void AddColorsToPaletteEntryTable(PALETTEENTRY& pLP, int nSize,
             BOOL bReducedPalette = TRUE)
-        { AddDIBColorsToPaletteEntryTable(m_hDib, pLP, nSize, bReducedPalette);}
-    BOOL CreatePalette(CPalette* pPal, BOOL bReducePal = FALSE)
-        { return ::CreateDIBPalette(m_hDib, pPal, bReducePal); }
-    int StretchDIBits(CDC* pDC, int xDest, int yDest, int cxDest, int cyDest,
-        int xSrc, int ySrc, int cxSrc, int cySrc)
+        { AddDIBColorsToPaletteEntryTable(m_hDib, &pLP, nSize, bReducedPalette);}
+    OwnerPtr<CPalette> CreatePalette(BOOL bReducePal = FALSE) const
     {
-        return ::StretchDIBits(pDC->m_hDC, xDest, yDest, cxDest, cyDest,
+        OwnerPtr<CPalette> pPal(MakeOwner<CPalette>());
+        ::CreateDIBPalette(m_hDib, &*pPal, bReducePal);
+        return pPal;
+    }
+    int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
+        int xSrc, int ySrc, int cxSrc, int cySrc) const
+    {
+        return ::StretchDIBits(pDC.m_hDC, xDest, yDest, cxDest, cyDest,
             xSrc, ySrc, cxSrc, cySrc, FindBits(), GetBmi(), DIB_RGB_COLORS,
             SRCCOPY);
     }
-    void SetDibHandle(HANDLE hDib);
+    explicit CDib(HANDLE hDib);
+    HDIB CopyHandle() const { return static_cast<HDIB>(::CopyHandle(m_hDib)); }
     // ---------- //
     int Height() const { return (int)DIBHeight(m_lpDib); }
     int Width() const { return (int)DIBWidth(m_lpDib); }
-    int NumColors() { return ((LPBITMAPINFOHEADER)m_lpDib)->biBitCount; }
-    int NumColorsInColorTable() { return DIBNumColors(m_lpDib); }
-    LPBITMAPINFOHEADER GetBmiHdr() { return (LPBITMAPINFOHEADER)m_lpDib; }
-    LPBITMAPINFO GetBmi() { return (LPBITMAPINFO)m_lpDib; }
-    LPSTR FindBits() { return FindDIBBits(m_lpDib); }
+    int NumColors() const { return ((LPBITMAPINFOHEADER)m_lpDib)->biBitCount; }
+    int NumColorsInColorTable() const { return DIBNumColors(m_lpDib); }
+    const LPBITMAPINFOHEADER GetBmiHdr() const { return (LPBITMAPINFOHEADER)m_lpDib; }
+    const LPBITMAPINFO GetBmi() const { return (LPBITMAPINFO)m_lpDib; }
+    const LPSTR FindBits() const { return FindDIBBits(m_lpDib); }
     // ---------- for 256 color Dibs only -------------- //
-    BYTE Get256ColorNumberAtXY(int x, int y);
+    BYTE Get256ColorNumberAtXY(int x, int y) const;
     void Set256ColorNumberAtXY(int x, int y, BYTE nColor);
     // ---------- for 16bit/pixel Dibs only -------------- //
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
-    int  GetCompressLevel() { return m_nCompressLevel; }
+    int  GetCompressLevel() const { return m_nCompressLevel; }
     // ---------- //
+private:
     HDIB  m_hDib;
     LPSTR m_lpDib;
     int   m_nCompressLevel;
