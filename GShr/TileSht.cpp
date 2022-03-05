@@ -62,10 +62,9 @@ void CTileSheet::Serialize(CArchive& ar)
 
         if (m_pBMap)
         {
-            CDib dib;
-            dib.BitmapToDIB(m_pBMap.get(), GetAppPalette());
-            ASSERT(dib.m_lpDib != NULL);
-            if (dib.m_lpDib != NULL)
+            CDib dib(*m_pBMap, GetAppPalette());
+            ASSERT(dib);
+            if (dib)
             {
                 ar << (WORD)1;      // Store "HasBitmap" flag
 #ifndef GPLAY
@@ -99,7 +98,7 @@ void CTileSheet::Serialize(CArchive& ar)
         {
             CDib dib;
             ar >> dib;
-            if (dib.m_lpDib != NULL)
+            if (dib)
             {
                 m_pBMap = dib.DIBToBitmap(GetAppPalette());
                 BITMAP bmInfo;

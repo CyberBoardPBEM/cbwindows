@@ -1958,9 +1958,8 @@ void CPlayBoardView::OnEditCopy()
         BeginWaitCursor();
         EmptyClipboard();
 
-        CDib dib;
-        dib.BitmapToDIB(&bmap, GetAppPalette());
-        SetClipboardData(CF_DIB, CopyHandle((HANDLE)dib.m_hDib));
+        CDib dib(bmap, GetAppPalette());
+        SetClipboardData(CF_DIB, dib.CopyHandle());
 
         CloseClipboard();
         EndWaitCursor();
@@ -2023,8 +2022,7 @@ void CPlayBoardView::OnEditBoardToFile()
         GdiFlush();
         dcMem.SelectObject(pPrvBMap);
 
-        CDib dib;
-        dib.BitmapToDIB(&bmap, GetAppPalette(), uint16_t(24));
+        CDib dib(bmap, GetAppPalette(), uint16_t(24));
 
         if (!dib.WriteDIBFile(file))
             AfxThrowMemoryException();

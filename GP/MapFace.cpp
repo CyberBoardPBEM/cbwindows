@@ -52,17 +52,17 @@ TileID CTileFacingMap::GetFacingTileID(ElementState state)
 TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 {
     ASSERT(m_pTMgr != NULL);
-    CDib    dibSrc;
+
     uint16_t nAngleDegCW = state.GetFacing();
 
     // Generate rotated full scale bitmap of tile...
 
     CTile tile = m_pTMgr->GetTile(baseTileID, fullScale);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
-    dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
+    CDib dibSrc(*bmap, GetAppPalette());
 
-    OwnerPtr<CDib> pRDib = Rotate16BitDib(dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
-    OwnerPtr<CBitmap> pBMapFull = pRDib->DIBToBitmap(GetAppPalette());
+    CDib pRDib = Rotate16BitDib(dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
+    OwnerPtr<CBitmap> pBMapFull = pRDib.DIBToBitmap(GetAppPalette());
     BITMAP bmapInfo;
     pBMapFull->GetObject(sizeof(BITMAP), &bmapInfo);
     CSize sizeFull(bmapInfo.bmWidth, bmapInfo.bmHeight);
@@ -71,10 +71,10 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     tile = m_pTMgr->GetTile(baseTileID, halfScale);
     bmap = tile.CreateBitmapOfTile();
-    dibSrc.BitmapToDIB(&*bmap, GetAppPalette());
+    dibSrc = CDib(*bmap, GetAppPalette());
 
     pRDib = Rotate16BitDib(dibSrc, nAngleDegCW, m_pTMgr->GetTransparentColor());
-    OwnerPtr<CBitmap> pBMapHalf = pRDib->DIBToBitmap(GetAppPalette());
+    OwnerPtr<CBitmap> pBMapHalf = pRDib.DIBToBitmap(GetAppPalette());
 
     pBMapHalf->GetObject(sizeof(BITMAP), &bmapInfo);
     CSize sizeHalf(bmapInfo.bmWidth, bmapInfo.bmHeight);

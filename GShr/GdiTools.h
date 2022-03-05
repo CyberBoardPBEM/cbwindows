@@ -125,7 +125,7 @@ typedef DELTAGEN *PDELTAGEN;
 ////////////////////////////////////////////////////////////////////
 // From ROTATE.CPP
 
-OwnerPtr<CDib> Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
+CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
 void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
 void  OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff);
 
@@ -204,7 +204,7 @@ CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
 #endif
 OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec);
 void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
-void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, PALETTEENTRY& pe);
+void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe);
 void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
 void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
     CDC& pDCSrc, const CPalette *pPalSrc, const CBitmap& pBMap, int xSrc, int ySrc);

@@ -1636,7 +1636,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     CDib dib;
     try
     {
-        dib.ReadDIBFile(file);
+        dib = CDib(file);
     }
     catch (...)
     {

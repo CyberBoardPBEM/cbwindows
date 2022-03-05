@@ -347,19 +347,19 @@ void CTileSelView::DoTileResizeDialog()
 
 void CTileSelView::DoTileRotation(int nAngle)
 {
-    CDib dibFull;
-    CDib dibHalf;
+    CDib dibFull(*m_bmFull, GetAppPalette());
+    CDib dibHalf(*m_bmHalf, GetAppPalette());
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
-    if (!dibFull.BitmapToDIB(&*m_bmFull, GetAppPalette()))
+    if (!dibFull)
         return;             // MEMORY ERROR
-    if(!dibHalf.BitmapToDIB(&*m_bmHalf, GetAppPalette()))
+    if(!dibHalf)
         return;             // MEMORY ERROR
 
-    OwnerPtr<CDib> pDib = Rotate16BitDib(dibFull, nAngle, RGB(255, 255, 255));
-    OwnerOrNullPtr<CBitmap> pbmFull = pDib->DIBToBitmap(GetAppPalette());
+    CDib pDib = Rotate16BitDib(dibFull, nAngle, RGB(255, 255, 255));
+    OwnerOrNullPtr<CBitmap> pbmFull = pDib.DIBToBitmap(GetAppPalette());
 
     pDib = Rotate16BitDib(dibHalf, nAngle, RGB(255, 255, 255));
-    OwnerOrNullPtr<CBitmap> pbmHalf = pDib->DIBToBitmap(GetAppPalette());
+    OwnerOrNullPtr<CBitmap> pbmHalf = pDib.DIBToBitmap(GetAppPalette());
 
     m_bmFull = std::move(pbmFull);
     m_bmHalf = std::move(pbmHalf);

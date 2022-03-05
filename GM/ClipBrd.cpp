@@ -46,9 +46,8 @@ void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, const CPalette *pPal /
         pWnd->BeginWaitCursor();
         EmptyClipboard();
 
-        CDib dib;
-        dib.BitmapToDIB(&pBMap, pPal);
-        SetClipboardData(CF_DIB, CopyHandle((HANDLE)dib.m_hDib));
+        CDib dib(pBMap, pPal);
+        SetClipboardData(CF_DIB, dib.CopyHandle());
 
         CloseClipboard();
         pWnd->EndWaitCursor();
@@ -62,10 +61,9 @@ OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, const CPalette *pPal /* =
 
     pWnd->BeginWaitCursor();
 
-    CDib dib;
-    dib.SetDibHandle(CopyHandle(::GetClipboardData(CF_DIB)));
+    CDib dib(CopyHandle(::GetClipboardData(CF_DIB)));
     CloseClipboard();
-    if (dib.m_hDib == NULL)
+    if (!dib)
     {
         pWnd->EndWaitCursor();
         return NULL;

@@ -342,7 +342,6 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         CTile   tileFull;
         CTile   tileHalf;
         CTile   tileSmall;
-        CDib    dib;
 
         TileID tid = tidsList[i];
 
@@ -353,11 +352,13 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         ar << (DWORD)tileSmall.GetSmallColor();
 
         OwnerPtr<CBitmap> bitmap = tileFull.CreateBitmapOfTile();
-        VERIFY(dib.BitmapToDIB(&*bitmap, GetAppPalette()));
+        CDib dib(*bitmap, GetAppPalette());
+        ASSERT(dib);
         ar << dib;
 
         bitmap = tileHalf.CreateBitmapOfTile();
-        VERIFY(dib.BitmapToDIB(&*bitmap, GetAppPalette()));
+        dib = CDib(*bitmap, GetAppPalette());
+        ASSERT(dib);
         ar << dib;
     }
 #endif
