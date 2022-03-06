@@ -124,7 +124,7 @@ class CPieceManager
     friend class CPieceTable;
     friend class CGamDoc;
 public:
-    CPieceManager();
+    CPieceManager(CTileManager& pTMgr);
     ~CPieceManager() = default;
 
 // Attributes
@@ -138,8 +138,7 @@ public:
     {
         return const_cast<CPieceSet&>(std::as_const(*this).GetPieceSet(nPSet));
     }
-    void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
-    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
+    const CTileManager& GetTileManager() const { return m_pTMgr; }
 
 // Operations
 public:
@@ -175,7 +174,7 @@ protected:
     WORD        m_wReserved3;       // For future need (set to 0)
     WORD        m_wReserved4;       // For future need (set to 0)
     // ------- //
-    CB::propagate_const<CTileManager*> m_pTMgr;          // Supporting tile manager
+    const CTileManager& m_pTMgr;          // Supporting tile manager
     // ------- //
     size_t GetPieceTableSize() const { return m_pPieceTbl.GetSize(); }
     void RemovePieceIDFromPieceSets(PieceID pid);
