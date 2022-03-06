@@ -437,8 +437,7 @@ BOOL CGamDoc::SetupBlankBoard()
     m_pTMgr = new CTileManager;
     m_pBMgr = new CBoardManager(*this);
 
-    m_pPMgr = new CPieceManager;
-    m_pPMgr->SetTileManager(&*m_pTMgr);
+    m_pPMgr = new CPieceManager(*m_pTMgr);
     m_pMMgr = new CMarkManager;
     m_pMMgr->SetTileManager(&*m_pTMgr);
 
@@ -635,8 +634,7 @@ void CGamDoc::Serialize(CArchive& ar)
             m_pTMgr = new CTileManager;
             m_pBMgr = new CBoardManager(*this);
 
-            m_pPMgr = new CPieceManager;
-            m_pPMgr->SetTileManager(&*m_pTMgr);
+            m_pPMgr = new CPieceManager(*m_pTMgr);
             m_pMMgr = new CMarkManager;
             m_pMMgr->SetTileManager(&*m_pTMgr);
 

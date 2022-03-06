@@ -45,9 +45,9 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////
 
-CPieceManager::CPieceManager()
+CPieceManager::CPieceManager(CTileManager& pTMgr) :
+    m_pTMgr(pTMgr)
 {
-    m_pTMgr = NULL;
     // --------- //
     m_wReserved1 = 0;
     m_wReserved2 = 0;
@@ -91,8 +91,8 @@ BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = 
         PieceDef& pDef = GetPiece(static_cast<PieceID>(i));
         TileID tid1 = pDef.m_tidFront;
         TileID tid2 = pDef.m_tidBack;
-        if ((tid1 != nullTid && !m_pTMgr->IsTileIDValid(tid1)) ||
-            (tid2 != nullTid && !m_pTMgr->IsTileIDValid(tid2)))
+        if ((tid1 != nullTid && !m_pTMgr.IsTileIDValid(tid1)) ||
+            (tid2 != nullTid && !m_pTMgr.IsTileIDValid(tid2)))
         {
             DeletePiece(static_cast<PieceID>(i), pMapStrings, TRUE);
             bPieceRemoved = TRUE;
