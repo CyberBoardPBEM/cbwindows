@@ -104,10 +104,9 @@ void CSetPiecesDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CSetPiecesDialog::LoadPieceNameList()
 {
     m_comboPGrp.ResetContent();
-    CPieceManager* pPMgr = m_pPTbl->GetPieceManager();
-    ASSERT(pPMgr != NULL);
-    for (size_t i = 0; i < pPMgr->GetNumPieceSets(); i++)
-        m_comboPGrp.AddString(pPMgr->GetPieceSet(i).GetName());
+    const CPieceManager& pPMgr = m_pPTbl->GetPieceManager();
+    for (size_t i = size_t(0); i < pPMgr.GetNumPieceSets(); i++)
+        m_comboPGrp.AddString(pPMgr.GetPieceSet(i).GetName());
     m_comboPGrp.SetCurSel(0);
     UpdatePieceList();
 }
@@ -131,7 +130,7 @@ void CSetPiecesDialog::UpdatePieceList()
         m_listPiece.SetItemMap(NULL);
         return;
     }
-    m_pPTbl->LoadUnusedPieceList(m_tblPiece, value_preserving_cast<size_t>(nSel));
+    m_tblPiece = m_pPTbl->LoadUnusedPieceList(value_preserving_cast<size_t>(nSel));
     m_listPiece.SetItemMap(&m_tblPiece, FALSE);
 }
 

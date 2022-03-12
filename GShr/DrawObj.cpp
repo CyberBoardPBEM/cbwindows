@@ -1497,7 +1497,7 @@ void CPieceObj::Draw(CDC& pDC, TileScale eScale)
     TileID tid;
 
     if (!m_pDoc->IsScenario() &&
-            pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, m_pDoc))
+            pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc))
         tid = pPTbl->GetFrontTileID(m_pid, TRUE);
     else
         tid = pPTbl->GetActiveTileID(m_pid, TRUE);  // Show rotations
@@ -1538,7 +1538,7 @@ BOOL CPieceObj::IsOwnedButNotByCurrentPlayer() const
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
-    return pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, m_pDoc);
+    return pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc);
 }
 
 void CPieceObj::SetPiece(CRect& rct, PieceID pid)

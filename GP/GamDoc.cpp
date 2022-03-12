@@ -603,9 +603,7 @@ BOOL CGamDoc::OnNewScenario()
     m_pPBMgr = new CPBoardManager(*this);
 
     // Create the playing piece table...
-    m_pPTbl = new CPieceTable;
-    m_pPTbl->SetPieceManager(m_pGbx->GetPieceManager());
-    m_pPTbl->SetDocument(this);
+    m_pPTbl = new CPieceTable(*m_pGbx->GetPieceManager(), *this);
     m_pPTbl->CreatePlayingPieceTable();
 
     // Create the tray manager.

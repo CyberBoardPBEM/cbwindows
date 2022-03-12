@@ -85,7 +85,7 @@ BOOL CGameState::SaveState()
         OwnerOrNullPtr<CPBoardManager> temp2 = CB::get_underlying(std::move(temp1));
         m_pPBMgr = CB::get_underlying(std::move(temp2)).release();
         m_pYMgr = m_pDoc->GetTrayManager()->Clone(m_pDoc);
-        m_pPTbl = m_pDoc->GetPieceTable()->Clone(m_pDoc);
+        m_pPTbl = m_pDoc->GetPieceTable()->Clone();
     }
     CATCH_ALL(e)
     {
@@ -107,7 +107,7 @@ BOOL CGameState::RestoreState()
         m_pDoc->GetGameStringMap()->Clone(&m_mapString);
         m_pDoc->GetPBoardManager()->Restore(*m_pDoc, *m_pPBMgr);
         m_pDoc->GetTrayManager()->Restore(m_pDoc, m_pYMgr);
-        m_pDoc->GetPieceTable()->Restore(m_pDoc, *m_pPTbl);
+        m_pDoc->GetPieceTable()->Restore(*m_pPTbl);
     }
     CATCH_ALL(e)
     {
@@ -123,7 +123,6 @@ void CGameState::Clear()
 
     m_pPBMgr = NULL;
     m_pYMgr.Clear();
-    if (m_pPTbl != NULL) delete m_pPTbl;
     m_pPTbl = NULL;
 }
 
@@ -137,8 +136,9 @@ void CGameState::Serialize(CArchive& ar)
     {
         Clear();
 
-        m_pPBMgr = new CPBoardManager(CheckedDeref(static_cast<CGamDoc*>(ar.m_pDocument)));
-        m_pPTbl = new CPieceTable;
+        CGamDoc& doc = CheckedDeref(static_cast<CGamDoc*>(ar.m_pDocument));
+        m_pPBMgr = new CPBoardManager(doc);
+        m_pPTbl = new CPieceTable(*doc.GetPieceManager(), doc);
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
             m_mapString.Serialize(ar);                  // V2.0
