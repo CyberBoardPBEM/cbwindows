@@ -313,7 +313,7 @@ BOOL CPieceSetSide::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, pDoc))
+    if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, *pDoc))
         return TRUE;
 
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
@@ -769,7 +769,7 @@ BOOL CObjectSetText::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
+        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, *pDoc))
             return TRUE;
 
         pDoc->FindPieceCurrentLocation(pid, pTray, pPBoard, pPObj);
@@ -866,7 +866,7 @@ BOOL CObjectLockdown::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
+        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, *pDoc))
             return TRUE;
         pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;

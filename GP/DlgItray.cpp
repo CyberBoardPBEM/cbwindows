@@ -141,8 +141,7 @@ void CImportTraysDlg::OnOK()
             CTraySet& pYSet = pYMgr->GetTraySet(nTray);
 
             // Locate only those pieces that aren't currently being used.
-            std::vector<PieceID> arrUnusedPieces;
-            pPTbl->LoadUnusedPieceList(arrUnusedPieces, nPSet);
+            std::vector<PieceID> arrUnusedPieces = pPTbl->LoadUnusedPieceList(nPSet);
             pPTbl->SetPieceListAsFrontUp(arrUnusedPieces);
             pYSet.AddPieceList(arrUnusedPieces);
         }

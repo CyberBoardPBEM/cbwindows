@@ -78,7 +78,7 @@ protected:
     using OwnerOrNullCPBoardManager = CB::propagate_const<std::unique_ptr<CPBoardManager, CPBoardManagerDelete>>;
     OwnerOrNullCPBoardManager m_pPBMgr;   // Playing boards in use.
     CTrayManager    m_pYMgr;    // Content of trays manager
-    CPieceTable*    m_pPTbl;    // The playing piece table.
+    OwnerOrNullPtr<CPieceTable> m_pPTbl;    // The playing piece table.
 };
 
 #endif

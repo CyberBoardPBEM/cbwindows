@@ -66,10 +66,10 @@ public:
     void SetFacing(uint16_t nFacing) { m_nFacing = nFacing; }
     uint16_t GetFacing() const  { return m_nFacing; }
 
-    DWORD GetOwnerMask() const  { return m_dwOwnerMask; }
-    void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned() const        { return m_dwOwnerMask != 0; }
-    BOOL IsOwnedBy(DWORD dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
+    uint32_t GetOwnerMask() const  { return m_dwOwnerMask; }
+    void SetOwnerMask(uint32_t dwMask) { m_dwOwnerMask = dwMask; }
+    BOOL IsOwned() const        { return m_dwOwnerMask != uint32_t(0); }
+    BOOL IsOwnedBy(uint32_t dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
 
     BOOL operator != (const Piece& pce) const
         { return m_nSide != pce.m_nSide || m_nFacing != pce.m_nFacing; }
@@ -80,9 +80,9 @@ public:
 
 protected:
     // If m_nSide is == 0xFF, the piece is not used.
-    BYTE        m_nSide;        // Visible side of piece (0 is front, 1 is back)
-    WORD        m_nFacing;      // (1 deg incrs) 0 is normal facing
-    DWORD       m_dwOwnerMask;  // Who owns the piece
+    uint8_t     m_nSide;        // Visible side of piece (0 is front, 1 is back)
+    uint16_t    m_nFacing;      // (1 deg incrs) 0 is normal facing
+    uint32_t    m_dwOwnerMask;  // Who owns the piece
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -94,51 +94,53 @@ protected:
 class CPieceTable
 {
 public:
-    CPieceTable();
+    CPieceTable(const CPieceManager& pPMgr, CGamDoc& pDoc);
     ~CPieceTable() = default;
     bool Empty() const { return m_pPieceTbl.Empty(); }
 
 // Attributes
 public:
-    CPieceManager* GetPieceManager() { return m_pPMgr; }
-    void SetPieceManager(CPieceManager* pPMgr) { m_pPMgr = pPMgr; }
-    void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
+    const CPieceManager& GetPieceManager() { return m_pPMgr; }
 
 // Operations
 public:
-    void LoadUnusedPieceList(std::vector<PieceID>& pPTbl, size_t nPieceSet,
-        BOOL bClear = TRUE);
-    void LoadUnusedPieceList(std::vector<PieceID>& pPTbl, const CPieceSet& pPceSet,
-        BOOL bClear = TRUE);
+    std::vector<PieceID> LoadUnusedPieceList(size_t nPieceSet) const;
+    std::vector<PieceID> LoadUnusedPieceList(const CPieceSet& pPceSet) const;
     void SetPieceListAsUnused(const std::vector<PieceID>& pPTbl);
     void SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl);
 
     void FlipPieceOver(PieceID pid);
 
     void SetPieceFacing(PieceID pid, uint16_t nFacingDegCW);
-    uint16_t GetPieceFacing(PieceID pid);
+    uint16_t GetPieceFacing(PieceID pid) const;
 
-    BOOL IsFrontUp(PieceID pid);
+    BOOL IsFrontUp(PieceID pid) const;
     BOOL Is2Sided(PieceID pid) const;
-    BOOL IsPieceUsed(PieceID pid);
+    BOOL IsPieceUsed(PieceID pid) const;
 
     BOOL IsPieceOwned(PieceID pid) const;
-    BOOL IsPieceOwnedBy(PieceID pid, DWORD dwOwnerMask) const;
-    BOOL IsOwnedButNotByCurrentPlayer(PieceID pid, CGamDoc* pDoc) const;
-    DWORD GetOwnerMask(PieceID pid) const;
-    void SetOwnerMask(PieceID pid, DWORD wwMask);
+    BOOL IsPieceOwnedBy(PieceID pid, uint32_t dwOwnerMask) const;
+    BOOL IsOwnedButNotByCurrentPlayer(PieceID pid, const CGamDoc& pDoc) const;
+    uint32_t GetOwnerMask(PieceID pid) const;
+    void SetOwnerMask(PieceID pid, uint32_t wwMask);
     void ClearAllOwnership();
 
-    BOOL IsPieceInvisible(PieceID pid);
+    BOOL IsPieceInvisible(PieceID pid) const;
 
-    TileID GetFrontTileID(PieceID pid, BOOL bWithFacing = FALSE);
-    TileID GetBackTileID(PieceID pid, BOOL bWithFacing = FALSE);
+    TileID GetFrontTileID(PieceID pid) const;
+    TileID GetFrontTileID(PieceID pid, BOOL bWithFacing);
+    TileID GetBackTileID(PieceID pid) const;
+    TileID GetBackTileID(PieceID pid, BOOL bWithFacing);
 
-    TileID GetActiveTileID(PieceID pid, BOOL bWithFacing = FALSE);
-    TileID GetInactiveTileID(PieceID pid, BOOL bWithFacing = FALSE);
+    TileID GetActiveTileID(PieceID pid) const;
+    TileID GetActiveTileID(PieceID pid, BOOL bWithFacing);
+    TileID GetInactiveTileID(PieceID pid) const;
+    TileID GetInactiveTileID(PieceID pid, BOOL bWithFacing);
 
-    CSize GetPieceSize(PieceID pid, BOOL bWithFacing = FALSE);
-    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing = FALSE);
+    CSize GetPieceSize(PieceID pid) const;
+    CSize GetPieceSize(PieceID pid, BOOL bWithFacing);
+    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const;
+    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing);
 
     void CreatePlayingPieceTable();
     void SetPiece(PieceID pid, uint8_t nSide = uint8_t(0), uint16_t nFacing = uint16_t(0));
@@ -148,14 +150,14 @@ public:
 
     void Clear();
 
-    CPieceTable* Clone(CGamDoc *pDoc) const;
-    void Restore(CGamDoc *pDoc, const CPieceTable& pTbl);
+    OwnerPtr<CPieceTable> Clone() const;
+    void Restore(const CPieceTable& pTbl);
     BOOL Compare(const CPieceTable& pTbl) const;
 
     void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    void DumpToTextFile(CFile& file);
+    void DumpToTextFile(CFile& file) const;
 #endif
 
 // Implementation
@@ -169,8 +171,8 @@ protected:
     WORD        m_wReserved3;       // For future need (set to 0)
     WORD        m_wReserved4;       // For future need (set to 0)
     // ------- //
-    CPieceManager* m_pPMgr;         // To get access to piece defs.
-    CGamDoc*       m_pDoc;          // Used for serialize fixups
+    const CPieceManager& m_pPMgr;         // To get access to piece defs.
+    RefPtr<CGamDoc> m_pDoc;          // Used for serialize fixups
     // ------- //
     const Piece& GetPiece(PieceID pid) const;
     Piece& GetPiece(PieceID pid) { return const_cast<Piece&>(std::as_const(*this).GetPiece(pid)); }
@@ -183,7 +185,8 @@ protected:
         pPce = const_cast<Piece*>(temp);
     }
 
-    TileID GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing, uint8_t nSide) const;
+    // non-const due to creating new tile for rotated tidBase
+    TileID GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing, uint8_t nSide);
 };
 
 #endif

@@ -632,9 +632,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
         m_pPBMgr = new CPBoardManager(*this);
 
         // Create the playing piece table...
-        m_pPTbl = new CPieceTable;
-        m_pPTbl->SetPieceManager(m_pGbx->GetPieceManager());
-        m_pPTbl->SetDocument(this);
+        m_pPTbl = new CPieceTable(*m_pGbx->GetPieceManager(), *this);
 
         // Create the tray manager.
         m_pYMgr = new CTrayManager;

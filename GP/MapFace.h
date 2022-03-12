@@ -131,7 +131,7 @@ public:
 
     void    SetTileManager(CTileManager* pTileMgr);
 
-    TileID  GetFacingTileID(ElementState state);
+    TileID  GetFacingTileID(ElementState state) const;
     TileID  CreateFacingTileID(ElementState state, TileID baseTileID);
 };
 

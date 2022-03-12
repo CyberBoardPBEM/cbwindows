@@ -277,8 +277,10 @@ public:
     CPieceManager* GetPieceManager();
     const CPieceTable* GetPieceTable() const { return m_pPTbl; }
     CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
-    CTrayManager* GetTrayManager() { return m_pYMgr; }
-    CPBoardManager* GetPBoardManager() { return m_pPBMgr; }
+    const CTrayManager* GetTrayManager() const { return m_pYMgr; }
+    CTrayManager* GetTrayManager() { return const_cast<CTrayManager*>(std::as_const(*this).GetTrayManager()); }
+    const CPBoardManager* GetPBoardManager() const { return m_pPBMgr; }
+    CPBoardManager* GetPBoardManager() { return const_cast<CPBoardManager*>(std::as_const(*this).GetPBoardManager()); }
     CPlayerManager* GetPlayerManager() { return m_pPlayerMgr; }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
     CHistoryTable* GetHistoryTable() { return m_pHistTbl; }

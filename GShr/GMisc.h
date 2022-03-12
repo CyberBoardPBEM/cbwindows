@@ -72,11 +72,11 @@ int Cos10K(int angle);
 // *** ARCLIB.CPP *** //
 
 // Convert from pre-3.10 ownership serialized owner masks to 26 player masks
-inline DWORD UPGRADE_OWNER_MASK(WORD wOldMask)
+inline uint32_t UPGRADE_OWNER_MASK(uint16_t wOldMask)
 {
-    DWORD dwNewMask = wOldMask & 0x8000 ? 0x80000000: 0;    // IMPORTANT: Must be in sync with player.h defs.
-    wOldMask &= 0xFF;
-    dwNewMask |= wOldMask == 0xFF ?  0x03FFFFFF : wOldMask;
+    uint32_t dwNewMask = wOldMask & 0x8000 ? 0x80000000: 0;    // IMPORTANT: Must be in sync with player.h defs.
+    wOldMask &= uint16_t(0xFF);
+    dwNewMask |= wOldMask == 0xFF ? uint32_t(0x03FFFFFF) : wOldMask;
     return dwNewMask;
 }
 

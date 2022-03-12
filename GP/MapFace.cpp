@@ -39,7 +39,7 @@ void CTileFacingMap::SetTileManager(CTileManager* pTileMgr)
     m_nTileSet = m_pTMgr->CreateTileSet("##-AutoFacings-##");
 }
 
-TileID CTileFacingMap::GetFacingTileID(ElementState state)
+TileID CTileFacingMap::GetFacingTileID(ElementState state) const
 {
     ASSERT(m_pTMgr != NULL);
     TileID tid;
