@@ -864,17 +864,24 @@ constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, UNDERLYING_TYPE>,
 /* Factor some repetitive code for tables indexed by ID values
     into a new XxxxIDTable<>. */
 template<typename KEY, typename ELEMENT,
+    size_t baseSize, size_t incrSize,
+    bool saveInGPlay,
+    bool triviallyCopyable = std::is_trivially_copyable_v<ELEMENT>>
+class XxxxIDTable;
+
+template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
         bool saveInGPlay>
-class XxxxIDTable
+class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, true>
 {
     static_assert(std::is_same_v<KEY, XxxxIDExt<KEY::PREFIX, KEY::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
-    /* data is stored in memory that may be realloc()'ed, so data must be memcpy()'able
-        (if ELEMENT is not trivially copyable, use std::vector) */
     static_assert(std::is_trivially_copyable_v<ELEMENT>, "ELEMENT must be trivially copyable");
 
 public:
-    constexpr static size_t maxSize = std::min(value_preserving_cast<size_t>(std::numeric_limits<ptrdiff_t>::max()/sizeof(ELEMENT)), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()));
+    size_t maxSize() const
+    {
+        return std::min(value_preserving_cast<size_t>(std::numeric_limits<ptrdiff_t>::max() / sizeof(ELEMENT)), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()));
+    }
 
     XxxxIDTable() noexcept
     {
@@ -947,7 +954,7 @@ public:
                 return static_cast<KEY>(i);
         }
         // Get TileID from end of table.
-        if (m_nTblSize >= maxSize)
+        if (m_nTblSize >= maxSize())
         {
             AfxThrowMemoryException();
         }
@@ -1028,22 +1035,146 @@ private:
 };
 
 template<typename KEY, typename ELEMENT,
+    size_t baseSize, size_t incrSize,
+    bool saveInGPlay>
+class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, false>
+{
+    static_assert(std::is_same_v<KEY, XxxxIDExt<KEY::PREFIX, KEY::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
+    static_assert(!std::is_trivially_copyable_v<ELEMENT>, "inefficient; use other XxxxIDTable impl instead");
+
+public:
+    size_t maxSize() const
+    {
+        return std::min(m_pTbl.max_size().get_value(), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()).get_value());
+    }
+
+    XxxxIDTable() noexcept = default;
+
+    XxxxIDTable(const XxxxIDTable& other) :
+        XxxxIDTable()
+    {
+        *this = other;
+    }
+
+    XxxxIDTable& operator=(const XxxxIDTable& other) = default;
+
+    XxxxIDTable(XxxxIDTable&& other) noexcept = default;
+
+    XxxxIDTable& operator=(XxxxIDTable&& other) noexcept = default;
+
+    ~XxxxIDTable() = default;
+
+    bool operator==(nullptr_t) const { return Empty(); }
+    bool operator!=(nullptr_t) const { return !operator==(nullptr); }
+    bool Empty() const { return m_pTbl.empty(); }
+    size_t GetSize() const { return m_pTbl.size(); }
+    bool Valid(KEY tid) const { return static_cast<KEY::UNDERLYING_TYPE>(tid) < GetSize(); }
+
+    const ELEMENT& operator[](KEY tid) const { return m_pTbl[value_preserving_cast<size_t>(static_cast<KEY::UNDERLYING_TYPE>(tid))]; }
+    ELEMENT& operator[](KEY tid) { return const_cast<ELEMENT&>(std::as_const(*this)[tid]); }
+
+    void Clear()
+    {
+        m_pTbl.clear();
+    }
+
+    /* WARNING:  will need to be generalized if an ELEMENT
+        without IsEmpty() wants to use this */
+    KEY CreateIDEntry(void (ELEMENT::* initializer)())
+    {
+        ASSERT(initializer);
+        // Allocate from empty entry if possible
+        for (size_t i = size_t(0) ; i < m_pTbl.size() ; ++i)
+        {
+            if (m_pTbl[i].IsEmpty())
+                return static_cast<KEY>(i);
+        }
+        // Get TileID from end of table.
+        if (m_pTbl.size() >= maxSize())
+        {
+            AfxThrowMemoryException();
+        }
+        KEY newXid = static_cast<KEY>(GetSize());
+        ResizeTable(GetSize() + size_t(1), initializer);
+        return newXid;
+    }
+
+    void ResizeTable(size_t nEntsNeeded, void (ELEMENT::* initializer)())
+    {
+        if (nEntsNeeded == size_t(0))
+        {
+            Clear();
+            return;
+        }
+
+        size_t oldSize = m_pTbl.size();
+        size_t nNewSize = CalcAllocSize(nEntsNeeded, baseSize, incrSize);
+        m_pTbl.resize(nNewSize);
+        if (initializer)
+        {
+            for (size_t i = oldSize ; i < nNewSize ; ++i)
+                (m_pTbl[i].*initializer)();
+        }
+    }
+
+    void Serialize(CArchive& ar)
+    {
+        /* m_nTblSize is serialized in key format to match
+            file v3.90, and size will become new key whenever
+            adding to a full table, so treating it as a key
+            here doesn't seem all that peculiar */
+        if (ar.IsStoring())
+        {
+            constexpr bool inGplay =
+#ifdef GPLAY
+                true
+#else
+                false
+#endif
+                ;
+            if (!inGplay || saveInGPlay)
+            {
+                ar << static_cast<KEY>(m_pTbl.size());
+                for (size_t i = size_t(0) ; i < m_pTbl.size() ; ++i)
+                    m_pTbl[i].Serialize(ar);
+            }
+        }
+        else
+        {
+            KEY wTmp;
+            ar >> wTmp;
+            if (static_cast<KEY::UNDERLYING_TYPE>(wTmp) > size_t(0))
+            {
+                ResizeTable(value_preserving_cast<size_t>(static_cast<KEY::UNDERLYING_TYPE>(wTmp)), nullptr);
+                for (size_t i = size_t(0) ; i < m_pTbl.size() ; ++i)
+                    m_pTbl[i].Serialize(ar);
+            }
+        }
+    }
+
+private:
+    std::vector<ELEMENT> m_pTbl;
+};
+
+template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
-        bool saveInGPlay>
-CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>& v)
+        bool saveInGPlay,
+        bool triviallyCopyable>
+CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>& v)
 {
     if (!ar.IsStoring())
     {
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
-    const_cast<XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>&>(v).Serialize(ar);
+    const_cast<XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>&>(v).Serialize(ar);
     return ar;
 }
 
 template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
-        bool saveInGPlay>
-CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay>& v)
+        bool saveInGPlay,
+        bool triviallyCopyable>
+CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>& v)
 {
     if (ar.IsStoring())
     {
