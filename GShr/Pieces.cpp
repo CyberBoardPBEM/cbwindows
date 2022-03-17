@@ -45,6 +45,53 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////////////
 
+namespace {
+    struct PieceDef_v310
+    {
+        TileID  m_tidFront;
+        TileID  m_tidBack;
+        WORD    m_flags;
+
+        // for serialize in
+        PieceDef_v310() = default;
+
+        explicit PieceDef_v310(const PieceDef& rhs)
+        {
+            m_tidFront = rhs.m_tidFront;
+            m_tidBack = rhs.m_tidBack;
+            m_flags = rhs.m_flags;
+        }
+        explicit operator PieceDef() const
+        {
+            PieceDef retval;
+            retval.m_tidFront = m_tidFront;
+            retval.m_tidBack = m_tidBack;
+            retval.m_flags = m_flags;
+            return retval;
+        }
+
+        void SetEmpty() { m_tidFront = m_tidBack = nullTid; m_flags = 0; }
+        void Serialize(CArchive& ar)
+        {
+            if (ar.IsStoring())
+            {
+                ar << m_tidFront;
+                ar << m_tidBack;
+                ar << m_flags;
+            }
+            else
+            {
+                ar >> m_tidFront;
+                ar >> m_tidBack;
+                if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))   // V2.0
+                    ar >> m_flags;
+                else
+                    m_flags = 0;
+            }
+        }
+    };
+}
+
 CPieceManager::CPieceManager(CTileManager& pTMgr) :
     m_pTMgr(pTMgr)
 {
@@ -191,13 +238,31 @@ void CPieceManager::RemovePieceIDFromPieceSets(PieceID pid)
 
 void CPieceManager::Serialize(CArchive& ar)
 {
+    typedef XxxxIDTable<PieceID, PieceDef_v310,
+                        pieceTblBaseSize, pieceTblIncrSize,
+                        true> PieceIDTable_v310;
+
     if (ar.IsStoring())
     {
         ar << m_wReserved1;
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        ar << m_pPieceTbl;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            PieceIDTable_v310 temp;
+            temp.ResizeTable(m_pPieceTbl.GetSize(), &PieceDef_v310::SetEmpty);
+            for (size_t i = size_t(0) ; i < temp.GetSize() ; ++i)
+            {
+                PieceID pid = static_cast<PieceID>(i);
+                temp[pid] = static_cast<PieceDef_v310>(m_pPieceTbl[pid]);
+            }
+            ar << temp;
+        }
+        else
+        {
+            ar << m_pPieceTbl;
+        }
     }
     else
     {
@@ -206,7 +271,21 @@ void CPieceManager::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        ar >> m_pPieceTbl;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            PieceIDTable_v310 temp;
+            ar >> temp;
+            m_pPieceTbl.ResizeTable(temp.GetSize(), &PieceDef::SetEmpty);
+            for (size_t i = size_t(0) ; i < temp.GetSize() ; ++i)
+            {
+                PieceID pid = static_cast<PieceID>(i);
+                m_pPieceTbl[pid] = static_cast<PieceDef>(temp[pid]);
+            }
+        }
+        else
+        {
+            ar >> m_pPieceTbl;
+        }
     }
     SerializePieceSets(ar);
 }
@@ -303,18 +382,34 @@ void PieceDef::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << m_tidFront;
-        ar << m_tidBack;
-        ar << m_flags;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ASSERT(!"dead code");
+            PieceDef_v310 temp(*this);
+            temp.Serialize(ar);
+        }
+        else
+        {
+            ar << m_tidFront;
+            ar << m_tidBack;
+            ar << m_flags;
+        }
     }
     else
     {
-        ar >> m_tidFront;
-        ar >> m_tidBack;
-        if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))   // V2.0
-            ar >> m_flags;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        {
+            ASSERT(!"dead code");
+            PieceDef_v310 temp;
+            temp.Serialize(ar);
+            *this = static_cast<PieceDef>(temp);
+        }
         else
-            m_flags = 0;
+        {
+            ar >> m_tidFront;
+            ar >> m_tidBack;
+            ar >> m_flags;
+        }
     }
 }
 
