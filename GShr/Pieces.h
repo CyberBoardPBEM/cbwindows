@@ -68,6 +68,13 @@ struct PieceDef
         flagShowOnlyVisibleSide = 0x8000    // The show only the top side of piece
     };
 
+    PieceDef() = default;
+    PieceDef(const PieceDef&) = delete;
+    PieceDef& operator=(const PieceDef&) = delete;
+    PieceDef(PieceDef&&) = default;
+    PieceDef& operator=(PieceDef&&) = default;
+    ~PieceDef() = default;
+
     // -------- //
     void SetEmpty() { m_tidFront = m_tidBack = nullTid; m_flags = 0; }
     BOOL IsEmpty() const { return m_tidFront == nullTid && m_tidBack == nullTid; }
@@ -154,7 +161,6 @@ public:
         BOOL bFromSetAlso = TRUE);
     // ------- //
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapStrings = NULL);
-    BOOL PurgeMissingTileIDs();
     BOOL IsTileInUse(TileID tid) const;
     // ------- //
     size_t CreatePieceSet(const char* pszName);

@@ -4,6 +4,9 @@
 //
 // wsu20210731
 //      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
+//              geomorphic boards with square cells
+//              geomorphic boards with rotated unit boards
+//              pieces with <= 100 sides
 //
 // wsu20220208:  This version has been reverted.
 //                  (It is equivalent to 3.10, so we will no
@@ -96,18 +99,18 @@ inline int GetSaveFileVersion()
     static const int retval = [] {
         struct FileFlagParser : public CCommandLineInfo
         {
-            bool id32cb64 = false;
+            bool id32cb64sidemany = false;
             virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
             {
-                if (bFlag && strcmp(pszParam, "id32cb64") == 0)
+                if (bFlag && strcmp(pszParam, "id32cb64sidemany") == 0)
                 {
-                    id32cb64 = true;
+                    id32cb64sidemany = true;
                 }
             }
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        return ffp.id32cb64 ? NumVersion(4, 0) : NumVersion(3, 10);
+        return ffp.id32cb64sidemany ? NumVersion(4, 0) : NumVersion(3, 10);
     }();
     return retval;
 }
