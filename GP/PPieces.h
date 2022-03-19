@@ -57,11 +57,11 @@ public:
     BOOL IsUsed() const         { return m_nSide != 0xFF; }
     void SetUnused();
 
-    void SetSide(uint8_t nSide) { m_nSide = nSide; }
-    void InvertSide()           { m_nSide ^= uint8_t(1); }
-    uint8_t GetSide() const     { return m_nSide; }
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void SetSide(uint8_t nSide) { m_nSide = nSide; }
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertSide()           { m_nSide ^= uint8_t(1); }
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] uint8_t GetSide() const     { return m_nSide; }
     BOOL IsFrontUp() const      { return m_nSide == 0; }
-    BOOL IsBackUp() const       { return m_nSide == 1; }
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL IsBackUp() const       { return m_nSide == 1; }
 
     void SetFacing(uint16_t nFacing) { m_nFacing = nFacing; }
     uint16_t GetFacing() const  { return m_nFacing; }
@@ -109,13 +109,13 @@ public:
     void SetPieceListAsUnused(const std::vector<PieceID>& pPTbl);
     void SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl);
 
-    void FlipPieceOver(PieceID pid);
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void FlipPieceOver(PieceID pid);
 
     void SetPieceFacing(PieceID pid, uint16_t nFacingDegCW);
     uint16_t GetPieceFacing(PieceID pid) const;
 
     BOOL IsFrontUp(PieceID pid) const;
-    BOOL Is2Sided(PieceID pid) const;
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL Is2Sided(PieceID pid) const;
     BOOL IsPieceUsed(PieceID pid) const;
 
     BOOL IsPieceOwned(PieceID pid) const;
@@ -129,13 +129,11 @@ public:
 
     TileID GetFrontTileID(PieceID pid) const;
     TileID GetFrontTileID(PieceID pid, BOOL bWithFacing);
-    TileID GetBackTileID(PieceID pid) const;
-    TileID GetBackTileID(PieceID pid, BOOL bWithFacing);
 
     TileID GetActiveTileID(PieceID pid) const;
     TileID GetActiveTileID(PieceID pid, BOOL bWithFacing);
-    TileID GetInactiveTileID(PieceID pid) const;
-    TileID GetInactiveTileID(PieceID pid, BOOL bWithFacing);
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] TileID GetInactiveTileID(PieceID pid) const;
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] TileID GetInactiveTileID(PieceID pid, BOOL bWithFacing);
 
     CSize GetPieceSize(PieceID pid) const;
     CSize GetPieceSize(PieceID pid, BOOL bWithFacing);
@@ -143,7 +141,7 @@ public:
     CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing);
 
     void CreatePlayingPieceTable();
-    void SetPiece(PieceID pid, uint8_t nSide = uint8_t(0), uint16_t nFacing = uint16_t(0));
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void SetPiece(PieceID pid, uint8_t nSide = uint8_t(0), uint16_t nFacing = uint16_t(0));
     void SetPieceUnused(PieceID pid);
 
     void PurgeUndefinedPieceIDs();

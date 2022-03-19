@@ -1045,7 +1045,7 @@ class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, false>
 public:
     size_t maxSize() const
     {
-        return std::min(m_pTbl.max_size().get_value(), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()).get_value());
+        return std::min(m_pTbl.max_size(), value_preserving_cast<size_t>(std::numeric_limits<KEY::UNDERLYING_TYPE>::max()));
     }
 
     XxxxIDTable() noexcept = default;

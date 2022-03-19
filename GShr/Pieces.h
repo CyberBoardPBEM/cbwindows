@@ -58,13 +58,17 @@ const size_t pieceTblIncrSize = 8;
 
 struct PieceDef
 {
-    TileID  m_tidFront;
-    TileID  m_tidBack;
+private:
+    std::vector<TileID> m_tids;
+public:
+    // allow sides 0 - 99 (GameElement64 could support 127)
+    static constexpr size_t maxSides = 100;
+
     WORD    m_flags;
 
     enum
     {
-        flagShowOnlyOwnersToo   = 0x4000,   // The show only flag applies to owners too
+        flagShowOnlyOwnersToo = 0x4000,   // The show only flag applies to owners too
         flagShowOnlyVisibleSide = 0x8000    // The show only the top side of piece
     };
 
@@ -76,13 +80,19 @@ struct PieceDef
     ~PieceDef() = default;
 
     // -------- //
-    void SetEmpty() { m_tidFront = m_tidBack = nullTid; m_flags = 0; }
-    BOOL IsEmpty() const { return m_tidFront == nullTid && m_tidBack == nullTid; }
+    void SetEmpty() { m_tids.clear(); m_flags = 0; }
+    BOOL IsEmpty() const { return m_tids.empty(); }
     // ---------- //
     void Serialize(CArchive& ar);
-    TileID GetFrontTID() const { return m_tidFront; }
-    TileID GetBackTID() const { return m_tidBack; }
-    BOOL Is2Sided() const { return m_tidBack != nullTid; }
+    TileID GetFrontTID() const;
+    void SetFrontTID(TileID tid);
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] TileID GetBackTID() const { return m_tids.size() < size_t(2) ? nullTid : m_tids[size_t(1)]; }
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void SetBackTID(TileID tid);
+    const std::vector<TileID>& GetTIDs() const { return m_tids; }
+    void SetTIDs(std::vector<TileID>&& tids);
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL Is2Sided() const { return m_tids.size() >= size_t(2); }
+    size_t GetSides() const { return m_tids.size(); }
+    void SetSides(size_t sides);
 };
 
 //////////////////////////////////////////////////////////////////////
