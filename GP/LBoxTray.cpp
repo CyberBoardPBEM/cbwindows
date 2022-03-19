@@ -140,7 +140,7 @@ void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     bool bRightRect = nItemCode.GetSide() != 0;
     int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
     if (bRightRect) nSide ^= 1;         // Toggle the side
-    strTip = m_pDoc->GetGameElementString(MakePieceElement(pid, nSide));
+    strTip = m_pDoc->GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -151,14 +151,14 @@ BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem)
 
     PieceID pid = MapIndexToItem(nItem);
     int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    if (m_pDoc->HasGameElementString(MakePieceElement(pid, nSide)))
+    if (m_pDoc->HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide))))
         return TRUE;
     if (m_eTrayViz == trayVizTwoSide)
     {
         // Check for tip on optional second side only of both sides are
         // visible in the tray.
         if (m_pDoc->GetPieceTable()->Is2Sided(pid) &&
-            m_pDoc->HasGameElementString(MakePieceElement(pid, nSide ^ 1)))
+            m_pDoc->HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1))))
             return TRUE;
     }
     return FALSE;

@@ -226,7 +226,7 @@ void CPieceEditDialog::OnOK()
     CString strText;
     m_editTextFront.GetWindowText(strText);
 
-    GameElement ge = MakePieceElement(m_pid, 0);
+    GameElement ge = MakePieceElement(m_pid, unsigned(0));
     if (!strText.IsEmpty())
         m_pDoc->GetGameStringMap().SetAt(ge, strText);
     else
@@ -235,7 +235,7 @@ void CPieceEditDialog::OnOK()
     if (m_chkSameAsTop.GetCheck() == 0)
         m_editTextBack.GetWindowText(strText);
 
-    ge = MakePieceElement(m_pid, 1);
+    ge = MakePieceElement(m_pid, unsigned(1));
     if (bBackChecked && !strText.IsEmpty())
         m_pDoc->GetGameStringMap().SetAt(ge, strText);
     else
@@ -277,7 +277,7 @@ BOOL CPieceEditDialog::OnInitDialog()
     SetupPieceTiles();
 
     CString strText;
-    m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, 0), strText);
+    m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, unsigned(0)), strText);
     if (!strText.IsEmpty())
         m_editTextFront.SetWindowText(strText);
     m_chkSameAsTop.SetCheck(0);
@@ -288,7 +288,7 @@ BOOL CPieceEditDialog::OnInitDialog()
     if (pPce.Is2Sided())
     {
         CString strTextBack;
-        m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, 1), strTextBack);
+        m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, unsigned(1)), strTextBack);
         if (strText == strTextBack)
             m_chkSameAsTop.SetCheck(1);
         if (!strTextBack.IsEmpty())

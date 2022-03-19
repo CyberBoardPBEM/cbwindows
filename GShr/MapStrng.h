@@ -58,7 +58,7 @@ class alignas(uint32_t) GameElement32
 public:
     // uninitialized data
     GameElement32() = default;
-    explicit GameElement32(PieceID16 pid, unsigned nSide = 0)
+    explicit GameElement32(PieceID16 pid, unsigned nSide = unsigned(0))
         {
             new (&u.pieceElement) U::PieceElement(pid, nSide);
             ASSERT(IsAPiece() && !IsAMarker() && !IsAnObject());
@@ -207,7 +207,7 @@ private:
                 nSide(static_cast<uint16_t>(s)),
                 tag(PIECE)
             {
-                if (s > 1)
+                if (s > unsigned(1))
                 {
                     ASSERT(!"side out of range");
                     CbThrowBadCastException();
@@ -306,10 +306,10 @@ const DWORD GAMEELEM_OBJECTID_MASK = 0xFFFE0000L; // else...top 15 bits nonzero 
 #endif
 
 #if !defined(NDEBUG)
-inline GameElementLegacyCheck MakePieceElementLegacyCheck(PieceID16 pid, int nSide = 0)
+inline GameElementLegacyCheck MakePieceElementLegacyCheck(PieceID16 pid, unsigned nSide = unsigned(0))
     { return (GameElementLegacyCheck)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
 #endif
-inline GameElement32 MakePieceElement(PieceID16 pid, int nSide = 0)
+inline GameElement32 MakePieceElement(PieceID16 pid, unsigned nSide = unsigned(0))
     {
         GameElement32 retval(pid, nSide);
 #if !defined(NDEBUG)
@@ -413,7 +413,7 @@ class alignas(uint64_t) GameElement64
 public:
     // uninitialized data
     GameElement64() = default;
-    explicit GameElement64(PieceID32 pid, unsigned nSide = 0)
+    explicit GameElement64(PieceID32 pid, unsigned nSide = unsigned(0))
     {
         new (&u.pieceElement) U::PieceElement(pid, nSide);
         ASSERT(IsAPiece() && !IsAMarker() && !IsAnObject());
@@ -566,12 +566,12 @@ private:
                 pad(0),     // Hash() won't work properly if bits uninitialized
                 tag(PIECE)
             {
-                if (s > 1)
+                if (s > unsigned(1))
                 {
                     ASSERT(!"future feature");
                     CbThrowBadCastException();
                 }
-                if (s > 127)
+                if (s > unsigned(127))
                 {
                     ASSERT(!"side out of range");
                     CbThrowBadCastException();
@@ -654,7 +654,7 @@ inline UINT HashKey(GameElement64 key)
     return key.Hash();
 }
 
-inline GameElement64 MakePieceElement(PieceID32 pid, int nSide = 0)
+inline GameElement64 MakePieceElement(PieceID32 pid, unsigned nSide = unsigned(0))
 {
     GameElement64 retval(pid, nSide);
     return retval;
@@ -720,7 +720,7 @@ public:
 // and markers to tile IDs.
 
 template<typename KEY>
-class CGameElementStringMapT : public CMap< KEY, KEY, CString, CString& >
+class CGameElementStringMapT : public CMap< KEY, KEY, CString, const CString& >
 {
 public:
     CGameElementStringMapT()

@@ -134,7 +134,7 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
         PieceID pid = pObj.m_pid;
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
         if (bBottomSide) nSide ^= 1;        // Toggle the side
-        return MakePieceElement(pid, nSide);
+        return MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
@@ -156,7 +156,7 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
         if (bBottomSide) nSide ^= 1;        // Toggle the side
 
-        elem = MakePieceElement(pid, nSide);
+        elem = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
         if (!HasGameElementString(elem) || pObj.IsOwnedButNotByCurrentPlayer())
             elem = Invalid_v<GameElement>;
     }
@@ -183,7 +183,7 @@ void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
         PieceID pid = pObj.m_pid;
         int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-        strTip = GetGameElementString(MakePieceElement(pid, nSide));
+        strTip = GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
@@ -201,8 +201,8 @@ void CGamDoc::DoEditPieceText(PieceID pid, BOOL bEditTop)
     CEditElementTextDialog dlg;
 
     int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    GameElement elem = MakePieceElement(pid, nSide);
-    GameElement elemDown = MakePieceElement(pid, nSide ^ 1);
+    GameElement elem = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
+    GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1));
 
     dlg.m_strText = GetGameElementString(elem);
 
@@ -241,7 +241,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
         {
             dlg.m_bDoubleSided = TRUE;
             int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-            CString strDown = GetGameElementString(MakePieceElement(pid, nSide ^ 1));
+            CString strDown = GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1)));
             if (!strDown.IsEmpty() && strDown == dlg.m_strText)
                 dlg.m_bSetBothSides = TRUE;
         }
@@ -260,7 +260,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
         if (GetPieceTable()->Is2Sided(pid))
         {
             int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-            SetObjectText(MakePieceElement(pid, nSide ^ 1),
+            SetObjectText(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1)),
                 dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
         }
     }

@@ -569,7 +569,7 @@ void CGbxProjView::DoPieceEdit()
             // Process front piece text change
             if (dlg.m_bSetFrontText)
             {
-                GameElement elem = MakePieceElement(pid, 0);
+                GameElement elem = MakePieceElement(pid, unsigned(0));
                 if (!dlg.m_strFront.IsEmpty())
                     pDoc->GetGameStringMap().SetAt(elem, dlg.m_strFront);
                 else
@@ -578,7 +578,7 @@ void CGbxProjView::DoPieceEdit()
             // Process back piece text change
             if (pDef.Is2Sided() && dlg.m_bSetBackText)
             {
-                GameElement elem = MakePieceElement(pid, 1);
+                GameElement elem = MakePieceElement(pid, unsigned(1));
                 if (!dlg.m_strBack.IsEmpty())
                     pDoc->GetGameStringMap().SetAt(elem, dlg.m_strBack);
                 else
