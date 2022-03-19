@@ -57,15 +57,42 @@ namespace {
 
         explicit PieceDef_v310(const PieceDef& rhs)
         {
-            m_tidFront = rhs.m_tidFront;
-            m_tidBack = rhs.m_tidBack;
+            const std::vector<TileID>& tids = rhs.GetTIDs();
+            switch (tids.size())
+            {
+                case 0:
+                    ASSERT(!"empty");
+                    m_tidFront = nullTid;
+                    m_tidBack = nullTid;
+                    break;
+                case 1:
+                    m_tidFront = tids[size_t(0)];
+                    m_tidBack = nullTid;
+                    break;
+                case 2:
+                    m_tidFront = tids[size_t(0)];
+                    m_tidBack = tids[size_t(1)];
+                    break;
+                default:
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+            }
             m_flags = rhs.m_flags;
         }
         explicit operator PieceDef() const
         {
             PieceDef retval;
-            retval.m_tidFront = m_tidFront;
-            retval.m_tidBack = m_tidBack;
+            std::vector<TileID> tids;
+            // ASSERT(m_tidBack != nullTid --> m_tidFront != nullTid);
+            ASSERT(m_tidBack == nullTid || m_tidFront != nullTid);
+            if (m_tidFront != nullTid || m_tidBack != nullTid)
+            {
+                tids.push_back(m_tidFront);
+            }
+            if (m_tidBack != nullTid)
+            {
+                tids.push_back(m_tidBack);
+            }
+            retval.SetTIDs(std::move(tids));
             retval.m_flags = m_flags;
             return retval;
         }
@@ -124,8 +151,11 @@ BOOL CPieceManager::IsTileInUse(TileID tid) const
     for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
         const PieceDef& pDef = GetPiece(static_cast<PieceID>(i));
-        if (pDef.m_tidFront == tid || pDef.m_tidBack == tid)
+        const std::vector<TileID>& tids = pDef.GetTIDs();
+        if (std::find(tids.begin(), tids.end(), tid) != tids.end())
+        {
             return TRUE;
+        }
     }
     return FALSE;
 }
@@ -136,10 +166,13 @@ BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = 
     for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
     {
         PieceDef& pDef = GetPiece(static_cast<PieceID>(i));
-        TileID tid1 = pDef.m_tidFront;
-        TileID tid2 = pDef.m_tidBack;
-        if ((tid1 != nullTid && !m_pTMgr.IsTileIDValid(tid1)) ||
-            (tid2 != nullTid && !m_pTMgr.IsTileIDValid(tid2)))
+        const std::vector<TileID>& tids = pDef.GetTIDs();
+        if (std::find_if(tids.begin(), tids.end(),
+                        [this](TileID tid)
+                        {
+                            ASSERT(tid != nullTid);
+                            return tid != nullTid && !m_pTMgr.IsTileIDValid(tid);
+                        }) != tids.end())
         {
             DeletePiece(static_cast<PieceID>(i), pMapStrings, TRUE);
             bPieceRemoved = TRUE;
@@ -156,8 +189,16 @@ PieceID CPieceManager::CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack
     PieceID pid = m_pPieceTbl.CreateIDEntry(&PieceDef::SetEmpty);
 
     PieceDef* pDef = &m_pPieceTbl[pid];
-    pDef->m_tidFront = tidFront;
-    pDef->m_tidBack = tidBack;
+    if (tidBack != nullTid)
+    {
+        pDef->SetSides(size_t(2));
+        pDef->SetBackTID(tidBack);
+    }
+    else
+    {
+        pDef->SetSides(size_t(1));
+    }
+    pDef->SetFrontTID(tidFront);
     GetPieceSet(nPSet).AddPieceID(pid);
     return pid;
 }
@@ -390,8 +431,7 @@ void PieceDef::Serialize(CArchive& ar)
         }
         else
         {
-            ar << m_tidFront;
-            ar << m_tidBack;
+            ar << m_tids;
             ar << m_flags;
         }
     }
@@ -406,11 +446,69 @@ void PieceDef::Serialize(CArchive& ar)
         }
         else
         {
-            ar >> m_tidFront;
-            ar >> m_tidBack;
+            ar >> m_tids;
             ar >> m_flags;
         }
     }
+}
+
+TileID PieceDef::GetFrontTID() const
+{
+    if (m_tids.size() < size_t(1))
+    {
+        AfxThrowMemoryException();
+    }
+    return m_tids[size_t(0)];
+}
+
+void PieceDef::SetFrontTID(TileID tid)
+{
+    ASSERT(tid != nullTid);
+    if (m_tids.size() < size_t(1))
+    {
+        m_tids.resize(size_t(1));
+    }
+    m_tids[size_t(0)] = tid;
+}
+
+void PieceDef::SetBackTID(TileID tid)
+{
+    ASSERT(m_tids.size() == size_t(2));
+    if (tid != nullTid)
+    {
+        if (m_tids.size() < size_t(2))
+        {
+            AfxThrowMemoryException();
+        }
+        m_tids[size_t(1)] = tid;
+    }
+    else if (m_tids.size() >= size_t(1) &&
+            m_tids[size_t(0)] != nullTid)
+    {
+        m_tids.resize(size_t(1));
+    }
+    else
+    {
+        m_tids.clear();
+    }
+}
+
+void PieceDef::SetTIDs(std::vector<TileID>&& tids)
+{
+    if (tids.size() > maxSides)
+    {
+        AfxThrowMemoryException();
+    }
+    m_tids = std::move(tids);
+}
+
+void PieceDef::SetSides(size_t sides)
+{
+    if (sides > maxSides)
+    {
+        AfxThrowMemoryException();
+    }
+    m_tids.resize(sides);
 }
 
 

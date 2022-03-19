@@ -96,9 +96,10 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) con
     PieceID nPid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
     unsigned side = 0u;
 
-    TileID tidLeft = m_pPMgr->GetPiece(nPid).GetFrontTID();
+    const PieceDef& piecedef = m_pPMgr->GetPiece(nPid);
+    TileID tidLeft = piecedef.GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece(nPid).GetBackTID();
+    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
 
     CRect rctLeft;
     CRect rctRight;
@@ -140,9 +141,10 @@ unsigned CPieceListBox::OnItemHeight(size_t nIndex) const
 {
     PieceID pid = MapIndexToItem(nIndex);
 
-    TileID tidLeft = m_pPMgr->GetPiece(pid).GetFrontTID();
+    const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
+    TileID tidLeft = piecedef.GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece(pid).GetBackTID();
+    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
     return DoOnItemHeight(tidLeft, tidRight);
 }
 
@@ -155,9 +157,10 @@ void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nStat
 
     PieceID pid = MapIndexToItem(nIndex);
 
-    TileID tidLeft = m_pPMgr->GetPiece(pid).GetFrontTID();
+    const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
+    TileID tidLeft = piecedef.GetFrontTID();
     ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = m_pPMgr->GetPiece(pid).GetBackTID();
+    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
 
     DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tidLeft, tidRight);
 }

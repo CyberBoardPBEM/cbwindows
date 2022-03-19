@@ -157,27 +157,27 @@ void CPieceEditDialog::SetupPieceTiles()
 {
     PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
 
-    size_t nSet = m_pTMgr.FindTileSetFromTileID(pDef.m_tidFront);
+    size_t nSet = m_pTMgr.FindTileSetFromTileID(pDef.GetFrontTID());
     ASSERT(nSet != Invalid_v<size_t>);
 
     m_comboFtset.SetCurSel(value_preserving_cast<int>(nSet));
     SetupTileListbox(m_comboFtset, m_listFtile);
-    m_listFtile.SetCurSelMapped(pDef.m_tidFront);
+    m_listFtile.SetCurSelMapped(pDef.GetFrontTID());
 
-    if (pDef.m_tidBack != nullTid)
+    if (pDef.Is2Sided())
     {
-        nSet = m_pTMgr.FindTileSetFromTileID(pDef.m_tidBack);
+        nSet = m_pTMgr.FindTileSetFromTileID(pDef.GetBackTID());
         ASSERT(nSet != Invalid_v<size_t>);
         m_comboBtset.SetCurSel(value_preserving_cast<int>(nSet));
         SetupTileListbox(m_comboBtset, m_listBtile);
-        m_listBtile.SetCurSelMapped(pDef.m_tidBack);
+        m_listBtile.SetCurSelMapped(pDef.GetBackTID());
     }
     else
     {
         m_comboBtset.SetCurSel(-1);
         SetupTileListbox(m_comboBtset, m_listBtile);
     }
-    m_chkBack.SetCheck(pDef.m_tidBack != nullTid ? 1 : 0);
+    m_chkBack.SetCheck(pDef.Is2Sided() ? 1 : 0);
 
     OnBackCheck();          // To reflect state of check box.
 }
@@ -224,8 +224,16 @@ void CPieceEditDialog::OnOK()
 
     BOOL bBackChecked = m_chkBack.GetCheck() == 1;
 
-    pDef.m_tidFront = tidFront;
-    pDef.m_tidBack = bBackChecked ? tidBack : nullTid;
+    pDef.SetFrontTID(tidFront);
+    if (bBackChecked)
+    {
+        pDef.SetSides(size_t(2));
+        pDef.SetBackTID(tidBack);
+    }
+    else
+    {
+        pDef.SetSides(size_t(1));
+    }
 
     CString strText;
     m_editTextFront.GetWindowText(strText);

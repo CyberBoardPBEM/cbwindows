@@ -317,7 +317,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid) const
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
-    return pDef->m_tidFront;
+    return pDef->GetFrontTID();
 }
 
 TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
@@ -326,22 +326,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
 
-    TileID tidBase = pDef->m_tidFront;
-
-    if (!bWithFacing || pPce->GetFacing() == 0)
-        return tidBase;
-
-    // Handle rotated pieces...
-    return GetFacedTileID(pid, tidBase, pPce->GetFacing(), uint8_t(0));
-}
-
-TileID CPieceTable::GetBackTileID(PieceID pid, BOOL bWithFacing)
-{
-    const Piece* pPce;
-    const PieceDef* pDef;
-    GetPieceDefinitionPair(pid, pPce, pDef);
-
-    TileID tidBase = pDef->m_tidFront;
+    TileID tidBase = pDef->GetFrontTID();
 
     if (!bWithFacing || pPce->GetFacing() == 0)
         return tidBase;
@@ -580,12 +565,17 @@ void CPieceTable::DumpToTextFile(CFile& file) const
         const Piece* pPce;
         const PieceDef* pDef;
         GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
-        sprintf(szBfr, "PieceID %5.5zd: m_nSide=%02X, m_nFacing=%3u, "
-            "m_tidFront=%5u, m_tidBack=%5u\r\n", i,
-            (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing,
-            (UINT)static_cast<TileID::UNDERLYING_TYPE>(pDef->m_tidFront),
-            (UINT)static_cast<TileID::UNDERLYING_TYPE>(pDef->m_tidBack));
+        sprintf(szBfr, "PieceID %5.5zd: m_nSide=%02X, m_nFacing=%3u\r\n",
+            i, (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing);
         file.Write(szBfr, lstrlen(szBfr));
+        const std::vector<TileID>& tids = pDef->GetTIDs();
+        for (size_t j = size_t(0); j < tids.size(); ++j)
+        {
+            sprintf(szBfr, "\tm_tid[%5zu]=%5u\r\n",
+                    j,
+                    value_preserving_cast<UINT>(static_cast<TileID::UNDERLYING_TYPE>(tids[j])));
+            file.Write(szBfr, lstrlen(szBfr));
+        }
     }
 }
 #endif
