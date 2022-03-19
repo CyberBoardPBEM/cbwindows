@@ -130,9 +130,9 @@ void CPieceManager::DeletePiece(PieceID pid, CGameElementStringMap* pMapStrings 
 
     // Also delete any associated piece strings
     if (pMapStrings != NULL && !pMapStrings->IsEmpty())
-        pMapStrings->RemoveKey(MakePieceElement(pid, 0));
+        pMapStrings->RemoveKey(MakePieceElement(pid, unsigned(0)));
     if (pMapStrings != NULL && !pMapStrings->IsEmpty())
-        pMapStrings->RemoveKey(MakePieceElement(pid, 1));
+        pMapStrings->RemoveKey(MakePieceElement(pid, unsigned(1)));
 }
 
 BOOL CPieceManager::IsPieceIDValid(PieceID pid) const

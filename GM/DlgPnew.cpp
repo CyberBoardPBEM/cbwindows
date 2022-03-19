@@ -168,14 +168,14 @@ void CPieceNewDialog::CreatePiece()
         m_editTextFront.GetWindowText(strText);
         if (!strText.IsEmpty())
         {
-            GameElement ge = MakePieceElement(pid, 0);
+            GameElement ge = MakePieceElement(pid, unsigned(0));
             m_pDoc->GetGameStringMap().SetAt(ge, strText);
         }
         if (m_chkSameAsTop.GetCheck() == 0)
             m_editTextBack.GetWindowText(strText);
         if (bBackChecked && !strText.IsEmpty())
         {
-            GameElement ge = MakePieceElement(pid, 1);
+            GameElement ge = MakePieceElement(pid, unsigned(1));
             m_pDoc->GetGameStringMap().SetAt(ge, strText);
         }
         PieceDef& pPce = m_pPMgr->GetPiece(pid);

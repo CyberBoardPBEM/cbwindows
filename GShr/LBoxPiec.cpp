@@ -130,8 +130,8 @@ void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem)
 {
     PieceID pid = MapIndexToItem(nItem);
-    return m_pDoc->HasGameElementString(MakePieceElement(pid, 0)) ||
-        m_pDoc->HasGameElementString(MakePieceElement(pid, 1));
+    return m_pDoc->HasGameElementString(MakePieceElement(pid, unsigned(0))) ||
+        m_pDoc->HasGameElementString(MakePieceElement(pid, unsigned(1)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
