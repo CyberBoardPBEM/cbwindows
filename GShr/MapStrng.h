@@ -570,11 +570,6 @@ private:
                 pad(0),     // Hash() won't work properly if bits uninitialized
                 tag(PIECE)
             {
-                if (s > unsigned(1))
-                {
-                    ASSERT(!"future feature");
-                    CbThrowBadCastException();
-                }
                 if (s > unsigned(127))
                 {
                     ASSERT(!"side out of range");
