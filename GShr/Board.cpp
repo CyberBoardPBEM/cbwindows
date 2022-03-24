@@ -257,7 +257,8 @@ CellStagger CBoard::GetStagger(Corner c) const
 }
 
 /* recognize the Peter Lomax Ogre/GEV board style where "sticking
-    out" cells are empty, and rest of edge is filled */
+    out" cells are empty, and rest of edge is filled
+    (see https://github.com/CyberBoardPBEM/cbwindows/pull/78) */
 bool CBoard::IsGEVStyle(Edge e) const
 {
     /* if the board appears to be GEV style on BOTH sides,

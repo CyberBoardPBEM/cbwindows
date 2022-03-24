@@ -170,7 +170,8 @@ public:
         CCellForm can provide */
     CellStagger GetStagger(Corner c) const;
     /* recognize the Peter Lomax Ogre/GEV board style where "sticking
-        out" cells are empty, and rest of edge is filled */
+        out" cells are empty, and rest of edge is filled
+        (see https://github.com/CyberBoardPBEM/cbwindows/pull/78) */
     bool IsGEVStyle(Edge e) const;
     bool IsEmpty(const BoardCell& cell) const;
     // WARNING:  only supported on unrotated boards
