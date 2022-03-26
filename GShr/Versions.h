@@ -346,7 +346,15 @@ namespace CB
         }
         else
         {
-            ar << static_cast<uint64_t>(s);
+            // handle 32/64bit difference in Invalid_v<size_t>
+            uint64_t u64 = static_cast<uint64_t>(s);
+#if !defined(_WIN64)
+            if (u64 == Invalid_v<size_t>)
+            {
+                u64 = std::numeric_limits<uint64_t>::max();
+            }
+#endif
+            ar << u64;
         }
     }
 
@@ -382,6 +390,13 @@ namespace CB
         {
             uint64_t u64;
             ar >> u64;
+            // handle 32/64bit difference in Invalid_v<size_t>
+#if !defined(_WIN64)
+            if (u64 == std::numeric_limits<uint64_t>::max())
+            {
+                u64 = Invalid_v<size_t>;
+            }
+#endif
             return value_preserving_cast<size_t>(u64);
         }
     }
