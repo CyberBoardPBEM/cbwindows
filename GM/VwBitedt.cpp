@@ -196,7 +196,7 @@ void CBitEditView::OnDraw(CDC* pDC)
 
     // Now handle the actual bitmap
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     pDC->SetStretchBltMode(COLORONCOLOR);
 
     if (m_bGridVisible && m_nZoom > 2)
@@ -279,7 +279,7 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
     CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
@@ -312,7 +312,7 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
@@ -345,7 +345,7 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
@@ -380,7 +380,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
@@ -407,7 +407,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
 void CBitEditView::DrawImageFill(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     CBrush* pBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
@@ -428,7 +428,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     COLORREF crHit = g_gt.mDC1.GetPixel(pt);
@@ -515,7 +515,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     ReleaseDC(pDC);
 
     // Now set the point in the view bitmap...
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
     SetupPalette(g_gt.mDC1);
 
     wx = point.x / m_nZoom;
@@ -773,7 +773,7 @@ void CBitEditView::UpdateTextView()
         // Draw the text on the view bitmap updating
         // the view with the master bitmap.
         SetViewImageFromMasterImage();          // Get fresh original
-        g_gt.mDC1.SelectObject(&m_bmView);
+        g_gt.mDC1.SelectObject(*m_bmView);
         SetupPalette(g_gt.mDC1);
         g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
@@ -1144,7 +1144,7 @@ void CBitEditView::OnImageBoardMask()
         GetCellForm(m_pSelView->GetCurrentScale());
 
     CSize size = pcf.GetCellSize();
-    g_gt.mDC1.SelectObject(&m_bmView);
+    g_gt.mDC1.SelectObject(*m_bmView);
 
     const CBitmap* pMask = pcf.GetMask();
 
