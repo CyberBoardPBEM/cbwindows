@@ -60,12 +60,16 @@ protected:
     void SetupTipMarkerIfRequired();
     void DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const;
 
-    unsigned DoOnItemHeight(TileID tid1, TileID tid2) const;
-    void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] unsigned DoOnItemHeight(TileID tid1, TileID tid2) const;
+    unsigned DoOnItemHeight(const std::vector<TileID>& tids) const;
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
         TileID tid1, TileID tid2) const;
+    void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+        const std::vector<TileID>& tids) const;
 
-    void GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight, CRect& rctLeft,
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight, CRect& rctLeft,
         CRect& rctRight) const;
+    std::vector<CRect> GetTileRectsForItem(int nItem, const std::vector<TileID>& tids) const;
 
 // Overrides...
 public:
