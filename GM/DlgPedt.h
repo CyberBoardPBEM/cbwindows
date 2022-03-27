@@ -52,7 +52,6 @@ public:
     CTileListBox    m_listFtile;
     CComboBox   m_comboBtset;
     CTileListBox    m_listBtile;
-    CButton m_chkBack;
     //}}AFX_DATA
 
     RefPtr<CGamDoc> m_pDoc;         // Caller must set this
@@ -60,11 +59,22 @@ public:
 
 // Implementation
 protected:
-    const std::vector<PieceID> m_tbl;     // Need to use list box.
+    /* sides are 0-based since they are vector indices, but we
+        will display them 1-based for human readability */
+    CComboBox m_numSides;
+    // m_currSide should contain 2 - sides
+    CComboBox m_currSide;
+    CStatic m_side_1;
+
     const CTileManager& m_pTMgr;        // Set internally from m_pDoc
     RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
+    const std::vector<PieceID> m_tbl;     // Need to use list box.
+    size_t m_prevSide = std::numeric_limits<size_t>::max();
+    std::vector<TileID> m_sideTids;
+    std::vector<std::string> m_sideTexts;
     // -------- //
     void SetupPieceTiles();
+    void SetupPieceTexts();
     void SetupTileSetNames(CComboBox& pCombo) const;
     void SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const;
     TileID GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const;
@@ -75,7 +85,7 @@ protected:
     //{{AFX_MSG(CPieceEditDialog)
     virtual void OnOK();
     virtual BOOL OnInitDialog();
-    afx_msg void OnBackCheck();
+    afx_msg void OnSelchangeNumSides();
     afx_msg void OnSelchangeBtset();
     afx_msg void OnSelchangeFtset();
     afx_msg void OnDblclkPiece();
@@ -83,6 +93,7 @@ protected:
     afx_msg void OnBtnClickTopVisible();
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnSelchangeCurrSide();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };

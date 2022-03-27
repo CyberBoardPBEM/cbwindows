@@ -196,7 +196,6 @@
 #define IDC_D_PCREATE_FTILE             5062
 #define IDC_D_PCREATE_FTSET             5063
 #define IDC_D_PCREATE_PIECES            5064
-#define IDC_D_PEDIT_BACK                5065
 #define IDC_D_PEDIT_BTILE               5066
 #define IDC_D_PEDIT_BTSET               5067
 #define IDC_D_PEDIT_FTILE               5068
@@ -278,9 +277,7 @@
 #define IDC_D_MPEDIT_CHG_TOP_TEXT       5145
 #define IDC_D_PEDIT_CHG_BACK_TEXT       5146
 #define IDC_D_MPEDIT_CHG_BACK_TEXT      5146
-#define IDC_D_PEDIT_FRONT_LABEL         5147
 #define IDC_D_MPEDIT_FRONT_LABEL        5147
-#define IDC_D_PEDIT_BACK_LABEL          5148
 #define IDC_D_MPEDIT_BACK_LABEL         5148
 #define IDC_D_MEDIT_TEXT_LABEL          5149
 #define IDC_D_MMEDIT_TEXT_LABEL         5149
