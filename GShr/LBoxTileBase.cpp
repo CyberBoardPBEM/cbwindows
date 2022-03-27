@@ -70,33 +70,57 @@ int CTileBaseListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 unsigned CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2) const
 {
-    ASSERT(tid1 != nullTid);        // At least one tile needs to exist
-
-    CTile tile = GetTileManager().GetTile(tid1, fullScale);
-    int nHt1 = tile.GetHeight();
-    int nHt2 = 0;
-
+    std::vector<TileID> tids;
+    ASSERT(tid1 != nullTid);
+    tids.push_back(tid1);
     if (tid2 != nullTid)
     {
-        tile = GetTileManager().GetTile(tid2, fullScale);
-        nHt2 = tile.GetHeight();
+        tids.push_back(tid2);
+    }
+    return DoOnItemHeight(tids);
+}
+
+unsigned CTileBaseListBox::DoOnItemHeight(const std::vector<TileID>& tids) const
+{
+    ASSERT(!tids.empty() &&
+            tids[size_t(0)] != nullTid);        // At least one tile needs to exist
+
+    int htTiles = 0;
+    for (size_t i = size_t(0) ; i < tids.size() ; ++i)
+    {
+        CTile tile = GetTileManager().GetTile(tids[i], fullScale);
+        htTiles = std::max(htTiles, tile.GetHeight());
     }
     // Listbox lines can only be 255 pixels high.
-    LONG nHt = CB::min(2 * tileBorder + CB::max(nHt1, nHt2), 255);
+    LONG nHt = std::min(2 * tileBorder + htTiles, 255);
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
-        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+        nHt = std::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
     return value_preserving_cast<unsigned>(nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState,
-    CRect rctItem, TileID tid1, TileID tid2) const
+void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+    TileID tid1, TileID tid2) const
+{
+    std::vector<TileID> tids;
+    ASSERT(tid1 != nullTid);
+    tids.push_back(tid1);
+    if (tid2 != nullTid)
+    {
+        tids.push_back(tid2);
+    }
+    DoOnDrawItem(pDC, nItem, nAction, nState, rctItem, tids);
+}
+
+void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+    const std::vector<TileID>& tids) const
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
     {
-        ASSERT(tid1 != nullTid);
+        ASSERT(!tids.empty() &&
+            tids[size_t(0)] != nullTid);
 
         BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
@@ -113,14 +137,14 @@ void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT n
         pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
             COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
 
-        CTile tile = GetTileManager().GetTile(tid1, fullScale);
-
         int x = rctItem.left + tileBorder;
 
         DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
         DrawItemDebugIDCode(pDC, nItem, rctItem, TRUE, x);
-        DrawTileImage(pDC, rctItem, TRUE, x, tid1);
-        DrawTileImage(pDC, rctItem, TRUE, x, tid2);
+        for (size_t i = size_t(0) ; i < tids.size() ; ++i)
+        {
+            DrawTileImage(pDC, rctItem, TRUE, x, tids[i]);
+        }
 
         pDC.RestoreDC(-1);
         ResetPalette(pDC);
@@ -217,15 +241,32 @@ std::string CTileBaseListBox::OnGetItemDebugString(size_t nItem) const
 void CTileBaseListBox::GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight,
     CRect& rctLeft, CRect& rctRight) const
 {
+    std::vector<TileID> tids;
     ASSERT(tidLeft != nullTid);
+    tids.push_back(tidLeft);
+    if (tidRight != nullTid)
+    {
+        tids.push_back(tidRight);
+    }
+    std::vector<CRect> rects = GetTileRectsForItem(nItem, tids);
+    rctLeft = rects[size_t(0)];
+    if (tidRight != nullTid)
+    {
+        rctRight = rects[size_t(1)];
+    }
+    else
+    {
+        rctRight.SetRectEmpty();
+    }
+}
+
+std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(int nItem, const std::vector<TileID>& tids) const
+{
+    ASSERT(!tids.empty() &&
+        tids[size_t(0)] != nullTid);
 
     CRect rctItem;
     GetItemRect(nItem, &rctItem);
-
-    rctRight.SetRectEmpty();                    // Initially empty the right rect
-
-    rctLeft.top = rctItem.top;                  // Set the top & bottom values
-    rctLeft.bottom = rctItem.bottom;
 
     int x = rctItem.left + tileBorder;          // Set starting x position
 
@@ -239,19 +280,17 @@ void CTileBaseListBox::GetTileRectsForItem(int nItem, TileID tidLeft, TileID tid
     DrawItemDebugIDCode(pDC, value_preserving_cast<size_t>(nItem), rctItem, FALSE, x);
     const_cast<CTileBaseListBox*>(this)->ReleaseDC(&pDC);
 
-    rctLeft.left = x;
-    DrawTileImage(pDC, rctItem, FALSE, x, tidLeft);
-    rctLeft.right = x;
-
-    if (tidRight != nullTid)
+    std::vector<CRect> retval(tids.size());
+    for (size_t i = size_t(0); i < tids.size(); ++i)
     {
-        rctRight.top = rctItem.top;                  // Set the top & bottom values
-        rctRight.bottom = rctItem.bottom;
-
-        rctRight.left = x;
-        DrawTileImage(pDC, rctItem, FALSE, x, tidRight);
-        rctRight.right = x;
+        retval[i].top = rctItem.top;            // Set the top & bottom values
+        retval[i].bottom = rctItem.bottom;
+        retval[i].left = x;
+        DrawTileImage(pDC, rctItem, FALSE, x, tids[i]);
+        retval[i].right = x;
     }
+
+    return retval;
 }
 
 
