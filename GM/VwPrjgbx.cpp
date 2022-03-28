@@ -222,7 +222,7 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_listTiles.EnableDropScroll();
 
 
-    if (!CreateListbox(IDC_V_PIECELIST, m_listPieces, LBS_HASSTRINGS | LBS_EXTENDEDSEL, rctList))
+    if (!CreateListbox(IDC_V_PIECELIST, m_listPieces, WS_HSCROLL | LBS_HASSTRINGS | LBS_EXTENDEDSEL, rctList))
         return -1;
     if (!CreateListbox(IDC_V_MARKLIST, m_listMarks, LBS_HASSTRINGS | LBS_EXTENDEDSEL, rctList))
         return -1;
