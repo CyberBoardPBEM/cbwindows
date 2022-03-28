@@ -70,6 +70,27 @@ const CTileManager& CPieceListBox::GetTileManager() const
     return CheckedDeref(m_pDoc->GetTileManager());
 }
 
+void CPieceListBox::SetItemMap(const std::vector<PieceID>* pMap, BOOL bKeepPosition /*= TRUE*/)
+{
+    CGrafixListBoxData<CTileBaseListBox, PieceID>::SetItemMap(pMap, bKeepPosition);
+
+    // set horz scroll bar
+    LONG width = 0;
+    if (pMap)
+    {
+        for (size_t i = size_t(0) ; i < pMap->size() ; ++i)
+        {
+            const PieceDef& pPce = m_pPMgr->GetPiece((*pMap)[i]);
+            const std::vector<TileID>& tids = pPce.GetTIDs();
+            ASSERT(!tids.empty());
+            std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(i), tids);
+            ASSERT(!rects.empty());
+            width = CB::max(width, rects.back().right);
+        }
+    }
+    SetHorizontalExtent(width);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
@@ -94,28 +115,23 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) con
     ASSERT(m_pDoc != NULL);
 
     PieceID nPid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    unsigned side = 0u;
 
     const PieceDef& piecedef = m_pPMgr->GetPiece(nPid);
-    TileID tidLeft = piecedef.GetFrontTID();
-    ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
+    std::vector<TileID> tids = piecedef.GetTIDs();
 
-    CRect rctLeft;
-    CRect rctRight;
-    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tidLeft, tidRight, rctLeft, rctRight);
+    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
 
-    if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
-        rct = rctLeft;
-    else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
+    for (size_t i = size_t(0) ; i < rects.size() ; ++i)
     {
-        rct = ItemToClient(rctRight);
-        side = 1u;
+        ASSERT(!rects[i].IsRectEmpty());
+        if (!rects[i].IsRectEmpty() && rects[i].PtInRect(point))
+        {
+            rct = ItemToClient(rects[i]);
+            return GameElement(nPid, value_preserving_cast<unsigned>(i));
+        }
     }
-    else
-        return Invalid_v<GameElement>;
 
-    return GameElement(nPid, side);
+    return Invalid_v<GameElement>;
 }
 
 void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
@@ -131,8 +147,15 @@ void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     PieceID pid = MapIndexToItem(nItem);
-    return m_pDoc->HasGameElementString(MakePieceElement(pid, unsigned(0))) ||
-        m_pDoc->HasGameElementString(MakePieceElement(pid, unsigned(1)));
+    const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
+    for (size_t i = size_t(0) ; i < piecedef.GetSides() ; ++i)
+    {
+        if (m_pDoc->HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(i))))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -142,10 +165,9 @@ unsigned CPieceListBox::OnItemHeight(size_t nIndex) const
     PieceID pid = MapIndexToItem(nIndex);
 
     const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
-    TileID tidLeft = piecedef.GetFrontTID();
-    ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
-    return DoOnItemHeight(tidLeft, tidRight);
+    const std::vector<TileID>& tids = piecedef.GetTIDs();
+    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);    // Should exist
+    return DoOnItemHeight(tids);
 }
 
 void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
@@ -158,11 +180,10 @@ void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nStat
     PieceID pid = MapIndexToItem(nIndex);
 
     const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
-    TileID tidLeft = piecedef.GetFrontTID();
-    ASSERT(tidLeft != nullTid);            // Should exist
-    TileID tidRight = piecedef.Is2Sided() ? piecedef.GetBackTID() : nullTid;
+    const std::vector<TileID>& tids = piecedef.GetTIDs();
+    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);    // Should exist
 
-    DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tidLeft, tidRight);
+    DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
 }
 
 BOOL CPieceListBox::OnDragSetup(DragInfo& pDI) const

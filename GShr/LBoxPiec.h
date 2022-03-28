@@ -54,6 +54,7 @@ public:
 
 // Operations
 public:
+    void SetItemMap(const std::vector<PieceID>* pMap, BOOL bKeepPosition = TRUE);
 
 // Implementation
 protected:
