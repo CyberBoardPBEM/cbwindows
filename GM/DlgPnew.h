@@ -37,7 +37,7 @@ class CPieceNewDialog : public CDialog
 {
 // Construction
 public:
-    CPieceNewDialog(CWnd* pParent = NULL);  // standard constructor
+    CPieceNewDialog(CGamDoc& doc, size_t nPSet, CWnd* pParent = NULL);  // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CPieceNewDialog)
@@ -56,21 +56,20 @@ public:
     CEdit   m_editQty;
     //}}AFX_DATA
 
-    // ..Must be set by caller..
-    CGamDoc*    m_pDoc;             // Pointer to document
-    size_t      m_nPSet;            // Number of piece set
+    RefPtr<CGamDoc> m_pDoc;             // Pointer to document
+    const size_t m_nPSet;            // Number of piece set
 
 // Implementation
 protected:
-    CTileManager*   m_pTMgr;        // Set internally from m_pDoc
-    CPieceManager*  m_pPMgr;        // Set internally from m_pDoc
+    const CTileManager& m_pTMgr;        // Set internally from m_pDoc
+    RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
 
     // -------- //
     void RefreshPieceList();
-    void SetupTileSetNames(CComboBox* pCombo);
-    void SetupTileListbox(CComboBox *pCombo, CTileListBox *pList);
+    void SetupTileSetNames(CComboBox& pCombo) const;
+    void SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const;
     void CreatePiece();
-    TileID GetTileID(CComboBox *pCombo, CTileListBox *pList);
+    TileID GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const;
 
 // Implementation
 protected:

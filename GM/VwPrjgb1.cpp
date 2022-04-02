@@ -506,9 +506,7 @@ void CGbxProjView::DoPieceNew()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpPce);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CPieceNewDialog dlg;
-    dlg.m_pDoc = (CGamDoc*)GetDocument();
-    dlg.m_nPSet = nGrp;
+    CPieceNewDialog dlg(*(CGamDoc*)GetDocument(), nGrp);
 
     dlg.DoModal();
     GetDocument()->UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
