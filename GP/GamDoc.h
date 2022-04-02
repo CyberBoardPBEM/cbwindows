@@ -284,7 +284,8 @@ public:
     CPlayerManager* GetPlayerManager() { return m_pPlayerMgr; }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
     CHistoryTable* GetHistoryTable() { return m_pHistTbl; }
-    CGameElementStringMap* GetGameStringMap() { return &m_mapStrings; }
+    const CGameElementStringMap* GetGameStringMap() const { return &m_mapStrings; }
+    CGameElementStringMap* GetGameStringMap() { return const_cast<CGameElementStringMap*>(std::as_const(*this).GetGameStringMap()); }
 
     // Fetch map of temporary tile rotations.
     CTileFacingMap* GetFacingMap();

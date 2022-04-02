@@ -37,7 +37,7 @@ class CPieceEditDialog : public CDialog
 {
 // Construction
 public:
-    CPieceEditDialog(CWnd* pParent = NULL); // standard constructor
+    CPieceEditDialog(CGamDoc& doc, PieceID pid, CWnd* pParent = NULL); // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CPieceEditDialog)
@@ -55,19 +55,19 @@ public:
     CButton m_chkBack;
     //}}AFX_DATA
 
-    CGamDoc*        m_pDoc;         // Caller must set this
-    PieceID         m_pid;          // Piece to edit
+    RefPtr<CGamDoc> m_pDoc;         // Caller must set this
+    const PieceID m_pid;          // Piece to edit
 
 // Implementation
 protected:
-    std::vector<PieceID> m_tbl;     // Need to use list box.
-    CTileManager*   m_pTMgr;        // Set internally from m_pDoc
-    CPieceManager*  m_pPMgr;        // Set internally from m_pDoc
+    const std::vector<PieceID> m_tbl;     // Need to use list box.
+    const CTileManager& m_pTMgr;        // Set internally from m_pDoc
+    RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
     // -------- //
     void SetupPieceTiles();
-    void SetupTileSetNames(CComboBox* pCombo);
-    void SetupTileListbox(CComboBox *pCombo, CTileListBox *pList);
-    TileID GetTileID(CComboBox *pCombo, CTileListBox *pList);
+    void SetupTileSetNames(CComboBox& pCombo) const;
+    void SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const;
+    TileID GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const;
     // -------- //
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 

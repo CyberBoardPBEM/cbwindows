@@ -528,9 +528,7 @@ void CGbxProjView::DoPieceEdit()
             return;
         PieceID pid = m_listPieces.MapIndexToItem(value_preserving_cast<size_t>(nSel));
 
-        CPieceEditDialog dlg;
-        dlg.m_pDoc = pDoc;
-        dlg.m_pid = pid;
+        CPieceEditDialog dlg(*pDoc, pid);
 
         if (dlg.DoModal() != IDOK)
             return;
