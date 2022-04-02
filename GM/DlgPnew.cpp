@@ -37,8 +37,12 @@ static char THIS_FILE[] = __FILE__;
 // CPieceNewDialog dialog
 
 
-CPieceNewDialog::CPieceNewDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPieceNewDialog::IDD, pParent)
+CPieceNewDialog::CPieceNewDialog(CGamDoc& doc, size_t nPSet, CWnd* pParent /*=NULL*/)
+    : CDialog(CPieceNewDialog::IDD, pParent),
+    m_pDoc(&doc),
+    m_nPSet(nPSet),
+    m_pTMgr(*m_pDoc->GetTileManager()),
+    m_pPMgr(m_pDoc->GetPieceManager())
 {
     //{{AFX_DATA_INIT(CPieceNewDialog)
     //}}AFX_DATA_INIT
@@ -110,35 +114,34 @@ void CPieceNewDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceNewDialog::SetupTileListbox(CComboBox *pCombo, CTileListBox *pList)
+void CPieceNewDialog::SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const
 {
-    int nCurSel = pCombo->GetCurSel();
+    int nCurSel = pCombo.GetCurSel();
     if (nCurSel < 0)
     {
-        pList->SetItemMap(NULL);
+        pList.SetItemMap(NULL);
         return;
     }
 
-    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const CTileSet& pTSet = m_pTMgr.GetTileSet(value_preserving_cast<size_t>(nCurSel));
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
-    pList->SetItemMap(&pLstMap);
+    pList.SetItemMap(&pLstMap);
 }
 
-void CPieceNewDialog::SetupTileSetNames(CComboBox* pCombo)
+void CPieceNewDialog::SetupTileSetNames(CComboBox& pCombo) const
 {
-    ASSERT(m_pTMgr);
-    pCombo->ResetContent();
+    pCombo.ResetContent();
 
-    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        pCombo->AddString(m_pTMgr->GetTileSet(i).GetName());
-    if (!m_pTMgr->IsEmpty())
-        pCombo->SetCurSel(0);           // Select the first entry
+    for (size_t i = size_t(0); i < m_pTMgr.GetNumTileSets(); i++)
+        pCombo.AddString(m_pTMgr.GetTileSet(i).GetName());
+    if (!m_pTMgr.IsEmpty())
+        pCombo.SetCurSel(0);           // Select the first entry
 }
 
 void CPieceNewDialog::CreatePiece()
 {
-    TileID tidFront = GetTileID(&m_comboFtset, &m_listFtile);
-    TileID tidBack  = GetTileID(&m_comboBtset, &m_listBtile);
+    TileID tidFront = GetTileID(m_comboFtset, m_listFtile);
+    TileID tidBack  = GetTileID(m_comboBtset, m_listBtile);
 
     if (tidFront == nullTid)
         return;
@@ -198,17 +201,17 @@ void CPieceNewDialog::CreatePiece()
         m_listPieces.SetTopIndex(m_listPieces.GetCount()-1);
 }
 
-TileID CPieceNewDialog::GetTileID(CComboBox *pCombo, CTileListBox *pList)
+TileID CPieceNewDialog::GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const
 {
-    int nCurSel = pCombo->GetCurSel();
+    int nCurSel = pCombo.GetCurSel();
     if (nCurSel < 0)
         return nullTid;
 
-    int nCurTile = pList->GetCurSel();
+    int nCurTile = pList.GetCurSel();
     if (nCurTile < 0)
         return nullTid;
 
-    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const CTileSet& pTSet = m_pTMgr.GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
     return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
@@ -226,12 +229,12 @@ void CPieceNewDialog::RefreshPieceList()
 
 void CPieceNewDialog::OnSelchangeBtset()
 {
-    SetupTileListbox(&m_comboBtset, &m_listBtile);
+    SetupTileListbox(m_comboBtset, m_listBtile);
 }
 
 void CPieceNewDialog::OnSelchangeFtset()
 {
-    SetupTileListbox(&m_comboFtset, &m_listFtile);
+    SetupTileListbox(m_comboFtset, m_listFtile);
 }
 
 void CPieceNewDialog::OnBtnClickTopVisible()
@@ -277,10 +280,6 @@ BOOL CPieceNewDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    ASSERT(m_pDoc);
-    m_pPMgr = m_pDoc->GetPieceManager();
-    ASSERT(m_pPMgr);
-
     // Add piece set name to dialog title
     CString strTitle;
     GetWindowText(strTitle);
@@ -290,16 +289,13 @@ BOOL CPieceNewDialog::OnInitDialog()
 
     m_listPieces.SetDocument(*m_pDoc);
 
-    m_pTMgr = m_pDoc->GetTileManager();
-    ASSERT(m_pTMgr);
+    m_listFtile.SetDocument(&*m_pDoc);
+    m_listBtile.SetDocument(&*m_pDoc);
 
-    m_listFtile.SetDocument(m_pDoc);
-    m_listBtile.SetDocument(m_pDoc);
-
-    SetupTileSetNames(&m_comboFtset);
-    SetupTileListbox(&m_comboFtset, &m_listFtile);
-    SetupTileSetNames(&m_comboBtset);
-    SetupTileListbox(&m_comboBtset, &m_listBtile);
+    SetupTileSetNames(m_comboFtset);
+    SetupTileListbox(m_comboFtset, m_listFtile);
+    SetupTileSetNames(m_comboBtset);
+    SetupTileListbox(m_comboBtset, m_listBtile);
 
     RefreshPieceList();
 
