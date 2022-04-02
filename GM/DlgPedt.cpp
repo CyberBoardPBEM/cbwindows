@@ -37,8 +37,13 @@ static char THIS_FILE[] = __FILE__;
 // CPieceEditDialog dialog
 
 
-CPieceEditDialog::CPieceEditDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPieceEditDialog::IDD, pParent)
+CPieceEditDialog::CPieceEditDialog(CGamDoc& doc, PieceID pid, CWnd* pParent /*=NULL*/)
+    : CDialog(CPieceEditDialog::IDD, pParent),
+    m_pDoc(&doc),
+    m_pid(pid),
+    m_tbl(1, m_pid),
+    m_pTMgr(*m_pDoc->GetTileManager()),
+    m_pPMgr(m_pDoc->GetPieceManager())
 {
     //{{AFX_DATA_INIT(CPieceEditDialog)
     //}}AFX_DATA_INIT
@@ -106,42 +111,41 @@ void CPieceEditDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceEditDialog::SetupTileListbox(CComboBox *pCombo, CTileListBox *pList)
+void CPieceEditDialog::SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const
 {
-    int nCurSel = pCombo->GetCurSel();
+    int nCurSel = pCombo.GetCurSel();
     if (nCurSel < 0)
     {
-        pList->SetItemMap(NULL);
+        pList.SetItemMap(NULL);
         return;
     }
 
-    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const CTileSet& pTSet = m_pTMgr.GetTileSet(value_preserving_cast<size_t>(nCurSel));
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
-    pList->SetItemMap(&pLstMap);
+    pList.SetItemMap(&pLstMap);
 }
 
-void CPieceEditDialog::SetupTileSetNames(CComboBox* pCombo)
+void CPieceEditDialog::SetupTileSetNames(CComboBox& pCombo) const
 {
-    ASSERT(m_pTMgr);
-    pCombo->ResetContent();
+    pCombo.ResetContent();
 
-    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        pCombo->AddString(m_pTMgr->GetTileSet(i).GetName());
-    if (!m_pTMgr->IsEmpty())
-        pCombo->SetCurSel(-1);          // Select no entry yet
+    for (size_t i = size_t(0); i < m_pTMgr.GetNumTileSets(); i++)
+        pCombo.AddString(m_pTMgr.GetTileSet(i).GetName());
+    if (!m_pTMgr.IsEmpty())
+        pCombo.SetCurSel(-1);          // Select no entry yet
 }
 
-TileID CPieceEditDialog::GetTileID(CComboBox *pCombo, CTileListBox *pList)
+TileID CPieceEditDialog::GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const
 {
-    int nCurSel = pCombo->GetCurSel();
+    int nCurSel = pCombo.GetCurSel();
     if (nCurSel < 0)
         return nullTid;
 
-    int nCurTile = pList->GetCurSel();
+    int nCurTile = pList.GetCurSel();
     if (nCurTile < 0)
         return nullTid;
 
-    const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
+    const CTileSet& pTSet = m_pTMgr.GetTileSet(value_preserving_cast<size_t>(nCurSel));
 
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
     return pLstMap.at(value_preserving_cast<size_t>(nCurTile));
@@ -153,25 +157,25 @@ void CPieceEditDialog::SetupPieceTiles()
 {
     PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
 
-    size_t nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tidFront);
+    size_t nSet = m_pTMgr.FindTileSetFromTileID(pDef.m_tidFront);
     ASSERT(nSet != Invalid_v<size_t>);
 
     m_comboFtset.SetCurSel(value_preserving_cast<int>(nSet));
-    SetupTileListbox(&m_comboFtset, &m_listFtile);
+    SetupTileListbox(m_comboFtset, m_listFtile);
     m_listFtile.SetCurSelMapped(pDef.m_tidFront);
 
     if (pDef.m_tidBack != nullTid)
     {
-        nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tidBack);
+        nSet = m_pTMgr.FindTileSetFromTileID(pDef.m_tidBack);
         ASSERT(nSet != Invalid_v<size_t>);
         m_comboBtset.SetCurSel(value_preserving_cast<int>(nSet));
-        SetupTileListbox(&m_comboBtset, &m_listBtile);
+        SetupTileListbox(m_comboBtset, m_listBtile);
         m_listBtile.SetCurSelMapped(pDef.m_tidBack);
     }
     else
     {
         m_comboBtset.SetCurSel(-1);
-        SetupTileListbox(&m_comboBtset, &m_listBtile);
+        SetupTileListbox(m_comboBtset, m_listBtile);
     }
     m_chkBack.SetCheck(pDef.m_tidBack != nullTid ? 1 : 0);
 
@@ -213,8 +217,8 @@ void CPieceEditDialog::OnBackCheck()
 void CPieceEditDialog::OnOK()
 {
     PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
-    TileID tidFront = GetTileID(&m_comboFtset, &m_listFtile);
-    TileID tidBack  = GetTileID(&m_comboBtset, &m_listBtile);
+    TileID tidFront = GetTileID(m_comboFtset, m_listFtile);
+    TileID tidBack  = GetTileID(m_comboBtset, m_listBtile);
     if (tidFront == nullTid)
         return;
 
@@ -257,22 +261,15 @@ BOOL CPieceEditDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    ASSERT(m_pDoc);
     m_listPieces.SetDocument(*m_pDoc);
 
-    m_pPMgr = m_pDoc->GetPieceManager();
-
-    m_tbl.push_back(m_pid);
     m_listPieces.SetItemMap(&m_tbl);
 
-    m_pTMgr = m_pDoc->GetTileManager();
-    ASSERT(m_pTMgr);
+    m_listFtile.SetDocument(&*m_pDoc);
+    m_listBtile.SetDocument(&*m_pDoc);
 
-    m_listFtile.SetDocument(m_pDoc);
-    m_listBtile.SetDocument(m_pDoc);
-
-    SetupTileSetNames(&m_comboFtset);
-    SetupTileSetNames(&m_comboBtset);
+    SetupTileSetNames(m_comboFtset);
+    SetupTileSetNames(m_comboBtset);
 
     SetupPieceTiles();
 
@@ -306,12 +303,12 @@ BOOL CPieceEditDialog::OnInitDialog()
 
 void CPieceEditDialog::OnSelchangeBtset()
 {
-    SetupTileListbox(&m_comboBtset, &m_listBtile);
+    SetupTileListbox(m_comboBtset, m_listBtile);
 }
 
 void CPieceEditDialog::OnSelchangeFtset()
 {
-    SetupTileListbox(&m_comboFtset, &m_listFtile);
+    SetupTileListbox(m_comboFtset, m_listFtile);
 }
 
 void CPieceEditDialog::OnDblclkPiece()

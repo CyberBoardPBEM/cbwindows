@@ -259,7 +259,8 @@ public:
     LPVOID GetCustomColors();
     void   SetCustomColors(LPVOID pCustColors);
 
-    CGameElementStringMap& GetGameStringMap() { return m_mapStrings; }
+    const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
+    CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 
     void ComputeGameboxPasskey(LPCTSTR pszPassword, LPBYTE pBfr);
     void ClearGameboxPasskey();
