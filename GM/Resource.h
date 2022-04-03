@@ -81,6 +81,7 @@
 #define IDS_ERR_SAVE_DELETE_FAIL        193
 #define IDS_TT_CUST_COLOR_CELLS         194
 #define IDS_TT_LINEWIDTH_COMBO          195
+#define IDS_SIDE_N                      196
 #define IDD_GM_ABOUTBOX                 1000
 #define IDD_BRDNEW                      1002
 #define IDD_TILESETNEW                  1005
@@ -190,7 +191,6 @@
 #define IDC_D_NTILE_BOARDNAME           5056
 #define IDC_D_NTILE_HEIGHT              5057
 #define IDC_D_NTILE_WIDTH               5058
-#define IDC_D_PCREATE_BACK              5059
 #define IDC_D_PCREATE_BTILE             5060
 #define IDC_D_PCREATE_BTSET             5061
 #define IDC_D_PCREATE_FTILE             5062
@@ -295,6 +295,9 @@
 #define IDC_D_MMEDIT_TEXTPROMPT         5157
 #define IDC_D_MMEDIT_TEXT               5158
 #define IDC_D_SETVISI_NATURAL           5159
+#define IDC_NUM_SIDES                   5162
+#define IDC_CURR_SIDE                   5163
+#define IDC_STATIC_SIDE_1               5164
 #define IDC_D_MARKGRP_VIZFULL           7090
 #define IDC_D_MARKGRP_RAND_VIZHIDDEN    7092
 #define IDC_D_MARKGRP_RAND_VIZALLHIDDEN 7093
@@ -396,9 +399,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1052
+#define _APS_NEXT_RESOURCE_VALUE        1053
 #define _APS_NEXT_COMMAND_VALUE         32894
-#define _APS_NEXT_CONTROL_VALUE         5162
+#define _APS_NEXT_CONTROL_VALUE         5165
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

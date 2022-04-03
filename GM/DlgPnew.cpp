@@ -57,7 +57,9 @@ void CPieceNewDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_D_PCREATE_TEXT_FRONT, m_editTextFront);
     DDX_Control(pDX, IDC_D_PCREATE_TEXT_BACK, m_editTextBack);
     DDX_Control(pDX, IDC_D_PCREATE_TEXT_SAMEASTOP, m_chkSameAsTop);
-    DDX_Control(pDX, IDC_D_PCREATE_BACK, m_chkBack);
+    DDX_Control(pDX, IDC_NUM_SIDES, m_numSides);
+    DDX_Control(pDX, IDC_CURR_SIDE, m_currSide);
+    DDX_Control(pDX, IDC_STATIC_SIDE_1, m_side_1);
     DDX_Control(pDX, IDC_D_PCREATE_FTILE, m_listFtile);
     DDX_Control(pDX, IDC_D_PCREATE_BTILE, m_listBtile);
     DDX_Control(pDX, IDC_D_PCREATE_BTSET, m_comboBtset);
@@ -72,12 +74,13 @@ BEGIN_MESSAGE_MAP(CPieceNewDialog, CDialog)
     ON_CBN_SELCHANGE(IDC_D_PCREATE_BTSET, OnSelchangeBtset)
     ON_CBN_SELCHANGE(IDC_D_PCREATE_FTSET, OnSelchangeFtset)
     ON_BN_CLICKED(IDC_D_PIECE_CREATE, OnCreate)
-    ON_BN_CLICKED(IDC_D_PCREATE_BACK, OnBackCheck)
     ON_LBN_DBLCLK(IDC_D_PCREATE_FTILE, OnDblClkFrontTile)
     ON_BN_CLICKED(IDC_D_PCREATE_TEXT_SAMEASTOP, OnCheckTextSameAsTop)
     ON_BN_CLICKED(IDC_D_PCREATE_TOP_VISIBLE, OnBtnClickTopVisible)
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
+    ON_CBN_SELCHANGE(IDC_NUM_SIDES, &CPieceNewDialog::OnSelchangeNumSides)
+    ON_CBN_SELCHANGE(IDC_CURR_SIDE, &CPieceNewDialog::OnSelchangeCurrSide)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -86,7 +89,6 @@ END_MESSAGE_MAP()
 
 static DWORD adwHelpMap[] =
 {
-    IDC_D_PCREATE_BACK, IDH_D_PCREATE_BACK,
     IDC_D_PCREATE_BTILE, IDH_D_PCREATE_BTILE,
     IDC_D_PCREATE_BTSET, IDH_D_PCREATE_BTSET,
     IDC_D_PCREATE_FTILE, IDH_D_PCREATE_FTILE,
@@ -140,10 +142,11 @@ void CPieceNewDialog::SetupTileSetNames(CComboBox& pCombo) const
 
 void CPieceNewDialog::CreatePiece()
 {
-    TileID tidFront = GetTileID(m_comboFtset, m_listFtile);
-    TileID tidBack  = GetTileID(m_comboBtset, m_listBtile);
+    m_sideTids[size_t(0)] = GetTileID(m_comboFtset, m_listFtile);
+    // read current non-front tileID and text
+    OnSelchangeCurrSide();
 
-    if (tidFront == nullTid)
+    if (std::find(m_sideTids.begin(), m_sideTids.end(), nullTid) != m_sideTids.end())
         return;
 
     CString str;
@@ -161,25 +164,29 @@ void CPieceNewDialog::CreatePiece()
         return;
     }
 
-    BOOL bBackChecked = m_chkBack.GetCheck() == 1;
-
     for (int i = 0; i < nNumPieces; i++)
     {
-        PieceID pid = m_pPMgr->CreatePiece(m_nPSet, tidFront,
-            bBackChecked ? tidBack : nullTid);
+        PieceID pid = m_pPMgr->CreatePiece(m_nPSet, std::vector<TileID>(m_sideTids));
         CString strText;
         m_editTextFront.GetWindowText(strText);
-        if (!strText.IsEmpty())
+        m_sideTexts[size_t(0)] = strText.GetBuffer();
+
+        for (size_t i = size_t(0) ; i < m_sideTexts.size() ; ++i)
         {
-            GameElement ge = MakePieceElement(pid, unsigned(0));
-            m_pDoc->GetGameStringMap().SetAt(ge, strText);
-        }
-        if (m_chkSameAsTop.GetCheck() == 0)
-            m_editTextBack.GetWindowText(strText);
-        if (bBackChecked && !strText.IsEmpty())
-        {
-            GameElement ge = MakePieceElement(pid, unsigned(1));
-            m_pDoc->GetGameStringMap().SetAt(ge, strText);
+            GameElement ge = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
+            CString strText;
+            if (m_chkSameAsTop.GetCheck() == 0)
+            {
+                strText = m_sideTexts[i].c_str();
+            }
+            else
+            {
+                strText = m_sideTexts[size_t(0)].c_str();
+            }
+            if (!strText.IsEmpty())
+                m_pDoc->GetGameStringMap().SetAt(ge, strText);
+            else
+                m_pDoc->GetGameStringMap().RemoveKey(ge);
         }
         PieceDef& pPce = m_pPMgr->GetPiece(pid);
         // Initially clear this
@@ -252,11 +259,15 @@ void CPieceNewDialog::OnCreate()
     m_pDoc->SetModifiedFlag();
 }
 
-void CPieceNewDialog::OnBackCheck()
+void CPieceNewDialog::OnSelchangeNumSides()
 {
-    BOOL bBackChecked = m_chkBack.GetCheck() != 0;
-    if (bBackChecked)
+    size_t numSides = value_preserving_cast<size_t>(m_numSides.GetCurSel()) + size_t(1);
+    ASSERT(size_t(1) <= numSides &&
+            numSides <= PieceDef::maxSides);
+
+    if (numSides >= size_t(2))
     {
+        m_currSide.EnableWindow(TRUE);
         m_comboBtset.EnableWindow(TRUE);
         m_listBtile.EnableWindow(TRUE);
         m_chkSameAsTop.EnableWindow(TRUE);
@@ -266,6 +277,7 @@ void CPieceNewDialog::OnBackCheck()
     }
     else
     {
+        m_currSide.EnableWindow(FALSE);
         m_comboBtset.EnableWindow(FALSE);
         m_listBtile.EnableWindow(FALSE);
         m_editTextBack.EnableWindow(FALSE);
@@ -273,6 +285,57 @@ void CPieceNewDialog::OnBackCheck()
         m_chkTopOnlyVisible.EnableWindow(FALSE);
         m_chkTopOnlyOwnersToo.EnableWindow(FALSE);
         m_editTextBack.SetWindowText("");
+    }
+
+    // fix up m_currSides, m_sideTids, and m_sideTexts content
+    size_t currSides = value_preserving_cast<size_t>(m_currSide.GetCount() + 1);
+    ASSERT(m_sideTids.size() == currSides &&
+            m_sideTexts.size() == currSides);
+    if (currSides < numSides)
+    {
+        std::string frontStr;
+        BOOL bSameAsTop = m_chkSameAsTop.GetCheck() != 0;
+        if (bSameAsTop)
+        {
+            frontStr = m_sideTexts[size_t(0)];
+        }
+        for (size_t i = currSides ; i < numSides ; ++i)
+        {
+            CString str;
+            AfxFormatString1(str, IDS_SIDE_N, std::to_string((i + size_t(1))).c_str());
+            if (m_currSide.AddString(str) != value_preserving_cast<int>(i - size_t(1)))
+            {
+                AfxThrowMemoryException();
+            }
+            m_sideTids.push_back(m_sideTids[size_t(0)]);
+            m_sideTexts.push_back(frontStr);
+        }
+    }
+    else if (currSides > numSides)
+    {
+        for (size_t i = currSides ; i > numSides ; --i)
+        {
+            unsigned i2 = value_preserving_cast<unsigned>(i - size_t(2));
+            if (m_currSide.DeleteString(i2) != value_preserving_cast<int>(i2))
+            {
+                AfxThrowMemoryException();
+            }
+        }
+        m_sideTids.resize(numSides);
+        m_sideTexts.resize(numSides);
+    }
+
+    ASSERT(m_sideTids.size() == numSides &&
+            m_sideTexts.size() == numSides);
+    if (m_currSide.GetCount() == 0)
+    {
+        m_currSide.EnableWindow(false);
+        OnSelchangeCurrSide();
+    }
+    else if (m_currSide.GetCurSel() == CB_ERR)
+    {
+        m_currSide.SetCurSel(0);
+        OnSelchangeCurrSide();
     }
 }
 
@@ -289,6 +352,18 @@ BOOL CPieceNewDialog::OnInitDialog()
 
     m_listPieces.SetDocument(*m_pDoc);
 
+    for (size_t i = size_t(0); i < PieceDef::maxSides; ++i)
+    {
+        int rc = m_numSides.AddString(std::to_string((i + size_t(1))).c_str());
+        if (rc != value_preserving_cast<int>(i))
+        {
+            AfxThrowMemoryException();
+        }
+    }
+    CString str;
+    AfxFormatString1(str, IDS_SIDE_N, std::to_string(1).c_str());
+    m_side_1.SetWindowText(str);
+
     m_listFtile.SetDocument(&*m_pDoc);
     m_listBtile.SetDocument(&*m_pDoc);
 
@@ -299,7 +374,11 @@ BOOL CPieceNewDialog::OnInitDialog()
 
     RefreshPieceList();
 
-    m_chkBack.SetCheck(0);
+    m_numSides.SetCurSel(0);
+    // satisfy OnSelchangeNumSides() preconditions
+    m_sideTids.push_back(nullTid);
+    m_sideTexts.push_back("");
+    OnSelchangeNumSides();
 
     m_editQty.SetWindowText("1");
 
@@ -308,8 +387,6 @@ BOOL CPieceNewDialog::OnInitDialog()
     m_chkTopOnlyOwnersToo.SetCheck(0);
     m_editTextFront.SetWindowText("");
     m_editTextBack.SetWindowText("");
-
-    OnBackCheck();          // To reflect state of check box.
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -334,6 +411,53 @@ void CPieceNewDialog::OnCheckTextSameAsTop()
         m_editTextBack.EnableWindow(FALSE);
     }
     else
-        m_editTextBack.EnableWindow(m_chkBack.GetCheck() != 0);
+        m_editTextBack.EnableWindow(m_numSides.GetCurSel() + 1 >= 2);
+}
+
+void CPieceNewDialog::OnSelchangeCurrSide()
+{
+    if (m_prevSide < m_sideTids.size())
+    {
+        TileID tidBack = GetTileID(m_comboBtset, m_listBtile);
+        m_sideTids[m_prevSide] = tidBack;
+        ASSERT(m_sideTexts.size() == m_sideTids.size());
+        if (m_chkSameAsTop.GetCheck() == 0)
+        {
+            CString strText;
+            m_editTextBack.GetWindowText(strText);
+            m_sideTexts[m_prevSide] = strText;
+        }
+        else
+        {
+            m_sideTexts[m_prevSide] = m_sideTexts[size_t(0)];
+        }
+    }
+
+    size_t currSide = std::numeric_limits<size_t>::max();
+
+    if (m_currSide.GetCurSel() != CB_ERR &&
+        value_preserving_cast<size_t>(m_currSide.GetCurSel()) + size_t(1) >= size_t(1))
+    {
+        currSide = value_preserving_cast<size_t>(m_currSide.GetCurSel()) + size_t(1);
+        ASSERT(size_t(1) <= currSide &&
+            currSide < value_preserving_cast<size_t>(m_numSides.GetCurSel()) + size_t(1));
+        TileID tid = m_sideTids[currSide];
+        if (tid != nullTid)
+        {
+            size_t nSet = m_pTMgr.FindTileSetFromTileID(tid);
+            ASSERT(nSet != Invalid_v<size_t>);
+            m_comboBtset.SetCurSel(value_preserving_cast<int>(nSet));
+            SetupTileListbox(m_comboBtset, m_listBtile);
+            m_listBtile.SetCurSelMapped(tid);
+        }
+        m_editTextBack.SetWindowText(m_sideTexts[currSide].c_str());
+    }
+    else
+    {
+        m_comboBtset.SetCurSel(-1);
+        SetupTileListbox(m_comboBtset, m_listBtile);
+    }
+
+    m_prevSide = currSide;
 }
 

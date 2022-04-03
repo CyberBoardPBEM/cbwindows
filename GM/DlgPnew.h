@@ -47,7 +47,6 @@ public:
     CEdit   m_editTextFront;
     CEdit   m_editTextBack;
     CButton m_chkSameAsTop;
-    CButton m_chkBack;
     CTileListBox    m_listFtile;
     CTileListBox    m_listBtile;
     CComboBox   m_comboBtset;
@@ -61,8 +60,18 @@ public:
 
 // Implementation
 protected:
+    /* sides are 0-based since they are vector indices, but we
+        will display them 1-based for human readability */
+    CComboBox m_numSides;
+    // m_currSide should contain 2 - sides
+    CComboBox m_currSide;
+    CStatic m_side_1;
+
     const CTileManager& m_pTMgr;        // Set internally from m_pDoc
     RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
+    size_t m_prevSide = std::numeric_limits<size_t>::max();
+    std::vector<TileID> m_sideTids;
+    std::vector<std::string> m_sideTexts;
 
     // -------- //
     void RefreshPieceList();
@@ -80,7 +89,7 @@ protected:
     afx_msg void OnSelchangeBtset();
     afx_msg void OnSelchangeFtset();
     afx_msg void OnCreate();
-    afx_msg void OnBackCheck();
+    afx_msg void OnSelchangeNumSides();
     virtual BOOL OnInitDialog();
     virtual void OnOK();
     afx_msg void OnDblClkFrontTile();
@@ -88,6 +97,7 @@ protected:
     afx_msg void OnBtnClickTopVisible();
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnSelchangeCurrSide();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
