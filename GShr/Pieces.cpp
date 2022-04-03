@@ -183,22 +183,13 @@ BOOL CPieceManager::PurgeMissingTileIDs(CGameElementStringMap* pMapStrings /* = 
 
 ///////////////////////////////////////////////////////////////////////
 
-PieceID CPieceManager::CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack)
+PieceID CPieceManager::CreatePiece(size_t nPSet, std::vector<TileID>&& tids)
 {
     ASSERT(nPSet < m_PSetTbl.size());
     PieceID pid = m_pPieceTbl.CreateIDEntry(&PieceDef::SetEmpty);
 
     PieceDef* pDef = &m_pPieceTbl[pid];
-    if (tidBack != nullTid)
-    {
-        pDef->SetSides(size_t(2));
-        pDef->SetBackTID(tidBack);
-    }
-    else
-    {
-        pDef->SetSides(size_t(1));
-    }
-    pDef->SetFrontTID(tidFront);
+    pDef->SetTIDs(std::move(tids));
     GetPieceSet(nPSet).AddPieceID(pid);
     return pid;
 }

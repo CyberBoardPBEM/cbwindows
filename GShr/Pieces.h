@@ -166,7 +166,7 @@ public:
     }
     BOOL IsPieceIDValid(PieceID pid) const;
     size_t FindPieceSetFromPieceID(PieceID pid) const;
-    PieceID CreatePiece(size_t nPSet, TileID tidFront, TileID tidBack);
+    PieceID CreatePiece(size_t nPSet, std::vector<TileID>&& tids);
     void DeletePiece(PieceID pid, CGameElementStringMap* mapStrings = NULL,
         BOOL bFromSetAlso = TRUE);
     // ------- //
