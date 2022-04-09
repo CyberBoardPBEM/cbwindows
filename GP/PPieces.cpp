@@ -23,6 +23,7 @@
 //
 
 #include    <stdafx.h>
+#include    <algorithm>
 #include    "WinExt.h"
 #include    "Gp.h"
 #include    "GamDoc.h"
@@ -194,12 +195,57 @@ BOOL CPieceTable::IsFrontUp(PieceID pid) const
     return GetPiece(pid).IsFrontUp();
 }
 
+uint8_t CPieceTable::GetSide(PieceID pid) const
+{
+    return GetPiece(pid).GetSide();
+}
+
+#if 0
+/* when showing all sides in row, the top side is the
+    leftmost, and other sides are shifted,
+    i.e., n 0 1 2 ... n-1 n+1 n+2 ... sides-1.
+    This converts between display index and side */
+uint8_t CPieceTable::GetSide(PieceID pid, size_t displayIndex) const
+{
+    no_demote<uint8_t> side = GetSide(pid);
+    if (displayIndex == uint8_t(0))
+    {
+        return side;
+    }
+    else if (displayIndex > side)
+    {
+        return value_preserving_cast<uint8_t>(displayIndex);
+    }
+    else
+    {
+        return value_preserving_cast<uint8_t>(displayIndex - size_t(1));
+    }
+}
+#else
+/* when showing all sides in row, the sides are rotated so
+    the top side is leftmost,
+    i.e., n n+1 n+2 ... sides-1 0 1 2 ... n-1.
+    This converts between display index and side */
+uint8_t CPieceTable::GetSide(PieceID pid, size_t displayIndex) const
+{
+    return value_preserving_cast<uint8_t>((GetSide(pid) + displayIndex) % GetSides(pid));
+}
+#endif
+
 BOOL CPieceTable::Is2Sided(PieceID pid) const
 {
     const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     return pDef->Is2Sided();
+}
+
+size_t CPieceTable::GetSides(PieceID pid) const
+{
+    const Piece* pPce;
+    const PieceDef* pDef;
+    GetPieceDefinitionPair(pid, pPce, pDef);
+    return pDef->GetSides();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -388,6 +434,45 @@ TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
 
     // Handle rotated pieces...
     return GetFacedTileID(pid, tidBase,  pPce->GetFacing(), pPce->GetSide());
+}
+
+std::vector<TileID> CPieceTable::GetInactiveTileIDs(PieceID pid) const
+{
+    const Piece* pPce;
+    const PieceDef* pDef;
+    GetPieceDefinitionPair(pid, pPce, pDef);
+    std::vector<TileID> retval = pDef->GetTIDs();
+#if 0
+    retval.erase(retval.begin() + pPce->GetSide());
+#else
+    std::rotate(retval.begin(), retval.begin() + pPce->GetSide() + size_t(1), retval.end());
+    retval.resize(retval.size() - size_t(1));
+#endif
+    return retval;
+}
+
+std::vector<TileID> CPieceTable::GetInactiveTileIDs(PieceID pid, BOOL bWithFacing)
+{
+    const Piece* pPce;
+    const PieceDef* pDef;
+    GetPieceDefinitionPair(pid, pPce, pDef);
+    std::vector<TileID> retval = pDef->GetTIDs();
+
+    if (bWithFacing && pPce->GetFacing() != 0)
+    {
+        for (size_t i = size_t(0) ; i < retval.size() ; ++i)
+        {
+            retval[i] = GetFacedTileID(pid, retval[i], pPce->GetFacing(), value_preserving_cast<uint8_t>(i));
+        }
+    }
+
+#if 0
+    retval.erase(retval.begin() + pPce->GetSide());
+#else
+    std::rotate(retval.begin(), retval.begin() + pPce->GetSide() + size_t(1), retval.end());
+    retval.resize(retval.size() - size_t(1));
+#endif
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////////////

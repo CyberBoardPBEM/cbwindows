@@ -318,7 +318,7 @@ bool CTrayListBox::IsShowAllSides(PieceID pid) const
     // If showing all sides, only show it if the piece allows it
     // or if the current players is the owner, or if the
     // program is in scenario mode.
-    if (m_eTrayViz == trayVizTwoSide && (bIsOwnedByCurrentPlayer &&
+    if (m_eTrayViz == trayVizAllSides && (bIsOwnedByCurrentPlayer &&
         !(pPce.m_flags & PieceDef::flagShowOnlyOwnersToo) ||
         !(pPce.m_flags & PieceDef::flagShowOnlyVisibleSide)) ||
         m_pDoc.IsScenario())
