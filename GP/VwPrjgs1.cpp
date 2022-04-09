@@ -195,11 +195,10 @@ void CGsnProjView::DoTrayEdit()
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
     CTrayManager* pYMgr = pDoc->GetTrayManager();
 
-    CSetPiecesDialog dlg;
-    dlg.m_pDoc = pDoc;
+    CSetPiecesDialog dlg(*pDoc);
     dlg.m_nYSel = value_preserving_cast<int>(nGrp);
 
-    m_listTrays.SetItemMap(NULL);       // Clear this since repaint may fail...
+    m_listTrays->SetItemMap(NULL);       // Clear this since repaint may fail...
     pDoc->CloseTrayPalettes();          // ...Ditto that for tray palettes
 
     dlg.DoModal();
@@ -254,7 +253,7 @@ void CGsnProjView::DoUpdateTrayList()
 
     CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
     const std::vector<PieceID>& pLstMap = pYGrp.GetPieceIDTable();
-    m_listTrays.SetItemMap(&pLstMap);
+    m_listTrays->SetItemMap(&pLstMap);
 }
 
 

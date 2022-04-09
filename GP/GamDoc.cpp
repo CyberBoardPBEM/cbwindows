@@ -181,7 +181,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc construction/destruction
 
-CGamDoc::CGamDoc()
+CGamDoc::CGamDoc() :
+    m_palTrayA(*this),
+    m_palTrayB(*this)
 {
     m_nSeedCarryOver = (UINT)GetTickCount();
 
@@ -213,9 +215,7 @@ CGamDoc::CGamDoc()
     m_bKeepMoveHist = TRUE;
     m_bVrfyGameState = TRUE;
     m_bVrfySaveState = TRUE;
-    m_palTrayA.SetDocument(this);
     m_palTrayA.SetPaletteID(0);
-    m_palTrayB.SetDocument(this);
     m_palTrayB.SetPaletteID(1);
     m_palMark.SetDocument(this);
     m_wDocRand = GetTimeBasedRandomNumber(FALSE);  // Non zero random number
@@ -1670,8 +1670,7 @@ void CGamDoc::OnEditSelectGamePieces()
     ASSERT(IsScenario() && GetTrayManager()->GetNumTraySets() > 0);
     CTrayManager* pYMgr = GetTrayManager();
 
-    CSetPiecesDialog dlg;
-    dlg.m_pDoc = this;
+    CSetPiecesDialog dlg(*this);
     dlg.m_nYSel = 0;                    // Default is first tray
 
     CloseTrayPalettes();                // ...Ditto that for tray palettes

@@ -78,9 +78,9 @@ public:
 
     DWORD GetOwnerMask() { return m_dwOwnerMask; }
     void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned() { return m_dwOwnerMask != 0; }
-    BOOL IsOwnedBy(DWORD dwMask) { return (BOOL)(m_dwOwnerMask & dwMask); }
-    BOOL IsOwnedButNotByCurrentPlayer(CGamDoc* pDOc);
+    BOOL IsOwned() const { return m_dwOwnerMask != 0; }
+    BOOL IsOwnedBy(DWORD dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
+    BOOL IsOwnedButNotByCurrentPlayer(const CGamDoc& pDOc) const;
 
 // Operations
 public:

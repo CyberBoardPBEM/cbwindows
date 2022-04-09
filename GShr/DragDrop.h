@@ -102,13 +102,13 @@ struct DragInfo
     struct SubInfo<DRAG_PIECE>
     {
         PieceID m_pieceID;
-        CGamDoc* m_gamDoc;
+        const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_PIECELIST>
     {
         const std::vector<PieceID>* m_pieceIDList;
-        CGamDoc* m_gamDoc;
+        const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_MARKER>

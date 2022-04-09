@@ -134,9 +134,9 @@ BOOL CTraySet::Compare(const CTraySet& pYGrp) const
     return TRUE;
 }
 
-BOOL CTraySet::IsOwnedButNotByCurrentPlayer(CGamDoc* pDoc)
+BOOL CTraySet::IsOwnedButNotByCurrentPlayer(const CGamDoc& pDoc) const
 {
-    return IsOwned() && !IsOwnedBy(pDoc->GetCurrentPlayerMask());
+    return IsOwned() && !IsOwnedBy(pDoc.GetCurrentPlayerMask());
 }
 
 void CTraySet::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)

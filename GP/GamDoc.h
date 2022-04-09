@@ -246,7 +246,7 @@ public:
     void SetGameState(GameState eState) { m_eState = eState; }
     BOOL IsRecording() { return m_eState == stateRecording; }
     BOOL IsAnyRecorded() { return m_eState == stateRecording && m_pRcdMoves != NULL; }
-    BOOL IsPlaying()
+    BOOL IsPlaying() const
         { return m_eState == stateMovePlay || m_eState == stateHistPlay; }
     BOOL IsPlayingMoves() { return m_eState == stateMovePlay; }
     BOOL IsPlayingHistory() { return m_eState == stateHistPlay; }
@@ -306,7 +306,7 @@ public:
     void DiscardWindowState();
 
     // Support for player accounts
-    BOOL  HasPlayers() { return m_pPlayerMgr != NULL; }
+    BOOL  HasPlayers() const { return m_pPlayerMgr != NULL; }
     DWORD  GetCurrentPlayerMask() const;
     void  SetCurrentPlayerMask(WORD dwMask) { m_dwCurrentPlayer = dwMask; }
     BOOL  IsCurrentPlayerReferee();

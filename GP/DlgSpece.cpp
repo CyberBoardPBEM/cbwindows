@@ -37,13 +37,14 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSetPiecesDialog dialog
 
-CSetPiecesDialog::CSetPiecesDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSetPiecesDialog::IDD, pParent)
+CSetPiecesDialog::CSetPiecesDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
+    : CDialog(CSetPiecesDialog::IDD, pParent),
+    m_listTray(doc),
+    m_pDoc(&doc)
 {
     //{{AFX_DATA_INIT(CSetPiecesDialog)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
-    m_pDoc = NULL;
     m_pPTbl = NULL;
     m_pYMgr = NULL;
     m_nYSel = -1;
@@ -242,7 +243,6 @@ BOOL CSetPiecesDialog::OnInitDialog()
     m_pPTbl = m_pDoc->GetPieceTable();
     ASSERT(m_pPTbl != NULL);
 
-    m_listTray.SetDocument(m_pDoc);
     m_listPiece.SetDocument(*m_pDoc);
     m_listTray.SetTrayContentVisibility(trayVizTwoSide);
 
