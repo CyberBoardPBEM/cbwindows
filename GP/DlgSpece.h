@@ -37,7 +37,7 @@ class CSetPiecesDialog : public CDialog
 {
 // Construction
 public:
-    CSetPiecesDialog(CWnd* pParent = NULL); // standard constructor
+    CSetPiecesDialog(CGamDoc& doc, CWnd* pParent = NULL); // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CSetPiecesDialog)
@@ -48,7 +48,7 @@ public:
     CTrayListBox    m_listTray;
     //}}AFX_DATA
 
-    CGamDoc*        m_pDoc;         // Must be set by creator
+    CGamDoc* const  m_pDoc;         // Must be set by creator
     int             m_nYSel;        // Initial tray number
 
 // Implementation

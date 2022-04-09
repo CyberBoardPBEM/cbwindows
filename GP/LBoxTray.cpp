@@ -48,27 +48,21 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTrayListBox::CTrayListBox()
+CTrayListBox::CTrayListBox(CGamDoc& pDoc) :
+    m_pDoc(pDoc)
 {
-    m_pDoc = NULL;
     m_eTrayViz = trayVizOneSide;
     m_bAllowTips = TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayListBox::SetDocument(CGamDoc *pDoc)
-{
-    m_pDoc = pDoc;
-}
-
 const CTileManager& CTrayListBox::GetTileManager() const
 {
-    ASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return CheckedDeref(m_pDoc.GetTileManager());
 }
 
-BOOL CTrayListBox::IsShowingTileImages()
+BOOL CTrayListBox::IsShowingTileImages() const
 {
     return m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide;
 }
@@ -86,7 +80,7 @@ BOOL CTrayListBox::OnIsToolTipsEnabled() const
 {
     if (m_eTrayViz != trayVizTwoSide && m_eTrayViz != trayVizOneSide)
         return FALSE;
-    return m_pDoc->IsShowingObjectTips() && m_bAllowTips;
+    return m_pDoc.IsShowingObjectTips() && m_bAllowTips;
 }
 
 GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
@@ -98,8 +92,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 
     ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
 
-    ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
+    const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
     ASSERT(pPTbl != NULL);
 
     PieceID nPid = MapIndexToItem(nIndex);
@@ -137,9 +130,9 @@ void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
         return;
     PieceID pid = static_cast<PieceID>(nItemCode);
     bool bRightRect = nItemCode.GetSide() != 0;
-    int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
+    int nSide = m_pDoc.GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
     if (bRightRect) nSide ^= 1;         // Toggle the side
-    strTip = m_pDoc->GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
+    strTip = m_pDoc.GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -149,15 +142,15 @@ BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem) const
     ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
 
     PieceID pid = MapIndexToItem(nItem);
-    int nSide = m_pDoc->GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    if (m_pDoc->HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide))))
+    int nSide = m_pDoc.GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
+    if (m_pDoc.HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide))))
         return TRUE;
     if (m_eTrayViz == trayVizTwoSide)
     {
         // Check for tip on optional second side only of both sides are
         // visible in the tray.
-        if (m_pDoc->GetPieceTable()->Is2Sided(pid) &&
-            m_pDoc->HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1))))
+        if (m_pDoc.GetPieceTable()->Is2Sided(pid) &&
+            m_pDoc.HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1))))
             return TRUE;
     }
     return FALSE;
@@ -262,17 +255,16 @@ void CTrayListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
 
 void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) const
 {
-    ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
+    const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
     ASSERT(pPTbl != NULL);
 
     PieceID pid = MapIndexToItem(nIndex);
 
     tid2 = nullTid;              // Initially assume no second tile image
 
-    if (!m_pDoc->IsScenario() &&
-        m_pDoc->HasPlayers() && pPTbl->IsPieceOwned(pid) &&
-        !pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
+    if (!m_pDoc.IsScenario() &&
+        m_pDoc.HasPlayers() && pPTbl->IsPieceOwned(pid) &&
+        !pPTbl->IsPieceOwnedBy(pid, m_pDoc.GetCurrentPlayerMask()))
     {
         // Piece is owned but not by the current player. Only show the
         // top image.
@@ -290,7 +282,7 @@ void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) co
 
 BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 {
-    if (m_pDoc->IsPlaying())
+    if (m_pDoc.IsPlaying())
     {
         pDI.m_dragType = DRAG_INVALID;
         return FALSE;                   // Drags not supported during play
@@ -300,14 +292,14 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
     {
         pDI.m_dragType = DRAG_PIECELIST;
         pDI.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
-        pDI.GetSubInfo<DRAG_PIECELIST>().m_gamDoc = m_pDoc;
+        pDI.GetSubInfo<DRAG_PIECELIST>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
         pDI.m_dragType = DRAG_PIECE;
         pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
-        pDI.GetSubInfo<DRAG_PIECE>().m_gamDoc = m_pDoc;
+        pDI.GetSubInfo<DRAG_PIECE>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     return TRUE;

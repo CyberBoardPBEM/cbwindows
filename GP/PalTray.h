@@ -44,17 +44,16 @@ class CTraySet;
 
 class CTrayPalette : public CWnd
 {
-    DECLARE_DYNCREATE(CTrayPalette)
+    DECLARE_DYNAMIC(CTrayPalette)
 
 // Construction
 public:
-    CTrayPalette();
+    CTrayPalette(CGamDoc& pDoc);
 
     BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
 
 // Attributes
 public:
-    void SetDocument(CGamDoc *pDoc);
     void SetPaletteID(UINT nID) { m_nID = nID; }
 
     CDockablePane* GetDockingFrame() { return m_pDockingFrame; }
@@ -75,7 +74,7 @@ public:
 
 // Implementation - vars
 protected:
-    CGamDoc*    m_pDoc;
+    RefPtr<CGamDoc> m_pDoc;
     UINT        m_nID;
     CDockablePane* m_pDockingFrame;
 

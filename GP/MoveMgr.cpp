@@ -323,7 +323,7 @@ BOOL CPieceSetSide::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     }
     else
     {
-        if (pTray->IsOwnedButNotByCurrentPlayer(pDoc))
+        if (pTray->IsOwnedButNotByCurrentPlayer(*pDoc))
             return TRUE;
     }
     return FALSE;
@@ -783,7 +783,7 @@ BOOL CObjectSetText::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
     }
     else if (pTray != NULL)
     {
-        if (pTray->IsOwnedButNotByCurrentPlayer(pDoc))
+        if (pTray->IsOwnedButNotByCurrentPlayer(*pDoc))
             return TRUE;
     }
     return FALSE;

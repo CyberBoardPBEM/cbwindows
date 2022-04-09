@@ -48,15 +48,15 @@ class CTrayListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
 {
 // Construction
 public:
-    CTrayListBox();
+    CTrayListBox(CGamDoc& pDoc);
 
 // Attributes
 public:
     virtual const CTileManager& GetTileManager() const override;
 
-    TrayViz GetTrayContentVisibility() { return m_eTrayViz; }
+    TrayViz GetTrayContentVisibility() const { return m_eTrayViz; }
 
-    BOOL IsShowingTileImages();
+    BOOL IsShowingTileImages() const;
 
 // Operations
 public:
@@ -64,7 +64,6 @@ public:
     size_t SelectTrayPiece(PieceID pid);
     void ShowListIndex(int nPos);
 
-    void SetDocument(CGamDoc *pDoc);
     void SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenString = NULL);
     void SetTipsAllowed(BOOL bTipsAllowed)
     {
@@ -78,7 +77,7 @@ protected:
 
 // Implementation
 protected:
-    CGamDoc*    m_pDoc;
+    const CGamDoc& m_pDoc;
 
     TrayViz     m_eTrayViz;
     CString     m_strHiddenString;

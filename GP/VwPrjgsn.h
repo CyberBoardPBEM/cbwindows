@@ -73,7 +73,7 @@ public:
     CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
 
     CEdit           m_editInfo;         // Used for various project info/help
-    CTrayListBox    m_listTrays;        // For viewing tray contents
+    OwnerOrNullPtr<CTrayListBox> m_listTrays;        // For viewing tray contents
 
     CButton         m_btnPrjA;          // Project button group
     CButton         m_btnPrjB;

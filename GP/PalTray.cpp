@@ -41,7 +41,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CTrayPalette, CWnd)
+IMPLEMENT_DYNAMIC(CTrayPalette, CWnd)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,10 +87,11 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPalette
 
-CTrayPalette::CTrayPalette()
+CTrayPalette::CTrayPalette(CGamDoc& pDoc) :
+    m_pDoc(&pDoc),
+    m_listTray(*m_pDoc)
 {
-    m_pDoc = NULL;
-
+    ASSERT(m_pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
     m_listTray.EnableDrag();
     m_listTray.EnableSelfDrop();
     m_listTray.EnableDropScroll();
@@ -360,18 +361,8 @@ void CTrayPalette::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::SetDocument(CGamDoc *pDoc)
-{
-    ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    m_pDoc = pDoc;
-    m_listTray.SetDocument(pDoc);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 void CTrayPalette::LoadTrayNameList()
 {
-    ASSERT(m_pDoc);
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     ASSERT(pYMgr != NULL);
 
@@ -458,7 +449,6 @@ void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
 
 void CTrayPalette::UpdateTrayList()
 {
-    ASSERT(m_pDoc);
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     ASSERT(pYMgr != NULL);
 
@@ -526,7 +516,7 @@ void CTrayPalette::UpdateTrayList()
             m_dummyArray.push_back(pPieceTbl->front());
         pPieceTbl = &m_dummyArray;
     }
-    if (!m_pDoc->IsScenario() && pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc))
+    if (!m_pDoc->IsScenario() && pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc))
         m_listTray.SetTipsAllowed(FALSE);
 
     if (!m_pDoc->IsScenario() && pYSet.IsOwned() &&
@@ -554,9 +544,9 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         pdi->m_dragType != DRAG_PIECELIST)
         return 0;                       // Only piece drops allowed
 
-    if (pdi->m_dragType == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != m_pDoc ||
-        pdi->m_dragType == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != m_pDoc ||
-        pdi->m_dragType == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != m_pDoc)
+    if (pdi->m_dragType == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
+        pdi->m_dragType == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
+        pdi->m_dragType == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
         return 0;                       // Only pieces from our document.
 
     if (pdi->m_dragType == DRAG_SELECTLIST)
@@ -580,7 +570,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         m_listTray.SetSelFromPoint(pdi->m_point);
         int nSel = m_listTray.GetCount() <= 0 ? -1 : m_listTray.GetCurSel();
 
-        if (!m_pDoc->IsScenario() && pYGrp.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+        if (!m_pDoc->IsScenario() && pYGrp.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
                 pYGrp.GetTrayContentVisibility() == trayVizNone)
             nSel = -1;  // Always append pieces when dropping on single line view
 
@@ -836,7 +826,7 @@ void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
             !pYSet.IsNonOwnerAccessAllowed());
     }
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
@@ -888,7 +878,7 @@ void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc) &&
+        bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
             !pYSet.IsNonOwnerAccessAllowed());
     }
 
@@ -909,7 +899,7 @@ void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
         m_listTray.GetSelCount() == 1 && m_listTray.IsShowingTileImages());
@@ -950,7 +940,7 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
 
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
@@ -992,7 +982,7 @@ void CTrayPalette::OnUpdateActTurnoverAllPieces(CCmdUI* pCmdUI)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(m_pDoc);
+        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
 
     pCmdUI->Enable((m_pDoc->IsScenario() ||

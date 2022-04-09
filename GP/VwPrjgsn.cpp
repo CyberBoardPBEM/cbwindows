@@ -156,9 +156,10 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     rctList.left = rctList.right + BTN_GROUP_XGAP;
     rctList.right = rctClient.right - XBORDER;
 
-    if (!CreateListbox(IDC_V_GSN_TRAYLIST, m_listTrays, LBS_HASSTRINGS, rctList))
+    m_listTrays = MakeOwner<CTrayListBox>(CheckedDeref(GetDocument()));
+    if (!CreateListbox(IDC_V_GSN_TRAYLIST, *m_listTrays, LBS_HASSTRINGS, rctList))
         return -1;
-    m_listTrays.SetTrayContentVisibility(trayVizTwoSide);
+    m_listTrays->SetTrayContentVisibility(trayVizTwoSide);
     if (!CreateEditbox(IDC_V_GSN_EDITINFO, m_editInfo, rctList))
         return -1;
 
@@ -169,7 +170,6 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGsnProjView::OnInitialUpdate()
 {
-    m_listTrays.SetDocument(GetDocument());
     GetDocument()->DoInitialUpdate();   // Since UpdateAllViews isn't virtual
     CView::OnInitialUpdate();
     CGamDoc* pDoc = GetDocument();
@@ -290,7 +290,7 @@ void CGsnProjView::LayoutView()
     rct.bottom = rctClient.bottom - YBORDER;
     rct.top = rct.bottom <= YBORDER ? rct.bottom : YBORDER;
 
-    hDwp = DeferWindowPos(hDwp, m_listTrays.m_hWnd, NULL, rct.left, rct.top,
+    hDwp = DeferWindowPos(hDwp, m_listTrays->m_hWnd, NULL, rct.left, rct.top,
         rct.Width(), rct.Height(), SWP_NOZORDER);
     hDwp = DeferWindowPos(hDwp, m_editInfo.m_hWnd, NULL, rct.left, rct.top,
         rct.Width(), rct.Height(), SWP_NOZORDER);
@@ -378,18 +378,18 @@ void CGsnProjView::UpdateItemControls(int nGrp)
 {
     HDWP hDwp = BeginDeferWindowPos(4);
     #define EzDefer(h, c, flg) \
-        DeferWindowPos(h, c.m_hWnd, NULL, 0, 0, 0, 0, \
+        DeferWindowPos(h, (c).m_hWnd, NULL, 0, 0, 0, 0, \
             SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | flg)
 
     if (nGrp == grpTray)        // Trays
     {
-        hDwp = EzDefer(hDwp, m_listTrays, SWP_SHOWWINDOW);
+        hDwp = EzDefer(hDwp, *m_listTrays, SWP_SHOWWINDOW);
         hDwp = EzDefer(hDwp, m_editInfo, SWP_HIDEWINDOW);
     }
     else    // Board, headings and no selection
     {
         hDwp = EzDefer(hDwp, m_editInfo, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_listTrays, SWP_HIDEWINDOW);
+        hDwp = EzDefer(hDwp, *m_listTrays, SWP_HIDEWINDOW);
     }
     EndDeferWindowPos(hDwp);
 }
