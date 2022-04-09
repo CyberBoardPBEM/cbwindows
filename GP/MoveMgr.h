@@ -132,7 +132,7 @@ class CPieceSetSide : public CMoveRecord
 {
 public:
     CPieceSetSide() { m_eType = mrecPSide; }
-    CPieceSetSide(PieceID pid, BOOL bTopUp)
+    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] CPieceSetSide(PieceID pid, BOOL bTopUp)
         { m_eType = mrecPSide; m_pid = pid; m_bTopUp = bTopUp; }
 
     virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
