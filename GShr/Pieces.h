@@ -69,7 +69,7 @@ struct PieceDef
     };
 
     // -------- //
-    void SetEmpty() { m_tidFront = m_tidBack = nullTid; }
+    void SetEmpty() { m_tidFront = m_tidBack = nullTid; m_flags = 0; }
     BOOL IsEmpty() const { return m_tidFront == nullTid && m_tidBack == nullTid; }
     // ---------- //
     void Serialize(CArchive& ar);
