@@ -75,7 +75,7 @@ protected:
     CString         m_strHiddenString;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual CSize OnItemSize(size_t nIndex) const override;
     virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         CRect rctItem) const override;
     virtual BOOL OnDragSetup(DragInfo& pDI) const override;

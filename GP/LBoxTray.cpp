@@ -205,19 +205,26 @@ void CTrayListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CTrayListBox::OnItemHeight(size_t nIndex) const
+CSize CTrayListBox::OnItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
     {
         TileID tid1, tid2;
         GetPieceTileIDs(value_preserving_cast<size_t>(nIndex), tid1, tid2);
-        return DoOnItemHeight(tid1, tid2);
+        return DoOnItemSize(nIndex, tid1, tid2);
     }
     else
     {
         // Hidden pieces. Draw the supplied text.
-        LONG nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
-        return value_preserving_cast<unsigned>(nHeight);
+        ASSERT(!m_strHiddenString.IsEmpty());
+        // only using DC to measure text, so const_cast safe;
+        CClientDC pDC(const_cast<CTrayListBox*>(this));
+        pDC.SaveDC();
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        CSize extent = pDC.GetTextExtent(m_strHiddenString);
+        pDC.SelectObject(prvFont);
+        pDC.RestoreDC(-1);
+        return extent;
     }
 }
 

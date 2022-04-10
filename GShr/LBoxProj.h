@@ -64,7 +64,7 @@ public:
     size_t GetItemSourceCode(int nIndex) const;
     void GetItemText(int nIndex, CString& str);
 
-    int GetItemWidth(int nItem);
+    int GetItemWidth(int nItem) const;
 
     /* N.B.:  CTileBaseListBox requires providing this, and it
         doesn't hurt much to provide it in general. */
@@ -81,7 +81,7 @@ protected:
     int     m_nHorzWidth;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual CSize OnItemSize(size_t nIndex) const override;
     virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         CRect rctItem) const override;
 

@@ -109,7 +109,7 @@ void CProjListBoxBase::GetItemText(int nIndex, CString& str)
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CProjListBoxBase::GetItemWidth(int nIndex)
+int CProjListBoxBase::GetItemWidth(int nIndex) const
 {
     int nWidth = 0;
 
@@ -137,9 +137,9 @@ int CProjListBoxBase::GetItemWidth(int nIndex)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CProjListBoxBase::OnItemHeight(size_t /*nIndex*/) const
+CSize CProjListBoxBase::OnItemSize(size_t nIndex) const
 {
-    return value_preserving_cast<unsigned>(g_res.tm8ssb.tmHeight);
+    return CSize(GetItemWidth(value_preserving_cast<int>(nIndex)), g_res.tm8ssb.tmHeight);
 }
 
 void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,

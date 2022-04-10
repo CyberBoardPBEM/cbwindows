@@ -47,18 +47,43 @@ CTileListBox::CTileListBox()
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
 }
 
-unsigned CTileListBox::OnItemHeight(size_t nIndex) const
+CSize CTileListBox::OnItemSize(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    CTile tile = pTMgr->GetTile(MapIndexToItem(nIndex), fullScale);
+    TileID tid = MapIndexToItem(nIndex);
+    CTile tile = pTMgr->GetTile(tid, fullScale);
 
     LONG nHt = 2 * tileBorder + tile.GetHeight();
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
         nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return value_preserving_cast<unsigned>(nHt);
+
+    int x = tileBorder;
+    if (m_bDisplayIDs)
+    {
+        CString str;
+        str.Format("[%u] ", static_cast<TileID::UNDERLYING_TYPE>(MapIndexToItem(nIndex)));
+        // only using DC to measure text, so const_cast safe;
+        CClientDC pDC(const_cast<CTileListBox*>(this));
+        pDC.SaveDC();
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        x += pDC.GetTextExtent(str).cx;
+        pDC.SelectObject(prvFont);
+        pDC.RestoreDC(-1);
+    }
+
+    x += tile.GetWidth() + tileBorder;
+
+    if (m_bDrawAllScales)
+    {
+        CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+        x += tileHalf.GetWidth() + 2 * tileBorder;
+        x += 8;
+    }
+
+    return CSize(x, nHt);
 }
 
 void CTileListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,

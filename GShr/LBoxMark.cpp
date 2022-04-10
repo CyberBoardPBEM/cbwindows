@@ -162,7 +162,7 @@ void CMarkListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CMarkListBox::OnItemHeight(size_t nIndex) const
+CSize CMarkListBox::OnItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
@@ -174,13 +174,20 @@ unsigned CMarkListBox::OnItemHeight(size_t nIndex) const
         std::vector<TileID> tids;
         tids.push_back(pMark.m_tid);
 
-        return DoOnItemHeight(tids);
+        return DoOnItemSize(nIndex, tids);
     }
     else
     {
         // Hidden markers. Account for drawing the supplied text.
-        LONG nHeight = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
-        return value_preserving_cast<unsigned>(nHeight);
+        ASSERT(!m_strHiddenString.IsEmpty());
+        // only using DC to measure text, so const_cast safe;
+        CClientDC pDC(const_cast<CMarkListBox*>(this));
+        pDC.SaveDC();
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        CSize extent = pDC.GetTextExtent(m_strHiddenString);
+        pDC.SelectObject(prvFont);
+        pDC.RestoreDC(-1);
+        return extent;
     }
 }
 
