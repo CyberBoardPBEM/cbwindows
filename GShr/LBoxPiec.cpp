@@ -70,27 +70,6 @@ const CTileManager& CPieceListBox::GetTileManager() const
     return CheckedDeref(m_pDoc->GetTileManager());
 }
 
-void CPieceListBox::SetItemMap(const std::vector<PieceID>* pMap, BOOL bKeepPosition /*= TRUE*/)
-{
-    CGrafixListBoxData<CTileBaseListBox, PieceID>::SetItemMap(pMap, bKeepPosition);
-
-    // set horz scroll bar
-    LONG width = 0;
-    if (pMap)
-    {
-        for (size_t i = size_t(0) ; i < pMap->size() ; ++i)
-        {
-            const PieceDef& pPce = m_pPMgr->GetPiece((*pMap)[i]);
-            const std::vector<TileID>& tids = pPce.GetTIDs();
-            ASSERT(!tids.empty());
-            std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(i), tids);
-            ASSERT(!rects.empty());
-            width = CB::max(width, rects.back().right);
-        }
-    }
-    SetHorizontalExtent(width);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
@@ -160,14 +139,14 @@ BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CPieceListBox::OnItemHeight(size_t nIndex) const
+CSize CPieceListBox::OnItemSize(size_t nIndex) const
 {
     PieceID pid = MapIndexToItem(nIndex);
 
     const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
     const std::vector<TileID>& tids = piecedef.GetTIDs();
     ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);    // Should exist
-    return DoOnItemHeight(tids);
+    return DoOnItemSize(nIndex, tids);
 }
 
 void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,

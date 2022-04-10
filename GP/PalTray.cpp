@@ -153,7 +153,7 @@ int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     rctLBox.top = m_nComboHeight;
 
     if (!m_listTray.Create(
-        WS_CHILD | WS_BORDER | WS_VISIBLE | WS_VSCROLL | LBS_EXTENDEDSEL |
+        WS_CHILD | WS_BORDER | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | LBS_EXTENDEDSEL |
             LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY,
         rctLBox, this, IDC_W_TRAYLIST))
     {

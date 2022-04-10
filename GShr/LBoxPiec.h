@@ -54,7 +54,6 @@ public:
 
 // Operations
 public:
-    void SetItemMap(const std::vector<PieceID>* pMap, BOOL bKeepPosition = TRUE);
 
 // Implementation
 protected:
@@ -62,7 +61,7 @@ protected:
     const CPieceManager* m_pPMgr;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual CSize OnItemSize(size_t nIndex) const override;
     virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         CRect rctItem) const override;
     virtual BOOL OnDragSetup(DragInfo& pDI) const override;

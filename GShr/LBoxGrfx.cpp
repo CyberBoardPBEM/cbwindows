@@ -258,7 +258,7 @@ LRESULT CGrafixListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CGrafixListBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
 {
-    unsigned nHt = OnItemHeight(value_preserving_cast<size_t>(lpMIS->itemID));
+    unsigned nHt = value_preserving_cast<unsigned>(OnItemSize(value_preserving_cast<size_t>(lpMIS->itemID)).cy);
 
     if (nHt >= 256) nHt = 255;
     if (nHt == 0) nHt = defaultItemHeight;

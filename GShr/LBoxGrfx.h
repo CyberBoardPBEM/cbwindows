@@ -135,7 +135,7 @@ public:
 
 // Overrides - the subclass of this class must override these
 public:
-    virtual unsigned OnItemHeight(size_t nIndex) const /* override */ = 0;
+    virtual CSize OnItemSize(size_t nIndex) const /* override */ = 0;
     virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         CRect rctItem) const /* override */ = 0;
     virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
@@ -271,9 +271,14 @@ public:
         int nTopIdx = GetTopIndex();
         int nFcsIdx = GetCaretIndex();
         ResetContent();
+        LONG width = 0;
         int nItem;
         for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
+        {
             AddString(" ");             // Fill with dummy data
+            width = CB::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
+        }
+        SetHorizontalExtent(value_preserving_cast<int>(width));
         if (bKeepPosition)
         {
             if (nTopIdx >= 0)

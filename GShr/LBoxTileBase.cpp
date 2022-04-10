@@ -68,7 +68,7 @@ int CTileBaseListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2) const
+CSize CTileBaseListBox::DoOnItemSize(size_t nItem, TileID tid1, TileID tid2) const
 {
     std::vector<TileID> tids;
     ASSERT(tid1 != nullTid);
@@ -77,26 +77,44 @@ unsigned CTileBaseListBox::DoOnItemHeight(TileID tid1, TileID tid2) const
     {
         tids.push_back(tid2);
     }
-    return DoOnItemHeight(tids);
+    return DoOnItemSize(nItem, tids);
 }
 
-unsigned CTileBaseListBox::DoOnItemHeight(const std::vector<TileID>& tids) const
+CSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
 {
     ASSERT(!tids.empty() &&
             tids[size_t(0)] != nullTid);        // At least one tile needs to exist
 
+    // only using DC for measurement, so const_cast safe
+    CClientDC pDC(const_cast<CTileBaseListBox*>(this));
+    pDC.SaveDC();
+    CRect rect(0, 0, 32000, 32000);
+
     int htTiles = 0;
+    int wdTiles = 0;
     for (size_t i = size_t(0) ; i < tids.size() ; ++i)
     {
         CTile tile = GetTileManager().GetTile(tids[i], fullScale);
         htTiles = std::max(htTiles, tile.GetHeight());
+        DrawTileImage(pDC, rect, FALSE, wdTiles, tids[i]);
     }
+
     // Listbox lines can only be 255 pixels high.
     LONG nHt = std::min(2 * tileBorder + htTiles, 255);
 
+    int nWd = wdTiles;
+
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
+    {
         nHt = std::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return value_preserving_cast<unsigned>(nHt);
+        BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
+        DrawTipMarker(pDC, rect, bItemHasTipText, nWd);
+        DrawItemDebugIDCode(pDC, nItem, rect, false, nWd);
+    }
+
+    pDC.RestoreDC(-1);
+
+    return CSize(nWd , nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////
