@@ -552,6 +552,7 @@ void Piece::SetUnused()
 {
     m_nSide = uint8_t(0xFF);
     m_nFacing = uint16_t(0);
+    m_dwOwnerMask = uint32_t(0);
 }
 
 

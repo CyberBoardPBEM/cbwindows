@@ -64,7 +64,7 @@ struct MarkDef
     enum { flagPromptText = 0x8000 };
 
     // -------- //
-    void SetEmpty() { m_tid = nullTid; }
+    void SetEmpty() { m_tid = nullTid; m_flags = 0; }
     BOOL IsEmpty() { return m_tid == nullTid; }
     // ---------- //
     void Serialize(CArchive& ar);
