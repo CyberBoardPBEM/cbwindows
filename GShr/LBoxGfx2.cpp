@@ -92,17 +92,22 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
     SetRedraw(FALSE);
     ResetContent();
 
+    LONG width = 0;
     int nItem;
     for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
+    {
         AddString(" ");             // Fill with dummy data
+        width = std::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
+    }
+    SetHorizontalExtent(value_preserving_cast<int>(width));
     if (bKeepPosition)
     {
         if (nTopIdx >= 0)
-            SetTopIndex(CB::min(nTopIdx, nItem - 1));
+            SetTopIndex(std::min(nTopIdx, nItem - 1));
         if (nFcsIdx >= 0)
-            SetCaretIndex(CB::min(nFcsIdx, nItem - 1), FALSE);
+            SetCaretIndex(std::min(nFcsIdx, nItem - 1), FALSE);
         if (nCurSel >= 0)
-            SetCurSel(CB::min(nCurSel, nItem - 1));
+            SetCurSel(std::min(nCurSel, nItem - 1));
     }
     SetRedraw(TRUE);
     Invalidate();
@@ -305,7 +310,7 @@ LRESULT CGrafixListBox2::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CGrafixListBox2::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
 {
-    unsigned nHt = OnItemHeight(lpMIS->itemID);
+    unsigned nHt = value_preserving_cast<unsigned>(OnItemSize(lpMIS->itemID).cy);
 
     if (nHt >= 256) nHt = 255;
     if (nHt == 0) nHt = defaultItemHeight;

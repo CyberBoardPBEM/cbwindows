@@ -92,7 +92,7 @@ public:
 
 // Overrides - the subclass of this class must override these
 public:
-    virtual unsigned OnItemHeight(size_t nIndex) const /* override */ = 0;
+    virtual CSize OnItemSize(size_t nIndex) const /* override */ = 0;
     virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         CRect rctItem) const /* override */ = 0;
     virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */

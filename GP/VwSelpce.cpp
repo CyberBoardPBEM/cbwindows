@@ -75,7 +75,7 @@ int CSelectedPieceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
 
     if (!m_listSel.Create(
-        WS_CHILD | WS_BORDER | WS_VISIBLE | WS_VSCROLL |
+        WS_CHILD | WS_BORDER | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL |
             LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT |
             LBS_EXTENDEDSEL | LBS_WANTKEYBOARDINPUT,
         CRect(0, 0, 0, 0), this, (UINT)-1))

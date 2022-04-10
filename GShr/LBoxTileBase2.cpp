@@ -58,7 +58,7 @@ CTileBaseListBox2::CTileBaseListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2) const
+CSize CTileBaseListBox2::DoOnItemSize(size_t nItem, TileID tid1, TileID tid2) const
 {
     ASSERT(tid1 != nullTid);        // At least one tile needs to exist
 
@@ -72,11 +72,31 @@ unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2) const
         nHt2 = tile.GetHeight();
     }
     // Listbox lines can only be 255 pixels high.
-    int nHt = CB::min(2 * tileBorder + CB::max(nHt1, nHt2), 255);
+    int nHt = std::min(2 * tileBorder + CB::max(nHt1, nHt2), 255);
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
         nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
-    return value_preserving_cast<unsigned>(nHt);
+
+    ASSERT(tid1 != nullTid);
+
+    BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
+
+    // only using DC for measurement, so const_cast safe
+    CClientDC pDC(const_cast<CTileBaseListBox2*>(this));
+    CRect rctItem(0, 0, 32000, 32000);
+
+    pDC.SaveDC();
+
+    int x = rctItem.left + tileBorder;
+
+    DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
+    DrawItemDebugIDCode(pDC, nItem, rctItem, false, x);
+    DrawTileImage(pDC, rctItem, false, x, tid1);
+    DrawTileImage(pDC, rctItem, false, x, tid2);
+
+    pDC.RestoreDC(-1);
+
+    return CSize(x, nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////

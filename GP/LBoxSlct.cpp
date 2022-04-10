@@ -194,7 +194,7 @@ std::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CSelectListBox::OnItemHeight(size_t nIndex) const
+CSize CSelectListBox::OnItemSize(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -204,7 +204,7 @@ unsigned CSelectListBox::OnItemHeight(size_t nIndex) const
     ASSERT(tid1 != nullTid);
     TileID tid2 = GetTileID(FALSE, nIndex);
 
-    return DoOnItemHeight(tid1, tid2);
+    return DoOnItemSize(nIndex, tid1, tid2);
 }
 
 void CSelectListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
