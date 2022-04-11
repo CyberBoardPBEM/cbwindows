@@ -64,7 +64,7 @@ const CTileManager& CTrayListBox::GetTileManager() const
 
 BOOL CTrayListBox::IsShowingTileImages() const
 {
-    return m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide;
+    return m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide;
 }
 
 void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenString)
@@ -78,11 +78,12 @@ void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenS
 
 BOOL CTrayListBox::OnIsToolTipsEnabled() const
 {
-    if (m_eTrayViz != trayVizTwoSide && m_eTrayViz != trayVizOneSide)
+    if (m_eTrayViz != trayVizAllSides && m_eTrayViz != trayVizOneSide)
         return FALSE;
     return m_pDoc.IsShowingObjectTips() && m_bAllowTips;
 }
 
+// N.B.:  GamElement side is actually item's display index, not piece's tile index
 GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     point = ClientToItem(point);
@@ -92,37 +93,38 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
     if (nIndex >= 65535 || GetCount() <= 0)
         return Invalid_v<GameElement>;
 
-    ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
+    ASSERT(m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide);
 
     const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
     ASSERT(pPTbl != NULL);
 
     PieceID nPid = MapIndexToItem(nIndex);
-    unsigned side = 0u;
 
     TileID tidLeft = pPTbl->GetActiveTileID(nPid);
     ASSERT(tidLeft != nullTid);            // Should exist
 
-    TileID tidRight = nullTid;              // Initially assume no second tile image
+    std::vector<TileID> tids;
+    tids.push_back(tidLeft);                // Initially assume no second tile image
 
     if (IsShowAllSides(nPid))
-        tidRight = pPTbl->GetInactiveTileID(nPid);
-
-    CRect rctLeft;
-    CRect rctRight;
-    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tidLeft, tidRight, rctLeft, rctRight);
-
-    if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
-        rct = rctLeft;
-    else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
-        rct = ItemToClient(rctRight);
-        side = 1u;
+        std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(nPid);
+        tids.insert(tids.end(), inactives.begin(), inactives.end());
     }
-    else
-        return Invalid_v<GameElement>;
 
-    return GameElement(nPid, side);
+    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
+
+    for (size_t i = size_t(0) ; i < rects.size() ; ++i)
+    {
+        ASSERT(!rects[i].IsRectEmpty());
+        if (!rects[i].IsRectEmpty() && rects[i].PtInRect(point))
+        {
+            rct = ItemToClient(rects[i]);
+            return GameElement(nPid, value_preserving_cast<unsigned>(i));
+        }
+    }
+
+    return Invalid_v<GameElement>;
 }
 
 void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
@@ -131,31 +133,49 @@ void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     if (nItemCode == Invalid_v<GameElement>)
         return;
     PieceID pid = static_cast<PieceID>(nItemCode);
-    bool bRightRect = nItemCode.GetSide() != 0;
-    int nSide = m_pDoc.GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    if (bRightRect) nSide ^= 1;         // Toggle the side
-    strTip = m_pDoc.GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
+    // nItemCode in OnGetHitItemCodeAtPoint format
+    uint8_t displayIndex = nItemCode.GetSide();
+    uint8_t side = m_pDoc.GetPieceTable()->GetSide(pid);
+    uint8_t textIndex;
+    if (displayIndex == uint8_t(0))
+    {
+        textIndex = side;
+    }
+    else if (displayIndex > side)
+    {
+        textIndex = displayIndex;
+    }
+    else
+    {
+        textIndex = displayIndex - uint8_t(1);
+    }
+    strTip = m_pDoc.GetGameElementString(MakePieceElement(pid, textIndex));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
-    ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
+    ASSERT(m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide);
 
     PieceID pid = MapIndexToItem(nItem);
-    int nSide = m_pDoc.GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    if (m_pDoc.HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide))))
-        return TRUE;
-    if (m_eTrayViz == trayVizTwoSide)
+    if (m_eTrayViz != trayVizAllSides)
     {
-        // Check for tip on optional second side only of both sides are
-        // visible in the tray.
-        if (m_pDoc.GetPieceTable()->Is2Sided(pid) &&
-            m_pDoc.HasGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1))))
-            return TRUE;
+        uint8_t side = m_pDoc.GetPieceTable()->GetSide(pid);
+        return m_pDoc.HasGameElementString(MakePieceElement(pid, side));
     }
-    return FALSE;
+    else
+    {
+        size_t sides = m_pDoc.GetPieceTable()->GetSides(pid);
+        for (unsigned i = unsigned(0) ; i < sides ; ++i)
+        {
+            if (m_pDoc.HasGameElementString(MakePieceElement(pid, i)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -207,11 +227,10 @@ void CTrayListBox::ShowListIndex(int nPos)
 
 CSize CTrayListBox::OnItemSize(size_t nIndex) const
 {
-    if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
+    if (m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide)
     {
-        TileID tid1, tid2;
-        GetPieceTileIDs(value_preserving_cast<size_t>(nIndex), tid1, tid2);
-        return DoOnItemSize(nIndex, tid1, tid2);
+        std::vector<TileID> tids = GetPieceTileIDs(value_preserving_cast<size_t>(nIndex));
+        return DoOnItemSize(nIndex, tids);
     }
     else
     {
@@ -235,11 +254,10 @@ void CTrayListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
     if (nIndex == size_t(UINT(-1)))
         return;
 
-    if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
+    if (m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide)
     {
-        TileID tid1, tid2;
-        GetPieceTileIDs(value_preserving_cast<size_t>(nIndex), tid1, tid2);
-        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid1, tid2);
+        std::vector<TileID> tids = GetPieceTileIDs(value_preserving_cast<size_t>(nIndex));
+        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
     }
     else
     {
@@ -262,14 +280,14 @@ void CTrayListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
     }
 }
 
-void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) const
+std::vector<TileID> CTrayListBox::GetPieceTileIDs(size_t nIndex) const
 {
     const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
     ASSERT(pPTbl != NULL);
 
     PieceID pid = MapIndexToItem(nIndex);
 
-    tid2 = nullTid;              // Initially assume no second tile image
+    std::vector<TileID> retval;
 
     if (!m_pDoc.IsScenario() &&
         m_pDoc.HasPlayers() && pPTbl->IsPieceOwned(pid) &&
@@ -277,16 +295,21 @@ void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) co
     {
         // Piece is owned but not by the current player. Only show the
         // top image.
-        tid1 = pPTbl->GetFrontTileID(pid);
+        retval.push_back(pPTbl->GetFrontTileID(pid));
     }
     else
     {
-        tid1 = pPTbl->GetActiveTileID(pid);
-        ASSERT(tid1 != nullTid);
+        retval.push_back(pPTbl->GetActiveTileID(pid));
+        ASSERT(retval.front() != nullTid);
 
         if (IsShowAllSides(pid))
-            tid2 = pPTbl->GetInactiveTileID(pid);
+        {
+            std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(pid);
+            retval.insert(retval.end(), inactives.begin(), inactives.end());
+        }
     }
+
+    return retval;
 }
 
 BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
