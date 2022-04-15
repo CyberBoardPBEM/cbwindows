@@ -125,7 +125,7 @@ struct DragInfo
     template<>
     struct SubInfo<DRAG_SELECTVIEW>
     {
-        const std::vector<RefPtr<CDrawObj>>* m_ptrArray;
+        const std::vector<CB::not_null<const CDrawObj*>>* m_ptrArray;
         CGamDoc* m_gamDoc;
     };
     // TODO:  when upgrade to c++ 17, use std::variant
@@ -143,7 +143,7 @@ private:
     } subInfos;
 public:
     template<DragType DT>
-    SubInfo<DT>& GetSubInfo()
+    const SubInfo<DT>& GetSubInfo() const
     {
         ASSERT(m_dragType == DT);
         /* TODO:  This check could be removed to improve release
@@ -157,8 +157,11 @@ public:
         {
             AfxThrowInvalidArgException();
         }
-        return reinterpret_cast<SubInfo<DT>&>(subInfos);
+        return reinterpret_cast<const SubInfo<DT>&>(subInfos);
     }
+
+    template<DragType DT>
+    SubInfo<DT>& GetSubInfo() { return const_cast<SubInfo<DT>&>(std::as_const(*this).GetSubInfo<DT>()); }
 };
 
 #endif

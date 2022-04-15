@@ -307,11 +307,11 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 
 bool CTrayListBox::IsShowAllSides(PieceID pid) const
 {
-    const CPieceTable& pPTbl = CheckedDeref(m_pDoc->GetPieceTable());
-    const PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+    const CPieceTable& pPTbl = CheckedDeref(m_pDoc.GetPieceTable());
+    const PieceDef& pPce = m_pDoc.GetPieceManager()->GetPiece(pid);
 
-    BOOL bIsOwnedByCurrentPlayer = m_pDoc->HasPlayers() &&
-        pPTbl.IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask());
+    BOOL bIsOwnedByCurrentPlayer = m_pDoc.HasPlayers() &&
+        pPTbl.IsPieceOwnedBy(pid, m_pDoc.GetCurrentPlayerMask());
 
     // If showing all sides, only show it if the piece allows it
     // or if the current players is the owner, or if the
@@ -319,7 +319,7 @@ bool CTrayListBox::IsShowAllSides(PieceID pid) const
     if (m_eTrayViz == trayVizTwoSide && (bIsOwnedByCurrentPlayer &&
         !(pPce.m_flags & PieceDef::flagShowOnlyOwnersToo) ||
         !(pPce.m_flags & PieceDef::flagShowOnlyVisibleSide)) ||
-        m_pDoc->IsScenario())
+        m_pDoc.IsScenario())
     {
         return true;
     }

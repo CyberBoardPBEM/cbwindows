@@ -41,7 +41,7 @@ const int tileGap = 6;
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CSelectListBox, CGrafixListBox2)
+BEGIN_MESSAGE_MAP(CSelectListBox, CTileBaseListBox2)
     //{{AFX_MSG_MAP(CSelectListBox)
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     //}}AFX_MSG_MAP
@@ -49,55 +49,58 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTileManager* CSelectListBox::GetTileManager()
+const CTileManager& CSelectListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    ASSERT(m_pDoc->GetTileManager() != NULL);
-    return m_pDoc->GetTileManager();
+    return CheckedDeref(m_pDoc->GetTileManager());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CSelectListBox::OnDragSetup(DragInfo* pDI)
+BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
 {
     ASSERT(!"untested code");
     if (GetCount() <= 1)
     {
-        pDI->m_dragType = DRAG_INVALID;
+        pDI.m_dragType = DRAG_INVALID;
         return FALSE;
     }
 
     if (!IsMultiSelect())
     {
+        ASSERT(!"unreachable code");
+        /* if this ever happens, rewrite like LBoxGrfx w/
+            list/single distinction
         m_multiSelList.clear();
         m_multiSelList.push_back(&GetCurMapItem());
+        */
     }
-    pDI->m_dragType = DRAG_SELECTVIEW;
-    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
-    pDI->m_hcsrSuggest = g_res.hcrDragTile;
-    pDI->GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
+    pDI.m_dragType = DRAG_SELECTVIEW;
+    pDI.GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
+    pDI.m_hcsrSuggest = g_res.hcrDragTile;
+    pDI.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
     return TRUE;
 }
 
 LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
-    DragInfo* pdi = (DragInfo*)lParam;
+    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
 
     DoInsertLineProcessing((UINT)wParam, pdi);
 
-    if (pdi->m_dragType != DRAG_SELECTVIEW)
+    if (pdi.m_dragType != DRAG_SELECTVIEW)
         return 0;               // Only our drops allowed
 
-    if (pdi->GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
+    if (pdi.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
         return 0;               // Only pieces from our document.
 
     DoAutoScrollProcessing(pdi);
 
     if (wParam == phaseDragOver)
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
+        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     else if (wParam == phaseDragDrop)
     {
-        int nSel = SpecialItemFromPoint(pdi->m_point);
+        int nSel = SpecialItemFromPoint(pdi.m_point);
 
         if (nSel < GetCount())
         {
@@ -111,12 +114,12 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CSelectListBox::OnIsToolTipsEnabled()
+BOOL CSelectListBox::OnIsToolTipsEnabled() const
 {
     return m_pDoc->IsShowingObjectTips();
 }
 
-GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
@@ -135,13 +138,13 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
     {
-        CDrawObj& pObj = MapIndexToItem(nIndex);
+        const CDrawObj& pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
         rct = rctLeft;
     }
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
-        CDrawObj& pObj = MapIndexToItem(nIndex);
+        const CDrawObj& pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
         rct = rctRight;
     }
@@ -150,7 +153,7 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 }
 
 void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle)
+    CString& strTip, CString& strTitle) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
@@ -161,9 +164,9 @@ void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
+BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
-    CDrawObj& pObj = MapIndexToItem(nItem);
+    const CDrawObj& pObj = MapIndexToItem(nItem);
     GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
     GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
     return elem1 != Invalid_v<GameElement> || elem2 != Invalid_v<GameElement>;
@@ -171,9 +174,9 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::string CSelectListBox::OnGetItemDebugString(size_t nIndex)
+std::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
 {
-    CDrawObj& pDObj = MapIndexToItem(nIndex);
+    const CDrawObj& pDObj = MapIndexToItem(nIndex);
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
@@ -189,7 +192,7 @@ std::string CSelectListBox::OnGetItemDebugString(size_t nIndex)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CSelectListBox::OnItemHeight(size_t nIndex)
+unsigned CSelectListBox::OnItemHeight(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -202,8 +205,8 @@ unsigned CSelectListBox::OnItemHeight(size_t nIndex)
     return DoOnItemHeight(tid1, tid2);
 }
 
-void CSelectListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem)
+void CSelectListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+    CRect rctItem) const
 {
     // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
     if (nIndex == size_t(UINT(-1)))
@@ -215,16 +218,16 @@ void CSelectListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nSta
     DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid1, tid2);
 }
 
-TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
+TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex) const
 {
-    CDrawObj& pDObj = MapIndexToItem(nIndex);
+    const CDrawObj& pDObj = MapIndexToItem(nIndex);
 
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         CPieceTable* pPTbl = m_pDoc->GetPieceTable();
         ASSERT(pPTbl != NULL);
 
-        PieceID pid = static_cast<CPieceObj&>(pDObj).m_pid;
+        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
 
         if (!m_pDoc->IsScenario() && pPTbl->IsPieceOwned(pid) &&
             !pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
@@ -252,7 +255,7 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
     {
         if (!bActiveIfApplies) return nullTid;      // Inactive side doesn't apply
 
-        MarkID mid = static_cast<CMarkObj&>(pDObj).m_mid;
+        MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
         ASSERT(pMMgr != NULL);
         return pMMgr->GetMark(mid).m_tid;

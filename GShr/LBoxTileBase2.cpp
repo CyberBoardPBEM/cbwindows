@@ -42,6 +42,7 @@ const int tileGap = 6;
 
 BEGIN_MESSAGE_MAP(CTileBaseListBox2, CGrafixListBox2)
     //{{AFX_MSG_MAP(CTileBaseListBox2)
+    ON_WM_CREATE()
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -57,19 +58,17 @@ CTileBaseListBox2::CTileBaseListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
+unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2) const
 {
     ASSERT(tid1 != nullTid);        // At least one tile needs to exist
 
-    SetupTipMarkerIfRequired();
-
-    CTile tile = GetTileManager()->GetTile(tid1, fullScale);
+    CTile tile = GetTileManager().GetTile(tid1, fullScale);
     int nHt1 = tile.GetHeight();
     int nHt2 = 0;
 
     if (tid2 != nullTid)
     {
-        tile = GetTileManager()->GetTile(tid2, fullScale);
+        tile = GetTileManager().GetTile(tid2, fullScale);
         nHt2 = tile.GetHeight();
     }
     // Listbox lines can only be 255 pixels high.
@@ -82,8 +81,8 @@ unsigned CTileBaseListBox2::DoOnItemHeight(TileID tid1, TileID tid2)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT nState,
-    CRect rctItem, TileID tid1, TileID tid2)
+void CTileBaseListBox2::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState,
+    CRect rctItem, TileID tid1, TileID tid2) const
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
     {
@@ -91,20 +90,20 @@ void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT 
 
         BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
-        SetupPalette(*pDC);
+        SetupPalette(pDC);
 
-        pDC->SaveDC();
-        pDC->IntersectClipRect(&rctItem);
-        pDC->SetBkMode(TRANSPARENT);
+        pDC.SaveDC();
+        pDC.IntersectClipRect(&rctItem);
+        pDC.SetBkMode(TRANSPARENT);
 
         CBrush brBack(GetSysColor(nState & ODS_SELECTED ?
             COLOR_HIGHLIGHT : COLOR_WINDOW));
-        pDC->FillRect(&rctItem, &brBack);       // Fill background color
+        pDC.FillRect(&rctItem, &brBack);       // Fill background color
 
-        pDC->SetTextColor(GetSysColor(nState & ODS_SELECTED ?
+        pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
             COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
 
-        CTile tile = GetTileManager()->GetTile(tid1, fullScale);
+        CTile tile = GetTileManager().GetTile(tid1, fullScale);
 
         int x = rctItem.left + tileBorder;
 
@@ -113,28 +112,28 @@ void CTileBaseListBox2::DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT 
         DrawTileImage(pDC, rctItem, TRUE, x, tid1);
         DrawTileImage(pDC, rctItem, TRUE, x, tid2);
 
-        pDC->RestoreDC(-1);
-        ResetPalette(*pDC);
+        pDC.RestoreDC(-1);
+        ResetPalette(pDC);
     }
     if (nAction & ODA_FOCUS)
-        pDC->DrawFocusRect(&rctItem);
+        pDC.DrawFocusRect(&rctItem);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid)
+void CTileBaseListBox2::DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid) const
 {
     if (tid == nullTid)
         return;                             // Nothing to do
 
-    CTile tile = GetTileManager()->GetTile(tid, fullScale);
+    CTile tile = GetTileManager().GetTile(tid, fullScale);
 
     if (bDrawIt)
     {
         if (tile.GetHeight() >= 255)
-            tile.BitBlt(CheckedDeref(pDC), x, rctItem.top + tileBorder);// Too large. Don't draw vertically centered
+            tile.BitBlt(pDC, x, rctItem.top + tileBorder);// Too large. Don't draw vertically centered
         else
-            tile.BitBlt(CheckedDeref(pDC), x, (rctItem.Height() - tile.GetHeight()) / 2 + rctItem.top);
+            tile.BitBlt(pDC, x, (rctItem.Height() - tile.GetHeight()) / 2 + rctItem.top);
     }
     x += tile.GetWidth() + tileGap;
 }
@@ -143,19 +142,19 @@ void CTileBaseListBox2::DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int
 // Optionally draw debug code string for item. If bDrawIt is false,
 // x is advanced the size of the string anyway but nothing is rendered
 
-void CTileBaseListBox2::DrawItemDebugIDCode(CDC* pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x)
+void CTileBaseListBox2::DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x) const
 {
     if (m_bDisplayIDs)
     {
         std::string str = OnGetItemDebugString(nItem);
 
-        CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
         int y = rctItem.top + rctItem.Height() / 2 -
             (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
         if (bDrawIt)
-            pDC->TextOut(x, y, str.c_str());
-        x += pDC->GetTextExtent(str.c_str()).cx;
-        pDC->SelectObject(prvFont);
+            pDC.TextOut(x, y, str.c_str());
+        x += pDC.GetTextExtent(str.c_str()).cx;
+        pDC.SelectObject(prvFont);
     }
 }
 
@@ -183,22 +182,22 @@ void CTileBaseListBox2::SetupTipMarkerIfRequired()
     }
 }
 
-void CTileBaseListBox2::DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, int& x)
+void CTileBaseListBox2::DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const
 {
     if (m_bTipMarkItems)
     {
-        CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
         if (bVisible)   // Draw only if visible. Else just move 'x'
         {
             int y = rctItem.top + (rctItem.Height() - m_sizeTipMark.cy) / 2;
-            pDC->TextOut(x, y, m_strTipMark);
+            pDC.TextOut(x, y, m_strTipMark);
         }
         x += m_sizeTipMark.cx;
-        pDC->SelectObject(prvFont);
+        pDC.SelectObject(prvFont);
     }
 }
 
-std::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem)
+std::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem) const
 {
     return CB::Sprintf("[%p] ", OnGetItemDebugIDCode(nItem));
 }
@@ -206,7 +205,7 @@ std::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem)
 /////////////////////////////////////////////////////////////////////////////
 
 void CTileBaseListBox2::GetTileRectsForItem(size_t nItem, TileID tidLeft, TileID tidRight,
-    CRect& rctLeft, CRect& rctRight)
+    CRect& rctLeft, CRect& rctRight) const
 {
     ASSERT(tidLeft != nullTid);
 
@@ -222,10 +221,11 @@ void CTileBaseListBox2::GetTileRectsForItem(size_t nItem, TileID tidLeft, TileID
 
     // Need to account for possible markers and debug strings
     // rendered to left of tile images
-    CDC* pDC = GetDC();
+    // only using DC for measurement, so const_cast safe
+    CDC& pDC = CheckedDeref(const_cast<CTileBaseListBox2*>(this)->GetDC());
     DrawTipMarker(pDC, rctItem, FALSE, x);
     DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
-    ReleaseDC(pDC);
+    const_cast<CTileBaseListBox2*>(this)->ReleaseDC(&pDC);
 
     rctLeft.left = x;
     DrawTileImage(pDC, rctItem, FALSE, x, tidLeft);
@@ -240,6 +240,16 @@ void CTileBaseListBox2::GetTileRectsForItem(size_t nItem, TileID tidLeft, TileID
         DrawTileImage(pDC, rctItem, FALSE, x, tidRight);
         rctRight.right = x;
     }
+}
+
+int CTileBaseListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    int retval = CGrafixListBox2::OnCreate(lpCreateStruct);
+    if (retval == 0)
+    {
+        SetupTipMarkerIfRequired();
+    }
+    return retval;
 }
 
 

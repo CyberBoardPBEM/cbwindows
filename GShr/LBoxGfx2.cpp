@@ -110,14 +110,14 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex)
+const CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex) const
 {
     ASSERT(m_pItemMap);
     ASSERT(nIndex < m_pItemMap->size());
     return *m_pItemMap->at(nIndex);
 }
 
-size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem)
+size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem) const
 {
     ASSERT(m_pItemMap);
     for (size_t i = 0; i < m_pItemMap->size(); i++)
@@ -128,7 +128,7 @@ size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem)
     return Invalid_v<size_t>;                  // Failed to find it
 }
 
-CDrawObj& CGrafixListBox2::GetCurMapItem()
+const CDrawObj& CGrafixListBox2::GetCurMapItem() const
 {
     ASSERT(!IsMultiSelect());
     ASSERT(m_pItemMap);
@@ -138,27 +138,27 @@ CDrawObj& CGrafixListBox2::GetCurMapItem()
     return *m_pItemMap->at(value_preserving_cast<size_t>(nItem));
 }
 
-void CGrafixListBox2::GetCurMappedItemList(std::vector<RefPtr<CDrawObj>>& pLst)
+std::vector<CB::not_null<const CDrawObj*>> CGrafixListBox2::GetCurMappedItemList() const
 {
-    pLst.clear();
+    std::vector<CB::not_null<const CDrawObj*>> pLst;
     ASSERT(IsMultiSelect());
     int nSels = GetSelCount();
     if (nSels == LB_ERR || nSels == 0)
-        return;
+        return pLst;
     std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
     GetSelItems(nSels, pSelTbl.data());
     pLst.reserve(pSelTbl.size());
     for (size_t i = size_t(0); i < pSelTbl.size(); i++)
         pLst.push_back(&MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
-    return;
+    return pLst;
 }
 
-void CGrafixListBox2::SetCurSelMapped(CDrawObj* nMapVal)
+void CGrafixListBox2::SetCurSelMapped(const CDrawObj& nMapVal)
 {
     ASSERT(m_pItemMap);
     for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
-        if (m_pItemMap->at(i) == nMapVal)
+        if (m_pItemMap->at(i) == &nMapVal)
         {
             SetCurSel(value_preserving_cast<int>(i));
             SetTopIndex(value_preserving_cast<int>(i));
@@ -195,7 +195,7 @@ void CGrafixListBox2::ShowFirstSelection()
         SetTopIndex(nTopSel);
 }
 
-int CGrafixListBox2::GetTopSelectedItem()
+int CGrafixListBox2::GetTopSelectedItem() const
 {
     int nTopSel;
     if (IsMultiSelect())
@@ -319,7 +319,7 @@ void CGrafixListBox2::DrawItem(LPDRAWITEMSTRUCT lpDIS)
     CDC* pDC = CDC::FromHandle(lpDIS->hDC);
 
     CRect rct(lpDIS->rcItem);
-    OnItemDraw(pDC, nIndex, lpDIS->itemAction, lpDIS->itemState, rct);
+    OnItemDraw(CheckedDeref(pDC), nIndex, lpDIS->itemAction, lpDIS->itemState, rct);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -355,7 +355,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
 
         // Get the final selection results after the mouse was released.
         if (IsMultiSelect())
-            GetCurMappedItemList(m_multiSelList);
+            m_multiSelList = GetCurMappedItemList();
 
         if (bWasDragging && m_triggeredCursor)
         {
@@ -385,7 +385,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
             CWnd* pWnd = GetWindowFromPoint(point);
             if (pWnd == NULL || (!m_bAllowSelfDrop && pWnd == this))
             {
-                OnDragCleanup(&di);         // Tell subclass we're all done.
+                OnDragCleanup(di);         // Tell subclass we're all done.
                 return;
             }
             di.m_point = point;
@@ -395,7 +395,7 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
 
             pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
                 (LPARAM)(LPVOID)&di);
-            OnDragCleanup(&di);             // Tell subclass we're all done.
+            OnDragCleanup(di);             // Tell subclass we're all done.
             m_multiSelList.clear();
         }
     }
@@ -428,7 +428,7 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
             }
             m_triggeredCursor = TRUE;
         }
-        OnDragSetup(&di);           // Get stuff from subclass
+        OnDragSetup(di);           // Get stuff from subclass
 
         // If we got here, dragging is under way....
         CWnd* pWnd = GetWindowFromPoint(point);
@@ -477,7 +477,7 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CWnd* CGrafixListBox2::GetWindowFromPoint(CPoint point)
+CWnd* CGrafixListBox2::GetWindowFromPoint(CPoint point) const
 {
     ClientToScreen(&point);
     CWnd* pWnd = WindowFromPoint(point);
@@ -507,12 +507,12 @@ int CGrafixListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoInsertLineProcessing(UINT nPhase, DragInfo* pdi)
+void CGrafixListBox2::DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi)
 {
     if (m_bAllowDropScroll)
     {
         // Handle drawing of insert line
-        CPoint pnt = pdi->m_point;
+        CPoint pnt = pdi.m_point;
         int nSel = SpecialItemFromPoint(pnt);
         if (nPhase == phaseDragEnter)
         {
@@ -533,7 +533,7 @@ void CGrafixListBox2::DoInsertLineProcessing(UINT nPhase, DragInfo* pdi)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoAutoScrollProcessing(DragInfo* pdi)
+void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
 {
     if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
     {
@@ -541,7 +541,7 @@ void CGrafixListBox2::DoAutoScrollProcessing(DragInfo* pdi)
         GetClientRect(&rct);
         rct.InflateRect(0, -scrollZonePixels);
         rct.NormalizeRect();
-        if (!rct.PtInRect(pdi->m_point))
+        if (!rct.PtInRect(pdi.m_point))
         {
             // Trigger time is usually longer
             m_nTimerID = SetTimer(timerScrollIDStart, timerScrollStart, NULL);
@@ -554,14 +554,14 @@ void CGrafixListBox2::DoAutoScrollProcessing(DragInfo* pdi)
 
 LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
-    DoInsertLineProcessing((UINT)wParam, (DragInfo*)lParam);
+    DoInsertLineProcessing((UINT)wParam, CheckedDeref(reinterpret_cast<const DragInfo*>(lParam)));
 
     CWnd *pWnd = GetParent();
     ASSERT(pWnd != NULL);
     LRESULT lResult = pWnd->SendMessage(WM_DRAGDROP, wParam, lParam);
 
     if (lResult != 0)
-        DoAutoScrollProcessing((DragInfo*)lParam);
+        DoAutoScrollProcessing(CheckedDeref(reinterpret_cast<const DragInfo*>(lParam)));
     return lResult;
 }
 
@@ -631,7 +631,7 @@ void CGrafixListBox2::OnTimer(uintptr_t nIDEvent)
 // This routine selects the next item if the point is past
 // the y midpoint of the item.
 
-int CGrafixListBox2::SpecialItemFromPoint(CPoint pnt)
+int CGrafixListBox2::SpecialItemFromPoint(CPoint pnt) const
 {
     BOOL bBucket;
     int nSel = (int)ItemFromPoint(pnt, bBucket);
