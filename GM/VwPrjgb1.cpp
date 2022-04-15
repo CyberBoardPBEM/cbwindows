@@ -323,8 +323,7 @@ void CGbxProjView::DoTileEdit()
 
     if (m_listTiles.GetSelCount() <= 0) return;
 
-    std::vector<TileID> tidtbl;
-    m_listTiles.GetCurMappedItemList(tidtbl);
+    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
     for (size_t i = 0; i < tidtbl.size(); i++)
@@ -358,8 +357,7 @@ void CGbxProjView::DoTileClone()
 
     if (m_listTiles.GetSelCount() <= 0) return;
 
-    std::vector<TileID> tidtbl;
-    m_listTiles.GetCurMappedItemList(tidtbl);
+    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
     for (size_t i = 0; i < tidtbl.size(); i++)
@@ -402,8 +400,7 @@ void CGbxProjView::DoTileDelete()
 
     if (m_listTiles.GetSelCount() <= 0) return;
 
-    std::vector<TileID> tidtbl;
-    m_listTiles.GetCurMappedItemList(tidtbl);
+    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
     BOOL bTilesInUse = pDoc->QueryAnyOfTheseTilesInUse(tidtbl);
     if (bTilesInUse)
     {

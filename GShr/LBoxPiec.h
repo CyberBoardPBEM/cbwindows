@@ -50,7 +50,7 @@ public:
 public:
     void SetDocument(CGamDoc* pDoc);
 
-    virtual CTileManager* GetTileManager() override;
+    virtual const CTileManager& GetTileManager() const override;
 
 // Operations
 public:
@@ -61,16 +61,16 @@ protected:
     CPieceManager*  m_pPMgr;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) override;
-    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) override;
-    virtual BOOL OnDragSetup(DragInfo* pDI) override;
+    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) const override;
+    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
 
     // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) override;
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
+    virtual BOOL OnIsToolTipsEnabled() const override;
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     //{{AFX_MSG(CPieceListBox)
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

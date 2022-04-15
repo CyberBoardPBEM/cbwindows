@@ -52,7 +52,7 @@ public:
 
 // Attributes
 public:
-    virtual CTileManager* GetTileManager() override;
+    virtual const CTileManager& GetTileManager() const override;
 
     TrayViz GetTrayContentVisibility() { return m_eTrayViz; }
 
@@ -74,7 +74,7 @@ public:
 
 // Implementation
 protected:
-    void GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2);
+    void GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) const;
 
 // Implementation
 protected:
@@ -85,16 +85,16 @@ protected:
     BOOL        m_bAllowTips;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) override;
-    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) override;
-    virtual BOOL OnDragSetup(DragInfo* pDI) override;
+    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) const override;
+    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
 
     // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) override;
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) override;
+    virtual BOOL OnIsToolTipsEnabled() const override;
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     // Misc
 

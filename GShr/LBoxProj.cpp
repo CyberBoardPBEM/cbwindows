@@ -95,7 +95,7 @@ int CProjListBoxBase::GetItemGroupCode(int nIndex)
     return (int)(str[0] - 'A');
 }
 
-size_t CProjListBoxBase::GetItemSourceCode(int nIndex)
+size_t CProjListBoxBase::GetItemSourceCode(int nIndex) const
 {
     return value_preserving_cast<size_t>(GetItemData(nIndex));
 }
@@ -137,19 +137,19 @@ int CProjListBoxBase::GetItemWidth(int nIndex)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CProjListBoxBase::OnItemHeight(size_t /*nIndex*/)
+unsigned CProjListBoxBase::OnItemHeight(size_t /*nIndex*/) const
 {
     return value_preserving_cast<unsigned>(g_res.tm8ssb.tmHeight);
 }
 
-void CProjListBoxBase::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem)
+void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+    CRect rctItem) const
 {
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
     {
-        COLORREF crPrevBack = pDC->SetBkColor(GetSysColor(
+        COLORREF crPrevBack = pDC.SetBkColor(GetSysColor(
             nState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
-        COLORREF crPrevText = pDC->SetTextColor(GetSysColor(
+        COLORREF crPrevText = pDC.SetTextColor(GetSysColor(
             nState & ODS_SELECTED ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
 
         // First character in string is sorting code. The second is the
@@ -158,7 +158,7 @@ void CProjListBoxBase::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nS
         GetText(value_preserving_cast<int>(nIndex), str);
         BOOL bHead = str[1] == '*';
 
-        CFont* pPrevFont = pDC->SelectObject(CFont::FromHandle(
+        CFont* pPrevFont = pDC.SelectObject(CFont::FromHandle(
             bHead ? g_res.h8ssb : g_res.h8ss));
 
         if (str[0] - 'A' == m_nMarkGrp &&
@@ -166,29 +166,29 @@ void CProjListBoxBase::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nS
         {
             CRect rct = rctItem;
             // Mark the line with a chevron
-            pDC->ExtTextOut(rct.left, rct.top, ETO_OPAQUE, rct,
+            pDC.ExtTextOut(rct.left, rct.top, ETO_OPAQUE, rct,
                 "\xBB", 1, NULL);
             rct.left += 3 * g_res.tm8ssb.tmAveCharWidth;
-            pDC->ExtTextOut(rctItem.left + 3 * g_res.tm8ssb.tmAveCharWidth,
+            pDC.ExtTextOut(rctItem.left + 3 * g_res.tm8ssb.tmAveCharWidth,
                 rctItem.top, ETO_OPAQUE, rct,
                 (const char*)str + prefixLen,
                 lstrlen((const char*)str + prefixLen), NULL);
         }
         else
         {
-            pDC->ExtTextOut(rctItem.left +
+            pDC.ExtTextOut(rctItem.left +
                 bHead ? 0 : 3 * g_res.tm8ssb.tmAveCharWidth,
                 rctItem.top, ETO_OPAQUE, rctItem,
                 (const char*)str + prefixLen,
                 lstrlen((const char*)str + prefixLen), NULL);
         }
 
-        pDC->SelectObject(pPrevFont);
-        pDC->SetBkColor(crPrevBack);
-        pDC->SetTextColor(crPrevText);
+        pDC.SelectObject(pPrevFont);
+        pDC.SetBkColor(crPrevBack);
+        pDC.SetTextColor(crPrevText);
     }
     if (nAction & ODA_FOCUS)
-        pDC->DrawFocusRect(&rctItem);
+        pDC.DrawFocusRect(&rctItem);
 }
 
 

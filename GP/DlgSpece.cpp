@@ -187,8 +187,7 @@ void CSetPiecesDialog::OnCopySelections()
         return;
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
-    std::vector<PieceID> selList;
-    m_listPiece.GetCurMappedItemList(selList);
+    std::vector<PieceID> selList = m_listPiece.GetCurMappedItemList();
     if (selList.empty())
         return;                     // Nothing to copy.
 
@@ -207,8 +206,7 @@ void CSetPiecesDialog::OnRemoveSelections()
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
 
-    std::vector<PieceID> selList;
-    m_listTray.GetCurMappedItemList(selList);
+    std::vector<PieceID> selList = m_listTray.GetCurMappedItemList();
     if (selList.empty())
         return;                     // Nothing to remove
 
