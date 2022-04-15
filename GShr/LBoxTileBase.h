@@ -42,7 +42,7 @@ public:
     CTileBaseListBox();
 
     void SetTipMarkVisibility(BOOL bShow = TRUE) { m_bTipMarkItems = bShow; }
-    BOOL GetTipMarkVisibility() { return m_bTipMarkItems; }
+    BOOL GetTipMarkVisibility() const { return m_bTipMarkItems; }
 
 // Vars...
 protected:
@@ -54,32 +54,33 @@ protected:
 
 // Helpers...
 protected:
-    void DrawTileImage(CDC* pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid);
-    void DrawItemDebugIDCode(CDC* pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x);
+    void DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid) const;
+    void DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x) const;
 
     void SetupTipMarkerIfRequired();
-    void DrawTipMarker(CDC* pDC, CRect rctItem, BOOL bVisible, int& x);
+    void DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const;
 
-    unsigned DoOnItemHeight(TileID tid1, TileID tid2);
-    void DoOnDrawItem(CDC *pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
-        TileID tid1, TileID tid2);
+    unsigned DoOnItemHeight(TileID tid1, TileID tid2) const;
+    void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+        TileID tid1, TileID tid2) const;
 
     void GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight, CRect& rctLeft,
-        CRect& rctRight);
+        CRect& rctRight) const;
 
 // Overrides...
 public:
-    virtual CTileManager* GetTileManager() /* override */ = 0;
+    virtual const CTileManager& GetTileManager() const /* override */ = 0;
 
 // Overrides...
 protected:
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) /* override */ { return FALSE; }
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const /* override */ { return FALSE; }
 
     // see CGrafixListBox::OnGetItemDebugIDCode comment
-    virtual int  OnGetItemDebugIDCode(size_t nItem) override = 0;
-    virtual std::string OnGetItemDebugString(size_t nItem) /* override */;
+    virtual int  OnGetItemDebugIDCode(size_t nItem) const override = 0;
+    virtual std::string OnGetItemDebugString(size_t nItem) const /* override */;
 
     //{{AFX_MSG(CTileBaseListBox)
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };

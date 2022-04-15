@@ -58,17 +58,16 @@ CMarkListBox::CMarkListBox()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTileManager* CMarkListBox::GetTileManager()
+const CTileManager& CMarkListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    ASSERT(m_pDoc->GetTileManager() != NULL);
-    return m_pDoc->GetTileManager();
+    return CheckedDeref(m_pDoc->GetTileManager());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CMarkListBox::OnIsToolTipsEnabled()
+BOOL CMarkListBox::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
     return m_pDoc->IsShowingObjectTips();
@@ -77,7 +76,7 @@ BOOL CMarkListBox::OnIsToolTipsEnabled()
 #endif
 }
 
-GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
@@ -96,7 +95,7 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle)
+    CString& strTip, CString& strTitle) const
 {
     MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
@@ -104,7 +103,7 @@ void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem)
+BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     ASSERT(m_eTrayViz == mtrayVizNormal);
     MarkID mid = MapIndexToItem(nItem);
@@ -150,7 +149,7 @@ void CMarkListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CMarkListBox::OnItemHeight(size_t nIndex)
+unsigned CMarkListBox::OnItemHeight(size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
@@ -171,8 +170,8 @@ unsigned CMarkListBox::OnItemHeight(size_t nIndex)
     }
 }
 
-void CMarkListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem)
+void CMarkListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+    CRect rctItem) const
 {
     // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
     if (nIndex == size_t(UINT(-1)))
@@ -197,35 +196,35 @@ void CMarkListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
         {
             // Hidden markers. Draw the supplied text.
-            pDC->SetTextAlign(TA_TOP | TA_LEFT);
+            pDC.SetTextAlign(TA_TOP | TA_LEFT);
             CBrush brBack(GetSysColor(nState & ODS_SELECTED ?
                 COLOR_HIGHLIGHT : COLOR_WINDOW));
-            pDC->FillRect(&rctItem, &brBack);       // Fill background color
-            pDC->SetBkMode(TRANSPARENT);
-            CFont* pPrvFont = pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
-            pDC->SetTextColor(GetSysColor(nState & ODS_SELECTED ?
+            pDC.FillRect(&rctItem, &brBack);       // Fill background color
+            pDC.SetBkMode(TRANSPARENT);
+            CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+            pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
                 COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-            pDC->TextOut(rctItem.left, rctItem.top, m_strHiddenString);
-            pDC->SelectObject(pPrvFont);
+            pDC.TextOut(rctItem.left, rctItem.top, m_strHiddenString);
+            pDC.SelectObject(pPrvFont);
         }
         if (nAction & ODA_FOCUS)
-            pDC->DrawFocusRect(&rctItem);
+            pDC.DrawFocusRect(&rctItem);
     }
 }
 
-BOOL CMarkListBox::OnDragSetup(DragInfo* pDI)
+BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
 {
 #ifdef GPLAY
     if (m_pDoc->IsPlaying())
     {
-        pDI->m_dragType = DRAG_INVALID;
+        pDI.m_dragType = DRAG_INVALID;
         return 0;                       // Drags not supported during play
     }
 #endif
-    pDI->m_dragType = DRAG_MARKER;
-    pDI->GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
-    pDI->GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
-    pDI->m_hcsrSuggest = g_res.hcrDragTile;
+    pDI.m_dragType = DRAG_MARKER;
+    pDI.GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
+    pDI.GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
+    pDI.m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;
 }
 

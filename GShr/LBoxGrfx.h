@@ -78,7 +78,7 @@ struct COverrideInfo<DRAG_MARKER> : private COverrideInfoBase
 {
     COverrideInfo(MarkID& mid) : COverrideInfoBase(DRAG_MARKER), m_markID(mid) {}
 
-    void CheckType() { CheckTypeBase<DRAG_MARKER>(); }
+    void CheckType() const { CheckTypeBase<DRAG_MARKER>(); }
 
     MarkID& m_markID;
 };
@@ -88,7 +88,7 @@ struct COverrideInfo<DRAG_TILE> : private COverrideInfoBase
 {
     COverrideInfo(TileID& tid) : COverrideInfoBase(DRAG_TILE), m_tileID(tid) {}
 
-    void CheckType() { CheckTypeBase<DRAG_TILE>(); }
+    void CheckType() const { CheckTypeBase<DRAG_TILE>(); }
 
     TileID& m_tileID;
 };
@@ -113,7 +113,7 @@ public:
 
 // Attributes
 public:
-    int  GetTopSelectedItem();
+    int  GetTopSelectedItem() const;
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
@@ -135,26 +135,26 @@ public:
 
 // Overrides - the subclass of this class must override these
 public:
-    virtual unsigned OnItemHeight(size_t nIndex) /* override */ = 0;
-    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) /* override */ = 0;
-    virtual BOOL OnDragSetup(DragInfo* pDI) /* override */
+    virtual unsigned OnItemHeight(size_t nIndex) const /* override */ = 0;
+    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) const /* override */ = 0;
+    virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
     {
-        pDI->m_dragType = DRAG_INVALID;
+        pDI.m_dragType = DRAG_INVALID;
         return FALSE;
     }
-    virtual void OnDragCleanup(DragInfo* pDI) /* override */ { }
+    virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
 
     // For tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() /* override */ { return FALSE; }
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return Invalid_v<GameElement>; }
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) /* override */ { }
+    virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const /* override */ { }
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it
         in general, and doing it here allows override checks of
         CGrafixListBoxData<>::OnGetItemDebugIDCode. */
-    virtual int OnGetItemDebugIDCode(size_t nItem) /* override */ = 0;
+    virtual int OnGetItemDebugIDCode(size_t nItem) const /* override */ = 0;
 
 // Implementation
 protected:
@@ -176,12 +176,12 @@ protected:
 
     int     m_nLastInsert;          // Last index with insert line
 
-    void  DoInsertLineProcessing(UINT nPhase, DragInfo* pdi);
-    void  DoAutoScrollProcessing(DragInfo* pdi);
+    void  DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi);
+    void  DoAutoScrollProcessing(const DragInfo& pdi);
     void  DoToolTipHitProcessing(CPoint point);
 
     CWnd* GetWindowFromPoint(CPoint point);
-    int   SpecialItemFromPoint(CPoint pnt);
+    int   SpecialItemFromPoint(CPoint pnt) const;
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
 
@@ -215,7 +215,7 @@ class CGrafixListBoxData : public BASE_WND
 public:
     CGrafixListBoxData() : m_pItemMap(NULL) {}
 
-    const std::vector<T>* GetItemMap() { return m_pItemMap; }
+    const std::vector<T>* GetItemMap() const { return m_pItemMap; }
     T GetCurMapItem() const
     {
         ASSERT(!IsMultiSelect());
@@ -225,19 +225,19 @@ public:
         ASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
         return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
     }
-    void GetCurMappedItemList(std::vector<T>& pLst)
+    std::vector<T> GetCurMappedItemList() const
     {
-        pLst.clear();
+        std::vector<T> pLst;
         ASSERT(IsMultiSelect());
         int nSels = GetSelCount();
         if (nSels == LB_ERR || nSels == 0)
-            return;
+            return pLst;
         std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
         GetSelItems(nSels, pSelTbl.data());
         pLst.reserve(pSelTbl.size());
         for (size_t i = 0; i < pSelTbl.size(); i++)
             pLst.push_back(MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
-        return;
+        return pLst;
     }
     // Note: the following reference is only good during drag and drop.
     // the data is only good during the drop. It is essentially a
@@ -246,7 +246,7 @@ public:
     // data in the case of a shift click isn't valid until the button
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
-    const std::vector<T>& GetMappedMultiSelectList() { return m_multiSelList; }
+    const std::vector<T>& GetMappedMultiSelectList() const { return m_multiSelList; }
 
     void SetItemMap(const std::vector<T>* pMap, BOOL bKeepPosition = TRUE)
     {
@@ -311,13 +311,13 @@ public:
         }
     }
 
-    T MapIndexToItem(size_t nIndex)
+    T MapIndexToItem(size_t nIndex) const
     {
         ASSERT(m_pItemMap);
         ASSERT(nIndex < m_pItemMap->size());
         return m_pItemMap->at(nIndex);
     }
-    size_t MapItemToIndex(T nItem)
+    size_t MapItemToIndex(T nItem) const
     {
         ASSERT(m_pItemMap);
         for (size_t i = 0; i < m_pItemMap->size(); i++)
@@ -338,7 +338,7 @@ protected:
         else if (IsMultiSelect())
         {
             // Get the final selection results after the mouse was released.
-            GetCurMappedItemList(m_multiSelList);
+            m_multiSelList = GetCurMappedItemList();
 
             CWnd* pWnd = GetParent();
             ASSERT(pWnd != NULL);
@@ -373,7 +373,7 @@ protected:
         CWnd* pWnd = GetWindowFromPoint(point);
         if (pWnd == NULL || (!m_bAllowSelfDrop && pWnd == this))
         {
-            OnDragCleanup(&di);         // Tell subclass we're all done.
+            OnDragCleanup(di);         // Tell subclass we're all done.
             return;
         }
         di.m_point = point;
@@ -383,13 +383,13 @@ protected:
 
         pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
             (LPARAM)(LPVOID)&di);
-        OnDragCleanup(&di);         // Tell subclass we're all done.
+        OnDragCleanup(di);         // Tell subclass we're all done.
         m_multiSelList.clear();
     }
 
     /* N.B.:  Only CTileBaseListBox requires providing this, but
         it doesn't hurt much to provide it in general.  */
-    virtual int OnGetItemDebugIDCode(size_t nItem) override { return value_preserving_cast<int>(static_cast<T::UNDERLYING_TYPE>(MapIndexToItem(nItem))); }
+    virtual int OnGetItemDebugIDCode(size_t nItem) const override { return value_preserving_cast<int>(static_cast<T::UNDERLYING_TYPE>(MapIndexToItem(nItem))); }
 
 private:
     const std::vector<T>* m_pItemMap;         // Maps index to item

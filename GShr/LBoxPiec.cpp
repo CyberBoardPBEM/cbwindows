@@ -65,17 +65,16 @@ void CPieceListBox::SetDocument(CGamDoc* pDoc)
     m_pPMgr = pDoc->GetPieceManager();
 }
 
-CTileManager* CPieceListBox::GetTileManager()
+const CTileManager& CPieceListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    ASSERT(m_pDoc->GetTileManager() != NULL);
-    return m_pDoc->GetTileManager();
+    return CheckedDeref(m_pDoc->GetTileManager());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CPieceListBox::OnIsToolTipsEnabled()
+BOOL CPieceListBox::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
     return m_pDoc->IsShowingObjectTips();
@@ -84,7 +83,7 @@ BOOL CPieceListBox::OnIsToolTipsEnabled()
 #endif
 }
 
-GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
@@ -118,7 +117,7 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 }
 
 void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle)
+    CString& strTip, CString& strTitle) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
@@ -127,7 +126,7 @@ void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem)
+BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     PieceID pid = MapIndexToItem(nItem);
     return m_pDoc->HasGameElementString(MakePieceElement(pid, unsigned(0))) ||
@@ -136,7 +135,7 @@ BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CPieceListBox::OnItemHeight(size_t nIndex)
+unsigned CPieceListBox::OnItemHeight(size_t nIndex) const
 {
     PieceID pid = MapIndexToItem(nIndex);
 
@@ -146,8 +145,8 @@ unsigned CPieceListBox::OnItemHeight(size_t nIndex)
     return DoOnItemHeight(tidLeft, tidRight);
 }
 
-void CPieceListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem)
+void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+    CRect rctItem) const
 {
     // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
     if (nIndex == size_t(UINT(-1)))
@@ -162,17 +161,17 @@ void CPieceListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nStat
     DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tidLeft, tidRight);
 }
 
-BOOL CPieceListBox::OnDragSetup(DragInfo* pDI)
+BOOL CPieceListBox::OnDragSetup(DragInfo& pDI) const
 {
-    pDI->m_dragType = DRAG_PIECE;
-    pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
+    pDI.m_dragType = DRAG_PIECE;
+    pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
     ASSERT(!"code look wrong, but I think this is unreachable");
     /* this is the original code, but it looks wrong since
         everything else seems to say DRAG_PIECE should have
         m_pObj contain CGamDoc*
-    pDI->m_pObj = (void*)m_pPMgr;
+    pDI.m_pObj = (void*)m_pPMgr;
     */
-    pDI->m_hcsrSuggest = g_res.hcrDragTile;
+    pDI.m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;
 }
 

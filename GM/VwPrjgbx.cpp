@@ -804,8 +804,7 @@ void CGbxProjView::OnEditCopy()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    std::vector<TileID> tidtbl;
-    m_listTiles.GetCurMappedItemList(tidtbl);
+    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
 
     BeginWaitCursor();
     TRY
@@ -1010,8 +1009,7 @@ void CGbxProjView::OnProjectSaveTileFile()
     if (dlg.DoModal() != IDOK)
         return;
 
-    std::vector<TileID> tidtbl;
-    m_listTiles.GetCurMappedItemList(tidtbl);
+    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
 
     BeginWaitCursor();
     TRY

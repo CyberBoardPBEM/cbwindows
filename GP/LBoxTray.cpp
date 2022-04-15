@@ -62,11 +62,10 @@ void CTrayListBox::SetDocument(CGamDoc *pDoc)
     m_pDoc = pDoc;
 }
 
-CTileManager* CTrayListBox::GetTileManager()
+const CTileManager& CTrayListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    ASSERT(m_pDoc->GetTileManager() != NULL);
-    return m_pDoc->GetTileManager();
+    return CheckedDeref(m_pDoc->GetTileManager());
 }
 
 BOOL CTrayListBox::IsShowingTileImages()
@@ -83,14 +82,14 @@ void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenS
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CTrayListBox::OnIsToolTipsEnabled()
+BOOL CTrayListBox::OnIsToolTipsEnabled() const
 {
     if (m_eTrayViz != trayVizTwoSide && m_eTrayViz != trayVizOneSide)
         return FALSE;
     return m_pDoc->IsShowingObjectTips() && m_bAllowTips;
 }
 
-GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
+GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
@@ -132,7 +131,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 }
 
 void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle)
+    CString& strTip, CString& strTitle) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
@@ -145,7 +144,7 @@ void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem)
+BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     ASSERT(m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide);
 
@@ -211,7 +210,7 @@ void CTrayListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CTrayListBox::OnItemHeight(size_t nIndex)
+unsigned CTrayListBox::OnItemHeight(size_t nIndex) const
 {
     if (m_eTrayViz == trayVizTwoSide || m_eTrayViz == trayVizOneSide)
     {
@@ -227,8 +226,8 @@ unsigned CTrayListBox::OnItemHeight(size_t nIndex)
     }
 }
 
-void CTrayListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem)
+void CTrayListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+    CRect rctItem) const
 {
     // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
     if (nIndex == size_t(UINT(-1)))
@@ -245,23 +244,23 @@ void CTrayListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
         if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
         {
             // Hidden pieces. Draw the supplied text.
-            pDC->SetTextAlign(TA_TOP | TA_LEFT);
+            pDC.SetTextAlign(TA_TOP | TA_LEFT);
             CBrush brBack(GetSysColor(nState & ODS_SELECTED ?
                 COLOR_HIGHLIGHT : COLOR_WINDOW));
-            pDC->FillRect(&rctItem, &brBack);       // Fill background color
-            pDC->SetBkMode(TRANSPARENT);
-            CFont* pPrvFont = pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
-            pDC->SetTextColor(GetSysColor(nState & ODS_SELECTED ?
+            pDC.FillRect(&rctItem, &brBack);       // Fill background color
+            pDC.SetBkMode(TRANSPARENT);
+            CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+            pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
                 COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-            pDC->TextOut(rctItem.left, rctItem.top, m_strHiddenString);
-            pDC->SelectObject(pPrvFont);
+            pDC.TextOut(rctItem.left, rctItem.top, m_strHiddenString);
+            pDC.SelectObject(pPrvFont);
         }
         if (nAction & ODA_FOCUS)
-            pDC->DrawFocusRect(&rctItem);
+            pDC.DrawFocusRect(&rctItem);
     }
 }
 
-void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2)
+void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2) const
 {
     ASSERT(m_pDoc != NULL);
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
@@ -289,27 +288,27 @@ void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2)
     }
 }
 
-BOOL CTrayListBox::OnDragSetup(DragInfo* pDI)
+BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 {
     if (m_pDoc->IsPlaying())
     {
-        pDI->m_dragType = DRAG_INVALID;
+        pDI.m_dragType = DRAG_INVALID;
         return FALSE;                   // Drags not supported during play
     }
 
     if (IsMultiSelect())
     {
-        pDI->m_dragType = DRAG_PIECELIST;
-        pDI->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
-        pDI->GetSubInfo<DRAG_PIECELIST>().m_gamDoc = m_pDoc;
-        pDI->m_hcsrSuggest = g_res.hcrDragTile;
+        pDI.m_dragType = DRAG_PIECELIST;
+        pDI.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
+        pDI.GetSubInfo<DRAG_PIECELIST>().m_gamDoc = m_pDoc;
+        pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
-        pDI->m_dragType = DRAG_PIECE;
-        pDI->GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
-        pDI->GetSubInfo<DRAG_PIECE>().m_gamDoc = m_pDoc;
-        pDI->m_hcsrSuggest = g_res.hcrDragTile;
+        pDI.m_dragType = DRAG_PIECE;
+        pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
+        pDI.GetSubInfo<DRAG_PIECE>().m_gamDoc = m_pDoc;
+        pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     return TRUE;
 }

@@ -61,14 +61,14 @@ protected:
         { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
     int GetItemGroupCode(int nIndex);
 public:
-    size_t GetItemSourceCode(int nIndex);
+    size_t GetItemSourceCode(int nIndex) const;
     void GetItemText(int nIndex, CString& str);
 
     int GetItemWidth(int nItem);
 
     /* N.B.:  CTileBaseListBox requires providing this, and it
         doesn't hurt much to provide it in general. */
-    virtual int OnGetItemDebugIDCode(size_t nItem) override
+    virtual int OnGetItemDebugIDCode(size_t nItem) const override
     {
         ASSERT(!"not impl");
         AfxThrowNotSupportedException();
@@ -81,9 +81,9 @@ protected:
     int     m_nHorzWidth;
 
     // Overrides
-    virtual unsigned OnItemHeight(size_t nIndex) override;
-    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) override;
+    virtual unsigned OnItemHeight(size_t nIndex) const override;
+    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) const override;
 
     virtual void OnDragEnd(CPoint point) override { ASSERT(!"not used"); AfxThrowNotSupportedException(); }
 
