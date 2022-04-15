@@ -48,7 +48,7 @@ public:
 
 // Attributes
 public:
-    void SetDocument(CGamDoc* pDoc);
+    void SetDocument(const CGamDoc& pDoc);
 
     virtual const CTileManager& GetTileManager() const override;
 
@@ -57,8 +57,8 @@ public:
 
 // Implementation
 protected:
-    CGamDoc*        m_pDoc;
-    CPieceManager*  m_pPMgr;
+    const CGamDoc*       m_pDoc;
+    const CPieceManager* m_pPMgr;
 
     // Overrides
     virtual unsigned OnItemHeight(size_t nIndex) const override;

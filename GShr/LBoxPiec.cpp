@@ -57,12 +57,11 @@ CPieceListBox::CPieceListBox()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceListBox::SetDocument(CGamDoc* pDoc)
+void CPieceListBox::SetDocument(const CGamDoc& pDoc)
 {
     ResetContent();
-    ASSERT(pDoc != NULL);
-    m_pDoc = pDoc;
-    m_pPMgr = pDoc->GetPieceManager();
+    m_pDoc = &pDoc;
+    m_pPMgr = pDoc.GetPieceManager();
 }
 
 const CTileManager& CPieceListBox::GetTileManager() const
@@ -177,7 +176,7 @@ BOOL CPieceListBox::OnDragSetup(DragInfo& pDI) const
 
 int CPieceListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CGrafixListBox::OnCreate(lpCreateStruct) == -1)
+    if (CTileBaseListBox::OnCreate(lpCreateStruct) == -1)
         return -1;
     m_pPMgr = NULL;
     m_pDoc = NULL;

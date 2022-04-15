@@ -258,7 +258,7 @@ BOOL CPieceEditDialog::OnInitDialog()
     CDialog::OnInitDialog();
 
     ASSERT(m_pDoc);
-    m_listPieces.SetDocument(m_pDoc);
+    m_listPieces.SetDocument(*m_pDoc);
 
     m_pPMgr = m_pDoc->GetPieceManager();
 

@@ -91,7 +91,7 @@ BOOL CImportTraysDlg::OnInitDialog()
     ASSERT(m_pDoc != NULL);         // MUST BE SET
     CDialog::OnInitDialog();
 
-    CPieceManager* pPMgr = m_pDoc->GetPieceManager();
+    const CPieceManager* pPMgr = m_pDoc->GetPieceManager();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     ASSERT(pYMgr != NULL && pPMgr != NULL);
 
@@ -123,7 +123,7 @@ BOOL CImportTraysDlg::OnInitDialog()
 
 void CImportTraysDlg::OnOK()
 {
-    CPieceManager* pPMgr = m_pDoc->GetPieceManager();
+    const CPieceManager* pPMgr = m_pDoc->GetPieceManager();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
@@ -134,7 +134,7 @@ void CImportTraysDlg::OnOK()
         {
             CString strTrayName;
             size_t nPSet = value_preserving_cast<size_t>(m_listGroups.GetItemData(i));
-            CPieceSet& pPSet = pPMgr->GetPieceSet(nPSet);
+            const CPieceSet& pPSet = pPMgr->GetPieceSet(nPSet);
 
             // Create tray and add pieces...
             size_t nTray = pYMgr->CreateTraySet(pPSet.GetName());

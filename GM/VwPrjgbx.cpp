@@ -239,7 +239,7 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void CGbxProjView::OnInitialUpdate()
 {
     m_listTiles.SetDocument(GetDocument());
-    m_listPieces.SetDocument(GetDocument());
+    m_listPieces.SetDocument(CheckedDeref(GetDocument()));
     m_listMarks.SetDocument(GetDocument());
 
     CView::OnInitialUpdate();

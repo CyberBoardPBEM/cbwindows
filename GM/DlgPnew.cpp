@@ -288,7 +288,7 @@ BOOL CPieceNewDialog::OnInitDialog()
     strTitle += m_pPMgr->GetPieceSet(m_nPSet).GetName();
     SetWindowText(strTitle);
 
-    m_listPieces.SetDocument(m_pDoc);
+    m_listPieces.SetDocument(*m_pDoc);
 
     m_pTMgr = m_pDoc->GetTileManager();
     ASSERT(m_pTMgr);

@@ -235,7 +235,7 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex)
                 return nullTid;
         }
 
-        PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+        const PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
 
         if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) && !bActiveIfApplies &&
             (!pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()) ||
