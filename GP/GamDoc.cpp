@@ -965,7 +965,7 @@ const CBoardManager* CGamDoc::GetBoardManager() const
     return m_pGbx->GetBoardManager();
 }
 
-CPieceManager* CGamDoc::GetPieceManager()
+const CPieceManager* CGamDoc::GetPieceManager() const
 {
     if (m_pGbx == NULL) return NULL;
     return m_pGbx->GetPieceManager();

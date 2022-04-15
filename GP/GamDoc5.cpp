@@ -94,7 +94,7 @@ void CGamDoc::GetPieceOwnerName(PieceID pid, CString& strName)
 // map is checked. This way changes to the gamebox's strings will show
 // up in all scenarios and games that haven't redefined them.
 
-CString CGamDoc::GetGameElementString(GameElement gelem)
+CString CGamDoc::GetGameElementString(GameElement gelem) const
 {
     CString str;
     if (!m_mapStrings.Lookup(gelem, str))
@@ -102,7 +102,7 @@ CString CGamDoc::GetGameElementString(GameElement gelem)
     return str;
 }
 
-BOOL CGamDoc::HasGameElementString(GameElement gelem)
+BOOL CGamDoc::HasGameElementString(GameElement gelem) const
 {
     CString str;
     if (!m_mapStrings.Lookup(gelem, str))

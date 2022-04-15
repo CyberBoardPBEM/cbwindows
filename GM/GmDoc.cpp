@@ -405,14 +405,14 @@ CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
 ////////////////////////////////////////////////////////////////////////////
 // Support for strings associated with game elements (pieces, markers)
 
-CString CGamDoc::GetGameElementString(GameElement gelem)
+CString CGamDoc::GetGameElementString(GameElement gelem) const
 {
     CString str;
     m_mapStrings.Lookup(gelem, str);
     return str;
 }
 
-BOOL CGamDoc::HasGameElementString(GameElement gelem)
+BOOL CGamDoc::HasGameElementString(GameElement gelem) const
 {
     CString str;
     return m_mapStrings.Lookup(gelem, str);

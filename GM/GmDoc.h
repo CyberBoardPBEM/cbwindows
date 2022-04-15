@@ -210,7 +210,8 @@ public:
     CBoardManager* GetBoardManager() { return m_pBMgr; }
     const CTileManager* GetTileManager() const { return &*m_pTMgr; }
     CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
-    CPieceManager* GetPieceManager() { return m_pPMgr; }
+    const CPieceManager* GetPieceManager() const { return m_pPMgr; }
+    CPieceManager* GetPieceManager() { return const_cast<CPieceManager*>(std::as_const(*this).GetPieceManager()); }
     CMarkManager* GetMarkManager() { return m_pMMgr; }
     CTilePalette* GetTilePalWnd() { return &m_palTile; }
     // -------- //
@@ -241,8 +242,8 @@ public:
     CView* FindBoardEditorView(const CBoard& pBoard);
 
     // Support for strings associated with game elements (pieces, markers)
-    CString     GetGameElementString(GameElement gelem);
-    BOOL        HasGameElementString(GameElement gelem);
+    CString     GetGameElementString(GameElement gelem) const;
+    BOOL        HasGameElementString(GameElement gelem) const;
 
     BOOL DoBoardPropertyDialog(CBoard& pBoard);
 

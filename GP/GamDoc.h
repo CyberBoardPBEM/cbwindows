@@ -256,7 +256,7 @@ public:
     void SetQuietPlayback(BOOL bBeQuite) { m_bQuietPlayback = bBeQuite; }
 
     BOOL IsScenario() const { return m_bScenario; }
-    BOOL IsShowingObjectTips() { return m_bShowObjTipText; }
+    BOOL IsShowingObjectTips() const { return m_bShowObjTipText; }
 
     BOOL IsRecordingCompoundMove();
 
@@ -274,7 +274,7 @@ public:
     {
         return const_cast<CBoardManager*>(std::as_const(*this).GetBoardManager());
     }
-    CPieceManager* GetPieceManager();
+    const CPieceManager* GetPieceManager() const;
     const CPieceTable* GetPieceTable() const { return m_pPTbl; }
     CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
     const CTrayManager* GetTrayManager() const { return m_pYMgr; }
@@ -320,8 +320,8 @@ public:
     BOOL  IsOwnerTipsDisabled() { return m_bDisableOwnerTips; }
 
     // Support for strings associated with game elements (pieces, markers)
-    CString     GetGameElementString(GameElement gelem);
-    BOOL        HasGameElementString(GameElement gelem);
+    CString     GetGameElementString(GameElement gelem) const;
+    BOOL        HasGameElementString(GameElement gelem) const;
     void        SetGameElementString(GameElement gelem, LPCTSTR pszString);
     void        GetTipTextForObject(const CDrawObj& pDObj, CString &strTip, CString* pStrTitle = NULL);
     GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
