@@ -56,14 +56,14 @@ public:
 
 // Attributes
 public:
-    int  GetTopSelectedItem();
+    int  GetTopSelectedItem() const;
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-    const std::vector<CB::not_null<CDrawObj*>>* GetItemMap() { return m_pItemMap; }
-    CDrawObj& GetCurMapItem();
-    void GetCurMappedItemList(std::vector<RefPtr<CDrawObj>>& pLst);
-    BOOL IsMultiSelect()
+    const std::vector<CB::not_null<CDrawObj*>>* GetItemMap() const { return m_pItemMap; }
+    const CDrawObj& GetCurMapItem() const;
+    std::vector<CB::not_null<const CDrawObj*>> GetCurMappedItemList() const;
+    BOOL IsMultiSelect() const
         { return (GetStyle() & (LBS_EXTENDEDSEL | LBS_MULTIPLESEL)) != 0; }
     // Note: the following pointer is only good during drag and drop.
     // the data is only good during the drop. It is essentially a
@@ -72,43 +72,47 @@ public:
     // data in the case of a shift click isn't valid until the button
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
-    std::vector<RefPtr<CDrawObj>>& GetMappedMultiSelectList() { return m_multiSelList; }
+    const std::vector<CB::not_null<const CDrawObj*>>& GetMappedMultiSelectList() const { return m_multiSelList; }
 
 // Operations
 public:
     void SetItemMap(const std::vector<CB::not_null<CDrawObj*>>* pMap, BOOL bKeepPosition = TRUE);
     void UpdateList(BOOL bKeepPosition = TRUE);
-    void SetCurSelMapped(CDrawObj* pMapVal);
+    void SetCurSelMapped(const CDrawObj& pMapVal);
     void SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items);
     void SetSelFromPoint(CPoint point);
     void ShowFirstSelection();
-    CDrawObj& MapIndexToItem(size_t nIndex);
-    size_t MapItemToIndex(const CDrawObj& pItem);
+    const CDrawObj& MapIndexToItem(size_t nIndex) const;
+    CDrawObj& MapIndexToItem(size_t nIndex)
+    {
+        return const_cast<CDrawObj&>(std::as_const(*this).MapIndexToItem(nIndex));
+    }
+    size_t MapItemToIndex(const CDrawObj& pItem) const;
     void MakeItemVisible(int nItem);
 
 // Overrides - the subclass of this class must override these
 public:
-    virtual unsigned OnItemHeight(size_t nIndex) /* override */ = 0;
-    virtual void OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) /* override */ = 0;
-    virtual BOOL OnDragSetup(DragInfo* pDI) /* override */
+    virtual unsigned OnItemHeight(size_t nIndex) const /* override */ = 0;
+    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
+        CRect rctItem) const /* override */ = 0;
+    virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
     {
-        pDI->m_dragType = DRAG_INVALID;
+        pDI.m_dragType = DRAG_INVALID;
         return FALSE;
     }
-    virtual void OnDragCleanup(DragInfo* pDI) /* override */ { }
+    virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
 
     // For tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() /* override */ { return FALSE; }
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) /* override */ { return Invalid_v<GameElement>; }
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) /* override */ { }
+    virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
+    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const /* override */ { }
 
 // Implementation
 protected:
     /* N.B.:  this class could be templatized to hold any pointer,
                 but that generality isn't actually needed yet */
     const std::vector<CB::not_null<CDrawObj*>>* m_pItemMap;          // Maps index to item
-    std::vector<RefPtr<CDrawObj>> m_multiSelList;      // Holds mapped multi select items on drop
+    std::vector<CB::not_null<const CDrawObj*>> m_multiSelList;      // Holds mapped multi select items on drop
 
     // Tool tip support
     CToolTipCtrl m_toolTip;
@@ -126,12 +130,12 @@ protected:
 
     int     m_nLastInsert;          // Last index with insert line
 
-    void  DoInsertLineProcessing(UINT nPhase, DragInfo* pdi);
-    void  DoAutoScrollProcessing(DragInfo* pdi);
+    void  DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi);
+    void  DoAutoScrollProcessing(const DragInfo& pdi);
     void  DoToolTipHitProcessing(CPoint point);
 
-    CWnd* GetWindowFromPoint(CPoint point);
-    int   SpecialItemFromPoint(CPoint pnt);
+    CWnd* GetWindowFromPoint(CPoint point) const;
+    int   SpecialItemFromPoint(CPoint pnt) const;
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
 
