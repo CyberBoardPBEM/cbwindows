@@ -92,7 +92,6 @@ protected:
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
-    // N.B.:  GamElement side is actually item's display index, not piece's tile index
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;

@@ -126,14 +126,16 @@ void CGamDoc::SetGameElementString(GameElement gelem, LPCTSTR pszString)
 }
 
 GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
-    BOOL bBottomSide /* = FALSE */)
+    size_t nSide /*= Invalid_v<size_t>*/)
 {
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
         PieceID pid = pObj.m_pid;
-        int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-        if (bBottomSide) nSide ^= 1;        // Toggle the side
+        if (nSide == Invalid_v<size_t>)
+        {
+            nSide = GetPieceTable()->GetSide(pid);
+        }
         return MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
@@ -146,15 +148,17 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
 }
 
 GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
-    BOOL bBottomSide /* = FALSE */)
+    size_t nSide /*= Invalid_v<size_t>*/)
 {
     GameElement elem = Invalid_v<GameElement>;
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
         PieceID pid = pObj.m_pid;
-        int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-        if (bBottomSide) nSide ^= 1;        // Toggle the side
+        if (nSide == Invalid_v<size_t>)
+        {
+            nSide = GetPieceTable()->GetSide(pid);
+        }
 
         elem = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
         if (!HasGameElementString(elem) || pObj.IsOwnedButNotByCurrentPlayer())
@@ -171,6 +175,10 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
             if (!HasGameElementString(elem))
                 elem = Invalid_v<GameElement>;
         }
+    }
+    else
+    {
+        ASSERT(!"invalid CDrawObj subtype");
     }
     return elem;
 }
