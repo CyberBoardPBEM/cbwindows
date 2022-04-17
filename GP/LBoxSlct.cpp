@@ -147,7 +147,15 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) co
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         const CDrawObj& pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
+        if (pObj.GetType() != CDrawObj::drawPieceObj)
+        {
+            CbThrowBadCastException();
+        }
+        const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
+        ASSERT(pieceObj.m_pDoc == m_pDoc);
+        const CPieceTable& pieceTbl = CheckedDeref(pieceObj.m_pDoc->GetPieceTable());
+        size_t nSide = pieceTbl.GetSide(pieceObj.m_pid, size_t(1));
+        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, nSide);
         rct = ItemToClient(rctRight);
     }
 
@@ -159,9 +167,7 @@ void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
-    static_assert(sizeof(GameElement) == sizeof(nItemCode), "size mismatch");
-    GameElement& elem = reinterpret_cast<GameElement&>(nItemCode);
-    strTip = m_pDoc->GetGameElementString(elem);
+    strTip = m_pDoc->GetGameElementString(nItemCode);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,8 +175,8 @@ void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     const CDrawObj& pObj = MapIndexToItem(nItem);
-    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, FALSE);
-    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
+    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, size_t(0));
+    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, size_t(1));
     return elem1 != Invalid_v<GameElement> || elem2 != Invalid_v<GameElement>;
 }
 

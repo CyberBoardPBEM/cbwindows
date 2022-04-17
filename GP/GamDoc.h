@@ -325,8 +325,9 @@ public:
     BOOL        HasGameElementString(GameElement gelem) const;
     void        SetGameElementString(GameElement gelem, LPCTSTR pszString);
     void        GetTipTextForObject(const CDrawObj& pDObj, CString &strTip, CString* pStrTitle = NULL);
-    GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
-    GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
+    // Invalid_v<size_t> = top
+    GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
+    GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
     void        DoEditPieceText(PieceID pid);
     void        DoEditObjectText(const CDrawObj& pDObj);
 

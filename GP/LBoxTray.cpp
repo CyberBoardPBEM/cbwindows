@@ -83,7 +83,6 @@ BOOL CTrayListBox::OnIsToolTipsEnabled() const
     return m_pDoc.IsShowingObjectTips() && m_bAllowTips;
 }
 
-// N.B.:  GamElement side is actually item's display index, not piece's tile index
 GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
     point = ClientToItem(point);
@@ -120,7 +119,9 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
         if (!rects[i].IsRectEmpty() && rects[i].PtInRect(point))
         {
             rct = ItemToClient(rects[i]);
-            return GameElement(nPid, value_preserving_cast<unsigned>(i));
+            const CPieceTable& pieceTbl = CheckedDeref(m_pDoc.GetPieceTable());
+            uint8_t side = pieceTbl.GetSide(nPid, i);
+            return GameElement(nPid, side);
         }
     }
 
@@ -132,24 +133,7 @@ void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
-    PieceID pid = static_cast<PieceID>(nItemCode);
-    // nItemCode in OnGetHitItemCodeAtPoint format
-    uint8_t displayIndex = nItemCode.GetSide();
-    uint8_t side = m_pDoc.GetPieceTable()->GetSide(pid);
-    uint8_t textIndex;
-    if (displayIndex == uint8_t(0))
-    {
-        textIndex = side;
-    }
-    else if (displayIndex > side)
-    {
-        textIndex = displayIndex;
-    }
-    else
-    {
-        textIndex = displayIndex - uint8_t(1);
-    }
-    strTip = m_pDoc.GetGameElementString(MakePieceElement(pid, textIndex));
+    strTip = m_pDoc.GetGameElementString(nItemCode);
 }
 
 /////////////////////////////////////////////////////////////////////////////
