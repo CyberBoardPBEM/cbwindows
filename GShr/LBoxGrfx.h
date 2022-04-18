@@ -185,6 +185,9 @@ protected:
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
 
+    CPoint ClientToItem(CPoint point) const;
+    CRect ItemToClient(CRect rect) const;
+
     // Overrides
     virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMIS) override;
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS) override;
