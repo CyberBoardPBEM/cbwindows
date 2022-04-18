@@ -85,6 +85,8 @@ BOOL CTrayListBox::OnIsToolTipsEnabled() const
 
 GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
+    point = ClientToItem(point);
+
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
@@ -114,7 +116,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
         rct = rctLeft;
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
-        rct = rctRight;
+        rct = ItemToClient(rctRight);
         side = 1u;
     }
     else

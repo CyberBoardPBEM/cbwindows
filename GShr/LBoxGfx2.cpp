@@ -695,3 +695,21 @@ void CGrafixListBox2::DrawSingle(int nIndex)
     ReleaseDC(pDC);
 }
 
+CPoint CGrafixListBox2::ClientToItem(CPoint point) const
+{
+    // account for horz scroll
+    int xOffset = GetScrollPos(SB_HORZ);
+    ASSERT(xOffset >= 0);
+    point.x += xOffset;
+    return point;
+}
+
+CRect CGrafixListBox2::ItemToClient(CRect rect) const
+{
+    // account for horz scroll
+    int xOffset = GetScrollPos(SB_HORZ);
+    ASSERT(xOffset >= 0);
+    rect.OffsetRect(-xOffset, 0);
+    return rect;
+}
+

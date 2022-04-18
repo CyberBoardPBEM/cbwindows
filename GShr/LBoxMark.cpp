@@ -78,6 +78,8 @@ BOOL CMarkListBox::OnIsToolTipsEnabled() const
 
 GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
+    point = ClientToItem(point);
+
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
@@ -91,7 +93,15 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 
     GetTileRectsForItem(value_preserving_cast<int>(nIndex), tid, nullTid, rct, rct);
 
-    return rct.PtInRect(point) ? GameElement(mid) : Invalid_v<GameElement>;
+    if (rct.PtInRect(point))
+    {
+        rct = ItemToClient(rct);
+        return GameElement(mid);
+    }
+    else
+    {
+        return Invalid_v<GameElement>;
+    }
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,

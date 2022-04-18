@@ -121,6 +121,8 @@ BOOL CSelectListBox::OnIsToolTipsEnabled() const
 
 GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
 {
+    point = ClientToItem(point);
+
     BOOL bOutsideClient;
     UINT nIndex = ItemFromPoint(point, bOutsideClient);
     if (nIndex >= 65535 || GetCount() <= 0)
@@ -140,13 +142,13 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) co
     {
         const CDrawObj& pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
-        rct = rctLeft;
+        rct = ItemToClient(rctLeft);
     }
     else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
     {
         const CDrawObj& pObj = MapIndexToItem(nIndex);
         elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, TRUE);
-        rct = rctRight;
+        rct = ItemToClient(rctRight);
     }
 
     return elem;
