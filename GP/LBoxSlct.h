@@ -65,8 +65,8 @@ protected:
     CGamDoc*    m_pDoc;
 
     // Misc
-    TileID GetTileID(BOOL bActiveIfApplies, size_t nIndex) const;
-    void GetTileRectsForTwoSidedView(int nLBoxIndex, CRect& rctLeft, CRect& rctRight);
+    // retval[0] is active face, followed by inactives
+    std::vector<TileID> GetTileIDs(size_t nIndex) const;
 
     // Overrides
     virtual CSize OnItemSize(size_t nIndex) const override;
