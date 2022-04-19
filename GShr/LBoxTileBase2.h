@@ -60,12 +60,11 @@ protected:
     void SetupTipMarkerIfRequired();
     void DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const;
 
-    CSize DoOnItemSize(size_t nItem, TileID tid1, TileID tid2) const;
+    CSize DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const;
     void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
-        TileID tid1, TileID tid2) const;
+        const std::vector<TileID>& tids) const;
 
-    void GetTileRectsForItem(size_t nItem, TileID tidLeft, TileID tidRight, CRect& rctLeft,
-        CRect& rctRight) const;
+    std::vector<CRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
 
 // Overrides...
 public:

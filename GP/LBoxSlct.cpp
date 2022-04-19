@@ -128,38 +128,33 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) co
     if (nIndex >= 65535 || GetCount() <= 0)
         return Invalid_v<GameElement>;
 
-    TileID tidLeft = GetTileID(TRUE, nIndex);
-    ASSERT(tidLeft != nullTid);
-    TileID tidRight = GetTileID(FALSE, nIndex);
+    std::vector<TileID> tids = GetTileIDs(nIndex);
+    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
 
-    CRect rctLeft;
-    CRect rctRight;
-    GetTileRectsForItem(nIndex, tidLeft, tidRight, rctLeft, rctRight);
+    std::vector<CRect> rcts = GetTileRectsForItem(value_preserving_cast<size_t>(nIndex), tids);
 
-    GameElement elem = Invalid_v<GameElement>;
-
-    if (!rctLeft.IsRectEmpty() && rctLeft.PtInRect(point))
+    for (size_t i = size_t(0); i < rcts.size(); ++i)
     {
-        const CDrawObj& pObj = MapIndexToItem(nIndex);
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
-        rct = ItemToClient(rctLeft);
-    }
-    else if (!rctRight.IsRectEmpty() && rctRight.PtInRect(point))
-    {
-        const CDrawObj& pObj = MapIndexToItem(nIndex);
-        if (pObj.GetType() != CDrawObj::drawPieceObj)
+        ASSERT(!rcts[i].IsRectEmpty());
+        if (rcts[i].PtInRect(point))
         {
-            CbThrowBadCastException();
+            rct = ItemToClient(rcts[i]);
+            const CDrawObj& pObj = MapIndexToItem(nIndex);
+            if (pObj.GetType() == CDrawObj::drawPieceObj)
+            {
+                const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
+                CPieceTable& pieceTbl = CheckedDeref(m_pDoc->GetPieceTable());
+                uint8_t side = pieceTbl.GetSide(pieceObj.m_pid, i);
+                return m_pDoc->GetVerifiedGameElementCodeForObject(pieceObj, side);
+            }
+            else
+            {
+                return m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
+            }
         }
-        const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
-        ASSERT(pieceObj.m_pDoc == m_pDoc);
-        const CPieceTable& pieceTbl = CheckedDeref(pieceObj.m_pDoc->GetPieceTable());
-        size_t nSide = pieceTbl.GetSide(pieceObj.m_pid, size_t(1));
-        elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, nSide);
-        rct = ItemToClient(rctRight);
     }
 
-    return elem;
+    return Invalid_v<GameElement>;
 }
 
 void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
@@ -174,10 +169,27 @@ void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
 
 BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
-    const CDrawObj& pObj = MapIndexToItem(nItem);
-    GameElement elem1 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, size_t(0));
-    GameElement elem2 = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, size_t(1));
-    return elem1 != Invalid_v<GameElement> || elem2 != Invalid_v<GameElement>;
+    const CDrawObj& pDObj = MapIndexToItem(nItem);
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
+    {
+        const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
+        CPieceTable& pieceTbl = CheckedDeref(m_pDoc->GetPieceTable());
+        size_t sides = pieceTbl.GetSides(pObj.m_pid);
+        for (size_t i = size_t(0); i < sides; ++i)
+        {
+            GameElement elem = m_pDoc->GetVerifiedGameElementCodeForObject(pObj, i);
+            if (elem != Invalid_v<GameElement>)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        GameElement elem = m_pDoc->GetVerifiedGameElementCodeForObject(pDObj);
+        return elem != Invalid_v<GameElement>;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -206,11 +218,10 @@ CSize CSelectListBox::OnItemSize(size_t nIndex) const
     CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    TileID tid1 = GetTileID(TRUE, nIndex);
-    ASSERT(tid1 != nullTid);
-    TileID tid2 = GetTileID(FALSE, nIndex);
+    std::vector<TileID> tids = GetTileIDs(nIndex);
+    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
 
-    return DoOnItemSize(nIndex, tid1, tid2);
+    return DoOnItemSize(nIndex, tids);
 }
 
 void CSelectListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
@@ -220,13 +231,13 @@ void CSelectListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nSta
     if (nIndex == size_t(UINT(-1)))
         return;                 // Nothing to draw.
 
-    TileID tid1 = GetTileID(TRUE, nIndex);
-    ASSERT(tid1 != nullTid);
-    TileID tid2 = GetTileID(FALSE, nIndex);
-    DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid1, tid2);
+    std::vector<TileID> tids = GetTileIDs(nIndex);
+    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+    DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
 }
 
-TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex) const
+// retval[0] is active face, followed by inactives
+std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
 {
     const CDrawObj& pDObj = MapIndexToItem(nIndex);
 
@@ -240,37 +251,42 @@ TileID CSelectListBox::GetTileID(BOOL bActiveIfApplies, size_t nIndex) const
         if (!m_pDoc->IsScenario() && pPTbl->IsPieceOwned(pid) &&
             !pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
         {
-            if (bActiveIfApplies)
-                return pPTbl->GetFrontTileID(pid);
-            else
-                return nullTid;
+            std::vector<TileID> retval;
+            retval.push_back(pPTbl->GetFrontTileID(pid));
+            return retval;
         }
 
         const PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
 
-        if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) && !bActiveIfApplies &&
+        std::vector<TileID> retval;
+        if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) &&
             (!pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()) ||
              pPce.m_flags & PieceDef::flagShowOnlyOwnersToo))
         {
-            return nullTid;
+            retval.push_back(pPTbl->GetActiveTileID(pid));
         }
-
-        return bActiveIfApplies ? pPTbl->GetActiveTileID(pid) :
-            pPTbl->GetInactiveTileID(pid);
+        else
+        {
+            retval.reserve(pPTbl->GetSides(pid));
+            retval.push_back(pPTbl->GetActiveTileID(pid));
+            std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(pid);
+            retval.insert(retval.end(), inactives.begin(), inactives.end());
+        }
+        return retval;
 
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        if (!bActiveIfApplies) return nullTid;      // Inactive side doesn't apply
-
         MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
-        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        ASSERT(pMMgr != NULL);
-        return pMMgr->GetMark(mid).m_tid;
+        CMarkManager& pMMgr = CheckedDeref(m_pDoc->GetMarkManager());
+        std::vector<TileID> retval;
+        retval.push_back(pMMgr.GetMark(mid).m_tid);
+        return retval;
     }
     else
     {
         ASSERT(FALSE);                              // Shouldn't happen
-        return nullTid;
+        return std::vector<TileID>();
     }
 }
+
