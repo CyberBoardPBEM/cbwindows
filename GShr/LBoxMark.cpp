@@ -89,9 +89,12 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 
     MarkID mid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
     MarkDef& pMark = pMMgr->GetMark(mid);
-    TileID tid = pMark.m_tid;
+    std::vector<TileID> tids;
+    tids.push_back(pMark.m_tid);
 
-    GetTileRectsForItem(value_preserving_cast<int>(nIndex), tid, nullTid, rct, rct);
+    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
+    ASSERT(rects.size() == size_t(1));
+    rct = rects[size_t(0)];
 
     if (rct.PtInRect(point))
     {
@@ -168,9 +171,10 @@ unsigned CMarkListBox::OnItemHeight(size_t nIndex) const
         MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
-        TileID tid = pMark.m_tid;
+        std::vector<TileID> tids;
+        tids.push_back(pMark.m_tid);
 
-        return DoOnItemHeight(tid, nullTid);
+        return DoOnItemHeight(tids);
     }
     else
     {
@@ -198,8 +202,9 @@ void CMarkListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
         MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
-        TileID tid = pMark.m_tid;
-        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tid, nullTid);
+        std::vector<TileID> tids;
+        tids.push_back(pMark.m_tid);
+        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
     }
     else
     {
