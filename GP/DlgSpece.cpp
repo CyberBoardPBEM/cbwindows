@@ -244,7 +244,7 @@ BOOL CSetPiecesDialog::OnInitDialog()
     ASSERT(m_pPTbl != NULL);
 
     m_listPiece.SetDocument(*m_pDoc);
-    m_listTray.SetTrayContentVisibility(trayVizTwoSide);
+    m_listTray.SetTrayContentVisibility(trayVizAllSides);
 
     LoadPieceNameList();
     LoadTrayNameList();
