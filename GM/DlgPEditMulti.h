@@ -36,7 +36,8 @@ class CPieceEditMultipleDialog : public CDialog
 {
 // Construction
 public:
-    CPieceEditMultipleDialog(CWnd* pParent = NULL);   // standard constructor
+    CPieceEditMultipleDialog(size_t sides, CWnd* pParent = NULL);   // standard constructor
+    const size_t m_sides;
 
 // Dialog Data
     //{{AFX_DATA(CPieceEditMultipleDialog)
@@ -55,11 +56,8 @@ public:
     BOOL    m_bTopOnlyVisible;
     BOOL    m_bTopOnlyOwnersToo;
 
-    BOOL    m_bSetFrontText;                     // TRUE if text should change
-    CString m_strFront;
-
-    BOOL    m_bSetBackText;                      // TRUE if text should change
-    CString m_strBack;
+    std::vector<bool> m_bSetTexts;                      // TRUE if text should change
+    std::vector<std::string> m_strs;
 
 // Overrides
     // ClassWizard generated virtual function overrides
@@ -81,8 +79,15 @@ protected:
     afx_msg void OnBtnClickTopVisible();
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnSelchangeCurrSide();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+    /* sides are 0-based since they are vector indices, but we
+        will display them 1-based for human readability */
+    // m_currSide should contain 2 - sides
+    CComboBox m_currSide;
+    size_t m_prevSide = std::numeric_limits<size_t>::max();
 };
 
 #endif

@@ -534,21 +534,36 @@ void CGbxProjView::DoPieceEdit()
     else
     {
         // Multiple selected. Do special piece edit.
-        CArray<int, int> tblSel;
+        std::vector<int> tblSel;
         int nNumSelected = m_listPieces.GetSelCount();
-        tblSel.SetSize(nNumSelected);
-        m_listPieces.GetSelItems(nNumSelected, tblSel.GetData());
+        if (!nNumSelected)
+        {
+            return;
+        }
+        tblSel.resize(value_preserving_cast<size_t>(nNumSelected));
+        m_listPieces.GetSelItems(nNumSelected, tblSel.data());
 
-        CPieceEditMultipleDialog dlg;
+        std::vector<PieceID> pids(tblSel.size());
+        std::vector<RefPtr<PieceDef>> pDefs;
+        pDefs.reserve(tblSel.size());
+        size_t sides = size_t(0);
+        for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)
+        {
+            pids[i] = m_listPieces.MapIndexToItem(value_preserving_cast<size_t>(tblSel[i]));
+            pDefs.push_back(&pDoc->GetPieceManager()->GetPiece(pids[i]));
+            sides = CB::max(sides, pDefs[i]->GetSides());
+        }
+
+        CPieceEditMultipleDialog dlg(sides);
         if (dlg.DoModal() != IDOK)
             return;
 
-        for (int i = 0; i < tblSel.GetSize(); i++)
+        for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)
         {
-            PieceID pid = m_listPieces.MapIndexToItem(value_preserving_cast<size_t>(tblSel[i]));
-            PieceDef& pDef = pDoc->GetPieceManager()->GetPiece(pid);
+            PieceID pid = pids[i];
+            PieceDef& pDef = *pDefs[i];
             // Process "top only visible" change
-            if (pDef.Is2Sided() && dlg.m_bSetTopOnlyVisible)
+            if (pDef.GetSides() >= size_t(2) && dlg.m_bSetTopOnlyVisible)
             {
                 pDef.m_flags &= ~PieceDef::flagShowOnlyVisibleSide;      // Initially clear the flag
                 pDef.m_flags &= ~PieceDef::flagShowOnlyOwnersToo;
@@ -559,23 +574,17 @@ void CGbxProjView::DoPieceEdit()
                         pDef.m_flags |= PieceDef::flagShowOnlyOwnersToo; // Set this flag too
                 }
             }
-            // Process front piece text change
-            if (dlg.m_bSetFrontText)
+            // Process piece text changes
+            for (size_t j = size_t(0) ; j < pDef.GetSides() ; ++j)
             {
-                GameElement elem = MakePieceElement(pid, unsigned(0));
-                if (!dlg.m_strFront.IsEmpty())
-                    pDoc->GetGameStringMap().SetAt(elem, dlg.m_strFront);
-                else
-                    pDoc->GetGameStringMap().RemoveKey(elem);
-            }
-            // Process back piece text change
-            if (pDef.Is2Sided() && dlg.m_bSetBackText)
-            {
-                GameElement elem = MakePieceElement(pid, unsigned(1));
-                if (!dlg.m_strBack.IsEmpty())
-                    pDoc->GetGameStringMap().SetAt(elem, dlg.m_strBack);
-                else
-                    pDoc->GetGameStringMap().RemoveKey(elem);
+                if (dlg.m_bSetTexts[j])
+                {
+                    GameElement elem = MakePieceElement(pid, value_preserving_cast<unsigned>(j));
+                    if (!dlg.m_strs[j].empty())
+                        pDoc->GetGameStringMap().SetAt(elem, dlg.m_strs[j].c_str());
+                    else
+                        pDoc->GetGameStringMap().RemoveKey(elem);
+                }
             }
         }
     }
