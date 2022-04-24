@@ -27,6 +27,7 @@
 
 // use explicitly sized ints for portable file format control
 #include <cinttypes>
+#include <cstdarg>
 #include <limits>
 #include <memory>
 #include <string>
@@ -120,6 +121,34 @@ namespace CB
 {
     // unfortunately, some, but not all, systems declare ssize_t
     using ssize_t = std::make_signed_t<size_t>;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+namespace CB
+{
+    inline std::string Sprintf(const char* fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        int rc = vsnprintf(nullptr, 0, fmt, args);
+        va_end(args);
+        if (rc < 0)
+        {
+            AfxThrowInvalidArgException();
+        }
+        // +1 for null terminator
+        std::string retval(rc + 1, '\0');
+        va_start(args, fmt);
+        rc = vsnprintf(&retval[0], retval.size(), fmt, args);
+        va_end(args);
+        if (rc < 0)
+        {
+            AfxThrowInvalidArgException();
+        }
+        retval.resize(rc);
+        return retval;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
