@@ -171,19 +171,20 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSelectListBox::OnGetItemDebugString(size_t nIndex, CString& str)
+std::string CSelectListBox::OnGetItemDebugString(size_t nIndex)
 {
     CDrawObj& pDObj = MapIndexToItem(nIndex);
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        PieceID pid = static_cast<CPieceObj&>(pDObj).m_pid;
-        str.Format("[pid:%u] ", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(pid)));
+        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
+        return CB::Sprintf("[pid:%u] ", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(pid)));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
-        MarkID mid = static_cast<CMarkObj&>(pDObj).m_mid;
-        str.Format("[mid:%u] ", value_preserving_cast<UINT>(static_cast<MarkID::UNDERLYING_TYPE>(mid)));
+        MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
+        return CB::Sprintf("[mid:%u] ", value_preserving_cast<UINT>(static_cast<MarkID::UNDERLYING_TYPE>(mid)));
     }
+    return std::string();
 }
 
 /////////////////////////////////////////////////////////////////////////////
