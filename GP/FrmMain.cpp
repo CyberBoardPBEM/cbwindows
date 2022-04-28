@@ -201,6 +201,57 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;      // fail to create
     }
 
+// TODO:  use CMFCDropDownToolbarButton or CMFCToolBarMenuButton?
+#if 1
+    // KLUDGE:  CMFCDropDownToolBar doesn't add images
+    if (!CMFCToolBar::AddToolBarForImageCollection(IDR_TBMENU))
+    {
+        TRACE("Failed to load menu images\n");
+        return -1;      // fail to create
+    }
+
+    if (!m_flipToolbar.Create(this,
+                                CBRS_GRIPPER | WS_CHILD | CBRS_TOP |
+                                CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,
+                                IDR_TBMENU) ||
+        !m_flipToolbar.LoadToolBar(IDR_TBMENU) ||
+        !m_flipToolbar.GetSafeHwnd())
+    {
+        TRACE("Failed to create flip toolbar\n");
+        return -1;      // fail to create
+    }
+    if (!m_wndTBarMove.ReplaceButton(ID_ACT_TURNOVER, CMFCDropDownToolbarButton(_T("Lorem Ipsum"), &m_flipToolbar)))
+    {
+        TRACE("Failed to replace flip button\n");
+        return -1;      // fail to create
+    }
+#else
+    if (!CMFCToolBar::AddToolBarForImageCollection(IDR_TBMENU))
+    {
+        TRACE("Failed to load menu images\n");
+        return -1;      // fail to create
+    }
+
+    CMenu bar;
+    bool rc = bar.LoadMenu(IDR_MENU_PLAYER_POPUPS);
+    if (!rc)
+    {
+        TRACE("Failed to load popup menu\n");
+        return -1;      // fail to create
+    }
+    CMenu& popup = CheckedDeref(bar.GetSubMenu(MENU_ACT_TURNOVER));
+    if (!popup.m_hMenu)
+    {
+        TRACE("Failed to find flip menu\n");
+        return -1;      // fail to create
+    }
+    if (!m_wndTBarMove.ReplaceButton(ID_ACT_TURNOVER, CMFCToolBarMenuButton(ID_ACT_TURNOVER, popup.m_hMenu, -1)))
+    {
+        TRACE("Failed to replace flip button\n");
+        return -1;      // fail to create
+    }
+#endif
+
     if (!m_wndTBarPlay.CreateEx(this, TBSTYLE_FLAT,
             CBRS_GRIPPER | WS_CHILD | WS_VISIBLE | CBRS_TOP |
             CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC,

@@ -118,6 +118,9 @@ protected:
     afx_msg LRESULT OnMessageBox(WPARAM wParam, LPARAM lParam);
 
     DECLARE_MESSAGE_MAP()
+
+private:
+    CMFCDropDownToolBar m_flipToolbar;
 };
 
 /////////////////////////////////////////////////////////////////////////////
