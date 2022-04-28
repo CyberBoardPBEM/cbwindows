@@ -220,6 +220,7 @@
 #define IDR_TBAR_PLAYBACK               2045
 #define IDR_TBAR_VIEW                   2051
 #define IDR_TBAR_MOVE                   2053
+#define IDR_TBMENU                      2057
 #define IDC_D_ABOUT_GENDATE2            5004
 #define IDC_D_YNEW_NAME                 5072
 #define IDC_D_MDESC_DESCR               5119
@@ -481,6 +482,8 @@
 #define ID_VIEW_SMALLSCALEBRD           40156
 #define ID_VIEW_BOARD_ROTATE180         40157
 #define ID_FILE_CHANGE_GAME_OWNER       40158
+#define ID_ACT_TURNOVER_PREV            40162
+#define ID_ACT_TURNOVER_RANDOM          40163
 #define ID_ACT_ROTATE_0                 40300
 #define ID_ACT_ROTATE_30                40306
 #define ID_ACT_ROTATE_45                40309
@@ -503,8 +506,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2057
-#define _APS_NEXT_COMMAND_VALUE         40162
+#define _APS_NEXT_RESOURCE_VALUE        2058
+#define _APS_NEXT_COMMAND_VALUE         40164
 #define _APS_NEXT_CONTROL_VALUE         7227
 #define _APS_NEXT_SYMED_VALUE           4000
 #endif

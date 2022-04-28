@@ -501,6 +501,7 @@ echo off
     <Image Include="res\GsnDoc.ico" />
     <Image Include="res\menuicon.bmp" />
     <Image Include="res\SysButton.bmp" />
+    <Image Include="res\tbmenu.bmp" />
     <Image Include="res\tbmove.bmp" />
     <Image Include="res\tbplayback.bmp" />
     <Image Include="res\tbview.bmp" />

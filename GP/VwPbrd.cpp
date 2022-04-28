@@ -1528,12 +1528,20 @@ void CPlayBoardView::OnActTurnOver()
 
 void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
+    bool bEnabled = false;
     CGamDoc* pDoc = GetDocument();
     if (pDoc->IsPlaying() || !pDoc->IsScenario() &&
-            m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
-        pCmdUI->Enable(FALSE);
+        m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+        bEnabled = false;
     else
-        pCmdUI->Enable(m_selList.HasFlippablePieces());
+        bEnabled = m_selList.HasFlippablePieces();
+    pCmdUI->Enable(bEnabled);
+    if (pCmdUI->m_pSubMenu != NULL)
+    {
+        // Need to handle menu that the submenu is connected to.
+        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
+            MF_BYPOSITION | (bEnabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
+    }
 }
 
 void CPlayBoardView::OnActPlotMove()

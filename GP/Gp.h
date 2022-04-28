@@ -70,7 +70,8 @@ enum
 // containing the right click popups.
 
 enum { MENU_PV_MOVEMODE = 0, MENU_PV_PLAYMODE, MENU_PV_SCNMODE,
-    MENU_PJ_GSN_DEFAULT, MENU_PJ_GAM_DEFAULT, MENU_PV_PIECE_TRAY, MENU_MV_RICHEDIT };
+    MENU_PJ_GSN_DEFAULT, MENU_PJ_GAM_DEFAULT, MENU_PV_PIECE_TRAY, MENU_MV_RICHEDIT,
+    MENU_ACT_TURNOVER, };
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp:

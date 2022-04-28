@@ -54,7 +54,7 @@ BEGIN
     "#if !defined(_AFXDLL)\r\n"
     "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
     "#endif\r\n"
-    "#endi\0"
+    "#endif\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -100,6 +100,8 @@ IDR_TBAR_PLAYBACK       BITMAP                  "res\\tbplayback.bmp"
 IDR_TBAR_VIEW           BITMAP                  "res\\tbview.bmp"
 
 IDR_TBAR_MOVE           BITMAP                  "res\\tbmove.bmp"
+
+IDR_TBMENU              BITMAP                  "res\\tbmenu.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -202,7 +204,12 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Move To &Front\tCtrl+F",      ID_ACT_TOFRONT
         MENUITEM "Move To &Back\tCtrl+B",       ID_ACT_TOBACK
-        MENUITEM "Turn Piece &Over\tCtrl+I",    ID_ACT_TURNOVER
+        POPUP "Turn Piece &Over"
+        BEGIN
+            MENUITEM "&Next\tCtrl+I",               ID_ACT_TURNOVER
+            MENUITEM "&Prev\tCtrl-Shift+I",         ID_ACT_TURNOVER_PREV
+            MENUITEM "&Random\tCtrl-Shift-Alt+I",   ID_ACT_TURNOVER_RANDOM
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
         MENUITEM "&Rotate Object - &Incremental...", 40074
@@ -212,7 +219,7 @@ BEGIN
             MENUITEM SEPARATOR
             POPUP "&Square Faces"
             BEGIN
-                MENUITEM "&0\013O",                     ID_ACT_ROTATE_0
+                MENUITEM "&0°",                         ID_ACT_ROTATE_0
                 MENUITEM "&90°",                        ID_ACT_ROTATE_90
                 MENUITEM "&180°",                       ID_ACT_ROTATE_180
                 MENUITEM "&270°",                       ID_ACT_ROTATE_270
@@ -666,6 +673,11 @@ BEGIN
     BEGIN
         MENUITEM "Copy",                        ID_EDIT_COPY
     END
+    POPUP "7=ACT_TURNOVER"
+    BEGIN
+        MENUITEM "Prev",                        ID_ACT_TURNOVER_PREV
+        MENUITEM "Random",                      ID_ACT_TURNOVER_RANDOM
+    END
 END
 
 IDR_HOLDER MENU
@@ -698,6 +710,8 @@ BEGIN
     "B",            ID_ACT_TOBACK,          VIRTKEY, CONTROL, NOINVERT
     "F",            ID_ACT_TOFRONT,         VIRTKEY, CONTROL, NOINVERT
     "I",            ID_ACT_TURNOVER,        VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_ACT_TURNOVER_PREV,   VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "I",            ID_ACT_TURNOVER_RANDOM, VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     "R",            ID_ACTIONS_ROLLDICE,    VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
     "M",            ID_DEBUG_MOVELIST,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
@@ -1449,6 +1463,13 @@ BEGIN
     BUTTON      ID_ACT_TURNOVER
 END
 
+IDR_TBMENU TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_ACT_TURNOVER
+    BUTTON      ID_ACT_TURNOVER_PREV
+    BUTTON      ID_ACT_TURNOVER_RANDOM
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1754,7 +1775,7 @@ BEGIN
     ID_ACT_DOMESSAGE        "Enter message for opponent\nEnter Message"
     ID_EDIT_CLRBOOKMARK     "Clear saved bookmark"
     ID_VIEW_DICEPAL         "Show or hide the dice palette"
-    ID_ACT_TURNOVER         "Turn the selected piece over to the opposite side\nTurn Piece Over"
+    ID_ACT_TURNOVER         "Turn the selected piece over to the next side\nTurn Piece Over - Next"
     ID_ACT_ROTATE           "Rotate the selected piece\nRotate Piece"
     ID_ACT_REFINESELECT     "Manually reduce the piece selections"
     ID_ACT_ARRANGESTACK     "Manually arrange stack order of selected pieces"
@@ -1958,6 +1979,12 @@ STRINGTABLE
 BEGIN
     IDS_MESSAGE_WND         "Messages"
     IDS_INFO_GAME_CREATED   "New Game File Created:\n\n%s"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ACT_TURNOVER_PREV    "Turn the selected piece over to the prev side\nTurn Piece Over - Prev"
+    ID_ACT_TURNOVER_RANDOM  "Turn the selected piece over to a random side\nTurn Piece Over - Random"
 END
 
 #endif    // English (United States) resources
