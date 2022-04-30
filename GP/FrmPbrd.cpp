@@ -68,8 +68,12 @@ BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
     ON_UPDATE_COMMAND_UI(ID_ACT_TOBACK, OnUpdateActToBack)
     ON_COMMAND(ID_ACT_TOFRONT, OnActToFront)
     ON_UPDATE_COMMAND_UI(ID_ACT_TOFRONT, OnUpdateActToFront)
-    ON_COMMAND(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
     ON_COMMAND(ID_PTOOL_PLOTMOVE, OnActPlotMove)
     ON_UPDATE_COMMAND_UI(ID_PTOOL_PLOTMOVE, OnUpdateActPlotMove)
     ON_COMMAND(ID_ACT_PLOTDONE, OnActPlotDone)
@@ -548,9 +552,9 @@ void CPlayBoardFrame::OnUpdateActToBack(CCmdUI* pCmdUI)
     GetActiveBoardView().OnUpdateActToBack(pCmdUI);
 }
 
-void CPlayBoardFrame::OnActTurnOver()
+BOOL CPlayBoardFrame::OnActTurnOver(UINT id)
 {
-    GetActiveBoardView().OnActTurnOver();
+    return GetActiveBoardView().OnActTurnOver(id);
 }
 
 void CPlayBoardFrame::OnUpdateActTurnOver(CCmdUI* pCmdUI)

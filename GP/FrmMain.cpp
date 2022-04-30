@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_COMPMOVE, OnUpdateDisable)
     ON_UPDATE_COMMAND_UI(ID_ACT_ROTATE_0, OnUpdateDisable)
     ON_UPDATE_COMMAND_UI(ID_MRKGROUP_FIRST, OnUpdateDisable)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateDisable)
     ON_COMMAND(IDW_MARK_PALETTE, OnToggleMarkPalette)
     ON_COMMAND(IDW_TRAY_PALETTEA, OnToggleTrayPaletteA)
     ON_COMMAND(IDW_TRAY_PALETTEB, OnToggleTrayPaletteB)
@@ -526,7 +527,19 @@ void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
         pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
             MF_BYPOSITION | MF_DISABLED | MF_GRAYED);
     }
-    pCmdUI->SetCheck(0);
+
+    bool clearCheck = true;
+    if (pCmdUI->m_pOther &&
+        pCmdUI->m_pOther->IsKindOf(RUNTIME_CLASS(CMFCToolBar)))
+    {
+        CMFCToolBar* pToolBar = static_cast<CMFCToolBar*>(pCmdUI->m_pOther);
+        clearCheck = bool(pToolBar->GetButtonStyle(pCmdUI->m_nIndex) & /*TBBS_CHECKBOX*/TBSTYLE_CHECK);
+    }
+    if (clearCheck)
+    {
+        pCmdUI->SetCheck(0);
+    }
+
     pCmdUI->Enable(0);
 }
 

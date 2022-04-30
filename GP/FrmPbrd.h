@@ -89,7 +89,7 @@ protected:
     afx_msg void OnUpdateActToBack(CCmdUI* pCmdUI);
     afx_msg void OnActToFront();
     afx_msg void OnUpdateActToFront(CCmdUI* pCmdUI);
-    afx_msg void OnActTurnOver();
+    afx_msg BOOL OnActTurnOver(UINT id);
     afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
     afx_msg void OnActPlotMove();
     afx_msg void OnUpdateActPlotMove(CCmdUI* pCmdUI);
