@@ -215,7 +215,7 @@ public:
     BOOL HasNonOwnedPieces() const;
     BOOL HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const;
     BOOL HasMarkers() const;
-    BOOL Has2SidedPieces() const;
+    BOOL HasFlippablePieces() const;
     BOOL IsMarkerSelected() const;
     // -------- //
     void SetMouseOffset(CSize size) { m_sizeMseOffset = size; }

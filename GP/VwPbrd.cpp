@@ -1533,7 +1533,7 @@ void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
             m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
         pCmdUI->Enable(FALSE);
     else
-        pCmdUI->Enable(m_selList.Has2SidedPieces());
+        pCmdUI->Enable(m_selList.HasFlippablePieces());
 }
 
 void CPlayBoardView::OnActPlotMove()
