@@ -702,15 +702,15 @@ BOOL CSelList::HasMarkers() const
     return FALSE;
 }
 
-BOOL CSelList::Has2SidedPieces() const
+BOOL CSelList::HasFlippablePieces() const
 {
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            if (m_pView->GetDocument()->GetPieceTable()->Is2Sided(
-                    static_cast<const CPieceObj&>(*pSel.m_pObj).m_pid))
+            if (m_pView->GetDocument()->GetPieceTable()->GetSides(
+                    static_cast<const CPieceObj&>(*pSel.m_pObj).m_pid) >= size_t(2))
                 return TRUE;
         }
     }
