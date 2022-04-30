@@ -80,8 +80,12 @@ BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_ACT_TOBACK, OnUpdateActToBack)
     ON_COMMAND(ID_ACT_TOFRONT, OnActToFront)
     ON_UPDATE_COMMAND_UI(ID_ACT_TOFRONT, OnUpdateActToFront)
-    ON_COMMAND(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
     ON_COMMAND(ID_PTOOL_PLOTMOVE, OnActPlotMove)
     ON_UPDATE_COMMAND_UI(ID_PTOOL_PLOTMOVE, OnUpdateActPlotMove)
     ON_COMMAND(ID_ACT_PLOTDONE, OnActPlotDone)
@@ -1513,8 +1517,12 @@ void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
         pCmdUI->Enable(m_selList.IsAnySelects());
 }
 
-void CPlayBoardView::OnActTurnOver()
+BOOL CPlayBoardView::OnActTurnOver(UINT id)
 {
+    if (id != ID_ACT_TURNOVER)
+    {
+        AfxThrowNotSupportedException();
+    }
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
@@ -1524,6 +1532,8 @@ void CPlayBoardView::OnActTurnOver()
     GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, m_pPBoard.get());
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
+
+    return true;
 }
 
 void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
