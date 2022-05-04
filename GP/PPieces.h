@@ -57,8 +57,11 @@ public:
     BOOL IsUsed() const         { return m_nSide != 0xFF; }
     void SetUnused();
 
+private:
+    // only for CPieceTable's use
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void SetSide(uint8_t nSide) { m_nSide = nSide; }
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertSide()           { m_nSide ^= uint8_t(1); }
+public:
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] uint8_t GetSide() const     { return m_nSide; }
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL IsFrontUp() const      { return m_nSide == 0; }
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL IsBackUp() const       { return m_nSide == 1; }
@@ -110,6 +113,8 @@ public:
     void SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl);
 
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void FlipPieceOver(PieceID pid);
+    enum Flip { fInvalid, fPrev, fNext, fSelect, fRandom };
+    void FlipPieceOver(PieceID pid, Flip flip);
 
     void SetPieceFacing(PieceID pid, uint16_t nFacingDegCW);
     uint16_t GetPieceFacing(PieceID pid) const;
