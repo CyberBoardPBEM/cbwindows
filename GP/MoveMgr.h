@@ -134,6 +134,8 @@ public:
     CPieceSetSide() { m_eType = mrecPSide; }
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] CPieceSetSide(PieceID pid, BOOL bTopUp)
         { m_eType = mrecPSide; m_pid = pid; m_bTopUp = bTopUp; }
+    CPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side)
+        { m_eType = mrecPSide; m_pid = pid; AfxThrowNotSupportedException(); }
 
     virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);

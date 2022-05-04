@@ -468,7 +468,7 @@ size_t CGamDoc::PlaceObjectTableInTray(const std::vector<CB::not_null<CDrawObj*>
 // (RECORDS)
 void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd)
 {
-    if (!m_pPTbl->Is2Sided(pObj.m_pid))
+    if (m_pPTbl->GetSides(pObj.m_pid) <= size_t(1))
         return;
     if (!IsQuietPlayback())
     {
@@ -502,6 +502,45 @@ void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDra
         // Only pieces are flipped. Others are left as they are.
         if (pObj.GetType() == CDrawObj::drawPieceObj)
             InvertPlayingPieceOnBoard(static_cast<CPieceObj&>(pObj), pPBrd);
+    }
+}
+
+void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, CPieceTable::Flip flip, CPlayBoard* pPBrd)
+{
+    if (m_pPTbl->GetSides(pObj.m_pid) <= size_t(1))
+        return;
+    if (!IsQuietPlayback())
+    {
+        CGamDocHint hint;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
+        UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
+    }
+
+    m_pPTbl->FlipPieceOver(pObj.m_pid, flip);
+    pObj.ResyncExtentRect();
+
+    // Record processing
+    RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable()->GetSide(pObj.m_pid));
+
+    if (!IsQuietPlayback())
+    {
+        CGamDocHint hint;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+        hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
+        UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
+    }
+    SetModifiedFlag();
+}
+
+void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPieceTable::Flip flip, CPlayBoard* pPBrd)
+{
+    for (auto pos = pLst.begin(); pos != pLst.end(); ++pos)
+    {
+        CDrawObj& pObj = **pos;
+        // Only pieces are flipped. Others are left as they are.
+        if (pObj.GetType() == CDrawObj::drawPieceObj)
+            InvertPlayingPieceOnBoard(static_cast<CPieceObj&>(pObj), flip, pPBrd);
     }
 }
 

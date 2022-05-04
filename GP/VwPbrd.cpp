@@ -1519,9 +1519,20 @@ void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
 
 BOOL CPlayBoardView::OnActTurnOver(UINT id)
 {
-    if (id != ID_ACT_TURNOVER)
+    CPieceTable::Flip flip;
+    switch (id)
     {
-        AfxThrowNotSupportedException();
+        case ID_ACT_TURNOVER:
+            flip = CPieceTable::fNext;
+            break;
+        case ID_ACT_TURNOVER_PREV:
+            flip = CPieceTable::fPrev;
+            break;
+        case ID_ACT_TURNOVER_RANDOM:
+            flip = CPieceTable::fRandom;
+            break;
+        default:
+            AfxThrowInvalidArgException();
     }
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
@@ -1529,7 +1540,7 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, m_pPBoard.get());
+    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, flip, m_pPBoard.get());
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 

@@ -180,6 +180,35 @@ void CPieceTable::FlipPieceOver(PieceID pid)
     GetPiece(pid).InvertSide();
 }
 
+void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip)
+{
+    size_t sides = GetSides(pid);
+    size_t offset;
+    switch (flip)
+    {
+        case fNext:
+            offset = size_t(1);
+            break;
+        case fPrev:
+            // avoid arithmetic overflow
+            offset = sides - size_t(1);
+            break;
+        case fRandom:
+        {
+            UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
+            offset = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(sides),
+                nRandSeed, &nRandSeed);
+            m_pDoc->SetRandomNumberSeed(nRandSeed);
+            break;
+        }
+        default:
+            AfxThrowInvalidArgException();
+    }
+    Piece& piece = GetPiece(pid);
+    uint8_t side = value_preserving_cast<uint8_t>((piece.GetSide() + offset) % sides);
+    piece.SetSide(side);
+}
+
 void CPieceTable::SetPieceUnused(PieceID pid)
 {
     GetPiece(pid).SetUnused();
@@ -397,7 +426,7 @@ TileID CPieceTable::GetActiveTileID(PieceID pid) const
     const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
-    return pPce->IsFrontUp() ? pDef->GetFrontTID() : pDef->GetBackTID();
+    return pDef->GetTIDs()[pPce->GetSide()];
 }
 
 TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
@@ -405,7 +434,7 @@ TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
     const Piece* pPce;
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
-    TileID tidBase = pPce->IsFrontUp() ? pDef->GetFrontTID() : pDef->GetBackTID();
+    TileID tidBase = pDef->GetTIDs()[pPce->GetSide()];
 
     if (!bWithFacing || pPce->GetFacing() == 0)
         return tidBase;

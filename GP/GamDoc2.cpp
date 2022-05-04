@@ -345,6 +345,15 @@ void CGamDoc::RecordPieceSetSide(PieceID pid, BOOL bTopUp)
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
+void CGamDoc::RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side)
+{
+    if (!IsRecording()) return;
+    CreateRecordListIfRequired();
+    ASSERT(m_pRcdMoves != NULL);
+    OwnerPtr<CPieceSetSide> pRcd = MakeOwner<CPieceSetSide>(pid, flip, side);
+    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
+}
+
 ////////////////////////////////////////////////////////////////////
 
 void CGamDoc::RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW)

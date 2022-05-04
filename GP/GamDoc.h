@@ -353,6 +353,7 @@ public:
         PlacePos ePos = placeDefault);
     void RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos);
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void RecordPieceSetSide(PieceID pid, BOOL bTopUp);
+    void RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side);
     void RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW);
     void RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask);
     void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
@@ -390,6 +391,8 @@ public:
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceOnBoard(CPieceObj& pObj, CPlayBoard *pPBrd);
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd);
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
+    void InvertPlayingPieceOnBoard(CPieceObj& pObj, CPieceTable::Flip flip, CPlayBoard* pPBrd);
+    void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPieceTable::Flip flip, CPlayBoard* pPBrd);
 
     void ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
         uint16_t nFacingDegCW);
