@@ -99,10 +99,12 @@ void CTileListBox::OnItemDraw(CDC* pDC, size_t nIndex, UINT nAction, UINT nState
             CString str;
             str.Format("[%u] ", static_cast<TileID::UNDERLYING_TYPE>(MapIndexToItem(nIndex)));
             CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
+            int prevBkMode = pDC->SetBkMode(TRANSPARENT);
             int y = rctItem.top + rctItem.Height() / 2 -
                 (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
             pDC->TextOut(x, y, str);
             x += pDC->GetTextExtent(str).cx;
+            pDC->SetBkMode(prevBkMode);
             pDC->SelectObject(prvFont);
         }
 
