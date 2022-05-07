@@ -100,7 +100,7 @@ void CRotatePieceDialog::UpdateRotationValue()
     TCHAR szBfr[40];
     if (m_nRelativeRotation != 0)
     {
-        wsprintf(szBfr, "%c%d", m_nRelativeRotation < 0 ? '-' : '+',
+        sprintf(szBfr, "%c%d", m_nRelativeRotation < 0 ? '-' : '+',
                 abs(m_nRelativeRotation));
     }
     else

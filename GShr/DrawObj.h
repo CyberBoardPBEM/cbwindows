@@ -204,6 +204,8 @@ protected:
 class alignas(uint32_t) ObjectID32
 {
 public:
+    typedef uint32_t UNDERLYING_TYPE;
+
     /* N.B.:  CB3.1 always seemed to init ObjectID so this is
                 the invalid value, not uninitialized data */
     constexpr ObjectID32() = default;
@@ -348,6 +350,8 @@ inline CArchive& operator>>(CArchive& ar, ObjectID32& oid)
 class alignas(uint64_t) ObjectID64
 {
 public:
+    typedef uint64_t UNDERLYING_TYPE;
+
     constexpr ObjectID64() = default;
     ObjectID64(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID64(PieceID32 pid);

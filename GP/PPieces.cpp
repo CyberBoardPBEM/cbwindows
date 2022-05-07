@@ -535,7 +535,7 @@ void CPieceTable::DumpToTextFile(CFile& file)
         const Piece* pPce;
         const PieceDef* pDef;
         GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
-        wsprintf(szBfr, "PieceID %5.5d: m_nSide=%02X, m_nFacing=%3u, "
+        sprintf(szBfr, "PieceID %5.5zd: m_nSide=%02X, m_nFacing=%3u, "
             "m_tidFront=%5u, m_tidBack=%5u\r\n", i,
             (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing,
             (UINT)static_cast<TileID::UNDERLYING_TYPE>(pDef->m_tidFront),

@@ -56,6 +56,8 @@ typedef DWORD GameElementLegacyCheck;
 class alignas(uint32_t) GameElement32
 {
 public:
+    typedef uint32_t UNDERLYING_TYPE;
+
     // uninitialized data
     GameElement32() = default;
     explicit GameElement32(PieceID16 pid, unsigned nSide = unsigned(0))
@@ -411,6 +413,8 @@ inline ObjectID32 GetObjectIDFromElement(GameElement32 elem)
 class alignas(uint64_t) GameElement64
 {
 public:
+    typedef uint64_t UNDERLYING_TYPE;
+
     // uninitialized data
     GameElement64() = default;
     explicit GameElement64(PieceID32 pid, unsigned nSide = unsigned(0))

@@ -165,7 +165,7 @@ void CCellForm::CreateHexMask()
 
     //TEST--Write mask file--TEST//
     //char fname[80];
-    //wsprintf(fname, "MASK%02d%02d.BMP", m_rct.right, m_rct.bottom);
+    //sprintf(fname, "MASK%02d%02d.BMP", m_rct.right, m_rct.bottom);
     //CFile mskFile(fname, CFile::modeWrite | CFile::modeCreate);
     //CDib dib;
     //dib.BitmapToDIB(m_pMask);

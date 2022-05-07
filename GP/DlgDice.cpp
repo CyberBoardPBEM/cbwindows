@@ -180,13 +180,13 @@ void CDieRollerDlg::MakeFormattedRollResult()
                     m_strRoll += " + ";
                 else
                     bPlusNeeded = TRUE;
-                wsprintf(szBfr, "%dD%d", rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
+                sprintf(szBfr, "%dD%d", rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
                 m_strRoll += szBfr;
             }
         }
         if (rs.m_nBias != 0)
         {
-            wsprintf(szBfr, " %c %d", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            sprintf(szBfr, " %c %d", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
         m_strRoll += "\r\n";
@@ -237,7 +237,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
                         m_strRoll += " + ";
                     else
                         bPlusNeeded = TRUE;
-                    wsprintf(szBfr, "%d", nRandomNum);
+                    sprintf(szBfr, "%d", nRandomNum);
                     m_strRoll += szBfr;
                 }
             }
@@ -245,12 +245,12 @@ void CDieRollerDlg::MakeFormattedRollResult()
         if (rs.m_nBias != 0)
         {
             nRandomTotal += rs.m_nBias;
-            wsprintf(szBfr, " [%c %d]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            sprintf(szBfr, " [%c %d]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
         if (rs.m_nBias != 0 || nDies > 1)
         {
-            wsprintf(szBfr, " = %d", nRandomTotal);
+            sprintf(szBfr, " = %d", nRandomTotal);
             m_strRoll += szBfr;
         }
         // Finish up...
