@@ -233,7 +233,7 @@ void CGridType::UpdateBoardDimensions()
         VERIFY(str.LoadString(IDS_BSIZE_PATTERN));
         CSize size = cf.CalcBoardSize(m_iRows, m_iCols);
         char szBfr[_MAX_PATH];
-        wsprintf(szBfr, str, size.cy, size.cx);
+        sprintf(szBfr, str, size.cy, size.cx);
         m_staticPixelSize.SetWindowText(szBfr);
     }
     else

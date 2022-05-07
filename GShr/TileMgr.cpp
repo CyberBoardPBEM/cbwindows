@@ -565,7 +565,7 @@ BOOL CTileManager::PruneTilesOnSheet255()
             {
                 RemoveTileIDFromTileSets(static_cast<TileID>(tid));
                 char szBfr[256];
-                wsprintf(szBfr, "Removed TileID %zu from tile group:\n\n\"%s\".",
+                sprintf(szBfr, "Removed TileID %zu from tile group:\n\n\"%s\".",
                     tid, GetTileSet(nSet).GetName());
                 AfxMessageBox(szBfr);
                 tp.m_tileFull.SetEmpty();
@@ -645,11 +645,11 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     {
         const CTileSet& pTSet = m_TSetTbl.at(nSet);
 
-        wsprintf(szBfr, "| %2zu  | %-25s  |", nSet, pTSet.GetName());
+        sprintf(szBfr, "| %2zu  | %-25s  |", nSet, pTSet.GetName());
         WriteFileString(hFile, szBfr);
         for (size_t i = 0; i < pTSet.GetTileIDTable().size(); i++)
         {
-            wsprintf(szBfr, " %u", static_cast<TileID::UNDERLYING_TYPE>(pTSet.GetTileIDTable().at(i)));
+            sprintf(szBfr, " %u", value_preserving_cast<unsigned>(static_cast<TileID::UNDERLYING_TYPE>(pTSet.GetTileIDTable().at(i))));
             WriteFileString(hFile, szBfr);
         }
         WriteFileString(hFile, "\r\n");
@@ -672,7 +672,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     {
         const CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
 
-        wsprintf(szBfr, "| %04zX  | %3u | %3u | %5u |\r\n", nSheet,
+        sprintf(szBfr, "| %04zX  | %3u | %3u | %5u |\r\n", nSheet,
             pTSheet.GetWidth(), pTSheet.GetHeight(),
             pTSheet.GetSheetHeight());
         WriteFileString(hFile, szBfr);
@@ -706,7 +706,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     pTbl = pShtTbl;
     for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
     {
-        wsprintf(szBfr, "| %04jX  | %3ju | %3ju | %5ju |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
+        sprintf(szBfr, "| %04jX  | %3ju | %3ju | %5ju |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
         pTbl += 4;
         WriteFileString(hFile, szBfr);
     }
@@ -727,7 +727,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
         const TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
-        wsprintf(szBfr, "| %10zu | %08zX %5u | %08zX %5u | 0x%08X  |", tid,
+        sprintf(szBfr, "| %10zu | %08zX %5u | %08zX %5u | 0x%08X  |", tid,
             tp.m_tileFull.m_nSheet, tp.m_tileFull.m_nOffset,
             tp.m_tileHalf.m_nSheet, tp.m_tileHalf.m_nOffset,
             tp.m_tileSmall);
@@ -735,7 +735,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
         size_t nTSet = FindTileSetFromTileID(static_cast<TileID>(tid));
         if (nTSet != Invalid_v<size_t>)
-            wsprintf(szBfr, " %3zu  |\r\n", nTSet);
+            sprintf(szBfr, " %3zu  |\r\n", nTSet);
         else
             lstrcpy(szBfr, " ***  |\r\n");
         WriteFileString(hFile, szBfr);

@@ -256,7 +256,7 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
         pDDib.Set16BitColorNumberAtXY(dstX, dstY, nColor);
         // TEST CODE:
         //        char str[256];
-        //        wsprintf(str, "dX=%d, dY=%d : sX=%d, sY=%d\n",
+        //        sprintf(str, "dX=%d, dY=%d : sX=%d, sY=%d\n",
         //          dstX, dstY,
         //          srcX.RoundedVal(), srcY.RoundedVal());
         //        TRACE(str);

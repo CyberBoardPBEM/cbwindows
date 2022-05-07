@@ -420,11 +420,11 @@ void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
 static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
 {
     TCHAR szKeyBfr[128];
-    wsprintf(szKeyBfr, szShellCommand, szFileClass, szPrintStyle);
+    sprintf(szKeyBfr, szShellCommand, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
-    wsprintf(szKeyBfr, szShellDdeexec, szFileClass, szPrintStyle);
+    sprintf(szKeyBfr, szShellDdeexec, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
-    wsprintf(szKeyBfr, szShell, szFileClass, szPrintStyle);
+    sprintf(szKeyBfr, szShell, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
 }
 
