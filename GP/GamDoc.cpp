@@ -1118,7 +1118,7 @@ void CGamDoc::OnDebugMoveList()
         CFile file;
         if (file.Open(dlg.GetPathName(), CFile::modeWrite | CFile::modeCreate))
         {
-            pMoveList->DumpToTextFile(file);
+            pMoveList->DumpToTextFile(*this, file);
             file.Close();
         }
     }

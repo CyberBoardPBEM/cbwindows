@@ -66,7 +66,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file) = 0;
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const /* override */ = 0;
 #endif
 protected:
     size_t  m_nSeqNum;              // Used to group move records
@@ -92,7 +92,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     CPoint      m_ptCtr;
@@ -118,7 +118,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     PieceID     m_pid;
@@ -146,7 +146,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     PieceID     m_pid;
@@ -171,7 +171,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     PieceID     m_pid;
@@ -194,7 +194,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     PieceID     m_pid;
@@ -216,7 +216,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     ObjectID    m_dwObjID;
@@ -239,7 +239,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     CPoint      m_ptCtr;
@@ -264,7 +264,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     ObjectID    m_dwObjID;
@@ -286,7 +286,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     GameElement m_elem;
@@ -308,7 +308,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     GameElement m_elem;
@@ -336,7 +336,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     OwnerOrNullPtr<CGameState> m_pState;
@@ -361,7 +361,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     BoardID     m_nBrdNum;
@@ -382,7 +382,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     CString m_strMsg;
@@ -404,7 +404,7 @@ public:
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     BOOL    m_bIsBoardEvent;        // If TRUE, message relates to board
@@ -440,7 +440,7 @@ public:
 
 #ifdef _DEBUG
     virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup) { ASSERT(FALSE); }
-    virtual void DumpToTextFile(CFile& file);
+    virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
     BOOL    m_bGroupBegin;
@@ -534,7 +534,7 @@ public:
     void Serialize(CArchive& ar, BOOL bSaveUndo = TRUE);
 
 #ifdef _DEBUG
-    void DumpToTextFile(CFile& file);
+    void DumpToTextFile(const CGamDoc& pDoc, CFile& file);
 #endif
 // Implementation
 protected:

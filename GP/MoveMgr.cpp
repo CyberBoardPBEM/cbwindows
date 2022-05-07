@@ -184,7 +184,7 @@ void CBoardPieceMove::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CBoardPieceMove::DumpToTextFile(CFile& file)
+void CBoardPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    board = %u, pos = %d, pid = %u, @(%d, %d)\r\n",
@@ -283,7 +283,7 @@ void CTrayPieceMove::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CTrayPieceMove::DumpToTextFile(CFile& file)
+void CTrayPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    tray = %zu, nPos = %zd, pid = %u\r\n",
@@ -376,7 +376,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CPieceSetSide::DumpToTextFile(CFile& file)
+void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    Piece %u is set to %s visible.\r\n",
@@ -455,7 +455,7 @@ void CPieceSetFacing::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CPieceSetFacing::DumpToTextFile(CFile& file)
+void CPieceSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    Piece %u is rotated %d degrees.\r\n", value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_nFacingDegCW);
@@ -520,7 +520,7 @@ void CPieceSetOwnership::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CPieceSetOwnership::DumpToTextFile(CFile& file)
+void CPieceSetOwnership::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    Piece %u has ownership changed to 0x%X.\r\n",
@@ -588,7 +588,7 @@ void CMarkerSetFacing::Serialize(CArchive& ar)              // VER2.0 is first t
 }
 
 #ifdef _DEBUG
-void CMarkerSetFacing::DumpToTextFile(CFile& file)
+void CMarkerSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    Marker dwObjID = %" PRIX64 ", mid = %u is rotated %d degrees.\r\n",
@@ -685,7 +685,7 @@ void CBoardMarkerMove::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CBoardMarkerMove::DumpToTextFile(CFile& file)
+void CBoardMarkerMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    board = %u, pos = %d, dwObjID = %" PRIX64 ", mid = %u, @(%d, %d)\r\n",
@@ -740,7 +740,7 @@ void CObjectDelete::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CObjectDelete::DumpToTextFile(CFile& file)
+void CObjectDelete::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    dwObjID = %" PRIX64 "\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const ObjectID::UNDERLYING_TYPE&>(m_dwObjID)));
@@ -839,7 +839,7 @@ void CObjectSetText::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CObjectSetText::DumpToTextFile(CFile& file)
+void CObjectSetText::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    elem = %" PRIX64 ", text = \"%s\"\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const GameElement::UNDERLYING_TYPE&>(m_elem)), (LPCTSTR)m_strObjText);
@@ -960,7 +960,7 @@ void CObjectLockdown::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CObjectLockdown::DumpToTextFile(CFile& file)
+void CObjectLockdown::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    elem = %" PRIX64 ", state = %d\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const GameElement::UNDERLYING_TYPE&>(m_elem)), m_bLockState);
@@ -991,7 +991,7 @@ void CGameStateRcd::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CGameStateRcd::DumpToTextFile(CFile& file)
+void CGameStateRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     static char strMsg[] =
         "    To much to dump! (Trust me on this)\r\n";
@@ -1053,7 +1053,7 @@ void CMovePlotList::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CMovePlotList::DumpToTextFile(CFile& file)
+void CMovePlotList::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     static char strMsg[] =
         "    To much to dump! (just plain lazy on this one)\r\n";
@@ -1078,7 +1078,7 @@ void CMessageRcd::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CMessageRcd::DumpToTextFile(CFile& file)
+void CMessageRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     file.Write(m_strMsg, lstrlen(m_strMsg));
     file.Write("\r\n", 2);
@@ -1174,7 +1174,7 @@ void CEventMessageRcd::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CEventMessageRcd::DumpToTextFile(CFile& file)
+void CEventMessageRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     if (m_bIsBoardEvent)
@@ -1206,7 +1206,7 @@ void CCompoundMove::Serialize(CArchive& ar)
 }
 
 #ifdef _DEBUG
-void CCompoundMove::DumpToTextFile(CFile& file)
+void CCompoundMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
     char szBfr[256];
     sprintf(szBfr, "    %s Compound Move.\r\n", m_bGroupBegin ? "Begin" : "End");
@@ -1995,7 +1995,7 @@ static char *tblTypes[CMoveRecord::mrecMax] =
     "SetObjectText", "LockObject", "EventMessage", "SetPieceOwnership"
 };
 
-void CMoveList::DumpToTextFile(CFile& file)
+void CMoveList::DumpToTextFile(const CGamDoc& pDoc, CFile& file)
 {
     char szBfr[256];
     sprintf(szBfr, "Current Move Group: %zu\r\n", m_nSeqNum);
@@ -2013,7 +2013,7 @@ void CMoveList::DumpToTextFile(CFile& file)
         sprintf(szBfr, "[Index=%04d; Seq=%04zd: %s]\r\n", nIndex, pRcd.GetSeqNum(),
             (LPCSTR)tblTypes[eType]);
         file.Write(szBfr, lstrlen(szBfr));
-        pRcd.DumpToTextFile(file);
+        pRcd.DumpToTextFile(pDoc, file);
         nIndex++;
     }
 }
