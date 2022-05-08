@@ -151,6 +151,10 @@ void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         m_tblSel.clear();
         return;
     }
+    else if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
+    {
+        Invalidate();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
