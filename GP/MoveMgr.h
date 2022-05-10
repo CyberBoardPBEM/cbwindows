@@ -133,9 +133,19 @@ class CPieceSetSide : public CMoveRecord
 public:
     CPieceSetSide() { m_eType = mrecPSide; }
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] CPieceSetSide(PieceID pid, BOOL bTopUp)
-        { m_eType = mrecPSide; m_pid = pid; m_bTopUp = bTopUp; }
+    {
+        m_eType = mrecPSide;
+        m_pid = pid;
+        m_flip = CPieceTable::fNext;
+        m_side = bTopUp ? size_t(0) : size_t(1);
+    }
     CPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side)
-        { m_eType = mrecPSide; m_pid = pid; AfxThrowNotSupportedException(); }
+    {
+        m_eType = mrecPSide;
+        m_pid = pid;
+        m_flip = flip;
+        m_side = side;
+    }
 
     virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
     virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
@@ -150,7 +160,8 @@ public:
 #endif
 protected:
     PieceID     m_pid;
-    BOOL        m_bTopUp;
+    CPieceTable::Flip m_flip;
+    size_t      m_side;
 };
 
 ///////////////////////////////////////////////////////////////////////

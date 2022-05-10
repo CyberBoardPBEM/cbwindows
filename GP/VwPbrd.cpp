@@ -1540,7 +1540,7 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, flip, m_pPBoard.get());
+    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, *m_pPBoard, flip);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 
