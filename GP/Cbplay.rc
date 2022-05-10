@@ -1927,6 +1927,7 @@ BEGIN
     IDS_PRJINFO_MPLAYER     "MULTIPLAYER INFORMATION:\r\n\r\n"
     IDS_ROW_BREAK           "<ROW-BREAK>"
     IDS_URL_CB_WEBSITE      "http://cyberboard.norsesoft.com"
+    IDS_TIP_FLIP_RANDOM     "Pieces in this area of the board have been flipped randomly."
     IDS_MSG_TRAY_INFO       "Playing piece tray ""%s"" has the following properties:\n\n"
     IDS_MSG_TVIZ_TWO_SIDE   "- Both sides of pieces are visible"
     IDS_MSG_TVIZ_ONE_SIDE   "- Only the top side of a piece is visible"
