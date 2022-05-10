@@ -1537,10 +1537,30 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
+    CPoint pntCenter;
+    if (flip == CPieceTable::fRandom)
+    {
+        CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
+        ASSERT(!rct.IsRectEmpty());
+        pntCenter = CPoint(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+    }
+
     m_selList.PurgeList(TRUE);          // Purge former selections
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, *m_pPBoard, flip);
+    CGamDoc* pDoc = GetDocument();
+    pDoc->AssignNewMoveGroup();
+
+    if (pDoc->IsRecording() && flip == CPieceTable::fRandom)
+    {
+        // Insert a notification tip so there is some information
+        // feedback during playback.
+        CString strMsg;
+        strMsg.LoadString(IDS_TIP_FLIP_RANDOM);
+        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+    }
+
+    pDoc->InvertPlayingPieceTableOnBoard(listObjs, *m_pPBoard, flip);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 

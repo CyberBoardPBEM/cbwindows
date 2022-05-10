@@ -151,6 +151,7 @@
 #define IDS_ROW_BREAK                   646
 #define IDS_URL_CB_WEBSITE              647
 #define IDS_URL_CB_DONATION             648
+#define IDS_TIP_FLIP_RANDOM             648
 #define IDS_MSG_TRAY_INFO               649
 #define IDS_MSG_TVIZ_TWO_SIDE           650
 #define IDS_MSG_TVIZ_ONE_SIDE           651
