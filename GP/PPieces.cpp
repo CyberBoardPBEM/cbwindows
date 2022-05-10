@@ -180,8 +180,10 @@ void CPieceTable::FlipPieceOver(PieceID pid)
     GetPiece(pid).InvertSide();
 }
 
-void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip)
+void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip, size_t side)
 {
+    Piece& piece = GetPiece(pid);
+    uint8_t prevSide = piece.GetSide();
     size_t sides = GetSides(pid);
     size_t offset;
     switch (flip)
@@ -194,19 +196,28 @@ void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip)
             offset = sides - size_t(1);
             break;
         case fRandom:
-        {
-            UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
-            offset = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(sides),
-                nRandSeed, &nRandSeed);
-            m_pDoc->SetRandomNumberSeed(nRandSeed);
+            if (side == Invalid_v<size_t>)
+            {
+                UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
+                offset = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(sides),
+                    nRandSeed, &nRandSeed);
+                m_pDoc->SetRandomNumberSeed(nRandSeed);
+            }
+            else
+            {
+                if (side >= sides)
+                {
+                    AfxThrowInvalidArgException();
+                }
+                // avoid arithmetic overflow
+                offset = side + sides - prevSide;
+            }
             break;
-        }
         default:
             AfxThrowInvalidArgException();
     }
-    Piece& piece = GetPiece(pid);
-    uint8_t side = value_preserving_cast<uint8_t>((piece.GetSide() + offset) % sides);
-    piece.SetSide(side);
+    side = (prevSide + offset) % sides;
+    piece.SetSide(value_preserving_cast<uint8_t>(side));
 }
 
 void CPieceTable::SetPieceUnused(PieceID pid)

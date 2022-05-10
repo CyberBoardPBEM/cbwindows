@@ -354,7 +354,7 @@ void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     CPieceObj* pObj;
 
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
-        pDoc->InvertPlayingPieceOnBoard(*pObj, pPBoard);
+        pDoc->InvertPlayingPieceOnBoard(*pObj, *pPBoard, m_flip, m_side);
     else
         pDoc->InvertPlayingPieceInTray(m_pid);
 }
@@ -364,14 +364,40 @@ void CPieceSetSide::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << m_pid;
-        ar << (BYTE)m_bTopUp;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90) || CB::GetVersion(ar) < NumVersion(104, 1))
+        {
+            if (m_flip != CPieceTable::fNext ||
+                m_side >= size_t(2))
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+            ar << m_pid;
+            ar << (BYTE)(m_side == size_t(0));
+        }
+        else
+        {
+            ar << m_pid;
+            ar << value_preserving_cast<uint8_t>(m_flip);
+            CB::WriteCount(ar, m_side);
+        }
     }
     else
     {
-        ar >> m_pid;
-        BYTE cTmp;
-        ar >> cTmp; m_bTopUp = (BOOL)cTmp;
+        if (CB::GetVersion(ar) <= NumVersion(3, 90) || CB::GetVersion(ar) < NumVersion(104, 1))
+        {
+            ar >> m_pid;
+            m_flip = CPieceTable::fNext;
+            BYTE cTmp;
+            ar >> cTmp; m_side = (cTmp ? size_t(0) : size_t(1));
+        }
+        else
+        {
+            ar >> m_pid;
+            uint8_t temp;
+            ar >> temp;
+            m_flip = static_cast<CPieceTable::Flip>(temp);
+            m_side = CB::ReadCount(ar);
+        }
     }
 }
 
@@ -379,8 +405,33 @@ void CPieceSetSide::Serialize(CArchive& ar)
 void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 {
     char szBfr[256];
-    sprintf(szBfr, "    Piece %u is set to %s visible.\r\n",
-        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_bTopUp ? "top" : "bottom");
+    sprintf(szBfr, "    Piece %u is flipped:%s to %s visible.\r\n",
+        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)),
+        [](CPieceTable::Flip f) {
+            switch (f) {
+                case CPieceTable::fPrev:
+                    return "prev";
+                case CPieceTable::fNext:
+                    return "next";
+                case CPieceTable::fSelect:
+                    return "select";
+                case CPieceTable::fRandom:
+                    return "random";
+                default:
+                    ASSERT(!"invalid value");
+                    return "invalid";
+            }
+        }(m_flip),
+        [](const CGamDoc& pDoc, PieceID pid, size_t side) {
+            if (pDoc.GetPieceTable()->GetSides(pid) <= size_t(2))
+            {
+                return side == size_t(0) ? std::string("front") : std::string("back");
+            }
+            else
+            {
+                return "side " + std::to_string(side);
+            }
+        }(pDoc, m_pid, m_side).c_str());
     file.Write(szBfr, lstrlen(szBfr));
 }
 #endif

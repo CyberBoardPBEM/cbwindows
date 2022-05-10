@@ -133,7 +133,7 @@ public:
     template<>
     struct Args<HINT_UPDATEOBJECT>
     {
-        CPlayBoard* m_pPBoard;
+        const CPlayBoard* m_pPBoard;
         CDrawObj*   m_pDrawObj;
     };
 
@@ -388,11 +388,9 @@ public:
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceOnBoard(CPieceObj& pObj, CPlayBoard *pPBrd);
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPlayBoard* pPBrd);
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
-    void InvertPlayingPieceOnBoard(CPieceObj& pObj, CPieceTable::Flip flip, CPlayBoard* pPBrd);
-    void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPieceTable::Flip flip, CPlayBoard* pPBrd);
+    void InvertPlayingPieceOnBoard(CPieceObj& pObj, const CPlayBoard& pPBrd, CPieceTable::Flip flip, size_t side = Invalid_v<size_t>);
+    void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, const CPlayBoard& pPBrd, CPieceTable::Flip flip);
 
     void ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd,
         uint16_t nFacingDegCW);

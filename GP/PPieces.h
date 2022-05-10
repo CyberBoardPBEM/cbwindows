@@ -114,7 +114,7 @@ public:
 
     [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void FlipPieceOver(PieceID pid);
     enum Flip { fInvalid, fPrev, fNext, fSelect, fRandom };
-    void FlipPieceOver(PieceID pid, Flip flip);
+    void FlipPieceOver(PieceID pid, Flip flip, size_t side);
 
     void SetPieceFacing(PieceID pid, uint16_t nFacingDegCW);
     uint16_t GetPieceFacing(PieceID pid) const;
