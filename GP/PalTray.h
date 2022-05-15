@@ -152,6 +152,7 @@ protected:
     afx_msg BOOL OnToolTipShow(UINT id, NMHDR *pNMH, LRESULT *pResult);
     afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
     afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
+    afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 
     DECLARE_MESSAGE_MAP()
 };

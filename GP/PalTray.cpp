@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     //}}AFX_MSG_MAP
     ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
+    ON_WM_INITMENUPOPUP()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1071,4 +1072,60 @@ void CTrayPalette::OnMouseMove(UINT nFlags, CPoint point)
         UpdateTrayList();
 
     CWnd::OnMouseMove(nFlags, point);
+}
+
+void CTrayPalette::OnInitMenuPopup(CMenu* pMenu, UINT nIndex, BOOL bSysMenu)
+{
+    // based on CFrameWnd::OnInitMenuPopup()
+    ASSERT(!bSysMenu);
+
+    CCmdUI state;
+    state.m_pMenu = pMenu;
+    ASSERT(state.m_pOther == NULL);
+    ASSERT(state.m_pParentMenu == NULL);
+
+    state.m_nIndexMax = pMenu->GetMenuItemCount();
+    for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+        state.m_nIndex++)
+    {
+        state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
+        if (state.m_nID == 0)
+            continue; // menu separator or invalid cmd - ignore it
+
+        ASSERT(state.m_pOther == NULL);
+        ASSERT(state.m_pMenu != NULL);
+        if (state.m_nID == (UINT)-1)
+        {
+            // possibly a popup menu, route to first item of that popup
+            state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
+            if (state.m_pSubMenu == NULL ||
+                (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
+                state.m_nID == (UINT)-1)
+            {
+                continue;       // first item of popup can't be routed to
+            }
+            state.DoUpdate(this, FALSE);    // popups are never auto disabled
+        }
+        else
+        {
+            // normal menu item
+            // Auto enable/disable if frame window has 'm_bAutoMenuEnable'
+            //    set and command is _not_ a system command.
+            state.m_pSubMenu = NULL;
+            state.DoUpdate(this, true);
+        }
+
+        // adjust for menu deletions and additions
+        UINT nCount = pMenu->GetMenuItemCount();
+        if (nCount < state.m_nIndexMax)
+        {
+            state.m_nIndex -= (state.m_nIndexMax - nCount);
+            while (state.m_nIndex < nCount &&
+                pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
+            {
+                state.m_nIndex++;
+            }
+        }
+        state.m_nIndexMax = nCount;
+    }
 }
