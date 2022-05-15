@@ -933,6 +933,13 @@ void CTrayPalette::OnActTurnOver()
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+
+    /* flipping pieces shouldn't change tray content,
+        so restore selections */
+    for (int i = 0; i < tblListSel.GetSize(); i++)
+    {
+        m_listTray.SetSel(tblListSel[i], true);
+    }
 }
 
 void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
@@ -952,6 +959,11 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 
 void CTrayPalette::OnActTurnoverAllPieces()
 {
+    CArray<int, int> tblListSel;
+    int nNumSelected = m_listTray.GetSelCount();
+    tblListSel.SetSize(nNumSelected);
+    m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
+
     m_pDoc->AssignNewMoveGroup();
     for (int i = 0; i < m_listTray.GetCount(); i++)
     {
@@ -963,6 +975,13 @@ void CTrayPalette::OnActTurnoverAllPieces()
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+
+    /* flipping pieces shouldn't change tray content,
+        so restore selections */
+    for (int i = 0; i < tblListSel.GetSize(); i++)
+    {
+        m_listTray.SetSel(tblListSel[i], true);
+    }
 }
 
 void CTrayPalette::OnUpdateActTurnoverAllPieces(CCmdUI* pCmdUI)
