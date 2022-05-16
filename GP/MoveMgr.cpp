@@ -356,7 +356,7 @@ void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
         pDoc->InvertPlayingPieceOnBoard(*pObj, *pPBoard, m_flip, m_side);
     else
-        pDoc->InvertPlayingPieceInTray(m_pid);
+        pDoc->InvertPlayingPieceInTray(m_pid, m_flip, m_side, true);
 }
 
 void CPieceSetSide::Serialize(CArchive& ar)

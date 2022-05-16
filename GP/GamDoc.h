@@ -388,7 +388,7 @@ public:
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
         CSize sizeDelta, PlacePos ePos = placeDefault);
 
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray = TRUE);
+    void InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size_t side, bool bOkToNotifyTray);
     void InvertPlayingPieceOnBoard(CPieceObj& pObj, const CPlayBoard& pPBrd, CPieceTable::Flip flip, size_t side = Invalid_v<size_t>);
     void InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, const CPlayBoard& pPBrd, CPieceTable::Flip flip);
 

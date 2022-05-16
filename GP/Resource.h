@@ -178,6 +178,7 @@
 #define IDS_MESSAGE_WND                 672
 #define IDS_INFO_REF_CREATED2           673
 #define IDS_INFO_GAME_CREATED           673
+#define IDS_TIP_TRAY_FLIPPED_RANDOM     674
 #define IDD_ABOUTBOX                    2000
 #define IDD_SCNPROP                     2002
 #define IDD_PBRDPROP                    2004
@@ -485,6 +486,8 @@
 #define ID_FILE_CHANGE_GAME_OWNER       40158
 #define ID_ACT_TURNOVER_PREV            40162
 #define ID_ACT_TURNOVER_RANDOM          40163
+#define ID_ACT_TURNOVER_ALL_PREV        40164
+#define ID_ACT_TURNOVER_ALL_RANDOM      40165
 #define ID_ACT_ROTATE_0                 40300
 #define ID_ACT_ROTATE_30                40306
 #define ID_ACT_ROTATE_45                40309
@@ -508,7 +511,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2058
-#define _APS_NEXT_COMMAND_VALUE         40164
+#define _APS_NEXT_COMMAND_VALUE         40166
 #define _APS_NEXT_CONTROL_VALUE         7227
 #define _APS_NEXT_SYMED_VALUE           4000
 #endif

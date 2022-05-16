@@ -71,10 +71,18 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE_SELECTED, OnUpdatePieceTrayShuffleSelected)
     ON_COMMAND(ID_EDIT_ELEMENT_TEXT, OnEditElementText)
     ON_UPDATE_COMMAND_UI(ID_EDIT_ELEMENT_TEXT, OnUpdateEditElementText)
-    ON_COMMAND(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
-    ON_COMMAND(ID_ACT_TURNOVER_ALL, OnActTurnoverAllPieces)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL, OnUpdateActTurnoverAllPieces)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL_PREV, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL_RANDOM, OnActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_PREV, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_RANDOM, OnUpdateActTurnOver)
     ON_COMMAND(ID_PTRAY_ABOUT, OnPieceTrayAbout)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_ABOUT, OnUpdatePieceTrayAbout)
     ON_WM_HELPINFO()
@@ -906,20 +914,73 @@ void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
         m_listTray.GetSelCount() == 1 && m_listTray.IsShowingTileImages());
 }
 
-void CTrayPalette::OnActTurnOver()
+BOOL CTrayPalette::OnActTurnOver(UINT id)
 {
     CArray<int, int> tblListSel;
     int nNumSelected = m_listTray.GetSelCount();
     tblListSel.SetSize(nNumSelected);
     m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
 
-    m_pDoc->AssignNewMoveGroup();
-    for (int i = 0; i < tblListSel.GetSize(); i++)
+    CArray<int, int> tblListAll;
+    CArray<int, int>* chosen;
+
+    switch (id)
     {
-        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[i]));
-        m_pDoc->InvertPlayingPieceInTray(pid, FALSE);
+        case ID_ACT_TURNOVER:
+        case ID_ACT_TURNOVER_PREV:
+        case ID_ACT_TURNOVER_RANDOM:
+            // operate on selected pieces
+            chosen = &tblListSel;
+            break;
+        case ID_ACT_TURNOVER_ALL:
+        case ID_ACT_TURNOVER_ALL_PREV:
+        case ID_ACT_TURNOVER_ALL_RANDOM:
+            // operate on all pieces
+            tblListAll.SetSize(m_listTray.GetCount());
+            for (int i = 0; i < m_listTray.GetCount(); i++)
+            {
+                tblListAll[i] = i;
+            }
+            chosen = &tblListAll;
+            break;
+        default:
+            AfxThrowInvalidArgException();
     }
+
+    CPieceTable::Flip flip;
+    switch (id)
+    {
+        case ID_ACT_TURNOVER:
+        case ID_ACT_TURNOVER_ALL:
+            flip = CPieceTable::fNext;
+            break;
+        case ID_ACT_TURNOVER_PREV:
+        case ID_ACT_TURNOVER_ALL_PREV:
+            flip = CPieceTable::fPrev;
+            break;
+        case ID_ACT_TURNOVER_RANDOM:
+        case ID_ACT_TURNOVER_ALL_RANDOM:
+            flip = CPieceTable::fRandom;
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+
+    m_pDoc->AssignNewMoveGroup();
+
     size_t nSel = GetSelectedTray();
+    if (m_pDoc->IsRecording() && flip == CPieceTable::fRandom)
+    {
+        CString strMsg;
+        strMsg.Format(IDS_TIP_TRAY_FLIPPED_RANDOM, value_preserving_cast<size_t>(chosen->GetCount()));
+        m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[0])));
+    }
+
+    for (int i = 0; i < chosen->GetSize(); i++)
+    {
+        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[i]));
+        m_pDoc->InvertPlayingPieceInTray(pid, flip, Invalid_v<size_t>, false);
+    }
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
@@ -931,10 +992,29 @@ void CTrayPalette::OnActTurnOver()
     {
         m_listTray.SetSel(tblListSel[i], true);
     }
+
+    return true;
 }
 
 void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
+    bool eligible;
+    switch (pCmdUI->m_nID)
+    {
+        case ID_ACT_TURNOVER:
+        case ID_ACT_TURNOVER_PREV:
+        case ID_ACT_TURNOVER_RANDOM:
+            eligible = m_listTray.GetSelCount() > 0;
+            break;
+        case ID_ACT_TURNOVER_ALL:
+        case ID_ACT_TURNOVER_ALL_PREV:
+        case ID_ACT_TURNOVER_ALL_RANDOM:
+            eligible = m_listTray.GetCount() > 0;
+            break;
+        default:
+            AfxThrowInvalidArgException();
+    }
+
     BOOL bNoOwnerRestrictions = TRUE;
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
@@ -944,50 +1024,16 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
         bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
 
-    pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
-        m_listTray.GetSelCount() > 0 && m_listTray.IsShowingTileImages());
-}
-
-void CTrayPalette::OnActTurnoverAllPieces()
-{
-    CArray<int, int> tblListSel;
-    int nNumSelected = m_listTray.GetSelCount();
-    tblListSel.SetSize(nNumSelected);
-    m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
-
-    m_pDoc->AssignNewMoveGroup();
-    for (int i = 0; i < m_listTray.GetCount(); i++)
+    bool enable = (m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
+                    eligible &&
+                    m_listTray.IsShowingTileImages();
+    pCmdUI->Enable(enable);
+    if (pCmdUI->m_pSubMenu != NULL)
     {
-        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(i));
-        m_pDoc->InvertPlayingPieceInTray(pid, FALSE);
+        // Need to handle menu that the submenu is connected to.
+        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
+            MF_BYPOSITION | (enable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
     }
-    size_t nSel = GetSelectedTray();
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CGamDocHint hint;
-    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
-    m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
-
-    /* flipping pieces shouldn't change tray content,
-        so restore selections */
-    for (int i = 0; i < tblListSel.GetSize(); i++)
-    {
-        m_listTray.SetSel(tblListSel[i], true);
-    }
-}
-
-void CTrayPalette::OnUpdateActTurnoverAllPieces(CCmdUI* pCmdUI)
-{
-    BOOL bNoOwnerRestrictions = TRUE;
-    size_t nSel = GetSelectedTray();
-    if (nSel != Invalid_v<size_t>)
-    {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-        bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
-    }
-
-    pCmdUI->Enable((m_pDoc->IsScenario() ||
-        bNoOwnerRestrictions) && m_listTray.IsShowingTileImages());
 }
 
 void CTrayPalette::OnPieceTrayAbout()
