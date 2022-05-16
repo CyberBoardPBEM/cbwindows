@@ -506,16 +506,16 @@ void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDra
 }
 
 // RECORDS
-void CGamDoc::InvertPlayingPieceInTray(PieceID pid, BOOL bOkToNotifyTray /* = TRUE */)
+void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size_t side, bool bOkToNotifyTray /* = true */)
 {
-    if (!m_pPTbl->Is2Sided(pid))
+    if (m_pPTbl->GetSides(pid) <= size_t(1))
         return;
 
-    m_pPTbl->FlipPieceOver(pid);
+    m_pPTbl->FlipPieceOver(pid, flip, side);
     CTraySet* pYGrp = FindPieceInTray(pid);
 
     // Record processing
-    RecordPieceSetSide(pid, GetPieceTable()->IsFrontUp(pid));
+    RecordPieceSetSide(pid, flip, GetPieceTable()->GetSide(pid));
 
     if (!IsQuietPlayback() && bOkToNotifyTray)
     {

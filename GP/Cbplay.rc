@@ -335,7 +335,12 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Move To &Front\tCtrl+F",      ID_ACT_TOFRONT
         MENUITEM "Move To &Back\tCtrl+B",       ID_ACT_TOBACK
-        MENUITEM "Turn Piece &Over\tCtrl+I",    ID_ACT_TURNOVER
+        POPUP "Turn Piece &Over"
+        BEGIN
+            MENUITEM "&Next\tCtrl+I",               ID_ACT_TURNOVER
+            MENUITEM "&Prev\tCtrl-Shift+I",         ID_ACT_TURNOVER_PREV
+            MENUITEM "&Random\tCtrl-Shift-Alt+I",   ID_ACT_TURNOVER_RANDOM
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Rotate Group - Incremental...", ID_ACT_ROTATEGROUP
         MENUITEM "Rotate Object - &Incremental...", ID_ACT_ROTATEREL
@@ -659,8 +664,18 @@ BEGIN
     END
     POPUP "5=PV_PIECE_TRAY"
     BEGIN
-        MENUITEM "Turn Selected Pieces Over",   ID_ACT_TURNOVER
-        MENUITEM "Turn All Pieces Over",        ID_ACT_TURNOVER_ALL
+        POPUP "Turn Selected Pieces Over"
+        BEGIN
+            MENUITEM "&Next",                       ID_ACT_TURNOVER
+            MENUITEM "&Prev",                       ID_ACT_TURNOVER_PREV
+            MENUITEM "&Random",                     ID_ACT_TURNOVER_RANDOM
+        END
+        POPUP "Turn All Pieces Over"
+        BEGIN
+            MENUITEM "&Next",                       ID_ACT_TURNOVER_ALL
+            MENUITEM "&Prev",                       ID_ACT_TURNOVER_ALL_PREV
+            MENUITEM "&Random",                     ID_ACT_TURNOVER_ALL_RANDOM
+        END
         MENUITEM SEPARATOR
         MENUITEM "Shuffle Selected Items",      ID_PTRAY_SHUFFLE_SELECTED
         MENUITEM "Shuffle All Pieces",          ID_PTRAY_SHUFFLE
@@ -1882,7 +1897,7 @@ BEGIN
     ID_ACT_RELEASE_OWNERSHIP 
                             "Release ownership of selected pieces\nRelease Ownership"
     ID_ACT_SET_OWNER        "Explicitly set piece ownership.\nSet Ownership"
-    ID_ACT_TURNOVER_ALL     "Turn over all pieces in the Tray.\nTurn All Pieces Over"
+    ID_ACT_TURNOVER_ALL     "Turn over all pieces in the Tray to the next side.\nTurn All Pieces Over - Next"
 END
 
 STRINGTABLE
@@ -1980,12 +1995,18 @@ STRINGTABLE
 BEGIN
     IDS_MESSAGE_WND         "Messages"
     IDS_INFO_GAME_CREATED   "New Game File Created:\n\n%s"
+    IDS_TIP_TRAY_FLIPPED_RANDOM 
+                            "%zu pieces in this tray have been flipped randomly."
 END
 
 STRINGTABLE
 BEGIN
     ID_ACT_TURNOVER_PREV    "Turn the selected piece over to the prev side\nTurn Piece Over - Prev"
     ID_ACT_TURNOVER_RANDOM  "Turn the selected piece over to a random side\nTurn Piece Over - Random"
+    ID_ACT_TURNOVER_ALL_PREV 
+                            "Turn over all pieces in the Tray to the previous side.\nTurn All Pieces Over - Previous"
+    ID_ACT_TURNOVER_ALL_RANDOM 
+                            "Turn over all pieces in the Tray to a random side.\nTurn All Pieces Over - Random"
 END
 
 #endif    // English (United States) resources
