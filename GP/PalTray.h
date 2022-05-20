@@ -120,6 +120,8 @@ protected:
     void DoEditSelectedPieceText();
     BOOL EnsureTooltipExistance();
 
+    void DoMenu(CPoint point, bool rightButton);
+
 // Generated message map functions
 protected:
 
@@ -132,9 +134,9 @@ protected:
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnPieceTrayShuffle();
     afx_msg void OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnPieceTrayShuffleSelected();
     afx_msg void OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI);
     afx_msg void OnEditElementText();
