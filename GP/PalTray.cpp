@@ -268,7 +268,7 @@ LRESULT CTrayPalette::OnPaletteHide(WPARAM, LPARAM)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
+void CTrayPalette::DoMenu(CPoint point, bool rightButton)
 {
     CMenu bar;
     if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
@@ -279,11 +279,26 @@ void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
         // Make sure we clean up even if exception is tossed.
         TRY
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON,
+            popup.TrackPopupMenu(TPM_LEFTBUTTON |
+                                    TPM_LEFTALIGN |
+                                    (rightButton ? TPM_RIGHTBUTTON : 0),
                 point.x, point.y, this); // Route commands through tray window
         }
         END_TRY
     }
+}
+
+void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+    DoMenu(point, true);
+}
+
+void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
+{
+    CRect rct;
+    // Use the list box as a guide of where to place the menu
+    m_listTray.GetWindowRect(rct);
+    DoMenu(rct.TopLeft(), false);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -735,27 +750,6 @@ void CTrayPalette::OnSize(UINT nType, int cx, int cy)
 void CTrayPalette::PostNcDestroy()
 {
     /* DO NOTHING - FRAME CLASS WOULD DELETE SELF! */
-}
-
-void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
-{
-    CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
-    {
-        CMenu& popup = *bar.GetSubMenu(MENU_PV_PIECE_TRAY);
-        ASSERT(popup.m_hMenu != NULL);
-
-        // Make sure we clean up even if exception is tossed.
-        TRY
-        {
-            CRect rct;
-            // Use the list box as a guide of where to place the menu
-            m_listTray.GetWindowRect(rct);
-            popup.TrackPopupMenu(TPM_LEFTBUTTON | TPM_LEFTALIGN,
-                rct.left, rct.top, this); // Route commands through tray window
-        }
-        END_TRY
-    }
 }
 
 void CTrayPalette::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
