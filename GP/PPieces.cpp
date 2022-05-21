@@ -196,6 +196,7 @@ void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip, size_t side
             offset = sides - size_t(1);
             break;
         case fRandom:
+        case fSelect:
             if (side == Invalid_v<size_t>)
             {
                 UINT nRandSeed = m_pDoc->GetRandomNumberSeed();

@@ -676,6 +676,7 @@ BEGIN
             MENUITEM "&Prev",                       ID_ACT_TURNOVER_ALL_PREV
             MENUITEM "&Random",                     ID_ACT_TURNOVER_ALL_RANDOM
         END
+        MENUITEM "Turn Over to Clicked Side",   ID_ACT_TURNOVER_SELECT
         MENUITEM SEPARATOR
         MENUITEM "Shuffle Selected Items",      ID_PTRAY_SHUFFLE_SELECTED
         MENUITEM "Shuffle All Pieces",          ID_PTRAY_SHUFFLE
@@ -2007,6 +2008,7 @@ BEGIN
                             "Turn over all pieces in the Tray to the previous side.\nTurn All Pieces Over - Previous"
     ID_ACT_TURNOVER_ALL_RANDOM 
                             "Turn over all pieces in the Tray to a random side.\nTurn All Pieces Over - Random"
+    ID_ACT_TURNOVER_SELECT  "Turn the clicked piece over to the clicked side\nTurn Piece Over - Select"
 END
 
 #endif    // English (United States) resources
