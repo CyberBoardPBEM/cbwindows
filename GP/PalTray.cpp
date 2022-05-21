@@ -83,6 +83,8 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_PREV, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_RANDOM, OnUpdateActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_SELECT, OnActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_SELECT, OnUpdateActTurnOver)
     ON_COMMAND(ID_PTRAY_ABOUT, OnPieceTrayAbout)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_ABOUT, OnUpdatePieceTrayAbout)
     ON_WM_HELPINFO()
@@ -270,6 +272,28 @@ LRESULT CTrayPalette::OnPaletteHide(WPARAM, LPARAM)
 
 void CTrayPalette::DoMenu(CPoint point, bool rightButton)
 {
+    // remember clicked side in case of ID_ACT_TURNOVER_SELECT
+    CPoint clientPoint(point);
+    ScreenToClient(&clientPoint);
+    CWnd* child = ChildWindowFromPoint(clientPoint);
+    ASSERT(child == this || child == &m_listTray);
+    if (child == &m_listTray)
+    {
+        CRect rect;
+        MapWindowPoints(&m_listTray, &clientPoint, 1);
+        /* KLUDGE:  OnGetHitItemCodeAtPoint is public in base
+            CGrafixListBox, but protected in derived
+            CTrayListBox.  Why? */
+        menuGameElement = static_cast<CGrafixListBox&>(m_listTray).OnGetHitItemCodeAtPoint(clientPoint, rect);
+        // ASSERT(menuGameElement != Invalid_v<GameElement> --> menuGameElement.IsAPiece()
+        ASSERT(menuGameElement == Invalid_v<GameElement> ||
+                menuGameElement.IsAPiece());
+    }
+    else
+    {
+        menuGameElement = Invalid_v<GameElement>;
+    }
+
     CMenu bar;
     if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
     {
@@ -915,7 +939,7 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     tblListSel.SetSize(nNumSelected);
     m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
 
-    CArray<int, int> tblListAll;
+    CArray<int, int> tblListSubjects;
     CArray<int, int>* chosen;
 
     switch (id)
@@ -930,12 +954,17 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
         case ID_ACT_TURNOVER_ALL_PREV:
         case ID_ACT_TURNOVER_ALL_RANDOM:
             // operate on all pieces
-            tblListAll.SetSize(m_listTray.GetCount());
+            tblListSubjects.SetSize(m_listTray.GetCount());
             for (int i = 0; i < m_listTray.GetCount(); i++)
             {
-                tblListAll[i] = i;
+                tblListSubjects[i] = i;
             }
-            chosen = &tblListAll;
+            chosen = &tblListSubjects;
+            break;
+        case ID_ACT_TURNOVER_SELECT:
+            // operate on clicked side
+            tblListSubjects.Add(value_preserving_cast<int>(m_listTray.MapItemToIndex(static_cast<PieceID>(menuGameElement))));
+            chosen = &tblListSubjects;
             break;
         default:
             AfxThrowInvalidArgException();
@@ -956,6 +985,9 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
         case ID_ACT_TURNOVER_ALL_RANDOM:
             flip = CPieceTable::fRandom;
             break;
+        case ID_ACT_TURNOVER_SELECT:
+            flip = CPieceTable::fSelect;
+            break;
         default:
             AfxThrowInvalidArgException();
     }
@@ -973,7 +1005,16 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     for (int i = 0; i < chosen->GetSize(); i++)
     {
         PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[i]));
-        m_pDoc->InvertPlayingPieceInTray(pid, flip, Invalid_v<size_t>, false, false);
+        size_t side;
+        if (flip == CPieceTable::fSelect)
+        {
+            side = menuGameElement.GetSide();
+        }
+        else
+        {
+            side = Invalid_v<size_t>;
+        }
+        m_pDoc->InvertPlayingPieceInTray(pid, flip, side, false, false);
     }
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
@@ -1004,6 +1045,9 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
         case ID_ACT_TURNOVER_ALL_PREV:
         case ID_ACT_TURNOVER_ALL_RANDOM:
             eligible = m_listTray.GetCount() > 0;
+            break;
+        case ID_ACT_TURNOVER_SELECT:
+            eligible = menuGameElement != Invalid_v<GameElement>;
             break;
         default:
             AfxThrowInvalidArgException();

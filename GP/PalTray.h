@@ -121,6 +121,8 @@ protected:
     BOOL EnsureTooltipExistance();
 
     void DoMenu(CPoint point, bool rightButton);
+private:
+    GameElement menuGameElement = Invalid_v<GameElement>;
 
 // Generated message map functions
 protected:

@@ -488,6 +488,7 @@
 #define ID_ACT_TURNOVER_RANDOM          40163
 #define ID_ACT_TURNOVER_ALL_PREV        40164
 #define ID_ACT_TURNOVER_ALL_RANDOM      40165
+#define ID_ACT_TURNOVER_SELECT          40166
 #define ID_ACT_ROTATE_0                 40300
 #define ID_ACT_ROTATE_30                40306
 #define ID_ACT_ROTATE_45                40309
