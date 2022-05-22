@@ -57,8 +57,9 @@ CPieceListBox::CPieceListBox()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceListBox::SetDocument(const CGamDoc& pDoc)
+void CPieceListBox::SetDocument(CGamDoc& pDoc)
 {
+    CGrafixListBoxData::SetDocument(pDoc);
     ResetContent();
     m_pDoc = &pDoc;
     m_pPMgr = pDoc.GetPieceManager();

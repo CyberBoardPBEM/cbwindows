@@ -28,6 +28,9 @@
 #include    "LBoxGfx2.h"
 #include    "ResTbl.h"
 #include    "GdiTools.h"
+#if defined(GPLAY)
+#include    "GamDoc.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -364,6 +367,9 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
 
         if (bWasDragging && m_triggeredCursor)
         {
+#if defined(GPLAY)
+            m_pDoc->AssignNewMoveGroup();
+#endif
             if (IsMultiSelect())
             {
                 CWnd *pWnd = GetParent();

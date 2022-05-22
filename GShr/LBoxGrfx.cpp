@@ -26,6 +26,9 @@
 #include    "LBoxGrfx.h"
 #include    "ResTbl.h"
 #include    "GdiTools.h"
+#if defined(GPLAY)
+#include    "GamDoc.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -622,5 +625,13 @@ CRect CGrafixListBox::ItemToClient(CRect rect) const
     rect.OffsetRect(-xOffset, 0);
     return rect;
 }
+
+void CGrafixListBox::AssignNewMoveGroup()
+{
+#if defined(GPLAY)
+    CheckedDeref(m_pDoc).AssignNewMoveGroup();
+#endif
+}
+
 
 

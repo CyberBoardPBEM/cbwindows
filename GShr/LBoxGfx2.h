@@ -130,6 +130,7 @@ protected:
 
     int     m_nLastInsert;          // Last index with insert line
 
+    void  SetDocument(CGamDoc& doc) { m_pDoc = &doc; }
     void  DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi);
     void  DoAutoScrollProcessing(const DragInfo& pdi);
     void  DoToolTipHitProcessing(CPoint point);
@@ -156,6 +157,9 @@ protected:
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    CB::propagate_const<CGamDoc*> m_pDoc = nullptr;
 };
 
 #endif
