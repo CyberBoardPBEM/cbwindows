@@ -205,6 +205,14 @@ protected:
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+protected:
+    // #include "GamDoc.h" causes problems
+    void AssignNewMoveGroup();
+    void SetDocument(CGamDoc& doc) { m_pDoc = &doc; }
+
+private:
+    CB::propagate_const<CGamDoc*> m_pDoc = nullptr;
 };
 
 /* Some derived classes (e.g., CMarkListBox) derive from
@@ -339,6 +347,7 @@ public:
 protected:
     virtual void OnDragEnd(CPoint point) override
     {
+        AssignNewMoveGroup();
         if (di.m_dragType == DRAG_INVALID)
         {
             // do nothing

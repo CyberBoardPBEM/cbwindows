@@ -63,7 +63,12 @@ public:
 // Operations
 public:
     void SetDocument(CGamDoc* pDoc)
-        { if (m_hWnd != NULL) ResetContent(); m_pDoc = pDoc; }
+    {
+        CGrafixListBoxData::SetDocument(CheckedDeref(pDoc));
+        if (m_hWnd != NULL)
+            ResetContent();
+        m_pDoc = pDoc;
+    }
 
     void SelectMarker(MarkID mid);
     void ShowListIndex(int nPos);

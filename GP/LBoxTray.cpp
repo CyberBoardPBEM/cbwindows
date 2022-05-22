@@ -51,6 +51,7 @@ END_MESSAGE_MAP()
 CTrayListBox::CTrayListBox(CGamDoc& pDoc) :
     m_pDoc(pDoc)
 {
+    CGrafixListBoxData::SetDocument(pDoc);
     m_eTrayViz = trayVizOneSide;
     m_bAllowTips = TRUE;
 }

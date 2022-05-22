@@ -58,7 +58,7 @@ public:
 
 // Operations
 public:
-    void SetDocument(CGamDoc *pDoc) { m_pDoc = pDoc; }
+    void SetDocument(CGamDoc* pDoc) { CTileBaseListBox2::SetDocument(CheckedDeref(pDoc)); m_pDoc = pDoc; }
 
 // Implementation
 protected:

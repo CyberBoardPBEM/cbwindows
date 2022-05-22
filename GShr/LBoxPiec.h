@@ -48,7 +48,7 @@ public:
 
 // Attributes
 public:
-    void SetDocument(const CGamDoc& pDoc);
+    void SetDocument(CGamDoc& pDoc);
 
     virtual const CTileManager& GetTileManager() const override;
 
