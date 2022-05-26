@@ -25,6 +25,11 @@
 #include    "stdafx.h"
 #include    "WinState.h"
 #include    "Versions.h"
+#if !defined(GPLAY)
+    #include    "GmDoc.h"
+#else
+    #include    "GamDoc.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 // Returns FALSE if no frame restoration data is supplied by frames.
@@ -70,6 +75,7 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
     ASSERT(m_pList != NULL);
     if (m_pList == NULL)
         return;
+    CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
     // Processes only the main frame and the MDI child frames.
     // All other records are ignored.
     for (CWinStateList::iterator pos = m_pList->begin() ; pos != m_pList->end() ; ++pos)
@@ -253,6 +259,7 @@ void CWinStateManager::Serialize(CArchive& ar)
         }
         if (dwCount == size_t(0))
             return;
+        fileVersion = CB::GetVersion(ar);
         m_pList = MakeOwner<CWinStateList>();
         while (dwCount--)
         {
