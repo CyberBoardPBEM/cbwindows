@@ -140,6 +140,7 @@ protected:
 
 protected:
     CDocument*  m_pDoc;
+    int fileVersion = INT_MAX;
     typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;
     OwnerOrNullPtr<CWinStateList> m_pList;            // Win state element list
 };
