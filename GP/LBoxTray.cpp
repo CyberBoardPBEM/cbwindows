@@ -111,7 +111,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct)
 
     TileID tidRight = nullTid;              // Initially assume no second tile image
 
-    if (m_eTrayViz == trayVizTwoSide)
+    if (IsShowAllSides(nPid))
         tidRight = pPTbl->GetInactiveTileID(nPid);
 
     CRect rctLeft;
@@ -284,18 +284,7 @@ void CTrayListBox::GetPieceTileIDs(size_t nIndex, TileID& tid1, TileID& tid2)
         tid1 = pPTbl->GetActiveTileID(pid);
         ASSERT(tid1 != nullTid);
 
-        PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
-
-        BOOL bIsOwnedByCurrentPlayer = m_pDoc->HasPlayers() &&
-            pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask());
-
-        // If showing two sides, only show it if the piece allows it
-        // or if the current players is the owner, or if the
-        // program is in scenario mode.
-        if (m_eTrayViz == trayVizTwoSide && (bIsOwnedByCurrentPlayer &&
-                !(pPce.m_flags & PieceDef::flagShowOnlyOwnersToo)   ||
-                !(pPce.m_flags & PieceDef::flagShowOnlyVisibleSide))||
-                 m_pDoc->IsScenario())
+        if (IsShowAllSides(pid))
             tid2 = pPTbl->GetInactiveTileID(pid);
     }
 }
@@ -323,6 +312,27 @@ BOOL CTrayListBox::OnDragSetup(DragInfo* pDI)
         pDI->m_hcsrSuggest = g_res.hcrDragTile;
     }
     return TRUE;
+}
+
+bool CTrayListBox::IsShowAllSides(PieceID pid) const
+{
+    const CPieceTable& pPTbl = CheckedDeref(m_pDoc->GetPieceTable());
+    const PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+
+    BOOL bIsOwnedByCurrentPlayer = m_pDoc->HasPlayers() &&
+        pPTbl.IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask());
+
+    // If showing all sides, only show it if the piece allows it
+    // or if the current players is the owner, or if the
+    // program is in scenario mode.
+    if (m_eTrayViz == trayVizTwoSide && (bIsOwnedByCurrentPlayer &&
+        !(pPce.m_flags & PieceDef::flagShowOnlyOwnersToo) ||
+        !(pPce.m_flags & PieceDef::flagShowOnlyVisibleSide)) ||
+        m_pDoc->IsScenario())
+    {
+        return true;
+    }
+    return false;
 }
 
 
