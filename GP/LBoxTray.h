@@ -101,6 +101,9 @@ protected:
     //{{AFX_MSG(CTrayListBox)
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    bool IsShowAllSides(PieceID pid) const;
 };
 
 #endif
