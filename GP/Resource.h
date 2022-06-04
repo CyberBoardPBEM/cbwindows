@@ -153,7 +153,7 @@
 #define IDS_URL_CB_DONATION             648
 #define IDS_TIP_FLIP_RANDOM             648
 #define IDS_MSG_TRAY_INFO               649
-#define IDS_MSG_TVIZ_TWO_SIDE           650
+#define IDS_MSG_TVIZ_ALL_SIDE           650
 #define IDS_MSG_TVIZ_ONE_SIDE           651
 #define IDS_MSG_TVIZ_HIDDEN             652
 #define IDS_MSG_TVIZ_ALL_HIDDEN         653
@@ -179,6 +179,7 @@
 #define IDS_INFO_REF_CREATED2           673
 #define IDS_INFO_GAME_CREATED           673
 #define IDS_TIP_TRAY_FLIPPED_RANDOM     674
+#define IDS_MSG_RANDOM_SIDE_PULL        675
 #define IDD_ABOUTBOX                    2000
 #define IDD_SCNPROP                     2002
 #define IDD_PBRDPROP                    2004
@@ -336,6 +337,7 @@
 #define IDC_D_YPRP_VIZALLHIDDEN         7093
 #define IDC_D_YPRP_RANDSEL              7094
 #define IDC_D_PBPRP_SHOW_SEL_AND_TINY   7095
+#define IDC_D_YPRP_RANDSIDE             7095
 #define IDC_D_SMSG_CLOSE                7096
 #define IDC_D_PBPRP_DRAW_LOCKED_BENEATH 7096
 #define IDC_D_IMPPCE_GROUPLIST          7097

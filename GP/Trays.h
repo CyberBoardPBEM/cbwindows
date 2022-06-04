@@ -67,6 +67,8 @@ public:
 
     BOOL IsRandomPiecePull() { return m_bRandomPull; }
     void SetRandPiecePull(BOOL bRandomPull) { m_bRandomPull = bRandomPull; }
+    bool IsRandomSidePull() { return m_bRandomSidePull; }
+    void SetRandSidePull(bool bRandomPull) { m_bRandomSidePull = bRandomPull; }
 
     TrayViz GetTrayContentVisibility() { return m_eTrayViz; }
     void SetTrayContentVisibility(TrayViz eTrayViz) { m_eTrayViz = eTrayViz; }
@@ -107,6 +109,7 @@ protected:
     DWORD     m_dwOwnerMask;        // Who can change the tray (0=no owners)
     BOOL      m_bNonOwnerAccess;    // Allow non-owner access. Visiblity is still enforced.
     BOOL      m_bRandomPull;        // Pieces are randomly selected on drags
+    bool      m_bRandomSidePull;    // Piece sidess are randomly selected on drags
     BOOL      m_bEnforceVizForOwnerToo; // m_eTrayViz applies to owner too
     TrayViz   m_eTrayViz;           // What can be seen
 };

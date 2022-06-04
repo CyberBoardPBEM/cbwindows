@@ -908,32 +908,34 @@ BEGIN
     LTEXT           "See the Tray Properties dialog to set Tray options.",IDC_STATIC,9,38,158,8
 END
 
-IDD_TRAYPRP DIALOG 55, 40, 232, 167
+IDD_TRAYPRP DIALOGEX 55, 40, 233, 181
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Tray Properties"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_D_YPRP_NAME,9,18,148,12,ES_AUTOHSCROLL
-    CONTROL         "Drag delivers random pieces for selections",IDC_D_YPRP_RANDSEL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,76,149,10
-    GROUPBOX        "Tray content visibility",IDC_STATIC,9,90,211,71
-    CONTROL         "Both sides of pieces are fully visible",IDC_D_YPRP_VIZFULL,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,112,127,10
-    CONTROL         "Only the top side of pieces are visible",IDC_D_YPRP_VIZTOP,
-                    "Button",BS_AUTORADIOBUTTON,17,123,133,10
-    CONTROL         "Each piece image is hidden. (shows ""HIDDEN"")",IDC_D_YPRP_VIZHIDDEN,
-                    "Button",BS_AUTORADIOBUTTON,17,134,167,10
-    CONTROL         "All piece items hidden. (shows the text ""ALL HIDDEN"")",IDC_D_YPRP_VIZALLHIDDEN,
-                    "Button",BS_AUTORADIOBUTTON,17,145,189,10
-    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
     LTEXT           "Name for Playing Piece Tray:",IDC_STATIC,9,5,148,8
-    COMBOBOX        IDC_D_YPRP_OWNER_LIST,9,44,147,102,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_D_YPRP_NAME,9,18,148,12,ES_AUTOHSCROLL
     LTEXT           "Tray's owner:",IDC_D_YPRP_OWNER_LABEL,9,34,45,8
+    COMBOBOX        IDC_D_YPRP_OWNER_LIST,9,44,147,102,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Allow non-owners to access this owned tray.",IDC_D_YPRP_NONOWNER_ACCESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,62,158,10
+    CONTROL         "Drag delivers random pieces for selections",IDC_D_YPRP_RANDSEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,76,149,10
+    CONTROL         "Drag delivers random sides for selections",IDC_D_YPRP_RANDSIDE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,90,144,10
+    GROUPBOX        "Tray content visibility",IDC_STATIC,9,104,211,71
     CONTROL         "Visibility rule also applies to the tray's owner.",IDC_D_YPRP_OWNER_TOO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,100,189,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,114,189,10
+    CONTROL         "Both sides of pieces are fully visible",IDC_D_YPRP_VIZFULL,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,126,127,10
+    CONTROL         "Only the top side of pieces are visible",IDC_D_YPRP_VIZTOP,
+                    "Button",BS_AUTORADIOBUTTON,17,137,133,10
+    CONTROL         "Each piece image is hidden. (shows ""HIDDEN"")",IDC_D_YPRP_VIZHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,148,167,10
+    CONTROL         "All piece items hidden. (shows the text ""ALL HIDDEN"")",IDC_D_YPRP_VIZALLHIDDEN,
+                    "Button",BS_AUTORADIOBUTTON,17,159,189,10
+    DEFPUSHBUTTON   "OK",IDOK,173,3,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,173,22,50,14
 END
 
 IDD_GMOVDESCR DIALOG 60, 50, 229, 158
@@ -1297,7 +1299,7 @@ BEGIN
 
     IDD_TRAYPRP, DIALOG
     BEGIN
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 178
     END
 
     IDD_SENDMESSAGE, DIALOG
@@ -1498,6 +1500,11 @@ BEGIN
 END
 
 IDD_SETPIECES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TRAYPRP AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -1945,7 +1952,7 @@ BEGIN
     IDS_URL_CB_WEBSITE      "http://cyberboard.norsesoft.com"
     IDS_TIP_FLIP_RANDOM     "Pieces in this area of the board have been flipped randomly."
     IDS_MSG_TRAY_INFO       "Playing piece tray ""%s"" has the following properties:\n\n"
-    IDS_MSG_TVIZ_TWO_SIDE   "- Both sides of pieces are visible"
+    IDS_MSG_TVIZ_ALL_SIDE   "- All sides of pieces are visible"
     IDS_MSG_TVIZ_ONE_SIDE   "- Only the top side of a piece is visible"
     IDS_MSG_TVIZ_HIDDEN     "- Pieces only show the word ""HIDDEN"""
     IDS_MSG_TVIZ_ALL_HIDDEN "- All pieces are hidden"
@@ -1998,6 +2005,8 @@ BEGIN
     IDS_INFO_GAME_CREATED   "New Game File Created:\n\n%s"
     IDS_TIP_TRAY_FLIPPED_RANDOM 
                             "%zu pieces in this tray have been flipped randomly."
+    IDS_MSG_RANDOM_SIDE_PULL 
+                            "- Pieces are flipped to a random side when dragged out of the tray"
 END
 
 STRINGTABLE

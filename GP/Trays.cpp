@@ -44,6 +44,7 @@ CTraySet::CTraySet()
     m_dwOwnerMask = 0;
     m_bNonOwnerAccess = FALSE;
     m_bRandomPull = FALSE;
+    m_bRandomSidePull = false;
     m_eTrayViz = trayVizTwoSide;
     m_bEnforceVizForOwnerToo = FALSE;
 }
@@ -153,13 +154,24 @@ void CTraySet::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_strName;
-        ar << (WORD)m_bRandomPull;
-        WORD wTmp = (WORD)m_eTrayViz;
+        ar << static_cast<uint16_t>(m_bRandomPull);
+        if (CB::GetVersion(ar) <= NumVersion(104, 1))
+        {
+            if (m_bRandomSidePull)
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+        }
+        else
+        {
+            ar << static_cast<uint16_t>(m_bRandomSidePull);
+        }
+        uint16_t wTmp = static_cast<uint16_t>(m_eTrayViz);
         if (m_bEnforceVizForOwnerToo)
             wTmp |= trayVizOwnEnforceFlag;   // Piggy back this option so don't rev file ver
         ar << wTmp;
         ar << m_dwOwnerMask;
-        ar << (WORD)m_bNonOwnerAccess;
+        ar << static_cast<uint16_t>(m_bNonOwnerAccess);
 
         ar << m_pidTbl;
     }
@@ -168,14 +180,22 @@ void CTraySet::Serialize(CArchive& ar)
         ar >> m_strName;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
         {
-            WORD  wTmp;
-            ar >> wTmp; m_bRandomPull = (BOOL)wTmp;
+            uint16_t  wTmp;
+            ar >> wTmp; m_bRandomPull = static_cast<BOOL>(wTmp);
+            if (CB::GetVersion(ar) <= NumVersion(104, 1))
+            {
+                m_bRandomSidePull = false;
+            }
+            else
+            {
+                ar >> wTmp; m_bRandomSidePull = static_cast<bool>(wTmp);
+            }
             // Special handle tray visibility rules
             ar >> wTmp;
             if (wTmp & trayVizOwnEnforceFlag)
             {
                 m_bEnforceVizForOwnerToo = TRUE;
-                wTmp &= ~(WORD)trayVizOwnEnforceFlag;
+                wTmp &= ~(uint16_t)trayVizOwnEnforceFlag;
             }
             else
                 m_bEnforceVizForOwnerToo;
