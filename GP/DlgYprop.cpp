@@ -43,6 +43,7 @@ CTrayPropDialog::CTrayPropDialog(CWnd* pParent /*=NULL*/)
     m_strName = "";
     m_nVizOpts = -1;
     m_bRandomSel = FALSE;
+    m_bRandomSide = false;
     //}}AFX_DATA_INIT
     m_nYSel = Invalid_v<size_t>;
     m_nOwnerSel = -1;
@@ -65,6 +66,7 @@ void CTrayPropDialog::DoDataExchange(CDataExchange* pDX)
     DDV_MaxChars(pDX, m_strName, 32);
     DDX_Radio(pDX, IDC_D_YPRP_VIZFULL, m_nVizOpts);
     DDX_Check(pDX, IDC_D_YPRP_RANDSEL, m_bRandomSel);
+    DDX_Check(pDX, IDC_D_YPRP_RANDSIDE, m_bRandomSide);
     //}}AFX_DATA_MAP
 }
 

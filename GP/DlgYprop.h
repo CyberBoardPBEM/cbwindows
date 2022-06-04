@@ -47,6 +47,7 @@ public:
     CString m_strName;
     int     m_nVizOpts;
     BOOL    m_bRandomSel;
+    BOOL    m_bRandomSide;
     //}}AFX_DATA
 
     size_t          m_nYSel;

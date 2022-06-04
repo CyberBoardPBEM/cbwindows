@@ -341,17 +341,47 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CTraySet& pYSet = pYMgr->GetTraySet(nSel);
 
-    if (pYSet.IsRandomPiecePull())
+    if (pYSet.IsRandomPiecePull() ||
+        pYSet.IsRandomSidePull())
     {
         std::vector<PieceID>& pPceArray = *reinterpret_cast<std::vector<PieceID>*>(wParam);
 
         UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(pPceArray.size()),
-            value_preserving_cast<int>(pYSet.GetPieceIDTable().size()), nRandSeed, &nRandSeed);
+        std::vector<int> pnIndices;
+        if (pYSet.IsRandomPiecePull())
+        {
+            pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(pPceArray.size()),
+                value_preserving_cast<int>(pYSet.GetPieceIDTable().size()), nRandSeed, &nRandSeed);
+        }
+        else
+        {
+            pnIndices.reserve(pPceArray.size());
+            for (size_t i = size_t(0) ; i < pPceArray.size() ; ++i)
+            {
+                pnIndices.push_back(value_preserving_cast<int>(i));
+            }
+        }
 
-        for (size_t i = 0; i < pPceArray.size(); i++)
-            pPceArray.at(i) = pYSet.GetPieceIDTable().at(value_preserving_cast<size_t>(pnIndices[value_preserving_cast<int>(i)]));
+        CPieceTable& pieceTable = CheckedDeref(m_pDoc->GetPieceTable());
+        for (size_t i = size_t(0); i < pPceArray.size(); i++)
+        {
+            pPceArray.at(i) = pYSet.GetPieceIDTable().at(value_preserving_cast<size_t>(pnIndices[i]));
+            if (pYSet.IsRandomSidePull())
+            {
+                size_t sides = pieceTable.GetSides(pPceArray[i]);
+                if (sides >= size_t(2))
+                {
+                    int side = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(sides),
+                                                                        nRandSeed, &nRandSeed);
+                    m_pDoc->InvertPlayingPieceInTray(pPceArray[i],
+                                                    CPieceTable::fSelect,
+                                                    value_preserving_cast<size_t>(side),
+                                                    false,
+                                                    true);
+                }
+            }
+        }
 
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
@@ -1087,8 +1117,8 @@ void CTrayPalette::OnPieceTrayAbout()
 
     switch (pYSet.GetTrayContentVisibility())
     {
-        case trayVizTwoSide:
-            strTmp.LoadString(IDS_MSG_TVIZ_TWO_SIDE);
+        case trayVizAllSides:
+            strTmp.LoadString(IDS_MSG_TVIZ_ALL_SIDE);
             break;
         case trayVizOneSide:
             strTmp.LoadString(IDS_MSG_TVIZ_ONE_SIDE);
@@ -1109,6 +1139,12 @@ void CTrayPalette::OnPieceTrayAbout()
     if (pYSet.IsRandomPiecePull())
     {
         strTmp.LoadString(IDS_MSG_RANDOM_PULL);
+        strMsg += strTmp + '\n';
+    }
+
+    if (pYSet.IsRandomSidePull())
+    {
+        strTmp.LoadString(IDS_MSG_RANDOM_SIDE_PULL);
         strMsg += strTmp + '\n';
     }
 
