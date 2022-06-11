@@ -77,8 +77,7 @@ void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
 ///////////////////////////////////////////////////////////////
 
 CDib::CDib(CDib&& rhs) noexcept :
-    m_hDib(nullptr),
-    m_lpDib(nullptr)
+    CDib()
 {
     *this = std::move(rhs);
 }
@@ -87,6 +86,7 @@ CDib& CDib::operator=(CDib&& rhs) noexcept
 {
     std::swap(m_hDib, rhs.m_hDib);
     std::swap(m_lpDib, rhs.m_lpDib);
+    std::swap(m_nCompressLevel, rhs.m_nCompressLevel);
     return *this;
 }
 
@@ -115,6 +115,7 @@ CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
         m_hDib = NULL;
         AfxThrowMemoryException();
     }
+    m_nCompressLevel = 0;
 }
 
 CDib::CDib(CFile& file)
@@ -131,6 +132,7 @@ CDib::CDib(CFile& file)
         m_hDib = NULL;
         AfxThrowMemoryException();
     }
+    m_nCompressLevel = 0;
 }
 
 BOOL CDib::WriteDIBFile(CFile& file) const
@@ -156,6 +158,7 @@ CDib::CDib(HANDLE hDib)
         m_hDib = NULL;
         AfxThrowMemoryException();
     }
+    m_nCompressLevel = 0;
 }
 
 CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
@@ -181,6 +184,7 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(
         m_hDib = nullptr;
         m_lpDib = nullptr;
     }
+    m_nCompressLevel = 0;
 }
 
 OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */) const
