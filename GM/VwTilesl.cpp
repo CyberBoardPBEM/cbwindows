@@ -282,7 +282,7 @@ void CTileSelView::UpdateDocumentTiles()
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
 
     // Get small scale color from tiny bitmap and update tile
-    g_gt.mDC1.SelectObject(&m_bmSmall);
+    g_gt.mDC1.SelectObject(&*m_bmSmall);
     SetupPalette(g_gt.mDC1);
     COLORREF crSmall = g_gt.mDC1.GetPixel(0, 0);
     g_gt.SelectSafeObjectsForDC1();
