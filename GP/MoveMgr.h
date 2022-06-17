@@ -131,15 +131,9 @@ protected:
 class CPieceSetSide : public CMoveRecord
 {
 public:
-    CPieceSetSide() { m_eType = mrecPSide; }
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] CPieceSetSide(PieceID pid, BOOL bTopUp)
-    {
-        m_eType = mrecPSide;
-        m_pid = pid;
-        m_flip = CPieceTable::fNext;
-        m_side = bTopUp ? size_t(0) : size_t(1);
-    }
-    CPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side)
+    CPieceSetSide() : m_forceMoveHidden(false) { m_eType = mrecPSide; }
+    CPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side, bool forceHide) :
+        m_forceMoveHidden(forceHide)
     {
         m_eType = mrecPSide;
         m_pid = pid;
@@ -162,6 +156,8 @@ protected:
     PieceID     m_pid;
     CPieceTable::Flip m_flip;
     size_t      m_side;
+    // for hiding moves due to CTraySet::IsRandomSidePull()
+    bool m_forceMoveHidden;
 };
 
 ///////////////////////////////////////////////////////////////////////

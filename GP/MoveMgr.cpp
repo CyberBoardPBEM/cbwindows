@@ -309,6 +309,11 @@ BOOL CPieceSetSide::ValidatePieces(CGamDoc* pDoc)
 
 BOOL CPieceSetSide::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
 {
+    if (m_forceMoveHidden)
+    {
+        return true;
+    }
+
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
@@ -356,7 +361,7 @@ void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
     if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
         pDoc->InvertPlayingPieceOnBoard(*pObj, *pPBoard, m_flip, m_side);
     else
-        pDoc->InvertPlayingPieceInTray(m_pid, m_flip, m_side, true);
+        pDoc->InvertPlayingPieceInTray(m_pid, m_flip, m_side, !m_forceMoveHidden, false);
 }
 
 void CPieceSetSide::Serialize(CArchive& ar)
@@ -380,6 +385,17 @@ void CPieceSetSide::Serialize(CArchive& ar)
             ar << value_preserving_cast<uint8_t>(m_flip);
             CB::WriteCount(ar, m_side);
         }
+        if (CB::GetVersion(ar) < NumVersion(104, 3))
+        {
+            if (m_forceMoveHidden)
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+        }
+        else
+        {
+            ar << static_cast<uint8_t>(m_forceMoveHidden);
+        }
     }
     else
     {
@@ -397,6 +413,16 @@ void CPieceSetSide::Serialize(CArchive& ar)
             ar >> temp;
             m_flip = static_cast<CPieceTable::Flip>(temp);
             m_side = CB::ReadCount(ar);
+        }
+        if (CB::GetVersion(ar) < NumVersion(104, 3))
+        {
+            m_forceMoveHidden = false;
+        }
+        else
+        {
+            uint8_t temp;
+            ar >> temp;
+            m_forceMoveHidden = static_cast<bool>(temp);
         }
     }
 }

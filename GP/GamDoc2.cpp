@@ -336,21 +336,12 @@ void CGamDoc::RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t n
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordPieceSetSide(PieceID pid, BOOL bTopUp)
+void CGamDoc::RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side, bool forceHide)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    OwnerPtr<CPieceSetSide> pRcd = MakeOwner<CPieceSetSide>(pid, bTopUp);
-    m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
-}
-
-void CGamDoc::RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side)
-{
-    if (!IsRecording()) return;
-    CreateRecordListIfRequired();
-    ASSERT(m_pRcdMoves != NULL);
-    OwnerPtr<CPieceSetSide> pRcd = MakeOwner<CPieceSetSide>(pid, flip, side);
+    OwnerPtr<CPieceSetSide> pRcd = MakeOwner<CPieceSetSide>(pid, flip, side, forceHide);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
