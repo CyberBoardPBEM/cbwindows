@@ -979,7 +979,7 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     for (int i = 0; i < chosen->GetSize(); i++)
     {
         PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[i]));
-        m_pDoc->InvertPlayingPieceInTray(pid, flip, Invalid_v<size_t>, false);
+        m_pDoc->InvertPlayingPieceInTray(pid, flip, Invalid_v<size_t>, false, false);
     }
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;

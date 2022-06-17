@@ -482,7 +482,7 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, const CPlayBoard& pPBrd
     pObj.ResyncExtentRect();
 
     // Record processing
-    RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable()->GetSide(pObj.m_pid));
+    RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable()->GetSide(pObj.m_pid), false);
 
     if (!IsQuietPlayback())
     {
@@ -506,7 +506,7 @@ void CGamDoc::InvertPlayingPieceTableOnBoard(const std::vector<CB::not_null<CDra
 }
 
 // RECORDS
-void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size_t side, bool bOkToNotifyTray /* = true */)
+void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size_t side, bool bOkToNotifyTray, bool forceHide)
 {
     if (m_pPTbl->GetSides(pid) <= size_t(1))
         return;
@@ -515,7 +515,7 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size
     CTraySet* pYGrp = FindPieceInTray(pid);
 
     // Record processing
-    RecordPieceSetSide(pid, flip, GetPieceTable()->GetSide(pid));
+    RecordPieceSetSide(pid, flip, GetPieceTable()->GetSide(pid), forceHide);
 
     if (!IsQuietPlayback() && bOkToNotifyTray)
     {
