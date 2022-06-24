@@ -395,14 +395,14 @@ bool CBoard::IsGEVStyleHelper(Edge e) const
                 if (Odd(i) == gevIsOddEmpty)
                 {
                     if (!(IsEmpty(GetCell(fixedAxisOuter, i)) &&
-                            !IsEmpty(ba.GetCell(fixedAxisInner, i))))
+                            !IsEmpty(GetCell(fixedAxisInner, i))))
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (IsEmpty(ba.GetCell(fixedAxisOuter, i)))
+                    if (IsEmpty(GetCell(fixedAxisOuter, i)))
                     {
                         return false;
                     }
