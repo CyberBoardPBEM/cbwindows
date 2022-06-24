@@ -499,8 +499,9 @@ std::string CBoardArray::GetCellNumberStr(size_t row, size_t col) const
         col = m_nCols - col - size_t(1);
 
     // Only computer wonks start counting at zero...
-    return CCellForm::GetCellNumberStr(m_eNumStyle, row + value_preserving_cast<size_t>(m_nRowTrkOffset + 1),
-        col + value_preserving_cast<size_t>(m_nColTrkOffset + 1));
+    // max prevents negative values
+    return CCellForm::GetCellNumberStr(m_eNumStyle, value_preserving_cast<size_t>(CB::max(value_preserving_cast<int>(row) + m_nRowTrkOffset + 1, 0)),
+        value_preserving_cast<size_t>(CB::max(value_preserving_cast<int>(col) + m_nColTrkOffset + 1, 0)));
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -644,8 +645,8 @@ void CBoardArray::Serialize(CArchive& ar)
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        ar << value_preserving_cast<WORD>(m_nRowTrkOffset);
-        ar << value_preserving_cast<WORD>(m_nColTrkOffset);
+        ar << value_preserving_cast<int16_t>(m_nRowTrkOffset);
+        ar << value_preserving_cast<int16_t>(m_nColTrkOffset);
         ar << (WORD)m_bRowTrkInvert;
         ar << (WORD)m_bColTrkInvert;
         if (CB::GetVersion(ar) <= NumVersion(3, 90))
@@ -666,14 +667,15 @@ void CBoardArray::Serialize(CArchive& ar)
     else
     {
         WORD wVal;
+        int16_t iVal;
         DestroyBoard();
 
         ar >> m_wReserved1;
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        ar >> wVal; m_nRowTrkOffset = wVal;  // (was int cast)
-        ar >> wVal; m_nColTrkOffset = wVal;  // (was int cast)
+        ar >> iVal; m_nRowTrkOffset = iVal;  // (was int cast)
+        ar >> iVal; m_nColTrkOffset = iVal;  // (was int cast)
         ar >> wVal; m_bRowTrkInvert = (BOOL)wVal;
         ar >> wVal; m_bColTrkInvert = (BOOL)wVal;
         if (CB::GetVersion(ar) <= NumVersion(3, 90))
