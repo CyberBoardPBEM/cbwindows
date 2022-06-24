@@ -54,7 +54,7 @@ BEGIN
     "#if !defined(_AFXDLL)\r\n"
     "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
     "#endif\r\n"
-    "#endi\0"
+    "#endif\0"
 END
 
 #endif    // APSTUDIO_INVOKED
