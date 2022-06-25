@@ -96,6 +96,7 @@ class CPieceTable
 public:
     CPieceTable();
     ~CPieceTable() = default;
+    bool Empty() const { return m_pPieceTbl.Empty(); }
 
 // Attributes
 public:
