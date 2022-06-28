@@ -278,6 +278,7 @@ public:
         int nCurSel = IsMultiSelect() ? -1 : GetCurSel();
         int nTopIdx = GetTopIndex();
         int nFcsIdx = GetCaretIndex();
+        int horzScroll = GetScrollPos(SB_HORZ);
         ResetContent();
         LONG width = 0;
         int nItem;
@@ -297,6 +298,10 @@ public:
                 SetCurSel(CB::min(nCurSel, nItem - 1));
         }
         SetRedraw(TRUE);
+        if (bKeepPosition)
+        {
+            SetScrollPos(SB_HORZ, horzScroll);
+        }
         Invalidate();
     }
     void SetCurSelMapped(T nMapVal)

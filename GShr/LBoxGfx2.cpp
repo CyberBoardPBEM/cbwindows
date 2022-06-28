@@ -92,6 +92,7 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
     int nCurSel = GetCurSel();
     int nTopIdx = GetTopIndex();
     int nFcsIdx = GetCaretIndex();
+    int horzScroll = GetScrollPos(SB_HORZ);
     SetRedraw(FALSE);
     ResetContent();
 
@@ -113,6 +114,10 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
             SetCurSel(std::min(nCurSel, nItem - 1));
     }
     SetRedraw(TRUE);
+    if (bKeepPosition)
+    {
+        SetScrollPos(SB_HORZ, horzScroll);
+    }
     Invalidate();
 }
 
