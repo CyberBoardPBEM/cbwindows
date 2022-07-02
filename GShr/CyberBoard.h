@@ -309,6 +309,12 @@ namespace CB
         return std::move(const_cast<PT&>(get_underlying(std::as_const(p))));
     }
 
+    template<typename T, typename U>
+    bool operator==(const CB::propagate_const<T>& left, const CB::propagate_const<U>& right)
+    {
+        return left.get() == right.get();
+    }
+
     template<typename T>
     bool operator==(const CB::propagate_const<T>& left, int i)
     {
@@ -318,6 +324,12 @@ namespace CB
         return left.get() == nullptr;
     }
 
+    template<typename T>
+    bool operator==(int i, const CB::propagate_const<T>& right)
+    {
+        return right == i;
+    }
+
     template<typename T, typename U>
     bool operator==(const CB::propagate_const<T>& left, const U& right)
     {
@@ -325,9 +337,21 @@ namespace CB
     }
 
     template<typename T, typename U>
+    bool operator==(const U& left, const CB::propagate_const<T>& right)
+    {
+        return right == left;
+    }
+
+    template<typename T, typename U>
     bool operator!=(const CB::propagate_const<T>& left, const U& right)
     {
         return !(left == right);
+    }
+
+    template<typename T, typename U>
+    bool operator!=(const U& left, const CB::propagate_const<T>& right)
+    {
+        return right != left;
     }
 
     // like c++14 std::make_unique<>
