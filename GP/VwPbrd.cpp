@@ -305,7 +305,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CPlayBoardView::NotifySelectListChange()
 {
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard.get();
     hint.GetArgs<HINT_UPDATESELECT>().m_pSelList = &m_selList;
     GetDocument()->UpdateAllViews(this, HINT_UPDATESELECT, &hint);
 }
@@ -467,14 +467,14 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     // Draw pieces etc.....
 
     CRect rct(&oRct);
-    SetupDrawListDC(&dcMem, &rct);
+    SetupDrawListDC(dcMem, rct);
 
     m_pPBoard->Draw(dcMem, &rct, m_nZoom);
 
     if (!pDC->IsPrinting() && GetPlayBoard()->GetPiecesVisible())
         m_selList.OnDraw(dcMem);       // Handle selections.
 
-    RestoreDrawListDC(&dcMem);
+    RestoreDrawListDC(dcMem);
 
     if (m_pPBoard->IsBoardRotated180())
     {
@@ -504,27 +504,27 @@ LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (GetDocument()->IsPlaying())
         return 0;                       // Drags not supported during play
 
-    DragInfo* pdi = (DragInfo*)lParam;
+    DragInfo& pdi = CheckedDeref(reinterpret_cast<DragInfo*>(lParam));
 
-    if (pdi->m_dragType == DRAG_PIECE)
+    if (pdi.m_dragType == DRAG_PIECE)
         return DoDragPiece(wParam, pdi);
 
-    if (pdi->m_dragType == DRAG_PIECELIST)
+    if (pdi.m_dragType == DRAG_PIECELIST)
         return DoDragPieceList(wParam, pdi);
 
-    if (pdi->m_dragType == DRAG_MARKER)
+    if (pdi.m_dragType == DRAG_MARKER)
         return DoDragMarker(wParam, pdi);
 
-    if (pdi->m_dragType == DRAG_SELECTLIST)
+    if (pdi.m_dragType == DRAG_SELECTLIST)
         return DoDragSelectList(wParam, pdi);
 
     return 0;
 }
 
-LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo* pdi)
+LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo& pdi)
 {
     ASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
-    if (pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
     if (wParam == phaseDragExit)
@@ -532,21 +532,21 @@ LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo* pdi)
     else if (wParam == phaseDragOver)
     {
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
+        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
     else if (wParam == phaseDragDrop)
     {
-        CPoint pnt = pdi->m_point;
+        CPoint pnt = pdi.m_point;
         ClientToWorkspace(pnt);
-        AddPiece(pnt, pdi->GetSubInfo<DRAG_PIECE>().m_pieceID);
+        AddPiece(pnt, pdi.GetSubInfo<DRAG_PIECE>().m_pieceID);
         DragKillAutoScroll();
     }
     return 0;
 }
 
-LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
+LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo& pdi)
 {
-    if (pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
     if (wParam == phaseDragExit)
@@ -554,13 +554,13 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
     else if (wParam == phaseDragOver)
     {
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
+        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
     else if (wParam == phaseDragDrop)
     {
         CGamDoc* pDoc = GetDocument();
-        CPoint pnt = pdi->m_point;
-        const std::vector<PieceID>& pTbl = CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
+        CPoint pnt = pdi.m_point;
+        const std::vector<PieceID>& pTbl = CheckedDeref(pdi.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
         ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
@@ -574,7 +574,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
         m_selList.PurgeList(TRUE);          // Purge former selections
         GetDocument()->AssignNewMoveGroup();
         GetDocument()->PlacePieceListOnBoard(pnt, pTbl,
-            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger, m_pPBoard);
+            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger, m_pPBoard.get());
 
         if (!pDoc->HasPlayers() || !m_pPBoard->IsOwned() ||
             m_pPBoard->IsNonOwnerAccessAllowed() ||
@@ -582,7 +582,7 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
             std::vector<CB::not_null<CPieceObj*>> pceList;
-            pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), pceList);
+            pDwg->GetObjectListFromPieceIDTable(CheckedDeref(pdi.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList), pceList);
             std::vector<CB::not_null<CDrawObj*>> temp;
             CB::Move(temp, std::move(pceList));
             SelectAllObjectsInList(temp);   // Reselect pieces dropped on board
@@ -595,11 +595,11 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo* pdi)
 
 #define MARKER_DROP_GAP_X     8
 
-LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
+LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo& pdi)
 {
-    ASSERT(pdi->m_dragType == DRAG_MARKER);
+    ASSERT(pdi.m_dragType == DRAG_MARKER);
     CGamDoc* pDoc = GetDocument();
-    if (pdi->GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
+    if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
         return 0;               // Only markers from our document.
 
     if (wParam == phaseDragExit)
@@ -607,13 +607,13 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
     else if (wParam == phaseDragOver)
     {
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
+        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
     else if (wParam == phaseDragDrop)
     {
         CMarkManager* pMMgr = pDoc->GetMarkManager();
-        CPoint pnt = pdi->m_point;
-        MarkID mid = pdi->GetSubInfo<DRAG_MARKER>().m_markID;
+        CPoint pnt = pdi.m_point;
+        MarkID mid = pdi.GetSubInfo<DRAG_MARKER>().m_markID;
         ClientToWorkspace(pnt);
 
         // If Control is held and the marker tray is set to
@@ -666,7 +666,7 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
                     sizeMin += CSize(MARKER_DROP_GAP_X, 0);
             }
             CRect rct(CPoint(pnt.x - sizeMin.cx/2, pnt.y - sizeMin.cy), sizeMin);
-            LimitRect(&rct);                    // Make sure stays on board.
+            LimitRect(rct);                    // Make sure stays on board.
 
             pDoc->AssignNewMoveGroup();
             int x = rct.right;
@@ -677,7 +677,7 @@ LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo* pdi)
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
                 CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
-                CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard, tblMarks[value_preserving_cast<size_t>(i)],
+                CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
@@ -696,7 +696,7 @@ NASTY_GOTO_TARGET:
         pnt = GetMidRect(rct);
 
         pDoc->AssignNewMoveGroup();
-        CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard, mid, pnt, ObjectID());
+        CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard.get(), mid, pnt, ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
@@ -717,22 +717,22 @@ NASTY_GOTO_TARGET:
     return 0;
 }
 
-LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
+LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
 {
-    if (pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != GetDocument())
         return 0;               // Only pieces from our document.
 
-    ClientToWorkspace(pdi->m_point);
+    ClientToWorkspace(pdi.m_point);
 
-    CSelList *pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
-    CDC *pDC = GetDC();
+    CSelList *pSLst = pdi.GetSubInfo<DRAG_SELECTLIST>().m_selectList;
+    CDC& pDC = CheckedDeref(GetDC());
     OnPrepareScaledDC(pDC, TRUE);
 
     if (wParam == phaseDragExit || wParam == phaseDragDrop ||
         wParam == phaseDragOver)
     {
         // Remove previous drag image.
-        pSLst->DrawTracker(CheckedDeref(pDC), trkMoving);
+        pSLst->DrawTracker(pDC, trkMoving);
     }
     if (wParam == phaseDragExit)
         DragKillAutoScroll();
@@ -741,7 +741,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
     CPoint pntSnapRefTopLeft = rctSnapRef.TopLeft();
 
     CPoint pntMseOff = pntSnapRefTopLeft + pSLst->GetMouseOffset();
-    CSize sizeDelta = pdi->m_point - pntMseOff; // Trial delta
+    CSize sizeDelta = pdi.m_point - pntMseOff; // Trial delta
 
     rctSnapRef += (CPoint)sizeDelta;    // Calc trial new position
     AdjustRect(rctSnapRef);         // Force onto grid.
@@ -754,7 +754,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         CRect rctObjs = pSLst->GetEnclosingRect();
         rctObjs += (CPoint)sizeDelta;               // Calc trial new position
         BOOL bXOK, bYOK;
-        if (!IsRectFullyOnBoard(&rctObjs, &bXOK, &bYOK))
+        if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
         {
             sizeDelta.cx = bXOK ? sizeDelta.cx : 0;
             sizeDelta.cy = bYOK ? sizeDelta.cy : 0;
@@ -770,14 +770,14 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
     {
         m_pDragSelList = pSLst;
         // Draw new drag image.
-        pSLst->DrawTracker(CheckedDeref(pDC), trkMoving);
+        pSLst->DrawTracker(pDC, trkMoving);
     }
-    ReleaseDC(pDC);
+    ReleaseDC(&pDC);
 
     if (wParam == phaseDragOver)
     {
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
+        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
     else if (wParam == phaseDragDrop)
     {
@@ -790,7 +790,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo* pdi)
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc->AssignNewMoveGroup();
-        pDoc->PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard);
+        pDoc->PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard.get());
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -822,7 +822,7 @@ void CPlayBoardView::DragDoAutoScroll()
         // Remove previous drag image.
         pDC = GetDC();
         pDC->SaveDC();
-        OnPrepareScaledDC(pDC, TRUE);
+        OnPrepareScaledDC(*pDC, TRUE);
         m_pDragSelList->DrawTracker(*pDC, trkMoving);
         pDC->RestoreDC(-1);
     }
@@ -832,7 +832,7 @@ void CPlayBoardView::DragDoAutoScroll()
     BOOL bScrolled = ProcessAutoScroll(point);
     if (m_pDragSelList != NULL && bScrolled)
     {
-        OnPrepareScaledDC(pDC, TRUE);
+        OnPrepareScaledDC(*pDC, TRUE);
         CPoint ptAfter(0, 0);
         ClientToWorkspace(ptAfter);
         CSize sizeDelta = ptAfter - ptBefore;
@@ -843,7 +843,7 @@ void CPlayBoardView::DragDoAutoScroll()
             CRect rctObjs = m_pDragSelList->GetEnclosingRect();
             rctObjs += (CPoint)sizeDelta;               // Calc trial new position
             BOOL bXOK, bYOK;
-            if (!IsRectFullyOnBoard(&rctObjs, &bXOK, &bYOK))
+            if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
             {
                 sizeDelta.cx = bXOK ? sizeDelta.cx : 0;
                 sizeDelta.cy = bYOK ? sizeDelta.cy : 0;
@@ -893,51 +893,51 @@ void CPlayBoardView::DragKillAutoScroll()
 void CPlayBoardView::AddPiece(CPoint pnt, PieceID pid)
 {
     ASSERT(FALSE);      //!!!!NO LONGER USED?!!!!!
-    GetDocument()->PlacePieceOnBoard(pnt, pid, m_pPBoard);
+    GetDocument()->PlacePieceOnBoard(pnt, pid, m_pPBoard.get());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::OnPrepareScaledDC(CDC *pDC, BOOL bHonor180Flip)
+void CPlayBoardView::OnPrepareScaledDC(CDC& pDC, BOOL bHonor180Flip)
 {
-    OnPrepareDC(pDC, NULL);
+    OnPrepareDC(&pDC, NULL);
     PrepareScaledDC(pDC, NULL, bHonor180Flip);
 }
 
-void CPlayBoardView::SetupDrawListDC(CDC* pDC, CRect* pRct)
+void CPlayBoardView::SetupDrawListDC(CDC& pDC, CRect& pRct) const
 {
     if (m_nZoom == fullScale)
         return;
 
-    pDC->SaveDC();
-    PrepareScaledDC(pDC, pRct);
+    pDC.SaveDC();
+    PrepareScaledDC(pDC, &pRct);
 }
 
-void CPlayBoardView::PrepareScaledDC(CDC *pDC, CRect* pRct, BOOL bHonor180Flip)
+void CPlayBoardView::PrepareScaledDC(CDC& pDC, CRect* pRct, BOOL bHonor180Flip) const
 {
     CSize wsize, vsize;
 
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
 
-    pDC->SetMapMode(MM_ANISOTROPIC);
+    pDC.SetMapMode(MM_ANISOTROPIC);
     if (bHonor180Flip && m_pPBoard->IsBoardRotated180())
     {
-        pDC->SetWindowExt(-wsize);
-        pDC->SetWindowOrg(wsize.cx, wsize.cy);
+        pDC.SetWindowExt(-wsize);
+        pDC.SetWindowOrg(wsize.cx, wsize.cy);
     }
     else
-        pDC->SetWindowExt(wsize);
-    pDC->SetViewportExt(vsize);
+        pDC.SetWindowExt(wsize);
+    pDC.SetViewportExt(vsize);
 
     if (pRct != NULL)
         ScaleRect(*pRct, wsize, vsize);
 }
 
-void CPlayBoardView::RestoreDrawListDC(CDC *pDC)
+void CPlayBoardView::RestoreDrawListDC(CDC& pDC) const
 {
     if (m_nZoom != fullScale)
-        pDC->RestoreDC(-1);
+        pDC.RestoreDC(-1);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1006,7 +1006,7 @@ void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
 /////////////////////////////////////////////////////////////////////////////
 // Handlers associated with tools.
 
-BOOL CPlayBoardView::IsBoardContentsAvailableToCurrentPlayer()
+BOOL CPlayBoardView::IsBoardContentsAvailableToCurrentPlayer() const
 {
     if (m_pPBoard->IsNonOwnerAccessAllowed() || !m_pPBoard->IsOwned() ||
             GetDocument()->IsScenario())
@@ -1209,7 +1209,7 @@ static PToolType tblTools[] =
     ptypeMPlot,         // ID_PTOOL_PLOTMOVE
 };
 
-PToolType CPlayBoardView::MapToolType(UINT nToolResID)
+PToolType CPlayBoardView::MapToolType(UINT nToolResID) const
 {
     return tblTools[nToolResID - ID_PTOOL_SELECT];
 }
@@ -1331,7 +1331,7 @@ void CPlayBoardView::OnViewBoardRotate180()
 {
    m_pPBoard->SetRotateBoard180(!m_pPBoard->IsBoardRotated180());
    CGamDocHint hint;
-   hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+   hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
    GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -1383,7 +1383,7 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->PlaceObjectTableOnBoard(pntCenter, tblObjs,
-        xStagger, yStagger, m_pPBoard);
+        xStagger, yStagger, m_pPBoard.get());
 
     // Reselect the pieces.
     SelectAllObjectsInTable(tblObjs);      // Reselect objects
@@ -1447,7 +1447,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard);
+    pDoc->PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard.get());
 
     // Reselect the pieces.
     SelectAllObjectsInTable(tblRandObjs);  // Reselect objects
@@ -1474,7 +1474,7 @@ void CPlayBoardView::OnActToFront()
 
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
-        m_pPBoard, placeTop);
+        m_pPBoard.get(), placeTop);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
@@ -1500,7 +1500,7 @@ void CPlayBoardView::OnActToBack()
 
     GetDocument()->AssignNewMoveGroup();
     GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
-        m_pPBoard, placeBack);
+        m_pPBoard.get(), placeBack);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
@@ -1521,7 +1521,7 @@ void CPlayBoardView::OnActTurnOver()
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, m_pPBoard);
+    GetDocument()->InvertPlayingPieceTableOnBoard(listObjs, m_pPBoard.get());
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
@@ -1588,7 +1588,7 @@ void CPlayBoardView::OnActPlotDone()
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument()->PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard);
+        GetDocument()->PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard.get());
         m_selList.PurgeList(TRUE);          // Purge former selections
         SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
@@ -1688,7 +1688,7 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument()->AssignNewMoveGroup();
-    GetDocument()->ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard,
+    GetDocument()->ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard.get(),
         uint16_t(5) * nFacing5DegCW);       // Convert to degrees
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1743,9 +1743,9 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
 
         CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
+            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
-            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
+            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
@@ -1753,7 +1753,7 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
             CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                 CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), nRelativeRotation);
             CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
+            pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
         }
     }
     return (LRESULT)0;
@@ -1825,11 +1825,11 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
-                m_pPBoard, m_tblCurAngles[i]);
+                m_pPBoard.get(), m_tblCurAngles[i]);
         }
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
-            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard,
+            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(),
                 m_tblCurAngles[i]);
         }
         if (m_bWheelRotation &&
@@ -1838,7 +1838,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
             // Restore original position
             CSize sizeDelta = CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]) -
                 GetMidRect(pDObj.GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
+            pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
         }
     }
     // Restore recording mode if it was active.
@@ -1858,11 +1858,11 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
             if (pDObj.GetType() == CDrawObj::drawPieceObj)
             {
-                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
+                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
             }
             else if (pDObj.GetType() == CDrawObj::drawMarkObj)
             {
-                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard, value_preserving_cast<uint16_t>(nAngle));
+                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
             }
             if (m_bWheelRotation &&
                 (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
@@ -1871,7 +1871,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
                 CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                     CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), dlg.m_nRelativeRotation);
                 CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-                pDoc->PlaceObjectOnBoard(m_pPBoard, &pDObj, sizeDelta);
+                pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
             }
         }
         m_selList.UpdateObjects(TRUE, FALSE);
@@ -1914,7 +1914,7 @@ void CPlayBoardView::OnViewPieces()
 {
     GetPlayBoard()->SetPiecesVisible(!GetPlayBoard()->GetPiecesVisible());
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
     GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -1946,9 +1946,9 @@ void CPlayBoardView::OnEditCopy()
     pBoard->Draw(dcMem, rct, m_nZoom, m_pPBoard->m_bCellBorders);
 
     // Draw pieces etc.....
-    SetupDrawListDC(&dcMem, &rct);
+    SetupDrawListDC(dcMem, rct);
     m_pPBoard->Draw(dcMem, &rct, m_nZoom);
-    RestoreDrawListDC(&dcMem);
+    RestoreDrawListDC(dcMem);
 
     GdiFlush();
     dcMem.SelectObject(pPrvBMap);
@@ -2015,9 +2015,9 @@ void CPlayBoardView::OnEditBoardToFile()
         pBoard->Draw(dcMem, rct, m_nZoom, m_pPBoard->m_bCellBorders);
 
         // Draw pieces etc.....
-        SetupDrawListDC(&dcMem, &rct);
-        m_pPBoard->Draw(dcMem, &rct, m_nZoom);
-        RestoreDrawListDC(&dcMem);
+        SetupDrawListDC(dcMem, rct);
+        m_pPBoard->Draw(dcMem, rct, m_nZoom);
+        RestoreDrawListDC(dcMem);
 
         GdiFlush();
         dcMem.SelectObject(pPrvBMap);
@@ -2077,7 +2077,7 @@ void CPlayBoardView::OnViewDrawIndOnTop()
 {
     GetPlayBoard()->SetIndicatorsOnTop(!GetPlayBoard()->GetIndicatorsOnTop());
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
     GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
@@ -2199,7 +2199,7 @@ void CPlayBoardView::OnActTakeOwnership()
     pDoc->SetPieceOwnershipTable(tblPieces, pDoc->GetCurrentPlayerMask());
 
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
@@ -2249,7 +2249,7 @@ void CPlayBoardView::OnActReleaseOwnership()
     pDoc->SetPieceOwnershipTable(tblPieces, 0);
 
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
@@ -2307,7 +2307,7 @@ void CPlayBoardView::OnActSetOwner()
     pDoc->SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
 
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard;
+    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
     pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();

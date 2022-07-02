@@ -455,7 +455,7 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CPoint CPlayBoardView::GetWorkspaceDim()
+CPoint CPlayBoardView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
     CPoint pnt = (CPoint)m_pPBoard->GetBoard()->GetSize(m_nZoom);
@@ -496,7 +496,7 @@ void CPlayBoardView::WorkspaceToClient(CRect& rect) const
     rect -= dpnt;
 }
 
-void CPlayBoardView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
+void CPlayBoardView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
 {
     CRect rct(pRect);
     WorkspaceToClient(rct);
@@ -534,14 +534,14 @@ void CPlayBoardView::ClientToWorkspace(CRect& rect) const
 
 //////////////////////////////////////////////////////////////////////
 
-BOOL CPlayBoardView::IsGridizeActive()
+BOOL CPlayBoardView::IsGridizeActive() const
 {
     BOOL bGridSnap = m_pPBoard->m_bGridSnap;
     int bControl = GetAsyncKeyState(VK_CONTROL) < 0;
     return !(bControl && bGridSnap || !bControl && !bGridSnap);
 }
 
-void CPlayBoardView::GridizeX(long& xPos)
+void CPlayBoardView::GridizeX(long& xPos) const
 {
     if (IsGridizeActive())
     {
@@ -550,7 +550,7 @@ void CPlayBoardView::GridizeX(long& xPos)
     }
 }
 
-void CPlayBoardView::GridizeY(long& yPos)
+void CPlayBoardView::GridizeY(long& yPos) const
 {
     if (IsGridizeActive())
     {
@@ -559,21 +559,21 @@ void CPlayBoardView::GridizeY(long& yPos)
     }
 }
 
-void CPlayBoardView::LimitPoint(POINT* pPnt)
+void CPlayBoardView::LimitPoint(POINT& pPnt) const
 {
-    CBoard* pBoard = m_pPBoard->GetBoard();
-    if (pPnt->x < 0) pPnt->x = 0;
-    if (pPnt->x > pBoard->GetWidth(fullScale))
-        pPnt->x = pBoard->GetWidth(fullScale);
-    if (pPnt->y < 0) pPnt->y = 0;
-    if (pPnt->y > pBoard->GetHeight(fullScale))
-        pPnt->y = pBoard->GetHeight(fullScale);
+    const CBoard* pBoard = m_pPBoard->GetBoard();
+    if (pPnt.x < 0) pPnt.x = 0;
+    if (pPnt.x > pBoard->GetWidth(fullScale))
+        pPnt.x = pBoard->GetWidth(fullScale);
+    if (pPnt.y < 0) pPnt.y = 0;
+    if (pPnt.y > pBoard->GetHeight(fullScale))
+        pPnt.y = pBoard->GetHeight(fullScale);
 }
 
-void CPlayBoardView::LimitRect(RECT* pRct)
+void CPlayBoardView::LimitRect(RECT& pRct) const
 {
     CRect rct(pRct);
-    CBoard* pBoard = m_pPBoard->GetBoard();
+    const CBoard* pBoard = m_pPBoard->GetBoard();
 
     if (rct.left < 0)
         rct.OffsetRect(-rct.left, 0);
@@ -583,13 +583,13 @@ void CPlayBoardView::LimitRect(RECT* pRct)
         rct.OffsetRect(pBoard->GetWidth(fullScale) - rct.right, 0);
     if (rct.bottom > pBoard->GetHeight(fullScale))
         rct.OffsetRect(0, pBoard->GetHeight(fullScale) - rct.bottom);
-    *pRct = rct;
+    pRct = rct;
 }
 
-BOOL CPlayBoardView::IsRectFullyOnBoard(RECT* pRct, BOOL* pbXOK, BOOL* pbYOK)
+BOOL CPlayBoardView::IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK, BOOL* pbYOK) const
 {
     CRect rct(pRct);
-    CBoard* pBoard = m_pPBoard->GetBoard();
+    const CBoard* pBoard = m_pPBoard->GetBoard();
     BOOL bXOK = TRUE;
     BOOL bYOK = TRUE;
     BOOL bOK = TRUE;
@@ -609,14 +609,14 @@ BOOL CPlayBoardView::IsRectFullyOnBoard(RECT* pRct, BOOL* pbXOK, BOOL* pbYOK)
     return bOK;
 }
 
-void CPlayBoardView::AdjustPoint(CPoint& pnt)
+void CPlayBoardView::AdjustPoint(CPoint& pnt) const
 {
     GridizeX(pnt.x);
     GridizeY(pnt.y);
-    LimitPoint(&pnt);
+    LimitPoint(pnt);
 }
 
-void CPlayBoardView::AdjustRect(CRect& rct)
+void CPlayBoardView::AdjustRect(CRect& rct) const
 {
     CPoint pnt;
     if (m_pPBoard->m_bGridRectCenters)
@@ -626,7 +626,7 @@ void CPlayBoardView::AdjustRect(CRect& rct)
 
     GridizeX(pnt.x);
     GridizeY(pnt.y);
-    LimitPoint(&pnt);
+    LimitPoint(pnt);
 
     if (m_pPBoard->m_bGridRectCenters)
     {
@@ -638,7 +638,7 @@ void CPlayBoardView::AdjustRect(CRect& rct)
         if (pnt != rct.TopLeft())
             rct.OffsetRect(pnt - rct.TopLeft());
     }
-    LimitRect(&rct);
+    LimitRect(rct);
 }
 
 //////////////////////////////////////////////////////////////////////
