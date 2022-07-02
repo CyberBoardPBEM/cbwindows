@@ -145,7 +145,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
         m_eSelMode = smodeNet;              // Net type selection
         CPlayTool::OnLButtonDown(pView, nFlags, point);
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc, TRUE);
+        pView->OnPrepareScaledDC(dc, TRUE);
         DrawNetRect(&dc, pView);
         return;
     }
@@ -230,7 +230,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
     if (m_eSelMode == smodeNet)
     {
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc, TRUE);
+        pView->OnPrepareScaledDC(dc, TRUE);
         DrawNetRect(&dc, pView);            // Erase previous position
         CPlayTool::OnMouseMove(pView, nFlags, point); // Update position
         DrawNetRect(&dc, pView);            // Draw new position rect
@@ -252,7 +252,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
             return;
 
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc, TRUE);
+        pView->OnPrepareScaledDC(dc, TRUE);
 
         pSLst->DrawTracker(dc, trkSizing); // Erase previous tracker
 
@@ -270,7 +270,7 @@ void CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
         if (m_eSelMode == smodeNet)
         {
             CClientDC dc(pView);
-            pView->OnPrepareScaledDC(&dc, TRUE);
+            pView->OnPrepareScaledDC(dc, TRUE);
             DrawNetRect(&dc, pView);            // Erase previous position
             // If the control key is down when button was released, fields
             // that intersect the select rect will selected. Otherwise only
@@ -326,7 +326,7 @@ void CPSelectTool::OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent)
         KillDragTimer(pView);
 
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc, TRUE);
+        pView->OnPrepareScaledDC(dc, TRUE);
         pSLst->DrawTracker(dc, trkSelected);   // Turn off handles
 
         CPoint point;
@@ -394,7 +394,7 @@ void CPSelectTool::StartSizingOperation(CPlayBoardView* pView, UINT nFlags,
     m_eSelMode = smodeSizing;
     CPlayTool::OnLButtonDown(pView, nFlags, point);
     CClientDC dc(pView);
-    pView->OnPrepareScaledDC(&dc, TRUE);
+    pView->OnPrepareScaledDC(dc, TRUE);
     pSLst->DrawTracker(dc, trkSizing);
 }
 
@@ -457,7 +457,7 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView* pView)
             pView->ClientToWorkspace(point);
 
             CClientDC dc(pView);
-            pView->OnPrepareScaledDC(&dc, TRUE);
+            pView->OnPrepareScaledDC(dc, TRUE);
 
             if (m_eSelMode == smodeNet)
             {
@@ -477,7 +477,7 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView* pView)
             MoveSelections(pSLst, point);   // Offset the tracking data
             c_ptLast = point;               // Save new 'last' position
 
-            pView->OnPrepareScaledDC(&dc, TRUE);
+            pView->OnPrepareScaledDC(dc, TRUE);
             if (m_eSelMode == smodeNet)
             {
                 GetCursorPos(&point);

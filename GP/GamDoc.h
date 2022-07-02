@@ -255,7 +255,7 @@ public:
     BOOL IsQuietPlayback() { return m_bQuietPlayback; }
     void SetQuietPlayback(BOOL bBeQuite) { m_bQuietPlayback = bBeQuite; }
 
-    BOOL IsScenario() { return m_bScenario; }
+    BOOL IsScenario() const { return m_bScenario; }
     BOOL IsShowingObjectTips() { return m_bShowObjTipText; }
 
     BOOL IsRecordingCompoundMove();

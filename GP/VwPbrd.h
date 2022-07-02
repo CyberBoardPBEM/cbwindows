@@ -53,7 +53,8 @@ protected: // create from serialization only
 public:
     const CGamDoc* GetDocument() const;
     CGamDoc* GetDocument() { return const_cast<CGamDoc*>(std::as_const(*this).GetDocument()); }
-    CPlayBoard* GetPlayBoard() { return m_pPBoard; }
+    const CPlayBoard* GetPlayBoard() const { return m_pPBoard.get(); }
+    CPlayBoard* GetPlayBoard() { return const_cast<CPlayBoard*>(std::as_const(*this).GetPlayBoard()); }
 
 // Operations
 public:
@@ -61,24 +62,25 @@ public:
 // Implementation
 public:
     virtual ~CPlayBoardView();
-    virtual void OnDraw(CDC* pDC);      // Overridden to draw this view
+    virtual void OnDraw(CDC* pDC) override;      // Overridden to draw this view
 
 // Tools and selection support
 public:
     CSelList    m_selList;              // List of selected objects.
 
     void NotifySelectListChange();
-    CSelList* GetSelectList() { return &m_selList; }
-    CPoint GetWorkspaceDim();
+    const CSelList* GetSelectList() const { return &m_selList; }
+    CSelList* GetSelectList() { return const_cast<CSelList*>(std::as_const(*this).GetSelectList()); }
+    CPoint GetWorkspaceDim() const;
 
     void AddDrawObject(CDrawObj::OwnerPtr pObj);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
 
-    void PrepareScaledDC(CDC *pDC, CRect* pRct = NULL, BOOL bHonor180Flip = FALSE);
-    void OnPrepareScaledDC(CDC *pDC, BOOL bHonor180Flip = FALSE);
+    void PrepareScaledDC(CDC& pDC, CRect* pRct = NULL, BOOL bHonor180Flip = FALSE) const;
+    void OnPrepareScaledDC(CDC& pDC, BOOL bHonor180Flip = FALSE);
 
-    void AdjustPoint(CPoint& pnt);      // Limit and grid processing
-    void AdjustRect(CRect& rct);
+    void AdjustPoint(CPoint& pnt) const;      // Limit and grid processing
+    void AdjustRect(CRect& rct) const;
 
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(CPoint point);
@@ -89,9 +91,9 @@ public:
     void SelectAllMarkers();
 
     // TEMP FOR NOW!
-    COLORREF GetTextColor() { return RGB(255, 0, 0); }
-    COLORREF GetLineColor() { return RGB(0, 255, 0); }
-    UINT GetLineWidth() { return 3; }
+    COLORREF GetTextColor() const { return RGB(255, 0, 0); }
+    COLORREF GetLineColor() const { return RGB(0, 255, 0); }
+    UINT GetLineWidth() const { return 3; }
 
 // Coordinate scaling...
 public:
@@ -99,7 +101,7 @@ public:
     void WorkspaceToClient(CRect& rect) const;
     void ClientToWorkspace(CPoint& point) const;
     void ClientToWorkspace(CRect& rect) const;
-    void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
+    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
 
 // View support
 public:
@@ -122,32 +124,32 @@ public:
 
 // Grid and limiting support
 protected:
-    BOOL IsGridizeActive();
+    BOOL IsGridizeActive() const;
 #ifdef WIN32
-    void GridizeX(long& xPos);
-    void GridizeY(long& yPos);
+    void GridizeX(long& xPos) const;
+    void GridizeY(long& yPos) const;
 #else
-    void GridizeX(int& xPos);
-    void GridizeY(int& yPos);
+    void GridizeX(int& xPos) const;
+    void GridizeY(int& yPos) const;
 #endif
-    void LimitPoint(POINT* pPnt);
-    void LimitRect(RECT* pRct);
-    BOOL IsRectFullyOnBoard(RECT* pRct, BOOL* pbXOK = NULL, BOOL* pbYOK = NULL);
+    void LimitPoint(POINT& pPnt) const;
+    void LimitRect(RECT& pRct) const;
+    BOOL IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK = NULL, BOOL* pbYOK = NULL) const;
 
 // Implementation
 protected:
-    CPlayBoard* m_pPBoard;          // Board that contains selections etc...
+    CB::propagate_const<CPlayBoard*> m_pPBoard;          // Board that contains selections etc...
     TileScale   m_nZoom;            // Current zoom level of view
     // -------- //
     BOOL        m_bInDrag;          // Currently being dragged over
-    CSelList*   m_pDragSelList;     // Pointer the select list being dragged
+    CB::propagate_const<CSelList*> m_pDragSelList;     // Pointer the select list being dragged
     uintptr_t    m_nTimerID;         // Used to control autoscrolls
     // -------- //
     UINT        m_nCurToolID;       // Current tool ID
     // -------- //
     CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
     CToolTipCtrl m_toolHitTip;      // Tooltip hit support for view
-    CDrawObj*    m_pCurTipObj;      // Currently hit tip object
+    CB::propagate_const<CDrawObj*> m_pCurTipObj;      // Currently hit tip object
 
     // Tables used to process relative piece rotations. DON'T Serialize!
     BOOL        m_bWheelRotation;   // Indicates the type of rotation being done
@@ -159,19 +161,19 @@ protected:
 
 // Implementation
 protected:
-    BOOL IsBoardContentsAvailableToCurrentPlayer();
+    BOOL IsBoardContentsAvailableToCurrentPlayer() const;
 
     void AddPiece(CPoint pnt, PieceID pid);
 
-    PToolType MapToolType(UINT nToolResID);
+    PToolType MapToolType(UINT nToolResID) const;
 
-    void SetupDrawListDC(CDC* pDC, CRect* pRct);
-    void RestoreDrawListDC(CDC *pDC);
+    void SetupDrawListDC(CDC& pDC, CRect& pRct) const;
+    void RestoreDrawListDC(CDC& pDC) const;
 
-    LRESULT DoDragPiece(WPARAM wParam, DragInfo* pdi);
-    LRESULT DoDragMarker(WPARAM wParam, DragInfo* pdi);
-    LRESULT DoDragPieceList(WPARAM wParam, DragInfo* pdi);
-    LRESULT DoDragSelectList(WPARAM wParam, DragInfo* pdi);
+    LRESULT DoDragPiece(WPARAM wParam, DragInfo& pdi);
+    LRESULT DoDragMarker(WPARAM wParam, DragInfo& pdi);
+    LRESULT DoDragPieceList(WPARAM wParam, DragInfo& pdi);
+    LRESULT DoDragSelectList(WPARAM wParam, DragInfo& pdi);
 
     void DragDoAutoScroll();
     void DragCheckAutoScroll();
@@ -286,7 +288,7 @@ public:
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
 inline const CGamDoc* CPlayBoardView::GetDocument() const
-   { return (CGamDoc*)m_pDocument; }
+   { return (const CGamDoc*)m_pDocument; }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
