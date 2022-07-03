@@ -64,6 +64,8 @@ public:
 protected:
     CGamDoc*    m_pDoc;
 
+    GameElement menuGameElement = Invalid_v<GameElement>;
+
     // Misc
     // retval[0] is active face, followed by inactives
     std::vector<TileID> GetTileIDs(size_t nIndex) const;
@@ -79,13 +81,28 @@ protected:
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
+private:
+    typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide);
+    GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const;
+public:
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     //{{AFX_MSG(CSelectListBox)
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
+    afx_msg BOOL OnActTurnOver(UINT id);
+    afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    const CPlayBoardView& GetBoardView() const;
+    CPlayBoardView& GetBoardView()
+    {
+        return const_cast<CPlayBoardView&>(std::as_const(*this).GetBoardView());
+    }
 };
 
 #endif

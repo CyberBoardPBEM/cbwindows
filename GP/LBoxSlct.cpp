@@ -29,6 +29,9 @@
 #include    "LBoxSlct.h"
 #include    "DrawObj.h"
 #include    "PPieces.h"
+#include    "FrmPbrd.h"
+#include    "GMisc.h"
+#include    "VwPbrd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +47,16 @@ const int tileGap = 6;
 BEGIN_MESSAGE_MAP(CSelectListBox, CTileBaseListBox2)
     //{{AFX_MSG_MAP(CSelectListBox)
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
+    ON_WM_CONTEXTMENU()
+    ON_WM_INITMENUPOPUP()
+    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
+    ON_COMMAND_EX(ID_ACT_TURNOVER_SELECT, OnActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
+    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_SELECT, OnUpdateActTurnOver)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -112,6 +125,178 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+void CSelectListBox::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
+{
+    // remember clicked side in case of ID_ACT_TURNOVER_SELECT
+    CPoint clientPoint(point);
+    ScreenToClient(&clientPoint);
+    CRect rect;
+    menuGameElement = OnGetHitItemCodeAtPoint(&CGamDoc::GetGameElementCodeForObject, clientPoint, rect);
+
+    CMenu bar;
+    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
+    {
+        CMenu& popup = *bar.GetSubMenu(MENU_PV_SELCT_BOX);
+        ASSERT(popup.m_hMenu != NULL);
+
+        // Make sure we clean up even if exception is tossed.
+        TRY
+        {
+            popup.TrackPopupMenu(TPM_LEFTBUTTON |
+                                    TPM_LEFTALIGN |
+                                    TPM_RIGHTBUTTON,
+                point.x, point.y, this); // Route commands through tray window
+        }
+        END_TRY
+    }
+    else
+    {
+        ASSERT(!"LoadMenu error");
+    }
+}
+
+void CSelectListBox::OnInitMenuPopup(CMenu* pMenu, UINT /*nIndex*/, BOOL bSysMenu)
+{
+    // based on CFrameWnd::OnInitMenuPopup()
+    ASSERT(!bSysMenu);
+
+    CCmdUI state;
+    state.m_pMenu = pMenu;
+    ASSERT(state.m_pOther == NULL);
+    ASSERT(state.m_pParentMenu == NULL);
+
+    state.m_nIndexMax = pMenu->GetMenuItemCount();
+    for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+        state.m_nIndex++)
+    {
+        state.m_nID = pMenu->GetMenuItemID(state.m_nIndex);
+        if (state.m_nID == 0)
+            continue; // menu separator or invalid cmd - ignore it
+
+        ASSERT(state.m_pOther == NULL);
+        ASSERT(state.m_pMenu != NULL);
+        if (state.m_nID == (UINT)-1)
+        {
+            // possibly a popup menu, route to first item of that popup
+            state.m_pSubMenu = pMenu->GetSubMenu(state.m_nIndex);
+            if (state.m_pSubMenu == NULL ||
+                (state.m_nID = state.m_pSubMenu->GetMenuItemID(0)) == 0 ||
+                state.m_nID == (UINT)-1)
+            {
+                continue;       // first item of popup can't be routed to
+            }
+            state.DoUpdate(this, FALSE);    // popups are never auto disabled
+        }
+        else
+        {
+            // normal menu item
+            // Auto enable/disable if frame window has 'm_bAutoMenuEnable'
+            //    set and command is _not_ a system command.
+            state.m_pSubMenu = NULL;
+            state.DoUpdate(this, true);
+        }
+
+        // adjust for menu deletions and additions
+        UINT nCount = pMenu->GetMenuItemCount();
+        if (nCount < state.m_nIndexMax)
+        {
+            state.m_nIndex -= (state.m_nIndexMax - nCount);
+            while (state.m_nIndex < nCount &&
+                pMenu->GetMenuItemID(state.m_nIndex) == state.m_nID)
+            {
+                state.m_nIndex++;
+            }
+        }
+        state.m_nIndexMax = nCount;
+    }
+}
+
+BOOL CSelectListBox::OnActTurnOver(UINT id)
+{
+    CPlayBoardView& view = GetBoardView();
+    switch (id)
+    {
+        case ID_ACT_TURNOVER:
+        case ID_ACT_TURNOVER_PREV:
+        case ID_ACT_TURNOVER_RANDOM:
+        {
+            bool b = view.OnCmdMsg(id, CN_COMMAND, nullptr, nullptr);
+            ASSERT(b);
+            return b;
+        }
+        case ID_ACT_TURNOVER_SELECT:
+        {
+            const CPlayBoard& playBoard = CheckedDeref(view.GetPlayBoard());
+
+            m_pDoc->AssignNewMoveGroup();
+
+            if (m_pDoc->IsRecording())
+            {
+                // Insert a notification tip so there is some information
+                // feedback during playback.
+                const CSelList& selList = CheckedDeref(view.GetSelectList());
+                CRect rct = selList.GetPiecesEnclosingRect(FALSE);
+                ASSERT(!rct.IsRectEmpty());
+                CPoint pntCenter = CPoint(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+                CString strMsg;
+                strMsg.LoadString(IDS_TIP_FLIP_RANDOM);
+                m_pDoc->RecordEventMessage(strMsg, playBoard.GetSerialNumber(),
+                    value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+            }
+
+            PieceID pid = static_cast<PieceID>(menuGameElement);
+            auto it = std::find_if(GetItemMap()->begin(),
+                                    GetItemMap()->end(),
+                                    [pid](CB::not_null<CDrawObj*> drawObj)
+                                    {
+                                        if (drawObj->GetType() != CDrawObj::drawPieceObj)
+                                        {
+                                            return false;
+                                        }
+                                        CPieceObj& pieceObj = static_cast<CPieceObj&>(*drawObj);
+                                        return pieceObj.m_pid == pid;
+                                    });
+            ASSERT(it != GetItemMap()->end());
+            CDrawObj& drawObj = **it;
+            ASSERT(drawObj.GetType() == CDrawObj::drawPieceObj);
+            CPieceObj& pieceObj = static_cast<CPieceObj&>(drawObj);
+            size_t side = menuGameElement.GetSide();
+            m_pDoc->InvertPlayingPieceOnBoard(pieceObj, playBoard, CPieceTable::fSelect, side);
+
+            return true;
+        }
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+
+void CSelectListBox::OnUpdateActTurnOver(CCmdUI* pCmdUI)
+{
+    switch (pCmdUI->m_nID)
+    {
+        case ID_ACT_TURNOVER:
+        case ID_ACT_TURNOVER_PREV:
+        case ID_ACT_TURNOVER_RANDOM:
+            pCmdUI->DoUpdate(&GetBoardView(), TRUE);
+            break;
+        case ID_ACT_TURNOVER_SELECT:
+        {
+            bool enable = menuGameElement != Invalid_v<GameElement> &&
+                        menuGameElement.IsAPiece();
+            pCmdUI->Enable(enable);
+            if (pCmdUI->m_pSubMenu != NULL)
+            {
+                // Need to handle menu that the submenu is connected to.
+                pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
+                    MF_BYPOSITION | (enable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
+            }
+            break;
+        }
+        default:
+            AfxThrowInvalidArgException();
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
@@ -121,6 +306,11 @@ BOOL CSelectListBox::OnIsToolTipsEnabled() const
 }
 
 GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
+{
+    return OnGetHitItemCodeAtPoint(&CGamDoc::GetVerifiedGameElementCodeForObject, point, rct);
+}
+
+GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const
 {
     point = ClientToItem(point);
 
@@ -146,11 +336,11 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) co
                 const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
                 CPieceTable& pieceTbl = CheckedDeref(m_pDoc->GetPieceTable());
                 uint8_t side = pieceTbl.GetSide(pieceObj.m_pid, i);
-                return m_pDoc->GetVerifiedGameElementCodeForObject(pieceObj, side);
+                return (m_pDoc->*func)(pieceObj, side);
             }
             else
             {
-                return m_pDoc->GetVerifiedGameElementCodeForObject(pObj);
+                return (m_pDoc->*func)(pObj, Invalid_v<size_t>);
             }
         }
     }
@@ -289,5 +479,12 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
         ASSERT(FALSE);                              // Shouldn't happen
         return std::vector<TileID>();
     }
+}
+
+const CPlayBoardView& CSelectListBox::GetBoardView() const
+{
+    CFrameWnd& frame = CheckedDeref(AFXGetParentFrame(this));
+    const CPlayBoardFrame& pbrdFrame = CheckedDeref(DYNAMIC_DOWNCAST(CPlayBoardFrame, &frame));
+    return pbrdFrame.GetActiveBoardView();
 }
 

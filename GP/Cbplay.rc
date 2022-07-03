@@ -694,6 +694,13 @@ BEGIN
         MENUITEM "Prev",                        ID_ACT_TURNOVER_PREV
         MENUITEM "Random",                      ID_ACT_TURNOVER_RANDOM
     END
+    POPUP "8=PV_SELCT_BOX"
+    BEGIN
+        MENUITEM "&Next",                       ID_ACT_TURNOVER
+        MENUITEM "&Prev",                       ID_ACT_TURNOVER_PREV
+        MENUITEM "&Random",                     ID_ACT_TURNOVER_RANDOM
+        MENUITEM "&Clicked Side",               ID_ACT_TURNOVER_SELECT
+    END
 END
 
 IDR_HOLDER MENU
