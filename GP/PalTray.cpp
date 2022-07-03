@@ -310,6 +310,10 @@ void CTrayPalette::DoMenu(CPoint point, bool rightButton)
         }
         END_TRY
     }
+    else
+    {
+        ASSERT(!"LoadMenu error");
+    }
 }
 
 void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
