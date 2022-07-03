@@ -47,7 +47,7 @@ public:
     CMySplitWnd    m_wndSplitter2;  // Embedded in the first
     CCbSplitterWnd m_wndSplitBoards;// Holds playing board views
 
-    CPlayBoard*    m_pPBoard;       // The playing board associated with this frame
+    CB::propagate_const<CPlayBoard*> m_pPBoard;       // The playing board associated with this frame
 
 // Operations
 public:
@@ -61,8 +61,11 @@ protected:
 
     virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 
-    CPlayBoardView* GetActiveBoardView();
-    CCbSplitterWnd* GetBoardSplitter();
+public:
+    const CPlayBoardView& GetActiveBoardView() const;
+protected:
+    CPlayBoardView& GetActiveBoardView() { return const_cast<CPlayBoardView&>(std::as_const(*this).GetActiveBoardView()); }
+    CCbSplitterWnd& GetBoardSplitter();
 
     // Generated message map functions
     //{{AFX_MSG(CPlayBoardFrame)

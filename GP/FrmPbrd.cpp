@@ -399,7 +399,7 @@ LRESULT CPlayBoardFrame::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
     if (ar.IsLoading())
     {
         m_wndSplitBoards.SetActivePane(nRow, nCol);
-        GetActiveBoardView()->NotifySelectListChange();
+        GetActiveBoardView().NotifySelectListChange();
     }
 
     return (LRESULT)1;
@@ -410,10 +410,8 @@ LRESULT CPlayBoardFrame::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 LRESULT CPlayBoardFrame::SendMessageToActiveBoardPane(UINT nMsg, WPARAM wParam,
     LPARAM lParam)
 {
-    CWnd* pWnd = GetActiveBoardView();
-    if (pWnd != NULL)
-        return pWnd->SendMessage(nMsg, wParam, lParam);
-    return (LRESULT)0;
+    CWnd& pWnd = GetActiveBoardView();
+    return pWnd.SendMessage(nMsg, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -422,9 +420,8 @@ LRESULT CPlayBoardFrame::SendMessageToActiveBoardPane(UINT nMsg, WPARAM wParam,
 LRESULT CPlayBoardFrame::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam)
 {
     // Route the message to the active board view.
-    CPlayBoardView* pView = GetActiveBoardView();
-    ASSERT(pView != NULL);
-    return pView->SendMessage(WM_CENTERBOARDONPOINT, wParam, lParam);
+    CPlayBoardView& pView = GetActiveBoardView();
+    return pView.SendMessage(WM_CENTERBOARDONPOINT, wParam, lParam);
 }
 
 // Send these on to the main view so they can be process no
@@ -435,200 +432,200 @@ void CPlayBoardFrame::OnClose()
     CWnd::OnClose();            // Short circuit frame's doc close code
 }
 
-CCbSplitterWnd* CPlayBoardFrame::GetBoardSplitter()
+CCbSplitterWnd& CPlayBoardFrame::GetBoardSplitter()
 {
-    return (CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0);
+    return CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
 }
 
-CPlayBoardView* CPlayBoardFrame::GetActiveBoardView()
+const CPlayBoardView& CPlayBoardFrame::GetActiveBoardView() const
 {
-    CCbSplitterWnd* pSplitWnd = (CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0);
-    return (CPlayBoardView*)pSplitWnd->GetActivePane();
+    CCbSplitterWnd& pSplitWnd = CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
+    return CheckedDeref((CPlayBoardView*)pSplitWnd.GetActivePane());
 }
 
 void CPlayBoardFrame::OnViewHalfScaleBrd()
 {
-    GetActiveBoardView()->OnViewHalfScaleBrd();
+    GetActiveBoardView().OnViewHalfScaleBrd();
 }
 
 void CPlayBoardFrame::OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateViewHalfScaleBrd(pCmdUI);
+    GetActiveBoardView().OnUpdateViewHalfScaleBrd(pCmdUI);
 }
 
 void CPlayBoardFrame::OnViewFullScaleBrd()
 {
-    GetActiveBoardView()->OnViewFullScaleBrd();
+    GetActiveBoardView().OnViewFullScaleBrd();
 }
 
 void CPlayBoardFrame::OnUpdateViewFullScaleBrd(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateViewFullScaleBrd(pCmdUI);
+    GetActiveBoardView().OnUpdateViewFullScaleBrd(pCmdUI);
 }
 
 void CPlayBoardFrame::OnViewSnapGrid()
 {
-    GetActiveBoardView()->OnViewSnapGrid();
+    GetActiveBoardView().OnViewSnapGrid();
 }
 
 void CPlayBoardFrame::OnUpdateViewSnapGrid(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateViewSnapGrid(pCmdUI);
+    GetActiveBoardView().OnUpdateViewSnapGrid(pCmdUI);
 }
 
 void CPlayBoardFrame::OnEditSelAllMarkers()
 {
-    GetActiveBoardView()->OnEditSelAllMarkers();
+    GetActiveBoardView().OnEditSelAllMarkers();
 }
 
 void CPlayBoardFrame::OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateEditSelAllMarkers(pCmdUI);
+    GetActiveBoardView().OnUpdateEditSelAllMarkers(pCmdUI);
 }
 
 void CPlayBoardFrame::OnEditBoardProperties()
 {
-    GetActiveBoardView()->OnEditBoardProperties();
+    GetActiveBoardView().OnEditBoardProperties();
 }
 
 void CPlayBoardFrame::OnViewPieces()
 {
-    GetActiveBoardView()->OnViewPieces();
+    GetActiveBoardView().OnViewPieces();
 }
 
 void CPlayBoardFrame::OnUpdateViewPieces(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateViewPieces(pCmdUI);
+    GetActiveBoardView().OnUpdateViewPieces(pCmdUI);
 }
 
 void CPlayBoardFrame::OnSelectGroupMarkers(UINT nID)
 {
-    GetActiveBoardView()->OnSelectGroupMarkers(nID);
+    GetActiveBoardView().OnSelectGroupMarkers(nID);
 }
 
 void CPlayBoardFrame::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 {
-    GetActiveBoardView()->OnUpdateSelectGroupMarkers(pCmdUI, nID);
+    GetActiveBoardView().OnUpdateSelectGroupMarkers(pCmdUI, nID);
 }
 
 void CPlayBoardFrame::OnViewToggleScale()
 {
-    GetActiveBoardView()->OnViewToggleScale();
+    GetActiveBoardView().OnViewToggleScale();
 }
 
 void CPlayBoardFrame::OnUpdateViewToggleScale(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateViewToggleScale(pCmdUI);
+    GetActiveBoardView().OnUpdateViewToggleScale(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActStack()
 {
-    GetActiveBoardView()->OnActStack();
+    GetActiveBoardView().OnActStack();
 }
 
 void CPlayBoardFrame::OnUpdateActStack(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActStack(pCmdUI);
+    GetActiveBoardView().OnUpdateActStack(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActToFront()
 {
-    GetActiveBoardView()->OnActToFront();
+    GetActiveBoardView().OnActToFront();
 }
 
 void CPlayBoardFrame::OnUpdateActToFront(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActToFront(pCmdUI);
+    GetActiveBoardView().OnUpdateActToFront(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActToBack()
 {
-    GetActiveBoardView()->OnActToBack();
+    GetActiveBoardView().OnActToBack();
 }
 
 void CPlayBoardFrame::OnUpdateActToBack(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActToBack(pCmdUI);
+    GetActiveBoardView().OnUpdateActToBack(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActTurnOver()
 {
-    GetActiveBoardView()->OnActTurnOver();
+    GetActiveBoardView().OnActTurnOver();
 }
 
 void CPlayBoardFrame::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActTurnOver(pCmdUI);
+    GetActiveBoardView().OnUpdateActTurnOver(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActPlotMove()
 {
-    GetActiveBoardView()->OnActPlotMove();
+    GetActiveBoardView().OnActPlotMove();
 }
 
 void CPlayBoardFrame::OnUpdateActPlotMove(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActPlotMove(pCmdUI);
+    GetActiveBoardView().OnUpdateActPlotMove(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActPlotDone()
 {
-    GetActiveBoardView()->OnActPlotDone();
+    GetActiveBoardView().OnActPlotDone();
 }
 
 void CPlayBoardFrame::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActPlotDone(pCmdUI);
+    GetActiveBoardView().OnUpdateActPlotDone(pCmdUI);
 }
 
 void CPlayBoardFrame::OnActPlotDiscard()
 {
-    GetActiveBoardView()->OnActPlotDiscard();
+    GetActiveBoardView().OnActPlotDiscard();
 }
 
 void CPlayBoardFrame::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView()->OnUpdateActPlotDiscard(pCmdUI);
+    GetActiveBoardView().OnUpdateActPlotDiscard(pCmdUI);
 }
 
 void CPlayBoardFrame::OnViewSplitBoardRows()
 {
-    CCbSplitterWnd* pSplitWnd = GetBoardSplitter();
-    if (pSplitWnd->IsRowHidden())
+    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
+    if (pSplitWnd.IsRowHidden())
     {
         CRect rct;
-        pSplitWnd->GetWindowRect(&rct);
-        pSplitWnd->SetRowInfo(0, rct.Height() / 2, 0);
-        pSplitWnd->ShowRow();
+        pSplitWnd.GetWindowRect(&rct);
+        pSplitWnd.SetRowInfo(0, rct.Height() / 2, 0);
+        pSplitWnd.ShowRow();
     }
     else
-        pSplitWnd->HideRow(1);
+        pSplitWnd.HideRow(1);
 }
 
 void CPlayBoardFrame::OnUpdateViewSplitBoardRows(CCmdUI* pCmdUI)
 {
-    CCbSplitterWnd* pSplitWnd = GetBoardSplitter();
+    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
     pCmdUI->Enable();
-    pCmdUI->SetCheck(!pSplitWnd->IsRowHidden());
+    pCmdUI->SetCheck(!pSplitWnd.IsRowHidden());
 }
 
 void CPlayBoardFrame::OnViewSplitBoardCols()
 {
-    CCbSplitterWnd* pSplitWnd = GetBoardSplitter();
-    if (pSplitWnd->IsColHidden())
+    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
+    if (pSplitWnd.IsColHidden())
     {
         CRect rct;
-        pSplitWnd->GetWindowRect(&rct);
-        pSplitWnd->SetColumnInfo(0, rct.Width() / 2, 0);
-        pSplitWnd->ShowColumn();
+        pSplitWnd.GetWindowRect(&rct);
+        pSplitWnd.SetColumnInfo(0, rct.Width() / 2, 0);
+        pSplitWnd.ShowColumn();
     }
     else
-        pSplitWnd->HideColumn(1);
+        pSplitWnd.HideColumn(1);
 }
 
 void CPlayBoardFrame::OnUpdateViewSplitBoardCols(CCmdUI* pCmdUI)
 {
-    CCbSplitterWnd* pSplitWnd = GetBoardSplitter();
+    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
     pCmdUI->Enable();
-    pCmdUI->SetCheck(!pSplitWnd->IsColHidden());
+    pCmdUI->SetCheck(!pSplitWnd.IsColHidden());
 }
