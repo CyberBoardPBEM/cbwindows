@@ -118,7 +118,7 @@ public:
 // Implementation - methods
 protected:
     void LoadMenuButtonBitmap();
-    void DoEditSelectedPieceText(BOOL bEditTop);
+    void DoEditSelectedPieceText();
     BOOL EnsureTooltipExistance();
 
 // Generated message map functions

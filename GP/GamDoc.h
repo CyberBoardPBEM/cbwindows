@@ -324,7 +324,7 @@ public:
     void        GetTipTextForObject(const CDrawObj& pDObj, CString &strTip, CString* pStrTitle = NULL);
     GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
     GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, BOOL bBottomSide = FALSE);
-    void        DoEditPieceText(PieceID pid, BOOL bEditTop);
+    void        DoEditPieceText(PieceID pid);
     void        DoEditObjectText(const CDrawObj& pDObj);
 
     void DoInitialUpdate();

@@ -196,7 +196,7 @@ void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::DoEditPieceText(PieceID pid, BOOL bEditTop)
+void CGamDoc::DoEditPieceText(PieceID pid)
 {
     CEditElementTextDialog dlg;
 
