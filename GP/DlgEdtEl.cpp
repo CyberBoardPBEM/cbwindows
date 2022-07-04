@@ -41,9 +41,9 @@ CEditElementTextDialog::CEditElementTextDialog(CWnd* pParent /*=NULL*/)
 {
     //{{AFX_DATA_INIT(CEditElementTextDialog)
     m_strText = "";
-    m_bSetBothSides = FALSE;
+    m_bSetAllSides = FALSE;
     //}}AFX_DATA_INIT
-    m_bDoubleSided = FALSE;
+    m_nSides = size_t(1);
 }
 
 
@@ -51,10 +51,10 @@ void CEditElementTextDialog::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CEditElementTextDialog)
-    DDX_Control(pDX, IDC_D_EDITELEM_SETBOTH, m_chkBothSides);
+    DDX_Control(pDX, IDC_D_EDITELEM_SETALL, m_chkAllSides);
     DDX_Control(pDX, IDC_D_EDITELEM_TEXT, m_editText);
     DDX_Text(pDX, IDC_D_EDITELEM_TEXT, m_strText);
-    DDX_Check(pDX, IDC_D_EDITELEM_SETBOTH, m_bSetBothSides);
+    DDX_Check(pDX, IDC_D_EDITELEM_SETALL, m_bSetAllSides);
     //}}AFX_DATA_MAP
 }
 
@@ -71,7 +71,7 @@ END_MESSAGE_MAP()
 static DWORD adwHelpMap[] =
 {
     IDC_D_EDITELEM_TEXT, IDH_D_EDITELEM_TEXT,
-    IDC_D_EDITELEM_SETBOTH, IDH_D_EDITELEM_SETBOTH,
+    IDC_D_EDITELEM_SETALL, IDH_D_EDITELEM_SETALL,
     0,0
 };
 
@@ -95,6 +95,6 @@ BOOL CEditElementTextDialog::OnInitDialog()
     int nChars = m_editText.GetWindowTextLength();
     m_editText.SetFocus();
     m_editText.SetSel(nChars, nChars, TRUE);
-    m_chkBothSides.EnableWindow(m_bDoubleSided);
+    m_chkAllSides.EnableWindow(m_nSides >= size_t(2));
     return FALSE;
 }
