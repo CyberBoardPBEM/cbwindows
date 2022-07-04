@@ -174,12 +174,6 @@ uint16_t CPieceTable::GetPieceFacing(PieceID pid) const
 
 ///////////////////////////////////////////////////////////////////////
 
-void CPieceTable::FlipPieceOver(PieceID pid)
-{
-    ASSERT(Is2Sided(pid));
-    GetPiece(pid).InvertSide();
-}
-
 void CPieceTable::FlipPieceOver(PieceID pid, CPieceTable::Flip flip, size_t side)
 {
     Piece& piece = GetPiece(pid);
@@ -231,11 +225,6 @@ BOOL CPieceTable::IsPieceUsed(PieceID pid) const
     return GetPiece(pid).IsUsed();
 }
 
-BOOL CPieceTable::IsFrontUp(PieceID pid) const
-{
-    return GetPiece(pid).IsFrontUp();
-}
-
 uint8_t CPieceTable::GetSide(PieceID pid) const
 {
     return GetPiece(pid).GetSide();
@@ -272,14 +261,6 @@ uint8_t CPieceTable::GetSide(PieceID pid, size_t displayIndex) const
     return value_preserving_cast<uint8_t>((GetSide(pid) + displayIndex) % GetSides(pid));
 }
 #endif
-
-BOOL CPieceTable::Is2Sided(PieceID pid) const
-{
-    const Piece* pPce;
-    const PieceDef* pDef;
-    GetPieceDefinitionPair(pid, pPce, pDef);
-    return pDef->Is2Sided();
-}
 
 size_t CPieceTable::GetSides(PieceID pid) const
 {
@@ -320,15 +301,6 @@ uint32_t CPieceTable::GetOwnerMask(PieceID pid) const
 void CPieceTable::SetOwnerMask(PieceID pid, uint32_t dwMask)
 {
     GetPiece(pid).SetOwnerMask(dwMask);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void CPieceTable::SetPiece(PieceID pid, uint8_t nSide, uint16_t nFacing)
-{
-    Piece& pPce = GetPiece(pid);
-    pPce.SetSide(nSide);
-    pPce.SetFacing(nFacing);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -447,28 +419,6 @@ TileID CPieceTable::GetActiveTileID(PieceID pid, BOOL bWithFacing)
     const PieceDef* pDef;
     GetPieceDefinitionPair(pid, pPce, pDef);
     TileID tidBase = pDef->GetTIDs()[pPce->GetSide()];
-
-    if (!bWithFacing || pPce->GetFacing() == 0)
-        return tidBase;
-
-    // Handle rotated pieces...
-    return GetFacedTileID(pid, tidBase,  pPce->GetFacing(), pPce->GetSide());
-}
-
-TileID CPieceTable::GetInactiveTileID(PieceID pid) const
-{
-    const Piece* pPce;
-    const PieceDef* pDef;
-    GetPieceDefinitionPair(pid, pPce, pDef);
-    return pPce->IsFrontUp() ? pDef->GetBackTID() : pDef->GetFrontTID();
-}
-
-TileID CPieceTable::GetInactiveTileID(PieceID pid, BOOL bWithFacing)
-{
-    const Piece* pPce;
-    const PieceDef* pDef;
-    GetPieceDefinitionPair(pid, pPce, pDef);
-    TileID tidBase = pPce->IsFrontUp() ? pDef->GetBackTID() : pDef->GetFrontTID();
 
     if (!bWithFacing || pPce->GetFacing() == 0)
         return tidBase;

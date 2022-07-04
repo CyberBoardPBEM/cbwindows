@@ -45,7 +45,7 @@ CTraySet::CTraySet()
     m_bNonOwnerAccess = FALSE;
     m_bRandomPull = FALSE;
     m_bRandomSidePull = false;
-    m_eTrayViz = trayVizTwoSide;
+    m_eTrayViz = trayVizAllSides;
     m_bEnforceVizForOwnerToo = FALSE;
 }
 

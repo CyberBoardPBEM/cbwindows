@@ -86,11 +86,8 @@ public:
     void Serialize(CArchive& ar);
     TileID GetFrontTID() const;
     void SetFrontTID(TileID tid);
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] TileID GetBackTID() const { return m_tids.size() < size_t(2) ? nullTid : m_tids[size_t(1)]; }
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] void SetBackTID(TileID tid);
     const std::vector<TileID>& GetTIDs() const { return m_tids; }
     void SetTIDs(std::vector<TileID>&& tids);
-    [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] BOOL Is2Sided() const { return m_tids.size() >= size_t(2); }
     size_t GetSides() const { return m_tids.size(); }
     void SetSides(size_t sides);
 };

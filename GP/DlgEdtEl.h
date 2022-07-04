@@ -47,7 +47,7 @@ public:
     BOOL    m_bSetAllSides;
     //}}AFX_DATA
 
-    no_demote<size_t>  m_nSides;
+    size_t  m_nSides;
 
 // Overrides
     // ClassWizard generated virtual function overrides

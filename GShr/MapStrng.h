@@ -311,7 +311,7 @@ const DWORD GAMEELEM_OBJECTID_MASK = 0xFFFE0000L; // else...top 15 bits nonzero 
 inline GameElementLegacyCheck MakePieceElementLegacyCheck(PieceID16 pid, unsigned nSide = unsigned(0))
     { return (GameElementLegacyCheck)(static_cast<WORD>(pid) | (DWORD)nSide << 16); }
 #endif
-inline GameElement32 MakePieceElement(PieceID16 pid, unsigned nSide = unsigned(0))
+inline GameElement32 MakePieceElement(PieceID16 pid, unsigned nSide)
     {
         GameElement32 retval(pid, nSide);
 #if !defined(NDEBUG)

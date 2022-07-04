@@ -37,7 +37,6 @@ class CGamDoc;
 
 enum TrayViz            // Tray content visiblity options
 {
-    trayVizTwoSide [[deprecated("need to get ready for pieces with multiple \"back\" sides")]] = 0,
     trayVizAllSides = 0,
     trayVizOneSide = 1,
     trayVizEachGeneric = 2,

@@ -462,28 +462,6 @@ void PieceDef::SetFrontTID(TileID tid)
     m_tids[size_t(0)] = tid;
 }
 
-void PieceDef::SetBackTID(TileID tid)
-{
-    ASSERT(m_tids.size() == size_t(2));
-    if (tid != nullTid)
-    {
-        if (m_tids.size() < size_t(2))
-        {
-            AfxThrowMemoryException();
-        }
-        m_tids[size_t(1)] = tid;
-    }
-    else if (m_tids.size() >= size_t(1) &&
-            m_tids[size_t(0)] != nullTid)
-    {
-        m_tids.resize(size_t(1));
-    }
-    else
-    {
-        m_tids.clear();
-    }
-}
-
 void PieceDef::SetTIDs(std::vector<TileID>&& tids)
 {
     if (tids.size() > maxSides)
