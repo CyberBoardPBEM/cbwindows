@@ -188,7 +188,7 @@ BOOL CTrayPalette::EnsureTooltipExistance()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::DoEditSelectedPieceText(BOOL bEditTop)
+void CTrayPalette::DoEditSelectedPieceText()
 {
     ASSERT(m_listTray.GetSelCount() == 1);
     int nSelItem;
@@ -196,7 +196,7 @@ void CTrayPalette::DoEditSelectedPieceText(BOOL bEditTop)
 
     PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nSelItem));
 
-    m_pDoc->DoEditPieceText(pid, bEditTop);
+    m_pDoc->DoEditPieceText(pid);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -795,7 +795,7 @@ void CTrayPalette::OnTrayListDoubleClick()
     }
 
     PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    m_pDoc->DoEditPieceText(pid, TRUE);
+    m_pDoc->DoEditPieceText(pid);
 }
 
 void CTrayPalette::OnPieceTrayShuffle()
@@ -898,7 +898,7 @@ void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
 
 void CTrayPalette::OnEditElementText()
 {
-    DoEditSelectedPieceText(TRUE);
+    DoEditSelectedPieceText();
 }
 
 void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
