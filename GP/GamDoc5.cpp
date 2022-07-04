@@ -208,18 +208,23 @@ void CGamDoc::DoEditPieceText(PieceID pid)
 {
     CEditElementTextDialog dlg;
 
-    int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-    GameElement elem = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
-    GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1));
-
+    no_demote<uint8_t> nSide = GetPieceTable()->GetSide(pid);
+    GameElement elem = MakePieceElement(pid, nSide);
     dlg.m_strText = GetGameElementString(elem);
+    dlg.m_nSides = GetPieceTable()->GetSides(pid);
 
-    if (GetPieceTable()->Is2Sided(pid))
+    /* dlg.m_bSetAllSides = sides >= 2 &&
+                            all side texts are currently same */
+    dlg.m_bSetAllSides = dlg.m_nSides >= size_t(2);
+    for (no_demote<size_t> i = size_t(0) ; i < dlg.m_nSides ; ++i)
     {
+        GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
         CString strDown = GetGameElementString(elemDown);
-        if (!strDown.IsEmpty() && strDown == dlg.m_strText)
-            dlg.m_bSetBothSides = TRUE;
-        dlg.m_bDoubleSided = TRUE;
+        if (strDown != dlg.m_strText)
+        {
+            dlg.m_bSetAllSides = FALSE;
+            break;
+        }
     }
 
     if (dlg.DoModal() != IDOK)
@@ -227,33 +232,35 @@ void CGamDoc::DoEditPieceText(PieceID pid)
 
     AssignNewMoveGroup();
 
-    SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
-
-    if (dlg.m_bSetBothSides && GetPieceTable()->Is2Sided(pid))
-        SetObjectText(elemDown, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+    if (!dlg.m_bSetAllSides)
+    {
+        SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+    }
+    else
+    {
+        for (no_demote<size_t> i = size_t(0) ; i < dlg.m_nSides ; ++i)
+        {
+            GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
+            SetObjectText(elemDown, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+        }
+    }
 }
 
 void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
 {
+    if (pDObj.GetType() == CDrawObj::drawPieceObj)
+    {
+        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
+        DoEditPieceText(pid);
+        return;
+    }
+
     CEditElementTextDialog dlg;
 
     CString strTip;
     GetTipTextForObject(pDObj, strTip, NULL);
 
     dlg.m_strText = strTip;
-
-    if (pDObj.GetType() == CDrawObj::drawPieceObj)
-    {
-        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
-        if (GetPieceTable()->Is2Sided(pid))
-        {
-            dlg.m_bDoubleSided = TRUE;
-            int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-            CString strDown = GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1)));
-            if (!strDown.IsEmpty() && strDown == dlg.m_strText)
-                dlg.m_bSetBothSides = TRUE;
-        }
-    }
 
     if (dlg.DoModal() != IDOK)
         return;
@@ -262,16 +269,6 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
     AssignNewMoveGroup();
 
     SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
-    if (dlg.m_bSetBothSides && pDObj.GetType() == CDrawObj::drawPieceObj)
-    {
-        PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
-        if (GetPieceTable()->Is2Sided(pid))
-        {
-            int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-            SetObjectText(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide ^ 1)),
-                dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

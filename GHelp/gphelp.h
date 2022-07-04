@@ -37,7 +37,7 @@
 #define IDH_DIE_SETS                    5016
 
 #define IDH_D_EDITELEM_TEXT             5020
-#define IDH_D_EDITELEM_SETBOTH          5021
+#define IDH_D_EDITELEM_SETALL           5021
 
 #define IDH_D_EPLAY_UPDATE_NAME         5031
 #define IDH_D_EPLAY_NAME_LIST           5032

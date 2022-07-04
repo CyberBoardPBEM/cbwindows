@@ -357,7 +357,7 @@
 #define IDC_D_MPGAME_PLAYER_NAME        7203
 #define IDC_D_MPGAME                    7204
 #define IDC_D_SELOWN_LIST               7205
-#define IDC_D_EDITELEM_SETBOTH          7206
+#define IDC_D_EDITELEM_SETALL           7206
 #define IDC_D_MPGAME_CREATE_REFEREE     7207
 #define IDC_D_NEWGEO_BOARD_LIST         7208
 #define IDC_D_NEWGEO_GEOMORPHIC_LIST    7209

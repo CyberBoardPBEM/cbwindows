@@ -41,13 +41,13 @@ public:
 // Dialog Data
     //{{AFX_DATA(CEditElementTextDialog)
     enum { IDD = IDD_EDIT_ELEMENT_TEXT };
-    CButton m_chkBothSides;
+    CButton m_chkAllSides;
     CEdit   m_editText;
     CString m_strText;
-    BOOL    m_bSetBothSides;
+    BOOL    m_bSetAllSides;
     //}}AFX_DATA
 
-    BOOL    m_bDoubleSided;
+    no_demote<size_t>  m_nSides;
 
 // Overrides
     // ClassWizard generated virtual function overrides
