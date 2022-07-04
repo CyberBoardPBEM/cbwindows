@@ -106,7 +106,7 @@ CTrayPalette::CTrayPalette(CGamDoc& pDoc) :
     m_listTray.EnableDrag();
     m_listTray.EnableSelfDrop();
     m_listTray.EnableDropScroll();
-    m_listTray.SetTrayContentVisibility(trayVizTwoSide);
+    m_listTray.SetTrayContentVisibility(trayVizAllSides);
 
     m_dummyArray.push_back(PieceID(0));
 
@@ -570,7 +570,7 @@ void CTrayPalette::UpdateTrayList()
          pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
         !pYSet.IsEnforcingVisibilityForOwnerToo()))
     {
-        eViz = trayVizTwoSide;              // Override visibility
+        eViz = trayVizAllSides;              // Override visibility
     }
     else if (eViz == trayVizEachGeneric)
     {

@@ -159,7 +159,7 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_listTrays = MakeOwner<CTrayListBox>(CheckedDeref(GetDocument()));
     if (!CreateListbox(IDC_V_GSN_TRAYLIST, *m_listTrays, WS_HSCROLL | LBS_HASSTRINGS, rctList))
         return -1;
-    m_listTrays->SetTrayContentVisibility(trayVizTwoSide);
+    m_listTrays->SetTrayContentVisibility(trayVizAllSides);
     if (!CreateEditbox(IDC_V_GSN_EDITINFO, m_editInfo, rctList))
         return -1;
 

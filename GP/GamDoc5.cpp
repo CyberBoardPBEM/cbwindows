@@ -190,8 +190,8 @@ void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
         PieceID pid = pObj.m_pid;
-        int nSide = GetPieceTable()->IsFrontUp(pid) ? 0 : 1;
-        strTip = GetGameElementString(MakePieceElement(pid, value_preserving_cast<unsigned>(nSide)));
+        uint8_t nSide = GetPieceTable()->GetSide(pid);
+        strTip = GetGameElementString(MakePieceElement(pid, nSide));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
@@ -208,7 +208,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
 {
     CEditElementTextDialog dlg;
 
-    no_demote<uint8_t> nSide = GetPieceTable()->GetSide(pid);
+    uint8_t nSide = GetPieceTable()->GetSide(pid);
     GameElement elem = MakePieceElement(pid, nSide);
     dlg.m_strText = GetGameElementString(elem);
     dlg.m_nSides = GetPieceTable()->GetSides(pid);
@@ -216,7 +216,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
     /* dlg.m_bSetAllSides = sides >= 2 &&
                             all side texts are currently same */
     dlg.m_bSetAllSides = dlg.m_nSides >= size_t(2);
-    for (no_demote<size_t> i = size_t(0) ; i < dlg.m_nSides ; ++i)
+    for (size_t i = size_t(0) ; i < dlg.m_nSides ; ++i)
     {
         GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
         CString strDown = GetGameElementString(elemDown);
@@ -238,7 +238,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
     }
     else
     {
-        for (no_demote<size_t> i = size_t(0) ; i < dlg.m_nSides ; ++i)
+        for (size_t i = size_t(0) ; i < dlg.m_nSides ; ++i)
         {
             GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
             SetObjectText(elemDown, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);

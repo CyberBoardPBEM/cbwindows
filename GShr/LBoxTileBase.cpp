@@ -68,18 +68,6 @@ int CTileBaseListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CSize CTileBaseListBox::DoOnItemSize(size_t nItem, TileID tid1, TileID tid2) const
-{
-    std::vector<TileID> tids;
-    ASSERT(tid1 != nullTid);
-    tids.push_back(tid1);
-    if (tid2 != nullTid)
-    {
-        tids.push_back(tid2);
-    }
-    return DoOnItemSize(nItem, tids);
-}
-
 CSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
 {
     ASSERT(!tids.empty() &&
@@ -118,19 +106,6 @@ CSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& ti
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
-    TileID tid1, TileID tid2) const
-{
-    std::vector<TileID> tids;
-    ASSERT(tid1 != nullTid);
-    tids.push_back(tid1);
-    if (tid2 != nullTid)
-    {
-        tids.push_back(tid2);
-    }
-    DoOnDrawItem(pDC, nItem, nAction, nState, rctItem, tids);
-}
 
 void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
     const std::vector<TileID>& tids) const
@@ -255,28 +230,6 @@ std::string CTileBaseListBox::OnGetItemDebugString(size_t nItem) const
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-void CTileBaseListBox::GetTileRectsForItem(int nItem, TileID tidLeft, TileID tidRight,
-    CRect& rctLeft, CRect& rctRight) const
-{
-    std::vector<TileID> tids;
-    ASSERT(tidLeft != nullTid);
-    tids.push_back(tidLeft);
-    if (tidRight != nullTid)
-    {
-        tids.push_back(tidRight);
-    }
-    std::vector<CRect> rects = GetTileRectsForItem(nItem, tids);
-    rctLeft = rects[size_t(0)];
-    if (tidRight != nullTid)
-    {
-        rctRight = rects[size_t(1)];
-    }
-    else
-    {
-        rctRight.SetRectEmpty();
-    }
-}
 
 std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(int nItem, const std::vector<TileID>& tids) const
 {
