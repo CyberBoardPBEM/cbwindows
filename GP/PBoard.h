@@ -101,6 +101,8 @@ public:
 
     BOOL IsNonOwnerAccessAllowed() const { return m_bNonOwnerAccess; }
     void SetNonOwnerAccess(BOOL bAllowAccess) { m_bNonOwnerAccess = bAllowAccess; }
+    bool IsPrivate() const { return m_bPrivate; }
+    void SetPrivate(bool b) { m_bPrivate = b; }
 
 // Operations
 public:
@@ -203,6 +205,9 @@ protected:
 
     OwnerOrNullPtr<CDrawList> m_pPceList;      // Piece draw list
     OwnerOrNullPtr<CDrawList> m_pIndList;      // Indicator draw list.
+
+    // don't show board to non-owner
+    bool    m_bPrivate;
 
     // For reference only...
     CB::propagate_const<CBoard*> m_pBoard;       // Loaded from Game Box

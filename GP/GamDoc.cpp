@@ -1028,6 +1028,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
     dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pPBoard.GetOwnerMask());
     dlg.m_bOwnerInfoIsReadOnly = !IsScenario();
     dlg.m_bNonOwnerAccess = pPBoard.IsNonOwnerAccessAllowed();
+    dlg.m_bPrivate = pPBoard.IsPrivate();
     dlg.m_bDrawLockedBeneath = pPBoard.GetDrawLockedBeneath();
 
     if (dlg.DoModal() == IDOK)
@@ -1054,6 +1055,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
             pPBoard.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
             pPBoard.PropagateOwnerMaskToAllPieces();
             pPBoard.SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
+            pPBoard.SetPrivate(dlg.m_bPrivate);
         }
 
         UpdateAllViews(NULL, HINT_BOARDCHANGE);

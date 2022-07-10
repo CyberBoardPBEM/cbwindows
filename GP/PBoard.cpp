@@ -92,6 +92,8 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_bNonOwnerAccess = FALSE;                  // Owned stuff can't be messed with
     m_dwOwnerMask = 0;                          // No player owns it
 
+    m_bPrivate = false;
+
     m_pBoard = NULL;                            // Loaded from Game Box
     m_nSerialNum = nullBid;                 // Initially set from game box.
 }
@@ -354,6 +356,18 @@ void CPlayBoard::Serialize(CArchive& ar)
         m_pPceList->Serialize(ar);  // Board's piece and annotation list
         ASSERT(m_pIndList != NULL);
         m_pIndList->Serialize(ar);  // Board's indicator list
+
+        if (CB::GetVersion(ar) < NumVersion(4, 0))
+        {
+            if (m_bPrivate)
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+        }
+        else
+        {
+            ar << m_bPrivate;
+        }
     }
     else
     {
@@ -480,6 +494,15 @@ void CPlayBoard::Serialize(CArchive& ar)
         ASSERT(m_pIndList == NULL);
         m_pIndList = MakeOwner<CDrawList>();
         m_pIndList->Serialize(ar);  // Board's indicator list
+
+        if (CB::GetVersion(ar) < NumVersion(4, 0))
+        {
+            m_bPrivate = false;
+        }
+        else
+        {
+            ar >> m_bPrivate;
+        }
     }
 }
 
