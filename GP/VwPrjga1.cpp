@@ -103,6 +103,12 @@ void CGamProjView::DoBoardView()
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
     CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
+    if (pPBoard.IsPrivate() &&
+        pPBoard.IsOwnedButNotByCurrentPlayer(*pDoc))
+    {
+        AfxMessageBox(IDS_ERR_PRIVATE_BOARD_PERM, MB_OK | MB_ICONEXCLAMATION);
+        return;
+    }
     CView* pView = pDoc->FindPBoardView(pPBoard);
     if (pView != NULL)
     {

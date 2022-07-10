@@ -37,6 +37,7 @@ public:
     //{{AFX_DATA(CPBrdPropDialog)
     enum { IDD = IDD_PBRDPROP };
     CButton m_chkAllowAccess;
+    CButton m_chkPrivate;
     CComboBox   m_comboOwners;
     CStatic m_staticOwnerLabel;
     CMFCColorButton  m_cpPlotColor;
@@ -68,6 +69,7 @@ public:
 
     BOOL            m_bOwnerInfoIsReadOnly;
     BOOL            m_bNonOwnerAccess;
+    BOOL            m_bPrivate;
     int             m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
     CPlayerManager* m_pPlayerMgr;
 

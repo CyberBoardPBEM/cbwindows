@@ -180,6 +180,7 @@
 #define IDS_INFO_GAME_CREATED           673
 #define IDS_TIP_TRAY_FLIPPED_RANDOM     674
 #define IDS_MSG_RANDOM_SIDE_PULL        675
+#define IDS_ERR_PRIVATE_BOARD_PERM      676
 #define IDD_ABOUTBOX                    2000
 #define IDD_SCNPROP                     2002
 #define IDD_PBRDPROP                    2004
@@ -378,6 +379,7 @@
 #define IDC_D_IMPPCE_CLEARALL           7224
 #define IDC_D_SETBRD_SELECTALL          7225
 #define IDC_D_SETBRD_CLEARALL           7226
+#define IDC_D_PBPRP_NONOWNER_HIDE       7227
 #define CTL3D_3DCHECK                   26567
 #define ID_PROJITEM_DELETE              32834
 #define ID_SCN_SELPIECES                40000
@@ -513,9 +515,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2058
+#define _APS_NEXT_RESOURCE_VALUE        2059
 #define _APS_NEXT_COMMAND_VALUE         40166
-#define _APS_NEXT_CONTROL_VALUE         7227
+#define _APS_NEXT_CONTROL_VALUE         7228
 #define _APS_NEXT_SYMED_VALUE           4000
 #endif
 #endif

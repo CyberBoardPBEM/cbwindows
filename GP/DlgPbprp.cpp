@@ -60,6 +60,7 @@ CPBrdPropDialog::CPBrdPropDialog(CWnd* pParent /*=NULL*/)
     m_crPlotColor = RGB(0,0,0);
     m_nPlotWd = 1;
     m_bNonOwnerAccess = FALSE;
+    m_bPrivate = FALSE;
     m_nOwnerSel = -1;
     m_pPlayerMgr = NULL;
     m_bOwnerInfoIsReadOnly = FALSE;
@@ -70,6 +71,7 @@ void CPBrdPropDialog::DoDataExchange(CDataExchange* pDX)
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CPBrdPropDialog)
     DDX_Control(pDX, IDC_D_PBPRP_NONOWNER_ACCESS, m_chkAllowAccess);
+    DDX_Control(pDX, IDC_D_PBPRP_NONOWNER_HIDE, m_chkPrivate);
     DDX_Control(pDX, IDC_D_PBPRP_OWNER_LIST, m_comboOwners);
     DDX_Control(pDX, IDC_D_PBPRP_OWNER_LABEL, m_staticOwnerLabel);
     DDX_Control(pDX, IDC_D_PBPRP_PLOTCOLOR, m_cpPlotColor);
@@ -172,6 +174,7 @@ void CPBrdPropDialog::OnOK()
     {
         m_nOwnerSel = m_comboOwners.GetCurSel() - 1;
         m_bNonOwnerAccess = m_chkAllowAccess.GetCheck() != 0;
+        m_bPrivate = m_chkPrivate.GetCheck() != 0;
     }
 }
 
@@ -197,6 +200,8 @@ BOOL CPBrdPropDialog::OnInitDialog()
         m_staticOwnerLabel.EnableWindow(FALSE);
         m_chkAllowAccess.SetCheck(0);
         m_chkAllowAccess.EnableWindow(FALSE);
+        m_chkPrivate.SetCheck(0);
+        m_chkPrivate.EnableWindow(FALSE);
     }
     else
     {
@@ -207,11 +212,13 @@ BOOL CPBrdPropDialog::OnInitDialog()
             m_comboOwners.AddString(m_pPlayerMgr->GetAt(i).m_strName);
         m_comboOwners.SetCurSel(m_nOwnerSel + 1);
         m_chkAllowAccess.SetCheck(m_bNonOwnerAccess ? 1 : 0);
+        m_chkPrivate.SetCheck(m_bPrivate ? 1 : 0);
     }
     if (m_bOwnerInfoIsReadOnly)
     {
         m_comboOwners.EnableWindow(FALSE);
         m_chkAllowAccess.EnableWindow(FALSE);
+        m_chkPrivate.EnableWindow(FALSE);
     }
 
     return TRUE;  // return TRUE  unless you set the focus to a control
