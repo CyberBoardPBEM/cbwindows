@@ -59,7 +59,7 @@ protected:
         size_t nSourceCode);
     void MarkGroupItem(int nGroupCode, size_t nSourceCode)
         { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
-    int GetItemGroupCode(int nIndex);
+    int GetItemGroupCode(int nIndex) const;
 public:
     size_t GetItemSourceCode(int nIndex) const;
     void GetItemText(int nIndex, CString& str);
@@ -109,7 +109,7 @@ public:
     {
         CProjListBoxBase::MarkGroupItem(value_preserving_cast<int>(nGroupCode), nSourceCode);
     }
-    T GetItemGroupCode(int nIndex)
+    T GetItemGroupCode(int nIndex) const
     {
         return static_cast<T>(CProjListBoxBase::GetItemGroupCode(nIndex));
     }

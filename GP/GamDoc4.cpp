@@ -40,6 +40,7 @@
 #include    "MoveHist.h"
 #include    "DlgState.h"
 #include    "VwPbrd.h"
+#include    "VwPrjgam.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -415,7 +416,9 @@ void CGamDoc::RestartMoves()
     ASSERT(IsPlaying());
     ASSERT(m_nFirstMove != Invalid_v<size_t> && m_nFirstMove <= size_t(1));
     m_nMoveInterlock++;
-    m_nCurMove = m_pMoves->DoMove(*this, m_nFirstMove);
+    /* !bAutoStepHiddenMove to prevent a completely hidden move
+        sequence running to the end */
+    m_nCurMove = m_pMoves->DoMove(*this, m_nFirstMove, false);
     m_nMoveInterlock--;
     ASSERT(m_nCurMove != Invalid_v<size_t> && m_nCurMove != m_nFirstMove);
     m_astrMsgHist.RemoveAll();
@@ -564,6 +567,18 @@ void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
 CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
 {
     if (IsQuietPlayback()) return NULL;
+    if (pPBoard.IsPrivate() &&
+        pPBoard.IsOwnedButNotByCurrentPlayer(*this))
+    {
+        CGamProjView& projView = FindProjectView();
+        CFrameWnd& frm = CheckedDeref(projView.GetParentFrame());
+        frm.ActivateFrame();
+        BoardID bid = pPBoard.GetBoard()->GetSerialNumber();
+        int i = projView.Find(bid);
+        projView.m_listProj.MakeItemVisible(i);
+        projView.m_listProj.SetNotificationTip(i, IDS_BOARD_HIDDEN_MOVE);
+        return nullptr;
+    }
 
     CView* pView = FindPBoardView(pPBoard);
     if (pView != NULL)

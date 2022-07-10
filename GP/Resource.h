@@ -181,6 +181,8 @@
 #define IDS_TIP_TRAY_FLIPPED_RANDOM     674
 #define IDS_MSG_RANDOM_SIDE_PULL        675
 #define IDS_ERR_PRIVATE_BOARD_PERM      676
+#define IDS_FULLY_HIDDEN_MOVE           677
+#define IDS_BOARD_HIDDEN_MOVE           678
 #define IDD_ABOUTBOX                    2000
 #define IDD_SCNPROP                     2002
 #define IDD_PBRDPROP                    2004

@@ -88,7 +88,7 @@ int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
     return nItem;
 }
 
-int CProjListBoxBase::GetItemGroupCode(int nIndex)
+int CProjListBoxBase::GetItemGroupCode(int nIndex) const
 {
     CString str;
     GetText(nIndex, str);

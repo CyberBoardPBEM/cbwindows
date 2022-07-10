@@ -128,6 +128,25 @@ CGamProjView::~CGamProjView()
 {
 }
 
+int CGamProjView::Find(BoardID bid) const
+{
+    const CGamDoc& doc = CheckedDeref(GetDocument());
+    for (int i = 0 ; i < m_listProj.GetCount() ; ++i)
+    {
+        if (m_listProj.GetItemGroupCode(i) == grpBrd)
+        {
+            size_t nBrd = m_listProj.GetItemSourceCode(i);
+            const CPlayBoard& pPBoard = doc.GetPBoardManager()->GetPBoard(nBrd);
+            if (pPBoard.GetBoard()->GetSerialNumber() == bid)
+            {
+                return i;
+            }
+        }
+    }
+    ASSERT(!"unknown BoardID");
+    return -1;
+}
+
 int CGamProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CView::OnCreate(lpCreateStruct) == -1)
