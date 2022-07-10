@@ -59,6 +59,8 @@
 #include    "DlgChgGameOwner.h"
 #include    "DlgNewGeoBoard.h"
 
+#include    "VwPrjgam.h"
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -514,8 +516,31 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
 
 /////////////////////////////////////////////////////////////////////////////
 
+CGamProjView& CGamDoc::FindProjectView()
+{
+    POSITION pos = GetFirstViewPosition();
+    while (pos != NULL)
+    {
+        CView& pView = CheckedDeref(GetNextView(pos));
+        if (pView.IsKindOf(RUNTIME_CLASS(CGamProjView)))
+        {
+            return static_cast<CGamProjView&>(pView);
+        }
+    }
+    ASSERT(!"no project view");
+    AfxThrowNotSupportedException();
+}
+
 CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard)
 {
+    if (!IsScenario() &&
+        pPBoard.IsPrivate() &&
+        pPBoard.IsOwnedButNotByCurrentPlayer(*this))
+    {
+        ASSERT(!"private board");
+        return nullptr;
+    }
+
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
     {

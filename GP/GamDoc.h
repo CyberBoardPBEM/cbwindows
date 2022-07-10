@@ -88,6 +88,7 @@ class CSelList;
 class CRollState;
 class CGpWinStateMgr;
 class CPlayerManager;
+class CGamProjView;
 
 ////////////////////////////////////////////////////////////////
 
@@ -297,6 +298,7 @@ public:
 public:
     BOOL CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
         LPVOID lpvCreateParam);
+    CGamProjView& FindProjectView();
     CView* FindPBoardView(const CPlayBoard& pPBoard);
     CView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
     void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);

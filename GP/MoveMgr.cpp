@@ -1965,6 +1965,7 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
         return Invalid_v<size_t>;
+    bool showAllHiddenMsgBox = !pDoc.IsQuietPlayback();
 
     m_nPlaybackLock++;                  // Stop recursion
 
@@ -2024,11 +2025,16 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             // done in 'quiet' mode.
 
             BOOL bQuietModeSave = pDoc.IsQuietPlayback();
-
-            if (!pDoc.IsQuietPlayback() && IsMoveHidden(pDoc, nIndex))
+            if (!bQuietModeSave)
             {
-                pDoc.SetQuietPlayback(TRUE);
-                bDoNextMove = bAutoStepHiddenMove;
+                if (IsMoveHidden(pDoc, nIndex))
+                {
+                    pDoc.SetQuietPlayback(TRUE);
+                }
+                else
+                {
+                    showAllHiddenMsgBox = false;
+                }
             }
 
             // Call setup routines
@@ -2105,8 +2111,17 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             if (bCompoundMove && !pDoc.IsQuietPlayback())
                 GetApp()->Delay((2 * stepDelay) / 3, (BOOL*)&m_nSkipCount);
 
-            #pragma message("warning:  TODO:  check for private board next step match")
-
+            /* If next move is hidden, it will show nothing, so no
+                reason to force user to click next button to
+                show it.  In particular, if all next moves are
+                hidden, this will allow the current list to run
+                to completion. */
+            if (!bDoNextMove &&
+                nIndex != Invalid_v<size_t> &&
+                IsMoveHidden(pDoc, nIndex))
+            {
+                bDoNextMove = bAutoStepHiddenMove;
+            }
         } while (bCompoundMove || bDoNextMove);
 
 
@@ -2130,6 +2145,10 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
 
     m_nPlaybackLock--;
 
+    if (showAllHiddenMsgBox)
+    {
+        AfxMessageBox(IDS_FULLY_HIDDEN_MOVE, MB_OK | MB_ICONINFORMATION);
+    }
     return nNextIndex;
 }
 

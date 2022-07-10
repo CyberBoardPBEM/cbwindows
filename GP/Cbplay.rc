@@ -2033,6 +2033,8 @@ BEGIN
                             "- Pieces are flipped to a random side when dragged out of the tray"
     IDS_ERR_PRIVATE_BOARD_PERM 
                             "You do not have permission to open this private board."
+    IDS_FULLY_HIDDEN_MOVE   "This move is completely hidden."
+    IDS_BOARD_HIDDEN_MOVE   "There is hidden movement on this board."
 END
 
 STRINGTABLE

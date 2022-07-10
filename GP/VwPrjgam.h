@@ -68,7 +68,11 @@ protected:
 
 // Attributes
 public:
-    CGamDoc* GetDocument() { return (CGamDoc*)m_pDocument; }
+    const CGamDoc* GetDocument() const { return (const CGamDoc*)m_pDocument; }
+    CGamDoc* GetDocument()
+    {
+        return const_cast<CGamDoc*>(std::as_const(*this).GetDocument());
+    }
 
     // Various controls...
     CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
@@ -80,6 +84,7 @@ public:
 
 // Operations
 public:
+    int Find(BoardID bid) const;
 
 // Implementation
 protected:
