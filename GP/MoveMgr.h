@@ -25,8 +25,10 @@
 #ifndef _MOVEMGR_H
 #define _MOVEMGR_H
 
-//#include <list>
+#include <set>
 #include "GamState.h"
+
+class CPlayBoard;
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -46,7 +48,7 @@ public:
         mrecMax };
 
 public:
-    CMoveRecord() { m_nSeqNum = Invalid_v<size_t>; m_eType = mrecUnknown; }
+    CMoveRecord() = default;
     virtual ~CMoveRecord() = default;
 
 public:
@@ -56,7 +58,11 @@ public:
     size_t GetSeqNum() const { return m_nSeqNum; }
 
 public:
-    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ { return FALSE; }
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const /* override */
+    {
+        return m_hiddenByPrivate;
+    }
     virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
     virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
@@ -64,13 +70,32 @@ public:
     virtual BOOL ValidatePieces(const CGamDoc& pDoc) const /* override */ { return TRUE; }
 
     virtual void Serialize(CArchive& ar);
+    class BoardCmp
+    {
+    public:
+        bool operator()(BoardID left, BoardID right) const
+        {
+            return static_cast<BoardID::UNDERLYING_TYPE>(left) < static_cast<BoardID::UNDERLYING_TYPE>(right);
+        }
+    };
+    using BoardSet = std::set<BoardID, BoardCmp>;
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) /* override */;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const /* override */ = 0;
 #endif
 protected:
-    size_t  m_nSeqNum;              // Used to group move records
-    RcdType m_eType;                // Type of record
+    static bool IsPrivateBoard(CGamDoc& pDoc, BoardID bid);
+    static bool IsPrivateBoard(CGamDoc& pDoc, const CPlayBoard& pbrd);
+
+    size_t  m_nSeqNum = Invalid_v<size_t>;   // Used to group move records
+    RcdType m_eType = mrecUnknown;              // Type of record
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    bool m_hiddenByPrivate = false;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -90,6 +115,10 @@ public:
     virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -141,13 +170,18 @@ public:
         m_side = side;
     }
 
-    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const override;
     virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -176,6 +210,10 @@ public:
     virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -199,6 +237,10 @@ public:
     virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -221,6 +263,10 @@ public:
 //  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -244,6 +290,10 @@ public:
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -269,6 +319,10 @@ public:
 //  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -285,12 +339,17 @@ public:
     CObjectSetText() { m_eType = mrecSetObjText; }
     CObjectSetText(GameElement elem, LPCTSTR pszText);
 
-    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const override;
 //  virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 //  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -308,11 +367,16 @@ public:
     CObjectLockdown() { m_eType = mrecLockObj; }
     CObjectLockdown(GameElement elem, BOOL bLockState);
 
-    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const override;
     virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -370,6 +434,10 @@ public:
     virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -413,6 +481,10 @@ public:
     virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
@@ -448,6 +520,10 @@ public:
     BOOL IsGroupBegin() const { return m_bGroupBegin; }
 
     virtual void Serialize(CArchive& ar);
+    /* provide visual feedback for only the first move in a
+        block of moves involving the same hidden board(s) */
+    virtual void SerializeHiddenByPrivate(CGamDoc& doc,
+                                        BoardSet& usedPrivateBoards) override;
 
 #ifdef _DEBUG
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override { ASSERT(FALSE); }
