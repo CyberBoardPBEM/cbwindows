@@ -43,7 +43,7 @@ No Help Available
 .Topic IDH_D_EDITELEM_TEXT
 No Help Available
 
-.Topic IDH_D_EDITELEM_SETBOTH
+.Topic IDH_D_EDITELEM_SETALL
 No Help Available
 
 .Topic IDH_D_EPLAY_UPDATE_NAME
