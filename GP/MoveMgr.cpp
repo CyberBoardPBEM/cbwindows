@@ -80,6 +80,28 @@ void CMoveRecord::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CMoveRecord::SerializeHiddenByPrivate(CGamDoc& /*doc*/,
+                                    BoardSet& usedPrivateBoards)
+{
+    m_hiddenByPrivate = false;
+    usedPrivateBoards.clear();
+}
+
+bool CMoveRecord::IsPrivateBoard(CGamDoc& pDoc, BoardID bid)
+{
+    CPlayBoard& pbrd = CheckedDeref(pDoc.GetPBoardManager()->
+                                            GetPBoardBySerial(bid));
+    return IsPrivateBoard(pDoc, pbrd);
+}
+
+bool CMoveRecord::IsPrivateBoard(CGamDoc& pDoc, const CPlayBoard& pbrd)
+{
+    return pbrd.IsPrivate() &&
+                    pbrd.IsOwnedButNotByCurrentPlayer(pDoc);
+}
+
 /////////////////////////////////////////////////////////////////////
 // CBoardPieceMove methods....
 
@@ -178,6 +200,60 @@ void CBoardPieceMove::Serialize(CArchive& ar)
         ar >> sTmp; m_ePos = (PlacePos)sTmp;
         ar >> sTmp; m_ptCtr.x = sTmp;
         ar >> sTmp; m_ptCtr.y = sTmp;
+    }
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CBoardPieceMove::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    bool fromPrivate = false;
+    bool fromHidden = false;
+    CPlayBoard* pPBrdFrom;
+    CTraySet* pTrayFrom;
+    CPieceObj* pObj;
+    if (doc.FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
+    {
+        if (IsPrivateBoard(doc, CheckedDeref(pPBrdFrom)))
+        {
+            fromPrivate = true;
+            BoardID bid = pPBrdFrom->GetBoard()->GetSerialNumber();
+            if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+            {
+                fromHidden = true;
+            }
+            else
+            {
+                usedPrivateBoards.insert(bid);
+            }
+        }
+    }
+    else
+    {
+        fromPrivate = pTrayFrom->GetTrayContentVisibility() != trayVizAllSides;
+        fromHidden = fromPrivate;
+    }
+
+    bool destPrivate = false;
+    bool destHidden = false;
+    if (IsPrivateBoard(doc, m_nBrdNum))
+    {
+        destPrivate = true;
+        if (usedPrivateBoards.find(m_nBrdNum) != usedPrivateBoards.end())
+        {
+            destHidden = true;
+        }
+        else
+        {
+            usedPrivateBoards.insert(m_nBrdNum);
+        }
+    }
+
+    m_hiddenByPrivate = fromHidden && destHidden;
+    if (!(fromPrivate && destPrivate))
+    {
+        usedPrivateBoards.clear();
     }
 }
 
@@ -305,8 +381,14 @@ BOOL CPieceSetSide::ValidatePieces(const CGamDoc& pDoc) const
 #endif
 }
 
-BOOL CPieceSetSide::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
+BOOL CPieceSetSide::IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const
 {
+    if (CMoveRecord::IsMoveHidden(pDoc, nMoveWithinGroup))
+    {
+        return true;
+    }
+
     if (m_forceMoveHidden)
     {
         return true;
@@ -425,6 +507,34 @@ void CPieceSetSide::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CPieceSetSide::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CPlayBoard* pPBoard;
+    CTraySet* pTray;
+    CPieceObj* pObj;
+    if (doc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj) &&
+        IsPrivateBoard(doc, CheckedDeref(pPBoard)))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 {
@@ -529,6 +639,34 @@ void CPieceSetFacing::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CPieceSetFacing::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CPlayBoard* pPBoard;
+    CTraySet* pTray;
+    CPieceObj* pObj;
+    if (doc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj) &&
+        IsPrivateBoard(doc, CheckedDeref(pPBoard)))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CPieceSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
@@ -591,6 +729,34 @@ void CPieceSetOwnership::Serialize(CArchive& ar)
         }
         else
             ar >> m_dwOwnerMask;
+    }
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CPieceSetOwnership::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CPlayBoard* pPBoard;
+    CTraySet* pTray;
+    CPieceObj* pObj;
+    if (doc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj) &&
+        IsPrivateBoard(doc, CheckedDeref(pPBoard)))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
     }
 }
 
@@ -659,6 +825,32 @@ void CMarkerSetFacing::Serialize(CArchive& ar)              // VER2.0 is first t
         ar >> m_nFacingDegCW;
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   //Ver2.90
             m_nFacingDegCW *= uint16_t(5);                                // Convert old values to degrees
+    }
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CMarkerSetFacing::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CDrawObj* pObj;
+    CPlayBoard& pPBoard = CheckedDeref(doc.FindObjectOnBoard(m_dwObjID, pObj));
+    if (IsPrivateBoard(doc, pPBoard))
+    {
+        BoardID bid = pPBoard.GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
     }
 }
 
@@ -757,6 +949,29 @@ void CBoardMarkerMove::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CBoardMarkerMove::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    if (IsPrivateBoard(doc, m_nBrdNum))
+    {
+        if (usedPrivateBoards.find(m_nBrdNum) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(m_nBrdNum);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CBoardMarkerMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
@@ -780,6 +995,7 @@ void CObjectDelete::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
     CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
+    ASSERT(pPBoard);
 
     if (pPBoard != NULL)
     {
@@ -794,6 +1010,7 @@ void CObjectDelete::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
     CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
+    ASSERT(pPBoard);
 
     if (pPBoard != NULL)
     {
@@ -810,6 +1027,38 @@ void CObjectDelete::Serialize(CArchive& ar)
         ar << m_dwObjID;
     else
         ar >> m_dwObjID;
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CObjectDelete::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CDrawObj* pObj;
+    CPlayBoard* pPBoard = doc.FindObjectOnBoard(m_dwObjID, pObj);
+    ASSERT(pPBoard);
+    if (!pPBoard)
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+        return;
+    }
+    if (IsPrivateBoard(doc, *pPBoard))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
 }
 
 #ifdef _DEBUG
@@ -832,8 +1081,14 @@ CObjectSetText::CObjectSetText(GameElement elem, LPCTSTR pszText)
         m_strObjText = pszText;
 }
 
-BOOL CObjectSetText::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
+BOOL CObjectSetText::IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const
 {
+    if (CMoveRecord::IsMoveHidden(pDoc, nMoveWithinGroup))
+    {
+        return true;
+    }
+
     const CPlayBoard* pPBoard = NULL;
     const CTraySet* pTray = NULL;
     const CDrawObj* pObj = NULL;
@@ -911,6 +1166,44 @@ void CObjectSetText::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CObjectSetText::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CPlayBoard* pPBoard;
+    if (IsGameElementAPiece(m_elem))
+    {
+        CTraySet* pTray;
+        CPieceObj* pPObj;
+        doc.FindPieceCurrentLocation(GetPieceIDFromElement(m_elem),
+            pTray, pPBoard, pPObj);
+    }
+    else
+    {
+        CDrawObj* pObj;
+        pPBoard = doc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+    }
+
+    if (pPBoard && IsPrivateBoard(doc, *pPBoard))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CObjectSetText::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
@@ -930,8 +1223,14 @@ CObjectLockdown::CObjectLockdown(GameElement elem, BOOL bLockState)
     m_bLockState = bLockState;
 }
 
-BOOL CObjectLockdown::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
+BOOL CObjectLockdown::IsMoveHidden(const CGamDoc& pDoc,
+                                int nMoveWithinGroup) const
 {
+    if (CMoveRecord::IsMoveHidden(pDoc, nMoveWithinGroup))
+    {
+        return true;
+    }
+
     const CDrawObj* pObj;
     const CPieceObj* pPObj;
     const CPlayBoard* pPBoard;
@@ -1032,6 +1331,44 @@ void CObjectLockdown::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CObjectLockdown::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    CPlayBoard* pPBoard;
+    if (IsGameElementAPiece(m_elem))
+    {
+        CTraySet* pTray;
+        CPieceObj* pPObj;
+        doc.FindPieceCurrentLocation(GetPieceIDFromElement(m_elem),
+            pTray, pPBoard, pPObj);
+    }
+    else
+    {
+        CDrawObj* pObj;
+        pPBoard = doc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+    }
+
+    if (pPBoard && IsPrivateBoard(doc, *pPBoard))
+    {
+        BoardID bid = pPBoard->GetBoard()->GetSerialNumber();
+        if (usedPrivateBoards.find(bid) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(bid);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CObjectLockdown::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
@@ -1120,6 +1457,29 @@ void CMovePlotList::Serialize(CArchive& ar)
     {
         ar >> m_nBrdNum;
         ar >> m_tblPlot;
+    }
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CMovePlotList::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    if (IsPrivateBoard(doc, m_nBrdNum))
+    {
+        if (usedPrivateBoards.find(m_nBrdNum) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(m_nBrdNum);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
     }
 }
 
@@ -1244,6 +1604,29 @@ void CEventMessageRcd::Serialize(CArchive& ar)
     }
 }
 
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CEventMessageRcd::SerializeHiddenByPrivate(CGamDoc& doc,
+                                    BoardSet& usedPrivateBoards)
+{
+    if (m_bIsBoardEvent && IsPrivateBoard(doc, m_nBoard))
+    {
+        if (usedPrivateBoards.find(m_nBoard) != usedPrivateBoards.end())
+        {
+            m_hiddenByPrivate = true;
+        }
+        else
+        {
+            m_hiddenByPrivate = false;
+            usedPrivateBoards.insert(m_nBoard);
+        }
+    }
+    else
+    {
+        CMoveRecord::SerializeHiddenByPrivate(doc, usedPrivateBoards);
+    }
+}
+
 #ifdef _DEBUG
 void CEventMessageRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
@@ -1274,6 +1657,16 @@ void CCompoundMove::Serialize(CArchive& ar)
         WORD wTmp;
         ar >> wTmp; m_bGroupBegin = (BOOL)wTmp;
     }
+}
+
+/* provide visual feedback for only the first move in a
+    block of moves involving the same hidden board(s) */
+void CCompoundMove::SerializeHiddenByPrivate(CGamDoc& /*doc*/,
+                                    BoardSet& /*usedPrivateBoards*/)
+{
+    m_hiddenByPrivate = false;
+    /* DoMove should never be called, so this shouldn't halt a
+        run of hiddent moves, so don't clear usedPrivateBoards */
 }
 
 #ifdef _DEBUG
@@ -1627,7 +2020,7 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
                 pDoc.FlushAllSelections();
 
             // Check for hidden operations. If the operation
-            // has any hidden portions, the entire move will be
+            // has all hidden portions, the entire move will be
             // done in 'quiet' mode.
 
             BOOL bQuietModeSave = pDoc.IsQuietPlayback();
@@ -1711,6 +2104,8 @@ size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             // Short delay between moves in compound move.
             if (bCompoundMove && !pDoc.IsQuietPlayback())
                 GetApp()->Delay((2 * stepDelay) / 3, (BOOL*)&m_nSkipCount);
+
+            #pragma message("warning:  TODO:  check for private board next step match")
 
         } while (bCompoundMove || bDoNextMove);
 
@@ -2036,6 +2431,63 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             BYTE cUndoFlag;
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 0))
                 ar >> cUndoFlag;        // Eat UNDO flag info (never used)
+        }
+
+        /* provide visual feedback for only the first move in a
+            block of moves involving the same hidden board(s) */
+        /* need to examine moves in original context,
+            so push current state */
+        CGamDoc& doc = CheckedDeref((CGamDoc*)ar.m_pDocument);
+        class PushGameState
+        {
+        public:
+            PushGameState(CGamDoc& d) :
+                doc(d),
+                recordState(doc.GetGameState())
+            {
+                doc.SetGameState(CGamDoc::stateNotRecording);
+                gs.SaveState(doc);
+                ASSERT(!doc.IsQuietPlayback());
+                doc.SetQuietPlayback(true);
+            }
+            ~PushGameState()
+            {
+                doc.SetQuietPlayback(false);
+                gs.RestoreState(doc);
+                doc.SetGameState(recordState);
+            }
+        private:
+            CGamDoc& doc;
+            const CGamDoc::GameState recordState;
+            CGameState gs;
+        } pushGameState(doc);
+
+        // every move should start with its base game state
+        if (empty() || front()->GetType() != CMoveRecord::mrecState)
+        {
+            AfxThrowArchiveException(CArchiveException::badSchema);
+        }
+
+        CMoveRecord::BoardSet usedPrivateBoards;
+        for (iterator it = begin() ; it != end() ; ++it)
+        {
+            (*it)->SerializeHiddenByPrivate(doc,
+                                            usedPrivateBoards);
+            /* actually apply moves to make sure future
+                move records find objects in their proper
+                locations */
+            switch ((*it)->GetType())
+            {
+                // doesn't support DoMove
+                case CMoveRecord::mrecCompoundMove:
+                    break;
+                /* DoMove doesn't respect quiet playback, and
+                    won't affect object locations */
+                case CMoveRecord::mrecMsg:
+                    break;
+                default:
+                    (*it)->DoMove(doc, 0);
+            }
         }
     }
 }
