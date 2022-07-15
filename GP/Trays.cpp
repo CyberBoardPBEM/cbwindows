@@ -155,7 +155,7 @@ void CTraySet::Serialize(CArchive& ar)
     {
         ar << m_strName;
         ar << static_cast<uint16_t>(m_bRandomPull);
-        if (CB::GetVersion(ar) <= NumVersion(104, 1))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             if (m_bRandomSidePull)
             {
@@ -182,7 +182,7 @@ void CTraySet::Serialize(CArchive& ar)
         {
             uint16_t  wTmp;
             ar >> wTmp; m_bRandomPull = static_cast<BOOL>(wTmp);
-            if (CB::GetVersion(ar) <= NumVersion(104, 1))
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
             {
                 m_bRandomSidePull = false;
             }
