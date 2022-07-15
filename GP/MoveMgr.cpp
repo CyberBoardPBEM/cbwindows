@@ -369,7 +369,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90) || CB::GetVersion(ar) < NumVersion(104, 1))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             if (m_flip != CPieceTable::fNext ||
                 m_side >= size_t(2))
@@ -385,7 +385,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
             ar << value_preserving_cast<uint8_t>(m_flip);
             CB::WriteCount(ar, m_side);
         }
-        if (CB::GetVersion(ar) < NumVersion(104, 3))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             if (m_forceMoveHidden)
             {
@@ -399,7 +399,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
     }
     else
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90) || CB::GetVersion(ar) < NumVersion(104, 1))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             ar >> m_pid;
             m_flip = CPieceTable::fNext;
@@ -414,7 +414,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
             m_flip = static_cast<CPieceTable::Flip>(temp);
             m_side = CB::ReadCount(ar);
         }
-        if (CB::GetVersion(ar) < NumVersion(104, 3))
+        if (CB::GetVersion(ar) <= NumVersion(3, 90))
         {
             m_forceMoveHidden = false;
         }
