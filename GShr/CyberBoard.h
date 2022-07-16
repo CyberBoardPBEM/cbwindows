@@ -1132,6 +1132,7 @@ public:
                 false
 #endif
                 ;
+ASSERT(!inGplay || saveInGPlay);
             if (!inGplay || saveInGPlay)
             {
                 ar << static_cast<KEY>(m_pTbl.size());
