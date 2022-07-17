@@ -933,8 +933,8 @@ BEGIN
     GROUPBOX        "Tray content visibility",IDC_STATIC,9,104,211,71
     CONTROL         "Visibility rule also applies to the tray's owner.",IDC_D_YPRP_OWNER_TOO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,114,189,10
-    CONTROL         "Both sides of pieces are fully visible",IDC_D_YPRP_VIZFULL,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,126,127,10
+    CONTROL         "All sides of pieces are fully visible",IDC_D_YPRP_VIZFULL,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,126,119,10
     CONTROL         "Only the top side of pieces are visible",IDC_D_YPRP_VIZTOP,
                     "Button",BS_AUTORADIOBUTTON,17,137,133,10
     CONTROL         "Each piece image is hidden. (shows ""HIDDEN"")",IDC_D_YPRP_VIZHIDDEN,
