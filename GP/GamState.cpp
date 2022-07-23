@@ -104,7 +104,7 @@ BOOL CGameState::RestoreState()
 
     TRY
     {
-        m_pDoc->GetGameStringMap()->Clone(&m_mapString);
+        m_pDoc->GetGameStringMap().Clone(m_mapString);
         m_pDoc->GetPBoardManager()->Restore(*m_pDoc, *m_pPBMgr);
         m_pDoc->GetTrayManager()->Restore(m_pDoc, m_pYMgr);
         m_pDoc->GetPieceTable()->Restore(*m_pPTbl);

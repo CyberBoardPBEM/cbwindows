@@ -775,31 +775,31 @@ public:
         }
     }
 
-    void Clone(CGameElementStringMapT* pMapToCopy)
+    void Clone(const CGameElementStringMapT& pMapToCopy)
     {
         RemoveAll();
 
-        POSITION pos = pMapToCopy->GetStartPosition();
+        POSITION pos = pMapToCopy.GetStartPosition();
         while (pos != NULL)
         {
             CString str;
             KEY elem;
-            pMapToCopy->GetNextAssoc(pos, elem, str);
+            pMapToCopy.GetNextAssoc(pos, elem, str);
             SetAt(elem, str);
         }
     }
 
-    BOOL Compare(CGameElementStringMapT* pMapToCompare)
+    BOOL Compare(const CGameElementStringMapT& pMapToCompare) const
     {
-        if (GetCount() != pMapToCompare->GetCount())
+        if (GetCount() != pMapToCompare.GetCount())
             return FALSE;                       // Different sizes so no match
-        POSITION pos = pMapToCompare->GetStartPosition();
+        POSITION pos = pMapToCompare.GetStartPosition();
         while (pos != NULL)
         {
             CString strToCompare;
             CString strOurs;
             KEY elem;
-            pMapToCompare->GetNextAssoc(pos, elem, strToCompare);
+            pMapToCompare.GetNextAssoc(pos, elem, strToCompare);
             if (!Lookup(elem, strOurs))
                 return FALSE;                   // Not found so no match
             if (strToCompare != strOurs)
