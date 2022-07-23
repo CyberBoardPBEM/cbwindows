@@ -258,7 +258,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     ASSERT(temp.GetType() == CMoveRecord::mrecState);
     CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
-    if (!pMove.GetGameState().RestoreState())
+    if (!pMove.GetGameState().RestoreState(*this))
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
@@ -456,8 +456,8 @@ void CGamDoc::RecordGameState()
     // Note: Don't Call CreateRecordListIfRequired() since it calls
     // us. Pretty nasty stuff!
     ASSERT(m_pRcdMoves != NULL);
-    CGameState* pState = new CGameState(this);
-    if (!pState->SaveState())
+    CGameState* pState = new CGameState();
+    if (!pState->SaveState(*this))
     {
         // DISPLAY MEMORY LOW ERROR
         return;                     // Can't add the record.

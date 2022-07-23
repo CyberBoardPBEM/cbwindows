@@ -1050,7 +1050,7 @@ void CObjectLockdown::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 
 void CGameStateRcd::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 {
-    if (!m_pState->RestoreState())
+    if (!m_pState->RestoreState(*pDoc))
         AfxMessageBox(IDS_ERR_FAILEDSTATECHG, MB_OK | MB_ICONEXCLAMATION);
     if (!pDoc->IsQuietPlayback())
         pDoc->UpdateAllViews(NULL, HINT_GAMESTATEUSED);
@@ -1061,7 +1061,7 @@ void CGameStateRcd::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (!ar.IsStoring())
     {
-        m_pState = MakeOwner<CGameState>((CGamDoc*)ar.m_pDocument);
+        m_pState = MakeOwner<CGameState>();
     }
     ASSERT(m_pState != NULL);
     m_pState->Serialize(ar);
@@ -1380,7 +1380,7 @@ bool CMoveList::IsWithinCompoundMove(size_t nIndex)
 }
 
 // Returns the starting move index
-size_t CMoveList::SetStartingState()
+size_t CMoveList::SetStartingState(CGamDoc& doc)
 {
     iterator pos = ++begin();
     ASSERT(pos != end());
@@ -1396,7 +1396,7 @@ size_t CMoveList::SetStartingState()
         nStartIndex = size_t(1);
     }
     CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(*temp);
-    pRcd.GetGameState().RestoreState();
+    pRcd.GetGameState().RestoreState(doc);
     return nStartIndex;
 }
 
@@ -1407,13 +1407,13 @@ size_t CMoveList::SetStartingState()
 void CMoveList::PushAndSetState(CGamDoc* pDoc, size_t nIndex)
 {
     ASSERT(m_pStateSave == NULL); // Only one push allowed
-    m_pStateSave = new CGameState(pDoc);
+    m_pStateSave = new CGameState();
     pDoc->FlushAllIndicators();
-    m_pStateSave->SaveState();
+    m_pStateSave->SaveState(*pDoc);
     m_bQuietPlaybackSave = pDoc->IsQuietPlayback();
     pDoc->SetQuietPlayback(TRUE);
 
-    size_t nCurIndex = SetStartingState();
+    size_t nCurIndex = SetStartingState(*pDoc);
     if (nCurIndex < nIndex)
     {
         while ((nCurIndex = DoMove(pDoc, nCurIndex)) < nIndex)
@@ -1427,7 +1427,7 @@ void CMoveList::PopAndRestoreState(CGamDoc* pDoc)
 {
     ASSERT(m_pStateSave != NULL); // Better be one!
     pDoc->SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
-    m_pStateSave->RestoreState();
+    m_pStateSave->RestoreState(*pDoc);
     delete m_pStateSave;
     m_pStateSave = NULL;
     pDoc->SetQuietPlayback(m_bQuietPlaybackSave);
@@ -1826,8 +1826,8 @@ void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
     }
     ASSERT(!m_bCompoundMove);
 
-    m_pCompoundBaseBookMark = new CGameState(pDoc);
-    if (!m_pCompoundBaseBookMark->SaveState())
+    m_pCompoundBaseBookMark = new CGameState();
+    if (!m_pCompoundBaseBookMark->SaveState(*pDoc))
     {
         // Memory low warning?....
         delete m_pCompoundBaseBookMark;
@@ -1854,7 +1854,7 @@ void CMoveList::CancelRecordingCompoundMove(CGamDoc* pDoc)
 
     ASSERT(m_pCompoundBaseBookMark != NULL);
     pDoc->SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
-    if (!m_pCompoundBaseBookMark->RestoreState())
+    if (!m_pCompoundBaseBookMark->RestoreState(*pDoc))
     {
         // Memory error message should be here
         delete m_pCompoundBaseBookMark;
@@ -1982,7 +1982,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
                 ASSERT(m_pCompoundBaseBookMark == NULL);
                 if (m_pCompoundBaseBookMark)
                     delete m_pCompoundBaseBookMark;
-                m_pCompoundBaseBookMark = new CGameState((CGamDoc*)ar.m_pDocument);
+                m_pCompoundBaseBookMark = new CGameState();
                 m_pCompoundBaseBookMark->Serialize(ar);
             }
         }
