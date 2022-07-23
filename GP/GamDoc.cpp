@@ -1153,8 +1153,8 @@ void CGamDoc::OnEditSetBookMark()
         // Need WARNING MESSAGE regarding deleting mark
         delete m_pBookMark;
     }
-    m_pBookMark = new CGameState(this);
-    if (!m_pBookMark->SaveState())
+    m_pBookMark = new CGameState();
+    if (!m_pBookMark->SaveState(*this))
     {
         // Memory low warning....
         delete m_pBookMark;
@@ -1174,7 +1174,7 @@ void CGamDoc::OnEditRestoreBookMark()
     if (m_pBookMark != NULL)
     {
         SetLoadingVersion(NumVersion(fileGamVerMajor, fileGamVerMinor));
-        if (!m_pBookMark->RestoreState())
+        if (!m_pBookMark->RestoreState(*this))
         {
             // Add memory error message
             return;

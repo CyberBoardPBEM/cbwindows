@@ -488,7 +488,7 @@ public:
 
     void PushAndSetState(CGamDoc* pDoc, size_t nIndex);
     void PopAndRestoreState(CGamDoc* pDoc);
-    size_t SetStartingState();
+    size_t SetStartingState(CGamDoc & doc);
 
     size_t FindPreviousMove(CGamDoc* pDoc, size_t nIndex);
 

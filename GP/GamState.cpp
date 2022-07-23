@@ -43,49 +43,39 @@ static char THIS_FILE[] = __FILE__;
 
 CGameState::CGameState()
 {
-    m_pDoc = NULL;
     m_pPBMgr = NULL;
     m_pPTbl = NULL;
 }
 
-CGameState::CGameState(CGamDoc* pDoc)
+BOOL CGameState::CompareState(const CGamDoc& doc) const
 {
-    m_pDoc = pDoc;
-    m_pPBMgr = NULL;
-    m_pPTbl = NULL;
-}
-
-BOOL CGameState::CompareState()
-{
-    ASSERT(m_pDoc != NULL);
     ASSERT(m_pPBMgr != NULL);
     ASSERT(m_pPTbl != NULL);
     // Compare the string tables
 
     // Compare the piece tables
-    if (!m_pDoc->GetPieceTable()->Compare(*m_pPTbl))
+    if (!doc.GetPieceTable()->Compare(*m_pPTbl))
         return FALSE;
     // Compare the play boards
-    if (!m_pDoc->GetPBoardManager()->Compare(*m_pPBMgr))
+    if (!doc.GetPBoardManager()->Compare(*m_pPBMgr))
         return FALSE;
     // Compare the trays
-    if (!m_pDoc->GetTrayManager()->Compare(m_pYMgr))
+    if (!doc.GetTrayManager()->Compare(m_pYMgr))
         return FALSE;
     return TRUE;
 }
 
-BOOL CGameState::SaveState()
+BOOL CGameState::SaveState(CGamDoc& doc)
 {
-    ASSERT(m_pDoc != NULL);
     Clear();
     TRY
     {
-        m_mapString.Clone(m_pDoc->GetGameStringMap());
-        OwnerPtr<CPBoardManager> temp1 = m_pDoc->GetPBoardManager()->Clone(*m_pDoc);
+        m_mapString.Clone(doc.GetGameStringMap());
+        OwnerPtr<CPBoardManager> temp1 = doc.GetPBoardManager()->Clone(doc);
         OwnerOrNullPtr<CPBoardManager> temp2 = CB::get_underlying(std::move(temp1));
         m_pPBMgr = CB::get_underlying(std::move(temp2)).release();
-        m_pYMgr = m_pDoc->GetTrayManager()->Clone(m_pDoc);
-        m_pPTbl = m_pDoc->GetPieceTable()->Clone();
+        m_pYMgr = doc.GetTrayManager()->Clone(&doc);
+        m_pPTbl = doc.GetPieceTable()->Clone();
     }
     CATCH_ALL(e)
     {
@@ -96,18 +86,17 @@ BOOL CGameState::SaveState()
     return TRUE;
 }
 
-BOOL CGameState::RestoreState()
+BOOL CGameState::RestoreState(CGamDoc& doc) const
 {
-    ASSERT(m_pDoc != NULL);
     ASSERT(m_pPBMgr != NULL);
     ASSERT(m_pPTbl != NULL);
 
     TRY
     {
-        m_pDoc->GetGameStringMap().Clone(m_mapString);
-        m_pDoc->GetPBoardManager()->Restore(*m_pDoc, *m_pPBMgr);
-        m_pDoc->GetTrayManager()->Restore(m_pDoc, m_pYMgr);
-        m_pDoc->GetPieceTable()->Restore(*m_pPTbl);
+        doc.GetGameStringMap().Clone(m_mapString);
+        doc.GetPBoardManager()->Restore(doc, *m_pPBMgr);
+        doc.GetTrayManager()->Restore(&doc, m_pYMgr);
+        doc.GetPieceTable()->Restore(*m_pPTbl);
     }
     CATCH_ALL(e)
     {

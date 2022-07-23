@@ -345,7 +345,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar >> cTmp;
         if (cTmp)
         {
-            m_pBookMark = new CGameState(this);
+            m_pBookMark = new CGameState();
             m_pBookMark->Serialize(ar);
         }
 

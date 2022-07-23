@@ -40,31 +40,20 @@ class CGameState
 {
 public:
     CGameState();
-    CGameState(CGamDoc* pDoc);
-    ~CGameState() { Clear(); }
-
-// Attributes
-public:
-    void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
+    ~CGameState() = default;
 
 // Operations
 public:
-    BOOL SaveState();
-    BOOL RestoreState();
+    BOOL SaveState(CGamDoc& doc);
+    BOOL RestoreState(CGamDoc& doc) const;
     // ------- //
-    BOOL CompareState();
+    BOOL CompareState(const CGamDoc& doc) const;
     // ------- //
     void Clear();
     void Serialize(CArchive& ar);
 
 // Implementation
 protected:
-    void CloneElementStringMap(CGameElementStringMap* pMapTo,
-        CGameElementStringMap* pMapFrom);
-
-// Implementation
-protected:
-    CGamDoc*        m_pDoc;
     // --------- //
     CGameElementStringMap m_mapString; // Text set by player
     /* can't use std::default_delete<CPBoardManager> because

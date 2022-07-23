@@ -92,8 +92,8 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
         // Insert the current state of the game in front of the
         // move list. This allows us to discard the moves if desired.
 
-        CGameState* pState = new CGameState(this);
-        if (!pState->SaveState())
+        CGameState* pState = new CGameState();
+        if (!pState->SaveState(*this))
         {
             AfxMessageBox(IDS_ERR_FAILEDSTATESAVE, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowUserException();
@@ -123,8 +123,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
             CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(temp);
             // See if the file's game state matches the current game
             // state. If not, give option to update game to file's state.
-            pRcd.GetGameState().SetDocument(this);
-            if (!pRcd.GetGameState().CompareState())
+            if (!pRcd.GetGameState().CompareState(*this))
             {
                 // File's positions don't match current games' positions.
                 CSelectStateDialog dlg;
@@ -134,7 +133,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
                 if (dlg.m_nState == 0)
                 {
                     // Use the current game state
-                    pRcd.GetGameState().RestoreState();
+                    pRcd.GetGameState().RestoreState(*this);
                     // Make sure we account for possible deletions
                     // of pieces in move file (for crash resistance)
                     GetPieceTable()->PurgeUndefinedPieceIDs();
@@ -151,8 +150,8 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
                     pHist->m_pMList->erase(pos); // Delete file game state
                     // Create a current state object
                     CMoveList::iterator pos = pHist->m_pMList->begin();
-                    CGameState* pState = new CGameState(this);
-                    pState->SaveState();
+                    CGameState* pState = new CGameState();
+                    pState->SaveState(*this);
                     OwnerPtr<CGameStateRcd> pCurRcd = MakeOwner<CGameStateRcd>(pState);
                     pCurRcd->SetSeqNum(size_t(0));
                     pHist->m_pMList->insert(++CMoveList::iterator(pos), std::move(pCurRcd));
@@ -240,8 +239,8 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         // Insert the current state of the game in front of the
         // move list. This allows us to discard the moves if desired.
 
-        CGameState* pState = new CGameState(this);
-        if (!pState->SaveState())
+        CGameState* pState = new CGameState();
+        if (!pState->SaveState(*this))
         {
             AfxMessageBox(IDS_ERR_FAILEDSTATESAVE, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowUserException();
@@ -263,7 +262,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(temp);
 
         // Use the history game state
-        pRcd.GetGameState().RestoreState();
+        pRcd.GetGameState().RestoreState(*this);
 
         // Make sure we account for possible deletions
         // of pieces in move file (for crash resistance)
@@ -391,7 +390,7 @@ void CGamDoc::FinishHistoryPlayback()
     ASSERT(temp.GetType() == CMoveRecord::mrecState);
     CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
-    if (!pMove.GetGameState().RestoreState())
+    if (!pMove.GetGameState().RestoreState(*this))
     {
         AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
     }
