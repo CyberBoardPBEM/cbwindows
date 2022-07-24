@@ -47,21 +47,21 @@ public:
 
 public:
     CMoveRecord() { m_nSeqNum = Invalid_v<size_t>; m_eType = mrecUnknown; }
-    virtual ~CMoveRecord() {}
+    virtual ~CMoveRecord() = default;
 
 public:
-    RcdType GetType() { return m_eType; }
+    RcdType GetType() const { return m_eType; }
     // -------- //
     void   SetSeqNum(size_t nSeq) { m_nSeqNum = nSeq; }
-    size_t GetSeqNum() { return m_nSeqNum; }
+    size_t GetSeqNum() const { return m_nSeqNum; }
 
 public:
-    virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup) { return FALSE; }
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup) {}
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup) {}
-    virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup) {}
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ { return FALSE; }
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
+    virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const /* override */ {}
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc) { return TRUE; }
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const /* override */ { return TRUE; }
 
     virtual void Serialize(CArchive& ar);
 
@@ -83,11 +83,11 @@ public:
     CBoardPieceMove() { m_eType = mrecPMove; }
     CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt, PlacePos ePos);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc);
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -109,11 +109,11 @@ public:
     CTrayPieceMove() { m_eType = mrecTMove; }
     CTrayPieceMove(size_t nTrayNum, PieceID pid, size_t nPos);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc);
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -141,11 +141,11 @@ public:
         m_side = side;
     }
 
-    virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc);
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -169,11 +169,11 @@ public:
     CPieceSetFacing(PieceID pid, uint16_t nFacingDegCW)
         { m_eType = mrecPFacing; m_pid = pid; m_nFacingDegCW = nFacingDegCW; }
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-//  virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+//  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc);
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -194,9 +194,9 @@ public:
     CPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
         { m_eType = mrecPOwner; m_pid = pid; m_dwOwnerMask = dwOwnerMask; }
 
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
-    virtual BOOL ValidatePieces(CGamDoc* pDoc);
+    virtual BOOL ValidatePieces(const CGamDoc& pDoc) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -216,9 +216,9 @@ public:
     CMarkerSetFacing() { m_eType = mrecMFacing; }
     CMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-//  virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+//  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -240,8 +240,8 @@ public:
     CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID mid,
         CPoint pnt, PlacePos ePos);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -264,9 +264,9 @@ public:
     CObjectDelete() { m_eType = mrecDelObj; }
     CObjectDelete(ObjectID dwObjID);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-//  virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+//  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -285,10 +285,10 @@ public:
     CObjectSetText() { m_eType = mrecSetObjText; }
     CObjectSetText(GameElement elem, LPCTSTR pszText);
 
-    virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
-//  virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
-//  virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+//  virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+//  virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -308,9 +308,9 @@ public:
     CObjectLockdown() { m_eType = mrecLockObj; }
     CObjectLockdown(GameElement elem, BOOL bLockState);
 
-    virtual BOOL IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual BOOL IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -336,9 +336,13 @@ public:
     ~CGameStateRcd() = default;
     // -------- //
     // m_pState should only be null in CMoveList::Serialize
-    CGameState& GetGameState() { return *m_pState; }
+    const CGameState& GetGameState() const { return *m_pState; }
+    CGameState& GetGameState()
+    {
+        return const_cast<CGameState&>(std::as_const(*this).GetGameState());
+    }
 
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -357,13 +361,13 @@ class CMovePlotList : public CMoveRecord
 {
 public:
     CMovePlotList() { m_eType = mrecMPlot; }
-    CMovePlotList(BoardID nBrdSerNum, CDrawList* pDwg)
+    CMovePlotList(BoardID nBrdSerNum, const CDrawList& pDwg)
         { m_eType = mrecMPlot; m_nBrdNum = nBrdSerNum; SavePlotList(pDwg); }
 
-    void SavePlotList(CDrawList* pDwg);
+    void SavePlotList(const CDrawList& pDwg);
 
-    virtual void DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup);
-    virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
+    virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -384,7 +388,7 @@ public:
     CMessageRcd(CString strMsg)
         { m_eType = mrecMsg; m_strMsg = strMsg; }
 
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -406,7 +410,7 @@ public:
     CEventMessageRcd(CString strMsg,
         size_t nTray, PieceID pid);
 
-    virtual void DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup);
+    virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
     virtual void Serialize(CArchive& ar);
 
@@ -441,12 +445,12 @@ public:
     CCompoundMove(BOOL bGroupBegin)
         { m_eType = mrecCompoundMove; m_bGroupBegin = bGroupBegin; }
 
-    BOOL IsGroupBegin() { return m_bGroupBegin; }
+    BOOL IsGroupBegin() const { return m_bGroupBegin; }
 
     virtual void Serialize(CArchive& ar);
 
 #ifdef _DEBUG
-    virtual void DoMove(CGamDoc* pDoc, int nMoveWithinGroup) { ASSERT(FALSE); }
+    virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override { ASSERT(FALSE); }
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
@@ -480,49 +484,49 @@ public:
 
 // Operations
 public:
-    static OwnerPtr<CMoveList> CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList);
+    static OwnerPtr<CMoveList> CloneMoveList(CGamDoc& pDoc, const CMoveList& pMoveList);
 
     void AssignNewMoveGroup() { m_nSeqNum++; }
     iterator AppendMoveRecord(OwnerPtr<CMoveRecord> pRec);
     iterator PrependMoveRecord(OwnerPtr<CMoveRecord> pRec, BOOL bSetSeqNum = TRUE);
 
-    void PushAndSetState(CGamDoc* pDoc, size_t nIndex);
-    void PopAndRestoreState(CGamDoc* pDoc);
-    size_t SetStartingState(CGamDoc & doc);
+    void PushAndSetState(CGamDoc& pDoc, size_t nIndex);
+    void PopAndRestoreState(CGamDoc& pDoc);
+    size_t SetStartingState(CGamDoc& doc);
 
-    size_t FindPreviousMove(CGamDoc* pDoc, size_t nIndex);
+    size_t FindPreviousMove(CGamDoc& pDoc, size_t nIndex);
 
     // Compound moves are a sequence of moves done one at a time.
     // For example: move piece, change facing, move again, change facing,
     // move again and flip over. Each move is played back completely one after
     // the other.
-    void BeginRecordingCompoundMove(CGamDoc* pDoc);
-    void CancelRecordingCompoundMove(CGamDoc* pDoc);
+    void BeginRecordingCompoundMove(CGamDoc& pDoc);
+    void CancelRecordingCompoundMove(CGamDoc& pDoc);
     void EndRecordingCompoundMove();
-    BOOL IsRecordingCompoundMove() { return m_bCompoundMove ; }
+    BOOL IsRecordingCompoundMove() const { return m_bCompoundMove ; }
 
-    BOOL IsSingleSteppingCompoundMoves() { return m_bCompoundSingleStep; }
-    bool IsThisMovePossible(size_t nIndex);
+    BOOL IsSingleSteppingCompoundMoves() const { return m_bCompoundSingleStep; }
+    bool IsThisMovePossible(size_t nIndex) const;
     void SetCompoundSingleStep(BOOL bSingleStep = TRUE)
         { m_bCompoundSingleStep = bSingleStep; }
-    bool IsWithinCompoundMove(size_t nIndex);
-    bool IsMoveHidden(CGamDoc* pDoc, size_t nIndex);
-    BOOL IsDoMoveActive() { return m_nPlaybackLock != 0; }
+    bool IsWithinCompoundMove(size_t nIndex) const;
+    bool IsMoveHidden(const CGamDoc& pDoc, size_t nIndex) const;
+    BOOL IsDoMoveActive() const { return m_nPlaybackLock != 0; }
 
     void PurgeAfter(size_t nIndex);
 
-    BOOL ValidatePieces(CGamDoc* pDoc);
+    BOOL ValidatePieces(const CGamDoc& pDoc) const;
 
-    size_t DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove = TRUE);
+    size_t DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove = TRUE);
     void IncrementSkipCount(BOOL bKeepInd) { m_nSkipCount++; m_bSkipKeepInd = bKeepInd; }
 
-    CMoveRecord& GetAt(iterator pos)
+    const CMoveRecord& GetAt(const_iterator pos) const
         { return **pos; }
-    CMoveRecord& GetNext(iterator& pos)
+    const CMoveRecord& GetNext(const_iterator& pos) const
         { return **pos++; }
-    CMoveRecord& GetPrev(iterator& pos)
+    const CMoveRecord& GetPrev(const_iterator& pos) const
     {
-        CMoveRecord& retval = **pos;
+        const CMoveRecord& retval = **pos;
         // decrementing MFC head position --> null, so emulate that
         if (pos != begin())
         {
@@ -534,7 +538,7 @@ public:
         }
         return retval;
     }
-    CMoveRecord& GetFirstRecord()
+    const CMoveRecord& GetFirstRecord() const
         { return *front(); }
 
     void Clear();
@@ -545,7 +549,7 @@ public:
 #endif
 // Implementation
 protected:
-    iterator FindIndex(size_t nIndex);
+    const_iterator FindIndex(size_t nIndex) const;
 
 protected:
     int         m_nPlaybackLock;        // Lock count used to stop recursion
@@ -553,14 +557,14 @@ protected:
     BOOL        m_bSkipKeepInd;         // Keep each skipped move's indicators
     BOOL        m_bCompoundSingleStep;  // If TRUE, single step compound moves
 
-    CGameState* m_pStateSave;           // Used to push/pos state
+    OwnerOrNullPtr<CGameState> m_pStateSave;           // Used to push/pos state
     BOOL        m_bQuietPlaybackSave;
 
     // Serialize the following...
     size_t      m_nSeqNum;
 
     BOOL        m_bCompoundMove;        // Recording a compound move.
-    CGameState* m_pCompoundBaseBookMark;// Game state at start of compound move
+    OwnerOrNullPtr<CGameState> m_pCompoundBaseBookMark;// Game state at start of compound move
     size_t      m_nCompoundBaseIndex;   // Index of current compound move.
 };
 

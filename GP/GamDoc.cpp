@@ -1236,7 +1236,7 @@ void CGamDoc::OnPbckEnd()
     m_nMoveInterlock++;
     m_bQuietPlayback = TRUE;
     FlushAllIndicators();
-    while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != Invalid_v<size_t>)
+    while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove)) != Invalid_v<size_t>)
     {
         FlushAllIndicators();
     }
@@ -1278,7 +1278,7 @@ void CGamDoc::OnPbckNext()
             if (m_bAutoStep)
                 m_bAutoPlayback = TRUE;     // Will be cleared during DoMove if aborted
 
-            m_nCurMove = m_pMoves->DoMove(this, m_nCurMove);
+            m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove);
 
             if (m_bAutoStep && m_bAutoPlayback)
             {
@@ -1358,7 +1358,7 @@ void CGamDoc::OnPbckPrevious()
     m_nMoveInterlock++;
     m_bQuietPlayback = TRUE;
 
-    size_t nPrvMove = m_pMoves->FindPreviousMove(this, m_nCurMove);
+    size_t nPrvMove = m_pMoves->FindPreviousMove(*this, m_nCurMove);
 
     MsgDialogCancel(TRUE);
     FlushAllIndicators();
@@ -1372,7 +1372,7 @@ void CGamDoc::OnPbckPrevious()
         // OK...we know there is at least one move to do PRIOR to the move
         // we are stepping up to. Find it so we can turn off silent mode for
         // that move.
-        size_t nPrvPrvMove = m_pMoves->FindPreviousMove(this, nPrvMove);
+        size_t nPrvPrvMove = m_pMoves->FindPreviousMove(*this, nPrvMove);
         if (m_nCurMove == nPrvPrvMove)
         {
             m_bQuietPlayback = FALSE;
@@ -1383,7 +1383,7 @@ void CGamDoc::OnPbckPrevious()
         // search for the final visible move index.
         m_astrMsgHist.RemoveAll();
 
-        while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove, FALSE)) < nPrvMove &&
+        while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove, FALSE)) < nPrvMove &&
             m_nCurMove != Invalid_v<size_t>)
         {
             if (m_nCurMove < nPrvPrvMove)

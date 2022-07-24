@@ -421,11 +421,31 @@ public:
     void FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct);
 
     // Object and piece locator methods...
+    BOOL FindPieceCurrentLocation(PieceID pid, const CTraySet*& pTraySet,
+        const CPlayBoard*& pPBoard, const CPieceObj*& ppObj) const;
     BOOL FindPieceCurrentLocation(PieceID pid, CTraySet*& pTraySet,
-        CPlayBoard*& pPBoard, CPieceObj*& ppObj);
-    CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj*& ppObj);
-    CTraySet*   FindPieceInTray(PieceID pid);
-    CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, CDrawObj*& ppObj);
+        CPlayBoard*& pPBoard, CPieceObj*& ppObj)
+    {
+        return std::as_const(*this).FindPieceCurrentLocation(pid,
+                                                            const_cast<const CTraySet*&>(pTraySet),
+                                                            const_cast<const CPlayBoard*&>(pPBoard),
+                                                            const_cast<const CPieceObj*&>(ppObj));
+    }
+    const CPlayBoard* FindPieceOnBoard(PieceID pid, const CPieceObj*& ppObj) const;
+    CPlayBoard* FindPieceOnBoard(PieceID pid, CPieceObj*& ppObj)
+    {
+        return const_cast<CPlayBoard*>(std::as_const(*this).FindPieceOnBoard(pid, const_cast<const CPieceObj*&>(ppObj)));
+    }
+    const CTraySet* FindPieceInTray(PieceID pid) const;
+    CTraySet* FindPieceInTray(PieceID pid)
+    {
+        return const_cast<CTraySet*>(std::as_const(*this).FindPieceInTray(pid));
+    }
+    const CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, const CDrawObj*& ppObj) const;
+    CPlayBoard* FindObjectOnBoard(ObjectID dwObjID, CDrawObj*& ppObj)
+    {
+        return const_cast<CPlayBoard*>(std::as_const(*this).FindObjectOnBoard(dwObjID, const_cast<const CDrawObj*&>(ppObj)));
+    }
     CPlayBoard* FindObjectOnBoard(CDrawObj* pObj);
 
     // Support for playback...
@@ -441,10 +461,10 @@ public:
     void FinishHistoryPlayback();
 
     // Support for play indicators...
-    void IndicateBoardToBoardPieceMove(CPlayBoard* pPBFrom, CPlayBoard* pPBTo,
+    void IndicateBoardToBoardPieceMove(CPlayBoard& pPBFrom, CPlayBoard& pPBTo,
         CPoint ptCtrFrom, CPoint ptCtrTo, CSize size);
-    void IndicateBoardPlotLine(CPlayBoard* pPBrd, CPoint ptA, CPoint ptB);
-    void IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size);
+    void IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB);
+    void IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size);
     void FlushAllSelections();
     void FlushAllIndicators();
     void UpdateAllBoardIndicators(CPlayBoard& pPBrd);

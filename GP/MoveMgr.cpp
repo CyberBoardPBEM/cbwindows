@@ -94,70 +94,68 @@ CBoardPieceMove::CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt,
     m_ePos = ePos;
 }
 
-BOOL CBoardPieceMove::ValidatePieces(CGamDoc* pDoc)
+BOOL CBoardPieceMove::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
 #endif
 }
 
-void CBoardPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CBoardPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
-            GetPBoardBySerial(m_nBrdNum);
-        ASSERT(pPBrdDest);
-        pDoc->IndicateBoardToBoardPieceMove(pPBoard, pPBrdDest, ptCtr, m_ptCtr,
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+            GetPBoardBySerial(m_nBrdNum));
+        pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().Size());
     }
     else
-        pDoc->SelectTrayItem(*pTray, m_pid);
+        pDoc.SelectTrayItem(*pTray, m_pid);
 }
 
-void CBoardPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CBoardPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBrdFrom;
     CTraySet* pTrayFrom;
     CPieceObj* pObj;
 
-    CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
-        GetPBoardBySerial(m_nBrdNum);
-    ASSERT(pPBrdDest);
+    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+        GetPBoardBySerial(m_nBrdNum));
 
-    pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
     {
         CRect rct = pObj->GetRect();
         CSize size = m_ptCtr - GetMidRect(rct);
-        pDoc->PlaceObjectOnBoard(pPBrdDest, pObj, size, m_ePos);
+        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, size, m_ePos);
     }
     else
     {
-        pDoc->PlacePieceOnBoard(m_ptCtr, m_pid, pPBrdDest);
-        VERIFY(pDoc->FindPieceOnBoard(m_pid, pObj) != NULL);
+        pDoc.PlacePieceOnBoard(m_ptCtr, m_pid, &pPBrdDest);
+        VERIFY(pDoc.FindPieceOnBoard(m_pid, pObj) != NULL);
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->IndicateBoardPiece(pPBrdDest, ptCtr, rct.Size());
+        pDoc.IndicateBoardPiece(pPBrdDest, ptCtr, rct.Size());
     }
-    pDoc->SelectObjectOnBoard(*pPBrdDest, pObj);
+    pDoc.SelectObjectOnBoard(pPBrdDest, pObj);
 }
 
-void CBoardPieceMove::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CBoardPieceMove::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
 }
 
@@ -205,45 +203,45 @@ CTrayPieceMove::CTrayPieceMove(size_t nTrayNum, PieceID pid, size_t nPos)
     m_nPos = nPos;
 }
 
-BOOL CTrayPieceMove::ValidatePieces(CGamDoc* pDoc)
+BOOL CTrayPieceMove::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
 #endif
 }
 
-void CTrayPieceMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CTrayPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
     }
     else
-        pDoc->SelectTrayItem(*pTray, m_pid);
+        pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
 }
 
-void CTrayPieceMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CTrayPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
-    pDoc->PlacePieceInTray(m_pid, pYGrp, m_nPos);
+    CTraySet& pYGrp = pDoc.GetTrayManager()->GetTraySet(m_nTrayNum);
+    pDoc.PlacePieceInTray(m_pid, pYGrp, m_nPos);
 }
 
-void CTrayPieceMove::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CTrayPieceMove::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(m_nTrayNum);
-    pDoc->SelectTrayItem(pYGrp, m_pid);
+    CTraySet& pYGrp = pDoc.GetTrayManager()->GetTraySet(m_nTrayNum);
+    pDoc.SelectTrayItem(pYGrp, m_pid);
 }
 
 void CTrayPieceMove::Serialize(CArchive& ar)
@@ -295,73 +293,73 @@ void CTrayPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CPieceSetSide methods....
 
-BOOL CPieceSetSide::ValidatePieces(CGamDoc* pDoc)
+BOOL CPieceSetSide::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
 #endif
 }
 
-BOOL CPieceSetSide::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
+BOOL CPieceSetSide::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     if (m_forceMoveHidden)
     {
         return true;
     }
 
-    CPlayBoard* pPBoard;
-    CTraySet* pTray;
-    CPieceObj* pObj;
+    const CPlayBoard* pPBoard;
+    const CTraySet* pTray;
+    const CPieceObj* pObj;
 
-    if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, *pDoc))
+    if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, pDoc))
         return TRUE;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
-        if (pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
+        if (pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
             return TRUE;
     }
     else
     {
-        if (pTray->IsOwnedButNotByCurrentPlayer(*pDoc))
+        if (pTray->IsOwnedButNotByCurrentPlayer(pDoc))
             return TRUE;
     }
     return FALSE;
 }
 
-void CPieceSetSide::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CPieceSetSide::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
+        pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(*pTray, m_pid);
+        pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
 }
 
-void CPieceSetSide::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CPieceSetSide::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
-        pDoc->InvertPlayingPieceOnBoard(*pObj, *pPBoard, m_flip, m_side);
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+        pDoc.InvertPlayingPieceOnBoard(*pObj, *pPBoard, m_flip, m_side);
     else
-        pDoc->InvertPlayingPieceInTray(m_pid, m_flip, m_side, !m_forceMoveHidden, false);
+        pDoc.InvertPlayingPieceInTray(m_pid, m_flip, m_side, !m_forceMoveHidden, false);
 }
 
 void CPieceSetSide::Serialize(CArchive& ar)
@@ -465,46 +463,46 @@ void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CPieceSetFacing methods....
 
-BOOL CPieceSetFacing::ValidatePieces(CGamDoc* pDoc)
+BOOL CPieceSetFacing::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
 #endif
 }
 
-void CPieceSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CPieceSetFacing::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
+        pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(*pTray, m_pid);
+        pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
 }
 
-void CPieceSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CPieceSetFacing::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
-        pDoc->ChangePlayingPieceFacingOnBoard(*pObj, pPBoard, m_nFacingDegCW);
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+        pDoc.ChangePlayingPieceFacingOnBoard(*pObj, pPBoard, m_nFacingDegCW);
     else
-        pDoc->ChangePlayingPieceFacingInTray(m_pid, m_nFacingDegCW);
+        pDoc.ChangePlayingPieceFacingInTray(m_pid, m_nFacingDegCW);
 }
 
 void CPieceSetFacing::Serialize(CArchive& ar)
@@ -543,35 +541,35 @@ void CPieceSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CPieceSetFacing methods....
 
-BOOL CPieceSetOwnership::ValidatePieces(CGamDoc* pDoc)
+BOOL CPieceSetOwnership::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc->GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
 #endif
 }
 
-void CPieceSetOwnership::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CPieceSetOwnership::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CPieceObj* pObj;
 
-    if (pDoc->FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
+    if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
+        pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
-        pDoc->SelectTrayItem(*pTray, m_pid);
-    pDoc->SetPieceOwnership(m_pid, m_dwOwnerMask);
+        pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
+    pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
 }
 
 void CPieceSetOwnership::Serialize(CArchive& ar)
@@ -617,30 +615,30 @@ CMarkerSetFacing::CMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacin
     m_nFacingDegCW = nFacingDegCW;
 }
 
-void CMarkerSetFacing::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CMarkerSetFacing::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, rct.Size());
-        pDoc->SelectObjectOnBoard(*pPBoard, pObj);
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
+        pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
         ASSERT(FALSE);          // SHOULDN'T HAPPEN
 }
 
-void CMarkerSetFacing::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CMarkerSetFacing::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
-        pDoc->ChangeMarkerFacingOnBoard(*static_cast<CMarkObj*>(pObj), pPBoard, m_nFacingDegCW);
+        pDoc.ChangeMarkerFacingOnBoard(*static_cast<CMarkObj*>(pObj), pPBoard, m_nFacingDegCW);
     else
         ASSERT(FALSE);          // SHOULDN'T HAPPEN
 }
@@ -689,51 +687,49 @@ CBoardMarkerMove::CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID 
     m_ePos = ePos;
 }
 
-void CBoardMarkerMove::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CBoardMarkerMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
-            GetPBoardBySerial(m_nBrdNum);
-        ASSERT(pPBrdDest != NULL);
-        pDoc->IndicateBoardToBoardPieceMove(pPBoard, pPBrdDest, ptCtr, m_ptCtr,
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+            GetPBoardBySerial(m_nBrdNum));
+        pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().Size());
     }
     else
-        pDoc->SelectMarkerPaletteItem(m_mid);
+        pDoc.SelectMarkerPaletteItem(m_mid);
 }
 
-void CBoardMarkerMove::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard* pPBrdDest = pDoc->GetPBoardManager()->
-        GetPBoardBySerial(m_nBrdNum);
-    ASSERT(pPBrdDest != NULL);
+    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+        GetPBoardBySerial(m_nBrdNum));
 
-    pDoc->EnsureBoardLocationVisible(*pPBrdDest, m_ptCtr);
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
 
     CDrawObj* pObj;
-    CPlayBoard* pPBrdFrom = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBrdFrom = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBrdFrom != NULL)
     {
         CRect rct = pObj->GetRect();
         CSize size = m_ptCtr - GetMidRect(rct);
-        pDoc->PlaceObjectOnBoard(pPBrdDest, pObj, size, m_ePos);
+        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, size, m_ePos);
     }
     else
     {
         // Need to create since doesn't currently exist
-        pObj = &pDoc->CreateMarkerObject(pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
+        pObj = &pDoc.CreateMarkerObject(&pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->IndicateBoardPiece(pPBrdDest, ptCtr, rct.Size());
+        pDoc.IndicateBoardPiece(pPBrdDest, ptCtr, rct.Size());
     }
 }
 
@@ -780,30 +776,30 @@ CObjectDelete::CObjectDelete(ObjectID dwObjID)
     m_dwObjID = dwObjID;
 }
 
-void CObjectDelete::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CObjectDelete::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().Size());
     }
 }
 
-void CObjectDelete::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CObjectDelete::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
-    CPlayBoard* pPBoard = pDoc->FindObjectOnBoard(m_dwObjID, pObj);
+    CPlayBoard* pPBoard = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
 
     if (pPBoard != NULL)
     {
         std::vector<CB::not_null<CDrawObj*>> list;
         list.push_back(pObj);
-        pDoc->DeleteObjectsInTable(list);
+        pDoc.DeleteObjectsInTable(list);
     }
 }
 
@@ -836,67 +832,67 @@ CObjectSetText::CObjectSetText(GameElement elem, LPCTSTR pszText)
         m_strObjText = pszText;
 }
 
-BOOL CObjectSetText::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
+BOOL CObjectSetText::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard* pPBoard = NULL;
-    CTraySet* pTray = NULL;
-    CDrawObj* pObj = NULL;
-    CPieceObj* pPObj = NULL;
+    const CPlayBoard* pPBoard = NULL;
+    const CTraySet* pTray = NULL;
+    const CDrawObj* pObj = NULL;
+    const CPieceObj* pPObj = NULL;
 
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, *pDoc))
+        if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
 
-        pDoc->FindPieceCurrentLocation(pid, pTray, pPBoard, pPObj);
+        pDoc.FindPieceCurrentLocation(pid, pTray, pPBoard, pPObj);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+        pPBoard = pDoc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
     if (pPBoard != NULL)
     {
-        if (pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
+        if (pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
             return TRUE;
     }
     else if (pTray != NULL)
     {
-        if (pTray->IsOwnedButNotByCurrentPlayer(*pDoc))
+        if (pTray->IsOwnedButNotByCurrentPlayer(pDoc))
             return TRUE;
     }
     return FALSE;
 }
 
-void CObjectSetText::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CObjectSetText::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard* pPBoard;
     CTraySet* pTray;
     CDrawObj* pObj = nullptr;
     CPieceObj* pPObj;
 
-    pDoc->SetGameElementString(m_elem,
+    pDoc.SetGameElementString(m_elem,
         m_strObjText.IsEmpty() ? NULL : (LPCTSTR)m_strObjText);
 
     if (IsGameElementAPiece(m_elem))
     {
-        if (pDoc->FindPieceCurrentLocation(GetPieceIDFromElement(m_elem),
+        if (pDoc.FindPieceCurrentLocation(GetPieceIDFromElement(m_elem),
                 pTray, pPBoard, pPObj))
             pObj = pPObj;
         else
-            pDoc->SelectTrayItem(*pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
+            pDoc.SelectTrayItem(*pTray, GetPieceIDFromElement(m_elem), IDS_TIP_OBJTEXTCHG);
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+        pPBoard = pDoc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
     if (pPBoard != NULL)
     {
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().Size());
 
         // Show a balloon tip so person knows what happened
         if (nMoveWithinGroup == 0)
-            pDoc->IndicateTextTipOnBoard(*pPBoard, ptCtr, IDS_TIP_OBJTEXTCHG);
+            pDoc.IndicateTextTipOnBoard(*pPBoard, ptCtr, IDS_TIP_OBJTEXTCHG);
     }
 }
 
@@ -934,32 +930,32 @@ CObjectLockdown::CObjectLockdown(GameElement elem, BOOL bLockState)
     m_bLockState = bLockState;
 }
 
-BOOL CObjectLockdown::IsMoveHidden(CGamDoc* pDoc, int nMoveWithinGroup)
+BOOL CObjectLockdown::IsMoveHidden(const CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CDrawObj* pObj;
-    CPieceObj* pPObj;
-    CPlayBoard* pPBoard;
+    const CDrawObj* pObj;
+    const CPieceObj* pPObj;
+    const CPlayBoard* pPBoard;
 
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc->GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, *pDoc))
+        if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
+        pPBoard = pDoc.FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+        pPBoard = pDoc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
     ASSERT(pObj != NULL);
 
-    if (pPBoard != NULL && pPBoard->IsOwnedButNotByCurrentPlayer(*pDoc))
+    if (pPBoard != NULL && pPBoard->IsOwnedButNotByCurrentPlayer(pDoc))
         return TRUE;
 
     return FALSE;
 }
 
-void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CObjectLockdown::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CDrawObj* pObj;
     CPieceObj* pPObj;
@@ -967,11 +963,11 @@ void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 
     if (IsGameElementAPiece(m_elem))
     {
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
+        pPBoard = pDoc.FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+        pPBoard = pDoc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
 
     ASSERT(pObj != NULL);
@@ -984,12 +980,12 @@ void CObjectLockdown::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        pDoc->IndicateBoardPiece(pPBoard, ptCtr, pObj->GetRect().Size());
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().Size());
     }
 }
 
-void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CObjectLockdown::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     if (nMoveWithinGroup != 0)      // Only do this for the first record in group
         return;
@@ -1000,11 +996,11 @@ void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
     if (IsGameElementAPiece(m_elem))
     {
-        pPBoard = pDoc->FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
+        pPBoard = pDoc.FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
     }
     else
-        pPBoard = pDoc->FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
+        pPBoard = pDoc.FindObjectOnBoard(static_cast<ObjectID>(m_elem), pObj);
 
 
     if (pPBoard != NULL)
@@ -1012,10 +1008,10 @@ void CObjectLockdown::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
 
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
-        pDoc->EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
 
         // Show a balloon tip so person knows what happened
-        pDoc->IndicateTextTipOnBoard(*pPBoard, ptCtr,
+        pDoc.IndicateTextTipOnBoard(*pPBoard, ptCtr,
             m_bLockState ? IDS_TIP_OBJLOCKED : IDS_TIP_OBJUNLOCKED);
     }
 }
@@ -1048,12 +1044,12 @@ void CObjectLockdown::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CGameStateRcd methods....
 
-void CGameStateRcd::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CGameStateRcd::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    if (!m_pState->RestoreState(*pDoc))
+    if (!m_pState->RestoreState(pDoc))
         AfxMessageBox(IDS_ERR_FAILEDSTATECHG, MB_OK | MB_ICONEXCLAMATION);
-    if (!pDoc->IsQuietPlayback())
-        pDoc->UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    if (!pDoc.IsQuietPlayback())
+        pDoc.UpdateAllViews(NULL, HINT_GAMESTATEUSED);
 }
 
 void CGameStateRcd::Serialize(CArchive& ar)
@@ -1079,39 +1075,37 @@ void CGameStateRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CMovePlotList
 
-void CMovePlotList::SavePlotList(CDrawList* pDwg)
+void CMovePlotList::SavePlotList(const CDrawList& pDwg)
 {
     m_tblPlot.RemoveAll();
-    for (CDrawList::iterator pos = pDwg->begin(); pos != pDwg->end(); ++pos)
+    for (CDrawList::const_iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
-        CDrawObj& pObj = **pos;
+        const CDrawObj& pObj = **pos;
         if (pObj.GetType() == CDrawObj::drawLine)
         {
-            CLine& pLObj = static_cast<CLine&>(pObj);
+            const CLine& pLObj = static_cast<const CLine&>(pObj);
             m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptBeg.x), static_cast<int16_t>(pLObj.m_ptBeg.y)));
             m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptEnd.x), static_cast<int16_t>(pLObj.m_ptEnd.y)));
         }
     }
 }
 
-void CMovePlotList::DoMoveSetup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard* pPBrd = pDoc->GetPBoardManager()->GetPBoardBySerial(m_nBrdNum);
-    ASSERT(pPBrd != NULL);
-    pPBrd->SetPlotMoveMode(TRUE);
+    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager()->GetPBoardBySerial(m_nBrdNum));
+    pPBrd.SetPlotMoveMode(TRUE);
     for (int i = 0; i < m_tblPlot.GetSize(); i += 2)
     {
         CPoint ptA(m_tblPlot.GetAt(i));
         CPoint ptB(m_tblPlot.GetAt(i+1));
-        pDoc->IndicateBoardPlotLine(pPBrd, ptA, ptB);
+        pDoc.IndicateBoardPlotLine(pPBrd, ptA, ptB);
     }
 }
 
-void CMovePlotList::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CMovePlotList::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard* pPBrd = pDoc->GetPBoardManager()->GetPBoardBySerial(m_nBrdNum);
-    ASSERT(pPBrd != NULL);
-    pPBrd->SetPlotMoveMode(FALSE);
+    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager()->GetPBoardBySerial(m_nBrdNum));
+    pPBrd.SetPlotMoveMode(FALSE);
 }
 
 void CMovePlotList::Serialize(CArchive& ar)
@@ -1140,9 +1134,9 @@ void CMovePlotList::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 
 /////////////////////////////////////////////////////////////////////
 
-void CMessageRcd::DoMove(CGamDoc* pDoc, int nMoveWithinGroup)
+void CMessageRcd::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    pDoc->MsgSetMessageText(m_strMsg);
+    pDoc.MsgSetMessageText(m_strMsg);
 }
 
 void CMessageRcd::Serialize(CArchive& ar)
@@ -1185,12 +1179,12 @@ CEventMessageRcd::CEventMessageRcd(CString strMsg,
     m_strMsg = strMsg;
 }
 
-void CEventMessageRcd::DoMoveCleanup(CGamDoc* pDoc, int nMoveWithinGroup)
+void CEventMessageRcd::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     if (m_bIsBoardEvent)        // Board event message
-        pDoc->EventShowBoardNotification(m_nBoard, CPoint(m_x, m_y), m_strMsg);
+        pDoc.EventShowBoardNotification(m_nBoard, CPoint(m_x, m_y), m_strMsg);
     else                        // Tray event message
-        pDoc->EventShowTrayNotification(m_nTray, m_pieceID, m_strMsg);
+        pDoc.EventShowTrayNotification(m_nTray, m_pieceID, m_strMsg);
 }
 
 void CEventMessageRcd::Serialize(CArchive& ar)
@@ -1302,9 +1296,7 @@ CMoveList::CMoveList()
     m_bCompoundMove = FALSE;
     m_nCompoundBaseIndex = Invalid_v<size_t>;
     m_nPlaybackLock = 0;
-    m_pCompoundBaseBookMark = NULL;
     m_bCompoundSingleStep = FALSE;
-    m_pStateSave = NULL;
 }
 
 CMoveList::~CMoveList()
@@ -1320,17 +1312,18 @@ CMoveList::~CMoveList()
 // C#. The whole reason for doing this is to patch over side effects
 // of switching to in-memory histories.
 
-OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList)
+OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc& pDoc, const CMoveList& pMoveList)
 {
     CMemFile memFile;
     CArchive arStore(&memFile, CArchive::store);
-    arStore.m_pDocument = pDoc;
-    pMoveList.Serialize(arStore, FALSE);
+    arStore.m_pDocument = &pDoc;
+    // store shouldn't modify src, so const_cast safe
+    const_cast<CMoveList&>(pMoveList).Serialize(arStore, FALSE);
     arStore.Close();
 
     memFile.SeekToBegin();
     CArchive arLoad(&memFile, CArchive::load);
-    arLoad.m_pDocument = pDoc;
+    arLoad.m_pDocument = &pDoc;
     OwnerPtr<CMoveList> pNewMoveList = MakeOwner<CMoveList>();
     pNewMoveList->Serialize(arLoad, FALSE);
     return pNewMoveList;
@@ -1339,42 +1332,42 @@ OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc* pDoc, CMoveList& pMoveList
 /////////////////////////////////////////////////////////////////////
 // CMoveList methods....
 
-BOOL CMoveList::ValidatePieces(CGamDoc* pDoc)
+BOOL CMoveList::ValidatePieces(const CGamDoc& pDoc) const
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
         return FALSE;
 
-    iterator pos;
+    const_iterator pos;
     for (pos = begin(); pos != end(); )
     {
-        CMoveRecord& pRcd = GetNext(pos);
+        const CMoveRecord& pRcd = GetNext(pos);
         if (!pRcd.ValidatePieces(pDoc))
             return FALSE;
     }
     return TRUE;
 }
 
-bool CMoveList::IsThisMovePossible(size_t nIndex)
+bool CMoveList::IsThisMovePossible(size_t nIndex) const
 {
     return nIndex < size() && nIndex != Invalid_v<size_t>;
 }
 
-bool CMoveList::IsWithinCompoundMove(size_t nIndex)
+bool CMoveList::IsWithinCompoundMove(size_t nIndex) const
 {
     if (nIndex == Invalid_v<size_t>)
         return false;
 
-    iterator posPrev = FindIndex(nIndex);
+    const_iterator posPrev = FindIndex(nIndex);
 
     // Start looking on previous record.
     if (posPrev != end())
         GetPrev(posPrev);
     while (posPrev != end())
     {
-        CMoveRecord& pRcd = GetPrev(posPrev);
+        const CMoveRecord& pRcd = GetPrev(posPrev);
         if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
-            return static_cast<CCompoundMove&>(pRcd).IsGroupBegin();
+            return static_cast<const CCompoundMove&>(pRcd).IsGroupBegin();
     }
     return false;
 }
@@ -1384,14 +1377,14 @@ size_t CMoveList::SetStartingState(CGamDoc& doc)
 {
     iterator pos = ++begin();
     ASSERT(pos != end());
-    CB::not_null<CMoveRecord*> temp = &GetAt(pos);
+    CB::not_null<CMoveRecord*> temp = pos->get();
     size_t nStartIndex = size_t(2);
 
     if (temp->GetType() != CMoveRecord::mrecState)
     {
         iterator pos = begin();
         ASSERT(pos != end());
-        temp = &GetAt(pos);
+        temp = pos->get();
         ASSERT(temp->GetType() == CMoveRecord::mrecState); // This *HAS* to be TRUE
         nStartIndex = size_t(1);
     }
@@ -1404,38 +1397,37 @@ size_t CMoveList::SetStartingState(CGamDoc& doc)
 // sets the playback state to what is should be at the specified
 // move index.
 
-void CMoveList::PushAndSetState(CGamDoc* pDoc, size_t nIndex)
+void CMoveList::PushAndSetState(CGamDoc& pDoc, size_t nIndex)
 {
     ASSERT(m_pStateSave == NULL); // Only one push allowed
     m_pStateSave = new CGameState();
-    pDoc->FlushAllIndicators();
-    m_pStateSave->SaveState(*pDoc);
-    m_bQuietPlaybackSave = pDoc->IsQuietPlayback();
-    pDoc->SetQuietPlayback(TRUE);
+    pDoc.FlushAllIndicators();
+    m_pStateSave->SaveState(pDoc);
+    m_bQuietPlaybackSave = pDoc.IsQuietPlayback();
+    pDoc.SetQuietPlayback(TRUE);
 
-    size_t nCurIndex = SetStartingState(*pDoc);
+    size_t nCurIndex = SetStartingState(pDoc);
     if (nCurIndex < nIndex)
     {
         while ((nCurIndex = DoMove(pDoc, nCurIndex)) < nIndex)
-            pDoc->FlushAllIndicators();
+            pDoc.FlushAllIndicators();
     }
-    pDoc->FlushAllIndicators();
+    pDoc.FlushAllIndicators();
 }
 
 // Undoes what PushAndSetState did.
-void CMoveList::PopAndRestoreState(CGamDoc* pDoc)
+void CMoveList::PopAndRestoreState(CGamDoc& pDoc)
 {
     ASSERT(m_pStateSave != NULL); // Better be one!
-    pDoc->SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
-    m_pStateSave->RestoreState(*pDoc);
-    delete m_pStateSave;
+    pDoc.SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
+    m_pStateSave->RestoreState(pDoc);
     m_pStateSave = NULL;
-    pDoc->SetQuietPlayback(m_bQuietPlaybackSave);
+    pDoc.SetQuietPlayback(m_bQuietPlaybackSave);
 }
 
-size_t CMoveList::FindPreviousMove(CGamDoc* pDoc, size_t nIndex)
+size_t CMoveList::FindPreviousMove(CGamDoc& pDoc, size_t nIndex)
 {
-    iterator     posPrev;
+    const_iterator posPrev;
     size_t       nCurIndex;
 
     BOOL bWithinCompoundMove = IsWithinCompoundMove(nIndex);
@@ -1450,7 +1442,7 @@ size_t CMoveList::FindPreviousMove(CGamDoc* pDoc, size_t nIndex)
         GetPrev(posPrev);           // Point to previous record.
         while (TRUE)
         {
-            CMoveRecord& pRcd = GetPrev(posPrev);
+            const CMoveRecord& pRcd = GetPrev(posPrev);
             nCurIndex--;
             if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
                 return nCurIndex;           // Found it.
@@ -1465,7 +1457,7 @@ CHECK_AGAIN:
         ASSERT(posPrev != end());
         if (posPrev == end())
             return size_t(0);
-        CMoveRecord& pRcd = GetPrev(posPrev);// First GetPrev() gets current record
+        const CMoveRecord& pRcd = GetPrev(posPrev);// First GetPrev() gets current record
     }
     else
     {
@@ -1474,14 +1466,14 @@ CHECK_AGAIN:
         posPrev = --end();
         nCurIndex = size() - size_t(1);
     }
-    CB::not_null<CMoveRecord*> pRcd = &GetPrev(posPrev);
+    CB::not_null<const CMoveRecord*> pRcd = &GetPrev(posPrev);
 
     // Another weird special case...If the record is an end of compound
     // move record and we are in single step mode, then step back one more
     // record.
     if (m_bCompoundSingleStep &&
         pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
-        !static_cast<CCompoundMove&>(*pRcd).IsGroupBegin())
+        !static_cast<const CCompoundMove&>(*pRcd).IsGroupBegin())
     {
         pRcd = &GetPrev(posPrev);
         nCurIndex--;
@@ -1492,7 +1484,7 @@ CHECK_AGAIN:
 
     ASSERT(nCurIndex >= 0);
     if (pRcd->GetType() == CMoveRecord::mrecCompoundMove &&
-        !static_cast<CCompoundMove&>(*pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
+        !static_cast<const CCompoundMove&>(*pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
     {
         // Previous move ended a compound move. Search for
         // starting record of this compound move grouping.
@@ -1540,9 +1532,9 @@ CHECK_AGAIN:
 // has all hidden portions, the entire move will be
 // done in 'quiet' mode.
 
-bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
+bool CMoveList::IsMoveHidden(const CGamDoc& pDoc, size_t nIndex) const
 {
-    iterator posFirst = FindIndex(nIndex);
+    const_iterator posFirst = FindIndex(nIndex);
     ASSERT(posFirst != end());
     if (posFirst == end())
         return false;
@@ -1550,11 +1542,11 @@ bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
     size_t nGrp = Invalid_v<size_t>;
     size_t nNextIndex = nIndex;
 
-    iterator pos = posFirst;
+    const_iterator pos = posFirst;
     int nElementInGroup = 0;
     while (pos != end())
     {
-        CMoveRecord& pRcd = GetNext(pos);
+        const CMoveRecord& pRcd = GetNext(pos);
         if (nGrp == Invalid_v<size_t>)
             nGrp = pRcd.GetSeqNum();
         if (nGrp != pRcd.GetSeqNum())
@@ -1575,7 +1567,7 @@ bool CMoveList::IsMoveHidden(CGamDoc* pDoc, size_t nIndex)
 // This routine plays back the moves for the group at the
 // specified index. Returns the index of the next move group.
 
-size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove /* = TRUE*/)
+size_t CMoveList::DoMove(CGamDoc& pDoc, size_t nIndex, BOOL bAutoStepHiddenMove /* = TRUE*/)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
@@ -1595,9 +1587,9 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
         {
             m_nSkipCount--;
             if (!m_bSkipKeepInd)
-                pDoc->FlushAllIndicators();
+                pDoc.FlushAllIndicators();
         }
-        pDoc->FlushAllSelections();
+        pDoc.FlushAllSelections();
 
         nNextIndex = nIndex;
 
@@ -1611,38 +1603,38 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             if (nIndex >= size() || nIndex == Invalid_v<size_t>)
                 break;
 
-            iterator posFirst = FindIndex(nIndex);
+            const_iterator posFirst = FindIndex(nIndex);
             ASSERT(posFirst != end());
             if (posFirst == end())
                 break;
 
             // First check for compound move record...
-            CMoveRecord& pRcd = GetAt(posFirst);
+            const CMoveRecord& pRcd = GetAt(posFirst);
             if (pRcd.GetType() == CMoveRecord::mrecCompoundMove)
             {
                 GetNext(posFirst);              // Step past record
                 nNextIndex++;                   // calc'ed for caller
-                if (!static_cast<CCompoundMove&>(pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
+                if (!static_cast<const CCompoundMove&>(pRcd).IsGroupBegin() && !m_bCompoundSingleStep)
                     break;
                 if (!m_bCompoundSingleStep)
                     bCompoundMove = TRUE;
             }
 
-            iterator pos = posFirst;
+            const_iterator pos = posFirst;
             size_t nGrp = Invalid_v<size_t>;
 
             if (bCompoundMove)
-                pDoc->FlushAllSelections();
+                pDoc.FlushAllSelections();
 
             // Check for hidden operations. If the operation
             // has any hidden portions, the entire move will be
             // done in 'quiet' mode.
 
-            BOOL bQuietModeSave = pDoc->IsQuietPlayback();
+            BOOL bQuietModeSave = pDoc.IsQuietPlayback();
 
-            if (!pDoc->IsQuietPlayback() && IsMoveHidden(pDoc, nIndex))
+            if (!pDoc.IsQuietPlayback() && IsMoveHidden(pDoc, nIndex))
             {
-                pDoc->SetQuietPlayback(TRUE);
+                pDoc.SetQuietPlayback(TRUE);
                 bDoNextMove = bAutoStepHiddenMove;
             }
 
@@ -1652,25 +1644,25 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             int nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord& pRcd = GetNext(pos);
+                const CMoveRecord& pRcd = GetNext(pos);
                 if (nGrp == Invalid_v<size_t>)
                     nGrp = pRcd.GetSeqNum();
                 if (nGrp != pRcd.GetSeqNum())
                     break;
                 nNextIndex++;                   // Determine for caller
                 BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
-                BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
+                BOOL bTmpQuietSave = pDoc.IsQuietPlayback();
                 if (bHidden)
-                    pDoc->SetQuietPlayback(TRUE);
+                    pDoc.SetQuietPlayback(TRUE);
                 pRcd.DoMoveSetup(pDoc, nElementInGroup);
                 if (bHidden)
-                    pDoc->SetQuietPlayback(bTmpQuietSave);
+                    pDoc.SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
             }
 
             // Wait a moment.
 
-            if (!pDoc->IsQuietPlayback())
+            if (!pDoc.IsQuietPlayback())
                 GetApp()->Delay(stepDelay, (BOOL*)&m_nSkipCount);
 
             // Do actual moves
@@ -1679,16 +1671,16 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord& pRcd = GetNext(pos);
+                const CMoveRecord& pRcd = GetNext(pos);
                 if (nGrp != pRcd.GetSeqNum())
                     break;
                 BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
-                BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
+                BOOL bTmpQuietSave = pDoc.IsQuietPlayback();
                 if (bHidden)
-                    pDoc->SetQuietPlayback(TRUE);
+                    pDoc.SetQuietPlayback(TRUE);
                 pRcd.DoMove(pDoc, nElementInGroup);
                 if (bHidden)
-                    pDoc->SetQuietPlayback(bTmpQuietSave);
+                    pDoc.SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
             }
 
@@ -1698,26 +1690,26 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             nElementInGroup = 0;
             while (pos != end())
             {
-                CMoveRecord& pRcd = GetNext(pos);
+                const CMoveRecord& pRcd = GetNext(pos);
                 if (nGrp != pRcd.GetSeqNum())
                     break;
                 BOOL bHidden = pRcd.IsMoveHidden(pDoc, nElementInGroup);
-                BOOL bTmpQuietSave = pDoc->IsQuietPlayback();
+                BOOL bTmpQuietSave = pDoc.IsQuietPlayback();
                 if (bHidden)
-                    pDoc->SetQuietPlayback(TRUE);
+                    pDoc.SetQuietPlayback(TRUE);
                 pRcd.DoMoveCleanup(pDoc, nElementInGroup);
                 if (bHidden)
-                    pDoc->SetQuietPlayback(bTmpQuietSave);
+                    pDoc.SetQuietPlayback(bTmpQuietSave);
                 nElementInGroup++;
             }
 
             // Restore quite mode playback if mode was initially different.
-            pDoc->SetQuietPlayback(bQuietModeSave);
+            pDoc.SetQuietPlayback(bQuietModeSave);
 
             nIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
 
             // Short delay between moves in compound move.
-            if (bCompoundMove && !pDoc->IsQuietPlayback())
+            if (bCompoundMove && !pDoc.IsQuietPlayback())
                 GetApp()->Delay((2 * stepDelay) / 3, (BOOL*)&m_nSkipCount);
 
         } while (bCompoundMove || bDoNextMove);
@@ -1730,10 +1722,10 @@ size_t CMoveList::DoMove(CGamDoc* pDoc, size_t nIndex, BOOL bAutoStepHiddenMove 
             // If the next record to be executed is a compound move
             // end record AND we are single stepping the compound
             // records, we need to step to the next record.
-            iterator pos = FindIndex(nNextIndex);
-            CMoveRecord& pRcd = GetAt(pos);
+            const_iterator pos = FindIndex(nNextIndex);
+            const CMoveRecord& pRcd = GetAt(pos);
             if (pRcd.GetType() == CMoveRecord::mrecCompoundMove &&
-                !static_cast<CCompoundMove&>(pRcd).IsGroupBegin())
+                !static_cast<const CCompoundMove&>(pRcd).IsGroupBegin())
             {
                 nNextIndex++;
                 nNextIndex = nNextIndex >= size() ? Invalid_v<size_t> : nNextIndex;
@@ -1780,14 +1772,13 @@ void CMoveList::PurgeAfter(size_t nIndex)
     {
         if (m_pCompoundBaseBookMark)
         {
-            delete m_pCompoundBaseBookMark;
             m_pCompoundBaseBookMark = NULL;
         }
         m_bCompoundMove = FALSE;
         m_nCompoundBaseIndex = Invalid_v<size_t>;
     }
 
-    iterator pos = FindIndex(nIndex);
+    const_iterator pos = FindIndex(nIndex);
     if (pos == end())
         return;             // Doesn't exist
     while (pos != end())
@@ -1802,8 +1793,6 @@ void CMoveList::Clear()
     if (m_nPlaybackLock != 0)
         return;
 
-    if (m_pCompoundBaseBookMark)
-        delete m_pCompoundBaseBookMark;
     m_pCompoundBaseBookMark = NULL;
     m_bCompoundMove = FALSE;
     m_nCompoundBaseIndex = Invalid_v<size_t>;
@@ -1812,7 +1801,7 @@ void CMoveList::Clear()
     clear();
 }
 
-void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
+void CMoveList::BeginRecordingCompoundMove(CGamDoc& pDoc)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
@@ -1827,10 +1816,9 @@ void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
     ASSERT(!m_bCompoundMove);
 
     m_pCompoundBaseBookMark = new CGameState();
-    if (!m_pCompoundBaseBookMark->SaveState(*pDoc))
+    if (!m_pCompoundBaseBookMark->SaveState(pDoc))
     {
         // Memory low warning?....
-        delete m_pCompoundBaseBookMark;
         m_pCompoundBaseBookMark = NULL;
         return;
     }
@@ -1841,7 +1829,7 @@ void CMoveList::BeginRecordingCompoundMove(CGamDoc* pDoc)
     m_bCompoundMove = TRUE;
 }
 
-void CMoveList::CancelRecordingCompoundMove(CGamDoc* pDoc)
+void CMoveList::CancelRecordingCompoundMove(CGamDoc& pDoc)
 {
     ASSERT(m_nPlaybackLock == 0);
     if (m_nPlaybackLock != 0)
@@ -1850,26 +1838,21 @@ void CMoveList::CancelRecordingCompoundMove(CGamDoc* pDoc)
     if (!m_bCompoundMove)
         return;                                 // Nothing to get rid of
 
-    pDoc->FlushAllIndicators();
+    pDoc.FlushAllIndicators();
 
     ASSERT(m_pCompoundBaseBookMark != NULL);
-    pDoc->SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
-    if (!m_pCompoundBaseBookMark->RestoreState(*pDoc))
+    pDoc.SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
+    if (!m_pCompoundBaseBookMark->RestoreState(pDoc))
     {
         // Memory error message should be here
-        delete m_pCompoundBaseBookMark;
         m_pCompoundBaseBookMark = NULL;
         return;
     }
-    if (m_pCompoundBaseBookMark)
-    {
-        delete m_pCompoundBaseBookMark;
-        m_pCompoundBaseBookMark = NULL;
-    }
+    m_pCompoundBaseBookMark = NULL;
     m_bCompoundMove = FALSE;
     PurgeAfter(m_nCompoundBaseIndex);
     m_nCompoundBaseIndex = Invalid_v<size_t>;
-    pDoc->UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    pDoc.UpdateAllViews(NULL, HINT_GAMESTATEUSED);
 }
 
 void CMoveList::EndRecordingCompoundMove()
@@ -1889,11 +1872,7 @@ void CMoveList::EndRecordingCompoundMove()
         m_bCompoundMove = FALSE;
         m_nCompoundBaseIndex = Invalid_v<size_t>;
 
-        if (m_pCompoundBaseBookMark)
-        {
-            delete m_pCompoundBaseBookMark;
-            m_pCompoundBaseBookMark = NULL;
-        }
+        m_pCompoundBaseBookMark = NULL;
     }
     else
     {
@@ -1942,9 +1921,10 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         iterator pos;
         for (pos = begin(); pos != end(); )
         {
-            CMoveRecord& pRcd = GetNext(pos);
+            const CMoveRecord& pRcd = GetNext(pos);
             ar << (short)pRcd.GetType();
-            pRcd.Serialize(ar);
+            // store should not modify pRcd, so const_cast safe
+            const_cast<CMoveRecord&>(pRcd).Serialize(ar);
         }
     }
     else
@@ -1980,9 +1960,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             if (cTmp)
             {
                 ASSERT(m_pCompoundBaseBookMark == NULL);
-                if (m_pCompoundBaseBookMark)
-                    delete m_pCompoundBaseBookMark;
-                m_pCompoundBaseBookMark = new CGameState();
+                m_pCompoundBaseBookMark = MakeOwner<CGameState>();
                 m_pCompoundBaseBookMark->Serialize(ar);
             }
         }
@@ -2084,7 +2062,7 @@ void CMoveList::DumpToTextFile(const CGamDoc& pDoc, CFile& file)
     int nIndex = 0;
     for (pos = begin(); pos != end(); )
     {
-        CMoveRecord& pRcd = GetNext(pos);
+        const CMoveRecord& pRcd = GetNext(pos);
         CMoveRecord::RcdType eType = pRcd.GetType();
         ASSERT(eType >= 0 && eType < CMoveRecord::mrecMax);
         sprintf(szBfr, "[Index=%04d; Seq=%04zd: %s]\r\n", nIndex, pRcd.GetSeqNum(),
@@ -2096,14 +2074,14 @@ void CMoveList::DumpToTextFile(const CGamDoc& pDoc, CFile& file)
 }
 #endif
 
-CMoveList::iterator CMoveList::FindIndex(size_t nIndex)
+CMoveList::const_iterator CMoveList::FindIndex(size_t nIndex) const
 {
     if (nIndex >= size())
     {
         ASSERT(!"out of bounds");
         return end();
     }
-    iterator retval = begin();
+    const_iterator retval = begin();
     for (size_t i = size_t(0) ; i < nIndex ; ++i)
     {
         ++retval;

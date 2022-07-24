@@ -83,7 +83,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
         // Check that all pieces contained in moves still exist
         // in the GameBox. If not we can't use the move file.
 
-        if (!pHist->m_pMList->ValidatePieces(this))
+        if (!pHist->m_pMList->ValidatePieces(*this))
         {
             AfxMessageBox(IDS_ERR_MISSINGPIECES, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowUserException();
@@ -109,7 +109,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
         CMoveList::iterator pos = ++pHist->m_pMList->begin();
         ASSERT(pos != pHist->m_pMList->end());
-        CMoveRecord& temp = pHist->m_pMList->GetAt(pos);
+        CMoveRecord& temp = **pos;
         BOOL bUpdatedGameState = FALSE;
 
         if (temp.GetType() != CMoveRecord::mrecState)
@@ -222,7 +222,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         // Check that all pieces contained in moves still exist
         // in the GameBox. If not we can't use the move file.
 
-        if (!pMoves->ValidatePieces(this))
+        if (!pMoves->ValidatePieces(*this))
         {
             AfxMessageBox(IDS_ERR_MISSINGPIECES, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowUserException();
@@ -233,7 +233,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
         m_nCurHist = nHistRec;                  // Set number of history playback
         // m_pHistMoves = pHist->m_pMList;      // Set pointer to history moves
         // Make a copy of the move list for playback
-        m_pHistMoves = CMoveList::CloneMoveList(this, *pHist.m_pMList);
+        m_pHistMoves = CMoveList::CloneMoveList(*this, *pHist.m_pMList);
         m_pMoves = m_pHistMoves.get();            // Shadow for playback
 
         // Insert the current state of the game in front of the
@@ -257,7 +257,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         CMoveList::iterator pos = ++m_pMoves->begin();
         ASSERT(pos != m_pMoves->end());
-        CMoveRecord& temp = m_pMoves->GetAt(pos);
+        CMoveRecord& temp = **pos;
         ASSERT(temp.GetType() == CMoveRecord::mrecState);
         CGameStateRcd& pRcd = static_cast<CGameStateRcd&>(temp);
 
@@ -349,7 +349,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         // Check that all pieces contained in moves still exist
         // in the GameBox. If not we can't use the move file.
 
-        if (!pMoves->ValidatePieces(this))
+        if (!pMoves->ValidatePieces(*this))
         {
             AfxMessageBox(IDS_ERR_MISSINGPIECES, MB_OK | MB_ICONEXCLAMATION);
             AfxThrowUserException();
@@ -415,7 +415,7 @@ void CGamDoc::RestartMoves()
     ASSERT(IsPlaying());
     ASSERT(m_nFirstMove != Invalid_v<size_t> && m_nFirstMove <= size_t(1));
     m_nMoveInterlock++;
-    m_nCurMove = m_pMoves->DoMove(this, m_nFirstMove);
+    m_nCurMove = m_pMoves->DoMove(*this, m_nFirstMove);
     m_nMoveInterlock--;
     ASSERT(m_nCurMove != Invalid_v<size_t> && m_nCurMove != m_nFirstMove);
     m_astrMsgHist.RemoveAll();
@@ -440,7 +440,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
     {
         // Process to the last record.
         m_bQuietPlayback = TRUE;
-        while ((m_nCurMove = m_pMoves->DoMove(this, m_nCurMove)) != Invalid_v<size_t>) ;
+        while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove)) != Invalid_v<size_t>) ;
         FlushAllIndicators();
         m_bQuietPlayback = FALSE;
     }
@@ -585,35 +585,35 @@ CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
 
 const int borderWidth = 3;
 
-void CGamDoc::IndicateBoardToBoardPieceMove(CPlayBoard* pPBFrom,
-    CPlayBoard* pPBTo, CPoint ptCtrFrom, CPoint ptCtrTo, CSize size)
+void CGamDoc::IndicateBoardToBoardPieceMove(CPlayBoard& pPBFrom, CPlayBoard& pPBTo,
+    CPoint ptCtrFrom, CPoint ptCtrTo, CSize size)
 {
     if (IsQuietPlayback()) return;
     IndicateBoardPiece(pPBFrom, ptCtrFrom, size);
     IndicateBoardPiece(pPBTo, ptCtrTo, size);
 
     // If on same board and move is not using plotted move mode.
-    if (pPBFrom == pPBTo && !pPBFrom->GetPlotMoveMode())
+    if (&pPBFrom == &pPBTo && !pPBFrom.GetPlotMoveMode())
         IndicateBoardPlotLine(pPBFrom, ptCtrFrom, ptCtrTo);
 }
 
-void CGamDoc::IndicateBoardPlotLine(CPlayBoard* pPBrd, CPoint ptA, CPoint ptB)
+void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
 {
     if (IsQuietPlayback()) return;
     CLine* pObj = new CLine;
-    pObj->SetForeColor(pPBrd->m_crPlotLineColor);
-    pObj->SetLineWidth(pPBrd->m_nPlotLineWidth);        // Must set width first!
+    pObj->SetForeColor(pPBrd.m_crPlotLineColor);
+    pObj->SetLineWidth(pPBrd.m_nPlotLineWidth);        // Must set width first!
     pObj->SetLine(ptA.x, ptA.y, ptB.x, ptB.y);
 
-    pPBrd->AddIndicatorObject(pObj);
+    pPBrd.AddIndicatorObject(pObj);
 
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
 }
 
-void CGamDoc::IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size)
+void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
 {
     if (IsQuietPlayback()) return;
     CRect rct(CPoint(0, 0), size);
@@ -622,14 +622,14 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard* pPBrd, CPoint ptCtr, CSize size)
     rct.InflateRect(borderWidth + 1, borderWidth + 1);
     CRectObj* pObj = new CRectObj;
     pObj->SetRect(&rct);
-    pObj->SetForeColor(pPBrd->m_crPlotLineColor);
+    pObj->SetForeColor(pPBrd.m_crPlotLineColor);
     pObj->SetBackColor(noColor);
     pObj->SetLineWidth(borderWidth);
 
-    pPBrd->AddIndicatorObject(pObj);
+    pPBrd.AddIndicatorObject(pObj);
 
     CGamDocHint hint;
-    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
+    hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
 }
