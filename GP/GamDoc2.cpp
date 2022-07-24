@@ -210,7 +210,7 @@ void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
     {
         CMoveList::iterator pos = ++pHist->m_pMList->begin();
         ASSERT(pos != pHist->m_pMList->end());
-        CMoveRecord& pRcd = pHist->m_pMList->GetAt(pos);
+        const CMoveRecord& pRcd = pHist->m_pMList->GetAt(pos);
         if (pRcd.GetType() == CMoveRecord::mrecState)
         {
             pHist->m_pMList->pop_front();
@@ -254,7 +254,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     // Get the first record which contains the starting positions
     // of the recording. Restore it.
 
-    CMoveRecord& temp = m_pRcdMoves->GetFirstRecord();
+    CMoveRecord& temp = *m_pRcdMoves->front();
     ASSERT(temp.GetType() == CMoveRecord::mrecState);
     CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
@@ -317,7 +317,7 @@ void CGamDoc::RecordPlotList(CPlayBoard* pPBrd)
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CMovePlotList> pRcd = MakeOwner<CMovePlotList>(pPBrd->GetSerialNumber(),
-        pPBrd->GetIndicatorList());
+        *pPBrd->GetIndicatorList());
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
@@ -484,7 +484,7 @@ void CGamDoc::RecordCompoundMoveBegin()
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    m_pRcdMoves->BeginRecordingCompoundMove(this);
+    m_pRcdMoves->BeginRecordingCompoundMove(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,7 +504,7 @@ void CGamDoc::RecordCompoundMoveDiscard()
     if (!IsRecording()) return;
     ASSERT(m_pRcdMoves != NULL);
     ASSERT(m_pRcdMoves->IsRecordingCompoundMove());
-    m_pRcdMoves->CancelRecordingCompoundMove(this);
+    m_pRcdMoves->CancelRecordingCompoundMove(*this);
 }
 
 ////////////////////////////////////////////////////////////////////

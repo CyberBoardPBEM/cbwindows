@@ -953,6 +953,7 @@ public:
                 list, but Front/Back are in terms of display,
                 which is in opposite order of
                 begin/end/front/back */
+    using BASE::const_iterator;
     using BASE::iterator;
     using BASE::begin;
     using BASE::clear;

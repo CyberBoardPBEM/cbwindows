@@ -237,7 +237,7 @@ uint8_t CPieceTable::GetSide(PieceID pid) const
     This converts between display index and side */
 uint8_t CPieceTable::GetSide(PieceID pid, size_t displayIndex) const
 {
-    no_demote<uint8_t> side = GetSide(pid);
+    uint8_t side = GetSide(pid);
     if (displayIndex == uint8_t(0))
     {
         return side;

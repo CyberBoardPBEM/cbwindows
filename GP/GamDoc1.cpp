@@ -863,7 +863,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<CB::not_null<CD
 
 ////////////////////////////////////////////////////////////////////
 
-CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, CDrawObj*& ppObj)
+const CPlayBoard* CGamDoc::FindObjectOnBoard(ObjectID dwObjID, const CDrawObj*& ppObj) const
 {
     ASSERT(m_pPBMgr != NULL);
     return m_pPBMgr->FindObjectOnBoard(dwObjID, ppObj);
@@ -875,13 +875,13 @@ CPlayBoard* CGamDoc::FindObjectOnBoard(CDrawObj* pObj)
     return m_pPBMgr->FindObjectOnBoard(*pObj);
 }
 
-CPlayBoard* CGamDoc::FindPieceOnBoard(PieceID pid, CPieceObj*& ppObj)
+const CPlayBoard* CGamDoc::FindPieceOnBoard(PieceID pid, const CPieceObj*& ppObj) const
 {
     ASSERT(m_pPBMgr != NULL);
     return m_pPBMgr->FindPieceOnBoard(pid, ppObj);
 }
 
-CTraySet* CGamDoc::FindPieceInTray(PieceID pid)
+const CTraySet* CGamDoc::FindPieceInTray(PieceID pid) const
 {
     ASSERT(m_pYMgr != NULL);
     return m_pYMgr->FindPieceIDInTraySet(pid);
@@ -932,8 +932,8 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
 // Locates the current location for a playing piece. returns
 // TRUE if found on a board. FALSE if in tray.
 
-BOOL CGamDoc::FindPieceCurrentLocation(PieceID pid, CTraySet*& pTraySet,
-    CPlayBoard*& pPBoard, CPieceObj*& ppObj)
+BOOL CGamDoc::FindPieceCurrentLocation(PieceID pid, const CTraySet*& pTraySet,
+    const CPlayBoard*& pPBoard, const CPieceObj*& ppObj) const
 {
     pTraySet = NULL;
     pPBoard = FindPieceOnBoard(pid, ppObj);
