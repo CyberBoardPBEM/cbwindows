@@ -244,7 +244,7 @@ size_t CTileManager::GetSheetForTile(CSize size)
 {
     for (size_t i = 0; i < m_TShtTbl.size(); i++)
     {
-        CTileSheet& pSht = m_TShtTbl.at(i);
+        CTileSheet& pSht = *m_TShtTbl.at(i);
         if (pSht.IsSameDimensions(size) &&
             (pSht.GetSheetHeight() + size.cy < int(maxSheetHeight)))
             return i;
@@ -252,7 +252,7 @@ size_t CTileManager::GetSheetForTile(CSize size)
     // If an empty one exists, reuse a tile sheet having a zero height...
     for (size_t i = 0; i < m_TShtTbl.size(); i++)
     {
-        CTileSheet& pSht = m_TShtTbl.at(i);
+        CTileSheet& pSht = *m_TShtTbl.at(i);
         if (pSht.GetSheetHeight() == 0)
         {
             pSht.SetSize(size);
@@ -260,8 +260,8 @@ size_t CTileManager::GetSheetForTile(CSize size)
         }
     }
     TRACE2("Creating new tile sheet for cx=%d by cy=%d tile\n", size.cx, size.cy);
-    m_TShtTbl.resize(m_TShtTbl.size() + 1);
-    m_TShtTbl.back().SetSize(size);
+    m_TShtTbl.emplace_back(MakeOwner<CTileSheet>());
+    m_TShtTbl.back()->SetSize(size);
     return m_TShtTbl.size() - 1;
 }
 
@@ -303,7 +303,7 @@ void CTileManager::MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>&
 void CTileManager::CreateTileOnSheet(CSize size, TileLoc& pLoc)
 {
     size_t nSht = GetSheetForTile(size);
-    CTileSheet& pSht = m_TShtTbl.at(nSht);
+    CTileSheet& pSht = *m_TShtTbl.at(nSht);
     pLoc.m_nSheet = nSht;
     pLoc.m_nOffset = pSht.GetSheetHeight();
     ASSERT(pLoc.m_nOffset < (int)65535U);
@@ -312,7 +312,7 @@ void CTileManager::CreateTileOnSheet(CSize size, TileLoc& pLoc)
 
 void CTileManager::DeleteTileFromSheet(const TileLoc& pLoc)
 {
-    CTileSheet& pSht = m_TShtTbl.at(pLoc.m_nSheet);
+    CTileSheet& pSht = *m_TShtTbl.at(pLoc.m_nSheet);
     pSht.DeleteTile(pLoc.m_nOffset);
     for (size_t i = 0; i < m_pTileTbl.GetSize(); i++)
     {
@@ -514,7 +514,7 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
             CB::WriteCount(ar, m_TShtTbl.size());
         }
         for (size_t i = size_t(0); i < m_TShtTbl.size(); i++)
-            m_TShtTbl.at(i).Serialize(ar);
+            m_TShtTbl.at(i)->Serialize(ar);
     }
     else
     {
@@ -529,10 +529,12 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
         {
             wSize = CB::ReadCount(ar);
         }
-        m_TShtTbl.resize(wSize);
-        for (size_t i = size_t(0); i < m_TShtTbl.size(); i++)
+        m_TShtTbl.reserve(wSize);
+        for (size_t i = size_t(0); i < wSize; i++)
         {
-            CTileSheet& pTSht = m_TShtTbl[i];
+            m_TShtTbl.emplace_back(MakeOwner<CTileSheet>());
+            ASSERT(i + size_t(1) == m_TShtTbl.size());
+            CTileSheet& pTSht = *m_TShtTbl[i];
             pTSht.Serialize(ar);
 #ifdef _DEBUG
             if (pTSht.GetSheetHeight() == 0)
@@ -576,7 +578,10 @@ BOOL CTileManager::PruneTilesOnSheet255()
         }
     }
     // delete improper sheets...
-    m_TShtTbl.resize(255);
+    while (m_TShtTbl.size() > size_t(255))
+    {
+        m_TShtTbl.pop_back();
+    }
     return bTileFound;
 }
 
@@ -670,7 +675,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
     {
-        const CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
+        const CTileSheet& pTSheet = *m_TShtTbl.at(nSheet);
 
         sprintf(szBfr, "| %04zX  | %3u | %3u | %5u |\r\n", nSheet,
             pTSheet.GetWidth(), pTSheet.GetHeight(),
@@ -688,7 +693,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     uintmax_t* pTbl = pShtTbl;
     for (size_t nSheet = size_t(0) ; nSheet < m_TShtTbl.size() ; nSheet++)
     {
-        const CTileSheet& pTSheet = m_TShtTbl.at(nSheet);
+        const CTileSheet& pTSheet = *m_TShtTbl.at(nSheet);
         *pTbl++ = nSheet;
         *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetWidth());
         *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetHeight());
