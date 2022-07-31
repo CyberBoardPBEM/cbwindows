@@ -291,7 +291,11 @@ protected:
     FontID      m_fontID;           // Current font
     // ------- //
     std::vector<CTileSet> m_TSetTbl;
-    std::vector<CTileSheet> m_TShtTbl;
+    /* need to store pointers, not objects, here because
+        CTile has pointer to CTileSheet, and if m_TShtTbl
+        holds objects, those pointers become invalid when
+        m_TShtTbl increases capacity */
+    std::vector<OwnerPtr<CTileSheet>> m_TShtTbl;
     // ------- //
     void Clear();
     void CreateTileOnSheet(CSize size, TileLoc& pLoc);
@@ -300,7 +304,7 @@ protected:
     size_t GetSheetForTile(CSize size);
     void RemoveTileIDFromTileSets(TileID tid);
     const CTileSheet& GetTileSheet(size_t nSheet) const
-        { return m_TShtTbl.at(nSheet); }
+        { return *m_TShtTbl.at(nSheet); }
     CTileSheet& GetTileSheet(size_t nSheet)
         { return const_cast<CTileSheet&>(std::as_const(*this).GetTileSheet(nSheet)); }
 
