@@ -116,7 +116,7 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
     SetRedraw(TRUE);
     if (bKeepPosition)
     {
-        SetScrollPos(SB_HORZ, horzScroll);
+        SendMessage(WM_HSCROLL, MAKELONG(int16_t(SB_THUMBPOSITION), value_preserving_cast<int16_t>(horzScroll)), NULL);
     }
     Invalidate();
 }
