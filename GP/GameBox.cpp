@@ -114,7 +114,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar >> verMajor;
         ar >> verMinor;
         if (NumVersion(verMajor, verMinor) >
-            NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
+            NumVersion(fileGbxVerMajor, fileGbxVerMinor) &&
             // file 3.90 is the same as 3.10
             NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
