@@ -611,7 +611,7 @@ void CBoardBase::Serialize(CArchive& ar)
         ar << (DWORD)m_xGridSnapOff;
         ar << (DWORD)m_yGridSnapOff;
 
-        ar << (WORD)m_iMaxLayer;
+        ar << value_preserving_cast<int16_t>(m_iMaxLayer);
         ar << (DWORD)m_crBkGnd;
         ar << m_strBoardName;
         ar << (WORD)(m_pBaseDwg != NULL ? 1 : 0);
@@ -645,7 +645,8 @@ void CBoardBase::Serialize(CArchive& ar)
             ar >> wTmp; m_xGridSnapOff = (int)wTmp * 1000;
             ar >> wTmp; m_yGridSnapOff = (int)wTmp * 1000;
         }
-        ar >> wTmp; m_iMaxLayer = (int)wTmp;
+        int16_t sTmp;
+        ar >> sTmp; m_iMaxLayer = value_preserving_cast<decltype(m_iMaxLayer)>(sTmp);
         ar >> dwTmp; m_crBkGnd = (COLORREF)dwTmp;
         ar >> m_strBoardName;
         ar >> wTmp;
