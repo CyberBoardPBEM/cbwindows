@@ -230,20 +230,6 @@ BOOL CSelectListBox::OnActTurnOver(UINT id)
 
             m_pDoc->AssignNewMoveGroup();
 
-            if (m_pDoc->IsRecording())
-            {
-                // Insert a notification tip so there is some information
-                // feedback during playback.
-                const CSelList& selList = CheckedDeref(view.GetSelectList());
-                CRect rct = selList.GetPiecesEnclosingRect(FALSE);
-                ASSERT(!rct.IsRectEmpty());
-                CPoint pntCenter = CPoint(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
-                CString strMsg;
-                strMsg.LoadString(IDS_TIP_FLIP_RANDOM);
-                m_pDoc->RecordEventMessage(strMsg, playBoard.GetSerialNumber(),
-                    value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
-            }
-
             PieceID pid = static_cast<PieceID>(menuGameElement);
             auto it = std::find_if(GetItemMap()->begin(),
                                     GetItemMap()->end(),
