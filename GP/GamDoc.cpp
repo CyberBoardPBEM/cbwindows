@@ -1410,7 +1410,7 @@ void CGamDoc::OnPbckPrevious()
         // search for the final visible move index.
         m_astrMsgHist.RemoveAll();
 
-        while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove, FALSE)) < nPrvMove &&
+        while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove)) < nPrvMove &&
             m_nCurMove != Invalid_v<size_t>)
         {
             if (m_nCurMove < nPrvPrvMove)
