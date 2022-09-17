@@ -88,6 +88,8 @@
 #ifndef __VERSIONS_H__
 #define __VERSIONS_H__
 
+#include <regex>
+
 const int progVerMajor = 3;         // Current program version
 const int progVerMinor = 50;        // (Number is divided by 100. ex: 10 is .10)
 
@@ -100,18 +102,20 @@ inline int GetSaveFileVersion()
     static const int retval = [] {
         struct FileFlagParser : public CCommandLineInfo
         {
-            bool id32cb64sidemany = false;
+            int version = NumVersion(4, 0);
             virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
             {
-                if (bFlag && strcmp(pszParam, "id32cb64sidemany") == 0)
+                static const std::regex re(R"(filever:([[:digit:]]+)\.([[:digit:]]+))");
+                std::cmatch m;
+                if (bFlag && std::regex_match(pszParam, m, re))
                 {
-                    id32cb64sidemany = true;
+                    version = NumVersion(stoi(m[1]), stoi(m[2]));
                 }
             }
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        return ffp.id32cb64sidemany ? NumVersion(4, 0) : NumVersion(3, 10);
+        return ffp.version;
     }();
     return retval;
 }
