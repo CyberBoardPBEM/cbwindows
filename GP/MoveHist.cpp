@@ -95,8 +95,18 @@ void CHistRecord::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << m_timeCreated;
-        ar << m_timeAbsorbed;
+        if (CB::GetVersion(ar) <= NumVersion(3, 10))
+        {
+            __time32_t ttime = static_cast<__time32_t>(m_timeCreated.GetTime());
+            ar << static_cast<__int32>(ttime);
+            ttime = static_cast<__time32_t>(m_timeAbsorbed.GetTime());
+            ar << static_cast<__int32>(ttime);
+        }
+        else
+        {
+            ar << m_timeCreated;
+            ar << m_timeAbsorbed;
+        }
         ar << m_strTitle;
         ar << m_strDescr;
         if (m_pMList)
