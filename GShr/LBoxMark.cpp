@@ -204,7 +204,10 @@ void CMarkListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
             return;
 
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        ASSERT(pMMgr);
+        if (pMMgr == NULL)
+        {
+            return;
+        }
 
         MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
