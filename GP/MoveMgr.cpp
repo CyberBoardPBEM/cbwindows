@@ -699,6 +699,7 @@ void CPieceSetOwnership::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 
     if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
+        pObj->SetOwnerMask(m_dwOwnerMask);
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
         pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
@@ -706,8 +707,10 @@ void CPieceSetOwnership::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
+    {
         pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
-    pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
+        pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
+    }
 }
 
 void CPieceSetOwnership::Serialize(CArchive& ar)
