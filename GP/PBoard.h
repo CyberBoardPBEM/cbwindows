@@ -135,6 +135,8 @@ public:
     bool Compare(const CPlayBoard& pBrd) const;
     // ------- //
     void Serialize(CArchive& ar);
+    // see CPieceObj::OnPieceTableChanged()
+    void OnPieceTableChanged();
 
     std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
 
@@ -281,6 +283,8 @@ public:
     bool Compare(const CPBoardManager& pMgr) const;
     // ------- //
     void Serialize(CArchive& ar);
+    // see CPieceObj::OnPieceTableChanged()
+    void OnPieceTableChanged();
 
 // Implementation - methods
 protected:

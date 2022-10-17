@@ -146,6 +146,8 @@ public:
 #endif
     // ------- //
     virtual void Serialize(CArchive& ar) /* override */;
+    // see CPieceObj::OnPieceTableChanged()
+    virtual void OnPieceTableChanged() /* override */ {}
 
 // Implementation - methods
 protected:
@@ -865,6 +867,8 @@ public:
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
     virtual BOOL Compare(const CDrawObj& pObj) const override;
     virtual void Serialize(CArchive& ar) override;
+    // see impl
+    virtual void OnPieceTableChanged() override;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -1023,6 +1027,8 @@ public:
 #endif
     // -------- //
     void Serialize(CArchive& ar);
+    // see CPieceObj::OnPieceTableChanged()
+    void OnPieceTableChanged();
 };
 
 #endif

@@ -523,6 +523,11 @@ void CPieceTable::Restore(const CPieceTable& pTbl)
 {
     Clear();
     m_pPieceTbl = pTbl.m_pPieceTbl;
+    if (m_pDoc->GetPieceTable() == this)
+    {
+        CPBoardManager& brdMgr = CheckedDeref(m_pDoc->GetPBoardManager());
+        brdMgr.OnPieceTableChanged();
+    }
 }
 
 BOOL CPieceTable::Compare(const CPieceTable& pTbl) const
@@ -587,6 +592,11 @@ void CPieceTable::Serialize(CArchive& ar)
                 pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
                 OwnerPtr<CDrawObj> pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
             }
+        }
+        if (m_pDoc->GetPieceTable() == this)
+        {
+            CPBoardManager& brdMgr = CheckedDeref(m_pDoc->GetPBoardManager());
+            brdMgr.OnPieceTableChanged();
         }
     }
 }

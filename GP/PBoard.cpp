@@ -506,6 +506,13 @@ void CPlayBoard::Serialize(CArchive& ar)
     }
 }
 
+// see CPieceObj::OnPieceTableChanged()
+void CPlayBoard::OnPieceTableChanged()
+{
+    m_pPceList->OnPieceTableChanged();
+    m_pIndList->OnPieceTableChanged();
+}
+
 std::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
 {
     if (!m_pGeoBoard)
@@ -829,6 +836,15 @@ void CPBoardManager::Serialize(CArchive& ar)
             push_back(new CPlayBoard(*m_pDoc));
             GetPBoard(i).Serialize(ar);
         }
+    }
+}
+
+// see CPieceObj::OnPieceTableChanged()
+void CPBoardManager::OnPieceTableChanged()
+{
+    for (size_t i = size_t(0) ; i < GetNumPBoards() ; i++)
+    {
+        GetPBoard(i).OnPieceTableChanged();
     }
 }
 

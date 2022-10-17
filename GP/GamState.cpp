@@ -57,7 +57,13 @@ BOOL CGameState::CompareState(const CGamDoc& doc) const
     if (!doc.GetPieceTable()->Compare(*m_pPTbl))
         return FALSE;
     // Compare the play boards
-    if (!doc.GetPBoardManager()->Compare(*m_pPBMgr))
+    /* compare must be relative to the doc's piece table, not
+        game state's, because ownership might be different,
+        which can cause CPieceObj::m_rctExtent to differ */
+    // const_cast safe because we're just using temp for compare
+    OwnerPtr<CPBoardManager> temp = m_pPBMgr->Clone(const_cast<CGamDoc&>(doc));
+    temp->OnPieceTableChanged();
+    if (!doc.GetPBoardManager()->Compare(*temp))
         return FALSE;
     // Compare the trays
     if (!doc.GetTrayManager()->Compare(m_pYMgr))

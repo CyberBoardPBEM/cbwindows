@@ -1618,21 +1618,21 @@ void CPieceObj::Serialize(CArchive& ar)
     {
         m_pDoc = (CGamDoc*)ar.m_pDocument;
         ar >> m_pid;
-        /* The sender of a .gmv may own a piece which has
-            different size tiles for front and active sides.
-            When that happens, the m_rctExtent in the .gmv will
-            be the active tile size (seen by the owner), but the
-            receiver needs m_rctExtent to be the front tile size
-            (seen by non-owners).
-            KLUDGE:  when loading a .gam, the CPieceTable isn't
-            ready yet.  */
-        CGamDoc& doc = CheckedDeref(m_pDoc);
-        CPieceTable& pieceTbl = CheckedDeref(doc.GetPieceTable());
-        if (!pieceTbl.Empty() && pieceTbl.IsPieceOwned(m_pid))
-        {
-            ResyncExtentRect();
-        }
     }
+}
+
+/* The sender of a .gmv may own a piece which has
+    different size tiles for front and active sides.
+    When that happens, the m_rctExtent in the .gmv will
+    be the active tile size (seen by the owner), but the
+    receiver needs m_rctExtent to be the front tile size
+    (seen by non-owners). */
+/* I now realize that CPieceTable Serialize() and Restore() both
+    require full updates of the CDrawList to match the doc's
+    new CPieceTable) */
+void CPieceObj::OnPieceTableChanged()
+{
+    ResyncExtentRect();
 }
 
 //////////////////////////////////////////////////////////////////
@@ -2387,6 +2387,16 @@ void CDrawList::Serialize(CArchive& ar)
             pDObj->Serialize(ar);
             push_back(std::move(pDObj));
         }
+    }
+}
+
+// see CPieceObj::OnPieceTableChanged()
+void CDrawList::OnPieceTableChanged()
+{
+    for (iterator pos = begin() ; pos != end() ; ++pos)
+    {
+        CDrawObj& pDObj = **pos;
+        pDObj.OnPieceTableChanged();
     }
 }
 
