@@ -101,7 +101,7 @@ public:
     void  ModifyDObjFlags(DWORD dwFlags, BOOL bState)
         { if (bState) SetDObjFlags(dwFlags); else ClearDObjFlags(dwFlags); }
 
-    virtual CRect& GetRect() /* override */ { return m_rctExtent; }
+    virtual CRect GetRect() const /* override */ { return m_rctExtent; }
     virtual void SetRect(const CRect& rct) /* override */ { m_rctExtent = rct; }
 
     virtual CRect GetEnclosingRect() const /* override */ { return m_rctExtent; }

@@ -2134,7 +2134,9 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
         AdjustRect(pSel.m_rect);
 
         pSel.m_pObj->OffsetObject(offset);
-        AdjustRect(pSel.m_pObj->GetRect());
+        CRect temp = pSel.m_pObj->GetRect();
+        AdjustRect(temp);
+        pSel.m_pObj->SetRect(temp);
     }
 
     m_selList.InvalidateList();
