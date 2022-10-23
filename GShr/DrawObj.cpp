@@ -136,7 +136,6 @@ BOOL    CDrawObj::c_bHitTestDraw = FALSE;
 
 CDrawObj::CDrawObj()
 {
-    m_rctExtent.SetRectEmpty();
     m_dwDObjFlags = 0;
     SetScaleVisibility(AllTileScales);
 }
@@ -155,28 +154,31 @@ ObjectID CDrawObj::GetObjectID() const
 
 void CDrawObj::MoveObject(CPoint ptUpLeft)
 {
-    m_rctExtent += CPoint(ptUpLeft.x - m_rctExtent.left,
-        ptUpLeft.y - m_rctExtent.top);
+    CRect temp = GetRect();
+    temp += CPoint(ptUpLeft.x - temp.left,
+        ptUpLeft.y - temp.top);
+    SetRect(temp);
 }
 
 void CDrawObj::Rotate(Rotation90 rot)
 {
+    CRect temp = GetRect();
     switch (rot)
     {
         case Rotation90::r0:
             ASSERT(!"no-op call");
             break;
         case Rotation90::r90:
-            m_rctExtent = CRect(-m_rctExtent.bottom, m_rctExtent.left,
-                                -m_rctExtent.top, m_rctExtent.right);
+            SetRect(CRect(-temp.bottom, temp.left,
+                                -temp.top, temp.right));
             break;
         case Rotation90::r180:
-            m_rctExtent = CRect(-m_rctExtent.right, -m_rctExtent.bottom,
-                                -m_rctExtent.left, -m_rctExtent.top);
+            SetRect(CRect(-temp.right, -temp.bottom,
+                                -temp.left, -temp.top));
             break;
         case Rotation90::r270:
-            m_rctExtent = CRect(m_rctExtent.top, -m_rctExtent.right,
-                                m_rctExtent.bottom, -m_rctExtent.left);
+            SetRect(CRect(temp.top, -temp.right,
+                                temp.bottom, -temp.left));
             break;
         default:
             AfxThrowInvalidArgException();
@@ -187,22 +189,25 @@ void CDrawObj::Rotate(Rotation90 rot)
 //DFM991129
 void CDrawObj::OffsetObject(CPoint offset)
 {
-    m_rctExtent += offset;
+    CRect temp = GetRect();
+    temp += offset;
+    SetRect(temp);
 }
 //DFM991129
 
 BOOL CDrawObj::IsExtentOutOfZone(const CRect& pRctZone, CPoint& pnt) const
 {
+    CRect rctExtent = GetRect();
     CRect rct;
-    rct.UnionRect(pRctZone, &m_rctExtent);
+    rct.UnionRect(pRctZone, rctExtent);
     if (rct != *pRctZone)
     {
         pnt.x = pnt.y = 0;
         // Calc offset needed to push the rect onto the pRctZone
-        if (m_rctExtent.right > pRctZone.right)
-            pnt.x = pRctZone.right - m_rctExtent.right;
-        if (m_rctExtent.bottom > pRctZone.bottom)
-            pnt.y = pRctZone.bottom - m_rctExtent.bottom;
+        if (rctExtent.right > pRctZone.right)
+            pnt.x = pRctZone.right - rctExtent.right;
+        if (rctExtent.bottom > pRctZone.bottom)
+            pnt.y = pRctZone.bottom - rctExtent.bottom;
         return TRUE;
     }
     return FALSE;
@@ -291,10 +296,11 @@ void CDrawObj::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_dwDObjFlags;            // File Ver 2.0
-        ar << (short)m_rctExtent.left;
-        ar << (short)m_rctExtent.top;
-        ar << (short)m_rctExtent.right;
-        ar << (short)m_rctExtent.bottom;
+        CRect temp = GetRect();
+        ar << (short)temp.left;
+        ar << (short)temp.top;
+        ar << (short)temp.right;
+        ar << (short)temp.bottom;
     }
     else
     {
@@ -307,10 +313,12 @@ void CDrawObj::Serialize(CArchive& ar)
             m_dwDObjFlags = wTmp;
         }
         short sTmp;
-        ar >> (short)sTmp; m_rctExtent.left = sTmp;
-        ar >> (short)sTmp; m_rctExtent.top = sTmp;
-        ar >> (short)sTmp; m_rctExtent.right = sTmp;
-        ar >> (short)sTmp; m_rctExtent.bottom = sTmp;
+        CRect temp;
+        ar >> (short)sTmp; temp.left = sTmp;
+        ar >> (short)sTmp; temp.top = sTmp;
+        ar >> (short)sTmp; temp.right = sTmp;
+        ar >> (short)sTmp; temp.bottom = sTmp;
+        SetRect(temp);
     }
 }
 
@@ -318,7 +326,6 @@ void CDrawObj::Serialize(CArchive& ar)
 void CDrawObj::CopyAttributes(const CDrawObj& source)
 {
     m_dwDObjFlags = source.m_dwDObjFlags;
-    m_rctExtent   = source.m_rctExtent;
 }
 //DFM19991213
 
@@ -518,6 +525,12 @@ ObjectID32 SerializeBackdoorObjectID::Convert(const ObjectID64& oid)
 }
 #endif
 
+void CDrawObj_SimplRctExtent::CopyAttributes(const CDrawObj_SimplRctExtent& source)
+{
+    CDrawObj::CopyAttributes(source);
+    m_rctExtent = source.m_rctExtent;
+}
+
 ////////////////////////////////////////////////////////////////////
 // CRectObject methods
 
@@ -597,7 +610,7 @@ void CRectObj::Serialize(CArchive& ar)
 //DFM19991213
 void CRectObj::CopyAttributes (const CRectObj& source)
 {
-    CDrawObj::CopyAttributes (source);
+    CDrawObj_SimplRctExtent::CopyAttributes (source);
 
     m_crFill     = source.m_crFill;
     m_crLine     = source.m_crLine;
@@ -784,7 +797,7 @@ CDrawObj::OwnerPtr CPolyObj::Clone() const
 
 void CPolyObj::CopyAttributes(const CPolyObj& source)
 {
-    CDrawObj::CopyAttributes(source);
+    CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_crFill     = source.m_crFill;
     m_crLine     = source.m_crLine;
@@ -993,7 +1006,7 @@ BOOL CLine::Compare(const CDrawObj& pObj) const
 //DFM19991214
 void CLine::CopyAttributes(const CLine& source)
 {
-    CDrawObj::CopyAttributes(source);
+    CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_ptBeg = source.m_ptBeg;
     m_ptEnd = source.m_ptEnd;
@@ -1167,7 +1180,7 @@ CDrawObj::OwnerPtr CBitmapImage::Clone() const
 
 void CBitmapImage::CopyAttributes(const CBitmapImage& source)
 {
-    CDrawObj::CopyAttributes(source);
+    CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_eBaseScale = source.m_eBaseScale;
     CDib dib(source.m_bitmap, GetAppPalette());
@@ -1285,7 +1298,7 @@ CDrawObj::OwnerPtr CTileImage::Clone() const
 
 void CTileImage::CopyAttributes(const CTileImage& source)
 {
-    CDrawObj::CopyAttributes(source);
+    CDrawObj_SimplRctExtent::CopyAttributes(source);
     m_tid = source.m_tid;
     // cloning isn't really violation of source's const
     m_pTMgr = const_cast<CTileManager*>(&*source.m_pTMgr);
@@ -1419,7 +1432,7 @@ void CText::CopyAttributes(const CText& source)
 {
     CFontTbl* pFontMgr = CGamDoc::GetFontManager();
 
-    CDrawObj::CopyAttributes(source);
+    CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_nAngle = source.m_nAngle;
     m_crText = source.m_crText;

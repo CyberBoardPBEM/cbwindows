@@ -101,10 +101,10 @@ public:
     void  ModifyDObjFlags(DWORD dwFlags, BOOL bState)
         { if (bState) SetDObjFlags(dwFlags); else ClearDObjFlags(dwFlags); }
 
-    virtual CRect GetRect() const /* override */ { return m_rctExtent; }
-    virtual void SetRect(const CRect& rct) /* override */ { m_rctExtent = rct; }
+    virtual CRect GetRect() const /* override */ = 0;
+    virtual void SetRect(const CRect& rct) /* override */ = 0;
 
-    virtual CRect GetEnclosingRect() const /* override */ { return m_rctExtent; }
+    virtual CRect GetEnclosingRect() const /* override */ { return GetRect(); }
     virtual BOOL HitTest(CPoint pt) /* override */ { return FALSE; }
 #ifdef GPLAY
     virtual ObjectID GetObjectID() const /* override */;
@@ -163,7 +163,6 @@ protected:
 // Implementation - vars
 protected:
     DWORD   m_dwDObjFlags;      // OR'ed values from enum DrawObjFlags
-    CRect   m_rctExtent;
 
     // Class variables (may be used to during draw of various offspring
     // class objects)
@@ -508,7 +507,20 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CRectObj : public CDrawObj
+class CDrawObj_SimplRctExtent : public CDrawObj
+{
+public:
+    CDrawObj_SimplRctExtent() { m_rctExtent.SetRectEmpty(); }
+    CRect GetRect() const override { return m_rctExtent; }
+    void SetRect(const CRect& rct) override { m_rctExtent = rct; }
+
+protected:
+    void CopyAttributes(const CDrawObj_SimplRctExtent& source);
+
+    CRect m_rctExtent;
+};
+
+class CRectObj : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -576,7 +588,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CLine : public CDrawObj
+class CLine : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -636,7 +648,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CPolyObj : public CDrawObj
+class CPolyObj : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -698,7 +710,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CText : public CDrawObj
+class CText : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -746,7 +758,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CBitmapImage : public CDrawObj
+class CBitmapImage : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -787,7 +799,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CTileImage : public CDrawObj
+class CTileImage : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -830,7 +842,7 @@ public:
 
 class CPieceTable;
 
-class CPieceObj : public CDrawObj
+class CPieceObj : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
@@ -890,7 +902,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 
-class CMarkObj : public CDrawObj
+class CMarkObj : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
