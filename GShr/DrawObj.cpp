@@ -1513,8 +1513,6 @@ void CPieceObj::SetOwnerMask(DWORD dwMask)
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
     pPTbl->SetOwnerMask(m_pid, dwMask);
-    // in case displayed tile changes
-    ResyncExtentRect();
 }
 
 BOOL CPieceObj::IsOwned() const
@@ -1618,20 +1616,6 @@ void CPieceObj::Serialize(CArchive& ar)
     {
         m_pDoc = (CGamDoc*)ar.m_pDocument;
         ar >> m_pid;
-        /* The sender of a .gmv may own a piece which has
-            different size tiles for front and active sides.
-            When that happens, the m_rctExtent in the .gmv will
-            be the active tile size (seen by the owner), but the
-            receiver needs m_rctExtent to be the front tile size
-            (seen by non-owners).
-            KLUDGE:  when loading a .gam, the CPieceTable isn't
-            ready yet.  */
-        CGamDoc& doc = CheckedDeref(m_pDoc);
-        CPieceTable& pieceTbl = CheckedDeref(doc.GetPieceTable());
-        if (!pieceTbl.Empty() && pieceTbl.IsPieceOwned(m_pid))
-        {
-            ResyncExtentRect();
-        }
     }
 }
 

@@ -96,7 +96,6 @@ class CPieceTable
 public:
     CPieceTable(const CPieceManager& pPMgr, CGamDoc& pDoc);
     ~CPieceTable() = default;
-    bool Empty() const { return m_pPieceTbl.Empty(); }
 
 // Attributes
 public:
