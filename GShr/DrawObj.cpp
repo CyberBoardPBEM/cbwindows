@@ -1499,6 +1499,19 @@ static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
 //////////////////////////////////////////////////////////////////
 // Class CPieceObj
 
+CRect CPieceObj::GetRect() const
+{
+    CSize size = GetSize();
+    return CRect(CPoint(m_center.x - size.cx/2,
+                        m_center.y - size.cy/2),
+                size);
+}
+
+void CPieceObj::SetRect(const CRect& rct)
+{
+    m_center = rct.CenterPoint();
+}
+
 void CPieceObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
@@ -1516,7 +1529,7 @@ void CPieceObj::Draw(CDC& pDC, TileScale eScale)
         tid = pPTbl->GetActiveTileID(m_pid, TRUE);  // Show rotations
     ASSERT(tid != nullTid);
 
-    CPoint pnt = m_rctExtent.TopLeft();
+    CPoint pnt = GetRect().TopLeft();
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
 
@@ -1552,14 +1565,13 @@ BOOL CPieceObj::IsOwnedButNotByCurrentPlayer() const
     return pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc);
 }
 
-void CPieceObj::SetPiece(CRect& rct, PieceID pid)
+void CPieceObj::SetPiece(const CRect& rct, PieceID pid)
 {
     m_pid = pid;
-    m_rctExtent = rct;
-    ResyncExtentRect();
+    SetRect(rct);
 }
 
-void CPieceObj::ResyncExtentRect()
+CSize CPieceObj::GetSize() const
 {
     ASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
@@ -1577,10 +1589,7 @@ void CPieceObj::ResyncExtentRect()
     ASSERT(tid != nullTid);
 
     CTile tile = pTMgr->GetTile(tid);
-    CPoint pnt = m_rctExtent.CenterPoint();
-    pnt.x -= tile.GetWidth() / 2;
-    pnt.y -= tile.GetHeight() / 2;
-    m_rctExtent = CRect(pnt, tile.GetSize());
+    return tile.GetSize();
 }
 
 BOOL CPieceObj::HitTest(CPoint pt)
@@ -1597,7 +1606,7 @@ OwnerPtr<CSelection> CPieceObj::CreateSelectProxy(CPlayBoardView& pView)
 CDrawObj::OwnerPtr CPieceObj::Clone(CGamDoc* pDoc) const
 {
     ::OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>();
-    pObj->m_rctExtent = m_rctExtent;        // From base class
+    pObj->m_center = m_center;
     pObj->m_dwDObjFlags = m_dwDObjFlags;    // From base class
     pObj->m_pDoc = pDoc;
     pObj->m_pid = m_pid;
@@ -1613,7 +1622,7 @@ BOOL CPieceObj::Compare(const CDrawObj& pObj) const
     const CPieceObj& pPce = static_cast<const CPieceObj&>(pObj);
     if (m_pid != pPce.m_pid)
         return FALSE;
-    if (m_rctExtent != pPce.m_rctExtent)
+    if (m_center != pPce.m_center)
         return FALSE;
     return TRUE;
 }

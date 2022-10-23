@@ -479,7 +479,6 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, const CPlayBoard& pPBrd
     }
 
     m_pPTbl->FlipPieceOver(pObj.m_pid, flip, side);
-    pObj.ResyncExtentRect();
 
     // Record processing
     RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable()->GetSide(pObj.m_pid), false);
@@ -539,7 +538,6 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd
         UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
     }
     m_pPTbl->SetPieceFacing(pObj.m_pid, nFacingDegCW);
-    pObj.ResyncExtentRect();
 
     // Record processing
     RecordPieceSetFacing(pObj.m_pid, nFacingDegCW);

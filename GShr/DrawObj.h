@@ -842,12 +842,15 @@ public:
 
 class CPieceTable;
 
-class CPieceObj : public CDrawObj_SimplRctExtent
+class CPieceObj : public CDrawObj
 {
 // Constructors
 public:
     CPieceObj() { m_pid = nullPid; m_pDoc = NULL; }
     CPieceObj(CGamDoc* pDoc) { m_pid = nullPid; m_pDoc = pDoc; }
+
+    CRect GetRect() const override;
+    void SetRect(const CRect& rct) override;
 
 // Attributes
 public:
@@ -855,7 +858,7 @@ public:
     CGamDoc*        m_pDoc;
 
 
-    void SetPiece(CRect& rct, PieceID pid);
+    void SetPiece(const CRect& rct, PieceID pid);
 
     BOOL IsOwned() const;
     BOOL IsOwnedBy(DWORD dwMask) const;
@@ -866,9 +869,10 @@ public:
     virtual ObjectID GetObjectID() const override { return static_cast<ObjectID>(m_pid); }
 
 // Operations
-public:
-    void ResyncExtentRect();
+private:
+    CSize GetSize() const;
 
+public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -877,6 +881,9 @@ public:
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
     virtual BOOL Compare(const CDrawObj& pObj) const override;
     virtual void Serialize(CArchive& ar) override;
+
+private:
+    CPoint m_center;
 };
 
 ///////////////////////////////////////////////////////////////////////
