@@ -40,22 +40,15 @@ IMPLEMENT_DYNAMIC(CSendMsgDialog, CDialog)
 /////////////////////////////////////////////////////////////////////////////
 // CSendMsgDialog dialog
 
-CSendMsgDialog::CSendMsgDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSendMsgDialog::IDD, pParent)
+CSendMsgDialog::CSendMsgDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
+    : CDialog(CSendMsgDialog::IDD, pParent),
+    m_pDoc(&doc)
 {
     //{{AFX_DATA_INIT(CSendMsgDialog)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
-    m_pDoc = NULL;
-    m_pRollState = NULL;
     m_bReadOnlyView = FALSE;
     m_bShowDieRoller = FALSE;
-}
-
-CSendMsgDialog::~CSendMsgDialog()
-{
-    if (m_pRollState != NULL)
-        delete m_pRollState;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -173,7 +166,7 @@ void CSendMsgDialog::TeardownReadOnlyView()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSendMsgDialog::FillEditBoxes(CString str)
+void CSendMsgDialog::FillEditBoxes(const std::string& str)
 {
     m_editMsg.SetWindowText("");
     m_editMsg2.SetWindowText("");
@@ -181,7 +174,7 @@ void CSendMsgDialog::FillEditBoxes(CString str)
     CString strReadOnly;
     CString strEditable;
 
-    CGamDoc::MsgSeperateIntoPieces(str, strReadOnly, strEditable);
+    CGamDoc::MsgSeperateIntoPieces(str.c_str(), strReadOnly, strEditable);
     if (strReadOnly.IsEmpty())
     {
         m_editMsg.SetWindowText(strEditable);
@@ -230,19 +223,17 @@ void CSendMsgDialog::OnChangeEdit2Message()
 BOOL CSendMsgDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    ASSERT(m_pDoc != NULL);
     if (m_pDoc->GetDieRollState() != NULL)
     {
         ASSERT(m_pRollState == NULL);
         // Make a copy of the Doc's die roll state
-        m_pRollState = new CRollState;
-        *m_pRollState = *m_pDoc->GetDieRollState();
+        m_pRollState = MakeOwner<CRollState>(*m_pDoc->GetDieRollState());
     }
 
     m_editMsg.SetFont(CFont::FromHandle(g_res.h8ss));
     m_editMsg2.SetFont(CFont::FromHandle(g_res.h8ss));
 
-    FillEditBoxes(m_pDoc->MsgGetMessageText());
+    FillEditBoxes(m_pDoc->MsgGetMessageText().GetString());
 
     if (m_bShowDieRoller)
     {
@@ -260,8 +251,7 @@ void CSendMsgDialog::OnSendMsgSendAndClose()
 
     CString str;
     m_editMsg.GetWindowText(str);
-    m_pDoc->SetDieRollState(m_pRollState);
-    m_pRollState = NULL;                    // We handed it off to the document
+    m_pDoc->SetDieRollState(std::move(m_pRollState));
     m_pDoc->MsgDialogSend(str, TRUE);
 }
 
@@ -276,7 +266,7 @@ void CSendMsgDialog::OnSendMsgSend()
 
     TeardownReadOnlyView();                 // Back to original layout
     // Set up with new history data.
-    FillEditBoxes(m_pDoc->MsgGetMessageText());
+    FillEditBoxes(m_pDoc->MsgGetMessageText().GetString());
 }
 
 void CSendMsgDialog::OnSendMsgClose()
@@ -309,11 +299,10 @@ void CSendMsgDialog::OnRollDice()
 {
     CDieRollerDlg dlg;
     if (m_pRollState)
-        dlg.SetRollState(m_pRollState, FALSE);
+        dlg.SetRollState(m_pRollState.get(), FALSE);
 
     if (dlg.DoModal() == IDOK)
     {
-        if (m_pRollState) delete m_pRollState;
         m_pRollState = dlg.GetRollState();
 
         CString str;

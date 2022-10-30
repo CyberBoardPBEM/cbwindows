@@ -34,8 +34,8 @@ class CSendMsgDialog : public CDialog
     DECLARE_DYNAMIC(CSendMsgDialog)
 // Construction
 public:
-    CSendMsgDialog(CWnd* pParent = NULL);   // standard constructor
-    ~CSendMsgDialog();
+    CSendMsgDialog(CGamDoc& doc, CWnd* pParent = NULL);
+    ~CSendMsgDialog() = default;
 
 // Dialog Data
 public:
@@ -47,22 +47,19 @@ public:
     CEditNoChevron  m_editMsg;
     //}}AFX_DATA
 
-    BOOL Create(UINT nID, CWnd* pWnd = NULL)
-        { return CDialog::Create(nID, pWnd); }
-
-    CGamDoc*    m_pDoc;
-    BOOL        m_bShowDieRoller;
+    RefPtr<CGamDoc> m_pDoc;
+    bool        m_bShowDieRoller;
 
 // Implementation
 protected:
     void TransferToReadOnlyView();
     void SetupReadOnlyView();
     void TeardownReadOnlyView();
-    void FillEditBoxes(CString str);
+    void FillEditBoxes(const std::string& str);
 
-    CRollState* m_pRollState;
+    OwnerOrNullPtr<CRollState> m_pRollState;
 
-    BOOL    m_bReadOnlyView;            // A die roll has occurred
+    bool    m_bReadOnlyView;            // A die roll has occurred
 
 // Implementation
 protected:
