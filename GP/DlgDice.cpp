@@ -41,17 +41,17 @@ CDieRollerDlg::CDieRollerDlg(CWnd* pParent /*=NULL*/)
 {
     //{{AFX_DATA_INIT(CDieRollerDlg)
     m_strSeed = "";
-    m_nFaces1 = 6;
-    m_nFaces2 = 6;
-    m_nFaces3 = 6;
-    m_nDice1 = 1;
-    m_nDice2 = 0;
-    m_nDice3 = 0;
+    m_nFaces1 = uint32_t(6);
+    m_nFaces2 = uint32_t(6);
+    m_nFaces3 = uint32_t(6);
+    m_nDice1 = uint32_t(1);
+    m_nDice2 = uint32_t(0);
+    m_nDice3 = uint32_t(0);
     m_bRoll1 = TRUE;
     m_bRoll2 = FALSE;
     m_bRoll3 = FALSE;
-    m_nBias = 0;
-    m_nSets = 1;
+    m_nBias = int32_t(0);
+    m_nSets = uint32_t(1);
     //}}AFX_DATA_INIT
     m_bFirstRoll = TRUE;
     m_strInitialSeed = "";
@@ -134,59 +134,60 @@ static DWORD adwHelpMap[] =
 
 void CDieRollerDlg::MakeFormattedRollResult()
 {
-    TCHAR szBfr[256];           // EGAD I HATE HARD CODED NUMBERS!
     CString str;
 
     if (!IsAnyDieSelected())
     {
-        m_strRoll.LoadString(IDS_MSG_NOROLLS);
+        CString temp;
+        temp.LoadString(IDS_MSG_NOROLLS);
+        m_strRoll = temp;
         return;
     }
 
-    CRollState rs;
-    GetRollState(rs);
-    int nSets = rs.m_nSetsToRoll;
-    if (nSets <= 0) nSets = 1;
+    const OwnerPtr<CRollState> temp = GetRollState();
+    const CRollState& rs = *temp;
+    uint32_t nSets = rs.m_nSetsToRoll;
+    if (nSets == uint32_t(0)) nSets = uint32_t(1);
 
-    m_strRoll.Empty();
+    m_strRoll.clear();
 
-    for (int nSet = 0; nSet < nSets; nSet++)
+    for (uint32_t nSet = uint32_t(0) ; nSet < nSets ; ++nSet)
     {
         // Start with special roll prefix character
         m_strRoll += "\xBB ";              // 0xBB = Chevron
-        if (nSets > 1)
+        if (nSets > uint32_t(1))
         {
             CString str;
             str.LoadString(IDS_MSG_ROLLSET);
             m_strRoll += str;
-            str.Format(" %d, ", nSet + 1);
+            str.Format(" %" PRIu32 ", ", nSet + uint32_t(1));
             m_strRoll += str;
         }
         // Show seed string if one was specified...
         CString strRollType;
-        if (!m_strSeed.IsEmpty())
-            AfxFormatString1(strRollType, IDS_MSG_ROLLWITHSEED, m_strSeed);
+        if (!m_strSeed.empty())
+            AfxFormatString1(strRollType, IDS_MSG_ROLLWITHSEED, m_strSeed.c_str());
         else
             strRollType.LoadString(IDS_MSG_ROLLWITHOUTSEED);
         m_strRoll += strRollType;
 
         // Build roll spec next...
         BOOL bPlusNeeded = FALSE;
-        for (int i = 0; i < DICETYPES; i++)
+        for (size_t i = size_t(0) ; i < rs.m_tbl.size() ; ++i)
         {
-            if (rs.m_tbl[i].m_bRoll && rs.m_tbl[i].m_nDice > 0)
+            if (rs.m_tbl[i].m_bRoll && rs.m_tbl[i].m_nDice > uint32_t(0))
             {
                 if (bPlusNeeded)
                     m_strRoll += " + ";
                 else
                     bPlusNeeded = TRUE;
-                sprintf(szBfr, "%dD%d", rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
+                std::string szBfr = CB::Sprintf("%" PRIu32 "D%" PRIu32, rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
                 m_strRoll += szBfr;
             }
         }
         if (rs.m_nBias != 0)
         {
-            sprintf(szBfr, " %c %d", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            std::string szBfr = CB::Sprintf(" %c %" PRId32, rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
         m_strRoll += "\r\n";
@@ -195,18 +196,18 @@ void CDieRollerDlg::MakeFormattedRollResult()
 
         // Now do the actual roll...
         bPlusNeeded = FALSE;
-        int nDies = 0;
-        int nRandomTotal = 0;
-        for (int i = 0; i < DICETYPES; i++)
+        uint32_t nDies = uint32_t(0);
+        int32_t nRandomTotal = 0;
+        for (size_t i = size_t(0) ; i < rs.m_tbl.size() ; ++i)
         {
-            if (rs.m_tbl[i].m_bRoll && rs.m_tbl[i].m_nDice > 0)
+            if (rs.m_tbl[i].m_bRoll && rs.m_tbl[i].m_nDice > uint32_t(0))
             {
-                for (UINT j = 0; j < rs.m_tbl[i].m_nDice; j++)
+                for (uint32_t j = uint32_t(0) ; j < rs.m_tbl[i].m_nDice ; ++j)
                 {
                     int32_t nRandomNum;
                     if (m_bFirstRoll)       // Is this the first roll?
                     {
-                        if (rs.m_strUserSeed.IsEmpty())
+                        if (rs.m_strUserSeed.empty())
                         {
                             // No seed given
                             nRandomNum = CalcRandomNumber(1, rs.m_tbl[i].m_nFaces,
@@ -217,8 +218,8 @@ void CDieRollerDlg::MakeFormattedRollResult()
                             // Seed string given. Use MD5 to hash the string
                             // for a starting seed value.
                             MD5_CTX mdContext;
-                            MD5Calc(&mdContext, (BYTE*)(LPCTSTR)rs.m_strUserSeed,
-                                rs.m_strUserSeed.GetLength());
+                            MD5Calc(&mdContext, reinterpret_cast<const BYTE*>(rs.m_strUserSeed.c_str()),
+                                value_preserving_cast<int>(rs.m_strUserSeed.length()));
 
                             nRandomNum = CalcRandomNumberUsingSeed(1,
                                 rs.m_tbl[i].m_nFaces,
@@ -237,7 +238,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
                         m_strRoll += " + ";
                     else
                         bPlusNeeded = TRUE;
-                    sprintf(szBfr, "%d", nRandomNum);
+                    std::string szBfr = CB::Sprintf("%" PRId32, nRandomNum);
                     m_strRoll += szBfr;
                 }
             }
@@ -245,12 +246,12 @@ void CDieRollerDlg::MakeFormattedRollResult()
         if (rs.m_nBias != 0)
         {
             nRandomTotal += rs.m_nBias;
-            sprintf(szBfr, " [%c %d]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            std::string szBfr = CB::Sprintf(" [%c %" PRId32 "]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
-        if (rs.m_nBias != 0 || nDies > 1)
+        if (rs.m_nBias != 0 || nDies > uint32_t(1))
         {
-            sprintf(szBfr, " = %d", nRandomTotal);
+            std::string szBfr = CB::Sprintf(" = %" PRId32, nRandomTotal);
             m_strRoll += szBfr;
         }
         // Finish up...
@@ -260,15 +261,9 @@ void CDieRollerDlg::MakeFormattedRollResult()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CRollState* CDieRollerDlg::GetRollState()
+OwnerPtr<CRollState> CDieRollerDlg::GetRollState() const
 {
-    CRollState* pRState = new CRollState;
-    GetRollState(*pRState);
-    return pRState;
-}
-
-void CDieRollerDlg::GetRollState(CRollState& rstate)
-{
+    CRollState rstate;
     rstate.m_bFirstRoll = m_bFirstRoll;
     rstate.m_nSetsToRoll = m_nSets;
     rstate.m_strUserSeed = m_strSeed;
@@ -287,21 +282,15 @@ void CDieRollerDlg::GetRollState(CRollState& rstate)
     rstate.m_tbl[2].m_bRoll = m_bRoll3;
     rstate.m_tbl[2].m_nDice = m_nDice3;
     rstate.m_tbl[2].m_nFaces = m_nFaces3;
+    return MakeOwner<CRollState>(rstate);
 }
 
-void CDieRollerDlg::SetRollState(CRollState* pRState, BOOL bTakeOwnership /* = TRUE */)
-{
-    SetRollState(*pRState);
-    if (bTakeOwnership)
-        delete pRState;
-}
-
-void CDieRollerDlg::SetRollState(CRollState& rstate)
+void CDieRollerDlg::SetRollState(const CRollState& rstate)
 {
     m_bFirstRoll = rstate.m_bFirstRoll;
     m_nSets = rstate.m_nSetsToRoll;
-    m_strSeed = rstate.m_strUserSeed;
-    m_strInitialSeed = rstate.m_strUserSeed;    // Saved to detect changes
+    m_strSeed = rstate.m_strUserSeed.c_str();
+    m_strInitialSeed = rstate.m_strUserSeed.c_str();    // Saved to detect changes
 
     m_nSeedCarryOver = rstate.m_nSeedCarryOver;
 
@@ -322,7 +311,7 @@ void CDieRollerDlg::SetRollState(CRollState& rstate)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CDieRollerDlg::IsAnyDieSelected()
+bool CDieRollerDlg::IsAnyDieSelected() const
 {
     return (m_chkRoll1.GetCheck() && GetDlgItemInt(IDC_DIE_NUMDIES1) > 0) ||
         (m_chkRoll2.GetCheck() && GetDlgItemInt(IDC_DIE_NUMDIES2) > 0) ||
@@ -344,7 +333,7 @@ BOOL CDieRollerDlg::OnInitDialog()
     CDialog::OnInitDialog();
     UpdateControls();
 
-    if (!m_bFirstRoll && !m_strSeed.IsEmpty())
+    if (!m_bFirstRoll && !m_strSeed.empty())
         m_editSeed.EnableWindow(FALSE);
     else
         m_btnResetSeed.EnableWindow(FALSE);

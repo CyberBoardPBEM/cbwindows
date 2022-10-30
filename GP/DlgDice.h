@@ -31,6 +31,8 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+#include <array>
+
 #ifndef _GMISC_H
 #include "GMisc.h"
 #endif
@@ -39,24 +41,24 @@
 
 struct RollRecord
 {
-    BOOL m_bRoll;
-    UINT m_nDice;
-    UINT m_nFaces;
+    bool     m_bRoll;
+    uint32_t m_nDice;
+    uint32_t m_nFaces;
 };
 
-const int  DICETYPES = 3;
-const WORD SCHEMA_ROLLSTATE = 1;
+constexpr uint32_t  DICETYPES = uint32_t(3);
+const uint16_t SCHEMA_ROLLSTATE = uint16_t(1);
 
 class CRollState
 {
 public:
-    BOOL        m_bFirstRoll;                   // No roll performed yet
-    UINT        m_nSetsToRoll;                  // Number of times to roll
-    CString     m_strUserSeed;                  // Current user seed (if any)
-    UINT        m_nSeedCarryOver;               // The current seed
+    bool        m_bFirstRoll;                   // No roll performed yet
+    uint32_t    m_nSetsToRoll;                  // Number of times to roll
+    std::string m_strUserSeed;                  // Current user seed (if any)
+    uint32_t    m_nSeedCarryOver;               // The current seed
     // The actual roll specification
-    int         m_nBias;
-    RollRecord  m_tbl[DICETYPES];
+    int32_t     m_nBias;
+    std::array<RollRecord, DICETYPES> m_tbl;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,10 +72,10 @@ public:
 
 // Methods
 public:
-    CString GetFormattedRollResult() { return m_strRoll; }
+    const std::string& GetFormattedRollResult() const { return m_strRoll; }
 
-    CRollState* GetRollState();     // Caller must delete or give back
-    void        SetRollState(CRollState* pRState, BOOL bTakeOwnership = TRUE);
+    OwnerPtr<CRollState> GetRollState() const;
+    void SetRollState(const CRollState& rstate);
 
 // Dialog Data
     //{{AFX_DATA(CDieRollerDlg)
@@ -84,18 +86,18 @@ public:
     CButton m_chkRoll3;
     CButton m_chkRoll2;
     CButton m_chkRoll1;
-    CString m_strSeed;
-    UINT    m_nFaces1;
-    UINT    m_nFaces2;
-    UINT    m_nFaces3;
-    UINT    m_nDice1;
-    UINT    m_nDice2;
-    UINT    m_nDice3;
-    BOOL    m_bRoll1;
-    BOOL    m_bRoll2;
-    BOOL    m_bRoll3;
-    int     m_nBias;
-    UINT    m_nSets;
+    std::string m_strSeed;
+    uint32_t m_nFaces1;
+    uint32_t m_nFaces2;
+    uint32_t m_nFaces3;
+    uint32_t m_nDice1;
+    uint32_t m_nDice2;
+    uint32_t m_nDice3;
+    bool    m_bRoll1;
+    bool    m_bRoll2;
+    bool    m_bRoll3;
+    int32_t m_nBias;
+    uint32_t m_nSets;
     //}}AFX_DATA
 
 
@@ -108,18 +110,16 @@ public:
 
 // Implementation
 protected:
-    void GetRollState(CRollState& rstate);
-    void SetRollState(CRollState& rstate);
     void MakeFormattedRollResult();
 
-    BOOL IsAnyDieSelected();
+    bool IsAnyDieSelected() const;
 
     void UpdateControls();
 
-    CString m_strRoll;
+    std::string m_strRoll;
 
-    BOOL    m_bFirstRoll;
-    CString m_strInitialSeed;               // Used to detect changed user seed
+    bool        m_bFirstRoll;
+    std::string m_strInitialSeed;               // Used to detect changed user seed
     uint32_t    m_nSeedCarryOver;
 
 
