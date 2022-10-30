@@ -299,7 +299,7 @@ void CSendMsgDialog::OnRollDice()
 {
     CDieRollerDlg dlg;
     if (m_pRollState)
-        dlg.SetRollState(m_pRollState.get(), FALSE);
+        dlg.SetRollState(*m_pRollState);
 
     if (dlg.DoModal() == IDOK)
     {
@@ -312,7 +312,7 @@ void CSendMsgDialog::OnRollDice()
 
         int nLen = m_editMsg2.GetWindowTextLength();
         m_editMsg2.SetSel(nLen, nLen);
-        m_editMsg2.ReplaceSel(dlg.GetFormattedRollResult());
+        m_editMsg2.ReplaceSel(dlg.GetFormattedRollResult().c_str());
         m_btnCancel.EnableWindow(FALSE);
 
         TransferToReadOnlyView();
