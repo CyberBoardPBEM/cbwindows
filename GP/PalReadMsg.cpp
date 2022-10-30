@@ -187,7 +187,7 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
 
 void CReadMsgWnd::ProcessMessages()
 {
-    CStringArray& astrHist = m_pDoc->MsgGetMessageHistory();
+    const CStringArray& astrHist = m_pDoc->MsgGetMessageHistory();
     if (astrHist.GetSize() <= 0 || astrHist.GetSize() < value_preserving_cast<intptr_t>(m_nMsgCount))
     {
         m_nMsgCount = size_t(0);
