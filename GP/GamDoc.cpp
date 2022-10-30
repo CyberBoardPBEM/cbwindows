@@ -58,6 +58,7 @@
 #include    "DlgPass.h"
 #include    "DlgChgGameOwner.h"
 #include    "DlgNewGeoBoard.h"
+#include    "DlgSmsg.h"
 
 #include    "VwPrjgam.h"
 
@@ -202,7 +203,6 @@ CGamDoc::CGamDoc() :
     m_pPBMgr = NULL;
     m_pYMgr = NULL;
     m_pPTbl = NULL;
-    m_pMsgDialog = NULL;
     m_pntMsgReadPos = CPoint(INT_MIN, INT_MIN);
     m_nMoveIdxAtBookMark = size_t(0);
     m_pBookMark = NULL;
@@ -231,7 +231,6 @@ CGamDoc::CGamDoc() :
     m_wReserved2 = 0;
     m_wReserved3 = 0;
     m_wReserved4 = 0;
-    m_pRollState = NULL;
     m_pTileFacingMap = NULL;
 
     m_pWinState = NULL;
@@ -377,15 +376,8 @@ void CGamDoc::DeleteContents()
     m_pBookMark = NULL;
     if (m_pHistTbl != NULL) delete m_pHistTbl;
     m_pHistTbl = NULL;
-    if (m_pMsgDialog != NULL)
-    {
-        m_pMsgDialog->DestroyWindow();
-        delete m_pMsgDialog;
-    }
     m_pMsgDialog = NULL;
 
-    if (m_pRollState != NULL)
-        delete m_pRollState;
     m_pRollState = NULL;
 
     m_pMoves = NULL;

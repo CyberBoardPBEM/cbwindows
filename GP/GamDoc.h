@@ -89,6 +89,13 @@ class CRollState;
 class CGpWinStateMgr;
 class CPlayerManager;
 class CGamProjView;
+class CSendMsgDialog;
+
+class CModelessDialogCleaner
+{
+public:
+    void operator()(CDialog* p) const;
+};
 
 ////////////////////////////////////////////////////////////////
 
@@ -488,15 +495,15 @@ public:
     void EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString strMsg);
 
     // Support for player messages
-    void MsgSetMessageText(CString str);
-    CString MsgGetMessageText();
-    CStringArray& MsgGetMessageHistory();
+    void MsgSetMessageText(const CString& str);
+    const CString& MsgGetMessageText() const;
+    const CStringArray& MsgGetMessageHistory() const;
 
-    void MsgDialogSend(CString str, BOOL bCloseDialog = TRUE);
+    void MsgDialogSend(const CString& str, BOOL bCloseDialog = TRUE);
     BOOL MsgSendDialogOpen(BOOL bShowDieRoller = FALSE);
-    void MsgDialogSend(CString str);
+    void MsgDialogSend(const CString& str);
     void MsgDialogCancel(BOOL bDiscardHistory = FALSE);
-    void MsgDialogClose(CString str);
+    void MsgDialogClose(const CString& str);
     void MsgDialogForceDefer();
 
     static CString MsgEncodeFromPieces(CString strReadOnly, CString strEditable);
@@ -508,8 +515,8 @@ public:
     static void MsgParseLegacyHistory(CString strLegacyMsg,
         CStringArray& astrMsgHist, CString& strCurMsg);
 
-    void SetDieRollState(CRollState* pRState);
-    CRollState* GetDieRollState();
+    void SetDieRollState(OwnerOrNullPtr<CRollState> pRState);
+    const CRollState* GetDieRollState() const;
 
     // Doc I/O Support
     void OnFileClose() { CDocument::OnFileClose(); }    // Expose protected
@@ -551,7 +558,7 @@ public:
 // Implementation - variables
 public:
     // The state of the die roller. (NOT CURRENTLY SERIALIZED!!!!)
-    CRollState* m_pRollState;
+    OwnerOrNullPtr<CRollState> m_pRollState;
 
     UINT        m_nSeedCarryOver;   // Current rand() seed
 
@@ -632,7 +639,8 @@ public:
     CTrayManager*   m_pYMgr;    // Tray manager
     CPieceTable*    m_pPTbl;    // The playing piece table.
 
-    CDialog*        m_pMsgDialog; // Pointer to message modeless dialog
+    using CSendMsgDlgPtr = CB::propagate_const<std::unique_ptr<CSendMsgDialog, CModelessDialogCleaner>>;
+    CSendMsgDlgPtr  m_pMsgDialog; // Pointer to message modeless dialog
     CPoint          m_pntMsgReadPos; // Position of read message dialog
 
     CGameBox*       m_pGbx;     // Holds the contents of gamebox

@@ -50,6 +50,18 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+void CModelessDialogCleaner::operator()(CDialog* p) const
+{
+    if (p)
+    {
+        if (p->m_hWnd)
+        {
+            p->DestroyWindow();
+        }
+        delete p;
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 DWORD  CGamDoc::GetCurrentPlayerMask() const
@@ -281,16 +293,14 @@ BOOL CGamDoc::IsPlayingLastHistory()
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::SetDieRollState(CRollState* pRState)
+void CGamDoc::SetDieRollState(OwnerOrNullPtr<CRollState> pRState)
 {
-    if (m_pRollState != NULL)
-        delete m_pRollState;
-    m_pRollState = pRState;
+    m_pRollState = std::move(pRState);
 }
 
-CRollState* CGamDoc::GetDieRollState()
+const CRollState* CGamDoc::GetDieRollState() const
 {
-    return m_pRollState;
+    return m_pRollState.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -339,7 +349,7 @@ void CGamDoc::EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString st
 ////////////////////////////////////////////////////////////////////////////
 // Called by record playback.
 
-void CGamDoc::MsgSetMessageText(CString str)
+void CGamDoc::MsgSetMessageText(const CString& str)
 {
     m_astrMsgHist.Add(str);
 
@@ -362,13 +372,13 @@ void CGamDoc::MsgSetMessageText(CString str)
 ////////////////////////////////////////////////////////////////////////////
 // Returns the current unaccepted message text.
 
-CString CGamDoc::MsgGetMessageText()
+const CString& CGamDoc::MsgGetMessageText() const
 {
     return m_strCurMsg;
 }
 
 // Return current message history.
-CStringArray& CGamDoc::MsgGetMessageHistory()
+const CStringArray& CGamDoc::MsgGetMessageHistory() const
 {
     return m_astrMsgHist;
 }
@@ -379,30 +389,25 @@ BOOL CGamDoc::MsgSendDialogOpen(BOOL bShowDieRoller /* = FALSE */)
 {
     if (m_pMsgDialog != NULL)
     {
-        if (m_pMsgDialog->IsKindOf(RUNTIME_CLASS(CSendMsgDialog)))
-            return TRUE;
-        m_pMsgDialog->DestroyWindow();
-        delete m_pMsgDialog;
-        m_pMsgDialog = NULL;
+        return TRUE;
     }
-    CSendMsgDialog* pDlg = new CSendMsgDialog;
+    CSendMsgDlgPtr pDlg(new CSendMsgDialog);
     pDlg->m_pDoc = this;
     pDlg->m_bShowDieRoller = bShowDieRoller;
     if (!pDlg->Create(IDD_SENDMESSAGE))
     {
         TRACE0("Failed to create Send Message Dialog\n");
-        delete pDlg;
         return FALSE;
     }
     // Note that dialog requests its data from the document.
-    m_pMsgDialog = pDlg;
+    m_pMsgDialog = std::move(pDlg);
     return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Called by dialog code to close send dialog in various ways.
 
-void CGamDoc::MsgDialogSend(CString str, BOOL bCloseDialog /* = TRUE */)
+void CGamDoc::MsgDialogSend(const CString& str, BOOL bCloseDialog /* = TRUE */)
 {
     AssignNewMoveGroup();
 
@@ -421,8 +426,6 @@ void CGamDoc::MsgDialogSend(CString str, BOOL bCloseDialog /* = TRUE */)
 
     if (bCloseDialog)
     {
-        m_pMsgDialog->DestroyWindow();
-        delete m_pMsgDialog;
         m_pMsgDialog = NULL;
     }
     SetModifiedFlag();
@@ -432,12 +435,7 @@ void CGamDoc::MsgDialogSend(CString str, BOOL bCloseDialog /* = TRUE */)
 
 void CGamDoc::MsgDialogCancel(BOOL bDiscardHistory /* = FALSE */)
 {
-    if (m_pMsgDialog != NULL)
-    {
-        m_pMsgDialog->DestroyWindow();
-        delete m_pMsgDialog;
-        m_pMsgDialog = NULL;
-    }
+    m_pMsgDialog = NULL;
     m_strCurMsg.Empty();
     if (bDiscardHistory)
         m_astrMsgHist.RemoveAll();
@@ -453,15 +451,10 @@ void CGamDoc::MsgDialogForceDefer()
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::MsgDialogClose(CString str)
+void CGamDoc::MsgDialogClose(const CString& str)
 {
     m_strCurMsg = str;              // Just save the current encoded message string
-    if (m_pMsgDialog != NULL)
-    {
-        m_pMsgDialog->DestroyWindow();
-        delete m_pMsgDialog;
-        m_pMsgDialog = NULL;
-    }
+    m_pMsgDialog = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////
