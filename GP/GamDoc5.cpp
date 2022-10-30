@@ -391,8 +391,7 @@ BOOL CGamDoc::MsgSendDialogOpen(BOOL bShowDieRoller /* = FALSE */)
     {
         return TRUE;
     }
-    CSendMsgDlgPtr pDlg(new CSendMsgDialog);
-    pDlg->m_pDoc = this;
+    CSendMsgDlgPtr pDlg(new CSendMsgDialog(*this));
     pDlg->m_bShowDieRoller = bShowDieRoller;
     if (!pDlg->Create(IDD_SENDMESSAGE))
     {
