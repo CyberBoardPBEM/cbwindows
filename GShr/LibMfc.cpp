@@ -540,3 +540,30 @@ CMDIFrameWndExCb::CMDIClientAreaWndCb& CMDIFrameWndExCb::GetMDIClient()
 {
     return static_cast<CMDIClientAreaWndCb&>(m_wndClientArea);
 }
+
+void DDX_Check(CDataExchange* pDX, int nIDC, bool& value)
+{
+    BOOL temp = value;
+    DDX_Check(pDX, nIDC, temp);
+    value = temp;
+}
+
+void DDX_Text(CDataExchange* pDX, int nIDC, std::string& value)
+{
+    CString temp = value.c_str();
+    DDX_Text(pDX, nIDC, temp);
+    value = temp;
+}
+
+void DDV_MaxChars(CDataExchange* pDX, std::string const& value, int nChars)
+{
+    CString temp = value.c_str();
+    DDV_MaxChars(pDX, temp, nChars);
+}
+
+void AfxFormatString1(std::string& rString, UINT nIDS, LPCTSTR lpsz1)
+{
+    CString temp;
+    AfxFormatString1(temp, nIDS, lpsz1);
+    rString = temp;
+}
