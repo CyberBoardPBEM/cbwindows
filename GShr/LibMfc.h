@@ -78,5 +78,13 @@ protected:
     CMDIClientAreaWndCb& GetMDIClient();
 };
 
+/////////////////////////////////////////////////////////////////////////////
+// provide overloads of MFC functions that support portable types
+
+void DDX_Check(CDataExchange* pDX, int nIDC, bool& value);
+void DDX_Text(CDataExchange* pDX, int nIDC, std::string& value);
+void DDV_MaxChars(CDataExchange* pDX, std::string const& value, int nChars);
+void AfxFormatString1(std::string& rString, UINT nIDS, LPCTSTR lpsz1);
+
 #endif
 
