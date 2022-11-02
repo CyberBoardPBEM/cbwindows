@@ -351,20 +351,20 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
     {
         std::vector<PieceID>& pPceArray = *reinterpret_cast<std::vector<PieceID>*>(wParam);
 
-        UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
+        uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        std::vector<int> pnIndices;
+        std::vector<size_t> pnIndices;
         if (pYSet.IsRandomPiecePull())
         {
-            pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(pPceArray.size()),
-                value_preserving_cast<int>(pYSet.GetPieceIDTable().size()), nRandSeed, &nRandSeed);
+            pnIndices = AllocateAndCalcRandomIndexVector(pPceArray.size(),
+                pYSet.GetPieceIDTable().size(), nRandSeed, &nRandSeed);
         }
         else
         {
             pnIndices.reserve(pPceArray.size());
             for (size_t i = size_t(0) ; i < pPceArray.size() ; ++i)
             {
-                pnIndices.push_back(value_preserving_cast<int>(i));
+                pnIndices.push_back(i);
             }
         }
 
@@ -377,7 +377,7 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
                 size_t sides = pieceTable.GetSides(pPceArray[i]);
                 if (sides >= size_t(2))
                 {
-                    int side = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(sides),
+                    int32_t side = CalcRandomNumberUsingSeed(0, value_preserving_cast<uint32_t>(sides),
                                                                         nRandSeed, &nRandSeed);
                     m_pDoc->InvertPlayingPieceInTray(pPceArray[i],
                                                     CPieceTable::fSelect,
@@ -909,17 +909,17 @@ void CTrayPalette::OnTrayListDoubleClick()
 void CTrayPalette::OnPieceTrayShuffle()
 {
     // Generate a shuffled index vector
-    UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
-    int nNumIndices = m_listTray.GetCount();
-    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
+    uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
+    size_t nNumIndices = value_preserving_cast<size_t>(m_listTray.GetCount());
+    std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
     std::vector<PieceID> tblPids;
     tblPids.reserve(value_preserving_cast<size_t>(nNumIndices));
-    for (int i = 0; i < nNumIndices; i++)
-        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(pnIndices[i])));
+    for (size_t i = size_t(0) ; i < nNumIndices ; ++i)
+        tblPids.push_back(m_listTray.MapIndexToItem(pnIndices[i]));
 
     m_pDoc->AssignNewMoveGroup();
 
@@ -953,25 +953,24 @@ void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
 
 void CTrayPalette::OnPieceTrayShuffleSelected()
 {
-    CArray<int, int> tblListSel;
-    int nNumSelected = m_listTray.GetSelCount();
-    tblListSel.SetSize(nNumSelected);
-    m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
+    size_t nNumSelected = value_preserving_cast<size_t>(m_listTray.GetSelCount());
+    std::vector<INT> tblListSel(nNumSelected);
+    m_listTray.GetSelItems(value_preserving_cast<int>(nNumSelected), tblListSel.data());
 
-    int nTopSel = tblListSel[0];        // This is where the shuffle is inserted
+    INT nTopSel = tblListSel[size_t(0)];        // This is where the shuffle is inserted
 
     // Generate a shuffled index vector for the number of selected items
-    UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
-    ASSERT(nNumSelected == tblListSel.GetSize());
-    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(nNumSelected,
+    uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
+    ASSERT(nNumSelected == tblListSel.size());
+    std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumSelected,
         nNumSelected, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
     std::vector<PieceID> tblPids;
     tblPids.reserve(value_preserving_cast<size_t>(nNumSelected));
-    for (int i = 0; i < nNumSelected; i++)
-        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[value_preserving_cast<size_t>(i)]])));
+    for (size_t i = size_t(0) ; i < nNumSelected ; ++i)
+        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[i]])));
 
     m_pDoc->AssignNewMoveGroup();
 

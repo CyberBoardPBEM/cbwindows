@@ -307,8 +307,8 @@ public:
     // Fetch map of temporary tile rotations.
     CTileFacingMap* GetFacingMap();
 
-    UINT GetRandomNumberSeed() { return m_nSeedCarryOver; }
-    void SetRandomNumberSeed(UINT nSeedCarryOver) { m_nSeedCarryOver = nSeedCarryOver; }
+    uint32_t GetRandomNumberSeed() { return m_nSeedCarryOver; }
+    void SetRandomNumberSeed(uint32_t nSeedCarryOver) { m_nSeedCarryOver = nSeedCarryOver; }
 
 // Operations
 public:
@@ -560,7 +560,7 @@ public:
     // The state of the die roller. (NOT CURRENTLY SERIALIZED!!!!)
     OwnerOrNullPtr<CRollState> m_pRollState;
 
-    UINT        m_nSeedCarryOver;   // Current rand() seed
+    uint32_t    m_nSeedCarryOver;   // Current rand() seed
 
     // File object for the currently open Game document.
     // (This object isn't used for scenarios.)

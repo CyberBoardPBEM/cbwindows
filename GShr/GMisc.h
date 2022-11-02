@@ -37,16 +37,16 @@ void MD5Calc(MD5_CTX* ctx, BYTE* pMsg, int nMsgLen);
 
 #ifdef GPLAY
 
-int CalcRandomNumberUsingSeed(int nLow, UINT nRange, UINT nSeed,
-    UINT* pnNextSeed = NULL);
-int CalcRandomNumber(int nLow, UINT nRange,
-    UINT* pnNextSeed = NULL);
+int32_t CalcRandomNumberUsingSeed(int32_t nLow, uint32_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed = NULL);
+int32_t CalcRandomNumber(int32_t nLow, uint32_t nRange,
+    uint32_t* pnNextSeed = NULL);
 
-void CalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed, int* pnIndices,
-    UINT* pnNextSeed = NULL);
+void CalcRandomIndexVector(std::vector<size_t>& pnIndices, size_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed = NULL);
 
-std::vector<int> AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
-    UINT* pnNextSeed = NULL);
+std::vector<size_t> AllocateAndCalcRandomIndexVector(size_t nNumIndices, size_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed = NULL);
 
 #endif
 
