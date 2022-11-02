@@ -198,9 +198,9 @@ LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
         COverrideInfo<DRAG_MARKER>& oi = *reinterpret_cast<COverrideInfo<DRAG_MARKER>*>(wParam);
         oi.CheckType();
 
-        UINT nRandSeed = m_pDoc->GetRandomNumberSeed();
+        uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
 
-        int nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(pMSet.GetMarkIDTable().size()),
+        int32_t nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<uint32_t>(pMSet.GetMarkIDTable().size()),
             nRandSeed, &nRandSeed);
 
         oi.m_markID = pMSet.GetMarkIDTable().at(value_preserving_cast<size_t>(nRandNum));

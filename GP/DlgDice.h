@@ -120,7 +120,7 @@ protected:
 
     BOOL    m_bFirstRoll;
     CString m_strInitialSeed;               // Used to detect changed user seed
-    UINT    m_nSeedCarryOver;
+    uint32_t    m_nSeedCarryOver;
 
 
     // Generated message map functions

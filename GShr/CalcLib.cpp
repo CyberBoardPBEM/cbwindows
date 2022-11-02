@@ -45,12 +45,19 @@ void MD5Calc(MD5_CTX* ctx, BYTE* pMsg, int nMsgLen)
 
 #ifdef  GPLAY
 
-int CalcRandomNumberUsingSeed(int nLow, UINT nRange, UINT nSeed,
-    UINT* pnNextSeed /* = NULL*/)
+int32_t CalcRandomNumberUsingSeed(int32_t nLow, uint32_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed /* = NULL*/)
 {
+    static_assert(RAND_MAX == 0x7FFF, "random algorithm not verified");
+    if (nRange >= uint32_t(RAND_MAX))
+    {
+        ASSERT(!"untested condition");
+        // random algorithm not verified in this condition
+        AfxThrowInvalidArgException();
+    }
     // Uses the same algorithm as the rand() runtime function.
-    UINT nNextSeed = nSeed * 214013L + 2531011L;
-    int nRand = ((nNextSeed >> 16) & 0x7FFF);
+    uint32_t nNextSeed = nSeed * uint32_t(214013L) + uint32_t(2531011L);
+    uint32_t nRand = ((nNextSeed >> 16) & uint32_t(0x7FFF));
 
     // Optionally copy the current seed for reseeding follow-on
     // calls...
@@ -60,38 +67,37 @@ int CalcRandomNumberUsingSeed(int nLow, UINT nRange, UINT nSeed,
     // This should generate better results!
     // It extracts the upper bits which are said to
     // be more random than the lower obtained with mod operator
-    return (nRand * nRange) / (RAND_MAX + 1) + nLow;
+    return int32_t(((nRand * nRange) / uint32_t(RAND_MAX + 1) + static_cast<uint32_t>(nLow)));
     // return (nRand % nRange) + nLow;
 }
 
-int CalcRandomNumber(int nLow, UINT nRange, UINT* pnNextSeed /* = NULL*/)
+int32_t CalcRandomNumber(int32_t nLow, uint32_t nRange, uint32_t* pnNextSeed /* = NULL*/)
 {
-    return CalcRandomNumberUsingSeed(nLow, nRange, (UINT)GetTickCount(),
+    return CalcRandomNumberUsingSeed(nLow, nRange, static_cast<uint32_t>(GetTickCount()),
         pnNextSeed);
 }
 
 // This routine will fill a caller specified vector of random
 // indices with a given zero based range. All indices will
 // be unique.
-void CalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed, int* pnIndices,
-    UINT* pnNextSeed /* = NULL*/)
+void CalcRandomIndexVector(std::vector<size_t>& pnIndices, size_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed /* = NULL*/)
 {
-    ASSERT(nNumIndices <= nRange);
-    ASSERT(pnIndices != NULL);
-    ASSERT(nSeed != 0);
+    ASSERT(pnIndices.size() <= nRange);
+    ASSERT(nSeed != uint32_t(0));
 
-    UINT nSeedHolder;
+    uint32_t nSeedHolder;
     if (pnNextSeed == NULL)
         pnNextSeed = &nSeedHolder;
     *pnNextSeed = nSeed;
 
-    for (int i = 0; i < nNumIndices; i++)
+    for (size_t i = size_t(0) ; i < pnIndices.size() ; ++i)
     {
         while (TRUE)
         {
-            int nRandVal = CalcRandomNumberUsingSeed(0, nRange, *pnNextSeed, pnNextSeed);
-            int j;
-            for (j = 0; j < i; j++)         // make sure not already calculated
+            size_t nRandVal = static_cast<size_t>(CalcRandomNumberUsingSeed(0, value_preserving_cast<uint32_t>(nRange), *pnNextSeed, pnNextSeed));
+            size_t j;
+            for (j = size_t(0) ; j < i ; ++j)         // make sure not already calculated
             {
                 if (pnIndices[j] == nRandVal)
                     break;
@@ -109,14 +115,14 @@ void CalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed, int* pnIndic
 // zero based range. The caller must 'delete' the returned vector.
 // All indices will be unique.
 
-std::vector<int> AllocateAndCalcRandomIndexVector(int nNumIndices, int nRange, UINT nSeed,
-    UINT* pnNextSeed /* = NULL*/)
+std::vector<size_t> AllocateAndCalcRandomIndexVector(size_t nNumIndices, size_t nRange, uint32_t nSeed,
+    uint32_t* pnNextSeed /* = NULL*/)
 {
     ASSERT(nNumIndices <= nRange);
-    ASSERT(nSeed != 0);
+    ASSERT(nSeed != uint32_t(0));
 
-    std::vector<int> pnIndices(nNumIndices);
-    CalcRandomIndexVector(nNumIndices, nRange, nSeed, pnIndices.data(), pnNextSeed);
+    std::vector<size_t> pnIndices(nNumIndices);
+    CalcRandomIndexVector(pnIndices, nRange, nSeed, pnNextSeed);
 
     return pnIndices;
 }

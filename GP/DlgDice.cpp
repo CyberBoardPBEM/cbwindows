@@ -203,7 +203,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
             {
                 for (UINT j = 0; j < rs.m_tbl[i].m_nDice; j++)
                 {
-                    int nRandomNum;
+                    int32_t nRandomNum;
                     if (m_bFirstRoll)       // Is this the first roll?
                     {
                         if (rs.m_strUserSeed.IsEmpty())
@@ -222,7 +222,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
 
                             nRandomNum = CalcRandomNumberUsingSeed(1,
                                 rs.m_tbl[i].m_nFaces,
-                                *((UINT*)mdContext.digest),
+                                *reinterpret_cast<uint32_t*>(mdContext.digest),
                                 &m_nSeedCarryOver);
                         }
                         m_bFirstRoll = FALSE;

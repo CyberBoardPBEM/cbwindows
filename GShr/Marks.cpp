@@ -331,11 +331,11 @@ void CMarkSet::AddMarkID(MarkID mid, size_t nPos /* = Invalid_v<size_t> */)
 // Entries are appended to the table.
 void CMarkSet::GetRandomSelection(size_t nCount, std::vector<MarkID>& tblIDs, CGamDoc* pDoc)
 {
-    UINT nRandSeed = pDoc->GetRandomNumberSeed();
+    uint32_t nRandSeed = pDoc->GetRandomNumberSeed();
     tblIDs.reserve(tblIDs.size() + nCount);
     while (nCount--)
     {
-        int nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<UINT>(GetMarkIDTable().size()),
+        int32_t nRandNum = CalcRandomNumberUsingSeed(0, value_preserving_cast<uint32_t>(GetMarkIDTable().size()),
             nRandSeed, &nRandSeed);
         tblIDs.push_back(GetMarkIDTable().at(value_preserving_cast<size_t>(nRandNum)));
     }

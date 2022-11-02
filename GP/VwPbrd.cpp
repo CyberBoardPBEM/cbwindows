@@ -1489,10 +1489,10 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     m_selList.PurgeList(TRUE);              // Purge former selections
 
     // Generate a shuffled index vector for the number of selected items
-    UINT nRandSeed = pDoc->GetRandomNumberSeed();
+    uint32_t nRandSeed = pDoc->GetRandomNumberSeed();
     size_t nNumIndices = tblObjs.size();
-    std::vector<int> pnIndices = AllocateAndCalcRandomIndexVector(value_preserving_cast<int>(nNumIndices),
-        value_preserving_cast<int>(nNumIndices), nRandSeed, &nRandSeed);
+    std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
+        nNumIndices, nRandSeed, &nRandSeed);
     pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Create a shuffled table of objects...
