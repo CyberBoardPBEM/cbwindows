@@ -91,7 +91,7 @@ void MD5Init(MD5_CTX *mdContext)
   mdContext->buf[3] = (UINT4)0x10325476;
 }
 
-void MD5Update(MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen)
+void MD5Update(MD5_CTX *mdContext, const unsigned char *inBuf, unsigned int inLen)
 {
   UINT4 in[16];
   int mdi;

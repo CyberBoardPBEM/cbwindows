@@ -36,7 +36,7 @@ void Compute16ByteHash(LPBYTE pDataToHash, int nDataLen, LPBYTE p16ByteHashCode)
     memcpy(p16ByteHashCode, mdContext.digest, 16);
 }
 
-void MD5Calc(MD5_CTX* ctx, BYTE* pMsg, int nMsgLen)
+void MD5Calc(MD5_CTX* ctx, const BYTE* pMsg, int nMsgLen)
 {
     MD5Init(ctx);
     MD5Update(ctx, pMsg, nMsgLen);

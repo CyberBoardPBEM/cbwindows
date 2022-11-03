@@ -33,7 +33,7 @@
 
 void Compute16ByteHash(LPBYTE pDataToHash, int nDataLen, LPBYTE p16ByteHashCode);
 
-void MD5Calc(MD5_CTX* ctx, BYTE* pMsg, int nMsgLen);
+void MD5Calc(MD5_CTX* ctx, const BYTE* pMsg, int nMsgLen);
 
 #ifdef GPLAY
 
