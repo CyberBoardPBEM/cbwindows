@@ -282,6 +282,11 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         // Reselect any object that are still on the board.
         SelectAllObjectsInTable(listSelectedObjs);
     }
+    else if (lHint == HINT_INVALIDATERECT && ph->GetArgs<HINT_INVALIDATERECT>().m_pPBoard == m_pPBoard)
+    {
+        const CRect& rect = CheckedDeref(ph->GetArgs<HINT_INVALIDATERECT>().m_pRect);
+        InvalidateWorkspaceRect(rect, true);
+    }
     else if (lHint == HINT_GAMESTATEUSED)
     {
         m_selList.PurgeList(TRUE);

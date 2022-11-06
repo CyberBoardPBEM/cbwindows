@@ -106,6 +106,7 @@ enum EGamDocHint
     HINT_UPDATEBOARD =              0x0300,
     HINT_UPDATESELECT =             0x0400,
     HINT_UPDATESELECTLIST =         0x0500, // resync select list. sender ignores.
+    HINT_INVALIDATERECT =           0x0600,
     HINT_GAMESTATEUSED =            0x1000,
     HINT_POINTINVIEW =              0x2000,
     HINT_SELECTOBJ =                0x4000,
@@ -159,6 +160,13 @@ public:
     };
 
     template<>
+    struct Args<HINT_INVALIDATERECT>
+    {
+        CPlayBoard* m_pPBoard;
+        const CRect* m_pRect;
+    };
+
+    template<>
     struct Args<HINT_POINTINVIEW>
     {
         CPlayBoard* m_pPBoard;
@@ -201,6 +209,7 @@ private:
         Args<HINT_UPDATEOBJLIST>    m_updateObjList;
         Args<HINT_UPDATEBOARD>      m_updateBoard;
         Args<HINT_UPDATESELECT>     m_updateSelect;
+        Args<HINT_INVALIDATERECT>   m_updateRect;
         Args<HINT_POINTINVIEW>      m_pointInView;
         Args<HINT_SELECTOBJ>        m_selectObj;
         Args<HINT_SELECTOBJLIST>    m_selectObjList;
@@ -467,6 +476,7 @@ public:
         CPoint ptCtrFrom, CPoint ptCtrTo, CSize size);
     void IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB);
     void IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size);
+    void Invalidate(CPlayBoard& pPBrd, const CRect& rect);
     void FlushAllSelections();
     void FlushAllIndicators();
     void UpdateAllBoardIndicators(CPlayBoard& pPBrd);

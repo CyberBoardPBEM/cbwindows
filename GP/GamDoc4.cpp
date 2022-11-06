@@ -649,6 +649,14 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
 }
 
+void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
+{
+    CGamDocHint hint;
+    hint.GetArgs<HINT_INVALIDATERECT>().m_pPBoard = &pPBrd;
+    hint.GetArgs<HINT_INVALIDATERECT>().m_pRect = &rect;
+    UpdateAllViews(NULL, HINT_INVALIDATERECT, &hint);
+}
+
 // Shows a balloon tip so person knows what happened. Uses a resource ID.
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     CPoint pointWorkspace, UINT nResID)
