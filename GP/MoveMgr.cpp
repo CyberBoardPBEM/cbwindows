@@ -699,15 +699,32 @@ void CPieceSetOwnership::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 
     if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
+        /* changing ownership may cause a smaller tile to be
+            visible, so we might need to invalidate more of the
+            board than IndicateBoardPiece() so that the larger
+            tile is erased */
+        CRect oldEnclosingRect = pObj->GetEnclosingRect();
+        /* set ownership before changing display so piece size is
+            correct for display */
+        pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
         pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        CRect newEnclosingRect = pObj->GetEnclosingRect();
+        CRect enclosingRect;
+        VERIFY(enclosingRect.UnionRect(oldEnclosingRect, newEnclosingRect));
+        if (enclosingRect != newEnclosingRect)
+        {
+            pDoc.Invalidate(*pPBoard, enclosingRect);
+        }
         pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.Size());
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
+    {
         pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
-    pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
+        pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
+    }
 }
 
 void CPieceSetOwnership::Serialize(CArchive& ar)
