@@ -556,6 +556,12 @@ public:
 #endif
     // ------- //
     virtual OwnerPtr Clone() const override;                  //DFM19991210
+#ifdef GPLAY
+    virtual OwnerPtr Clone(CGamDoc* /*pDoc*/) const override
+    {
+        return Clone();
+    }
+#endif
 
     virtual void Serialize(CArchive& ar) override;
 // Implementation
