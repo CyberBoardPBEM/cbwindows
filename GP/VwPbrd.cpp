@@ -760,8 +760,9 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
         BOOL bXOK, bYOK;
         if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
         {
-            sizeDelta.cx = bXOK ? sizeDelta.cx : 0;
-            sizeDelta.cy = bYOK ? sizeDelta.cy : 0;
+            CRect temp = rctObjs;
+            LimitRect(temp);
+            sizeDelta += temp.TopLeft() - rctObjs.TopLeft();
         }
         if (sizeDelta.cx != 0 || sizeDelta.cy != 0) // Check 'em again (what a pain!)
             pSLst->Offset((CPoint)sizeDelta);
