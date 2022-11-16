@@ -152,6 +152,7 @@ BEGIN_MESSAGE_MAP(CGbxProjView, CView)
     ON_UPDATE_COMMAND_UI(ID_PROJECT_CLONEBOARD, OnUpdateProjectCloneBoard)
     //}}AFX_MSG_MAP
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
+    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -435,6 +436,8 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != pDoc)
         return -1;               // Only pieces from our document.
 
+    // no size restriction
+
     CRect rct;
     m_listTiles.GetClientRect(&rct);
     if (!rct.PtInRect(pdi->m_pointClient))
@@ -473,6 +476,20 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
         m_listTiles.ShowFirstSelection();
         pDoc->SetModifiedFlag();
     }
+    return 1;
+}
+
+LRESULT CGbxProjView::OnGetDragSize(WPARAM wParam, LPARAM lParam)
+{
+    /* I don't expect this to be a source for any limited dest,
+        so report max size since it is easy to generate and
+        will make it obvious if any limited dest does receive
+        this */
+    CSize retval;
+    retval.cx = std::numeric_limits<decltype(retval.cx)>::max();
+    retval.cy = std::numeric_limits<decltype(retval.cy)>::max();
+
+    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
     return 1;
 }
 

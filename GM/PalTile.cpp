@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CTilePalette, CWnd)
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
     ON_CBN_SELCHANGE(IDC_W_TPAL_TSETS, OnTileNameCbnSelchange)
+    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_HELPINFO()
     ON_WM_CREATE()
     //}}AFX_MSG_MAP
@@ -243,6 +244,16 @@ void CTilePalette::PostNcDestroy()
 void CTilePalette::OnTileNameCbnSelchange()
 {
     UpdateTileList();
+}
+
+LRESULT CTilePalette::OnGetDragSize(WPARAM wParam, LPARAM lParam)
+{
+    CSize retval;
+    retval.cx = std::numeric_limits<decltype(retval.cx)>::max();
+    retval.cy = std::numeric_limits<decltype(retval.cy)>::max();
+
+    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
+    return 1;
 }
 
 BOOL CTilePalette::OnHelpInfo(HELPINFO* pHelpInfo)

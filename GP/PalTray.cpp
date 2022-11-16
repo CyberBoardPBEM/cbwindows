@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     ON_LBN_DBLCLK(IDC_W_TRAYLIST, OnTrayListDoubleClick)
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_OVERRIDE_SELECTED_ITEM_LIST, OnOverrideSelectedItemList)
+    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_PTRAY_SHUFFLE, OnPieceTrayShuffle)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE, OnUpdatePieceTrayShuffle)
@@ -393,6 +394,56 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
     return (LRESULT)1;
 }
 
+LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
+{
+    size_t nSel = GetSelectedTray();
+    if (nSel == Invalid_v<size_t>)
+    {
+        ASSERT(!"bad tray");
+        return 0;
+    }
+    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
+    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+
+    std::vector<int> items;
+    if (pYSet.IsRandomPiecePull() ||
+        pYSet.IsRandomSidePull())
+    {
+        items.reserve(value_preserving_cast<size_t>(m_listTray.GetCount()));
+        for (int i = 0 ; i < m_listTray.GetCount() ; ++i)
+        {
+            items.push_back(i);
+        }
+    }
+    else
+    {
+        items.resize(value_preserving_cast<size_t>(m_listTray.GetSelCount()));
+        m_listTray.GetSelItems(value_preserving_cast<int>(items.size()), items.data());
+    }
+
+    // check all sides of all items
+    CPieceTable& pieceTable = CheckedDeref(m_pDoc->GetPieceTable());
+    CTileManager& tileMgr = CheckedDeref(m_pDoc->GetTileManager());
+    DWORD player = m_pDoc->GetCurrentPlayerMask();
+    CSize retval(0, 0);
+    for (int item : items)
+    {
+        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(item));
+        std::vector<TileID> tids = pieceTable.GetInactiveTileIDs(pid, TRUE);
+        tids.push_back(pieceTable.GetActiveTileID(pid, TRUE));
+        for (TileID tid : tids)
+        {
+            ASSERT(tid != nullTid);
+            CSize size = tileMgr.GetTile(tid).GetSize();
+            retval.cx = std::max(retval.cx, size.cx);
+            retval.cy = std::max(retval.cy, size.cy);
+        }
+    }
+
+    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
+    return 1;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void CTrayPalette::Serialize(CArchive& ar)
@@ -640,6 +691,8 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         if (!pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
             return -1;                   // Only piece drops allowed
     }
+
+    // no size restriction
 
     size_t nGrpSel = GetSelectedTray();
     if (nGrpSel == Invalid_v<size_t>)

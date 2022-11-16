@@ -220,6 +220,7 @@ protected:
     afx_msg void OnUpdateProjectCloneBoard(CCmdUI* pCmdUI);
     //}}AFX_MSG
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
 };
 

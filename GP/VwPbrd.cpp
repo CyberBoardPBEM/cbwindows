@@ -535,6 +535,17 @@ LRESULT CPlayBoardView::DoDragPiece(DragInfo& pdi)
     if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
         return -1;               // Only pieces from our document.
 
+    // if piece can't fit on board, reject drop
+    CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
+    if (pdi.GetSubInfo<DRAG_PIECE>().m_size.cx > limit.cx ||
+        pdi.GetSubInfo<DRAG_PIECE>().m_size.cy > limit.cy)
+    {
+        return pdi.m_phase == PhaseDrag::Over ?
+                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
+                :
+                    -1;
+    }
+
     if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
     else if (pdi.m_phase == PhaseDrag::Over)
@@ -556,6 +567,17 @@ LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
 {
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
         return -1;               // Only pieces from our document.
+
+    // if piece can't fit on board, reject drop
+    CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
+    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_size.cx > limit.cx ||
+        pdi.GetSubInfo<DRAG_PIECELIST>().m_size.cy > limit.cy)
+    {
+        return pdi.m_phase == PhaseDrag::Over ?
+                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
+                :
+                    -1;
+    }
 
     if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
@@ -609,6 +631,17 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
     CGamDoc* pDoc = GetDocument();
     if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
         return -1;               // Only markers from our document.
+
+    // if marker can't fit on board, reject drop
+    CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
+    if (pdi.GetSubInfo<DRAG_MARKER>().m_size.cx > limit.cx ||
+        pdi.GetSubInfo<DRAG_MARKER>().m_size.cy > limit.cy)
+    {
+        return pdi.m_phase == PhaseDrag::Over ?
+                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
+                :
+                    -1;
+    }
 
     if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
@@ -766,6 +799,14 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
         {
             CRect temp = rctObjs;
             LimitRect(temp);
+            // if enclosing rect can't fit on board, reject drop
+            if (!IsRectFullyOnBoard(temp, &bXOK, &bYOK))
+            {
+                return pdi.m_phase == PhaseDrag::Over ?
+                            reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
+                        :
+                            -1;
+            }
             sizeDelta += temp.TopLeft() - rctObjs.TopLeft();
         }
         if (sizeDelta.cx != 0 || sizeDelta.cy != 0) // Check 'em again (what a pain!)

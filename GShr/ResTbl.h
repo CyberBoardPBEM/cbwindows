@@ -39,6 +39,7 @@ struct ResourceTable
     // ======== Cursors ========= //
     HCURSOR     hcrDragTile;
     HCURSOR     hcrNoDrop;
+    HCURSOR     hcrNoDropTooBig;
     HCURSOR     hcrCrossHair;
 #ifndef GPLAY
     HCURSOR     hcrFill;

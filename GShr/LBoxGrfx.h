@@ -94,6 +94,12 @@ struct COverrideInfo<DRAG_TILE> : private COverrideInfoBase
 };
 
 #define WM_OVERRIDE_SELECTED_ITEM_LIST  (WM_USER + 501) // WPARAM = std::vector<XxxxID<LPARAM>>*, LPARAM = XxxxID::PREFIX
+/* We don't allow drop if the dropped objects are too big for
+    the destination, but checking requires knowing the size of
+    the dropped objects.  So, parallel to
+    WM_OVERRIDE_SELECTED_ITEM, this message gets that size from
+    parent window. */
+#define WM_GET_DRAG_SIZE (WM_USER + 504) // WPARAM = CSize*
 
 /////////////////////////////////////////////////////////////////////////////
 // Custom Listbox - containing colors
@@ -194,6 +200,8 @@ protected:
 
     virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
+    // send WM_GET_DRAG_SIZE to parent
+    CSize GetDragSize() const;
     virtual void OnDragEnd(CPoint point) /* override */= 0;
 
     //{{AFX_MSG(CGrafixListBox)

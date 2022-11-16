@@ -257,6 +257,21 @@ LRESULT CGrafixListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
     return CListBox::WindowProc(message, wParam, lParam);
 }
 
+CSize CGrafixListBox::GetDragSize() const
+{
+    CWnd& parent = CheckedDeref(GetParent());
+    CSize retval;
+    if (!parent.SendMessage(WM_GET_DRAG_SIZE, reinterpret_cast<WPARAM>(&retval)))
+    {
+        ASSERT(!"parent didn't provide drag size");
+        /* parent didn't provide drag size,
+            so assume worst case scenario */
+        retval.cx = std::numeric_limits<decltype(retval.cx)>::max();
+        retval.cy = std::numeric_limits<decltype(retval.cy)>::max();
+    }
+    return retval;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void CGrafixListBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
