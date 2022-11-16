@@ -841,7 +841,6 @@ void CPlayBoardView::DragDoAutoScroll()
     BOOL bScrolled = ProcessAutoScroll(point);
     if (m_pDragSelList != NULL && bScrolled)
     {
-        OnPrepareScaledDC(*pDC, TRUE);
         CPoint ptAfter(0, 0);
         ClientToWorkspace(ptAfter);
         CSize sizeDelta = ptAfter - ptBefore;
@@ -862,8 +861,11 @@ void CPlayBoardView::DragDoAutoScroll()
     }
     if (m_pDragSelList != NULL)
     {
+        pDC->SaveDC();
+        OnPrepareScaledDC(*pDC, TRUE);
         // Restore drag image.
         m_pDragSelList->DrawTracker(*pDC, trkMoving);
+        pDC->RestoreDC(-1);
     }
     if (pDC != NULL)
         ReleaseDC(pDC);
