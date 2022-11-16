@@ -168,8 +168,10 @@ void CPieceListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nStat
 
 BOOL CPieceListBox::OnDragSetup(DragInfo& pDI) const
 {
+    ASSERT(!"untested code");
     pDI.SetDragType(DRAG_PIECE);
     pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
+    pDI.GetSubInfo<DRAG_PIECE>().m_size = GetDragSize();
     ASSERT(!"code look wrong, but I think this is unreachable");
     /* this is the original code, but it looks wrong since
         everything else seems to say DRAG_PIECE should have

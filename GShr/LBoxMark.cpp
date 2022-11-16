@@ -248,6 +248,7 @@ BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
 #endif
     pDI.SetDragType(DRAG_MARKER);
     pDI.GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
+    pDI.GetSubInfo<DRAG_MARKER>().m_size = GetDragSize();
     pDI.GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
     pDI.m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;

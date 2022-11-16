@@ -125,6 +125,7 @@
 #define IDD_PIECE_EDIT_MULTIPLE         1050
 #define IDD_MARKER_EDIT_MULTIPLE        1051
 #define IDR_MENU_DESIGN_POPUPS          2023
+#define IDC_NODROP_TOOBIG               3000
 #define IDC_D_ABOUT_FILEVER             5001
 #define IDC_D_ABOUT_GENDATE             5002
 #define IDC_D_ABOUT_VERSION             5003
@@ -399,6 +400,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        1053
 #define _APS_NEXT_COMMAND_VALUE         32894
 #define _APS_NEXT_CONTROL_VALUE         5165
-#define _APS_NEXT_SYMED_VALUE           3000
+#define _APS_NEXT_SYMED_VALUE           3001
 #endif
 #endif

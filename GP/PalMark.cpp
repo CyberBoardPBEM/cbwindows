@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CMarkerPalette, CWnd)
     ON_WM_WINDOWPOSCHANGING()
     ON_CBN_SELCHANGE(IDC_W_MARKLIST, OnMarkerNameCbnSelchange)
     ON_MESSAGE(WM_OVERRIDE_SELECTED_ITEM, OnOverrideSelectedItem)
+    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_HELPINFO()
     ON_WM_CREATE()
     //}}AFX_MSG_MAP
@@ -208,6 +209,47 @@ LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
     }
 
     return (LRESULT)1;
+}
+
+LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
+{
+    size_t nSel = GetSelectedMarkerGroup();
+    if (nSel == Invalid_v<size_t>)
+    {
+        ASSERT(!"bad tray");
+        return 0;
+    }
+    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+
+    std::vector<int> items;
+    if (pMSet.IsRandomMarkerPull())
+    {
+        items.reserve(value_preserving_cast<size_t>(m_listMark.GetCount()));
+        for (int i = 0; i < m_listMark.GetCount(); ++i)
+        {
+            items.push_back(i);
+        }
+    }
+    else
+    {
+        items.push_back(m_listMark.GetCurSel());
+    }
+
+    CTileManager& tileMgr = CheckedDeref(m_pDoc->GetTileManager());
+    CSize retval(0, 0);
+    for (int item : items)
+    {
+        MarkID mid = m_listMark.MapIndexToItem(value_preserving_cast<size_t>(item));
+        MarkDef& pMark = pMMgr->GetMark(mid);
+        ASSERT(pMark.m_tid != nullTid);
+        CSize size = tileMgr.GetTile(pMark.m_tid).GetSize();
+        retval.cx = std::max(retval.cx, size.cx);
+        retval.cy = std::max(retval.cy, size.cy);
+    }
+
+    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
+    return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////

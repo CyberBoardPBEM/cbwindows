@@ -162,6 +162,7 @@ BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
     {
         pDI.SetDragType(DRAG_TILELIST);
         pDI.GetSubInfo<DRAG_TILELIST>().m_tileIDList = &GetMappedMultiSelectList();
+        pDI.GetSubInfo<DRAG_TILELIST>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_TILELIST>().m_gamDoc = m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
@@ -169,6 +170,7 @@ BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
     {
         pDI.SetDragType(DRAG_TILE);
         pDI.GetSubInfo<DRAG_TILE>().m_tileID = GetCurMapItem();
+        pDI.GetSubInfo<DRAG_TILE>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_TILE>().m_gamDoc = m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }

@@ -112,6 +112,8 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (pdi.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
         return -1;               // Only pieces from our document.
 
+    // no size restriction
+
     DoAutoScrollProcessing(pdi);
 
     if (pdi.m_phase == PhaseDrag::Over)

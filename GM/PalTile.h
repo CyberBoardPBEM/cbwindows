@@ -85,6 +85,7 @@ protected:
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnTileNameCbnSelchange();
+    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     //}}AFX_MSG

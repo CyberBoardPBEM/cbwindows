@@ -114,6 +114,7 @@ protected:
     afx_msg void OnWindowPosChanging(WINDOWPOS FAR* lpwndpos);
     afx_msg void OnMarkerNameCbnSelchange();
     afx_msg LRESULT OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     //}}AFX_MSG

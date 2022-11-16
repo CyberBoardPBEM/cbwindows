@@ -882,6 +882,17 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
     if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
         return -1;               // Only tiles from our document.
 
+    // if tile can't fit on board, reject drop
+    CSize limit = m_pBoard->GetSize(fullScale);
+    if (pdi->GetSubInfo<DRAG_TILE>().m_size.cx > limit.cx ||
+        pdi->GetSubInfo<DRAG_TILE>().m_size.cy > limit.cy)
+    {
+        return pdi->m_phase == PhaseDrag::Over ?
+                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
+                :
+                    -1;
+    }
+
     if (pdi->m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
     else if (pdi->m_phase == PhaseDrag::Drop)

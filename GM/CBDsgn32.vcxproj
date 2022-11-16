@@ -474,6 +474,7 @@ echo off
     <None Include="res\Eraser.cur" />
     <None Include="res\Fill.cur" />
     <None Include="res\NoDrop.cur" />
+    <None Include="res\NoDropTooBig.cur" />
     <None Include="res\Pencil.cur" />
     <None Include="res\Small4Way.cur" />
   </ItemGroup>

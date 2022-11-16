@@ -215,6 +215,7 @@
 #define IDC_CMOVMODE                    2034
 #define IDD_EDIT_ELEMENT_TEXT           2034
 #define IDB_MENU_ICON                   2035
+#define IDC_NODROP_TOOBIG               2035
 #define IDD_CREATE_PLAYERS              2036
 #define IDD_EDIT_PLAYERS                2037
 #define IDD_MULTIPLAYER_GAME            2038

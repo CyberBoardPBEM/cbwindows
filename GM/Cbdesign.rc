@@ -932,6 +932,8 @@ IDC_SMALL4WAY           CURSOR                  "res\\SMALL4WAY.CUR"
 
 IDC_COLORCHANGE         CURSOR                  "res\\ColorChange.cur"
 
+IDC_NODROP_TOOBIG       CURSOR                  "res\\NoDropTooBig.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

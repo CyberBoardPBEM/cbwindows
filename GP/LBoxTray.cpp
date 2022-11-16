@@ -309,13 +309,16 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
     {
         pDI.SetDragType(DRAG_PIECELIST);
         pDI.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
+        pDI.GetSubInfo<DRAG_PIECELIST>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_PIECELIST>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
+        ASSERT(!"untested code");
         pDI.SetDragType(DRAG_PIECE);
         pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
+        pDI.GetSubInfo<DRAG_PIECE>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_PIECE>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }

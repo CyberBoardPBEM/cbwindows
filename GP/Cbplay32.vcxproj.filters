@@ -683,6 +683,9 @@
     <None Include="res\NoDrop.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\NoDropTooBig.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="res\manifest.xml">

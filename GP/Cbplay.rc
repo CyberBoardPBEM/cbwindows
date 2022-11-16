@@ -1214,6 +1214,8 @@ IDC_CROSSHAIR           CURSOR                  "res\\CrossHair.cur"
 
 IDC_CMOVMODE            CURSOR                  "res\\CMovMode.cur"
 
+IDC_NODROP_TOOBIG       CURSOR                  "res\\NoDropTooBig.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

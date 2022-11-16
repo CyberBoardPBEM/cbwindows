@@ -513,6 +513,7 @@ echo off
     <None Include="res\CrossHair.cur" />
     <None Include="res\DragTile.cur" />
     <None Include="res\NoDrop.cur" />
+    <None Include="res\NoDropTooBig.cur" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="res\manifest.xml" />
