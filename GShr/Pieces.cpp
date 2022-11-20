@@ -61,7 +61,7 @@ namespace {
             switch (tids.size())
             {
                 case 0:
-                    ASSERT(!"empty");
+                    // this can happen due to minimum piece table size 32
                     m_tidFront = nullTid;
                     m_tidBack = nullTid;
                     break;
