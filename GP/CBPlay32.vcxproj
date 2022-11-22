@@ -288,6 +288,7 @@ echo off
     <ClCompile Include="..\GShr\CellForm.cpp" />
     <ClCompile Include="..\GShr\Color.cpp" />
     <ClCompile Include="..\GShr\DibApi.cpp" />
+    <ClCompile Include="..\GShr\DragDrop.cpp" />
     <ClCompile Include="DlgChgGameOwner.cpp" />
     <ClCompile Include="DlgDice.cpp" />
     <ClCompile Include="DlgEdtEl.cpp" />

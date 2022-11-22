@@ -140,7 +140,7 @@ public:
         CRect rctItem) const /* override */ = 0;
     virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
     {
-        pDI.m_dragType = DRAG_INVALID;
+        pDI.SetDragType(DRAG_INVALID);
         return FALSE;
     }
     virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
@@ -353,7 +353,7 @@ protected:
     virtual void OnDragEnd(CPoint point) override
     {
         AssignNewMoveGroup();
-        if (di.m_dragType == DRAG_INVALID)
+        if (di.GetDragType() == DRAG_INVALID)
         {
             // do nothing
         }
@@ -369,14 +369,14 @@ protected:
         else
         {
             // The parent may want to override the value.
-            if (di.m_dragType == DRAG_MARKER)
+            if (di.GetDragType() == DRAG_MARKER)
             {
                 COverrideInfo<DRAG_MARKER> oi(di.GetSubInfo<DRAG_MARKER>().m_markID);
                 CWnd* pWnd = GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
             }
-            else if (di.m_dragType == DRAG_TILE)
+            else if (di.GetDragType() == DRAG_TILE)
             {
                 COverrideInfo<DRAG_TILE> oi(di.GetSubInfo<DRAG_TILE>().m_tileID);
                 CWnd* pWnd = GetParent();

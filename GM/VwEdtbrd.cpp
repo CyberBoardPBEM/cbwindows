@@ -877,7 +877,7 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
 
     DragInfo* pdi = (DragInfo*)lParam;
 
-    if (pdi->m_dragType != DRAG_TILE)
+    if (pdi->GetDragType() != DRAG_TILE)
         return -1;               // Only tile drops allowed
     if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
         return -1;               // Only tiles from our document.

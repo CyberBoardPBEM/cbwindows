@@ -429,7 +429,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     DragInfo* pdi = (DragInfo*)lParam;
 
-    if (pdi->m_dragType != DRAG_TILELIST)
+    if (pdi->GetDragType() != DRAG_TILELIST)
         return -1;               // Only tile list drops allowed
 
     if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != pDoc)
@@ -442,7 +442,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     if (pdi->m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (pdi->m_phase == PhaseDrag::Drop && pdi->m_dragType == DRAG_TILELIST)
+    else if (pdi->m_phase == PhaseDrag::Drop && pdi->GetDragType() == DRAG_TILELIST)
     {
         int nProjSel = m_listProj.GetCurSel();
         ASSERT(nProjSel >= 0 &&

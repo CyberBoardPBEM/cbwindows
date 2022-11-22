@@ -626,16 +626,16 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     DragInfo* pdi = (DragInfo*)lParam;
 
-    if (pdi->m_dragType != DRAG_PIECE && pdi->m_dragType != DRAG_SELECTLIST &&
-        pdi->m_dragType != DRAG_PIECELIST)
+    if (pdi->GetDragType() != DRAG_PIECE && pdi->GetDragType() != DRAG_SELECTLIST &&
+        pdi->GetDragType() != DRAG_PIECELIST)
         return -1;                       // Only piece drops allowed
 
-    if (pdi->m_dragType == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
-        pdi->m_dragType == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
-        pdi->m_dragType == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
+    if (pdi->GetDragType() == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
+        pdi->GetDragType() == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
+        pdi->GetDragType() == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
         return -1;                       // Only pieces from our document.
 
-    if (pdi->m_dragType == DRAG_SELECTLIST)
+    if (pdi->GetDragType() == DRAG_SELECTLIST)
     {
         if (!pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
             return -1;                   // Only piece drops allowed
@@ -670,7 +670,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
                 nSel++;
         }
         size_t dropCount;
-        if (pdi->m_dragType == DRAG_PIECE)
+        if (pdi->GetDragType() == DRAG_PIECE)
         {
             ASSERT(!"untested code");
             dropCount = size_t(1);
@@ -679,7 +679,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
             // Select the last piece that was inserted
             nSel = value_preserving_cast<int>(pYGrp.GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID));
         }
-        else if (pdi->m_dragType == DRAG_PIECELIST)
+        else if (pdi->GetDragType() == DRAG_PIECELIST)
         {
             m_pDoc->AssignNewMoveGroup();
             const std::vector<PieceID>& pieceIDList = CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
@@ -690,7 +690,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         }
         else        // DRAG_SELECTLIST
         {
-            ASSERT(pdi->m_dragType == DRAG_SELECTLIST);
+            ASSERT(pdi->GetDragType() == DRAG_SELECTLIST);
             std::vector<CB::not_null<CDrawObj*>> m_listPtr;
             CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
             pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
