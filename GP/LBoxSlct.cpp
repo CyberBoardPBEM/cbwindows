@@ -75,7 +75,7 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
     ASSERT(!"untested code");
     if (GetCount() <= 1)
     {
-        pDI.m_dragType = DRAG_INVALID;
+        pDI.SetDragType(DRAG_INVALID);
         return FALSE;
     }
 
@@ -88,7 +88,7 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
         m_multiSelList.push_back(&GetCurMapItem());
         */
     }
-    pDI.m_dragType = DRAG_SELECTVIEW;
+    pDI.SetDragType(DRAG_SELECTVIEW);
     pDI.GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
     pDI.m_hcsrSuggest = g_res.hcrDragTile;
     pDI.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
@@ -105,7 +105,7 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     DoInsertLineProcessing(pdi);
 
-    if (pdi.m_dragType != DRAG_SELECTVIEW)
+    if (pdi.GetDragType() != DRAG_SELECTVIEW)
         return -1;               // Only our drops allowed
 
     ASSERT(!"untested code");

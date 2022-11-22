@@ -76,7 +76,15 @@ enum DragType
 
 struct DragInfo
 {
+    DragInfo() { m_dragType = DRAG_INVALID; }
+    ~DragInfo() { SetDragType(DRAG_INVALID); }
+
+    DragType    GetDragType() const { return m_dragType; }
+    // keep SubInfos constructed to match m_dragType
+    void        SetDragType(DragType dt);
+private:
     DragType    m_dragType;
+public:
     PhaseDrag   m_phase;
 //  BOOL        m_bDropAccepted;// Set by droppee so source knows what happened
     CPoint      m_point;        // Loc of mouse in window (dragOver&dragDrop)
@@ -91,30 +99,35 @@ struct DragInfo
     struct SubInfo<DRAG_TILE>
     {
         TileID m_tileID;
+        CSize m_size;
         CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_TILELIST>
     {
         const std::vector<TileID>* m_tileIDList;
+        CSize m_size;
         CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_PIECE>
     {
         PieceID m_pieceID;
+        CSize m_size;
         const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_PIECELIST>
     {
         const std::vector<PieceID>* m_pieceIDList;
+        CSize m_size;
         const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_MARKER>
     {
         MarkID m_markID;
+        CSize m_size;
         CGamDoc* m_gamDoc;
     };
     template<>
@@ -131,7 +144,7 @@ struct DragInfo
     };
     // TODO:  when upgrade to c++ 17, use std::variant
 private:
-    union
+    union SubInfos
     {
         SubInfo<DRAG_TILE> m_tile;
         SubInfo<DRAG_TILELIST> m_tileList;
@@ -140,6 +153,9 @@ private:
         SubInfo<DRAG_MARKER> m_marker;
         SubInfo<DRAG_SELECTLIST> m_selectList;
         SubInfo<DRAG_SELECTVIEW> m_selectView;
+
+        SubInfos() {}
+        ~SubInfos() {}
     } subInfos;
 public:
     template<DragType DT>

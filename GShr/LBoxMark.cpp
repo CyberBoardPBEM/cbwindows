@@ -242,11 +242,11 @@ BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
 #ifdef GPLAY
     if (m_pDoc->IsPlaying())
     {
-        pDI.m_dragType = DRAG_INVALID;
+        pDI.SetDragType(DRAG_INVALID);
         return 0;                       // Drags not supported during play
     }
 #endif
-    pDI.m_dragType = DRAG_MARKER;
+    pDI.SetDragType(DRAG_MARKER);
     pDI.GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
     pDI.GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
     pDI.m_hcsrSuggest = g_res.hcrDragTile;

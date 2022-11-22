@@ -514,16 +514,16 @@ LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     DragInfo& pdi = CheckedDeref(reinterpret_cast<DragInfo*>(lParam));
 
-    if (pdi.m_dragType == DRAG_PIECE)
+    if (pdi.GetDragType() == DRAG_PIECE)
         return DoDragPiece(pdi);
 
-    if (pdi.m_dragType == DRAG_PIECELIST)
+    if (pdi.GetDragType() == DRAG_PIECELIST)
         return DoDragPieceList(pdi);
 
-    if (pdi.m_dragType == DRAG_MARKER)
+    if (pdi.GetDragType() == DRAG_MARKER)
         return DoDragMarker(pdi);
 
-    if (pdi.m_dragType == DRAG_SELECTLIST)
+    if (pdi.GetDragType() == DRAG_SELECTLIST)
         return DoDragSelectList(pdi);
 
     return 0;
@@ -605,7 +605,7 @@ LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
 
 LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
 {
-    ASSERT(pdi.m_dragType == DRAG_MARKER);
+    ASSERT(pdi.GetDragType() == DRAG_MARKER);
     CGamDoc* pDoc = GetDocument();
     if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
         return -1;               // Only markers from our document.

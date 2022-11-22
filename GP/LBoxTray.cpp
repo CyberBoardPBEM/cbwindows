@@ -301,20 +301,20 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 {
     if (m_pDoc.IsPlaying())
     {
-        pDI.m_dragType = DRAG_INVALID;
+        pDI.SetDragType(DRAG_INVALID);
         return FALSE;                   // Drags not supported during play
     }
 
     if (IsMultiSelect())
     {
-        pDI.m_dragType = DRAG_PIECELIST;
+        pDI.SetDragType(DRAG_PIECELIST);
         pDI.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList = &GetMappedMultiSelectList();
         pDI.GetSubInfo<DRAG_PIECELIST>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
     }
     else
     {
-        pDI.m_dragType = DRAG_PIECE;
+        pDI.SetDragType(DRAG_PIECE);
         pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
         pDI.GetSubInfo<DRAG_PIECE>().m_gamDoc = &m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;

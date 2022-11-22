@@ -97,7 +97,7 @@ public:
         CRect rctItem) const /* override */ = 0;
     virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
     {
-        pDI.m_dragType = DRAG_INVALID;
+        pDI.SetDragType(DRAG_INVALID);
         return FALSE;
     }
     virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
