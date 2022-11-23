@@ -58,7 +58,6 @@ enum DragType
 {
     DRAG_TILE,
     DRAG_TILELIST,
-    DRAG_MGRTILE,
     DRAG_PIECE,
     DRAG_PIECELIST,
     DRAG_MARKER,
@@ -91,12 +90,6 @@ struct DragInfo
     {
         const std::vector<TileID>* m_tileIDList;
         CGamDoc* m_gamDoc;
-    };
-    template<>
-    struct SubInfo<DRAG_MGRTILE>
-    {
-        TileID m_tileID;
-        CTileManager* m_tileMgr;
     };
     template<>
     struct SubInfo<DRAG_PIECE>
@@ -134,7 +127,6 @@ private:
     {
         SubInfo<DRAG_TILE> m_tile;
         SubInfo<DRAG_TILELIST> m_tileList;
-        SubInfo<DRAG_MGRTILE> m_mgrTile;
         SubInfo<DRAG_PIECE> m_piece;
         SubInfo<DRAG_PIECELIST> m_pieceList;
         SubInfo<DRAG_MARKER> m_marker;
