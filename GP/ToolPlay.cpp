@@ -97,11 +97,12 @@ void CPlayTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
     SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
 }
 
-void CPlayTool::OnLButtonUp(CPlayBoardView* pView, UINT, CPoint point)
+bool CPlayTool::OnLButtonUp(CPlayBoardView* pView, UINT, CPoint point)
 {
     if (CWnd::GetCapture() != pView)
-        return;
+        return false;
     ReleaseCapture();
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -263,8 +264,9 @@ void CPSelectTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)
     c_ptLast = point;               // Save new 'last' position
 }
 
-void CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
+bool CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
 {
+    bool retval = true;
     if (CWnd::GetCapture() == pView)
     {
         if (m_eSelMode == smodeNet)
@@ -290,7 +292,7 @@ void CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
                 CPoint pnt = point;
                 pSLst->SetTrackingMode(trkSelected);
                 pView->WorkspaceToClient(pnt);
-                DoDragDropEnd(pView, pnt);
+                retval = DoDragDropEnd(pView, pnt) && retval;
             }
             else
             {
@@ -300,10 +302,14 @@ void CPSelectTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
             }
         }
     }
+    else
+    {
+        retval = false;
+    }
     m_eSelMode = smodeNormal;
     KillDragTimer(pView);           // Make sure timers are released
     KillScrollTimer(pView);
-    CPlayTool::OnLButtonUp(pView, nFlags, point);
+    return CPlayTool::OnLButtonUp(pView, nFlags, point) && retval;
 }
 
 void CPSelectTool::OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent)
@@ -615,7 +621,7 @@ void CPSelectTool::DoDragDrop(CPlayBoardView* pView, CPoint pntClient)
         SetCursor(g_res.hcrNoDrop);
 }
 
-void CPSelectTool::DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient)
+bool CPSelectTool::DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient)
 {
     SetCursor(LoadCursor(NULL, IDC_ARROW));
 
@@ -623,12 +629,12 @@ void CPSelectTool::DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient)
     pView->ClientToScreen(&pnt);
     CWnd* pWnd = GetWindowFromPoint(pnt);
     if (pWnd == NULL)
-        return;
+        return false;
     m_di.m_point = pntClient;
     pView->ClientToScreen(&m_di.m_point);
     pWnd->ScreenToClient(&m_di.m_point);
 
-    pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop, (LPARAM)(LPVOID)&m_di);
+    return pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop, (LPARAM)(LPVOID)&m_di) == 1;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -645,11 +651,12 @@ void CPShapeTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point
     s_plySelectTool.StartSizingOperation(pView, nFlags, point, nDragHandle);
 }
 
-void CPShapeTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
+bool CPShapeTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
 {
     if (CWnd::GetCapture() != pView)
-        return;
-    s_plySelectTool.OnLButtonUp(pView, nFlags, point);
+        return false;
+    bool retval = true;
+    retval = s_plySelectTool.OnLButtonUp(pView, nFlags, point) && retval;
     pView->GetSelectList()->PurgeList(TRUE); // Clear current select list
     if (!IsEmptyObject())
         pView->AddDrawObject(m_pObj);
@@ -658,6 +665,7 @@ void CPShapeTool::OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point)
         delete m_pObj;
         m_pObj = NULL;
     }
+    return true;
 }
 
 void CPShapeTool::OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point)

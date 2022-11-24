@@ -576,7 +576,7 @@ LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
     ASSERT(pWnd != NULL);
     LRESULT lResult = pWnd->SendMessage(WM_DRAGDROP, wParam, lParam);
 
-    if (lResult != 0)
+    if (wParam == phaseDragOver && lResult != 0)
         DoAutoScrollProcessing(CheckedDeref(reinterpret_cast<const DragInfo*>(lParam)));
     return lResult;
 }

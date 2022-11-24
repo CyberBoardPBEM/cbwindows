@@ -42,6 +42,10 @@ class CSelList;
 //      LPARAM = Pointer to DragInfo structure.
 // Return:
 //      HCURSOR to display (if phaseDragOver). Or zero for no drop cursor.
+//      int success/failure (if not phaseDragOver)
+//           0 - not handled
+//          -1 - failure
+//           1 - success
 
 extern UINT WM_DRAGDROP;
 

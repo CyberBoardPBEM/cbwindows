@@ -874,9 +874,9 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
     DragInfo* pdi = (DragInfo*)lParam;
 
     if (pdi->m_dragType != DRAG_TILE)
-        return 0;               // Only tile drops allowed
+        return -1;               // Only tile drops allowed
     if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
-        return 0;               // Only tiles from our document.
+        return -1;               // Only tiles from our document.
 
     if (wParam == phaseDragOver)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
@@ -902,7 +902,7 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
             default: ;
         }
     }
-    return 0;
+    return 1;
 }
 
 void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,

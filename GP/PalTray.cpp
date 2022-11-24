@@ -618,28 +618,28 @@ void CTrayPalette::UpdateTrayList()
 LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
     if (m_pDoc->IsPlaying())
-        return 0;                       // Drags not supported during play
+        return -1;                       // Drags not supported during play
 
     DragInfo* pdi = (DragInfo*)lParam;
 
     if (pdi->m_dragType != DRAG_PIECE && pdi->m_dragType != DRAG_SELECTLIST &&
         pdi->m_dragType != DRAG_PIECELIST)
-        return 0;                       // Only piece drops allowed
+        return -1;                       // Only piece drops allowed
 
     if (pdi->m_dragType == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
         pdi->m_dragType == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
         pdi->m_dragType == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
-        return 0;                       // Only pieces from our document.
+        return -1;                       // Only pieces from our document.
 
     if (pdi->m_dragType == DRAG_SELECTLIST)
     {
         if (!pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
-            return 0;                   // Only piece drops allowed
+            return -1;                   // Only piece drops allowed
     }
 
     size_t nGrpSel = GetSelectedTray();
     if (nGrpSel == Invalid_v<size_t>)
-        return 0;                       // No tray to drop on
+        return -1;                       // No tray to drop on
 
     if (wParam == phaseDragOver)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
@@ -716,7 +716,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         if (!rct.IntersectRect(rct, rctLBoxClient))
             m_listTray.SetTopIndex(nSel);
     }
-    return 0;
+    return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////
