@@ -426,15 +426,15 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
     DragInfo* pdi = (DragInfo*)lParam;
 
     if (pdi->m_dragType != DRAG_TILELIST)
-        return 0;               // Only tile list drops allowed
+        return -1;               // Only tile list drops allowed
 
     if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != pDoc)
-        return 0;               // Only pieces from our document.
+        return -1;               // Only pieces from our document.
 
     CRect rct;
     m_listTiles.GetClientRect(&rct);
     if (!rct.PtInRect(pdi->m_pointClient))
-        return 0;
+        return -1;
 
     if (wParam == phaseDragOver)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
@@ -469,7 +469,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
         m_listTiles.ShowFirstSelection();
         pDoc->SetModifiedFlag();
     }
-    return 0;
+    return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -102,11 +102,11 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
     DoInsertLineProcessing((UINT)wParam, pdi);
 
     if (pdi.m_dragType != DRAG_SELECTVIEW)
-        return 0;               // Only our drops allowed
+        return -1;               // Only our drops allowed
 
     ASSERT(!"untested code");
     if (pdi.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
-        return 0;               // Only pieces from our document.
+        return -1;               // Only pieces from our document.
 
     DoAutoScrollProcessing(pdi);
 
@@ -122,7 +122,7 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
             MakeItemVisible(nSel);
         }
     }
-    return 0;
+    return 1;
 }
 
 void CSelectListBox::OnContextMenu(CWnd* /*pWnd*/, CPoint point)

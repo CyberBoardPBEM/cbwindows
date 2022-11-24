@@ -57,7 +57,7 @@ public:
     // ----------- //
     virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point);
+    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) /* override */;
     virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) /*override*/ {}
     virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest)
@@ -97,7 +97,7 @@ public:
 public:
     virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point);
+    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override;
     virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override;
     virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
@@ -119,7 +119,7 @@ public:
     // ------- //
     void DoDragDropStart(CPlayBoardView* pView);
     void DoDragDrop(CPlayBoardView* pView, CPoint pntClient);
-    void DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient);
+    bool DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient);
     // ------- //
     void StartSizingOperation(CPlayBoardView* pView, UINT nFlags,
         CPoint point, int nHandleID = -1);
@@ -138,7 +138,7 @@ public:
 public:
     virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point);
+    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override;
     virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override;
     virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
@@ -181,7 +181,7 @@ public:
 public:
     virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
+    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override { return true; }
     virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
     virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override {}
     virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
@@ -204,7 +204,7 @@ public:
 public:
     virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
     virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
+    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override { return true; }
     virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
     virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override {}
     virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
