@@ -1115,7 +1115,16 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
     ClientToWorkspace(point);
-    pTool.OnLButtonUp(this, nFlags, point);
+    bool rc = pTool.OnLButtonUp(this, nFlags, point);
+    ASSERT(rc || pTool.m_eToolType == ptypeSelect);
+    if (!rc && pTool.m_eToolType == ptypeSelect)
+    {
+        // failed drop messed up selection list, so rebuild it
+        std::vector<CB::not_null<CDrawObj*>> listObjs;
+        m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
+        m_selList.PurgeList(TRUE);          // Purge former selections
+        SelectAllObjectsInTable(listObjs);  // Reselect on this board.
+    }
 }
 
 void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
