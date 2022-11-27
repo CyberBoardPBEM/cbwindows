@@ -557,7 +557,7 @@ public:
 
 // Implementation - variables
 public:
-    // The state of the die roller. (NOT CURRENTLY SERIALIZED!!!!)
+    // The state of the die roller.
     OwnerOrNullPtr<CRollState> m_pRollState;
 
     uint32_t    m_nSeedCarryOver;   // Current rand() seed

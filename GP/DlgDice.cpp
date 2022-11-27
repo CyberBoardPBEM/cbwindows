@@ -33,6 +33,61 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+CArchive& operator<<(CArchive& ar, const CRollState& rs)
+{
+    switch (SCHEMA_ROLLSTATE)
+    {
+        case 1:
+            ar << value_preserving_cast<uint8_t>(SCHEMA_ROLLSTATE)
+                << rs.m_bFirstRoll
+                << rs.m_nSetsToRoll
+                << rs.m_strUserSeed
+                << rs.m_nSeedCarryOver
+                << rs.m_nBias
+                << value_preserving_cast<uint8_t>(rs.m_tbl.size());
+            for (size_t i = size_t(0) ; i < rs.m_tbl.size() ; ++i)
+            {
+                ar << rs.m_tbl[i].m_bRoll
+                    << rs.m_tbl[i].m_nDice
+                    << rs.m_tbl[i].m_nFaces;
+            }
+            break;
+        default:
+            AfxThrowArchiveException(CArchiveException::badSchema);
+    }
+    return ar;
+}
+
+CArchive& operator>>(CArchive& ar, CRollState& rs)
+{
+    uint8_t schema, size;
+    ar >> schema;
+    switch (schema)
+    {
+        case 1:
+            ar >> rs.m_bFirstRoll
+                >> rs.m_nSetsToRoll
+                >> rs.m_strUserSeed
+                >> rs.m_nSeedCarryOver
+                >> rs.m_nBias
+                >> size;
+            if (size != rs.m_tbl.size())
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+            for (size_t i = size_t(0) ; i < rs.m_tbl.size() ; ++i)
+            {
+                ar >> rs.m_tbl[i].m_bRoll
+                    >> rs.m_tbl[i].m_nDice
+                    >> rs.m_tbl[i].m_nFaces;
+            }
+            break;
+        default:
+            AfxThrowArchiveException(CArchiveException::badSchema);
+    }
+    return ar;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CDieRollerDlg dialog
 

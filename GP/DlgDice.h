@@ -60,6 +60,8 @@ public:
     int32_t     m_nBias;
     std::array<RollRecord, DICETYPES> m_tbl;
 };
+CArchive& operator<<(CArchive& ar, const CRollState& rs);
+CArchive& operator>>(CArchive& ar, CRollState& rs);
 
 /////////////////////////////////////////////////////////////////////////////
 // CDieRollerDlg dialog
