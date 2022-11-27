@@ -25,6 +25,7 @@
 #include    "stdafx.h"
 #include    <io.h>
 #include    "Gp.h"
+#include    "DlgDice.h"
 #include    "FrmMain.h"
 #include    "GamDoc.h"
 #include    "GameBox.h"
@@ -212,6 +213,14 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (WORD)m_bAutoStep;
         ar << (WORD)m_bMsgWinVisible;
 
+        if (CB::GetVersion(ar) >= NumVersion(4, 0))
+        {
+            ar << bool(m_pRollState);
+            if (m_pRollState)
+            {
+                ar << *m_pRollState;
+            }
+        }
         ar << (DWORD)m_nSeedCarryOver;
 
         ar << (BYTE)(m_pRcdMoves != NULL ? 1 : 0);
@@ -305,6 +314,16 @@ void CGamDoc::SerializeGame(CArchive& ar)
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
         {
+            if (CB::GetVersion(ar) >= NumVersion(4, 0))
+            {
+                bool temp;
+                ar >> temp;
+                if (temp)
+                {
+                    m_pRollState = MakeOwner<CRollState>();
+                    ar >> *m_pRollState;
+                }
+            }
             DWORD dwTmp;
             ar >> dwTmp;
             m_nSeedCarryOver = (UINT)dwTmp;

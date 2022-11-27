@@ -8,6 +8,7 @@
 //              geomorphic boards with rotated unit boards
 //              pieces with <= 100 sides
 //              completely private boards
+//              serialize CGamDoc::m_pRollState
 //
 // wsu20220208:  This version has been reverted.
 //                  (It is equivalent to 3.10, so we will no
