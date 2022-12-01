@@ -86,6 +86,8 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 #pragma warning(error:  4311)
 // warning C4312 : 'type cast' : conversion from 'xxx' to 'yyy' of greater size
 #pragma warning(error:  4312)
+// warning C4477 : 'sprintf' : format string 'xxx' requires an argument of type 'yyy', but variadic argument 1 has type 'zzz'
+#pragma warning(error:  4477)
 // warning C4701 : potentially uninitialized local variable 'xxx' used
 #pragma warning(error:  4701)
 // warning C4703 : potentially uninitialized local pointer variable 'xxx' used
