@@ -56,12 +56,7 @@ static char szSectDisableHtmlHelp[] = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
-// Want this to be different from the designer's inter app drag and
-// drop doesn't cause a crash. Probably wouldn't happen since the
-// there isn't any common drag types. But just to be on the safe
-// side....
-
-UINT NEAR WM_DRAGDROP = RegisterWindowMessage("msgDragDropPlay");
+const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
 
 /////////////////////////////////////////////////////////////////////////////
 

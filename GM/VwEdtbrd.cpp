@@ -868,6 +868,10 @@ ToolType CBrdEditView::MapToolType(UINT nToolResID)
 
 LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
 {
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
     m_nCurToolID = ID_TOOL_ARROW;       // Not valid with drag over.
     m_nLastToolID = ID_TOOL_ARROW;      // Not valid with drag over.
 
@@ -878,9 +882,9 @@ LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
     if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
         return -1;               // Only tiles from our document.
 
-    if (wParam == phaseDragOver)
+    if (pdi->m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (wParam == phaseDragDrop)
+    else if (pdi->m_phase == PhaseDrag::Drop)
     {
         CDrawList* pDwg;
         // Process a tile drop....

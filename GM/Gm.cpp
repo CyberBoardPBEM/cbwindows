@@ -53,7 +53,7 @@ static char szSectDisableHtmlHelp[] = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
-UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
+const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
 
 UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages");
 UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList");

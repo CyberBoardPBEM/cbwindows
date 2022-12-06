@@ -170,10 +170,10 @@ protected:
     void SetupDrawListDC(CDC& pDC, CRect& pRct) const;
     void RestoreDrawListDC(CDC& pDC) const;
 
-    LRESULT DoDragPiece(WPARAM wParam, DragInfo& pdi);
-    LRESULT DoDragMarker(WPARAM wParam, DragInfo& pdi);
-    LRESULT DoDragPieceList(WPARAM wParam, DragInfo& pdi);
-    LRESULT DoDragSelectList(WPARAM wParam, DragInfo& pdi);
+    LRESULT DoDragPiece(DragInfo& pdi);
+    LRESULT DoDragMarker(DragInfo& pdi);
+    LRESULT DoDragPieceList(DragInfo& pdi);
+    LRESULT DoDragSelectList(DragInfo& pdi);
 
     void DragDoAutoScroll();
     void DragCheckAutoScroll();

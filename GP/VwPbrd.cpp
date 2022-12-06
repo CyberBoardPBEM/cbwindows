@@ -505,40 +505,44 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 
 LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
     if (GetDocument()->IsPlaying())
         return -1;                       // Drags not supported during play
 
     DragInfo& pdi = CheckedDeref(reinterpret_cast<DragInfo*>(lParam));
 
     if (pdi.m_dragType == DRAG_PIECE)
-        return DoDragPiece(wParam, pdi);
+        return DoDragPiece(pdi);
 
     if (pdi.m_dragType == DRAG_PIECELIST)
-        return DoDragPieceList(wParam, pdi);
+        return DoDragPieceList(pdi);
 
     if (pdi.m_dragType == DRAG_MARKER)
-        return DoDragMarker(wParam, pdi);
+        return DoDragMarker(pdi);
 
     if (pdi.m_dragType == DRAG_SELECTLIST)
-        return DoDragSelectList(wParam, pdi);
+        return DoDragSelectList(pdi);
 
     return 0;
 }
 
-LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragPiece(DragInfo& pdi)
 {
     ASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
     if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
         return -1;               // Only pieces from our document.
 
-    if (wParam == phaseDragExit)
+    if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
-    else if (wParam == phaseDragOver)
+    else if (pdi.m_phase == PhaseDrag::Over)
     {
         DragCheckAutoScroll();
         return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
-    else if (wParam == phaseDragDrop)
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CPoint pnt = pdi.m_point;
         ClientToWorkspace(pnt);
@@ -548,19 +552,19 @@ LRESULT CPlayBoardView::DoDragPiece(WPARAM wParam, DragInfo& pdi)
     return 1;
 }
 
-LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
 {
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
         return -1;               // Only pieces from our document.
 
-    if (wParam == phaseDragExit)
+    if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
-    else if (wParam == phaseDragOver)
+    else if (pdi.m_phase == PhaseDrag::Over)
     {
         DragCheckAutoScroll();
         return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
-    else if (wParam == phaseDragDrop)
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CGamDoc* pDoc = GetDocument();
         CPoint pnt = pdi.m_point;
@@ -599,21 +603,21 @@ LRESULT CPlayBoardView::DoDragPieceList(WPARAM wParam, DragInfo& pdi)
 
 #define MARKER_DROP_GAP_X     8
 
-LRESULT CPlayBoardView::DoDragMarker(WPARAM wParam, DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
 {
     ASSERT(pdi.m_dragType == DRAG_MARKER);
     CGamDoc* pDoc = GetDocument();
     if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
         return -1;               // Only markers from our document.
 
-    if (wParam == phaseDragExit)
+    if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
-    else if (wParam == phaseDragOver)
+    else if (pdi.m_phase == PhaseDrag::Over)
     {
         DragCheckAutoScroll();
         return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
-    else if (wParam == phaseDragDrop)
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CMarkManager* pMMgr = pDoc->GetMarkManager();
         CPoint pnt = pdi.m_point;
@@ -721,7 +725,7 @@ NASTY_GOTO_TARGET:
     return 1;
 }
 
-LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
 {
     if (pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != GetDocument())
         return -1;               // Only pieces from our document.
@@ -732,13 +736,13 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
     CDC& pDC = CheckedDeref(GetDC());
     OnPrepareScaledDC(pDC, TRUE);
 
-    if (wParam == phaseDragExit || wParam == phaseDragDrop ||
-        wParam == phaseDragOver)
+    if (pdi.m_phase == PhaseDrag::Exit || pdi.m_phase == PhaseDrag::Drop ||
+        pdi.m_phase == PhaseDrag::Over)
     {
         // Remove previous drag image.
         pSLst->DrawTracker(pDC, trkMoving);
     }
-    if (wParam == phaseDragExit)
+    if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
 
     CRect rctSnapRef = pSLst->GetSnapReferenceRect();
@@ -771,7 +775,7 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
     CRect rctObjs = pSLst->GetEnclosingRect();
     CPoint pntTopLeft = rctObjs.TopLeft();
 
-    if (wParam == phaseDragOver || wParam == phaseDragEnter)
+    if (pdi.m_phase == PhaseDrag::Over || pdi.m_phase == PhaseDrag::Enter)
     {
         m_pDragSelList = pSLst;
         // Draw new drag image.
@@ -779,12 +783,12 @@ LRESULT CPlayBoardView::DoDragSelectList(WPARAM wParam, DragInfo& pdi)
     }
     ReleaseDC(&pDC);
 
-    if (wParam == phaseDragOver)
+    if (pdi.m_phase == PhaseDrag::Over)
     {
         DragCheckAutoScroll();
         return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
     }
-    else if (wParam == phaseDragDrop)
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CGamDoc* pDoc = GetDocument();
 

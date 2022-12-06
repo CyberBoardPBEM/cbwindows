@@ -420,6 +420,10 @@ BOOL CGbxProjView::CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct)
 
 LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
     CGamDoc* pDoc = GetDocument();
     ASSERT(pDoc);
 
@@ -436,9 +440,9 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (!rct.PtInRect(pdi->m_pointClient))
         return -1;
 
-    if (wParam == phaseDragOver)
+    if (pdi->m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (wParam == phaseDragDrop && pdi->m_dragType == DRAG_TILELIST)
+    else if (pdi->m_phase == PhaseDrag::Drop && pdi->m_dragType == DRAG_TILELIST)
     {
         int nProjSel = m_listProj.GetCurSel();
         ASSERT(nProjSel >= 0 &&
