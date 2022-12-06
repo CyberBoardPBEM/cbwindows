@@ -617,6 +617,10 @@ void CTrayPalette::UpdateTrayList()
 
 LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
     if (m_pDoc->IsPlaying())
         return -1;                       // Drags not supported during play
 
@@ -641,9 +645,9 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (nGrpSel == Invalid_v<size_t>)
         return -1;                       // No tray to drop on
 
-    if (wParam == phaseDragOver)
+    if (pdi->m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (wParam == phaseDragDrop)
+    else if (pdi->m_phase == PhaseDrag::Drop)
     {
         CTrayManager* pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYGrp = pYMgr->GetTraySet(nGrpSel);

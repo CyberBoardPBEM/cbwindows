@@ -176,7 +176,7 @@ protected:
 
     int     m_nLastInsert;          // Last index with insert line
 
-    void  DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi);
+    void  DoInsertLineProcessing(const DragInfo& pdi);
     void  DoAutoScrollProcessing(const DragInfo& pdi);
     void  DoToolTipHitProcessing(CPoint point);
 
@@ -403,7 +403,8 @@ protected:
         ClientToScreen(&di.m_point);
         pWnd->ScreenToClient(&di.m_point);
 
-        pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
+        di.m_phase = PhaseDrag::Drop;
+        pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
             (LPARAM)(LPVOID)&di);
         OnDragCleanup(di);         // Tell subclass we're all done.
         m_multiSelList.clear();

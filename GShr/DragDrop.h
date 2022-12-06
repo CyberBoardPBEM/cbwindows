@@ -38,7 +38,7 @@ class CSelList;
 // is returned, the "No Drop" cursor is displayed.
 //
 // The message format is:
-//      WPARAM = drag phase code.
+//      WPARAM = process id
 //      LPARAM = Pointer to DragInfo structure.
 // Return:
 //      HCURSOR to display (if phaseDragOver). Or zero for no drop cursor.
@@ -47,14 +47,17 @@ class CSelList;
 //          -1 - failure
 //           1 - success
 
-extern UINT WM_DRAGDROP;
+extern const UINT WM_DRAGDROP;
 
 // Drag phase codes...
 
-const   WORD    phaseDragEnter = 0;
-const   WORD    phaseDragExit  = 1;
-const   WORD    phaseDragOver  = 2;
-const   WORD    phaseDragDrop  = 3;
+enum class PhaseDrag
+{
+    Enter = 0,
+    Exit = 1,
+    Over = 2,
+    Drop = 3,
+};
 
 // ----------------------------------------------- //
 
@@ -74,6 +77,7 @@ enum DragType
 struct DragInfo
 {
     DragType    m_dragType;
+    PhaseDrag   m_phase;
 //  BOOL        m_bDropAccepted;// Set by droppee so source knows what happened
     CPoint      m_point;        // Loc of mouse in window (dragOver&dragDrop)
     CPoint      m_pointClient;  // list box relative

@@ -409,7 +409,8 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
             ClientToScreen(&di.m_point);
             pWnd->ScreenToClient(&di.m_point);
 
-            pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop,
+            di.m_phase = PhaseDrag::Drop;
+            pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                 (LPARAM)(LPVOID)&di);
             OnDragCleanup(di);             // Tell subclass we're all done.
             m_multiSelList.clear();
@@ -474,13 +475,16 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
             {
                 // Inform previous window we are leaving them
                 CWnd* pLstWnd = CWnd::FromHandle(m_hLastWnd);
-                pLstWnd->SendMessage(WM_DRAGDROP, phaseDragExit,
+                di.m_phase = PhaseDrag::Exit;
+                pLstWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                     (LPARAM)(LPVOID)&di);
             }
-            pWnd->SendMessage(WM_DRAGDROP, phaseDragEnter, (LPARAM)(LPVOID)&di);
+            di.m_phase = PhaseDrag::Enter;
+            pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()), (LPARAM)(LPVOID)&di);
         }
         m_hLastWnd = pWnd->m_hWnd;
-        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, phaseDragOver,
+        di.m_phase = PhaseDrag::Over;
+        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                 (LPARAM)(LPVOID)&di);
         if (hCursor)
             SetCursor(hCursor);
@@ -523,19 +527,19 @@ int CGrafixListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi)
+void CGrafixListBox2::DoInsertLineProcessing(const DragInfo& pdi)
 {
     if (m_bAllowDropScroll)
     {
         // Handle drawing of insert line
         CPoint pnt = pdi.m_point;
         int nSel = SpecialItemFromPoint(pnt);
-        if (nPhase == phaseDragEnter)
+        if (pdi.m_phase == PhaseDrag::Enter)
         {
             m_nLastInsert = nSel;
             DrawSingle(m_nLastInsert);          // Turn line on
         }
-        else if (nPhase == phaseDragExit || nPhase == phaseDragDrop)
+        else if (pdi.m_phase == PhaseDrag::Exit || pdi.m_phase == PhaseDrag::Drop)
         {
             DrawSingle(m_nLastInsert);          // Turn line off
             m_nLastInsert = -1;
@@ -570,14 +574,19 @@ void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
 
 LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
-    DoInsertLineProcessing((UINT)wParam, CheckedDeref(reinterpret_cast<const DragInfo*>(lParam)));
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
+    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
+    DoInsertLineProcessing(pdi);
 
     CWnd *pWnd = GetParent();
     ASSERT(pWnd != NULL);
     LRESULT lResult = pWnd->SendMessage(WM_DRAGDROP, wParam, lParam);
 
-    if (wParam == phaseDragOver && lResult != 0)
-        DoAutoScrollProcessing(CheckedDeref(reinterpret_cast<const DragInfo*>(lParam)));
+    if (pdi.m_phase == PhaseDrag::Over && lResult != 0)
+        DoAutoScrollProcessing(di);
     return lResult;
 }
 

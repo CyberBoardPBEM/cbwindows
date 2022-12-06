@@ -131,7 +131,7 @@ protected:
     int     m_nLastInsert;          // Last index with insert line
 
     void  SetDocument(CGamDoc& doc) { m_pDoc = &doc; }
-    void  DoInsertLineProcessing(UINT nPhase, const DragInfo& pdi);
+    void  DoInsertLineProcessing(const DragInfo& pdi);
     void  DoAutoScrollProcessing(const DragInfo& pdi);
     void  DoToolTipHitProcessing(CPoint point);
 

@@ -594,13 +594,15 @@ void CPSelectTool::DoDragDrop(CPlayBoardView* pView, CPoint pntClient)
         {
             // Signal previous window we are leaving them
             CWnd* pLstWnd = CWnd::FromHandle(m_hLastWnd);
-            pLstWnd->SendMessage(WM_DRAGDROP, phaseDragExit,
+            m_di.m_phase = PhaseDrag::Exit;
+            pLstWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                 (LPARAM)(LPVOID)&m_di);
         }
         // Signal new window we have entered it.
         if (pWnd != NULL)
         {
-            pWnd->SendMessage(WM_DRAGDROP, phaseDragEnter,
+            m_di.m_phase = PhaseDrag::Enter;
+            pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                 (LPARAM)(LPVOID)&m_di);
         }
     }
@@ -610,7 +612,8 @@ void CPSelectTool::DoDragDrop(CPlayBoardView* pView, CPoint pntClient)
         m_di.m_point = pntClient;
         pView->ClientToScreen(&m_di.m_point);   // Move point into new coord system
         pWnd->ScreenToClient(&m_di.m_point);
-        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, phaseDragOver,
+        m_di.m_phase = PhaseDrag::Over;
+        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
                 (LPARAM)(LPVOID)&m_di);
     }
     m_hLastWnd = hWnd;
@@ -634,7 +637,8 @@ bool CPSelectTool::DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient)
     pView->ClientToScreen(&m_di.m_point);
     pWnd->ScreenToClient(&m_di.m_point);
 
-    return pWnd->SendMessage(WM_DRAGDROP, phaseDragDrop, (LPARAM)(LPVOID)&m_di) == 1;
+    m_di.m_phase = PhaseDrag::Drop;
+    return pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()), (LPARAM)(LPVOID)&m_di) == 1;
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -97,9 +97,13 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
 
 LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
     const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
 
-    DoInsertLineProcessing((UINT)wParam, pdi);
+    DoInsertLineProcessing(pdi);
 
     if (pdi.m_dragType != DRAG_SELECTVIEW)
         return -1;               // Only our drops allowed
@@ -110,9 +114,9 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
 
     DoAutoScrollProcessing(pdi);
 
-    if (wParam == phaseDragOver)
+    if (pdi.m_phase == PhaseDrag::Over)
         return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
-    else if (wParam == phaseDragDrop)
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         int nSel = SpecialItemFromPoint(pdi.m_point);
 
