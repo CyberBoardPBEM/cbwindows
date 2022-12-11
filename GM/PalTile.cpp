@@ -248,11 +248,9 @@ void CTilePalette::OnTileNameCbnSelchange()
 
 LRESULT CTilePalette::OnGetDragSize(WPARAM wParam, LPARAM lParam)
 {
-    CSize retval;
-    retval.cx = std::numeric_limits<decltype(retval.cx)>::max();
-    retval.cy = std::numeric_limits<decltype(retval.cy)>::max();
-
-    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
+    TileID tid = GetCurrentTileID();
+    CTile tile = m_pDoc->GetTileManager()->GetTile(tid, fullScale);
+    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = tile.GetSize();
     return 1;
 }
 
