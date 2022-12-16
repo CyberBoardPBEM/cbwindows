@@ -203,6 +203,9 @@ void CGamProjView::DoHistoryReplay()
     // Move the current selection down one to track the
     // history record that was selected.
     m_listProj.SetCurSel(nSel+1);
+    /* Windows doesn't do this automatically for SetCurSel()
+        (see https://learn.microsoft.com/en-us/windows/win32/controls/lbn-selchange) */
+    OnSelChangeProjList();
 }
 
 // Finished with the move file play back
