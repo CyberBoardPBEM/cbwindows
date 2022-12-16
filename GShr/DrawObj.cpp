@@ -374,6 +374,14 @@ void ObjectID32::Serialize(CArchive& ar)
     {
         case 2:
             ar >> u.buf;
+            // some old files used different object ID tag values
+            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            {
+                if (u.tag.subtype == stInvalid)
+                {
+                    u.tag.subtype = stMarkObj;
+                }
+            }
             break;
         case 4: {
             ASSERT(!"probably should never be used");
