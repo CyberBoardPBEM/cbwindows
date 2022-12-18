@@ -119,6 +119,7 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Latest CyberBoard Releases...", ID_HELP_RELEASES
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -254,6 +255,7 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Latest CyberBoard Releases...", ID_HELP_RELEASES
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -1533,6 +1535,11 @@ BEGIN
     IDS_TT_CUST_COLOR_CELLS "Left Click=Fore Color; Right Click=Back Color\nShift Click & Ctrl Click = Set Custom Color"
     IDS_TT_LINEWIDTH_COMBO  "Line or Border Width"
     IDS_SIDE_N              "Side:  %1"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_URL_CB_RELEASES     "https://github.com/CyberBoardPBEM/cbwindows/releases"
 END
 
 #endif    // English (United States) resources
