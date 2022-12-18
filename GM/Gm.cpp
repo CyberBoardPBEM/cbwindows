@@ -157,7 +157,7 @@ BOOL CGmApp::InitInstance()
     // Change the registry key under which our settings are stored.
     // You should modify this string to be something appropriate
     // such as the name of your company or organization.
-    SetRegistryKey("CyberBoard V3.50");
+    SetRegistryKey("CyberBoard V4.00");
 
     m_bDisableHtmlHelp = GetProfileInt(szSectSettings, szSectDisableHtmlHelp, 0);
     if (!m_bDisableHtmlHelp)
