@@ -92,8 +92,8 @@
 
 #include <regex>
 
-const int progVerMajor = 3;         // Current program version
-const int progVerMinor = 50;        // (Number is divided by 100. ex: 10 is .10)
+const int progVerMajor = 4;         // Current program version
+const int progVerMinor = 0;        // (Number is divided by 100. ex: 10 is .10)
 
 inline int NumVersion(int major, int minor) { return major * 256 + minor; }
 inline int VersionMajor(int numVer) { return numVer / 256; }
