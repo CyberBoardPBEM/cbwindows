@@ -93,6 +93,7 @@ static const TCHAR szGmvIconKey[] = "CyberBoardRecording\\DefaultIcon";
 BEGIN_MESSAGE_MAP(CGpApp, CWinAppEx)
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
     ON_COMMAND(ID_HELP_WEBSITE, OnHelpWebsite)
+    ON_COMMAND(ID_HELP_RELEASES, OnHelpReleases)
     ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE16, OnOpenRecentFile)
     // Standard file based document commands
     ON_COMMAND(ID_FILE_NEW, CWinAppEx::OnFileNew)
@@ -617,6 +618,13 @@ void CGpApp::OnHelpWebsite()
 {
     CString strUrl;
     strUrl.LoadString(IDS_URL_CB_WEBSITE);
+    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void CGpApp::OnHelpReleases()
+{
+    CString strUrl;
+    strUrl.LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 

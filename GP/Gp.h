@@ -124,6 +124,7 @@ public:
 
     afx_msg void OnAppAbout();
     afx_msg void OnHelpWebsite();
+    afx_msg void OnHelpReleases();
     afx_msg BOOL OnOpenRecentFile(UINT nID);
     DECLARE_MESSAGE_MAP()
 };

@@ -129,6 +129,7 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Latest CyberBoard Releases...", ID_HELP_RELEASES
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -263,6 +264,7 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Latest CyberBoard Releases...", ID_HELP_RELEASES
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -434,6 +436,7 @@ BEGIN
         MENUITEM "&Contents",                   ID_HELP_INDEX
         MENUITEM SEPARATOR
         MENUITEM "Visit the CyberBoard Web Site...", ID_HELP_WEBSITE
+        MENUITEM "Latest CyberBoard Releases...", ID_HELP_RELEASES
         MENUITEM SEPARATOR
         MENUITEM "&About CyberBoard...",        ID_APP_ABOUT
     END
@@ -2048,6 +2051,11 @@ BEGIN
     ID_ACT_TURNOVER_ALL_RANDOM 
                             "Turn over all pieces in the Tray to a random side.\nTurn All Pieces Over - Random"
     ID_ACT_TURNOVER_SELECT  "Turn the clicked piece over to the clicked side\nTurn Piece Over - Select"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_URL_CB_RELEASES     "https://github.com/CyberBoardPBEM/cbwindows/releases"
 END
 
 #endif    // English (United States) resources

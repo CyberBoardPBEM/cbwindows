@@ -228,6 +228,8 @@
 #define IDR_TBAR_VIEW                   2051
 #define IDR_TBAR_MOVE                   2053
 #define IDR_TBMENU                      2057
+#define ID_HELP_RELEASES                4000
+#define IDS_URL_CB_RELEASES             4001
 #define IDC_D_ABOUT_GENDATE2            5004
 #define IDC_D_YNEW_NAME                 5072
 #define IDC_D_MDESC_DESCR               5119
@@ -521,6 +523,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        2059
 #define _APS_NEXT_COMMAND_VALUE         40166
 #define _APS_NEXT_CONTROL_VALUE         7228
-#define _APS_NEXT_SYMED_VALUE           4000
+#define _APS_NEXT_SYMED_VALUE           4002
 #endif
 #endif

@@ -85,6 +85,7 @@ BEGIN_MESSAGE_MAP(CGmApp, CWinAppEx)
     //{{AFX_MSG_MAP(CGmApp)
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
     ON_COMMAND(ID_HELP_WEBSITE, OnHelpWebsite)
+    ON_COMMAND(ID_HELP_RELEASES, OnHelpReleases)
     //}}AFX_MSG_MAP
     // Standard file based document commands
     ON_COMMAND(ID_FILE_NEW, CWinAppEx::OnFileNew)
@@ -594,6 +595,13 @@ void CGmApp::OnHelpWebsite()
 {
     CString strUrl;
     strUrl.LoadString(IDS_URL_CB_WEBSITE);
+    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void CGmApp::OnHelpReleases()
+{
+    CString strUrl;
+    strUrl.LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 

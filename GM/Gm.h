@@ -111,6 +111,7 @@ public:
     //{{AFX_MSG(CGmApp)
     afx_msg void OnAppAbout();
     afx_msg void OnHelpWebsite();
+    afx_msg void OnHelpReleases();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
