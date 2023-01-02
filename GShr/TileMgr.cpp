@@ -214,7 +214,7 @@ size_t CTileManager::FindNamedTileSet(const char* pszName) const
     {
         const CTileSet& pTSet = GetTileSet(i);
         CString strName = pTSet.GetName();
-        if (strName.CompareNoCase(pszName))
+        if (strName.CompareNoCase(pszName) == 0)
             return i;
     }
     return Invalid_v<size_t>;
