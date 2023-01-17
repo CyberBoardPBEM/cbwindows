@@ -6,7 +6,9 @@
 *.vtg
 *.vpj
 [Dd]ebug
+[Dd]ebugU
 [Rr]elease
+[Rr]eleaseU
 GP/gphelpidmap.h
 GM/gmhelpidmap.h
 GHelp/CBoard.chm
