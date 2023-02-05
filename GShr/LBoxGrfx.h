@@ -237,9 +237,9 @@ public:
     const std::vector<T>* GetItemMap() const { return m_pItemMap; }
     T GetCurMapItem() const
     {
-        ASSERT(!IsMultiSelect());
+        ASSERT(!this->IsMultiSelect());
         ASSERT(m_pItemMap);
-        int nItem = GetCurSel();
+        int nItem = this->GetCurSel();
         ASSERT(nItem >= 0);
         ASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
         return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
@@ -247,12 +247,12 @@ public:
     std::vector<T> GetCurMappedItemList() const
     {
         std::vector<T> pLst;
-        ASSERT(IsMultiSelect());
-        int nSels = GetSelCount();
+        ASSERT(this->IsMultiSelect());
+        int nSels = this->GetSelCount();
         if (nSels == LB_ERR || nSels == 0)
             return pLst;
         std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
-        GetSelItems(nSels, pSelTbl.data());
+        this->GetSelItems(nSels, pSelTbl.data());
         pLst.reserve(pSelTbl.size());
         for (size_t i = 0; i < pSelTbl.size(); i++)
             pLst.push_back(MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
@@ -278,39 +278,39 @@ public:
     {
         if (m_pItemMap == NULL)
         {
-            ResetContent();
+            this->ResetContent();
             return;
         }
 
-        SetRedraw(FALSE);
-        int nCurSel = IsMultiSelect() ? -1 : GetCurSel();
-        int nTopIdx = GetTopIndex();
-        int nFcsIdx = GetCaretIndex();
-        int horzScroll = GetScrollPos(SB_HORZ);
-        ResetContent();
+        this->SetRedraw(FALSE);
+        int nCurSel = this->IsMultiSelect() ? -1 : this->GetCurSel();
+        int nTopIdx = this->GetTopIndex();
+        int nFcsIdx = this->GetCaretIndex();
+        int horzScroll = this->GetScrollPos(SB_HORZ);
+        this->ResetContent();
         LONG width = 0;
         int nItem;
         for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
         {
-            AddString(" ");             // Fill with dummy data
-            width = CB::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
+            this->AddString(" ");             // Fill with dummy data
+            width = CB::max(width, this->OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
         }
-        SetHorizontalExtent(value_preserving_cast<int>(width));
+        this->SetHorizontalExtent(value_preserving_cast<int>(width));
         if (bKeepPosition)
         {
             if (nTopIdx >= 0)
-                SetTopIndex(CB::min(nTopIdx, nItem - 1));
+                this->SetTopIndex(CB::min(nTopIdx, nItem - 1));
             if (nFcsIdx >= 0)
-                SetCaretIndex(CB::min(nFcsIdx, nItem - 1), FALSE);
+                this->SetCaretIndex(CB::min(nFcsIdx, nItem - 1), FALSE);
             if (nCurSel >= 0)
-                SetCurSel(CB::min(nCurSel, nItem - 1));
+                this->SetCurSel(CB::min(nCurSel, nItem - 1));
         }
-        SetRedraw(TRUE);
+        this->SetRedraw(TRUE);
         if (bKeepPosition)
         {
-            SendMessage(WM_HSCROLL, MAKELONG(int16_t(SB_THUMBPOSITION), value_preserving_cast<int16_t>(horzScroll)), NULL);
+            this->SendMessage(WM_HSCROLL, MAKELONG(int16_t(SB_THUMBPOSITION), value_preserving_cast<int16_t>(horzScroll)), NULL);
         }
-        Invalidate();
+        this->Invalidate();
     }
     void SetCurSelMapped(T nMapVal)
     {
@@ -319,23 +319,23 @@ public:
         {
             if (m_pItemMap->at(i) == nMapVal)
             {
-                SetCurSel(value_preserving_cast<int>(i));
-                SetTopIndex(value_preserving_cast<int>(i));
+                this->SetCurSel(value_preserving_cast<int>(i));
+                this->SetTopIndex(value_preserving_cast<int>(i));
             }
         }
     }
     void SetCurSelsMapped(const std::vector<T>& items)
     {
         ASSERT(m_pItemMap);
-        ASSERT(IsMultiSelect());
+        ASSERT(this->IsMultiSelect());
 
-        SetSel(-1, FALSE);      // Deselect all
-        for (size_t i = 0; i < items.size(); i++)
+        this->SetSel(-1, FALSE);      // Deselect all
+        for (size_t i = size_t(0); i < items.size(); i++)
         {
             for (size_t j = 0; j < m_pItemMap->size(); j++)
             {
                 if (m_pItemMap->at(j) == items[i])
-                    SetSel(value_preserving_cast<int>(j));
+                    this->SetSel(value_preserving_cast<int>(j));
             }
         }
     }
@@ -360,34 +360,34 @@ public:
 protected:
     virtual void OnDragEnd(CPoint point) override
     {
-        AssignNewMoveGroup();
-        if (di.GetDragType() == DRAG_INVALID)
+        this->AssignNewMoveGroup();
+        if (BASE_WND::di.GetDragType() == DRAG_INVALID)
         {
             // do nothing
         }
-        else if (IsMultiSelect())
+        else if (this->IsMultiSelect())
         {
             // Get the final selection results after the mouse was released.
             m_multiSelList = GetCurMappedItemList();
 
-            CWnd* pWnd = GetParent();
+            CWnd* pWnd = this->GetParent();
             ASSERT(pWnd != NULL);
             pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&m_multiSelList), T::PREFIX);
         }
         else
         {
             // The parent may want to override the value.
-            if (di.GetDragType() == DRAG_MARKER)
+            if (BASE_WND::di.GetDragType() == DRAG_MARKER)
             {
-                COverrideInfo<DRAG_MARKER> oi(di.GetSubInfo<DRAG_MARKER>().m_markID);
-                CWnd* pWnd = GetParent();
+                COverrideInfo<DRAG_MARKER> oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
+                CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
             }
-            else if (di.GetDragType() == DRAG_TILE)
+            else if (BASE_WND::di.GetDragType() == DRAG_TILE)
             {
-                COverrideInfo<DRAG_TILE> oi(di.GetSubInfo<DRAG_TILE>().m_tileID);
-                CWnd* pWnd = GetParent();
+                COverrideInfo<DRAG_TILE> oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
+                CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
             }
@@ -400,21 +400,21 @@ protected:
         ReleaseCapture();
         SetCursor(LoadCursor(NULL, IDC_ARROW));
 
-        CWnd* pWnd = GetWindowFromPoint(point);
-        if (pWnd == NULL || (!m_bAllowSelfDrop && pWnd == this))
+        CWnd* pWnd = this->GetWindowFromPoint(point);
+        if (pWnd == NULL || (!this->m_bAllowSelfDrop && pWnd == this))
         {
-            OnDragCleanup(di);         // Tell subclass we're all done.
+            this->OnDragCleanup(BASE_WND::di);         // Tell subclass we're all done.
             return;
         }
-        di.m_point = point;
-        di.m_pointClient = point;       // list box relative
-        ClientToScreen(&di.m_point);
-        pWnd->ScreenToClient(&di.m_point);
+        BASE_WND::di.m_point = point;
+        BASE_WND::di.m_pointClient = point;       // list box relative
+        this->ClientToScreen(&BASE_WND::di.m_point);
+        pWnd->ScreenToClient(&BASE_WND::di.m_point);
 
-        di.m_phase = PhaseDrag::Drop;
+        BASE_WND::di.m_phase = PhaseDrag::Drop;
         pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-            (LPARAM)(LPVOID)&di);
-        OnDragCleanup(di);         // Tell subclass we're all done.
+            (LPARAM)(LPVOID)&BASE_WND::di);
+        this->OnDragCleanup(BASE_WND::di);         // Tell subclass we're all done.
         m_multiSelList.clear();
     }
 

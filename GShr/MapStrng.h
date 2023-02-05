@@ -31,6 +31,7 @@
 
 #include    "Pieces.h"
 #include    "Marks.h"
+#include    "Versions.h"
 
 #if defined(GPLAY)
 #include    "DrawObj.h"
@@ -733,19 +734,19 @@ public:
         {
             if (CB::GetVersion(ar) <= NumVersion(3, 90))
             {
-                uint32_t dwCount = value_preserving_cast<uint32_t>(GetCount());
+                uint32_t dwCount = value_preserving_cast<uint32_t>(this->GetCount());
                 ar << dwCount;
             }
             else
             {
-                CB::WriteCount(ar, value_preserving_cast<size_t>(GetCount()));
+                CB::WriteCount(ar, value_preserving_cast<size_t>(this->GetCount()));
             }
-            POSITION pos = GetStartPosition();
+            POSITION pos = this->GetStartPosition();
             while (pos != NULL)
             {
                 KEY elem;
                 CString str;
-                GetNextAssoc(pos, elem, str);
+                this->GetNextAssoc(pos, elem, str);
                 ar << elem;
                 ar << str;
             }
@@ -770,14 +771,14 @@ public:
                 ar >> dwElem;
                 CString str;
                 ar >> str;
-                SetAt(dwElem, str);
+                this->SetAt(dwElem, str);
             }
         }
     }
 
     void Clone(const CGameElementStringMapT& pMapToCopy)
     {
-        RemoveAll();
+        this->RemoveAll();
 
         POSITION pos = pMapToCopy.GetStartPosition();
         while (pos != NULL)
@@ -785,13 +786,13 @@ public:
             CString str;
             KEY elem;
             pMapToCopy.GetNextAssoc(pos, elem, str);
-            SetAt(elem, str);
+            this->SetAt(elem, str);
         }
     }
 
     BOOL Compare(const CGameElementStringMapT& pMapToCompare) const
     {
-        if (GetCount() != pMapToCompare.GetCount())
+        if (this->GetCount() != pMapToCompare.GetCount())
             return FALSE;                       // Different sizes so no match
         POSITION pos = pMapToCompare.GetStartPosition();
         while (pos != NULL)

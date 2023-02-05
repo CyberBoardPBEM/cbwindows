@@ -157,7 +157,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
         // object must already be in this list
         ASSERT(pDwg->Find(*opObj) != pDwg->end());
         // don't let the object get deleted
-        OwnerOrNullPtr<CDrawObj> temp = CB::get_underlying(std::move(opObj));
+        OwnerOrNullPtr<CDrawObj> temp = std::move(opObj);
         CB::get_underlying(std::move(temp)).release();
     }
 

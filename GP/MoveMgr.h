@@ -100,7 +100,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////
 
-enum PlacePos;
+enum PlacePos : int;
 
 class CBoardPieceMove : public CMoveRecord
 {

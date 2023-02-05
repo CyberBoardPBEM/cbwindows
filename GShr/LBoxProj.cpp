@@ -60,7 +60,7 @@ int CProjListBoxBase::AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode
     int nIdx = AddString(str);
     if (nIdx == LB_ERR)
         return nIdx;
-    int nItem = SetItemData(nIdx, nSourceCode != Invalid_v<size_t> ? value_preserving_cast<DWORD_PTR>(nSourceCode) : Invalid_v<uintptr_t>);
+    int nItem = SetItemData(nIdx, nSourceCode != Invalid_v<size_t> ? value_preserving_cast<uintptr_t>(nSourceCode) : Invalid_v<uintptr_t>);
     m_nHorzWidth = CB::max(GetItemWidth(nIdx), m_nHorzWidth);
     SetHorizontalExtent(m_nHorzWidth);
     return nItem;

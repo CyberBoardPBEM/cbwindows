@@ -86,6 +86,8 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 #pragma warning(error:  4311)
 // warning C4312 : 'type cast' : conversion from 'xxx' to 'yyy' of greater size
 #pragma warning(error:  4312)
+// warning C4471 : 'xxx' : a forward declaration of an unscoped enumeration must have an underlying type
+#pragma warning(error:  4471)
 // warning C4477 : 'sprintf' : format string 'xxx' requires an argument of type 'yyy', but variadic argument 1 has type 'zzz'
 #pragma warning(error:  4477)
 // warning C4701 : potentially uninitialized local variable 'xxx' used
@@ -201,7 +203,7 @@ namespace CB
     void Copy(LEFT& left, const RIGHT& right)
     {
         left.clear();
-        for (RIGHT::const_iterator it = right.begin() ; it != right.end() ; ++it)
+        for (typename RIGHT::const_iterator it = right.begin() ; it != right.end() ; ++it)
         {
             left.push_back(*it);
         }
@@ -211,7 +213,7 @@ namespace CB
     void Move(LEFT& left, RIGHT&& right)
     {
         left.clear();
-        for (RIGHT::iterator it = right.begin() ; it != right.end() ; ++it)
+        for (typename RIGHT::iterator it = right.begin() ; it != right.end() ; ++it)
         {
             left.push_back(std::move(*it));
         }
@@ -809,7 +811,7 @@ const OwnerPtr<CWordArray> ToCWordArray(const std::vector<XxxxIDExt<PREFIX, UNDE
 template<typename T>
 std::vector<T> ToVector(const CWordArray& a)
 {
-    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
+    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, typename T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     std::vector<T> retval;
     retval.reserve(value_preserving_cast<size_t>(a.GetSize()));
     for (INT_PTR i = 0 ; i < a.GetSize() ; ++i)
@@ -835,7 +837,7 @@ const OwnerPtr<CDWordArray> ToCDWordArray(const std::vector<XxxxIDExt<PREFIX, UN
 template<typename T>
 std::vector<T> ToVector(const CDWordArray& a)
 {
-    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
+    static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, typename T::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     std::vector<T> retval;
     retval.reserve(value_preserving_cast<size_t>(a.GetSize()));
     for (INT_PTR i = 0; i < a.GetSize(); ++i)
@@ -868,13 +870,15 @@ constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, UNDERLYING_TYPE>,
 template<typename KEY, typename ELEMENT,
     size_t baseSize, size_t incrSize,
     bool saveInGPlay,
+    size_t (*calcAllocSize)(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize),
     bool triviallyCopyable = std::is_trivially_copyable_v<ELEMENT>>
 class XxxxIDTable;
 
 template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
-        bool saveInGPlay>
-class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, true>
+        bool saveInGPlay,
+        size_t (*calcAllocSize)(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize)>
+class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, calcAllocSize, true>
 {
     static_assert(std::is_same_v<KEY, XxxxIDExt<KEY::PREFIX, KEY::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     static_assert(std::is_trivially_copyable_v<ELEMENT>, "ELEMENT must be trivially copyable");
@@ -973,7 +977,7 @@ public:
             return;
         }
 
-        size_t nNewSize = CalcAllocSize(nEntsNeeded, baseSize, incrSize);
+        size_t nNewSize = (*calcAllocSize)(nEntsNeeded, baseSize, incrSize);
         if (m_pTbl != NULL)
         {
             ELEMENT* pNewTbl = (ELEMENT*)realloc(
@@ -1038,8 +1042,9 @@ private:
 
 template<typename KEY, typename ELEMENT,
     size_t baseSize, size_t incrSize,
-    bool saveInGPlay>
-class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, false>
+    bool saveInGPlay,
+    size_t(*calcAllocSize)(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize)>
+class XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, calcAllocSize, false>
 {
     static_assert(std::is_same_v<KEY, XxxxIDExt<KEY::PREFIX, KEY::UNDERLYING_TYPE>>, "requires XxxxIDExt<>");
     static_assert(!std::is_trivially_copyable_v<ELEMENT>, "inefficient; use other XxxxIDTable impl instead");
@@ -1110,7 +1115,7 @@ public:
         }
 
         size_t oldSize = m_pTbl.size();
-        size_t nNewSize = CalcAllocSize(nEntsNeeded, baseSize, incrSize);
+        size_t nNewSize = (*calcAllocSize)(nEntsNeeded, baseSize, incrSize);
         m_pTbl.resize(nNewSize);
         if (initializer)
         {
@@ -1162,22 +1167,24 @@ private:
 template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
         bool saveInGPlay,
+        size_t (*calcAllocSize)(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize),
         bool triviallyCopyable>
-CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>& v)
+CArchive& operator<<(CArchive& ar, const XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, calcAllocSize, triviallyCopyable>& v)
 {
     if (!ar.IsStoring())
     {
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
-    const_cast<XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>&>(v).Serialize(ar);
+    const_cast<XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, calcAllocSize, triviallyCopyable>&>(v).Serialize(ar);
     return ar;
 }
 
 template<typename KEY, typename ELEMENT,
         size_t baseSize, size_t incrSize,
         bool saveInGPlay,
+        size_t(*calcAllocSize)(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize),
         bool triviallyCopyable>
-CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, triviallyCopyable>& v)
+CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize, saveInGPlay, calcAllocSize, triviallyCopyable>& v)
 {
     if (ar.IsStoring())
     {

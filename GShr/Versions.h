@@ -191,7 +191,7 @@ namespace CB { namespace Impl
     template<typename T>
     size_t GetXxxxIDSerializeSize(const CArchive& ar)
     {
-        static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, T::UNDERLYING_TYPE>>, "requires XxxxIDExt");
+        static_assert(std::is_same_v<T, XxxxIDExt<T::PREFIX, typename T::UNDERLYING_TYPE>>, "requires XxxxIDExt");
         /* if .gbx/.gsn/.gam/.gmv versions become unequal,
             the version logic here will need to rebuilt */
         ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
@@ -287,6 +287,16 @@ CArchive& operator<<(CArchive& ar, const std::vector<XxxxIDExt<PREFIX, UNDERLYIN
             CbThrowBadCastException();
     }
 }
+
+template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
+                                        std::is_same_v<T, CDWordArray> ||
+                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+CArchive& operator<<(CArchive& ar, const T& v);
+
+template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
+                                        std::is_same_v<T, CDWordArray> ||
+                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+CArchive& operator>>(CArchive& ar, T& v);
 
 template<char PREFIX, typename UNDERLYING_TYPE>
 CArchive& operator>>(CArchive& ar, std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
@@ -414,7 +424,7 @@ namespace CB
 
 template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
                                         std::is_same_v<T, CDWordArray> ||
-                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+                                        std::is_same_v<T, CArray<int, int>>, bool> /*= true*/>
 inline CArchive& operator<<(CArchive& ar, const T& v)
 {
     CB::WriteCount(ar, value_preserving_cast<size_t>(v.GetSize()));
@@ -425,7 +435,7 @@ inline CArchive& operator<<(CArchive& ar, const T& v)
 
 template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
                                         std::is_same_v<T, CDWordArray> ||
-                                        std::is_same_v<T, CArray<int, int>>, bool> = true>
+                                        std::is_same_v<T, CArray<int, int>>, bool> /*= true*/>
 inline CArchive& operator>>(CArchive& ar, T& v)
 {
     size_t size = CB::ReadCount(ar);

@@ -173,7 +173,8 @@ public:
 protected:
     XxxxIDTable<PieceID, Piece,
                 pieceTblBaseSize, pieceTblIncrSize,
-                true> m_pPieceTbl;
+                true,
+                CalcAllocSize> m_pPieceTbl;
 
     WORD        m_wReserved1;       // For future need (set to 0)
     WORD        m_wReserved2;       // For future need (set to 0)

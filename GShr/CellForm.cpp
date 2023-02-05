@@ -180,7 +180,7 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
         row = y / m_pPoly[size_t(3)].y;
 
         CB::ssize_t xBase = CellPhase(row) * m_pPoly[size_t(1)].x;
-        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_pPoly[size_t(2)].x;
+        col = x < xBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((x - xBase) / m_pPoly[size_t(2)].x);
 
         CRect rct = GetRect(row, col);
         g_gt.mDC1.SelectObject(*m_pMask);
@@ -199,7 +199,7 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
     {
         col = x / m_pPoly[size_t(2)].x;
         CB::ssize_t yBase = CellPhase(col) * m_pPoly[size_t(3)].y;
-        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_pPoly[size_t(4)].y;
+        row = y < yBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((y - yBase) / m_pPoly[size_t(4)].y);
 
         CRect rct = GetRect(row, col);
 
@@ -224,13 +224,13 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
     {
         row = y / m_rct.bottom;
         CB::ssize_t xBase = (CellPhase(row) * m_rct.right) / 2;
-        col = x < xBase ? CB::ssize_t(-1) : (x - xBase) / m_rct.right;
+        col = x < xBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((x - xBase) / m_rct.right);
     }
     else    // m_eType == cformBrickVert
     {
         col = x / m_rct.right;
         CB::ssize_t yBase = (CellPhase(col) * m_rct.bottom) / 2;
-        row = y < yBase ? CB::ssize_t(-1) : (y - yBase) / m_rct.bottom;
+        row = y < yBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((y - yBase) / m_rct.bottom);
     }
 }
 
@@ -390,10 +390,10 @@ void CCellForm::Serialize(CArchive& ar)
                     AfxThrowInvalidArgException();
             }
         }
-        ar << (short)m_rct.left;
-        ar << (short)m_rct.top;
-        ar << (short)m_rct.right;
-        ar << (short)m_rct.bottom;
+        ar << static_cast<uint16_t>(m_rct.left);
+        ar << static_cast<uint16_t>(m_rct.top);
+        ar << static_cast<uint16_t>(m_rct.right);
+        ar << static_cast<uint16_t>(m_rct.bottom);
         WriteArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
     }
     else
@@ -407,11 +407,11 @@ void CCellForm::Serialize(CArchive& ar)
         {
             m_nStagger = CellStagger::Invalid;
         }
-        short sTmp;
-        ar >> (short)sTmp; m_rct.left = sTmp;
-        ar >> (short)sTmp; m_rct.top = sTmp;
-        ar >> (short)sTmp; m_rct.right = sTmp;
-        ar >> (short)sTmp; m_rct.bottom = sTmp;
+        uint16_t sTmp;
+        ar >> sTmp; m_rct.left = sTmp;
+        ar >> sTmp; m_rct.top = sTmp;
+        ar >> sTmp; m_rct.right = sTmp;
+        ar >> sTmp; m_rct.bottom = sTmp;
 
         if (m_eType == cformHexFlat || m_eType == cformHexPnt)
         {
