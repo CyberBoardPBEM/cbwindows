@@ -272,7 +272,8 @@ void CPieceManager::Serialize(CArchive& ar)
 {
     typedef XxxxIDTable<PieceID, PieceDef_v310,
                         pieceTblBaseSize, pieceTblIncrSize,
-                        true> PieceIDTable_v310;
+                        true,
+                        CalcAllocSize> PieceIDTable_v310;
 
     if (ar.IsStoring())
     {

@@ -297,10 +297,10 @@ void CDrawObj::Serialize(CArchive& ar)
     {
         ar << m_dwDObjFlags;            // File Ver 2.0
         CRect temp = GetRect();
-        ar << (short)temp.left;
-        ar << (short)temp.top;
-        ar << (short)temp.right;
-        ar << (short)temp.bottom;
+        ar << static_cast<uint16_t>(temp.left);
+        ar << static_cast<uint16_t>(temp.top);
+        ar << static_cast<uint16_t>(temp.right);
+        ar << static_cast<uint16_t>(temp.bottom);
     }
     else
     {
@@ -312,12 +312,12 @@ void CDrawObj::Serialize(CArchive& ar)
             ar >> wTmp;
             m_dwDObjFlags = wTmp;
         }
-        short sTmp;
+        uint16_t sTmp;
         CRect temp;
-        ar >> (short)sTmp; temp.left = sTmp;
-        ar >> (short)sTmp; temp.top = sTmp;
-        ar >> (short)sTmp; temp.right = sTmp;
-        ar >> (short)sTmp; temp.bottom = sTmp;
+        ar >> sTmp; temp.left = sTmp;
+        ar >> sTmp; temp.top = sTmp;
+        ar >> sTmp; temp.right = sTmp;
+        ar >> sTmp; temp.bottom = sTmp;
         SetRect(temp);
     }
 }

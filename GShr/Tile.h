@@ -29,6 +29,10 @@
 #include    "GdiTools.h"
 #endif
 
+#ifndef     _GMISC_H
+#include    "GMisc.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////
 
 class   CTile;
@@ -276,7 +280,8 @@ public:
 protected:
     XxxxIDTable<TileID, TileDef,
                 tileTblBaseSize, tileTblIncrSize,
-                false> m_pTileTbl;
+                false,
+                CalcAllocSize> m_pTileTbl;
     COLORREF    m_crTrans;          // Transparency color for all tiles
     WORD        m_wReserved1;       // For future need (set to 0)
     WORD        m_wReserved2;       // For future need (set to 0)

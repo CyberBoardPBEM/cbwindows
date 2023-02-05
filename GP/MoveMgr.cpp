@@ -2530,7 +2530,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
 
 #ifdef _DEBUG
 
-static char *tblTypes[CMoveRecord::mrecMax] =
+static const char *tblTypes[CMoveRecord::mrecMax] =
 {
     "UnKnown", "GameStateSnapshot", "PieceToBoardMove", "PieceToTrayMove",
     "PieceSetSide", "MarkerToBoardMove", "MovePlotTrack", "PlayerMessage",

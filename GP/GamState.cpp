@@ -72,7 +72,7 @@ BOOL CGameState::SaveState(CGamDoc& doc)
     {
         m_mapString.Clone(doc.GetGameStringMap());
         OwnerPtr<CPBoardManager> temp1 = doc.GetPBoardManager()->Clone(doc);
-        OwnerOrNullPtr<CPBoardManager> temp2 = CB::get_underlying(std::move(temp1));
+        OwnerOrNullPtr<CPBoardManager> temp2 = std::move(temp1);
         m_pPBMgr = CB::get_underlying(std::move(temp2)).release();
         m_pYMgr = doc.GetTrayManager()->Clone(&doc);
         m_pPTbl = doc.GetPieceTable()->Clone();

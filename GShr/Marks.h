@@ -181,7 +181,8 @@ public:
 protected:
     XxxxIDTable<MarkID, MarkDef,
                 markTblBaseSize, markTblIncrSize,
-                true> m_pMarkTbl;
+                true,
+                CalcAllocSize> m_pMarkTbl;
     std::vector<CMarkSet> m_MSetTbl;
     WORD        m_wReserved1;   // For future need (set to 0)
     WORD        m_wReserved2;   // For future need (set to 0)

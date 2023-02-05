@@ -35,7 +35,7 @@ class CGamDoc;
 
 //////////////////////////////////////////////////////////////////////
 
-enum TrayViz            // Tray content visiblity options
+enum TrayViz : int            // Tray content visiblity options
 {
     trayVizAllSides = 0,
     trayVizOneSide = 1,
