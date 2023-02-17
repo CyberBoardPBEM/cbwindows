@@ -40,7 +40,7 @@
 #include    "ResTbl.h"
 #include    "StrLib.h"
 
-#if 1
+#if 0
 #include <format>
 
 // unfortunately, these aren't provided by default (due to needing encoding conversion)
