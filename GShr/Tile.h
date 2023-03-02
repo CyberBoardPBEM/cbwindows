@@ -267,6 +267,10 @@ public:
     void CreateTilesFromTileImageArchive(CArchive& ar, size_t nTSet,
             std::vector<TileID>* pTidTbl  = NULL, size_t nPos = Invalid_v<size_t>);
     // ---------- //
+    bool Needs32BitIDs() const
+    {
+        return m_pTileTbl.GetSize() >= size_t(0xFFFF);
+    }
     void Serialize(CArchive& archive);
     void SerializeTileSets(CArchive& ar);
     void SerializeTileSheets(CArchive& ar);

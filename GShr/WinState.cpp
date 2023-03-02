@@ -229,7 +229,7 @@ void CWinStateManager::Serialize(CArchive& ar)
             ar << (DWORD)0;
             return;
         }
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<DWORD>(m_pList->size());
         }
@@ -247,7 +247,7 @@ void CWinStateManager::Serialize(CArchive& ar)
     {
         m_pList = nullptr;
         size_t dwCount;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             DWORD temp;
             ar >> temp;
@@ -340,7 +340,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar << m_wUserCode1;
         ar << m_boardID;
         ar << m_wndState;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
         }
@@ -360,7 +360,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar >> m_boardID;
         ar >> m_wndState;
         size_t size;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             DWORD dwSize;
             ar >> dwSize;

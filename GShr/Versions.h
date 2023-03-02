@@ -4,6 +4,7 @@
 //
 // wsu20210731
 //      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
+//              treat size_t as 64bit (even in 32bit builds)
 //              geomorphic boards with square cells
 //              geomorphic boards with rotated unit boards
 //              pieces with <= 100 sides
@@ -104,7 +105,7 @@ inline int GetSaveFileVersion()
     static const int retval = [] {
         struct FileFlagParser : public CCommandLineInfo
         {
-            int version = NumVersion(4, 0);
+            int version = NumVersion(105, 0);
             virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
             {
                 static const std::regex re(R"(filever:([[:digit:]]+)\.([[:digit:]]+))");
@@ -182,6 +183,318 @@ namespace CB
     }
 }
 
+class Features;
+const Features& GetCBFeatures();
+
+//  support for incremental file format changes
+class Feature
+{
+public:
+    Feature() noexcept = default;
+    explicit Feature(std::string f) : feature(std::move(f)) {}
+
+    bool operator==(const Feature& other) const noexcept
+    {
+        return _stricmp(feature.c_str(), other.feature.c_str()) == 0;
+    }
+
+    friend CArchive& operator<<(CArchive& ar, const Feature& f)
+    {
+        /* At this point in the file, the reader doesn't yet
+            know whether feature "size_t-64bit" is active, so
+            make a rule that size is always 8 bytes for
+            Feature/Features */
+        ar << uint64_t(f.feature.size());
+        ar.Write(f.feature.c_str(), value_preserving_cast<uint32_t>(f.feature.size()));
+        return ar;
+    }
+
+    friend CArchive& operator>>(CArchive& ar, Feature& f)
+    {
+        /* At this point in the file, the reader doesn't yet
+            know whether feature "size_t-64bit" is active, so
+            make a rule that size is always 8 bytes for
+            Feature/Features */
+        uint64_t size;
+        ar >> size;
+        f.feature.resize(value_preserving_cast<size_t>(size));
+        ar.Read(&f.feature.front(), value_preserving_cast<uint32_t>(size));
+        return ar;
+    }
+
+private:
+    std::string feature;
+
+    friend std::formatter<Feature, char>;
+    friend std::formatter<Features, char>;
+};
+
+template<>
+struct std::formatter<Feature, char> : std::formatter<std::string, char>
+{
+    using BASE = formatter<std::string, char>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    constexpr auto format(const Feature& f, FormatContext& ctx)
+    {
+        return BASE::format(std::format("Feature({})", f.feature), ctx);
+    }
+};
+
+inline const Feature ftrId32Bit("id-32bit");
+inline const Feature ftrSizet64Bit("size_t-64bit");
+inline const Feature ftrGeoSquareCell("geo-square-cell");
+inline const Feature ftrGeoRotateUnit("geo-rotate-unit");
+inline const Feature ftrPiece100Sides("piece-100-sides");
+inline const Feature ftrPrivatePlayerBoard("private-player-board");
+inline const Feature ftrCRollState("CRollState");
+
+class Features : private std::vector<Feature>
+{
+    using BASE = std::vector<Feature>;
+public:
+    Features() noexcept = default;
+    Features(std::initializer_list<Feature> l) : BASE(l) {}
+
+    using BASE::begin;
+    using BASE::end;
+
+    bool Check(const Feature& f) const noexcept
+    {
+        return Find(f) != end();
+    }
+
+    void Add(const Feature& f)
+    {
+        if (!Check(f))
+        {
+            push_back(f);
+        }
+    }
+
+    void Remove(const Feature& f)
+    {
+        auto it = Find(f);
+        if (it != end())
+        {
+            erase(it);
+        }
+    }
+
+    friend CArchive& operator<<(CArchive& ar, const Features& fs)
+    {
+        if (!ar.IsStoring())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+
+        /* At this point in the file, the reader doesn't yet
+            know whether feature "size_t-64bit" is active, so
+            make a rule that size is always 8 bytes for
+            Feature/Features */
+        ar << uint64_t(fs.size());
+        for (const Feature& f : fs)
+        {
+            ar << f;
+        }
+
+        return ar;
+    }
+
+    friend CArchive& operator>>(CArchive& ar, Features& fs)
+    {
+        if (!ar.IsLoading())
+        {
+            AfxThrowArchiveException(CArchiveException::readOnly);
+        }
+
+        /* At this point in the file, the reader doesn't yet
+            know whether feature "size_t-64bit" is active, so
+            make a rule that size is always 8 bytes for
+            Feature/Features */
+        uint64_t size;
+        ar >> size;
+        fs.resize(value_preserving_cast<size_t>(size));
+        for (Feature& feature : fs)
+        {
+            ar >> feature;
+            if (!GetCBFeatures().Check(feature))
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+        }
+
+        return ar;
+    }
+
+private:
+    typename BASE::const_iterator Find(const Feature& f) const noexcept
+    {
+        return std::find(begin(), end(), f);
+    }
+};
+
+template<>
+struct std::formatter<Features, char> : std::formatter<std::string, char>
+{
+    using BASE = formatter<std::string, char>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    constexpr auto format(const Features& fs, FormatContext& ctx)
+    {
+        std::string accum;
+        for (const Feature& f : fs)
+        {
+            if (!accum.empty())
+            {
+                accum += ", ";
+            }
+            accum += std::format("{}", f.feature);
+        }
+        return BASE::format(std::format("Features({})", accum), ctx);
+    }
+};
+
+/* mostly for testing, features to be used even if not required
+    (e.g., id-32bit) */
+inline const Features& GetCBForcedFeatures()
+{
+    static const Features features = [] {
+        struct FileFlagParser : public CCommandLineInfo
+        {
+            Features features;
+            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            {
+                static const std::regex re(R"(filever:force-(.+))", std::regex_constants::icase);
+                std::cmatch m;
+                if (bFlag && std::regex_match(pszParam, m, re))
+                {
+                    features.Add(Feature(m[1]));
+                }
+            }
+        };
+        FileFlagParser ffp;
+        CbGetApp().ParseCommandLine(ffp);
+        TRACE("%s", std::format("{}:  {}\n", __func__, ffp.features).c_str());
+        return ffp.features;
+    }();
+    return features;
+}
+
+// CB file format 4.0 added these features
+inline const Features& GetCBFile4Features()
+{
+    static const Features features = {
+        ftrId32Bit,
+        ftrSizet64Bit,
+        ftrGeoSquareCell,
+        ftrGeoRotateUnit,
+        ftrPiece100Sides,
+        ftrPrivatePlayerBoard,
+        ftrCRollState,
+    };
+    return features;
+}
+
+inline const Features& GetCBFeatures()
+{
+    static const Features features = [] {
+        struct FileFlagParser : public CCommandLineInfo
+        {
+            Features features;
+            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            {
+                static const std::regex re(R"(filever:no-(.+))", std::regex_constants::icase);
+                std::cmatch m;
+                if (bFlag && std::regex_match(pszParam, m, re))
+                {
+                    Feature f(m[1]);
+                    features.Remove(f);
+                }
+            }
+        };
+        FileFlagParser ffp;
+        if (GetSaveFileVersion() >= NumVersion(4, 0))
+        {
+            ffp.features = GetCBFile4Features();
+            CbGetApp().ParseCommandLine(ffp);
+        }
+        const Features& forced = GetCBForcedFeatures();
+        for (const Feature& f : forced)
+        {
+            if (!ffp.features.Check(f))
+            {
+                ASSERT(!"conflicting feature settings");
+                AfxThrowInvalidArgException();
+            }
+        }
+        TRACE("%s", std::format("{}:  {}\n", __func__, ffp.features).c_str());
+        return ffp.features;
+    }();
+    return features;
+}
+
+/* TODO:  when we have our own CArchive replacement, make
+            Features a member of it rather than static CGamDoc
+            member */
+// KLUDGE:  get access to CGamDoc::Get/SetFileFeatures
+extern const Features& GetFileFeatures();
+extern void SetFileFeatures(Features&& fs);
+namespace CB
+{
+    inline const Features& GetFeatures(const CArchive& ar)
+    {
+        return GetFileFeatures();
+    }
+
+    inline void SetFeatures(CArchive& ar, Features&& fs)
+    {
+        return SetFileFeatures(std::move(fs));
+    }
+
+    inline void AddFeature(CArchive& ar, const Feature& f)
+    {
+        Features fs = GetFeatures(ar);
+        fs.Add(f);
+        SetFeatures(ar, std::move(fs));
+    }
+}
+
+/* This is an RAII helper for setting the current file format
+    version, and then changing it to a different version when
+    the need for the current version is done.  Defaults to
+    different version being the version in use before creating
+    this object, but that version can be overridden to set a
+    different version.  */
+class SetFileFeaturesGuard
+{
+public:
+    SetFileFeaturesGuard(CArchive& ar, Features&& ctorFeat, Features&& dtorFeat) noexcept :
+        ar(ar), m_dtorFeat(std::move(dtorFeat))
+    {
+        CB::SetFeatures(ar, std::move(ctorFeat));
+    }
+    SetFileFeaturesGuard(CArchive& ar, const Features& ctorFeat, const Features& dtorFeat) :
+        SetFileFeaturesGuard(ar, Features(ctorFeat), Features(dtorFeat))
+    {
+    }
+    SetFileFeaturesGuard(CArchive& ar, const Features& ctorFeat) :
+        SetFileFeaturesGuard(ar, Features(ctorFeat), Features(CB::GetFeatures(ar)))
+    {
+    }
+    ~SetFileFeaturesGuard()
+    {
+        CB::SetFeatures(ar, std::move(m_dtorFeat));
+    }
+private:
+    CArchive& ar;
+    Features m_dtorFeat;
+};
+
 /* cope with varying file versions
 by getting sizeof(XxxxID<>) for file */
 /*  N.B.:  making this a template allows us the option to use
@@ -197,15 +510,12 @@ namespace CB { namespace Impl
         ASSERT(NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         ASSERT(NumVersion(fileGamVerMajor, fileGamVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(fileGbxVerMajor, fileGbxVerMinor));
-        if (GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrId32Bit))
         {
-            // ASSERT(GetVersion(ar) < NumVersion(3, 10) --> ar.IsLoading());
-            ASSERT(GetVersion(ar) == NumVersion(3, 10) || ar.IsLoading());
             return sizeof(XxxxID16<T::PREFIX>::UNDERLYING_TYPE);
         }
         else
         {
-            ASSERT(GetVersion(ar) == NumVersion(4, 0));
             if (sizeof(XxxxID<T::PREFIX>::UNDERLYING_TYPE) != sizeof(XxxxID32<T::PREFIX>::UNDERLYING_TYPE))
             {
                 ASSERT(!"not ready for 32bit ids");
@@ -336,8 +646,19 @@ namespace CB
             AfxThrowArchiveException(CArchiveException::readOnly);
         }
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
+            // handle 32/64bit difference in Invalid_v<size_t>
+#if defined(_WIN64)
+            if (s == Invalid_v<size_t>)
+            {
+                s = std::numeric_limits<uint32_t>::max();
+            }
+#endif
+            if (s > uint32_t(0xFFFFFFFF))
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
             /* this matches the
             MFC CArchive::WriteCount()/ReadCount() format.  Note
             that MFC 32bit and 64bit processes use the same
@@ -385,7 +706,7 @@ namespace CB
             AfxThrowArchiveException(CArchiveException::readOnly);
         }
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             uint16_t u16;
             ar >> u16;

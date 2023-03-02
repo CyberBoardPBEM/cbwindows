@@ -48,7 +48,7 @@ void CGeoBoardElement::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_nBoardSerialNum;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrGeoRotateUnit))
         {
             if (m_rotation != Rotation90::r0)
             {
@@ -63,7 +63,7 @@ void CGeoBoardElement::Serialize(CArchive& ar)
     else
     {
         ar >> m_nBoardSerialNum;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrGeoRotateUnit))
         {
             m_rotation = Rotation90::r0;
         }
@@ -814,6 +814,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
     CMemFile file;
     CArchive arSave(&file, CArchive::store);
     arSave.m_pDocument = &doc;
+    SetFileFeaturesGuard setFileFeaturesGuard(arSave, GetCBFeatures());
     // save should not modify src, so should be safe
     const_cast<CBoard&>(*this).Serialize(arSave);      // Make a copy of the board
     arSave.Close();
@@ -1034,6 +1035,18 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
 
 /////////////////////////////////////////////////////////////////////////////
 
+bool CGeomorphicBoard::NeedsGeoRotate() const
+{
+    for (const CGeoBoardElement& elt : *this)
+    {
+        if (elt.m_rotation != Rotation90::r0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CGeomorphicBoard::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
@@ -1041,7 +1054,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar << m_strName;
 
         ar << m_nSerialNum;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(m_nBoardRowCount);
             ar << value_preserving_cast<WORD>(m_nBoardColCount);
@@ -1052,18 +1065,18 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
             CB::WriteCount(ar, m_nBoardColCount);
         }
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(size());
         }
         else
         {
-            CB::WriteCount(ar, value_preserving_cast<size_t>(size()));
+            CB::WriteCount(ar, size());
         }
         for (size_t i = size_t(0); i < size(); ++i)
         {
             CGeoBoardElement& elt = (*this)[i];
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrGeoSquareCell))
             {
                 /* old file format, so enforce old geoboard
                     restrictions (see old DlgNewGeoBoard.cpp for
@@ -1076,7 +1089,11 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
                 if (!(cellType == cformHexFlat && (bArray.GetCols() & size_t(1)) != size_t(0) ||
                         cellType == cformHexPnt && (bArray.GetRows() & size_t(1)) != size_t(0)))
                 {
-                    AfxThrowArchiveException(CArchiveException::badSchema);
+                    if (!GetCBFeatures().Check(ftrGeoSquareCell))
+                    {
+                        AfxThrowArchiveException(CArchiveException::badSchema);
+                    }
+                    CB::AddFeature(ar, ftrGeoSquareCell);
                 }
             }
             elt.Serialize(ar);
@@ -1089,7 +1106,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
         ar >> m_strName;
 
         ar >> m_nSerialNum;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp; m_nBoardRowCount = value_preserving_cast<size_t>(wTmp);
             ar >> wTmp; m_nBoardColCount = value_preserving_cast<size_t>(wTmp);
@@ -1102,7 +1119,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
 
         clear();
         size_t wCount;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp;
             wCount = wTmp;

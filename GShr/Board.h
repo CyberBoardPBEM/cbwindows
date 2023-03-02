@@ -276,6 +276,10 @@ public:
     OwnerPtr<CBoard>& operator[](size_t nIndex)
         { return at(nIndex); }
     // ------- //
+    bool Needs32BitIDs() const
+    {
+        return static_cast<BoardID::UNDERLYING_TYPE>(m_nNextSerialNumber) >= size_t(0xFFFF);
+    }
     void Serialize(CArchive& ar);
 protected:
     // Saved in file...

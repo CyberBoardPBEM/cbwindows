@@ -174,6 +174,13 @@ public:
     void DeletePieceSet(size_t nPSet, CGameElementStringMap* mapStrings = NULL);
     void Clear();
     // ---------- //
+    bool Needs32BitIDs() const
+    {
+        return m_pPieceTbl.GetSize() >= size_t(0xFFFF);
+    }
+private:
+    bool Needs100SidePieces() const;
+public:
     void Serialize(CArchive& ar);
     void SerializePieceSets(CArchive& ar);
 // Implementation

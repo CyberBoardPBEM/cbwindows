@@ -134,6 +134,7 @@ public:
     void Restore(CGamDoc& pDoc, const CPlayBoard& pBrd);
     bool Compare(const CPlayBoard& pBrd) const;
     // ------- //
+    bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
     std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;

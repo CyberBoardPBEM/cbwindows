@@ -28,6 +28,7 @@
 // use explicitly sized ints for portable file format control
 #include <cinttypes>
 #include <cstdarg>
+#include <format>
 #include <limits>
 #include <memory>
 #include <string>

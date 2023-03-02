@@ -48,7 +48,7 @@ void CHistoryTable::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(size());
         }
@@ -63,7 +63,7 @@ void CHistoryTable::Serialize(CArchive& ar)
     {
         Clear();
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;

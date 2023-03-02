@@ -1047,6 +1047,7 @@ void CGbxProjView::OnProjectSaveTileFile()
         }
         CArchive ar(&file, CArchive::store);
         ar.Write(FILEGTLSIGNATURE, 4);
+        // TODO:  if new format ever needed, use Features
         ar << (WORD)NumVersion(fileGtlVerMajor, fileGtlVerMinor);
         pTMgr->CopyTileImagesToArchive(ar, tidtbl);
         ar.Close();

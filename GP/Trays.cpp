@@ -155,7 +155,7 @@ void CTraySet::Serialize(CArchive& ar)
     {
         ar << m_strName;
         ar << static_cast<uint16_t>(m_bRandomPull);
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             if (m_bRandomSidePull)
             {
@@ -182,7 +182,7 @@ void CTraySet::Serialize(CArchive& ar)
         {
             uint16_t  wTmp;
             ar >> wTmp; m_bRandomPull = static_cast<BOOL>(wTmp);
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
             {
                 m_bRandomSidePull = false;
             }
@@ -362,7 +362,7 @@ void CTrayManager::SerializeTraySets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumTraySets());
         }
@@ -376,7 +376,7 @@ void CTrayManager::SerializeTraySets(CArchive& ar)
     else
     {
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;

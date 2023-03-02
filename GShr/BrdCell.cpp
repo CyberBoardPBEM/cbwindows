@@ -522,7 +522,7 @@ void BoardCell::Serialize(CArchive& ar)
     static_assert(sizeof(temp.m_crCell) == sizeof(DWORD), "file v3.90 mixup");
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrId32Bit))
         {
             if (IsTileID())
             {
@@ -552,7 +552,7 @@ void BoardCell::Serialize(CArchive& ar)
     }
     else
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrId32Bit))
         {
             DWORD dwTmp;
             ar >> dwTmp; temp.m_crCell = (COLORREF)dwTmp;
@@ -649,7 +649,7 @@ void CBoardArray::Serialize(CArchive& ar)
         ar << value_preserving_cast<int16_t>(m_nColTrkOffset);
         ar << (WORD)m_bRowTrkInvert;
         ar << (WORD)m_bColTrkInvert;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(m_nRows);
             ar << value_preserving_cast<WORD>(m_nCols);
@@ -678,7 +678,7 @@ void CBoardArray::Serialize(CArchive& ar)
         ar >> iVal; m_nColTrkOffset = iVal;  // (was int cast)
         ar >> wVal; m_bRowTrkInvert = (BOOL)wVal;
         ar >> wVal; m_bColTrkInvert = (BOOL)wVal;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wVal; m_nRows = wVal;
             ar >> wVal; m_nCols = wVal;

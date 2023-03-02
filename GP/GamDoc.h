@@ -238,6 +238,8 @@ protected: // create from serialization only
 // Class vars and methods (used during deserialize)...
     // Version of file being loaded
     static int c_fileVersion;
+    // load and save can't be simultaneous, so use for both
+    static Features c_fileFeatures;
 
 public:
     static CFontTbl* GetFontManager()
@@ -245,6 +247,9 @@ public:
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
     using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
     static int GetLoadingVersion() { return c_fileVersion; }
+    static void SetFileFeatures(Features&& feat) noexcept { c_fileFeatures = std::move(feat); }
+    static void SetFileFeatures(const Features& feat) { SetFileFeatures(Features(feat)); }
+    static const Features& GetFileFeatures() { return c_fileFeatures; }
     // The version of the loaded file is used to determine
     // if the game histories need to be upgraded and written
     // to the file. Normally the histories are simply copied
@@ -524,7 +529,7 @@ public:
     void SerializeScenario(CArchive& ar);
     void SerializeGame(CArchive& ar);
     void SerializeMoveSet(CArchive& ar, CHistRecord*& pHist);
-    void SerializeScenarioOrGame(CArchive& ar);
+    void SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatureTable);
     void SerializeCurrentGameData(CFile* pFile, long lOffset, BOOL bSaving);
     long SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst);
     CMoveList* DeserializeMovesFromFile(CFile* pFile, long lOffset);

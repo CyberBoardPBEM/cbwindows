@@ -113,6 +113,42 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         BYTE verMajor, verMinor;
         ar >> verMajor;
         ar >> verMinor;
+
+        Features fileFeatures;
+        if (NumVersion(verMajor, verMinor) >= NumVersion(105, 0))
+        {
+            try
+            {
+                ar.Flush();     // ensure GetPosition() is current
+                uint64_t offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
+                uint64_t offsetFeatureTable;
+                ar >> offsetFeatureTable;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetFeatureTable), CFile::begin);
+                ar >> fileFeatures;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+                uint64_t dummy;
+                ar >> dummy;
+                ASSERT(dummy == offsetFeatureTable);
+            }
+            catch (...)
+            {
+                ASSERT(!"exception");
+                // report file too new
+                verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
+            }
+        }
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0) ||
+                NumVersion(verMajor, verMinor) == NumVersion(104, 5))
+        {
+            fileFeatures = GetCBFile4Features();
+        }
+        else
+        {
+            ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
+        }
+
         if (NumVersion(verMajor, verMinor) >
             NumVersion(fileGbxVerMajor, fileGbxVerMinor) &&
             // file 3.90 is the same as 3.10
@@ -123,6 +159,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         }
         SetLoadingVersion(NumVersion(verMajor, verMinor));
         CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor));
+        SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
 
         ar >> cEatThis;         // Eat program version
         ar >> cEatThis;

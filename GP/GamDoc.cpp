@@ -80,9 +80,20 @@ int GetLoadingVersion()
     return CGamDoc::GetLoadingVersion();
 }
 
+const Features& GetFileFeatures()
+{
+    return CGamDoc::GetFileFeatures();
+}
+
+void SetFileFeatures(Features&& fs)
+{
+    CGamDoc::SetFileFeatures(std::move(fs));
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 int CGamDoc::c_fileVersion = 0;
+Features CGamDoc::c_fileFeatures;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc
@@ -1193,6 +1204,7 @@ void CGamDoc::OnEditRestoreBookMark()
     if (m_pBookMark != NULL)
     {
         SetLoadingVersion(NumVersion(fileGamVerMajor, fileGamVerMinor));
+        SetFileFeatures(GetCBFeatures());
         if (!m_pBookMark->RestoreState(*this))
         {
             // Add memory error message

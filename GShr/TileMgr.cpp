@@ -469,7 +469,7 @@ void CTileManager::SerializeTileSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumTileSets());
         }
@@ -483,7 +483,7 @@ void CTileManager::SerializeTileSets(CArchive& ar)
     else
     {
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;
@@ -505,7 +505,7 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(m_TShtTbl.size());
         }
@@ -519,7 +519,7 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
     else
     {
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;
@@ -841,7 +841,7 @@ void TileLoc::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << (m_nSheet == noSheet ? noSheet16 : value_preserving_cast<uint16_t>(m_nSheet));
         }
@@ -859,7 +859,7 @@ void TileLoc::Serialize(CArchive& ar)
             ar >> chTmp;
             m_nSheet = (chTmp == 0xFF) ? noSheet : value_preserving_cast<size_t>(chTmp);
         }
-        else if (CB::GetVersion(ar) <= NumVersion(3, 90))   // V3.90
+        else if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))   // V3.90
         {
             uint16_t wTmp;
             ar >> wTmp;

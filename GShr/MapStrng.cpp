@@ -160,6 +160,11 @@ void GameElement64::Serialize(CArchive& ar) const
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    // piece-100-sides can't fit in GameElement32, so use GameElement64
+    if (CB::GetFeatures(ar).Check(ftrPiece100Sides))
+    {
+        fileIDSize = 4;
+    }
     switch (fileIDSize)
     {
         case 2:
@@ -186,6 +191,11 @@ void GameElement64::Serialize(CArchive& ar)
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    // piece-100-sides can't fit in GameElement32, so use GameElement64
+    if (CB::GetFeatures(ar).Check(ftrPiece100Sides))
+    {
+        fileIDSize = 4;
+    }
     switch (fileIDSize)
     {
         case 2:

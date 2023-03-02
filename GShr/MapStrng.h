@@ -732,7 +732,7 @@ public:
     {
         if (ar.IsStoring())
         {
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 uint32_t dwCount = value_preserving_cast<uint32_t>(this->GetCount());
                 ar << dwCount;
@@ -755,7 +755,7 @@ public:
         {
             this->RemoveAll();
             size_t count;
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 uint32_t dwCount;
                 ar >> dwCount;

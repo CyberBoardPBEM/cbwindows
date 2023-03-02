@@ -174,6 +174,10 @@ public:
     void DeleteMarkSet(size_t nMSet, CGameElementStringMap* pMapString = NULL);
     void Clear();
     // ---------- //
+    bool Needs32BitIDs() const
+    {
+        return m_pMarkTbl.GetSize() >= size_t(0xFFFF);
+    }
     void Serialize(CArchive& ar);
     void SerializeMarkSets(CArchive& ar);
 
