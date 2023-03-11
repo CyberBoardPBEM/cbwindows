@@ -211,7 +211,7 @@ public:
     ObjectID32(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t);
     explicit ObjectID32(PieceID16 pid);
 #if !defined(NDEBUG)
-    [[deprecated("only for GetObjectIDFromElementLegacyCheck()")]] explicit ObjectID32(uint32_t dw);
+    [[deprecated("only for GetObjectIDFromElementLegacyCheck()")]] explicit ObjectID32(UNDERLYING_TYPE dw);
 #endif
     ObjectID32(const ObjectID32&) = default;
     ObjectID32& operator=(const ObjectID32&) = default;
@@ -310,7 +310,7 @@ private:
             {
             }
         } invalid;
-        uint32_t buf;
+        UNDERLYING_TYPE buf;
 
         constexpr U() : invalid() {}
         U(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
@@ -332,6 +332,24 @@ private:
         privacy of ObjectID32's content */
     explicit operator ObjectID64() const;
     friend class SerializeBackdoorObjectID;
+
+    friend std::formatter<ObjectID32, char>;
+    friend std::formatter<ObjectID32, wchar_t>;
+};
+
+template<typename CharT>
+struct std::formatter<ObjectID32, CharT> : private std::formatter<ObjectID32::UNDERLYING_TYPE, CharT>
+{
+private:
+    using BASE = formatter<ObjectID32::UNDERLYING_TYPE, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(ObjectID32 oid, FormatContext& ctx)
+    {
+        return BASE::format(oid.u.buf, ctx);
+    }
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID32& oid)
@@ -463,7 +481,7 @@ private:
             {
             }
         } invalid;
-        uint64_t buf;
+        UNDERLYING_TYPE buf;
 
         constexpr U() : invalid() {}
         U(uint16_t i, uint16_t s, CDrawObj::CDrawObjType t) :
@@ -482,6 +500,58 @@ private:
     // Serialize conversion helpers
     explicit operator ObjectID32() const;
     friend class SerializeBackdoorObjectID;
+
+    friend std::formatter<ObjectID64, char>;
+    friend std::formatter<ObjectID64, wchar_t>;
+};
+
+template<typename CharT>
+struct std::formatter<ObjectID64, CharT>
+{
+public:
+    template<typename ParseContext>
+    constexpr typename ParseContext::iterator parse(ParseContext& ctx) {
+        typename ParseContext::iterator begin = ctx.begin();
+        typename ParseContext::iterator retval = fmtUL.parse(ctx);
+        ASSERT(ctx.begin() == begin);
+        VERIFY(fmtPID.parse(ctx) == retval);
+        return retval;
+    }
+
+    template<typename FormatContext>
+    FormatContext::iterator format(ObjectID64 oid, FormatContext& ctx)
+    {
+        switch (oid.u.tag.subtype)
+        {
+            case ObjectID64::stPieceObj:
+                std::format_to(ctx.out(), "ObjectID64(pid:");
+                fmtPID.format(oid.u.pieceObj.pid, ctx);
+                return std::format_to(ctx.out(), ")");
+            case ObjectID64::stInvalid:
+                return std::format_to(ctx.out(), "ObjectID64(invalid)");
+            case ObjectID64::stMarkObj:
+                std::format_to(ctx.out(), "ObjectID64(markobj(id:");
+                fmtUL.format(oid.u.markObj.id, ctx);
+                std::format_to(ctx.out(), ", serial:");
+                fmtUL.format(oid.u.markObj.serial, ctx);
+                return std::format_to(ctx.out(), "))");
+            case ObjectID64::stLineObj:
+                // not implemented
+                [[fallthrough]];
+            case ObjectID64::stMarkerID:
+                // GameElement64
+                [[fallthrough]];
+            default:
+                ASSERT(!"illegal ObjectID subtype");
+                std::format_to(ctx.out(), "ObjectID64(unknown:");
+                fmtUL.format(oid.u.buf, ctx);
+                return std::format_to(ctx.out(), ")");
+        }
+    }
+
+private:
+    formatter<ObjectID64::UNDERLYING_TYPE, CharT> fmtUL;
+    formatter<PieceID32, CharT> fmtPID;
 };
 
 inline CArchive& operator<<(CArchive& ar, const ObjectID64& oid)

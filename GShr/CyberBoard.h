@@ -168,6 +168,82 @@ namespace CB
     }
 }
 
+template<typename CharT>
+struct std::formatter<SIZE, CharT> : private std::formatter<decltype(SIZE::cx), CharT>
+{
+private:
+    using BASE = formatter<decltype(SIZE::cx), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const SIZE& s, FormatContext& ctx)
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(s.cx, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(s.cy, ctx);
+        return std::format_to(ctx.out(), ")");
+    }
+};
+
+template<typename CharT>
+struct std::formatter<CSize, CharT> : public std::formatter<SIZE, CharT>
+{
+};
+
+template<typename CharT>
+struct std::formatter<POINT, CharT> : private std::formatter<decltype(POINT::x), CharT>
+{
+private:
+    using BASE = formatter<decltype(POINT::x), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const POINT& p, FormatContext& ctx)
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(p.x, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(p.y, ctx);
+        return std::format_to(ctx.out(), ")");
+    }
+};
+
+template<typename CharT>
+struct std::formatter<CPoint, CharT> : public std::formatter<POINT, CharT>
+{
+};
+
+template<typename CharT>
+struct std::formatter<RECT, CharT> : private std::formatter<decltype(RECT::left), CharT>
+{
+private:
+    using BASE = formatter<decltype(RECT::left), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const RECT& r, FormatContext& ctx)
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(r.left, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.top, ctx);
+        std::format_to(ctx.out(), " - ");
+        BASE::format(r.right, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.bottom, ctx);
+        return std::format_to(ctx.out(), ")");
+    }
+};
+
+template<typename CharT>
+struct std::formatter<CRect, CharT> : public std::formatter<RECT, CharT>
+{
+};
+
 /////////////////////////////////////////////////////////////////////////////
 
 // emulate c++20 std::remove_cvref_t
@@ -871,6 +947,16 @@ inline CB::string operator""_cbstring(const char* s, size_t len)
     return CB::string(s, len);
 }
 
+template<typename CharT>
+struct std::formatter<CString, CharT> : private std::formatter<CB::string, CharT>
+{
+private:
+    using BASE = formatter<CB::string, CharT>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
 // unfortunately, these aren't provided by default (due to needing encoding conversion)
 template<>
 struct std::formatter<wchar_t, char> : private std::formatter<std::string, char>
@@ -1085,6 +1171,21 @@ private:
     }
 
     friend class SerializeBackdoor;
+};
+
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
+struct std::formatter<XxxxIDExt<PREFIX, UNDERLYING_TYPE>, char> : private std::formatter<UNDERLYING_TYPE, char>
+{
+private:
+    using BASE = formatter<UNDERLYING_TYPE, char>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    constexpr auto format(const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& id, FormatContext& ctx)
+    {
+        return BASE::format(static_cast<UNDERLYING_TYPE>(id), ctx);
+    }
 };
 
 // goal is 32bit ids, but currently ids are 16 bit
