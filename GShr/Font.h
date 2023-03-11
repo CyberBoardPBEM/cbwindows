@@ -63,6 +63,21 @@ public:
     std::string ToString(int angle = 0) const;
 };
 
+template<typename CharT>
+struct std::formatter<CbFont, CharT> : private std::formatter<CB::string, CharT>
+{
+private:
+    using BASE = formatter<CB::string, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const CbFont& f, FormatContext& ctx)
+    {
+        return BASE::format(f.ToString(), ctx);
+    }
+};
+
 class CFontTbl : private AtomList<CbFont>
 {
 protected:

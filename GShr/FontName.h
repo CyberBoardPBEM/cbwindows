@@ -47,6 +47,21 @@ public:
     std::string ToString() const { return szFName; }
 };
 
+template<typename CharT>
+struct std::formatter<FName, CharT> : private std::formatter<CB::string, CharT>
+{
+private:
+    using BASE = formatter<CB::string, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const FName& f, FormatContext& ctx)
+    {
+        return BASE::format(f.ToString(), ctx);
+    }
+};
+
 // ------------------------------------------------------ //
 
 class FNameTbl : private AtomList<FName>

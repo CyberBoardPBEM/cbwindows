@@ -250,10 +250,10 @@ private:
             constexpr ObjectElement() = default;
         } objectElement;
 #endif
-        uint32_t buf;
+        UNDERLYING_TYPE buf;
 
         U() {}
-        constexpr U(Invalid_t) : buf(static_cast<uint32_t>(INT32_C(-1))) {};
+        constexpr U(Invalid_t) : buf(static_cast<UNDERLYING_TYPE>(INT32_C(-1))) {};
         U(const U&) = default;
         U& operator=(const U&) = default;
         ~U() = default;
@@ -275,12 +275,30 @@ private:
     friend class SerializeBackdoorGameElement;
 
     friend Invalid<GameElement32>;
+
+    friend std::formatter<GameElement32, char>;
+    friend std::formatter<GameElement32, wchar_t>;
 };
 
 template<>
 struct Invalid<GameElement32>
 {
     static constexpr GameElement32 value = GameElement32(GameElement32::Invalid_t());
+};
+
+template<typename CharT>
+struct std::formatter<GameElement32, CharT> : private std::formatter<GameElement32::UNDERLYING_TYPE, CharT>
+{
+private:
+    using BASE = formatter<GameElement32::UNDERLYING_TYPE, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(GameElement32 ge, FormatContext& ctx)
+    {
+        return BASE::format(ge.u.buf, ctx);
+    }
 };
 
 inline CArchive& operator<<(CArchive& ar, const GameElement32& ge)
@@ -611,10 +629,10 @@ private:
             constexpr ObjectElement() = default;
         } objectElement;
 #endif
-        uint64_t buf;
+        UNDERLYING_TYPE buf;
 
         U() {}
-        constexpr U(Invalid_t) : buf(static_cast<uint64_t>(INT64_C(-1))) {};
+        constexpr U(Invalid_t) : buf(static_cast<UNDERLYING_TYPE>(INT64_C(-1))) {};
         U(const U&) = default;
         U& operator=(const U&) = default;
         ~U() = default;
@@ -634,6 +652,67 @@ template<>
 struct Invalid<GameElement64>
 {
     static constexpr GameElement64 value = GameElement64(GameElement64::Invalid_t());
+};
+
+template<typename CharT>
+struct std::formatter<GameElement64, CharT>
+{
+public:
+    template<typename ParseContext>
+    constexpr typename ParseContext::iterator parse(ParseContext& ctx) {
+        typename ParseContext::iterator begin = ctx.begin();
+        typename ParseContext::iterator retval = fmtUL.parse(ctx);
+        ASSERT(ctx.begin() == begin);
+        VERIFY(fmtPID.parse(ctx) == retval);
+        ASSERT(ctx.begin() == begin);
+        VERIFY(fmtMID.parse(ctx) == retval);
+#if defined(GPLAY)
+        ASSERT(ctx.begin() == begin);
+        VERIFY(fmtOID.parse(ctx) == retval);
+#endif
+        return retval;
+    }
+
+    template<typename FormatContext>
+    FormatContext::iterator format(GameElement64 ge, FormatContext& ctx)
+    {
+        if (ge.IsAPiece())
+        {
+            std::format_to(ctx.out(), "GameElement64(pid:");
+            fmtPID.format(static_cast<PieceID32>(ge), ctx);
+            std::format_to(ctx.out(), ", side:");
+            fmtUL.format(ge.GetSide(), ctx);
+            return std::format_to(ctx.out(), ")");
+        }
+        else if (ge.IsAMarker())
+        {
+            std::format_to(ctx.out(), "GameElement64(mid:");
+            fmtMID.format(static_cast<MarkID32>(ge), ctx);
+            return std::format_to(ctx.out(), ")");
+        }
+        else
+        {
+#if defined(GPLAY)
+            ASSERT(ge.IsAnObject());
+            std::format_to(ctx.out(), "GameElement64(");
+            fmtOID.format(static_cast<ObjectID64>(ge), ctx);
+            return std::format_to(ctx.out(), ")");
+#else
+            ASSERT(!"illegal GameElement64 subtype");
+            std::format_to(ctx.out(), "GameElement64(unknown:");
+            fmtUL.format(ge.u.buf, ctx);
+            return std::format_to(ctx.out(), ")");
+#endif
+        }
+    }
+
+private:
+    formatter<GameElement64::UNDERLYING_TYPE, CharT> fmtUL;
+    formatter<PieceID32, CharT> fmtPID;
+    formatter<MarkID32, CharT> fmtMID;
+#if defined(GPLAY)
+    formatter<ObjectID64, CharT> fmtOID;
+#endif
 };
 
 inline CArchive& operator<<(CArchive& ar, const GameElement64& ge)
