@@ -76,7 +76,7 @@ protected:
 
     // Subclass should only override one of these if any...
     virtual const void* OnGetItemDebugIDCode(size_t nItem) const /* override */ { return &MapIndexToItem(nItem); }
-    virtual std::string OnGetItemDebugString(size_t nItem) const /* override */;
+    virtual CB::string OnGetItemDebugString(size_t nItem) const /* override */;
 
     //{{AFX_MSG(CTileBaseListBox)
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

@@ -1173,16 +1173,16 @@ private:
     friend class SerializeBackdoor;
 };
 
-template<wchar_t PREFIX, typename UNDERLYING_TYPE>
-struct std::formatter<XxxxIDExt<PREFIX, UNDERLYING_TYPE>, char> : private std::formatter<UNDERLYING_TYPE, char>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE, typename CharT>
+struct std::formatter<XxxxIDExt<PREFIX, UNDERLYING_TYPE>, CharT> : private std::formatter<UNDERLYING_TYPE, CharT>
 {
 private:
-    using BASE = formatter<UNDERLYING_TYPE, char>;
+    using BASE = formatter<UNDERLYING_TYPE, CharT>;
 public:
     using BASE::parse;
 
     template<typename FormatContext>
-    constexpr auto format(const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& id, FormatContext& ctx)
+    FormatContext::iterator format(const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& id, FormatContext& ctx)
     {
         return BASE::format(static_cast<UNDERLYING_TYPE>(id), ctx);
     }

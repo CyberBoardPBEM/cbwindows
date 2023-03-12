@@ -215,9 +215,9 @@ void CTileBaseListBox2::DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, in
     }
 }
 
-std::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem) const
+CB::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem) const
 {
-    return CB::Sprintf("[%p] ", OnGetItemDebugIDCode(nItem));
+    return std::format(L"[{}] ", OnGetItemDebugIDCode(nItem));
 }
 
 /////////////////////////////////////////////////////////////////////////////

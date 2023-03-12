@@ -566,8 +566,7 @@ BOOL CTileManager::PruneTilesOnSheet255()
             if (nSet != Invalid_v<size_t>)
             {
                 RemoveTileIDFromTileSets(static_cast<TileID>(tid));
-                char szBfr[256];
-                sprintf(szBfr, "Removed TileID %zu from tile group:\n\n\"%s\".",
+                CB::string szBfr = std::format(L"Removed TileID {} from tile group:\n\n\"{}\".",
                     tid, GetTileSet(nSet).GetName());
                 AfxMessageBox(szBfr);
                 tp.m_tileFull.SetEmpty();
@@ -622,8 +621,6 @@ static int compsheets(const void *elem1, const void *elem2)
 
 void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile) const
 {
-    char  szBfr[256];
-
     HANDLE hFile = CreateFile(pszFileName, GENERIC_WRITE, 0,
         NULL, bNewFile ? CREATE_ALWAYS : OPEN_ALWAYS,
         FILE_ATTRIBUTE_NORMAL, NULL);
@@ -650,11 +647,11 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     {
         const CTileSet& pTSet = m_TSetTbl.at(nSet);
 
-        sprintf(szBfr, "| %2zu  | %-25s  |", nSet, pTSet.GetName());
+        CB::string szBfr = std::format(L"| {:2}  | {:<25}  |", nSet, pTSet.GetName());
         WriteFileString(hFile, szBfr);
         for (size_t i = 0; i < pTSet.GetTileIDTable().size(); i++)
         {
-            sprintf(szBfr, " %u", value_preserving_cast<unsigned>(static_cast<TileID::UNDERLYING_TYPE>(pTSet.GetTileIDTable().at(i))));
+            szBfr = std::format(L" {}", pTSet.GetTileIDTable().at(i));
             WriteFileString(hFile, szBfr);
         }
         WriteFileString(hFile, "\r\n");
@@ -677,7 +674,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     {
         const CTileSheet& pTSheet = *m_TShtTbl.at(nSheet);
 
-        sprintf(szBfr, "| %04zX  | %3u | %3u | %5u |\r\n", nSheet,
+        CB::string szBfr = std::format(L"| {:04X}  | {:3} | {:3} | {:5} |\r\n", nSheet,
             pTSheet.GetWidth(), pTSheet.GetHeight(),
             pTSheet.GetSheetHeight());
         WriteFileString(hFile, szBfr);
@@ -711,7 +708,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
     pTbl = pShtTbl;
     for (size_t nSheet = 0; nSheet < m_TShtTbl.size(); nSheet++)
     {
-        sprintf(szBfr, "| %04jX  | %3ju | %3ju | %5ju |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
+        CB::string szBfr = std::format(L"| {:04X}  | {:3} | {:3} | {:5} |\r\n", pTbl[0], pTbl[1], pTbl[2], pTbl[3]);
         pTbl += 4;
         WriteFileString(hFile, szBfr);
     }
@@ -724,15 +721,15 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     WriteFileString(hFile,
         "                  TileID Table\r\n"
-        "+-------+------------+------------+-------------+------+\r\n"
-        "|  TID  | FULL  SIZE | HALF  SIZE | SMALL COLOR |  IN  |\r\n"
-        "|       | Sht    Off | Sht    Off |     RGB     | TSET |\r\n"
-        "+-------+------------+------------+-------------+------+\r\n");
+        "+------------+----------------+----------------+-------------+------+\r\n"
+        "|     TID    |   FULL    SIZE |   HALF    SIZE | SMALL COLOR |  IN  |\r\n"
+        "|            |   Sht      Off |   Sht      Off |     RGB     | TSET |\r\n"
+        "+------------+----------------+----------------+-------------+------+\r\n");
 
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
         const TileDef& tp = m_pTileTbl[static_cast<TileID>(tid)];
-        sprintf(szBfr, "| %10zu | %08zX %5u | %08zX %5u | 0x%08X  |", tid,
+        CB::string szBfr = std::format(L"| {:10} | {:08X} {:5} | {:08X} {:5} | 0x{:08X}  |", tid,
             tp.m_tileFull.m_nSheet, tp.m_tileFull.m_nOffset,
             tp.m_tileHalf.m_nSheet, tp.m_tileHalf.m_nOffset,
             tp.m_tileSmall);
@@ -740,13 +737,13 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
         size_t nTSet = FindTileSetFromTileID(static_cast<TileID>(tid));
         if (nTSet != Invalid_v<size_t>)
-            sprintf(szBfr, " %3zu  |\r\n", nTSet);
+            szBfr = std::format(L" {:3}  |\r\n", nTSet);
         else
-            lstrcpy(szBfr, " ***  |\r\n");
+            szBfr = " ***  |\r\n";
         WriteFileString(hFile, szBfr);
     }
     WriteFileString(hFile,
-        "+-------+------------+------------+-------------+------+\r\n");
+        "+------------+----------------+----------------+-------------+------+\r\n");
 
     CloseHandle(hFile);
 }
