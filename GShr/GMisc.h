@@ -31,10 +31,10 @@
 
 // *** CALCLIB.CPP *** //
 
-std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen);
+std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, size_t nDataLen);
 
 template<size_t N>
-std::array<std::byte, N> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen)
+std::array<std::byte, N> Compute16ByteHash(const void* pDataToHash, size_t nDataLen)
 {
     std::array<std::byte, 16> temp = Compute16ByteHash(pDataToHash, nDataLen);
     static_assert(N >= 16);
@@ -44,7 +44,7 @@ std::array<std::byte, N> Compute16ByteHash(const void* pDataToHash, no_demote<si
     return retval;
 }
 
-void MD5Calc(MD5_CTX* ctx, const void* pMsg, no_demote<size_t> nMsgLen);
+void MD5Calc(MD5_CTX* ctx, const void* pMsg, size_t nMsgLen);
 
 #ifdef GPLAY
 

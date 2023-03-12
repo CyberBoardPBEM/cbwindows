@@ -41,105 +41,6 @@
 #include    "StrLib.h"
 
 #if 0
-#include <format>
-
-// unfortunately, these aren't provided by default (due to needing encoding conversion)
-namespace std {
-    template<>
-    struct formatter<std::wstring_view, char> : formatter<std::string, char>
-    {
-        using BASE = formatter<std::string, char>;
-    public:
-        using BASE::parse;
-
-        template<typename FormatContext>
-        constexpr auto format(const std::wstring_view& s, FormatContext& ctx)
-        {
-            // TODO:  replace this with proper encoding conversion
-            std::string temp;
-            temp.reserve(s.size());
-            for (size_t i = 0; i < s.size(); ++i) {
-                temp += static_cast<char>(value_preserving_cast<uint8_t>(s[i]));
-            }
-            return BASE::format(temp, ctx);
-        }
-    };
-
-    template<>
-    struct formatter<std::wstring, char> : formatter<std::wstring_view, char>
-    {
-        using BASE = formatter<std::wstring_view, char>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-
-    template<>
-    struct formatter<const wchar_t*, char> : formatter<std::wstring_view, char>
-    {
-        using BASE = formatter<std::wstring_view, char>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-
-    template<size_t n>
-    struct formatter<wchar_t [n], char> : formatter<std::wstring_view, char>
-    {
-        using BASE = formatter<std::wstring_view, char>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-
-    template<>
-    struct formatter<std::string_view, wchar_t> : formatter<std::wstring, wchar_t>
-    {
-        using BASE = formatter<std::wstring, wchar_t>;
-    public:
-        using BASE::parse;
-
-        template<typename FormatContext>
-        constexpr auto format(const std::string_view& s, FormatContext& ctx)
-        {
-            // TODO:  replace this with proper encoding conversion
-            std::wstring temp;
-            temp.reserve(s.size());
-            for (size_t i = 0; i < s.size(); ++i) {
-                temp += static_cast<wchar_t>(static_cast<uint8_t>(s[i]));
-            }
-            return BASE::format(temp, ctx);
-        }
-    };
-
-    template<>
-    struct formatter<std::string, wchar_t> : formatter<std::string_view, wchar_t>
-    {
-        using BASE = formatter<std::string_view, wchar_t>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-
-    template<>
-    struct formatter<const char*, wchar_t> : formatter<std::string_view, wchar_t>
-    {
-        using BASE = formatter<std::string_view, wchar_t>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-
-    template<size_t n>
-    struct formatter<char [n], wchar_t> : formatter<std::string_view, wchar_t>
-    {
-        using BASE = formatter<std::string_view, wchar_t>;
-    public:
-        using BASE::parse;
-        using BASE::format;
-    };
-}
-
 static class Test
 {
 public:
@@ -166,6 +67,18 @@ public:
         TRACE("%ls\n", std::format(L"{:15}", "test").c_str());
 
         TRACE("%ls\n", std::format(L"{1:3.15}", L"unused", s3).c_str());
+
+        TRACE("%s\n", std::format("{:#010x}", CSize(15, 16)).c_str());
+        TRACE("%ls\n", std::format(L"{:#010x}", CSize(15, 16)).c_str());
+        TRACE("%s\n", std::format("{:#010x}", CPoint(15, 16)).c_str());
+        TRACE("%ls\n", std::format(L"{:#010x}", CPoint(15, 16)).c_str());
+        TRACE("%s\n", std::format("{:#010x}", CRect(15, 16, 17, 18)).c_str());
+        TRACE("%s\n", std::format(L"{:#010x}", CRect(15, 16, 17, 18)).c_str());
+
+        TRACE("%s", std::format("{}\n", GetCBFile4Features()).c_str());
+        TRACE("%ls", std::format(L"{}\n", GetCBFile4Features()).c_str());
+        TRACE("%s", std::format("{}\n", *GetCBFile4Features().begin()).c_str());
+        TRACE("%ls", std::format(L"{}\n", *GetCBFile4Features().begin()).c_str());
 
 #if 0   // this gets rejected at compile time due to type mismatch
         TRACE("%s\n", std::format("{:3.15x}", s3).c_str());
