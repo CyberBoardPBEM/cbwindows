@@ -32,9 +32,9 @@ typedef struct
 } MD5_CTX;
 
 void MD5Init(MD5_CTX *mdContext);
-void MD5Update(MD5_CTX *mdContext, const void *inBuf, no_demote<uint32_t> inLen);
+void MD5Update(MD5_CTX *mdContext, const void *inBuf, uint32_t inLen);
 #if defined(_WIN64)
-inline void MD5Update(MD5_CTX* mdContext, const void* inBuf, no_demote<size_t> inLen)
+inline void MD5Update(MD5_CTX* mdContext, const void* inBuf, size_t inLen)
 {
     MD5Update(mdContext, inBuf, value_preserving_cast<uint32_t>(inLen));
 }

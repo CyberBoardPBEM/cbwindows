@@ -473,6 +473,143 @@ CMDIFrameWndExCb::CMDIClientAreaWndCb& CMDIFrameWndExCb::GetMDIClient()
     return static_cast<CMDIClientAreaWndCb&>(m_wndClientArea);
 }
 
+CB::string CB::string::LoadString(UINT nID)
+{
+    CString temp;
+    if (!temp.LoadString(nID))
+    {
+        ASSERT(!"unknown id");
+        AfxThrowResourceException();
+    }
+    return temp;
+}
+
+CB::string CB::string::LoadString(int nID)
+{
+    return LoadString(value_preserving_cast<UINT>(nID));
+}
+
+CB::string CB::string::GetModuleFileName(HMODULE hModule)
+{
+    CString temp;
+    for ( ; ; )
+    {
+        CB::string::value_type* ptr = temp.GetBufferSetLength(temp.GetLength() + MAX_PATH);
+        DWORD rc = ::GetModuleFileName(hModule, ptr, temp.GetLength());
+        if (!rc)
+        {
+            AfxThrowResourceException();
+        }
+        else if (rc < value_preserving_cast<DWORD>(temp.GetLength()))
+        {
+            return ptr;
+        }
+    }
+}
+
+CB::string CB::string::GetWindowText(const CWnd& wnd)
+{
+    CString temp;
+    wnd.GetWindowText(temp);
+    return temp;
+}
+
+CB::string CB::string::GetText(const CListBox& wnd, int nIndex)
+{
+    CString temp;
+    wnd.GetText(nIndex, temp);
+    return temp;
+}
+
+CB::string CB::string::GetLBText(const CComboBox& wnd, int nIndex)
+{
+    CString temp;
+    wnd.GetLBText(nIndex, temp);
+    return temp;
+}
+
+CB::string CB::string::GetMenuString(const CMenu& menu, UINT nIDItem, UINT nFlags)
+{
+    CString temp;
+    if (!menu.GetMenuString(nIDItem, temp, nFlags))
+    {
+        AfxThrowResourceException();
+    }
+    return temp;
+}
+
+CB::string CB::string::GetDocString(const CDocTemplate& docTempl, CDocTemplate::DocStringIndex index)
+{
+    CString temp;
+    if (!docTempl.GetDocString(temp, index))
+    {
+        AfxThrowResourceException();
+    }
+    return temp;
+}
+
+std::unique_ptr<CB::string> CB::string::DoPromptFileName(CWinApp& app, UINT nIDSTitle,
+    DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
+{
+    CString temp;
+    if (!app.DoPromptFileName(temp, nIDSTitle, lFlags, bOpenFileDialog, pTemplate))
+    {
+        return nullptr;
+    }
+    return std::make_unique<CB::string>(temp);
+}
+
+CB::string& CB::string::operator=(const string& other)
+{
+    wide.reset();
+    cp1252 = other.cp1252;
+    return *this;
+}
+
+CB::string::~string()
+{
+    static size_t strs;
+    static size_t wstrs;
+    static class Report
+    {
+    public:
+        ~Report()
+        {
+            TRACE("strs %zu, wstrs %zu\n", strs, wstrs);
+        }
+    } report;
+    ++strs;
+    if (wide)
+    {
+        ++wstrs;
+    }
+}
+
+CB::string::string(std::wstring_view s)
+{
+    // TODO:  utf-8 conversion
+    cp1252.resize(s.size());
+    for (size_t i = size_t(0) ; i < cp1252.size() ; ++i)
+    {
+        cp1252[i] = static_cast<char>(value_preserving_cast<uint8_t>(s[i]));
+    }
+}
+
+const std::wstring& CB::string::std_wstr() const
+{
+    if (!wide)
+    {
+        // TODO:  utf-8 conversion
+        wide.reset(new std::wstring);
+        wide->resize(cp1252.size());
+        for (size_t i = size_t(0) ; i < cp1252.size() ; ++i)
+        {
+            (*wide)[i] = static_cast<uint8_t>(cp1252[i]);
+        }
+    }
+    return *wide;
+}
+
 void DDX_Check(CDataExchange* pDX, int nIDC, bool& value)
 {
     BOOL temp = value;
@@ -498,4 +635,109 @@ void AfxFormatString1(std::string& rString, UINT nIDS, LPCTSTR lpsz1)
     CString temp;
     AfxFormatString1(temp, nIDS, lpsz1);
     rString = temp;
+}
+
+// CB currently only uses cp1252 strings
+/* CB::string will be replacing CString,
+    so use (ANSI) CString file format */
+namespace {
+    void WriteStringLength(CArchive& ar, size_t size)
+    {
+        if (size < size_t(0xff))
+        {
+            ar << value_preserving_cast<uint8_t>(size);
+            return;
+        }
+        ar << uint8_t(0xff);
+        if (size < size_t(0xffff))
+        {
+            ar << value_preserving_cast<uint16_t>(size);
+            return;
+        }
+        ASSERT(!"untested code");
+        ar << uint8_t(0xff);
+        ar << uint16_t(0xffff);
+        if (size < size_t(0xffffffff))
+        {
+            ar << value_preserving_cast<uint32_t>(size);
+            return;
+        }
+        ASSERT(!"untested code");
+        ar << uint8_t(0xff);
+        ar << uint16_t(0xffff);
+        ar << uint32_t(0xffffffff);
+        ar << uint64_t(size);
+    }
+
+    size_t ReadStringLength(CArchive& ar)
+    {
+        {
+            uint8_t len8;
+            ar >> len8;
+            if (len8 < 0xff)
+            {
+                return len8;
+            }
+        }
+        {
+            uint16_t len16;
+            ar >> len16;
+            if (len16 < 0xffff)
+            {
+                return len16;
+            }
+        }
+        ASSERT(!"untested code");
+        {
+            uint32_t len32;
+            ar >> len32;
+            if (len32 < 0xffffffff)
+            {
+                return len32;
+            }
+        }
+        ASSERT(!"untested code");
+        {
+            uint64_t len64;
+            ar >> len64;
+            if (len64 > SIZE_T_MAX)
+            {
+                AfxThrowArchiveException(CArchiveException::genericException);
+            }
+            return value_preserving_cast<size_t>(len64);
+        }
+    }
+}
+
+void CB::string::Serialize(CArchive& ar) const
+{
+#if 0
+    CString cs = cp1252.c_str();
+    ar << cs;
+#else
+    WriteStringLength(ar, cp1252.size());
+    ar.Write(cp1252.c_str(), value_preserving_cast<UINT>(cp1252.size()));
+#endif
+}
+
+void CB::string::Serialize(CArchive& ar)
+{
+    wide.reset();
+#if 0
+    CString cs;
+    ar >> cs;
+    cp1252 = cs;
+#else
+    size_t size = ReadStringLength(ar);
+    if (size > cp1252.max_size())
+    {
+        AfxThrowArchiveException(CArchiveException::genericException);
+    }
+    cp1252.resize(size);
+    UINT rc = ar.Read(&cp1252[0], value_preserving_cast<UINT>(size));
+    if (rc != size)
+    {
+        AfxThrowArchiveException(CArchiveException::genericException);
+    }
+#endif
 }

@@ -91,7 +91,7 @@ void MD5Init(MD5_CTX *mdContext)
   mdContext->buf[3] = (uint32_t)0x10325476;
 }
 
-void MD5Update(MD5_CTX* mdContext, const void* inBuf, no_demote<uint32_t> inLen)
+void MD5Update(MD5_CTX* mdContext, const void* inBuf, uint32_t inLen)
 {
   uint32_t in[16];
   int mdi;
@@ -128,7 +128,7 @@ void MD5Final(MD5_CTX *mdContext)
   uint32_t in[16];
   int32_t mdi;
   uint32_t i, ii;
-  no_demote<uint32_t> padLen;
+  uint32_t padLen;
 
   /* save number of bits */
   in[14] = mdContext->i[0];
@@ -138,7 +138,7 @@ void MD5Final(MD5_CTX *mdContext)
   mdi = (int)((mdContext->i[0] >> 3) & 0x3F);
 
   /* pad out to 56 mod 64 */
-  padLen = make_nd<uint32_t>((mdi < 56) ? (56 - mdi) : (120 - mdi));
+  padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
   MD5Update (mdContext, PADDING, padLen);
 
   /* append length in bits and transform */

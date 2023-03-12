@@ -61,8 +61,11 @@ public:
 private:
     std::string feature;
 
+    // KLUDGE:  friend can't refer to template partial specialization
     friend std::formatter<Feature, char>;
+    friend std::formatter<Feature, wchar_t>;
     friend std::formatter<class Features, char>;
+    friend std::formatter<class Features, wchar_t>;
 };
 //
 //              A collection of Features is represented by
@@ -327,17 +330,18 @@ inline CArchive& operator>>(CArchive& ar, Feature& f)
     return ar;
 }
 
-template<>
-struct std::formatter<Feature, char> : std::formatter<std::string, char>
+template<typename CharT>
+struct std::formatter<Feature, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
 {
-    using BASE = formatter<std::string, char>;
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
 public:
     using BASE::parse;
 
     template<typename FormatContext>
-    constexpr auto format(const Feature& f, FormatContext& ctx)
+    FormatContext::iterator format(const Feature& f, FormatContext& ctx)
     {
-        return BASE::format(std::format("Feature({})", f.feature), ctx);
+        return BASE::format("Feature("_cbstring + f.feature + ")", ctx);
     }
 };
 
@@ -414,26 +418,27 @@ inline typename Features::BASE::const_iterator Features::Find(const Feature & f)
     return std::find(begin(), end(), f);
 }
 
-template<>
-struct std::formatter<Features, char> : std::formatter<std::string, char>
+template<typename CharT>
+struct std::formatter<Features, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
 {
-    using BASE = formatter<std::string, char>;
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
 public:
     using BASE::parse;
 
     template<typename FormatContext>
-    constexpr auto format(const Features& fs, FormatContext& ctx)
+    FormatContext::iterator format(const Features& fs, FormatContext& ctx)
     {
-        std::string accum;
+        CB::string accum;
         for (const Feature& f : fs)
         {
             if (!accum.empty())
             {
                 accum += ", ";
             }
-            accum += std::format("{}", f.feature);
+            accum += f.feature;
         }
-        return BASE::format(std::format("Features({})", accum), ctx);
+        return BASE::format("Features(" + accum + ")", ctx);
     }
 };
 

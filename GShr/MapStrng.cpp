@@ -145,7 +145,10 @@ GameElement32::operator GameElement64() const
 #if !defined(NDEBUG)
 ObjectID32 GetObjectIDFromElementLegacyCheck(GameElementLegacyCheck elem)
 {
+#pragma warning(push)
+#pragma warning(default:  4996)
     return static_cast<ObjectID32>(elem);
+#pragma warning(pop)
 }
 #endif
 #endif

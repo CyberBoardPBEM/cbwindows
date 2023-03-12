@@ -28,9 +28,11 @@
 // use explicitly sized ints for portable file format control
 #include <cinttypes>
 #include <cstdarg>
+#include <filesystem>
 #include <format>
 #include <limits>
 #include <memory>
+#include <regex>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -71,6 +73,8 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 #endif
 
 #if defined(_MSC_VER)
+// warning C4172 : returning address of local variable or temporary
+#pragma warning(error:  4172)
 // warning C4239 : nonstandard extension used : 'argument' : conversion from 'xxx' to 'xxx &'
 #pragma warning(error:  4239)
 // warning C4244 : 'initializing' : conversion from 'xxx' to 'yyy', possible loss of data
@@ -97,10 +101,18 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 #pragma warning(error:  4703)
 // warning C4715 : 'xxx' : not all control paths return a value
 #pragma warning(error:  4715)
+// warning C4717 : 'xxx' : recursive on all control paths, function will cause runtime stack overflow
+#pragma warning(error:  4717)
 // warning C4805 : '|=' : unsafe mix of type 'bool' and type 'BOOL' in operation
 #pragma warning(error:  4805)
+// warning C4834 : discarding return value of function with 'nodiscard' attribute
+#pragma warning(error:  4834)
 // warning C4840 : non - portable use of class 'xxx' as an argument to a variadic function
 #pragma warning(error:  4840)
+// warning C4927 : illegal conversion; more than one user - defined conversion has been implicitly applied
+#pragma warning(error:  4927)
+// warning C4996 : 'xxx' : The POSIX name for this item is deprecated.Instead, use the ISO Cand C++ conformant name : yyy.See online help for details.
+#pragma warning(error:  4996)
 // warning C5205 : delete of an abstract class 'xxx' that has a non - virtual destructor results in undefined behavior
 // WARNING:  for some reason, this won't change level!
 #pragma warning(1:  5205)
@@ -680,6 +692,295 @@ constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, SRC>, bool> is_va
         return true;
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+namespace CB
+{
+    /* long term plans involve Unicode Windows API due to
+        wxWidgets dropping ANSI support
+        (https://github.com/wxWidgets/wxWidgets/issues/22682),
+        but storing UTF-8 strings
+        (https://github.com/CyberBoardPBEM/cbwindows/pull/71#discussion_r725491054) */
+    // currently:  std::string assumed to be windows-1252 string
+    /* TODO:  make std::string utf8, and use wxWidgets for
+            encoding conversions */
+    /*  WARNING:  switching to utf8 will require changing all
+            indexing and sizing operations to work in terms of
+            iterators due to varying-sized chars */
+    // implementation in LibMfc.cpp
+    class string
+    {
+    public:
+#if !defined(_UNICODE)
+        using value_type = char;
+#else
+        using value_type = wchar_t;
+#endif
+        static constexpr const size_t npos = std::string::npos;
+
+        // nodiscard to avoid confusing with BOOL CString::LoadString(), etc
+        [[nodiscard]] static string LoadString(UINT nID);
+        [[nodiscard]] static string LoadString(int nID);
+
+        template<typename... Args>
+        [[nodiscard]] static string Format(UINT fmt, Args&&... args)
+        {
+            string sFmt = LoadString(fmt);
+            return std::vformat(sFmt, std::make_wformat_args(args...));
+        }
+
+        [[nodiscard]] static string GetModuleFileName(HMODULE hModule);
+        [[nodiscard]] static string GetWindowText(const CWnd& wnd);
+        [[nodiscard]] static string GetText(const CListBox& wnd, int nIndex);
+        [[nodiscard]] static string GetLBText(const CComboBox& wnd, int nIndex);
+        [[nodiscard]] static string GetMenuString(const CMenu& menu, UINT nIDItem, UINT nFlags);
+        [[nodiscard]] static string GetDocString(const CDocTemplate& docTempl, CDocTemplate::DocStringIndex index);
+        // TODO:  std::optional<string> is probably better
+        [[nodiscard]] static std::unique_ptr<string> DoPromptFileName(CWinApp& app, UINT nIDSTitle,
+            DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
+
+        string() = default;     // empty string
+        string(const string& other) : cp1252(other.cp1252) {}
+        string(string&&) = default;
+        string& operator=(const string&);
+        string& operator=(string&&) = default;
+//        ~string() = default;
+~string();
+
+        string(std::string_view s) : cp1252(s) {} // windows-1252 string
+        // CString accepts !s
+        string(const char* s) : cp1252(s ? s : "") {} // windows-1252 string
+        string(const char* s, size_t n) : cp1252(s, n) {} // windows-1252 string
+        string(const std::string& s) : string(s.c_str()) {}
+        string(size_t n, char c) : cp1252(n, c) {}
+        // not impl yet
+        string(size_t n, wchar_t c) = delete;
+        string(const CString& s) : string(s.GetString()) {}
+        string(std::wstring_view s);
+        string(const wchar_t* s) : string(std::wstring_view(s)) {}
+        string(const std::wstring& s) : string(std::wstring_view(s)) {}
+        // resolve ambiguous string(NULL)
+        string(int i) : string(nullptr) { ASSERT(!i); }
+        string(nullptr_t) : string(static_cast<const char*>(nullptr)) {}
+
+        // nodiscard to avoid confusing with void CString::Empty()
+        [[nodiscard]] bool empty() const { return cp1252.empty(); }
+        size_t a_size() const { return cp1252.size(); }
+        const char* a_str() const { return cp1252.c_str(); }
+        operator const char*() const { return a_str(); }
+        const std::string& std_str() const { return cp1252; }
+        operator const std::string&() const { return std_str(); }
+        std::string_view std_strv() const { return std_str(); }
+        operator std::string_view() const { return std_strv(); }
+        CString mfc_str() const { return v_str(); }
+        operator CString() const { return mfc_str(); }
+        size_t w_size() const { return std_wstr().size(); }
+        const wchar_t* w_str() const { return std_wstr().c_str(); }
+        operator const wchar_t*() const { return w_str(); }
+        const std::wstring& std_wstr() const;
+        std::wstring_view std_wstrv() const { return std_wstr(); }
+        operator std::wstring_view() const { return std_wstrv(); }
+        operator const std::wstring& () const { return std_wstr(); }
+        const value_type* v_str() const { return static_cast<const value_type*>(*this); }
+        const char& operator[](size_t s) const { return cp1252[s]; }
+        const wchar_t& front() const { return std_wstr().front(); }
+
+        operator std::filesystem::path() const { return std::filesystem::path(std_wstr()); }
+
+        size_t find(char _Ch, size_t _Off = size_t(0)) const
+        {
+            return cp1252.find(_Ch, _Off);
+        }
+        size_t find(const string& _Right, size_t _Off = size_t(0)) const
+        {
+            return cp1252.find(_Right.cp1252, _Off);
+        }
+        size_t rfind(char _Ch, size_t _Off = npos) const
+        {
+            return cp1252.rfind(_Ch, _Off);
+        }
+        size_t rfind(const string& _Right, size_t _Off = npos) const
+        {
+            return cp1252.rfind(_Right.cp1252, _Off);
+        }
+
+        string substr(size_t _Off = size_t(0), size_t _Count = npos) const
+        {
+            return cp1252.substr(_Off, _Count);
+        }
+
+        int CompareNoCase(const string& rhs) const { return _wcsicmp(*this, rhs); }
+
+        void clear() { wide.reset(); cp1252.clear(); }
+        // reserve doesn't change cp1252's value, so no need for wide.reset()
+        void reserve(size_t s) { cp1252.reserve(s); }
+        void resize(size_t s) { wide.reset(); cp1252.resize(s); }
+
+        string& operator+=(const string& rhs) { wide.reset(); cp1252 += rhs.cp1252; return *this; }
+        string& operator+=(char c) { wide.reset(); cp1252 += c; return *this; }
+        string& operator+=(wchar_t c) { return *this += CB::string(std::wstring_view(&c, size_t(1))); }
+
+        void Serialize(CArchive& ar) const;
+        void Serialize(CArchive& ar);
+
+    private:
+        std::string cp1252;
+        mutable std::unique_ptr<std::wstring> wide;
+    };
+
+    inline bool operator==(const string& lhs, const string& rhs) { return lhs.CompareNoCase(rhs) == 0; }
+    inline bool operator==(const string& lhs, const char* rhs) { return lhs == CB::string(rhs); }
+    inline bool operator!=(const string& lhs, const string& rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const string& lhs, const char* rhs) { return !(lhs == rhs); }
+    inline std::string& operator+=(std::string& lhs, const string& rhs) { return lhs += rhs.a_str(); }
+    inline CString& operator+=(CString& lhs, const string& rhs) { return lhs += rhs.mfc_str(); }
+    inline string operator+(string lhs, const string& rhs) { return lhs += rhs; }
+    inline string operator+(string lhs, const char* rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(string lhs, const CString& rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(char lhs, const string& rhs) { return string(size_t(1), lhs) += rhs; }
+    // not impl yet
+    inline string operator+(wchar_t lhs, const string& rhs) = delete;
+    inline string operator+(string lhs, char rhs) { return lhs += string(size_t(1), rhs); }
+    // not impl yet
+    inline string operator+(string lhs, wchar_t rhs) = delete;
+    inline CArchive& operator<<(CArchive& ar, const string& s) { s.Serialize(ar); return ar; }
+    inline CArchive& operator>>(CArchive& ar, string& s) { s.Serialize(ar); return ar; }
+
+    using regex = std::basic_regex<string::value_type>;
+    using cmatch = std::match_results<const string::value_type*>;
+}
+
+template<typename CharT>
+struct std::formatter<CB::string, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
+{
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const CB::string& s, FormatContext& ctx)
+    {
+        return BASE::format(static_cast<const CharT*>(s), ctx);
+    }
+};
+
+inline CB::string operator""_cbstring(const char* s, size_t len)
+{
+    return CB::string(s, len);
+}
+
+// unfortunately, these aren't provided by default (due to needing encoding conversion)
+template<>
+struct std::formatter<wchar_t, char> : private std::formatter<std::string, char>
+{
+    using BASE = formatter<std::string, char>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(wchar_t c, FormatContext& ctx)
+    {
+        return BASE::format(CB::string(std::wstring_view(&c, size_t(1))), ctx);
+    }
+};
+
+template<>
+struct std::formatter<std::wstring_view, char> : private std::formatter<std::string, char>
+{
+    using BASE = formatter<std::string, char>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(std::wstring_view s, FormatContext& ctx)
+    {
+        return BASE::format(CB::string(s), ctx);
+    }
+};
+
+template<size_t n>
+struct std::formatter<wchar_t[n], char> : private std::formatter<std::wstring_view, char>
+{
+    using BASE = formatter<std::wstring_view, char>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
+template<>
+struct std::formatter<const wchar_t*, char> : private std::formatter<std::wstring_view, char>
+{
+    using BASE = formatter<std::wstring_view, char>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
+template<>
+struct std::formatter<std::wstring, char> : private std::formatter<std::wstring_view, char>
+{
+    using BASE = std::formatter<std::wstring_view, char>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
+template<>
+struct std::formatter<char, wchar_t> : private std::formatter<std::wstring, wchar_t>
+{
+    using BASE = formatter<std::wstring, wchar_t>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(char c, FormatContext& ctx)
+    {
+        return BASE::format(CB::string(std::string_view(&c, size_t(1))), ctx);
+    }
+};
+
+template<>
+struct std::formatter<std::string_view, wchar_t> : private std::formatter<std::wstring, wchar_t>
+{
+    using BASE = formatter<std::wstring, wchar_t>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(std::string_view s, FormatContext& ctx)
+    {
+        return BASE::format(CB::string(s), ctx);
+    }
+};
+
+template<size_t n>
+struct std::formatter<char[n], wchar_t> : private std::formatter<std::string_view, wchar_t>
+{
+    using BASE = formatter<std::string_view, wchar_t>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
+template<>
+struct std::formatter<const char*, wchar_t> : private std::formatter<std::string_view, wchar_t>
+{
+    using BASE = formatter<std::string_view, wchar_t>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
+
+template<>
+struct std::formatter<std::string, wchar_t> : private std::formatter<std::string_view, wchar_t>
+{
+    using BASE = std::formatter<std::string_view, wchar_t>;
+public:
+    using BASE::parse;
+    using BASE::format;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 

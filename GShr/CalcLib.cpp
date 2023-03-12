@@ -32,7 +32,7 @@
 #define new DEBUG_NEW
 #endif
 
-std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen)
+std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, size_t nDataLen)
 {
     MD5_CTX mdContext;
     MD5Calc(&mdContext, pDataToHash, nDataLen);
@@ -42,7 +42,7 @@ std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, no_demote<s
     return retval;
 }
 
-void MD5Calc(MD5_CTX* ctx, const void* pMsg, no_demote<size_t> nMsgLen)
+void MD5Calc(MD5_CTX* ctx, const void* pMsg, size_t nMsgLen)
 {
     MD5Init(ctx);
     MD5Update(ctx, pMsg, nMsgLen);
