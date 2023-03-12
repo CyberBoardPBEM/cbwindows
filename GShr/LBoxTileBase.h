@@ -76,7 +76,7 @@ protected:
 
     // see CGrafixListBox::OnGetItemDebugIDCode comment
     virtual int  OnGetItemDebugIDCode(size_t nItem) const override = 0;
-    virtual std::string OnGetItemDebugString(size_t nItem) const /* override */;
+    virtual CB::string OnGetItemDebugString(size_t nItem) const /* override */;
 
     //{{AFX_MSG(CTileBaseListBox)
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

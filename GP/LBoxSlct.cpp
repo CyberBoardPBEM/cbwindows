@@ -377,7 +377,7 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
+CB::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
 {
     const CDrawObj& pDObj = MapIndexToItem(nIndex);
     if (pDObj.GetType() == CDrawObj::drawPieceObj)

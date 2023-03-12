@@ -76,7 +76,7 @@ protected:
         CRect rctItem) const override;
     virtual BOOL OnDragSetup(DragInfo& pDI) const override;
 
-    virtual std::string OnGetItemDebugString(size_t nItem) const override;
+    virtual CB::string OnGetItemDebugString(size_t nItem) const override;
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;

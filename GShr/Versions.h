@@ -462,7 +462,7 @@ inline const Features& GetCBForcedFeatures()
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        TRACE("%s", std::format("{}:  {}\n", __func__, ffp.features).c_str());
+        TRACE("%ls", std::format(L"{}:  {}\n", CB::string(__func__), ffp.features).c_str());
         return ffp.features;
     }();
     return features;
@@ -515,7 +515,7 @@ inline const Features& GetCBFeatures()
                 AfxThrowInvalidArgException();
             }
         }
-        TRACE("%s", std::format("{}:  {}\n", __func__, ffp.features).c_str());
+        TRACE("%ls", std::format(L"{}:  {}\n", CB::string(__func__), ffp.features).c_str());
         return ffp.features;
     }();
     return features;
