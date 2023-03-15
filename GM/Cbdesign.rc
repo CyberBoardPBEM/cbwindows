@@ -1485,7 +1485,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_TT_COLORCELLS       "Left Click=Fore Color; Right Click=Back Color"
-    IDS_BSIZE_PATTERN       "Height = %d, Width = %d pixels."
+    IDS_BSIZE_PATTERN       "Height = {}, Width = {} pixels."
     IDS_BSIZE_INVALID       "Invalid Board Size"
     IDS_COPY_OF             "Copy of "
     IDS_COMPRESS_NONE       "No Compression"

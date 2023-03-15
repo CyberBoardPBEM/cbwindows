@@ -1338,8 +1338,7 @@ void CBitEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         ClientToWorkspace(point);
         if (GetImagePixelLoc(point))
         {
-            char szCoord[40];
-            sprintf(szCoord, "X=%d, Y=%d", point.x, point.y);
+            CB::string szCoord = std::format(L"X={}, Y={}", point.x, point.y);
             pCmdUI->Enable();
             pCmdUI->SetText(szCoord);
         }
