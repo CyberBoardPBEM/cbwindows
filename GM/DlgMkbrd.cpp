@@ -229,11 +229,9 @@ void CGridType::UpdateBoardDimensions()
         m_bStagger);
     if (cf.CalcTrialBoardSize(m_iRows, m_iCols))
     {
-        CString str;
-        VERIFY(str.LoadString(IDS_BSIZE_PATTERN));
+        CB::string str = CB::string::LoadString(IDS_BSIZE_PATTERN);
         CSize size = cf.CalcBoardSize(m_iRows, m_iCols);
-        char szBfr[_MAX_PATH];
-        sprintf(szBfr, str, size.cy, size.cx);
+        CB::string szBfr = std::vformat(str, std::make_wformat_args(size.cy, size.cx));
         m_staticPixelSize.SetWindowText(szBfr);
     }
     else
