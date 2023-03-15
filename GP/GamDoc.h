@@ -227,6 +227,32 @@ private:
 
 enum PlacePos : int { placeBack = -1, placeDefault = 0, placeTop = 1 };
 
+template<typename CharT>
+struct std::formatter<PlacePos, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
+{
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(PlacePos pos, FormatContext& ctx)
+    {
+        switch (pos)
+        {
+        case placeBack:
+            return BASE::format("ppBack"_cbstring, ctx);
+        case placeDefault:
+            return BASE::format("ppDefault"_cbstring, ctx);
+        case placeTop:
+            return BASE::format("ppTop"_cbstring, ctx);
+        default:
+            ASSERT(!"illegal value");
+            return BASE::format("pp?"_cbstring, ctx);
+        }
+    }
+};
+
 ////////////////////////////////////////////////////////////////
 
 class CGamDoc : public CDocument

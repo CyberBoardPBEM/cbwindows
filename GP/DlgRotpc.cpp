@@ -97,14 +97,14 @@ void CRotatePieceDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CRotatePieceDialog::UpdateRotationValue()
 {
-    TCHAR szBfr[40];
+    CB::string szBfr;
     if (m_nRelativeRotation != 0)
     {
-        sprintf(szBfr, "%c%d", m_nRelativeRotation < 0 ? '-' : '+',
+        szBfr = std::format(L"{}{}", m_nRelativeRotation < 0 ? L'-' : L'+',
                 abs(m_nRelativeRotation));
     }
     else
-        lstrcpy(szBfr, "0");
+        szBfr = "0";
     m_editCurVal.SetWindowText(szBfr);
 }
 

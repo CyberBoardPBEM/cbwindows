@@ -635,22 +635,21 @@ void CPieceTable::DumpToTextFile(CFile& file) const
     static char szHead[] = "\r\nPiece Table\r\n-----------\r\n";
     file.Write(szHead, lstrlen(szHead));
 
-    char szBfr[256];
-    for (size_t i = 0; i < m_pPieceTbl.GetSize(); i++)
+    for (size_t i = size_t(0); i < m_pPieceTbl.GetSize(); i++)
     {
         const Piece* pPce;
         const PieceDef* pDef;
         GetPieceDefinitionPair(static_cast<PieceID>(i), pPce, pDef);
-        sprintf(szBfr, "PieceID %5.5zd: m_nSide=%02X, m_nFacing=%3u\r\n",
-            i, (UINT)pPce->m_nSide, (UINT)pPce->m_nFacing);
-        file.Write(szBfr, lstrlen(szBfr));
+        CB::string szBfr = std::format(L"PieceID {:.5}: m_nSide={:02X}, m_nFacing={:3}\r\n",
+            std::format(L"{:5}", i), pPce->m_nSide, pPce->m_nFacing);
+        file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
         const std::vector<TileID>& tids = pDef->GetTIDs();
         for (size_t j = size_t(0); j < tids.size(); ++j)
         {
-            sprintf(szBfr, "\tm_tid[%5zu]=%5u\r\n",
+            szBfr = std::format(L"\tm_tid[{:5}]={:5}\r\n",
                     j,
-                    value_preserving_cast<UINT>(static_cast<TileID::UNDERLYING_TYPE>(tids[j])));
-            file.Write(szBfr, lstrlen(szBfr));
+                    tids[j]);
+            file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
         }
     }
 }

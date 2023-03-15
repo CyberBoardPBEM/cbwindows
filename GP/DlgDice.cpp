@@ -236,13 +236,13 @@ void CDieRollerDlg::MakeFormattedRollResult()
                     m_strRoll += " + ";
                 else
                     bPlusNeeded = TRUE;
-                std::string szBfr = CB::Sprintf("%" PRIu32 "D%" PRIu32, rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
+                CB::string szBfr = std::format(L"{}D{}", rs.m_tbl[i].m_nDice,  rs.m_tbl[i].m_nFaces);
                 m_strRoll += szBfr;
             }
         }
         if (rs.m_nBias != 0)
         {
-            std::string szBfr = CB::Sprintf(" %c %" PRId32, rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            CB::string szBfr = std::format(L" {} {}", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
         m_strRoll += "\r\n";
@@ -293,7 +293,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
                         m_strRoll += " + ";
                     else
                         bPlusNeeded = TRUE;
-                    std::string szBfr = CB::Sprintf("%" PRId32, nRandomNum);
+                    CB::string szBfr = std::format(L"{}", nRandomNum);
                     m_strRoll += szBfr;
                 }
             }
@@ -301,12 +301,12 @@ void CDieRollerDlg::MakeFormattedRollResult()
         if (rs.m_nBias != 0)
         {
             nRandomTotal += rs.m_nBias;
-            std::string szBfr = CB::Sprintf(" [%c %" PRId32 "]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
+            CB::string szBfr = std::format(L" [{} {}]", rs.m_nBias < 0 ? '-' : '+', abs(rs.m_nBias));
             m_strRoll += szBfr;
         }
         if (rs.m_nBias != 0 || nDies > uint32_t(1))
         {
-            std::string szBfr = CB::Sprintf(" = %" PRId32, nRandomTotal);
+            CB::string szBfr = std::format(L" = {}", nRandomTotal);
             m_strRoll += szBfr;
         }
         // Finish up...

@@ -73,9 +73,9 @@ static const TCHAR szPrint[]        = "print";
 static const TCHAR szPrintTo[]      = "printto";
 static const TCHAR szGame[]         = "CyberBoardGame";
 static const TCHAR szScenario[]     = "CyberBoardScenario";
-static const TCHAR szShell[]        = "%s\\shell\\%s";
-static const TCHAR szShellCommand[] = "%s\\shell\\%s\\command";
-static const TCHAR szShellDdeexec[] = "%s\\shell\\%s\\ddeexec";
+static constexpr const wchar_t* szShell        = L"{}\\shell\\{}";
+static constexpr const wchar_t* szShellCommand = L"{}\\shell\\{}\\command";
+static constexpr const wchar_t* szShellDdeexec = L"{}\\shell\\{}\\ddeexec";
 
 static void DeletePrintKeys(LPCTSTR szFileClass);
 
@@ -415,12 +415,11 @@ void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
 
 static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
 {
-    TCHAR szKeyBfr[128];
-    sprintf(szKeyBfr, szShellCommand, szFileClass, szPrintStyle);
+    CB::string szKeyBfr = std::format(szShellCommand, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
-    sprintf(szKeyBfr, szShellDdeexec, szFileClass, szPrintStyle);
+    szKeyBfr = std::format(szShellDdeexec, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
-    sprintf(szKeyBfr, szShell, szFileClass, szPrintStyle);
+    szKeyBfr = std::format(szShell, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
 }
 
