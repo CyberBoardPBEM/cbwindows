@@ -260,10 +260,9 @@ void CBoardPieceMove::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CBoardPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    board = %u, pos = %d, pid = %u, @(%d, %d)\r\n",
-        value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBrdNum)), m_ePos, value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_ptCtr.x, m_ptCtr.y);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    board = {}, pos = {}, pid = {}, @({}, {})\r\n",
+        m_nBrdNum, m_ePos, m_pid, m_ptCtr.x, m_ptCtr.y);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -359,10 +358,9 @@ void CTrayPieceMove::Serialize(CArchive& ar)
 #ifdef _DEBUG
 void CTrayPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    tray = %zu, nPos = %zd, pid = %u\r\n",
-        m_nTrayNum, m_nPos, value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    tray = {}, nPos = {}, pid = {}\r\n",
+        m_nTrayNum, m_nPos, m_pid);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -539,35 +537,34 @@ void CPieceSetSide::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    Piece %u is flipped:%s to %s visible.\r\n",
-        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)),
+    CB::string szBfr = std::format(L"    Piece {} is flipped:{} to {} visible.\r\n",
+        m_pid,
         [](CPieceTable::Flip f) {
             switch (f) {
                 case CPieceTable::fPrev:
-                    return "prev";
+                    return "prev"_cbstring;
                 case CPieceTable::fNext:
-                    return "next";
+                    return "next"_cbstring;
                 case CPieceTable::fSelect:
-                    return "select";
+                    return "select"_cbstring;
                 case CPieceTable::fRandom:
-                    return "random";
+                    return "random"_cbstring;
                 default:
                     ASSERT(!"invalid value");
-                    return "invalid";
+                    return "invalid"_cbstring;
             }
         }(m_flip),
         [](const CGamDoc& pDoc, PieceID pid, size_t side) {
             if (pDoc.GetPieceTable()->GetSides(pid) <= size_t(2))
             {
-                return side == size_t(0) ? std::string("front") : std::string("back");
+                return side == size_t(0) ? "front"_cbstring : "back"_cbstring;
             }
             else
             {
-                return "side " + std::to_string(side);
+                return "side "_cbstring + std::format(L"{}", side);
             }
-        }(pDoc, m_pid, m_side).c_str());
-    file.Write(szBfr, lstrlen(szBfr));
+        }(pDoc, m_pid, m_side));
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -671,9 +668,8 @@ void CPieceSetFacing::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CPieceSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    Piece %u is rotated %d degrees.\r\n", value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_nFacingDegCW);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    Piece {} is rotated {} degrees.\r\n", m_pid, m_nFacingDegCW);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -781,10 +777,9 @@ void CPieceSetOwnership::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CPieceSetOwnership::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    Piece %u has ownership changed to 0x%X.\r\n",
-        value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)), m_dwOwnerMask);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    Piece {} has ownership changed to {:#X}.\r\n",
+        m_pid, m_dwOwnerMask);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -875,10 +870,9 @@ void CMarkerSetFacing::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CMarkerSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    Marker dwObjID = %" PRIX64 ", mid = %u is rotated %d degrees.\r\n",
-        value_preserving_cast<uint64_t>(reinterpret_cast<const ObjectID::UNDERLYING_TYPE&>(m_dwObjID)), value_preserving_cast<unsigned>(static_cast<MarkID::UNDERLYING_TYPE>(m_mid)), m_nFacingDegCW);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    Marker dwObjID = {:#X}, mid = {} is rotated {} degrees.\r\n",
+        m_dwObjID, m_mid, m_nFacingDegCW);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -993,10 +987,9 @@ void CBoardMarkerMove::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CBoardMarkerMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    board = %u, pos = %d, dwObjID = %" PRIX64 ", mid = %u, @(%d, %d)\r\n",
-        value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBrdNum)), m_ePos, value_preserving_cast<uint64_t>(reinterpret_cast<const ObjectID::UNDERLYING_TYPE&>(m_dwObjID)), value_preserving_cast<unsigned>(static_cast<MarkID::UNDERLYING_TYPE>(m_mid)), m_ptCtr.x, m_ptCtr.y);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    board = {}, pos = {}, dwObjID = {}, mid = {}, @({}, {})\r\n",
+        m_nBrdNum, m_ePos, m_dwObjID, m_mid, m_ptCtr.x, m_ptCtr.y);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -1082,9 +1075,8 @@ void CObjectDelete::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CObjectDelete::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    dwObjID = %" PRIX64 "\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const ObjectID::UNDERLYING_TYPE&>(m_dwObjID)));
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    dwObjID = {}\r\n", m_dwObjID);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -1225,9 +1217,8 @@ void CObjectSetText::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CObjectSetText::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    elem = %" PRIX64 ", text = \"%s\"\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const GameElement::UNDERLYING_TYPE&>(m_elem)), (LPCTSTR)m_strObjText);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    elem = {}, text = \"{}\"\r\n", m_elem, m_strObjText);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -1390,9 +1381,8 @@ void CObjectLockdown::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CObjectLockdown::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    elem = %" PRIX64 ", state = %d\r\n", value_preserving_cast<uint64_t>(reinterpret_cast<const GameElement::UNDERLYING_TYPE&>(m_elem)), m_bLockState);
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    elem = {}, state = {}\r\n", m_elem, m_bLockState);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -1648,18 +1638,18 @@ void CEventMessageRcd::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CEventMessageRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
+    CB::string szBfr;
     if (m_bIsBoardEvent)
     {
-        sprintf(szBfr, "    BoardEvt = %s, nBoard = %u, (x, y) = (%d, %d)\r\n",
-                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(m_nBoard)), m_x, m_y);
+        szBfr = std::format(L"    BoardEvt = {}, nBoard = {}, (x, y) = ({}, {})\r\n",
+                 m_bIsBoardEvent ? "TRUE"_cbstring : "FALSE"_cbstring, m_nBoard, m_x, m_y);
     }
     else
     {
-        sprintf(szBfr, "    BoardEvt = %s, nTray = %zu, pieceID = %u\r\n",
-                 (LPCTSTR)(m_bIsBoardEvent ? "TRUE" : "FALSE"), m_nTray, value_preserving_cast<unsigned>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID)));
+        szBfr = std::format(L"    BoardEvt = {}, nTray = {}, pieceID = {}\r\n",
+                 m_bIsBoardEvent ? "TRUE"_cbstring : "FALSE"_cbstring, m_nTray, m_pieceID);
     }
-    file.Write(szBfr, lstrlen(szBfr));
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -1690,9 +1680,8 @@ void CCompoundMove::SerializeHiddenByPrivate(CGamDoc& /*doc*/,
 #ifdef _DEBUG
 void CCompoundMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    char szBfr[256];
-    sprintf(szBfr, "    %s Compound Move.\r\n", m_bGroupBegin ? "Begin" : "End");
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"    {} Compound Move.\r\n", m_bGroupBegin ? "Begin"_cbstring : "End"_cbstring);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 }
 #endif
 
@@ -2541,11 +2530,10 @@ static const char *tblTypes[CMoveRecord::mrecMax] =
 
 void CMoveList::DumpToTextFile(const CGamDoc& pDoc, CFile& file)
 {
-    char szBfr[256];
-    sprintf(szBfr, "Current Move Group: %zu\r\n", m_nSeqNum);
-    file.Write(szBfr, lstrlen(szBfr));
-    sprintf(szBfr, "Number of move records: %zu\r\n", size());
-    file.Write(szBfr, lstrlen(szBfr));
+    CB::string szBfr = std::format(L"Current Move Group: {}\r\n", m_nSeqNum);
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
+    szBfr = std::format(L"Number of move records: {}\r\n", size());
+    file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
 
     iterator pos;
     int nIndex = 0;
@@ -2554,9 +2542,9 @@ void CMoveList::DumpToTextFile(const CGamDoc& pDoc, CFile& file)
         const CMoveRecord& pRcd = GetNext(pos);
         CMoveRecord::RcdType eType = pRcd.GetType();
         ASSERT(eType >= 0 && eType < CMoveRecord::mrecMax);
-        sprintf(szBfr, "[Index=%04d; Seq=%04zd: %s]\r\n", nIndex, pRcd.GetSeqNum(),
-            (LPCSTR)tblTypes[eType]);
-        file.Write(szBfr, lstrlen(szBfr));
+        szBfr = std::format(L"[Index={:04}; Seq={:04}; Hid={}: {}]\r\n", nIndex, pRcd.GetSeqNum(),
+            pRcd.IsMoveHidden(pDoc, nIndex), tblTypes[eType]);
+        file.Write(szBfr.a_str(), value_preserving_cast<UINT>(szBfr.a_size()));
         pRcd.DumpToTextFile(pDoc, file);
         nIndex++;
     }

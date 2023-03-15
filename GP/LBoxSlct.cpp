@@ -383,12 +383,12 @@ CB::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
-        return CB::Sprintf("[pid:%u] ", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(pid)));
+        return std::format(L"[pid:{}] ", pid);
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
         MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
-        return CB::Sprintf("[mid:%u] ", value_preserving_cast<UINT>(static_cast<MarkID::UNDERLYING_TYPE>(mid)));
+        return std::format(L"[mid:{}] ", mid);
     }
     return std::string();
 }
