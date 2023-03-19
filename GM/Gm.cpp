@@ -41,6 +41,32 @@
 #include    "StrLib.h"
 
 #if 0
+namespace CB
+{
+    std::string Sprintf(const char* fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        int rc = vsnprintf(nullptr, 0, fmt, args);
+        va_end(args);
+        if (rc < 0)
+        {
+            AfxThrowInvalidArgException();
+        }
+        // +1 for null terminator
+        std::string retval(rc + 1, '\0');
+        va_start(args, fmt);
+        rc = vsnprintf(&retval[0], retval.size(), fmt, args);
+        va_end(args);
+        if (rc < 0)
+        {
+            AfxThrowInvalidArgException();
+        }
+        retval.resize(rc);
+        return retval;
+    }
+}
+
 static class Test
 {
 public:

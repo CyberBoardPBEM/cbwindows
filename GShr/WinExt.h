@@ -24,6 +24,7 @@ extern "C" {            /* Assume C declarations for C++ */
 
 /****** KERNEL Macro APIs ****************************************************/
 
+#error needs to be checked
 #define     GetInstanceModule(hInstance) \
                 GetModuleHandle((LPCSTR)MAKELP(0, hInstance))
 

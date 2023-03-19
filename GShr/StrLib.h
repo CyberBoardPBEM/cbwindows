@@ -29,7 +29,6 @@
 
 [[nodiscard]] CB::string SetFileExt(const CB::string& fname, const CB::string& ext);
 CB::string StrGetAAAFormat(size_t n);
-void StrLeadZeros(char* szVal, size_t nWidth);
 [[nodiscard]] CB::string StrTruncatePath(const CB::string& pszName);
 CB::string StrExtractFilename(const CB::string& pszFPath);
 CB::string StrBuildFullFilename(const CB::string& pszPath,

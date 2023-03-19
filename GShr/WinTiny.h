@@ -30,6 +30,7 @@ class CTinyWnd : public CWnd
 // Construction
 public:
     CTinyWnd();
+#error needs to be checked
     BOOL Create(LPCSTR lpszClassName, DWORD dwStyle,
         int x, int y, int nWidth, int nHeight, CWnd* pParentWnd,
         UINT nID, LPSTR lpParam = NULL);
