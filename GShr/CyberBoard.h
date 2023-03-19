@@ -142,32 +142,6 @@ namespace CB
 
 /////////////////////////////////////////////////////////////////////////////
 
-namespace CB
-{
-    inline std::string Sprintf(const char* fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        int rc = vsnprintf(nullptr, 0, fmt, args);
-        va_end(args);
-        if (rc < 0)
-        {
-            AfxThrowInvalidArgException();
-        }
-        // +1 for null terminator
-        std::string retval(rc + 1, '\0');
-        va_start(args, fmt);
-        rc = vsnprintf(&retval[0], retval.size(), fmt, args);
-        va_end(args);
-        if (rc < 0)
-        {
-            AfxThrowInvalidArgException();
-        }
-        retval.resize(rc);
-        return retval;
-    }
-}
-
 template<typename CharT>
 struct std::formatter<SIZE, CharT> : private std::formatter<decltype(SIZE::cx), CharT>
 {
@@ -845,10 +819,6 @@ namespace CB
         size_t a_size() const { return cp1252.size(); }
         const char* a_str() const { return cp1252.c_str(); }
         operator const char*() const { return a_str(); }
-        const std::string& std_str() const { return cp1252; }
-        operator const std::string&() const { return std_str(); }
-        std::string_view std_strv() const { return std_str(); }
-        operator std::string_view() const { return std_strv(); }
         CString mfc_str() const { return v_str(); }
         operator CString() const { return mfc_str(); }
         size_t w_size() const { return std_wstr().size(); }
@@ -1599,23 +1569,6 @@ CArchive& operator>>(CArchive& ar, XxxxIDTable<KEY, ELEMENT, baseSize, incrSize,
         AfxThrowArchiveException(CArchiveException::writeOnly);
     }
     v.Serialize(ar);
-    return ar;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-inline CArchive& operator<<(CArchive& ar, const std::string& s)
-{
-    CString cs = s.c_str();
-    ar << cs;
-    return ar;
-}
-
-inline CArchive& operator>>(CArchive& ar, std::string& s)
-{
-    CString cs;
-    ar >> cs;
-    s = cs;
     return ar;
 }
 

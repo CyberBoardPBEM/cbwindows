@@ -1289,6 +1289,7 @@ CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend)
     }
     CPalette* pPal = new CPalette;
     pPal->CreatePalette(pLP);
+#error needs to be checked
     delete (char*)pLP;
     return pPal;
 }

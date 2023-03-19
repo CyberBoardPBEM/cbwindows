@@ -65,20 +65,6 @@ CB::string StrGetAAAFormat(size_t n)
     return retval;
 }
 
-void StrLeadZeros(char* szVal, size_t nWidth)
-{
-    char szTmp[_MAX_I64TOSTR_BASE10_COUNT];
-    size_t i;
-    ASSERT(nWidth < sizeof(szTmp));
-    for (i = size_t(0) ; i < nWidth ; ++i)
-        szTmp[value_preserving_cast<ptrdiff_t>(i)] = '0';
-    szTmp[value_preserving_cast<ptrdiff_t>(i)] = 0;           // Terminate
-    size_t nLen = strlen(szVal);
-    ASSERT(nLen < sizeof(szTmp));
-    memcpy(szTmp + value_preserving_cast<ptrdiff_t>(nWidth - nLen), szVal, nLen);
-    strcpy(szVal, szTmp);
-}
-
 // --------------------------- //
 // Removes the filename portion of a file path specification
 
