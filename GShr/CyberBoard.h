@@ -1652,6 +1652,100 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if defined(NDEBUG)
+    namespace CB { namespace Impl
+    {
+        class CTraceFileAndLineInfo
+        {
+        public:
+            CTraceFileAndLineInfo(const char* file, int line) : file(file), line(line) {}
+
+            void operator()(LPCSTR fmt, ...) const
+            {
+                CString temp;
+                va_list args;
+                va_start(args, fmt);
+                temp.FormatV(fmt, args);
+                va_end(args);
+
+                CString out;
+                out.Format("%hs(%d):  %s", file, line, temp.GetString());
+                OutputDebugString(out);
+            }
+
+            // TODO:  pay attention to cat and level
+            void operator()(DWORD /*cat*/, int /*level*/, LPCSTR fmt, ...) const
+            {
+                CString temp;
+                va_list args;
+                va_start(args, fmt);
+                temp.FormatV(fmt, args);
+                va_end(args);
+
+                CString out;
+                out.Format("%hs(%d):  %s", file, line, temp.GetString());
+                OutputDebugString(out);
+            }
+
+        private:
+            const char* const file;
+            const int line;
+        };
+    }}
+#endif
+
+namespace CB { namespace Impl {
+    class Cpp20Trace
+    {
+    public:
+        Cpp20Trace(const char* file, int line) : file(file), line(line) {}
+
+        template<typename... Args>
+        void operator()(std::format_string<Args...> fmt, Args&&... args)
+        {
+            CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
+            // %ls with wchar_t* is the only thing that MS implements per standard
+            CTraceFileAndLineInfo(file, line)("%ls", temp.w_str());
+        }
+
+        template<typename... Args>
+        void operator()(std::wformat_string<Args...> fmt, Args&&... args)
+        {
+            CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
+            // %ls with wchar_t* is the only thing that MS implements per standard
+            CTraceFileAndLineInfo(file, line)("%ls", temp.w_str());
+        }
+
+        template<typename... Args>
+        void operator()(DWORD cat, int level, std::format_string<Args...> fmt, Args&&... args)
+        {
+            CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
+            // %ls with wchar_t* is the only thing that MS implements per standard
+            CTraceFileAndLineInfo(file, line)(cat, level, "%ls", temp.w_str());
+        }
+
+        template<typename... Args>
+        void operator()(DWORD cat, int level, std::wformat_string<Args...> fmt, Args&&... args)
+        {
+            CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
+            // %ls with wchar_t* is the only thing that MS implements per standard
+            CTraceFileAndLineInfo(file, line)(cat, level, "%ls", temp.w_str());
+        }
+
+    private:
+        const char* const file;
+        const int line;
+    };
+}}
+#define DBGREL_CPP20_TRACE CB::Impl::Cpp20Trace(__FILE__, __LINE__)
+#if !defined(NDEBUG)
+    #define CPP20_TRACE DBGREL_CPP20_TRACE
+#else
+    #define CPP20_TRACE true ? void(0) : CB::Impl::Cpp20Trace(__FILE__, __LINE__)
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
 static_assert(std::is_same_v<std::vector<int>::size_type, size_t>, "std::vector index is not size_t");
 static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdiff_t>, "std::vector iterator offset is not ptrdiff_t");
 
