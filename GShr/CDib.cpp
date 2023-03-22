@@ -42,22 +42,6 @@ static UINT CalcSize(DWORD cbTotal, const void FAR* lpStart);
 
 ///////////////////////////////////////////////////////////////
 
-BYTE CDib::Get256ColorNumberAtXY(int x, int y) const
-{
-    ASSERT(m_hDib != NULL);
-    ASSERT(x >= 0 && x < Width());
-    ASSERT(y >= 0 && y < Height());
-    return *::DibXY(m_lpDib, x, y);
-}
-
-void CDib::Set256ColorNumberAtXY(int x, int y, BYTE nColor)
-{
-    ASSERT(m_hDib != NULL);
-    ASSERT(x >= 0 && x < Width());
-    ASSERT(y >= 0 && y < Height());
-    *::DibXY(m_lpDib, x, y) = nColor;
-}
-
 WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 {
     ASSERT(m_hDib != NULL);

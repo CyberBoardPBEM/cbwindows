@@ -38,10 +38,7 @@ DECLARE_HANDLE(HDIB);
 BOOL    SaveDIB(HDIB hDib, CFile& file);
 HDIB    ReadDIBFile(CFile& file);
 HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
-void    AddDIBColorsToPaletteEntryTable(HDIB hDIB, LPPALETTEENTRY pLP,
-            int nSize, BOOL bReducedPalette = TRUE);
-BOOL    CreateDIBPalette(HDIB hDIB, CPalette* pPal,
-            BOOL bReducedPalette = FALSE);
+BOOL    CreateDIBPalette(HDIB hDIB, CPalette* pPal);
 LPSTR   FindDIBBits(LPSTR lpbi);
 DWORD   DIBWidth(LPSTR lpDIB);
 DWORD   DIBHeight(LPSTR lpDIB);
@@ -54,8 +51,6 @@ void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
             DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
 void    InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo);
 LPBYTE  DibXY(LPSTR lpbi, int x, int y);
-BOOL    IsColorNumInDIB(LPSTR lpbi, UINT iColor);
-LPBYTE  GetColorUseTable(LPSTR lpbi);
 
 HANDLE  ConvertDIBSectionToDIB(HBITMAP hDibSect);
 

@@ -90,45 +90,6 @@ BOOL AppendStringToEditBox(CEdit& edit, CString strAppend,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL GetMaximumTextExtent(HDC hDC, LPCTSTR pszStr, int nStringLen, int nMaxWidth,
-    int* pnFit)
-{
-    int  nStrLen = nStringLen == -1 ? lstrlen(pszStr) : nStringLen;
-    SIZE size;
-
-    // Determine the largest string that can fit in the cell...
-    if (GetTextExtentExPoint(hDC, pszStr, nStrLen, nMaxWidth,
-            pnFit, NULL, &size))
-        return TRUE;
-
-    // If it failed (probably due to running on Win32s) do it the hard way!
-    //
-    // First try entire string extent to save time.
-    if (!GetTextExtentPoint(hDC, pszStr, nStrLen, &size))
-        return FALSE;
-
-    if (size.cx <= nMaxWidth)
-    {
-        *pnFit = nStrLen;
-        return TRUE;
-    }
-    // Use brute force approach. Perhaps this can be made more clever when
-    // the product ship data isn't looming.
-    int nChar;
-    for (nChar = 0; nChar < nStrLen; nChar++)
-    {
-        if (!GetTextExtentPoint(hDC, pszStr, nChar + 1, &size))
-            return FALSE;
-        if (size.cx > nMaxWidth)
-            break;
-    }
-    ASSERT(nChar < nStrLen);        // Should always bail out before end string!
-    *pnFit = nChar;
-    return TRUE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 CDisableMainWindow::CDisableMainWindow(BOOL bDisable /* = TRUE */)
 {
     DisableMainWindow(bDisable);
@@ -145,35 +106,6 @@ void CDisableMainWindow::DisableMainWindow(BOOL bDisable /* = TRUE */)
     ASSERT(AfxGetApp()->m_pMainWnd != NULL);
 
     AfxGetApp()->m_pMainWnd->EnableWindow(!bDisable);
-}
-
-///////////////////////////////////////////////////////////////////////
-// This routine will simply create a unique temporary filename.
-
-void GetTemporaryFileName(LPCTSTR lpPrefixString, CString& strTempName)
-{
-    TCHAR szTempName[_MAX_PATH];
-    TCHAR szPath[_MAX_PATH];
-
-    // Save to temporary path
-    VERIFY(GetTempPath(sizeof(szPath)/sizeof(TCHAR), szPath) != 0);
-    VERIFY(GetTempFileName(szPath, lpPrefixString, 0, szTempName) != 0);
-    strTempName = szTempName;
-}
-
-///////////////////////////////////////////////////////////////////////
-// TruncatedAnsiStringWithEllipses() - This function shortens a string
-// to fit within a target width. The shortened string has "..." at the
-// end of it.
-
-void TruncatedAnsiStringWithEllipses(CDC* pRefDC, int nTargWidth, CString& str)
-{
-    CString strWrk = "..." + str;       // Ellipse is prefix for size calc
-    int nFitWidth;
-    VERIFY(GetMaximumTextExtent(pRefDC->m_hAttribDC, strWrk, strWrk.GetLength(),
-        nTargWidth, &nFitWidth));
-    ASSERT(nFitWidth > 0);
-    str = str.Left(nFitWidth - 3) + "...";
 }
 
 ///////////////////////////////////////////////////////////////////////

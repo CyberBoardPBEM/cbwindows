@@ -151,55 +151,6 @@ int GridizeClosest(int nVal, int nMultiple, int nOffset)
     return rslt.quot * nMultiple + nOffset;
 }
 
-////////////////////////////////////////////////////////////////////////
-//  StrToInt() - convert string to integer and advance pointer.
-//      Returns advanced pointer.
-
-char *StrToInt(const char *sp, int *iVal)
-{
-    *iVal = (int)strtol(sp, (char**)&sp, 10);
-    return (char *)sp;
-}
-
-////////////////////////////////////////////////////////////////////////
-//  StrDecimalChecked() - convert decimal string to integer, and
-//      power of 10 scaling divisor. Advances character pointer. Returns
-//      FALSE if number not converted.
-
-static int tblPow10[] = { 1, 10, 100, 1000, 10000 };
-
-BOOL StrDecimalChecked(const char **psp, int *pnVal, int *pnScale)
-{
-    int nWholePart = 0;
-    int nFracPart = 0;
-    ptrdiff_t nFracDigs = 0;
-
-    BOOL bMinus = **psp == '-';
-    if (bMinus) (*psp)++;       // Step past minus character
-
-    const char *sp = *psp;
-    *psp = StrToInt(*psp, &nWholePart); // Convert whole part
-    BOOL bNumFound = *psp != sp;
-
-    if (**psp == '.')           // Check for decimal point
-    {
-        (*psp)++;               // Step past decimal character
-        sp = *psp;              // Mark start of string
-        *psp = StrToInt(*psp, &nFracPart);  // Convert fractional part
-        nFracDigs = *psp - sp;
-        if (nFracDigs > 4) return FALSE;    // No scale > 10000
-        bNumFound = nFracDigs > 0 ? TRUE : bNumFound;
-    }
-    if (bNumFound)
-    {
-        *pnScale = tblPow10[nFracDigs];
-        *pnVal = nWholePart * tblPow10[nFracDigs] + nFracPart;
-        if (bMinus)
-            *pnVal = -(*pnVal);
-    }
-    return bNumFound;
-}
-
 // ----------------------------------------------- //
 // Helper for calculation allocation increments.
 

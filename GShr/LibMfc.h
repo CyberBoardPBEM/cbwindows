@@ -46,12 +46,6 @@ BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 BOOL AppendStringToEditBox(CEdit& edit, CString strAppend,
     BOOL bEnsureNewline = FALSE);
 
-BOOL GetMaximumTextExtent(HDC hDC, LPCTSTR pszStr, int nStringLen, int nMaxWidth,
-    int* pnFit);    // (not really MFC related)
-
-void GetTemporaryFileName(LPCTSTR lpPrefixString, CString& strTempName);
-void TruncatedAnsiStringWithEllipses(CDC *pRefDC, int nTargWidth, CString& str);
-
 BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar);
 UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
 void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblNames,

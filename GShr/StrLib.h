@@ -27,11 +27,7 @@
 
 //*** STRLIB.CPP ***//
 
-BOOL StrToIntChecked(const char **psp, int *iVal);
-char *StrToLong(const char *sp, long *lVal);
 char *SetFileExt(char *fname, const char *ext);
-BOOL StrIsIdentifierChar(int ch);
-BOOL StrIsIdentifier(const char* sp);
 void StrGetAAAFormat(char *szVal, size_t n);
 void StrLeadZeros(char* szVal, size_t nWidth);
 void StrTruncatePath(char *pszName);

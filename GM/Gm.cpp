@@ -596,49 +596,6 @@ BOOL CGmApp::OnIdle(LONG lCount)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// INI file tools
-//
-// Loads a vector of integers from the app's INI file.
-
-void CGmApp::GetProfileIntVect(const char* pszSect, const char* pszEntry,
-    const char* pszDefault, UINT nEnts, int* piVals)
-{
-    CString str = GetApp()->GetProfileString(pszSect, pszEntry, pszDefault);
-    const char *sp = str;
-    UINT i;
-    for (i = 0; i < nEnts; i++)
-    {
-        if (!StrToIntChecked(&sp, &piVals[i]))
-            break;
-    }
-    if (i != nEnts)             // Check if enough numbers were found
-    {
-        // INI file isn't setup properly. Load from default string.
-        // The default string is assumed to be properly constructed.
-        sp = pszDefault;
-        for (i = 0; i < nEnts; i++)
-            StrToIntChecked(&sp, &piVals[i]);
-    }
-}
-
-// Saves a vector of integers in the app's INI file.
-
-void CGmApp::SetProfileIntVect(const char* pszSect, const char* pszEntry,
-    UINT nEnts, int* piVals)
-{
-    CString str;
-
-    for (UINT i = 0; i < nEnts; i++)
-    {
-        char szNum[40];
-        itoa(piVals[i], szNum, 10);
-        str += szNum;
-        str += ' ';
-    }
-    WriteProfileString(pszSect, pszEntry, str);
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialog
