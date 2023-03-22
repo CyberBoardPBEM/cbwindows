@@ -92,11 +92,6 @@ public:
     BOOL DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray);
     void DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray);
 
-    void GetProfileIntVect(const char* pszSect, const char* pszEntry,
-        const char* pszDefault, UINT nEnts, int* piVals);
-    void SetProfileIntVect(const char* pszSect, const char* pszEntry,
-        UINT nEnts, int* piVals);
-
     BOOL DispatchMessages();
     void UpdateAllViewsForAllDocuments(CView* pSender, LPARAM lHint = 0,
         CObject* pHint = NULL);

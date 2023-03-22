@@ -35,31 +35,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // --------------------------- //
-/*
-    StrToIntChecked() - convert string to integer and advance pointer.
-        Returns advanced pointer.
-*/
-
-BOOL StrToIntChecked(const char **psp, int *iVal)
-{
-    const char* sp = *psp;
-    *iVal = (int)strtol(*psp, (char**)psp, 10);
-    return sp != *psp;
-}
-
-// --------------------------- //
-/*
-    StrToLong() - convert string to long and advance pointer.
-        Returns advanced pointer.
-*/
-
-char *StrToLong(const char *sp, long *lVal)
-{
-    *lVal = (int)strtol(sp, (char**)&sp, 10);
-    return (char*)sp;
-}
-
-// --------------------------- //
 
 char *SetFileExt(char *fname, const char *ext)
 {
@@ -72,29 +47,6 @@ char *SetFileExt(char *fname, const char *ext)
 }
 
 // --------------------------- //
-
-BOOL StrIsIdentifierChar(int c)
-{
-    return  c >= 'a' && c <= 'z'    ||
-            c >= 'A' && c <= 'Z'    ||
-            c >= '0' && c <= '9'    ||
-            c == '_';
-}
-
-// --------------------------- //
-
-BOOL StrIsIdentifier(const char* sp)
-{
-    if (*sp >= '0' && *sp <= '9')       // Can't start with a digit
-        return FALSE;
-    while (*sp)
-    {
-        if (!StrIsIdentifierChar(*sp))
-            return FALSE;
-        sp++;
-    }
-    return TRUE;
-}
 
 void StrGetAAAFormat(char *szVal, size_t n)
 {

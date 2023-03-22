@@ -56,7 +56,6 @@ CPoint RotatePointAroundPoint(CPoint pntOrigin, CPoint pntXlate, int nAngleDeg);
 
 int GridizeClosest1000(int nVal, int nMultiple, int nOffset);
 int GridizeClosest(int nVal, int nMultiple, int nOffset);
-BOOL StrDecimalChecked(const char **psp, int *pnVal, int *pnScale);
 size_t CalcAllocSize(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize);
 void ScalePoint(POINT& pnt, const CSize& numSize, const CSize& denSize);
 void ScaleRect(RECT& rct, const CSize& numSize, const CSize& denSize);

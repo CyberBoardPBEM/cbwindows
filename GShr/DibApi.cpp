@@ -194,63 +194,6 @@ HDIB ReadDIBFile(CFile& file)
     return hDIB;
 }
 
-////////////////////////////////////////////////////////////////////
-
-void AddDIBColorsToPaletteEntryTable(HDIB hDIB, LPPALETTEENTRY pLP,
-                                            int nSize, BOOL bReducedPalette)
-{
-    LPSTR lpbi;              // pointer to packed-DIB
-    LPBITMAPINFO lpbmi;      // pointer to BITMAPINFO structure (Win3.0)
-    LPBITMAPCOREINFO lpbmc;  // pointer to BITMAPCOREINFO structure (old)
-
-    /* if handle to DIB is invalid, return FALSE */
-
-    ASSERT(hDIB != NULL);
-
-    lpbi = (LPSTR) GlobalLock((HGLOBAL) hDIB);
-
-    /* get pointer to BITMAPINFO (Win 3.0) */
-    lpbmi = (LPBITMAPINFO)lpbi;
-
-    /* get pointer to BITMAPCOREINFO (old 1.x) */
-    lpbmc = (LPBITMAPCOREINFO)lpbi;
-
-    /* get the number of colors in the DIB */
-    WORD wNumColors = DIBNumColors(lpbi);
-    BOOL bWinStyleDIB = IS_WIN30_DIB(lpbi);
-
-    if (wNumColors != 0)
-    {
-        LPBYTE pFlags = NULL;
-        if (bReducedPalette)
-            pFlags = GetColorUseTable(lpbi);
-
-        for (int i = 0; i < (int)wNumColors; i++)
-        {
-            if (bReducedPalette)
-                if (pFlags[i] == 0) continue; // Don't store color (not used)
-            PALETTEENTRY pe;
-            if (bWinStyleDIB)
-            {
-                pe.peRed = lpbmi->bmiColors[i].rgbRed;
-                pe.peGreen = lpbmi->bmiColors[i].rgbGreen;
-                pe.peBlue = lpbmi->bmiColors[i].rgbBlue;
-                pe.peFlags = 0;
-            }
-            else
-            {
-                pe.peRed = lpbmc->bmciColors[i].rgbtRed;
-                pe.peGreen = lpbmc->bmciColors[i].rgbtGreen;
-                pe.peBlue = lpbmc->bmciColors[i].rgbtBlue;
-                pe.peFlags = 0;
-            }
-            AddEntryToPalette(pLP, nSize, pe);
-        }
-        if (pFlags) delete pFlags;
-    }
-    GlobalUnlock((HGLOBAL) hDIB);
-}
-
 ///////////////////////////////////////////////////////////////////////
 
 HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
@@ -323,7 +266,7 @@ HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal, BOOL bReducedPalette)
+BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal)
 {
     LPLOGPALETTE lpPal;      // pointer to a logical palette
     HANDLE hLogPal;          // handle to a logical palette
@@ -355,8 +298,6 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal, BOOL bReducedPalette)
     if (wNumColors != 0)
     {
         LPBYTE pFlags = NULL;
-        if (bReducedPalette)
-            pFlags = GetColorUseTable(lpbi);
 
         /* allocate memory block for logical palette */
         hLogPal = GlobalAlloc(GHND, sizeof(LOGPALETTE)+ sizeof(PALETTEENTRY) *
@@ -379,8 +320,6 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal, BOOL bReducedPalette)
         int n = 0;
         for (i = 0; i < (int)wNumColors; i++)
         {
-            if (bReducedPalette)
-                if (pFlags[i] == 0) continue; // Don't store color (not used)
             if (bWinStyleDIB)
             {
                 lpPal->palPalEntry[n].peRed = lpbmi->bmiColors[i].rgbRed;
@@ -409,55 +348,6 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal, BOOL bReducedPalette)
     GlobalUnlock((HGLOBAL) hDIB);
 
     return bResult;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-LPBYTE GetColorUseTable(LPSTR lpbi)
-{
-    WORD wNumColors = DIBNumColors(lpbi);
-    ASSERT(wNumColors <= 256);
-    LPBYTE pFlags = new BYTE[wNumColors];
-    memset(pFlags, 0, wNumColors);
-    if (wNumColors == 2)
-    {
-        pFlags[0] = pFlags[1] = 1;
-        return pFlags;
-    }
-
-    int nWidth = (int)DIBWidth(lpbi);
-    int nHeight = (int)DIBHeight(lpbi);
-
-    for (int y = 0; y < nHeight; y++)
-    {
-        for (int x = 0; x < nWidth; x++)
-        {
-            BYTE bmapByte = *DibXY(lpbi,x,y);
-            if (wNumColors == 256)
-                pFlags[bmapByte] = 1;
-            else if (wNumColors == 16)
-            {
-                int idx = (x & 0 ? bmapByte >> 4 : bmapByte) & 0x0F;
-                pFlags[idx] = 1;
-            }
-        }
-    }
-    return pFlags;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-BOOL IsColorNumInDIB(LPSTR lpbi, UINT iColor)
-{
-    int nWidth = (int)DIBWidth(lpbi);
-    int nHeight = (int)DIBHeight(lpbi);
-
-    for (int y = 0; y < nHeight; y++)
-    {
-        for (int x = 0; x < nWidth; x++)
-            if (*DibXY(lpbi,x,y) == iColor) return TRUE;
-    }
-    return FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////

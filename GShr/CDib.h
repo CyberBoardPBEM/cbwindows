@@ -48,13 +48,10 @@ public:
     OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
     BOOL AppendDIB(const CDib& pDib);
     BOOL RemoveDIBSlice(int y, int ht);
-    void AddColorsToPaletteEntryTable(PALETTEENTRY& pLP, int nSize,
-            BOOL bReducedPalette = TRUE)
-        { AddDIBColorsToPaletteEntryTable(m_hDib, &pLP, nSize, bReducedPalette);}
-    OwnerPtr<CPalette> CreatePalette(BOOL bReducePal = FALSE) const
+    OwnerPtr<CPalette> CreatePalette() const
     {
         OwnerPtr<CPalette> pPal(MakeOwner<CPalette>());
-        ::CreateDIBPalette(m_hDib, &*pPal, bReducePal);
+        ::CreateDIBPalette(m_hDib, &*pPal);
         return pPal;
     }
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
@@ -74,9 +71,6 @@ public:
     const LPBITMAPINFOHEADER GetBmiHdr() const { return (LPBITMAPINFOHEADER)m_lpDib; }
     const LPBITMAPINFO GetBmi() const { return (LPBITMAPINFO)m_lpDib; }
     const LPSTR FindBits() const { return FindDIBBits(m_lpDib); }
-    // ---------- for 256 color Dibs only -------------- //
-    BYTE Get256ColorNumberAtXY(int x, int y) const;
-    void Set256ColorNumberAtXY(int x, int y, BYTE nColor);
     // ---------- for 16bit/pixel Dibs only -------------- //
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
