@@ -70,7 +70,7 @@ public:
     int NumColorsInColorTable() const { return DIBNumColors(m_lpDib); }
     const LPBITMAPINFOHEADER GetBmiHdr() const { return (LPBITMAPINFOHEADER)m_lpDib; }
     const LPBITMAPINFO GetBmi() const { return (LPBITMAPINFO)m_lpDib; }
-    const LPSTR FindBits() const { return FindDIBBits(m_lpDib); }
+    const void* FindBits() const { return FindDIBBits(m_lpDib); }
     // ---------- for 16bit/pixel Dibs only -------------- //
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
@@ -80,7 +80,7 @@ public:
     // ---------- //
 private:
     HDIB  m_hDib;
-    LPSTR m_lpDib;
+    void* m_lpDib;
     int   m_nCompressLevel;
     // ---------- //
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);
