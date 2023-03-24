@@ -85,7 +85,7 @@ BOOL SaveDIB(HDIB hDib, CFile& file)
     // first DWORD in both BITMAPINFOHEADER and BITMAPCOREHEADER conains
     // the size of the structure, let's use this.
 
-    dwDIBSize = *(LPDWORD)lpBI + PaletteSize((LPSTR)lpBI);  // Partial Calculation
+    dwDIBSize = *(LPDWORD)lpBI + PaletteSize(lpBI);  // Partial Calculation
 
     // Now calculate the size of the image
 
@@ -126,11 +126,11 @@ BOOL SaveDIB(HDIB hDib, CFile& file)
      * plus the size of the color table.
      */
     bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + lpBI->biSize
-                       + PaletteSize((LPSTR)lpBI);
+                       + PaletteSize(lpBI);
     TRY
     {
         // Write the file header
-        file.Write((LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER));
+        file.Write(&bmfHdr, sizeof(BITMAPFILEHEADER));
         //
         // Write the DIB header and the bits
         //
@@ -154,7 +154,7 @@ HDIB ReadDIBFile(CFile& file)
     BITMAPFILEHEADER bmfHeader;
     DWORD dwBitsSize;
     HDIB hDIB;
-    LPSTR pDIB;
+    void* pDIB;
 
     /*
      * get length of DIB in bytes for use when reading
@@ -165,7 +165,7 @@ HDIB ReadDIBFile(CFile& file)
     /*
      * Go read the DIB file header and check if it's valid.
      */
-    if ((file.Read((LPSTR)&bmfHeader, sizeof(bmfHeader)) !=
+    if ((file.Read(&bmfHeader, sizeof(bmfHeader)) !=
          sizeof(bmfHeader)) || (bmfHeader.bfType != DIB_HEADER_MARKER))
     {
         return NULL;
@@ -178,7 +178,7 @@ HDIB ReadDIBFile(CFile& file)
     {
         return NULL;
     }
-    pDIB = (LPSTR) GlobalLock((HGLOBAL) hDIB);
+    pDIB = GlobalLock((HGLOBAL) hDIB);
 
     /*
      * Go read the bits.
@@ -237,7 +237,7 @@ HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
     // table, and the bits
 
     dwBytesPerLine = WIDTHBYTES(wBitCount * dwWidth);
-    dwLen = bi.biSize + PaletteSize((LPSTR)&bi) + (dwBytesPerLine * dwHeight);
+    dwLen = bi.biSize + PaletteSize(&bi) + (dwBytesPerLine * dwHeight);
 
     // alloc memory block to store our bitmap
     hDIB = (HDIB)GlobalAlloc(GHND, dwLen);
@@ -273,9 +273,9 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal)
     HPALETTE hPal = NULL;    // handle to a palette
     int i;                   // loop index
     WORD wNumColors;         // number of colors in color table
-    LPSTR lpbi;              // pointer to packed-DIB
-    LPBITMAPINFO lpbmi;      // pointer to BITMAPINFO structure (Win3.0)
-    LPBITMAPCOREINFO lpbmc;  // pointer to BITMAPCOREINFO structure (old)
+    const void* lpbi;        // pointer to packed-DIB
+    const BITMAPINFO* lpbmi; // pointer to BITMAPINFO structure (Win3.0)
+    const BITMAPCOREINFO* lpbmc; // pointer to BITMAPCOREINFO structure (old)
     BOOL bWinStyleDIB;       // flag which signifies whether this is a Win3.0 DIB
     BOOL bResult = FALSE;
 
@@ -284,13 +284,13 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal)
     if (hDIB == NULL)
         return FALSE;
 
-    lpbi = (LPSTR) GlobalLock((HGLOBAL) hDIB);
+    lpbi = GlobalLock((HGLOBAL) hDIB);
 
     /* get pointer to BITMAPINFO (Win 3.0) */
-    lpbmi = (LPBITMAPINFO)lpbi;
+    lpbmi = static_cast<const BITMAPINFO*>(lpbi);
 
     /* get pointer to BITMAPCOREINFO (old 1.x) */
-    lpbmc = (LPBITMAPCOREINFO)lpbi;
+    lpbmc = static_cast<const BITMAPCOREINFO*>(lpbi);
 
     /* get the number of colors in the DIB */
     wNumColors = DIBNumColors(lpbi);
@@ -352,13 +352,13 @@ BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal)
 
 ///////////////////////////////////////////////////////////////////////
 
-LPBYTE DibXY(LPSTR lpbi, int x, int y)
+const void* DibXY(const void* lpbi, int x, int y)
 {
-    BYTE* pBits;
+    const std::byte* pBits;
     DWORD ulWidthBytes;
-    LPBITMAPINFOHEADER lpbmi = (LPBITMAPINFOHEADER)lpbi;
+    const BITMAPINFOHEADER* lpbmi = static_cast<const BITMAPINFOHEADER*>(lpbi);
 
-    pBits = (BYTE *)lpbi + (WORD)lpbmi->biSize + PaletteSize(lpbi);
+    pBits = static_cast<const std::byte*>(lpbi) + (WORD)lpbmi->biSize + PaletteSize(lpbi);
     ulWidthBytes = DIBWIDTHBYTES(*lpbmi);
     pBits += (ulWidthBytes * (long)(lpbmi->biHeight - y - 1)) +
         (x * (int)lpbmi->biBitCount / 8);
@@ -367,22 +367,22 @@ LPBYTE DibXY(LPSTR lpbi, int x, int y)
 
 ///////////////////////////////////////////////////////////////////////
 
-LPSTR FindDIBBits(LPSTR lpbi)
+const void* FindDIBBits(const void* lpbi)
 {
-    return(lpbi + *(LPDWORD)lpbi + PaletteSize(lpbi));
+    return(static_cast<const std::byte*>(lpbi) + *static_cast<const uint32_t*>(lpbi) + PaletteSize(lpbi));
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-DWORD DIBWidth(LPSTR lpDIB)
+DWORD DIBWidth(const void* lpDIB)
 {
-    LPBITMAPINFOHEADER lpbmi;  // pointer to a Win 3.0-style DIB
-    LPBITMAPCOREHEADER lpbmc;  // pointer to an other-style DIB
+    const BITMAPINFOHEADER* lpbmi;  // pointer to a Win 3.0-style DIB
+    const BITMAPCOREHEADER* lpbmc;  // pointer to an other-style DIB
 
     /* point to the header (whether Win 3.0 and old) */
 
-    lpbmi = (LPBITMAPINFOHEADER)lpDIB;
-    lpbmc = (LPBITMAPCOREHEADER)lpDIB;
+    lpbmi = static_cast<const BITMAPINFOHEADER*>(lpDIB);
+    lpbmc = static_cast<const BITMAPCOREHEADER*>(lpDIB);
 
     /* return the DIB width if it is a Win 3.0 DIB */
     if (IS_WIN30_DIB(lpDIB))
@@ -393,15 +393,15 @@ DWORD DIBWidth(LPSTR lpDIB)
 
 ///////////////////////////////////////////////////////////////////////
 
-DWORD DIBHeight(LPSTR lpDIB)
+DWORD DIBHeight(const void* lpDIB)
 {
-    LPBITMAPINFOHEADER lpbmi;  // pointer to a Win 3.0-style DIB
-    LPBITMAPCOREHEADER lpbmc;  // pointer to an other-style DIB
+    const BITMAPINFOHEADER* lpbmi;  // pointer to a Win 3.0-style DIB
+    const BITMAPCOREHEADER* lpbmc;  // pointer to an other-style DIB
 
-    /* point to the header (whether old or Win 3.0 */
+    /* point to the header (whether Win 3.0 and old) */
 
-    lpbmi = (LPBITMAPINFOHEADER)lpDIB;
-    lpbmc = (LPBITMAPCOREHEADER)lpDIB;
+    lpbmi = static_cast<const BITMAPINFOHEADER*>(lpDIB);
+    lpbmc = static_cast<const BITMAPCOREHEADER*>(lpDIB);
 
     /* return the DIB height if it is a Win 3.0 DIB */
     if (IS_WIN30_DIB(lpDIB))
@@ -412,7 +412,7 @@ DWORD DIBHeight(LPSTR lpDIB)
 
 ///////////////////////////////////////////////////////////////////////
 
-WORD PaletteSize(LPSTR lpbi)
+WORD PaletteSize(const void* lpbi)
 {
     /* calculate the size required by the palette */
     if (IS_WIN30_DIB (lpbi))
@@ -423,7 +423,7 @@ WORD PaletteSize(LPSTR lpbi)
 
 ///////////////////////////////////////////////////////////////////////
 
-WORD DIBNumColors(LPSTR lpbi)
+WORD DIBNumColors(const void* lpbi)
 {
     WORD wBitCount;  // DIB bit count
 
@@ -437,7 +437,7 @@ WORD DIBNumColors(LPSTR lpbi)
     {
         DWORD dwClrUsed;
 
-        dwClrUsed = ((LPBITMAPINFOHEADER)lpbi)->biClrUsed;
+        dwClrUsed = static_cast<const BITMAPINFOHEADER*>(lpbi)->biClrUsed;
         if (dwClrUsed != 0)
             return(WORD)dwClrUsed;
     }
@@ -446,9 +446,9 @@ WORD DIBNumColors(LPSTR lpbi)
      *  the number of bits per pixel for the DIB.
      */
     if (IS_WIN30_DIB(lpbi))
-        wBitCount = ((LPBITMAPINFOHEADER)lpbi)->biBitCount;
+        wBitCount = static_cast<const BITMAPINFOHEADER*>(lpbi)->biBitCount;
     else
-        wBitCount = ((LPBITMAPCOREHEADER)lpbi)->bcBitCount;
+        wBitCount = static_cast<const BITMAPCOREHEADER*>(lpbi)->bcBitCount;
 
     /* return number of colors based on bits per pixel */
     switch (wBitCount)
@@ -474,7 +474,7 @@ WORD DIBNumColors(LPSTR lpbi)
 
 HBITMAP DIBToBitmap (HANDLE hDIB, HPALETTE hPal)
 {
-    LPSTR    lpDIBHdr, lpDIBBits;
+    const void *lpDIBHdr, *lpDIBBits;
     HBITMAP  hBitmap;
     HDC      hDC;
     HPALETTE hOldPal = NULL;
@@ -482,7 +482,7 @@ HBITMAP DIBToBitmap (HANDLE hDIB, HPALETTE hPal)
     if (!hDIB)
         return NULL;
 
-    lpDIBHdr = (LPSTR)GlobalLock(hDIB);
+    lpDIBHdr = GlobalLock(hDIB);
     lpDIBBits = FindDIBBits(lpDIBHdr);
     hDC = GetDC(NULL);
 
@@ -497,8 +497,8 @@ HBITMAP DIBToBitmap (HANDLE hDIB, HPALETTE hPal)
 
     RealizePalette (hDC);
 
-    hBitmap = CreateDIBitmap(hDC, (LPBITMAPINFOHEADER) lpDIBHdr, CBM_INIT,
-        lpDIBBits, (LPBITMAPINFO)lpDIBHdr, DIB_RGB_COLORS);
+    hBitmap = CreateDIBitmap(hDC, static_cast<const BITMAPINFOHEADER*>(lpDIBHdr), CBM_INIT,
+        lpDIBBits, static_cast<const BITMAPINFO*>(lpDIBHdr), DIB_RGB_COLORS);
 
     if (!hBitmap)
         return NULL;
@@ -599,7 +599,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         BITMAP             Bitmap;
         BITMAPINFOHEADER   bmInfoHdr;
         LPBITMAPINFOHEADER lpbmInfoHdr;
-        LPSTR              lpBits;
+        void*              lpBits;
         HDC                hMemDC;
         HPALETTE           hOldPal = NULL;
 
@@ -610,7 +610,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         if (!hBitmap)
             return NULL;
 
-        if (!GetObject(hBitmap, sizeof(Bitmap), (LPSTR)&Bitmap))
+        if (!GetObject(hBitmap, sizeof(Bitmap), &Bitmap))
             return NULL;
 
         // Changed to allow forces bits per pixel.
@@ -621,7 +621,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         // into this memory, and find out where the bitmap bits go.
 
         hDIB = GlobalAlloc(GHND, sizeof(BITMAPINFOHEADER) +
-            PaletteSize((LPSTR)&bmInfoHdr) + bmInfoHdr.biSizeImage);
+            PaletteSize(&bmInfoHdr) + bmInfoHdr.biSizeImage);
 
         if (!hDIB)
             return NULL;
@@ -631,7 +631,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 
         InitColorTableMasksIfReqd((LPBITMAPINFO)lpbmInfoHdr);
 
-        lpBits = FindDIBBits((LPSTR)lpbmInfoHdr);
+        lpBits = FindDIBBits(lpbmInfoHdr);
 
         // Now, we need a DC to hold our bitmap.  If the app passed us
         //  a palette, it should be selected into the DC.
@@ -681,7 +681,7 @@ HANDLE ConvertDIBSectionToDIB(HBITMAP hDibSect)
         return NULL;
 
     BITMAPINFOHEADER* pbmInfoHdr = (BITMAPINFOHEADER*)GlobalLock(hDIB);
-    DWORD* pdwMasks = (DWORD*)((LPSTR)pbmInfoHdr + sizeof(BITMAPINFOHEADER));
+    DWORD* pdwMasks = (DWORD*)(reinterpret_cast<std::byte*>(pbmInfoHdr) + sizeof(BITMAPINFOHEADER));
 
     *pbmInfoHdr = dibSect.dsBmih;
 
@@ -689,7 +689,7 @@ HANDLE ConvertDIBSectionToDIB(HBITMAP hDibSect)
     pdwMasks[1] = dibSect.dsBitfields[1];
     pdwMasks[2] = dibSect.dsBitfields[2];
 
-    LPSTR pBits = FindDIBBits((LPSTR)pbmInfoHdr);
+    void* pBits = FindDIBBits(pbmInfoHdr);
 
     memcpy(pBits, dibSect.dsBm.bmBits, dibSect.dsBmih.biSizeImage);
 

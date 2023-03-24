@@ -92,7 +92,7 @@ CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
     {
         AfxThrowMemoryException();
     }
-    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
     if (!m_lpDib)
     {
         GlobalFree((HGLOBAL)m_hDib);
@@ -109,7 +109,7 @@ CDib::CDib(CFile& file)
     {
         AfxThrowMemoryException();
     }
-    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
     if (!m_lpDib)
     {
         GlobalFree((HGLOBAL)m_hDib);
@@ -135,7 +135,7 @@ CDib::CDib(HANDLE hDib)
         m_lpDib = nullptr;
         return;
     }
-    m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
     if (!m_lpDib)
     {
         GlobalFree((HGLOBAL)m_hDib);
@@ -155,7 +155,7 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(
         {
             AfxThrowMemoryException();
         }
-        m_lpDib = (LPSTR)::GlobalLock((HGLOBAL)m_hDib);
+        m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
         if (!m_lpDib)
         {
             GlobalFree((HGLOBAL)m_hDib);
@@ -189,7 +189,7 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRU
             pbmiDib->bmiHeader.biHeight);
 
         SetDIBits(memDC.m_hDC, hDibSect, 0,
-            pbmiDib->bmiHeader.biHeight, FindDIBBits((char*)pbmiDib), pbmiDib,
+            pbmiDib->bmiHeader.biHeight, FindDIBBits(pbmiDib), pbmiDib,
             DIB_RGB_COLORS);
 
         memDC.SelectPalette(prvPal, FALSE);
@@ -355,7 +355,7 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
 
         if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)
             AfxThrowMemoryException();
-        dib.m_lpDib = (LPSTR)GlobalLock((HGLOBAL)dib.m_hDib);
+        dib.m_lpDib = GlobalLock((HGLOBAL)dib.m_hDib);
 
         ar.Read(pCompBfr, dwCompSize);
 
@@ -373,7 +373,7 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
         // Load uncompressed bitmap...
         if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)
             AfxThrowMemoryException();
-        dib.m_lpDib = (LPSTR)GlobalLock((HGLOBAL)dib.m_hDib);
+        dib.m_lpDib = GlobalLock((HGLOBAL)dib.m_hDib);
 
         ar.Read(dib.m_lpDib, dwSize);
     }

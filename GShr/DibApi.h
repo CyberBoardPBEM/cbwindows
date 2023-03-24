@@ -39,18 +39,22 @@ BOOL    SaveDIB(HDIB hDib, CFile& file);
 HDIB    ReadDIBFile(CFile& file);
 HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
 BOOL    CreateDIBPalette(HDIB hDIB, CPalette* pPal);
-LPSTR   FindDIBBits(LPSTR lpbi);
-DWORD   DIBWidth(LPSTR lpDIB);
-DWORD   DIBHeight(LPSTR lpDIB);
-WORD    PaletteSize(LPSTR lpbi);
-WORD    DIBNumColors(LPSTR lpbi);
+const void* FindDIBBits(const void* lpbi);
+inline void* FindDIBBits(void* lpbi)
+{
+    return const_cast<void*>(FindDIBBits(static_cast<const void*>(lpbi)));
+}
+DWORD   DIBWidth(const void* lpDIB);
+DWORD   DIBHeight(const void* lpDIB);
+WORD    PaletteSize(const void* lpbi);
+WORD    DIBNumColors(const void* lpbi);
 HANDLE  CopyHandle(HANDLE h);
 HBITMAP DIBToBitmap(HANDLE hDIB, HPALETTE hPal);
 HANDLE  BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
 void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
             DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
 void    InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo);
-LPBYTE  DibXY(LPSTR lpbi, int x, int y);
+const void* DibXY(const void* lpbi, int x, int y);
 
 HANDLE  ConvertDIBSectionToDIB(HBITMAP hDibSect);
 
