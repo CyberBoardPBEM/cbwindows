@@ -426,12 +426,12 @@ void CCellForm::Serialize(CArchive& ar)
     }
 }
 
-std::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col)
+CB::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t col)
 {
     size_t nTmp;
-    char szNum1[_MAX_U64TOSTR_BASE10_COUNT];
-    char szNum2[_MAX_U64TOSTR_BASE10_COUNT];
-    std::string str;
+    CB::string szNum1;
+    CB::string szNum2;
+    CB::string str;
     switch (eStyle)
     {
         case cnsColRow:
@@ -440,11 +440,7 @@ std::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t 
             col = nTmp;
             // Fall through to cnsRowCol processing.
         case cnsRowCol:
-            _ui64toa(row, szNum1, 10);
-            _ui64toa(col, szNum2, 10);
-            str = szNum1;
-            str += ", ";
-            str += szNum2;
+            str = std::format(L"{}, {}", row, col);
             break;
         case cns0101ByCols:
             nTmp = row;
@@ -452,14 +448,11 @@ std::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t 
             col = nTmp;
             // Fall through to cns0101ByRows processing.
         case cns0101ByRows:
-            _ui64toa(row, szNum1, 10);
-            _ui64toa(col, szNum2, 10);
-            nTmp = CB::max(strlen(szNum1), strlen(szNum2));
+            szNum1 = std::format(L"{}", row);
+            szNum2 = std::format(L"{}", col);
+            nTmp = CB::max(szNum1.w_size(), szNum2.w_size());
             nTmp = CB::max(nTmp, size_t(2));            // Make sure at least 2 digits
-            StrLeadZeros(szNum1, nTmp);
-            StrLeadZeros(szNum2, nTmp);
-            str = szNum1;
-            str += szNum2;
+            str = std::format(L"{:0>{}}{:0>{}}", szNum1, nTmp, szNum2, nTmp);
             break;
         case cnsAA01ByCols:
             nTmp = row;
@@ -467,10 +460,8 @@ std::string CCellForm::GetCellNumberStr(CellNumStyle eStyle, size_t row, size_t 
             col = nTmp;
             // Fall through to cnsAA01ByRows processing.
         case cnsAA01ByRows:
-            StrGetAAAFormat(szNum1, row);
-            _ui64toa(col, szNum2, 10);
-            str = szNum1;
-            str += szNum2;
+            szNum1 = StrGetAAAFormat(row);
+            str = std::format(L"{}{}", szNum1, col);
             break;
         default:;
     }
