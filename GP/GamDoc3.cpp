@@ -154,8 +154,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
                 c_fileFeatures.Add(ftrSizet64Bit);
             }
         }
-        else if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(4, 0) ||
-            NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(104, 5)) {
+        else if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();
         }
         else
@@ -222,8 +221,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
                 verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
             }
         }
-        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0) ||
-                NumVersion(verMajor, verMinor) == NumVersion(104, 5))
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
         {
             fileFeatures = GetCBFile4Features();
         }
@@ -735,8 +733,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
                 verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
             }
         }
-        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0) ||
-                NumVersion(verMajor, verMinor) == NumVersion(104, 5))
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
         {
             fileFeatures = GetCBFile4Features();
         }

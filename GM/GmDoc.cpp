@@ -595,8 +595,7 @@ void CGamDoc::Serialize(CArchive& ar)
                 c_fileFeatures.Add(ftrSizet64Bit);
             }
         }
-        else if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(4, 0) ||
-                NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(104, 5)) {
+        else if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();
         }
         else
@@ -703,14 +702,13 @@ void CGamDoc::Serialize(CArchive& ar)
                     verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
                 }
             }
-            else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0) ||
-                    NumVersion(verMajor, verMinor) == NumVersion(104, 5))
+            else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
             {
                 fileFeatures = GetCBFile4Features();
             }
             else
             {
-                ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) <= NumVersion(3, 90));
+                ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
                 fileFeatures = Features();
             }
 

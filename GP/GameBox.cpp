@@ -139,8 +139,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
                 verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
             }
         }
-        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0) ||
-                NumVersion(verMajor, verMinor) == NumVersion(104, 5))
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
         {
             fileFeatures = GetCBFile4Features();
         }
