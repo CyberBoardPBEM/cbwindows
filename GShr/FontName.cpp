@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 // ====================================================== //
 
-FNameID FNameTbl::AddFaceName(const char *pszFName, uint8_t iFamily)
+FNameID FNameTbl::AddFaceName(const CB::string& pszFName, uint8_t iFamily)
 {
     FName oFName(pszFName, iFamily);
     return Register(std::move(oFName));
@@ -60,9 +60,13 @@ FNameID FNameTbl::operator[](size_t iFaceNum) const
 
 // ====================================================== //
 
-FName::FName(const char *pszFName, uint8_t iFamily)
+FName::FName(CB::string pszFName, uint8_t iFamily)
 {
-    strcpy(szFName, pszFName);
+    if (pszFName.a_size() >= size_t(LF_FACESIZE))
+    {
+        AfxThrowInvalidArgException();
+    }
+    szFName = std::move(pszFName);
     this->iFamily = iFamily;
 }
 
@@ -71,7 +75,7 @@ bool FName::operator==(const FName& rhs) const
 {
     if (iFamily == rhs.iFamily)
     {
-        if (strcmp(szFName, rhs.szFName) == 0)
+        if (szFName == rhs.szFName)
             return TRUE;
     }
     return FALSE;

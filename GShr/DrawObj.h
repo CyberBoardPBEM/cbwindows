@@ -796,10 +796,10 @@ public:
 public:
     int         m_nAngle;
     COLORREF    m_crText;
-    CString     m_text;
+    CB::string  m_text;
     FontID      m_fontID;
 
-    void SetText(int x, int y, const char* pszText, FontID fntID,
+    void SetText(int x, int y, const CB::string& pszText, FontID fntID,
         COLORREF crText = RGB(255,255,255));
     virtual enum CDrawObjType GetType() const override { return drawText; }
 

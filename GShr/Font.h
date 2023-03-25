@@ -60,7 +60,7 @@ public:
     bool IsBold(void) const { return (taFlags & taBold) != 0; }
     bool IsItalic(void) const { return (taFlags & taItalic) != 0; }
     bool IsULine(void) const { return (taFlags & taULine) != 0; }
-    std::string ToString(int angle = 0) const;
+    CB::string ToString(int angle = 0) const;
 };
 
 template<typename CharT>
@@ -87,7 +87,7 @@ public:
     // -------- //
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
-    FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const char *pszFName);
+    FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const CB::string& pszFName);
     // N.B.:  angle is clockwise per CB convention
     void FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle = 0);
     HFONT GetFontHandle(FontID id, int angle = 0);
@@ -97,7 +97,7 @@ public:
     int GetSize(FontID id) const { return id != 0 ? (*id)->iTypeSize : 0; }
     int GetFamily(FontID id) const
         { return oFName.GetFaceFamily((*id)->fnID); }
-    const char* GetFaceName(FontID id) const
+    const CB::string* GetFaceName(FontID id) const
         { return oFName.GetFaceName((*id)->fnID); }
     FNameTbl* GetFontNameTable() { return &oFName; }
     // -------- //
