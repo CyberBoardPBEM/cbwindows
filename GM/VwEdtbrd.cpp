@@ -1063,7 +1063,7 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
 void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
 {
     CTextObjDialog dlg;
-    dlg.m_strText = pDObj->m_text;
+    dlg.m_strText = pDObj->m_text.mfc_str();
     dlg.m_pFontMgr = CGamDoc::GetFontManager();
     dlg.SetFontID(pDObj->m_fontID);
 

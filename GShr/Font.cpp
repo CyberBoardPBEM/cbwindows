@@ -50,7 +50,7 @@ CFontTbl::~CFontTbl(void)
 // ----------------------------------------------------- //
 
 FontID CFontTbl::AddFont(int iSize, int taFlgs, uint8_t iFamily,
-    const char *pszFName)
+    const CB::string& pszFName)
 {
     FNameID fnID = oFName.AddFaceName(pszFName, iFamily);
 
@@ -68,23 +68,23 @@ CbFont::~CbFont()
     }
 }
 
-std::string CbFont::ToString(int angle /* = 0 */) const
+CB::string CbFont::ToString(int angle /* = 0 */) const
 {
-    std::ostringstream str;
-    str << "CbFont(" <<
-        (*fnID)->ToString() << ", "
-        "size:" << std::to_string(iTypeSize) << ", "
-        "flags:";
+    std::wostringstream str;
+    str << L"CbFont(" <<
+        (*fnID)->ToString() << L", "
+        L"size:" << std::to_wstring(iTypeSize) << L", "
+        L"flags:";
 
     const static struct
     {
         int flag;
-        const char* name;
+        CB::string name;
     } flags[] =
     {
-        taBold, "Bold",
-        taItalic, "Italic",
-        taULine, "ULine",
+        taBold, L"Bold",
+        taItalic, L"Italic",
+        taULine, L"ULine",
     };
     if (taFlags)
     {
@@ -97,7 +97,7 @@ std::string CbFont::ToString(int angle /* = 0 */) const
                 str << flags[i].name;
                 if (temp)
                 {
-                    str << '|';
+                    str << L'|';
                 }
             }
         }
@@ -105,15 +105,15 @@ std::string CbFont::ToString(int angle /* = 0 */) const
     }
     else
     {
-        str << "<none>";
+        str << L"<none>";
     }
 
     if (angle)
     {
-        str << ' ' << angle << '°';
+        str << L' ' << angle << L'°';
     }
 
-    str << ')';
+    str << L')';
     return str.str();
 }
 
@@ -123,7 +123,7 @@ std::string CbFont::ToString(int angle /* = 0 */) const
 void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
 {
     const CbFont *opFnt = &**id;
-    const char *pszFace;
+    const CB::string* pszFace;
 
     memset(pLF, 0, sizeof(LOGFONT));
     // need TrueType for rotated text
@@ -137,7 +137,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
     pLF->lfPitchAndFamily = oFName.GetFaceFamily(opFnt->fnID);
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
-        strcpy(pLF->lfFaceName, pszFace);
+        strcpy(pLF->lfFaceName, *pszFace);
     }
 }
 
@@ -173,7 +173,7 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
         ar << (WORD)GetSize(rfontID);
         ar << (WORD)GetFlags(rfontID);
         ar << (WORD)GetFamily(rfontID);
-        CString str = GetFaceName(rfontID);
+        const CB::string& str = CheckedDeref(GetFaceName(rfontID));
         ar << str;
     }
     else
@@ -183,7 +183,7 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
         ar >> wSize;
         ar >> wFlags;
         ar >> wFamily;
-        CString str;
+        CB::string str;
         ar >> str;
         rfontID = AddFont((int)wSize, (int)wFlags, value_preserving_cast<uint8_t>(wFamily), str);
     }

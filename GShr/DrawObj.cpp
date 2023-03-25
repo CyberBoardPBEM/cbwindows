@@ -1344,11 +1344,11 @@ void CText::Draw(CDC& pDC, TileScale eScale)
     COLORREF crPrev = pDC.SetTextColor(m_crText);
     CPoint topLeft = m_rctExtent.TopLeft() + m_geoOffset;
     pDC.ExtTextOut(topLeft.x, topLeft.y,
-        0, NULL, m_text, m_text.GetLength(), NULL);
+        0, NULL, m_text, NULL);
     pDC.SetTextColor(crPrev);
 }
 
-void CText::SetText(int x, int y, const char* pszText, FontID fntID,
+void CText::SetText(int x, int y, const CB::string& pszText, FontID fntID,
     COLORREF crText)
 {
     m_text = pszText;
@@ -1369,7 +1369,7 @@ BOOL CText::SetFont(FontID fid)
     CFont* pPrvFont = g_gt.mDC1.SelectObject(CFont::FromHandle(hFont));
 
     // Compute (new) dimensions
-    CSize sizeTxt = g_gt.mDC1.GetTextExtent(m_text, m_text.GetLength());
+    CSize sizeTxt = g_gt.mDC1.GetTextExtent(m_text);
     m_rctExtent.right = m_rctExtent.left + sizeTxt.cx;
     m_rctExtent.bottom = m_rctExtent.top + sizeTxt.cy;
     g_gt.mDC1.SelectObject(pPrvFont);
