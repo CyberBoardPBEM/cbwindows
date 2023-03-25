@@ -215,8 +215,11 @@ WORD GetTimeBasedRandomNumber(BOOL bZeroAllowed)
 
 // ----------------------------------------------- //
 // Return a random number from 0 ... 65535.
-WORD GetStringBasedRandomNumber(LPCSTR str)
+WORD GetStringBasedRandomNumber(const CB::string& str_)
 {
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    const char* str = str_.a_str();
     UINT nSeed = 0;
     while (*str)
         nSeed = (nSeed << 4) + *str++;      // Use shifted sum
@@ -226,8 +229,11 @@ WORD GetStringBasedRandomNumber(LPCSTR str)
 
 // ----------------------------------------------- //
 // return a hash of string
-DWORD GetStringHash(LPCSTR str)
+DWORD GetStringHash(const CB::string& str_)
 {
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    const char* str = str_.a_str();
     DWORD dwHash = 0;
     while (*str)
         dwHash = (dwHash << 4) + *str++;    // Use shifted sum

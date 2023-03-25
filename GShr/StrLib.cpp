@@ -48,13 +48,13 @@ char *SetFileExt(char *fname, const char *ext)
 
 // --------------------------- //
 
-void StrGetAAAFormat(char *szVal, size_t n)
+CB::string StrGetAAAFormat(size_t n)
 {
-    memset(szVal, 0, 8);
-    char ch = value_preserving_cast<char>(((n - size_t(1)) % size_t(26)) + size_t('A'));
+    CB::string retval;
+    wchar_t ch = value_preserving_cast<wchar_t>(((n - size_t(1)) % size_t(26)) + size_t(L'A'));
     for ( ; ; )
     {
-        *szVal++ = ch;
+        retval += ch;
         if (n > size_t(26))
         {
             n -= size_t(26);
@@ -64,6 +64,7 @@ void StrGetAAAFormat(char *szVal, size_t n)
             break;
         }
     }
+    return retval;
 }
 
 void StrLeadZeros(char* szVal, size_t nWidth)

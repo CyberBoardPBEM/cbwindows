@@ -28,7 +28,7 @@
 //*** STRLIB.CPP ***//
 
 char *SetFileExt(char *fname, const char *ext);
-void StrGetAAAFormat(char *szVal, size_t n);
+CB::string StrGetAAAFormat(size_t n);
 void StrLeadZeros(char* szVal, size_t nWidth);
 void StrTruncatePath(char *pszName);
 void StrExtractFilename(char *pszFName, const char* pszFPath);
