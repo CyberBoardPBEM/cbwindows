@@ -119,6 +119,7 @@ public:
 
 // Attributes
 public:
+    CB::string GetText(int nIndex) const;
     int  GetTopSelectedItem() const;
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
@@ -134,7 +135,7 @@ public:
 
     // Notification Tooltip Support
     void SetNotificationTip(int nItem, UINT nResID);
-    void SetNotificationTip(int nItem, LPCTSTR pszTip);
+    void SetNotificationTip(int nItem, const CB::string& pszTip);
     void ClearNotificationTip();
     static void CALLBACK NotificationTipTimeoutHandler(HWND hwnd, UINT uMsg,
         UINT_PTR idEvent, DWORD dwTime);
@@ -154,7 +155,7 @@ public:
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const /* override */ { }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip, CB::string& strTitle) const /* override */ { }
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it

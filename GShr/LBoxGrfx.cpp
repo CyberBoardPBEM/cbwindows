@@ -74,14 +74,13 @@ CGrafixListBox::CGrafixListBox() :
 
 void CGrafixListBox::SetNotificationTip(int nItem, UINT nResID)
 {
-    CString str;
-    str.LoadString(nResID);
+    CB::string str = CB::string::LoadString(nResID);
     SetNotificationTip(nItem, str);
 }
 
 // Shows a notification tip over a specified item. If the item
 // doesn't exist, the center of the listbox receives the tip.
-void CGrafixListBox::SetNotificationTip(int nItem, LPCTSTR pszTip)
+void CGrafixListBox::SetNotificationTip(int nItem, const CB::string& pszTip)
 {
     if (m_toolMsgTip.m_hWnd == NULL)
     {
@@ -94,7 +93,7 @@ void CGrafixListBox::SetNotificationTip(int nItem, LPCTSTR pszTip)
     TOOLINFO ti;
     m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_LISTITEM_MSG);
     ti.uFlags |= TTF_TRACK;
-    ti.lpszText = (LPTSTR)pszTip;
+    ti.lpszText = const_cast<CB::string::value_type*>(pszTip.v_str());
 
     m_toolMsgTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 
@@ -148,6 +147,13 @@ void CGrafixListBox::ShowFirstSelection()
     GetItemRect(nTopSel, &rct);
     if (!rct.IntersectRect(rct, rctLBoxClient))
         SetTopIndex(nTopSel);
+}
+
+CB::string CGrafixListBox::GetText(int nIndex) const
+{
+    CString temp;
+    CListBox::GetText(nIndex, temp);
+    return temp;
 }
 
 int CGrafixListBox::GetTopSelectedItem() const
@@ -218,18 +224,18 @@ void CGrafixListBox::DoToolTipHitProcessing(CPoint point)
         if (nItemCode != Invalid_v<GameElement>)
         {
             // New object found so create a new tip
-            CString strTip;
-            CString strTitle;
+            CB::string strTip;
+            CB::string strTitle;
 
             // Call subclass for info
             OnGetTipTextForItemCode(nItemCode, strTip, strTitle);
 
-            if (!strTip.IsEmpty())
+            if (!strTip.empty())
             {
                 m_toolTip.AddTool(this, strTip, rctTool, ID_TIP_LISTITEM_HIT);
 
-                if (!strTitle.IsEmpty())
-                    m_toolTip.SendMessage(TTM_SETTITLE, 0, (LPARAM)(LPCTSTR)strTitle);
+                if (!strTitle.empty())
+                    m_toolTip.SendMessage(TTM_SETTITLE, 0, reinterpret_cast<LPARAM>(strTitle.v_str()));
 
                 m_toolTip.Activate(TRUE);
             }

@@ -90,8 +90,7 @@ int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
 
 int CProjListBoxBase::GetItemGroupCode(int nIndex) const
 {
-    CString str;
-    GetText(nIndex, str);
+    CB::string str = GetText(nIndex);
     return (int)(str[0] - 'A');
 }
 
@@ -102,8 +101,7 @@ size_t CProjListBoxBase::GetItemSourceCode(int nIndex) const
 
 void CProjListBoxBase::GetItemText(int nIndex, CString& str)
 {
-    CString strTmp;
-    GetText(nIndex, strTmp);
+    CB::string strTmp = GetText(nIndex);
     str = (const char*)strTmp + prefixLen;
 }
 
@@ -115,8 +113,7 @@ int CProjListBoxBase::GetItemWidth(int nIndex) const
 
     // First character in string is sorting code. The second is the
     // style ('*' = Heading line, '+' = Item line)
-    CString str;
-    GetText(nIndex, str);
+    CB::string str = GetText(nIndex);
     BOOL bHead = str[1] == '*';
     CWindowDC scrnDC(NULL);
 
@@ -154,8 +151,7 @@ void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nS
 
         // First character in string is sorting code. The second is the
         // style ('*' = Heading line, '+' = Item line)
-        CString str;
-        GetText(value_preserving_cast<int>(nIndex), str);
+        CB::string str = GetText(value_preserving_cast<int>(nIndex));
         BOOL bHead = str[1] == '*';
 
         CFont* pPrevFont = pDC.SelectObject(CFont::FromHandle(

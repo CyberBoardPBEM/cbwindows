@@ -52,7 +52,7 @@ public:
 
 // Attributes
 public:
-    void SetTrayContentVisibility(MarkerTrayViz eTrayViz, LPCTSTR pszHiddenString = NULL)
+    void SetTrayContentVisibility(MarkerTrayViz eTrayViz, const CB::string& pszHiddenString = CB::string())
     {
         m_eTrayViz = eTrayViz;
         m_strHiddenString = pszHiddenString;
@@ -77,7 +77,7 @@ public:
 protected:
     CGamDoc*        m_pDoc;
     MarkerTrayViz   m_eTrayViz;
-    CString         m_strHiddenString;
+    CB::string         m_strHiddenString;
 
     // Overrides
     virtual CSize OnItemSize(size_t nIndex) const override;
@@ -88,7 +88,7 @@ protected:
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip, CB::string& strTitle) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     //{{AFX_MSG(CMarkListBox)

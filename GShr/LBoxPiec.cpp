@@ -115,7 +115,7 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) con
 }
 
 void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle) const
+    CB::string& strTip, CB::string& strTitle) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
