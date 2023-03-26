@@ -39,7 +39,7 @@
 // 2-4: number used to force a group to be sorted in a particular
 //  sequence. default is 3 spaces.
 
-const int prefixLen = 5;                // five characters
+const size_t prefixLen = size_t(5);                // five characters
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -50,13 +50,13 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CProjListBoxBase::AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode)
+int CProjListBoxBase::AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode)
 {
-    CString str;
-    str += value_preserving_cast<char>(nGroupCode + 'A');
-    str += nSourceCode == Invalid_v<size_t> ? '*' : '+';
-    str += "   ";           // Will always precede sequenced entries
-    str += pszText;
+    // str += "   ";           // Will always precede sequenced entries
+    CB::string str = std::format(L"{}{}   {}",
+                                value_preserving_cast<char>(nGroupCode + 'A'),
+                                nSourceCode == Invalid_v<size_t> ? '*' : '+',
+                                pszText);
     int nIdx = AddString(str);
     if (nIdx == LB_ERR)
         return nIdx;
@@ -66,19 +66,15 @@ int CProjListBoxBase::AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode
     return nItem;
 }
 
-int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
+int CProjListBoxBase::AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
     size_t nSourceCode)
 {
-    CString str;
-    str += value_preserving_cast<char>(nGroupCode + 'A');
-    str += nSourceCode == Invalid_v<size_t> ? '*' : '+';
+    CB::string str = std::format(L"{}{}{:03}{}",
+                                value_preserving_cast<char>(nGroupCode + 'A'),
+                                nSourceCode == Invalid_v<size_t> ? '*' : '+',
+                                nSeqNum,
+                                pszText);
 
-    char szNum[_MAX_ITOSTR_BASE10_COUNT];
-    _itoa(nSeqNum, szNum, 10);
-    StrLeadZeros(szNum, size_t(3));
-    str += szNum;
-
-    str += pszText;
     int nIdx = AddString(str);
     if (nIdx == LB_ERR)
         return nIdx;
@@ -91,7 +87,7 @@ int CProjListBoxBase::AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
 int CProjListBoxBase::GetItemGroupCode(int nIndex) const
 {
     CB::string str = GetText(nIndex);
-    return (int)(str[0] - 'A');
+    return (int)(str[size_t(0)] - 'A');
 }
 
 size_t CProjListBoxBase::GetItemSourceCode(int nIndex) const
@@ -99,10 +95,10 @@ size_t CProjListBoxBase::GetItemSourceCode(int nIndex) const
     return value_preserving_cast<size_t>(GetItemData(nIndex));
 }
 
-void CProjListBoxBase::GetItemText(int nIndex, CString& str)
+CB::string CProjListBoxBase::GetItemText(int nIndex) const
 {
     CB::string strTmp = GetText(nIndex);
-    str = (const char*)strTmp + prefixLen;
+    return strTmp.substr(prefixLen);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -114,20 +110,19 @@ int CProjListBoxBase::GetItemWidth(int nIndex) const
     // First character in string is sorting code. The second is the
     // style ('*' = Heading line, '+' = Item line)
     CB::string str = GetText(nIndex);
-    BOOL bHead = str[1] == '*';
+    BOOL bHead = str[size_t(1)] == '*';
     CWindowDC scrnDC(NULL);
 
     CFont* pPrevFont = scrnDC.SelectObject(CFont::FromHandle(
         bHead ? g_res.h8ssb : g_res.h8ss));
 
-    if (str[0] - 'A' == m_nMarkGrp &&
+    if (str[size_t(0)] - 'A' == m_nMarkGrp &&
         GetItemSourceCode(nIndex) == m_nMarkSourceCode)
     {
         // Mark the line with a chevron
         nWidth = scrnDC.GetTextExtent("\xBB", 1).cx;
     }
-    nWidth += scrnDC.GetTextExtent((const char*)str + prefixLen,
-        lstrlen((const char*)str + prefixLen)).cx + 16; // (fudge factor)
+    nWidth += scrnDC.GetTextExtent(str.substr(prefixLen)).cx + 16; // (fudge factor)
     scrnDC.SelectObject(pPrevFont);
     return nWidth;
 }
@@ -152,12 +147,12 @@ void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nS
         // First character in string is sorting code. The second is the
         // style ('*' = Heading line, '+' = Item line)
         CB::string str = GetText(value_preserving_cast<int>(nIndex));
-        BOOL bHead = str[1] == '*';
+        BOOL bHead = str[size_t(1)] == '*';
 
         CFont* pPrevFont = pDC.SelectObject(CFont::FromHandle(
             bHead ? g_res.h8ssb : g_res.h8ss));
 
-        if (str[0] - 'A' == m_nMarkGrp &&
+        if (str[size_t(0)] - 'A' == m_nMarkGrp &&
             GetItemSourceCode(value_preserving_cast<int>(nIndex)) == m_nMarkSourceCode)
         {
             CRect rct = rctItem;
@@ -167,16 +162,16 @@ void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nS
             rct.left += 3 * g_res.tm8ssb.tmAveCharWidth;
             pDC.ExtTextOut(rctItem.left + 3 * g_res.tm8ssb.tmAveCharWidth,
                 rctItem.top, ETO_OPAQUE, rct,
-                (const char*)str + prefixLen,
-                lstrlen((const char*)str + prefixLen), NULL);
+                str.substr(prefixLen),
+                NULL);
         }
         else
         {
             pDC.ExtTextOut(rctItem.left +
                 bHead ? 0 : 3 * g_res.tm8ssb.tmAveCharWidth,
                 rctItem.top, ETO_OPAQUE, rctItem,
-                (const char*)str + prefixLen,
-                lstrlen((const char*)str + prefixLen), NULL);
+                str.substr(prefixLen),
+                NULL);
         }
 
         pDC.SelectObject(pPrevFont);

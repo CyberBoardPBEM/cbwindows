@@ -54,15 +54,15 @@ public:
 
 // Operations
 protected:
-    int AddItem(int nGroupCode, LPCSTR pszText, size_t nSourceCode);
-    int AddSeqItem(int nGroupCode, LPCSTR pszText, int nSeqNum,
+    int AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode);
+    int AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
         size_t nSourceCode);
     void MarkGroupItem(int nGroupCode, size_t nSourceCode)
         { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
     int GetItemGroupCode(int nIndex) const;
 public:
     size_t GetItemSourceCode(int nIndex) const;
-    void GetItemText(int nIndex, CString& str);
+    CB::string GetItemText(int nIndex) const;
 
     int GetItemWidth(int nItem) const;
 
@@ -96,11 +96,11 @@ template<typename T>
 class CProjListBox : public CProjListBoxBase
 {
 public:
-    int AddItem(T nGroupCode, LPCSTR pszText, size_t nSourceCode = Invalid_v<size_t>)
+    int AddItem(T nGroupCode, const CB::string& pszText, size_t nSourceCode = Invalid_v<size_t>)
     {
         return CProjListBoxBase::AddItem(value_preserving_cast<int>(nGroupCode), pszText, nSourceCode);
     }
-    int AddSeqItem(T nGroupCode, LPCSTR pszText, int nSeqNum,
+    int AddSeqItem(T nGroupCode, const CB::string& pszText, int nSeqNum,
         size_t nSourceCode = Invalid_v<size_t>)
     {
         return CProjListBoxBase::AddSeqItem(value_preserving_cast<int>(nGroupCode), pszText, nSeqNum, nSourceCode);
