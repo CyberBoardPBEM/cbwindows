@@ -454,7 +454,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
         }
         CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
-        str = pPBoard.GetBoard()->GetName();
+        str = pPBoard.GetBoard()->GetName().mfc_str();
         if (bDisplayIDs)
         {
             CString strTmp = str;

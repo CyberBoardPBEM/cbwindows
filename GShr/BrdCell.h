@@ -104,8 +104,8 @@ public:
     BOOL GetColCellTrackingInvert() const { return m_bColTrkInvert; }
     CellNumStyle GetCellNumStyle() const { return m_eNumStyle; }
     // ------ //
-    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
-    std::string GetCellNumberStr(size_t row, size_t col) const;
+    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(size_t row, size_t col) const;
     // ------ //
     COLORREF GetCellFrameColor() const { return m_crCellFrame; }
     void SetCellFrameColor(COLORREF cr);

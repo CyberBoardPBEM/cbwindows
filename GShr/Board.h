@@ -91,10 +91,10 @@ public:
     const CDrawList* GetBaseDrawing() const { return m_pBaseDwg ? &*m_pBaseDwg : nullptr; }
     CDrawList* GetBaseDrawing(BOOL bCreate = FALSE);
     void SetMaxDrawLayer(int iMaxLayer = -1) { m_iMaxLayer = iMaxLayer; }
-    void SetName(const char *pszName) { m_strBoardName = pszName; }
+    void SetName(const CB::string& pszName) { m_strBoardName = pszName; }
 
     int GetMaxDrawLayer() const { return m_iMaxLayer; }
-    const char* GetName() const { return m_strBoardName; }
+    const CB::string& GetName() const { return m_strBoardName; }
 
 // Operations
 public:
@@ -115,7 +115,7 @@ protected:
     // Saved in file...
     BOOL        m_bApplyVisibility; // Show objects matching scale mask
     BoardID     m_nSerialNum;       // Board serial number
-    CString     m_strBoardName;     // Name of board
+    CB::string  m_strBoardName;     // Name of board
     COLORREF    m_crBkGnd;          // Default color of the board
     int         m_iMaxLayer;        // Max layer to draw
 
