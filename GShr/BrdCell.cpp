@@ -480,7 +480,7 @@ void CBoardArray::SetCellFrameColor(COLORREF cr)
 
 ///////////////////////////////////////////////////////////////////////////
 
-std::string CBoardArray::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CBoardArray::GetCellNumberStr(CPoint pnt, TileScale eScale) const
 {
     size_t row, col;
     if (!FindCell(pnt.x, pnt.y, row, col, eScale))
@@ -488,7 +488,7 @@ std::string CBoardArray::GetCellNumberStr(CPoint pnt, TileScale eScale) const
     return GetCellNumberStr(row, col);
 }
 
-std::string CBoardArray::GetCellNumberStr(size_t row, size_t col) const
+CB::string CBoardArray::GetCellNumberStr(size_t row, size_t col) const
 {
     if (row >= m_nRows || col >= m_nCols)
         return "";

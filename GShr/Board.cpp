@@ -741,7 +741,7 @@ size_t CBoardManager::FindBoardBySerial(BoardID nSerialNum) const
 {
     for (size_t i = 0; i < GetNumBoards(); i++)
     {
-        TRACE2("Board %zu has serial number %u\n", i, value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(GetBoard(i).GetSerialNumber())));
+        CPP20_TRACE("Board {} has serial number {}\n", i, GetBoard(i).GetSerialNumber());
         if (GetBoard(i).GetSerialNumber() == nSerialNum)
             return i;
     }

@@ -595,7 +595,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         {
             bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
         }
-        str = pBMgr->GetBoard(i).GetName();
+        str = pBMgr->GetBoard(i).GetName().mfc_str();
         if (bDisplayIDs)
         {
             CString strTmp = str;
