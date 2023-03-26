@@ -164,14 +164,14 @@ void CTileBaseListBox2::DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctIte
 {
     if (m_bDisplayIDs)
     {
-        std::string str = OnGetItemDebugString(nItem);
+        CB::string str = OnGetItemDebugString(nItem);
 
         CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
         int y = rctItem.top + rctItem.Height() / 2 -
             (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
         if (bDrawIt)
-            pDC.TextOut(x, y, str.c_str());
-        x += pDC.GetTextExtent(str.c_str()).cx;
+            pDC.TextOut(x, y, str);
+        x += pDC.GetTextExtent(str).cx;
         pDC.SelectObject(prvFont);
     }
 }
@@ -186,7 +186,7 @@ void CTileBaseListBox2::SetupTipMarkerIfRequired()
         if (m_sizeTipMark.cx == 0)
         {
             // Hasn't been initialized yet.
-            m_strTipMark.LoadString(IDS_TIP_LBOXITEM_MARKER);
+            m_strTipMark = CB::string::LoadString(IDS_TIP_LBOXITEM_MARKER);
 
             CDC* pDC = GetDC();
 

@@ -111,8 +111,7 @@ void CGbxProjView::DoBoardDelete()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CString strTitle;
-    m_listProj.GetItemText(nSel, strTitle);
+    CB::string strTitle = m_listProj.GetItemText(nSel);
     CString strPrompt;
     AfxFormatString1(strPrompt, IDP_DELETEBOARD, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
@@ -202,8 +201,7 @@ void CGbxProjView::DoBoardEdit()
     }
     else
     {
-        CString strTitle;
-        m_listProj.GetItemText(nSel, strTitle);
+        CB::string strTitle = m_listProj.GetItemText(nSel);
         pDoc->CreateNewFrame(GetApp()->m_pMapViewTmpl, strTitle, &pBoard);
     }
 }
@@ -264,8 +262,7 @@ void CGbxProjView::DoTileGroupDelete()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTile);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CString strTitle;
-    m_listProj.GetItemText(nSel, strTitle);
+    CB::string strTitle = m_listProj.GetItemText(nSel);
     CString strPrompt;
     AfxFormatString1(strPrompt, IDP_DELETETILESET, strTitle);
 
@@ -481,8 +478,7 @@ void CGbxProjView::DoPieceGroupDelete()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpPce);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CString strTitle;
-    m_listProj.GetItemText(nSel, strTitle);
+    CB::string strTitle = m_listProj.GetItemText(nSel);
     CString strPrompt;
     AfxFormatString1(strPrompt, IDP_DELETEPIECESET, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
@@ -680,8 +676,7 @@ void CGbxProjView::DoMarkGroupDelete()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpMark);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CString strTitle;
-    m_listProj.GetItemText(nSel, strTitle);
+    CB::string strTitle = m_listProj.GetItemText(nSel);
     CString strPrompt;
     AfxFormatString1(strPrompt, IDP_DELETEMARKSET, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)

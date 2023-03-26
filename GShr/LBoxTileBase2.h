@@ -49,7 +49,7 @@ protected:
     int         m_bDisplayIDs;              // Set by property [Settings]:DisplayIDs
 
     BOOL        m_bTipMarkItems;
-    CString     m_strTipMark;
+    CB::string  m_strTipMark;
     CSize       m_sizeTipMark;
 
 // Helpers...

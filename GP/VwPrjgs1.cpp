@@ -106,8 +106,7 @@ void CGsnProjView::DoBoardView()
     }
     else
     {
-        CString strTitle;
-        m_listProj.GetItemText(nSel, strTitle);
+        CB::string strTitle = m_listProj.GetItemText(nSel);
         pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
