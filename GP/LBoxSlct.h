@@ -85,7 +85,7 @@ private:
     typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide);
     GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const;
 public:
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip, CB::string& strTitle) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     //{{AFX_MSG(CSelectListBox)

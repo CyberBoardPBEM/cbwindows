@@ -69,7 +69,7 @@ protected:
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CString& strTip, CString& strTitle) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip, CB::string& strTitle) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
     //{{AFX_MSG(CPieceListBox)

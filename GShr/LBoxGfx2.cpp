@@ -276,18 +276,18 @@ void CGrafixListBox2::DoToolTipHitProcessing(CPoint point)
         if (nItemCode != Invalid_v<GameElement>)
         {
             // New object found so create a new tip
-            CString strTip;
-            CString strTitle;
+            CB::string strTip;
+            CB::string strTitle;
 
             // Call subclass for info
             OnGetTipTextForItemCode(nItemCode, strTip, strTitle);
 
-            if (!strTip.IsEmpty())
+            if (!strTip.empty())
             {
                 m_toolTip.AddTool(this, strTip, rctTool, ID_TIP_LISTITEM_HIT);
 
-                if (!strTitle.IsEmpty())
-                    m_toolTip.SendMessage(TTM_SETTITLE, 0, (LPARAM)(LPCTSTR)strTitle);
+                if (!strTitle.empty())
+                    m_toolTip.SendMessage(TTM_SETTITLE, 0, (LPARAM)strTitle.v_str());
 
                 m_toolTip.Activate(TRUE);
             }

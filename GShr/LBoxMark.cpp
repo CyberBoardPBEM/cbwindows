@@ -108,7 +108,7 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CString& strTip, CString& strTitle) const
+    CB::string& strTip, CB::string& strTitle) const
 {
     MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
@@ -179,7 +179,7 @@ CSize CMarkListBox::OnItemSize(size_t nIndex) const
     else
     {
         // Hidden markers. Account for drawing the supplied text.
-        ASSERT(!m_strHiddenString.IsEmpty());
+        ASSERT(!m_strHiddenString.empty());
         // only using DC to measure text, so const_cast safe;
         CClientDC pDC(const_cast<CMarkListBox*>(this));
         pDC.SaveDC();
