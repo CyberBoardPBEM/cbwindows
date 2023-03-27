@@ -43,13 +43,13 @@ public:
 HWND FindWindowForProcessID(DWORD dwProcessID);
 BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 
-BOOL AppendStringToEditBox(CEdit& edit, CString strAppend,
+BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
     BOOL bEnsureNewline = FALSE);
 
 BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar);
 UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
-void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblNames,
-        CUIntArray* pTblSelections = NULL, UINT nBreaksAt = 20);
+void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, const std::vector<CB::string>& tblNames,
+        const std::vector<size_t>* pTblSelections = NULL, UINT nBreaksAt = 20);
 
 /////////////////////////////////////////////////////////////////////////////
 // Extend CMDIFrameWndEx with message handlers to split tabs
@@ -76,9 +76,9 @@ protected:
 // provide overloads of MFC functions that support portable types
 
 void DDX_Check(CDataExchange* pDX, int nIDC, bool& value);
-void DDX_Text(CDataExchange* pDX, int nIDC, std::string& value);
-void DDV_MaxChars(CDataExchange* pDX, std::string const& value, int nChars);
-void AfxFormatString1(std::string& rString, UINT nIDS, LPCTSTR lpsz1);
+void DDX_Text(CDataExchange* pDX, int nIDC, CB::string& value);
+void DDV_MaxChars(CDataExchange* pDX, CB::string const& value, int nChars);
+CB::string AfxFormatString1(UINT nIDS, const CB::string& lpsz1);
 
 #endif
 

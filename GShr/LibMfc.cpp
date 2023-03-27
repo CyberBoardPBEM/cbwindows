@@ -72,15 +72,15 @@ BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL AppendStringToEditBox(CEdit& edit, CString strAppend,
+BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
     BOOL bEnsureNewline /* = FALSE */)
 {
     if (bEnsureNewline)
     {
-        CString str;
-        edit.GetWindowText(str);
-        if (str != "" && str.GetAt(str.GetLength() - 1) != '\n')
-            AppendStringToEditBox(edit, "\r\n", FALSE);
+ASSERT(!"needs testing");
+        CB::string str = CB::string::GetWindowText(edit);
+        if (!str.empty() && str[str.a_size() - size_t(1)] != '\n')
+            AppendStringToEditBox(edit, L"\r\n", FALSE);
     }
     int nLen = edit.GetWindowTextLength();
     edit.SetSel(nLen, nLen);
@@ -147,23 +147,23 @@ UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID)
 // vertically before a menu break is forced. The default break value
 // is 20 menu items.
 
-void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, CStringArray& tblNames,
-    CUIntArray* pTblSelections /* = NULL */, UINT nBreaksAt /* = 20 */)
+void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, const std::vector<CB::string>& tblNames,
+    const std::vector<size_t>* pTblSelections /* = NULL */, UINT nBreaksAt /* = 20 */)
 {
-    if (tblNames.GetSize() > 0)
+    if (!tblNames.empty())
     {
-        intptr_t nMenuEntries = pTblSelections != NULL ? pTblSelections->GetSize() :
-            tblNames.GetSize();
-        for (intptr_t i = 0; i < nMenuEntries; i++)
+        size_t nMenuEntries = pTblSelections != NULL ? pTblSelections->size() :
+            tblNames.size();
+        for (size_t i = size_t(0) ; i < nMenuEntries ; ++i)
         {
-            intptr_t nNameIdx = pTblSelections != NULL ? value_preserving_cast<intptr_t>(pTblSelections->GetAt(i)) : i;
-            ASSERT(nNameIdx < tblNames.GetSize());
+            size_t nNameIdx = pTblSelections != NULL ? (*pTblSelections)[i] : i;
+            ASSERT(nNameIdx < tblNames.size());
             // Break the menu every 'nBreaksAt' lines since Windows
             // won't automatically break the menu if it is
             // too tall.
             UINT nFlags = value_preserving_cast<UINT>(MF_ENABLED | MF_STRING |
-                (i % value_preserving_cast<intptr_t>(nBreaksAt) == 0 && i != 0 ? MF_MENUBARBREAK : 0));
-            VERIFY(menu.AppendMenu(nFlags, nBaseID + value_preserving_cast<uintptr_t>(i), tblNames.GetAt(nNameIdx)));
+                (i % nBreaksAt == size_t(0) && i != size_t(0) ? MF_MENUBARBREAK : 0));
+            VERIFY(menu.AppendMenu(nFlags, nBaseID + i, tblNames[nNameIdx]));
         }
     }
 }
@@ -491,16 +491,17 @@ CB::string CB::string::LoadString(int nID)
 
 CB::string CB::string::GetModuleFileName(HMODULE hModule)
 {
-    CString temp;
+    std::vector<CB::string::value_type> temp;
     for ( ; ; )
     {
-        CB::string::value_type* ptr = temp.GetBufferSetLength(temp.GetLength() + MAX_PATH);
-        DWORD rc = ::GetModuleFileName(hModule, ptr, temp.GetLength());
+        temp.resize(temp.size() + size_t(MAX_PATH));
+        CB::string::value_type* ptr = temp.data();
+        DWORD rc = ::GetModuleFileName(hModule, ptr, value_preserving_cast<DWORD>(temp.size()));
         if (!rc)
         {
             AfxThrowResourceException();
         }
-        else if (rc < value_preserving_cast<DWORD>(temp.GetLength()))
+        else if (rc < value_preserving_cast<DWORD>(temp.size()))
         {
             return ptr;
         }
@@ -575,6 +576,8 @@ CB::string::~string()
     public:
         ~Report()
         {
+            /* WARNING:  don't use CPP20_TRACE here (it creates
+                more CB::string instances) */
             TRACE("strs %zu, wstrs %zu\n", strs, wstrs);
         }
     } report;
@@ -617,24 +620,24 @@ void DDX_Check(CDataExchange* pDX, int nIDC, bool& value)
     value = temp;
 }
 
-void DDX_Text(CDataExchange* pDX, int nIDC, std::string& value)
+void DDX_Text(CDataExchange* pDX, int nIDC, CB::string& value)
 {
-    CString temp = value.c_str();
+    CString temp = value;
     DDX_Text(pDX, nIDC, temp);
     value = temp;
 }
 
-void DDV_MaxChars(CDataExchange* pDX, std::string const& value, int nChars)
+void DDV_MaxChars(CDataExchange* pDX, const CB::string& value, int nChars)
 {
-    CString temp = value.c_str();
+    CString temp = value;
     DDV_MaxChars(pDX, temp, nChars);
 }
 
-void AfxFormatString1(std::string& rString, UINT nIDS, LPCTSTR lpsz1)
+CB::string AfxFormatString1(UINT nIDS, const CB::string& lpsz1)
 {
     CString temp;
     AfxFormatString1(temp, nIDS, lpsz1);
-    rString = temp;
+    return temp;
 }
 
 // CB currently only uses cp1252 strings
