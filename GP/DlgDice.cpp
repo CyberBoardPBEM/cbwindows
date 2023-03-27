@@ -221,7 +221,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
         // Show seed string if one was specified...
         CString strRollType;
         if (!m_strSeed.empty())
-            AfxFormatString1(strRollType, IDS_MSG_ROLLWITHSEED, m_strSeed.c_str());
+            AfxFormatString1(strRollType, IDS_MSG_ROLLWITHSEED, m_strSeed);
         else
             strRollType.LoadString(IDS_MSG_ROLLWITHOUTSEED);
         m_strRoll += strRollType;
@@ -273,8 +273,8 @@ void CDieRollerDlg::MakeFormattedRollResult()
                             // Seed string given. Use MD5 to hash the string
                             // for a starting seed value.
                             MD5_CTX mdContext;
-                            MD5Calc(&mdContext, rs.m_strUserSeed.c_str(),
-                                rs.m_strUserSeed.length());
+                            MD5Calc(&mdContext, rs.m_strUserSeed.a_str(),
+                                rs.m_strUserSeed.a_size());
 
                             nRandomNum = CalcRandomNumberUsingSeed(1,
                                 rs.m_tbl[i].m_nFaces,
@@ -344,8 +344,8 @@ void CDieRollerDlg::SetRollState(const CRollState& rstate)
 {
     m_bFirstRoll = rstate.m_bFirstRoll;
     m_nSets = rstate.m_nSetsToRoll;
-    m_strSeed = rstate.m_strUserSeed.c_str();
-    m_strInitialSeed = rstate.m_strUserSeed.c_str();    // Saved to detect changes
+    m_strSeed = rstate.m_strUserSeed;
+    m_strInitialSeed = rstate.m_strUserSeed;    // Saved to detect changes
 
     m_nSeedCarryOver = rstate.m_nSeedCarryOver;
 

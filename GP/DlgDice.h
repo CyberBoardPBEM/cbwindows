@@ -54,7 +54,7 @@ class CRollState
 public:
     bool        m_bFirstRoll;                   // No roll performed yet
     uint32_t    m_nSetsToRoll;                  // Number of times to roll
-    std::string m_strUserSeed;                  // Current user seed (if any)
+    CB::string  m_strUserSeed;                  // Current user seed (if any)
     uint32_t    m_nSeedCarryOver;               // The current seed
     // The actual roll specification
     int32_t     m_nBias;
@@ -88,7 +88,7 @@ public:
     CButton m_chkRoll3;
     CButton m_chkRoll2;
     CButton m_chkRoll1;
-    std::string m_strSeed;
+    CB::string m_strSeed;
     uint32_t m_nFaces1;
     uint32_t m_nFaces2;
     uint32_t m_nFaces3;
@@ -121,7 +121,7 @@ protected:
     std::string m_strRoll;
 
     bool        m_bFirstRoll;
-    std::string m_strInitialSeed;               // Used to detect changed user seed
+    CB::string  m_strInitialSeed;               // Used to detect changed user seed
     uint32_t    m_nSeedCarryOver;
 
 

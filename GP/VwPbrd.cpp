@@ -2165,9 +2165,12 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
         CMarkManager* pMgr = GetDocument()->GetMarkManager();
         if (pMgr->IsEmpty())
             return;
-        CStringArray tbl;
-        for (size_t i = 0; i < pMgr->GetNumMarkSets(); i++)
-            tbl.Add(pMgr->GetMarkSet(i).GetName());
+        std::vector<CB::string> tbl;
+        tbl.reserve(pMgr->GetNumMarkSets());
+        for (size_t i = size_t(0) ; i < pMgr->GetNumMarkSets() ; ++i)
+        {
+            tbl.push_back(pMgr->GetMarkSet(i).GetName());
+        }
         CMenu menu;
         VERIFY(menu.CreatePopupMenu());
 
