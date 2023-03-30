@@ -324,12 +324,11 @@ BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
     {
         if (m_bKeepGamBackup && IsScenario())
         {
-            char szTmp[_MAX_PATH];
-            lstrcpy(szTmp, pszPathName);
+            CB::string szTmp = pszPathName;
             if (IsScenario())
-                SetFileExt(szTmp, "gs_");
+                szTmp = SetFileExt(szTmp, "gs_");
             else
-                SetFileExt(szTmp, "ga_");
+                szTmp = SetFileExt(szTmp, "ga_");
             if (_access(szTmp, 0) != -1)    // Remove previous backup
                 CFile::Remove(szTmp);
             CFile::Rename(pszPathName, szTmp);

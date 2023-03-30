@@ -941,9 +941,7 @@ long CGamDoc::SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst)
 
 void CGamDoc::LoadGameBoxFileForSerialize()
 {
-    char szPath[MAX_PATH];
-    char szFPath[MAX_PATH];
-    char szGbxRootName[MAX_PATH];
+    CB::string szFPath;
 
     m_pGbx = new CGameBox;      // Create game box object
 
@@ -953,11 +951,10 @@ void CGamDoc::LoadGameBoxFileForSerialize()
     // If we can't find it there, prompt for the location.
     if (_access(m_strGBoxFile, 0) == -1)
     {
-        strcpy(szPath, m_strTmpPathName);
-        StrTruncatePath(szPath);
-        StrExtractFilename(szGbxRootName, m_strGBoxFile);
+        CB::string szPath = StrTruncatePath(m_strTmpPathName);
+        CB::string szGbxRootName = StrExtractFilename(m_strGBoxFile);
 
-        StrBuildFullFilename(szFPath, szPath, szGbxRootName);
+        szFPath = StrBuildFullFilename(szPath, szGbxRootName);
 
         if (_access(szFPath, 0) == -1)
         {
@@ -981,11 +978,11 @@ void CGamDoc::LoadGameBoxFileForSerialize()
                 AfxThrowArchiveException(CArchiveException::genericException);
 
             m_strGBoxFile = dlg.GetPathName();      // Set new name
-            strcpy(szFPath, dlg.GetPathName());
+            szFPath = dlg.GetPathName();
         }
     }
     else
-        strcpy(szFPath, m_strGBoxFile);
+        szFPath = m_strGBoxFile;
     CString strErr;
     if (!m_pGbx->Load(this, szFPath, strErr, m_dwGBoxID))
     {

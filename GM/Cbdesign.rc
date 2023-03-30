@@ -1531,7 +1531,7 @@ STRINGTABLE
 BEGIN
     IDS_WARN_FILE_UPGRADE   "You are loading a GameBox file from a prior version of CyberBoard. It will automatically be upgraded when you save it. The upgraded file is not compatible with prior versions of CyberBoard.\n\nPress OK to continue, Cancel to exit."
     IDS_ERR_SAVE_DELETE_FAIL 
-                            "Failed to remove back-up file ""%s"". Check if the file attributes are marked as read-only. Please correct and Save again."
+                            "Failed to remove back-up file ""{}"". Check if the file attributes are marked as read-only. Please correct and Save again."
     IDS_TT_CUST_COLOR_CELLS "Left Click=Fore Color; Right Click=Back Color\nShift Click & Ctrl Click = Set Custom Color"
     IDS_TT_LINEWIDTH_COMBO  "Line or Border Width"
     IDS_SIDE_N              "Side:  %1"

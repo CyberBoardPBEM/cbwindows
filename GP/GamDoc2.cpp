@@ -65,12 +65,13 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
     CString strTitle;
     strTitle.LoadString(IDS_GMOV_ENTERNAME);
 
-    char szFName[MAX_PATH];
-    strcpy(szFName, GetPathName());
-    if (*szFName != 0)
-        SetFileExt(szFName, "gmv");
+    CB::string szFName = GetPathName();
+    if (!szFName.empty())
+    {
+        szFName = SetFileExt(szFName, "gmv");
+    }
 
-    CFileDialog dlg(FALSE, "gmv", *szFName != 0 ? szFName : NULL,
+    CFileDialog dlg(FALSE, "gmv", !szFName.empty() ? szFName : NULL,
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 
@@ -125,12 +126,13 @@ void CGamDoc::SaveRecordedMoves()
     CString strTitle;
     strTitle.LoadString(IDS_GMOV_ENTERNAME);
 
-    char szFName[_MAX_PATH];
-    strcpy(szFName, GetPathName());
-    if (*szFName != 0)
-        SetFileExt(szFName, "gmv");
+    CB::string szFName = GetPathName();
+    if (!szFName.empty())
+    {
+        szFName = SetFileExt(szFName, "gmv");
+    }
 
-    CFileDialog dlg(FALSE, "gmv", *szFName != 0 ? szFName : NULL,
+    CFileDialog dlg(FALSE, "gmv", !szFName.empty() ? szFName : NULL,
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 

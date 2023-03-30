@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    <filesystem>
 #include    "StrLib.h"
 
 #ifdef _DEBUG
@@ -36,14 +37,11 @@ static char THIS_FILE[] = __FILE__;
 
 // --------------------------- //
 
-char *SetFileExt(char *fname, const char *ext)
+CB::string SetFileExt(const CB::string& fname, const CB::string& ext)
 {
-    char *sp = strrchr(fname, '.');
-    if (sp != NULL)
-        *sp = 0;
-    strcat(fname, ".");
-    strcat(fname, ext);
-    return fname;
+    std::filesystem::path stdFname(fname.w_str());
+    std::filesystem::path stdExt(ext.w_str());
+    return stdFname.replace_extension(stdExt).wstring();
 }
 
 // --------------------------- //
@@ -84,60 +82,27 @@ void StrLeadZeros(char* szVal, size_t nWidth)
 // --------------------------- //
 // Removes the filename portion of a file path specification
 
-void StrTruncatePath(char *pszName)
+CB::string StrTruncatePath(const CB::string& pszName)
 {
-    if (strlen(pszName) == 0)
-        return;
-
-    char* sp;
-    for (sp = pszName + strlen(pszName) - 1; sp != pszName; sp--)
-    {
-        if (*sp == '\\')
-        {
-            if (sp[-1] == ':')
-                sp++;           // leave backslash on drive
-            break;
-        }
-        else if (*sp == ':')
-        {
-            // If no backslash encountered but the drive name was,
-            // force a backslash after the drive.
-            sp++;
-            *sp++ = '\\';
-        }
-    }
-    *sp = 0;
+    std::filesystem::path stdName(pszName.w_str());
+    return stdName.remove_filename().wstring();
 }
 
 // Extract only the file name.
 
-void StrExtractFilename(char *pszFName, const char* pszFPath)
+CB::string StrExtractFilename(const CB::string& pszFPath)
 {
-    if (strlen(pszFPath) == 0)
-    {
-        *pszFName = 0;
-        return;
-    }
-    const char* sp;
-    for (sp = pszFPath + strlen(pszFPath) - 1; sp != pszFPath; sp--)
-    {
-        if (*sp == '\\' || *sp == ':')
-        {
-            sp++;
-            break;
-        }
-    }
-    strcpy(pszFName, sp);
+    std::filesystem::path stdFPath(pszFPath.w_str());
+    return stdFPath.filename().wstring();
 }
 
 // --------------------------- //
 
-void StrBuildFullFilename(char* pszFull, const char* pszPath,
-    const char* pszName)
+CB::string StrBuildFullFilename(const CB::string& pszPath,
+    const CB::string& pszName)
 {
-    strcpy(pszFull, pszPath);
-    if (pszFull[strlen(pszFull)-1] != '\\')
-        strcat(pszFull, "\\");
-    strcat(pszFull, pszName);
+    std::filesystem::path stdPath(pszPath.w_str());
+    std::filesystem::path stdName(pszName.w_str());
+    return (stdPath / stdName).wstring();
 }
 
