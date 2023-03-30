@@ -27,13 +27,13 @@
 
 //*** STRLIB.CPP ***//
 
-char *SetFileExt(char *fname, const char *ext);
+[[nodiscard]] CB::string SetFileExt(const CB::string& fname, const CB::string& ext);
 CB::string StrGetAAAFormat(size_t n);
 void StrLeadZeros(char* szVal, size_t nWidth);
-void StrTruncatePath(char *pszName);
-void StrExtractFilename(char *pszFName, const char* pszFPath);
-void StrBuildFullFilename(char* pszFull, const char* pszPath,
-    const char* pszName);
+[[nodiscard]] CB::string StrTruncatePath(const CB::string& pszName);
+CB::string StrExtractFilename(const CB::string& pszFPath);
+CB::string StrBuildFullFilename(const CB::string& pszPath,
+    const CB::string& pszName);
 
 #endif
 

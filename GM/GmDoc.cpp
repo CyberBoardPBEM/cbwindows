@@ -232,9 +232,7 @@ BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
     UpdateAllViews(NULL, HINT_FORCETILEUPDATE, NULL);
     if (_access(pszPathName, 0) != -1)
     {
-        char szTmp[_MAX_PATH];
-        lstrcpy(szTmp, pszPathName);
-        SetFileExt(szTmp, "gb_");
+        CB::string szTmp = SetFileExt(pszPathName, "gb_");
         if (_access(szTmp, 0) != -1)        // Remove previous backup
         {
             TRY
@@ -243,8 +241,7 @@ BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
             }
             CATCH_ALL(e)
             {
-                CString strErr;
-                strErr.Format(IDS_ERR_SAVE_DELETE_FAIL, szTmp);
+                CB::string strErr = CB::string::Format(IDS_ERR_SAVE_DELETE_FAIL, szTmp);
                 AfxMessageBox(strErr);
                 return FALSE;
             }
