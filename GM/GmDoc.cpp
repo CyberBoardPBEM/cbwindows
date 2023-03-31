@@ -566,7 +566,7 @@ void CGamDoc::Serialize(CArchive& ar)
 
         // leave space for pointer to feature list at end of file
         uint64_t offsetOffsetFeatureTable = UINT64_MAX;
-        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
@@ -646,7 +646,7 @@ void CGamDoc::Serialize(CArchive& ar)
         CColorPalette::CustomColorsSerialize(ar, m_pCustomColors);
 
         // serialize done, so write features now
-        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
@@ -676,7 +676,7 @@ void CGamDoc::Serialize(CArchive& ar)
             ar >> verMinor;
 
             Features fileFeatures;
-            if (NumVersion(verMajor, verMinor) >= NumVersion(105, 0))
+            if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
             {
                 try
                 {

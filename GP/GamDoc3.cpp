@@ -117,7 +117,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
 
         // leave space for pointer to feature list at end of file
         uint64_t offsetOffsetFeatureTable = UINT64_MAX;
-        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
@@ -170,7 +170,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         pHist->Serialize(ar);
 
         // serialize done, so write features now
-        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
@@ -197,7 +197,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         ar >> verMinor;
 
         Features fileFeatures;
-        if (NumVersion(verMajor, verMinor) >= NumVersion(105, 0))
+        if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
         {
             try
             {
@@ -346,7 +346,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
             m_pHistTbl->Serialize(ar);
 
         // serialize done, so write features now
-        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
@@ -556,7 +556,7 @@ void CGamDoc::SerializeScenario(CArchive& ar)
     if (ar.IsStoring())
     {
         // serialize done, so write features now
-        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
         {
             ar.Flush();     // ensure GetPosition() is current
             uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
@@ -593,7 +593,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar << (BYTE)fileGsnVerMajor;
         ar << (BYTE)fileGsnVerMinor;
 
-        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(105, 0))
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
         {
             // leave space for pointer to feature list at end of file
             ar.Flush();     // ensure GetPosition() is current
@@ -709,7 +709,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar >> verMinor;
 
         Features fileFeatures;
-        if (NumVersion(verMajor, verMinor) >= NumVersion(105, 0))
+        if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
         {
             try
             {

@@ -105,7 +105,7 @@ inline int GetSaveFileVersion()
     static const int retval = [] {
         struct FileFlagParser : public CCommandLineInfo
         {
-            int version = NumVersion(105, 0);
+            int version = NumVersion(5, 0);
             virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
             {
                 static const std::regex re(R"(filever:([[:digit:]]+)\.([[:digit:]]+))");

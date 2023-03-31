@@ -115,7 +115,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         ar >> verMinor;
 
         Features fileFeatures;
-        if (NumVersion(verMajor, verMinor) >= NumVersion(105, 0))
+        if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
         {
             try
             {
