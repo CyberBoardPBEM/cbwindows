@@ -2,14 +2,139 @@
 //
 // Copyright (c) 1994-2010 By Dale L. Larson, All Rights Reserved.
 //
+#ifndef __VERSIONS_H__
+#define __VERSIONS_H__
+
+#include <regex>
+
+const int progVerMajor = 4;         // Current program version
+const int progVerMinor = 0;        // (Number is divided by 100. ex: 10 is .10)
+
+inline int NumVersion(int major, int minor) { return major * 256 + minor; }
+inline int VersionMajor(int numVer) { return numVer / 256; }
+inline int VersionMinor(int numVer) { return numVer % 256; }
+
+// wsu20230331
+//      5.00 - use feature lists instead of version numbers
+//              The goal of this version is to make one final
+//              file version NUMBER change, and then never
+//              change the file version NUMBER again.The problem
+//              with version numbers is there isn't a good way
+//              to make file format changes in parallel, and no
+//              good way to distinguish the evolution of the
+//              file format between releases. This makes it
+//              difficult to read files written at intermediate
+//              points in time between releases because the
+//              version number is the same, but the actual
+//              format is different.
+//
+//              This version replaces the storage-efficient but
+//              not-very-informative version NUMBER with a
+//              much-larger storage but more informative version
+//              FEATURE LIST that a particular file requires its
+//              reader to support.There is also a requirement
+//              that readers that know about features NOT
+//              specified by a file will correctly interpret that
+//              file in a backward-compatible pre-feature mode.
+//
+//              A "feature" has value semantics
+//              (https://en.wikipedia.org/wiki/Value_semantics),
+//              and is represented by a name of string type.  It
+//              is of course each developer's responsibility not
+//              to use the same feature name for different
+//              purposes. For convenience (see below), the
+//              string names are case-insensitive. These names
+//              are represented by class Feature. Feature is
+//              implemented as a thin wrapper on std::string
+//              that provides the very small interface needed to
+//              represent a feature (identity comparison, and
+//              save/load).
+class Feature
+{
+public:
+    Feature() noexcept = default;
+    explicit Feature(std::string f) : feature(std::move(f)) {}
+    bool operator==(const Feature& other) const noexcept;
+    friend CArchive& operator<<(CArchive& ar, const Feature& f);
+    friend CArchive& operator>>(CArchive& ar, Feature& f);
+
+private:
+    std::string feature;
+
+    friend std::formatter<Feature, char>;
+    friend std::formatter<class Features, char>;
+};
+//
+//              A collection of Features is represented by
+//              class Features.  Again, this has value semantics
+//              and is just a thin wrapper on
+//              std::vector<Feature> providing the very small
+//              interface needed (iterate, add/remove feature,
+//              test whether it contains a feature, and
+//              save/load).
+class Features : private std::vector<Feature>
+{
+    using BASE = std::vector<Feature>;
+public:
+    Features() noexcept = default;
+    Features(std::initializer_list<Feature> l) : BASE(l) {}
+    using BASE::begin;
+    using BASE::end;
+    bool Check(const Feature& f) const noexcept;
+    void Add(const Feature& f);
+    void Remove(const Feature& f);
+    friend CArchive& operator<<(CArchive& ar, const Features& fs);
+    friend CArchive& operator>>(CArchive& ar, Features& fs);
+
+private:
+    typename BASE::const_iterator Find(const Feature& f) const noexcept;
+};
+//
+//              Some features (e.g., the size of an ID) are
+//              relatively widely scattered throughout the file,
+//              but some (e.g., the presence of CRollState) are
+//              very local.To avoid needing the have these local
+//              features checked at the beginning of writing a
+//              file (i.e., to reduce code coupling), the
+//              feature list is appended to throughout the save
+//              operation, and then the list is written at the
+//              end.  (This does have the disadvantage that
+//              writing and reading the file is not purely
+//              sequential.)
+//
+//              For testing purposes, there is command line
+//              switch support to force using a file Feature
+//              even if it isn't actually required,
+//              e.g., /filever:force-id-32bit (see
+//              GetCBForcedFeatures()). Also, there is support
+//              to forbid saving a file with a particular
+//              Feature, e.g., /filever:no-id-32bit
+//              (see GetCBFeatures()). Currently, this is only
+//              checked at save time, not continuously during
+//              editing, but at least the user can verify that
+//              he hasn't unintentionally written a file that is
+//              no longer compatible with another player's CB.
+//              (If the additional work seems warranted, nothing
+//              prevents editing actions from checking the
+//              GetCBFeatures() list.) fFor convenience of
+//              typing these command line switches, Feature
+//              names are case-insensitive.
+//
 // wsu20210731
 //      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
+inline const Feature ftrId32Bit("id-32bit");
 //              treat size_t as 64bit (even in 32bit builds)
+inline const Feature ftrSizet64Bit("size_t-64bit");
 //              geomorphic boards with square cells
+inline const Feature ftrGeoSquareCell("geo-square-cell");
 //              geomorphic boards with rotated unit boards
+inline const Feature ftrGeoRotateUnit("geo-rotate-unit");
 //              pieces with <= 100 sides
+inline const Feature ftrPiece100Sides("piece-100-sides");
 //              completely private boards
+inline const Feature ftrPrivatePlayerBoard("private-player-board");
 //              serialize CGamDoc::m_pRollState
+inline const Feature ftrCRollState("CRollState");
 //              update old object ID CDrawObj::drawMarkObj tag
 //
 // wsu20220208:  This version has been reverted.
@@ -87,18 +212,6 @@
 //      fileGbxVerMinor updates:
 //      0.57 - Added bitmapped drawing objects. (DrawObj.*)
 //
-
-#ifndef __VERSIONS_H__
-#define __VERSIONS_H__
-
-#include <regex>
-
-const int progVerMajor = 4;         // Current program version
-const int progVerMinor = 0;        // (Number is divided by 100. ex: 10 is .10)
-
-inline int NumVersion(int major, int minor) { return major * 256 + minor; }
-inline int VersionMajor(int numVer) { return numVer / 256; }
-inline int VersionMinor(int numVer) { return numVer % 256; }
 
 inline int GetSaveFileVersion()
 {
@@ -183,51 +296,36 @@ namespace CB
     }
 }
 
-class Features;
 const Features& GetCBFeatures();
 
-//  support for incremental file format changes
-class Feature
+inline bool Feature::operator==(const Feature& other) const noexcept
 {
-public:
-    Feature() noexcept = default;
-    explicit Feature(std::string f) : feature(std::move(f)) {}
+    return _stricmp(feature.c_str(), other.feature.c_str()) == 0;
+}
 
-    bool operator==(const Feature& other) const noexcept
-    {
-        return _stricmp(feature.c_str(), other.feature.c_str()) == 0;
-    }
+inline CArchive& operator<<(CArchive& ar, const Feature& f)
+{
+    /* At this point in the file, the reader doesn't yet
+        know whether feature "size_t-64bit" is active, so
+        make a rule that size is always 8 bytes for
+        Feature/Features */
+    ar << uint64_t(f.feature.size());
+    ar.Write(f.feature.c_str(), value_preserving_cast<uint32_t>(f.feature.size()));
+    return ar;
+}
 
-    friend CArchive& operator<<(CArchive& ar, const Feature& f)
-    {
-        /* At this point in the file, the reader doesn't yet
-            know whether feature "size_t-64bit" is active, so
-            make a rule that size is always 8 bytes for
-            Feature/Features */
-        ar << uint64_t(f.feature.size());
-        ar.Write(f.feature.c_str(), value_preserving_cast<uint32_t>(f.feature.size()));
-        return ar;
-    }
-
-    friend CArchive& operator>>(CArchive& ar, Feature& f)
-    {
-        /* At this point in the file, the reader doesn't yet
-            know whether feature "size_t-64bit" is active, so
-            make a rule that size is always 8 bytes for
-            Feature/Features */
-        uint64_t size;
-        ar >> size;
-        f.feature.resize(value_preserving_cast<size_t>(size));
-        ar.Read(&f.feature.front(), value_preserving_cast<uint32_t>(size));
-        return ar;
-    }
-
-private:
-    std::string feature;
-
-    friend std::formatter<Feature, char>;
-    friend std::formatter<Features, char>;
-};
+inline CArchive& operator>>(CArchive& ar, Feature& f)
+{
+    /* At this point in the file, the reader doesn't yet
+        know whether feature "size_t-64bit" is active, so
+        make a rule that size is always 8 bytes for
+        Feature/Features */
+    uint64_t size;
+    ar >> size;
+    f.feature.resize(value_preserving_cast<size_t>(size));
+    ar.Read(&f.feature.front(), value_preserving_cast<uint32_t>(size));
+    return ar;
+}
 
 template<>
 struct std::formatter<Feature, char> : std::formatter<std::string, char>
@@ -243,98 +341,78 @@ public:
     }
 };
 
-inline const Feature ftrId32Bit("id-32bit");
-inline const Feature ftrSizet64Bit("size_t-64bit");
-inline const Feature ftrGeoSquareCell("geo-square-cell");
-inline const Feature ftrGeoRotateUnit("geo-rotate-unit");
-inline const Feature ftrPiece100Sides("piece-100-sides");
-inline const Feature ftrPrivatePlayerBoard("private-player-board");
-inline const Feature ftrCRollState("CRollState");
-
-class Features : private std::vector<Feature>
+inline bool Features::Check(const Feature& f) const noexcept
 {
-    using BASE = std::vector<Feature>;
-public:
-    Features() noexcept = default;
-    Features(std::initializer_list<Feature> l) : BASE(l) {}
+    return Find(f) != end();
+}
 
-    using BASE::begin;
-    using BASE::end;
-
-    bool Check(const Feature& f) const noexcept
+inline void Features::Add(const Feature& f)
+{
+    if (!Check(f))
     {
-        return Find(f) != end();
+        push_back(f);
+    }
+}
+
+inline void Features::Remove(const Feature& f)
+{
+    auto it = Find(f);
+    if (it != end())
+    {
+        erase(it);
+    }
+}
+
+inline CArchive& operator<<(CArchive& ar, const Features& fs)
+{
+    if (!ar.IsStoring())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
     }
 
-    void Add(const Feature& f)
+    /* At this point in the file, the reader doesn't yet
+        know whether feature "size_t-64bit" is active, so
+        make a rule that size is always 8 bytes for
+        Feature/Features */
+    ar << uint64_t(fs.size());
+    for (const Feature& f : fs)
     {
-        if (!Check(f))
+        ar << f;
+    }
+
+    return ar;
+}
+
+inline CArchive& operator>>(CArchive& ar, Features& fs)
+{
+    if (!ar.IsLoading())
+    {
+        AfxThrowArchiveException(CArchiveException::readOnly);
+    }
+
+    /* At this point in the file, the reader doesn't yet
+        know whether feature "size_t-64bit" is active, so
+        make a rule that size is always 8 bytes for
+        Feature/Features */
+    uint64_t size;
+    ar >> size;
+    fs.resize(value_preserving_cast<size_t>(size));
+    for (Feature& feature : fs)
+    {
+        ar >> feature;
+        if (!GetCBFeatures().Check(feature))
         {
-            push_back(f);
+            AfxThrowArchiveException(CArchiveException::badSchema);
         }
     }
 
-    void Remove(const Feature& f)
-    {
-        auto it = Find(f);
-        if (it != end())
-        {
-            erase(it);
-        }
-    }
+    return ar;
+}
 
-    friend CArchive& operator<<(CArchive& ar, const Features& fs)
-    {
-        if (!ar.IsStoring())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-
-        /* At this point in the file, the reader doesn't yet
-            know whether feature "size_t-64bit" is active, so
-            make a rule that size is always 8 bytes for
-            Feature/Features */
-        ar << uint64_t(fs.size());
-        for (const Feature& f : fs)
-        {
-            ar << f;
-        }
-
-        return ar;
-    }
-
-    friend CArchive& operator>>(CArchive& ar, Features& fs)
-    {
-        if (!ar.IsLoading())
-        {
-            AfxThrowArchiveException(CArchiveException::readOnly);
-        }
-
-        /* At this point in the file, the reader doesn't yet
-            know whether feature "size_t-64bit" is active, so
-            make a rule that size is always 8 bytes for
-            Feature/Features */
-        uint64_t size;
-        ar >> size;
-        fs.resize(value_preserving_cast<size_t>(size));
-        for (Feature& feature : fs)
-        {
-            ar >> feature;
-            if (!GetCBFeatures().Check(feature))
-            {
-                AfxThrowArchiveException(CArchiveException::badSchema);
-            }
-        }
-
-        return ar;
-    }
-
-private:
-    typename BASE::const_iterator Find(const Feature& f) const noexcept
-    {
-        return std::find(begin(), end(), f);
-    }
-};
+inline typename Features::BASE::const_iterator Features::Find(const Feature & f) const noexcept
+{
+    return std::find(begin(), end(), f);
+}
 
 template<>
 struct std::formatter<Features, char> : std::formatter<std::string, char>
