@@ -1,6 +1,6 @@
 // versions.h - program version numbers.
 //
-// Copyright (c) 1994-2010 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 #ifndef __VERSIONS_H__
 #define __VERSIONS_H__
