@@ -1,6 +1,6 @@
 // MoveMgr.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -57,7 +57,7 @@ void CMoveRecord::Serialize(CArchive& ar)
     // by the object's constructor.
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << (m_nSeqNum == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nSeqNum));
         }
@@ -68,7 +68,7 @@ void CMoveRecord::Serialize(CArchive& ar)
     }
     else
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             uint16_t sTmp;
             ar >> sTmp; m_nSeqNum = (sTmp == uint16_t(0xFFFF) ? Invalid_v<size_t> : sTmp);
@@ -326,7 +326,7 @@ void CTrayPieceMove::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_pid;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<int16_t>(m_nTrayNum);
             ASSERT(m_nPos == Invalid_v<size_t> ||
@@ -342,7 +342,7 @@ void CTrayPieceMove::Serialize(CArchive& ar)
     else
     {
         ar >> m_pid;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             int16_t sTmp;
             ar >> sTmp; m_nTrayNum = value_preserving_cast<size_t>(sTmp);
@@ -449,7 +449,8 @@ void CPieceSetSide::Serialize(CArchive& ar)
     CMoveRecord::Serialize(ar);
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        // TODO:  handle ftrPiece100Sides w/o ftrSizet64Bit?
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit) || !CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             if (m_flip != CPieceTable::fNext ||
                 m_side >= size_t(2))
@@ -465,7 +466,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
             ar << value_preserving_cast<uint8_t>(m_flip);
             CB::WriteCount(ar, m_side);
         }
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             if (m_forceMoveHidden)
             {
@@ -479,7 +480,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
     }
     else
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit) || !CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             ar >> m_pid;
             m_flip = CPieceTable::fNext;
@@ -494,7 +495,7 @@ void CPieceSetSide::Serialize(CArchive& ar)
             m_flip = static_cast<CPieceTable::Flip>(temp);
             m_side = CB::ReadCount(ar);
         }
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             m_forceMoveHidden = false;
         }
@@ -1578,7 +1579,7 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         }
         else
         {
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 ar << value_preserving_cast<WORD>(m_nTray);
                 ar << value_preserving_cast<DWORD>(static_cast<PieceID::UNDERLYING_TYPE>(m_pieceID));
@@ -1605,7 +1606,7 @@ void CEventMessageRcd::Serialize(CArchive& ar)
         }
         else
         {
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 ar >> wTmp; m_nTray = value_preserving_cast<size_t>(wTmp);
                 ar >> dwTmp; m_pieceID = static_cast<PieceID>(dwTmp);
@@ -2320,7 +2321,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
     {
         ASSERT(m_pStateSave == NULL); // Should never save with this active!
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<uint16_t>(m_nSeqNum);
         }
@@ -2329,7 +2330,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             CB::WriteCount(ar, m_nSeqNum);
         }
         ar << (WORD)m_bCompoundMove;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << (m_nCompoundBaseIndex != Invalid_v<size_t> ? value_preserving_cast<uint32_t>(m_nCompoundBaseIndex) : uint32_t(INT32_C(-1)));
         }
@@ -2341,7 +2342,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         if (m_pCompoundBaseBookMark)
             m_pCompoundBaseBookMark->Serialize(ar);
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(size());
         }
@@ -2364,7 +2365,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         size_t wCount;
         uint16_t sTmp;
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> sTmp; m_nSeqNum = sTmp;
         }
@@ -2379,7 +2380,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             WORD  wTmp;
             uint32_t dwTmp;
             ar >> wTmp; m_bCompoundMove = (BOOL)wTmp;
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 ar >> dwTmp; m_nCompoundBaseIndex = (dwTmp != uint32_t(INT32_C(-1)) ? value_preserving_cast<size_t>(dwTmp) : Invalid_v<size_t>);
             }
@@ -2396,7 +2397,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             }
         }
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;

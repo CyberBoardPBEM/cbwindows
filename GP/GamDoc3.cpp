@@ -1,6 +1,6 @@
 // GamDoc3.cpp -- serialization support for the document.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -101,6 +101,7 @@ void CGamDoc::Serialize(CArchive& ar)
     else
         SerializeGame(ar);
     SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
+    SetFileFeatures(GetCBFeatures());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,11 +114,72 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         ar.Write(FILEGMVSIGNATURE, 4);
         ar << (BYTE)fileGmvVerMajor;
         ar << (BYTE)fileGmvVerMinor;
+
+        // leave space for pointer to feature list at end of file
+        uint64_t offsetOffsetFeatureTable = UINT64_MAX;
+        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(5, 0))
+        {
+            ar.Flush();     // ensure GetPosition() is current
+            offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
+            ar << uint64_t(0);
+
+            // initialize feature list
+            c_fileFeatures = GetCBForcedFeatures();
+            /* these features are global in the sense that, if
+                any ID needs 32 bits, then we store all IDs in
+                32 bit format */
+            if (GetBoardManager()->Needs32BitIDs() ||
+                GetTileManager()->Needs32BitIDs() ||
+                GetPieceManager()->Needs32BitIDs() ||
+                GetMarkManager()->Needs32BitIDs())
+            {
+                if (!GetCBFeatures().Check(ftrId32Bit))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+                c_fileFeatures.Add(ftrId32Bit);
+            }
+            if (GetPieceManager()->Needs100SidePieces())
+            {
+                if (!GetCBFeatures().Check(ftrPiece100Sides))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+                c_fileFeatures.Add(ftrPiece100Sides);
+            }
+            /* TODO:  Check all size_t for 64bit vals.  For now,
+                        use unless forbidden */
+            if (GetCBFeatures().Check(ftrSizet64Bit))
+            {
+                c_fileFeatures.Add(ftrSizet64Bit);
+            }
+        }
+        else if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(4, 0)) {
+            c_fileFeatures = GetCBFile4Features();
+        }
+        else
+        {
+            ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) <= NumVersion(3, 90));
+            c_fileFeatures = Features();
+        }
+
         ar << (BYTE)progVerMajor;
         ar << (BYTE)progVerMinor;
 
         ar << m_dwScenarioID;
         pHist->Serialize(ar);
+
+        // serialize done, so write features now
+        if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) >= NumVersion(5, 0))
+        {
+            ar.Flush();     // ensure GetPosition() is current
+            uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
+            ar << c_fileFeatures;
+            // write data at current file pointer before changing it
+            ar.Flush();
+            ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+            ar << offsetFeatureTable;
+        }
     }
     else
     {
@@ -133,6 +195,41 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         BYTE verMajor, verMinor;
         ar >> verMajor;
         ar >> verMinor;
+
+        Features fileFeatures;
+        if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
+        {
+            try
+            {
+                ar.Flush();     // ensure GetPosition() is current
+                uint64_t offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
+                uint64_t offsetFeatureTable;
+                ar >> offsetFeatureTable;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetFeatureTable), CFile::begin);
+                ar >> fileFeatures;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+                uint64_t dummy;
+                ar >> dummy;
+                ASSERT(dummy == offsetFeatureTable);
+            }
+            catch (...)
+            {
+                ASSERT(!"exception");
+                // report file too new
+                verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
+            }
+        }
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
+        {
+            fileFeatures = GetCBFile4Features();
+        }
+        else
+        {
+            ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
+        }
+
         if (NumVersion(verMajor, verMinor) >
             NumVersion(fileGmvVerMajor, fileGmvVerMinor) &&
             // file 3.90 is the same as 3.10
@@ -143,6 +240,9 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         }
         SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor),
                                                         NumVersion(fileGamVerMajor, fileGamVerMinor));
+        SetFileFeaturesGuard setFileFeaturesGuard(ar,
+                                                    std::move(fileFeatures),
+                                                    Features(GetCBFeatures()));
 
         BYTE byteBucket;        // Place to dump unused bytes
         ar >> byteBucket;       // Eat the program version
@@ -176,7 +276,8 @@ void CGamDoc::SerializeGame(CArchive& ar)
         // Scenario file header
         ar.Write(FILEGAMSIGNATURE, 4);
 
-        SerializeScenarioOrGame(ar);
+        uint64_t offsetOffsetFeatureTable = UINT64_MAX;
+        SerializeScenarioOrGame(ar, offsetOffsetFeatureTable);
 
         ar << m_dwCurrentPlayer;
         ar << m_dwPlayerHash;
@@ -185,7 +286,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (WORD)m_eState;
         ar << m_strCurMsg;
         ar << m_astrMsgHist;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ASSERT(m_nCurMove == Invalid_v<size_t> ||
                     m_nCurMove < size_t(0xFFFF));
@@ -213,8 +314,9 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (WORD)m_bAutoStep;
         ar << (WORD)m_bMsgWinVisible;
 
-        if (CB::GetVersion(ar) >= NumVersion(4, 0))
+        if (GetCBFeatures().Check(ftrCRollState))
         {
+            CB::AddFeature(ar, ftrCRollState);
             ar << bool(m_pRollState);
             if (m_pRollState)
             {
@@ -242,6 +344,18 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << (BYTE)(m_pHistTbl != NULL ? 1 : 0);
         if (m_pHistTbl)
             m_pHistTbl->Serialize(ar);
+
+        // serialize done, so write features now
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
+        {
+            ar.Flush();     // ensure GetPosition() is current
+            uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
+            ar << c_fileFeatures;
+            // write data at current file pointer before changing it
+            ar.Flush();
+            ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+            ar << offsetFeatureTable;
+        }
     }
     else
     {
@@ -255,7 +369,8 @@ void CGamDoc::SerializeGame(CArchive& ar)
             AfxThrowArchiveException(CArchiveException::genericException);
         }
 
-        SerializeScenarioOrGame(ar);
+        uint64_t dummy;
+        SerializeScenarioOrGame(ar, dummy);
 
         WORD wTmp;
         BYTE cTmp;
@@ -289,7 +404,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
             ar >> m_astrMsgHist;
         else
             MsgParseLegacyHistory(m_strCurMsg, m_astrMsgHist, m_strCurMsg);
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp; m_nCurMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
             ar >> wTmp; m_nFirstMove = (wTmp == 0xFFFF ? Invalid_v<size_t> : value_preserving_cast<size_t>(wTmp));
@@ -314,7 +429,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
         {
-            if (CB::GetVersion(ar) >= NumVersion(4, 0))
+            if (CB::GetFeatures(ar).Check(ftrCRollState))
             {
                 bool temp;
                 ar >> temp;
@@ -435,7 +550,23 @@ void CGamDoc::SerializeScenario(CArchive& ar)
             AfxThrowArchiveException(CArchiveException::genericException);
         }
     }
-    SerializeScenarioOrGame(ar);
+    uint64_t offsetOffsetFeatureTable = UINT64_MAX;
+    SerializeScenarioOrGame(ar, offsetOffsetFeatureTable);
+
+    if (ar.IsStoring())
+    {
+        // serialize done, so write features now
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
+        {
+            ar.Flush();     // ensure GetPosition() is current
+            uint64_t offsetFeatureTable = ar.GetFile()->GetPosition();
+            ar << c_fileFeatures;
+            // write data at current file pointer before changing it
+            ar.Flush();
+            ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+            ar << offsetFeatureTable;
+        }
+    }
 
     // This code will repair a game containing extraneous ID 0 Pieces
     // in trays. It will only fix the gamebox if the actual piece is
@@ -453,12 +584,63 @@ void CGamDoc::SerializeScenario(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 // File signature already processed
-void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
+void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatureTable)
 {
     if (ar.IsStoring())
     {
+        ASSERT(fileGsnVerMajor == fileGamVerMajor &&
+                fileGsnVerMinor == fileGamVerMinor);
         ar << (BYTE)fileGsnVerMajor;
         ar << (BYTE)fileGsnVerMinor;
+
+        if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
+        {
+            // leave space for pointer to feature list at end of file
+            ar.Flush();     // ensure GetPosition() is current
+            offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
+            ar << uint64_t(0);
+
+            // initialize feature list
+            c_fileFeatures = GetCBForcedFeatures();
+            /* these features are global in the sense that, if
+                any ID needs 32 bits, then we store all IDs in
+                32 bit format */
+            if (GetBoardManager()->Needs32BitIDs() ||
+                GetTileManager()->Needs32BitIDs() ||
+                GetPieceManager()->Needs32BitIDs() ||
+                GetMarkManager()->Needs32BitIDs())
+            {
+                if (!GetCBFeatures().Check(ftrId32Bit))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+                c_fileFeatures.Add(ftrId32Bit);
+            }
+            if (GetPieceManager()->Needs100SidePieces())
+            {
+                if (!GetCBFeatures().Check(ftrPiece100Sides))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+                c_fileFeatures.Add(ftrPiece100Sides);
+            }
+            /* TODO:  Check all size_t for 64bit vals.  For now,
+                        use unless forbidden */
+            if (GetCBFeatures().Check(ftrSizet64Bit))
+            {
+                c_fileFeatures.Add(ftrSizet64Bit);
+            }
+        }
+        else if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(4, 0) ||
+            NumVersion(fileGsnVerMajor, fileGsnVerMinor) == NumVersion(104, 5)) {
+            c_fileFeatures = GetCBFile4Features();
+        }
+        else
+        {
+            ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(3, 10));
+            c_fileFeatures = Features();
+        }
+
         ar << (BYTE)progVerMajor;
         ar << (BYTE)progVerMinor;
 
@@ -525,6 +707,41 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
 
         ar >> verMajor;
         ar >> verMinor;
+
+        Features fileFeatures;
+        if (NumVersion(verMajor, verMinor) >= NumVersion(5, 0))
+        {
+            try
+            {
+                ar.Flush();     // ensure GetPosition() is current
+                offsetOffsetFeatureTable = ar.GetFile()->GetPosition();
+                uint64_t offsetFeatureTable;
+                ar >> offsetFeatureTable;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetFeatureTable), CFile::begin);
+                ar >> fileFeatures;
+                ar.Flush();
+                ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
+                uint64_t dummy;
+                ar >> dummy;
+                ASSERT(dummy == offsetFeatureTable);
+            }
+            catch (...)
+            {
+                ASSERT(!"exception");
+                // report file too new
+                verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
+            }
+        }
+        else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
+        {
+            fileFeatures = GetCBFile4Features();
+        }
+        else
+        {
+            ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
+        }
+
         if (NumVersion(verMajor, verMinor) >
             NumVersion(fileGsnVerMajor, fileGsnVerMinor) &&
             // file 3.90 is the same as 3.10
@@ -543,6 +760,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar)
         }
         m_nLoadedFileVersion = NumVersion(verMajor, verMinor);
         SetLoadingVersion(m_nLoadedFileVersion);
+        SetFileFeatures(std::move(fileFeatures));
 
         BYTE byteBucket;        // Place to dump unused bytes
         ar >> byteBucket;       // Eat the program version

@@ -1,6 +1,6 @@
 // Pieces.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -268,6 +268,18 @@ void CPieceManager::RemovePieceIDFromPieceSets(PieceID pid)
     ASSERT(FALSE);
 }
 
+bool CPieceManager::Needs100SidePieces() const
+{
+    for (size_t i = size_t(0) ; i < m_pPieceTbl.GetSize() ; ++i)
+    {
+        if (m_pPieceTbl[static_cast<PieceID>(i)].GetSides() > size_t(2))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CPieceManager::Serialize(CArchive& ar)
 {
     typedef XxxxIDTable<PieceID, PieceDef_v310,
@@ -277,11 +289,19 @@ void CPieceManager::Serialize(CArchive& ar)
 
     if (ar.IsStoring())
     {
+        if (Needs100SidePieces())
+        {
+            if (!GetCBFeatures().Check(ftrPiece100Sides))
+            {
+                AfxThrowArchiveException(CArchiveException::badSchema);
+            }
+            CB::AddFeature(ar, ftrPiece100Sides);
+        }
         ar << m_wReserved1;
         ar << m_wReserved2;
         ar << m_wReserved3;
         ar << m_wReserved4;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             PieceIDTable_v310 temp;
             temp.ResizeTable(m_pPieceTbl.GetSize(), &PieceDef_v310::SetEmpty);
@@ -304,7 +324,7 @@ void CPieceManager::Serialize(CArchive& ar)
         ar >> m_wReserved2;
         ar >> m_wReserved3;
         ar >> m_wReserved4;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             PieceIDTable_v310 temp;
             ar >> temp;
@@ -327,7 +347,7 @@ void CPieceManager::SerializePieceSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumPieceSets());
         }
@@ -341,7 +361,7 @@ void CPieceManager::SerializePieceSets(CArchive& ar)
     else
     {
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;
@@ -415,7 +435,7 @@ void PieceDef::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             ASSERT(!"dead code");
             PieceDef_v310 temp(*this);
@@ -429,7 +449,7 @@ void PieceDef::Serialize(CArchive& ar)
     }
     else
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrPiece100Sides))
         {
             ASSERT(!"dead code");
             PieceDef_v310 temp;

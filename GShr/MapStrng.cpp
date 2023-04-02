@@ -1,6 +1,6 @@
 // MapStrng.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -160,6 +160,11 @@ void GameElement64::Serialize(CArchive& ar) const
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    // piece-100-sides can't fit in GameElement32, so use GameElement64
+    if (CB::GetFeatures(ar).Check(ftrPiece100Sides))
+    {
+        fileIDSize = 4;
+    }
     switch (fileIDSize)
     {
         case 2:
@@ -186,6 +191,11 @@ void GameElement64::Serialize(CArchive& ar)
         AfxThrowArchiveException(CArchiveException::readOnly);
     }
     size_t fileIDSize = GetXxxxIDSerializeSize<decltype(u.pieceElement.pid)>(ar);
+    // piece-100-sides can't fit in GameElement32, so use GameElement64
+    if (CB::GetFeatures(ar).Check(ftrPiece100Sides))
+    {
+        fileIDSize = 4;
+    }
     switch (fileIDSize)
     {
         case 2:

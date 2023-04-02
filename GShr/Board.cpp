@@ -788,7 +788,7 @@ void CBoardManager::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumBoards());
         }
@@ -821,14 +821,13 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
         size_t count;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp;
             count = wTmp;
         }
         else
         {
-            ASSERT(CB::GetVersion(ar) == NumVersion(4, 0));
             count = CB::ReadCount(ar);
         }
         reserve(count);

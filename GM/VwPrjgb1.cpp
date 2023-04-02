@@ -150,6 +150,7 @@ void CGbxProjView::DoBoardClone()
         CMemFile file;
         CArchive arSave(&file, CArchive::store);
         arSave.m_pDocument = pDoc;
+        SetFileFeaturesGuard setFileFeaturesGuard(arSave, GetCBFeatures());
         pOrigBoard.Serialize(arSave);      // Make a copy of the board
         arSave.Close();
 

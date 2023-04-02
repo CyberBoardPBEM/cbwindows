@@ -93,6 +93,7 @@ public:
 
     size_t  AddElement(BoardID nBoardSerialNum, Rotation90 rot);
 
+    bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
     std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;

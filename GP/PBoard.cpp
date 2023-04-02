@@ -1,6 +1,6 @@
 // PBoard.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -302,6 +302,11 @@ bool CPlayBoard::Compare(const CPlayBoard& pBrd) const
     return m_pIndList->Compare(*pBrd.m_pIndList);
 }
 
+bool CPlayBoard::NeedsGeoRotate() const
+{
+    return m_pGeoBoard && m_pGeoBoard->NeedsGeoRotate();
+}
+
 void CPlayBoard::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
@@ -357,7 +362,7 @@ void CPlayBoard::Serialize(CArchive& ar)
         ASSERT(m_pIndList != NULL);
         m_pIndList->Serialize(ar);  // Board's indicator list
 
-        if (CB::GetVersion(ar) < NumVersion(4, 0))
+        if (!CB::GetFeatures(ar).Check(ftrPrivatePlayerBoard))
         {
             if (m_bPrivate)
             {
@@ -495,7 +500,7 @@ void CPlayBoard::Serialize(CArchive& ar)
         m_pIndList = MakeOwner<CDrawList>();
         m_pIndList->Serialize(ar);  // Board's indicator list
 
-        if (CB::GetVersion(ar) < NumVersion(4, 0))
+        if (!CB::GetFeatures(ar).Check(ftrPrivatePlayerBoard))
         {
             m_bPrivate = false;
         }
@@ -788,7 +793,7 @@ void CPBoardManager::Serialize(CArchive& ar)
         ar << m_wReserved3;
         ar << m_wReserved4;
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumPBoards());
         }
@@ -796,6 +801,37 @@ void CPBoardManager::Serialize(CArchive& ar)
         {
             CB::WriteCount(ar, GetNumPBoards());
         }
+
+        /* if any CPBoard needs Feature "private-player-board"
+            or Feature "geo-rotate-unit", all must use that new
+            feature */
+        for (const OwnerPtr<CPlayBoard>& board : *this)
+        {
+            if (board->IsPrivate())
+            {
+                if (GetCBFeatures().Check(ftrPrivatePlayerBoard))
+                {
+                    CB::AddFeature(ar, ftrPrivatePlayerBoard);
+                }
+                // else will be checked by CPBoard::Serialize
+            }
+            if (board->NeedsGeoRotate())
+            {
+                if (GetCBFeatures().Check(ftrGeoRotateUnit))
+                {
+                    CB::AddFeature(ar, ftrGeoRotateUnit);
+                }
+                // else will be checked by CGeoBoardElement::Serialize
+            }
+
+            const Features& fs = CB::GetFeatures(ar);
+            if (fs.Check(ftrPrivatePlayerBoard) &&
+                fs.Check(ftrGeoRotateUnit))
+            {
+                break;
+            }
+        }
+
         for (size_t i = size_t(0); i < GetNumPBoards(); i++)
             GetPBoard(i).Serialize(ar);
     }
@@ -814,7 +850,7 @@ void CPBoardManager::Serialize(CArchive& ar)
         ar >> m_wReserved3;
         ar >> m_wReserved4;
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD tmp;
             ar >> tmp;

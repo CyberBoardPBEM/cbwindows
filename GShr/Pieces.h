@@ -1,6 +1,6 @@
 // Pieces.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -174,6 +174,13 @@ public:
     void DeletePieceSet(size_t nPSet, CGameElementStringMap* mapStrings = NULL);
     void Clear();
     // ---------- //
+    bool Needs32BitIDs() const
+    {
+        return m_pPieceTbl.GetSize() >= size_t(0xFFFF);
+    }
+private:
+    bool Needs100SidePieces() const;
+public:
     void Serialize(CArchive& ar);
     void SerializePieceSets(CArchive& ar);
 // Implementation

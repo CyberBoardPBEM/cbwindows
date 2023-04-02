@@ -1,6 +1,6 @@
 // Tile.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -267,6 +267,10 @@ public:
     void CreateTilesFromTileImageArchive(CArchive& ar, size_t nTSet,
             std::vector<TileID>* pTidTbl  = NULL, size_t nPos = Invalid_v<size_t>);
     // ---------- //
+    bool Needs32BitIDs() const
+    {
+        return m_pTileTbl.GetSize() >= size_t(0xFFFF);
+    }
     void Serialize(CArchive& archive);
     void SerializeTileSets(CArchive& ar);
     void SerializeTileSheets(CArchive& ar);

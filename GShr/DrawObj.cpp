@@ -1,6 +1,6 @@
 // DrawObj.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -821,7 +821,7 @@ void CPolyObj::Serialize(CArchive& ar)
         ar << (DWORD)m_crFill;
         ar << (DWORD)m_crLine;
         ar << (WORD)m_nLineWidth;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(m_Pnts.size());
         }
@@ -839,7 +839,7 @@ void CPolyObj::Serialize(CArchive& ar)
         ar >> dwTmp; m_crFill = (COLORREF)dwTmp;
         ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
         ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp; m_Pnts.resize(wTmp);
         }
@@ -2318,7 +2318,7 @@ void CDrawList::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(size());
         }
@@ -2345,7 +2345,7 @@ void CDrawList::Serialize(CArchive& ar)
     {
         clear();
         size_t count;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD wCount;
             ar >> wCount;

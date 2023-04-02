@@ -1,6 +1,6 @@
 // MapStrng.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -732,7 +732,7 @@ public:
     {
         if (ar.IsStoring())
         {
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 uint32_t dwCount = value_preserving_cast<uint32_t>(this->GetCount());
                 ar << dwCount;
@@ -755,7 +755,7 @@ public:
         {
             this->RemoveAll();
             size_t count;
-            if (CB::GetVersion(ar) <= NumVersion(3, 90))
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
             {
                 uint32_t dwCount;
                 ar >> dwCount;

@@ -259,7 +259,7 @@ void CMarkManager::SerializeMarkSets(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetNumMarkSets());
         }
@@ -273,7 +273,7 @@ void CMarkManager::SerializeMarkSets(CArchive& ar)
     else
     {
         size_t wSize;
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             WORD temp;
             ar >> temp;

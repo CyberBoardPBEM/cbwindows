@@ -196,6 +196,8 @@ public:
     static CFontTbl* GetFontManager() { return &m_fontTbl; }
     // Version of file being loaded
     static int c_fileVersion;
+    // load and save can't be simultaneous, so use for both
+    static Features c_fileFeatures;
 
 // Attributes
 public:
@@ -204,6 +206,9 @@ public:
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
     using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
     static int GetLoadingVersion() { return c_fileVersion; }
+    static void SetFileFeatures(Features&& feat) noexcept { c_fileFeatures = std::move(feat); }
+    static void SetFileFeatures(const Features& feat) { SetFileFeatures(Features(feat)); }
+    static const Features& GetFileFeatures() { return c_fileFeatures; }
     // -------- //
     DWORD GetGameBoxID() { return m_dwGameID; }
     // -------- //

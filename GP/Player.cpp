@@ -64,7 +64,7 @@ void CPlayerManager::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(GetSize());
         }
@@ -81,7 +81,7 @@ void CPlayerManager::Serialize(CArchive& ar)
         size_t nCount;
         WORD wTmp;
 
-        if (CB::GetVersion(ar) <= NumVersion(3, 90))
+        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp;
             nCount = wTmp;
