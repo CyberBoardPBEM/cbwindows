@@ -31,9 +31,20 @@
 
 // *** CALCLIB.CPP *** //
 
-void Compute16ByteHash(LPBYTE pDataToHash, int nDataLen, LPBYTE p16ByteHashCode);
+std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen);
 
-void MD5Calc(MD5_CTX* ctx, const BYTE* pMsg, int nMsgLen);
+template<size_t N>
+std::array<std::byte, N> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen)
+{
+    std::array<std::byte, 16> temp = Compute16ByteHash(pDataToHash, nDataLen);
+    static_assert(N >= 16);
+    std::array<std::byte, N> retval;
+    static_assert(std::is_trivially_copyable_v<std::byte>);
+    memcpy(retval.data(), temp.data(), temp.size()*sizeof(std::byte));
+    return retval;
+}
+
+void MD5Calc(MD5_CTX* ctx, const void* pMsg, no_demote<size_t> nMsgLen);
 
 #ifdef GPLAY
 

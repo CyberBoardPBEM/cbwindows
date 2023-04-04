@@ -22,20 +22,24 @@
  **********************************************************************
  */
 
-/* typedef a 32 bit type */
-typedef unsigned long int UINT4;
-
 /* Data structure for MD5 (Message Digest) computation */
 typedef struct
 {
-    UINT4 i[2];                   /* number of _bits_ handled mod 2^64 */
-    UINT4 buf[4];                                    /* scratch buffer */
-    unsigned char in[64];                              /* input buffer */
-    unsigned char digest[16];     /* actual digest after MD5Final call */
+    uint32_t i[2];                   /* number of _bits_ handled mod 2^64 */
+    uint32_t buf[4];                                    /* scratch buffer */
+    uint8_t in[64];                              /* input buffer */
+    uint8_t digest[16];     /* actual digest after MD5Final call */
 } MD5_CTX;
 
 void MD5Init(MD5_CTX *mdContext);
-void MD5Update(MD5_CTX *mdContext, const unsigned char *inBuf, unsigned int inLen);
+void MD5Update(MD5_CTX *mdContext, const void *inBuf, no_demote<uint32_t> inLen);
+#if defined(_WIN64)
+inline void MD5Update(MD5_CTX* mdContext, const void* inBuf, no_demote<size_t> inLen)
+{
+    MD5Update(mdContext, inBuf, value_preserving_cast<uint32_t>(inLen));
+}
+#endif
+
 void MD5Final(MD5_CTX *mdContext);
 
 /*
