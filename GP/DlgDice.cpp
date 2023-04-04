@@ -273,8 +273,8 @@ void CDieRollerDlg::MakeFormattedRollResult()
                             // Seed string given. Use MD5 to hash the string
                             // for a starting seed value.
                             MD5_CTX mdContext;
-                            MD5Calc(&mdContext, reinterpret_cast<const BYTE*>(rs.m_strUserSeed.c_str()),
-                                value_preserving_cast<int>(rs.m_strUserSeed.length()));
+                            MD5Calc(&mdContext, rs.m_strUserSeed.c_str(),
+                                rs.m_strUserSeed.length());
 
                             nRandomNum = CalcRandomNumberUsingSeed(1,
                                 rs.m_tbl[i].m_nFaces,

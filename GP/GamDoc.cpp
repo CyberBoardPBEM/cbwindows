@@ -829,14 +829,13 @@ BOOL CGamDoc::OnNewGame()
 DWORD CGamDoc::CalculateHashForCurrentPlayerMask()
 {
     ASSERT(!m_strPlayerFileDescr.IsEmpty());
-    BYTE bfr1[18];
-    BYTE bfr2[16];
-    Compute16ByteHash((LPBYTE)(LPCTSTR)m_strPlayerFileDescr,
-        m_strPlayerFileDescr.GetLength(), bfr1);
-    bfr1[16] = (BYTE)(m_dwCurrentPlayer >> 8);
-    bfr1[17] = (BYTE)(m_dwCurrentPlayer & 0xFF);
-    Compute16ByteHash(bfr1, 18, bfr2);
-    return *((DWORD*)(&bfr2));
+    std::array<std::byte, 18> bfr1 =
+    Compute16ByteHash<18>((LPCTSTR)m_strPlayerFileDescr,
+        value_preserving_cast<size_t>(m_strPlayerFileDescr.GetLength()));
+    bfr1[16] = static_cast<std::byte>(m_dwCurrentPlayer >> 8);
+    bfr1[17] = static_cast<std::byte>(m_dwCurrentPlayer & 0xFF);
+    std::array<std::byte, 16> bfr2 = Compute16ByteHash(bfr1.data(), bfr1.size());
+    return *reinterpret_cast<DWORD*>(bfr2.data());
 }
 
 BOOL CGamDoc::VerifyCurrentPlayerMask()
@@ -2004,8 +2003,8 @@ void CGamDoc::OnFileCreateReferee()
     if (dlg.DoModal() != IDOK)
         return;
     MD5_CTX md5Context;
-    MD5Calc(&md5Context, (BYTE*)(LPCTSTR)dlg.m_strPassword,
-        dlg.m_strPassword.GetLength());
+    MD5Calc(&md5Context, (LPCTSTR)dlg.m_strPassword,
+        value_preserving_cast<size_t>(dlg.m_strPassword.GetLength()));
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
         AfxMessageBox(IDS_ERR_INVALID_PASSWORD);
@@ -2079,8 +2078,8 @@ void CGamDoc::OnFileChangeGameOwner()
     if (dlg.DoModal() != IDOK)
         return;
     MD5_CTX md5Context;
-    MD5Calc(&md5Context, (BYTE*)(LPCTSTR)dlg.m_strPassword,
-        dlg.m_strPassword.GetLength());
+    MD5Calc(&md5Context, (LPCTSTR)dlg.m_strPassword,
+        value_preserving_cast<size_t>(dlg.m_strPassword.GetLength()));
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
         AfxMessageBox(IDS_ERR_INVALID_PASSWORD);

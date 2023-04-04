@@ -204,20 +204,18 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR lpszPathName)
     // If the game loaded OK, check if it's password protected.
     if (bOK)
     {
-        BYTE bfr[16];
-
         // Hash the box ID and check as the internal password for
         // a gamebox that doesn't require a password.
-        Compute16ByteHash(m_abyteBoxID, 16, bfr);
-        if (memcmp(m_abytePass, bfr, 16) == 0)
+        std::array<std::byte, 16> bfr = Compute16ByteHash(m_abyteBoxID, sizeof(m_abyteBoxID));
+        if (m_abytePass == bfr)
             return bOK;
 
         // Prompt and check the password...
         CDlgGetGameboxPassword dlg;
         if (dlg.DoModal() == IDOK)
         {
-            ComputeGameboxPasskey(dlg.m_strPassword, bfr);
-            if (memcmp(bfr, m_abytePass, 16) == 0)
+            bfr = ComputeGameboxPasskey(dlg.m_strPassword);
+            if (bfr == m_abytePass)
                 return TRUE;
             AfxMessageBox(IDS_ERR_BAD_PASSWORD);
         }
@@ -620,7 +618,7 @@ void CGamDoc::Serialize(CArchive& ar)
         ar << m_strTitle;
         ar << m_strDescr;
 
-        ar.Write(m_abytePass, 16);
+        ar.Write(m_abytePass.data(), value_preserving_cast<UINT>(m_abytePass.size()));
 
         ar << (WORD)m_bStickyDrawTools;
         ar << m_wCompressLevel;
@@ -773,7 +771,7 @@ void CGamDoc::Serialize(CArchive& ar)
             ar >> m_strDescr;
 
             if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))   // V2.0
-                ar.Read(m_abytePass, 16);
+                ar.Read(m_abytePass.data(), value_preserving_cast<UINT>(m_abytePass.size()));
 
             WORD wTmp;
             ar >> wTmp; m_bStickyDrawTools = (BOOL)wTmp;
@@ -853,7 +851,7 @@ void CGamDoc::OnEditGbxProperties()
             if (dlg.m_strPassword.IsEmpty())
                 ClearGameboxPasskey();      // Disable the password (if any)
             else
-                ComputeGameboxPasskey(dlg.m_strPassword, m_abytePass);// Set the password
+                m_abytePass = ComputeGameboxPasskey(dlg.m_strPassword);// Set the password
         }
         SetModifiedFlag();
     }
@@ -862,16 +860,14 @@ void CGamDoc::OnEditGbxProperties()
 // Do an MD5 hash of the password, append the box ID and
 // hash it again. This value is the password key used to
 // allow editing of the gamebox.
-// The output buffer must be at least 16 bytes in length!
-void CGamDoc::ComputeGameboxPasskey(LPCTSTR pszPassword, LPBYTE pBfr)
+std::array<std::byte, 16> CGamDoc::ComputeGameboxPasskey(LPCTSTR pszPassword)
 {
-    BYTE bfr[32];
     CString strPassword = pszPassword;
     strPassword += KEY_PASS_POSTFIX;
 
-    Compute16ByteHash((LPBYTE)(LPCTSTR)strPassword, strPassword.GetLength(), bfr);
+    std::array<std::byte, 32> bfr = Compute16ByteHash<32>((LPCTSTR)strPassword, value_preserving_cast<size_t>(strPassword.GetLength()));
     memcpy(&bfr[16], m_abyteBoxID, 16);
-    Compute16ByteHash(bfr, 32, pBfr);
+    return Compute16ByteHash(bfr.data(), bfr.size());
 }
 
 void CGamDoc::ClearGameboxPasskey()
@@ -879,7 +875,7 @@ void CGamDoc::ClearGameboxPasskey()
     // Disable the password (if any)
     // Hash the box ID and use it as the internal password for
     // a gamebox that doesn't require a password.
-    Compute16ByteHash(m_abyteBoxID, 16, m_abytePass);
+    m_abytePass = Compute16ByteHash(m_abyteBoxID, sizeof(m_abyteBoxID));
 }
 
 void CGamDoc::OnEditCreateBoard()

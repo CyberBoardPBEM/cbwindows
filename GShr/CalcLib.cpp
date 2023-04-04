@@ -23,20 +23,26 @@
 //
 
 #include    "stdafx.h"
+
+#include    <array>
+
 #include    "GMisc.h"           // To verify prototypes
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-void Compute16ByteHash(LPBYTE pDataToHash, int nDataLen, LPBYTE p16ByteHashCode)
+std::array<std::byte, 16> Compute16ByteHash(const void* pDataToHash, no_demote<size_t> nDataLen)
 {
     MD5_CTX mdContext;
     MD5Calc(&mdContext, pDataToHash, nDataLen);
-    memcpy(p16ByteHashCode, mdContext.digest, 16);
+    std::array<std::byte, 16> retval;
+    static_assert(sizeof(retval) == sizeof(mdContext.digest));
+    memcpy(retval.data(), mdContext.digest, retval.size());
+    return retval;
 }
 
-void MD5Calc(MD5_CTX* ctx, const BYTE* pMsg, int nMsgLen)
+void MD5Calc(MD5_CTX* ctx, const void* pMsg, no_demote<size_t> nMsgLen)
 {
     MD5Init(ctx);
     MD5Update(ctx, pMsg, nMsgLen);

@@ -27,6 +27,8 @@
 #ifndef _GMDOC_H
 #define _GMDOC_H
 
+#include    <array>
+
 #ifndef     _FONT_H
 #include    "Font.h"
 #endif
@@ -267,7 +269,7 @@ public:
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 
-    void ComputeGameboxPasskey(LPCTSTR pszPassword, LPBYTE pBfr);
+    std::array<std::byte, 16> ComputeGameboxPasskey(LPCTSTR pszPassword);
     void ClearGameboxPasskey();
 
     void OnFileClose() { CDocument::OnFileClose(); }    // Expose protected
@@ -295,7 +297,7 @@ protected:
     CString         m_strAuthor;    // Game box author (<= 32 chars)
     CString         m_strTitle;     // Game box tile (<= 64 chars)
     CString         m_strDescr;     // Game box description (<= 64 chars)
-    BYTE            m_abytePass[16];// MD5 Hash of password and uuid based box ID
+    std::array<std::byte, 16> m_abytePass;// MD5 Hash of password and uuid based box ID
     WORD            m_wCompressLevel;// Amount of compression to apply to bitmaps and such
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
     LPVOID          m_pCustomColors; // Container for custom edit colors
