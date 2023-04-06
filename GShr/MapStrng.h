@@ -799,7 +799,7 @@ public:
 // and markers to tile IDs.
 
 template<typename KEY>
-class CGameElementStringMapT : public CMap< KEY, KEY, CString, const CString& >
+class CGameElementStringMapT : public CMap< KEY, KEY, CB::string, const CB::string& >
 {
 public:
     CGameElementStringMapT()
@@ -824,7 +824,7 @@ public:
             while (pos != NULL)
             {
                 KEY elem;
-                CString str;
+                CB::string str;
                 this->GetNextAssoc(pos, elem, str);
                 ar << elem;
                 ar << str;
@@ -848,7 +848,7 @@ public:
             {
                 KEY dwElem;
                 ar >> dwElem;
-                CString str;
+                CB::string str;
                 ar >> str;
                 this->SetAt(dwElem, str);
             }
@@ -862,7 +862,7 @@ public:
         POSITION pos = pMapToCopy.GetStartPosition();
         while (pos != NULL)
         {
-            CString str;
+            CB::string str;
             KEY elem;
             pMapToCopy.GetNextAssoc(pos, elem, str);
             this->SetAt(elem, str);
@@ -876,8 +876,8 @@ public:
         POSITION pos = pMapToCompare.GetStartPosition();
         while (pos != NULL)
         {
-            CString strToCompare;
-            CString strOurs;
+            CB::string strToCompare;
+            CB::string strOurs;
             KEY elem;
             pMapToCompare.GetNextAssoc(pos, elem, strToCompare);
             if (!Lookup(elem, strOurs))

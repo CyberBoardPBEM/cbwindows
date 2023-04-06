@@ -194,14 +194,14 @@ void CPieceEditDialog::SetupPieceTexts()
     m_sideTexts.resize(pDef.GetSides());
     for (size_t i = size_t(0); i < pDef.GetSides(); ++i)
     {
-        CString strText;
+        CB::string strText;
         m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, value_preserving_cast<unsigned>(i)), strText);
-        m_sideTexts[i] = strText.GetBuffer();
+        m_sideTexts[i] = strText;
     }
 
-    CString strText;
+    CB::string strText;
     m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, unsigned(0)), strText);
-    if (!strText.IsEmpty())
+    if (!strText.empty())
         m_editTextFront.SetWindowText(strText);
     m_chkSameAsTop.SetCheck(0);
 
@@ -226,7 +226,7 @@ void CPieceEditDialog::SetupPieceTexts()
     {
         size_t currSide = value_preserving_cast<size_t>(m_currSide.GetCurSel()) + size_t(1);
         ASSERT(size_t(1) <= currSide && currSide < pDef.GetSides());
-        m_editTextBack.SetWindowText(m_sideTexts[currSide].c_str());
+        m_editTextBack.SetWindowText(m_sideTexts[currSide]);
     }
     else
     {
@@ -278,7 +278,7 @@ void CPieceEditDialog::OnSelchangeNumSides()
             m_sideTexts.size() == currSides);
     if (currSides < numSides)
     {
-        std::string frontStr;
+        CB::string frontStr;
         BOOL bSameAsTop = m_chkSameAsTop.GetCheck() != 0;
         if (bSameAsTop)
         {
@@ -347,16 +347,16 @@ void CPieceEditDialog::OnOK()
     for (size_t i = size_t(0) ; i < m_sideTexts.size() ; ++i)
     {
         GameElement ge = MakePieceElement(m_pid, value_preserving_cast<unsigned>(i));
-        CString strText;
+        CB::string strText;
         if (m_chkSameAsTop.GetCheck() == 0)
         {
-            strText = m_sideTexts[i].c_str();
+            strText = m_sideTexts[i];
         }
         else
         {
-            strText = m_sideTexts[size_t(0)].c_str();
+            strText = m_sideTexts[size_t(0)];
         }
-        if (!strText.IsEmpty())
+        if (!strText.empty())
             m_pDoc->GetGameStringMap().SetAt(ge, strText);
         else
             m_pDoc->GetGameStringMap().RemoveKey(ge);
@@ -407,10 +407,10 @@ BOOL CPieceEditDialog::OnInitDialog()
     // satisfy OnSelchangeNumSides() preconditions
     m_sideTids.clear();
     m_sideTids.push_back(pPce.GetFrontTID());
-    CString strText;
+    CB::string strText;
     m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, unsigned(0)), strText);
     m_sideTexts.clear();
-    m_sideTexts.push_back(strText.GetBuffer());
+    m_sideTexts.push_back(strText);
     OnSelchangeNumSides();
 
     SetupPieceTiles();
@@ -496,7 +496,7 @@ void CPieceEditDialog::OnSelchangeCurrSide()
             SetupTileListbox(m_comboBtset, m_listBtile);
             m_listBtile.SetCurSelMapped(tid);
         }
-        m_editTextBack.SetWindowText(m_sideTexts[currSide].c_str());
+        m_editTextBack.SetWindowText(m_sideTexts[currSide]);
     }
     else
     {

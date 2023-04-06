@@ -71,7 +71,7 @@ protected:
     const std::vector<PieceID> m_tbl;     // Need to use list box.
     size_t m_prevSide = std::numeric_limits<size_t>::max();
     std::vector<TileID> m_sideTids;
-    std::vector<std::string> m_sideTexts;
+    std::vector<CB::string> m_sideTexts;
     // -------- //
     void SetupPieceTiles();
     void SetupPieceTexts();

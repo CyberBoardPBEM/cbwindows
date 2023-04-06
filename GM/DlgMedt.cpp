@@ -192,9 +192,9 @@ BOOL CMarkerEditDialog::OnInitDialog()
     m_tbl.push_back(m_mid);
     m_listMarks.SetItemMap(&m_tbl);
 
-    CString strMarkText;
+    CB::string strMarkText;
     m_pDoc->GetGameStringMap().Lookup(MakeMarkerElement(m_mid), strMarkText);
-    if (!strMarkText.IsEmpty())
+    if (!strMarkText.empty())
         m_editMarkerText.SetWindowText(strMarkText);
 
     WORD wMarkFlags = m_pMMgr->GetMark(m_mid).m_flags;

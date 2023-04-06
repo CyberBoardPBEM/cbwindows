@@ -108,7 +108,7 @@ void CGamDoc::GetPieceOwnerName(PieceID pid, CString& strName)
 
 CString CGamDoc::GetGameElementString(GameElement gelem) const
 {
-    CString str;
+    CB::string str;
     if (!m_mapStrings.Lookup(gelem, str))
         m_pGbx->GetGameBoxStringMap().Lookup(gelem, str);
     return str;
@@ -116,7 +116,7 @@ CString CGamDoc::GetGameElementString(GameElement gelem) const
 
 BOOL CGamDoc::HasGameElementString(GameElement gelem) const
 {
-    CString str;
+    CB::string str;
     if (!m_mapStrings.Lookup(gelem, str))
         return m_pGbx->GetGameBoxStringMap().Lookup(gelem, str);
     return TRUE;
