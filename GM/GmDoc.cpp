@@ -413,14 +413,14 @@ CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
 
 CString CGamDoc::GetGameElementString(GameElement gelem) const
 {
-    CString str;
+    CB::string str;
     m_mapStrings.Lookup(gelem, str);
     return str;
 }
 
 BOOL CGamDoc::HasGameElementString(GameElement gelem) const
 {
-    CString str;
+    CB::string str;
     return m_mapStrings.Lookup(gelem, str);
 }
 
