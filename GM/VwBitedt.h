@@ -110,7 +110,7 @@ public:
     void CommitCurrentText();
     void FixupTextCaret();
     void UpdateTextView();
-    void AddChar(char nChar);
+    void AddChar(wchar_t nChar);
     void DelChar();
     void UpdateFontInfo();
     // Undo support
@@ -142,7 +142,7 @@ protected:
     CPoint      m_ptText;       // Text position within bitmap
     int         m_nTxtExtent;   // Length of text in pixels
     // ------ //
-    CString     m_strText;      // Text editing.
+    CB::string  m_strText;      // Text editing.
     // ------ //
     OwnerPtr<CBitmap> m_bmMaster;     // master (current) bitmap image
     OwnerPtr<CBitmap> m_bmView;       // bitmap shown in edit window

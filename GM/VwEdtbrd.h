@@ -119,7 +119,7 @@ protected:
     void PixelToWorkspace(CPoint& point);
 
     void CreateTextDrawingObject(CPoint pnt, FontID fid, COLORREF crText,
-        CString& m_strText, BOOL bInvalidate = TRUE);
+        const CB::string& m_strText, BOOL bInvalidate = TRUE);
 
     void DoViewScale(TileScale nZoom);
     void CenterViewOnWorkspacePoint(CPoint point);

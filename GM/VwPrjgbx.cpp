@@ -34,6 +34,7 @@
 #include    "DibApi.h"          // For CopyHandle()
 
 #include    "VwPrjgbx.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -514,8 +515,7 @@ void CGbxProjView::SetButtonState(CButton& btn, UINT nStringID)
         btn.SetWindowText("");
     else
     {
-        CString str;
-        str.LoadString(nStringID);
+        CB::string str = CB::string::LoadString(nStringID);
         btn.SetWindowText(str);
     }
     btn.EnableWindow(nStringID != 0);
@@ -578,12 +578,11 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     m_listProj.ResetContent();
 
     // Document type....
-    CString str;
-    str.LoadString(IDS_PHEAD_DOCTYPE);
+    CB::string str = CB::string::LoadString(IDS_PHEAD_DOCTYPE);
     m_listProj.AddItem(grpDoc, str);
 
     // Boards....
-    str.LoadString(IDS_PHEAD_BOARDS);
+    str = CB::string::LoadString(IDS_PHEAD_BOARDS);
     m_listProj.AddItem(grpBHdr, str);
 
     CBoardManager* pBMgr = pDoc->GetBoardManager();
@@ -598,15 +597,15 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         str = pBMgr->GetBoard(i).GetName().mfc_str();
         if (bDisplayIDs)
         {
-            CString strTmp = str;
-            str.Format("[%u] %s",
-                value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(pBMgr->GetBoard(i).GetSerialNumber())), (LPCTSTR)strTmp);
+            CB::string strTmp = std::move(str);
+            str = std::format(L"[{}] {}",
+                pBMgr->GetBoard(i).GetSerialNumber(), strTmp);
         }
         m_listProj.AddItem(grpBrd, str, i);
     }
 
     // Tiles....
-    str.LoadString(IDS_PHEAD_TILES);
+    str = CB::string::LoadString(IDS_PHEAD_TILES);
     m_listProj.AddItem(grpTHdr, str);
 
     CTileManager* pTMgr = pDoc->GetTileManager();
@@ -615,7 +614,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         m_listProj.AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
 
     // Pieces....
-    str.LoadString(IDS_PHEAD_PIECES);
+    str = CB::string::LoadString(IDS_PHEAD_PIECES);
     m_listProj.AddItem(grpPHdr, str);
 
     CPieceManager* pPMgr = pDoc->GetPieceManager();
@@ -624,7 +623,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         m_listProj.AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
 
     // Marks....
-    str.LoadString(IDS_PHEAD_MARKS);
+    str = CB::string::LoadString(IDS_PHEAD_MARKS);
     m_listProj.AddItem(grpMHdr, str);
 
     CMarkManager* pMMgr = pDoc->GetMarkManager();
@@ -1018,10 +1017,8 @@ void CGbxProjView::OnProjectSaveTileFile()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    CString strFilter;
-    strFilter.LoadString(IDS_GTL_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_SEL_SAVETILELIBRARY);
+    CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_SEL_SAVETILELIBRARY);
 
     CFileDialog dlg(FALSE, FILEEXT_GTLB, NULL, OFN_HIDEREADONLY |
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
@@ -1078,10 +1075,8 @@ void CGbxProjView::OnProjectLoadTileFile()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    CString strFilter;
-    strFilter.LoadString(IDS_GTL_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_SEL_LOADTILELIBRARY);
+    CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_SEL_LOADTILELIBRARY);
 
     CFileDialog dlg(TRUE, FILEEXT_GTLB, NULL,
         OFN_HIDEREADONLY|OFN_PATHMUSTEXIST, strFilter, NULL, 0);
@@ -1096,8 +1091,7 @@ void CGbxProjView::OnProjectLoadTileFile()
     if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
         &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, CB::string(dlg.GetPathName()));
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return;
     }

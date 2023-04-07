@@ -762,7 +762,7 @@ void CBitEditView::FixupTextCaret()
 void CBitEditView::CommitCurrentText()
 {
     SetMasterImageFromViewImage();
-    m_strText.Empty();
+    m_strText.clear();
 }
 
 void CBitEditView::UpdateTextView()
@@ -783,7 +783,7 @@ void CBitEditView::UpdateTextView()
         g_gt.mDC1.SetBkMode(TRANSPARENT);
 
         g_gt.mDC1.TextOut(m_ptText.x, m_ptText.y, m_strText);
-        CSize size = g_gt.mDC1.GetTextExtent(m_strText, m_strText.GetLength());
+        CSize size = g_gt.mDC1.GetTextExtent(m_strText);
         m_nTxtExtent = size.cx;
 
         g_gt.mDC1.SelectObject(pPrvFont);
@@ -795,7 +795,7 @@ void CBitEditView::UpdateTextView()
     FixupTextCaret();
 }
 
-void CBitEditView::AddChar(char nChar)
+void CBitEditView::AddChar(wchar_t nChar)
 {
     if (CRect(CPoint(0, 0), m_size).PtInRect(m_ptCaret))
     {
@@ -806,9 +806,9 @@ void CBitEditView::AddChar(char nChar)
 
 void CBitEditView::DelChar()
 {
-    if (m_strText.GetLength() > 0)
+    if (!m_strText.empty())
     {
-        m_strText = m_strText.Left(m_strText.GetLength() - 1);
+        m_strText.resize(m_strText.a_size() - size_t(1));
         UpdateTextView();
     }
 }
@@ -859,7 +859,10 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if (m_nCurToolID == ID_ITOOL_TEXT)
     {
         if (nChar != VK_BACK)
-            AddChar(value_preserving_cast<char>(nChar));
+{
+ASSERT(nChar < 0x7f || !"non-ascii needs work");
+            AddChar(value_preserving_cast<wchar_t>(nChar));
+}
         else
             DelChar();
     }
@@ -900,7 +903,7 @@ void CBitEditView::RestoreUndoToView()
     ClearPasteImage();
 
     SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
-    m_strText.Empty();
+    m_strText.clear();
     m_bmView = CloneBitmap(*m_listUndo.front());
     m_listUndo.pop_front();
 }
