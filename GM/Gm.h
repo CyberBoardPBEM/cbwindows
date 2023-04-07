@@ -39,10 +39,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // Our clipboard formats
 
-extern UINT CF_TILEIMAGES;      // Dword count, dword small colorref, full Dib,
+extern const UINT CF_TILEIMAGES;      // Dword count, dword small colorref, full Dib,
                                 // half Dib, repeat...
-extern UINT CF_TIDLIST;         // dword count followed array of DWORDS.
-extern UINT CF_GBOXID;          // dword gameboxid, dword cur process id
+extern const UINT CF_TIDLIST;         // dword count followed array of DWORDS.
+extern const UINT CF_GBOXID;          // dword gameboxid, dword cur process id
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +88,7 @@ public:
     void DoHelpShellLaunch();
     void DoHelpContents();
     void DoHelpContext(uintptr_t dwContextData);
-    void DoHelpTopic(LPCTSTR pszTopic);
+    void DoHelpTopic(const CB::string& pszTopic);
     BOOL DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray);
     void DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray);
 

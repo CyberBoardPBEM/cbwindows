@@ -438,7 +438,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
     CTEXT           "CyberBoard Designer Program",IDC_STATIC,43,8,132,8
-    CTEXT           "Copyright © 1994-2022 by Dale L. Larson",IDC_STATIC,35,40,147,8
+    CTEXT           "Copyright © 1994-2023 by Dale L. Larson && William Su",IDC_STATIC,23,40,172,8
     DEFPUSHBUTTON   "OK",IDOK,92,89,32,14,WS_GROUP
     CTEXT           "All Rights Reserved",IDC_STATIC,43,50,132,8
     CTEXT           "Program Version - ???????",IDC_D_ABOUT_VERSION,43,18,132,8
@@ -1226,8 +1226,8 @@ BEGIN
     IDS_ERR_TILESETNAME     "You must provide a unique name for tile groups."
     IDS_ERR_PIECESETNAME    "You must provide a unique piece group name."
     IDS_ERR_MARKERSETNAME   "You must provide a unique marker group name."
-    IDP_PROGVER             "Program Version - %1.%2"
-    IDP_FILEVER             "GBX File Version - %1.%2"
+    IDP_PROGVER             "Program Version - {}.{:02}"
+    IDP_FILEVER             "GBX File Version - {}.{}"
 END
 
 STRINGTABLE

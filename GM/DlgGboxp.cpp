@@ -28,6 +28,7 @@
 #include    "DlgGboxp.h"
 #include    "zlib.h"
 #include    "DlgSpass.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

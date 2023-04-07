@@ -96,36 +96,36 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
 
-static char szSectSettings[] = "Settings";
-static char szSectDisableHtmlHelp[] = "DisableHtmlHelp";
+static const CB::string szSectSettings = "Settings";
+static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
 const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
 
-UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages");
-UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList");
-UINT CF_GBOXID = RegisterClipboardFormat("cfCyberBoardGameBoxID");
+const UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages");
+const UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList");
+const UINT CF_GBOXID = RegisterClipboardFormat("cfCyberBoardGameBoxID");
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const char HELP_TIP_CONTEXT_FILE[] = "::/gmcontext.txt";
-static const char HELP_FILE[] = "cboard.chm";
+static const CB::string HELP_TIP_CONTEXT_FILE = "::/gmcontext.txt";
+static const CB::string HELP_FILE = "cboard.chm";
 
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys to delete...
 
-static const TCHAR szGbxShellNew[] = ".gbx\\ShellNew";
+static const CB::string szGbxShellNew = ".gbx\\ShellNew";
 
-static const TCHAR szPrint[]        = "print";
-static const TCHAR szPrintTo[]      = "printto";
-static const TCHAR szGameBox[]      = "CyberBoardGameBox";
+static const CB::string szPrint        = "print";
+static const CB::string szPrintTo      = "printto";
+static const CB::string szGameBox      = "CyberBoardGameBox";
 // std::format() requires constant expression format string
 static constexpr const wchar_t* szShell        = L"{}\\shell\\{}";
 static constexpr const wchar_t* szShellCommand = L"{}\\shell\\{}\\command";
 static constexpr const wchar_t* szShellDdeexec = L"{}\\shell\\{}\\ddeexec";
 
-static void DeletePrintKeys(LPCTSTR szFileClass);
+static void DeletePrintKeys(const CB::string& szFileClass);
 
 /////////////////////////////////////////////////////////////////////////////
 // CGmApp
@@ -145,7 +145,7 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
+static void DeletePrintStyleKeys(const CB::string& szFileClass, const CB::string& szPrintStyle)
 {
     CB::string szKeyBfr = std::format(szShellCommand, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
@@ -155,7 +155,7 @@ static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
 }
 
-static void DeletePrintKeys(LPCTSTR szFileClass)
+static void DeletePrintKeys(const CB::string& szFileClass)
 {
     DeletePrintStyleKeys(szFileClass, szPrint);
     DeletePrintStyleKeys(szFileClass, szPrintTo);
@@ -231,19 +231,18 @@ BOOL CGmApp::InitInstance()
 
     if (m_pszHelpFilePath != NULL)
     {
-        char buff[_MAX_PATH];
-        strcpy(buff, m_pszHelpFilePath);
+        CB::string buff = m_pszHelpFilePath;
 
-        char *dip = strrchr(buff, '\\');
-        if (dip != NULL)
+        no_demote<size_t> dip = buff.rfind('\\');
+        if (dip != CB::string::npos)
         {
             dip++;
-            *dip = '\0';
-            strcat(buff, HELP_FILE);
-            if (_access(buff, 4) == 0)
+            buff.resize(dip);
+            buff += HELP_FILE;
+            if (_waccess(buff, 4) == 0)
             {
-                free((char*)m_pszHelpFilePath);
-                m_pszHelpFilePath = _strdup(buff);
+                free(const_cast<LPTSTR>(m_pszHelpFilePath));
+                m_pszHelpFilePath = _tcsdup(buff);
             }
         }
     }
@@ -379,14 +378,14 @@ void CGmApp::DoHelpContext(uintptr_t dwContextData)
         ::HtmlHelp(0, m_pszHelpFilePath, HH_HELP_CONTEXT, dwContextData);
 }
 
-void CGmApp::DoHelpTopic(LPCTSTR pszTopic)
+void CGmApp::DoHelpTopic(const CB::string& pszTopic)
 {
     if (m_bDisableHtmlHelp)
         return;
-    CString strHelpPath = m_pszHelpFilePath;
+    CB::string strHelpPath = m_pszHelpFilePath;
     strHelpPath += "::/";
     strHelpPath += pszTopic;
-    TRACE1("HtmlHelp Topic: %s\n", (LPCTSTR)strHelpPath);
+    CPP20_TRACE("HtmlHelp Topic: {}\n", strHelpPath);
     ::HtmlHelp(0, strHelpPath, HH_DISPLAY_TOPIC, NULL);
 }
 
@@ -398,7 +397,7 @@ BOOL CGmApp::DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray)
         return TRUE;                            // Ignore static controls
     if (pHelpInfo->iContextType == HELPINFO_WINDOW)
     {
-        CString strHelpPath = m_pszHelpFilePath;
+        CB::string strHelpPath = m_pszHelpFilePath;
         strHelpPath += HELP_TIP_CONTEXT_FILE;
         return ::HtmlHelp((HWND)pHelpInfo->hItemHandle,
             strHelpPath, HH_TP_HELP_WM_HELP, reinterpret_cast<uintptr_t>(dwIDArray)) != NULL;
@@ -414,7 +413,7 @@ void CGmApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
         return;                                     // Ignore static controls
     if (pWndCtrl->GetDlgCtrlID() == 0)
         return;                                     // Ignore windows with no ID
-    CString strHelpPath = m_pszHelpFilePath;
+    CB::string strHelpPath = m_pszHelpFilePath;
     strHelpPath += HELP_TIP_CONTEXT_FILE;
     ::HtmlHelp(pWndCtrl->GetSafeHwnd(), strHelpPath,
         HH_TP_HELP_CONTEXTMENU, reinterpret_cast<uintptr_t>(dwIDArray));
@@ -562,25 +561,17 @@ void CGmApp::OnAppAbout()
 }
 
 #ifdef _DEBUG
-static char szGenDate[] = __DATE__;
+static const char szGenDate[] = __DATE__;
 #endif
 
 BOOL CAboutDlg::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    char szNum1[20];
-    char szNum2[20];
-    CString str;
 
-    _itoa(progVerMajor, szNum1, 10);
-    _itoa(progVerMinor + 100, szNum2, 10);
-
-    AfxFormatString2(str, IDP_PROGVER, szNum1, szNum2 + 1);
+    CB::string str = CB::string::Format(IDP_PROGVER, progVerMajor, progVerMinor);
     m_staticProgVer.SetWindowText(str);
 
-    _itoa(fileGbxVerMajor, szNum1, 10);
-    _itoa(fileGbxVerMinor, szNum2, 10);
-    AfxFormatString2(str, IDP_FILEVER, szNum1, szNum2);
+    str = CB::string::Format(IDP_FILEVER, fileGbxVerMajor, fileGbxVerMinor);
     m_staticFileVer.SetWindowText(str);
 #ifdef _DEBUG
     m_staticGenDate.SetWindowText(szGenDate);
@@ -598,15 +589,13 @@ BOOL CAboutDlg::OnInitDialog()
 
 void CGmApp::OnHelpWebsite()
 {
-    CString strUrl;
-    strUrl.LoadString(IDS_URL_CB_WEBSITE);
+    CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CGmApp::OnHelpReleases()
 {
-    CString strUrl;
-    strUrl.LoadString(IDS_URL_CB_RELEASES);
+    CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
