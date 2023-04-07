@@ -112,8 +112,7 @@ void CGbxProjView::DoBoardDelete()
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
     CB::string strTitle = m_listProj.GetItemText(nSel);
-    CString strPrompt;
-    AfxFormatString1(strPrompt, IDP_DELETEBOARD, strTitle);
+    CB::string strPrompt = AfxFormatString1(IDP_DELETEBOARD, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
     {
         CGmBoxHint hint;
@@ -161,8 +160,7 @@ void CGbxProjView::DoBoardClone()
 
         // We have a copy of the board. Now just change it's name
         // and give it a new serial number.
-        CString strNewName;
-        strNewName.LoadString(IDS_COPY_OF);
+        CB::string strNewName = CB::string::LoadString(IDS_COPY_OF);
         strNewName += pNewBoard->GetName();
         pNewBoard->SetName(strNewName);
         pNewBoard->SetSerialNumber(pBMgr->IssueSerialNumber());
@@ -263,8 +261,7 @@ void CGbxProjView::DoTileGroupDelete()
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CB::string strTitle = m_listProj.GetItemText(nSel);
-    CString strPrompt;
-    AfxFormatString1(strPrompt, IDP_DELETETILESET, strTitle);
+    CB::string strPrompt = AfxFormatString1(IDP_DELETETILESET, strTitle);
 
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
     {
@@ -479,8 +476,7 @@ void CGbxProjView::DoPieceGroupDelete()
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CB::string strTitle = m_listProj.GetItemText(nSel);
-    CString strPrompt;
-    AfxFormatString1(strPrompt, IDP_DELETEPIECESET, strTitle);
+    CB::string strPrompt = AfxFormatString1(IDP_DELETEPIECESET, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
     {
         pDoc->GetPieceManager()->DeletePieceSet(nGrp, &pDoc->GetGameStringMap());
@@ -677,8 +673,7 @@ void CGbxProjView::DoMarkGroupDelete()
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
     CB::string strTitle = m_listProj.GetItemText(nSel);
-    CString strPrompt;
-    AfxFormatString1(strPrompt, IDP_DELETEMARKSET, strTitle);
+    CB::string strPrompt = AfxFormatString1(IDP_DELETEMARKSET, strTitle);
     if (AfxMessageBox(strPrompt, MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
     {
         pDoc->GetMarkManager()->DeleteMarkSet(nGrp, &pDoc->GetGameStringMap());

@@ -233,7 +233,7 @@ BOOL CGmApp::InitInstance()
     {
         CB::string buff = m_pszHelpFilePath;
 
-        no_demote<size_t> dip = buff.rfind('\\');
+        size_t dip = buff.rfind('\\');
         if (dip != CB::string::npos)
         {
             dip++;

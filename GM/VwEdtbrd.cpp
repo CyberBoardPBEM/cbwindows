@@ -1085,7 +1085,7 @@ void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
 }
 
 void CBrdEditView::CreateTextDrawingObject(CPoint pnt, FontID fid,
-    COLORREF crText, CString& strText, BOOL bInvalidate /* = TRUE */)
+    COLORREF crText, const CB::string& strText, BOOL bInvalidate /* = TRUE */)
 {
     {
         OwnerPtr<CText> pText = MakeOwner<CText>();
@@ -1525,9 +1525,9 @@ void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            std::string str = pba.GetCellNumberStr(point, m_nZoom);
+            CB::string str = pba.GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
-            pCmdUI->SetText(str.c_str());
+            pCmdUI->SetText(str);
         }
     }
 }
@@ -1625,10 +1625,8 @@ void CBrdEditView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnEditPasteBitmapFromFile()
 {
-    CString strFilter;
-    strFilter.LoadString(IDS_BMP_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_SEL_BITMAPFILE);
+    CB::string strFilter = CB::string::LoadString(IDS_BMP_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_SEL_BITMAPFILE);
 
     CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_PATHMUSTEXIST,
         strFilter, NULL, 0);
@@ -1643,8 +1641,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
         &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
