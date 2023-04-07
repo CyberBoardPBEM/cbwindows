@@ -36,9 +36,9 @@ public:
     enum { IDD = IDD_GBOXPROP };
     CComboBox   m_comboCompress;
     CEdit   m_editAuthor;
-    CString m_strAuthor;
-    CString m_strDescr;
-    CString m_strTitle;
+    CB::string m_strAuthor;
+    CB::string m_strDescr;
+    CB::string m_strTitle;
     //}}AFX_DATA
     BOOL    m_bPropEdit;        // Set to true is editing existing props
     int     m_nCompressLevel;

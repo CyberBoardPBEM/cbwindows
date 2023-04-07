@@ -68,12 +68,12 @@ void CGbxProjView::DoGbxProperty()
 void CGbxProjView::DoUpdateGbxInfo()
 {
     CGamDoc* pDoc = GetDocument();
-    CString str;
-    if (!pDoc->m_strTitle.IsEmpty())
+    CB::string str;
+    if (!pDoc->m_strTitle.empty())
         str += "TITLE: " + pDoc->m_strTitle + "\r\n\r\n";
-    if (!pDoc->m_strAuthor.IsEmpty())
+    if (!pDoc->m_strAuthor.empty())
         str += "AUTHOR: " + pDoc->m_strAuthor + "\r\n\r\n";
-    if (!pDoc->m_strDescr.IsEmpty())
+    if (!pDoc->m_strDescr.empty())
         str += "DESCRIPTION:\r\n\r\n" + pDoc->m_strDescr;
     m_editInfo.SetWindowText(str);
 }

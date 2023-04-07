@@ -226,7 +226,7 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR lpszPathName)
     return bOK;
 }
 
-BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
+BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
 {
     // Make sure tile edits are saved.
     UpdateAllViews(NULL, HINT_FORCETILEUPDATE, NULL);
@@ -295,7 +295,7 @@ void CGamDoc::SetCustomColors(LPVOID pCustColors)
 ///////////////////////////////////////////////////////////////////////
 // Support for new unique views on this document
 
-BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
+BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
     LPVOID lpvCreateParam)
 {
     CMDIChildWndEx* pNewFrame
@@ -303,7 +303,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
     if (pNewFrame == NULL)
         return FALSE;               // Not created
     ASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
-    CString str = GetTitle();
+    CB::string str = GetTitle();
     str += " - ";
     str += pszTitle;
     pNewFrame->SetWindowText(str);
@@ -411,7 +411,7 @@ CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
 ////////////////////////////////////////////////////////////////////////////
 // Support for strings associated with game elements (pieces, markers)
 
-CString CGamDoc::GetGameElementString(GameElement gelem) const
+CB::string CGamDoc::GetGameElementString(GameElement gelem) const
 {
     CB::string str;
     m_mapStrings.Lookup(gelem, str);
@@ -755,7 +755,7 @@ void CGamDoc::Serialize(CArchive& ar)
                 ar >> m_dwGameID;
             else
             {
-                CString str;            // Create an ID based on old name
+                CB::string str;            // Create an ID based on old name
                 ar >> str;
                 m_dwGameID = GetStringHash(str);
             }
@@ -857,12 +857,14 @@ void CGamDoc::OnEditGbxProperties()
 // Do an MD5 hash of the password, append the box ID and
 // hash it again. This value is the password key used to
 // allow editing of the gamebox.
-std::array<std::byte, 16> CGamDoc::ComputeGameboxPasskey(LPCTSTR pszPassword)
+std::array<std::byte, 16> CGamDoc::ComputeGameboxPasskey(const CB::string& pszPassword)
 {
-    CString strPassword = pszPassword;
+    CB::string strPassword = pszPassword;
     strPassword += KEY_PASS_POSTFIX;
 
-    std::array<std::byte, 32> bfr = Compute16ByteHash<32>((LPCTSTR)strPassword, value_preserving_cast<size_t>(strPassword.GetLength()));
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    std::array<std::byte, 32> bfr = Compute16ByteHash<32>(strPassword.a_str(), strPassword.a_size());
     memcpy(&bfr[16], m_abyteBoxID, 16);
     return Compute16ByteHash(bfr.data(), bfr.size());
 }

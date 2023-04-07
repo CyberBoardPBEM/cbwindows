@@ -203,7 +203,7 @@ public:
 
 // Attributes
 public:
-    void ExportGamebox(LPCSTR pszPathName);
+    void ExportGamebox(const CB::string& pszPathName);
 
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
     using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
@@ -236,7 +236,7 @@ public:
 public:
     BOOL SetupBlankBoard();
 
-    BOOL CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
+    BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
         LPVOID lpvCreateParam = NULL);
 
     BOOL NotifyTileDatabaseChange(BOOL bPurgeScan = TRUE);
@@ -249,7 +249,7 @@ public:
     CView* FindBoardEditorView(const CBoard& pBoard);
 
     // Support for strings associated with game elements (pieces, markers)
-    CString     GetGameElementString(GameElement gelem) const;
+    CB::string  GetGameElementString(GameElement gelem) const;
     BOOL        HasGameElementString(GameElement gelem) const;
 
     BOOL DoBoardPropertyDialog(CBoard& pBoard);
@@ -269,7 +269,7 @@ public:
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 
-    std::array<std::byte, 16> ComputeGameboxPasskey(LPCTSTR pszPassword);
+    std::array<std::byte, 16> ComputeGameboxPasskey(const CB::string& pszPassword);
     void ClearGameboxPasskey();
 
     void OnFileClose() { CDocument::OnFileClose(); }    // Expose protected
@@ -294,9 +294,9 @@ protected:
     DWORD           m_dwMajorRevs;  // Major revisions (stuff was deleted)
     DWORD           m_dwMinorRevs;  // Minor revisions (stuff was added)
     DWORD           m_dwGameID;     // Unique autogened signature for gamebox
-    CString         m_strAuthor;    // Game box author (<= 32 chars)
-    CString         m_strTitle;     // Game box tile (<= 64 chars)
-    CString         m_strDescr;     // Game box description (<= 64 chars)
+    CB::string      m_strAuthor;    // Game box author (<= 32 chars)
+    CB::string      m_strTitle;     // Game box tile (<= 64 chars)
+    CB::string      m_strDescr;     // Game box description (<= 64 chars)
     std::array<std::byte, 16> m_abytePass;// MD5 Hash of password and uuid based box ID
     WORD            m_wCompressLevel;// Amount of compression to apply to bitmaps and such
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
@@ -323,8 +323,8 @@ public:
 
 protected:
     virtual BOOL OnNewDocument();
-    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-    virtual BOOL OnSaveDocument(const char* pszPathName);
+    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
+    virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override;
     virtual void DeleteContents();
     virtual void OnCloseDocument();
 
