@@ -25,6 +25,7 @@
 #include "stdafx.h"
 #include "Gm.h"
 #include "DlgPcep.h"
+#include "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

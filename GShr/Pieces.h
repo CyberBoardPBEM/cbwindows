@@ -109,8 +109,8 @@ public:
     const std::vector<PieceID>& GetPieceIDTable() const { return m_pidTbl; }
     BOOL HasPieceID(PieceID pid) const;
 
-    const char* GetName() const { return m_strName.c_str(); }
-    void SetName(const char *pszName) { m_strName = pszName; }
+    const CB::string& GetName() const { return m_strName; }
+    void SetName(CB::string pszName) { m_strName = std::move(pszName); }
 
 // Operations
 public:
@@ -120,7 +120,7 @@ public:
     void Serialize(CArchive& ar);
 // Implementation
 protected:
-    std::string m_strName;
+    CB::string m_strName;
     std::vector<PieceID> m_pidTbl;
 };
 
@@ -170,7 +170,7 @@ public:
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapStrings = NULL);
     BOOL IsTileInUse(TileID tid) const;
     // ------- //
-    size_t CreatePieceSet(const char* pszName);
+    size_t CreatePieceSet(CB::string pszName);
     void DeletePieceSet(size_t nPSet, CGameElementStringMap* mapStrings = NULL);
     void Clear();
     // ---------- //

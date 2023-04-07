@@ -97,8 +97,8 @@ public:
     const std::vector<MarkID>& GetMarkIDTable() const { return m_midTbl; }
     BOOL HasMarkID(MarkID mid) const;
 
-    const char* GetName() const { return m_strName.c_str(); }
-    void SetName(const char *pszName) { m_strName = pszName; }
+    const CB::string& GetName() const { return m_strName; }
+    void SetName(CB::string pszName) { m_strName = std::move(pszName); }
 
     BOOL IsRandomMarkerPull() { return m_eMarkViz != mtrayVizNormal; }
     void SetMarkerTrayContentVisibility(MarkerTrayViz eMarkViz) { m_eMarkViz = eMarkViz; }
@@ -118,7 +118,7 @@ public:
 
 // Implementation
 protected:
-    std::string m_strName;
+    CB::string m_strName;
     std::vector<MarkID> m_midTbl;
     MarkerTrayViz m_eMarkViz;   // Content visibility flags // V2.0
 };
@@ -170,7 +170,7 @@ public:
     // ------- //
     CSize GetMarkSize(MarkID mid);
     // ------- //
-    size_t CreateMarkSet(const char* pszName);
+    size_t CreateMarkSet(const CB::string& pszName);
     void DeleteMarkSet(size_t nMSet, CGameElementStringMap* pMapString = NULL);
     void Clear();
     // ---------- //

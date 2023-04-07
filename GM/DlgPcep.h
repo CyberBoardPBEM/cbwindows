@@ -35,7 +35,7 @@ public:
     //{{AFX_DATA(CPiecePropDialog)
     enum { IDD = IDD_PIECEGRPPROP };
     CEdit   m_editName;
-    CString m_strName;
+    CB::string m_strName;
     //}}AFX_DATA
 
 // Implementation

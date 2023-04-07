@@ -140,17 +140,15 @@ void ResourceTable::LoadFonts(void)
     int     nSizeSmall = 8;
     int     nSizeBig = 10;
 
-    CString strFontName;
-    strFontName.LoadString(IDS_BASEFONT_NAME);
-    if (strFontName.IsEmpty())
+    CB::string strFontName = CB::string::LoadString(IDS_BASEFONT_NAME);
+    if (strFontName.empty())
         strFontName = "MS Sans Serif";
-    CString strFontSize;
-    strFontSize.LoadString(IDS_BASEFONT_SIZE_SMALL);
-    if (!strFontSize.IsEmpty())
-        nSizeSmall = atoi(strFontSize);
-    strFontSize.LoadString(IDS_BASEFONT_SIZE_BIG);
-    if (!strFontSize.IsEmpty())
-        nSizeBig = atoi(strFontSize);
+    CB::string strFontSize = CB::string::LoadString(IDS_BASEFONT_SIZE_SMALL);
+    if (!strFontSize.empty())
+        nSizeSmall = std::stoi(strFontSize.std_wstr());
+    strFontSize = CB::string::LoadString(IDS_BASEFONT_SIZE_BIG);
+    if (!strFontSize.empty())
+        nSizeBig = std::stoi(strFontSize.std_wstr());
 
     memset(&lf, 0, sizeof(LOGFONT));
 

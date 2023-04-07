@@ -201,19 +201,19 @@ size_t CTileManager::FindTileSetFromTileID(TileID tid) const
     return Invalid_v<size_t>;
 }
 
-size_t CTileManager::CreateTileSet(const char* pszName)
+size_t CTileManager::CreateTileSet(CB::string pszName)
 {
-    m_TSetTbl.resize(m_TSetTbl.size() + 1);
-    m_TSetTbl.back().SetName(pszName);
-    return m_TSetTbl.size() - 1;
+    m_TSetTbl.resize(m_TSetTbl.size() + size_t(1));
+    m_TSetTbl.back().SetName(std::move(pszName));
+    return m_TSetTbl.size() - size_t(1);
 }
 
-size_t CTileManager::FindNamedTileSet(const char* pszName) const
+size_t CTileManager::FindNamedTileSet(const CB::string& pszName) const
 {
     for (size_t i = 0; i < GetNumTileSets(); i++)
     {
         const CTileSet& pTSet = GetTileSet(i);
-        CString strName = pTSet.GetName();
+        CB::string strName = pTSet.GetName();
         if (strName.CompareNoCase(pszName) == 0)
             return i;
     }
@@ -586,22 +586,21 @@ BOOL CTileManager::PruneTilesOnSheet255()
 
 ////////////////////////////////////////////////////////////////////////
 
-static CString GetLastErrorAsText()
+static CB::string GetLastErrorAsText()
 {
-    LPVOID lpMessageBuffer;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+    wchar_t* lpMessageBuffer;
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
         NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-    (LPTSTR)&lpMessageBuffer,  0,  NULL);
-    CString msg;
-    msg = (char*)lpMessageBuffer;
+        reinterpret_cast<wchar_t*>(&lpMessageBuffer), 0, NULL);
+    CB::string msg = lpMessageBuffer;
     LocalFree(lpMessageBuffer);
     return msg;
 }
 
-static BOOL WriteFileString(HANDLE hFile, LPCSTR psz)
+static BOOL WriteFileString(HANDLE hFile, const CB::string& psz)
 {
     DWORD dwBytesWritten;
-    return WriteFile(hFile, psz, lstrlen(psz), &dwBytesWritten, NULL);
+    return WriteFile(hFile, psz.a_str(), value_preserving_cast<DWORD>(psz.a_size()), &dwBytesWritten, NULL);
 }
 
 static int compsheets(const void *elem1, const void *elem2)
@@ -619,7 +618,7 @@ static int compsheets(const void *elem1, const void *elem2)
         return 0;
 }
 
-void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile) const
+void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOOL bNewFile) const
 {
     HANDLE hFile = CreateFile(pszFileName, GENERIC_WRITE, 0,
         NULL, bNewFile ? CREATE_ALWAYS : OPEN_ALWAYS,
@@ -627,7 +626,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile
 
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        CString strError = GetLastErrorAsText();
+        CB::string strError = GetLastErrorAsText();
         AfxMessageBox(strError);
         return;
     }
