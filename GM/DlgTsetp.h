@@ -35,7 +35,7 @@ public:
     //{{AFX_DATA(CTSetPropDialog)
     enum { IDD = IDD_TILESETPROP };
     CMFCColorButton m_cpTrans;
-    CString m_strName;
+    CB::string m_strName;
     //}}AFX_DATA
 
     COLORREF    m_crTrans;

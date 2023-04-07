@@ -181,8 +181,8 @@ public:
     const std::vector<TileID>& GetTileIDTable() const { return m_tidTbl; }
     BOOL HasTileID(TileID tid) const;
 
-    const char* GetName() const { return m_strName.c_str(); }
-    void SetName(const char *pszName) { m_strName = pszName; }
+    const CB::string& GetName() const { return m_strName; }
+    void SetName(CB::string pszName) { m_strName = std::move(pszName); }
 
 // Operations
 public:
@@ -194,7 +194,7 @@ public:
 
 // Implementation
 protected:
-    std::string m_strName;
+    CB::string m_strName;
     std::vector<TileID> m_tidTbl;
 };
 
@@ -258,8 +258,8 @@ public:
         COLORREF crSmall);
 
     // Tile Set Ops.
-    size_t CreateTileSet(const char* pszName);
-    size_t FindNamedTileSet(const char* pszName) const;
+    size_t CreateTileSet(CB::string pszName);
+    size_t FindNamedTileSet(const CB::string& pszName) const;
     void DeleteTileSet(size_t nTSet);
 
     // ---------- //
@@ -277,7 +277,7 @@ public:
 
     // TOOL CODE //
     BOOL PruneTilesOnSheet255();
-    void DumpTileDatabaseInfoToFile(LPCTSTR pszFileName, BOOL bNewFile = TRUE) const;
+    void DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOOL bNewFile = TRUE) const;
     // TOOL CODE //
 
 // Implementation

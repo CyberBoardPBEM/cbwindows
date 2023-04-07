@@ -868,7 +868,7 @@ OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& p
     palSec.GetObject(sizeof(short), &nSizeSec);
     palPri.GetObject(sizeof(short), &nSizePri);
 
-    std::vector<char> v(size_t(sizeof(LOGPALETTE) +
+    std::vector<std::byte> v(size_t(sizeof(LOGPALETTE) +
         nPalSize * sizeof(PALETTEENTRY)));
     LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
 
@@ -1247,6 +1247,7 @@ OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot)
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend)
 {
     int nPalSize = 256;
+#error needs work
     LPLOGPALETTE pLP = (LPLOGPALETTE) new char[sizeof(LOGPALETTE) +
         nPalSize * sizeof(PALETTEENTRY)];
     SetupIdentityPalette(nPalSize, pLP);    // Start with speedy identity pal

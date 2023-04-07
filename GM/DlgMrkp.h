@@ -22,6 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#include "LibMfc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPropDialog dialog
 
@@ -35,7 +37,7 @@ public:
     //{{AFX_DATA(CMarkerPropDialog)
     enum { IDD = IDD_MARKERGRPPROP };
     CEdit   m_editName;
-    CString m_strName;
+    CB::string m_strName;
     int     m_nMarkerViz;
     //}}AFX_DATA
 

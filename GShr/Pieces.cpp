@@ -236,11 +236,11 @@ size_t CPieceManager::FindPieceSetFromPieceID(PieceID pid) const
     return Invalid_v<size_t>;
 }
 
-size_t CPieceManager::CreatePieceSet(const char* pszName)
+size_t CPieceManager::CreatePieceSet(CB::string pszName)
 {
-    m_PSetTbl.resize(m_PSetTbl.size() + 1);
-    m_PSetTbl.back().SetName(pszName);
-    return m_PSetTbl.size() - 1;
+    m_PSetTbl.resize(m_PSetTbl.size() + size_t(1));
+    m_PSetTbl.back().SetName(std::move(pszName));
+    return m_PSetTbl.size() - size_t(1);
 }
 
 void CPieceManager::DeletePieceSet(size_t nPSet, CGameElementStringMap* pMapStrings /* = NULL */)

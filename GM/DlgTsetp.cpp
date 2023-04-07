@@ -26,6 +26,7 @@
 #include    "Gm.h"
 #include    "GdiTools.h"
 #include    "DlgTsetp.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

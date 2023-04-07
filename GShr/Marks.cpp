@@ -168,7 +168,7 @@ size_t CMarkManager::FindMarkInMarkSet(MarkID mid) const
     return Invalid_v<size_t>;
 }
 
-size_t CMarkManager::CreateMarkSet(const char* pszName)
+size_t CMarkManager::CreateMarkSet(const CB::string& pszName)
 {
     m_MSetTbl.resize(m_MSetTbl.size() + 1);
     m_MSetTbl.back().SetName(pszName);
