@@ -35,7 +35,7 @@ public:
     int     m_iNumber;
     //}}AFX_DATA
 
-    CString m_strPrompt;
+    CB::string m_strPrompt;
 // Implementation
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

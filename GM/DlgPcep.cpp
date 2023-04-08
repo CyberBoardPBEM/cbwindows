@@ -63,9 +63,8 @@ END_MESSAGE_MAP()
 
 void CPiecePropDialog::OnOK()
 {
-    CString str;
-    m_editName.GetWindowText(str);
-    if (str.IsEmpty())
+    CB::string str = CB::string::GetWindowText(m_editName);
+    if (str.empty())
     {
         AfxMessageBox(IDS_ERR_PIECESETNAME, MB_OK | MB_ICONEXCLAMATION);
         m_editName.SetFocus();

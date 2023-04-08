@@ -574,7 +574,7 @@ void CGbxProjView::DoPieceEdit()
                 {
                     GameElement elem = MakePieceElement(pid, value_preserving_cast<unsigned>(j));
                     if (!dlg.m_strs[j].empty())
-                        pDoc->GetGameStringMap().SetAt(elem, dlg.m_strs[j].c_str());
+                        pDoc->GetGameStringMap().SetAt(elem, dlg.m_strs[j]);
                     else
                         pDoc->GetGameStringMap().RemoveKey(elem);
                 }

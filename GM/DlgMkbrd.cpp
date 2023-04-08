@@ -26,6 +26,7 @@
 #include    "Gm.h"
 #include    "CellForm.h"
 #include    "DlgMkbrd.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -129,7 +130,7 @@ void CGridType::OnOK()
 {
     UpdateData(TRUE);
 
-    if (m_strBoardName.IsEmpty())
+    if (m_strBoardName.empty())
     {
         AfxMessageBox(IDS_ERR_BOARDNAME, MB_OK | MB_ICONEXCLAMATION);
         CWnd* pWnd = GetDlgItem(IDC_D_NEWBRD_BOARDNAME);
@@ -218,8 +219,7 @@ void CGridType::UpdateBoardDimensions()
 
     if (!(m_iRows > size_t(0) && m_iCols > size_t(0) && m_iCellHt >= 4 && m_iCellWd >= 4))
     {
-        CString str;
-        VERIFY(str.LoadString(IDS_BSIZE_INVALID));
+        CB::string str = CB::string::LoadString(IDS_BSIZE_INVALID);
         m_staticPixelSize.SetWindowText(str);
         return;
     }
@@ -236,8 +236,7 @@ void CGridType::UpdateBoardDimensions()
     }
     else
     {
-        CString str;
-        VERIFY(str.LoadString(IDS_BSIZE_INVALID));
+        CB::string str = CB::string::LoadString(IDS_BSIZE_INVALID);
         m_staticPixelSize.SetWindowText(str);
     }
 }

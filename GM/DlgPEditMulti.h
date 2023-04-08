@@ -57,7 +57,7 @@ public:
     BOOL    m_bTopOnlyOwnersToo;
 
     std::vector<bool> m_bSetTexts;                      // TRUE if text should change
-    std::vector<std::string> m_strs;
+    std::vector<CB::string> m_strs;
 
 // Overrides
     // ClassWizard generated virtual function overrides
