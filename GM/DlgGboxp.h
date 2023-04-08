@@ -44,7 +44,7 @@ public:
     int     m_nCompressLevel;
 
     BOOL    m_bPassSet;
-    CString m_strPassword;
+    CB::string m_strPassword;
 
 // Implementation
 protected:

@@ -845,7 +845,7 @@ void CGamDoc::OnEditGbxProperties()
         if (dlg.m_bPassSet)
         {
             // Update the gamebox password.
-            if (dlg.m_strPassword.IsEmpty())
+            if (dlg.m_strPassword.empty())
                 ClearGameboxPasskey();      // Disable the password (if any)
             else
                 m_abytePass = ComputeGameboxPasskey(dlg.m_strPassword);// Set the password

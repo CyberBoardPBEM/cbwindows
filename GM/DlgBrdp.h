@@ -58,7 +58,7 @@ public:
     float   m_fYGridSnapOff;
     float   m_fXGridSnap;
     float   m_fYGridSnap;
-    CString m_strName;
+    CB::string m_strName;
     int     m_nStyleNum;
     BOOL    m_bColTrkInvert;
     BOOL    m_bRowTrkInvert;

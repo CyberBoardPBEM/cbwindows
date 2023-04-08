@@ -132,7 +132,7 @@ void CMarkerEditMultipleDialog::OnOK()
     m_bPromptForText = m_chkPromptForText.GetCheck() != 0;
 
     m_bSetText = m_chkSetText.GetCheck() != 0;
-    m_editText.GetWindowText(m_strText);
+    m_strText = CB::string::GetWindowText(m_editText);
 
     CDialog::OnOK();
 }
