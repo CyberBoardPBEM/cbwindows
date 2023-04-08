@@ -1051,7 +1051,7 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
 
     if (dlg.DoModal() == IDOK)
     {
-        if (!dlg.m_strText.IsEmpty())
+        if (!dlg.m_strText.empty())
         {
             CreateTextDrawingObject(point, dlg.m_fontID,
                 m_pBMgr->GetForeColor(), dlg.m_strText, TRUE);
@@ -1069,7 +1069,7 @@ void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
 
     if (dlg.DoModal() == IDOK)
     {
-        if (!dlg.m_strText.IsEmpty())
+        if (!dlg.m_strText.empty())
         {
             CRect rct = pDObj->GetEnclosingRect();
             InvalidateWorkspaceRect(&rct);

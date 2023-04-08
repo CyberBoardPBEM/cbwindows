@@ -27,6 +27,7 @@
 #include    "GmDoc.h"
 #include    "Pieces.h"
 #include    "DlgPnew.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -149,9 +150,8 @@ void CPieceNewDialog::CreatePiece()
     if (std::find(m_sideTids.begin(), m_sideTids.end(), nullTid) != m_sideTids.end())
         return;
 
-    CString str;
-    m_editQty.GetWindowText(str);
-    int nNumPieces = atoi(str);
+    CB::string str = CB::string::GetWindowText(m_editQty);
+    int nNumPieces = stoi(str.std_wstr());
     if (nNumPieces <= 0)
         return;
     // due to LB_ITEMFROMPOINT limit
@@ -167,23 +167,22 @@ void CPieceNewDialog::CreatePiece()
     for (int i = 0; i < nNumPieces; i++)
     {
         PieceID pid = m_pPMgr->CreatePiece(m_nPSet, std::vector<TileID>(m_sideTids));
-        CString strText;
-        m_editTextFront.GetWindowText(strText);
-        m_sideTexts[size_t(0)] = strText.GetBuffer();
+        CB::string strText = CB::string::GetWindowText(m_editTextFront);
+        m_sideTexts[size_t(0)] = strText;
 
         for (size_t i = size_t(0) ; i < m_sideTexts.size() ; ++i)
         {
             GameElement ge = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
-            CString strText;
+            CB::string strText;
             if (m_chkSameAsTop.GetCheck() == 0)
             {
-                strText = m_sideTexts[i].c_str();
+                strText = m_sideTexts[i];
             }
             else
             {
-                strText = m_sideTexts[size_t(0)].c_str();
+                strText = m_sideTexts[size_t(0)];
             }
-            if (!strText.IsEmpty())
+            if (!strText.empty())
                 m_pDoc->GetGameStringMap().SetAt(ge, strText);
             else
                 m_pDoc->GetGameStringMap().RemoveKey(ge);
@@ -293,7 +292,7 @@ void CPieceNewDialog::OnSelchangeNumSides()
             m_sideTexts.size() == currSides);
     if (currSides < numSides)
     {
-        std::string frontStr;
+        CB::string frontStr;
         BOOL bSameAsTop = m_chkSameAsTop.GetCheck() != 0;
         if (bSameAsTop)
         {
@@ -301,8 +300,7 @@ void CPieceNewDialog::OnSelchangeNumSides()
         }
         for (size_t i = currSides ; i < numSides ; ++i)
         {
-            CString str;
-            AfxFormatString1(str, IDS_SIDE_N, std::to_string((i + size_t(1))).c_str());
+            CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", i + size_t(1)));
             if (m_currSide.AddString(str) != value_preserving_cast<int>(i - size_t(1)))
             {
                 AfxThrowMemoryException();
@@ -344,8 +342,7 @@ BOOL CPieceNewDialog::OnInitDialog()
     CDialog::OnInitDialog();
 
     // Add piece set name to dialog title
-    CString strTitle;
-    GetWindowText(strTitle);
+    CB::string strTitle = CB::string::GetWindowText(*this);
     strTitle += " - ";
     strTitle += m_pPMgr->GetPieceSet(m_nPSet).GetName();
     SetWindowText(strTitle);
@@ -354,14 +351,13 @@ BOOL CPieceNewDialog::OnInitDialog()
 
     for (size_t i = size_t(0); i < PieceDef::maxSides; ++i)
     {
-        int rc = m_numSides.AddString(std::to_string((i + size_t(1))).c_str());
+        int rc = m_numSides.AddString(static_cast<CB::string>(std::format("{}", i + size_t(1))));
         if (rc != value_preserving_cast<int>(i))
         {
             AfxThrowMemoryException();
         }
     }
-    CString str;
-    AfxFormatString1(str, IDS_SIDE_N, std::to_string(1).c_str());
+    CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", 1));
     m_side_1.SetWindowText(str);
 
     m_listFtile.SetDocument(&*m_pDoc);
@@ -423,8 +419,7 @@ void CPieceNewDialog::OnSelchangeCurrSide()
         ASSERT(m_sideTexts.size() == m_sideTids.size());
         if (m_chkSameAsTop.GetCheck() == 0)
         {
-            CString strText;
-            m_editTextBack.GetWindowText(strText);
+            CB::string strText = CB::string::GetWindowText(m_editTextBack);
             m_sideTexts[m_prevSide] = strText;
         }
         else
@@ -450,7 +445,7 @@ void CPieceNewDialog::OnSelchangeCurrSide()
             SetupTileListbox(m_comboBtset, m_listBtile);
             m_listBtile.SetCurSelMapped(tid);
         }
-        m_editTextBack.SetWindowText(m_sideTexts[currSide].c_str());
+        m_editTextBack.SetWindowText(m_sideTexts[currSide]);
     }
     else
     {

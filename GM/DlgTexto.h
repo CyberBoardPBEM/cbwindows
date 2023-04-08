@@ -41,7 +41,7 @@ public:
 
     //{{AFX_DATA(CTextObjDialog)
     enum { IDD = IDD_TEXTPROP };
-    CString m_strText;
+    CB::string m_strText;
     //}}AFX_DATA
 
     void SetFontID(FontID fontID);

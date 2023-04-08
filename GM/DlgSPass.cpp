@@ -25,6 +25,7 @@
 #include "stdafx.h"
 #include "Gm.h"
 #include "DlgSPass.h"
+#include "LibMfc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,10 +88,10 @@ void CSetGameboxPassword::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CSetGameboxPassword::OnOK()
 {
-    m_editPass1.GetWindowText(m_strPass1);
-    m_editPass2.GetWindowText(m_strPass2);
+    m_strPass1 = CB::string::GetWindowText(m_editPass1);
+    m_strPass2 = CB::string::GetWindowText(m_editPass2);
 
-    if (m_strPass1.Compare(m_strPass2) != 0)
+    if (m_strPass1 != m_strPass2)
     {
         AfxMessageBox(IDS_WARN_PASS_MUST_MATCH);
         m_editPass1.SetFocus();
