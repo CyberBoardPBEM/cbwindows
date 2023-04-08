@@ -26,6 +26,7 @@
 #include "Gm.h"
 #include "GmHelp.h"
 #include "DlgPEditMulti.h"
+#include "LibMfc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -97,8 +98,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
     ASSERT(m_bSetTexts[size_t(0)] == bool(m_editFront.IsWindowEnabled()));
     if (m_bSetTexts[size_t(0)])
     {
-        CString str;
-        m_editFront.GetWindowText(str);
+        CB::string str = CB::string::GetWindowText(m_editFront);
         m_strs[size_t(0)] = str;
     }
     if (m_chkSetFrontText.GetCheck())
@@ -107,7 +107,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
         {
             m_bSetTexts[size_t(0)] = true;
             m_editFront.EnableWindow(TRUE);
-            m_editFront.SetWindowText(m_strs[size_t(0)].c_str());
+            m_editFront.SetWindowText(m_strs[size_t(0)]);
             m_staticFrontLabel.EnableWindow(TRUE);
         }
     }
@@ -141,8 +141,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
             ASSERT(m_bSetTexts[currSide] == bool(m_editBack.IsWindowEnabled()));
             if (m_bSetTexts[currSide])
             {
-                CString str;
-                m_editBack.GetWindowText(str);
+                CB::string str = CB::string::GetWindowText(m_editBack);
                 m_strs[currSide] = str;
             }
             if (m_chkSetBackText.GetCheck())
@@ -151,7 +150,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
                 {
                     m_bSetTexts[currSide] = true;
                     m_editBack.EnableWindow(TRUE);
-                    m_editBack.SetWindowText(m_strs[currSide].c_str());
+                    m_editBack.SetWindowText(m_strs[currSide]);
                     m_staticBackLabel.EnableWindow(TRUE);
                 }
             }
@@ -175,8 +174,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
                 ASSERT(m_bSetTexts[m_prevSide] == bool(m_editBack.IsWindowEnabled()));
                 if (m_bSetTexts[m_prevSide])
                 {
-                    CString str;
-                    m_editBack.GetWindowText(str);
+                    CB::string str = CB::string::GetWindowText(m_editBack);
                     m_strs[m_prevSide] = str;
                 }
                 m_bSetTexts[m_prevSide] = m_chkSetBackText.GetCheck();
@@ -184,7 +182,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
             m_chkSetBackText.SetCheck(m_bSetTexts[currSide] ? BST_CHECKED : BST_UNCHECKED);
             m_editBack.EnableWindow(m_bSetTexts[currSide]);
             m_staticBackLabel.EnableWindow(m_bSetTexts[currSide]);
-            m_editBack.SetWindowText(m_strs[currSide].c_str());
+            m_editBack.SetWindowText(m_strs[currSide]);
         }
     }
 
@@ -224,8 +222,7 @@ BOOL CPieceEditMultipleDialog::OnInitDialog()
     {
         for (size_t i = size_t(1); i < m_sides; ++i)
         {
-            CString str;
-            AfxFormatString1(str, IDS_SIDE_N, std::to_string((i + size_t(1))).c_str());
+            CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", i + size_t(1)));
             if (m_currSide.AddString(str) != value_preserving_cast<int>(i - size_t(1)))
             {
                 AfxThrowMemoryException();

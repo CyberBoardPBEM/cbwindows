@@ -27,6 +27,7 @@
 #include    "GmDoc.h"
 #include    "Pieces.h"
 #include    "DlgPedt.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -286,8 +287,7 @@ void CPieceEditDialog::OnSelchangeNumSides()
         }
         for (size_t i = currSides ; i < numSides ; ++i)
         {
-            CString str;
-            AfxFormatString1(str, IDS_SIDE_N, std::to_string((i + size_t(1))).c_str());
+            CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", i + size_t(1)));
             if (m_currSide.AddString(str) != value_preserving_cast<int>(i - size_t(1)))
             {
                 AfxThrowMemoryException();
@@ -340,9 +340,8 @@ void CPieceEditDialog::OnOK()
 
     pDef.SetTIDs(std::move(m_sideTids));
 
-    CString strText;
-    m_editTextFront.GetWindowText(strText);
-    m_sideTexts[size_t(0)] = strText.GetBuffer();
+    CB::string strText = CB::string::GetWindowText(m_editTextFront);
+    m_sideTexts[size_t(0)] = strText;
 
     for (size_t i = size_t(0) ; i < m_sideTexts.size() ; ++i)
     {
@@ -388,8 +387,7 @@ BOOL CPieceEditDialog::OnInitDialog()
             AfxThrowMemoryException();
         }
     }
-    CString str;
-    AfxFormatString1(str, IDS_SIDE_N, std::to_string(1).c_str());
+    CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", 1));
     m_side_1.SetWindowText(str);
 
     m_listPieces.SetItemMap(&m_tbl);
@@ -469,8 +467,7 @@ void CPieceEditDialog::OnSelchangeCurrSide()
         m_sideTids[m_prevSide] = tidBack;
         if (m_chkSameAsTop.GetCheck() == 0)
         {
-            CString strText;
-            m_editTextBack.GetWindowText(strText);
+            CB::string strText = CB::string::GetWindowText(m_editTextBack);
             m_sideTexts[m_prevSide] = strText;
         }
         else

@@ -117,14 +117,13 @@ void CNewTileDialog::OnSelChangeBoardName()
     int nBrd = m_comboBoard.GetCurSel();
     if (nBrd >= 0)
     {
-        char szNum[40];
         CBoard& pBoard = m_pBMgr->GetBoard(value_preserving_cast<size_t>(nBrd));
 
         CSize size = pBoard.GetCellSize(fullScale);
 
-        itoa(size.cx, szNum, 10);
+        CB::string szNum = std::format("{}", size.cx);
         m_editWidth.SetWindowText(szNum);
-        itoa(size.cy, szNum, 10);
+        szNum = std::format("{}", size.cy);
         m_editHeight.SetWindowText(szNum);
 
         size = pBoard.GetCellSize(halfScale);

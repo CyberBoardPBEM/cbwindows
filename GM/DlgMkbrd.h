@@ -41,7 +41,7 @@ public:
     int     m_iCellHt;
     size_t  m_iCols;
     size_t  m_iRows;
-    CString m_strBoardName;
+    CB::string m_strBoardName;
     CellStagger m_bStagger;
     int     m_nBoardType;
     //}}AFX_DATA

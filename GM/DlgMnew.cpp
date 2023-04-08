@@ -125,9 +125,8 @@ void CMarkerCreateDialog::CreateMarker()
         return;
     WORD wMarkFlags = m_chkPromptText.GetCheck() != 0 ? MarkDef::flagPromptText : 0;
     MarkID mid = m_pMMgr->CreateMark(m_nMSet, tid, wMarkFlags);
-    CString strMarkText;
-    m_editMarkerText.GetWindowText(strMarkText);
-    if (!strMarkText.IsEmpty())
+    CB::string strMarkText = CB::string::GetWindowText(m_editMarkerText);
+    if (!strMarkText.empty())
         m_pDoc->GetGameStringMap().SetAt(MakeMarkerElement(mid), strMarkText);
     RefreshMarkerList();
 }
