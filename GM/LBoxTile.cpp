@@ -63,8 +63,7 @@ CSize CTileListBox::OnItemSize(size_t nIndex) const
     int x = tileBorder;
     if (m_bDisplayIDs)
     {
-        CString str;
-        str.Format("[%u] ", static_cast<TileID::UNDERLYING_TYPE>(MapIndexToItem(nIndex)));
+        CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
         // only using DC to measure text, so const_cast safe;
         CClientDC pDC(const_cast<CTileListBox*>(this));
         pDC.SaveDC();
@@ -121,8 +120,7 @@ void CTileListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
         int y = rctItem.top + tileBorder;
         if (m_bDisplayIDs)
         {
-            CString str;
-            str.Format("[%u] ", static_cast<TileID::UNDERLYING_TYPE>(MapIndexToItem(nIndex)));
+            CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
             CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
             int prevBkMode = pDC.SetBkMode(TRANSPARENT);
             int y = rctItem.top + rctItem.Height() / 2 -
