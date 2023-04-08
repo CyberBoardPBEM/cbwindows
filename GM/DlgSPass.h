@@ -43,8 +43,8 @@ public:
     enum { IDD = IDD_SET_PASSWORD };
     CEdit   m_editPass2;
     CEdit   m_editPass1;
-    CString m_strPass1;
-    CString m_strPass2;
+    CB::string m_strPass1;
+    CB::string m_strPass2;
     //}}AFX_DATA
 
 

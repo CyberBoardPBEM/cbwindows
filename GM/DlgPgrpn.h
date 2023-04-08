@@ -35,7 +35,7 @@ public:
     //{{AFX_DATA(CPieceGroupNameDialog)
     enum { IDD = IDD_PIECENEWGRP };
     CEdit   m_editName;
-    CString m_strName;
+    CB::string m_strName;
     //}}AFX_DATA
 
 // Implementation

@@ -113,10 +113,9 @@ BOOL CResizeTileDialog::OnInitDialog()
         m_comboBrdName.AddString(m_pBMgr->GetBoard(i).GetName());
     m_comboBrdName.SetCurSel(-1);
 
-    char szNum[40];
-    _itoa(m_nHeight, szNum, 10);
+    CB::string szNum = std::format("{}", m_nHeight);
     m_staticCurHt.SetWindowText(szNum);
-    _itoa(m_nWidth, szNum, 10);
+    szNum = std::format("{}", m_nWidth);
     m_staticCurWd.SetWindowText(szNum);
 
     return TRUE;  // return TRUE  unless you set the focus to a control
@@ -127,14 +126,13 @@ void CResizeTileDialog::OnSelchangeBrdName()
     int nBrd = m_comboBrdName.GetCurSel();
     if (nBrd >= 0)
     {
-        char szNum[40];
         CBoard& pBoard = m_pBMgr->GetBoard(value_preserving_cast<size_t>(nBrd));
 
         CSize size = pBoard.GetCellSize(fullScale);
 
-        _itoa(size.cx, szNum, 10);
+        CB::string szNum = std::format("{}", size.cx);
         m_editWidth.SetWindowText(szNum);
-        _itoa(size.cy, szNum, 10);
+        szNum = std::format("{}", size.cy);
         m_editHeight.SetWindowText(szNum);
 
         size = pBoard.GetCellSize(halfScale);

@@ -27,6 +27,7 @@
 #include    "Font.h"
 #include    "GdiTools.h"
 #include    "DlgTexto.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

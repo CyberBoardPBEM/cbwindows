@@ -71,7 +71,7 @@ protected:
     RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
     size_t m_prevSide = std::numeric_limits<size_t>::max();
     std::vector<TileID> m_sideTids;
-    std::vector<std::string> m_sideTexts;
+    std::vector<CB::string> m_sideTexts;
 
     // -------- //
     void RefreshPieceList();
