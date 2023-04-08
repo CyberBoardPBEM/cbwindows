@@ -69,10 +69,9 @@ BOOL CDocFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CDocFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
-    CString str = pDoc->GetTitle();
+    CB::string str = pDoc->GetTitle();
     str += " - ";
-    CString strType;
-    strType.LoadString(IDS_PROJTYPE_GAMEBOX);
+    CB::string strType = CB::string::LoadString(IDS_PROJTYPE_GAMEBOX);
     str += strType;
     SetWindowText(str);
 }

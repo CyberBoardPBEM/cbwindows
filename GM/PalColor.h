@@ -46,7 +46,7 @@ class CColorCmdUI : public CCmdUI
 public:
     // Not used...
     virtual void SetCheck(int nCheck) {}
-    virtual void SetText(LPCSTR lpszText) {}
+    virtual void SetText(LPCTSTR lpszText) override {}
     // Used...
     virtual void Enable(BOOL bOn);
     // New for color palette
@@ -95,7 +95,7 @@ public:
     virtual void PostNcDestroy();
 
 protected:
-    CString     m_strPaneName;
+    CB::string  m_strPaneName;
     CComboBox   m_comboLine;
 
     CToolTipCtrl m_toolTip;
@@ -141,8 +141,8 @@ protected:
 // Implementation - methods
 protected:
     void SetupToolTips(int nMaxWidth);
-    void SetupToolTip(RECT* rct, UINT nID, UINT nFlags = 0, LPCTSTR pszText = NULL);
-    void SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags = 0, LPCTSTR pszText = NULL);
+    void SetupToolTip(RECT* rct, UINT nID, UINT nFlags = 0, const CB::string* pszText = NULL);
+    void SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags = 0, const CB::string* pszText = NULL);
 
     void DoPaint(CDC* pDC);
     void PaintCellGroup(CDC* pDC, COLORREF* pArray, int xLoc, int yLoc);
@@ -177,9 +177,9 @@ protected:
         // Account for size of caption.
         size = m_sizeClient + CSize(0, GetCaptionHeight());
     }
-    virtual void GetPaneName(CString &strName) const
+    virtual void GetPaneName(CString &strName) const override
     {
-        strName = m_strPaneName;
+        strName = m_strPaneName.mfc_str();
     }
     virtual void OnPressCloseButton();
 

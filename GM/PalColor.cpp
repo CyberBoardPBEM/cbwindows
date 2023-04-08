@@ -46,9 +46,9 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-static char szColorPalDefPos[] = "140 350";
-static char szSectSettings[] = "Settings";
-static char szEntryColorPalPos[] = "ColorPalPos";
+static const CB::string szColorPalDefPos = "140 350";
+static const CB::string szSectSettings = "Settings";
+static const CB::string szEntryColorPalPos = "ColorPalPos";
 
 /////////////////////////////////////////////////////////////////////////////
 // Color picker area layout:
@@ -256,7 +256,6 @@ void CColorPalette::PostNcDestroy()
 
 void CColorPalette::SetupToolTips(int nMaxWidth)
 {
-    CString strRes;
     m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
     m_toolTip.SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0,
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -268,13 +267,13 @@ void CColorPalette::SetupToolTips(int nMaxWidth)
     SetupToolTip(m_rctStdColors, IDS_TT_COLORCELLS, TTF_CENTERTIP);
     SetupToolTip(m_rctColorMix, IDS_TT_COLORCELLS, TTF_CENTERTIP);
 
-    strRes.LoadString(IDS_TT_CUST_COLOR_CELLS);
-    SetupToolTip(m_rctCustColors, IDS_TT_CUST_COLOR_CELLS, TTF_CENTERTIP, strRes);
+    CB::string strRes = CB::string::LoadString(IDS_TT_CUST_COLOR_CELLS);
+    SetupToolTip(m_rctCustColors, IDS_TT_CUST_COLOR_CELLS, TTF_CENTERTIP, &strRes);
 
     m_toolTip.Activate(TRUE);
 }
 
-void CColorPalette::SetupToolTip(RECT* rct, UINT nID, UINT nFlags, LPCTSTR pszText)
+void CColorPalette::SetupToolTip(RECT* rct, UINT nID, UINT nFlags, const CB::string* pszText)
 {
     TOOLINFO ti;
     memset(&ti, 0, sizeof(TOOLINFO));
@@ -284,15 +283,15 @@ void CColorPalette::SetupToolTip(RECT* rct, UINT nID, UINT nFlags, LPCTSTR pszTe
     ti.hwnd = m_hWnd;
     ti.uId = nID;
     if (pszText == NULL)
-        ti.lpszText = (LPTSTR)MAKEINTRESOURCE(nID);
+        ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
     else
-        ti.lpszText = (LPTSTR)pszText;
+        ti.lpszText = const_cast<CB::string::value_type*>(pszText->v_str());
     ti.hinst = AfxGetResourceHandle();
     ti.rect = *rct;
     m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 }
 
-void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, LPCTSTR pszText)
+void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, const CB::string* pszText)
 {
     TOOLINFO ti;
     memset(&ti, 0, sizeof(TOOLINFO));
@@ -301,9 +300,9 @@ void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, LPCTSTR pszT
     ti.hwnd = m_hWnd;
     ti.uId = reinterpret_cast<uintptr_t>(pWnd->GetSafeHwnd());
     if (pszText == NULL)
-        ti.lpszText = (LPTSTR)MAKEINTRESOURCE(nID);
+        ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
     else
-        ti.lpszText = (LPTSTR)pszText;
+        ti.lpszText = const_cast<CB::string::value_type*>(pszText->v_str());
     ti.hinst = AfxGetResourceHandle();
     m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 }
@@ -395,8 +394,7 @@ BOOL CColorPalette::SetupLineControl()
         5 * rctCombo.Height());
     for (int i = 0; i <= numLineWidths; i++)
     {
-        char strNum[20];
-        _itoa(i, strNum, 10);
+        CB::string strNum = std::format("{}", i);
         m_comboLine.AddString(strNum);
     }
     m_comboLine.SetCurSel(1);

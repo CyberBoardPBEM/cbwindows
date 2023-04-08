@@ -278,14 +278,14 @@ CView* CMainFrame::GetActiveView() const
 
 ///////////////////////////////////////////////////////////////////////
 
-static char szSectSettings[] = "Settings";
-static char szSectControlBars[] = "ControlBars";
-static char szEntryToolPal[] = "ToolPal";
-static char szEntryIToolPal[] = "ImageToolPal";
-static char szEntryColorPal[] = "ColorPal";
-static char szEntryTilePal[] = "TilePal";
-static char szEntryToolBar[] = "ToolBar";
-static char szEntryStatusBar[] = "StatusBar";
+static const CB::string szSectSettings = "Settings";
+static const CB::string szSectControlBars = "ControlBars";
+static const CB::string szEntryToolPal = "ToolPal";
+static const CB::string szEntryIToolPal = "ImageToolPal";
+static const CB::string szEntryColorPal = "ColorPal";
+static const CB::string szEntryTilePal = "TilePal";
+static const CB::string szEntryToolBar = "ToolBar";
+static const CB::string szEntryStatusBar = "StatusBar";
 
 void CMainFrame::SaveProfileSettings()
 {
@@ -336,7 +336,7 @@ BOOL CMainFrame::BuildAppGDIPalette()
     ClearSystemPalette();
 
     uint16_t nPalSize = uint16_t(256);
-    std::vector<char> v((sizeof(LOGPALETTE) +
+    std::vector<std::byte> v((sizeof(LOGPALETTE) +
         value_preserving_cast<size_t>(nPalSize * sizeof(PALETTEENTRY))));
     LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
     SetupIdentityPalette(nPalSize, pLP);    // Start with speedy identity pal
