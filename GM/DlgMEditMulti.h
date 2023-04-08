@@ -51,7 +51,7 @@ public:
     BOOL    m_bPromptForText;
 
     BOOL    m_bSetText;
-    CString m_strText;
+    CB::string m_strText;
 
 // Overrides
     // ClassWizard generated virtual function overrides

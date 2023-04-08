@@ -41,7 +41,7 @@ public:
 // Dialog Data
     //{{AFX_DATA(CDlgGetGameboxPassword)
     enum { IDD = IDD_ENTER_PASSWORD };
-    CString m_strPassword;
+    CB::string m_strPassword;
     //}}AFX_DATA
 
 

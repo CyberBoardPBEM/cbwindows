@@ -32,7 +32,7 @@ public:
     //{{AFX_DATA(CCreateTSet)
     enum { IDD = IDD_TILESETNEW };
     CEdit   m_editTSName;
-    CString m_strTSName;
+    CB::string m_strTSName;
     //}}AFX_DATA
 
 // Implementation

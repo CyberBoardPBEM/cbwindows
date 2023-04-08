@@ -25,6 +25,7 @@
 #include "stdafx.h"
 #include "Gm.h"
 #include "DlgGPass.h"
+#include "LibMfc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

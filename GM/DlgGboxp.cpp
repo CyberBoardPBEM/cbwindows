@@ -115,20 +115,19 @@ BOOL CGmBoxPropsDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    CString str;
-    str.LoadString(IDS_COMPRESS_NONE);
+    CB::string str = CB::string::LoadString(IDS_COMPRESS_NONE);
     int nItem = m_comboCompress.AddString(str);
     m_comboCompress.SetItemData(nItem, Z_NO_COMPRESSION);
 
-    str.LoadString(IDS_COMPRESS_FASTEST);
+    str = CB::string::LoadString(IDS_COMPRESS_FASTEST);
     nItem = m_comboCompress.AddString(str);
     m_comboCompress.SetItemData(nItem, Z_BEST_SPEED);
 
-    str.LoadString(IDS_COMPRESS_MEDIUM);
+    str = CB::string::LoadString(IDS_COMPRESS_MEDIUM);
     nItem = m_comboCompress.AddString(str);
     m_comboCompress.SetItemData(nItem, 6);
 
-    str.LoadString(IDS_COMPRESS_MOST);
+    str = CB::string::LoadString(IDS_COMPRESS_MOST);
     nItem = m_comboCompress.AddString(str);
     m_comboCompress.SetItemData(nItem, Z_BEST_COMPRESSION);
 

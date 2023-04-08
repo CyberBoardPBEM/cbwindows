@@ -158,9 +158,8 @@ void CMarkerEditDialog::OnOK()
     else
         pDef.m_flags &= ~MarkDef::flagPromptText;
 
-    CString strMarkText;
-    m_editMarkerText.GetWindowText(strMarkText);
-    if (strMarkText.IsEmpty())
+    CB::string strMarkText = CB::string::GetWindowText(m_editMarkerText);
+    if (strMarkText.empty())
         m_pDoc->GetGameStringMap().RemoveKey(MakeMarkerElement(m_mid));
     else
         m_pDoc->GetGameStringMap().SetAt(MakeMarkerElement(m_mid), strMarkText);

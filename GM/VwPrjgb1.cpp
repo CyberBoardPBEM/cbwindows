@@ -751,7 +751,7 @@ void CGbxProjView::DoMarkEdit()
             if (dlg.m_bSetText)
             {
                 GameElement elem = MakeMarkerElement(mid);
-                if (!dlg.m_strText.IsEmpty())
+                if (!dlg.m_strText.empty())
                     pDoc->GetGameStringMap().SetAt(elem, dlg.m_strText);
                 else
                     pDoc->GetGameStringMap().RemoveKey(elem);

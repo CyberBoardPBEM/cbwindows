@@ -29,6 +29,7 @@
 #include    "GdiTools.h"
 #include    "DlgBrdp.h"
 #include    "DlgBrdsz.h"
+#include    "LibMfc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -165,9 +166,8 @@ void CBoardPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CBoardPropDialog::OnOK()
 {
-    CString str;
-    m_editBrdName.GetWindowText(str);
-    if (str.IsEmpty())
+    CB::string str = CB::string::GetWindowText(m_editBrdName);
+    if (str.empty())
     {
         AfxMessageBox(IDS_ERR_BOARDNAME, MB_OK | MB_ICONEXCLAMATION);
         m_editBrdName.SetFocus();
@@ -250,22 +250,20 @@ void CBoardPropDialog::OnReshape()
 
 void CBoardPropDialog::UpdateInfoArea()
 {
-    char szNum[std::max(_MAX_U64TOSTR_BASE10_COUNT, _MAX_ITOSTR_BASE10_COUNT)];
-    _ui64toa(m_nRows, szNum, 10);
+    CB::string szNum = std::format("{}", m_nRows);
     m_staticRows.SetWindowText(szNum);
-    _ui64toa(m_nCols, szNum, 10);
-    m_staticCols.SetWindowText(szNum);
+    szNum = std::format("{}", m_nCols);
 
     if (m_bShapeChanged && m_eCellStyle == cformHexPnt)
-        strcpy(szNum, "??");
+        szNum = "??";
     else
-        _itoa(m_nCellHt, szNum, 10);
+        szNum = std::format("{}", m_nCellHt);
     m_staticHeight.SetWindowText(szNum);
 
     if (m_bShapeChanged && m_eCellStyle == cformHexFlat)
-        strcpy(szNum, "??");
+        szNum = "??";
     else
-        _itoa(m_nCellWd, szNum, 10);
+        szNum = std::format("{}", m_nCellWd);
 
     m_staticWidth.SetWindowText(szNum);
 
@@ -278,21 +276,21 @@ void CBoardPropDialog::UpdateInfoArea()
         cfFull, cfHalf, cfSmall);
 
     CSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);
-    _itoa(size.cx, szNum, 10);
+    szNum = std::format("{}", size.cx);
     m_staticPixelWidth.SetWindowText(szNum);
-    _itoa(size.cy, szNum, 10);
+    szNum = std::format("{}", size.cy);
     m_staticPixelHeight.SetWindowText(szNum);
 
     size = cfHalf.CalcBoardSize(m_nRows, m_nCols);
-    _itoa(size.cx, szNum, 10);
+    szNum = std::format("{}", size.cx);
     m_staticHalfPixelWidth.SetWindowText(szNum);
-    _itoa(size.cy, szNum, 10);
+    szNum = std::format("{}", size.cy);
     m_staticHalfPixelHeight.SetWindowText(szNum);
 
     size = cfSmall.CalcBoardSize(m_nRows, m_nCols);
-    _itoa(size.cx, szNum, 10);
+    szNum = std::format("{}", size.cx);
     m_staticSmallPixelWidth.SetWindowText(szNum);
-    _itoa(size.cy, szNum, 10);
+    szNum = std::format("{}", size.cy);
     m_staticSmallPixelHeight.SetWindowText(szNum);
 }
 
