@@ -73,7 +73,7 @@ public:
 
 // Operations
 public:
-    BOOL Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
+    BOOL Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& strErr,
         DWORD dwGbxID = 0);
 
 // Vars...

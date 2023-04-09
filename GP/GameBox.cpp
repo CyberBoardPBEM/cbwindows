@@ -80,7 +80,7 @@ CGameBox::~CGameBox()
 
 //////////////////////////////////////////////////////////////////
 
-BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
+BOOL CGameBox::Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& strErr,
     DWORD dwGbxID)
 {
     CFile file;
@@ -88,7 +88,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
 
     if (!file.Open(pszPathName, CFile::modeRead | CFile::shareDenyWrite, &fe))
     {
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, pszPathName);
+        strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, pszPathName);
         return FALSE;
     }
 
@@ -105,7 +105,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
         str[4] = 0;
         if (strcmp(str, FILEGBXSIGNATURE) != 0)
         {
-            strErr.LoadString(IDS_ERR_NOTAGAMEBOX);
+            strErr = CB::string::LoadString(IDS_ERR_NOTAGAMEBOX);
             return FALSE;
         }
 
@@ -153,7 +153,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
             // file 3.90 is the same as 3.10
             NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
-            strErr.LoadString(IDS_ERR_GAMEBOXNEWER);
+            strErr = CB::string::LoadString(IDS_ERR_GAMEBOXNEWER);
             return FALSE;
         }
         SetLoadingVersion(NumVersion(verMajor, verMinor));
@@ -172,7 +172,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
 
         // Main serialization
         WORD wEatThis;
-        CString strEatThis;
+        CB::string strEatThis;
 
         ar >> m_nBitsPerPixel;
         if (m_nBitsPerPixel > (WORD)GetCurrentVideoResolution())
@@ -184,7 +184,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
 
         if (dwGbxID != 0 && dwGbxID != m_dwGameID)
         {
-            strErr.LoadString(IDS_ERR_WRONGGAMEBOX);
+            strErr = CB::string::LoadString(IDS_ERR_WRONGGAMEBOX);
             return FALSE;
         }
 
@@ -233,14 +233,14 @@ BOOL CGameBox::Load(CGamDoc* pDoc, LPCSTR pszPathName, CString& strErr,
     {
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
-        strErr.LoadString(IDS_ERR_GBXNOMEM);
+        strErr = CB::string::LoadString(IDS_ERR_GBXNOMEM);
         return FALSE;
     }
     AND_CATCH_ALL(e)
     {
         file.Abort();       // Will not throw an exception
         GetMainFrame()->EndWaitCursor();
-        strErr.LoadString(IDS_ERR_GBXREAD);
+        strErr = CB::string::LoadString(IDS_ERR_GBXREAD);
         return FALSE;
     }
     END_CATCH_ALL
