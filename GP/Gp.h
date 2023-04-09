@@ -58,7 +58,7 @@ enum
     WMB_MSGID = 0,      // LPARAM is message ID
     WMB_PTR_STATIC = 1, // LPARAM is text pointer. (don't deallocate!)
     WMB_PTR_NEW = 2,    // LPARAM is text pointer allocated with 'new' operator.
-    WMB_PTR_CSTRING = 3,// LPARAM is CString object pointer.
+    WMB_PTR_CBSTRING = 3,// LPARAM is CB::string object pointer.
 };
 
 #define WM_PALETTE_HIDE         (WM_USER + 216)
@@ -105,7 +105,7 @@ public:
     void DoHelpShellLaunch();
     void DoHelpContents();
     void DoHelpContext(uintptr_t dwContextData);
-    void DoHelpTopic(LPCTSTR pszTopic);
+    void DoHelpTopic(const CB::string& pszTopic);
     BOOL DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray);
     void DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray);
 

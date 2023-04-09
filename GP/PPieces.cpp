@@ -137,12 +137,11 @@ void CPieceTable::PurgeUndefinedPieceIDs()
     {
         // Post a message that will be displayed after the game has
         // been fully loaded.
-        CString strMsg;
-        strMsg.LoadString(IDS_WARN_PIECESDELETED);
-        CString* pStr = new CString;
-        pStr->Format(strMsg, nPiecesDeleted);
+        CB::string strMsg = CB::string::LoadString(IDS_WARN_PIECESDELETED);
+        std::unique_ptr<CB::string> pStr(new CB::string);
+        *pStr = std::vformat(strMsg, std::make_wformat_args(nPiecesDeleted));
         GetApp()->GetMainWnd()->PostMessage(WM_MESSAGEBOX,
-            (WPARAM)WMB_PTR_CSTRING, (LPARAM)pStr);
+            (WPARAM)WMB_PTR_CBSTRING, reinterpret_cast<LPARAM>(pStr.release()));
     }
 }
 

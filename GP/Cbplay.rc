@@ -780,7 +780,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_GP_MAINFRAME,IDC_STATIC,11,17,20,20
     CTEXT           "CyberBoard Player Program",IDC_STATIC,42,10,132,8
-    CTEXT           "Copyright © 1994-2022 by Dale L. Larson",IDC_STATIC,25,50,166,8
+    CTEXT           "Copyright © 1994-2023 by Dale L. Larson && William Su",IDC_STATIC,23,50,172,8
     DEFPUSHBUTTON   "OK",IDOK,93,95,32,14,WS_GROUP
     CTEXT           "All Rights Reserved",IDC_STATIC,42,58,132,8
     CTEXT           "Program Version - ?????",IDC_D_ABOUT_PROGVER,42,19,132,8
@@ -1558,11 +1558,11 @@ BEGIN
     IDS_GSCN_FILTER         "Scenario Files (*.gsn)|*.gsn|All Files (*.*)|*.*||"
     IDS_GBOX_SELECT         "Select Game Box File for Scenario"
     IDS_GSCN_SELECT         "Select Initial Scenario for Game"
-    IDP_PROGVER             "Program Version - %1.%2"
-    IDP_GBXVER              "GBX File Version - %1.%2"
-    IDP_GSNVER              "GSN File Version - %1.%2"
-    IDP_GAMVER              "GAM File Version - %1.%2"
-    IDP_GMVVER              "GMV File Version - %1.%2"
+    IDP_PROGVER             "Program Version - {}.{:02}"
+    IDP_GBXVER              "GBX File Version - {}.{:02}"
+    IDP_GSNVER              "GSN File Version - {}.{:02}"
+    IDP_GAMVER              "GAM File Version - {}.{:02}"
+    IDP_GMVVER              "GMV File Version - {}.{:02}"
     IDS_ERR_NOTAGAMEBOX     "The file is not a Game Box."
     IDS_ERR_GAMEBOXNEWER    "The Game Box file was created by a newer version of the program. You must upgrade to load it."
     IDS_ERR_GBXVIDEORES     "The Game Box file you have selected was created using a video driver supporting at least 16 bit color (65536 colors). Colors in the game may appear strange."
@@ -1875,7 +1875,7 @@ BEGIN
     IDS_WARN_DISCARD_COMP_MOVE 
                             "Are you sure you want to discard your compound move?"
     IDS_MSG_ROLLSET         "SET"
-    IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of %zu piece(s) have been removed from the game."
+    IDS_WARN_PIECESDELETED  "Pieces were defined in the current game that no longer exist in the GameBox file. A total of {} piece(s) have been removed from the game."
     IDS_TIP_OBJTEXTCHG      "This object's text has changed"
     IDS_TIP_OBJLOCKED       "Objects have been locked on this playing board.\r\n\r\nLocked objects cannot be selected."
     IDS_TIP_OBJUNLOCKED     "Objects have been unlocked on this playing board."
