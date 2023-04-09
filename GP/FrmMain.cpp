@@ -559,10 +559,14 @@ LRESULT CMainFrame::OnMessageBox(WPARAM wParam, LPARAM lParam)
             AfxMessageBox((LPCTSTR)lParam, MB_OK);
             delete (char*)lParam;
             break;
-        case WMB_PTR_CSTRING:
-            AfxMessageBox(*((CString*)lParam), MB_OK);
-            delete (CString*)lParam;
+        case WMB_PTR_CBSTRING:
+        {
+            ASSERT(!"needs testing");
+            auto p = reinterpret_cast<CB::string*>(lParam);
+            AfxMessageBox(*p, MB_OK);
+            delete p;
             break;
+        }
         default:
             ASSERT(FALSE);      // SHOULD NEVER HAPPEN!
     }

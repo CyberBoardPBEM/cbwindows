@@ -51,8 +51,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
 
-static char szSectSettings[] = "Settings";
-static char szSectDisableHtmlHelp[] = "DisableHtmlHelp";
+static const CB::string szSectSettings = "Settings";
+static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -60,32 +60,32 @@ const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const char HELP_TIP_CONTEXT_FILE[] = "::/gpcontext.txt";
-static const char HELP_FILE[] = "cboard.chm";
+static const CB::string HELP_TIP_CONTEXT_FILE = "::/gpcontext.txt";
+static const CB::string HELP_FILE = "cboard.chm";
 
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys to delete...
 
-static const TCHAR szGsnShellNew[] = ".gsn\\ShellNew";
-static const TCHAR szGamShellNew[] = ".gam\\ShellNew";
+static const CB::string szGsnShellNew = ".gsn\\ShellNew";
+static const CB::string szGamShellNew = ".gam\\ShellNew";
 
-static const TCHAR szPrint[]        = "print";
-static const TCHAR szPrintTo[]      = "printto";
-static const TCHAR szGame[]         = "CyberBoardGame";
-static const TCHAR szScenario[]     = "CyberBoardScenario";
+static const CB::string szPrint        = "print";
+static const CB::string szPrintTo      = "printto";
+static const CB::string szGame         = "CyberBoardGame";
+static const CB::string szScenario     = "CyberBoardScenario";
 static constexpr const wchar_t* szShell        = L"{}\\shell\\{}";
 static constexpr const wchar_t* szShellCommand = L"{}\\shell\\{}\\command";
 static constexpr const wchar_t* szShellDdeexec = L"{}\\shell\\{}\\ddeexec";
 
-static void DeletePrintKeys(LPCTSTR szFileClass);
+static void DeletePrintKeys(const CB::string& szFileClass);
 
 /////////////////////////////////////////////////////////////////////////////
 // Registry related string...
 
-static const TCHAR szGmvExtension[] = ".gmv";
-static const TCHAR szGmvType[] = "CyberBoardRecording";
-static const TCHAR szGmvTypeDesc[] = "CyberBoard Recording";
-static const TCHAR szGmvIconKey[] = "CyberBoardRecording\\DefaultIcon";
+static const CB::string szGmvExtension = ".gmv";
+static const CB::string szGmvType = "CyberBoardRecording";
+static const CB::string szGmvTypeDesc = "CyberBoard Recording";
+static const CB::string szGmvIconKey = "CyberBoardRecording\\DefaultIcon";
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp
@@ -172,19 +172,18 @@ BOOL CGpApp::InitInstance()
 
     if (m_pszHelpFilePath != NULL)
     {
-        char buff[_MAX_PATH];
-        strcpy(buff, m_pszHelpFilePath);
+        CB::string buff = m_pszHelpFilePath;
 
-        char *dip = strrchr(buff, '\\');
-        if (dip != NULL)
+        no_demote<size_t> dip = buff.rfind('\\');
+        if (dip != CB::string::npos)
         {
             dip++;
-            *dip = '\0';
-            strcat(buff, HELP_FILE);
-            if (_access(buff, 4) == 0)
+            buff.resize(dip);
+            buff += HELP_FILE;
+            if (_waccess(buff, 4) == 0)
             {
-                free((char*)m_pszHelpFilePath);
-                m_pszHelpFilePath = _strdup(buff);
+                free(const_cast<LPTSTR>(m_pszHelpFilePath));
+                m_pszHelpFilePath = _tcsdup(buff);
             }
         }
     }
@@ -234,12 +233,11 @@ BOOL CGpApp::InitInstance()
     RegisterShellFileTypes(TRUE);
 
     // Add an icon association for move files.
-    TCHAR szFName[MAX_PATH];
-    GetModuleFileName(NULL, szFName, MAX_PATH);
-    lstrcat(szFName, ",4");
-    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvExtension, REG_SZ, szGmvType, lstrlen(szGmvType));
-    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvType, REG_SZ, szGmvTypeDesc, lstrlen(szGmvTypeDesc));
-    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvIconKey, REG_SZ, szFName, lstrlen(szFName));
+    CB::string szFName = CB::string::GetModuleFileName(NULL);
+    szFName += ",4";
+    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvExtension, REG_SZ, szGmvType, value_preserving_cast<DWORD>(szGmvType.v_size()));
+    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvType, REG_SZ, szGmvTypeDesc, value_preserving_cast<DWORD>(szGmvTypeDesc.v_size()));
+    AfxRegSetValue(HKEY_CLASSES_ROOT, szGmvIconKey, REG_SZ, szFName, value_preserving_cast<DWORD>(szFName.v_size()));
 
     // Remove the ShellNew keys since we don't support them...
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szGsnShellNew);
@@ -314,13 +312,13 @@ BOOL CGpApp::OnOpenRecentFile(UINT nID)
     ASSERT(nID < ID_FILE_MRU_FILE1 + (UINT)m_pRecentFileList->GetSize());
     int nIndex = nID - ID_FILE_MRU_FILE1;
 
-    CString strFileName = (*m_pRecentFileList)[nIndex];
-    if (!strFileName.IsEmpty())
+    CB::string strFileName = (*m_pRecentFileList)[nIndex];
+    if (!strFileName.empty())
     {
-        int nPathEnd = strFileName.ReverseFind('\\');
-        if (nPathEnd != -1)
+        no_demote<size_t> nPathEnd = strFileName.rfind('\\');
+        if (nPathEnd != CB::string::npos)
         {
-            strFileName = strFileName.Left(nPathEnd);
+            strFileName = strFileName.substr(size_t(0), nPathEnd);
             SetCurrentDirectory(strFileName);
         }
     }
@@ -370,14 +368,14 @@ void CGpApp::DoHelpContext(uintptr_t dwContextData)
         ::HtmlHelp(0, m_pszHelpFilePath, HH_HELP_CONTEXT, dwContextData);
 }
 
-void CGpApp::DoHelpTopic(LPCTSTR pszTopic)
+void CGpApp::DoHelpTopic(const CB::string& pszTopic)
 {
     if (m_bDisableHtmlHelp)
         return;
-    CString strHelpPath = m_pszHelpFilePath;
+    CB::string strHelpPath = m_pszHelpFilePath;
     strHelpPath += "::/";
     strHelpPath += pszTopic;
-    TRACE1("HtmlHelp Topic: %s\n", (LPCTSTR)strHelpPath);
+    CPP20_TRACE("HtmlHelp Topic: {}\n", strHelpPath);
     ::HtmlHelp(0, strHelpPath, HH_DISPLAY_TOPIC, NULL);
 }
 
@@ -389,7 +387,7 @@ BOOL CGpApp::DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray)
         return TRUE;                            // Ignore static controls
     if (pHelpInfo->iContextType == HELPINFO_WINDOW)
     {
-        CString strHelpPath = m_pszHelpFilePath;
+        CB::string strHelpPath = m_pszHelpFilePath;
         strHelpPath += HELP_TIP_CONTEXT_FILE;
         return ::HtmlHelp((HWND)pHelpInfo->hItemHandle,
             strHelpPath, HH_TP_HELP_WM_HELP, reinterpret_cast<uintptr_t>(dwIDArray)) != NULL;
@@ -405,7 +403,7 @@ void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
         return;                                     // Ignore static controls
     if (pWndCtrl->GetDlgCtrlID() == 0)
         return;                                     // Ignore windows with no ID
-    CString strHelpPath = m_pszHelpFilePath;
+    CB::string strHelpPath = m_pszHelpFilePath;
     strHelpPath += HELP_TIP_CONTEXT_FILE;
     ::HtmlHelp(pWndCtrl->GetSafeHwnd(), strHelpPath,
         HH_TP_HELP_CONTEXTMENU, reinterpret_cast<uintptr_t>(dwIDArray));
@@ -413,7 +411,7 @@ void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
 
 /////////////////////////////////////////////////////////////////////////////
 
-static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
+static void DeletePrintStyleKeys(const CB::string& szFileClass, const CB::string& szPrintStyle)
 {
     CB::string szKeyBfr = std::format(szShellCommand, szFileClass, szPrintStyle);
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
@@ -423,7 +421,7 @@ static void DeletePrintStyleKeys(LPCTSTR szFileClass, LPCTSTR szPrintStyle)
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szKeyBfr);
 }
 
-static void DeletePrintKeys(LPCTSTR szFileClass)
+static void DeletePrintKeys(const CB::string& szFileClass)
 {
     DeletePrintStyleKeys(szFileClass, szPrint);
     DeletePrintStyleKeys(szFileClass, szPrintTo);
@@ -569,18 +567,12 @@ END_MESSAGE_MAP()
 
 void CAboutDlg::SetupVersion(CStatic& s, int major, int minor, UINT nRes)
 {
-    char szNum1[20];
-    char szNum2[20];
-    CString str;
-
-    _itoa(major, szNum1, 10);
-    _itoa(minor + 100, szNum2, 10);
-    AfxFormatString2(str, nRes, szNum1, szNum2 + 1);
+    CB::string str = CB::string::Format(nRes, major, minor);
     s.SetWindowText(str);
 }
 
 #ifdef _DEBUG
-static char szGenDate[] = __DATE__;
+static const char szGenDate[] = __DATE__;
 #endif
 
 BOOL CAboutDlg::OnInitDialog()
@@ -615,15 +607,13 @@ void CGpApp::OnAppAbout()
 
 void CGpApp::OnHelpWebsite()
 {
-    CString strUrl;
-    strUrl.LoadString(IDS_URL_CB_WEBSITE);
+    CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CGpApp::OnHelpReleases()
 {
-    CString strUrl;
-    strUrl.LoadString(IDS_URL_CB_RELEASES);
+    CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
