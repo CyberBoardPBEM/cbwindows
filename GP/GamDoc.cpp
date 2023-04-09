@@ -601,7 +601,7 @@ BOOL CGamDoc::OnNewScenario()
     // Load gamebox using archival procedures.
 
     m_pGbx = new CGameBox;      // Create game box object
-    CString strErr;
+    CB::string strErr;
     if (!m_pGbx->Load(this, strGBoxPath, strErr))
     {
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);

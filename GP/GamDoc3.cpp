@@ -983,7 +983,7 @@ void CGamDoc::LoadGameBoxFileForSerialize()
     }
     else
         szFPath = m_strGBoxFile;
-    CString strErr;
+    CB::string strErr;
     if (!m_pGbx->Load(this, szFPath, strErr, m_dwGBoxID))
     {
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
