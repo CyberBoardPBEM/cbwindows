@@ -654,12 +654,12 @@ void CGamDoc::DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& p
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::SetObjectText(GameElement elem, LPCTSTR pszObjText)
+void CGamDoc::SetObjectText(GameElement elem, const CB::string* pszObjText)
 {
     SetGameElementString(elem, pszObjText);
 
     // Record processing
-    RecordObjectSetText(elem, pszObjText);
+    RecordObjectSetText(elem, *pszObjText);
 
     SetModifiedFlag();
 }

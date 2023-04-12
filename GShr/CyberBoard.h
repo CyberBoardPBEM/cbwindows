@@ -859,9 +859,9 @@ namespace CB
         operator std::wstring_view() const { return std_wstrv(); }
         operator const std::wstring& () const { return std_wstr(); }
 #if !defined(_UNICODE)
-        no_demote<size_t> v_size() const { return a_size(); }
+        size_t v_size() const { return a_size(); }
 #else
-        no_demote<size_t> v_size() const { return w_size(); }
+        size_t v_size() const { return w_size(); }
 #endif
         const value_type* v_str() const { return static_cast<const value_type*>(*this); }
         const char& operator[](size_t s) const { return cp1252[s]; }

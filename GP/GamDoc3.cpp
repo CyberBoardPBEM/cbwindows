@@ -394,7 +394,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         {
             m_dwCurrentPlayer = 0;
             m_dwPlayerHash = 0;
-            m_strPlayerFileDescr.Empty();
+            m_strPlayerFileDescr.clear();
         }
 
         ar >> wTmp; m_eState = (GameState)wTmp;
@@ -798,7 +798,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar >> m_strScnTitle;
         ar >> m_strScnAuthor;
         ar >> m_strScnDescr;
-        TRACE1("Scenario Description length is %d\n", m_strScnDescr.GetLength());
+        CPP20_TRACE("Scenario Description length is {}\n", m_strScnDescr.a_size());
 
         ar >> wTmp; m_bKeepGamBackup = (BOOL)wTmp;
         ar >> wTmp; m_bKeepMoveHist = (BOOL)wTmp;
@@ -949,26 +949,23 @@ void CGamDoc::LoadGameBoxFileForSerialize()
     // Game/Scenario file exists. If it does, just use it. Otherwise,
     // Check if the gamebox is stored where the game or scenario is.
     // If we can't find it there, prompt for the location.
-    if (_access(m_strGBoxFile, 0) == -1)
+    if (!std::filesystem::exists(m_strGBoxFile))
     {
         CB::string szPath = StrTruncatePath(m_strTmpPathName);
         CB::string szGbxRootName = StrExtractFilename(m_strGBoxFile);
 
         szFPath = StrBuildFullFilename(szPath, szGbxRootName);
 
-        if (_access(szFPath, 0) == -1)
+        if (std::filesystem::exists(szFPath))
         {
             // File doesn't exist where the game file is.
             // Use open file dialog to locate file.
-            CString str;
-            AfxFormatString1(str, IDP_ERR_NOGAMEBOX, szFPath);
+            CB::string str = AfxFormatString1(IDP_ERR_NOGAMEBOX, szFPath);
             if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION) != IDOK)
                 AfxThrowArchiveException(CArchiveException::genericException);
 
-            CString strFilter;
-            strFilter.LoadString(IDS_GBOX_FILTER);
-            CString strTitle;
-            strTitle.LoadString(IDS_GBOX_SELECT);
+            CB::string strFilter = CB::string::LoadString(IDS_GBOX_FILTER);
+            CB::string strTitle = CB::string::LoadString(IDS_GBOX_SELECT);
 
             CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_PATHMUSTEXIST,
                 strFilter, NULL, 0);

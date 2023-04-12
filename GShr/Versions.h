@@ -854,21 +854,21 @@ inline CArchive& operator>>(CArchive& ar, T& v)
     return ar;
 }
 
-inline CArchive& operator<<(CArchive& ar, const CStringArray& v)
+inline CArchive& operator<<(CArchive& ar, const std::vector<CB::string>& v)
 {
-    CB::WriteCount(ar, value_preserving_cast<size_t>(v.GetSize()));
-    for (intptr_t i = 0 ; i < v.GetSize() ; ++i)
+    CB::WriteCount(ar, v.size());
+    for (size_t i = size_t(0) ; i < v.size() ; ++i)
     {
         ar << v[i];
     }
     return ar;
 }
 
-inline CArchive& operator>>(CArchive& ar, CStringArray& v)
+inline CArchive& operator>>(CArchive& ar, std::vector<CB::string>& v)
 {
     size_t size = CB::ReadCount(ar);
-    v.SetSize(value_preserving_cast<intptr_t>(size));
-    for (intptr_t i = 0 ; i < v.GetSize() ; ++i)
+    v.resize(size);
+    for (size_t i = size_t(0) ; i < v.size() ; ++i)
     {
         ar >> v[i];
     }

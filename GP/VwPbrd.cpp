@@ -755,8 +755,8 @@ NASTY_GOTO_TARGET:
             if (dlg.DoModal() == IDOK)
             {
                 GameElement elem = pDoc->GetGameElementCodeForObject(pObj);
-                pDoc->SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL :
-                    (LPCTSTR)dlg.m_strText);
+                pDoc->SetObjectText(elem, dlg.m_strText.empty() ? NULL :
+                    &dlg.m_strText);
             }
         }
     }

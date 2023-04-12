@@ -34,9 +34,9 @@ public:
 // Dialog Data
     //{{AFX_DATA(CScnPropDialog)
     enum { IDD = IDD_SCNPROP };
-    CString m_strAuthor;
-    CString m_strTitle;
-    CString m_strDescr;
+    CB::string m_strAuthor;
+    CB::string m_strTitle;
+    CB::string m_strDescr;
     //}}AFX_DATA
 
 // Implementation

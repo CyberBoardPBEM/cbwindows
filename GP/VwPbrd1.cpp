@@ -73,10 +73,8 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             if (pPObj->IsOwned() &&
                 !pDoc->GetPieceTable()->IsPieceInvisible(pPObj->m_pid))
             {
-                CString strOwner;
-                pDoc->GetPieceOwnerName(pPObj->m_pid, strOwner);
-                CString strOwnedBy;
-                strOwnedBy.Format(IDS_TIP_OWNED_BY_UC, (LPCTSTR)strOwner);
+                CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
+                CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
                 GetMainFrame()->GetStatusBar()->SetWindowText(strOwnedBy);
             }
             else
@@ -97,8 +95,8 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             CRect rct = pDObj->GetRect();
             WorkspaceToClient(rct);
 
-            CString strTip;
-            CString strTitle;
+            CB::string strTip;
+            CB::string strTitle;
             if (pDoc->IsShowingObjectTips())
                 pDoc->GetTipTextForObject(*pDObj, strTip, &strTitle);
 
@@ -110,15 +108,13 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
                 if (pPObj->IsOwned() &&
                     !pDoc->GetPieceTable()->IsPieceInvisible(pPObj->m_pid))
                 {
-                    CString strOwner;
-                    pDoc->GetPieceOwnerName(pPObj->m_pid, strOwner);
-                    CString strOwnedBy;
-                    strOwnedBy.Format(IDS_TIP_OWNED_BY_UC, (LPCTSTR)strOwner);
+                    CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
+                    CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
 
                     if (!pDoc->IsScenario() && !pPObj->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
                     {
-                        strTip.Empty();             // Current player isn't allowed to see text.
-                        if (!pDoc->IsOwnerTipsDisabled() && !strOwner.IsEmpty())// Replace tip with special "Owned by" tip
+                        strTip.clear();             // Current player isn't allowed to see text.
+                        if (!pDoc->IsOwnerTipsDisabled() && !strOwner.empty())// Replace tip with special "Owned by" tip
                             strTip = strOwnedBy;
                     }
                     else
@@ -126,7 +122,7 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
                         if (!pDoc->IsOwnerTipsDisabled())
                         {
                             // Append actual tip to owner string.
-                            if (strTip.IsEmpty())
+                            if (strTip.empty())
                                 strTip = strOwnedBy;
                             else
                             {
@@ -137,12 +133,12 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
                     }
                 }
             }
-            if (!strTip.IsEmpty())
+            if (!strTip.empty())
             {
                 m_toolHitTip.AddTool(this, strTip, rct, ID_TIP_PLAYBOARD_HIT);
 
-                if (!strTitle.IsEmpty())
-                    m_toolHitTip.SendMessage(TTM_SETTITLE, 0, (LPARAM)(LPCTSTR)strTitle);
+                if (!strTitle.empty())
+                    m_toolHitTip.SendMessage(TTM_SETTITLE, 0, reinterpret_cast<LPARAM>(strTitle.v_str()));
 
                 m_toolHitTip.Activate(TRUE);
             }

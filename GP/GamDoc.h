@@ -329,7 +329,8 @@ public:
     CTrayManager* GetTrayManager() { return const_cast<CTrayManager*>(std::as_const(*this).GetTrayManager()); }
     const CPBoardManager* GetPBoardManager() const { return m_pPBMgr; }
     CPBoardManager* GetPBoardManager() { return const_cast<CPBoardManager*>(std::as_const(*this).GetPBoardManager()); }
-    CPlayerManager* GetPlayerManager() { return m_pPlayerMgr; }
+    const CPlayerManager* GetPlayerManager() const { return m_pPlayerMgr; }
+    CPlayerManager* GetPlayerManager() { return const_cast<CPlayerManager*>(std::as_const(*this).GetPlayerManager()); }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
     CHistoryTable* GetHistoryTable() { return m_pHistTbl; }
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
@@ -343,7 +344,7 @@ public:
 
 // Operations
 public:
-    BOOL CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
+    BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
         LPVOID lpvCreateParam);
     CGamProjView& FindProjectView();
     CView* FindPBoardView(const CPlayBoard& pPBoard);
@@ -360,7 +361,7 @@ public:
     void  SetCurrentPlayerMask(WORD dwMask) { m_dwCurrentPlayer = dwMask; }
     BOOL  IsCurrentPlayerReferee();
     void  ClearAllOwnership();
-    void  GetPieceOwnerName(PieceID pid, CString& strName);
+    CB::string GetPieceOwnerName(PieceID pid) const;
 
     BOOL  IsCurrentPlayer(DWORD dwMask) { return (BOOL)(GetCurrentPlayerMask() & dwMask); }
 
@@ -370,10 +371,10 @@ public:
     BOOL  IsOwnerTipsDisabled() { return m_bDisableOwnerTips; }
 
     // Support for strings associated with game elements (pieces, markers)
-    CString     GetGameElementString(GameElement gelem) const;
+    CB::string  GetGameElementString(GameElement gelem) const;
     BOOL        HasGameElementString(GameElement gelem) const;
-    void        SetGameElementString(GameElement gelem, LPCTSTR pszString);
-    void        GetTipTextForObject(const CDrawObj& pDObj, CString &strTip, CString* pStrTitle = NULL);
+    void        SetGameElementString(GameElement gelem, const CB::string* pszString);
+    void        GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip, CB::string* pStrTitle = NULL);
     // Invalid_v<size_t> = top
     GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
     GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
@@ -409,16 +410,16 @@ public:
         MarkID mid, CPoint pnt, PlacePos ePos = placeDefault);
     void RecordPlotList(CPlayBoard* pPBrd);
     void RecordGameState();
-    void RecordMessage(CString strMsg);
+    void RecordMessage(const CB::string& strMsg);
     void RecordObjectDelete(ObjectID dwObjID);
     void RecordCompoundMoveBegin();
     void RecordCompoundMoveEnd();
     void RecordCompoundMoveDiscard();
-    void RecordObjectSetText(GameElement elem, LPCTSTR pszObjText);
+    void RecordObjectSetText(GameElement elem, const CB::string& pszObjText);
     void RecordObjectLockdown(GameElement elem, BOOL bLockState);
-    void RecordEventMessage(CString strMsg, BoardID nBoard,
+    void RecordEventMessage(const CB::string& strMsg, BoardID nBoard,
         int x, int y);
-    void RecordEventMessage(CString strMsg, size_t nTray,
+    void RecordEventMessage(const CB::string& strMsg, size_t nTray,
         PieceID pid);
 
     // Document data manipulations methods...
@@ -458,7 +459,7 @@ public:
         UINT nLineWd, COLORREF crLine, CLine* pObj);
     void ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<CB::not_null<CDrawObj*>>& pList, BOOL bToFront);
     void DeleteObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pList);
-    void SetObjectText(GameElement elem, LPCTSTR pszObjText);
+    void SetObjectText(GameElement elem, const CB::string* pszObjText);
     void SetObjectLockdownTable(const std::vector<CB::not_null<CDrawObj*>>& pLst, BOOL bLockState);
     void SetObjectLockdown(CDrawObj& pDObj, BOOL bLockState);
 
@@ -504,7 +505,7 @@ public:
     void SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj);
     void SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID);
-    void SelectTrayItem(const CTraySet& pYSet, PieceID pid, LPCTSTR pszNotificationTip = NULL);
+    void SelectTrayItem(const CTraySet& pYSet, PieceID pid, const CB::string* pszNotificationTip = NULL);
     void SelectMarkerPaletteItem(MarkID mid);
     void RestartMoves();
     void FinishHistoryPlayback();
@@ -519,32 +520,32 @@ public:
     void FlushAllIndicators();
     void UpdateAllBoardIndicators(CPlayBoard& pPBrd);
     void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace, UINT nResID);
-    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace,LPCTSTR pszStr);
+    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace, const CB::string& pszStr);
 
     // Support for event notification messages (displayed as tool tips)
-    void EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, CString strMsg);
-    void EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString strMsg);
+    void EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, const CB::string& strMsg);
+    void EventShowTrayNotification(size_t nTrayNum, PieceID pid, const CB::string& strMsg);
 
     // Support for player messages
-    void MsgSetMessageText(const CString& str);
-    const CString& MsgGetMessageText() const;
-    const CStringArray& MsgGetMessageHistory() const;
+    void MsgSetMessageText(const CB::string& str);
+    const CB::string& MsgGetMessageText() const;
+    const std::vector<CB::string>& MsgGetMessageHistory() const;
 
-    void MsgDialogSend(const CString& str, BOOL bCloseDialog = TRUE);
+    void MsgDialogSend(const CB::string& str, BOOL bCloseDialog = TRUE);
     BOOL MsgSendDialogOpen(BOOL bShowDieRoller = FALSE);
-    void MsgDialogSend(const CString& str);
+    void MsgDialogSend(const CB::string& str);
     void MsgDialogCancel(BOOL bDiscardHistory = FALSE);
-    void MsgDialogClose(const CString& str);
+    void MsgDialogClose(const CB::string& str);
     void MsgDialogForceDefer();
 
-    static CString MsgEncodeFromPieces(CString strReadOnly, CString strEditable);
-    static void MsgSeperateIntoPieces(CString strMsg, CString& strReadOnly,
-        CString& strEditable);
+    static CB::string MsgEncodeFromPieces(const CB::string& strReadOnly, const CB::string& strEditable);
+    static void MsgSeperateIntoPieces(const CB::string& strMsg, CB::string& strReadOnly,
+        CB::string& strEditable);
 
-    static void MsgSeperateLegacyMsgIntoPieces(CString strMsg, CString& strHistory,
-        CString& strReadOnly, CString& strEditable);
-    static void MsgParseLegacyHistory(CString strLegacyMsg,
-        CStringArray& astrMsgHist, CString& strCurMsg);
+    static void MsgSeperateLegacyMsgIntoPieces(CB::string& strMsg, CB::string& strHistory,
+        CB::string& strReadOnly, CB::string& strEditable);
+    static void MsgParseLegacyHistory(CB::string& strLegacyMsg,
+        std::vector<CB::string>& astrMsgHist, CB::string& strCurMsg);
 
     void SetDieRollState(OwnerOrNullPtr<CRollState> pRState);
     const CRollState* GetDieRollState() const;
@@ -560,7 +561,7 @@ public:
     long SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst);
     CMoveList* DeserializeMovesFromFile(CFile* pFile, long lOffset);
     void LoadGameBoxFileForSerialize();
-    void LoadAndActivateMoveFile(LPCSTR pszPathName);
+    void LoadAndActivateMoveFile(const CB::string& pszPathName);
     BOOL LoadAndActivateHistory(size_t nHistRec);
     BOOL LoadVintageHistoryMoveLists(CFile& file);
     BOOL LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist);
@@ -603,19 +604,19 @@ public:
     DWORD       m_dwMajorRevs;  // GameBox Major revision number
     DWORD       m_dwMinorRevs;  // GameBox Minor revisions number
     DWORD       m_dwGBoxID;     // Required Game box signature
-    CString     m_strGBoxFile;  // Probable Game box filename
+    CB::string  m_strGBoxFile;  // Probable Game box filename
     // The scenario ID is used to relate games to move files. All players
     // MUST start play with the same scenario file!
     DWORD       m_dwScenarioID; // Scenario ID (ramdomly gened at new)
-    CString     m_strScnAuthor; // Scenario author
-    CString     m_strScnTitle;  // Scenario title
-    CString     m_strScnDescr;  // Scenario description
+    CB::string  m_strScnAuthor; // Scenario author
+    CB::string  m_strScnTitle;  // Scenario title
+    CB::string  m_strScnDescr;  // Scenario description
     CPlayerManager* m_pPlayerMgr;// Pointer to player manager (if has player accounts)
     DWORD       m_dwCurrentPlayer;// Mask for game file's player
     DWORD       m_dwPlayerHash; // MS 32 bits of MD5 hash of m_wCurrentPlayer ..
                                 // .. and player file description text. Used as ..
                                 // .. a tamper check.
-    CString     m_strPlayerFileDescr; // Description of who owns file and other stuff..
+    CB::string  m_strPlayerFileDescr; // Description of who owns file and other stuff..
                                 // .. that happened when it was created.
     BOOL        m_bTrayAVisible;// Tray pallete A visible
     BOOL        m_bTrayBVisible;// Tray pallete B visible
@@ -636,8 +637,8 @@ public:
 
     GameState   m_eState;       // Current state of game.
 
-    CString     m_strCurMsg;    // Current user message under construction
-    CStringArray m_astrMsgHist; // Current message history
+    CB::string  m_strCurMsg;    // Current user message under construction
+    std::vector<CB::string> m_astrMsgHist; // Current message history
 
     size_t      m_nCurMove;     // Index of current move (Invalid_v<size_t> is at end)
     POSITION    m_posCurMove;   // Shadow of m_nCurMove. (NOSAVE)
@@ -699,7 +700,7 @@ protected:
     BOOL    m_bAutoPlayback;    // Autoplayback is active
     BOOL    m_bQuietPlayback;   // True if no visual feedback is to be shown
     WORD    m_wDocRand;         // Used to generate ObjectID's
-    CString m_strTmpPathName;   // Used to pass filename to serialize
+    CB::string m_strTmpPathName;   // Used to pass filename to serialize
 
     BOOL    m_bSimulateSpectator;// If set, show everything as if spectator game
 
@@ -713,13 +714,13 @@ public:
 
 protected:
     virtual BOOL OnNewDocument();
-    virtual BOOL OnSaveDocument(const char* pszPathName);
-    virtual BOOL OnOpenDocument(const char* pszPathName);
+    virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override;
+    virtual BOOL OnOpenDocument(LPCTSTR pszPathName) override;
     virtual void DeleteContents();
 
-    BOOL DoSaveGameFile(LPCTSTR pszFileName);
-    BOOL CheckIfPlayerFilesExist(LPCTSTR pszBaseName, LPCTSTR pszExt,
-        BOOL bCheckReferee, CString& strExist);
+    BOOL DoSaveGameFile(const CB::string& pszFileName);
+    BOOL CheckIfPlayerFilesExist(const CB::string& pszBaseName, const CB::string& pszExt,
+        BOOL bCheckReferee, CB::string& strExist);
 
 // Generated message map functions
 protected:

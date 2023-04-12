@@ -60,11 +60,11 @@ void CGsnProjView::DoUpdateGsnInfo()
 {
     CGamDoc* pDoc = GetDocument();
     CString str;
-    if (!pDoc->m_strScnTitle.IsEmpty())
+    if (!pDoc->m_strScnTitle.empty())
         str += "TITLE: " + pDoc->m_strScnTitle + "\r\n\r\n";
-    if (!pDoc->m_strScnAuthor.IsEmpty())
+    if (!pDoc->m_strScnAuthor.empty())
         str += "AUTHOR: " + pDoc->m_strScnAuthor + "\r\n\r\n";
-    if (!pDoc->m_strScnDescr.IsEmpty())
+    if (!pDoc->m_strScnDescr.empty())
         str += "DESCRIPTION:\r\n\r\n" + pDoc->m_strScnDescr;
     m_editInfo.SetWindowText(str);
 }

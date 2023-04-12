@@ -60,10 +60,8 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
     CHistRecord& pHist = m_pHistTbl->GetHistRecord(nHistRec);
 
     // Get the output file name
-    CString strFilter;
-    strFilter.LoadString(IDS_GMOV_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_GMOV_ENTERNAME);
+    CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
     CB::string szFName = GetPathName();
     if (!szFName.empty())
@@ -85,8 +83,7 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
         CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive,
         &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
@@ -121,10 +118,8 @@ void CGamDoc::SaveRecordedMoves()
     FlushAllIndicators();
 
     // Get the output file name
-    CString strFilter;
-    strFilter.LoadString(IDS_GMOV_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_GMOV_ENTERNAME);
+    CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
     CB::string szFName = GetPathName();
     if (!szFName.empty())
@@ -158,8 +153,7 @@ void CGamDoc::SaveRecordedMoves()
         CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive,
         &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
@@ -187,8 +181,8 @@ void CGamDoc::SaveRecordedMoves()
     }
     END_CATCH_ALL
 
-    m_strCurMsg.Empty();
-    m_astrMsgHist.RemoveAll();
+    m_strCurMsg.clear();
+    m_astrMsgHist.clear();
 
     GetMainFrame()->GetMessageWindow()->SetText(NULL);
 
@@ -382,7 +376,7 @@ void CGamDoc::RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFaci
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordEventMessage(CString strMsg,
+void CGamDoc::RecordEventMessage(const CB::string& strMsg,
         BoardID nBoard, int x, int y)
 {
     if (!IsRecording()) return;
@@ -393,7 +387,7 @@ void CGamDoc::RecordEventMessage(CString strMsg,
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
-void CGamDoc::RecordEventMessage(CString strMsg,
+void CGamDoc::RecordEventMessage(const CB::string& strMsg,
         size_t nTray, PieceID pid)
 {
     if (!IsRecording()) return;
@@ -430,7 +424,7 @@ void CGamDoc::RecordObjectDelete(ObjectID dwObjID)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordObjectSetText(GameElement elem, LPCTSTR pszObjText)
+void CGamDoc::RecordObjectSetText(GameElement elem, const CB::string& pszObjText)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
@@ -470,7 +464,7 @@ void CGamDoc::RecordGameState()
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordMessage(CString strMsg)
+void CGamDoc::RecordMessage(const CB::string& strMsg)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
@@ -556,7 +550,7 @@ void CGamDoc::DoAcceptPlayback()    // (exposed for project window access)
     }
 
     FlushAllIndicators();
-    m_astrMsgHist.RemoveAll();
+    m_astrMsgHist.clear();
     TransferPlaybackToHistoryTable(bTruncateRemainingMoves);
 }
 

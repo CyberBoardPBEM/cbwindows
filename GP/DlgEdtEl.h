@@ -43,7 +43,7 @@ public:
     enum { IDD = IDD_EDIT_ELEMENT_TEXT };
     CButton m_chkAllSides;
     CEdit   m_editText;
-    CString m_strText;
+    CB::string m_strText;
     BOOL    m_bSetAllSides;
     //}}AFX_DATA
 

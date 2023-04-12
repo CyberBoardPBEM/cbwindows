@@ -41,7 +41,7 @@ public:
 // Dialog Data
     //{{AFX_DATA(CPasswordDialog)
     enum { IDD = IDD_GET_PASSWORD };
-    CString m_strPassword;
+    CB::string m_strPassword;
     //}}AFX_DATA
 
 

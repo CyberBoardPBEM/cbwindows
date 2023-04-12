@@ -57,7 +57,7 @@ protected:
 // Implementation - methods
 protected:
     void ProcessMessages();
-    BOOL GetLine(CString& strBfr, CString& strLine);
+    static bool GetLine(CB::string& strBfr, CB::string& strLine);
 
     void SetDefaults();
 
