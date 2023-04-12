@@ -1135,7 +1135,7 @@ void CObjectSetText::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CPieceObj* pPObj;
 
     pDoc.SetGameElementString(m_elem,
-        m_strObjText.IsEmpty() ? NULL : (LPCTSTR)m_strObjText);
+        m_strObjText.empty() ? NULL : &m_strObjText);
 
     if (IsGameElementAPiece(m_elem))
     {

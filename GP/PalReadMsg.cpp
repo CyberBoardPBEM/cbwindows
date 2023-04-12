@@ -187,19 +187,19 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
 
 void CReadMsgWnd::ProcessMessages()
 {
-    const CStringArray& astrHist = m_pDoc->MsgGetMessageHistory();
-    if (astrHist.GetSize() <= 0 || astrHist.GetSize() < value_preserving_cast<intptr_t>(m_nMsgCount))
+    const std::vector<CB::string>& astrHist = m_pDoc->MsgGetMessageHistory();
+    if (astrHist.empty() || astrHist.size() < m_nMsgCount)
     {
         m_nMsgCount = size_t(0);
         m_editCtrl.SetWindowText("");
     }
 
     size_t nOldCount = m_nMsgCount;            // Save previous length for a moment
-    m_nMsgCount = value_preserving_cast<size_t>(astrHist.GetSize());       // Set new high water mark
+    m_nMsgCount = astrHist.size();       // Set new high water mark
     for (size_t i = nOldCount ; i < m_nMsgCount ; ++i)
     {
-        CString strBfr = astrHist.GetAt(value_preserving_cast<intptr_t>(i));
-        if (strBfr.IsEmpty() || strBfr.GetAt(strBfr.GetLength()-1) != '\n')
+        CB::string strBfr = astrHist[i];
+        if (strBfr.empty() || strBfr[strBfr.a_size()-size_t(1)] != '\n')
         {
             strBfr += "\r\n";
         }
@@ -209,16 +209,16 @@ void CReadMsgWnd::ProcessMessages()
             InsertText(STR_MESSAGE_DIVIDER);
         }
 
-        CString strLine;
+        CB::string strLine;
 
         while (GetLine(strBfr, strLine))
         {
-            if (strLine.IsEmpty() || strLine.GetAt(0) == '\r')
+            if (strLine.empty() || strLine[size_t(0)] == '\r')
                 InsertText("\r\n");
-            else if (strLine.GetAt(0) == CHAR_CHEVRON)      // Dice Roll
+            else if (strLine[size_t(0)] == CHAR_CHEVRON)      // Dice Roll
             {
                 SetTextStyle(MSG_DICE_ROLL_COLOR, MSG_DICE_ROLL_EFFECT);
-                InsertText((LPCTSTR)strLine + 2);           // Don't show chevron
+                InsertText(strLine.substr(size_t(2)));           // Don't show chevron
             }
             else                                            // Normal Message
             {
@@ -231,24 +231,24 @@ void CReadMsgWnd::ProcessMessages()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CReadMsgWnd::GetLine(CString& strBfr, CString& strLine)
+bool CReadMsgWnd::GetLine(CB::string& strBfr, CB::string& strLine)
 {
-    if (strBfr.IsEmpty())
+    if (strBfr.empty())
     {
-        strLine.Empty();
-        return FALSE;
+        strLine.clear();
+        return false;
     }
-    int nCrLf = strBfr.Find('\n');
-    if (nCrLf < 0)
+    size_t nCrLf = strBfr.find('\n');
+    if (nCrLf == CB::string::npos)
     {
         // Last string in buffer
         strLine = strBfr;
-        strBfr.Empty();
-        return TRUE;
+        strBfr.clear();
+        return true;
     }
-    strLine = strBfr.Left(nCrLf + 1);
-    strBfr = strBfr.Mid(nCrLf + 1);
-    return TRUE;
+    strLine = strBfr.substr(size_t(0), nCrLf + size_t(1));
+    strBfr = strBfr.substr(nCrLf + size_t(1));
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

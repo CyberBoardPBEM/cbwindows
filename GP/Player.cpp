@@ -32,7 +32,7 @@ intptr_t CPlayerManager::AddPlayer(LPCTSTR pszName)
     return Add(player);
 }
 
-Player& CPlayerManager::GetPlayerUsingMask(DWORD dwMask)
+const Player& CPlayerManager::GetPlayerUsingMask(DWORD dwMask) const
 {
     ASSERT(dwMask != 0);
     int nPlayerNum = GetPlayerNumFromMask(dwMask);

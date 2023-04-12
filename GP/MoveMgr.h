@@ -356,7 +356,7 @@ public:
 #endif
 protected:
     GameElement m_elem;
-    CString     m_strObjText;
+    CB::string  m_strObjText;
 };
 
 ///////////////////////////////////////////////////////////////////////

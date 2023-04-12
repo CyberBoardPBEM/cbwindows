@@ -53,7 +53,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
+void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
 {
     ASSERT(m_pRcdMoves == NULL);    // Should be gone at this point!
 
@@ -62,8 +62,7 @@ void CGamDoc::LoadAndActivateMoveFile(LPCSTR pszPathName)
 
     if (!file.Open(pszPathName, CFile::modeRead | CFile::shareExclusive, &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, pszPathName);
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, pszPathName);
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
@@ -421,7 +420,7 @@ void CGamDoc::RestartMoves()
     m_nCurMove = m_pMoves->DoMove(*this, m_nFirstMove, false);
     m_nMoveInterlock--;
     ASSERT(m_nCurMove != Invalid_v<size_t> && m_nCurMove != m_nFirstMove);
-    m_astrMsgHist.RemoveAll();
+    m_astrMsgHist.clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -435,8 +434,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
     {
         m_pMoves->PurgeAfter(m_nCurMove);
         // Append TRUNCATED! to description
-        CString str;
-        str.LoadString(IDS_TRUNCATED);
+        CB::string str = CB::string::LoadString(IDS_TRUNCATED);
         m_pPlayHist->m_strTitle += str;
     }
     else
@@ -533,13 +531,12 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB:
 
 void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID)
 {
-    CString str;
-    str.LoadString(nResourceID);
-    SelectTrayItem(pYSet, pid, str);
+    CB::string str = CB::string::LoadString(nResourceID);
+    SelectTrayItem(pYSet, pid, &str);
 }
 
 void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
-    LPCTSTR pszNotificationTip /* = NULL */)
+    const CB::string* pszNotificationTip /* = NULL */)
 {
     if (IsQuietPlayback()) return;
     // Make sure tray palette A is visible
@@ -549,7 +546,7 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     // Select the piece in the appropriate trayset.
     size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
-    m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip);
+    m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip ? *pszNotificationTip : nullptr);
 }
 
 void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
@@ -661,14 +658,13 @@ void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     CPoint pointWorkspace, UINT nResID)
 {
-    CString str;
-    str.LoadString(nResID);
+    CB::string str = CB::string::LoadString(nResID);
     IndicateTextTipOnBoard(pPBoard, pointWorkspace, str);
 }
 
 // Shows a balloon tip so person knows what happened.
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
-    CPoint pointWorkspace, LPCTSTR pszStr)
+    CPoint pointWorkspace, const CB::string& pszStr)
 {
     if (IsQuietPlayback()) return;
     CPlayBoardView* pView = (CPlayBoardView*)FindPBoardView(pPBoard);

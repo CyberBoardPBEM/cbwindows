@@ -288,7 +288,7 @@ void CGamDoc::OnCloseDocument()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::OnOpenDocument(const char* pszPathName)
+BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
 {
     BOOL bRet = FALSE;
     SetThisDocumentType();
@@ -301,7 +301,7 @@ BOOL CGamDoc::OnOpenDocument(const char* pszPathName)
     // to the Serialize routine
     m_strTmpPathName = pszPathName;
     bRet = CDocument::OnOpenDocument(pszPathName);
-    m_strTmpPathName.Empty();
+    m_strTmpPathName.clear();
 
     if (bRet && !IsScenario())
     {
@@ -318,7 +318,7 @@ BOOL CGamDoc::OnOpenDocument(const char* pszPathName)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::OnSaveDocument(const char* pszPathName)
+BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
 {
     if (_access(pszPathName, 0) != -1)
     {
@@ -436,7 +436,7 @@ void CGamDoc::DeleteContents()
     m_pPlayerMgr = NULL;
     m_dwCurrentPlayer = 0;
     m_dwPlayerHash = 0;
-    m_strPlayerFileDescr.Empty();
+    m_strPlayerFileDescr.clear();
 
     m_bSimulateSpectator = FALSE;
 }
@@ -498,7 +498,7 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 ///////////////////////////////////////////////////////////////////////
 // Support for new unique views on this document
 
-BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
+BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
     LPVOID lpvCreateParam)
 {
     m_pvParam = lpvCreateParam;
@@ -507,7 +507,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, LPCSTR pszTitle,
     if (pNewFrame == NULL)
         return FALSE;               // Not created
     ASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
-    CString str = GetTitle();
+    CB::string str = GetTitle();
     str += " - ";
     str += pszTitle;
     pNewFrame->SetWindowText(str);
@@ -583,10 +583,8 @@ void CGamDoc::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFra
 
 BOOL CGamDoc::OnNewScenario()
 {
-    CString strFilter;
-    strFilter.LoadString(IDS_GBOX_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_GBOX_SELECT);
+    CB::string strFilter = CB::string::LoadString(IDS_GBOX_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_GBOX_SELECT);
 
     CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_PATHMUSTEXIST,
         strFilter, NULL, 0);
@@ -596,7 +594,7 @@ BOOL CGamDoc::OnNewScenario()
         return FALSE;
 
     m_strGBoxFile = dlg.GetFileName();
-    CString strGBoxPath = dlg.GetPathName();
+    CB::string strGBoxPath = dlg.GetPathName();
 
     // Load gamebox using archival procedures.
 
@@ -648,10 +646,8 @@ BOOL CGamDoc::OnNewScenario()
 
 BOOL CGamDoc::OnNewGame()
 {
-    CString strFilter;
-    strFilter.LoadString(IDS_GSCN_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_GSCN_SELECT);
+    CB::string strFilter = CB::string::LoadString(IDS_GSCN_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_GSCN_SELECT);
 
     CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_PATHMUSTEXIST,
         strFilter, NULL, 0);
@@ -668,8 +664,7 @@ BOOL CGamDoc::OnNewGame()
     if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
         &fe))
     {
-        CString strErr;
-        AfxFormatString1(strErr, AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
@@ -685,7 +680,7 @@ BOOL CGamDoc::OnNewGame()
         m_bScenario = TRUE;             // Fake out shared code
         SerializeScenario(ar);
         m_bScenario = FALSE;
-        m_strTmpPathName.Empty();
+        m_strTmpPathName.clear();
         GetMainFrame()->EndWaitCursor();
     }
     CATCH_ALL(e)
@@ -714,27 +709,24 @@ BOOL CGamDoc::OnNewGame()
             return FALSE;
 
         // Prompt for a base file name...
-        CString strExt;
-        strExt.LoadString(IDS_GAME_FILTER);
-        CString strTitle;
-        strTitle.LoadString(IDS_GAME_SELECT_ROOT_NAME);
+        CB::string strExt = CB::string::LoadString(IDS_GAME_FILTER);
+        CB::string strTitle = CB::string::LoadString(IDS_GAME_SELECT_ROOT_NAME);
         CFileDialog dlg(FALSE, "gam", NULL, OFN_HIDEREADONLY, strExt, NULL, 0);
         dlg.m_ofn.lpstrTitle = strTitle;
 
         if (dlg.DoModal() == IDOK)
         {
-            CString strFileList;
+            CB::string strFileList;
 
-            CString strBaseName = dlg.GetPathName();
-            int nPos = strBaseName.ReverseFind('.');
-            strBaseName = strBaseName.Left(nPos);
+            CB::string strBaseName = dlg.GetPathName();
+            size_t nPos = strBaseName.rfind('.');
+            strBaseName = strBaseName.substr(size_t(0), nPos);
 
-            CString strExists;
+            CB::string strExists;
             if (CheckIfPlayerFilesExist(strBaseName, dlg.GetFileExt(),
                 dlgMultiplay.m_bCreateReferee, strExists))
             {
-                CString strWarn;
-                strWarn.Format(IDS_WARN_PLAYER_FILES_EXIST, (LPCTSTR)strExists);
+                CB::string strWarn = CB::string::Format(IDS_WARN_PLAYER_FILES_EXIST, strExists);
                 if (AfxMessageBox(strWarn,
                     MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONEXCLAMATION) != IDOK)
                 {
@@ -746,16 +738,14 @@ BOOL CGamDoc::OnNewGame()
             // all created games. This string will be displayed at the end of
             // the scenario description.
 
-            CString strPlayers;
+            CB::string strPlayers;
             for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
                 strPlayers += m_pPlayerMgr->ElementAt(i).m_strName + "\r\n";
-            CString strGamInfo;
-            strGamInfo.Format(IDS_INFO_MPLAY_CREATE, m_pPlayerMgr->GetSize(),
-                (LPCTSTR)strPlayers);
+            CB::string strGamInfo = CB::string::Format(IDS_INFO_MPLAY_CREATE, m_pPlayerMgr->GetSize(),
+                strPlayers);
             if (dlgMultiplay.m_bCreateReferee)
             {
-                CString strReferee;
-                strReferee.LoadString(IDS_INFO_MPLAY_CREATE_REF);
+                CB::string strReferee = CB::string::LoadString(IDS_INFO_MPLAY_CREATE_REF);
                 strGamInfo += strReferee;
             }
 
@@ -763,9 +753,9 @@ BOOL CGamDoc::OnNewGame()
 
             for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
             {
-                CString strPlayName;
+                CB::string strPlayName;
                 strPlayName = m_pPlayerMgr->ElementAt(i).m_strName;
-                CString strFName = strBaseName + "-" + strPlayName + "." + dlg.GetFileExt();
+                CB::string strFName = strBaseName + "-" + strPlayName + "." + dlg.GetFileExt();
 
                 m_strPlayerFileDescr = strGamInfo + "@" + strFName;  // For hash check and calc
                 m_dwCurrentPlayer = CPlayerManager::GetMaskFromPlayerNum(i);
@@ -778,10 +768,9 @@ BOOL CGamDoc::OnNewGame()
 
             // Create the specator game file...
 
-            CString strSpec;
-            strSpec.LoadString(IDS_GAME_SPECTATOR);
+            CB::string strSpec = CB::string::LoadString(IDS_GAME_SPECTATOR);
 
-            CString strFName = strBaseName + strSpec + dlg.GetFileExt();
+            CB::string strFName = strBaseName + strSpec + dlg.GetFileExt();
 
             m_strPlayerFileDescr = strGamInfo + "@" + strFName; // For hash check and calc
             m_dwCurrentPlayer = 0;
@@ -796,8 +785,7 @@ BOOL CGamDoc::OnNewGame()
 
             if (dlgMultiplay.m_bCreateReferee)
             {
-                CString strReferee;
-                strReferee.LoadString(IDS_GAME_REFEREE);
+                CB::string strReferee = CB::string::LoadString(IDS_GAME_REFEREE);
 
                 strFName = strBaseName + strReferee + dlg.GetFileExt();
 
@@ -810,8 +798,7 @@ BOOL CGamDoc::OnNewGame()
 
                 strFileList += strFName;
             }
-            CString strMsg;
-            strMsg.Format(IDS_MSG_PLAYER_FILES, strFileList.GetString());
+            CB::string strMsg = CB::string::Format(IDS_MSG_PLAYER_FILES, strFileList);
             AfxMessageBox(strMsg, MB_OK | MB_ICONINFORMATION);
 
             return FALSE;
@@ -827,10 +814,12 @@ BOOL CGamDoc::OnNewGame()
 
 DWORD CGamDoc::CalculateHashForCurrentPlayerMask()
 {
-    ASSERT(!m_strPlayerFileDescr.IsEmpty());
+    ASSERT(!m_strPlayerFileDescr.empty());
     std::array<std::byte, 18> bfr1 =
-    Compute16ByteHash<18>((LPCTSTR)m_strPlayerFileDescr,
-        value_preserving_cast<size_t>(m_strPlayerFileDescr.GetLength()));
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    Compute16ByteHash<18>(m_strPlayerFileDescr.a_str(),
+        m_strPlayerFileDescr.a_size());
     bfr1[16] = static_cast<std::byte>(m_dwCurrentPlayer >> 8);
     bfr1[17] = static_cast<std::byte>(m_dwCurrentPlayer & 0xFF);
     std::array<std::byte, 16> bfr2 = Compute16ByteHash(bfr1.data(), bfr1.size());
@@ -845,30 +834,26 @@ BOOL CGamDoc::VerifyCurrentPlayerMask()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::CheckIfPlayerFilesExist(LPCTSTR pszBaseName, LPCTSTR pszExt, BOOL bCheckReferee,
-    CString& strExist)
+BOOL CGamDoc::CheckIfPlayerFilesExist(const CB::string& strBaseName, const CB::string& strFileExt, BOOL bCheckReferee,
+    CB::string& strExist)
 {
-    CString strBaseName = pszBaseName;
-    CString strFileExt = pszExt;
     BOOL bFilesExist = FALSE;
 
     for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
     {
-        CString strPlayName;
-        strPlayName = m_pPlayerMgr->ElementAt(i).m_strName;
-        CString strFName = strBaseName + "-" + strPlayName + "." + strFileExt;
+        CB::string strPlayName = m_pPlayerMgr->ElementAt(i).m_strName;
+        CB::string strFName = strBaseName + "-" + strPlayName + "." + strFileExt;
 
-        if (_access(strFName, 0) != -1)
+        if (std::filesystem::exists(strFName))
         {
             strExist += strFName + "\n";
             bFilesExist = TRUE;
         }
     }
-    CString strSpec;
-    strSpec.LoadString(IDS_GAME_SPECTATOR);
+    CB::string strSpec = CB::string::LoadString(IDS_GAME_SPECTATOR);
 
-    CString strFName = strBaseName + strSpec + strFileExt;
-    if (_access(strFName, 0) != -1)
+    CB::string strFName = strBaseName + strSpec + strFileExt;
+    if (std::filesystem::exists(strFName))
     {
         strExist += strFName + "\n";
         bFilesExist = TRUE;
@@ -877,11 +862,10 @@ BOOL CGamDoc::CheckIfPlayerFilesExist(LPCTSTR pszBaseName, LPCTSTR pszExt, BOOL 
     if (!bCheckReferee)
         return bFilesExist;
 
-    CString strReferee;
-    strReferee.LoadString(IDS_GAME_REFEREE);
+    CB::string strReferee = CB::string::LoadString(IDS_GAME_REFEREE);
 
     strFName = strBaseName + strReferee + strFileExt;
-    if (_access(strFName, 0) != -1)
+    if (std::filesystem::exists(strFName))
     {
         strExist += strFName + "\n";
         bFilesExist = TRUE;
@@ -892,7 +876,7 @@ BOOL CGamDoc::CheckIfPlayerFilesExist(LPCTSTR pszBaseName, LPCTSTR pszExt, BOOL 
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::DoSaveGameFile(LPCTSTR pszFileName)
+BOOL CGamDoc::DoSaveGameFile(const CB::string& pszFileName)
 {
     CFile file;
     CFileException fe;
@@ -955,8 +939,7 @@ void CGamDoc::DiscardWindowState()
 void CGamDoc::SetThisDocumentType()
 {
     CDocTemplate *pDocTmpl = GetDocTemplate();
-    CString str;
-    VERIFY(pDocTmpl->GetDocString(str, CDocTemplate::filterExt));
+    CB::string str = CB::string::GetDocString(*pDocTmpl, CDocTemplate::filterExt);
     m_bScenario = str.CompareNoCase(".gsn") == 0;
 }
 
@@ -1410,7 +1393,7 @@ void CGamDoc::OnPbckPrevious()
 
         // Clear out any strings we may have accumulated during the
         // search for the final visible move index.
-        m_astrMsgHist.RemoveAll();
+        m_astrMsgHist.clear();
 
         while ((m_nCurMove = m_pMoves->DoMove(*this, m_nCurMove)) < nPrvMove &&
             m_nCurMove != Invalid_v<size_t>)
@@ -1726,10 +1709,8 @@ void CGamDoc::OnFileLoadMoveFile()
         return;
     }
 
-    CString strFilter;
-    strFilter.LoadString(IDS_GMOV_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_GMOV_ENTERNAME);
+    CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
     CFileDialog dlg(TRUE, "gmv", NULL, OFN_HIDEREADONLY, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
@@ -1807,25 +1788,25 @@ void CGamDoc::OnFileSaveGameAsScenario()
 
     // Save various variables...
     m_bScenario = TRUE;
-    CString strPlayerFileDescr = m_strPlayerFileDescr;
+    CB::string strPlayerFileDescr = m_strPlayerFileDescr;
     DWORD dwPlayerHash = m_dwPlayerHash;
     DWORD dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwScenarioID = m_dwScenarioID;    // Cache scenario ID
 
-    m_strPlayerFileDescr.Empty();
+    m_strPlayerFileDescr.clear();
     m_dwPlayerHash = 0;
     m_dwCurrentPlayer = 0;
     m_dwScenarioID = IssueScenarioID();     // Create new scenario ID
 
-    CString fileName;
-    if (GetApp()->DoPromptFileName(fileName, IDS_SAVEGAMEASSCENARIO,
+    std::unique_ptr<CB::string> fileName = CB::string::DoPromptFileName(*GetApp(), IDS_SAVEGAMEASSCENARIO,
         OFN_HIDEREADONLY | OFN_PATHMUSTEXIST, FALSE,
-        GetApp()->GetScnenarioDocTemplate()))
+        GetApp()->GetScnenarioDocTemplate());
+    if (fileName)
     {
         TRY
         {
             FlushAllIndicators();
-            OnSaveDocument(fileName);
+            OnSaveDocument(*fileName);
         }
         END_TRY
     }
@@ -1914,13 +1895,10 @@ void CGamDoc::OnEditCreatePlayers()
     if (dlg.m_nPlayerCount > size_t(0))
     {
         m_pPlayerMgr = new CPlayerManager;
-        char szBfr[2];
-        szBfr[1] = 0;
         for (size_t i = size_t(0) ; i < dlg.m_nPlayerCount ; ++i)
         {
-            szBfr[0] = value_preserving_cast<char>(size_t('A') + i);
-            CString str;
-            str.Format(IDS_BASE_PLAYER_NAME, szBfr);
+            CB::string szBfr = value_preserving_cast<CB::string::value_type>(size_t('A') + i);
+            CB::string str = CB::string::Format(IDS_BASE_PLAYER_NAME, szBfr);
             m_pPlayerMgr->AddPlayer(str);
         }
     }
@@ -2002,8 +1980,10 @@ void CGamDoc::OnFileCreateReferee()
     if (dlg.DoModal() != IDOK)
         return;
     MD5_CTX md5Context;
-    MD5Calc(&md5Context, (LPCTSTR)dlg.m_strPassword,
-        value_preserving_cast<size_t>(dlg.m_strPassword.GetLength()));
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    MD5Calc(&md5Context, dlg.m_strPassword.a_str(),
+        dlg.m_strPassword.a_size());
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
         AfxMessageBox(IDS_ERR_INVALID_PASSWORD);
@@ -2011,38 +1991,36 @@ void CGamDoc::OnFileCreateReferee()
     }
 
     // Save so we can later restore.
-    CString strPlayerFileDescr = m_strPlayerFileDescr;
+    CB::string strPlayerFileDescr = m_strPlayerFileDescr;
     DWORD dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwPlayerHash = m_dwPlayerHash;
 
-    CString strReferee;
-    strReferee.LoadString(IDS_GAME_REFEREE);
+    CB::string strReferee = CB::string::LoadString(IDS_GAME_REFEREE);
 
     // Rip apart current player string to get the raw stuff
     // we need to create a referee file.
-    CString strBaseName = m_strPathName;
-    int nPos = strBaseName.ReverseFind('-');
-    if (nPos >= 0)
-        strBaseName = strBaseName.Left(nPos);
+    CB::string strBaseName = m_strPathName;
+    size_t nPos = strBaseName.rfind('-');
+    if (nPos != CB::string::npos)
+        strBaseName = strBaseName.substr(size_t(0), nPos);
     else
     {
         // Just remove the extension
-        int nPos = strBaseName.ReverseFind('.');
-        if (nPos >= 0)
-            strBaseName = strBaseName.Left(nPos);
+        size_t nPos = strBaseName.rfind('.');
+        if (nPos != CB::string::npos)
+            strBaseName = strBaseName.substr(size_t(0), nPos);
     }
-    CString strGamInfo;
-    nPos = m_strPlayerFileDescr.ReverseFind('@');
-    if (nPos >= 0)
-        strGamInfo = m_strPlayerFileDescr.Left(nPos);
+    CB::string strGamInfo;
+    nPos = m_strPlayerFileDescr.rfind('@');
+    if (nPos != CB::string::npos)
+        strGamInfo = m_strPlayerFileDescr.substr(size_t(0), nPos);
 
-    CString strFName = strBaseName + strReferee + "gam";
+    CB::string strFName = strBaseName + strReferee + "gam";
 
-    if (_access(strFName, 0) != -1)
+    if (std::filesystem::exists(strFName))
     {
         // File already exists. Prompt for overwrite.
-        CString str;
-        str.Format(IDS_WARN_REF_EXISTS, strFName.GetString());
+        CB::string str = CB::string::Format(IDS_WARN_REF_EXISTS, strFName);
         if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2) != IDOK)
             return;
     }
@@ -2060,8 +2038,7 @@ void CGamDoc::OnFileCreateReferee()
 
     if (bOK)
     {
-        CString str;
-        str.Format(IDS_INFO_REF_CREATED, strFName.GetString());
+        CB::string str = CB::string::Format(IDS_INFO_REF_CREATED, strFName);
         AfxMessageBox(str);
     }
 }
@@ -2077,8 +2054,10 @@ void CGamDoc::OnFileChangeGameOwner()
     if (dlg.DoModal() != IDOK)
         return;
     MD5_CTX md5Context;
-    MD5Calc(&md5Context, (LPCTSTR)dlg.m_strPassword,
-        value_preserving_cast<size_t>(dlg.m_strPassword.GetLength()));
+    /* use CP1252 (not wchar_t, not UTF8) to remain
+        compatible with CB3 */
+    MD5Calc(&md5Context, dlg.m_strPassword.a_str(),
+        dlg.m_strPassword.a_size());
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
         AfxMessageBox(IDS_ERR_INVALID_PASSWORD);
@@ -2094,38 +2073,37 @@ void CGamDoc::OnFileChangeGameOwner()
         return;                         // No player selected
 
     DWORD dwPlayerMask = CPlayerManager::GetMaskFromPlayerNum(dlg2.m_nPlayer);
-    CString strPlayerName = m_pPlayerMgr->ElementAt(dlg2.m_nPlayer).m_strName;
+    CB::string strPlayerName = m_pPlayerMgr->ElementAt(dlg2.m_nPlayer).m_strName;
 
     // Save so we can later restore.
-    CString strPlayerFileDescr = m_strPlayerFileDescr;
+    CB::string strPlayerFileDescr = m_strPlayerFileDescr;
     DWORD dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwPlayerHash = m_dwPlayerHash;
 
     // Rip apart current player string to get the raw stuff
     // we need to create a referee file.
-    CString strBaseName = m_strPathName;
-    int nPos = strBaseName.ReverseFind('-');
-    if (nPos >= 0)
-        strBaseName = strBaseName.Left(nPos);
+    CB::string strBaseName = m_strPathName;
+    size_t nPos = strBaseName.rfind('-');
+    if (nPos != CB::string::npos)
+        strBaseName = strBaseName.substr(size_t(0), nPos);
     else
     {
         // Just remove the extension
-        int nPos = strBaseName.ReverseFind('.');
-        if (nPos >= 0)
-            strBaseName = strBaseName.Left(nPos);
+        size_t nPos = strBaseName.rfind('.');
+        if (nPos != CB::string::npos)
+            strBaseName = strBaseName.substr(size_t(0), nPos);
     }
-    CString strGamInfo;
-    nPos = m_strPlayerFileDescr.ReverseFind('@');
-    if (nPos >= 0)
-        strGamInfo = m_strPlayerFileDescr.Left(nPos);
+    CB::string strGamInfo;
+    nPos = m_strPlayerFileDescr.rfind('@');
+    if (nPos != CB::string::npos)
+        strGamInfo = m_strPlayerFileDescr.substr(size_t(0), nPos);
 
-    CString strFName = strBaseName + "-" + strPlayerName + ".gam";
+    CB::string strFName = strBaseName + "-" + strPlayerName + ".gam";
 
-    if (_access(strFName, 0) != -1)
+    if (std::filesystem::exists(strFName))
     {
         // File already exists. Prompt for overwrite.
-        CString str;
-        str.Format(IDS_WARN_REF_EXISTS, strFName.GetString());
+        CB::string str = CB::string::Format(IDS_WARN_REF_EXISTS, strFName);
         if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2) != IDOK)
             return;
     }
@@ -2143,8 +2121,7 @@ void CGamDoc::OnFileChangeGameOwner()
 
     if (bOK)
     {
-        CString str;
-        str.Format(IDS_INFO_GAME_CREATED, strFName.GetString());
+        CB::string str = CB::string::Format(IDS_INFO_GAME_CREATED, strFName);
         AfxMessageBox(str);
     }
 }

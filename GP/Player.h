@@ -45,7 +45,7 @@ class CPlayerManager : public CArray< Player, Player& >
 {
 public:
     intptr_t AddPlayer(LPCTSTR pszName);
-    Player& GetPlayerUsingMask(DWORD dwMask);
+    const Player& GetPlayerUsingMask(DWORD dwMask) const;
 
     static DWORD GetMaskFromPlayerNum(int nPlayerNumber);
     static int   GetPlayerNumFromMask(DWORD dwMask);

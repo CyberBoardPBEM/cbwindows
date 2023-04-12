@@ -132,8 +132,7 @@ void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
         str += " - ";
         CString strOwnerName = pDoc->GetPlayerManager()->
             GetPlayerUsingMask(m_pPBoard->GetOwnerMask()).m_strName;
-        CString strOwnedBy;
-        strOwnedBy.Format(IDS_TIP_OWNED_BY_UC, (LPCTSTR)strOwnerName);
+        CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwnerName);
         str += strOwnedBy;
     }
 

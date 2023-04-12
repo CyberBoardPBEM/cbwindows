@@ -89,14 +89,15 @@ BOOL CGamDoc::IsCurrentPlayerReferee()
 ////////////////////////////////////////////////////////////////////////////
 // Get "Owned by" string for piece
 
-void CGamDoc::GetPieceOwnerName(PieceID pid, CString& strName)
+CB::string CGamDoc::GetPieceOwnerName(PieceID pid) const
 {
-    strName.Empty();
+    CB::string strName;
     if (GetPieceTable()->IsPieceOwned(pid))
     {
         strName = GetPlayerManager()->GetPlayerUsingMask(
             GetPieceTable()->GetOwnerMask(pid)).m_strName;
     }
+    return strName;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,7 @@ void CGamDoc::GetPieceOwnerName(PieceID pid, CString& strName)
 // map is checked. This way changes to the gamebox's strings will show
 // up in all scenarios and games that haven't redefined them.
 
-CString CGamDoc::GetGameElementString(GameElement gelem) const
+CB::string CGamDoc::GetGameElementString(GameElement gelem) const
 {
     CB::string str;
     if (!m_mapStrings.Lookup(gelem, str))
@@ -122,13 +123,12 @@ BOOL CGamDoc::HasGameElementString(GameElement gelem) const
     return TRUE;
 }
 
-void CGamDoc::SetGameElementString(GameElement gelem, LPCTSTR pszString)
+void CGamDoc::SetGameElementString(GameElement gelem, const CB::string* pszString)
 {
-    if (pszString != NULL && *pszString != 0)
+    if (pszString != NULL && !pszString->empty())
     {
         // Add the new string value
-        CString str = pszString;
-        m_mapStrings.SetAt(gelem, str);
+        m_mapStrings.SetAt(gelem, *pszString);
     }
     else
     {
@@ -195,8 +195,8 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
     return elem;
 }
 
-void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
-    CString* pStrTitle /* = NULL */)
+void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip,
+    CB::string* pStrTitle /* = NULL */)
 {
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
@@ -209,7 +209,7 @@ void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CString &strTip,
     {
         const CMarkObj& pObj = static_cast<const CMarkObj&>(pDObj);
         strTip = GetGameElementString(MakeObjectIDElement(pObj.GetObjectID()));
-        if (strTip.IsEmpty())
+        if (strTip.empty())
             strTip = GetGameElementString(MakeMarkerElement(pObj.m_mid));
     }
 }
@@ -231,7 +231,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
     for (size_t i = size_t(0) ; i < dlg.m_nSides ; ++i)
     {
         GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
-        CString strDown = GetGameElementString(elemDown);
+        CB::string strDown = GetGameElementString(elemDown);
         if (strDown != dlg.m_strText)
         {
             dlg.m_bSetAllSides = FALSE;
@@ -246,14 +246,14 @@ void CGamDoc::DoEditPieceText(PieceID pid)
 
     if (!dlg.m_bSetAllSides)
     {
-        SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+        SetObjectText(elem, dlg.m_strText.empty() ? NULL : &dlg.m_strText);
     }
     else
     {
         for (size_t i = size_t(0) ; i < dlg.m_nSides ; ++i)
         {
             GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
-            SetObjectText(elemDown, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+            SetObjectText(elemDown, dlg.m_strText.empty() ? NULL : &dlg.m_strText);
         }
     }
 }
@@ -269,7 +269,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
 
     CEditElementTextDialog dlg;
 
-    CString strTip;
+    CB::string strTip;
     GetTipTextForObject(pDObj, strTip, NULL);
 
     dlg.m_strText = strTip;
@@ -280,7 +280,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
     GameElement elem = GetGameElementCodeForObject(pDObj);
     AssignNewMoveGroup();
 
-    SetObjectText(elem, dlg.m_strText.IsEmpty() ? NULL : (LPCTSTR)dlg.m_strText);
+    SetObjectText(elem, dlg.m_strText.empty() ? NULL : &dlg.m_strText);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -308,7 +308,7 @@ const CRollState* CGamDoc::GetDieRollState() const
 // coordinates. If either of the coordinates are -1, the center of
 // the view receives the tip.
 
-void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, CString strMsg)
+void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, const CB::string& strMsg)
 {
     if (IsQuietPlayback()) return;
 
@@ -338,27 +338,26 @@ void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, C
 // If the piece id is null or not found in the tray, the center of the
 // listbox receives the tip.
 
-void CGamDoc::EventShowTrayNotification(size_t nTrayNum, PieceID pid, CString strMsg)
+void CGamDoc::EventShowTrayNotification(size_t nTrayNum, PieceID pid, const CB::string& strMsg)
 {
     if (IsQuietPlayback()) return;
 
     CTraySet& pYGrp = GetTrayManager()->GetTraySet(nTrayNum);
-    SelectTrayItem(pYGrp, pid, strMsg);
+    SelectTrayItem(pYGrp, pid, &strMsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // Called by record playback.
 
-void CGamDoc::MsgSetMessageText(const CString& str)
+void CGamDoc::MsgSetMessageText(const CB::string& str)
 {
-    m_astrMsgHist.Add(str);
+    m_astrMsgHist.push_back(str);
 
-    if (!m_strCurMsg.IsEmpty())
+    if (!m_strCurMsg.empty())
     {
-        if (!m_strCurMsg.IsEmpty() && m_strCurMsg.GetAt(m_strCurMsg.GetLength() - 1) != '\n')
+        if (!m_strCurMsg.empty() && m_strCurMsg[m_strCurMsg.a_size() - size_t(1)] != '\n')
             m_strCurMsg += "\r\n";
-        CString strDivider;
-        strDivider.LoadString(IDS_MSG_DIVIDER);
+        CB::string strDivider = CB::string::LoadString(IDS_MSG_DIVIDER);
         m_strCurMsg += strDivider + str;
     }
     else
@@ -372,13 +371,13 @@ void CGamDoc::MsgSetMessageText(const CString& str)
 ////////////////////////////////////////////////////////////////////////////
 // Returns the current unaccepted message text.
 
-const CString& CGamDoc::MsgGetMessageText() const
+const CB::string& CGamDoc::MsgGetMessageText() const
 {
     return m_strCurMsg;
 }
 
 // Return current message history.
-const CStringArray& CGamDoc::MsgGetMessageHistory() const
+const std::vector<CB::string>& CGamDoc::MsgGetMessageHistory() const
 {
     return m_astrMsgHist;
 }
@@ -406,22 +405,22 @@ BOOL CGamDoc::MsgSendDialogOpen(BOOL bShowDieRoller /* = FALSE */)
 /////////////////////////////////////////////////////////////////////////////
 // Called by dialog code to close send dialog in various ways.
 
-void CGamDoc::MsgDialogSend(const CString& str, BOOL bCloseDialog /* = TRUE */)
+void CGamDoc::MsgDialogSend(const CB::string& str, BOOL bCloseDialog /* = TRUE */)
 {
     AssignNewMoveGroup();
 
-    CString strReadOnly;
-    CString strEditable;
+    CB::string strReadOnly;
+    CB::string strEditable;
     MsgSeperateIntoPieces(str, strReadOnly, strEditable);
-    CString strMsg = strReadOnly + strEditable;
+    CB::string strMsg = strReadOnly + strEditable;
 
     RecordMessage(strMsg);
 
     // Add to message history
-    m_astrMsgHist.Add(strMsg);
+    m_astrMsgHist.push_back(std::move(strMsg));
 
     // Clear out current message buffer
-    m_strCurMsg.Empty();
+    m_strCurMsg.clear();
 
     if (bCloseDialog)
     {
@@ -435,9 +434,9 @@ void CGamDoc::MsgDialogSend(const CString& str, BOOL bCloseDialog /* = TRUE */)
 void CGamDoc::MsgDialogCancel(BOOL bDiscardHistory /* = FALSE */)
 {
     m_pMsgDialog = NULL;
-    m_strCurMsg.Empty();
+    m_strCurMsg.clear();
     if (bDiscardHistory)
-        m_astrMsgHist.RemoveAll();
+        m_astrMsgHist.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -450,7 +449,7 @@ void CGamDoc::MsgDialogForceDefer()
 
 ////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::MsgDialogClose(const CString& str)
+void CGamDoc::MsgDialogClose(const CB::string& str)
 {
     m_strCurMsg = str;              // Just save the current encoded message string
     m_pMsgDialog = NULL;
@@ -466,40 +465,37 @@ void CGamDoc::MsgDialogClose(const CString& str)
 
 // This routine breaks an encoded send message string into its parts.
 /* static */
-void CGamDoc::MsgSeperateLegacyMsgIntoPieces(CString strMsg, CString& strHistory,
-    CString& strReadOnly, CString& strEditable)
+void CGamDoc::MsgSeperateLegacyMsgIntoPieces(CB::string& strMsg, CB::string& strHistory,
+    CB::string& strReadOnly, CB::string& strEditable)
 {
-    strHistory.Empty();
-    strReadOnly.Empty();
-    strEditable.Empty();
+    strHistory.clear();
+    strReadOnly.clear();
+    strEditable.clear();
+ASSERT(!"needs testing");
 
     // Search the message string backwards for a ">>\r\n" or start of buffer.
-    int i;
-    for (i = strMsg.GetLength()-2; i >= 0; i--)
+    size_t i = strMsg.rfind("\xBB\r");
+    if (i != CB::string::npos)
     {
-        if (strMsg.GetAt(i) == '\xBB' && strMsg.GetAt(i+1) == '\r')
-        {
-            i += 3;                 // Position to start of next line
-            break;
-        }
+        ASSERT(strMsg[i + size_t(2)] == '\n');
+        i += size_t(3);                 // Position to start of next line
     }
-    if (i < 0) i = 0;
-    strHistory = strMsg.Left(i);    // Extract historical messages
-    strMsg = strMsg.Mid(i);         // Remove historical msgs from main string
-    if (strMsg.IsEmpty())
+    else
+    {
+        i = size_t(0);
+    }
+    strHistory = strMsg.substr(size_t(0), i);    // Extract historical messages
+    strMsg = strMsg.substr(i);         // Remove historical msgs from main string
+    if (strMsg.empty())
         return;
     // Search the message string backwards for a "reverse P" or start of buffer.
-    for (i = strMsg.GetLength()-1; i >= 0; i--)
-    {
-        if (strMsg.GetAt(i) == '\xB6')  // 0xB6 is paragraph marker
-            break;
-    }
-    if (i < 0)
+    i = strMsg.rfind('\xB6');   // 0xB6 is paragraph marker
+    if (i == CB::string::npos)
         strReadOnly = strMsg;
     else
     {
-        strReadOnly = strMsg.Left(i);   // Extract read-only part of current msg
-        strEditable = strMsg.Mid(i+1);  // Extract editable part of current msg
+        strReadOnly = strMsg.substr(size_t(0), i);   // Extract read-only part of current msg
+        strEditable = strMsg.substr(i + size_t(1));  // Extract editable part of current msg
     }
 }
 
@@ -512,72 +508,67 @@ void CGamDoc::MsgSeperateLegacyMsgIntoPieces(CString strMsg, CString& strHistory
 // This routine breaks the encoded send message buffer into its parts.
 
 /* static */
-void CGamDoc::MsgSeperateIntoPieces(CString strMsg, CString& strReadOnly,
-    CString& strEditable)
+void CGamDoc::MsgSeperateIntoPieces(const CB::string& strMsg, CB::string& strReadOnly,
+    CB::string& strEditable)
 {
-    strReadOnly.Empty();
-    strEditable.Empty();
+    strReadOnly.clear();
+    strEditable.clear();
 
-    if (strMsg.IsEmpty())
+    if (strMsg.empty())
         return;
 
     // Search the message string backwards for a "reverse P" or start of buffer.
-    int i;
-    for (i = strMsg.GetLength()-1; i >= 0; i--)
-    {
-        if (strMsg.GetAt(i) == '\xB6')  // 0xB6 is paragraph marker
-            break;
-    }
-    if (i < 0)
+    size_t i = strMsg.rfind('\xB6'); // 0xB6 is paragraph marker
+    if (i == CB::string::npos)
         strReadOnly = strMsg;
     else
     {
-        strReadOnly = strMsg.Left(i);   // Extract read-only part of current msg
-        strEditable = strMsg.Mid(i+1);  // Extract editable part of current msg
+        strReadOnly = strMsg.substr(size_t(0), i);   // Extract read-only part of current msg
+        strEditable = strMsg.substr(i + size_t(1));  // Extract editable part of current msg
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////
 /* static */
-CString CGamDoc::MsgEncodeFromPieces(CString strReadOnly,  CString strEditable)
+CB::string CGamDoc::MsgEncodeFromPieces(const CB::string& strReadOnly,  const CB::string& strEditable)
 {
-    CString str;
+    CB::string str;
     str = strReadOnly;
-    if (!strEditable.IsEmpty())
+    if (!strEditable.empty())
         str += '\xB6' + strEditable;
     return str;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 /* static */
-void CGamDoc::MsgParseLegacyHistory(CString strLegacyMsg,
-    CStringArray& astrMsgHist, CString& strCurMsg)
+void CGamDoc::MsgParseLegacyHistory(CB::string& strLegacyMsg,
+    std::vector<CB::string>& astrMsgHist, CB::string& strCurMsg)
 {
-    astrMsgHist.RemoveAll();
+    astrMsgHist.clear();
 
-    CString strHistory;
-    CString strReadOnly;
-    CString strEditable;
+    CB::string strHistory;
+    CB::string strReadOnly;
+    CB::string strEditable;
 
     MsgSeperateLegacyMsgIntoPieces(strLegacyMsg, strHistory, strReadOnly, strEditable);
 
     // New encoding only holds read-only and editable strings
     strCurMsg = MsgEncodeFromPieces(strReadOnly, strEditable);
 
-    int nPos;
+    size_t nPos;
     // The loop searches for a chevron followed by <cr><lf>
-    while ((nPos = strHistory.Find("\xBB\r\n")) != -1)
+    while ((nPos = strHistory.find("\xBB\r\n")) != CB::string::npos)
     {
-        CString strBfr;
-        strBfr = strHistory.Left(nPos + 3);         // Buffer the message
-        strHistory = strHistory.Mid(nPos + 3);      // Remove the message
+        CB::string strBfr;
+        strBfr = strHistory.substr(size_t(0), nPos + size_t(3));         // Buffer the message
+        strHistory = strHistory.substr(nPos + size_t(3));      // Remove the message
         // Finally we need to remove the divider string
-        VERIFY((nPos = strBfr.Find("\r\n\xAB")) != -1);
-        strBfr = strBfr.Left(nPos);
-        astrMsgHist.Add(strBfr);
+        VERIFY((nPos = strBfr.find("\r\n\xAB")) != CB::string::npos);
+        strBfr = strBfr.substr(size_t(0), nPos);
+        astrMsgHist.push_back(std::move(strBfr));
     }
-    if (!strHistory.IsEmpty())
-        astrMsgHist.Add(strHistory);
+    if (!strHistory.empty())
+        astrMsgHist.push_back(std::move(strHistory));
 }
 
 

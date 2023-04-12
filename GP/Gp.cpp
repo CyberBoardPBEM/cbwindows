@@ -174,7 +174,7 @@ BOOL CGpApp::InitInstance()
     {
         CB::string buff = m_pszHelpFilePath;
 
-        no_demote<size_t> dip = buff.rfind('\\');
+        size_t dip = buff.rfind('\\');
         if (dip != CB::string::npos)
         {
             dip++;
@@ -315,7 +315,7 @@ BOOL CGpApp::OnOpenRecentFile(UINT nID)
     CB::string strFileName = (*m_pRecentFileList)[nIndex];
     if (!strFileName.empty())
     {
-        no_demote<size_t> nPathEnd = strFileName.rfind('\\');
+        size_t nPathEnd = strFileName.rfind('\\');
         if (nPathEnd != CB::string::npos)
         {
             strFileName = strFileName.substr(size_t(0), nPathEnd);

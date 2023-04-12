@@ -171,11 +171,11 @@ void CSendMsgDialog::FillEditBoxes(const std::string& str)
     m_editMsg.SetWindowText("");
     m_editMsg2.SetWindowText("");
 
-    CString strReadOnly;
-    CString strEditable;
+    CB::string strReadOnly;
+    CB::string strEditable;
 
     CGamDoc::MsgSeperateIntoPieces(str.c_str(), strReadOnly, strEditable);
-    if (strReadOnly.IsEmpty())
+    if (strReadOnly.empty())
     {
         m_editMsg.SetWindowText(strEditable);
         m_editMsg.SetFocus();
@@ -194,7 +194,7 @@ void CSendMsgDialog::FillEditBoxes(const std::string& str)
         m_editMsg2.SetFocus();
         m_editMsg2.SetSel(m_editMsg2.GetWindowTextLength(),
             m_editMsg2.GetWindowTextLength());
-        if (!strReadOnly.IsEmpty())
+        if (!strReadOnly.empty())
         {
             // If there is a read-only part in the message, there
             // must have been a die roll. We need to disable cancel.
@@ -233,7 +233,7 @@ BOOL CSendMsgDialog::OnInitDialog()
     m_editMsg.SetFont(CFont::FromHandle(g_res.h8ss));
     m_editMsg2.SetFont(CFont::FromHandle(g_res.h8ss));
 
-    FillEditBoxes(m_pDoc->MsgGetMessageText().GetString());
+    FillEditBoxes(m_pDoc->MsgGetMessageText());
 
     if (m_bShowDieRoller)
     {
@@ -266,26 +266,23 @@ void CSendMsgDialog::OnSendMsgSend()
 
     TeardownReadOnlyView();                 // Back to original layout
     // Set up with new history data.
-    FillEditBoxes(m_pDoc->MsgGetMessageText().GetString());
+    FillEditBoxes(m_pDoc->MsgGetMessageText());
 }
 
 void CSendMsgDialog::OnSendMsgClose()
 {
-    CString str;
+    CB::string str;
     if (m_bReadOnlyView)
     {
-        CString strReadOnly;
-        CString strEditable;
-        m_editMsg.GetWindowText(strReadOnly);
-        m_editMsg2.GetWindowText(strEditable);
+        CB::string strReadOnly = CB::string::GetWindowText(m_editMsg);
+        CB::string strEditable = CB::string::GetWindowText(m_editMsg2);
         str = CGamDoc::MsgEncodeFromPieces(strReadOnly, strEditable);
     }
     else
     {
         // No read-only part yet
-        CString strEditable;
-        m_editMsg.GetWindowText(strEditable);
-        str = CGamDoc::MsgEncodeFromPieces(CString(""), strEditable);
+        CB::string strEditable = CB::string::GetWindowText(m_editMsg);
+        str = CGamDoc::MsgEncodeFromPieces("", strEditable);
     }
     m_pDoc->MsgDialogClose(str);
 }

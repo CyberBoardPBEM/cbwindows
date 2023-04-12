@@ -1950,19 +1950,19 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_BASE_PLAYER_NAME    "Player %s"
+    IDS_BASE_PLAYER_NAME    "Player {}"
     IDS_LBL_NO_OWNER        "<< NO OWNER >>"
     IDS_TIP_OWNER_ACQUIRED  "Pieces in this area of the board have had their ownership set."
     IDS_TIP_OWNER_RELEASED  "Pieces in this area of the board have had their ownership cleared."
-    IDS_TIP_OWNED_BY_UC     "Owned by %s"
+    IDS_TIP_OWNED_BY_UC     "Owned by {}"
     IDS_TIP_OWNED_BY_LC     "owned by %s"
     IDS_TIP_OWNED_BY_PROJ   " - Owned by %s"
     IDS_GAME_FILTER         "Game Files (*.gam)|*.gam|All Files (*.*)|*.*||"
     IDS_GAME_SELECT_ROOT_NAME "Select Base Name for Player Game Files"
     IDS_GAME_SPECTATOR      "-Spectator."
-    IDS_MSG_PLAYER_FILES    "The following player specific game files have been created:\n\n%s\n\nDistribute them as required."
+    IDS_MSG_PLAYER_FILES    "The following player specific game files have been created:\n\n{}\n\nDistribute them as required."
     IDS_WARN_PLAYER_FILES_EXIST 
-                            "Player files already exist with the specified base filename. They are:\n\n%s\nPress OK to overwrite them. Press Cancel to abort."
+                            "Player files already exist with the specified base filename. They are:\n\n{}\nPress OK to overwrite them. Press Cancel to abort."
     IDS_PHEAD_SPECTATOR_OWNED " - Owned by Spectator"
     IDS_ERR_PLAYER_TAMPER   "This game file's player owner key has been tampered with.\nThis game file cannot be loaded.\n\nYou *ARE* the weakest link....GOOD BYE!"
     IDS_GAME_REFEREE        "-Referee."
@@ -1971,7 +1971,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_INFO_MPLAY_CREATE   "%d player files were created for this game. The players names are:\r\n\r\n%s\r\n"
+    IDS_INFO_MPLAY_CREATE   "{} player files were created for this game. The players names are:\r\n\r\n{}\r\n"
     IDS_INFO_MPLAY_CREATE_REF "A Referee file was created as well.\r\n\r\n"
     IDS_PRJINFO_TITLE       "TITLE: "
     IDS_PRJINFO_AUTHOR      "AUTHOR: "
@@ -2018,8 +2018,8 @@ BEGIN
     IDS_MSG_TVIZ_OWNER_FULL "- It's fully visible to the its owner"
     IDS_WARN_FILE_UPGRADE   "You are loading a Game or Scenario file from a prior version of CyberBoard. It will automatically be upgraded when you save it. The upgraded file is not compatible with prior versions of CyberBoard.\n\nPress OK to continue, Cancel to exit."
     IDS_ERR_INVALID_PASSWORD "Invalid Password."
-    IDS_INFO_REF_CREATED    "Referee file created:\n\n%s"
-    IDS_WARN_REF_EXISTS     "The referee file:\n\n%s\n\nAlready exists. Press OK to overwrite."
+    IDS_INFO_REF_CREATED    "Referee file created:\n\n{}"
+    IDS_WARN_REF_EXISTS     "The referee file:\n\n{}\n\nAlready exists. Press OK to overwrite."
     IDS_ERR_NOHISTWHENMOVE  "You can't replay a history entry while a move file is active. Please accept or discard the move file and try again."
     IDS_BARNAME_STANDARD    "Standard"
     IDS_BARNAME_VIEW        "View"
@@ -2031,7 +2031,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_MESSAGE_WND         "Messages"
-    IDS_INFO_GAME_CREATED   "New Game File Created:\n\n%s"
+    IDS_INFO_GAME_CREATED   "New Game File Created:\n\n{}"
     IDS_TIP_TRAY_FLIPPED_RANDOM 
                             "%zu pieces in this tray have been flipped randomly."
     IDS_MSG_RANDOM_SIDE_PULL 

@@ -51,32 +51,28 @@ void CGamProjView::DoGamProperty()
 
 void CGamProjView::DoUpdateGamInfo()
 {
-    CString strTitle;
-    CString strAuthor;
-    CString strDescr;
-    CString strMultiInfo;
-    strTitle.LoadString(IDS_PRJINFO_TITLE);
-    strAuthor.LoadString(IDS_PRJINFO_AUTHOR);
-    strDescr.LoadString(IDS_PRJINFO_DESCRIPTION);
-    strMultiInfo.LoadString(IDS_PRJINFO_MPLAYER);
+    CB::string strTitle = CB::string::LoadString(IDS_PRJINFO_TITLE);
+    CB::string strAuthor = CB::string::LoadString(IDS_PRJINFO_AUTHOR);
+    CB::string strDescr = CB::string::LoadString(IDS_PRJINFO_DESCRIPTION);
+    CB::string strMultiInfo = CB::string::LoadString(IDS_PRJINFO_MPLAYER);
 
     CGamDoc* pDoc = GetDocument();
-    CString str;
-    if (!pDoc->m_strScnTitle.IsEmpty())
+    CB::string str;
+    if (!pDoc->m_strScnTitle.empty())
         str += strTitle + pDoc->m_strScnTitle + "\r\n\r\n";
-    if (!pDoc->m_strScnAuthor.IsEmpty())
+    if (!pDoc->m_strScnAuthor.empty())
         str += strAuthor + pDoc->m_strScnAuthor + "\r\n\r\n";
     if (pDoc->HasPlayers() && !pDoc->IsScenario())
     {
-        CString strInfo;
-        int nPos = pDoc->m_strPlayerFileDescr.ReverseFind('@');
-        if (nPos >= 0)
-            strInfo = pDoc->m_strPlayerFileDescr.Left(nPos);
+        CB::string strInfo;
+        size_t nPos = pDoc->m_strPlayerFileDescr.rfind('@');
+        if (nPos != CB::string::npos)
+            strInfo = pDoc->m_strPlayerFileDescr.substr(size_t(0), nPos);
         else
             strInfo = pDoc->m_strPlayerFileDescr;
         str += strMultiInfo + strInfo;
     }
-    if (!pDoc->m_strScnDescr.IsEmpty())
+    if (!pDoc->m_strScnDescr.empty())
         str += strDescr + pDoc->m_strScnDescr;
     m_editInfo.SetWindowText(str);
 }
