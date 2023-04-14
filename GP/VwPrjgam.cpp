@@ -376,8 +376,7 @@ void CGamProjView::SetButtonState(CButton& btn, UINT nStringID)
         btn.SetWindowText("");
     else
     {
-        CString str;
-        str.LoadString(nStringID);
+        CB::string str = CB::string::LoadString(nStringID);
         btn.SetWindowText(str);
     }
     btn.EnableWindow(nStringID != 0);
@@ -413,35 +412,31 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     m_listProj.ResetContent();
 
     // Document type....
-    CString str;
-    str.LoadString(IDS_PHEAD_GAM_DOCTYPE);
+    CB::string str = CB::string::LoadString(IDS_PHEAD_GAM_DOCTYPE);
     if (pDoc->HasPlayers())
     {
         if (pDoc->GetCurrentPlayerMask() == 0)
         {
-            CString strSpec;
-            strSpec.LoadString(IDS_PHEAD_SPECTATOR_OWNED);
+            CB::string strSpec = CB::string::LoadString(IDS_PHEAD_SPECTATOR_OWNED);
             str += strSpec;
         }
         else if (pDoc->IsCurrentPlayerReferee())
         {
-            CString strSpec;
-            strSpec.LoadString(IDS_PHEAD_REFEREE_OWNED);
+            CB::string strSpec = CB::string::LoadString(IDS_PHEAD_REFEREE_OWNED);
             str += strSpec;
         }
         else
         {
-            CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pDoc->GetCurrentPlayerMask()).m_strName;
-            CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
+            CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
     }
     m_listProj.AddItem(grpDoc, str);
 
     // Boards....
-    str.LoadString(IDS_PHEAD_GAM_BOARDS);
+    str = CB::string::LoadString(IDS_PHEAD_GAM_BOARDS);
     m_listProj.AddItem(grpBrdHdr, str);
 
     CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
@@ -457,23 +452,22 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         str = pPBoard.GetBoard()->GetName().mfc_str();
         if (bDisplayIDs)
         {
-            CString strTmp = str;
-            str.Format("[%u] %s",
-                value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(pPBMgr->GetPBoard(i).GetBoard()->GetSerialNumber())), (LPCTSTR)strTmp);
+            CB::string strTmp = std::move(str);
+            str = std::format("[{}] {}",
+                pPBMgr->GetPBoard(i).GetBoard()->GetSerialNumber(), strTmp);
         }
         if (pPBoard.IsOwned())
         {
-            CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pPBoard.GetOwnerMask()).m_strName;
-            CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
+            CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
         m_listProj.AddItem(grpBrd, str, i);
     }
 
     // History Heading....
-    str.LoadString(IDS_PHEAD_GAM_HISTORY);
+    str = CB::string::LoadString(IDS_PHEAD_GAM_HISTORY);
     m_listProj.AddItem(grpHistHdr, str);
 
     // Current History....!!!!!ACCOUNT FOR PLAYBACK!!!!!
@@ -482,18 +476,18 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         //if (pDoc->IsRecording())
         if (pDoc->GetGameState() == CGamDoc::stateRecording)
         {
-            str.LoadString(IDS_PHEAD_GAM_CURRENT);
-            m_listProj.AddItem(grpCurHist, str, 0);
+            str = CB::string::LoadString(IDS_PHEAD_GAM_CURRENT);
+            m_listProj.AddItem(grpCurHist, str, size_t(0));
         }
         else if (pDoc->GetGameState() == CGamDoc::stateHistPlay)
         {
-            str.LoadString(IDS_PHEAD_GAM_SUSPEND);
-            m_listProj.AddItem(grpCurHist, str, 0);
+            str = CB::string::LoadString(IDS_PHEAD_GAM_SUSPEND);
+            m_listProj.AddItem(grpCurHist, str, size_t(0));
         }
         else
         {
             ASSERT(pDoc->GetGameState() == CGamDoc::stateMovePlay);
-            str.LoadString(IDS_PHEAD_GAM_MOVEFILE);
+            str = CB::string::LoadString(IDS_PHEAD_GAM_MOVEFILE);
             if (!pDoc->m_pPlayHist->m_strTitle.IsEmpty())
                 str += " - " + pDoc->m_pPlayHist->m_strTitle;
             m_listProj.AddItem(grpCurPlay, str, 0);
@@ -501,8 +495,8 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     }
     if (pDoc->GetGameState() == CGamDoc::stateHistPlay)
     {
-        str.LoadString(IDS_PHEAD_GAM_HISTPLAY);
-        m_listProj.AddItem(grpHistPlay, str, 0);
+        str = CB::string::LoadString(IDS_PHEAD_GAM_HISTPLAY);
+        m_listProj.AddItem(grpHistPlay, str, size_t(0));
     }
 
     // Load rest of game history
@@ -511,12 +505,12 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     if (pHTbl != NULL)
     {
-        CString strTimeFmt;
-        strTimeFmt.LoadString(IDS_GAME_USA_TIMEFMT);
-        for (size_t i = 0; i < pHTbl->GetNumHistRecords(); i++)
+        // TODO:  why not use locale's time instead of US?
+        CB::string strTimeFmt = CB::string::LoadString(IDS_GAME_USA_TIMEFMT);
+        for (size_t i = size_t(0); i < pHTbl->GetNumHistRecords(); i++)
         {
             CHistRecord& pRcd = pHTbl->GetHistRecord(i);
-            CString str = pRcd.m_timeAbsorbed.Format(strTimeFmt);
+            CB::string str = pRcd.m_timeAbsorbed.Format(strTimeFmt);
             str += " - ";
             str += pRcd.m_strTitle;
             m_listProj.AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);

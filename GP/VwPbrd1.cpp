@@ -167,19 +167,18 @@ void CPlayBoardView::ClearToolTip()
 
 void CPlayBoardView::SetNotificationTip(CPoint pointClient, UINT nResID)
 {
-    CString str;
-    str.LoadString(nResID);
-    SetNotificationTip(pointClient, str);
+    CB::string str = CB::string::LoadString(nResID);
+    SetNotificationTip(pointClient, &str);
 }
 
-void CPlayBoardView::SetNotificationTip(CPoint pointClient, LPCTSTR pszTip)
+void CPlayBoardView::SetNotificationTip(CPoint pointClient, const CB::string* pszTip)
 {
     ClearNotificationTip();
 
     TOOLINFO ti;
     m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_PLAYBOARD_MSG);
     ti.uFlags |= TTF_TRACK;
-    ti.lpszText = (LPTSTR)pszTip;
+    ti.lpszText = pszTip ? const_cast<CB::string::value_type*>(pszTip->v_str()) : nullptr;
 
     m_toolMsgTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 

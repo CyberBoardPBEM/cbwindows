@@ -59,7 +59,7 @@ void CGsnProjView::DoGsnProperty()
 void CGsnProjView::DoUpdateGsnInfo()
 {
     CGamDoc* pDoc = GetDocument();
-    CString str;
+    CB::string str;
     if (!pDoc->m_strScnTitle.empty())
         str += "TITLE: " + pDoc->m_strScnTitle + "\r\n\r\n";
     if (!pDoc->m_strScnAuthor.empty())

@@ -330,7 +330,7 @@ void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, c
         pView = (CPlayBoardView*)FindPBoardView(*pPBoard);
         pView->WorkspaceToClient(pntTipLoc);
     }
-    pView->SetNotificationTip(pntTipLoc, strMsg);
+    pView->SetNotificationTip(pntTipLoc, &strMsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////
