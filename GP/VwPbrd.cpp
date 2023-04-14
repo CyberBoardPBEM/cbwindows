@@ -1296,9 +1296,9 @@ void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         if (rct.PtInRect(point))
         {
             point += (CSize)GetDeviceScrollPosition();
-            std::string str = m_pPBoard->GetCellNumberStr(point, m_nZoom);
+            CB::string str = m_pPBoard->GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
-            pCmdUI->SetText(str.c_str());
+            pCmdUI->SetText(str);
         }
     }
 }
@@ -1507,8 +1507,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
-        CString strMsg;
-        strMsg.Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.size());
+        CB::string strMsg = CB::string::Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.size());
         pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
@@ -1616,8 +1615,7 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
-        CString strMsg;
-        strMsg.LoadString(IDS_TIP_FLIP_RANDOM);
+        CB::string strMsg = CB::string::LoadString(IDS_TIP_FLIP_RANDOM);
         pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
@@ -2079,10 +2077,8 @@ void CPlayBoardView::OnEditCopy()
 
 void CPlayBoardView::OnEditBoardToFile()
 {
-    CString strFilter;
-    strFilter.LoadString(IDS_BMP_FILTER);
-    CString strTitle;
-    strTitle.LoadString(IDS_SEL_BITMAPFILE);
+    CB::string strFilter = CB::string::LoadString(IDS_BMP_FILTER);
+    CB::string strTitle = CB::string::LoadString(IDS_SEL_BITMAPFILE);
 
     CFileDialog dlg(FALSE, "bmp", NULL, OFN_HIDEREADONLY |
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
@@ -2176,9 +2172,8 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 
         CreateSequentialSubMenuIDs(menu, ID_MRKGROUP_FIRST, tbl);
 
-        CString str;
-        VERIFY(pCmdUI->m_pMenu->GetMenuString(pCmdUI->m_nIndex, str,
-            MF_BYPOSITION));
+        CB::string str = CB::string::GetMenuString(*pCmdUI->m_pMenu, pCmdUI->m_nIndex,
+            MF_BYPOSITION);
         VERIFY(pCmdUI->m_pMenu->ModifyMenu(pCmdUI->m_nIndex,
             MF_BYPOSITION | MF_ENABLED | MF_POPUP | MF_STRING,
             reinterpret_cast<UINT_PTR>(menu.Detach()), str));
@@ -2304,8 +2299,7 @@ void CPlayBoardView::OnActTakeOwnership()
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
-        CString strMsg;
-        strMsg.LoadString(IDS_TIP_OWNER_ACQUIRED);
+        CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
         pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
@@ -2354,8 +2348,7 @@ void CPlayBoardView::OnActReleaseOwnership()
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
-        CString strMsg;
-        strMsg.LoadString(IDS_TIP_OWNER_RELEASED);
+        CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_RELEASED);
         pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
@@ -2412,8 +2405,7 @@ void CPlayBoardView::OnActSetOwner()
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
-        CString strMsg;
-        strMsg.LoadString(IDS_TIP_OWNER_ACQUIRED);
+        CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
         pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }

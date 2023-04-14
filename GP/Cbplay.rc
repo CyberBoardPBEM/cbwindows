@@ -1885,7 +1885,7 @@ BEGIN
     IDS_TIP_LBOXITEM_MARKER "* "
     IDS_TIP_CLICK_MENU      "Click here for tray's menu"
     IDS_TIP_TRAY_SHUFFLED   "%zu pieces in this tray have been shuffled."
-    IDS_TIP_OBJS_SHUFFLED   "%zu objects in this area of the board have been shuffled."
+    IDS_TIP_OBJS_SHUFFLED   "{} objects in this area of the board have been shuffled."
     IDS_TIP_SELLIST_HELP    "Insert key = Selects only highlighted items.\r\nDelete key = Deselects all highlighted items."
 END
 
@@ -1956,7 +1956,7 @@ BEGIN
     IDS_TIP_OWNER_RELEASED  "Pieces in this area of the board have had their ownership cleared."
     IDS_TIP_OWNED_BY_UC     "Owned by {}"
     IDS_TIP_OWNED_BY_LC     "owned by %s"
-    IDS_TIP_OWNED_BY_PROJ   " - Owned by %s"
+    IDS_TIP_OWNED_BY_PROJ   " - Owned by {}"
     IDS_GAME_FILTER         "Game Files (*.gam)|*.gam|All Files (*.*)|*.*||"
     IDS_GAME_SELECT_ROOT_NAME "Select Base Name for Player Game Files"
     IDS_GAME_SPECTATOR      "-Spectator."

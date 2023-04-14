@@ -85,12 +85,11 @@ int CSelectedPieceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     m_toolTip.Create(this, TTS_NOPREFIX);
 
-    CString str;
-    str.LoadString(IDS_TIP_SELLIST_HELP);
+    CB::string str = CB::string::LoadString(IDS_TIP_SELLIST_HELP);
 
     TOOLINFO ti;
     m_toolTip.FillInToolInfo(ti, &m_listSel, 0);
-    ti.lpszText = (LPSTR)(LPCSTR)str;
+    ti.lpszText = const_cast<CB::string::value_type*>(str.v_str());
     ti.uFlags |= TTF_CENTERTIP;
     m_toolTip.SendMessage(TTM_ADDTOOL, (WPARAM)0, (LPARAM)&ti);
 

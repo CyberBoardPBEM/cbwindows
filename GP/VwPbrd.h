@@ -115,7 +115,7 @@ public:
 // Tooltip Support
 public:
     void SetNotificationTip(CPoint pointClient, UINT nResID);
-    void SetNotificationTip(CPoint pointClient, LPCTSTR pszTip);
+    void SetNotificationTip(CPoint pointClient, const CB::string* pszTip);
     void ClearNotificationTip();
     void ClearToolTip();
     static void CALLBACK NotificationTipTimeoutHandler(HWND hwnd, UINT uMsg,

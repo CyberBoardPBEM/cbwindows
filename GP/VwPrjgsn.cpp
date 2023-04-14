@@ -364,8 +364,7 @@ void CGsnProjView::SetButtonState(CButton& btn, UINT nStringID)
         btn.SetWindowText("");
     else
     {
-        CString str;
-        str.LoadString(nStringID);
+        CB::string str = CB::string::LoadString(nStringID);
         btn.SetWindowText(str);
     }
     btn.EnableWindow(nStringID != 0);
@@ -415,12 +414,11 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     m_listProj.ResetContent();
 
     // Document type....
-    CString str;
-    str.LoadString(IDS_PHEAD_GSN_DOCTYPE);
+    CB::string str = CB::string::LoadString(IDS_PHEAD_GSN_DOCTYPE);
     m_listProj.AddItem(grpDoc, str);
 
     // Boards....
-    str.LoadString(IDS_PHEAD_GSN_BOARDS);
+    str = CB::string::LoadString(IDS_PHEAD_GSN_BOARDS);
     m_listProj.AddItem(grpBrdHdr, str);
 
     CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
@@ -431,23 +429,22 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         str = pPBoard.GetBoard()->GetName().mfc_str();
         if (bDisplayIDs)
         {
-            CString strTmp = str;
-            str.Format("[%u] %s",
-                value_preserving_cast<unsigned>(static_cast<BoardID::UNDERLYING_TYPE>(pPBoard.GetBoard()->GetSerialNumber())), (LPCTSTR)strTmp);
+            CB::string strTmp = std::move(str);
+            str = std::format("[{}] {}",
+                pPBoard.GetBoard()->GetSerialNumber(), strTmp);
         }
         if (pPBoard.IsOwned())
         {
-            CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pPBoard.GetOwnerMask()).m_strName;
-            CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
+            CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
         m_listProj.AddItem(grpBrd, str, i);
     }
 
     // Trays....
-    str.LoadString(IDS_PHEAD_GSN_TRAYS);
+    str = CB::string::LoadString(IDS_PHEAD_GSN_TRAYS);
     m_listProj.AddItem(grpTrayHdr, str);
 
     CTrayManager* pYMgr = pDoc->GetTrayManager();
@@ -458,15 +455,14 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         str = pYSet.GetName();
         if (bDisplayIDs)
         {
-            CString strTmp = str;
-            str.Format("[%zu] %s", i, (LPCTSTR)strTmp);
+            CB::string strTmp = std::move(str);
+            str = std::format("[{}] {}", i, strTmp);
         }
         if (pYSet.IsOwned())
         {
-            CString strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pYSet.GetOwnerMask()).m_strName;
-            CString strOwnedBy;
-            strOwnedBy.Format(IDS_TIP_OWNED_BY_PROJ, strOwner.GetString());
+            CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
         m_listProj.AddItem(grpTray, str, i);

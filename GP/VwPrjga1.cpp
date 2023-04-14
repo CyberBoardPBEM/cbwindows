@@ -234,7 +234,7 @@ void CGamProjView::DoUpdateHistoryHelpInfo()
 void CGamProjView::DoUpdateCurPlayInfo()
 {
     CGamDoc* pDoc = GetDocument();
-    CString str = "";
+    CB::string str = "";
     if (pDoc->GetGameState() == CGamDoc::stateMovePlay)
     {
         if (!pDoc->m_pPlayHist->m_strDescr.IsEmpty())
