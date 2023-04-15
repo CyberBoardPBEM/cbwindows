@@ -748,11 +748,11 @@ namespace CB
 
 /////////////////////////////////////////////////////////////////////////////
 
-template<char PREFIX_, typename UNDERLYING_TYPE_, std::enable_if_t<std::is_integral_v<UNDERLYING_TYPE_> && std::is_unsigned_v<UNDERLYING_TYPE_>, bool> = true>
+template<wchar_t PREFIX_, typename UNDERLYING_TYPE_, std::enable_if_t<std::is_integral_v<UNDERLYING_TYPE_> && std::is_unsigned_v<UNDERLYING_TYPE_>, bool> = true>
 class XxxxIDExt
 {
 public:
-    static constexpr char PREFIX = PREFIX_;
+    static constexpr wchar_t PREFIX = PREFIX_;
     using UNDERLYING_TYPE = UNDERLYING_TYPE_;
 
     XxxxIDExt() = default;
@@ -787,17 +787,17 @@ private:
 };
 
 // goal is 32bit ids, but currently ids are 16 bit
-template<char PREFIX>
+template<wchar_t PREFIX>
 using XxxxID16 = XxxxIDExt<PREFIX, uint16_t>;
 
-template<char PREFIX>
+template<wchar_t PREFIX>
 using XxxxID32 = XxxxIDExt<PREFIX, uint32_t>;
 
-template<char PREFIX>
+template<wchar_t PREFIX>
 using XxxxID = XxxxID32<PREFIX>;
 
 // KLUDGE:  use OwnerPtr since CWordArray doesn't have move operators
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 const OwnerPtr<CWordArray> ToCWordArray(const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
     OwnerPtr<CWordArray> retval = MakeOwner<CWordArray>();
@@ -823,7 +823,7 @@ std::vector<T> ToVector(const CWordArray& a)
 }
 
 // KLUDGE:  use OwnerPtr since CWordArray doesn't have move operators
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 const OwnerPtr<CDWordArray> ToCDWordArray(const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
     OwnerPtr<CDWordArray> retval = MakeOwner<CDWordArray>();
@@ -848,13 +848,13 @@ std::vector<T> ToVector(const CDWordArray& a)
     return retval;
 }
 
-template<typename DEST, char PREFIX, typename UNDERLYING_TYPE>
+template<typename DEST, wchar_t PREFIX, typename UNDERLYING_TYPE>
 constexpr std::enable_if_t<is_always_value_preserving_v<DEST, UNDERLYING_TYPE>, DEST> value_preserving_cast(XxxxIDExt<PREFIX, UNDERLYING_TYPE> src)
 {
     return static_cast<DEST>(static_cast<UNDERLYING_TYPE>(src));
 }
 
-template<typename DEST, char PREFIX, typename UNDERLYING_TYPE>
+template<typename DEST, wchar_t PREFIX, typename UNDERLYING_TYPE>
 constexpr std::enable_if_t<!is_always_value_preserving_v<DEST, UNDERLYING_TYPE>, DEST> value_preserving_cast(XxxxIDExt<PREFIX, UNDERLYING_TYPE> src)
 {
     if (!is_value_preserving<DEST>(static_cast<UNDERLYING_TYPE>(src)))
@@ -1229,7 +1229,7 @@ public:
         --Depth();
     }
 
-    template<char PREFIX, typename UNDERLYING_TYPE_SRC, typename UNDERLYING_TYPE_DEST = std::conditional_t<std::is_same_v<UNDERLYING_TYPE_SRC, uint16_t>, uint32_t, uint16_t>>
+    template<wchar_t PREFIX, typename UNDERLYING_TYPE_SRC, typename UNDERLYING_TYPE_DEST = std::conditional_t<std::is_same_v<UNDERLYING_TYPE_SRC, uint16_t>, uint32_t, uint16_t>>
     static XxxxIDExt<PREFIX, UNDERLYING_TYPE_DEST> Convert(const XxxxIDExt<PREFIX, UNDERLYING_TYPE_SRC>& xid)
     {
         if (!Depth())

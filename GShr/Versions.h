@@ -610,7 +610,7 @@ size_t GetXxxxIDSerializeSize(const CArchive& ar)
     return CB::Impl::GetXxxxIDSerializeSize<CB::remove_cvref_t<T>>(ar);
 }
 
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 CArchive& operator<<(CArchive& ar, const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
 {
     if (!ar.IsStoring())
@@ -630,7 +630,7 @@ CArchive& operator<<(CArchive& ar, const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid
     }
 }
 
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
 {
     if (ar.IsStoring())
@@ -653,7 +653,7 @@ CArchive& operator>>(CArchive& ar, XxxxIDExt<PREFIX, UNDERLYING_TYPE>& oid)
     }
 }
 
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 CArchive& operator<<(CArchive& ar, const std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
     if (!ar.IsStoring())
@@ -686,7 +686,7 @@ template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
                                         std::is_same_v<T, CArray<int, int>>, bool> = true>
 CArchive& operator>>(CArchive& ar, T& v);
 
-template<char PREFIX, typename UNDERLYING_TYPE>
+template<wchar_t PREFIX, typename UNDERLYING_TYPE>
 CArchive& operator>>(CArchive& ar, std::vector<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>& v)
 {
     if (ar.IsStoring())

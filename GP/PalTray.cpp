@@ -337,10 +337,10 @@ void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
 
 LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
 {
-    char prefix = value_preserving_cast<char>(lParam);
-    ASSERT(prefix == 'P' && wParam);
+    wchar_t prefix = value_preserving_cast<wchar_t>(lParam);
+    ASSERT(prefix == L'P' && wParam);
     size_t nSel = GetSelectedTray();
-    if (nSel == Invalid_v<size_t> || !wParam || prefix != 'P')
+    if (nSel == Invalid_v<size_t> || !wParam || prefix != L'P')
         return (LRESULT)0;
 
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
