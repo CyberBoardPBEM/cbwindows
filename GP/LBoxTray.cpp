@@ -68,10 +68,10 @@ BOOL CTrayListBox::IsShowingTileImages() const
     return m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide;
 }
 
-void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenString)
+void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString)
 {
     m_eTrayViz = eTrayViz;
-    m_strHiddenString = pszHiddenString;
+    m_strHiddenString = std::move(pszHiddenString);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -220,7 +220,7 @@ CSize CTrayListBox::OnItemSize(size_t nIndex) const
     else
     {
         // Hidden pieces. Draw the supplied text.
-        ASSERT(!m_strHiddenString.IsEmpty());
+        ASSERT(!m_strHiddenString.empty());
         // only using DC to measure text, so const_cast safe;
         CClientDC pDC(const_cast<CTrayListBox*>(this));
         pDC.SaveDC();

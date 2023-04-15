@@ -390,7 +390,7 @@ CB::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
         MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
         return std::format(L"[mid:{}] ", mid);
     }
-    return std::string();
+    return CB::string();
 }
 
 /////////////////////////////////////////////////////////////////////////////

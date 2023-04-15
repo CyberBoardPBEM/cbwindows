@@ -70,13 +70,13 @@ BOOL CProjFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CProjFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
-    CString str = pDoc->GetTitle();
+    CB::string str = pDoc->GetTitle();
     str += " - ";
-    CString strType;
+    CB::string strType;
     if (pDoc->IsScenario())
-        strType.LoadString(IDS_PROJTYPE_SCENARIO);
+        strType = CB::string::LoadString(IDS_PROJTYPE_SCENARIO);
     else
-        strType.LoadString(IDS_PROJTYPE_GAME);
+        strType = CB::string::LoadString(IDS_PROJTYPE_GAME);
 
     str += strType;
     SetWindowText(str);

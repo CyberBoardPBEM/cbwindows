@@ -64,7 +64,7 @@ public:
     size_t SelectTrayPiece(PieceID pid);
     void ShowListIndex(int nPos);
 
-    void SetTrayContentVisibility(TrayViz eTrayViz, LPCTSTR pszHiddenString = NULL);
+    void SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString = CB::string());
     void SetTipsAllowed(BOOL bTipsAllowed)
     {
         m_bAllowTips = bTipsAllowed;
@@ -81,7 +81,7 @@ protected:
     const CGamDoc& m_pDoc;
 
     TrayViz     m_eTrayViz;
-    CString     m_strHiddenString;
+    CB::string  m_strHiddenString;
     BOOL        m_bAllowTips;
 
     // Overrides
