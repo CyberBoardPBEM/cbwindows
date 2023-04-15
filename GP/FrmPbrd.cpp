@@ -122,15 +122,15 @@ BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
-    CString str = pDoc->GetTitle();
+    CB::string str = pDoc->GetTitle();
 
-    CString strBoardName = m_pPBoard->GetBoard()->GetName();
+    CB::string strBoardName = m_pPBoard->GetBoard()->GetName();
     str += " - " + strBoardName;
 
     if (m_pPBoard->IsOwned())
     {
         str += " - ";
-        CString strOwnerName = pDoc->GetPlayerManager()->
+        CB::string strOwnerName = pDoc->GetPlayerManager()->
             GetPlayerUsingMask(m_pPBoard->GetOwnerMask()).m_strName;
         CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwnerName);
         str += strOwnedBy;

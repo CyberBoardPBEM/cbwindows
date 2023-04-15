@@ -86,7 +86,7 @@ static UINT toolbars[] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-static char szSectControlBars[] = "ControlBars";
+static const CB::string szSectControlBars = "ControlBars";
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
@@ -103,23 +103,34 @@ CMainFrame::~CMainFrame()
 // BUGFIX: Fix problem in MFC7.1 (VS2003)
 LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)  //TODO: DLL20200618 REMOVE THIS!!
 {
+    ASSERT(!"needs testing");
     // unpack the DDE message
     UINT_PTR unused;
     HGLOBAL hData;
     VERIFY(UnpackDDElParam(WM_DDE_EXECUTE, lParam, &unused, (UINT_PTR*)&hData));
 
     // get the command string
-    TCHAR szCommand[_MAX_PATH * 2];
-    LPCTSTR lpsz = (LPCTSTR)GlobalLock(hData);
-    int commandLength = lstrlen(lpsz);
-    if (commandLength >= sizeof(szCommand)/sizeof(TCHAR))
-    {
-        // The command would be truncated. This could be a security problem
-        TRACE0("Warning: Command was ignored because it was too long.\n");
-        return 0;
+    CB::string szCommand;
+    try {
+        class RAII
+        {
+        public:
+            RAII(HGLOBAL h) :
+                hData(h),
+                lpsz(static_cast<CB::string::value_type*>(GlobalLock(hData)))
+            {
+            }
+            const void* get() const { return lpsz; }
+            ~RAII() { GlobalUnlock(hData); }
+        private:
+            const HGLOBAL hData;
+            const void* const lpsz;
+        } lpsz(hData);
+        szCommand = static_cast<const CB::string::value_type*>(lpsz.get());
     }
-    lstrcpy(szCommand, lpsz);           // THE FIX!
-    GlobalUnlock(hData);
+    catch (...)
+    {
+    }
 
     // acknowledge now - before attempting to execute
     ::PostMessage((HWND)wParam, WM_DDE_ACK, (WPARAM)m_hWnd,
@@ -129,14 +140,14 @@ LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)  //TODO: DLL20200
     // don't execute the command when the window is disabled
     if (!IsWindowEnabled())
     {
-        TRACE(traceAppMsg, 0, "Warning: DDE command '%s' ignored because window is disabled.\n",
+        CPP20_TRACE(traceAppMsg, 0, "Warning: DDE command '{}' ignored because window is disabled.\n",
             szCommand);
         return 0;
     }
 
     // execute the command
-    if (!AfxGetApp()->OnDDECommand(szCommand))
-        TRACE(traceAppMsg, 0, "Error: failed to execute DDE command '%s'.\n", szCommand);
+    if (!AfxGetApp()->OnDDECommand(const_cast<CB::string::value_type*>(szCommand.v_str())))
+        CPP20_TRACE(traceAppMsg, 0, "Error: failed to execute DDE command '{}'.\n", szCommand);
 
     return 0L;
 }
@@ -271,50 +282,48 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     m_wndStatusBar.SetPaneStyle(0, SBPS_STRETCH);
 
-    CString str;
-    str.LoadString(IDS_TRAYA_TITLE);
-    if (!m_wndTrayPalA.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEA,
+    CB::string str = CB::string::LoadString(IDS_TRAYA_TITLE);
+    if (!m_wndTrayPalA.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEA,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray A palette dock window\n");
         return -1;      // fail to create
     }
 
-    str.LoadString(IDS_TRAYB_TITLE);
-    if (!m_wndTrayPalB.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEB,
+    str = CB::string::LoadString(IDS_TRAYB_TITLE);
+    if (!m_wndTrayPalB.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEB,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray B palette dock window\n");
         return -1;      // fail to create
     }
 
-    str.LoadString(IDS_PAL_MARKERS);
-    if (!m_wndMarkPal.Create((LPCTSTR)str, this, CRect(0, 0, 200, 1000), TRUE, IDW_MARK_PALETTE,
+    str = CB::string::LoadString(IDS_PAL_MARKERS);
+    if (!m_wndMarkPal.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_MARK_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create marker palette dock window\n");
         return -1;      // fail to create
     }
 
-    str.LoadString(IDS_MESSAGE_WND);
-    if (!m_wndMessage.Create((LPCTSTR)str, this, CRect(0, 0, 300, 80), TRUE, IDW_MESSAGE_WINDOW,
+    str = CB::string::LoadString(IDS_MESSAGE_WND);
+    if (!m_wndMessage.Create(str, this, CRect(0, 0, 300, 80), TRUE, IDW_MESSAGE_WINDOW,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create message window\n");
         return -1;      // fail to create
     }
 
-    CString strBarName;
-    strBarName.LoadString(IDS_BARNAME_STANDARD);
+    CB::string strBarName = CB::string::LoadString(IDS_BARNAME_STANDARD);
     m_wndToolBar.SetWindowText(strBarName);
 
-    strBarName.LoadString(IDS_BARNAME_VIEW);
+    strBarName = CB::string::LoadString(IDS_BARNAME_VIEW);
     m_wndTBarView.SetWindowText(strBarName);
 
-    strBarName.LoadString(IDS_BARNAME_MOVE);
+    strBarName = CB::string::LoadString(IDS_BARNAME_MOVE);
     m_wndTBarMove.SetWindowText(strBarName);
 
-    strBarName.LoadString(IDS_BARNAME_PLAYBACK);
+    strBarName = CB::string::LoadString(IDS_BARNAME_PLAYBACK);
     m_wndTBarPlay.SetWindowText(strBarName);
 
     m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
@@ -450,7 +459,7 @@ BOOL CMainFrame::BuildAppGDIPalette()
     ClearSystemPalette();
 
     uint16_t nPalSize = uint16_t(256);
-    std::vector<char> v((sizeof(LOGPALETTE) +
+    std::vector<std::byte> v((sizeof(LOGPALETTE) +
         value_preserving_cast<size_t>(nPalSize * sizeof(PALETTEENTRY))));
     LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
     // Start with speedy identity pal
@@ -553,11 +562,11 @@ LRESULT CMainFrame::OnMessageBox(WPARAM wParam, LPARAM lParam)
             AfxMessageBox((UINT)lParam, MB_OK);
             break;
         case WMB_PTR_STATIC:
-            AfxMessageBox((LPCTSTR)lParam, MB_OK);
+            AfxMessageBox(reinterpret_cast<const CB::string::value_type*>(lParam), MB_OK);
             break;
         case WMB_PTR_NEW:
-            AfxMessageBox((LPCTSTR)lParam, MB_OK);
-            delete (char*)lParam;
+            AfxMessageBox(reinterpret_cast<const CB::string::value_type*>(lParam), MB_OK);
+            delete reinterpret_cast<const CB::string::value_type*>(lParam);
             break;
         case WMB_PTR_CBSTRING:
         {
