@@ -546,7 +546,7 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     // Select the piece in the appropriate trayset.
     size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
-    m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip ? *pszNotificationTip : nullptr);
+    m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
 }
 
 void CGamDoc::SelectMarkerPaletteItem(MarkID mid)

@@ -61,7 +61,7 @@ protected:
 
     void SetDefaults();
 
-    void InsertText(LPCTSTR pszText, BOOL bAtEnd = TRUE);
+    void InsertText(const CB::string& pszText, BOOL bAtEnd = TRUE);
 
     void SetTextStyle(COLORREF cr, DWORD dwEffect = 0);
     void SetTextColor(COLORREF cr);

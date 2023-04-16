@@ -367,12 +367,12 @@ void CMarkerPalette::UpdateMarkerList()
     CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
     const std::vector<MarkID>* pMarkTbl = &pMSet.GetMarkIDTable();
 
-    CString str = "";
+    CB::string str = "";
     if (pMSet.GetMarkerTrayContentVisibility() == mtrayVizEachGenericRandPull)
-        str.LoadString(IDS_TRAY_RANDHIDDEN);
+        str = CB::string::LoadString(IDS_TRAY_RANDHIDDEN);
     else if (pMSet.GetMarkerTrayContentVisibility() == mtrayVizNoneRandPull)
     {
-        str.LoadString(IDS_TRAY_ALLRANDHIDDEN);
+        str = CB::string::LoadString(IDS_TRAY_ALLRANDHIDDEN);
         // Set the first (and only) element in the dummy array
         // if there are any markers in the group
         m_dummyArray.clear();

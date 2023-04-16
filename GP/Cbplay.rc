@@ -1884,7 +1884,7 @@ BEGIN
     IDS_TIP_PREFIX_BACK     "Back: "
     IDS_TIP_LBOXITEM_MARKER "* "
     IDS_TIP_CLICK_MENU      "Click here for tray's menu"
-    IDS_TIP_TRAY_SHUFFLED   "%zu pieces in this tray have been shuffled."
+    IDS_TIP_TRAY_SHUFFLED   "{} pieces in this tray have been shuffled."
     IDS_TIP_OBJS_SHUFFLED   "{} objects in this area of the board have been shuffled."
     IDS_TIP_SELLIST_HELP    "Insert key = Selects only highlighted items.\r\nDelete key = Deselects all highlighted items."
 END
@@ -1980,7 +1980,7 @@ BEGIN
     IDS_ROW_BREAK           "<ROW-BREAK>"
     IDS_URL_CB_WEBSITE      "http://cyberboard.norsesoft.com"
     IDS_TIP_FLIP_RANDOM     "Pieces in this area of the board have been flipped randomly."
-    IDS_MSG_TRAY_INFO       "Playing piece tray ""%s"" has the following properties:\n\n"
+    IDS_MSG_TRAY_INFO       "Playing piece tray ""{}"" has the following properties:\n\n"
     IDS_MSG_TVIZ_ALL_SIDE   "- All sides of pieces are visible"
     IDS_MSG_TVIZ_ONE_SIDE   "- Only the top side of a piece is visible"
     IDS_MSG_TVIZ_HIDDEN     "- Pieces only show the word ""HIDDEN"""
@@ -2010,7 +2010,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_MSG_NOT_OWNED       "- There is no tray owner"
-    IDS_MSG_OWNED_BY        "- The tray's owner is ""%s"""
+    IDS_MSG_OWNED_BY        "- The tray's owner is ""{}"""
     IDS_MSG_NONOWN_ALLOWED  "- Non-owners are allowed access to the tray"
     IDS_MSG_NONOWN_NOT_ALLOWED 
                             "- Non-owners are NOT allowed access to the tray"
@@ -2033,7 +2033,7 @@ BEGIN
     IDS_MESSAGE_WND         "Messages"
     IDS_INFO_GAME_CREATED   "New Game File Created:\n\n{}"
     IDS_TIP_TRAY_FLIPPED_RANDOM 
-                            "%zu pieces in this tray have been flipped randomly."
+                            "{} pieces in this tray have been flipped randomly."
     IDS_MSG_RANDOM_SIDE_PULL 
                             "- Pieces are flipped to a random side when dragged out of the tray"
     IDS_ERR_PRIVATE_BOARD_PERM 

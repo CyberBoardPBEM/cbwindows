@@ -66,7 +66,7 @@ public:
 // Operations
 public:
     void DeselectAll();
-    void SelectTrayPiece(size_t nGroup, PieceID pid, LPCTSTR pszNotificationTip = NULL);
+    void SelectTrayPiece(size_t nGroup, PieceID pid, const CB::string* pszNotificationTip = NULL);
     void ShowTrayIndex(size_t nGroup, int nPos);
 
     void UpdatePaletteContents(const CTraySet* pTray = NULL);
