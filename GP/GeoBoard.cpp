@@ -76,7 +76,7 @@ void CGeoBoardElement::Serialize(CArchive& ar)
     }
 }
 
-std::string CGeoBoardElement::GetCellNumberStr(const CBoardManager& brdMgr,
+CB::string CGeoBoardElement::GetCellNumberStr(const CBoardManager& brdMgr,
                             size_t row, size_t col) const
 {
     static const auto Odd = [](size_t x)
@@ -1139,7 +1139,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
     }
 }
 
-std::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
 {
     // find sub-board containing pnt
     const CBoardManager& brdMgr = CheckedDeref(m_pDoc->GetBoardManager());
@@ -1149,7 +1149,7 @@ std::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) con
     size_t overallRow, overallCol;
     if (!ba.FindCell(pnt.x, pnt.y, overallRow, overallCol, eScale))
     {
-        return std::string();
+        return CB::string();
     }
     const CCellForm& cf = ba.GetCellForm(eScale);
     // find which quadrant of cell

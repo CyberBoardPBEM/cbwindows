@@ -30,7 +30,7 @@
 
 const UINT COPY_BFR_LEN = 4096;
 
-BOOL CloneFile(LPCSTR pszSrcPath, LPCSTR pszDestPath)
+BOOL CloneFile(const CB::string& pszSrcPath, const CB::string& pszDestPath)
 {
     TRY
     {
@@ -51,7 +51,7 @@ BOOL CloneFile(LPCSTR pszSrcPath, LPCSTR pszDestPath)
     return TRUE;
 }
 
-BOOL CloneOpenFile(CFile* pSrcFile, LPCSTR pszDestPath)
+BOOL CloneOpenFile(CFile* pSrcFile, const CB::string& pszDestPath)
 {
     TRY
     {
@@ -72,15 +72,14 @@ BOOL CloneOpenFile(CFile* pSrcFile, LPCSTR pszDestPath)
 
 BOOL CopyOpenFiles(CFile* pSrcFile, CFile* pDestFile, DWORD dwLen)
 {
-    char* pszBfr = NULL;
+    std::vector<std::byte> pszBfr(COPY_BFR_LEN);
     TRY
     {
-        pszBfr = new char[COPY_BFR_LEN];
         while (TRUE)
         {
             UINT nRead = value_preserving_cast<UINT>(CB::min(dwLen, COPY_BFR_LEN));
-            pSrcFile->Read(pszBfr, nRead);
-            pDestFile->Write(pszBfr, nRead);
+            pSrcFile->Read(pszBfr.data(), nRead);
+            pDestFile->Write(pszBfr.data(), nRead);
             dwLen -= nRead;
             if (dwLen == 0)
                 break;
@@ -88,11 +87,9 @@ BOOL CopyOpenFiles(CFile* pSrcFile, CFile* pDestFile, DWORD dwLen)
     }
     CATCH_ALL(e)
     {
-        if (pszBfr) delete pszBfr;
         return FALSE;
     }
     END_CATCH_ALL
-    if (pszBfr) delete pszBfr;
     return TRUE;
 }
 

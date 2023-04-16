@@ -25,8 +25,8 @@
 #ifndef _FILELIB_H
 #define _FILELIB_H
 
-BOOL CloneFile(LPCSTR pszSrcPath, LPCSTR pszDestPath);
-BOOL CloneOpenFile(CFile* pSrcFile, LPCSTR pszDestPath);
+BOOL CloneFile(const CB::string& pszSrcPath, const CB::string& pszDestPath);
+BOOL CloneOpenFile(CFile* pSrcFile, const CB::string& pszDestPath);
 BOOL CopyOpenFiles(CFile* pSrcFile, CFile* pDestFile, DWORD dwLen);
 
 #endif

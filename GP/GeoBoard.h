@@ -55,7 +55,7 @@ public:
 
 public:
     void Serialize(CArchive& ar);
-    std::string GetCellNumberStr(const CBoardManager& brdMgr,
+    CB::string GetCellNumberStr(const CBoardManager& brdMgr,
                                 size_t row, size_t col) const;
 
 private:
@@ -75,7 +75,7 @@ public:
 
 // Atributes...
 public:
-    void SetName(LPCTSTR pszName) { m_strName = pszName; }
+    void SetName(CB::string pszName) { m_strName = std::move(pszName); }
 
     void SetSerialNumber(BoardID nBoardSerialNumber) { m_nSerialNum = nBoardSerialNumber; }
     BoardID GetSerialNumber() const { return m_nSerialNum; }
@@ -96,7 +96,7 @@ public:
     bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
-    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
 
 // Implementation - methods
 protected:
@@ -123,7 +123,7 @@ protected:
 
 // Implementation - vars
 protected:
-    CString  m_strName;                 // The board's name
+    CB::string m_strName;                 // The board's name
     BoardID  m_nSerialNum;              // The issued serial number
 
     size_t m_nBoardRowCount;          // Number of boards vertically

@@ -66,25 +66,74 @@ LRESULT CEditNoChevron::OnPasteMessage(WPARAM, LPARAM)
     if (GetStyle() & ES_READONLY)
         return (LRESULT)0;
 
-    if (OpenClipboard())
+    class RAII_OpenClipboard
     {
-        LPSTR pText = (LPSTR)GlobalLock(::GetClipboardData(CF_TEXT));
+    public:
+        RAII_OpenClipboard(CWnd* wnd) : b(wnd->OpenClipboard()) {}
+        ~RAII_OpenClipboard()
+        {
+            if (b)
+            {
+                CloseClipboard();
+            }
+        }
+        explicit operator bool() const { return b; }
+    private:
+        const bool b;
+    } openClipboard(this);
+    if (openClipboard)
+    {
+        std::optional<CB::string> pText;
+        {
+            class RAII_GlobalLock
+            {
+            public:
+                RAII_GlobalLock(HGLOBAL h) :
+                    hData(h),
+                    data(GlobalLock(hData))
+                {
+                }
+                operator const void* () const { return data; }
+                ~RAII_GlobalLock() { GlobalUnlock(hData); }
+            private:
+                const HGLOBAL hData;
+                const void* const data;
+            };
+
+            RAII_GlobalLock globalLockUnicode(::GetClipboardData(CF_UNICODETEXT));
+            if (globalLockUnicode)
+            {
+                pText.emplace(static_cast<const wchar_t*>(static_cast<const void*>(globalLockUnicode)));
+            }
+            else
+            {
+                RAII_GlobalLock globalLockText(::GetClipboardData(CF_UNICODETEXT));
+                if (globalLockText)
+                {
+                    pText.emplace(static_cast<const char*>(static_cast<const void*>(globalLockText)));
+                }
+            }
+        }
         if (pText != NULL)
         {
-            CString str = pText;
-            pText = str.LockBuffer();
-            while (*pText)
+            // Replace chevrons and paragraph chars with spaces
+            CB::string str;
+            str.reserve(pText->a_size());
+            for (size_t i = size_t(0) ; i < pText->a_size() ; ++i)
             {
-                // Replace chevrons and paragraph chars with spaces
-                if (*pText == static_cast<unsigned char>(0xBB) || *pText == static_cast<unsigned char>(0xB6))
-                    *pText = ' ';
-                pText++;
+                char c = (*pText)[i];
+                switch (c)
+                {
+                    case static_cast<char>(0xBB):
+                    case static_cast<char>(0xB6):
+                        str += ' ';
+                        break;
+                    default:
+                        str += c;
+                }
             }
-            str.UnlockBuffer();
             ReplaceSel(str);
         }
-        GlobalUnlock(::GetClipboardData(CF_TEXT));
-        CloseClipboard();
     }
     return (LRESULT)0;
 }
