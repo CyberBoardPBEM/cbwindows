@@ -50,9 +50,11 @@ const DWORD    MSG_SENDER_EFFECT = CFE_BOLD;
 
 /////////////////////////////////////////////////////////////////////////////
 
-const char     CHAR_CHEVRON = '\xBB';                       // '>>'
-const char     CHAR_CHEVRON_REV = '\xAB';                   // '<<'
-const char*    STR_MESSAGE_DIVIDER = "\xAB--------------------\xBB\r\n";
+namespace {
+const CB::string CHAR_CHEVRON(size_t(1), '\xBB');               // '>>'
+const CB::string CHAR_CHEVRON_REV(size_t(1), '\xAB');           // '<<'
+const CB::string STR_MESSAGE_DIVIDER = "\xAB--------------------\xBB\r\n";
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -215,7 +217,7 @@ void CReadMsgWnd::ProcessMessages()
         {
             if (strLine.empty() || strLine[size_t(0)] == '\r')
                 InsertText("\r\n");
-            else if (strLine[size_t(0)] == CHAR_CHEVRON)      // Dice Roll
+            else if (strLine.front() == CHAR_CHEVRON.front())      // Dice Roll
             {
                 SetTextStyle(MSG_DICE_ROLL_COLOR, MSG_DICE_ROLL_EFFECT);
                 InsertText(strLine.substr(size_t(2)));           // Don't show chevron
@@ -253,7 +255,7 @@ bool CReadMsgWnd::GetLine(CB::string& strBfr, CB::string& strLine)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CReadMsgWnd::InsertText(LPCTSTR pszText, BOOL bAtEnd /* = TRUE */)
+void CReadMsgWnd::InsertText(const CB::string& pszText, BOOL bAtEnd /* = TRUE */)
 {
     if (bAtEnd)
     {

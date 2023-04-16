@@ -503,10 +503,10 @@ void CTrayPalette::LoadTrayNameList()
     for (size_t i = 0; i < pYMgr->GetNumTraySets(); i++)
     {
         CTraySet& pYSet = pYMgr->GetTraySet(i);
-        CString strTrayName = pYSet.GetName();
+        CB::string strTrayName = pYSet.GetName();
         if (pYSet.IsOwned())
         {
-            CString strOwner = m_pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = m_pDoc->GetPlayerManager()->GetPlayerUsingMask(
                 pYSet.GetOwnerMask()).m_strName;
             strTrayName += " - " + strOwner;
         }
@@ -563,7 +563,7 @@ void CTrayPalette::DeselectAll()
 }
 
 void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
-    LPCTSTR pszNotificationTip /* = NULL */)
+    const CB::string* pszNotificationTip /* = NULL */)
 {
     size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
@@ -574,7 +574,7 @@ void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
     size_t nItem = m_listTray.SelectTrayPiece(pid);
     if (pszNotificationTip != NULL)
     {
-        m_listTray.SetNotificationTip(value_preserving_cast<int>(nItem), pszNotificationTip);
+        m_listTray.SetNotificationTip(value_preserving_cast<int>(nItem), *pszNotificationTip);
     }
 }
 
@@ -593,19 +593,18 @@ void CTrayPalette::UpdateTrayList()
 
     // Get the name from the combo box since it has all the ownership
     // information added.
-    CString strTrayName;
-    m_comboYGrp.GetLBText(m_comboYGrp.GetCurSel(), strTrayName);
+    CB::string strTrayName = CB::string::GetLBText(m_comboYGrp, m_comboYGrp.GetCurSel());
 
     TOOLINFO ti;
     m_toolTipCombo.FillInToolInfo(ti, &m_comboYGrp, 0);
     ti.uFlags |= TTF_SUBCLASS | TTF_CENTERTIP;
-    ti.lpszText = (LPTSTR)(LPCTSTR)strTrayName;
+    ti.lpszText = const_cast<CB::string::value_type*>(strTrayName.v_str());
     m_toolTipCombo.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 
     CTraySet& pYSet = pYMgr->GetTraySet(nSel);
     const std::vector<PieceID>* pPieceTbl = &pYSet.GetPieceIDTable();
 
-    CString str = "";
+    CB::string str = "";
     m_listTray.EnableDrag(TRUE);
     m_listTray.EnableSelfDrop(TRUE);
     m_listTray.SetTipsAllowed(TRUE);
@@ -627,21 +626,21 @@ void CTrayPalette::UpdateTrayList()
     {
         if (pYSet.IsRandomPiecePull())
         {
-            str.LoadString(IDS_TRAY_RANDHIDDEN);
+            str = CB::string::LoadString(IDS_TRAY_RANDHIDDEN);
             m_listTray.EnableSelfDrop(FALSE);
         }
         else
-            str.LoadString(IDS_TRAY_HIDDEN);
+            str = CB::string::LoadString(IDS_TRAY_HIDDEN);
     }
     else if (eViz == trayVizNone)
     {
         if (pYSet.IsRandomPiecePull())
         {
-            str.LoadString(IDS_TRAY_ALLRANDHIDDEN);
+            str = CB::string::LoadString(IDS_TRAY_ALLRANDHIDDEN);
             m_listTray.EnableSelfDrop(FALSE);
         }
         else
-            str.LoadString(IDS_TRAY_ALLHIDDEN);
+            str = CB::string::LoadString(IDS_TRAY_ALLHIDDEN);
         // Set the first (and only) element in the dummy array
         // to the first element in actual tray.
         m_dummyArray.clear();
@@ -928,8 +927,7 @@ void CTrayPalette::OnPieceTrayShuffle()
 
     if (m_pDoc->IsRecording())
     {
-        CString strMsg;
-        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
+        CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
         m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
@@ -979,8 +977,7 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
 
     if (m_pDoc->IsRecording())
     {
-        CString strMsg;
-        strMsg.Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
+        CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_SHUFFLED, tblPids.size());
         m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
@@ -1087,8 +1084,7 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     size_t nSel = GetSelectedTray();
     if (m_pDoc->IsRecording() && flip == CPieceTable::fRandom)
     {
-        CString strMsg;
-        strMsg.Format(IDS_TIP_TRAY_FLIPPED_RANDOM, value_preserving_cast<size_t>(chosen->GetCount()));
+        CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_FLIPPED_RANDOM, chosen->GetCount());
         m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[0])));
     }
 
@@ -1171,64 +1167,63 @@ void CTrayPalette::OnPieceTrayAbout()
         return;
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CTraySet& pYSet = pYMgr->GetTraySet(nSel);
-    CString strMsg;
-    CString strTmp;
-    strMsg.Format(IDS_MSG_TRAY_INFO, pYSet.GetName());
+    CB::string strMsg = CB::string::Format(IDS_MSG_TRAY_INFO, pYSet.GetName());
+    CB::string strTmp;
 
     switch (pYSet.GetTrayContentVisibility())
     {
         case trayVizAllSides:
-            strTmp.LoadString(IDS_MSG_TVIZ_ALL_SIDE);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_ALL_SIDE);
             break;
         case trayVizOneSide:
-            strTmp.LoadString(IDS_MSG_TVIZ_ONE_SIDE);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_ONE_SIDE);
             break;
         case trayVizEachGeneric:
-            strTmp.LoadString(IDS_MSG_TVIZ_HIDDEN);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_HIDDEN);
             break;
         case trayVizNone:
-            strTmp.LoadString(IDS_MSG_TVIZ_ALL_HIDDEN);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_ALL_HIDDEN);
             break;
         default:
             ASSERT(FALSE);
-            strTmp.LoadString(IDS_ERR_TRAY_VIZ);
+            strTmp = CB::string::LoadString(IDS_ERR_TRAY_VIZ);
     }
 
     strMsg += strTmp + '\n';
 
     if (pYSet.IsRandomPiecePull())
     {
-        strTmp.LoadString(IDS_MSG_RANDOM_PULL);
+        strTmp = CB::string::LoadString(IDS_MSG_RANDOM_PULL);
         strMsg += strTmp + '\n';
     }
 
     if (pYSet.IsRandomSidePull())
     {
-        strTmp.LoadString(IDS_MSG_RANDOM_SIDE_PULL);
+        strTmp = CB::string::LoadString(IDS_MSG_RANDOM_SIDE_PULL);
         strMsg += strTmp + '\n';
     }
 
     if (pYSet.IsOwned())
     {
-        strTmp.Format(IDS_MSG_OWNED_BY, (LPCTSTR)m_pDoc->GetPlayerManager()->
+        strTmp = CB::string::Format(IDS_MSG_OWNED_BY, m_pDoc->GetPlayerManager()->
             GetPlayerUsingMask(pYSet.GetOwnerMask()).m_strName);
     }
     else
-        strTmp.LoadString(IDS_MSG_NOT_OWNED);
+        strTmp = CB::string::LoadString(IDS_MSG_NOT_OWNED);
 
     strMsg += strTmp;
     if (pYSet.IsOwned())
     {
         if (pYSet.IsNonOwnerAccessAllowed())
-            strTmp.LoadString(IDS_MSG_NONOWN_ALLOWED);
+            strTmp = CB::string::LoadString(IDS_MSG_NONOWN_ALLOWED);
         else
-            strTmp.LoadString(IDS_MSG_NONOWN_NOT_ALLOWED);
+            strTmp = CB::string::LoadString(IDS_MSG_NONOWN_NOT_ALLOWED);
         strMsg += '\n' + strTmp;
 
         if (pYSet.IsEnforcingVisibilityForOwnerToo())
-            strTmp.LoadString(IDS_MSG_TVIZ_OWNER_TOO);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_OWNER_TOO);
         else
-            strTmp.LoadString(IDS_MSG_TVIZ_OWNER_FULL);
+            strTmp = CB::string::LoadString(IDS_MSG_TVIZ_OWNER_FULL);
         strMsg += '\n' + strTmp;
     }
     AfxMessageBox(strMsg, MB_ICONINFORMATION);
