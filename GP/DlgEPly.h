@@ -50,7 +50,7 @@ public:
     void SetDialogsPlayerNames(CPlayerManager* pPlayerMgr);
     void GetPlayerNamesFromDialog(CPlayerManager* pPlayerMgr);
 
-    CStringArray m_tblNames;
+    std::vector<CB::string> m_tblNames;
 
 // Overrides
     // ClassWizard generated virtual function overrides

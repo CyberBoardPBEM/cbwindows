@@ -488,7 +488,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         {
             ASSERT(pDoc->GetGameState() == CGamDoc::stateMovePlay);
             str = CB::string::LoadString(IDS_PHEAD_GAM_MOVEFILE);
-            if (!pDoc->m_pPlayHist->m_strTitle.IsEmpty())
+            if (!pDoc->m_pPlayHist->m_strTitle.empty())
                 str += " - " + pDoc->m_pPlayHist->m_strTitle;
             m_listProj.AddItem(grpCurPlay, str, 0);
         }

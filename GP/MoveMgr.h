@@ -337,7 +337,7 @@ class CObjectSetText : public CMoveRecord
 {
 public:
     CObjectSetText() { m_eType = mrecSetObjText; }
-    CObjectSetText(GameElement elem, LPCTSTR pszText);
+    CObjectSetText(GameElement elem, const CB::string* pszText);
 
     virtual BOOL IsMoveHidden(const CGamDoc& pDoc,
                                 int nMoveWithinGroup) const override;
@@ -453,8 +453,8 @@ class CMessageRcd : public CMoveRecord
 {
 public:
     CMessageRcd() { m_eType = mrecMsg; }
-    CMessageRcd(CString strMsg)
-        { m_eType = mrecMsg; m_strMsg = strMsg; }
+    CMessageRcd(CB::string strMsg)
+        { m_eType = mrecMsg; m_strMsg = std::move(strMsg); }
 
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
 
@@ -464,7 +464,7 @@ public:
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
-    CString m_strMsg;
+    CB::string m_strMsg;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -473,9 +473,9 @@ class CEventMessageRcd : public CMoveRecord
 {
 public:
     CEventMessageRcd() { m_eType = mrecEvtMsg; }
-    CEventMessageRcd(CString strMsg,
+    CEventMessageRcd(CB::string strMsg,
         BoardID nBoard, int x, int y);
-    CEventMessageRcd(CString strMsg,
+    CEventMessageRcd(CB::string strMsg,
         size_t nTray, PieceID pid);
 
     virtual void DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
@@ -505,7 +505,7 @@ protected:
             PieceID m_pieceID;
         };
     };
-    CString m_strMsg;               // The message text
+    CB::string m_strMsg;            // The message text
 };
 
 ///////////////////////////////////////////////////////////////////////

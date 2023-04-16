@@ -631,8 +631,8 @@ void Piece::Serialize(CArchive& ar)
 #ifdef _DEBUG
 void CPieceTable::DumpToTextFile(CFile& file) const
 {
-    static char szHead[] = "\r\nPiece Table\r\n-----------\r\n";
-    file.Write(szHead, lstrlen(szHead));
+    static const CB::string szHead = "\r\nPiece Table\r\n-----------\r\n";
+    file.Write(szHead.a_str(), value_preserving_cast<UINT>(szHead.a_size()));
 
     for (size_t i = size_t(0); i < m_pPieceTbl.GetSize(); i++)
     {

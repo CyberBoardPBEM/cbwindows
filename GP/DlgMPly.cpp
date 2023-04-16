@@ -129,7 +129,7 @@ BOOL CMultiplayerGameDialog::OnInitDialog()
 void CMultiplayerGameDialog::OnOK()
 {
     for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-        m_listPlayers.GetText(i, m_pPlayerMgr->ElementAt(i).m_strName);
+        m_pPlayerMgr->ElementAt(i).m_strName = CB::string::GetText(m_listPlayers, i);
 
     CDialog::OnOK();
 }

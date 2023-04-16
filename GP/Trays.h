@@ -61,8 +61,8 @@ public:
     BOOL HasPieceID(PieceID pid) const;
     size_t GetPieceIDIndex(PieceID pid) const;
 
-    const char* GetName() const { return m_strName; }
-    void SetName(const char *pszName) { m_strName = pszName; }
+    const CB::string& GetName() const { return m_strName; }
+    void SetName(CB::string pszName) { m_strName = std::move(pszName); }
 
     BOOL IsRandomPiecePull() { return m_bRandomPull; }
     void SetRandPiecePull(BOOL bRandomPull) { m_bRandomPull = bRandomPull; }
@@ -102,7 +102,7 @@ public:
 
 // Implementation
 protected:
-    CString     m_strName;
+    CB::string m_strName;
     std::vector<PieceID> m_pidTbl;
 
     DWORD     m_dwOwnerMask;        // Who can change the tray (0=no owners)
@@ -139,11 +139,11 @@ public:
 
 // Operations
 public:
-    size_t CreateTraySet(const char* pszName);
+    size_t CreateTraySet(CB::string pszName);
     void DeleteTraySet(size_t nYSet);
     void RemovePieceIDFromTraySets(PieceID pid);
     CTraySet* FindPieceIDInTraySet(PieceID pid);
-    size_t FindTrayByName(const char* strName) const;
+    size_t FindTrayByName(const CB::string& strName) const;
     size_t FindTrayByRef(const CTraySet& pYSet) const;
 
     void Clear();

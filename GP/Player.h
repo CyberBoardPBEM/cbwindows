@@ -32,11 +32,11 @@ const DWORD OWNER_MASK_SPECTATOR = 0;               // No ownership is spectator
 
 struct Player
 {
-    CString m_strName;      // The player's name
+    CB::string m_strName;   // The player's name
     DWORD   m_seqNum;       // Number used for special unlock messages
 
     Player() { m_seqNum = 0; }
-    Player(LPCTSTR pszName) { m_strName = pszName; m_seqNum = 0; }
+    Player(CB::string pszName) { m_strName = std::move(pszName); m_seqNum = 0; }
 
     void Serialize(CArchive& ar);
 };
@@ -44,7 +44,7 @@ struct Player
 class CPlayerManager : public CArray< Player, Player& >
 {
 public:
-    intptr_t AddPlayer(LPCTSTR pszName);
+    intptr_t AddPlayer(CB::string pszName);
     const Player& GetPlayerUsingMask(DWORD dwMask) const;
 
     static DWORD GetMaskFromPlayerNum(int nPlayerNumber);
