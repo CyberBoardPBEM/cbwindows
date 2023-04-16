@@ -191,7 +191,7 @@ void CSelLine::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 
 HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
 {
-    LPCSTR id;
+    const CB::string::value_type* id;
     switch (nHandleID)
     {
 

@@ -89,13 +89,13 @@ void CEditPlayersDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CEditPlayersDialog::SetDialogsPlayerNames(CPlayerManager* pPlayerMgr)
 {
     for (int i = 0; i < pPlayerMgr->GetSize(); i++)
-        m_tblNames.Add(pPlayerMgr->ElementAt(i).m_strName);
+        m_tblNames.push_back(std::cref(pPlayerMgr->ElementAt(i).m_strName));
 }
 
 void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager* pPlayerMgr)
 {
     for (int i = 0; i < pPlayerMgr->GetSize(); i++)
-        pPlayerMgr->ElementAt(i).m_strName = m_tblNames[i];
+        pPlayerMgr->ElementAt(i).m_strName = m_tblNames[value_preserving_cast<size_t>(i)];
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ BOOL CEditPlayersDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    for (int i = 0; i < m_tblNames.GetSize(); i++)
+    for (size_t i = size_t(0) ; i < m_tblNames.size() ; ++i)
         m_listNames.AddString(m_tblNames[i]);
 
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -139,12 +139,12 @@ BOOL CEditPlayersDialog::OnInitDialog()
 
 void CEditPlayersDialog::OnOK()
 {
-    m_tblNames.RemoveAll();
+    m_tblNames.clear();
     for (int i = 0; i < m_listNames.GetCount(); i++)
     {
         CString strName;
         m_listNames.GetText(i, strName);
-        m_tblNames.Add(strName);
+        m_tblNames.push_back(strName);
     }
 
     CDialog::OnOK();

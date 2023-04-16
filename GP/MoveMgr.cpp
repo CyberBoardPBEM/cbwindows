@@ -1083,12 +1083,12 @@ void CObjectDelete::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 /////////////////////////////////////////////////////////////////////
 // CObjectSetText methods....
 
-CObjectSetText::CObjectSetText(GameElement elem, LPCTSTR pszText)
+CObjectSetText::CObjectSetText(GameElement elem, const CB::string* pszText)
 {
     m_eType = mrecSetObjText;
     m_elem = elem;
     if (pszText != NULL)
-        m_strObjText = pszText;
+        m_strObjText = *pszText;
 }
 
 BOOL CObjectSetText::IsMoveHidden(const CGamDoc& pDoc,
@@ -1411,9 +1411,9 @@ void CGameStateRcd::Serialize(CArchive& ar)
 #ifdef _DEBUG
 void CGameStateRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    static char strMsg[] =
+    static const CB::string strMsg =
         "    To much to dump! (Trust me on this)\r\n";
-    file.Write(strMsg, lstrlen(strMsg));
+    file.Write(strMsg.a_str(), value_preserving_cast<UINT>(strMsg.a_size()));
 }
 #endif
 
@@ -1494,9 +1494,9 @@ void CMovePlotList::SerializeHiddenByPrivate(CGamDoc& doc,
 #ifdef _DEBUG
 void CMovePlotList::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    static char strMsg[] =
+    static const CB::string strMsg =
         "    To much to dump! (just plain lazy on this one)\r\n";
-    file.Write(strMsg, lstrlen(strMsg));
+    file.Write(strMsg.a_str(), value_preserving_cast<UINT>(strMsg.a_size()));
 }
 #endif
 
@@ -1519,14 +1519,14 @@ void CMessageRcd::Serialize(CArchive& ar)
 #ifdef _DEBUG
 void CMessageRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 {
-    file.Write(m_strMsg, lstrlen(m_strMsg));
+    file.Write(m_strMsg.a_str(), value_preserving_cast<UINT>(m_strMsg.a_size()));
     file.Write("\r\n", 2);
 }
 #endif
 
 /////////////////////////////////////////////////////////////////////
 
-CEventMessageRcd::CEventMessageRcd(CString strMsg,
+CEventMessageRcd::CEventMessageRcd(CB::string strMsg,
     BoardID nBoard, int x, int y)
 {
     m_eType = mrecEvtMsg;
@@ -1534,17 +1534,17 @@ CEventMessageRcd::CEventMessageRcd(CString strMsg,
     m_nBoard = nBoard;
     m_x = x;
     m_y = y;
-    m_strMsg = strMsg;
+    m_strMsg = std::move(strMsg);
 }
 
-CEventMessageRcd::CEventMessageRcd(CString strMsg,
+CEventMessageRcd::CEventMessageRcd(CB::string strMsg,
     size_t nTray, PieceID pieceID)
 {
     m_eType = mrecEvtMsg;
     m_bIsBoardEvent = FALSE;
     m_nTray = nTray;
     m_pieceID = pieceID;
-    m_strMsg = strMsg;
+    m_strMsg = std::move(strMsg);
 }
 
 void CEventMessageRcd::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
@@ -2520,7 +2520,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
 
 #ifdef _DEBUG
 
-static const char *tblTypes[CMoveRecord::mrecMax] =
+static const CB::string tblTypes[CMoveRecord::mrecMax] =
 {
     "UnKnown", "GameStateSnapshot", "PieceToBoardMove", "PieceToTrayMove",
     "PieceSetSide", "MarkerToBoardMove", "MovePlotTrack", "PlayerMessage",

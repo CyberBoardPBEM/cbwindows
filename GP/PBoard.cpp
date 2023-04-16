@@ -511,7 +511,7 @@ void CPlayBoard::Serialize(CArchive& ar)
     }
 }
 
-std::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
 {
     if (!m_pGeoBoard)
     {

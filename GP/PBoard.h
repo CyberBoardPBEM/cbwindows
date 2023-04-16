@@ -137,7 +137,7 @@ public:
     bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
-    std::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
 
 // Vars...
 public:

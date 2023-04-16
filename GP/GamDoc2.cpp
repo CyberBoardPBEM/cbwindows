@@ -429,7 +429,7 @@ void CGamDoc::RecordObjectSetText(GameElement elem, const CB::string& pszObjText
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    OwnerPtr<CObjectSetText> pRcd = MakeOwner<CObjectSetText>(elem, pszObjText);
+    OwnerPtr<CObjectSetText> pRcd = MakeOwner<CObjectSetText>(elem, &pszObjText);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 

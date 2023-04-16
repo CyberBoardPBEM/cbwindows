@@ -237,7 +237,7 @@ void CGamProjView::DoUpdateCurPlayInfo()
     CB::string str = "";
     if (pDoc->GetGameState() == CGamDoc::stateMovePlay)
     {
-        if (!pDoc->m_pPlayHist->m_strDescr.IsEmpty())
+        if (!pDoc->m_pPlayHist->m_strDescr.empty())
             str = pDoc->m_pPlayHist->m_strDescr;
     }
     m_editInfo.SetWindowText(str);

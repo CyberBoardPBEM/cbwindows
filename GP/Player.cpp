@@ -26,9 +26,9 @@
 #include    "Versions.h"
 #include    "Player.h"
 
-intptr_t CPlayerManager::AddPlayer(LPCTSTR pszName)
+intptr_t CPlayerManager::AddPlayer(CB::string pszName)
 {
-    Player player(pszName);
+    Player player(std::move(pszName));
     return Add(player);
 }
 

@@ -230,11 +230,11 @@ void CTrayManager::Clear()
     m_YSetTbl.clear();
 }
 
-size_t CTrayManager::CreateTraySet(const char* pszName)
+size_t CTrayManager::CreateTraySet(CB::string pszName)
 {
-    m_YSetTbl.resize(m_YSetTbl.size() + 1);
-    m_YSetTbl.back().SetName(pszName);
-    return m_YSetTbl.size() - 1;
+    m_YSetTbl.resize(m_YSetTbl.size() + size_t(1));
+    m_YSetTbl.back().SetName(std::move(pszName));
+    return m_YSetTbl.size() - size_t(1);
 }
 
 void CTrayManager::DeleteTraySet(size_t nYSet)
@@ -253,12 +253,12 @@ CTraySet* CTrayManager::FindPieceIDInTraySet(PieceID pid)
     return NULL;
 }
 
-size_t CTrayManager::FindTrayByName(const char* strName) const
+size_t CTrayManager::FindTrayByName(const CB::string& strName) const
 {
     for (size_t i = 0; i < GetNumTraySets(); i++)
     {
         const CTraySet& pYSet = GetTraySet(i);
-        if (lstrcmp(pYSet.GetName(), strName) == 0)
+        if (pYSet.GetName() == strName)
             return i;
     }
     return Invalid_v<size_t>;
