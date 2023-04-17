@@ -129,8 +129,8 @@ void CTrayPropDialog::OnSelChangeOwnerList()
 
 void CTrayPropDialog::OnOK()
 {
-    m_editName.GetWindowText(m_strName);
-    if (m_strName.IsEmpty())
+    m_strName = CB::string::GetWindowText(m_editName);
+    if (m_strName.empty())
     {
         AfxMessageBox(IDS_ERR_TRAYNAME, MB_OK | MB_ICONINFORMATION);
         m_editName.SetFocus();
@@ -174,8 +174,7 @@ BOOL CTrayPropDialog::OnInitDialog()
     }
     else
     {
-        CString str;
-        str.LoadString(IDS_LBL_NO_OWNER);
+        CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
         m_comboOwners.AddString(str);
         for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
             m_comboOwners.AddString(m_pPlayerMgr->GetAt(i).m_strName);

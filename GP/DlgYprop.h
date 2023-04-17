@@ -44,7 +44,7 @@ public:
     CStatic m_staticOwnerLabel;
     CComboBox   m_comboOwners;
     CEdit   m_editName;
-    CString m_strName;
+    CB::string m_strName;
     int     m_nVizOpts;
     BOOL    m_bRandomSel;
     BOOL    m_bRandomSide;

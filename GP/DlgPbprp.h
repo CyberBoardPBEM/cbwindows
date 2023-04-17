@@ -47,7 +47,7 @@ public:
     BOOL        m_bCellBorders;
     int         m_xStackStagger;
     int         m_yStackStagger;
-    CString     m_strBoardName;
+    CB::string  m_strBoardName;
     BOOL        m_bGridRectCenters;
     BOOL        m_bSnapMovePlot;
     float       m_fXGridSnapOff;

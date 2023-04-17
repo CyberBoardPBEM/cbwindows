@@ -110,8 +110,7 @@ void CSendMsgDialog::TransferToReadOnlyView()
     if (!m_bReadOnlyView)
         SetupReadOnlyView();
 
-    CString str;
-    m_editMsg2.GetWindowText(str);
+    CB::string str = CB::string::GetWindowText(m_editMsg2);
     AppendStringToEditBox(m_editMsg, str, TRUE);
     m_editMsg2.SetWindowText("");
     m_btnCancel.EnableWindow(FALSE);
@@ -166,7 +165,7 @@ void CSendMsgDialog::TeardownReadOnlyView()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSendMsgDialog::FillEditBoxes(const std::string& str)
+void CSendMsgDialog::FillEditBoxes(const CB::string& str)
 {
     m_editMsg.SetWindowText("");
     m_editMsg2.SetWindowText("");
@@ -174,7 +173,7 @@ void CSendMsgDialog::FillEditBoxes(const std::string& str)
     CB::string strReadOnly;
     CB::string strEditable;
 
-    CGamDoc::MsgSeperateIntoPieces(str.c_str(), strReadOnly, strEditable);
+    CGamDoc::MsgSeperateIntoPieces(str, strReadOnly, strEditable);
     if (strReadOnly.empty())
     {
         m_editMsg.SetWindowText(strEditable);
@@ -249,8 +248,7 @@ void CSendMsgDialog::OnSendMsgSendAndClose()
     if (m_bReadOnlyView)
         TransferToReadOnlyView();
 
-    CString str;
-    m_editMsg.GetWindowText(str);
+    CB::string str = CB::string::GetWindowText(m_editMsg);
     m_pDoc->SetDieRollState(std::move(m_pRollState));
     m_pDoc->MsgDialogSend(str, TRUE);
 }
@@ -260,8 +258,7 @@ void CSendMsgDialog::OnSendMsgSend()
     if (m_bReadOnlyView)
         TransferToReadOnlyView();
 
-    CString str;
-    m_editMsg.GetWindowText(str);
+    CB::string str = CB::string::GetWindowText(m_editMsg);
     m_pDoc->MsgDialogSend(str, FALSE);      // Don't close us
 
     TeardownReadOnlyView();                 // Back to original layout
@@ -302,9 +299,8 @@ void CSendMsgDialog::OnRollDice()
     {
         m_pRollState = dlg.GetRollState();
 
-        CString str;
-        m_editMsg2.GetWindowText(str);
-        if (str != "" && str.GetAt(str.GetLength() - 1) != '\n')
+        CB::string str = CB::string::GetWindowText(m_editMsg2);
+        if (str != "" && str[str.a_size() - size_t(1)] != '\n')
             AppendStringToEditBox(m_editMsg2, "\r\n", FALSE);
 
         int nLen = m_editMsg2.GetWindowTextLength();

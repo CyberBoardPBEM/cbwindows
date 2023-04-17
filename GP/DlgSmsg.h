@@ -55,7 +55,7 @@ protected:
     void TransferToReadOnlyView();
     void SetupReadOnlyView();
     void TeardownReadOnlyView();
-    void FillEditBoxes(const std::string& str);
+    void FillEditBoxes(const CB::string& str);
 
     OwnerOrNullPtr<CRollState> m_pRollState;
 
