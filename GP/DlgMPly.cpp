@@ -91,9 +91,8 @@ void CMultiplayerGameDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CMultiplayerGameDialog::OnBtnPressUpdateName()
 {
-    CString strEdit;
-    m_editPlayer.GetWindowText(strEdit);
-    if (!strEdit.IsEmpty())
+    CB::string strEdit = CB::string::GetWindowText(m_editPlayer);
+    if (!strEdit.empty())
     {
         int nSel = m_listPlayers.GetCurSel();
         if (nSel >= 0)
@@ -109,8 +108,7 @@ void CMultiplayerGameDialog::OnSelChangePlayerList()
     int nSel = m_listPlayers.GetCurSel();
     if (nSel >= 0)
     {
-        CString strEdit;
-        m_listPlayers.GetText(nSel, strEdit);
+        CB::string strEdit = CB::string::GetText(m_listPlayers, nSel);
         m_editPlayer.SetWindowText(strEdit);
     }
 }

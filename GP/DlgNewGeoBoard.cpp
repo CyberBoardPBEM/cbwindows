@@ -175,8 +175,8 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
                 if (m_nCurrentColumn > size_t(0) && pBArray.GetRows() != m_nCurrentRowHeight)
                     continue;
             }
-            static const char* const suffix[] = { "", " -  90°", " - 180°", " - 270°" };
-            int nItem = m_listBoard.AddString((std::string(pBrd.GetName()) + suffix[ptrdiff_t(r)]).c_str());
+            static const CB::string suffix[] = { "", " -  90°", " - 180°", " - 270°" };
+            int nItem = m_listBoard.AddString(pBrd.GetName() + suffix[ptrdiff_t(r)]);
             m_listBoard.SetItemDataPtr(nItem, ge.release());
         }
     }
@@ -258,8 +258,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     if (m_nCurrentRowHeight == size_t(0))
         m_nCurrentRowHeight = pBArray.GetRows();
 
-    CString strLabel;
-    m_listBoard.GetText(m_listBoard.GetCurSel(), strLabel);
+    CB::string strLabel = CB::string::GetText(m_listBoard, m_listBoard.GetCurSel());
 
     int nItem = m_listGeo.AddString(strLabel);
     m_listGeo.SetItemDataPtr(nItem, new CGeoBoardElement(ge));
@@ -279,8 +278,7 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
 
 void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
 {
-    CString str;
-    str.LoadString(IDS_ROW_BREAK);
+    CB::string str = CB::string::LoadString(IDS_ROW_BREAK);
 
     int nItem = m_listGeo.AddString(str);
     m_listGeo.SetItemDataPtr(nItem, nullptr);
@@ -323,8 +321,7 @@ void CCreateGeomorphicBoardDialog::OnOK()
 {
     m_pGeoBoard = MakeOwner<CGeomorphicBoard>(*m_pDoc);
 
-    CString strName;
-    m_editBoardName.GetWindowText(strName);
+    CB::string strName = CB::string::GetWindowText(m_editBoardName);
     m_pGeoBoard->SetName(strName);
     m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager()->IssueGeoSerialNumber());
 

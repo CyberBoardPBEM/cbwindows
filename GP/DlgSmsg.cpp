@@ -309,7 +309,7 @@ void CSendMsgDialog::OnRollDice()
 
         int nLen = m_editMsg2.GetWindowTextLength();
         m_editMsg2.SetSel(nLen, nLen);
-        m_editMsg2.ReplaceSel(dlg.GetFormattedRollResult().c_str());
+        m_editMsg2.ReplaceSel(dlg.GetFormattedRollResult());
         m_btnCancel.EnableWindow(FALSE);
 
         TransferToReadOnlyView();
