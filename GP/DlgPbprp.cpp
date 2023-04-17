@@ -205,8 +205,7 @@ BOOL CPBrdPropDialog::OnInitDialog()
     }
     else
     {
-        CString str;
-        str.LoadString(IDS_LBL_NO_OWNER);
+        CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
         m_comboOwners.AddString(str);
         for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
             m_comboOwners.AddString(m_pPlayerMgr->GetAt(i).m_strName);

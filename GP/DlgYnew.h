@@ -39,7 +39,7 @@ public:
     //{{AFX_DATA(CTrayNewDialog)
     enum { IDD = IDD_TRAYNEW };
     CEdit   m_editName;
-    CString m_strName;
+    CB::string m_strName;
     //}}AFX_DATA
 
     CTrayManager*   m_pYMgr;

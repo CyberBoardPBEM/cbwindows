@@ -65,8 +65,8 @@ END_MESSAGE_MAP()
 
 void CTrayNewDialog::OnOK()
 {
-    m_editName.GetWindowText(m_strName);
-    if (m_strName.IsEmpty())
+    m_strName = CB::string::GetWindowText(m_editName);
+    if (m_strName.empty())
     {
         AfxMessageBox(IDS_ERR_TRAYNAME, MB_OK | MB_ICONINFORMATION);
         m_editName.SetFocus();
