@@ -34,8 +34,8 @@ public:
 // Dialog Data
     //{{AFX_DATA(CMovDescDialog)
     enum { IDD = IDD_GMOVDESCR };
-    CString m_strDesc;
-    CString m_strTitle;
+    CB::string m_strDesc;
+    CB::string m_strTitle;
     //}}AFX_DATA
 
 // Implementation

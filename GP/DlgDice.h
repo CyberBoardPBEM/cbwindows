@@ -74,7 +74,7 @@ public:
 
 // Methods
 public:
-    const std::string& GetFormattedRollResult() const { return m_strRoll; }
+    const CB::string& GetFormattedRollResult() const { return m_strRoll; }
 
     OwnerPtr<CRollState> GetRollState() const;
     void SetRollState(const CRollState& rstate);
@@ -118,7 +118,7 @@ protected:
 
     void UpdateControls();
 
-    std::string m_strRoll;
+    CB::string  m_strRoll;
 
     bool        m_bFirstRoll;
     CB::string  m_strInitialSeed;               // Used to detect changed user seed

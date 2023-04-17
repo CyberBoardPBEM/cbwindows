@@ -106,17 +106,15 @@ void CEditPlayersDialog::OnSelChangeNameList()
     int nSel = m_listNames.GetCurSel();
     if (nSel >= 0)
     {
-        CString strEdit;
-        m_listNames.GetText(nSel, strEdit);
+        CB::string strEdit = CB::string::GetText(m_listNames, nSel);
         m_editName.SetWindowText(strEdit);
     }
 }
 
 void CEditPlayersDialog::OnBtnPressUpdateName()
 {
-    CString strEdit;
-    m_editName.GetWindowText(strEdit);
-    if (!strEdit.IsEmpty())
+    CB::string strEdit = CB::string::GetWindowText(m_editName);
+    if (!strEdit.empty())
     {
         int nSel = m_listNames.GetCurSel();
         if (nSel >= 0)
@@ -142,8 +140,7 @@ void CEditPlayersDialog::OnOK()
     m_tblNames.clear();
     for (int i = 0; i < m_listNames.GetCount(); i++)
     {
-        CString strName;
-        m_listNames.GetText(i, strName);
+        CB::string strName = CB::string::GetText(m_listNames, i);
         m_tblNames.push_back(strName);
     }
 

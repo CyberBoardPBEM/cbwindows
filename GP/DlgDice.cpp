@@ -189,12 +189,9 @@ static DWORD adwHelpMap[] =
 
 void CDieRollerDlg::MakeFormattedRollResult()
 {
-    CString str;
-
     if (!IsAnyDieSelected())
     {
-        CString temp;
-        temp.LoadString(IDS_MSG_NOROLLS);
+        CB::string temp = CB::string::LoadString(IDS_MSG_NOROLLS);
         m_strRoll = temp;
         return;
     }
@@ -212,18 +209,17 @@ void CDieRollerDlg::MakeFormattedRollResult()
         m_strRoll += "\xBB ";              // 0xBB = Chevron
         if (nSets > uint32_t(1))
         {
-            CString str;
-            str.LoadString(IDS_MSG_ROLLSET);
+            CB::string str = CB::string::LoadString(IDS_MSG_ROLLSET);
             m_strRoll += str;
-            str.Format(" %" PRIu32 ", ", nSet + uint32_t(1));
+            str = std::format(" {}, ", nSet + uint32_t(1));
             m_strRoll += str;
         }
         // Show seed string if one was specified...
-        CString strRollType;
+        CB::string strRollType;
         if (!m_strSeed.empty())
-            AfxFormatString1(strRollType, IDS_MSG_ROLLWITHSEED, m_strSeed);
+            strRollType = AfxFormatString1(IDS_MSG_ROLLWITHSEED, m_strSeed);
         else
-            strRollType.LoadString(IDS_MSG_ROLLWITHOUTSEED);
+            strRollType = CB::string::LoadString(IDS_MSG_ROLLWITHOUTSEED);
         m_strRoll += strRollType;
 
         // Build roll spec next...
@@ -246,7 +242,7 @@ void CDieRollerDlg::MakeFormattedRollResult()
             m_strRoll += szBfr;
         }
         m_strRoll += "\r\n";
-        str.LoadString(IDS_MSG_ROLLRESULT);
+        CB::string str = CB::string::LoadString(IDS_MSG_ROLLRESULT);
         m_strRoll += str;
 
         // Now do the actual roll...
