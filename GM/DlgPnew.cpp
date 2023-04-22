@@ -251,7 +251,7 @@ void CPieceNewDialog::OnBtnClickTopVisible()
 void CPieceNewDialog::OnCreate()
 {
     CreatePiece();
-    m_editQty.SetWindowText("1");       // Always set quantity back to 1
+    m_editQty.SetWindowText("1"_cbstring);       // Always set quantity back to 1
 
     OnCheckTextSameAsTop();
 
@@ -283,7 +283,7 @@ void CPieceNewDialog::OnSelchangeNumSides()
         m_chkSameAsTop.EnableWindow(FALSE);
         m_chkTopOnlyVisible.EnableWindow(FALSE);
         m_chkTopOnlyOwnersToo.EnableWindow(FALSE);
-        m_editTextBack.SetWindowText("");
+        m_editTextBack.SetWindowText(""_cbstring);
     }
 
     // fix up m_currSides, m_sideTids, and m_sideTexts content
@@ -376,13 +376,13 @@ BOOL CPieceNewDialog::OnInitDialog()
     m_sideTexts.push_back("");
     OnSelchangeNumSides();
 
-    m_editQty.SetWindowText("1");
+    m_editQty.SetWindowText("1"_cbstring);
 
     m_chkSameAsTop.SetCheck(0);
     m_chkTopOnlyVisible.SetCheck(0);
     m_chkTopOnlyOwnersToo.SetCheck(0);
-    m_editTextFront.SetWindowText("");
-    m_editTextBack.SetWindowText("");
+    m_editTextFront.SetWindowText(""_cbstring);
+    m_editTextBack.SetWindowText(""_cbstring);
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -403,7 +403,7 @@ void CPieceNewDialog::OnCheckTextSameAsTop()
     BOOL bSameAsTop = m_chkSameAsTop.GetCheck() != 0;
     if (bSameAsTop)
     {
-        m_editTextBack.SetWindowText("");
+        m_editTextBack.SetWindowText(""_cbstring);
         m_editTextBack.EnableWindow(FALSE);
     }
     else

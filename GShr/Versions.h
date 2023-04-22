@@ -261,7 +261,7 @@ const int fileGmvVerMinor = VersionMinor(GetSaveFileVersion());
 #define FILEGAMSIGNATURE    "GAME"  // File signature for games
 #define FILEGMVSIGNATURE    "GMOV"  // File signature for move files
 
-#define FILEEXT_GTLB        "gtl"   // File extension for tile library files
+#define FILEEXT_GTLB        "gtl"_cbstring   // File extension for tile library files
 
 /* This is an RAII helper for setting the current file format
     version, and then changing it to a different version when
@@ -462,7 +462,7 @@ inline const Features& GetCBForcedFeatures()
         };
         FileFlagParser ffp;
         CbGetApp().ParseCommandLine(ffp);
-        TRACE("%ls", std::format(L"{}:  {}\n", CB::string(__func__), ffp.features).c_str());
+        CPP20_TRACE(L"{}:  {}\n", CB::string(__func__), ffp.features);
         return ffp.features;
     }();
     return features;
@@ -515,7 +515,7 @@ inline const Features& GetCBFeatures()
                 AfxThrowInvalidArgException();
             }
         }
-        TRACE("%ls", std::format(L"{}:  {}\n", CB::string(__func__), ffp.features).c_str());
+        CPP20_TRACE(L"{}:  {}\n", CB::string(__func__), ffp.features);
         return ffp.features;
     }();
     return features;

@@ -207,13 +207,13 @@ void CGbxProjView::DoBoardEdit()
 void CGbxProjView::DoUpdateBoardHelpInfo()
 {
 // m_editInfo.SetWindowText("Board Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateBoardInfo()
 {
 // m_editInfo.SetWindowText("Board Info Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ void CGbxProjView::DoUpdateBoardInfo()
 
 void CGbxProjView::DoTileManagerProperty()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGbxProjView::DoTileGroupCreate()
@@ -420,7 +420,7 @@ void CGbxProjView::DoTileDelete()
 void CGbxProjView::DoUpdateTileHelpInfo()
 {
     // m_editInfo.SetWindowText("Tile Tips Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateTileList()
@@ -613,7 +613,7 @@ void CGbxProjView::DoPieceDelete()
 void CGbxProjView::DoUpdatePieceHelpInfo()
 {
     // m_editInfo.SetWindowText("Piece Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGbxProjView::DoUpdatePieceList()
@@ -790,7 +790,7 @@ void CGbxProjView::DoMarkDelete()
 void CGbxProjView::DoUpdateMarkHelpInfo()
 {
     // m_editInfo.SetWindowText("Marker Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateMarkList()

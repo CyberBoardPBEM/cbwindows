@@ -293,7 +293,7 @@ public:
         int nItem;
         for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
         {
-            this->AddString(" ");             // Fill with dummy data
+            this->AddString(" "_cbstring);             // Fill with dummy data
             width = CB::max(width, this->OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
         }
         this->SetHorizontalExtent(value_preserving_cast<int>(width));

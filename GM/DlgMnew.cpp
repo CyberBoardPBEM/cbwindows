@@ -183,7 +183,7 @@ BOOL CMarkerCreateDialog::OnInitDialog()
     SetupTileListbox();
 
     m_chkPromptText.SetCheck(0);
-    m_editMarkerText.SetWindowText("");
+    m_editMarkerText.SetWindowText(""_cbstring);
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }

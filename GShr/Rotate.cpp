@@ -185,6 +185,7 @@ namespace {
 // angle is clockwise
 CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
 {
+DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, pSDib.Width(), pSDib.Height(), angle);
     ASSERT(0 <= angle && angle < 360);
     ASSERT(angle != 0 || !"unnecessary call");
     if (angle % 90 == 0)

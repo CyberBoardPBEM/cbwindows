@@ -78,10 +78,10 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
                 GetMainFrame()->GetStatusBar()->SetWindowText(strOwnedBy);
             }
             else
-                GetMainFrame()->GetStatusBar()->SetWindowText("");
+                GetMainFrame()->GetStatusBar()->SetWindowText(""_cbstring);
         }
         else
-            GetMainFrame()->GetStatusBar()->SetWindowText("");
+            GetMainFrame()->GetStatusBar()->SetWindowText(""_cbstring);
     }
 
     if (pDObj != m_pCurTipObj)

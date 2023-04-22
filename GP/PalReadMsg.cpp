@@ -177,7 +177,7 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
 {
     if (pDoc != m_pDoc)
     {
-        m_editCtrl.SetWindowText("");
+        m_editCtrl.SetWindowText(""_cbstring);
         m_pDoc = pDoc;
         m_nMsgCount = size_t(0);
     }
@@ -193,7 +193,7 @@ void CReadMsgWnd::ProcessMessages()
     if (astrHist.empty() || astrHist.size() < m_nMsgCount)
     {
         m_nMsgCount = size_t(0);
-        m_editCtrl.SetWindowText("");
+        m_editCtrl.SetWindowText(""_cbstring);
     }
 
     size_t nOldCount = m_nMsgCount;            // Save previous length for a moment

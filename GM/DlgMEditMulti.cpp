@@ -100,7 +100,7 @@ void CMarkerEditMultipleDialog::UpdateTextControls()
     else
     {
         m_editText.EnableWindow(FALSE);
-        m_editText.SetWindowText("");
+        m_editText.SetWindowText(""_cbstring);
         m_staticTextLabel.EnableWindow(FALSE);
     }
 }

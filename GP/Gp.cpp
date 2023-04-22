@@ -56,7 +56,7 @@ static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
-const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
+const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop"_cbstring);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -147,7 +147,7 @@ BOOL CGpApp::InitInstance()
     // Change the registry key under which our settings are stored.
     // You should modify this string to be something appropriate
     // such as the name of your company or organization.
-    SetRegistryKey("CyberBoard V4.00");
+    SetRegistryKey("CyberBoard V4.00"_cbstring);
 
     m_bDisableHtmlHelp = GetProfileInt(szSectSettings, szSectDisableHtmlHelp, 0);
     if (!m_bDisableHtmlHelp)
@@ -347,7 +347,7 @@ void CGpApp::DoHelpShellLaunch()
     memset(&execInfo, 0, sizeof(execInfo));
     execInfo.cbSize = sizeof(SHELLEXECUTEINFO);
     execInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    execInfo.lpVerb = "open";
+    execInfo.lpVerb = "open"_cbstring;
     execInfo.lpFile = m_pszHelpFilePath;
     execInfo.nShow = SW_SHOWNORMAL;
     if (ShellExecuteEx(&execInfo))
@@ -572,7 +572,7 @@ void CAboutDlg::SetupVersion(CStatic& s, int major, int minor, UINT nRes)
 }
 
 #ifdef _DEBUG
-static const char szGenDate[] = __DATE__;
+static const CB::string szGenDate = __DATE__;
 #endif
 
 BOOL CAboutDlg::OnInitDialog()
@@ -608,12 +608,12 @@ void CGpApp::OnAppAbout()
 void CGpApp::OnHelpWebsite()
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
-    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+    ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CGpApp::OnHelpReleases()
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
-    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+    ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 

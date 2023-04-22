@@ -885,7 +885,6 @@ namespace CB
     inline bool operator!=(const string& lhs, const string& rhs) { return !(lhs == rhs); }
     inline bool operator!=(const string& lhs, const char* rhs) { return !(lhs == rhs); }
     inline std::string& operator+=(std::string& lhs, const string& rhs) { return lhs += rhs.a_str(); }
-    inline CString& operator+=(CString& lhs, const string& rhs) { return lhs += rhs.mfc_str(); }
     inline string operator+(string lhs, const string& rhs) { return lhs += rhs; }
     inline string operator+(string lhs, const char* rhs) { return lhs += static_cast<string>(rhs); }
     inline string operator+(string lhs, const CString& rhs) { return lhs += static_cast<string>(rhs); }
@@ -1610,96 +1609,46 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(NDEBUG)
-    namespace CB { namespace Impl
-    {
-        class CTraceFileAndLineInfo
-        {
-        public:
-            CTraceFileAndLineInfo(const char* file, int line) : file(file), line(line) {}
-
-            void operator()(LPCSTR fmt, ...) const
-            {
-                CString temp;
-                va_list args;
-                va_start(args, fmt);
-                temp.FormatV(fmt, args);
-                va_end(args);
-
-                CString out;
-                out.Format("%hs(%d):  %s", file, line, temp.GetString());
-                OutputDebugString(out);
-            }
-
-            // TODO:  pay attention to cat and level
-            void operator()(DWORD /*cat*/, int /*level*/, LPCSTR fmt, ...) const
-            {
-                CString temp;
-                va_list args;
-                va_start(args, fmt);
-                temp.FormatV(fmt, args);
-                va_end(args);
-
-                CString out;
-                out.Format("%hs(%d):  %s", file, line, temp.GetString());
-                OutputDebugString(out);
-            }
-
-        private:
-            const char* const file;
-            const int line;
-        };
-    }}
-#endif
-
 namespace CB { namespace Impl {
-    class Cpp20Trace
+    template<typename... Args>
+    void Cpp20Trace(const char* file, int line, std::format_string<Args...> fmt, Args&&... args)
     {
-    public:
-        Cpp20Trace(const char* file, int line) : file(file), line(line) {}
+        CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
+        CB::string temp2 = std::format(L"{}({}):  {}", file, line, temp);
+        OutputDebugStringW(temp2);
+    }
 
-        template<typename... Args>
-        void operator()(std::format_string<Args...> fmt, Args&&... args)
-        {
-            CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
-            // %ls with wchar_t* is the only thing that MS implements per standard
-            CTraceFileAndLineInfo(file, line)("%ls", temp.w_str());
-        }
+    template<typename... Args>
+    void Cpp20Trace(const char* file, int line, std::wformat_string<Args...> fmt, Args&&... args)
+    {
+        CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
+        CB::string temp2 = std::format(L"{}({}):  {}", file, line, temp);
+        OutputDebugStringW(temp2);
+    }
 
-        template<typename... Args>
-        void operator()(std::wformat_string<Args...> fmt, Args&&... args)
-        {
-            CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
-            // %ls with wchar_t* is the only thing that MS implements per standard
-            CTraceFileAndLineInfo(file, line)("%ls", temp.w_str());
-        }
+    // TODO:  pay attention to cat and level
+    template<typename... Args>
+    void Cpp20Trace(const char* file, int line, DWORD cat, int level, std::format_string<Args...> fmt, Args&&... args)
+    {
+        CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
+        CB::string temp2 = std::format(L"{}({}):  {}", file, line, temp);
+        OutputDebugStringW(temp2);
+    }
 
-        template<typename... Args>
-        void operator()(DWORD cat, int level, std::format_string<Args...> fmt, Args&&... args)
-        {
-            CB::string temp = std::vformat(fmt.get(), std::make_format_args(args...));
-            // %ls with wchar_t* is the only thing that MS implements per standard
-            CTraceFileAndLineInfo(file, line)(cat, level, "%ls", temp.w_str());
-        }
-
-        template<typename... Args>
-        void operator()(DWORD cat, int level, std::wformat_string<Args...> fmt, Args&&... args)
-        {
-            CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
-            // %ls with wchar_t* is the only thing that MS implements per standard
-            CTraceFileAndLineInfo(file, line)(cat, level, "%ls", temp.w_str());
-        }
-
-    private:
-        const char* const file;
-        const int line;
-    };
+    // TODO:  pay attention to cat and level
+    template<typename... Args>
+    void Cpp20Trace(const char* file, int line, DWORD cat, int level, std::wformat_string<Args...> fmt, Args&&... args)
+    {
+        CB::string temp = std::vformat(fmt.get(), std::make_wformat_args(args...));
+        CB::string temp2 = std::format(L"{}({}):  {}", file, line, temp);
+        OutputDebugStringW(temp2);
+    }
 }}
-#define DBGREL_CPP20_TRACE CB::Impl::Cpp20Trace(__FILE__, __LINE__)
+#define DBGREL_CPP20_TRACE(fmt, ...) CB::Impl::Cpp20Trace(__FILE__, __LINE__, fmt, __VA_ARGS__)
 #if !defined(NDEBUG)
-    #define CPP20_TRACE DBGREL_CPP20_TRACE
+    #define CPP20_TRACE(fmt, ...) DBGREL_CPP20_TRACE(fmt, __VA_ARGS__)
 #else
-    #define CPP20_TRACE true ? void(0) : CB::Impl::Cpp20Trace(__FILE__, __LINE__)
+    #define CPP20_TRACE(fmt, ...) true ? void(0) : CB::Impl::Cpp20Trace(__FILE__, __LINE__, fmt, __VA_ARGS__)
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

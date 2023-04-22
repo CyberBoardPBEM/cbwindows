@@ -117,7 +117,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
         {
             m_bSetTexts[size_t(0)] = false;
             m_editFront.EnableWindow(FALSE);
-            m_editFront.SetWindowText("");
+            m_editFront.SetWindowText(""_cbstring);
             m_staticFrontLabel.EnableWindow(FALSE);
         }
     }
@@ -160,7 +160,7 @@ void CPieceEditMultipleDialog::UpdateTextControls()
                 {
                     m_bSetTexts[currSide] = false;
                     m_editBack.EnableWindow(FALSE);
-                    m_editBack.SetWindowText("");
+                    m_editBack.SetWindowText(""_cbstring);
                     m_staticBackLabel.EnableWindow(FALSE);
                 }
             }

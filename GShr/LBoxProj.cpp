@@ -120,7 +120,7 @@ int CProjListBoxBase::GetItemWidth(int nIndex) const
         GetItemSourceCode(nIndex) == m_nMarkSourceCode)
     {
         // Mark the line with a chevron
-        nWidth = scrnDC.GetTextExtent("\xBB", 1).cx;
+        nWidth = scrnDC.GetTextExtent("\xBB"_cbstring, 1).cx;
     }
     nWidth += scrnDC.GetTextExtent(str.substr(prefixLen)).cx + 16; // (fudge factor)
     scrnDC.SelectObject(pPrevFont);
@@ -158,7 +158,7 @@ void CProjListBoxBase::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nS
             CRect rct = rctItem;
             // Mark the line with a chevron
             pDC.ExtTextOut(rct.left, rct.top, ETO_OPAQUE, rct,
-                "\xBB", 1, NULL);
+                "\xBB"_cbstring, 1, NULL);
             rct.left += 3 * g_res.tm8ssb.tmAveCharWidth;
             pDC.ExtTextOut(rctItem.left + 3 * g_res.tm8ssb.tmAveCharWidth,
                 rctItem.top, ETO_OPAQUE, rct,
