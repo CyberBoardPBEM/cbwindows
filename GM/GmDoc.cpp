@@ -230,7 +230,7 @@ BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
 {
     // Make sure tile edits are saved.
     UpdateAllViews(NULL, HINT_FORCETILEUPDATE, NULL);
-    if (_access(pszPathName, 0) != -1)
+    if (std::filesystem::exists(pszPathName))
     {
         CB::string szTmp = SetFileExt(pszPathName, "gb_");
         if (_access(szTmp, 0) != -1)        // Remove previous backup
@@ -978,8 +978,8 @@ void CGamDoc::OnUpdateStickyDrawTools(CCmdUI* pCmdUI)
 
 void CGamDoc::OnDumpTileData()
 {
-    CFileDialog dlg(FALSE, "txt", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", NULL, 0);
+    CFileDialog dlg(FALSE, "txt"_cbstring, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
     if (dlg.DoModal() == IDOK)
     {
         GetTileManager()->DumpTileDatabaseInfoToFile(dlg.GetPathName(), TRUE);
@@ -990,7 +990,7 @@ void CGamDoc::OnBugFixDumpBadTiles()
 {
     if (AfxMessageBox("This is a secret function that will attempt to remove illegal tiles "
         "assigned to tile sheet 255. It can also trash your GameBox. Therefore, only Dale Larson and his "
-        "appropriately blessed holy minions should use it. You have been WARNED!",
+        "appropriately blessed holy minions should use it. You have been WARNED!"_cbstring,
         MB_OKCANCEL | MB_ICONEXCLAMATION) == IDOK)
     {
         if (GetTileManager()->PruneTilesOnSheet255())

@@ -127,12 +127,12 @@ void CGsnProjView::DoBoardRemove()
 
 void CGsnProjView::DoUpdateBoardHelpInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGsnProjView::DoUpdateBoardInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ void CGsnProjView::DoTrayDelete()
 
 void CGsnProjView::DoUpdateTrayHelpInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGsnProjView::DoUpdateTrayList()

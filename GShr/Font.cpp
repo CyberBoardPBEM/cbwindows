@@ -137,7 +137,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
     pLF->lfPitchAndFamily = oFName.GetFaceFamily(opFnt->fnID);
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
-        strcpy(pLF->lfFaceName, *pszFace);
+        _tcscpy(pLF->lfFaceName, *pszFace);
     }
 }
 

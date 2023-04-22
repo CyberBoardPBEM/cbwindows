@@ -496,7 +496,7 @@ void CColorPalette::DoPaint(CDC* pDC)
         pDC->SetTextColor(RGB(0,0,0));
         pDC->SetTextAlign(TA_CENTER | TA_TOP);
         pDC->ExtTextOut((m_rctNoColor.left + m_rctNoColor.right) / 2 ,
-            m_rctNoColor.top + 1, 0, NULL, "no color", 8, NULL);
+            m_rctNoColor.top + 1, 0, NULL, "no color"_cbstring, 8, NULL);
         pDC->SelectObject(pPrvFont);
     }
 

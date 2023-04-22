@@ -321,7 +321,7 @@ int CGamProjView::CreateButton(UINT nCtrlID, CButton& btn, CPoint llpos,
 {
     CRect rct(llpos, CSize((relsize.cx * g_res.tm8ss.tmAveCharWidth) / 4,
         (relsize.cy * g_res.tm8ss.tmHeight) / 8));
-    if (!btn.Create("", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+    if (!btn.Create(""_cbstring, WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
             rct, this, nCtrlID))
         return 0;
     btn.SetFont(CFont::FromHandle(g_res.h8ss));
@@ -373,7 +373,7 @@ void CGamProjView::UpdateButtons(int nGrp)
 void CGamProjView::SetButtonState(CButton& btn, UINT nStringID)
 {
     if (nStringID == 0)
-        btn.SetWindowText("");
+        btn.SetWindowText(""_cbstring);
     else
     {
         CB::string str = CB::string::LoadString(nStringID);
@@ -446,7 +446,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
         {
-            bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
+            bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
         }
         CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
         str = pPBoard.GetBoard()->GetName().mfc_str();
@@ -510,7 +510,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         for (size_t i = size_t(0); i < pHTbl->GetNumHistRecords(); i++)
         {
             CHistRecord& pRcd = pHTbl->GetHistRecord(i);
-            CB::string str = pRcd.m_timeAbsorbed.Format(strTimeFmt);
+            CB::string str = pRcd.m_timeAbsorbed.Format(strTimeFmt.v_str());
             str += " - ";
             str += pRcd.m_strTitle;
             m_listProj.AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);
@@ -564,7 +564,7 @@ void CGamProjView::OnSelChangeProjList()
         case grpCurPlay:DoUpdateCurPlayInfo(); break;
         case grpHist:   DoUpdateHistoryInfo(); break;
         default:
-            m_editInfo.SetWindowText("");
+            m_editInfo.SetWindowText(""_cbstring);
     }
     if (nGrp != m_nLastGrp)
     {

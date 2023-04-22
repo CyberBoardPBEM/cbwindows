@@ -100,8 +100,8 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
     int nItem;
     for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
     {
-        AddString(" ");             // Fill with dummy data
-        width = std::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
+        AddString(" "_cbstring);             // Fill with dummy data
+        width = CB::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
     }
     SetHorizontalExtent(value_preserving_cast<int>(width));
     if (bKeepPosition)

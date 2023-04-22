@@ -122,12 +122,12 @@ void CGamProjView::DoBoardView()
 
 void CGamProjView::DoUpdateBoardHelpInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGamProjView::DoUpdateBoardInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ void CGamProjView::DoHistoryExport()
 
 void CGamProjView::DoUpdateHistoryHelpInfo()
 {
-    m_editInfo.SetWindowText("");
+    m_editInfo.SetWindowText(""_cbstring);
 }
 
 void CGamProjView::DoUpdateCurPlayInfo()

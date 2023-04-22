@@ -2080,7 +2080,7 @@ void CPlayBoardView::OnEditBoardToFile()
     CB::string strFilter = CB::string::LoadString(IDS_BMP_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_BITMAPFILE);
 
-    CFileDialog dlg(FALSE, "bmp", NULL, OFN_HIDEREADONLY |
+    CFileDialog dlg(FALSE, "bmp"_cbstring, NULL, OFN_HIDEREADONLY |
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 

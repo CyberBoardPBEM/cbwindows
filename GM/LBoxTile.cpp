@@ -44,7 +44,7 @@ CTileListBox::CTileListBox()
 {
     m_pDoc = NULL;
     m_bDrawAllScales = FALSE;
-    m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
+    m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
 }
 
 CSize CTileListBox::OnItemSize(size_t nIndex) const

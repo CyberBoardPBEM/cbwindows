@@ -112,7 +112,7 @@ void CSendMsgDialog::TransferToReadOnlyView()
 
     CB::string str = CB::string::GetWindowText(m_editMsg2);
     AppendStringToEditBox(m_editMsg, str, TRUE);
-    m_editMsg2.SetWindowText("");
+    m_editMsg2.SetWindowText(""_cbstring);
     m_btnCancel.EnableWindow(FALSE);
 }
 
@@ -167,8 +167,8 @@ void CSendMsgDialog::TeardownReadOnlyView()
 
 void CSendMsgDialog::FillEditBoxes(const CB::string& str)
 {
-    m_editMsg.SetWindowText("");
-    m_editMsg2.SetWindowText("");
+    m_editMsg.SetWindowText(""_cbstring);
+    m_editMsg2.SetWindowText(""_cbstring);
 
     CB::string strReadOnly;
     CB::string strEditable;

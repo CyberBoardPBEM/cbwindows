@@ -231,7 +231,7 @@ void CPieceEditDialog::SetupPieceTexts()
     }
     else
     {
-        m_editTextBack.SetWindowText("");
+        m_editTextBack.SetWindowText(""_cbstring);
     }
 
     OnCheckSameAsTop();
@@ -270,7 +270,7 @@ void CPieceEditDialog::OnSelchangeNumSides()
         m_editTextBack.EnableWindow(FALSE);
         m_chkTopOnlyVisible.EnableWindow(FALSE);
         m_chkTopOnlyOwnersToo.EnableWindow(FALSE);
-        m_editTextBack.SetWindowText("");
+        m_editTextBack.SetWindowText(""_cbstring);
     }
 
     // fix up m_currSides, m_sideTids, and m_sideTexts content
@@ -381,7 +381,7 @@ BOOL CPieceEditDialog::OnInitDialog()
 
     for (size_t i = size_t(0) ; i < PieceDef::maxSides ; ++i)
     {
-        int rc = m_numSides.AddString(std::to_string((i + size_t(1))).c_str());
+        int rc = m_numSides.AddString(CB::string(std::format("{}", i + size_t(1))));
         if (rc != value_preserving_cast<int>(i))
         {
             AfxThrowMemoryException();
@@ -450,7 +450,7 @@ void CPieceEditDialog::OnCheckSameAsTop()
     BOOL bSameAsTop = m_chkSameAsTop.GetCheck() != 0;
     if (bSameAsTop)
     {
-        m_editTextBack.SetWindowText("");
+        m_editTextBack.SetWindowText(""_cbstring);
         m_editTextBack.EnableWindow(FALSE);
     }
     else

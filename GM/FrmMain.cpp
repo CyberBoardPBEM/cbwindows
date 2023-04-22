@@ -187,23 +187,23 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CSize colorPalSize;
     m_wndColorPal.CalculateMinClientSize(colorPalSize);
     m_wndColorPal.SetMinSize(colorPalSize);
-    if (!m_wndColorPal.Create("Colors", this, colorPalSize, TRUE, IDW_COLOR_PALETTE,
+    if (!m_wndColorPal.Create("Colors"_cbstring, this, colorPalSize, TRUE, IDW_COLOR_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create color palette window\n");
         return -1;      // fail to create
     }
 
-    if (!m_wndTilePal.Create("Tiles", this, CSize(colorPalSize.cx, 800), TRUE, IDW_TILE_PALETTE,
+    if (!m_wndTilePal.Create("Tiles"_cbstring, this, CSize(colorPalSize.cx, 800), TRUE, IDW_TILE_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tile palette dock window\n");
         return -1;      // fail to create
     }
 
-    m_wndToolBar.SetWindowText("Standard");
-    m_wndToolPal.SetWindowText("Board Tools");
-    m_wndIToolPal.SetWindowText("Tile Tools");
+    m_wndToolBar.SetWindowText("Standard"_cbstring);
+    m_wndToolPal.SetWindowText("Board Tools"_cbstring);
+    m_wndIToolPal.SetWindowText("Tile Tools"_cbstring);
 
     m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
     m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);

@@ -50,7 +50,7 @@ END_MESSAGE_MAP()
 
 CTileBaseListBox::CTileBaseListBox()
 {
-    m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
+    m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
 
     m_bTipMarkItems = TRUE;
     m_sizeTipMark = CSize(0,0);

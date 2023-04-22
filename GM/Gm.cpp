@@ -127,11 +127,11 @@ static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 
 /////////////////////////////////////////////////////////////////////////////
 
-const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop");
+const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop"_cbstring);
 
-const UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages");
-const UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList");
-const UINT CF_GBOXID = RegisterClipboardFormat("cfCyberBoardGameBoxID");
+const UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages"_cbstring);
+const UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList"_cbstring);
+const UINT CF_GBOXID = RegisterClipboardFormat("cfCyberBoardGameBoxID"_cbstring);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -232,7 +232,7 @@ BOOL CGmApp::InitInstance()
     // Change the registry key under which our settings are stored.
     // You should modify this string to be something appropriate
     // such as the name of your company or organization.
-    SetRegistryKey("CyberBoard V4.00");
+    SetRegistryKey("CyberBoard V4.00"_cbstring);
 
     m_bDisableHtmlHelp = GetProfileInt(szSectSettings, szSectDisableHtmlHelp, 0);
     if (!m_bDisableHtmlHelp)
@@ -383,7 +383,7 @@ void CGmApp::DoHelpShellLaunch()
     memset(&execInfo, 0, sizeof(execInfo));
     execInfo.cbSize = sizeof(SHELLEXECUTEINFO);
     execInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    execInfo.lpVerb = "open";
+    execInfo.lpVerb = "open"_cbstring;
     execInfo.lpFile = m_pszHelpFilePath;
     execInfo.nShow = SW_SHOWNORMAL;
     if (ShellExecuteEx(&execInfo))
@@ -587,7 +587,7 @@ void CGmApp::OnAppAbout()
 }
 
 #ifdef _DEBUG
-static const char szGenDate[] = __DATE__;
+static const CB::string szGenDate = __DATE__;
 #endif
 
 BOOL CAboutDlg::OnInitDialog()
@@ -616,12 +616,12 @@ BOOL CAboutDlg::OnInitDialog()
 void CGmApp::OnHelpWebsite()
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
-    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+    ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CGmApp::OnHelpReleases()
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
-    ShellExecute(NULL, "open", strUrl, NULL, NULL, SW_SHOWNORMAL);
+    ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 

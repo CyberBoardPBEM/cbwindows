@@ -90,7 +90,7 @@ BOOL CTinyBoardPopup::Create(CWnd* pParent, CPoint ptCenter)
 
     return CWnd::CreateEx(dwExStyle,
         AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW),
-        (HBRUSH)(COLOR_BTNFACE + 1)), "", dwStyle, rct, pParent, NULL, NULL);
+        (HBRUSH)(COLOR_BTNFACE + 1)), ""_cbstring, dwStyle, rct, pParent, NULL, NULL);
 }
 
 int CTinyBoardPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)

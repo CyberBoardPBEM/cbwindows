@@ -320,7 +320,7 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
 
 BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
 {
-    if (_access(pszPathName, 0) != -1)
+    if (std::filesystem::exists(pszPathName))
     {
         if (m_bKeepGamBackup && IsScenario())
         {
@@ -711,7 +711,7 @@ BOOL CGamDoc::OnNewGame()
         // Prompt for a base file name...
         CB::string strExt = CB::string::LoadString(IDS_GAME_FILTER);
         CB::string strTitle = CB::string::LoadString(IDS_GAME_SELECT_ROOT_NAME);
-        CFileDialog dlg(FALSE, "gam", NULL, OFN_HIDEREADONLY, strExt, NULL, 0);
+        CFileDialog dlg(FALSE, "gam"_cbstring, NULL, OFN_HIDEREADONLY, strExt, NULL, 0);
         dlg.m_ofn.lpstrTitle = strTitle;
 
         if (dlg.DoModal() == IDOK)
@@ -1118,12 +1118,12 @@ void CGamDoc::OnDebugMoveList()
         pMoveList = m_pRcdMoves.get();
     else
     {
-        AfxMessageBox("No move list exists!");
+        AfxMessageBox("No move list exists!"_cbstring);
         return;
     }
-    CFileDialog dlg(FALSE, "txt", "movedump.txt",
+    CFileDialog dlg(FALSE, "txt"_cbstring, "movedump.txt"_cbstring,
         OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", NULL, 0);
+        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
     if (dlg.DoModal() == IDOK)
     {
         CFile file;
@@ -1140,9 +1140,9 @@ void CGamDoc::OnDebugPieceTable()
     ASSERT(m_pPTbl != NULL);
     if (m_pPTbl == NULL)
         return;
-    CFileDialog dlg(FALSE, "txt", "piecedump.txt",
+    CFileDialog dlg(FALSE, "txt"_cbstring, "piecedump.txt"_cbstring,
         OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", NULL, 0);
+        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
     if (dlg.DoModal() == IDOK)
     {
         CFile file;
@@ -1712,7 +1712,7 @@ void CGamDoc::OnFileLoadMoveFile()
     CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
-    CFileDialog dlg(TRUE, "gmv", NULL, OFN_HIDEREADONLY, strFilter, NULL, 0);
+    CFileDialog dlg(TRUE, "gmv"_cbstring, NULL, OFN_HIDEREADONLY, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 
     if (dlg.DoModal() != IDOK)

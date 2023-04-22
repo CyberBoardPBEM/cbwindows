@@ -380,7 +380,7 @@ int CGbxProjView::CreateButton(UINT nCtrlID, CButton& btn, CPoint llpos,
 {
     CRect rct(llpos, CSize((relsize.cx * g_res.tm8ss.tmAveCharWidth) / 4,
         (relsize.cy * g_res.tm8ss.tmHeight) / 8));
-    if (!btn.Create("", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+    if (!btn.Create(""_cbstring, WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
             rct, this, nCtrlID))
         return 0;
     btn.SetFont(CFont::FromHandle(g_res.h8ss));
@@ -512,7 +512,7 @@ void CGbxProjView::UpdateButtons(int nGrp)
 void CGbxProjView::SetButtonState(CButton& btn, UINT nStringID)
 {
     if (nStringID == 0)
-        btn.SetWindowText("");
+        btn.SetWindowText(""_cbstring);
     else
     {
         CB::string str = CB::string::LoadString(nStringID);
@@ -592,7 +592,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
         {
-            bDisplayIDs = GetApp()->GetProfileInt("Settings", "DisplayIDs", 0);
+            bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
         }
         str = pBMgr->GetBoard(i).GetName().mfc_str();
         if (bDisplayIDs)

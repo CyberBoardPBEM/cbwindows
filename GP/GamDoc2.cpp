@@ -69,7 +69,7 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
         szFName = SetFileExt(szFName, "gmv");
     }
 
-    CFileDialog dlg(FALSE, "gmv", !szFName.empty() ? szFName : NULL,
+    CFileDialog dlg(FALSE, "gmv"_cbstring, !szFName.empty() ? szFName : NULL,
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 
@@ -127,7 +127,7 @@ void CGamDoc::SaveRecordedMoves()
         szFName = SetFileExt(szFName, "gmv");
     }
 
-    CFileDialog dlg(FALSE, "gmv", !szFName.empty() ? szFName : NULL,
+    CFileDialog dlg(FALSE, "gmv"_cbstring, !szFName.empty() ? szFName : NULL,
         OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
     dlg.m_ofn.lpstrTitle = strTitle;
 
