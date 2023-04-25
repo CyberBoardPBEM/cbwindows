@@ -461,7 +461,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     CBoardPropDialog dlg;
     CBoardArray& pBrdAry = pBoard.GetBoardArray();
 
-    dlg.m_strName = pBoard.GetName().mfc_str();
+    dlg.m_strName = pBoard.GetName();
     dlg.m_bGridSnap = pBoard.m_bGridSnap;
     dlg.m_xGridSnap = pBoard.m_xGridSnap;
     dlg.m_yGridSnap = pBoard.m_yGridSnap;

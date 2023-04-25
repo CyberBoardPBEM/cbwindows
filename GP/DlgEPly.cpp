@@ -88,8 +88,9 @@ void CEditPlayersDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CEditPlayersDialog::SetDialogsPlayerNames(CPlayerManager* pPlayerMgr)
 {
+    m_tblNames.reserve(m_tblNames.size() + value_preserving_cast<size_t>(pPlayerMgr->GetSize()));
     for (int i = 0; i < pPlayerMgr->GetSize(); i++)
-        m_tblNames.push_back(std::cref(pPlayerMgr->ElementAt(i).m_strName));
+        m_tblNames.push_back(pPlayerMgr->ElementAt(i).m_strName);
 }
 
 void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager* pPlayerMgr)
@@ -138,10 +139,11 @@ BOOL CEditPlayersDialog::OnInitDialog()
 void CEditPlayersDialog::OnOK()
 {
     m_tblNames.clear();
+    m_tblNames.reserve(value_preserving_cast<size_t>(m_listNames.GetCount()));
     for (int i = 0; i < m_listNames.GetCount(); i++)
     {
         CB::string strName = CB::string::GetText(m_listNames, i);
-        m_tblNames.push_back(strName);
+        m_tblNames.push_back(std::move(strName));
     }
 
     CDialog::OnOK();

@@ -594,7 +594,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         {
             bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
         }
-        str = pBMgr->GetBoard(i).GetName().mfc_str();
+        str = pBMgr->GetBoard(i).GetName();
         if (bDisplayIDs)
         {
             CB::string strTmp = std::move(str);

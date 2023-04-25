@@ -192,12 +192,13 @@ void CPieceEditDialog::SetupPieceTexts()
 {
     PieceDef& pDef = m_pPMgr->GetPiece(m_pid);
 
-    m_sideTexts.resize(pDef.GetSides());
+    m_sideTexts.clear();
+    m_sideTexts.reserve(pDef.GetSides());
     for (size_t i = size_t(0); i < pDef.GetSides(); ++i)
     {
         CB::string strText;
         m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, value_preserving_cast<unsigned>(i)), strText);
-        m_sideTexts[i] = strText;
+        m_sideTexts.push_back(std::move(strText));
     }
 
     CB::string strText;
@@ -408,7 +409,7 @@ BOOL CPieceEditDialog::OnInitDialog()
     CB::string strText;
     m_pDoc->GetGameStringMap().Lookup(MakePieceElement(m_pid, unsigned(0)), strText);
     m_sideTexts.clear();
-    m_sideTexts.push_back(strText);
+    m_sideTexts.push_back(std::move(strText));
     OnSelchangeNumSides();
 
     SetupPieceTiles();

@@ -566,7 +566,7 @@ LRESULT CMainFrame::OnMessageBox(WPARAM wParam, LPARAM lParam)
             break;
         case WMB_PTR_NEW:
             AfxMessageBox(reinterpret_cast<const CB::string::value_type*>(lParam), MB_OK);
-            delete reinterpret_cast<const CB::string::value_type*>(lParam);
+            delete [] reinterpret_cast<const CB::string::value_type*>(lParam);
             break;
         case WMB_PTR_CBSTRING:
         {

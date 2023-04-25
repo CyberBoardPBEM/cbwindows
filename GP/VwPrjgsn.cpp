@@ -426,7 +426,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
     {
         CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
-        str = pPBoard.GetBoard()->GetName().mfc_str();
+        str = pPBoard.GetBoard()->GetName();
         if (bDisplayIDs)
         {
             CB::string strTmp = std::move(str);

@@ -1032,7 +1032,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
     dlg.m_yStackStagger = pPBoard.m_yStackStagger;
     dlg.m_crPlotColor = pPBoard.m_crPlotLineColor;
     dlg.m_nPlotWd = pPBoard.m_nPlotLineWidth;
-    dlg.m_strBoardName = pPBoard.GetBoard()->GetName().mfc_str();
+    dlg.m_strBoardName = pPBoard.GetBoard()->GetName();
     dlg.m_pPlayerMgr = GetPlayerManager();
     dlg.m_nOwnerSel = CPlayerManager::GetPlayerNumFromMask(pPBoard.GetOwnerMask());
     dlg.m_bOwnerInfoIsReadOnly = !IsScenario();
