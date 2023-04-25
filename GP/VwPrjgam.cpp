@@ -449,7 +449,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
         }
         CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
-        str = pPBoard.GetBoard()->GetName().mfc_str();
+        str = pPBoard.GetBoard()->GetName();
         if (bDisplayIDs)
         {
             CB::string strTmp = std::move(str);

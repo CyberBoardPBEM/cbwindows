@@ -132,7 +132,6 @@ void CImportTraysDlg::OnOK()
     {
         if (m_listGroups.GetCheck(i) > 0)
         {
-            CB::string strTrayName;
             size_t nPSet = value_preserving_cast<size_t>(m_listGroups.GetItemData(i));
             const CPieceSet& pPSet = pPMgr->GetPieceSet(nPSet);
 
