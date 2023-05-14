@@ -30,6 +30,27 @@
 #include <cstdarg>
 #include <filesystem>
 #include <format>
+// KLUDGE:  see https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2508r1.html
+#if __cpp_lib_format < 202207
+    #pragma message("WARNING:  out-of-date STL does not provide std::basic_format_string")
+    namespace std {
+        template<typename CharT, typename... Args>
+        struct basic_format_string : private basic_string_view<CharT>
+        {
+        private:
+            using BASE = basic_string_view<CharT>;
+        public:
+            using BASE::BASE;
+            const basic_string_view<CharT>& get() const { return *this; }
+        };
+
+        template<typename... Args>
+        using format_string = basic_format_string<char, type_identity_t<Args>...>;
+
+        template<typename... Args>
+        using wformat_string = basic_format_string<wchar_t, type_identity_t<Args>...>;
+    }
+#endif
 #include <limits>
 #include <memory>
 #include <regex>
