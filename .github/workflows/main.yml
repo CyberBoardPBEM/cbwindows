@@ -34,14 +34,16 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
       run: |
-        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /target:build
+        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
+        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
+        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
         msbuild zlib\zLib.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
         msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
         msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=DebugU /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=DebugU /target:build
+        msbuild zlib\zLib.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
+        msbuild GM\CBDsgn32.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
+        msbuild GP\CBPlay32.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
+        msbuild zlib\zLib.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
         msbuild GM\CBDsgn32.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
         msbuild GP\CBPlay32.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
 
