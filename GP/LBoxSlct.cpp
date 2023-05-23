@@ -140,7 +140,7 @@ void CSelectListBox::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     menuGameElement = OnGetHitItemCodeAtPoint(&CGamDoc::GetGameElementCodeForObject, clientPoint, rect);
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
     {
         CMenu& popup = *bar.GetSubMenu(MENU_PV_SELCT_BOX);
         ASSERT(popup.m_hMenu != NULL);

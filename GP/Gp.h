@@ -81,6 +81,8 @@ class CGpApp : public CWinAppEx
 public:
     static CGpApp& Get();
 private:
+    class CwxGpApp;
+    friend wxMFCApp<CGpApp>;
     CGpApp();
 public:
 

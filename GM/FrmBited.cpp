@@ -76,7 +76,7 @@ BOOL CBitEditFrame::PreCreateWindow(CREATESTRUCT& cs)
     cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS,
         AfxGetApp()->LoadStandardCursor(IDC_ARROW),
         (HBRUSH)GetStockObject(LTGRAY_BRUSH),
-        AfxGetApp()->LoadIcon(IDR_BITEDITOR));
+        AfxGetApp()->LoadIconW(IDR_BITEDITOR));
 
     cs.style |= WS_CLIPCHILDREN;
     cs.style &= ~(DWORD)FWS_ADDTOTITLE;

@@ -153,7 +153,7 @@ BOOL CReadMsgWnd::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
         ::GetCursorPos(&point); // Get current mouse position
 
         CMenu menu;
-        VERIFY(menu.LoadMenu(IDR_MENU_PLAYER_POPUPS));
+        VERIFY(menu.LoadMenuW(IDR_MENU_PLAYER_POPUPS));
 
         CMenu *pPopupMenu = menu.GetSubMenu(MENU_MV_RICHEDIT);
         ASSERT(pPopupMenu != NULL);

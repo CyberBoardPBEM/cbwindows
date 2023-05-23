@@ -1172,7 +1172,7 @@ void CGbxProjView::OnContextMenu(CWnd* pWnd, CPoint point)
         return;
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_DESIGN_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_DESIGN_POPUPS))
     {
         CMenu& popup = *bar.GetSubMenu(nID);
         ASSERT(popup.m_hMenu != NULL);

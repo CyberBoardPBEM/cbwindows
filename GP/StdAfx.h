@@ -30,6 +30,9 @@
 #define _SECURE_ATL 1
 #endif
 
+// avoid conflict w/ wx's GdiplusShutdown
+#define _ATL_NO_DEFAULT_LIBS
+
 #include "targetver.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit

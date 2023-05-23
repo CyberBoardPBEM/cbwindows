@@ -604,7 +604,7 @@ void CGsnProjView::OnContextMenu(CWnd* pWnd, CPoint point)
         return;
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
     {
         CMenu& popup = *bar.GetSubMenu(nID);
         ASSERT(popup.m_hMenu != NULL);

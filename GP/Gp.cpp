@@ -117,17 +117,43 @@ CGpApp::CGpApp()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGpApp object
 
+class CGpApp::CwxGpApp : public wxMFCApp<CGpApp>
+{
+protected:
+    BOOL InitMainWnd() override
+    {
+        // CGmApp::InitInstance already created MFC main wnd
+
+        return TRUE;
+    }
+};
+
 CGpApp& CGpApp::Get()
 {
     /* make this a function variable to ensure
         it's constructed before use */
-    static CGpApp theApp;
+    static CwxGpApp theApp;
     return theApp;
 }
 CWinApp& CbGetApp()
 {
     return CGpApp::Get();
 }
+
+namespace {
+    class wxCGpApp : public wxAppWithMFC
+    {
+    public:
+        virtual bool OnInit() override
+        {
+            // handling cmd line w/ MFC, so skip wxCmdLineParser
+            return true;
+        }
+    };
+}
+wxDECLARE_APP(wxCGpApp);
+// Notice use of wxIMPLEMENT_APP_NO_MAIN() instead of the usual wxIMPLEMENT_APP!
+wxIMPLEMENT_APP_NO_MAIN(wxCGpApp);
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp initialization
