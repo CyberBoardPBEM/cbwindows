@@ -940,7 +940,7 @@ void CBitEditView::OnContextMenu(CWnd* pWnd, CPoint point)
     GetParentFrame()->ActivateFrame();
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_DESIGN_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_DESIGN_POPUPS))
     {
         CMenu& popup = *bar.GetSubMenu(MENU_IV_BITEDIT);
         ASSERT(popup.m_hMenu != NULL);

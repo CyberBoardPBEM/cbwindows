@@ -61,6 +61,10 @@
 
 #include <WinExt.h>
 
+// nmake -f makefile.vc BUILD=debug SHARED=0 DEBUG_RUNTIME_LIBS=default RUNTIME_LIBS=static TARGET_CPU=X64
+#include "wx/wxprec.h"
+#include "wx/msw/mfc.h"
+
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
 static_assert(std::is_same_v<uint16_t, WORD>, "wrong standard replacement for WORD");
 static_assert(std::is_same_v<unsigned int, UINT>, "wrong standard replacement for UINT");
@@ -237,6 +241,21 @@ public:
 template<typename CharT>
 struct std::formatter<CRect, CharT> : public std::formatter<RECT, CharT>
 {
+};
+
+template<typename CharT>
+struct std::formatter<wxString, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
+{
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxString& s, FormatContext& ctx)
+    {
+        return BASE::format(static_cast<const CharT*>(s), ctx);
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////

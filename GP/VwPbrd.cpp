@@ -1035,7 +1035,7 @@ void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
     GetParentFrame()->ActivateFrame();
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
     {
         UINT nMenuNum;
         if (GetDocument()->IsPlaying())

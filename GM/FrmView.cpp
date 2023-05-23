@@ -60,7 +60,7 @@ BOOL CViewFrame::PreCreateWindow(CREATESTRUCT& cs)
     cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS,
         AfxGetApp()->LoadStandardCursor(IDC_ARROW),
         (HBRUSH)GetStockObject(LTGRAY_BRUSH),
-        AfxGetApp()->LoadIcon(IDR_BOARDVIEW));
+        AfxGetApp()->LoadIconW(IDR_BOARDVIEW));
 
     cs.style |= WS_CLIPCHILDREN;
     cs.style &= ~(DWORD)FWS_ADDTOTITLE;

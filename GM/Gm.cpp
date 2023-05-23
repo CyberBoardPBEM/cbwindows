@@ -202,17 +202,43 @@ CGmApp::CGmApp()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CGmApp object
 
+class CGmApp::CwxGmApp : public wxMFCApp<CGmApp>
+{
+protected:
+    BOOL InitMainWnd() override
+    {
+        // CGmApp::InitInstance already created MFC main wnd
+
+        return TRUE;
+    }
+};
+
 CGmApp& CGmApp::Get()
 {
     /* make this a function variable to ensure
         it's constructed before use */
-    static CGmApp theApp;
+    static CwxGmApp theApp;
     return theApp;
 }
 CWinApp& CbGetApp()
 {
     return CGmApp::Get();
 }
+
+namespace {
+    class wxCGmApp : public wxAppWithMFC
+    {
+    public:
+        virtual bool OnInit() override
+        {
+            // handling cmd line w/ MFC, so skip wxCmdLineParser
+            return true;
+        }
+    };
+}
+wxDECLARE_APP(wxCGmApp);
+// Notice use of wxIMPLEMENT_APP_NO_MAIN() instead of the usual wxIMPLEMENT_APP!
+wxIMPLEMENT_APP_NO_MAIN(wxCGmApp);
 
 /////////////////////////////////////////////////////////////////////////////
 // CGmApp initialization
@@ -343,6 +369,11 @@ BOOL CGmApp::InitInstance()
         AfxMessageBox(IDP_ERR_MINCOLORS, MB_OK | MB_ICONSTOP);
         return FALSE;
     }
+wxString test = wxString("hello, €") + "world\n";
+OutputDebugStringA(test);
+OutputDebugStringW(test);
+CPP20_TRACE("test:  {}", test);
+//CPP20_TRACE(L"test:  {}", test);
 
     return TRUE;
 }

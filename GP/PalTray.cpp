@@ -296,7 +296,7 @@ void CTrayPalette::DoMenu(CPoint point, bool rightButton)
     }
 
     CMenu bar;
-    if (bar.LoadMenu(IDR_MENU_PLAYER_POPUPS))
+    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
     {
         CMenu& popup = *bar.GetSubMenu(MENU_PV_PIECE_TRAY);
         ASSERT(popup.m_hMenu != NULL);
