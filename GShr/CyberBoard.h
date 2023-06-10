@@ -861,6 +861,8 @@ namespace CB
         operator const char*() const { return a_str(); }
         CString mfc_str() const { return v_str(); }
         operator CString() const { return mfc_str(); }
+        wxString wx_str() const { return wxString(std_wstr().c_str(), w_size()); }
+        operator wxString() const { return wx_str(); }
         size_t w_size() const { return std_wstr().size(); }
         const wchar_t* w_str() const { return std_wstr().c_str(); }
         operator const wchar_t*() const { return w_str(); }
@@ -927,6 +929,7 @@ namespace CB
     inline std::string& operator+=(std::string& lhs, const string& rhs) { return lhs += rhs.a_str(); }
     inline string operator+(string lhs, const string& rhs) { return lhs += rhs; }
     inline string operator+(string lhs, const char* rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(const char* lhs, const string& rhs) { return static_cast<string>(lhs) + rhs; }
     inline string operator+(string lhs, const CString& rhs) { return lhs += static_cast<string>(rhs); }
     inline string operator+(char lhs, const string& rhs) { return string(size_t(1), lhs) += rhs; }
     // not impl yet
