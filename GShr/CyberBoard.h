@@ -792,9 +792,9 @@ namespace CB
         (https://github.com/wxWidgets/wxWidgets/issues/22682),
         but storing UTF-8 strings
         (https://github.com/CyberBoardPBEM/cbwindows/pull/71#discussion_r725491054) */
-    // currently:  std::string assumed to be windows-1252 string
-    /* TODO:  make std::string utf8, and use wxWidgets for
-            encoding conversions */
+    /* currently:  std::string assumed to be windows-1252 string,
+        use wx for encoding conversions */
+    // TODO:  make std::string utf8
     /*  WARNING:  switching to utf8 will require changing all
             indexing and sizing operations to work in terms of
             iterators due to varying-sized chars */
@@ -859,17 +859,17 @@ namespace CB
         size_t a_size() const { return cp1252.size(); }
         const char* a_str() const { return cp1252.c_str(); }
         operator const char*() const { return a_str(); }
-        CString mfc_str() const { return v_str(); }
+        inline CString mfc_str() const;
         operator CString() const { return mfc_str(); }
-        wxString wx_str() const { return wxString(std_wstr().c_str(), w_size()); }
-        operator wxString() const { return wx_str(); }
-        size_t w_size() const { return std_wstr().size(); }
-        const wchar_t* w_str() const { return std_wstr().c_str(); }
+        const wxString& wx_str() const;
+        operator const wxString&() const { return wx_str(); }
+        size_t w_size() const { return wx_str().size(); }
+        const wchar_t* w_str() const { return wx_str(); }
         operator const wchar_t*() const { return w_str(); }
-        const std::wstring& std_wstr() const;
-        std::wstring_view std_wstrv() const { return std_wstr(); }
+        std::wstring std_wstr() const { return std::wstring(w_str(), w_size()); }
+        std::wstring_view std_wstrv() const { return std::wstring_view(w_str(), w_size()); }
         operator std::wstring_view() const { return std_wstrv(); }
-        operator const std::wstring& () const { return std_wstr(); }
+        operator std::wstring() const { return std_wstr(); }
 #if !defined(_UNICODE)
         size_t v_size() const { return a_size(); }
 #else
@@ -877,7 +877,7 @@ namespace CB
 #endif
         const value_type* v_str() const { return static_cast<const value_type*>(*this); }
         const char& operator[](size_t s) const { return cp1252[s]; }
-        const wchar_t& front() const { return std_wstr().front(); }
+        const wchar_t& front() const { return *w_str(); }
 
         operator std::filesystem::path() const { return std::filesystem::path(std_wstr()); }
 
@@ -905,13 +905,13 @@ namespace CB
 
         int CompareNoCase(const string& rhs) const { return _wcsicmp(*this, rhs); }
 
-        void clear() { wide.reset(); cp1252.clear(); }
+        void clear() { wxwide.reset(); cp1252.clear(); }
         // reserve doesn't change cp1252's value, so no need for wide.reset()
         void reserve(size_t s) { cp1252.reserve(s); }
-        void resize(size_t s) { wide.reset(); cp1252.resize(s); }
+        void resize(size_t s) { wxwide.reset(); cp1252.resize(s); }
 
-        string& operator+=(const string& rhs) { wide.reset(); cp1252 += rhs.cp1252; return *this; }
-        string& operator+=(char c) { wide.reset(); cp1252 += c; return *this; }
+        string& operator+=(const string& rhs) { wxwide.reset(); cp1252 += rhs.cp1252; return *this; }
+        string& operator+=(char c) { wxwide.reset(); cp1252 += c; return *this; }
         string& operator+=(wchar_t c) { return *this += CB::string(std::wstring_view(&c, size_t(1))); }
 
         void Serialize(CArchive& ar) const;
@@ -919,7 +919,9 @@ namespace CB
 
     private:
         std::string cp1252;
-        mutable std::unique_ptr<std::wstring> wide;
+        /* need to keep object long-term so char* doesn't become
+            orphaned */
+        mutable std::unique_ptr<wxString> wxwide;
     };
 
     inline bool operator==(const string& lhs, const string& rhs) { return lhs.CompareNoCase(rhs) == 0; }
@@ -1693,6 +1695,12 @@ namespace CB { namespace Impl {
 #else
     #define CPP20_TRACE(fmt, ...) true ? void(0) : CB::Impl::Cpp20Trace(__FILE__, __LINE__, fmt, __VA_ARGS__)
 #endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+namespace CB {
+    inline CString string::mfc_str() const { return CString(v_str(), value_preserving_cast<int>(v_size())); }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
