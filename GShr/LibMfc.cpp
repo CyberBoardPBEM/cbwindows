@@ -562,7 +562,7 @@ std::unique_ptr<CB::string> CB::string::DoPromptFileName(CWinApp& app, UINT nIDS
 
 CB::string& CB::string::operator=(const string& other)
 {
-    wide.reset();
+    wxwide.reset();
     cp1252 = other.cp1252;
     return *this;
 }
@@ -570,7 +570,7 @@ CB::string& CB::string::operator=(const string& other)
 CB::string::~string()
 {
     static size_t strs;
-    static size_t wstrs;
+    static size_t wxstrs;
     static class Report
     {
     public:
@@ -578,39 +578,29 @@ CB::string::~string()
         {
             /* WARNING:  don't use CPP20_TRACE here (it creates
                 more CB::string instances) */
-            TRACE("strs %zu, wstrs %zu\n", strs, wstrs);
+            TRACE("strs %zu, wxstrs %zu\n", strs, wxstrs);
         }
     } report;
     ++strs;
-    if (wide)
+    if (wxwide)
     {
-        ++wstrs;
+        ++wxstrs;
     }
 }
 
 CB::string::string(std::wstring_view s)
 {
-    // TODO:  utf-8 conversion
-    cp1252.resize(s.size());
-    for (size_t i = size_t(0) ; i < cp1252.size() ; ++i)
-    {
-        cp1252[i] = static_cast<char>(value_preserving_cast<uint8_t>(s[i]));
-    }
+    wxCharBuffer buf = wxConvLibc.cWC2MB(s.data(), s.size(), nullptr);
+    cp1252 = std::string(buf, buf.length());
 }
 
-const std::wstring& CB::string::std_wstr() const
+const wxString& CB::string::wx_str() const
 {
-    if (!wide)
+    if (!wxwide)
     {
-        // TODO:  utf-8 conversion
-        wide.reset(new std::wstring);
-        wide->resize(cp1252.size());
-        for (size_t i = size_t(0) ; i < cp1252.size() ; ++i)
-        {
-            (*wide)[i] = static_cast<uint8_t>(cp1252[i]);
-        }
+        wxwide.reset(new wxString(cp1252.data(), cp1252.size()));
     }
-    return *wide;
+    return *wxwide;
 }
 
 void DDX_Check(CDataExchange* pDX, int nIDC, bool& value)
@@ -725,7 +715,7 @@ void CB::string::Serialize(CArchive& ar) const
 
 void CB::string::Serialize(CArchive& ar)
 {
-    wide.reset();
+    wxwide.reset();
 #if 0
     CString cs;
     ar >> cs;
