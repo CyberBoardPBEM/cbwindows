@@ -23,10 +23,10 @@
 //
 
 #include    "stdafx.h"
+#include    <wx/zstream.h>
 #include    "Gm.h"
 #include    "StrLib.h"
 #include    "DlgGboxp.h"
-#include    "zlib.h"
 #include    "DlgSpass.h"
 #include    "LibMfc.h"
 
@@ -47,7 +47,7 @@ CGmBoxPropsDialog::CGmBoxPropsDialog(CWnd* pParent /*=NULL*/)
     m_strDescr = "";
     m_strTitle = "";
     //}}AFX_DATA_INIT
-    m_nCompressLevel = Z_BEST_SPEED;
+    m_nCompressLevel = wxZ_BEST_SPEED;
     m_bPropEdit = TRUE;
 
     m_bPassSet = FALSE;
@@ -117,11 +117,11 @@ BOOL CGmBoxPropsDialog::OnInitDialog()
 
     CB::string str = CB::string::LoadString(IDS_COMPRESS_NONE);
     int nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, Z_NO_COMPRESSION);
+    m_comboCompress.SetItemData(nItem, wxZ_NO_COMPRESSION);
 
     str = CB::string::LoadString(IDS_COMPRESS_FASTEST);
     nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, Z_BEST_SPEED);
+    m_comboCompress.SetItemData(nItem, wxZ_BEST_SPEED);
 
     str = CB::string::LoadString(IDS_COMPRESS_MEDIUM);
     nItem = m_comboCompress.AddString(str);
@@ -129,14 +129,14 @@ BOOL CGmBoxPropsDialog::OnInitDialog()
 
     str = CB::string::LoadString(IDS_COMPRESS_MOST);
     nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, Z_BEST_COMPRESSION);
+    m_comboCompress.SetItemData(nItem, wxZ_BEST_COMPRESSION);
 
     switch (m_nCompressLevel)
     {
-        case Z_NO_COMPRESSION:      m_comboCompress.SetCurSel(0); break;
-        case Z_BEST_SPEED:          m_comboCompress.SetCurSel(1); break;
+        case wxZ_NO_COMPRESSION:    m_comboCompress.SetCurSel(0); break;
+        case wxZ_BEST_SPEED:        m_comboCompress.SetCurSel(1); break;
         case 6:                     m_comboCompress.SetCurSel(2); break;
-        case Z_BEST_COMPRESSION:    m_comboCompress.SetCurSel(3); break;
+        case wxZ_BEST_COMPRESSION:  m_comboCompress.SetCurSel(3); break;
         default: ASSERT(FALSE);     m_comboCompress.SetCurSel(1); break;// Shouldn't happen
     }
 
