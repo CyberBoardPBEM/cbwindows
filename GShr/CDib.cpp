@@ -23,9 +23,10 @@
 //
 
 #include    "stdafx.h"
+#include    <wx/mstream.h>
+#include    <wx/zstream.h>
 #include    "GdiTools.h"
 #include    "CDib.h"
-#include    "zlib.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -292,12 +293,11 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
                 them, then file format must change */
     if (dib.m_hDib)
     {
-        static_assert(sizeof(uLongf) == sizeof(uint32_t), "compress can support large blobs");
         uint32_t dwSize = value_preserving_cast<uint32_t>(GlobalSize(dib.m_hDib));
         ASSERT(dwSize > uint32_t(0));
-        ASSERT(dib.m_nCompressLevel >= Z_NO_COMPRESSION
-            && dib.m_nCompressLevel <= Z_BEST_COMPRESSION);
-        if (dib.m_nCompressLevel > Z_NO_COMPRESSION)
+        ASSERT(dib.m_nCompressLevel >= wxZ_NO_COMPRESSION
+            && dib.m_nCompressLevel <= wxZ_BEST_COMPRESSION);
+        if (dib.m_nCompressLevel > wxZ_NO_COMPRESSION)
         {
             // Store size of the uncompressed dib bfr with upper bit set.
             // The set upper bit allows us to detect loading of uncompressed
@@ -309,20 +309,20 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
             ar << (dwSize | uint32_t(0x80000000));
 
             // Use zlib to compress the dib before writing it out the the archive.
-            uLongf dwDestLen = value_preserving_cast<uLongf>(MulDiv(value_preserving_cast<int>(dwSize), 1001, 1000) + 12);
-            LPVOID pDestBfr = GlobalAlloc(GPTR, dwDestLen);
-            if (pDestBfr == NULL)
-                AfxThrowMemoryException();
-            int err = compress2((LPBYTE)pDestBfr, &dwDestLen, (LPBYTE)dib.m_lpDib,
-                value_preserving_cast<uLong>(dwSize), dib.m_nCompressLevel);
-            if (err != Z_OK)
+            uint32_t dwDestLen = value_preserving_cast<uint32_t>(MulDiv(value_preserving_cast<int>(dwSize), 1001, 1000) + 12);
+            std::vector<std::byte> pDestBfr(dwDestLen);
+            wxMemoryOutputStream mstream(pDestBfr.data(), pDestBfr.size());
             {
-                GlobalFree(GlobalHandle(pDestBfr));
-                AfxThrowMemoryException();
+                wxZlibOutputStream zstream(mstream, dib.m_nCompressLevel, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
+                bool rc = zstream.WriteAll(dib.m_lpDib, dwSize);
+                if (!rc)
+                {
+                    AfxThrowMemoryException();
+                }
             }
-            ar << value_preserving_cast<uint32_t>(dwDestLen);                    // Store the compressed size of the bitmap
-            ar.Write(pDestBfr, dwDestLen);      // Store the compressed bitmap
-            GlobalFree(GlobalHandle(pDestBfr));
+            dwDestLen = value_preserving_cast<uint32_t>(mstream.TellO());
+            ar << dwDestLen;                    // Store the compressed size of the bitmap
+            ar.Write(pDestBfr.data(), dwDestLen);      // Store the compressed bitmap
         }
         else
         {
@@ -349,23 +349,20 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
         uint32_t dwCompSize;
         ar >> dwCompSize;           // Get compressed data size
 
-        LPVOID pCompBfr = GlobalAlloc(GPTR, dwCompSize);
-        if (pCompBfr == NULL)
-            AfxThrowMemoryException();
+        std::vector<std::byte> pCompBfr(dwCompSize);
 
         if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)
             AfxThrowMemoryException();
         dib.m_lpDib = GlobalLock((HGLOBAL)dib.m_hDib);
 
-        ar.Read(pCompBfr, dwCompSize);
+        ar.Read(pCompBfr.data(), dwCompSize);
 
-        uLongf temp = dwSize;
-        int err = uncompress((LPBYTE)dib.m_lpDib, &temp,
-            (LPBYTE)pCompBfr, dwCompSize);
-        ASSERT(temp == dwSize);
+        wxMemoryInputStream mstream(pCompBfr.data(), pCompBfr.size());
+        wxZlibInputStream zstream(mstream, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
+        bool rc = zstream.ReadAll(dib.m_lpDib, dwSize);
+        ASSERT(zstream.LastRead() == dwSize);
 
-        GlobalFree(GlobalHandle(pCompBfr));
-        if (err != Z_OK)
+        if (!rc)
             AfxThrowMemoryException();
     }
     else if (dwSize > uint32_t(0))

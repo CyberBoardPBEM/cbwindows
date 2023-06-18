@@ -334,7 +334,7 @@ echo off
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\deps\wxWidgets\include\msvc;..\deps\wxWidgets\include;..\zLib;..\gshr;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\deps\wxWidgets\include\msvc;..\deps\wxWidgets\include;..\gshr;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_AFX_SECURE_NO_WARNINGS;_ATL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;__WXMSW__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -761,12 +761,6 @@ echo off
   </ItemGroup>
   <ItemGroup>
     <Xml Include="res\manifest.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zLib\zLib.vcxproj">
-      <Project>{5bf1b9ba-043f-469f-be19-787ff317eddc}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
