@@ -151,7 +151,7 @@ void CPieceNewDialog::CreatePiece()
         return;
 
     CB::string str = CB::string::GetWindowText(m_editQty);
-    int nNumPieces = std::stoi(str);
+    int nNumPieces = std::stoi(str.std_wstr());
     if (nNumPieces <= 0)
         return;
     // due to LB_ITEMFROMPOINT limit

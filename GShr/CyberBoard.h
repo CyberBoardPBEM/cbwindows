@@ -866,6 +866,10 @@ namespace CB
         size_t w_size() const { return wx_str().size(); }
         const wchar_t* w_str() const { return wx_str(); }
         operator const wchar_t*() const { return w_str(); }
+        std::string std_str() const { return std::string(a_str(), a_size()); }
+        std::string_view std_strv() const { return std::string_view(a_str(), a_size()); }
+        operator std::string_view() const { return std_strv(); }
+        operator std::string() const { return std_str(); }
         std::wstring std_wstr() const { return std::wstring(w_str(), w_size()); }
         std::wstring_view std_wstrv() const { return std::wstring_view(w_str(), w_size()); }
         operator std::wstring_view() const { return std_wstrv(); }

@@ -145,10 +145,10 @@ void ResourceTable::LoadFonts(void)
         strFontName = "MS Sans Serif";
     CB::string strFontSize = CB::string::LoadString(IDS_BASEFONT_SIZE_SMALL);
     if (!strFontSize.empty())
-        nSizeSmall = std::stoi(strFontSize);
+        nSizeSmall = std::stoi(strFontSize.std_wstr());
     strFontSize = CB::string::LoadString(IDS_BASEFONT_SIZE_BIG);
     if (!strFontSize.empty())
-        nSizeBig = std::stoi(strFontSize);
+        nSizeBig = std::stoi(strFontSize.std_wstr());
 
     memset(&lf, 0, sizeof(LOGFONT));
 
