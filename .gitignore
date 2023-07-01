@@ -12,6 +12,7 @@
 GP/gphelpidmap.h
 GM/gmhelpidmap.h
 GHelp/CBoard.chm
+out
 *.old
 *.user
 .vs/
