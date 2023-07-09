@@ -589,6 +589,15 @@ void CGamDoc::Serialize(CArchive& ar)
             {
                 c_fileFeatures.Add(ftrSizet64Bit);
             }
+            // this also affects m_mapStrings
+            if (m_pPMgr->Needs100SidePieces())
+            {
+                if (!GetCBFeatures().Check(ftrPiece100Sides))
+                {
+                    AfxThrowArchiveException(CArchiveException::badSchema);
+                }
+                c_fileFeatures.Add(ftrPiece100Sides);
+            }
         }
         else if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();
