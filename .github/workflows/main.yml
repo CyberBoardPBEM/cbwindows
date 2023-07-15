@@ -7,43 +7,47 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  # This allows this workflow to be manually run from the repository's GitHub Actions feature
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: windows-2022
+    name: build ${{ matrix.arch }}-${{ matrix.config }}
+    strategy:
+      matrix:
+        arch: [ x64, x86 ]
+        config: [ Debug, Release ]
+        include:
+          - arch: x64
+            arch_vsdev: amd64
+          - arch: x86
+            arch_vsdev: x86
+          - config: Debug
+            cmake_build_type: Debug
+          - config: Release
+            cmake_build_type: RelWithDebInfo
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
 
-    - name: Setup MSBuild
-      id: setup_msbuild
-      uses: microsoft/setup-msbuild@v1.0.2
+    # copied from wxWidgets/.../ci_cmake.yml
+    # required for CMake to find Ninja
+    - name: "[Windows] Set up MSVC Developer Command Prompt"
+      if: runner.os == 'Windows'
+      uses: wxWidgets/gha-setup-vsdevenv@ac61ecb4b05909261f8f375601c0e15aabdd9f10
+      with:
+        arch: ${{ matrix.arch_vsdev }}
 
-    - name: echo msbuild path
-      run: echo "${{ steps.setup_msbuild.outputs.msbuildPath }}"
-
-    - name: echo MSBuild version
-      run: msbuild -version       # Runs a single command using the runners shell
-
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
+    - name: CMake Configure and Build ${{ matrix.arch }}-${{ matrix.config }}
       run: |
-        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /property:Platform=Win32 /target:build
-        msbuild zlib\zLib.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=Debug /property:Platform=x64 /target:build
-        msbuild zlib\zLib.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=DebugU /property:Platform=Win32 /target:build
-        msbuild zlib\zLib.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
-        msbuild GM\CBDsgn32.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
-        msbuild GP\CBPlay32.vcxproj /property:Configuration=DebugU /property:Platform=x64 /target:build
-
+        mkdir out\build\${{ matrix.arch }}-${{ matrix.config }}
+        cmake -G Ninja -B out\build\${{ matrix.arch }}-${{ matrix.config }} -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }}
+        cmake --build out\build\${{ matrix.arch }}-${{ matrix.config }}
