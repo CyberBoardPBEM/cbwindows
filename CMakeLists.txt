@@ -18,15 +18,19 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MFC_FLAG 1)
 
 # wxWidgets
-set(wxBUILD_INSTALL OFF)
-set(wxBUILD_SHARED OFF)
-set(wxBUILD_USE_STATIC_RUNTIME ON)
-set(wxBUILD_MSVC_MULTIPROC ON)
+# KLUDGE:  must be cache variables to prevent wx_option() from
+# overriding them
+set(wxBUILD_INSTALL OFF CACHE BOOL "skip")
+set(wxBUILD_SHARED OFF CACHE BOOL "skip")
+set(wxBUILD_USE_STATIC_RUNTIME ON CACHE BOOL "skip")
 set(wxUSE_MEDIACTRL OFF CACHE BOOL "skip")
 set(wxUSE_POSTSCRIPT OFF CACHE BOOL "skip")
 set(wxUSE_STC OFF CACHE BOOL "skip")
 set(wxUSE_WEBVIEW OFF CACHE BOOL "skip")
 set(wxUSE_WINRT OFF CACHE BOOL "skip")
+if (MSVC)
+	set(wxBUILD_MSVC_MULTIPROC ON CACHE BOOL "skip")
+endif()
 add_subdirectory(deps/wxWidgets EXCLUDE_FROM_ALL)
 
 add_compile_definitions($<IF:$<CONFIG:Debug>,_,N>DEBUG)
