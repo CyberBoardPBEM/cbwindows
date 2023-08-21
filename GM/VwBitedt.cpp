@@ -859,10 +859,10 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if (m_nCurToolID == ID_ITOOL_TEXT)
     {
         if (nChar != VK_BACK)
-{
-ASSERT(nChar < 0x7f || !"non-ascii needs work");
+        {
+            ASSERT(nChar < 0x7f || !"non-ascii needs work");
             AddChar(value_preserving_cast<wchar_t>(nChar));
-}
+        }
         else
             DelChar();
     }
