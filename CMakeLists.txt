@@ -1,3 +1,5 @@
+# Copyright (c) 2023 By William Su, All Rights Reserved.
+
 cmake_minimum_required(VERSION 2.8.12)
 # set VERSION variables
 cmake_policy(SET CMP0048 NEW)
