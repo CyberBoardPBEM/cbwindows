@@ -21,6 +21,11 @@
  ** documentation and/or software.                                   **
  **********************************************************************
  */
+/*
+This version is "derived from the RSA Data Security, Inc. MD5
+Message Digest Algorithm", but has been slightly modifed to use
+current standard type names, e.g., uint32_t.
+*/
 
 /* Data structure for MD5 (Message Digest) computation */
 typedef struct
