@@ -102,6 +102,13 @@ wxWidgets files on which `CyberBoard.sln` depends.)  Set the Configuration to
 `DebugU` and Platform to `x64`, and the output will be in
 `<working copy>\x64\DebugU`.
 
+**All-config build**  
+For convenience, the `build-all-configs.bat` will build the full matrix of
+x86/x64 and Debug/Release builds.  However, it assumes an x64 operating system
+and the default install location for Visual Studio, so it is not a completely
+general tool.  If necessary, edit the `VSROOTDIR` variable in
+`build-all-configs.bat` to match your system.
+
 
 Coding Conventions
 ------------------
