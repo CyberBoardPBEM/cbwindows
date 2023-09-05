@@ -46,14 +46,6 @@ public:
     BOOL WriteDIBFile(CFile& file) const;
     explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
     OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
-    BOOL AppendDIB(const CDib& pDib);
-    BOOL RemoveDIBSlice(int y, int ht);
-    OwnerPtr<CPalette> CreatePalette() const
-    {
-        OwnerPtr<CPalette> pPal(MakeOwner<CPalette>());
-        ::CreateDIBPalette(m_hDib, &*pPal);
-        return pPal;
-    }
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
         int xSrc, int ySrc, int cxSrc, int cySrc) const
     {

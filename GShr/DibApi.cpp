@@ -6,7 +6,6 @@
 //  SaveDIB()           - Saves the specified dib in a file
 //  ReadDIBFile()       - Loads a DIB from a file
 //  CreateDIB()         - Create an empty DIB
-//  CreateDIBPalette()  - Creates a palette from a DIB
 //  FindDIBBits()       - Returns a pointer to the DIB bits
 //  DIBWidth()          - Gets the width of the DIB
 //  DIBHeight()         - Gets the height of the DIB
@@ -262,92 +261,6 @@ HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
 
     /* return handle to the DIB */
     return hDIB;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-BOOL CreateDIBPalette(HDIB hDIB, CPalette* pPal)
-{
-    LPLOGPALETTE lpPal;      // pointer to a logical palette
-    HANDLE hLogPal;          // handle to a logical palette
-    HPALETTE hPal = NULL;    // handle to a palette
-    int i;                   // loop index
-    WORD wNumColors;         // number of colors in color table
-    const void* lpbi;        // pointer to packed-DIB
-    const BITMAPINFO* lpbmi; // pointer to BITMAPINFO structure (Win3.0)
-    const BITMAPCOREINFO* lpbmc; // pointer to BITMAPCOREINFO structure (old)
-    BOOL bWinStyleDIB;       // flag which signifies whether this is a Win3.0 DIB
-    BOOL bResult = FALSE;
-
-    /* if handle to DIB is invalid, return FALSE */
-
-    if (hDIB == NULL)
-        return FALSE;
-
-    lpbi = GlobalLock((HGLOBAL) hDIB);
-
-    /* get pointer to BITMAPINFO (Win 3.0) */
-    lpbmi = static_cast<const BITMAPINFO*>(lpbi);
-
-    /* get pointer to BITMAPCOREINFO (old 1.x) */
-    lpbmc = static_cast<const BITMAPCOREINFO*>(lpbi);
-
-    /* get the number of colors in the DIB */
-    wNumColors = DIBNumColors(lpbi);
-
-    if (wNumColors != 0)
-    {
-        LPBYTE pFlags = NULL;
-
-        /* allocate memory block for logical palette */
-        hLogPal = GlobalAlloc(GHND, sizeof(LOGPALETTE)+ sizeof(PALETTEENTRY) *
-                              wNumColors);
-
-        /* If not enough memory, clean up and return NULL */
-        if (hLogPal == 0)
-        {
-            GlobalUnlock((HGLOBAL) hDIB);
-            return FALSE;
-        }
-
-        lpPal = (LPLOGPALETTE) GlobalLock((HGLOBAL) hLogPal);
-
-        /* set version and number of palette entries */
-        lpPal->palVersion = PALVERSION;
-
-        /* is this a Win 3.0 DIB? */
-        bWinStyleDIB = IS_WIN30_DIB(lpbi);
-        int n = 0;
-        for (i = 0; i < (int)wNumColors; i++)
-        {
-            if (bWinStyleDIB)
-            {
-                lpPal->palPalEntry[n].peRed = lpbmi->bmiColors[i].rgbRed;
-                lpPal->palPalEntry[n].peGreen = lpbmi->bmiColors[i].rgbGreen;
-                lpPal->palPalEntry[n].peBlue = lpbmi->bmiColors[i].rgbBlue;
-                lpPal->palPalEntry[n].peFlags = 0;
-            }
-            else
-            {
-                lpPal->palPalEntry[n].peRed = lpbmc->bmciColors[i].rgbtRed;
-                lpPal->palPalEntry[n].peGreen = lpbmc->bmciColors[i].rgbtGreen;
-                lpPal->palPalEntry[n].peBlue = lpbmc->bmciColors[i].rgbtBlue;
-                lpPal->palPalEntry[n].peFlags = 0;
-            }
-            n++;
-        }
-
-        /* create the palette and get handle to it */
-        lpPal->palNumEntries = (WORD)n;
-        bResult = pPal->CreatePalette(lpPal);
-        GlobalUnlock((HGLOBAL) hLogPal);
-        GlobalFree((HGLOBAL) hLogPal);
-        if (pFlags) delete pFlags;
-    }
-
-    GlobalUnlock((HGLOBAL) hDIB);
-
-    return bResult;
 }
 
 ///////////////////////////////////////////////////////////////////////

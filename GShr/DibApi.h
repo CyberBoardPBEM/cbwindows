@@ -38,7 +38,6 @@ DECLARE_HANDLE(HDIB);
 BOOL    SaveDIB(HDIB hDib, CFile& file);
 HDIB    ReadDIBFile(CFile& file);
 HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
-BOOL    CreateDIBPalette(HDIB hDIB, CPalette* pPal);
 const void* FindDIBBits(const void* lpbi);
 inline void* FindDIBBits(void* lpbi)
 {
