@@ -39,10 +39,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // Our clipboard formats
 
-extern const UINT CF_TILEIMAGES;      // Dword count, dword small colorref, full Dib,
-                                // half Dib, repeat...
-extern const UINT CF_TIDLIST;         // dword count followed array of DWORDS.
-extern const UINT CF_GBOXID;          // dword gameboxid, dword cur process id
+extern const wxDataFormat CF_TILEIMAGES;      // Dword count, dword small colorref, full Dib,
+                                              // half Dib, repeat...
+extern const wxDataFormat CF_TIDLIST;         // dword count followed array of DWORDS.
+extern const wxDataFormat CF_GBOXID;          // dword gameboxid, dword cur process id
 
 /////////////////////////////////////////////////////////////////////////////
 

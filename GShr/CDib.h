@@ -52,7 +52,6 @@ public:
             SRCCOPY);
     }
     explicit CDib(HANDLE hDib);
-    HDIB CopyHandle() const { return static_cast<HDIB>(::CopyHandle(m_hDib)); }
     // ---------- //
     int Height() const { return (int)DIBHeight(m_lpDib); }
     int Width() const { return (int)DIBWidth(m_lpDib); }

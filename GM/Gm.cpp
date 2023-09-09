@@ -129,9 +129,9 @@ static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 
 const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop"_cbstring);
 
-const UINT CF_TILEIMAGES = RegisterClipboardFormat("cfCyberBoardTileImages"_cbstring);
-const UINT CF_TIDLIST = RegisterClipboardFormat("cfCyberBoardTileIDList"_cbstring);
-const UINT CF_GBOXID = RegisterClipboardFormat("cfCyberBoardGameBoxID"_cbstring);
+const wxDataFormat CF_TILEIMAGES(wxString("cfCyberBoardTileImages"_cbstring));
+const wxDataFormat CF_TIDLIST(wxString("cfCyberBoardTileIDList"_cbstring));
+const wxDataFormat CF_GBOXID(wxString("cfCyberBoardGameBoxID"_cbstring));
 
 /////////////////////////////////////////////////////////////////////////////
 

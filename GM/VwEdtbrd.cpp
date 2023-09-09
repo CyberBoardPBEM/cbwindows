@@ -1591,7 +1591,7 @@ void CBrdEditView::OnUpdateToolSuspendScaleVsibility(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnEditPaste()
 {
-    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this, GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this);
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();

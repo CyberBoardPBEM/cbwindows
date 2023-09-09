@@ -498,34 +498,3 @@ void InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo)
         pdwMasks[2] = 0x0000001F;
     }
 }
-
-//////////////////////////////////////////////////////////////////////////
-//// Clipboard support
-
-HANDLE CopyHandle (HANDLE h)
-{
-    BYTE*       lpCopy;
-    BYTE*       lp;
-    HANDLE      hCopy;
-    size_t      dwLen;
-
-    if (h == NULL)
-        return NULL;
-
-    dwLen = GlobalSize((HGLOBAL) h);
-
-    if ((hCopy = (HANDLE) GlobalAlloc (GHND, dwLen)) != NULL)
-    {
-        lpCopy = (BYTE *) GlobalLock((HGLOBAL) hCopy);
-        lp     = (BYTE *) GlobalLock((HGLOBAL) h);
-
-        while (dwLen--)
-            *lpCopy++ = *lp++;
-
-        GlobalUnlock((HGLOBAL) hCopy);
-        GlobalUnlock((HGLOBAL) h);
-    }
-
-    return hCopy;
-}
-

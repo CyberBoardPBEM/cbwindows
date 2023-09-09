@@ -62,6 +62,7 @@
 #include <WinExt.h>
 
 #include <wx/clipbrd.h>
+#include <wx/dataobj.h>
 #include <wx/image.h>
 #include <wx/msw/mfc.h>
 

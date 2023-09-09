@@ -2062,16 +2062,14 @@ void CPlayBoardView::OnEditCopy()
     GdiFlush();
     dcMem.SelectObject(pPrvBMap);
 
-    if (OpenClipboard())
+    LockWxClipboard lockClipbd(std::try_to_lock);
+    if (lockClipbd)
     {
-        BeginWaitCursor();
-        EmptyClipboard();
+        wxBusyCursor busyCursor;
 
-        CDib dib(bmap, GetAppPalette());
-        SetClipboardData(CF_DIB, dib.CopyHandle());
-
-        CloseClipboard();
-        EndWaitCursor();
+        wxImage img = ToImage(bmap);
+        wxBitmap wxbmp(img);
+        wxTheClipboard->SetData(new wxBitmapDataObject(wxbmp));
     }
 }
 

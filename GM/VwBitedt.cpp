@@ -1245,15 +1245,15 @@ void CBitEditView::OnEditCopy()
     if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL &&
         !m_rctPaste.IsRectEmpty())
     {
-        SetClipboardBitmap(this, *m_bmPaste, GetAppPalette());
+        SetClipboardBitmap(this, *m_bmPaste);
     }
     else
-        SetClipboardBitmap(this, *m_bmView, GetAppPalette());
+        SetClipboardBitmap(this, *m_bmView);
 }
 
 void CBitEditView::OnEditPaste()
 {
-    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this, GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this);
 
     SetUndoFromView();
 
