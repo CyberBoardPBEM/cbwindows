@@ -18,6 +18,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MFC_FLAG 1)
+if (MSVC)
+	add_compile_options(/EHs)
+endif()
 
 # wxWidgets
 # KLUDGE:  must be cache variables to prevent wx_option() from

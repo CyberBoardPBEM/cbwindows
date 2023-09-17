@@ -61,7 +61,6 @@
 
 #include <WinExt.h>
 
-// nmake -f makefile.vc BUILD=debug SHARED=0 DEBUG_RUNTIME_LIBS=default RUNTIME_LIBS=static TARGET_CPU=X64
 #include "wx/wxprec.h"
 #include "wx/msw/mfc.h"
 
