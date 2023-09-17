@@ -61,8 +61,8 @@
 
 #include <WinExt.h>
 
-#include "wx/wxprec.h"
-#include "wx/msw/mfc.h"
+#include <wx/clipbrd.h>
+#include <wx/msw/mfc.h>
 
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
 static_assert(std::is_same_v<uint16_t, WORD>, "wrong standard replacement for WORD");
@@ -1698,6 +1698,46 @@ namespace CB { namespace Impl {
 #else
     #define CPP20_TRACE(fmt, ...) true ? void(0) : CB::Impl::Cpp20Trace(__FILE__, __LINE__, fmt, __VA_ARGS__)
 #endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+// N.B.:  don't mix MS clipboard and wx clipboard functions
+class LockWxClipboard
+{
+public:
+    LockWxClipboard() :
+        LockWxClipboard(std::try_to_lock)
+    {
+        if (!open)
+        {
+            throw std::runtime_error("open clipboard failed");
+        }
+    }
+    LockWxClipboard(std::try_to_lock_t) { TryLock(); }
+    LockWxClipboard(std::defer_lock_t) {}
+    ~LockWxClipboard()
+    {
+        if (open)
+        {
+            Unlock();
+        }
+    }
+    explicit operator bool() const { return open; }
+    bool TryLock()
+    {
+        ASSERT(!open);
+        open = wxTheClipboard->Open();
+        ASSERT(open);
+        return open;
+    }
+    void Unlock()
+    {
+        ASSERT(open);
+        wxTheClipboard->Close();
+    }
+private:
+    bool open = false;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 
