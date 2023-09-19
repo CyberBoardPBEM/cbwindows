@@ -35,8 +35,6 @@ DECLARE_HANDLE(HDIB);
 // to hold those bits.
 
 /* Function prototypes */
-BOOL    SaveDIB(HDIB hDib, CFile& file);
-HDIB    ReadDIBFile(CFile& file);
 HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
 const void* FindDIBBits(const void* lpbi);
 inline void* FindDIBBits(void* lpbi)

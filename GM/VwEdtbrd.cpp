@@ -1635,34 +1635,21 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     if (dlg.DoModal() != IDOK)
         return;
 
-    CFile file;
-    CFileException fe;
-
-    if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
-        &fe))
-    {
-        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
-        return;
-    }
-    CDib dib;
     try
     {
-        dib = CDib(file);
-    }
-    catch (...)
-    {
-        AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
-        return;
-    }
-    OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
+        wxImage img(CB::string(dlg.GetPathName()));
+        OwnerPtr<CBitmap> pBMap = ToBitmap(img);
 
-    {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
         pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
         GetSelectList()->PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
+    }
+    catch (...)
+    {
+        AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
+        return;
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList()->AddObject(pDObj, TRUE);

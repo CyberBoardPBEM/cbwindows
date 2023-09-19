@@ -42,8 +42,6 @@ public:
     operator bool() const { return m_hDib; }
     CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
     // ---------- /
-    explicit CDib(CFile& file);
-    BOOL WriteDIBFile(CFile& file) const;
     explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
     OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
@@ -78,6 +76,9 @@ private:
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);
     friend CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib);
 };
+
+wxImage ToImage(const CBitmap& bmp);
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
 
 #endif
 

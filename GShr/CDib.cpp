@@ -39,10 +39,6 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////
 
-static UINT CalcSize(DWORD cbTotal, const void FAR* lpStart);
-
-///////////////////////////////////////////////////////////////
-
 WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 {
     ASSERT(m_hDib != NULL);
@@ -101,31 +97,6 @@ CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
         AfxThrowMemoryException();
     }
     m_nCompressLevel = 0;
-}
-
-CDib::CDib(CFile& file)
-{
-    m_hDib = ::ReadDIBFile(file);
-    if (!m_hDib)
-    {
-        AfxThrowMemoryException();
-    }
-    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
-    if (!m_lpDib)
-    {
-        GlobalFree((HGLOBAL)m_hDib);
-        m_hDib = NULL;
-        AfxThrowMemoryException();
-    }
-    m_nCompressLevel = 0;
-}
-
-BOOL CDib::WriteDIBFile(CFile& file) const
-{
-    if (m_hDib)
-        return ::SaveDIB(m_hDib, file);
-    else
-        return FALSE;
 }
 
 CDib::CDib(HANDLE hDib)
@@ -310,4 +281,85 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
         ar.Read(dib.m_lpDib, dwSize);
     }
     return ar;
+}
+
+wxImage ToImage(const CBitmap& bmp)
+{
+    BITMAP info;
+    if (!const_cast<CBitmap&>(bmp).GetBitmap(&info))
+    {
+        AfxThrowMemoryException();
+    }
+    ASSERT(info.bmWidth > 0 && info.bmHeight > 0);
+    wxImage retval(info.bmWidth, info.bmHeight, false);
+    switch (info.bmBitsPixel)
+    {
+        case 16:
+        {
+            const uint16_t* srcLine = static_cast<const uint16_t*>(info.bmBits);
+            for (int y = 0 ; y < info.bmHeight ; ++y)
+            {
+                const uint16_t* src = srcLine;
+                for (int x = 0 ; x < info.bmWidth ; ++x)
+                {
+                    COLORREF cr = RGB565_TO_24(*src);
+                    // KLUDGE:  data seems to be bottom up
+                    retval.SetRGB(x, info.bmHeight - 1 - y,
+                                    GetRValue(cr),
+                                    GetGValue(cr),
+                                    GetBValue(cr));
+                    ++src;
+                }
+                srcLine += info.bmWidthBytes/sizeof(*srcLine);
+            }
+            break;
+        }
+        default:
+            AfxThrowNotSupportedException();
+    }
+    return retval;
+}
+
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
+{
+    if (img.HasAlpha() || img.HasMask())
+    {
+        AfxThrowNotSupportedException();
+    }
+
+    OwnerPtr<CBitmap> retval(MakeOwner<CBitmap>());
+    HBITMAP hbmp = Create16BitDIBSection(img.GetWidth(), img.GetHeight());
+    if (!hbmp)
+    {
+        AfxThrowMemoryException();
+    }
+    retval->Attach(hbmp);
+
+    DIBSECTION dibSect;
+    VERIFY(GetObject(hbmp, sizeof(DIBSECTION), &dibSect));
+    ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
+            dibSect.dsBm.bmHeight == img.GetHeight() &&
+            dibSect.dsBmih.biBitCount == 16 &&
+            dibSect.dsBitfields[0] == 0xf800 &&
+            dibSect.dsBitfields[1] == 0x07e0 &&
+            dibSect.dsBitfields[2] == 0x001f);
+    size_t lineBytes = DIBWIDTHBYTES(dibSect.dsBmih);
+
+    uint16_t* lineStart = static_cast<uint16_t*>(dibSect.dsBm.bmBits);
+    for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
+    {
+        // KLUDGE:  dibsection data is bottom up
+        int imgY = dibSect.dsBm.bmHeight - y - 1;
+        uint16_t* rgb565 = lineStart;
+        for (int x = 0; x < dibSect.dsBm.bmWidth ; ++x)
+        {
+            uint8_t red = img.GetRed(x, imgY);
+            uint8_t green = img.GetGreen(x, imgY);
+            uint8_t blue = img.GetBlue(x, imgY);
+            *rgb565++ = RGB565(RGB(red, green, blue));
+        }
+        reinterpret_cast<std::byte*&>(lineStart) += lineBytes;
+    }
+
+    return retval;
 }

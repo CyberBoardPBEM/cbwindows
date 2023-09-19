@@ -2090,18 +2090,6 @@ void CPlayBoardView::OnEditBoardToFile()
     BeginWaitCursor();
     TRY
     {
-        CFile file;
-        CFileException fe;
-
-        if (!file.Open(dlg.GetPathName(),
-            CFile::modeCreate | CFile::modeWrite, &fe))
-        {
-            EndWaitCursor();
-            AfxMessageBox(IDP_ERR_BMPCREATE, MB_ICONEXCLAMATION);
-            EndWaitCursor();
-            return;
-        }
-
         CBoard* pBoard = m_pPBoard->GetBoard();
         CWindowDC scrnDC(this);
 
@@ -2129,10 +2117,15 @@ void CPlayBoardView::OnEditBoardToFile()
         GdiFlush();
         dcMem.SelectObject(pPrvBMap);
 
-        CDib dib(bmap, GetAppPalette(), uint16_t(24));
+        wxImage img = ToImage(bmap);
 
-        if (!dib.WriteDIBFile(file))
-            AfxThrowMemoryException();
+        if (!img.SaveFile(CB::string(dlg.GetPathName())))
+        {
+            EndWaitCursor();
+            AfxMessageBox(IDP_ERR_BMPCREATE, MB_ICONEXCLAMATION);
+            EndWaitCursor();
+            return;
+        }
 
         EndWaitCursor();
     }
