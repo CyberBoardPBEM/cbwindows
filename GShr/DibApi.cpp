@@ -230,48 +230,6 @@ WORD DIBNumColors(const void* lpbi)
 
 ///////////////////////////////////////////////////////////////////////
 
-HBITMAP DIBToBitmap (HANDLE hDIB, HPALETTE hPal)
-{
-    const void *lpDIBHdr, *lpDIBBits;
-    HBITMAP  hBitmap;
-    HDC      hDC;
-    HPALETTE hOldPal = NULL;
-
-    if (!hDIB)
-        return NULL;
-
-    lpDIBHdr = GlobalLock(hDIB);
-    lpDIBBits = FindDIBBits(lpDIBHdr);
-    hDC = GetDC(NULL);
-
-    if (!hDC)
-    {
-        GlobalUnlock(hDIB);
-        return NULL;
-    }
-
-    if (hPal)
-        hOldPal = SelectPalette(hDC, hPal, FALSE);
-
-    RealizePalette (hDC);
-
-    hBitmap = CreateDIBitmap(hDC, static_cast<const BITMAPINFOHEADER*>(lpDIBHdr), CBM_INIT,
-        lpDIBBits, static_cast<const BITMAPINFO*>(lpDIBHdr), DIB_RGB_COLORS);
-
-    if (!hBitmap)
-        return NULL;
-
-    if (hOldPal)
-        SelectPalette(hDC, hOldPal, FALSE);
-
-    ReleaseDC (NULL, hDC);
-    GlobalUnlock(hDIB);
-
-    return hBitmap;
-}
-
-///////////////////////////////////////////////////////////////////////
-
 HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 {
     HANDLE hDIB = NULL;

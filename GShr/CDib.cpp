@@ -99,24 +99,6 @@ CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
     m_nCompressLevel = 0;
 }
 
-CDib::CDib(HANDLE hDib)
-{
-    m_hDib = (HDIB)hDib;
-    if (m_hDib == NULL)
-    {
-        m_lpDib = nullptr;
-        return;
-    }
-    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
-    if (!m_lpDib)
-    {
-        GlobalFree((HGLOBAL)m_hDib);
-        m_hDib = NULL;
-        AfxThrowMemoryException();
-    }
-    m_nCompressLevel = 0;
-}
-
 CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
 {
     if (pBM.m_hObject != NULL)
@@ -137,13 +119,13 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(
     }
     else
     {
-        m_hDib = nullptr;
+        m_hDib = NULL;
         m_lpDib = nullptr;
     }
     m_nCompressLevel = 0;
 }
 
-OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */) const
+OwnerPtr<CBitmap> CDib::DIBToBitmap() const
 {
     // This weird code is used to xfer the dib into a dib section
     // having a standard color table.

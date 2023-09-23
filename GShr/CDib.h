@@ -43,7 +43,7 @@ public:
     CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
     // ---------- /
     explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
-    OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
+    OwnerPtr<CBitmap> DIBToBitmap() const;
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
         int xSrc, int ySrc, int cxSrc, int cySrc) const
     {
@@ -51,7 +51,6 @@ public:
             xSrc, ySrc, cxSrc, cySrc, FindBits(), GetBmi(), DIB_RGB_COLORS,
             SRCCOPY);
     }
-    explicit CDib(HANDLE hDib);
     // ---------- //
     int Height() const { return (int)DIBHeight(m_lpDib); }
     int Width() const { return (int)DIBWidth(m_lpDib); }

@@ -391,10 +391,10 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
         ar >> dwTmp; crSmall = (COLORREF)dwTmp;
 
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap(GetAppPalette()));
+        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap());
 
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap(GetAppPalette()));
+        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap());
 
         VERIFY(pBMapFull->GetObject(sizeof(BITMAP), &bmInfoFull) > 0);
         VERIFY(pBMapHalf->GetObject(sizeof(BITMAP), &bmInfoHalf) > 0);

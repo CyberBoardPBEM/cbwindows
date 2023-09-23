@@ -1192,7 +1192,7 @@ void CBitmapImage::CopyAttributes(const CBitmapImage& source)
 
     m_eBaseScale = source.m_eBaseScale;
     CDib dib(source.m_bitmap, GetAppPalette());
-    m_bitmap.Attach(dib.DIBToBitmap(GetAppPalette())->Detach());
+    m_bitmap.Attach(dib.DIBToBitmap()->Detach());
 }
 
 void CBitmapImage::Serialize(CArchive& ar)
@@ -1217,7 +1217,7 @@ void CBitmapImage::Serialize(CArchive& ar)
         ar >> dib;
         if (dib)
         {
-            ::OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
+            ::OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap();
             m_bitmap.Attach(pBMap->Detach());
         }
     }

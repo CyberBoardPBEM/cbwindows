@@ -100,7 +100,7 @@ void CTileSheet::Serialize(CArchive& ar)
             ar >> dib;
             if (dib)
             {
-                m_pBMap = dib.DIBToBitmap(GetAppPalette());
+                m_pBMap = dib.DIBToBitmap();
                 BITMAP bmInfo;
                 m_pBMap->GetObject(sizeof(bmInfo), &bmInfo);
                 TRACE3("-- Loaded Tile Sheet for cx=%d, cy=%d tiles. Tile sheet height = %d\n",

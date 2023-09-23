@@ -109,7 +109,7 @@ void CRotateDialog::OnRotApply()
     for (int i = 0; i < 12; i++)
     {
         CDib pRDib = Rotate16BitDib(dibSrc, angTbl[i], m_crTrans);
-        m_bmapTbl[i] = pRDib.DIBToBitmap(GetAppPalette());
+        m_bmapTbl[i] = pRDib.DIBToBitmap();
     }
 
     CRect rct;

@@ -45,7 +45,6 @@ DWORD   DIBWidth(const void* lpDIB);
 DWORD   DIBHeight(const void* lpDIB);
 WORD    PaletteSize(const void* lpbi);
 WORD    DIBNumColors(const void* lpbi);
-HBITMAP DIBToBitmap(HANDLE hDIB, HPALETTE hPal);
 HANDLE  BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
 void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
             DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
