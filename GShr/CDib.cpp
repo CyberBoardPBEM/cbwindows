@@ -61,7 +61,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t
 
     size_t dataSize = WIDTHBYTES(bi.biWidth * bi.biBitCount) * bi.biHeight;
     reserve(bi.biSize +
-            (wBitCount <= size_t(16) ? PaletteSize(&bi) : uint16_t(0)) +
+            (wBitCount <= size_t(16) ? GetPaletteSize(bi) : uint16_t(0)) +
             dataSize);
     *reinterpret_cast<BITMAPINFOHEADER*>(buf.data()) = bi;
 
@@ -106,6 +106,13 @@ CBITMAPINFOHEADER::operator const BITMAPINFO&() const
     return reinterpret_cast<const BITMAPINFO&>(retval);
 }
 
+const void* CBITMAPINFOHEADER::GetBits() const
+{
+    const BITMAPINFOHEADER& lpbi = *this;
+    ASSERT(lpbi.biSize == sizeof(lpbi));
+    return(reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi));
+}
+
 void CBITMAPINFOHEADER::reserve(size_t s)
 {
     ASSERT(buf.empty() && s >= sizeof(BITMAPINFO));
@@ -124,6 +131,53 @@ CBITMAPINFOHEADER::operator void*()
     return reinterpret_cast<BITMAPINFOHEADER*>(buf.data());
 }
 
+///////////////////////////////////////////////////////////////////////
+
+uint16_t CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
+{
+    if (lpbi.biBitCount == 24)
+    {
+        return uint16_t(0);
+    }
+    else
+    {
+        return value_preserving_cast<uint16_t>(GetNumColors(lpbi) * sizeof(RGBQUAD));
+    }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+uint16_t CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
+{
+    // check for explicit count
+    if (lpbi.biClrUsed != 0)
+    {
+        return value_preserving_cast<uint16_t>(lpbi.biClrUsed);
+    }
+
+    switch (lpbi.biBitCount)
+    {
+        case 1:
+        case 4:
+        case 8:
+            return static_cast<uint16_t>(1 << lpbi.biBitCount);
+        case 16:
+            return uint16_t(3);       // Special: Used only for the pixel bit masks
+        default:
+            AfxThrowNotSupportedException();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////
+
+const void* CBITMAPINFOHEADER::DibXY(const BITMAPINFOHEADER& lpbi, ptrdiff_t x, ptrdiff_t y)
+{
+    const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi);
+    pBits += ((DIBWIDTHBYTES(lpbi) * (lpbi.biHeight - y - 1)) +
+        (x * static_cast<int>(lpbi.biBitCount) / 8));
+    return pBits;
+}
+
 ///////////////////////////////////////////////////////////////
 
 WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
@@ -131,7 +185,7 @@ WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
     ASSERT(m_hDib && NumColorBits() == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    return *((WORD*)::DibXY(m_hDib, x, y));
+    return *((WORD*)m_hDib.DibXY(x, y));
 }
 
 void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
@@ -139,7 +193,7 @@ void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
     ASSERT(m_hDib && NumColorBits() == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    *((WORD*)::DibXY(m_hDib, x, y)) = nColor;
+    *((WORD*)m_hDib.DibXY(x, y)) = nColor;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -197,7 +251,7 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap() const
         pbmiDib.bmiHeader.biHeight);
 
     SetDIBits(NULL, *pBMap, 0,
-        pbmiDib.bmiHeader.biHeight, FindDIBBits(&pbmiDib.bmiHeader), &pbmiDib,
+        pbmiDib.bmiHeader.biHeight, m_hDib.GetBits(), &pbmiDib,
         DIB_RGB_COLORS);
 
     memDC.SelectPalette(prvPal, FALSE);

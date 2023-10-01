@@ -152,13 +152,10 @@ OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 {
     OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
 
-    BYTE bih[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
-    BITMAPINFO* pbmi = (BITMAPINFO*)&bih;
-    InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi, nWidth, nHeight, uint16_t(16));
-    InitColorTableMasksIfReqd(pbmi);
+    CBITMAPINFOHEADER bmi(nWidth, nHeight, uint16_t(16));
 
     VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS,
+    HBITMAP hBmap = CreateDIBSection(NULL, bmi, DIB_RGB_COLORS,
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 
@@ -173,11 +170,10 @@ OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
 {
     OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
 
-    BITMAPINFOHEADER bih;
-    InitBitmapInfoHeader(&bih, nWidth, nHeight, uint16_t(24));
+    CBITMAPINFOHEADER bmi(nWidth, nHeight, uint16_t(24));
 
     VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(NULL, (LPBITMAPINFO)&bih, DIB_RGB_COLORS,
+    HBITMAP hBmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(static_cast<BITMAPINFOHEADER*>(bmi)), DIB_RGB_COLORS,
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 

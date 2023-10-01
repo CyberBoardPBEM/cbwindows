@@ -1,17 +1,5 @@
 //  dibapi.cpp
 //
-//  Source file for Device-Independent Bitmap (DIB) API.  Provides
-//  the following functions:
-//
-//  CreateDIB()         - Create an empty DIB
-//  FindDIBBits()       - Returns a pointer to the DIB bits
-//  DIBWidth()          - Gets the width of the DIB
-//  DIBHeight()         - Gets the height of the DIB
-//  PaletteSize()       - Gets the size required to store the DIB's palette
-//  DIBNumColors()      - Calculates the number of colors
-//                        in the DIB's color table
-//  CopyHandle()        - Makes a copy of the given global memory block
-//
 // This is a part of the Microsoft Foundation Classes C++ library.
 // Copyright (C) 1992 Microsoft Corporation
 // All rights reserved.
@@ -37,195 +25,6 @@
  */
 
 #define DIB_HEADER_MARKER   ((WORD) ('M' << 8) | 'B')
-
-///////////////////////////////////////////////////////////////////////
-
-HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
-{
-    BITMAPINFOHEADER bi;         // bitmap header
-    LPBITMAPINFOHEADER lpbi;     // pointer to BITMAPINFOHEADER
-    DWORD dwLen;                 // size of memory block
-    HDIB hDIB;
-    DWORD dwBytesPerLine;        // Number of bytes per scanline
-
-
-    // Make sure bits per pixel is valid
-    if (wBitCount <= 1)
-        wBitCount = 1;
-    else if (wBitCount <= 4)
-        wBitCount = 4;
-    else if (wBitCount <= 8)
-        wBitCount = 8;
-    else if (wBitCount <= 16)
-        wBitCount = 16;
-    else if (wBitCount <= 24)
-        wBitCount = 24;
-    else
-        wBitCount = 4;  // set default value to 4 if parameter is bogus
-
-    // initialize BITMAPINFOHEADER
-    bi.biSize = sizeof(BITMAPINFOHEADER);
-    bi.biWidth = dwWidth;         // fill in width from parameter
-    bi.biHeight = dwHeight;       // fill in height from parameter
-    bi.biPlanes = 1;              // must be 1
-    bi.biBitCount = wBitCount;    // from parameter
-    bi.biCompression = wBitCount == 16 ? BI_BITFIELDS : BI_RGB;
-    bi.biSizeImage = 0;           // 0's here mean "default"
-    bi.biXPelsPerMeter = 0;
-    bi.biYPelsPerMeter = 0;
-    bi.biClrUsed = 0;
-    bi.biClrImportant = 0;
-
-    // calculate size of memory block required to store the DIB.  This
-    // block should be big enough to hold the BITMAPINFOHEADER, the color
-    // table, and the bits
-
-    dwBytesPerLine = WIDTHBYTES(wBitCount * dwWidth);
-    dwLen = bi.biSize + PaletteSize(&bi) + (dwBytesPerLine * dwHeight);
-
-    // alloc memory block to store our bitmap
-    hDIB = (HDIB)GlobalAlloc(GHND, dwLen);
-
-    // major bummer if we couldn't get memory block
-    if (!hDIB)
-        return NULL;
-
-    // lock memory and get pointer to it
-    lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDIB);
-
-    // use our bitmap info structure to fill in first part of
-    // our DIB with the BITMAPINFOHEADER
-    *lpbi = bi;
-
-    InitColorTableMasksIfReqd((BITMAPINFO*)lpbi);
-
-    // Since we don't know what the colortable and bits should contain,
-    // just leave these blank.  Unlock the DIB and return the HDIB.
-
-    GlobalUnlock(hDIB);
-
-    /* return handle to the DIB */
-    return hDIB;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-const void* DibXY(const BITMAPINFOHEADER* lpbmi, int x, int y)
-{
-    const std::byte* pBits;
-    DWORD ulWidthBytes;
-
-    pBits = reinterpret_cast<const std::byte*>(lpbmi) + (WORD)lpbmi->biSize + PaletteSize(lpbmi);
-    ulWidthBytes = DIBWIDTHBYTES(*lpbmi);
-    pBits += (ulWidthBytes * (long)(lpbmi->biHeight - y - 1)) +
-        (x * (int)lpbmi->biBitCount / 8);
-    return(LPBYTE)pBits;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-const void* FindDIBBits(const BITMAPINFOHEADER* lpbi)
-{
-    return(reinterpret_cast<const std::byte*>(lpbi) + lpbi->biSize + PaletteSize(lpbi));
-}
-
-///////////////////////////////////////////////////////////////////////
-
-DWORD DIBWidth(const void* lpDIB)
-{
-    const BITMAPINFOHEADER* lpbmi;  // pointer to a Win 3.0-style DIB
-    const BITMAPCOREHEADER* lpbmc;  // pointer to an other-style DIB
-
-    /* point to the header (whether Win 3.0 and old) */
-
-    lpbmi = static_cast<const BITMAPINFOHEADER*>(lpDIB);
-    lpbmc = static_cast<const BITMAPCOREHEADER*>(lpDIB);
-
-    /* return the DIB width if it is a Win 3.0 DIB */
-    if (IS_WIN30_DIB(lpDIB))
-        return lpbmi->biWidth;
-    else  /* it is an other-style DIB, so return its width */
-        return(DWORD)lpbmc->bcWidth;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-DWORD DIBHeight(const void* lpDIB)
-{
-    const BITMAPINFOHEADER* lpbmi;  // pointer to a Win 3.0-style DIB
-    const BITMAPCOREHEADER* lpbmc;  // pointer to an other-style DIB
-
-    /* point to the header (whether Win 3.0 and old) */
-
-    lpbmi = static_cast<const BITMAPINFOHEADER*>(lpDIB);
-    lpbmc = static_cast<const BITMAPCOREHEADER*>(lpDIB);
-
-    /* return the DIB height if it is a Win 3.0 DIB */
-    if (IS_WIN30_DIB(lpDIB))
-        return lpbmi->biHeight;
-    else  /* it is an other-style DIB, so return its height */
-        return(DWORD)lpbmc->bcHeight;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-WORD PaletteSize(const void* lpbi)
-{
-    /* calculate the size required by the palette */
-    if (IS_WIN30_DIB (lpbi))
-        return (WORD)(DIBNumColors(lpbi) * sizeof(RGBQUAD));
-    else
-        return (WORD)(DIBNumColors(lpbi) * sizeof(RGBTRIPLE));
-}
-
-///////////////////////////////////////////////////////////////////////
-
-WORD DIBNumColors(const void* lpbi)
-{
-    WORD wBitCount;  // DIB bit count
-
-    /*  If this is a Windows-style DIB, the number of colors in the
-     *  color table can be less than the number of bits per pixel
-     *  allows for (i.e. lpbi->biClrUsed can be set to some value).
-     *  If this is the case, return the appropriate value.
-     */
-
-    if (IS_WIN30_DIB(lpbi))
-    {
-        DWORD dwClrUsed;
-
-        dwClrUsed = static_cast<const BITMAPINFOHEADER*>(lpbi)->biClrUsed;
-        if (dwClrUsed != 0)
-            return(WORD)dwClrUsed;
-    }
-
-    /*  Calculate the number of colors in the color table based on
-     *  the number of bits per pixel for the DIB.
-     */
-    if (IS_WIN30_DIB(lpbi))
-        wBitCount = static_cast<const BITMAPINFOHEADER*>(lpbi)->biBitCount;
-    else
-        wBitCount = static_cast<const BITMAPCOREHEADER*>(lpbi)->bcBitCount;
-
-    /* return number of colors based on bits per pixel */
-    switch (wBitCount)
-    {
-        case 1:
-            return 2;
-
-        case 4:
-            return 16;
-
-        case 8:
-            return 256;
-
-        case 16:
-            return 3;       // Special: Used only for the pixel bit masks
-
-        default:
-            return 0;
-    }
-}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -331,7 +130,7 @@ CBITMAPINFOHEADER BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         hDIB = CBITMAPINFOHEADER(Bitmap.bmWidth, Bitmap.bmHeight,
             nBPP == 0 ? value_preserving_cast<uint16_t>(Bitmap.bmPlanes * Bitmap.bmBitsPixel) : nBPP);
 
-        lpBits = FindDIBBits(hDIB);
+        lpBits = hDIB.GetBits();
 
         // Now, we need a DC to hold our bitmap.  If the app passed us
         //  a palette, it should be selected into the DC.
@@ -368,68 +167,23 @@ CBITMAPINFOHEADER ConvertDIBSectionToDIB(HBITMAP hDibSect)
 {
     DIBSECTION dibSect;
     if (!GetObject(hDibSect, sizeof(dibSect), (LPVOID)&dibSect))
-        return NULL;
+        return nullptr;
 
     ASSERT(dibSect.dsBmih.biBitCount == 16);            // Only support this
     CBITMAPINFOHEADER hDIB(dibSect.dsBmih.biWidth, dibSect.dsBmih.biHeight, dibSect.dsBmih.biBitCount);
 
-    BITMAPINFOHEADER* pbmInfoHdr = (BITMAPINFOHEADER*)GlobalLock(hDIB);
-    DWORD* pdwMasks = (DWORD*)(reinterpret_cast<std::byte*>(pbmInfoHdr) + sizeof(BITMAPINFOHEADER));
+    BITMAPINFO* pbmInfoHdr = hDIB;
+    DWORD* pdwMasks = reinterpret_cast<DWORD*>(pbmInfoHdr->bmiColors);
 
-    *pbmInfoHdr = dibSect.dsBmih;
+    pbmInfoHdr->bmiHeader = dibSect.dsBmih;
 
     pdwMasks[0] = dibSect.dsBitfields[0];
     pdwMasks[1] = dibSect.dsBitfields[1];
     pdwMasks[2] = dibSect.dsBitfields[2];
 
-    void* pBits = FindDIBBits(pbmInfoHdr);
+    void* pBits = hDIB.GetBits();
 
     memcpy(pBits, dibSect.dsBm.bmBits, dibSect.dsBmih.biSizeImage);
 
-    GlobalUnlock(hDIB);
-
     return hDIB;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr, DWORD dwWidth,
-    DWORD dwHeight, uint16_t nBPP)
-{
-    memset(lpBmInfoHdr, 0, sizeof(BITMAPINFOHEADER));
-
-    lpBmInfoHdr->biSize      = sizeof(BITMAPINFOHEADER);
-    lpBmInfoHdr->biWidth     = dwWidth;
-    lpBmInfoHdr->biHeight    = dwHeight;
-    lpBmInfoHdr->biPlanes    = 1;
-
-    if (nBPP <= uint16_t(1))
-        nBPP = uint16_t(1);
-    else if (nBPP <= uint16_t(4))
-        nBPP = uint16_t(4);
-    else if (nBPP <= uint16_t(8))
-        nBPP = uint16_t(8);
-    else if (nBPP <= uint16_t(16))
-    {
-        nBPP = uint16_t(16);
-        lpBmInfoHdr->biCompression = BI_BITFIELDS;
-    }
-    else
-        nBPP = uint16_t(24);
-
-    lpBmInfoHdr->biBitCount  = nBPP;
-    lpBmInfoHdr->biSizeImage = WIDTHBYTES(dwWidth * nBPP) * dwHeight;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo)
-{
-    if (lpBmInfo->bmiHeader.biBitCount == 16)
-    {
-        DWORD* pdwMasks = (DWORD*)&lpBmInfo->bmiColors[0];
-        pdwMasks[0] = 0x0000F800;
-        pdwMasks[1] = 0x000007E0;
-        pdwMasks[2] = 0x0000001F;
-    }
 }

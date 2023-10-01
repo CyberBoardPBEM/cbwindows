@@ -52,12 +52,26 @@ public:
     operator const BITMAPINFO*() const { return &static_cast<const BITMAPINFO&>(*this); }
     operator BITMAPINFO*() { return &static_cast<BITMAPINFO&>(*this); }
 
+    const void* GetBits() const;
+    void* GetBits()
+    {
+        return const_cast<void*>(std::as_const(*this).GetBits());
+    }
+    const void* DibXY(ptrdiff_t x, ptrdiff_t y) const
+    {
+        return DibXY(*this, x, y);
+    }
+
     // for reading in CDib
     void reserve(size_t s);
     // don't use void* except for serialize-in
     operator void*();
 
 private:
+    static uint16_t GetPaletteSize(const BITMAPINFOHEADER& lpbi);
+    static uint16_t GetNumColors(const BITMAPINFOHEADER& lpbi);
+    static const void* DibXY(const BITMAPINFOHEADER& lpbi, ptrdiff_t x, ptrdiff_t y);
+
     std::vector<std::byte> buf;
 };
 
@@ -82,21 +96,7 @@ DECLARE_HANDLE(HDIB);
 // to hold those bits.
 
 /* Function prototypes */
-HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
-const void* FindDIBBits(const BITMAPINFOHEADER* lpbi);
-inline void* FindDIBBits(BITMAPINFOHEADER* lpbi)
-{
-    return const_cast<void*>(FindDIBBits(static_cast<const BITMAPINFOHEADER*>(lpbi)));
-}
-DWORD   DIBWidth(const void* lpDIB);
-DWORD   DIBHeight(const void* lpDIB);
-WORD    PaletteSize(const void* lpbi);
-WORD    DIBNumColors(const void* lpbi);
 CBITMAPINFOHEADER BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
-void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
-            DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
-void    InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo);
-const void* DibXY(const BITMAPINFOHEADER* lpbi, int x, int y);
 
 CBITMAPINFOHEADER ConvertDIBSectionToDIB(HBITMAP hDibSect);
 
