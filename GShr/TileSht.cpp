@@ -110,7 +110,7 @@ void CTileSheet::Serialize(CArchive& ar)
                 // If the DIB was in 256 color format and we are running
                 // on Win9x/ME we need to remap all transparent colors
                 // to the WinNT/2000/XP 16 bit equivalent.
-                if (dib.NumColors() == 8)       // (should be changed to NumColorBits!)
+                if (dib.NumColorBits() == 8)
                 {
                     COLORREF crTrans = ((CGamDoc*)ar.m_pDocument)->
                         GetTileManager()->GetTransparentColor();

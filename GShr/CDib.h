@@ -32,14 +32,14 @@
 class CDib
 {
 public:
-    CDib() { m_hDib = NULL; m_lpDib = NULL; m_nCompressLevel = 0; }
+    CDib() { m_nCompressLevel = 0; }
     CDib(const CDib&) = delete;
     CDib& operator=(const CDib&) = delete;
     CDib(CDib&& rhs) noexcept;
     CDib& operator=(CDib&& rhs) noexcept;
     ~CDib() { ClearDib(); }
     void ClearDib();
-    operator bool() const { return m_hDib; }
+    explicit operator bool() const { return bool(m_hDib); }
     CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
     // ---------- /
     explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
@@ -48,17 +48,16 @@ public:
         int xSrc, int ySrc, int cxSrc, int cySrc) const
     {
         return ::StretchDIBits(pDC.m_hDC, xDest, yDest, cxDest, cyDest,
-            xSrc, ySrc, cxSrc, cySrc, FindBits(), GetBmi(), DIB_RGB_COLORS,
+            xSrc, ySrc, cxSrc, cySrc, FindBits(), &GetBmi(), DIB_RGB_COLORS,
             SRCCOPY);
     }
     // ---------- //
-    int Height() const { return (int)DIBHeight(m_lpDib); }
-    int Width() const { return (int)DIBWidth(m_lpDib); }
-    int NumColors() const { return ((LPBITMAPINFOHEADER)m_lpDib)->biBitCount; }
-    int NumColorsInColorTable() const { return DIBNumColors(m_lpDib); }
-    const LPBITMAPINFOHEADER GetBmiHdr() const { return (LPBITMAPINFOHEADER)m_lpDib; }
-    const LPBITMAPINFO GetBmi() const { return (LPBITMAPINFO)m_lpDib; }
-    const void* FindBits() const { return FindDIBBits(m_lpDib); }
+    int Height() const { return m_hDib.get().biHeight; }
+    int Width() const { return m_hDib.get().biWidth; }
+    int NumColorBits() const { return m_hDib.get().biBitCount; }
+    const BITMAPINFOHEADER& GetBmiHdr() const { return m_hDib; }
+    const BITMAPINFO& GetBmi() const { return m_hDib; }
+    const void* FindBits() const { return FindDIBBits(m_hDib); }
     // ---------- for 16bit/pixel Dibs only -------------- //
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
@@ -70,8 +69,7 @@ public:
     static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP = uint16_t(16));
 
 private:
-    HDIB  m_hDib;
-    void* m_lpDib;
+    CBITMAPINFOHEADER m_hDib;
     int   m_nCompressLevel;
     // ---------- //
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);

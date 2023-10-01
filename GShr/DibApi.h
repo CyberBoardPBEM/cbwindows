@@ -14,6 +14,53 @@
 #ifndef _INC_DIBAPI
 #define _INC_DIBAPI
 
+// TODO:  move to CDib.h when DibApi.h removed
+// this includes the palette and pixel data
+class CBITMAPINFOHEADER
+{
+public:
+    CBITMAPINFOHEADER() = default;
+    CBITMAPINFOHEADER(std::nullptr_t) : CBITMAPINFOHEADER() {}
+    CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount);
+    CBITMAPINFOHEADER(const CBITMAPINFOHEADER&) = delete;
+    CBITMAPINFOHEADER(CBITMAPINFOHEADER&&) = default;
+    CBITMAPINFOHEADER& operator=(const CBITMAPINFOHEADER&) = delete;
+    CBITMAPINFOHEADER& operator=(CBITMAPINFOHEADER&&) = default;
+    ~CBITMAPINFOHEADER() = default;
+
+    /* KLUDGE:  need const and non-const to avoid ambiguity with
+                operator BITMAPINFOHEADER* */
+    explicit operator bool() const;
+    explicit operator bool() { return bool(std::as_const(*this)); }
+    size_t size() const { return *this ? buf.size() : size_t(0); }
+
+    const BITMAPINFOHEADER& get() const;
+    BITMAPINFOHEADER& get()
+    {
+        return const_cast<BITMAPINFOHEADER&>(std::as_const(*this).get());
+    }
+    operator const BITMAPINFOHEADER&() const { return get(); }
+    operator BITMAPINFOHEADER&() { return get(); }
+    operator const BITMAPINFOHEADER*() const { return &get(); }
+    operator BITMAPINFOHEADER*() { return &get(); }
+
+    operator const BITMAPINFO&() const;
+    operator BITMAPINFO&()
+    {
+        return const_cast<BITMAPINFO&>(static_cast<const BITMAPINFO&>(std::as_const(*this)));
+    }
+    operator const BITMAPINFO*() const { return &static_cast<const BITMAPINFO&>(*this); }
+    operator BITMAPINFO*() { return &static_cast<BITMAPINFO&>(*this); }
+
+    // for reading in CDib
+    void reserve(size_t s);
+    // don't use void* except for serialize-in
+    operator void*();
+
+private:
+    std::vector<std::byte> buf;
+};
+
 /* Handle to a DIB */
 DECLARE_HANDLE(HDIB);
 
@@ -36,21 +83,21 @@ DECLARE_HANDLE(HDIB);
 
 /* Function prototypes */
 HDIB    CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount);
-const void* FindDIBBits(const void* lpbi);
-inline void* FindDIBBits(void* lpbi)
+const void* FindDIBBits(const BITMAPINFOHEADER* lpbi);
+inline void* FindDIBBits(BITMAPINFOHEADER* lpbi)
 {
-    return const_cast<void*>(FindDIBBits(static_cast<const void*>(lpbi)));
+    return const_cast<void*>(FindDIBBits(static_cast<const BITMAPINFOHEADER*>(lpbi)));
 }
 DWORD   DIBWidth(const void* lpDIB);
 DWORD   DIBHeight(const void* lpDIB);
 WORD    PaletteSize(const void* lpbi);
 WORD    DIBNumColors(const void* lpbi);
-HANDLE  BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
+CBITMAPINFOHEADER BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
 void    InitBitmapInfoHeader(LPBITMAPINFOHEADER lpBmInfoHdr,
             DWORD dwWidth, DWORD dwHeight, uint16_t nBPP);
 void    InitColorTableMasksIfReqd(LPBITMAPINFO lpBmInfo);
-const void* DibXY(const void* lpbi, int x, int y);
+const void* DibXY(const BITMAPINFOHEADER* lpbi, int x, int y);
 
-HANDLE  ConvertDIBSectionToDIB(HBITMAP hDibSect);
+CBITMAPINFOHEADER ConvertDIBSectionToDIB(HBITMAP hDibSect);
 
 #endif //!_INC_DIBAPI

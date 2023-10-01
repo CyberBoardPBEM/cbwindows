@@ -110,13 +110,12 @@ HDIB CreateDIB(DWORD dwWidth, DWORD dwHeight, WORD wBitCount)
 
 ///////////////////////////////////////////////////////////////////////
 
-const void* DibXY(const void* lpbi, int x, int y)
+const void* DibXY(const BITMAPINFOHEADER* lpbmi, int x, int y)
 {
     const std::byte* pBits;
     DWORD ulWidthBytes;
-    const BITMAPINFOHEADER* lpbmi = static_cast<const BITMAPINFOHEADER*>(lpbi);
 
-    pBits = static_cast<const std::byte*>(lpbi) + (WORD)lpbmi->biSize + PaletteSize(lpbi);
+    pBits = reinterpret_cast<const std::byte*>(lpbmi) + (WORD)lpbmi->biSize + PaletteSize(lpbmi);
     ulWidthBytes = DIBWIDTHBYTES(*lpbmi);
     pBits += (ulWidthBytes * (long)(lpbmi->biHeight - y - 1)) +
         (x * (int)lpbmi->biBitCount / 8);
@@ -125,9 +124,9 @@ const void* DibXY(const void* lpbi, int x, int y)
 
 ///////////////////////////////////////////////////////////////////////
 
-const void* FindDIBBits(const void* lpbi)
+const void* FindDIBBits(const BITMAPINFOHEADER* lpbi)
 {
-    return(static_cast<const std::byte*>(lpbi) + *static_cast<const uint32_t*>(lpbi) + PaletteSize(lpbi));
+    return(reinterpret_cast<const std::byte*>(lpbi) + lpbi->biSize + PaletteSize(lpbi));
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -230,9 +229,9 @@ WORD DIBNumColors(const void* lpbi)
 
 ///////////////////////////////////////////////////////////////////////
 
-HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
+CBITMAPINFOHEADER BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 {
-    HANDLE hDIB = NULL;
+    CBITMAPINFOHEADER hDIB = NULL;
     if (!hBitmap)
         return NULL;
     // If the target format is 16 bits per pixel we avoid the use
@@ -258,6 +257,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
                 return ConvertDIBSectionToDIB(hBitmap);
         }
 
+        ASSERT(!"untested code");
         BITMAP bmapSrc;                 // Source bitmap
         if (!GetObject(hBitmap, sizeof(bmapSrc), (LPVOID)&bmapSrc))
             return NULL;
@@ -267,11 +267,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         // created and the bitmap is Blited into it. Then the
         // section is converted to a DIB.
 
-        BYTE bmapInfo[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)];
-        BITMAPINFO* pbmi = (BITMAPINFO*)&bmapInfo;      // Convenience pointer
-        InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi,
-            bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
-        InitColorTableMasksIfReqd(pbmi);
+        CBITMAPINFOHEADER bmi(bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
 
         // We need a reference DC for palette bitmaps
         hMemDCScreen = GetDC(NULL);
@@ -280,11 +276,12 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 
         if (hPal)
         {
+            ASSERT(!"untested code");
             hPrvPal = SelectPalette(hMemDCSrc, hPal, FALSE);
             RealizePalette(hMemDCSrc);
         }
 
-        hBmapSect = CreateDIBSection(hMemDCSrc, pbmi, DIB_RGB_COLORS, &pBits, NULL, 0);
+        hBmapSect = CreateDIBSection(hMemDCSrc, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
         if (hBmapSect != NULL)
         {
             hMemDCSect = CreateCompatibleDC(hMemDCScreen);
@@ -312,9 +309,8 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
     }
     else
     {
+        ASSERT(!"untested code");
         BITMAP             Bitmap;
-        BITMAPINFOHEADER   bmInfoHdr;
-        LPBITMAPINFOHEADER lpbmInfoHdr;
         void*              lpBits;
         HDC                hMemDC;
         HPALETTE           hOldPal = NULL;
@@ -329,25 +325,13 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         if (!GetObject(hBitmap, sizeof(Bitmap), &Bitmap))
             return NULL;
 
-        // Changed to allow forces bits per pixel.
-        InitBitmapInfoHeader(&bmInfoHdr, Bitmap.bmWidth, Bitmap.bmHeight,
-            nBPP == 0 ? value_preserving_cast<uint16_t>(Bitmap.bmPlanes * Bitmap.bmBitsPixel) : nBPP);
-
         // Now allocate memory for the DIB.  Then, set the BITMAPINFOHEADER
         // into this memory, and find out where the bitmap bits go.
 
-        hDIB = GlobalAlloc(GHND, sizeof(BITMAPINFOHEADER) +
-            PaletteSize(&bmInfoHdr) + bmInfoHdr.biSizeImage);
+        hDIB = CBITMAPINFOHEADER(Bitmap.bmWidth, Bitmap.bmHeight,
+            nBPP == 0 ? value_preserving_cast<uint16_t>(Bitmap.bmPlanes * Bitmap.bmBitsPixel) : nBPP);
 
-        if (!hDIB)
-            return NULL;
-
-        lpbmInfoHdr  = (LPBITMAPINFOHEADER)GlobalLock(hDIB);
-        *lpbmInfoHdr = bmInfoHdr;
-
-        InitColorTableMasksIfReqd((LPBITMAPINFO)lpbmInfoHdr);
-
-        lpBits = FindDIBBits(lpbmInfoHdr);
+        lpBits = FindDIBBits(hDIB);
 
         // Now, we need a DC to hold our bitmap.  If the app passed us
         //  a palette, it should be selected into the DC.
@@ -356,6 +340,7 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 
         if (hPal)
         {
+            ASSERT(!"untested code");
             hOldPal = SelectPalette(hMemDC, hPal, FALSE);
             RealizePalette(hMemDC);
         }
@@ -363,14 +348,10 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
         // it party on our bitmap.  It will fill in the color table,
         // and bitmap bits of our global memory block.
         if (!GetDIBits(hMemDC, hBitmap, 0, Bitmap.bmHeight, lpBits,
-            (LPBITMAPINFO)lpbmInfoHdr, DIB_RGB_COLORS))
+            hDIB, DIB_RGB_COLORS))
         {
-            GlobalUnlock (hDIB);
-            GlobalFree (hDIB);
             hDIB = NULL;
         }
-        else
-            GlobalUnlock (hDIB);
 
         // Finally, clean up and return.
         if (hOldPal)
@@ -383,18 +364,14 @@ HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 
 ///////////////////////////////////////////////////////////////////////
 
-HANDLE ConvertDIBSectionToDIB(HBITMAP hDibSect)
+CBITMAPINFOHEADER ConvertDIBSectionToDIB(HBITMAP hDibSect)
 {
     DIBSECTION dibSect;
     if (!GetObject(hDibSect, sizeof(dibSect), (LPVOID)&dibSect))
         return NULL;
 
     ASSERT(dibSect.dsBmih.biBitCount == 16);            // Only support this
-    HANDLE hDIB = GlobalAlloc(GHND, sizeof(BITMAPINFOHEADER) +
-        3 * sizeof(RGBQUAD) + dibSect.dsBmih.biSizeImage);
-
-    if (hDIB == NULL)
-        return NULL;
+    CBITMAPINFOHEADER hDIB(dibSect.dsBmih.biWidth, dibSect.dsBmih.biHeight, dibSect.dsBmih.biBitCount);
 
     BITMAPINFOHEADER* pbmInfoHdr = (BITMAPINFOHEADER*)GlobalLock(hDIB);
     DWORD* pdwMasks = (DWORD*)(reinterpret_cast<std::byte*>(pbmInfoHdr) + sizeof(BITMAPINFOHEADER));

@@ -39,20 +39,107 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////
 
+CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount)
+{
+    switch (wBitCount)
+    {
+        case 16:
+        case 24:
+            break;
+        default:
+            AfxThrowNotSupportedException();
+    }
+
+    BITMAPINFOHEADER bi;
+    memset(&bi, 0, sizeof(bi));
+    bi.biSize = sizeof(BITMAPINFOHEADER);
+    bi.biWidth = dwWidth;
+    bi.biHeight = dwHeight;
+    bi.biPlanes = 1;
+    bi.biBitCount = wBitCount;
+    bi.biCompression = wBitCount == 16 ? BI_BITFIELDS : BI_RGB;
+
+    size_t dataSize = WIDTHBYTES(bi.biWidth * bi.biBitCount) * bi.biHeight;
+    reserve(bi.biSize +
+            (wBitCount <= size_t(16) ? PaletteSize(&bi) : uint16_t(0)) +
+            dataSize);
+    *reinterpret_cast<BITMAPINFOHEADER*>(buf.data()) = bi;
+
+    if (bi.biBitCount == 16)
+    {
+        BITMAPINFO& bmi = *this;
+        DWORD* pdwMasks = reinterpret_cast<DWORD*>(bmi.bmiColors);
+        pdwMasks[0] = 0x0000F800;
+        pdwMasks[1] = 0x000007E0;
+        pdwMasks[2] = 0x0000001F;
+    }
+}
+
+CBITMAPINFOHEADER::operator bool() const
+{
+    if (buf.size() < sizeof(BITMAPINFOHEADER))
+    {
+        return false;
+    }
+    const BITMAPINFOHEADER* retval = reinterpret_cast<const BITMAPINFOHEADER*>(buf.data());
+    ASSERT(!retval->biSize ||
+            retval->biSize == sizeof(BITMAPINFOHEADER));
+    return retval->biSize == sizeof(BITMAPINFOHEADER);
+}
+
+const BITMAPINFOHEADER& CBITMAPINFOHEADER::get() const
+{
+    if (!*this)
+    {
+        CbThrowBadCastException();
+    }
+    return *reinterpret_cast<const BITMAPINFOHEADER*>(buf.data());
+}
+
+CBITMAPINFOHEADER::operator const BITMAPINFO&() const
+{
+    const BITMAPINFOHEADER& retval = *this;
+    if (retval.biBitCount > 16)
+    {
+        CbThrowBadCastException();
+    }
+    return reinterpret_cast<const BITMAPINFO&>(retval);
+}
+
+void CBITMAPINFOHEADER::reserve(size_t s)
+{
+    ASSERT(buf.empty() && s >= sizeof(BITMAPINFO));
+    buf.resize(s);
+    ASSERT(!*this);
+}
+
+// don't use void* except for serialize-in
+CBITMAPINFOHEADER::operator void*()
+{
+    if (*this ||
+        buf.size() < sizeof(BITMAPINFOHEADER))
+    {
+        CbThrowBadCastException();
+    }
+    return reinterpret_cast<BITMAPINFOHEADER*>(buf.data());
+}
+
+///////////////////////////////////////////////////////////////
+
 WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 {
-    ASSERT(m_hDib != NULL);
+    ASSERT(m_hDib && NumColorBits() == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    return *((WORD*)::DibXY(m_lpDib, x, y));
+    return *((WORD*)::DibXY(m_hDib, x, y));
 }
 
 void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
 {
-    ASSERT(m_hDib != NULL);
+    ASSERT(m_hDib && NumColorBits() == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    *((WORD*)::DibXY(m_lpDib, x, y)) = nColor;
+    *((WORD*)::DibXY(m_hDib, x, y)) = nColor;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -65,37 +152,19 @@ CDib::CDib(CDib&& rhs) noexcept :
 
 CDib& CDib::operator=(CDib&& rhs) noexcept
 {
-    std::swap(m_hDib, rhs.m_hDib);
-    std::swap(m_lpDib, rhs.m_lpDib);
+    m_hDib = std::move(rhs.m_hDib);
     std::swap(m_nCompressLevel, rhs.m_nCompressLevel);
     return *this;
 }
 
 void CDib::ClearDib()
 {
-    if (m_hDib)
-    {
-        GlobalUnlock((HGLOBAL)m_hDib);
-        GlobalFree((HGLOBAL)m_hDib);
-        m_hDib = NULL;
-        m_lpDib = NULL;
-    }
+    m_hDib = nullptr;
 }
 
 CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
 {
-    m_hDib = ::CreateDIB(dwWidth, dwHeight, wBPP);
-    if (!m_hDib)
-    {
-        AfxThrowMemoryException();
-    }
-    m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
-    if (!m_lpDib)
-    {
-        GlobalFree((HGLOBAL)m_hDib);
-        m_hDib = NULL;
-        AfxThrowMemoryException();
-    }
+    m_hDib = CBITMAPINFOHEADER(value_preserving_cast<int32_t>(dwWidth), value_preserving_cast<int32_t>(dwHeight), wBPP);
     m_nCompressLevel = 0;
 }
 
@@ -103,24 +172,12 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(
 {
     if (pBM.m_hObject != NULL)
     {
-        m_hDib = (HDIB)::BitmapToDIB((HBITMAP)(pBM.m_hObject),
+        m_hDib = ::BitmapToDIB((HBITMAP)(pBM.m_hObject),
             (HPALETTE)(pPal ? pPal->m_hObject : NULL), nBPP);
-        if (!m_hDib)
-        {
-            AfxThrowMemoryException();
-        }
-        m_lpDib = ::GlobalLock((HGLOBAL)m_hDib);
-        if (!m_lpDib)
-        {
-            GlobalFree((HGLOBAL)m_hDib);
-            m_hDib = NULL;
-            AfxThrowMemoryException();
-        }
     }
     else
     {
-        m_hDib = NULL;
-        m_lpDib = nullptr;
+        m_hDib = nullptr;
     }
     m_nCompressLevel = 0;
 }
@@ -129,24 +186,24 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap() const
 {
     // This weird code is used to xfer the dib into a dib section
     // having a standard color table.
-    BITMAPINFO* pbmiDib = (BITMAPINFO*)m_lpDib;
+    const BITMAPINFO& pbmiDib = m_hDib;
     CWindowDC scrnDC(NULL);
     CDC memDC;
     memDC.CreateCompatibleDC(&scrnDC);
     CPalette* prvPal = memDC.SelectPalette(GetAppPalette(), FALSE);
     memDC.RealizePalette();
 
-    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib->bmiHeader.biWidth,
-        pbmiDib->bmiHeader.biHeight);
+    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib.bmiHeader.biWidth,
+        pbmiDib.bmiHeader.biHeight);
 
     SetDIBits(NULL, *pBMap, 0,
-        pbmiDib->bmiHeader.biHeight, FindDIBBits(pbmiDib), pbmiDib,
+        pbmiDib.bmiHeader.biHeight, FindDIBBits(&pbmiDib.bmiHeader), &pbmiDib,
         DIB_RGB_COLORS);
 
     memDC.SelectPalette(prvPal, FALSE);
 
-    ASSERT(Width() == pbmiDib->bmiHeader.biWidth &&
-            Height() == pbmiDib->bmiHeader.biHeight);
+    ASSERT(Width() == pbmiDib.bmiHeader.biWidth &&
+            Height() == pbmiDib.bmiHeader.biHeight);
     pBMap->SetBitmapDimension(Width(), Height());
     return pBMap;
 }
@@ -159,7 +216,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
                 them, then file format must change */
     if (dib.m_hDib)
     {
-        uint32_t dwSize = value_preserving_cast<uint32_t>(GlobalSize(dib.m_hDib));
+        uint32_t dwSize = value_preserving_cast<uint32_t>(dib.m_hDib.size());
         ASSERT(dwSize > uint32_t(0));
         ASSERT(dib.m_nCompressLevel >= wxZ_NO_COMPRESSION
             && dib.m_nCompressLevel <= wxZ_BEST_COMPRESSION);
@@ -180,7 +237,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
             wxMemoryOutputStream mstream(pDestBfr.data(), pDestBfr.size());
             {
                 wxZlibOutputStream zstream(mstream, dib.m_nCompressLevel, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
-                bool rc = zstream.WriteAll(dib.m_lpDib, dwSize);
+                bool rc = zstream.WriteAll(&dib.m_hDib.get(), dwSize);
                 if (!rc)
                 {
                     AfxThrowMemoryException();
@@ -194,7 +251,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
         {
             // Store size of the raw dib
             ar << dwSize;
-            ar.Write(dib.m_lpDib, value_preserving_cast<UINT>(dwSize));      // Store the uncompressed bitmap
+            ar.Write(&dib.m_hDib.get(), value_preserving_cast<UINT>(dwSize));      // Store the uncompressed bitmap
         }
     }
     else
@@ -217,15 +274,13 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
 
         std::vector<std::byte> pCompBfr(dwCompSize);
 
-        if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)
-            AfxThrowMemoryException();
-        dib.m_lpDib = GlobalLock((HGLOBAL)dib.m_hDib);
+        dib.m_hDib.reserve(dwSize);
 
         ar.Read(pCompBfr.data(), dwCompSize);
 
         wxMemoryInputStream mstream(pCompBfr.data(), pCompBfr.size());
         wxZlibInputStream zstream(mstream, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
-        bool rc = zstream.ReadAll(dib.m_lpDib, dwSize);
+        bool rc = zstream.ReadAll(dib.m_hDib, dwSize);
         ASSERT(zstream.LastRead() == dwSize);
 
         if (!rc)
@@ -234,11 +289,9 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
     else if (dwSize > uint32_t(0))
     {
         // Load uncompressed bitmap...
-        if ((dib.m_hDib = (HDIB)GlobalAlloc(GHND, dwSize)) == NULL)
-            AfxThrowMemoryException();
-        dib.m_lpDib = GlobalLock((HGLOBAL)dib.m_hDib);
+        dib.m_hDib.reserve(dwSize);
 
-        ar.Read(dib.m_lpDib, dwSize);
+        ar.Read(dib.m_hDib, dwSize);
     }
     return ar;
 }
