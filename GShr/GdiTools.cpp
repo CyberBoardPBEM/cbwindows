@@ -173,7 +173,7 @@ OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
     CBITMAPINFOHEADER bmi(nWidth, nHeight, uint16_t(24));
 
     VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(static_cast<BITMAPINFOHEADER*>(bmi)), DIB_RGB_COLORS,
+    HBITMAP hBmap = CreateDIBSection(NULL, &reinterpret_cast<BITMAPINFO&>(static_cast<BITMAPINFOHEADER&>(bmi)), DIB_RGB_COLORS,
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 

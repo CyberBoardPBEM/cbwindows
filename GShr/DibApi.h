@@ -22,6 +22,8 @@ public:
     CBITMAPINFOHEADER() = default;
     CBITMAPINFOHEADER(std::nullptr_t) : CBITMAPINFOHEADER() {}
     CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount);
+    CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
+    CBITMAPINFOHEADER(HBITMAP hDibSect);
     CBITMAPINFOHEADER(const CBITMAPINFOHEADER&) = delete;
     CBITMAPINFOHEADER(CBITMAPINFOHEADER&&) = default;
     CBITMAPINFOHEADER& operator=(const CBITMAPINFOHEADER&) = delete;
@@ -96,8 +98,5 @@ DECLARE_HANDLE(HDIB);
 // to hold those bits.
 
 /* Function prototypes */
-CBITMAPINFOHEADER BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
-
-CBITMAPINFOHEADER ConvertDIBSectionToDIB(HBITMAP hDibSect);
 
 #endif //!_INC_DIBAPI
