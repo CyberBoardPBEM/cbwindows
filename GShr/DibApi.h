@@ -69,6 +69,16 @@ public:
     // don't use void* except for serialize-in
     operator void*();
 
+    // convert bits to uint32_t aligned bytes
+    static size_t BitsToBytes(size_t i)
+    {
+        return ((i + size_t(31)) & size_t(~31)) / size_t(8);
+    }
+    static size_t BitsToBytes(LONG i)
+    {
+        return BitsToBytes(value_preserving_cast<size_t>(i));
+    }
+
 private:
     static uint16_t GetPaletteSize(const BITMAPINFOHEADER& lpbi);
     static uint16_t GetNumColors(const BITMAPINFOHEADER& lpbi);
@@ -77,26 +87,9 @@ private:
     std::vector<std::byte> buf;
 };
 
-/* Handle to a DIB */
-DECLARE_HANDLE(HDIB);
-
-/* DIB constants */
-#define PALVERSION   0x300
-
-/* DIB Macros*/
-
-#define IS_WIN30_DIB(lpbi)  ((*(LPDWORD)(lpbi)) == sizeof(BITMAPINFOHEADER))
-#define RECTWIDTH(lpRect)     ((lpRect)->right - (lpRect)->left)
-#define RECTHEIGHT(lpRect)    ((lpRect)->bottom - (lpRect)->top)
-
-#define WIDTHBYTES(i)     ((unsigned)((i + 31) & (~31)) / 8)  /* ULONG aligned ! */
-#define DIBWIDTHBYTES(bi) (int)WIDTHBYTES((int)(bi).biWidth * (int)(bi).biBitCount)
-
-// WIDTHBYTES performs DWORD-aligning of DIB scanlines.  The "bits"
-// parameter is the bit count for the scanline (biWidth * biBitCount),
-// and this macro returns the number of DWORD-aligned bytes needed
-// to hold those bits.
-
-/* Function prototypes */
+inline size_t WidthBytes(const BITMAPINFOHEADER* bmi)
+{
+    return CBITMAPINFOHEADER::BitsToBytes(bmi->biWidth * bmi->biBitCount);
+}
 
 #endif //!_INC_DIBAPI

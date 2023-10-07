@@ -284,10 +284,10 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
     // ASSERT(dibSect.dsBmih.biBitCount == 16);
 
-    DWORD dwWidthBytes = DIBWIDTHBYTES(dibSect.dsBmih);
+    size_t dwWidthBytes = WidthBytes(&dibSect.dsBmih);
     LPBYTE pBits = (LPBYTE)dibSect.dsBm.bmBits;
-    pBits += (dwWidthBytes * (dibSect.dsBmih.biHeight - y - 1)) +
-        (x * (int)dibSect.dsBmih.biBitCount / 8);
+    pBits += value_preserving_cast<ptrdiff_t>((dwWidthBytes * value_preserving_cast<size_t>(dibSect.dsBmih.biHeight - y - 1)) +
+        value_preserving_cast<size_t>(x * dibSect.dsBmih.biBitCount / 8));
 
     ASSERT(pBits < (LPBYTE)dibSect.dsBm.bmBits + dibSect.dsBmih.biSizeImage);
 
@@ -583,7 +583,7 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
         memset(&bmap, 0, sizeof(BITMAP));
         GetObject(*pbmDst, sizeof(BITMAP), &bmap);
         // How many bytes in the image data?
-        DWORD dwBitsSize = bmap.bmHeight * WIDTHBYTES(bmap.bmWidth * bmap.bmPlanes *
+        size_t dwBitsSize = value_preserving_cast<size_t>(bmap.bmHeight) * CBITMAPINFOHEADER::BitsToBytes(bmap.bmWidth * bmap.bmPlanes *
             bmap.bmBitsPixel);
 
         // Copy the bits
@@ -763,8 +763,10 @@ void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans)
     int xDstBase = xDst;
     int ySrc = 0;
 
-    int nBytesPerScanLineSrc = WIDTHBYTES(bmapSrc.bmWidth * 16);
-    int nBytesPerScanLineDest = WIDTHBYTES(bmapDest.bmWidth * 16);
+    ASSERT(bmapSrc.bmBitsPixel == 16);
+    int nBytesPerScanLineSrc = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapSrc.bmWidth * 16));
+    ASSERT(bmapDest.bmBitsPixel == 16);
+    int nBytesPerScanLineDest = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapDest.bmWidth * 16));
     for (int nScanLine = 0; nScanLine < size.cy; nScanLine++)
     {
         xDst = xDstBase;

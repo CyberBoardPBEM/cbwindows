@@ -323,8 +323,10 @@ void CTileSheet::TransBlt(CDC& pDC, int xDst, int yDst, int ySrc,
     yDst += pntOrg.y;
     int xDstBase = xDst;
 
-    int nBytesPerScanLineTile = WIDTHBYTES(bmapTile.bmWidth * 16);
-    int nBytesPerScanLineDest = WIDTHBYTES(bmapDest.bmWidth * 16);
+    ASSERT(bmapTile.bmBitsPixel == 16);
+    int nBytesPerScanLineTile = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapTile.bmWidth * 16));
+    ASSERT(bmapDest.bmBitsPixel == 16);
+    int nBytesPerScanLineDest = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapDest.bmWidth * 16));
     for (int nScanLine = 0; nScanLine < m_size.cy; nScanLine++)
     {
         xDst = xDstBase;
@@ -379,9 +381,12 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int y
     yDst += pntOrg.y;
     int xDstBase = xDst;
 
-    int nBytesPerScanLineTile = WIDTHBYTES(bmapTile.bmWidth * 16);
-    int nBytesPerScanLineDest = WIDTHBYTES(bmapDest.bmWidth * 16);
-    int nBytesPerScanLineMask = WIDTHBYTES(pMaskBMapInfo.bmWidth * 16);
+    ASSERT(bmapTile.bmBitsPixel == 16);
+    int nBytesPerScanLineTile = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapTile.bmWidth * 16));
+    ASSERT(bmapDest.bmBitsPixel == 16);
+    int nBytesPerScanLineDest = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapDest.bmWidth * 16));
+    ASSERT(pMaskBMapInfo.bmBitsPixel == 16);
+    int nBytesPerScanLineMask = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(pMaskBMapInfo.bmWidth * 16));
     for (int nScanLine = 0; nScanLine < m_size.cy; nScanLine++)
     {
         xDst = xDstBase;

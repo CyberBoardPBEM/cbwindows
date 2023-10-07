@@ -11,19 +11,3 @@
 // Microsoft Foundation Classes product.
 
 #include    "stdafx.h"
-#include    <io.h>
-#include    <errno.h>
-#include    "GdiTools.h"
-#include    "DibApi.h"
-
-#ifdef _DEBUG
-    #define new DEBUG_NEW
-#endif
-
-/*
- * Dib Header Marker - used in writing DIBs to files
- */
-
-#define DIB_HEADER_MARKER   ((WORD) ('M' << 8) | 'B')
-
-///////////////////////////////////////////////////////////////////////

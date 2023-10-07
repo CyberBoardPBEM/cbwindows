@@ -58,6 +58,7 @@ public:
     const BITMAPINFOHEADER& GetBmiHdr() const { return m_hDib; }
     const BITMAPINFO& GetBmi() const { return m_hDib; }
     const void* FindBits() const { return m_hDib.GetBits(); }
+    void* FindBits() { return m_hDib.GetBits(); }
     // ---------- for 16bit/pixel Dibs only -------------- //
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
