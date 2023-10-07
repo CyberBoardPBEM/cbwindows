@@ -31,7 +31,6 @@
 #include    "Board.h"
 #include    "Pieces.h"
 #include    "Marks.h"
-#include    "DibApi.h"          // For CopyHandle()
 
 #include    "VwPrjgbx.h"
 #include    "LibMfc.h"

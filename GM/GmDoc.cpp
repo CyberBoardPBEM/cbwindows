@@ -37,7 +37,6 @@
 #include    "GMisc.h"
 #include    "Gm.h"
 #include    "GmDoc.h"
-#include    "DibApi.h"
 #include    "CDib.h"
 #include    "GdiTools.h"
 #include    "Board.h"

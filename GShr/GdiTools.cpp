@@ -284,7 +284,7 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
     // ASSERT(dibSect.dsBmih.biBitCount == 16);
 
-    size_t dwWidthBytes = WidthBytes(&dibSect.dsBmih);
+    size_t dwWidthBytes = WidthBytes(dibSect.dsBmih);
     LPBYTE pBits = (LPBYTE)dibSect.dsBm.bmBits;
     pBits += value_preserving_cast<ptrdiff_t>((dwWidthBytes * value_preserving_cast<size_t>(dibSect.dsBmih.biHeight - y - 1)) +
         value_preserving_cast<size_t>(x * dibSect.dsBmih.biBitCount / 8));

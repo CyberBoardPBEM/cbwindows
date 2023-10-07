@@ -272,6 +272,15 @@ const void* CBITMAPINFOHEADER::GetBits() const
     return(reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi));
 }
 
+const void* CBITMAPINFOHEADER::DibXY(ptrdiff_t x, ptrdiff_t y) const
+{
+    const BITMAPINFOHEADER& lpbi = *this;
+    const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi);
+    pBits += value_preserving_cast<ptrdiff_t>((WidthBytes(lpbi) * value_preserving_cast<size_t>(lpbi.biHeight - y - 1)) +
+        value_preserving_cast<size_t>(x * lpbi.biBitCount / 8));
+    return pBits;
+}
+
 void CBITMAPINFOHEADER::reserve(size_t s)
 {
     ASSERT(buf.empty() && s >= sizeof(BITMAPINFO));
@@ -325,16 +334,6 @@ uint16_t CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
         default:
             AfxThrowNotSupportedException();
     }
-}
-
-///////////////////////////////////////////////////////////////////////
-
-const void* CBITMAPINFOHEADER::DibXY(const BITMAPINFOHEADER& lpbi, ptrdiff_t x, ptrdiff_t y)
-{
-    const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi);
-    pBits += value_preserving_cast<ptrdiff_t>((WidthBytes(&lpbi) * value_preserving_cast<size_t>(lpbi.biHeight - y - 1)) +
-        value_preserving_cast<size_t>(x * lpbi.biBitCount / 8));
-    return pBits;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -563,7 +562,7 @@ OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
             dibSect.dsBitfields[0] == 0xf800 &&
             dibSect.dsBitfields[1] == 0x07e0 &&
             dibSect.dsBitfields[2] == 0x001f);
-    size_t lineBytes = WidthBytes(&dibSect.dsBmih);
+    size_t lineBytes = WidthBytes(dibSect.dsBmih);
 
     uint16_t* lineStart = static_cast<uint16_t*>(dibSect.dsBm.bmBits);
     for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
