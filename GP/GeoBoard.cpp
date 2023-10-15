@@ -628,7 +628,7 @@ void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size) const
     CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
     dc.RealizePalette();
 
-    m_bmap.Attach(Create16BitDIBSection(dc.m_hDC, size.cx, size.cy));
+    m_bmap.Attach(Create16BitDIBSection(size.cx, size.cy));
     CBitmap* prvBMap = dc.SelectObject(&m_bmap);
 
     CBrush brush(m_pDoc->GetTileManager()->GetTransparentColor());

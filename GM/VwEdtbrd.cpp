@@ -226,7 +226,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     if (m_bOffScreen)
     {
-        bmMem.Attach(Create16BitDIBSection(pDC->m_hDC,
+        bmMem.Attach(Create16BitDIBSection(
             oRct.Width(), oRct.Height()));
         dcMem.CreateCompatibleDC(pDC);
         pPrvBMap = dcMem.SelectObject(&bmMem);

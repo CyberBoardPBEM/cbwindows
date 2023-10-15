@@ -153,7 +153,7 @@ void     FixupTransparentColorsAfter256ColorDibUpgrade(
     HBITMAP hBitmap, COLORREF crTrans);
 void    GetDIBSectDimensions(HBITMAP hBitmap, int& rWidth, int& rHeight);
 
-HBITMAP Create16BitDIBSection(HDC hDC, int nWidth, int nHeight);
+HBITMAP Create16BitDIBSection(int nWidth, int nHeight);
 HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight);
 HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight);
 HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock);
@@ -165,7 +165,7 @@ COLORREF Get16BitDIBSectPixel(HBITMAP hBitmap, int x, int y);
 
 BOOL Is16BitDIBSectInvisible(HBITMAP hBitmap, COLORREF crTrans, int y = -1, int nHeight = 0);
 
-HBITMAP CreateRGBDIBSection(HDC hDC, int nWidth, int nHeight);
+HBITMAP CreateRGBDIBSection(int nWidth, int nHeight);
 HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight);
 HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 

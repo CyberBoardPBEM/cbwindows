@@ -153,7 +153,7 @@ void CTileSheet::CreateTile()
         SetupPalette(g_gt.mDC2);
 
         OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
-        pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        pBMap->Attach(Create16BitDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight));
         ASSERT(pBMap->m_hObject != NULL);
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
@@ -175,7 +175,7 @@ void CTileSheet::CreateTile()
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
         m_pBMap = MakeOwner<CBitmap>();
         SetupPalette(g_gt.mDC1);
-        m_pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        m_pBMap->Attach(Create16BitDIBSection(
             m_size.cx, m_size.cy));
         g_gt.mDC1.SelectObject(m_pBMap.get());
         g_gt.mDC1.PatBlt(0, 0, m_size.cx, m_size.cy, WHITENESS);
@@ -208,7 +208,7 @@ void CTileSheet::DeleteTile(int yLoc)
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
         SetupPalette(g_gt.mDC2);
 
-        pBMap->Attach(Create16BitDIBSection(g_gt.mDC2.m_hDC,
+        pBMap->Attach(Create16BitDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight));
 
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
@@ -264,7 +264,7 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 
     if (bmap.bmBits != NULL)                // DIB Section check
     {
-        pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        pBMap->Attach(Create16BitDIBSection(
             m_size.cx, m_size.cy));
     }
     else

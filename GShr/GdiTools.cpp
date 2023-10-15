@@ -1,6 +1,6 @@
 // GdiTools.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -148,42 +148,34 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 // Creates a 16 bit DIB section that is 16 bits per pixel
 // in 5-6-5 format.
 
-HBITMAP Create16BitDIBSection(HDC hDC, int nWidth, int nHeight)
+HBITMAP Create16BitDIBSection(int nWidth, int nHeight)
 {
     BYTE bih[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
     BITMAPINFO* pbmi = (BITMAPINFO*)&bih;
     InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi, nWidth, nHeight, uint16_t(16));
     InitColorTableMasksIfReqd(pbmi);
 
-    HDC hLocalDC = hDC == NULL ? GetDC(NULL) : hDC;   // Get a DC if one not supplied
-
     VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(hLocalDC, pbmi, DIB_RGB_COLORS,
+    HBITMAP hBmap = CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS,
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 
-    if (hDC == NULL)
-        ReleaseDC(NULL, hLocalDC);
     return hBmap;
 }
 
 /////////////////////////////////////////////////////////////////
 // Creates a 24 bit DIB section.
 
-HBITMAP CreateRGBDIBSection(HDC hDC, int nWidth, int nHeight)
+HBITMAP CreateRGBDIBSection(int nWidth, int nHeight)
 {
     BITMAPINFOHEADER bih;
     InitBitmapInfoHeader(&bih, nWidth, nHeight, uint16_t(24));
 
-    HDC hLocalDC = hDC == NULL ? GetDC(NULL) : hDC;   // Get a DC if one not supplied
-
     VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(hLocalDC, (LPBITMAPINFO)&bih, DIB_RGB_COLORS,
+    HBITMAP hBmap = CreateDIBSection(NULL, (LPBITMAPINFO)&bih, DIB_RGB_COLORS,
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 
-    if (hDC == NULL)
-        ReleaseDC(NULL, hLocalDC);
     return hBmap;
 }
 
@@ -203,7 +195,7 @@ static void InitializeNtColorMapper()
     if (s_hDibSect == NULL)
     {
         // Need to init the mapping DIB section
-        s_hDibSect = Create16BitDIBSection(NULL, 1, 1);
+        s_hDibSect = Create16BitDIBSection(1, 1);
         ASSERT(s_hDibSect != NULL);
         s_hDCDibSect = CreateCompatibleDC(NULL);
         ASSERT(s_hDCDibSect != NULL);
@@ -408,7 +400,7 @@ void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLO
 
 HBITMAP Create16BitColorSweep()
 {
-    HBITMAP hBitmap = Create16BitDIBSection(NULL, 256, 48);
+    HBITMAP hBitmap = Create16BitDIBSection(256, 48);
     for (int color = 0; color < 256; color++)
         Set16BitDIBSectPixelBlock(hBitmap, color,  0, 1, 16, RGB(color, 0, 0));
     for (int color = 0; color < 256; color++)
@@ -422,7 +414,7 @@ HBITMAP Create16BitColorSweep()
 
 HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight)
 {
-    HBITMAP hBitmap = Create16BitDIBSection(NULL, nHueDivisions, nHeight);
+    HBITMAP hBitmap = Create16BitDIBSection(nHueDivisions, nHeight);
     ASSERT(hBitmap != NULL);
 
     double  dh;
@@ -441,7 +433,7 @@ HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight)
 
 HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    HBITMAP hBitmap = Create16BitDIBSection(NULL, nWidth, nHeight);
+    HBITMAP hBitmap = Create16BitDIBSection(nWidth, nHeight);
     ASSERT(hBitmap != NULL);
 
     COLORREF cref;
@@ -461,7 +453,7 @@ HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
 
 HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight)
 {
-    HBITMAP hBitmap = CreateRGBDIBSection(NULL, nHueDivisions, nHeight);
+    HBITMAP hBitmap = CreateRGBDIBSection(nHueDivisions, nHeight);
     ASSERT(hBitmap != NULL);
 
     COLORREF cref;
@@ -476,7 +468,7 @@ HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight)
 
 HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    HBITMAP hBitmap = CreateRGBDIBSection(NULL, nWidth, nHeight);
+    HBITMAP hBitmap = CreateRGBDIBSection(nWidth, nHeight);
     ASSERT(hBitmap != NULL);
 
     COLORREF cref;
@@ -499,7 +491,7 @@ HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBl
     int nHueVSteps = nHueVertSteps / 2 + (nHueVertSteps & 1);   // In case odd
     int nHueSSteps = nHueVertSteps / 2;
 
-    HBITMAP hBitmap = Create16BitDIBSection(NULL,
+    HBITMAP hBitmap = Create16BitDIBSection(
         nHues * cxBlock, nHueVertSteps * cyBlock);
     ASSERT(hBitmap != NULL);
 
@@ -588,8 +580,7 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
 
     if (bmInfo.bmBits != NULL)
     {
-        g_gt.mDC1.SelectObject(pbmSrc);
-        HBITMAP hBmap = Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        HBITMAP hBmap = Create16BitDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
         BITMAP bmap;
         memset(&bmap, 0, sizeof(BITMAP));
@@ -638,7 +629,7 @@ void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
 
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
-        pbmDst->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        pbmDst->Attach(Create16BitDIBSection(
             rct.Width(), rct.Height()));
     }
     else
@@ -703,7 +694,7 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
 
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
-        pbmDst->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        pbmDst->Attach(Create16BitDIBSection(
             size.cx, size.cy));
     }
     else
@@ -729,7 +720,7 @@ OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
     OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
     CBrush brush(cr);
 
-    pBMap->Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC, size.cx, size.cy));
+    pBMap->Attach(Create16BitDIBSection(size.cx, size.cy));
     g_gt.mDC1.SelectObject(&*pBMap);
     SetupPalette(g_gt.mDC1);
 
@@ -809,7 +800,7 @@ void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono)
     BITMAP  bmapMInfo;
 
     GetObject(hBMapMono, sizeof(BITMAP), &bmapMInfo);
-    HBITMAP hBMapNew = Create16BitDIBSection(hDC,
+    HBITMAP hBMapNew = Create16BitDIBSection(
         bmapMInfo.bmWidth, bmapMInfo.bmHeight);
 
     SelectObject(g_gt.mTileDC.m_hDC, hBMapNew);

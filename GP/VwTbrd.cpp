@@ -165,7 +165,7 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    bmMem.Attach(Create16BitDIBSection(pDC->m_hDC, oRct.Width(), oRct.Height()));
+    bmMem.Attach(Create16BitDIBSection(oRct.Width(), oRct.Height()));
     dcMem.CreateCompatibleDC(pDC);
     pPrvBMap = dcMem.SelectObject(&bmMem);
     dcMem.PatBlt(0, 0, oRct.Width(), oRct.Height(), WHITENESS);
@@ -218,7 +218,7 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
 
     CSize size = m_pPBoard->GetBoard()->GetSize(smallScale);
 
-    bmap.Attach(Create16BitDIBSection(pDC->m_hDC, size.cx, size.cy));
+    bmap.Attach(Create16BitDIBSection(size.cx, size.cy));
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&bmap);
     SetupPalette(dcMem);
@@ -247,7 +247,7 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
 
     CBoard* pBoard = m_pPBoard->GetBoard();
     CSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
-    m_pBMap->Attach(Create16BitDIBSection(pDC->m_hDC, size.cx, size.cy));
+    m_pBMap->Attach(Create16BitDIBSection(size.cx, size.cy));
 
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);

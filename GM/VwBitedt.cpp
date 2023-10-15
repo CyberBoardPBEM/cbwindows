@@ -202,7 +202,7 @@ void CBitEditView::OnDraw(CDC* pDC)
     if (m_bGridVisible && m_nZoom > 2)
     {
         CBitmap bmTmp;
-        bmTmp.Attach(Create16BitDIBSection(g_gt.mDC1.m_hDC,
+        bmTmp.Attach(Create16BitDIBSection(
             size.cx + 1, size.cy + 1));
         SetupPalette(g_gt.mDC2);
         g_gt.mDC2.SelectObject(&bmTmp);

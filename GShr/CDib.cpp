@@ -186,10 +186,10 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRU
         memDC.RealizePalette();
 
         HBITMAP hDibSect =
-            Create16BitDIBSection(memDC.m_hDC, pbmiDib->bmiHeader.biWidth,
+            Create16BitDIBSection(pbmiDib->bmiHeader.biWidth,
             pbmiDib->bmiHeader.biHeight);
 
-        SetDIBits(memDC.m_hDC, hDibSect, 0,
+        SetDIBits(NULL, hDibSect, 0,
             pbmiDib->bmiHeader.biHeight, FindDIBBits(pbmiDib), pbmiDib,
             DIB_RGB_COLORS);
 
@@ -311,4 +311,3 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
     }
     return ar;
 }
-
