@@ -98,6 +98,7 @@ public:
     // ---------- /
     explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
     OwnerPtr<CBitmap> DIBToBitmap() const;
+#ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
         int xSrc, int ySrc, int cxSrc, int cySrc) const
     {
@@ -105,11 +106,14 @@ public:
             xSrc, ySrc, cxSrc, cySrc, FindBits(), &GetBmi(), DIB_RGB_COLORS,
             SRCCOPY);
     }
+#endif
     // ---------- //
     int Height() const { return m_hDib.get().biHeight; }
     int Width() const { return m_hDib.get().biWidth; }
     int NumColorBits() const { return m_hDib.get().biBitCount; }
+#ifdef WE_WANT_THIS_STUFF_DLL940113
     const BITMAPINFO& GetBmi() const { return m_hDib; }
+#endif
     const void* FindBits() const { return m_hDib.GetBits(); }
     void* FindBits() { return m_hDib.GetBits(); }
     // ---------- for 16bit/pixel Dibs only -------------- //

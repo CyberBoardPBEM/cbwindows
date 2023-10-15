@@ -863,6 +863,7 @@ OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& p
     return palNew;
 }
 
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 // ----------------------------------------------------------- //
 // Assumes bitmap and palette of dest DC has been selected
 // and realized.
@@ -918,6 +919,7 @@ void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
     pBMap->DeleteObject();
     pBMap->Attach(bmap.Detach());
 }
+#endif
 
 // ----------------------------------------------------------- //
 

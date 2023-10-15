@@ -197,20 +197,22 @@ OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
 
 CPalette* GetAppPalette();
 
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
     CPalette* pPalNew = NULL);
 void AppendBitmap(CBitmap *pBMapTo, CBitmap *pBMapFrm, CPalette *pPalTo,
     CPalette *pPalFrm);
 void RemoveBitmapSlice(CBitmap *pBMap, int yPos, int iHt, CPalette *pPal = NULL);
-#ifdef WE_WANT_THIS_STUFF_DLL940113
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
 #endif
 OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec);
 void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
 void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe);
 void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
     CDC& pDCSrc, const CPalette *pPalSrc, const CBitmap& pBMap, int xSrc, int ySrc);
+#endif
 
 OwnerPtr<CBrush> Clone(const CBrush& brush);
 
