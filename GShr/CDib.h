@@ -25,6 +25,8 @@
 #ifndef _CDIB_H
 #define _CDIB_H
 
+class CDib
+{
 // this includes the palette and pixel data
 class CBITMAPINFOHEADER
 {
@@ -76,16 +78,6 @@ public:
     // don't use void* except for serialize-in
     operator void*();
 
-    // convert bits to uint32_t aligned bytes
-    static size_t BitsToBytes(size_t i)
-    {
-        return ((i + size_t(31)) & size_t(~31)) / size_t(8);
-    }
-    static size_t BitsToBytes(LONG i)
-    {
-        return BitsToBytes(value_preserving_cast<size_t>(i));
-    }
-
 private:
     static WORD GetPaletteSize(const BITMAPINFOHEADER& lpbi);
     static WORD GetNumColors(const BITMAPINFOHEADER& lpbi);
@@ -93,13 +85,6 @@ private:
     std::vector<std::byte> buf;
 };
 
-inline size_t WidthBytes(const BITMAPINFOHEADER& bmi)
-{
-    return CBITMAPINFOHEADER::BitsToBytes(bmi.biWidth * bmi.biBitCount);
-}
-
-class CDib
-{
 public:
     CDib() { m_nCompressLevel = 0; }
     CDib(const CDib&) = delete;
@@ -124,7 +109,6 @@ public:
     int Height() const { return m_hDib.get().biHeight; }
     int Width() const { return m_hDib.get().biWidth; }
     int NumColorBits() const { return m_hDib.get().biBitCount; }
-    const BITMAPINFOHEADER& GetBmiHdr() const { return m_hDib; }
     const BITMAPINFO& GetBmi() const { return m_hDib; }
     const void* FindBits() const { return m_hDib.GetBits(); }
     void* FindBits() { return m_hDib.GetBits(); }
@@ -135,6 +119,27 @@ public:
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
     // ---------- //
+
+    size_t WidthBytes() const
+    {
+        const BITMAPINFOHEADER& bmi = m_hDib;
+        return BitsToBytes(bmi.biWidth * bmi.biBitCount);
+    }
+
+    // convert bits to uint32_t aligned bytes
+    static size_t BitsToBytes(size_t i)
+    {
+        return ((i + size_t(31)) & size_t(~31)) / size_t(8);
+    }
+    static size_t BitsToBytes(LONG i)
+    {
+        return BitsToBytes(value_preserving_cast<size_t>(i));
+    }
+
+    static size_t WidthBytes(const BITMAPINFOHEADER& bmi)
+    {
+        return BitsToBytes(bmi.biWidth * bmi.biBitCount);
+    }
 
     static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP = uint16_t(16));
 

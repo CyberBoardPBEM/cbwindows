@@ -273,7 +273,7 @@ static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans)
     CDib pDib(size.cx, size.cy, 16);
     WORD cr16Trans = RGB565(crTrans);
     // Number of pixels (words) to fill
-    size_t nBfrLen = (value_preserving_cast<size_t>(pDib.Height()) * WidthBytes(pDib.GetBmiHdr())) / sizeof(uint16_t);
+    size_t nBfrLen = (value_preserving_cast<size_t>(pDib.Height()) * pDib.WidthBytes()) / sizeof(uint16_t);
     uint16_t* pwBfr = static_cast<uint16_t*>(pDib.FindBits());
     while (nBfrLen--)
         *pwBfr++ = cr16Trans;

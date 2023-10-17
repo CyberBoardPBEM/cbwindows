@@ -150,17 +150,7 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 
 OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 {
-    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
-
-    CBITMAPINFOHEADER bmi(nWidth, nHeight, uint16_t(16));
-
-    VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(NULL, bmi, DIB_RGB_COLORS,
-        &pBits, NULL, 0);
-    ASSERT(hBmap != NULL);
-
-    retval->Attach(hBmap);
-    return retval;
+    return CDib::CreateDIBSection(nWidth, nHeight, uint16_t(16));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -168,17 +158,7 @@ OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
 {
-    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
-
-    CBITMAPINFOHEADER bmi(nWidth, nHeight, uint16_t(24));
-
-    VOID* pBits;
-    HBITMAP hBmap = CreateDIBSection(NULL, &reinterpret_cast<BITMAPINFO&>(static_cast<BITMAPINFOHEADER&>(bmi)), DIB_RGB_COLORS,
-        &pBits, NULL, 0);
-    ASSERT(hBmap != NULL);
-
-    retval->Attach(hBmap);
-    return retval;
+    return CDib::CreateDIBSection(nWidth, nHeight, uint16_t(24));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -284,7 +264,7 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
     // ASSERT(dibSect.dsBmih.biBitCount == 16);
 
-    size_t dwWidthBytes = WidthBytes(dibSect.dsBmih);
+    size_t dwWidthBytes = CDib::WidthBytes(dibSect.dsBmih);
     LPBYTE pBits = (LPBYTE)dibSect.dsBm.bmBits;
     pBits += value_preserving_cast<ptrdiff_t>((dwWidthBytes * value_preserving_cast<size_t>(dibSect.dsBmih.biHeight - y - 1)) +
         value_preserving_cast<size_t>(x * dibSect.dsBmih.biBitCount / 8));
@@ -583,7 +563,7 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
         memset(&bmap, 0, sizeof(BITMAP));
         GetObject(*pbmDst, sizeof(BITMAP), &bmap);
         // How many bytes in the image data?
-        size_t dwBitsSize = value_preserving_cast<size_t>(bmap.bmHeight) * CBITMAPINFOHEADER::BitsToBytes(bmap.bmWidth * bmap.bmPlanes *
+        size_t dwBitsSize = value_preserving_cast<size_t>(bmap.bmHeight) * CDib::BitsToBytes(bmap.bmWidth * bmap.bmPlanes *
             bmap.bmBitsPixel);
 
         // Copy the bits
@@ -764,9 +744,9 @@ void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans)
     int ySrc = 0;
 
     ASSERT(bmapSrc.bmBitsPixel == 16);
-    int nBytesPerScanLineSrc = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapSrc.bmWidth * 16));
+    int nBytesPerScanLineSrc = value_preserving_cast<int>(CDib::BitsToBytes(bmapSrc.bmWidth * 16));
     ASSERT(bmapDest.bmBitsPixel == 16);
-    int nBytesPerScanLineDest = value_preserving_cast<int>(CBITMAPINFOHEADER::BitsToBytes(bmapDest.bmWidth * 16));
+    int nBytesPerScanLineDest = value_preserving_cast<int>(CDib::BitsToBytes(bmapDest.bmWidth * 16));
     for (int nScanLine = 0; nScanLine < size.cy; nScanLine++)
     {
         xDst = xDstBase;

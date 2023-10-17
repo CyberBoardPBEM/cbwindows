@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 
 ///////////////////////////////////////////////////////////////
 
-CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount)
 {
     switch (wBitCount)
     {
@@ -75,7 +75,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t
     }
 }
 
-CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
 {
     if (!hBitmap)
     {
@@ -129,7 +129,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nB
         }
 
         LPVOID pBits = NULL;
-        HBITMAP hBmapSect = CreateDIBSection(hMemDCSrc, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
+        HBITMAP hBmapSect = ::CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
         if (hBmapSect != NULL)
         {
             HDC hMemDCSect = CreateCompatibleDC(hMemDCScreen);
@@ -211,7 +211,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nB
     *this = std::move(hDIB);
 }
 
-CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hDibSect)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hDibSect)
 {
     DIBSECTION dibSect;
     if (!GetObject(hDibSect, sizeof(dibSect), &dibSect))
@@ -234,7 +234,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hDibSect)
     memcpy(GetBits(), dibSect.dsBm.bmBits, dibSect.dsBmih.biSizeImage);
 }
 
-CBITMAPINFOHEADER::operator bool() const
+CDib::CBITMAPINFOHEADER::operator bool() const
 {
     if (buf.size() < sizeof(BITMAPINFOHEADER))
     {
@@ -246,7 +246,7 @@ CBITMAPINFOHEADER::operator bool() const
     return retval->biSize == sizeof(BITMAPINFOHEADER);
 }
 
-const BITMAPINFOHEADER& CBITMAPINFOHEADER::get() const
+const BITMAPINFOHEADER& CDib::CBITMAPINFOHEADER::get() const
 {
     if (!*this)
     {
@@ -255,7 +255,7 @@ const BITMAPINFOHEADER& CBITMAPINFOHEADER::get() const
     return *reinterpret_cast<const BITMAPINFOHEADER*>(buf.data());
 }
 
-CBITMAPINFOHEADER::operator const BITMAPINFO&() const
+CDib::CBITMAPINFOHEADER::operator const BITMAPINFO&() const
 {
     const BITMAPINFOHEADER& retval = *this;
     if (retval.biBitCount > 16)
@@ -265,14 +265,14 @@ CBITMAPINFOHEADER::operator const BITMAPINFO&() const
     return reinterpret_cast<const BITMAPINFO&>(retval);
 }
 
-const void* CBITMAPINFOHEADER::GetBits() const
+const void* CDib::CBITMAPINFOHEADER::GetBits() const
 {
     const BITMAPINFOHEADER& lpbi = *this;
     ASSERT(lpbi.biSize == sizeof(lpbi));
     return(reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi));
 }
 
-const void* CBITMAPINFOHEADER::DibXY(ptrdiff_t x, ptrdiff_t y) const
+const void* CDib::CBITMAPINFOHEADER::DibXY(ptrdiff_t x, ptrdiff_t y) const
 {
     const BITMAPINFOHEADER& lpbi = *this;
     const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi);
@@ -281,7 +281,7 @@ const void* CBITMAPINFOHEADER::DibXY(ptrdiff_t x, ptrdiff_t y) const
     return pBits;
 }
 
-void CBITMAPINFOHEADER::reserve(size_t s)
+void CDib::CBITMAPINFOHEADER::reserve(size_t s)
 {
     ASSERT(buf.empty() && s >= sizeof(BITMAPINFO));
     buf.resize(s);
@@ -289,7 +289,7 @@ void CBITMAPINFOHEADER::reserve(size_t s)
 }
 
 // don't use void* except for serialize-in
-CBITMAPINFOHEADER::operator void*()
+CDib::CBITMAPINFOHEADER::operator void*()
 {
     if (*this ||
         buf.size() < sizeof(BITMAPINFOHEADER))
@@ -301,7 +301,7 @@ CBITMAPINFOHEADER::operator void*()
 
 ///////////////////////////////////////////////////////////////////////
 
-uint16_t CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
+uint16_t CDib::CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
 {
     if (lpbi.biBitCount == 24)
     {
@@ -315,7 +315,7 @@ uint16_t CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
 
 ///////////////////////////////////////////////////////////////////////
 
-uint16_t CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
+uint16_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
 {
     // check for explicit count
     if (lpbi.biClrUsed != 0)
@@ -418,6 +418,24 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap() const
             Height() == pbmiDib.bmiHeader.biHeight);
     pBMap->SetBitmapDimension(Width(), Height());
     return pBMap;
+}
+
+OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP /*= uint16_t(16)*/)
+{
+    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
+
+    CBITMAPINFOHEADER bmi(nWidth, nHeight, nBPP);
+
+    VOID* pBits;
+    HBITMAP hBmap = ::CreateDIBSection(NULL, bmi, DIB_RGB_COLORS,
+        &pBits, NULL, 0);
+    if (!hBmap)
+    {
+        AfxThrowMemoryException();
+    }
+
+    retval->Attach(hBmap);
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -562,7 +580,7 @@ OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
             dibSect.dsBitfields[0] == 0xf800 &&
             dibSect.dsBitfields[1] == 0x07e0 &&
             dibSect.dsBitfields[2] == 0x001f);
-    size_t lineBytes = WidthBytes(dibSect.dsBmih);
+    size_t lineBytes = CDib::WidthBytes(dibSect.dsBmih);
 
     uint16_t* lineStart = static_cast<uint16_t*>(dibSect.dsBm.bmBits);
     for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
