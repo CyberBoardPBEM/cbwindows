@@ -145,50 +145,28 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(
 
 OwnerPtr<CBitmap> CDib::DIBToBitmap(const CPalette *pPal, BOOL bDibSect /* = TRUE */) const
 {
-    if (bDibSect)
-    {
-        // This weird code is used to xfer the dib into a dib section
-        // having a standard color table.
-        BITMAPINFO* pbmiDib = (BITMAPINFO*)m_lpDib;
-        CWindowDC scrnDC(NULL);
-        CDC memDC;
-        memDC.CreateCompatibleDC(&scrnDC);
-        CPalette* prvPal = memDC.SelectPalette(GetAppPalette(), FALSE);
-        memDC.RealizePalette();
+    // This weird code is used to xfer the dib into a dib section
+    // having a standard color table.
+    BITMAPINFO* pbmiDib = (BITMAPINFO*)m_lpDib;
+    CWindowDC scrnDC(NULL);
+    CDC memDC;
+    memDC.CreateCompatibleDC(&scrnDC);
+    CPalette* prvPal = memDC.SelectPalette(GetAppPalette(), FALSE);
+    memDC.RealizePalette();
 
-        HBITMAP hDibSect =
-            Create16BitDIBSection(pbmiDib->bmiHeader.biWidth,
-            pbmiDib->bmiHeader.biHeight);
+    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib->bmiHeader.biWidth,
+        pbmiDib->bmiHeader.biHeight);
 
-        SetDIBits(NULL, hDibSect, 0,
-            pbmiDib->bmiHeader.biHeight, FindDIBBits(pbmiDib), pbmiDib,
-            DIB_RGB_COLORS);
+    SetDIBits(NULL, *pBMap, 0,
+        pbmiDib->bmiHeader.biHeight, FindDIBBits(pbmiDib), pbmiDib,
+        DIB_RGB_COLORS);
 
-        memDC.SelectPalette(prvPal, FALSE);
+    memDC.SelectPalette(prvPal, FALSE);
 
-        OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
-        pBMap->Attach((HGDIOBJ)hDibSect);
-        ASSERT(Width() == pbmiDib->bmiHeader.biWidth &&
-                Height() == pbmiDib->bmiHeader.biHeight);
-        pBMap->SetBitmapDimension(Width(), Height());
-        return pBMap;
-
-    }
-    else
-    {
-        HBITMAP hBMap = ::DIBToBitmap(m_hDib,
-            (HPALETTE)(pPal ? pPal->m_hObject : NULL));
-        ASSERT(hBMap != NULL);
-        if (hBMap != NULL)
-        {
-            OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
-            pBMap->Attach((HGDIOBJ)hBMap);
-            pBMap->SetBitmapDimension(Width(), Height());
-            return pBMap;
-        }
-        else
-            AfxThrowInvalidArgException();
-    }
+    ASSERT(Width() == pbmiDib->bmiHeader.biWidth &&
+            Height() == pbmiDib->bmiHeader.biHeight);
+    pBMap->SetBitmapDimension(Width(), Height());
+    return pBMap;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -327,16 +305,10 @@ OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
         AfxThrowNotSupportedException();
     }
 
-    OwnerPtr<CBitmap> retval(MakeOwner<CBitmap>());
-    HBITMAP hbmp = Create16BitDIBSection(img.GetWidth(), img.GetHeight());
-    if (!hbmp)
-    {
-        AfxThrowMemoryException();
-    }
-    retval->Attach(hbmp);
+    OwnerPtr<CBitmap> retval = Create16BitDIBSection(img.GetWidth(), img.GetHeight());
 
     DIBSECTION dibSect;
-    VERIFY(GetObject(hbmp, sizeof(DIBSECTION), &dibSect));
+    VERIFY(GetObject(*retval, sizeof(DIBSECTION), &dibSect));
     ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
             dibSect.dsBm.bmHeight == img.GetHeight() &&
             dibSect.dsBmih.biBitCount == 16 &&

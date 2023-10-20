@@ -148,8 +148,10 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 // Creates a 16 bit DIB section that is 16 bits per pixel
 // in 5-6-5 format.
 
-HBITMAP Create16BitDIBSection(int nWidth, int nHeight)
+OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 {
+    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
+
     BYTE bih[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
     BITMAPINFO* pbmi = (BITMAPINFO*)&bih;
     InitBitmapInfoHeader((BITMAPINFOHEADER*)pbmi, nWidth, nHeight, uint16_t(16));
@@ -160,14 +162,17 @@ HBITMAP Create16BitDIBSection(int nWidth, int nHeight)
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 
-    return hBmap;
+    retval->Attach(hBmap);
+    return retval;
 }
 
 /////////////////////////////////////////////////////////////////
 // Creates a 24 bit DIB section.
 
-HBITMAP CreateRGBDIBSection(int nWidth, int nHeight)
+OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
 {
+    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
+
     BITMAPINFOHEADER bih;
     InitBitmapInfoHeader(&bih, nWidth, nHeight, uint16_t(24));
 
@@ -176,7 +181,8 @@ HBITMAP CreateRGBDIBSection(int nWidth, int nHeight)
         &pBits, NULL, 0);
     ASSERT(hBmap != NULL);
 
-    return hBmap;
+    retval->Attach(hBmap);
+    return retval;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -186,7 +192,7 @@ HBITMAP CreateRGBDIBSection(int nWidth, int nHeight)
 // a different mapping scheme than NT machines. This does this by
 // passing the RGB colors through a single pixel DIB section.
 
-static HBITMAP s_hDibSect = NULL;
+static OwnerOrNullPtr<CBitmap> s_hDibSect;
 static HDC     s_hDCDibSect = NULL;
 static LPWORD  s_pPixel = NULL;
 
@@ -199,8 +205,8 @@ static void InitializeNtColorMapper()
         ASSERT(s_hDibSect != NULL);
         s_hDCDibSect = CreateCompatibleDC(NULL);
         ASSERT(s_hDCDibSect != NULL);
-        VERIFY(SelectObject(s_hDCDibSect, s_hDibSect) != NULL);
-        s_pPixel = (LPWORD)GetDIBSectXYLoc(s_hDibSect, 0, 0);
+        VERIFY(SelectObject(s_hDCDibSect, *s_hDibSect) != NULL);
+        s_pPixel = (LPWORD)GetDIBSectXYLoc(*s_hDibSect, 0, 0);
         ASSERT(s_pPixel != NULL);
     }
 }
@@ -398,24 +404,23 @@ void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLO
 
 /////////////////////////////////////////////////////////////////
 
-HBITMAP Create16BitColorSweep()
+OwnerPtr<CBitmap> Create16BitColorSweep()
 {
-    HBITMAP hBitmap = Create16BitDIBSection(256, 48);
+    OwnerPtr<CBitmap> hBitmap = Create16BitDIBSection(256, 48);
     for (int color = 0; color < 256; color++)
-        Set16BitDIBSectPixelBlock(hBitmap, color,  0, 1, 16, RGB(color, 0, 0));
+        Set16BitDIBSectPixelBlock(*hBitmap, color,  0, 1, 16, RGB(color, 0, 0));
     for (int color = 0; color < 256; color++)
-        Set16BitDIBSectPixelBlock(hBitmap, color, 16, 1, 16, RGB(0, color, 0));
+        Set16BitDIBSectPixelBlock(*hBitmap, color, 16, 1, 16, RGB(0, color, 0));
     for (int color = 0; color < 256; color++)
-        Set16BitDIBSectPixelBlock(hBitmap, color, 32 , 1, 16, RGB(0, 0, color));
+        Set16BitDIBSectPixelBlock(*hBitmap, color, 32 , 1, 16, RGB(0, 0, color));
     return hBitmap;
 }
 
 /////////////////////////////////////////////////////////////////
 
-HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight)
+OwnerPtr<CBitmap> Create16BitColorBar(int nHueDivisions, int nHeight)
 {
-    HBITMAP hBitmap = Create16BitDIBSection(nHueDivisions, nHeight);
-    ASSERT(hBitmap != NULL);
+    OwnerPtr<CBitmap> hBitmap = Create16BitDIBSection(nHueDivisions, nHeight);
 
     double  dh;
     double  r, g, b;
@@ -426,15 +431,14 @@ HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight)
         dh = 359.0 * h / (double)(nHueDivisions - 1);
         HSVtoRGB(dh, 1.0, 1.0, r, g, b);
         cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
-        Set16BitDIBSectPixelBlock(hBitmap, h, 0, 1, nHeight, cref);
+        Set16BitDIBSectPixelBlock(*hBitmap, h, 0, 1, nHeight, cref);
     }
     return hBitmap;
 }
 
-HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
+OwnerPtr<CBitmap> Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    HBITMAP hBitmap = Create16BitDIBSection(nWidth, nHeight);
-    ASSERT(hBitmap != NULL);
+    OwnerPtr<CBitmap> hBitmap = Create16BitDIBSection(nWidth, nHeight);
 
     COLORREF cref;
 
@@ -443,7 +447,7 @@ HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
         for (int y = 0; y < nHeight; y++)
         {
             cref = HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1));
-            Set16BitDIBSectPixel(hBitmap, x, y, cref);
+            Set16BitDIBSectPixel(*hBitmap, x, y, cref);
         }
     }
     return hBitmap;
@@ -451,25 +455,23 @@ HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight)
 
 /////////////////////////////////////////////////////////////////
 
-HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight)
+OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
 {
-    HBITMAP hBitmap = CreateRGBDIBSection(nHueDivisions, nHeight);
-    ASSERT(hBitmap != NULL);
+    OwnerPtr<CBitmap> hBitmap = CreateRGBDIBSection(nHueDivisions, nHeight);
 
     COLORREF cref;
 
     for (int h = 0; h < nHueDivisions; h++)
     {
         cref = HSVtoRGB((h * 359) / (nHueDivisions - 1), 255, 255);
-        SetRGBDIBSectPixelBlock(hBitmap, h, 0, 1, nHeight, cref);
+        SetRGBDIBSectPixelBlock(*hBitmap, h, 0, 1, nHeight, cref);
     }
     return hBitmap;
 }
 
-HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
+OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    HBITMAP hBitmap = CreateRGBDIBSection(nWidth, nHeight);
-    ASSERT(hBitmap != NULL);
+    OwnerPtr<CBitmap> hBitmap = CreateRGBDIBSection(nWidth, nHeight);
 
     COLORREF cref;
 
@@ -478,7 +480,7 @@ HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
         for (int y = 0; y < nHeight; y++)
         {
             cref = HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1));
-            SetRGBDIBSectPixel(hBitmap, x, y, cref);
+            SetRGBDIBSectPixel(*hBitmap, x, y, cref);
         }
     }
     return hBitmap;
@@ -486,14 +488,13 @@ HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
 
 /////////////////////////////////////////////////////////////////
 
-HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock)
+OwnerPtr<CBitmap> Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock)
 {
     int nHueVSteps = nHueVertSteps / 2 + (nHueVertSteps & 1);   // In case odd
     int nHueSSteps = nHueVertSteps / 2;
 
-    HBITMAP hBitmap = Create16BitDIBSection(
+    OwnerPtr<CBitmap> hBitmap = Create16BitDIBSection(
         nHues * cxBlock, nHueVertSteps * cyBlock);
-    ASSERT(hBitmap != NULL);
 
     // Generate the color wash bitmap...
 
@@ -510,14 +511,14 @@ HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBl
         {
             HSVtoRGB(dh,  1.0, (double)v / nHueVSteps, r, g, b);
             cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
-            Set16BitDIBSectPixelBlock(hBitmap, x, y, cxBlock, cyBlock, cref);
+            Set16BitDIBSectPixelBlock(*hBitmap, x, y, cxBlock, cyBlock, cref);
             y += cyBlock;
         }
         for (int s = 1; s < nHueSSteps + 1; s++)
         {
             HSVtoRGB(dh, 1.0 - (double)s / (nHueSSteps + 1), 1.0, r, g, b);
             cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
-            Set16BitDIBSectPixelBlock(hBitmap, x, y, cxBlock, cyBlock, cref);
+            Set16BitDIBSectPixelBlock(*hBitmap, x, y, cxBlock, cyBlock, cref);
             y += cyBlock;
         }
         x += cxBlock;
@@ -580,11 +581,11 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
 
     if (bmInfo.bmBits != NULL)
     {
-        HBITMAP hBmap = Create16BitDIBSection(
+        pbmDst = Create16BitDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
         BITMAP bmap;
         memset(&bmap, 0, sizeof(BITMAP));
-        GetObject(hBmap, sizeof(BITMAP), &bmap);
+        GetObject(*pbmDst, sizeof(BITMAP), &bmap);
         // How many bytes in the image data?
         DWORD dwBitsSize = bmap.bmHeight * WIDTHBYTES(bmap.bmWidth * bmap.bmPlanes *
             bmap.bmBitsPixel);
@@ -592,7 +593,6 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
         // Copy the bits
         memcpy(bmap.bmBits, bmInfo.bmBits, dwBitsSize);
 
-        pbmDst->Attach(hBmap);
         g_gt.ClearMemDCBitmaps();
     }
     else
@@ -630,7 +630,7 @@ OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
         pbmDst->Attach(Create16BitDIBSection(
-            rct.Width(), rct.Height()));
+            rct.Width(), rct.Height())->Detach());
     }
     else
     {
@@ -696,8 +696,8 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
 
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
-        pbmDst->Attach(Create16BitDIBSection(
-            size.cx, size.cy));
+        pbmDst = Create16BitDIBSection(
+            size.cx, size.cy);
     }
     else
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, size.cx, size.cy);
@@ -719,10 +719,9 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
 
 OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
 {
-    OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
     CBrush brush(cr);
 
-    pBMap->Attach(Create16BitDIBSection(size.cx, size.cy));
+    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(size.cx, size.cy);
     g_gt.mDC1.SelectObject(&*pBMap);
     SetupPalette(g_gt.mDC1);
 
@@ -802,10 +801,10 @@ void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono)
     BITMAP  bmapMInfo;
 
     GetObject(hBMapMono, sizeof(BITMAP), &bmapMInfo);
-    HBITMAP hBMapNew = Create16BitDIBSection(
+    OwnerPtr<CBitmap> hBMapNew = Create16BitDIBSection(
         bmapMInfo.bmWidth, bmapMInfo.bmHeight);
 
-    SelectObject(g_gt.mTileDC.m_hDC, hBMapNew);
+    SelectObject(g_gt.mTileDC.m_hDC, *hBMapNew);
     SetupPalette(g_gt.mTileDC);
     g_gt.mTileDC.SetBkColor(RGB(255, 255, 255));
     g_gt.mTileDC.SetTextColor(RGB(0, 0, 0));
@@ -813,7 +812,7 @@ void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono)
     BitBlt(g_gt.mTileDC.m_hDC, 0, 0, bmapMInfo.bmWidth, bmapMInfo.bmHeight,
         hDC, 0, 0, SRCCOPY);
     g_gt.SelectSafeObjectsForTileDC();
-    hBMapMono = (HBITMAP)SelectObject(hDC, hBMapNew);
+    hBMapMono = (HBITMAP)SelectObject(hDC, hBMapNew->Detach());
     if (bDelMono)
         DeleteObject(hBMapMono);
 }

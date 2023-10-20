@@ -41,7 +41,7 @@ public:
 // Implementation
 protected:
     CPlayBoard* m_pPBoard;          // The playing board we are viewing
-    CBitmap*    m_pBMap;            // Cached predrawn board bitmap
+    OwnerOrNullPtr<CBitmap> m_pBMap;            // Cached predrawn board bitmap
 
     TileScale   m_nZoom;
 
@@ -59,7 +59,7 @@ protected:
 
 // Implementation
 protected:
-    virtual ~CTinyBoardView();
+    virtual ~CTinyBoardView() = default;
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
     virtual void OnInitialUpdate();     // first time after construct
     virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);

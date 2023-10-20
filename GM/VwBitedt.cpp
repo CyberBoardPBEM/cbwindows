@@ -201,11 +201,10 @@ void CBitEditView::OnDraw(CDC* pDC)
 
     if (m_bGridVisible && m_nZoom > 2)
     {
-        CBitmap bmTmp;
-        bmTmp.Attach(Create16BitDIBSection(
-            size.cx + 1, size.cy + 1));
+        OwnerPtr<CBitmap> bmTmp = Create16BitDIBSection(
+            size.cx + 1, size.cy + 1);
         SetupPalette(g_gt.mDC2);
-        g_gt.mDC2.SelectObject(&bmTmp);
+        g_gt.mDC2.SelectObject(&*bmTmp);
         g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1, 0, 0,
             m_size.cx, m_size.cy, SRCCOPY);
         for (int i = 0; i <= size.cx; i += m_nZoom)

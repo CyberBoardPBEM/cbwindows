@@ -1,6 +1,6 @@
 // VwTbrd.cpp : Small scale playing board view.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -60,12 +60,6 @@ END_MESSAGE_MAP()
 CTinyBoardView::CTinyBoardView()
 {
     m_pPBoard = NULL;
-    m_pBMap = NULL;
-}
-
-CTinyBoardView::~CTinyBoardView()
-{
-    if (m_pBMap != NULL) delete m_pBMap;
 }
 
 BOOL CTinyBoardView::PreCreateWindow(CREATESTRUCT& cs)
@@ -112,8 +106,7 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard)
     {
-        if (m_pBMap != NULL) delete m_pBMap;
-        m_pBMap = NULL;
+        m_pBMap = nullptr;
         Invalidate();
     }
     else if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_GAMESTATEUSED)
@@ -151,12 +144,11 @@ LRESULT CTinyBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 void CTinyBoardView::OnDraw(CDC* pDC)
 {
     SetupPalette(*pDC);          // (moved to top)
-    if (m_pBMap == NULL)
+    if (!m_pBMap)
         RegenCachedMap(pDC);
-    ASSERT(m_pBMap != NULL);
+    ASSERT(m_pBMap);
 
     CDC      dcMem;
-    CBitmap  bmMem;
     CRect    oRct;
     CRect    oRctSave;
     CBitmap* pPrvBMap;
@@ -165,9 +157,9 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    bmMem.Attach(Create16BitDIBSection(oRct.Width(), oRct.Height()));
+    OwnerPtr<CBitmap> bmMem = Create16BitDIBSection(oRct.Width(), oRct.Height());
     dcMem.CreateCompatibleDC(pDC);
-    pPrvBMap = dcMem.SelectObject(&bmMem);
+    pPrvBMap = dcMem.SelectObject(&*bmMem);
     dcMem.PatBlt(0, 0, oRct.Width(), oRct.Height(), WHITENESS);
 
     if (m_pPBoard->IsBoardRotated180())
@@ -218,7 +210,7 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
 
     CSize size = m_pPBoard->GetBoard()->GetSize(smallScale);
 
-    bmap.Attach(Create16BitDIBSection(size.cx, size.cy));
+    bmap.Attach(Create16BitDIBSection(size.cx, size.cy)->Detach());
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&bmap);
     SetupPalette(dcMem);
@@ -242,16 +234,13 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
     BeginWaitCursor();
     SetupPalette(*pDC);
 
-    if (m_pBMap != NULL) delete m_pBMap;
-    m_pBMap = new CBitmap;
-
     CBoard* pBoard = m_pPBoard->GetBoard();
     CSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
-    m_pBMap->Attach(Create16BitDIBSection(size.cx, size.cy));
+    m_pBMap = Create16BitDIBSection(size.cx, size.cy);
 
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);
-    CBitmap* pPrvBMap = dcMem.SelectObject(m_pBMap);
+    CBitmap* pPrvBMap = dcMem.SelectObject(&*m_pBMap);
     SetupPalette(dcMem);
 
     CRect rct(CPoint(0, 0), size);
@@ -342,7 +331,7 @@ void CTinyBoardView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
 {
-    if (m_pBMap == NULL)
+    if (!m_pBMap)
         return;
 
     CTinyBoardPopup* pTBrd = new CTinyBoardPopup;

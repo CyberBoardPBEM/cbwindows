@@ -67,6 +67,9 @@ public:
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
     // ---------- //
+
+    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP = uint16_t(16));
+
 private:
     HDIB  m_hDib;
     void* m_lpDib;

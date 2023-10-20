@@ -213,7 +213,6 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CBrdEditView::OnDraw(CDC* pDC)
 {
     CDC dcMem;
-    CBitmap bmMem;
     CRect oRct;
     CDC* pDrawDC = pDC;
     CBitmap* pPrvBMap = nullptr;
@@ -226,10 +225,10 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     if (m_bOffScreen)
     {
-        bmMem.Attach(Create16BitDIBSection(
-            oRct.Width(), oRct.Height()));
+        OwnerPtr<CBitmap> bmMem = Create16BitDIBSection(
+            oRct.Width(), oRct.Height());
         dcMem.CreateCompatibleDC(pDC);
-        pPrvBMap = dcMem.SelectObject(&bmMem);
+        pPrvBMap = dcMem.SelectObject(&*bmMem);
         dcMem.SetViewportOrg(-oRct.left, -oRct.top);
         dcMem.SetStretchBltMode(COLORONCOLOR);
         SetupPalette(&dcMem);

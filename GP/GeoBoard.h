@@ -1,6 +1,6 @@
 // GeoBoard.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -111,10 +111,10 @@ protected:
     void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;
     // non-const because new tiles get added to CTileManager
     void    CopyCells(CBoardArray& pBArryTo, const CGeoBoardElement& gbeFrom);
-    void    CreateBitmap(CBitmap& m_bmap, CSize size) const;
-    void    CombineLeftAndRight(CBitmap& bmap, TileScale eScale, const CBoardArray& pBALeft,
+    OwnerPtr<CBitmap> CreateBitmap(CSize size) const;
+    OwnerPtr<CBitmap> CombineLeftAndRight(TileScale eScale, const CBoardArray& pBALeft,
                 const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight) const;
-    void    CombineTopAndBottom(CBitmap& bmap, TileScale eScale, const CBoardArray& pBATop,
+    OwnerPtr<CBitmap> CombineTopAndBottom(TileScale eScale, const CBoardArray& pBATop,
                 const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop, size_t nRowBottom, size_t nColBottom) const;
     // non-const because new tiles get added to CTileManager
     size_t  GetSpecialTileSet();

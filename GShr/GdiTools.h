@@ -1,6 +1,6 @@
 // GdiTools.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -153,11 +153,11 @@ void     FixupTransparentColorsAfter256ColorDibUpgrade(
     HBITMAP hBitmap, COLORREF crTrans);
 void    GetDIBSectDimensions(HBITMAP hBitmap, int& rWidth, int& rHeight);
 
-HBITMAP Create16BitDIBSection(int nWidth, int nHeight);
-HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight);
-HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight);
-HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock);
-HBITMAP Create16BitColorSweep();
+OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight);
+OwnerPtr<CBitmap> Create16BitColorBar(int nHueDivisions, int nHeight);
+OwnerPtr<CBitmap> Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight);
+OwnerPtr<CBitmap> Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock);
+OwnerPtr<CBitmap> Create16BitColorSweep();
 
 void Set16BitDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
 void Set16BitDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);
@@ -165,9 +165,9 @@ COLORREF Get16BitDIBSectPixel(HBITMAP hBitmap, int x, int y);
 
 BOOL Is16BitDIBSectInvisible(HBITMAP hBitmap, COLORREF crTrans, int y = -1, int nHeight = 0);
 
-HBITMAP CreateRGBDIBSection(int nWidth, int nHeight);
-HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight);
-HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
+OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
+OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
+OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 
 void SetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
 void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);

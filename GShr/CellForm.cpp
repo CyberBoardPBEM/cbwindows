@@ -145,10 +145,8 @@ void CCellForm::CreateHexMask()
     CDC dcMask;
     dcMask.CreateCompatibleDC(NULL);
     SetupPalette(dcMask);
-    m_pMask = new CBitmap;
-    //  m_pMask->CreateBitmap(m_rct.right, m_rct.bottom, 1, 1, NULL);
-    m_pMask->Attach(Create16BitDIBSection(
-        m_rct.right, m_rct.bottom));
+    m_pMask = Create16BitDIBSection(
+        m_rct.right, m_rct.bottom);
     ResetPalette(dcMask);
 
     CBitmap *prvbmMask = dcMask.SelectObject(&*m_pMask);

@@ -195,7 +195,7 @@ int CColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (!SetupLineControl())
         return FALSE;
 
-    m_bmapBar.Attach(CreateRGBColorBar(m_rctColorBar.Width() - 2, m_rctColorBar.Height() - 2));
+    m_bmapBar = CreateRGBColorBar(m_rctColorBar.Width() - 2, m_rctColorBar.Height() - 2);
     GenerateSVWash(FALSE);
 
     SetupToolTips(m_sizeClient.cx);
@@ -518,13 +518,13 @@ void CColorPalette::DoPaint(CDC* pDC)
     // Paint the color bar...
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&m_bmapBar);
+    CBitmap* pPrvBMap = dcMem.SelectObject(&*m_bmapBar);
     pDC->BitBlt(m_rctColorBar.left + 1, m_rctColorBar.top + 1,
         m_rctColorBar.Width(), m_rctColorBar.Height(), &dcMem, 0, 0, SRCCOPY);
     pDC->FrameRect(m_rctColorBar, &brBlack);
 
     // Paint the current hue saturation/value wash...
-    dcMem.SelectObject(&m_bmapWash);
+    dcMem.SelectObject(&*m_bmapWash);
     pDC->BitBlt(m_rctSatValWash.left + 1, m_rctSatValWash.top + 1,
         m_rctSatValWash.Width(), m_rctSatValWash.Height(), &dcMem, 0, 0, SRCCOPY);
     dcMem.SelectObject(pPrvBMap);
@@ -685,9 +685,8 @@ BOOL CColorPalette::MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCh
 
 void CColorPalette::GenerateSVWash(BOOL bInvalidate /* = TRUE */)
 {
-    m_bmapWash.DeleteObject();
-    m_bmapWash.Attach(CreateRGBSaturationValueWash(m_nHue, m_rctSatValWash.Width() - 2,
-        m_rctSatValWash.Height() - 2));
+    m_bmapWash = CreateRGBSaturationValueWash(m_nHue, m_rctSatValWash.Width() - 2,
+        m_rctSatValWash.Height() - 2);
     if (bInvalidate)
         InvalidateRect(m_rctSatValWash, FALSE);
 }

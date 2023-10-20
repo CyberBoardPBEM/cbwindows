@@ -442,7 +442,6 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 {
     CBoard*     pBoard = m_pPBoard->GetBoard();
     CDC         dcMem;
-    CBitmap     bmMem;
     CRect       oRct;
     CRect       oRctSave;
     CBitmap*    pPrvBMap;
@@ -453,10 +452,10 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    bmMem.Attach(Create16BitDIBSection(
-        oRct.Width(), oRct.Height()));
+    OwnerPtr<CBitmap> bmMem = Create16BitDIBSection(
+        oRct.Width(), oRct.Height());
     dcMem.CreateCompatibleDC(pDC);
-    pPrvBMap = dcMem.SelectObject(&bmMem);
+    pPrvBMap = dcMem.SelectObject(&*bmMem);
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
@@ -2042,11 +2041,10 @@ void CPlayBoardView::OnEditCopy()
     SetupPalette(scrnDC);
     CSize size = pBoard->GetSize(m_nZoom);
 
-    CBitmap bmap;
-    bmap.Attach(Create16BitDIBSection(size.cx, size.cy));
+    OwnerPtr<CBitmap> bmap = Create16BitDIBSection(size.cx, size.cy);
     CDC dcMem;
     dcMem.CreateCompatibleDC(&scrnDC);
-    CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
+    CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
     SetupPalette(dcMem);
 
     CRect rct(0, 0, size.cx, size.cy);
@@ -2067,7 +2065,7 @@ void CPlayBoardView::OnEditCopy()
     {
         wxBusyCursor busyCursor;
 
-        wxImage img = ToImage(bmap);
+        wxImage img = ToImage(*bmap);
         wxBitmap wxbmp(img);
         wxTheClipboard->SetData(new wxBitmapDataObject(wxbmp));
     }
@@ -2094,12 +2092,11 @@ void CPlayBoardView::OnEditBoardToFile()
         SetupPalette(scrnDC);
         CSize size = pBoard->GetSize(m_nZoom);
 
-        CBitmap bmap;
-        bmap.Attach(Create16BitDIBSection(
-            size.cx, size.cy));
+        OwnerPtr<CBitmap> bmap = Create16BitDIBSection(
+            size.cx, size.cy);
         CDC dcMem;
         dcMem.CreateCompatibleDC(&scrnDC);
-        CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
+        CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
         SetupPalette(dcMem);
 
         CRect rct(0, 0, size.cx, size.cy);
@@ -2115,7 +2112,7 @@ void CPlayBoardView::OnEditBoardToFile()
         GdiFlush();
         dcMem.SelectObject(pPrvBMap);
 
-        wxImage img = ToImage(bmap);
+        wxImage img = ToImage(*bmap);
 
         if (!img.SaveFile(CB::string(dlg.GetPathName())))
         {

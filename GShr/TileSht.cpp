@@ -1,6 +1,6 @@
 // TileSht.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -152,9 +152,8 @@ void CTileSheet::CreateTile()
         SetupPalette(g_gt.mDC1);
         SetupPalette(g_gt.mDC2);
 
-        OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
-        pBMap->Attach(Create16BitDIBSection(
-            bmInfo.bmWidth, bmInfo.bmHeight));
+        OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(
+            bmInfo.bmWidth, bmInfo.bmHeight);
         ASSERT(pBMap->m_hObject != NULL);
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
@@ -173,10 +172,9 @@ void CTileSheet::CreateTile()
     {
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        m_pBMap = MakeOwner<CBitmap>();
         SetupPalette(g_gt.mDC1);
-        m_pBMap->Attach(Create16BitDIBSection(
-            m_size.cx, m_size.cy));
+        m_pBMap = Create16BitDIBSection(
+            m_size.cx, m_size.cy);
         g_gt.mDC1.SelectObject(m_pBMap.get());
         g_gt.mDC1.PatBlt(0, 0, m_size.cx, m_size.cy, WHITENESS);
         g_gt.SelectSafeObjectsForDC1();
@@ -204,12 +202,11 @@ void CTileSheet::DeleteTile(int yLoc)
         bmInfo.bmBits = NULL;
         bmInfo.bmHeight -= m_size.cy;           // Decrease size.
 
-        OwnerPtr<CBitmap> pBMap = MakeOwner<CBitmap>();
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
         SetupPalette(g_gt.mDC2);
 
-        pBMap->Attach(Create16BitDIBSection(
-            bmInfo.bmWidth, bmInfo.bmHeight));
+        OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(
+            bmInfo.bmWidth, bmInfo.bmHeight);
 
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
         SetupPalette(g_gt.mDC1);
@@ -264,8 +261,8 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 
     if (bmap.bmBits != NULL)                // DIB Section check
     {
-        pBMap->Attach(Create16BitDIBSection(
-            m_size.cx, m_size.cy));
+        pBMap = Create16BitDIBSection(
+            m_size.cx, m_size.cy);
     }
     else
     {
