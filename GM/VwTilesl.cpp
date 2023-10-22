@@ -355,10 +355,10 @@ void CTileSelView::DoTileRotation(int nAngle)
     if(!dibHalf)
         return;             // MEMORY ERROR
 
-    CDib pDib = Rotate16BitDib(dibFull, nAngle, RGB(255, 255, 255));
+    CDib pDib = dibFull.Rotate16Bit(nAngle, RGB(255, 255, 255));
     OwnerOrNullPtr<CBitmap> pbmFull = pDib.DIBToBitmap();
 
-    pDib = Rotate16BitDib(dibHalf, nAngle, RGB(255, 255, 255));
+    pDib = dibHalf.Rotate16Bit(nAngle, RGB(255, 255, 255));
     OwnerOrNullPtr<CBitmap> pbmHalf = pDib.DIBToBitmap();
 
     m_bmFull = std::move(pbmFull);

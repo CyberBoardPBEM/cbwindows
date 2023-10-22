@@ -110,25 +110,21 @@ public:
     // ---------- //
     int Height() const { return m_hDib.get().biHeight; }
     int Width() const { return m_hDib.get().biWidth; }
-    int NumColorBits() const { return m_hDib.get().biBitCount; }
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     const BITMAPINFO& GetBmi() const { return m_hDib; }
 #endif
-    const void* FindBits() const { return m_hDib.GetBits(); }
-    void* FindBits() { return m_hDib.GetBits(); }
     // ---------- for 16bit/pixel Dibs only -------------- //
+private:
+    void Fill(uint16_t color);
     WORD Get16BitColorNumberAtXY(int x, int y) const;
     void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
+public:
+    // angle is clockwise
+    CDib Rotate16Bit(int angle, COLORREF crTrans) const;
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
     // ---------- //
-
-    size_t WidthBytes() const
-    {
-        const BITMAPINFOHEADER& bmi = m_hDib;
-        return BitsToBytes(bmi.biWidth * bmi.biBitCount);
-    }
 
     // convert bits to uint32_t aligned bytes
     static size_t BitsToBytes(size_t i)
@@ -148,6 +144,12 @@ public:
     static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP);
 
 private:
+    CDib Rotate16BitFast(int angle) const;
+    struct ImgEdge;
+    void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
+        CDib& pDDib) const;
+    static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
+
     CBITMAPINFOHEADER m_hDib;
     int   m_nCompressLevel;
     // ---------- //

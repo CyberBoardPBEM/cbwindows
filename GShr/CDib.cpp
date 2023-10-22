@@ -288,9 +288,19 @@ uint16_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
 
 ///////////////////////////////////////////////////////////////
 
+void CDib::Fill(uint16_t color)
+{
+    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
+    // Number of pixels (words) to fill
+    size_t nBfrLen = (value_preserving_cast<size_t>(Height()) * WidthBytes(m_hDib)) / sizeof(uint16_t);
+    uint16_t* pwBfr = static_cast<uint16_t*>(m_hDib.GetBits());
+    while (nBfrLen--)
+        *pwBfr++ = color;
+}
+
 WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 {
-    ASSERT(m_hDib && NumColorBits() == 16);
+    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
     return *((WORD*)m_hDib.DibXY(x, y));
@@ -298,7 +308,7 @@ WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
 
 void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
 {
-    ASSERT(m_hDib && NumColorBits() == 16);
+    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
     *((WORD*)m_hDib.DibXY(x, y)) = nColor;

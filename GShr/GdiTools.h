@@ -123,12 +123,6 @@ typedef struct _DELTAGEN {
 typedef DELTAGEN *PDELTAGEN;
 
 ////////////////////////////////////////////////////////////////////
-// From ROTATE.CPP
-
-CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
-void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
-
-////////////////////////////////////////////////////////////////////
 // Some non-class GDI tools...
 
 FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK = FALSE);

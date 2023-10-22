@@ -87,7 +87,7 @@ inline int Stepper::RoundedVal()
 
 /////////////////////////////////////////////////////////////////////
 
-struct ImgEdge
+struct CDib::ImgEdge
 {
     POINT*      m_pSPnts;               // Source rect corner points
     POINT*      m_pDPnts;               // Rotated rect corner points
@@ -112,9 +112,9 @@ struct ImgEdge
 
 static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts);
 static void RotatePoint(POINT& pt, int nSin, int nCos);
-static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
-static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDib& pSDib,
-    CDib& pDDib);
+namespace {
+    void RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
+}
 
 /////////////////////////////////////////////////////////////////////
 
@@ -126,22 +126,21 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 
 /////////////////////////////////////////////////////////////////////
 
-namespace {
     // angle is clockwise
-    CDib Rotate16BitDibFast(const CDib& sDib, int angle)
+    CDib CDib::Rotate16BitFast(int angle) const
     {
         switch (angle)
         {
             case 90:
             {
-                int width = sDib.Width(), height = sDib.Height();
+                int width = Width(), height = Height();
                 CDib dDib(height, width);
                 for (int srcY = 0, destX = height - 1 ; srcY < height ; ++srcY, --destX)
                 {
                     // destY always has same value as srcX
                     for (int srcX = 0 ; srcX < width ; ++srcX)
                     {
-                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
                         dDib.Set16BitColorNumberAtXY(destX, srcX, color);
                     }
                 }
@@ -149,13 +148,13 @@ namespace {
             }
             case 180:
             {
-                int width = sDib.Width(), height = sDib.Height();
+                int width = Width(), height = Height();
                 CDib dDib(width, height);
                 for (int srcY = 0, destY = height - 1 ; srcY < height ; ++srcY, --destY)
                 {
                     for (int srcX = 0, destX = width - 1 ; srcX < width ; ++srcX, --destX)
                     {
-                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
                         dDib.Set16BitColorNumberAtXY(destX, destY, color);
                     }
                 }
@@ -163,14 +162,14 @@ namespace {
             }
             case 270:
             {
-                int width = sDib.Width(), height = sDib.Height();
+                int width = Width(), height = Height();
                 CDib dDib(height, width);
                 // destX always has same value as srcY
                 for (int srcY = 0 ; srcY < height ; ++srcY)
                 {
                     for (int srcX = 0, destY = width - 1 ; srcX < width ; ++srcX, --destY)
                     {
-                        WORD color = sDib.Get16BitColorNumberAtXY(srcX, srcY);
+                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
                         dDib.Set16BitColorNumberAtXY(srcY, destY, color);
                     }
                 }
@@ -180,17 +179,16 @@ namespace {
                 AfxThrowInvalidArgException();
         }
     }
-}
 
 // angle is clockwise
-CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans)
+CDib CDib::Rotate16Bit(int angle, COLORREF crTrans) const
 {
-DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, pSDib.Width(), pSDib.Height(), angle);
+DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     ASSERT(0 <= angle && angle < 360);
     ASSERT(angle != 0 || !"unnecessary call");
     if (angle % 90 == 0)
     {
-        return Rotate16BitDibFast(pSDib, angle);
+        return Rotate16BitFast(angle);
     }
     POINT   pntSrc[numPnts];
     POINT   pntDst[numPnts];
@@ -201,7 +199,7 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, pSDib.Width(), pSDib.Height
     // angle to maintain backward compatibility with existing games.
     angle = 360 - angle;
 
-    CSize sizeSrc(pSDib.Width(), pSDib.Height());
+    CSize sizeSrc(Width(), Height());
     CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
     CDib pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
@@ -225,7 +223,7 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, pSDib.Width(), pSDib.Height
 
     while (1)
     {
-        DrawScanLine(lftEdge, rgtEdge, yCur, pSDib, pDDib);
+        DrawScanLine(lftEdge, rgtEdge, yCur, pDDib);
         if (!lftEdge.NextScanLine())
             break;
         if (!rgtEdge.NextScanLine())
@@ -237,8 +235,8 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, pSDib.Width(), pSDib.Height
 
 /////////////////////////////////////////////////////////////////////
 
-static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDib& pSDib,
-    CDib& pDDib)
+void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
+    CDib& pDDib) const
 {
     int dstX = lftEdge.m_dstX;
     int dstXMax = rgtEdge.m_dstX;
@@ -251,7 +249,7 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
     //  TRACE2("For Y = %d, Dest Width = %d\n", dstY, dstWd + 1);
     for (; dstX <= dstXMax; dstX++)
     {
-        WORD nColor = pSDib.Get16BitColorNumberAtXY(srcX.RoundedVal(),
+        WORD nColor = Get16BitColorNumberAtXY(srcX.RoundedVal(),
             srcY.RoundedVal());
 
         pDDib.Set16BitColorNumberAtXY(dstX, dstY, nColor);
@@ -268,15 +266,11 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 
 /////////////////////////////////////////////////////////////////////
 
-static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans)
+CDib CDib::CreateTransparentColorDIB(CSize size, COLORREF crTrans)
 {
     CDib pDib(size.cx, size.cy);
     WORD cr16Trans = RGB565(crTrans);
-    // Number of pixels (words) to fill
-    size_t nBfrLen = (value_preserving_cast<size_t>(pDib.Height()) * pDib.WidthBytes()) / sizeof(uint16_t);
-    uint16_t* pwBfr = static_cast<uint16_t*>(pDib.FindBits());
-    while (nBfrLen--)
-        *pwBfr++ = cr16Trans;
+    pDib.Fill(cr16Trans);
 
     return pDib;
 }
@@ -357,7 +351,7 @@ static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts
 
 /////////////////////////////////////////////////////////////////////
 
-ImgEdge::ImgEdge(BOOL bLeftSide, POINT* pSrcPnts, POINT* pDstPnts,
+CDib::ImgEdge::ImgEdge(BOOL bLeftSide, POINT* pSrcPnts, POINT* pDstPnts,
     int nTopPnt, int nBotPnt)
 {
     m_pDPnts = pDstPnts;
@@ -369,7 +363,7 @@ ImgEdge::ImgEdge(BOOL bLeftSide, POINT* pSrcPnts, POINT* pDstPnts,
 
 /////////////////////////////////////////////////////////////////////
 
-BOOL ImgEdge::SetupNextEdge()
+BOOL CDib::ImgEdge::SetupNextEdge()
 {
     int nBasePnt = m_nCurPnt;       // Seed the line's base point.
     while (1)
@@ -403,7 +397,7 @@ BOOL ImgEdge::SetupNextEdge()
 
 /////////////////////////////////////////////////////////////////////
 
-BOOL ImgEdge::NextScanLine()
+BOOL CDib::ImgEdge::NextScanLine()
 {
     if (--m_nLines == 0)
         return SetupNextEdge();
@@ -419,6 +413,7 @@ BOOL ImgEdge::NextScanLine()
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+namespace {
 void RotatePoints(POINT* pPnts, int nPnts, int nDegrees)
 {
     // Do it cheap and EZ at first....
@@ -428,6 +423,7 @@ void RotatePoints(POINT* pPnts, int nPnts, int nDegrees)
     int nCos = Cos10K(nDegrees);
     for (int i = 0; i < nPnts; i++)
         RotatePoint(pPnts[i], nSin, nCos);
+}
 }
 
 /////////////////////////////////////////////////////////////////////
