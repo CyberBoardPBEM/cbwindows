@@ -431,7 +431,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     SetupPalette(g_gt.mDC1);
 
     COLORREF crHit = g_gt.mDC1.GetPixel(pt);
-    WORD crHit565 = MapWin9xRgbToWin9x565(crHit);
+    WORD crHit565 = RGB565(crHit);
     COLORREF crNew = m_pTMgr->GetForeColor();
     WORD crNew565 = RGB565(crNew);
 

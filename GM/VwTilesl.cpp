@@ -328,8 +328,8 @@ void CTileSelView::DoTileResizeDialog()
         {
             bmFull = CreateColorBitmap(m_sizeFull, RGB(255, 255, 255));
             bmHalf = CreateColorBitmap(m_sizeHalf, RGB(255, 255, 255));
-            MergeBitmap(*bmFull, *m_bmFull, CPoint(0,0), noColor);
-            MergeBitmap(*bmHalf, *m_bmHalf, CPoint(0,0), noColor);
+            MergeBitmap(*bmFull, *m_bmFull, CPoint(0,0));
+            MergeBitmap(*bmHalf, *m_bmHalf, CPoint(0,0));
         }
         m_bmFull = std::move(bmFull);
         m_bmHalf = std::move(bmHalf);

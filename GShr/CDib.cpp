@@ -75,7 +75,7 @@ CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, ui
     }
 }
 
-CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal)
 {
     if (!hBitmap)
     {
@@ -83,126 +83,76 @@ CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint1
     }
 
     CBITMAPINFOHEADER hDIB;
-    // If the target format is 16 bits per pixel we avoid the use
+    // The target format is 16 bits per pixel, so we avoid the use
     // of GetDIBits() since it forces 555 format and we desire 565
     // format.
-    if (nBPP == 16)
+
+    // If the bitmap is already a DIB section of the proper format
+    // we can just directly make a DIB.
+    DIBSECTION dibSect;
+    if (GetObject(hBitmap, sizeof(dibSect), &dibSect))
     {
-        // If the bitmap is already a DIB section of the proper format
-        // we can just directly make a DIB.
-        DIBSECTION dibSect;
-        if (GetObject(hBitmap, sizeof(dibSect), &dibSect))
+        if (dibSect.dsBmih.biBitCount == 16 && dibSect.dsBitfields[0] == 0xF800)
         {
-            if (dibSect.dsBmih.biBitCount == 16 && dibSect.dsBitfields[0] == 0xF800)
-            {
-                *this = CBITMAPINFOHEADER(hBitmap);
-                return;
-            }
+            *this = CBITMAPINFOHEADER(hBitmap);
+            return;
         }
-
-        ASSERT(!"untested code");
-        BITMAP bmapSrc;                 // Source bitmap
-        if (!GetObject(hBitmap, sizeof(bmapSrc), &bmapSrc))
-        {
-            CbThrowBadCastException();
-        }
-
-        // To force the proper 16bit bitmap format we'll use
-        // DIB sections. A DIB section of the desired format is
-        // created and the bitmap is Blited into it. Then the
-        // section is converted to a DIB.
-
-        CBITMAPINFOHEADER bmi(bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
-
-        // We need a reference DC for palette bitmaps
-        HDC hMemDCScreen = GetDC(NULL);
-        // WARNING:  this looks strange, but is copied from the original code
-        HDC hMemDCSrc = CreateCompatibleDC(hMemDCScreen);
-        ReleaseDC(NULL, hMemDCSrc);
-
-        HPALETTE hPrvPal = NULL;
-        if (hPal)
-        {
-            ASSERT(!"untested code");
-            hPrvPal = SelectPalette(hMemDCSrc, hPal, FALSE);
-            RealizePalette(hMemDCSrc);
-        }
-
-        LPVOID pBits = NULL;
-        HBITMAP hBmapSect = ::CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
-        if (hBmapSect != NULL)
-        {
-            HDC hMemDCSect = CreateCompatibleDC(hMemDCScreen);
-            HBITMAP hPrvBmapSect = (HBITMAP)SelectObject(hMemDCSect, hBmapSect);
-
-            HBITMAP hPrvBmapSrc = (HBITMAP)SelectObject(hMemDCSrc, hBitmap);
-
-            BitBlt(hMemDCSect, 0, 0, bmapSrc.bmWidth, bmapSrc.bmHeight,
-                hMemDCSrc, 0, 0, SRCCOPY);
-
-            SelectObject(hMemDCSect, hPrvBmapSect);
-            SelectObject(hMemDCSrc, hPrvBmapSrc);
-
-            DeleteDC(hMemDCSect);
-        }
-
-        if (hPrvPal)
-            SelectPalette(hMemDCSrc, hPrvPal, FALSE);
-        DeleteDC(hMemDCSrc);
-
-        // Now that we have the converted bitmap create the
-        // actual DIB.
-        hDIB = CBITMAPINFOHEADER(hBmapSect);
-        DeleteObject(hBmapSect);
     }
-    else
+
+    ASSERT(!"untested code");
+    BITMAP bmapSrc;                 // Source bitmap
+    if (!GetObject(hBitmap, sizeof(bmapSrc), &bmapSrc))
+    {
+        CbThrowBadCastException();
+    }
+
+    // To force the proper 16bit bitmap format we'll use
+    // DIB sections. A DIB section of the desired format is
+    // created and the bitmap is Blited into it. Then the
+    // section is converted to a DIB.
+
+    CBITMAPINFOHEADER bmi(bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
+
+    // We need a reference DC for palette bitmaps
+    HDC hMemDCScreen = GetDC(NULL);
+    // WARNING:  this looks strange, but is copied from the original code
+    HDC hMemDCSrc = CreateCompatibleDC(hMemDCScreen);
+    ReleaseDC(NULL, hMemDCSrc);
+
+    HPALETTE hPrvPal = NULL;
+    if (hPal)
     {
         ASSERT(!"untested code");
-        // Do some setup -- make sure the Bitmap passed in is valid,
-        // get info on the bitmap (like its height, width, etc.),
-        // then setup a BITMAPINFOHEADER.
-
-        BITMAP Bitmap;
-        if (!GetObject(hBitmap, sizeof(Bitmap), &Bitmap))
-        {
-            CbThrowBadCastException();
-        }
-
-        // Now allocate memory for the DIB.  Then, set the BITMAPINFOHEADER
-        // into this memory, and find out where the bitmap bits go.
-
-        hDIB = CBITMAPINFOHEADER(Bitmap.bmWidth, Bitmap.bmHeight,
-            nBPP == 0 ? value_preserving_cast<uint16_t>(Bitmap.bmPlanes * Bitmap.bmBitsPixel) : nBPP);
-
-        void* lpBits = hDIB.GetBits();
-
-        // Now, we need a DC to hold our bitmap.  If the app passed us
-        //  a palette, it should be selected into the DC.
-
-        HDC hMemDC = GetDC(NULL);
-
-        HPALETTE hOldPal = NULL;
-        if (hPal)
-        {
-            ASSERT(!"untested code");
-            hOldPal = SelectPalette(hMemDC, hPal, FALSE);
-            RealizePalette(hMemDC);
-        }
-        // We're finally ready to get the DIB.  Call the driver and let
-        // it party on our bitmap.  It will fill in the color table,
-        // and bitmap bits of our global memory block.
-        if (!GetDIBits(hMemDC, hBitmap, 0, Bitmap.bmHeight, lpBits,
-            hDIB, DIB_RGB_COLORS))
-        {
-            hDIB = nullptr;
-        }
-
-        // Finally, clean up and return.
-        if (hOldPal)
-            SelectPalette(hMemDC, hOldPal, FALSE);
-
-        ReleaseDC(NULL, hMemDC);
+        hPrvPal = SelectPalette(hMemDCSrc, hPal, FALSE);
+        RealizePalette(hMemDCSrc);
     }
+
+    LPVOID pBits = NULL;
+    HBITMAP hBmapSect = ::CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
+    if (hBmapSect != NULL)
+    {
+        HDC hMemDCSect = CreateCompatibleDC(hMemDCScreen);
+        HBITMAP hPrvBmapSect = (HBITMAP)SelectObject(hMemDCSect, hBmapSect);
+
+        HBITMAP hPrvBmapSrc = (HBITMAP)SelectObject(hMemDCSrc, hBitmap);
+
+        BitBlt(hMemDCSect, 0, 0, bmapSrc.bmWidth, bmapSrc.bmHeight,
+            hMemDCSrc, 0, 0, SRCCOPY);
+
+        SelectObject(hMemDCSect, hPrvBmapSect);
+        SelectObject(hMemDCSrc, hPrvBmapSrc);
+
+        DeleteDC(hMemDCSect);
+    }
+
+    if (hPrvPal)
+        SelectPalette(hMemDCSrc, hPrvPal, FALSE);
+    DeleteDC(hMemDCSrc);
+
+    // Now that we have the converted bitmap create the
+    // actual DIB.
+    hDIB = CBITMAPINFOHEADER(hBmapSect);
+    DeleteObject(hBmapSect);
 
     if (!hDIB)
     {
@@ -374,18 +324,18 @@ void CDib::ClearDib()
     m_hDib = nullptr;
 }
 
-CDib::CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP /* = 16 */)
+CDib::CDib(DWORD dwWidth, DWORD dwHeight)
 {
-    m_hDib = CBITMAPINFOHEADER(value_preserving_cast<int32_t>(dwWidth), value_preserving_cast<int32_t>(dwHeight), wBPP);
+    m_hDib = CBITMAPINFOHEADER(value_preserving_cast<int32_t>(dwWidth), value_preserving_cast<int32_t>(dwHeight), uint16_t(16));
     m_nCompressLevel = 0;
 }
 
-CDib::CDib(const CBitmap& pBM, const CPalette* pPal, uint16_t nBPP/* = uint16_t(16)*/)
+CDib::CDib(const CBitmap& pBM, const CPalette* pPal)
 {
     if (pBM.m_hObject != NULL)
     {
         m_hDib = CBITMAPINFOHEADER((HBITMAP)(pBM.m_hObject),
-            (HPALETTE)(pPal ? pPal->m_hObject : NULL), nBPP);
+            (HPALETTE)(pPal ? pPal->m_hObject : NULL));
     }
     else
     {
@@ -420,7 +370,7 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap() const
     return pBMap;
 }
 
-OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP /*= uint16_t(16)*/)
+OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP)
 {
     OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
 

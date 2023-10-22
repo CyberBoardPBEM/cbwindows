@@ -764,16 +764,14 @@ void CTileManager::SetForeColor(COLORREF cr)
 {
     m_crFore = cr;
     m_brFore.DeleteObject();
-    COLORREF crTemp = MapWin9xRgbToNtRgb(m_crFore);
-    m_brFore.CreateSolidBrush(crTemp);
+    m_brFore.CreateSolidBrush(m_crFore);
 }
 
 void CTileManager::SetBackColor(COLORREF cr)
 {
     m_crBack = cr;
     m_brBack.DeleteObject();
-    COLORREF crTemp = MapWin9xRgbToNtRgb(m_crBack);
-    m_brBack.CreateSolidBrush(crTemp);
+    m_brBack.CreateSolidBrush(m_crBack);
 }
 
 #ifdef GPLAY

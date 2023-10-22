@@ -1,6 +1,6 @@
 // Rotate.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -135,7 +135,7 @@ namespace {
             case 90:
             {
                 int width = sDib.Width(), height = sDib.Height();
-                CDib dDib(height, width, 16);
+                CDib dDib(height, width);
                 for (int srcY = 0, destX = height - 1 ; srcY < height ; ++srcY, --destX)
                 {
                     // destY always has same value as srcX
@@ -150,7 +150,7 @@ namespace {
             case 180:
             {
                 int width = sDib.Width(), height = sDib.Height();
-                CDib dDib(width, height, 16);
+                CDib dDib(width, height);
                 for (int srcY = 0, destY = height - 1 ; srcY < height ; ++srcY, --destY)
                 {
                     for (int srcX = 0, destX = width - 1 ; srcX < width ; ++srcX, --destX)
@@ -164,7 +164,7 @@ namespace {
             case 270:
             {
                 int width = sDib.Width(), height = sDib.Height();
-                CDib dDib(height, width, 16);
+                CDib dDib(height, width);
                 // destX always has same value as srcY
                 for (int srcY = 0 ; srcY < height ; ++srcY)
                 {
@@ -270,7 +270,7 @@ static void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY, const CDi
 
 static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans)
 {
-    CDib pDib(size.cx, size.cy, 16);
+    CDib pDib(size.cx, size.cy);
     WORD cr16Trans = RGB565(crTrans);
     // Number of pixels (words) to fill
     size_t nBfrLen = (value_preserving_cast<size_t>(pDib.Height()) * pDib.WidthBytes()) / sizeof(uint16_t);
@@ -428,17 +428,6 @@ void RotatePoints(POINT* pPnts, int nPnts, int nDegrees)
     int nCos = Cos10K(nDegrees);
     for (int i = 0; i < nPnts; i++)
         RotatePoint(pPnts[i], nSin, nCos);
-}
-
-/////////////////////////////////////////////////////////////////////
-
-void OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff)
-{
-    for (int i = 0; i < nPnts; i++)
-    {
-        pPnts[i].x += xOff;
-        pPnts[i].y += yOff;
-    }
 }
 
 /////////////////////////////////////////////////////////////////////

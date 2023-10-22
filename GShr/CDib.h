@@ -34,7 +34,7 @@ public:
     CBITMAPINFOHEADER() = default;
     CBITMAPINFOHEADER(std::nullptr_t) : CBITMAPINFOHEADER() {}
     CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount);
-    CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal, uint16_t nBPP = uint16_t(0));
+    CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal);
     CBITMAPINFOHEADER(HBITMAP hDibSect);
     CBITMAPINFOHEADER(const CBITMAPINFOHEADER&) = delete;
     CBITMAPINFOHEADER(CBITMAPINFOHEADER&&) = default;
@@ -94,9 +94,9 @@ public:
     ~CDib() { ClearDib(); }
     void ClearDib();
     explicit operator bool() const { return bool(m_hDib); }
-    CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
+    CDib(DWORD dwWidth, DWORD dwHeight);
     // ---------- /
-    explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
+    explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL);
     OwnerPtr<CBitmap> DIBToBitmap() const;
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
@@ -145,7 +145,7 @@ public:
         return BitsToBytes(bmi.biWidth * bmi.biBitCount);
     }
 
-    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP = uint16_t(16));
+    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP);
 
 private:
     CBITMAPINFOHEADER m_hDib;

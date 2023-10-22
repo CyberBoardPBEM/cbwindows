@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#error dead code
 #include    "GMisc.h"
 
 const int xArrowHeadSize = 4;

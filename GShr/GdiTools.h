@@ -127,7 +127,6 @@ typedef DELTAGEN *PDELTAGEN;
 
 CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
 void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
-void  OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff);
 
 ////////////////////////////////////////////////////////////////////
 // Some non-class GDI tools...
@@ -143,35 +142,14 @@ int ScreenPixelsToTenthPoints(int nPixels);
 int TenthPointsToScreenPixels(int nTenthPts);
 int GetCurrentVideoResolution();
 
-void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono = TRUE);
-
-LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y);
-
-COLORREF MapWin9xRgbToNtRgb(COLORREF cr);
-WORD     MapWin9xRgbToWin9x565(COLORREF cr);
-void     FixupTransparentColorsAfter256ColorDibUpgrade(
-    HBITMAP hBitmap, COLORREF crTrans);
-void    GetDIBSectDimensions(HBITMAP hBitmap, int& rWidth, int& rHeight);
-
 OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight);
-OwnerPtr<CBitmap> Create16BitColorBar(int nHueDivisions, int nHeight);
-OwnerPtr<CBitmap> Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight);
-OwnerPtr<CBitmap> Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock);
-OwnerPtr<CBitmap> Create16BitColorSweep();
-
-void Set16BitDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
-void Set16BitDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);
-COLORREF Get16BitDIBSectPixel(HBITMAP hBitmap, int x, int y);
-
-BOOL Is16BitDIBSectInvisible(HBITMAP hBitmap, COLORREF crTrans, int y = -1, int nHeight = 0);
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
 OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
 OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 
-void SetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
-void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);
-COLORREF GetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y);
+void SetRGBDIBSectPixel(CBitmap& hBitmap, int x, int y, COLORREF cr);
+void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COLORREF cr);
 
 COLORREF HSVtoRGB(int h, int s, int v);
 void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
@@ -185,13 +163,11 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
 // If a crVoided color is supplied, the source bitmap will have its
 // copied region filled with that color.
 OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
-    COLORREF crVoided = noColor);
+    COLORREF crVoided);
 OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     int nStretchMode = COLORONCOLOR);
-void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst,
-    COLORREF crTrans = noColor);
+void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
 void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
-void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans);
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
 OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
 

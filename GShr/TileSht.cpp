@@ -107,16 +107,6 @@ void CTileSheet::Serialize(CArchive& ar)
                     m_size.cx, m_size.cy, bmInfo.bmHeight);
                 //  ASSERT(bmInfo.bmHeight < maxSheetHeight);
                 m_sheetHt = bmInfo.bmHeight;
-                // If the DIB was in 256 color format and we are running
-                // on Win9x/ME we need to remap all transparent colors
-                // to the WinNT/2000/XP 16 bit equivalent.
-                if (dib.NumColorBits() == 8)
-                {
-                    COLORREF crTrans = ((CGamDoc*)ar.m_pDocument)->
-                        GetTileManager()->GetTransparentColor();
-                    FixupTransparentColorsAfter256ColorDibUpgrade(
-                        (HBITMAP)m_pBMap->m_hObject, crTrans);
-                }
             }
             else
             {
