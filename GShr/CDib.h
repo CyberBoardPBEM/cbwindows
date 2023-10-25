@@ -72,6 +72,10 @@ public:
         return const_cast<void*>(std::as_const(*this).GetBits());
     }
     const void* DibXY(ptrdiff_t x, ptrdiff_t y) const;
+    void* DibXY(ptrdiff_t x, ptrdiff_t y)
+    {
+        return const_cast<void*>(std::as_const(*this).DibXY(x, y));
+    }
 
     // for reading in CDib
     void reserve(size_t s);
@@ -113,14 +117,13 @@ public:
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     const BITMAPINFO& GetBmi() const { return m_hDib; }
 #endif
-    // ---------- for 16bit/pixel Dibs only -------------- //
 private:
-    void Fill(uint16_t color);
-    WORD Get16BitColorNumberAtXY(int x, int y) const;
-    void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
+    void Fill(COLORREF color);
+    COLORREF GetColorAtXY(int x, int y) const;
+    void SetColorAtXY(int x, int y, COLORREF nColor);
 public:
     // angle is clockwise
-    CDib Rotate16Bit(int angle, COLORREF crTrans) const;
+    CDib Rotate(int angle, COLORREF crTrans) const;
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
@@ -144,7 +147,7 @@ public:
     static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP);
 
 private:
-    CDib Rotate16BitFast(int angle) const;
+    CDib RotateFast(int angle) const;
     struct ImgEdge;
     void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
         CDib& pDDib) const;

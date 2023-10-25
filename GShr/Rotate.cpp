@@ -127,7 +127,7 @@ namespace {
 /////////////////////////////////////////////////////////////////////
 
     // angle is clockwise
-    CDib CDib::Rotate16BitFast(int angle) const
+    CDib CDib::RotateFast(int angle) const
     {
         switch (angle)
         {
@@ -140,8 +140,8 @@ namespace {
                     // destY always has same value as srcX
                     for (int srcX = 0 ; srcX < width ; ++srcX)
                     {
-                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
-                        dDib.Set16BitColorNumberAtXY(destX, srcX, color);
+                        COLORREF color = GetColorAtXY(srcX, srcY);
+                        dDib.SetColorAtXY(destX, srcX, color);
                     }
                 }
                 return dDib;
@@ -154,8 +154,8 @@ namespace {
                 {
                     for (int srcX = 0, destX = width - 1 ; srcX < width ; ++srcX, --destX)
                     {
-                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
-                        dDib.Set16BitColorNumberAtXY(destX, destY, color);
+                        COLORREF color = GetColorAtXY(srcX, srcY);
+                        dDib.SetColorAtXY(destX, destY, color);
                     }
                 }
                 return dDib;
@@ -169,8 +169,8 @@ namespace {
                 {
                     for (int srcX = 0, destY = width - 1 ; srcX < width ; ++srcX, --destY)
                     {
-                        WORD color = Get16BitColorNumberAtXY(srcX, srcY);
-                        dDib.Set16BitColorNumberAtXY(srcY, destY, color);
+                        COLORREF color = GetColorAtXY(srcX, srcY);
+                        dDib.SetColorAtXY(srcY, destY, color);
                     }
                 }
                 return dDib;
@@ -181,14 +181,14 @@ namespace {
     }
 
 // angle is clockwise
-CDib CDib::Rotate16Bit(int angle, COLORREF crTrans) const
+CDib CDib::Rotate(int angle, COLORREF crTrans) const
 {
 DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     ASSERT(0 <= angle && angle < 360);
     ASSERT(angle != 0 || !"unnecessary call");
     if (angle % 90 == 0)
     {
-        return Rotate16BitFast(angle);
+        return RotateFast(angle);
     }
     POINT   pntSrc[numPnts];
     POINT   pntDst[numPnts];
@@ -249,10 +249,10 @@ void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
     //  TRACE2("For Y = %d, Dest Width = %d\n", dstY, dstWd + 1);
     for (; dstX <= dstXMax; dstX++)
     {
-        WORD nColor = Get16BitColorNumberAtXY(srcX.RoundedVal(),
+        COLORREF nColor = GetColorAtXY(srcX.RoundedVal(),
             srcY.RoundedVal());
 
-        pDDib.Set16BitColorNumberAtXY(dstX, dstY, nColor);
+        pDDib.SetColorAtXY(dstX, dstY, nColor);
         // TEST CODE:
         //        char str[256];
         //        sprintf(str, "dX=%d, dY=%d : sX=%d, sY=%d\n",
@@ -269,8 +269,7 @@ void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
 CDib CDib::CreateTransparentColorDIB(CSize size, COLORREF crTrans)
 {
     CDib pDib(size.cx, size.cy);
-    WORD cr16Trans = RGB565(crTrans);
-    pDib.Fill(cr16Trans);
+    pDib.Fill(crTrans);
 
     return pDib;
 }

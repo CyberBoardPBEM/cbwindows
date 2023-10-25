@@ -37,6 +37,96 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+namespace {
+    size_t BPP(HBITMAP hbmp)
+    {
+        DIBSECTION dibSect;
+        if (!GetObject(hbmp, sizeof(dibSect), &dibSect))
+        {
+            CbThrowBadCastException();
+        }
+        switch (dibSect.dsBmih.biBitCount)
+        {
+            case 16:
+                if (!(dibSect.dsBitfields[0] == 0xf800 &&
+                        dibSect.dsBitfields[1] == 0x07e0 &&
+                        dibSect.dsBitfields[2] == 0x001f))
+                {
+                    CbThrowBadCastException();
+                }
+                // fall through
+            case 24:
+                return static_cast<size_t>(dibSect.dsBmih.biBitCount);
+            default:
+                CbThrowBadCastException();
+        }
+    }
+
+    void* Ptr(HBITMAP hbmp, size_t x, size_t y)
+    {
+        DIBSECTION dibSect;
+        if (!GetObject(hbmp, sizeof(dibSect), &dibSect) ||
+            !(dibSect.dsBm.bmBits &&
+                x < value_preserving_cast<size_t>(dibSect.dsBm.bmWidth) &&
+                y < value_preserving_cast<size_t>(dibSect.dsBm.bmHeight) &&
+                dibSect.dsBm.bmWidthBytes &&
+                dibSect.dsBmih.biSizeImage == value_preserving_cast<size_t>(dibSect.dsBm.bmHeight*dibSect.dsBm.bmWidthBytes)))
+        {
+            AfxThrowInvalidArgException();
+        }
+        return static_cast<std::byte*>(dibSect.dsBm.bmBits) +
+                    // data is bottom up
+                    (dibSect.dsBm.bmHeight - 1 - value_preserving_cast<ptrdiff_t>(y)) * dibSect.dsBm.bmWidthBytes +
+                    value_preserving_cast<ptrdiff_t>(x) * dibSect.dsBm.bmBitsPixel / 8;
+    }
+
+    COLORREF Get(HBITMAP hbmp, size_t x, size_t y)
+    {
+        switch (BPP(hbmp))
+        {
+            case 16:
+            {
+                std::uint16_t& rgb565 = *static_cast<std::uint16_t*>(Ptr(hbmp, x, y));
+                return RGB565_TO_24(rgb565);
+            }
+            case 24:
+            {
+                std::byte& blue = *static_cast<std::byte*>(Ptr(hbmp, x, y));
+                std::byte& green = *(&blue + 1);
+                std::byte& red = *(&green + 1);
+                return RGB(red, green, blue);
+            }
+            default:
+                CbThrowBadCastException();
+        }
+    }
+
+    void Set(HBITMAP hbmp, size_t x, size_t y, COLORREF c)
+    {
+        switch (BPP(hbmp))
+        {
+            case 16:
+            {
+                std::uint16_t& rgb565 = *static_cast<std::uint16_t*>(Ptr(hbmp, x, y));
+                rgb565 = RGB565(c);
+                break;
+            }
+            case 24:
+            {
+                BYTE& blue = *static_cast<BYTE*>(Ptr(hbmp, x, y));
+                blue = GetBValue(c);
+                BYTE& green = *(&blue + 1);
+                green = GetGValue(c);
+                BYTE& red = *(&green + 1);
+                blue = GetRValue(c);
+                break;
+            }
+            default:
+                CbThrowBadCastException();
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////
 
 CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount)
@@ -288,30 +378,88 @@ uint16_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
 
 ///////////////////////////////////////////////////////////////
 
-void CDib::Fill(uint16_t color)
+void CDib::Fill(COLORREF color)
 {
-    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
-    // Number of pixels (words) to fill
-    size_t nBfrLen = (value_preserving_cast<size_t>(Height()) * WidthBytes(m_hDib)) / sizeof(uint16_t);
-    uint16_t* pwBfr = static_cast<uint16_t*>(m_hDib.GetBits());
-    while (nBfrLen--)
-        *pwBfr++ = color;
+    ASSERT(m_hDib);
+    switch (m_hDib.get().biBitCount)
+    {
+        case 16:
+        {
+            // Number of pixels (words) to fill
+            size_t nBfrLen = (value_preserving_cast<size_t>(Height()) * WidthBytes(m_hDib)) / sizeof(uint16_t);
+            uint16_t* pwBfr = static_cast<uint16_t*>(m_hDib.GetBits());
+            while (nBfrLen--)
+                *pwBfr++ = RGB565(color);
+            break;
+        }
+        case 24:
+        {
+            // no efficient way to manipulate 24bit
+            int width = Width();
+            int height = Height();
+            BYTE red = GetRValue(color);
+            BYTE green = GetGValue(color);
+            BYTE blue = GetBValue(color);
+            for (int y = 0 ; y < height ; ++y)
+            {
+                BYTE* p = static_cast<BYTE*>(m_hDib.DibXY(0, y));
+                for (int x = 0 ; x < width ; ++x)
+                {
+                    *p++ = blue;
+                    *p++ = green;
+                    *p++ = red;
+                }
+            }
+            break;
+        }
+        default:
+            CbThrowBadCastException();
+    }
 }
 
-WORD CDib::Get16BitColorNumberAtXY(int x, int y) const
+COLORREF CDib::GetColorAtXY(int x, int y) const
 {
-    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
+    ASSERT(m_hDib);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    return *((WORD*)m_hDib.DibXY(x, y));
+    switch (m_hDib.get().biBitCount)
+    {
+        case 16:
+            return RGB565_TO_24(*static_cast<const uint16_t*>(m_hDib.DibXY(x, y)));
+        case 24:
+        {
+            const BYTE* p = static_cast<const BYTE*>(m_hDib.DibXY(x, y));
+            BYTE blue = *p++;
+            BYTE green = *p++;
+            BYTE red = *p;
+            return RGB(red, green, blue);
+        }
+        default:
+            CbThrowBadCastException();
+    }
 }
 
-void CDib::Set16BitColorNumberAtXY(int x, int y, WORD nColor)
+void CDib::SetColorAtXY(int x, int y, COLORREF nColor)
 {
-    ASSERT(m_hDib && m_hDib.get().biBitCount == 16);
+    ASSERT(m_hDib);
     ASSERT(x >= 0 && x < Width());
     ASSERT(y >= 0 && y < Height());
-    *((WORD*)m_hDib.DibXY(x, y)) = nColor;
+    switch (m_hDib.get().biBitCount)
+    {
+        case 16:
+            *static_cast<uint16_t*>(m_hDib.DibXY(x, y)) = RGB565(nColor);
+            break;
+        case 24:
+        {
+            BYTE* p = static_cast<BYTE*>(m_hDib.DibXY(x, y));
+            *p++ = GetBValue(nColor);
+            *p++ = GetGValue(nColor);
+            *p = GetRValue(nColor);
+            break;
+        }
+        default:
+            CbThrowBadCastException();
+    }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -368,9 +516,19 @@ OwnerPtr<CBitmap> CDib::DIBToBitmap() const
     OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib.bmiHeader.biWidth,
         pbmiDib.bmiHeader.biHeight);
 
+#if 0
     SetDIBits(NULL, *pBMap, 0,
         pbmiDib.bmiHeader.biHeight, m_hDib.GetBits(), &pbmiDib,
         DIB_RGB_COLORS);
+#else
+    for (int y = 0 ; y < pbmiDib.bmiHeader.biHeight ; ++y)
+    {
+        for (int x = 0 ; x < pbmiDib.bmiHeader.biWidth ; ++x)
+        {
+            Set(*pBMap, value_preserving_cast<size_t>(x), value_preserving_cast<size_t>(y), GetColorAtXY(x, y));
+        }
+    }
+#endif
 
     memDC.SelectPalette(prvPal, FALSE);
 

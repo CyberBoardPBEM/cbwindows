@@ -852,7 +852,7 @@ OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot)
     {
         AfxThrowMemoryException();
     }
-    CDib pDib = sourceDib.Rotate16Bit(static_cast<int>(rot)*90, RGB(255, 255, 255));
+    CDib pDib = sourceDib.Rotate(static_cast<int>(rot)*90, RGB(255, 255, 255));
     return pDib.DIBToBitmap();
 }
 
