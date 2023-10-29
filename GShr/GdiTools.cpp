@@ -150,7 +150,7 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 
 OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 {
-    return CDib::CreateDIBSection(nWidth, nHeight, uint16_t(16));
+    return CDib::CreateDIBSection(nWidth, nHeight, size_t(16));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
 {
-    return CDib::CreateDIBSection(nWidth, nHeight, uint16_t(24));
+    return CDib::CreateDIBSection(nWidth, nHeight, size_t(24));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -186,10 +186,8 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
 void SetRGBDIBSectPixel(CBitmap& hBitmap, int x, int y, COLORREF cr)
 {
-    BYTE* pPxl = (BYTE*)GetDIBSectXYLoc(hBitmap, x, y);
-    *pPxl++ = GetBValue(cr);
-    *pPxl++ = GetGValue(cr);
-    *pPxl   = GetRValue(cr);
+    WIN_RGBTRIO* pPxl = static_cast<WIN_RGBTRIO*>(GetDIBSectXYLoc(hBitmap, x, y));
+    *pPxl = cr;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -200,12 +198,10 @@ void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COL
     while (cy--)
     {
         cx = cxSave;
-        BYTE* pPxl = (BYTE*)GetDIBSectXYLoc(hBitmap, x, y);
+        WIN_RGBTRIO* pPxl = (WIN_RGBTRIO*)GetDIBSectXYLoc(hBitmap, x, y);
         while (cx--)
         {
-            *pPxl++ = GetBValue(cr);
-            *pPxl++ = GetGValue(cr);
-            *pPxl++ = GetRValue(cr);
+            *pPxl++ = cr;
         }
         y++;
     }

@@ -33,10 +33,10 @@ class CBITMAPINFOHEADER
 public:
     CBITMAPINFOHEADER() = default;
     CBITMAPINFOHEADER(std::nullptr_t) : CBITMAPINFOHEADER() {}
-    CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount);
+    CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, size_t wBitCount);
     CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal);
-    CBITMAPINFOHEADER(HBITMAP hDibSect);
     CBITMAPINFOHEADER(const CBITMAPINFOHEADER&) = delete;
+    CBITMAPINFOHEADER(const CBITMAPINFOHEADER& other, size_t wBitCount);
     CBITMAPINFOHEADER(CBITMAPINFOHEADER&&) = default;
     CBITMAPINFOHEADER& operator=(const CBITMAPINFOHEADER&) = delete;
     CBITMAPINFOHEADER& operator=(CBITMAPINFOHEADER&&) = default;
@@ -83,8 +83,8 @@ public:
     operator void*();
 
 private:
-    static WORD GetPaletteSize(const BITMAPINFOHEADER& lpbi);
-    static WORD GetNumColors(const BITMAPINFOHEADER& lpbi);
+    static size_t GetPaletteSize(const BITMAPINFOHEADER& lpbi);
+    static size_t GetNumColors(const BITMAPINFOHEADER& lpbi);
 
     std::vector<std::byte> buf;
 };
@@ -144,7 +144,7 @@ public:
         return BitsToBytes(bmi.biWidth * bmi.biBitCount);
     }
 
-    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP);
+    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, size_t nBPP);
 
 private:
     CDib RotateFast(int angle) const;
@@ -161,7 +161,7 @@ private:
 };
 
 wxImage ToImage(const CBitmap& bmp);
-OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img, size_t bpp = size_t(16));
 
 #endif
 

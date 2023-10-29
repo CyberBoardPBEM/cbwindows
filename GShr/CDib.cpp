@@ -56,7 +56,7 @@ namespace {
                 }
                 // fall through
             case 24:
-                return static_cast<size_t>(dibSect.dsBmih.biBitCount);
+                return value_preserving_cast<size_t>(dibSect.dsBmih.biBitCount);
             default:
                 CbThrowBadCastException();
         }
@@ -80,56 +80,20 @@ namespace {
                     value_preserving_cast<ptrdiff_t>(x) * dibSect.dsBm.bmBitsPixel / 8;
     }
 
-    COLORREF Get(HBITMAP hbmp, size_t x, size_t y)
+    size_t WidthBytes(HBITMAP hbmp)
     {
-        switch (BPP(hbmp))
+        DIBSECTION dibSect;
+        if (!GetObject(hbmp, sizeof(dibSect), &dibSect))
         {
-            case 16:
-            {
-                std::uint16_t& rgb565 = *static_cast<std::uint16_t*>(Ptr(hbmp, x, y));
-                return RGB565_TO_24(rgb565);
-            }
-            case 24:
-            {
-                std::byte& blue = *static_cast<std::byte*>(Ptr(hbmp, x, y));
-                std::byte& green = *(&blue + 1);
-                std::byte& red = *(&green + 1);
-                return RGB(red, green, blue);
-            }
-            default:
-                CbThrowBadCastException();
+            AfxThrowInvalidArgException();
         }
-    }
-
-    void Set(HBITMAP hbmp, size_t x, size_t y, COLORREF c)
-    {
-        switch (BPP(hbmp))
-        {
-            case 16:
-            {
-                std::uint16_t& rgb565 = *static_cast<std::uint16_t*>(Ptr(hbmp, x, y));
-                rgb565 = RGB565(c);
-                break;
-            }
-            case 24:
-            {
-                BYTE& blue = *static_cast<BYTE*>(Ptr(hbmp, x, y));
-                blue = GetBValue(c);
-                BYTE& green = *(&blue + 1);
-                green = GetGValue(c);
-                BYTE& red = *(&green + 1);
-                blue = GetRValue(c);
-                break;
-            }
-            default:
-                CbThrowBadCastException();
-        }
+        return value_preserving_cast<size_t>(dibSect.dsBm.bmWidthBytes);
     }
 }
 
 ///////////////////////////////////////////////////////////////
 
-CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, uint16_t wBitCount)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, size_t wBitCount)
 {
     switch (wBitCount)
     {
@@ -146,12 +110,12 @@ CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, ui
     bi.biWidth = dwWidth;
     bi.biHeight = dwHeight;
     bi.biPlanes = 1;
-    bi.biBitCount = wBitCount;
-    bi.biCompression = wBitCount == 16 ? BI_BITFIELDS : BI_RGB;
+    bi.biBitCount = value_preserving_cast<uint16_t>(wBitCount);
+    bi.biCompression = wBitCount == size_t(16) ? BI_BITFIELDS : BI_RGB;
 
     size_t dataSize = BitsToBytes(bi.biWidth * bi.biBitCount) * value_preserving_cast<size_t>(bi.biHeight);
     reserve(bi.biSize +
-            (wBitCount <= size_t(16) ? GetPaletteSize(bi) : uint16_t(0)) +
+            (wBitCount <= size_t(16) ? GetPaletteSize(bi) : size_t(0)) +
             dataSize);
     *reinterpret_cast<BITMAPINFOHEADER*>(buf.data()) = bi;
 
@@ -172,106 +136,94 @@ CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal)
         CbThrowBadCastException();
     }
 
-    CBITMAPINFOHEADER hDIB;
-    // The target format is 16 bits per pixel, so we avoid the use
-    // of GetDIBits() since it forces 555 format and we desire 565
-    // format.
-
-    // If the bitmap is already a DIB section of the proper format
-    // we can just directly make a DIB.
     DIBSECTION dibSect;
-    if (GetObject(hBitmap, sizeof(dibSect), &dibSect))
+    if (!GetObject(hBitmap, sizeof(dibSect), &dibSect))
     {
-        if (dibSect.dsBmih.biBitCount == 16 && dibSect.dsBitfields[0] == 0xF800)
+        CbThrowBadCastException();
+    }
+    ASSERT(dibSect.dsBmih.biHeight > 0);
+    *this = CBITMAPINFOHEADER(dibSect.dsBmih.biWidth, dibSect.dsBmih.biHeight, size_t(24));
+
+    if (BPP(hBitmap) == size_t(16))
+    {
+        // DIBs are bottom up
+        const uint16_t* srcRowStart = static_cast<const uint16_t*>(Ptr(hBitmap, size_t(0), value_preserving_cast<size_t>(dibSect.dsBmih.biHeight - 1)));
+        ptrdiff_t srcStride = value_preserving_cast<ptrdiff_t>(::WidthBytes(hBitmap) / sizeof(*srcRowStart));
+        std::byte* destRowStart = static_cast<std::byte*>(DibXY(0, dibSect.dsBmih.biHeight - 1));
+        ptrdiff_t destStride = value_preserving_cast<ptrdiff_t>(WidthBytes(*this));
+        for (size_t y = size_t(0) ; y < value_preserving_cast<size_t>(dibSect.dsBmih.biHeight) ; ++y)
         {
-            *this = CBITMAPINFOHEADER(hBitmap);
-            return;
+            const uint16_t* src = srcRowStart;
+            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
+            for (size_t x = size_t(0) ; x < value_preserving_cast<size_t>(dibSect.dsBmih.biWidth) ; ++x)
+            {
+                COLORREF cr = RGB565_TO_24(*src++);
+                *dest++ = cr;
+            }
+            srcRowStart += srcStride;
+            destRowStart += destStride;
         }
     }
-
-    ASSERT(!"untested code");
-    BITMAP bmapSrc;                 // Source bitmap
-    if (!GetObject(hBitmap, sizeof(bmapSrc), &bmapSrc))
+    else
     {
-        CbThrowBadCastException();
+        AfxThrowNotSupportedException();
     }
-
-    // To force the proper 16bit bitmap format we'll use
-    // DIB sections. A DIB section of the desired format is
-    // created and the bitmap is Blited into it. Then the
-    // section is converted to a DIB.
-
-    CBITMAPINFOHEADER bmi(bmapSrc.bmWidth, bmapSrc.bmHeight, uint16_t(16));
-
-    // We need a reference DC for palette bitmaps
-    HDC hMemDCScreen = GetDC(NULL);
-    // WARNING:  this looks strange, but is copied from the original code
-    HDC hMemDCSrc = CreateCompatibleDC(hMemDCScreen);
-    ReleaseDC(NULL, hMemDCSrc);
-
-    HPALETTE hPrvPal = NULL;
-    if (hPal)
-    {
-        ASSERT(!"untested code");
-        hPrvPal = SelectPalette(hMemDCSrc, hPal, FALSE);
-        RealizePalette(hMemDCSrc);
-    }
-
-    LPVOID pBits = NULL;
-    HBITMAP hBmapSect = ::CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
-    if (hBmapSect != NULL)
-    {
-        HDC hMemDCSect = CreateCompatibleDC(hMemDCScreen);
-        HBITMAP hPrvBmapSect = (HBITMAP)SelectObject(hMemDCSect, hBmapSect);
-
-        HBITMAP hPrvBmapSrc = (HBITMAP)SelectObject(hMemDCSrc, hBitmap);
-
-        BitBlt(hMemDCSect, 0, 0, bmapSrc.bmWidth, bmapSrc.bmHeight,
-            hMemDCSrc, 0, 0, SRCCOPY);
-
-        SelectObject(hMemDCSect, hPrvBmapSect);
-        SelectObject(hMemDCSrc, hPrvBmapSrc);
-
-        DeleteDC(hMemDCSect);
-    }
-
-    if (hPrvPal)
-        SelectPalette(hMemDCSrc, hPrvPal, FALSE);
-    DeleteDC(hMemDCSrc);
-
-    // Now that we have the converted bitmap create the
-    // actual DIB.
-    hDIB = CBITMAPINFOHEADER(hBmapSect);
-    DeleteObject(hBmapSect);
-
-    if (!hDIB)
-    {
-        CbThrowBadCastException();
-    }
-    *this = std::move(hDIB);
 }
 
-CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(HBITMAP hDibSect)
+CDib::CBITMAPINFOHEADER::CBITMAPINFOHEADER(const CDib::CBITMAPINFOHEADER& other, size_t wBitCount)
 {
-    DIBSECTION dibSect;
-    if (!GetObject(hDibSect, sizeof(dibSect), &dibSect))
+    const BITMAPINFOHEADER& bmih = other;
+    if (bmih.biBitCount == wBitCount)
     {
-        CbThrowBadCastException();
+        // caller shouldn't ask for unnecessary conversion
+        AfxThrowInvalidArgException();
     }
-
-    ASSERT(dibSect.dsBmih.biBitCount == 16);            // Only support this
-    *this = CBITMAPINFOHEADER(dibSect.dsBmih.biWidth, dibSect.dsBmih.biHeight, dibSect.dsBmih.biBitCount);
-
-    BITMAPINFO& pbmInfoHdr = *this;
-    DWORD* pdwMasks = reinterpret_cast<DWORD*>(pbmInfoHdr.bmiColors);
-
-    pbmInfoHdr.bmiHeader = dibSect.dsBmih;
-
-    ASSERT(pdwMasks[0] == dibSect.dsBitfields[0]);
-    ASSERT(pdwMasks[1] == dibSect.dsBitfields[1]);
-    ASSERT(pdwMasks[2] == dibSect.dsBitfields[2]);
-
-    memcpy(GetBits(), dibSect.dsBm.bmBits, dibSect.dsBmih.biSizeImage);
+    if (bmih.biBitCount == 16 && wBitCount == uint16_t(24))
+    {
+        *this = CBITMAPINFOHEADER(bmih.biWidth, bmih.biHeight, wBitCount);
+        // DIBs are bottom up
+        const uint16_t* srcRowStart = static_cast<const uint16_t*>(other.DibXY(0, bmih.biHeight - 1));
+        ptrdiff_t srcStride = value_preserving_cast<ptrdiff_t>(WidthBytes(other) / sizeof(*srcRowStart));
+        std::byte* destRowStart = static_cast<std::byte*>(DibXY(0, bmih.biHeight - 1));
+        ptrdiff_t destStride = value_preserving_cast<ptrdiff_t>(WidthBytes(*this));
+        for (int y = 0 ; y < bmih.biHeight ; ++y)
+        {
+            const uint16_t* src = srcRowStart;
+            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
+            for (int x = 0 ; x < bmih.biWidth ; ++x)
+            {
+                COLORREF cr = RGB565_TO_24(*src++);
+                *dest++ = cr;
+            }
+            srcRowStart += srcStride;
+            destRowStart += destStride;
+        }
+    }
+    else if (bmih.biBitCount == 24 && wBitCount == uint16_t(16))
+    {
+        *this = CBITMAPINFOHEADER(bmih.biWidth, bmih.biHeight, wBitCount);
+        // DIBs are bottom up
+        const std::byte* srcRowStart = static_cast<const std::byte*>(other.DibXY(0, bmih.biHeight - 1));
+        ptrdiff_t srcStride = value_preserving_cast<ptrdiff_t>(WidthBytes(other));
+        uint16_t* destRowStart = static_cast<uint16_t*>(DibXY(0, bmih.biHeight - 1));
+        ptrdiff_t destStride = value_preserving_cast<ptrdiff_t>(WidthBytes(*this) / sizeof(*destRowStart));
+        for (int y = 0; y < bmih.biHeight; ++y)
+        {
+            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+            uint16_t* dest = destRowStart;
+            for (int x = 0; x < bmih.biWidth; ++x)
+            {
+                COLORREF cr = *src++;
+                *dest++ = RGB565(cr);
+            }
+            srcRowStart += srcStride;
+            destRowStart += destStride;
+        }
+    }
+    else
+    {
+        AfxThrowNotSupportedException();
+    }
 }
 
 CDib::CBITMAPINFOHEADER::operator bool() const
@@ -309,13 +261,13 @@ const void* CDib::CBITMAPINFOHEADER::GetBits() const
 {
     const BITMAPINFOHEADER& lpbi = *this;
     ASSERT(lpbi.biSize == sizeof(lpbi));
-    return(reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi));
+    return(reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + value_preserving_cast<ptrdiff_t>(GetPaletteSize(lpbi)));
 }
 
 const void* CDib::CBITMAPINFOHEADER::DibXY(ptrdiff_t x, ptrdiff_t y) const
 {
     const BITMAPINFOHEADER& lpbi = *this;
-    const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + GetPaletteSize(lpbi);
+    const std::byte* pBits = reinterpret_cast<const std::byte*>(&lpbi) + lpbi.biSize + value_preserving_cast<ptrdiff_t>(GetPaletteSize(lpbi));
     pBits += value_preserving_cast<ptrdiff_t>((WidthBytes(lpbi) * value_preserving_cast<size_t>(lpbi.biHeight - y - 1)) +
         value_preserving_cast<size_t>(x * lpbi.biBitCount / 8));
     return pBits;
@@ -341,26 +293,26 @@ CDib::CBITMAPINFOHEADER::operator void*()
 
 ///////////////////////////////////////////////////////////////////////
 
-uint16_t CDib::CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
+size_t CDib::CBITMAPINFOHEADER::GetPaletteSize(const BITMAPINFOHEADER& lpbi)
 {
     if (lpbi.biBitCount == 24)
     {
-        return uint16_t(0);
+        return size_t(0);
     }
     else
     {
-        return value_preserving_cast<uint16_t>(GetNumColors(lpbi) * sizeof(RGBQUAD));
+        return value_preserving_cast<size_t>(GetNumColors(lpbi) * sizeof(RGBQUAD));
     }
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-uint16_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
+size_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
 {
     // check for explicit count
     if (lpbi.biClrUsed != 0)
     {
-        return value_preserving_cast<uint16_t>(lpbi.biClrUsed);
+        return value_preserving_cast<size_t>(lpbi.biClrUsed);
     }
 
     switch (lpbi.biBitCount)
@@ -368,9 +320,9 @@ uint16_t CDib::CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
         case 1:
         case 4:
         case 8:
-            return static_cast<uint16_t>(1 << lpbi.biBitCount);
+            return size_t(1) << lpbi.biBitCount;
         case 16:
-            return uint16_t(3);       // Special: Used only for the pixel bit masks
+            return size_t(3);       // Special: Used only for the pixel bit masks
         default:
             AfxThrowNotSupportedException();
     }
@@ -385,6 +337,7 @@ void CDib::Fill(COLORREF color)
     {
         case 16:
         {
+            ASSERT(!"dead code");
             // Number of pixels (words) to fill
             size_t nBfrLen = (value_preserving_cast<size_t>(Height()) * WidthBytes(m_hDib)) / sizeof(uint16_t);
             uint16_t* pwBfr = static_cast<uint16_t*>(m_hDib.GetBits());
@@ -394,21 +347,19 @@ void CDib::Fill(COLORREF color)
         }
         case 24:
         {
-            // no efficient way to manipulate 24bit
             int width = Width();
             int height = Height();
-            BYTE red = GetRValue(color);
-            BYTE green = GetGValue(color);
-            BYTE blue = GetBValue(color);
+            // DIBs are bottom up
+            std::byte* destRowStart = static_cast<std::byte*>(m_hDib.DibXY(0, height - 1));
+            ptrdiff_t destStride = value_preserving_cast<ptrdiff_t>(WidthBytes(m_hDib));
             for (int y = 0 ; y < height ; ++y)
             {
-                BYTE* p = static_cast<BYTE*>(m_hDib.DibXY(0, y));
+                WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
                 for (int x = 0 ; x < width ; ++x)
                 {
-                    *p++ = blue;
-                    *p++ = green;
-                    *p++ = red;
+                    *dest++ = color;
                 }
+                destRowStart += destStride;
             }
             break;
         }
@@ -425,14 +376,12 @@ COLORREF CDib::GetColorAtXY(int x, int y) const
     switch (m_hDib.get().biBitCount)
     {
         case 16:
+            ASSERT(!"dead code");
             return RGB565_TO_24(*static_cast<const uint16_t*>(m_hDib.DibXY(x, y)));
         case 24:
         {
-            const BYTE* p = static_cast<const BYTE*>(m_hDib.DibXY(x, y));
-            BYTE blue = *p++;
-            BYTE green = *p++;
-            BYTE red = *p;
-            return RGB(red, green, blue);
+            const WIN_RGBTRIO* p = static_cast<const WIN_RGBTRIO*>(m_hDib.DibXY(x, y));
+            return *p;
         }
         default:
             CbThrowBadCastException();
@@ -447,14 +396,13 @@ void CDib::SetColorAtXY(int x, int y, COLORREF nColor)
     switch (m_hDib.get().biBitCount)
     {
         case 16:
+            ASSERT(!"dead code");
             *static_cast<uint16_t*>(m_hDib.DibXY(x, y)) = RGB565(nColor);
             break;
         case 24:
         {
-            BYTE* p = static_cast<BYTE*>(m_hDib.DibXY(x, y));
-            *p++ = GetBValue(nColor);
-            *p++ = GetGValue(nColor);
-            *p = GetRValue(nColor);
+            WIN_RGBTRIO* p = static_cast<WIN_RGBTRIO*>(m_hDib.DibXY(x, y));
+            *p = nColor;
             break;
         }
         default:
@@ -484,7 +432,7 @@ void CDib::ClearDib()
 
 CDib::CDib(DWORD dwWidth, DWORD dwHeight)
 {
-    m_hDib = CBITMAPINFOHEADER(value_preserving_cast<int32_t>(dwWidth), value_preserving_cast<int32_t>(dwHeight), uint16_t(16));
+    m_hDib = CBITMAPINFOHEADER(value_preserving_cast<int32_t>(dwWidth), value_preserving_cast<int32_t>(dwHeight), size_t(24));
     m_nCompressLevel = 0;
 }
 
@@ -504,41 +452,33 @@ CDib::CDib(const CBitmap& pBM, const CPalette* pPal)
 
 OwnerPtr<CBitmap> CDib::DIBToBitmap() const
 {
-    // This weird code is used to xfer the dib into a dib section
-    // having a standard color table.
-    const BITMAPINFO& pbmiDib = m_hDib;
-    CWindowDC scrnDC(NULL);
-    CDC memDC;
-    memDC.CreateCompatibleDC(&scrnDC);
-    CPalette* prvPal = memDC.SelectPalette(GetAppPalette(), FALSE);
-    memDC.RealizePalette();
+    const BITMAPINFOHEADER& pbmiDib = m_hDib;
 
-    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib.bmiHeader.biWidth,
-        pbmiDib.bmiHeader.biHeight);
+    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(pbmiDib.biWidth,
+        pbmiDib.biHeight);
 
-#if 0
-    SetDIBits(NULL, *pBMap, 0,
-        pbmiDib.bmiHeader.biHeight, m_hDib.GetBits(), &pbmiDib,
-        DIB_RGB_COLORS);
-#else
-    for (int y = 0 ; y < pbmiDib.bmiHeader.biHeight ; ++y)
+    ASSERT(pbmiDib.biBitCount == 24);
+    // DIBs are bottom up
+    const std::byte* srcRowStart = static_cast<const std::byte*>(m_hDib.DibXY(0, pbmiDib.biHeight - 1));
+    ptrdiff_t srcStride = value_preserving_cast<ptrdiff_t>(WidthBytes(pbmiDib));
+    uint16_t* destRowStart = static_cast<uint16_t*>(Ptr(*pBMap, size_t(0), value_preserving_cast<size_t>(pbmiDib.biHeight - 1)));
+    ptrdiff_t destStride = value_preserving_cast<ptrdiff_t>(::WidthBytes(*pBMap) / sizeof(*destRowStart));
+    for (int y = 0 ; y < pbmiDib.biHeight ; ++y)
     {
-        for (int x = 0 ; x < pbmiDib.bmiHeader.biWidth ; ++x)
+        const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+        uint16_t* dest = destRowStart;
+        for (int x = 0 ; x < pbmiDib.biWidth ; ++x)
         {
-            Set(*pBMap, value_preserving_cast<size_t>(x), value_preserving_cast<size_t>(y), GetColorAtXY(x, y));
+            *dest++ = RGB565(*src++);
         }
+        srcRowStart += srcStride;
+        destRowStart += destStride;
     }
-#endif
-
-    memDC.SelectPalette(prvPal, FALSE);
-
-    ASSERT(Width() == pbmiDib.bmiHeader.biWidth &&
-            Height() == pbmiDib.bmiHeader.biHeight);
     pBMap->SetBitmapDimension(Width(), Height());
     return pBMap;
 }
 
-OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight, uint16_t nBPP)
+OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight, size_t nBPP)
 {
     OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
 
@@ -564,7 +504,15 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
                 them, then file format must change */
     if (dib.m_hDib)
     {
-        uint32_t dwSize = value_preserving_cast<uint32_t>(dib.m_hDib.size());
+        // mem format is 24bit, but file format is still 16bit
+        ASSERT(dib.m_hDib.get().biBitCount == 24);
+        OwnerOrNullPtr<CDib::CBITMAPINFOHEADER> converted;
+        if (dib.m_hDib.get().biBitCount != 16)
+        {
+            converted = MakeOwner<CDib::CBITMAPINFOHEADER>(dib.m_hDib, uint16_t(16));
+        }
+        const CDib::CBITMAPINFOHEADER& serialize = converted ? *converted : dib.m_hDib;
+        uint32_t dwSize = value_preserving_cast<uint32_t>(serialize.size());
         ASSERT(dwSize > uint32_t(0));
         ASSERT(dib.m_nCompressLevel >= wxZ_NO_COMPRESSION
             && dib.m_nCompressLevel <= wxZ_BEST_COMPRESSION);
@@ -585,7 +533,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
             wxMemoryOutputStream mstream(pDestBfr.data(), pDestBfr.size());
             {
                 wxZlibOutputStream zstream(mstream, dib.m_nCompressLevel, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
-                bool rc = zstream.WriteAll(&dib.m_hDib.get(), dwSize);
+                bool rc = zstream.WriteAll(&serialize.get(), dwSize);
                 if (!rc)
                 {
                     AfxThrowMemoryException();
@@ -599,7 +547,7 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
         {
             // Store size of the raw dib
             ar << dwSize;
-            ar.Write(&dib.m_hDib.get(), value_preserving_cast<UINT>(dwSize));      // Store the uncompressed bitmap
+            ar.Write(&serialize.get(), value_preserving_cast<UINT>(dwSize));      // Store the uncompressed bitmap
         }
     }
     else
@@ -641,6 +589,14 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
 
         ar.Read(dib.m_hDib, dwSize);
     }
+    if (dib.m_hDib)
+    {
+        // mem format is 24bit, but old files aren't
+        if (dib.m_hDib.get().biBitCount != 24)
+        {
+            dib.m_hDib = CDib::CBITMAPINFOHEADER(dib.m_hDib, size_t(24));
+        }
+    }
     return ar;
 }
 
@@ -657,21 +613,42 @@ wxImage ToImage(const CBitmap& bmp)
     {
         case 16:
         {
-            const uint16_t* srcLine = static_cast<const uint16_t*>(info.bmBits);
+            ASSERT(!"untested code");
+            // DIBS are bottom up;
+            const uint16_t* srcRowStart = static_cast<const uint16_t*>(Ptr(bmp, size_t(0), size_t(0)));
+            ptrdiff_t srcStride = -info.bmWidthBytes / ptrdiff_t(sizeof(*srcRowStart));
             for (int y = 0 ; y < info.bmHeight ; ++y)
             {
-                const uint16_t* src = srcLine;
+                const uint16_t* src = srcRowStart;
                 for (int x = 0 ; x < info.bmWidth ; ++x)
                 {
-                    COLORREF cr = RGB565_TO_24(*src);
-                    // KLUDGE:  data seems to be bottom up
-                    retval.SetRGB(x, info.bmHeight - 1 - y,
+                    COLORREF cr = RGB565_TO_24(*src++);
+                    retval.SetRGB(x, y,
                                     GetRValue(cr),
                                     GetGValue(cr),
                                     GetBValue(cr));
+                }
+                srcRowStart += srcStride;
+            }
+            break;
+        }
+        case 24:
+        {
+            // DIBS are bottom up;
+            const std::byte* srcRowStart = static_cast<const std::byte*>(Ptr(bmp, size_t(0), size_t(0)));
+            ptrdiff_t srcStride = -info.bmWidthBytes;
+            for (int y = 0 ; y < info.bmHeight ; ++y)
+            {
+                const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+                for (int x = 0 ; x < info.bmWidth ; ++x)
+                {
+                    retval.SetRGB(x, y,
+                                    src->red,
+                                    src->green,
+                                    src->blue);
                     ++src;
                 }
-                srcLine += info.bmWidthBytes/sizeof(*srcLine);
+                srcRowStart += srcStride;
             }
             break;
         }
@@ -681,39 +658,72 @@ wxImage ToImage(const CBitmap& bmp)
     return retval;
 }
 
-OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img, size_t bpp /*= size_t(16)*/)
 {
     if (img.HasAlpha() || img.HasMask())
     {
         AfxThrowNotSupportedException();
     }
 
-    OwnerPtr<CBitmap> retval = Create16BitDIBSection(img.GetWidth(), img.GetHeight());
+    OwnerPtr<CBitmap> retval = CDib::CreateDIBSection(img.GetWidth(), img.GetHeight(), bpp);
 
-    DIBSECTION dibSect;
-    VERIFY(GetObject(*retval, sizeof(DIBSECTION), &dibSect));
-    ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
-            dibSect.dsBm.bmHeight == img.GetHeight() &&
-            dibSect.dsBmih.biBitCount == 16 &&
-            dibSect.dsBitfields[0] == 0xf800 &&
-            dibSect.dsBitfields[1] == 0x07e0 &&
-            dibSect.dsBitfields[2] == 0x001f);
-    size_t lineBytes = CDib::WidthBytes(dibSect.dsBmih);
-
-    uint16_t* lineStart = static_cast<uint16_t*>(dibSect.dsBm.bmBits);
-    for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
+    switch (bpp)
     {
-        // KLUDGE:  dibsection data is bottom up
-        int imgY = dibSect.dsBm.bmHeight - y - 1;
-        uint16_t* rgb565 = lineStart;
-        for (int x = 0; x < dibSect.dsBm.bmWidth ; ++x)
+        case 16:
         {
-            uint8_t red = img.GetRed(x, imgY);
-            uint8_t green = img.GetGreen(x, imgY);
-            uint8_t blue = img.GetBlue(x, imgY);
-            *rgb565++ = RGB565(RGB(red, green, blue));
+            DIBSECTION dibSect;
+            VERIFY(GetObject(*retval, sizeof(DIBSECTION), &dibSect));
+            ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
+                    dibSect.dsBm.bmHeight == img.GetHeight() &&
+                    dibSect.dsBmih.biBitCount == 16 &&
+                    dibSect.dsBitfields[0] == 0xf800 &&
+                    dibSect.dsBitfields[1] == 0x07e0 &&
+                    dibSect.dsBitfields[2] == 0x001f);
+
+            // DIBs are bottom up
+            std::uint16_t* destRowStart = static_cast<std::uint16_t*>(Ptr(*retval, size_t(0), value_preserving_cast<size_t>(dibSect.dsBm.bmHeight - 1)));
+            size_t destStride = CDib::WidthBytes(dibSect.dsBmih) / sizeof(*destRowStart);
+
+            for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
+            {
+                uint16_t* dest = destRowStart;
+                for (int x = 0; x < dibSect.dsBm.bmWidth ; ++x)
+                {
+                    uint8_t red = img.GetRed(x, y);
+                    uint8_t green = img.GetGreen(x, y);
+                    uint8_t blue = img.GetBlue(x, y);
+                    *dest++ = RGB565(RGB(red, green, blue));
+                }
+                destRowStart += destStride;
+            }
+            break;
         }
-        reinterpret_cast<std::byte*&>(lineStart) += lineBytes;
+        case 24:
+        {
+            DIBSECTION dibSect;
+            VERIFY(GetObject(*retval, sizeof(DIBSECTION), &dibSect));
+            ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
+                    dibSect.dsBm.bmHeight == img.GetHeight() &&
+                    dibSect.dsBmih.biBitCount == 24);
+
+            // DIBs are bottom up
+            std::byte* destRowStart = static_cast<std::byte*>(Ptr(*retval, size_t(0), value_preserving_cast<size_t>(dibSect.dsBm.bmHeight - 1)));
+            size_t destStride = CDib::WidthBytes(dibSect.dsBmih);
+
+            for (int y = 0; y < dibSect.dsBm.bmHeight ; ++y)
+            {
+                WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
+                for (int x = 0; x < dibSect.dsBm.bmWidth ; ++x)
+                {
+                    dest->red = img.GetRed(x, y);
+                    dest->green = img.GetGreen(x, y);
+                    dest->blue = img.GetBlue(x, y);
+                    ++dest;
+                }
+                destRowStart += destStride;
+            }
+            break;
+        }
     }
 
     return retval;

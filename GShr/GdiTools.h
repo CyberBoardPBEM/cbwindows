@@ -35,10 +35,39 @@
 
 inline UINT ScanBytesFor16bpp(UINT nWidth)
     { return 2 * nWidth + ((nWidth & 1) ? 2 : 0); }
+inline size_t ScanBytesFor24bpp(size_t nWidth)
+    { return (size_t(3)*nWidth + size_t(3)) & ~size_t(3); }
 
 ////////////////////////////////////////////////////////////////////
 
-class CDib;
+// for 24bpp DIBs
+struct WIN_RGBTRIO
+{
+    uint8_t blue;
+    uint8_t green;
+    uint8_t red;
+
+    WIN_RGBTRIO() = default;
+    WIN_RGBTRIO(COLORREF cr)
+    {
+        *this = cr;
+    }
+    WIN_RGBTRIO& operator=(COLORREF cr)
+    {
+        blue = GetBValue(cr);
+        green = GetGValue(cr);
+        red = GetRValue(cr);
+        return *this;
+    }
+
+    operator COLORREF() const
+    {
+        return RGB(red, green, blue);
+    }
+};
+static_assert(sizeof(WIN_RGBTRIO) == 3 &&
+                    alignof(WIN_RGBTRIO) == 1,
+                "WIN_RGBTRIO problem");
 
 ////////////////////////////////////////////////////////////////////
 // Converts 24 bit RGB values to 16 bit 5-6-5 format
