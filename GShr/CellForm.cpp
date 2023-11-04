@@ -145,7 +145,7 @@ void CCellForm::CreateHexMask()
     CDC dcMask;
     dcMask.CreateCompatibleDC(NULL);
     SetupPalette(dcMask);
-    m_pMask = Create16BitDIBSection(
+    m_pMask = CDib::CreateDIBSection(
         m_rct.right, m_rct.bottom);
     ResetPalette(dcMask);
 

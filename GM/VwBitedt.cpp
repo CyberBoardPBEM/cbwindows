@@ -201,7 +201,7 @@ void CBitEditView::OnDraw(CDC* pDC)
 
     if (m_bGridVisible && m_nZoom > 2)
     {
-        OwnerPtr<CBitmap> bmTmp = Create16BitDIBSection(
+        OwnerPtr<CBitmap> bmTmp = CreateRGBDIBSection(
             size.cx + 1, size.cy + 1);
         SetupPalette(g_gt.mDC2);
         g_gt.mDC2.SelectObject(&*bmTmp);
@@ -431,28 +431,32 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     SetupPalette(g_gt.mDC1);
 
     COLORREF crHit = g_gt.mDC1.GetPixel(pt);
-    WORD crHit565 = RGB565(crHit);
     COLORREF crNew = m_pTMgr->GetForeColor();
-    WORD crNew565 = RGB565(crNew);
 
     BITMAP bmap;
     memset(&bmap, 0, sizeof(BITMAP));
     VERIFY(m_bmView->GetObject(sizeof(BITMAP), &bmap));
 
     ASSERT(bmap.bmBits != NULL);
-    ASSERT(bmap.bmBitsPixel == 16);
+    ASSERT(bmap.bmBitsPixel == 24);
     ASSERT(bmap.bmWidthBytes > 1);
     ASSERT(bmap.bmPlanes == 1);
 
-    for (int y = 0; y < bmap.bmHeight; y++)
+    std::byte* pxlRowStart = static_cast<std::byte*>(bmap.bmBits);
+    ptrdiff_t pxlStride = bmap.bmWidthBytes;
+    for (int y = 0 ; y < bmap.bmHeight ; ++y)
     {
-        for (int x = 0; x < bmap.bmWidth; x++)
+        WIN_RGBTRIO* pxl = reinterpret_cast<WIN_RGBTRIO*>(pxlRowStart);
+        for (int x = 0 ; x < bmap.bmWidth ; ++x)
         {
-            WORD* pPxl = (WORD*)((BYTE*)bmap.bmBits +
-                (y * ScanBytesFor16bpp(bmap.bmWidth) + 2 * x));
-            if (*pPxl == crHit565)
-                *pPxl = crNew565;
+            COLORREF cr = *pxl;
+            if (cr == crHit)
+            {
+                *pxl = crNew;
+            }
+            ++pxl;
         }
+        pxlRowStart += pxlStride;
     }
     ::GdiFlush();
 

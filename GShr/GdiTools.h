@@ -33,8 +33,6 @@
 // DIB scan lines are always aligned on DWORD boundries. This inline
 // computes the number of bytes in a 16bits per pixel scan line.
 
-inline UINT ScanBytesFor16bpp(UINT nWidth)
-    { return 2 * nWidth + ((nWidth & 1) ? 2 : 0); }
 inline size_t ScanBytesFor24bpp(size_t nWidth)
     { return (size_t(3)*nWidth + size_t(3)) & ~size_t(3); }
 
@@ -68,22 +66,6 @@ struct WIN_RGBTRIO
 static_assert(sizeof(WIN_RGBTRIO) == 3 &&
                     alignof(WIN_RGBTRIO) == 1,
                 "WIN_RGBTRIO problem");
-
-////////////////////////////////////////////////////////////////////
-// Converts 24 bit RGB values to 16 bit 5-6-5 format
-
-inline WORD RGB565(COLORREF cref)
-{
-    return (WORD)(((cref & 0xF8) << 8) | ((cref & 0xFC00) >> 5) | ((cref & 0xF80000) >> 19));
-}
-
-inline COLORREF RGB565_TO_24(WORD clr16)
-{
-    BYTE r = (((clr16 & 0xF800) >> 11) * 0xFF) / 0x1F;
-    BYTE g = static_cast<BYTE>((((clr16 & 0x7E0) >> 5) * 0xFF) / 0x3F);
-    BYTE b = (( clr16 & 0x1F) * 0xFF) / 0x1F;
-    return RGB(r, g, b);
-}
 
 ////////////////////////////////////////////////////////////////////
 
@@ -164,8 +146,6 @@ int GetYPixelsPerLogicalInch();
 int ScreenPixelsToTenthPoints(int nPixels);
 int TenthPointsToScreenPixels(int nTenthPts);
 int GetCurrentVideoResolution();
-
-OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight);
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
 OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);

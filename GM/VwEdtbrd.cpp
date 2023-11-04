@@ -225,7 +225,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     if (m_bOffScreen)
     {
-        OwnerPtr<CBitmap> bmMem = Create16BitDIBSection(
+        OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
             oRct.Width(), oRct.Height());
         dcMem.CreateCompatibleDC(pDC);
         pPrvBMap = dcMem.SelectObject(&*bmMem);

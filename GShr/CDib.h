@@ -144,7 +144,7 @@ public:
         return BitsToBytes(bmi.biWidth * bmi.biBitCount);
     }
 
-    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight, size_t nBPP);
+    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight);
 
 private:
     CDib RotateFast(int angle) const;
@@ -161,7 +161,7 @@ private:
 };
 
 wxImage ToImage(const CBitmap& bmp);
-OwnerPtr<CBitmap> ToBitmap(const wxImage& img, size_t bpp = size_t(16));
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
 
 #endif
 

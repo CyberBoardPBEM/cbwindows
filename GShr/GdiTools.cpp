@@ -145,20 +145,11 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 }
 
 /////////////////////////////////////////////////////////////////
-// Creates a 16 bit DIB section that is 16 bits per pixel
-// in 5-6-5 format.
-
-OwnerPtr<CBitmap> Create16BitDIBSection(int nWidth, int nHeight)
-{
-    return CDib::CreateDIBSection(nWidth, nHeight, size_t(16));
-}
-
-/////////////////////////////////////////////////////////////////
 // Creates a 24 bit DIB section.
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
 {
-    return CDib::CreateDIBSection(nWidth, nHeight, size_t(24));
+    return CDib::CreateDIBSection(nWidth, nHeight);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -294,7 +285,11 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
 
     if (bmInfo.bmBits != NULL)
     {
-        pbmDst = Create16BitDIBSection(
+        if (bmInfo.bmBitsPixel != 24)
+        {
+            AfxThrowNotSupportedException();
+        }
+        pbmDst = CDib::CreateDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
         BITMAP bmap;
         memset(&bmap, 0, sizeof(BITMAP));
@@ -310,6 +305,7 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
     }
     else
     {
+        ASSERT(!"untested code");
         g_gt.mDC1.SelectObject(pbmSrc);
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, bmInfo.bmWidth, bmInfo.bmHeight);
         g_gt.mDC2.SelectObject(&*pbmDst);
@@ -342,8 +338,8 @@ OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     OwnerPtr<CBitmap> pbmDst = MakeOwner<CBitmap>();
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
-        pbmDst->Attach(Create16BitDIBSection(
-            rct.Width(), rct.Height())->Detach());
+        pbmDst = CDib::CreateDIBSection(
+            rct.Width(), rct.Height());
     }
     else
     {
@@ -403,7 +399,7 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
 
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
-        pbmDst = Create16BitDIBSection(
+        pbmDst = CDib::CreateDIBSection(
             size.cx, size.cy);
     }
     else
@@ -428,7 +424,7 @@ OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
 {
     CBrush brush(cr);
 
-    OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(size.cx, size.cy);
+    OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(size.cx, size.cy);
     g_gt.mDC1.SelectObject(&*pBMap);
     SetupPalette(g_gt.mDC1);
 

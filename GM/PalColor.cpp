@@ -756,8 +756,7 @@ void CColorPalette::UpdateCurrentColors(BOOL bImmediate)
 void CColorPalette::UpdateCurrentColorMix(BOOL bUpdate /* = TRUE*/)
 {
     COLORREF cref = HSVtoRGB(m_nHue, m_nSat, m_nVal);
-    // Make sure we only show possible colors.
-    m_crCurMix = RGB565_TO_24(RGB565(cref));
+    m_crCurMix = cref;
     if (bUpdate)
         InvalidateRect(m_rctColorMix, FALSE);
 }

@@ -452,7 +452,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    OwnerPtr<CBitmap> bmMem = Create16BitDIBSection(
+    OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
         oRct.Width(), oRct.Height());
     dcMem.CreateCompatibleDC(pDC);
     pPrvBMap = dcMem.SelectObject(&*bmMem);
@@ -2041,7 +2041,7 @@ void CPlayBoardView::OnEditCopy()
     SetupPalette(scrnDC);
     CSize size = pBoard->GetSize(m_nZoom);
 
-    OwnerPtr<CBitmap> bmap = Create16BitDIBSection(size.cx, size.cy);
+    OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(size.cx, size.cy);
     CDC dcMem;
     dcMem.CreateCompatibleDC(&scrnDC);
     CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
@@ -2092,7 +2092,7 @@ void CPlayBoardView::OnEditBoardToFile()
         SetupPalette(scrnDC);
         CSize size = pBoard->GetSize(m_nZoom);
 
-        OwnerPtr<CBitmap> bmap = Create16BitDIBSection(
+        OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(
             size.cx, size.cy);
         CDC dcMem;
         dcMem.CreateCompatibleDC(&scrnDC);

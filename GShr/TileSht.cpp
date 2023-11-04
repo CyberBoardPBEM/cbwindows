@@ -142,7 +142,7 @@ void CTileSheet::CreateTile()
         SetupPalette(g_gt.mDC1);
         SetupPalette(g_gt.mDC2);
 
-        OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(
+        OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
         ASSERT(pBMap->m_hObject != NULL);
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
@@ -163,7 +163,7 @@ void CTileSheet::CreateTile()
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
         SetupPalette(g_gt.mDC1);
-        m_pBMap = Create16BitDIBSection(
+        m_pBMap = CDib::CreateDIBSection(
             m_size.cx, m_size.cy);
         g_gt.mDC1.SelectObject(m_pBMap.get());
         g_gt.mDC1.PatBlt(0, 0, m_size.cx, m_size.cy, WHITENESS);
@@ -195,7 +195,7 @@ void CTileSheet::DeleteTile(int yLoc)
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
         SetupPalette(g_gt.mDC2);
 
-        OwnerPtr<CBitmap> pBMap = Create16BitDIBSection(
+        OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
 
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
@@ -251,7 +251,7 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 
     if (bmap.bmBits != NULL)                // DIB Section check
     {
-        pBMap = Create16BitDIBSection(
+        pBMap = CDib::CreateDIBSection(
             m_size.cx, m_size.cy);
     }
     else
@@ -303,41 +303,46 @@ void CTileSheet::TransBlt(CDC& pDC, int xDst, int yDst, int ySrc,
     ::GetObject(hBMapDest, sizeof(BITMAP), &bmapDest);
     ASSERT(bmapTile.bmBits != NULL && bmapDest.bmBits != NULL);
 
-    LPBYTE pTile = (LPBYTE)bmapTile.bmBits;
-    LPBYTE pDest = (LPBYTE)bmapDest.bmBits;
-
-    WORD cr16Trans = RGB565(crTrans);
-
     CPoint pntOrg = pDC.GetViewportOrg();
     xDst += pntOrg.x;
     yDst += pntOrg.y;
-    int xDstBase = xDst;
 
-    ASSERT(bmapTile.bmBitsPixel == 16);
-    int nBytesPerScanLineTile = value_preserving_cast<int>(CDib::BitsToBytes(bmapTile.bmWidth * 16));
-    ASSERT(bmapDest.bmBitsPixel == 16);
-    int nBytesPerScanLineDest = value_preserving_cast<int>(CDib::BitsToBytes(bmapDest.bmWidth * 16));
-    for (int nScanLine = 0; nScanLine < m_size.cy; nScanLine++)
+    ASSERT(bmapTile.bmBitsPixel == 24);
+    // DIBs are bottom-up
+    ptrdiff_t srcStride = -bmapTile.bmWidthBytes;
+    const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
+                (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
+    ASSERT(bmapDest.bmBitsPixel == 24);
+    ptrdiff_t destStride = -bmapDest.bmWidthBytes;
+    std::byte* destRowStart = static_cast<std::byte*>(bmapDest.bmBits) +
+                (bmapDest.bmHeight - 1 - yDst) * -destStride +
+                xDst * (bmapDest.bmBitsPixel / 8);
+
+    for (int y = 0 ;
+        y < m_size.cy && yDst + y < bmapDest.bmHeight ;
+        ++y)
     {
-        xDst = xDstBase;
-        WORD* pPxlTile = (WORD*)(pTile + (bmapTile.bmHeight - ySrc - 1) *
-            nBytesPerScanLineTile);
-        WORD* pPxlDest = (WORD*)(pDest + (bmapDest.bmHeight - yDst - 1) *
-            nBytesPerScanLineDest + 2 * xDst); // Two bytes per pixel
-        for (int nPxl = 0; nPxl < m_size.cx; nPxl++)
+        if (yDst + y >= 0)
         {
-            if (*pPxlTile != cr16Trans &&
-                xDst >= 0 && xDst < bmapDest.bmWidth &&
-                yDst >= 0 && yDst < bmapDest.bmHeight)
+            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
+            for (int x = 0 ;
+                x < m_size.cx && xDst + x < bmapDest.bmWidth ;
+                ++x)
             {
-                *pPxlDest = *pPxlTile;
+                COLORREF cr = *src++;
+                if (xDst + x >= 0)
+                {
+                    if (cr != crTrans)
+                    {
+                        *dest = cr;
+                    }
+                }
+                ++dest;
             }
-            pPxlDest++;
-            pPxlTile++;
-            xDst++;
         }
-        yDst++;
-        ySrc++;
+        srcRowStart += srcStride;
+        destRowStart += destStride;
     }
 }
 
@@ -361,52 +366,55 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int y
     ::GetObject(hBMapDest, sizeof(BITMAP), &bmapDest);
     ASSERT(bmapTile.bmBits != NULL && bmapDest.bmBits != NULL);
 
-    LPBYTE pTile = (LPBYTE)bmapTile.bmBits;
-    LPBYTE pDest = (LPBYTE)bmapDest.bmBits;
-    LPBYTE pMask = (LPBYTE)pMaskBMapInfo.bmBits;
-
-    WORD cr16Trans = RGB565(crTrans);
     CPoint pntOrg = pDC.GetViewportOrg();
     xDst += pntOrg.x;
     yDst += pntOrg.y;
-    int xDstBase = xDst;
 
-    ASSERT(bmapTile.bmBitsPixel == 16);
-    int nBytesPerScanLineTile = value_preserving_cast<int>(CDib::BitsToBytes(bmapTile.bmWidth * 16));
-    ASSERT(bmapDest.bmBitsPixel == 16);
-    int nBytesPerScanLineDest = value_preserving_cast<int>(CDib::BitsToBytes(bmapDest.bmWidth * 16));
-    ASSERT(pMaskBMapInfo.bmBitsPixel == 16);
-    int nBytesPerScanLineMask = value_preserving_cast<int>(CDib::BitsToBytes(pMaskBMapInfo.bmWidth * 16));
-    for (int nScanLine = 0; nScanLine < m_size.cy; nScanLine++)
+    ASSERT(bmapTile.bmBitsPixel == 24);
+    ptrdiff_t srcStride = -bmapTile.bmWidthBytes;
+    const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
+                                        (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
+    ASSERT(bmapDest.bmBitsPixel == 24);
+    ptrdiff_t destStride = -bmapDest.bmWidthBytes;
+    std::byte* destRowStart = static_cast<std::byte*>(bmapDest.bmBits) +
+                                        (bmapDest.bmHeight - 1 - yDst) * -destStride +
+                                        xDst * (bmapDest.bmBitsPixel / 8);
+    ASSERT(pMaskBMapInfo.bmBitsPixel == 24);
+    ptrdiff_t maskStride = -pMaskBMapInfo.bmWidthBytes;
+    const std::byte* maskRowStart = static_cast<const std::byte*>(pMaskBMapInfo.bmBits) +
+                                        (pMaskBMapInfo.bmHeight - 1) * -maskStride;
+
+    for (int y = 0 ;
+        y < std::min(m_size.cy, pMaskBMapInfo.bmHeight) &&
+                yDst + y < bmapDest.bmHeight ;
+        ++y)
     {
-        xDst = xDstBase;
-
-        WORD* pPxlTile = (WORD*)(pTile + (bmapTile.bmHeight - ySrc - 1) *
-            nBytesPerScanLineTile);
-        WORD* pPxlDest = (WORD*)(pDest + (bmapDest.bmHeight - yDst - 1) *
-            nBytesPerScanLineDest + 2 * xDst); // Two bytes per pixel
-        WORD* pPxlMask = (WORD*)(pMask + (pMaskBMapInfo.bmHeight - nScanLine - 1) *
-            nBytesPerScanLineMask);
-
-        for (int nPxl = 0; nPxl < m_size.cx; nPxl++)
+        if (yDst + y >= 0)
         {
-            if (nScanLine < pMaskBMapInfo.bmHeight &&  // Still in mask?
-                nPxl < pMaskBMapInfo.bmWidth &&        // Still in mask?
-                *pPxlMask == 0 &&                       // Only black mask bits get through
-                *pPxlTile != cr16Trans &&
-                xDst >= 0 && xDst < bmapDest.bmWidth &&
-                yDst >= 0 && yDst < bmapDest.bmHeight)
+            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
+            const WIN_RGBTRIO* mask = reinterpret_cast<const WIN_RGBTRIO*>(maskRowStart);
+            for (int x = 0 ;
+                x < std::min(m_size.cx, pMaskBMapInfo.bmWidth) &&
+                        xDst + x < bmapDest.bmWidth ;
+                ++x)
             {
-                *pPxlDest = *pPxlTile;
+                COLORREF crMask = *mask++;
+                COLORREF crSrc = *src++;
+                if (xDst + x >= 0)
+                {
+                    if (crMask == RGB(0, 0, 0) &&   // Only black mask bits get through
+                        crSrc != crTrans)
+                    {
+                        *dest = crSrc;
+                    }
+                }
+                ++dest;
             }
-            pPxlDest++;
-            pPxlTile++;
-            pPxlMask++;
-
-            xDst++;
         }
-        yDst++;
-        ySrc++;
+        srcRowStart += srcStride;
+        destRowStart += destStride;
+        maskRowStart += maskStride;
     }
 }
 

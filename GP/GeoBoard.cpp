@@ -632,7 +632,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
     CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
     dc.RealizePalette();
 
-    OwnerPtr<CBitmap> retval = Create16BitDIBSection(size.cx, size.cy);
+    OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
     CBitmap* prvBMap = dc.SelectObject(&*retval);
 
     CBrush brush(m_pDoc->GetTileManager()->GetTransparentColor());
