@@ -424,7 +424,7 @@ HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight)
     for (int h = 0; h < nHueDivisions; h++)
     {
         dh = 359.0 * h / (double)(nHueDivisions - 1);
-        HSVtoRGB(dh, 1.0, 1.0, &r, &g, &b);
+        HSVtoRGB(dh, 1.0, 1.0, r, g, b);
         cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
         Set16BitDIBSectPixelBlock(hBitmap, h, 0, 1, nHeight, cref);
     }
@@ -508,14 +508,14 @@ HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBl
         dh = 359.0 * h / (double)(nHues - 1);
         for (int v = 1; v < nHueVSteps + 1; v++)
         {
-            HSVtoRGB(dh,  1.0, (double)v / nHueVSteps, &r, &g, &b);
+            HSVtoRGB(dh,  1.0, (double)v / nHueVSteps, r, g, b);
             cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
             Set16BitDIBSectPixelBlock(hBitmap, x, y, cxBlock, cyBlock, cref);
             y += cyBlock;
         }
         for (int s = 1; s < nHueSSteps + 1; s++)
         {
-            HSVtoRGB(dh, 1.0 - (double)s / (nHueSSteps + 1), 1.0, &r, &g, &b);
+            HSVtoRGB(dh, 1.0 - (double)s / (nHueSSteps + 1), 1.0, r, g, b);
             cref = RGB((int)(r * 255), (int)(g * 255), (int)(b * 255));
             Set16BitDIBSectPixelBlock(hBitmap, x, y, cxBlock, cyBlock, cref);
             y += cyBlock;
@@ -533,19 +533,19 @@ HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBl
 COLORREF HSVtoRGB(int h, int s, int v)
 {
     double r, g, b;
-    HSVtoRGB((double)h, (double)s/255, (double)v/255, &r, &g, &b);
+    HSVtoRGB((double)h, (double)s/255, (double)v/255, r, g, b);
     return RGB((int)(r * 255 + 0.5), (int)(g * 255 + 0.5), (int)(b * 255 + 0.5));
 }
 
 /////////////////////////////////////////////////////////////////
 
-void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b)
+void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b)
 {
     double f, p, q, t;
     int i;
 
     if (s == 0.0)
-        *r = *g = *b = v;
+        r = g = b = v;
     else
     {
         if (h >= 360.0)
@@ -558,12 +558,12 @@ void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b)
         t = v * (1.0 - s * (1.0 - f));
         switch (i)
         {
-            case 0: *r = v; *g = t; *b = p; break;
-            case 1: *r = q; *g = v; *b = p; break;
-            case 2: *r = p; *g = v; *b = t; break;
-            case 3: *r = p; *g = q; *b = v; break;
-            case 4: *r = t; *g = p; *b = v; break;
-            case 5: *r = v; *g = p; *b = q; break;
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
         }
     }
 }
@@ -613,20 +613,20 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
 // The copy excludes the right and bottom edges of rctSrc.
 // If a crVoided color is supplied, the source bitmap will have its
 // copied region filled with that color.
-void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
+OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     COLORREF crVoided /* = noColor */)
 {
-    ASSERT(pbmSrc != NULL && pbmSrc->m_hObject != NULL);
-    pbmDst->DeleteObject();
+    ASSERT(pbmSrc.m_hObject != NULL);
     BITMAP bmInfo;
     memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc->GetObject(sizeof(bmInfo), &bmInfo);
+    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
     CRect rct(0, 0, bmInfo.bmWidth, bmInfo.bmHeight);
     rct &= rctSrc;
     ASSERT(!rct.IsRectEmpty());
 
-    g_gt.mDC1.SelectObject(pbmSrc);
+    g_gt.mDC1.SelectObject(&pbmSrc);
 
+    OwnerPtr<CBitmap> pbmDst = MakeOwner<CBitmap>();
     if (bmInfo.bmBits != NULL)      // Check for DIB Section
     {
         pbmDst->Attach(Create16BitDIBSection(
@@ -637,7 +637,7 @@ void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, rct.Width(), rct.Height());
     }
 
-    g_gt.mDC2.SelectObject(pbmDst);
+    g_gt.mDC2.SelectObject(&*pbmDst);
 
     // I don't select and realize the palettes since they aren't used
     // in memory to memory Bitblt operations.
@@ -651,6 +651,8 @@ void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
         ResetPalette(g_gt.mDC1);
     }
     g_gt.ClearMemDCBitmaps();
+
+    return pbmDst;
 }
 
 // Draws on the source bitmap over the destination bitmap at the

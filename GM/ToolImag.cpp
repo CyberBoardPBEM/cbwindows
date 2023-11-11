@@ -1,6 +1,6 @@
 // ToolImag.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -219,14 +219,14 @@ void CBitSelectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
             rct.bottom++;
             // Copy selected area into the paste bitmap.
             pView->SetUndoFromView();
-            CopyBitmapPiece(pView->GetPasteBitmap(),
-                pView->GetCurrentMasterBitmap(), rct,
+            pView->GetPasteBitmap() = CopyBitmapPiece(
+                *pView->GetCurrentMasterBitmap(), rct,
                 pView->GetBackColor());
             pView->InvalidateFocusBorder();
         }
         pView->SetSelectRect(rct);
-        pView->GetTileSelectView()->UpdateViewImage(NULL, TRUE);
-        pView->InvalidateViewImage(NULL);
+        pView->GetTileSelectView().UpdateViewImage(NULL, TRUE);
+        pView->InvalidateViewImage(false);
     }
     else
         pView->InvalidateFocusBorder();

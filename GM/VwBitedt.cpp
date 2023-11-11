@@ -158,7 +158,7 @@ BOOL CBitEditView::PreCreateWindow(CREATESTRUCT& cs)
 void CBitEditView::OnInitialUpdate()
 {
     CScrollView::OnInitialUpdate();
-    m_pTMgr = GetDocument()->GetTileManager();
+    m_pTMgr = GetDocument().GetTileManager();
     UpdateFontInfo();
     RecalcScrollLimits();
 }
@@ -256,17 +256,17 @@ void CBitEditView::OnActivateView(BOOL bActivate, CView *pActivateView,
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CBitEditView::ClientToWorkspace(CPoint& pnt)
+void CBitEditView::ClientToWorkspace(CPoint& pnt) const
 {
     pnt += (CSize)GetDeviceScrollPosition();
 }
 
-void CBitEditView::WorkspaceToClient(CPoint& pnt)
+void CBitEditView::WorkspaceToClient(CPoint& pnt) const
 {
     pnt -= (CSize)GetDeviceScrollPosition();
 }
 
-void CBitEditView::WorkspaceToClient(CRect& rct)
+void CBitEditView::WorkspaceToClient(CRect& rct) const
 {
     rct -= GetDeviceScrollPosition();
 }
@@ -303,7 +303,7 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
     g_gt.mDC1.SelectObject(pPrvBrush);
     g_gt.SelectSafeObjectsForDC1();
 
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -326,7 +326,7 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
     }
     g_gt.SelectSafeObjectsForDC1();
 
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -336,7 +336,7 @@ void CBitEditView::DrawPastedImage()
     SetViewImageFromMasterImage();          // Get fresh original
     MergeBitmap(*m_bmView, *m_bmPaste, m_rctPaste.TopLeft());
 
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -371,7 +371,7 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
 
     g_gt.SelectSafeObjectsForDC1();
 
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -400,7 +400,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
 
     g_gt.SelectSafeObjectsForDC1();
 
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -420,7 +420,7 @@ void CBitEditView::DrawImageFill(CPoint pt)
     g_gt.SelectSafeObjectsForDC2();
 
     SetMasterImageFromViewImage();
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -459,7 +459,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
 
     g_gt.SelectSafeObjectsForDC1();
     SetMasterImageFromViewImage();
-    InvalidateViewImage(NULL, TRUE);
+    InvalidateViewImage(true);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
@@ -533,12 +533,12 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CBitmap *CBitEditView::GetCurrentViewBitmap()
+OwnerPtr<CBitmap>& CBitEditView::GetCurrentViewBitmap()
 {
-    return &*m_bmView;
+    return m_bmView;
 }
 
-void CBitEditView::SetCurrentBitmap(TileID tid, CBitmap *pBMap,
+void CBitEditView::SetCurrentBitmap(TileID tid, const CBitmap* pBMap,
     BOOL bFillOnly /* = FALSE */)
 {
     if (m_nCurToolID == ID_ITOOL_TEXT)
@@ -570,16 +570,14 @@ void CBitEditView::SetCurrentBitmap(TileID tid, CBitmap *pBMap,
     Invalidate();
 }
 
-CBitmap* CBitEditView::SetViewImageFromMasterImage()
+void CBitEditView::SetViewImageFromMasterImage()
 {
     m_bmView = CloneBitmap(*m_bmMaster);
-    return &*m_bmView;
 }
 
-CBitmap* CBitEditView::SetMasterImageFromViewImage()
+void CBitEditView::SetMasterImageFromViewImage()
 {
     m_bmMaster = CloneBitmap(*m_bmView);
-    return &*m_bmView;
 }
 
 // Clear main image, undo images,  etc...
@@ -598,7 +596,7 @@ void CBitEditView::ClearPasteImage()
     m_rctPaste.SetRectEmpty();
 }
 
-BOOL CBitEditView::GetImagePixelLoc(CPoint& point)
+BOOL CBitEditView::GetImagePixelLoc(CPoint& point) const
 {
 //  point += (CSize)GetDeviceScrollPosition();
     point -= CSize(xBorder, yBorder);
@@ -610,7 +608,7 @@ BOOL CBitEditView::GetImagePixelLoc(CPoint& point)
 
 // Same as GetImagePixelLoc except the point is clamped to
 // always be in the image.
-void CBitEditView::GetImagePixelLocClamped(CPoint& point)
+void CBitEditView::GetImagePixelLocClamped(CPoint& point) const
 {
 //  point += (CSize)GetDeviceScrollPosition();
     point -= CSize(xBorder, yBorder);
@@ -639,35 +637,21 @@ void CBitEditView::InvalidateFocusBorder(BOOL bUpdate /* = FALSE */)
         UpdateWindow();
 }
 
-void CBitEditView::InvalidateViewImage(CRect* pRct, BOOL bUpdate /* = FALSE */)
+void CBitEditView::InvalidateViewImage(bool bUpdate)
 {
-    CRect rct;
-    if (pRct == NULL)
-        rct = GetImageRect();
-    else
-    {
-        rct = *pRct;
-        if (m_nZoom > 1)
-        {
-            rct.left *= m_nZoom;
-            rct.right *= m_nZoom;
-            rct.top *= m_nZoom;
-            rct.bottom *= m_nZoom;
-        }
-        rct.OffsetRect(xBorder, yBorder);
-    }
+    CRect rct = GetImageRect();
     WorkspaceToClient(rct);
     InvalidateRect(&rct, TRUE);
     if (bUpdate)
         UpdateWindow();
 }
 
-BOOL CBitEditView::IsPtInImage(CPoint point)
+BOOL CBitEditView::IsPtInImage(CPoint point) const
 {
     return GetImageRect().PtInRect(point);
 }
 
-CRect CBitEditView::GetImageRect()
+CRect CBitEditView::GetImageRect() const
 {
     CRect rct;
     if (m_bmMaster->m_hObject != NULL)
@@ -697,21 +681,21 @@ void CBitEditView::RecalcScrollLimits()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CBitEditView::IsPtInSelectRect(CPoint point)
+BOOL CBitEditView::IsPtInSelectRect(CPoint point) const
 {
     if (m_rctPaste.IsRectEmpty())
         return FALSE;
     return GetZoomedSelectRect().PtInRect(point);
 }
 
-CRect CBitEditView::GetZoomedSelectBorderRect()
+CRect CBitEditView::GetZoomedSelectBorderRect() const
 {
     CRect rct = GetZoomedSelectRect();
     rct.InflateRect(xBorder, yBorder);
     return rct;
 }
 
-CRect CBitEditView::GetZoomedSelectRect()
+CRect CBitEditView::GetZoomedSelectRect() const
 {
     CRect rct(m_rctPaste.left * m_nZoom, m_rctPaste.top * m_nZoom,
         m_rctPaste.right * m_nZoom, m_rctPaste.bottom * m_nZoom);
@@ -726,7 +710,7 @@ CRect CBitEditView::GetZoomedSelectRect()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CBitEditView::CalcCaretHeight(int yLoc)
+int CBitEditView::CalcCaretHeight(int yLoc) const
 {
     if (yLoc >= m_size.cy) return 0;
     int yEnd = yLoc + m_tmHeight;
@@ -777,7 +761,7 @@ void CBitEditView::UpdateTextView()
         SetupPalette(g_gt.mDC1);
         g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
-        CFontTbl* pFMgr = GetDocument()->GetFontManager();
+        CFontTbl* pFMgr = GetDocument().GetFontManager();
         CFont* pPrvFont = g_gt.mDC1.SelectObject(
             CFont::FromHandle(pFMgr->GetFontHandle(GetBitFont())));
         g_gt.mDC1.SetBkMode(TRANSPARENT);
@@ -789,7 +773,7 @@ void CBitEditView::UpdateTextView()
         g_gt.mDC1.SelectObject(pPrvFont);
         g_gt.mDC1.SetTextAlign(nAlign);
         g_gt.SelectSafeObjectsForDC1();
-        InvalidateViewImage(NULL, TRUE);
+        InvalidateViewImage(true);
         m_pSelView->UpdateViewImage(NULL, TRUE);
     }
     FixupTextCaret();
@@ -828,7 +812,7 @@ FontID CBitEditView::GetBitFont()
 void CBitEditView::UpdateFontInfo()
 {
     CDC* pDC = GetDC();
-    CFontTbl* pFMgr = GetDocument()->GetFontManager();
+    CFontTbl* pFMgr = GetDocument().GetFontManager();
     CFont *pFont = CFont::FromHandle(pFMgr->GetFontHandle(GetBitFont()));
     CFont* pPrvFont = pDC->SelectObject(pFont);
     TEXTMETRIC tm;
@@ -1023,7 +1007,7 @@ IToolType CBitEditView::MapToolType(UINT nToolResID)
 void CBitEditView::OnImageGridLines()
 {
     m_bGridVisible = !m_bGridVisible;
-    InvalidateViewImage(NULL, FALSE);
+    InvalidateViewImage(false);
 }
 
 void CBitEditView::OnUpdateImageGridLines(CCmdUI* pCmdUI)
@@ -1097,7 +1081,7 @@ LRESULT CBitEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 LRESULT CBitEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
     LPVOID pCustomColors = (LPVOID)wParam;
-    GetDocument()->SetCustomColors(pCustomColors);
+    GetDocument().SetCustomColors(pCustomColors);
     return (LRESULT)0;
 }
 
@@ -1124,7 +1108,7 @@ void CBitEditView::OnUpdateColorTransparent(CCmdUI* pCmdUI)
 
 void CBitEditView::OnUpdateColorCustom(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetCustomColors(GetDocument()->GetCustomColors());
+    ((CColorCmdUI*)pCmdUI)->SetCustomColors(GetDocument().GetCustomColors());
 }
 
 void CBitEditView::OnUpdateLineWidth(CCmdUI* pCmdUI)
@@ -1134,7 +1118,7 @@ void CBitEditView::OnUpdateLineWidth(CCmdUI* pCmdUI)
 
 void CBitEditView::OnImageBoardMask()
 {
-    CBoardManager* pBMgr = GetDocument()->GetBoardManager();
+    CBoardManager* pBMgr = GetDocument().GetBoardManager();
 
     CBoardMaskDialog dlg;
     dlg.m_pBMgr = pBMgr;
@@ -1167,14 +1151,14 @@ void CBitEditView::OnImageBoardMask()
     g_gt.SelectSafeObjectsForDC1();
 
     SetMasterImageFromViewImage();
-    InvalidateViewImage(NULL);
+    InvalidateViewImage(false);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 
 void CBitEditView::OnUpdateImageBoardMask(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_pSelView->GetCurrentScale() != smallScale &&
-        !GetDocument()->GetBoardManager()->IsEmpty());
+        !GetDocument().GetBoardManager()->IsEmpty());
 }
 
 void CBitEditView::OnUpdateViewZoomIn(CCmdUI* pCmdUI)
@@ -1247,7 +1231,7 @@ void CBitEditView::OnEditUndo()
         return;
     RestoreUndoToView();
     SetMasterImageFromViewImage();
-    InvalidateViewImage(NULL);
+    InvalidateViewImage(false);
     m_pSelView->UpdateViewImage(NULL, TRUE);
 }
 

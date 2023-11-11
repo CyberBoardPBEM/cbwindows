@@ -1,6 +1,6 @@
 // VwTilesl.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -115,10 +115,10 @@ BOOL CTileSelView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CTileSelView::OnInitialUpdate()
 {
-    m_pTileMgr = GetDocument()->GetTileManager();
+    m_pTileMgr = GetDocument().GetTileManager();
     ASSERT(m_pTileMgr != NULL);
     CScrollView::OnInitialUpdate();
-    m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument()->GetCreateParameter()));
+    m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
     ASSERT(m_tid != nullTid);
 
     // Fetch full scale tile
@@ -179,23 +179,23 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileSelView::SetBitEditor(CBitEditView *pEditView)
+void CTileSelView::SetBitEditor(CBitEditView& pEditView)
 {
-    m_pEditView = pEditView;
+    m_pEditView = &pEditView;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTileSelView drawing
 
-void CTileSelView::DrawTile(CDC* pDC, CBitmap* pBMap, CRect rct)
+void CTileSelView::DrawTile(CDC& pDC, CBitmap& pBMap, CRect rct)
 {
     CBrush brBlack;
     brBlack.CreateStockObject(BLACK_BRUSH);
-    g_gt.mDC1.SelectObject(pBMap);
-    pDC->BitBlt(rct.left, rct.top, rct.Width(), rct.Height(),
+    g_gt.mDC1.SelectObject(&pBMap);
+    pDC.BitBlt(rct.left, rct.top, rct.Width(), rct.Height(),
         &g_gt.mDC1, 0, 0, SRCCOPY);
     rct.InflateRect(1, 1);
-    pDC->FrameRect(&rct, &brBlack);
+    pDC.FrameRect(&rct, &brBlack);
 }
 
 void CTileSelView::OnDraw(CDC* pDC)
@@ -204,24 +204,24 @@ void CTileSelView::OnDraw(CDC* pDC)
     CRect rctActive;
 
     if (m_eCurTile != fullScale)
-        DrawTile(pDC, &*m_bmFull, m_rctFull);
+        DrawTile(*pDC, *m_bmFull, m_rctFull);
     else
         rctActive = m_rctFull;
 
     if (m_eCurTile != halfScale)
-        DrawTile(pDC, &*m_bmHalf, m_rctHalf);
+        DrawTile(*pDC, *m_bmHalf, m_rctHalf);
     else
         rctActive = m_rctHalf;
 
     if (m_eCurTile != smallScale)
-        DrawTile(pDC, &*m_bmSmall, m_rctSmall);
+        DrawTile(*pDC, *m_bmSmall, m_rctSmall);
     else
         rctActive = m_rctSmall;
 
-    CBitmap* pbm = m_pEditView->GetCurrentViewBitmap();
-    ASSERT(pbm->m_hObject != NULL);
+    CBitmap& pbm = *m_pEditView->GetCurrentViewBitmap();
+    ASSERT(pbm.m_hObject != NULL);
 
-    DrawTile(pDC, pbm, rctActive);
+    DrawTile(*pDC, pbm, rctActive);
 
     rctActive.InflateRect(nBorderWidth + 1, nBorderWidth + 1);
     Draw25PctPatBorder(*this, *pDC, rctActive, nBorderWidth);
@@ -267,7 +267,7 @@ void CTileSelView::UpdateViewImage(CRect* pRct, BOOL bImmed /* = FALSE */)
     CRect rct = GetActiveTileRect();
     if (pRct)
         rct = *pRct;
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
     InvalidateRect(&rct, FALSE);
     if (bImmed)
         UpdateWindow();
@@ -277,7 +277,7 @@ void CTileSelView::UpdateViewImage(CRect* pRct, BOOL bImmed /* = FALSE */)
 
 void CTileSelView::UpdateDocumentTiles()
 {
-    CGamDoc *pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     // Make sure our bitmaps are up to date.
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
 
@@ -293,8 +293,8 @@ void CTileSelView::UpdateDocumentTiles()
     // Finally handle various notifications
     CGmBoxHint hint;
     hint.GetArgs<HINT_TILEMODIFIED>().m_tid = m_tid;
-    pDoc->UpdateAllViews(this, HINT_TILEMODIFIED, &hint);
-    pDoc->SetModifiedFlag();
+    pDoc.UpdateAllViews(this, HINT_TILEMODIFIED, &hint);
+    pDoc.SetModifiedFlag();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -303,7 +303,7 @@ void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
-    dlg.m_pBMgr = GetDocument()->GetBoardManager();
+    dlg.m_pBMgr = GetDocument().GetBoardManager();
     dlg.m_bRescaleBMaps = TRUE;
     dlg.m_nWidth = m_sizeFull.cx;
     dlg.m_nHeight = m_sizeFull.cy;
@@ -373,7 +373,7 @@ void CTileSelView::DoTileRotation(int nAngle)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTileSelView::IsUndoAvailable()
+BOOL CTileSelView::IsUndoAvailable() const
 {
     return m_pBmFullUndo != NULL;
 }
@@ -443,7 +443,7 @@ void CTileSelView::CalcViewLayout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CRect CTileSelView::GetActiveTileRect()
+CRect CTileSelView::GetActiveTileRect() const
 {
     if (m_eCurTile == fullScale)
         return m_rctFull;
@@ -453,7 +453,7 @@ CRect CTileSelView::GetActiveTileRect()
         return m_rctSmall;
 }
 
-CPoint CTileSelView::GetActiveTileLoc()
+CPoint CTileSelView::GetActiveTileLoc() const
 {
     if (m_eCurTile == fullScale)
         return m_rctFull.TopLeft();

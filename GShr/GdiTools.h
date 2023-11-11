@@ -174,14 +174,17 @@ void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLO
 COLORREF GetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y);
 
 COLORREF HSVtoRGB(int h, int s, int v);
-void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b);
+void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
 void ClearSystemPalette();
 void SetupColorTable(CDWordArray* pTbl, BOOL bInclBlackAndWhite = TRUE);
 void SetupPalette(CDC& pDC);
 void ResetPalette(CDC& pDC);
 OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
-void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
+// The copy excludes the right and bottom edges of rctSrc.
+// If a crVoided color is supplied, the source bitmap will have its
+// copied region filled with that color.
+OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     COLORREF crVoided = noColor);
 OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     int nStretchMode = COLORONCOLOR);
