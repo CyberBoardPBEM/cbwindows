@@ -325,8 +325,18 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             }
         }
     }
-    m_rowToBoardRow.front()[0] = m_rowToBoardRow.front()[1];
-    m_rowToBoardRow.back()[1] = m_rowToBoardRow.back()[0];
+    // fixup border cells that didn't get merge treatment
+    for (size_t i = size_t(0) ; i < m_rowToBoardRow.size() ; ++i)
+    {
+        if (m_rowToBoardRow[i][0] == BoardToSubBoard())
+        {
+            m_rowToBoardRow[i][0] = m_rowToBoardRow[i][1];
+        }
+        else if (m_rowToBoardRow[i][1] == BoardToSubBoard())
+        {
+            m_rowToBoardRow[i][1] = m_rowToBoardRow[i][0];
+        }
+    }
     for (size_t boardCol = size_t(0) ; boardCol < GetBoardColCount() ; ++boardCol)
     {
         ComputeCellOffset(size_t(0), boardCol, row, col);
@@ -368,8 +378,18 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             }
         }
     }
-    m_colToBoardCol.front()[0] = m_colToBoardCol.front()[1];
-    m_colToBoardCol.back()[1] = m_colToBoardCol.back()[0];
+    // fixup border cells that didn't get merge treatment
+    for (size_t i = size_t(0) ; i < m_colToBoardCol.size() ; ++i)
+    {
+        if (m_colToBoardCol[i][0] == BoardToSubBoard())
+        {
+            m_colToBoardCol[i][0] = m_colToBoardCol[i][1];
+        }
+        else if (m_colToBoardCol[i][1] == BoardToSubBoard())
+        {
+            m_colToBoardCol[i][1] = m_colToBoardCol[i][0];
+        }
+    }
 
     return pBrdNew;
 }
