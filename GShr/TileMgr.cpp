@@ -352,12 +352,12 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         ar << (DWORD)tileSmall.GetSmallColor();
 
         OwnerPtr<CBitmap> bitmap = tileFull.CreateBitmapOfTile();
-        CDib dib(*bitmap, GetAppPalette());
+        CDib dib(*bitmap);
         ASSERT(dib);
         ar << dib;
 
         bitmap = tileHalf.CreateBitmapOfTile();
-        dib = CDib(*bitmap, GetAppPalette());
+        dib = CDib(*bitmap);
         ASSERT(dib);
         ar << dib;
     }

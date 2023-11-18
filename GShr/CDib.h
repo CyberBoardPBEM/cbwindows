@@ -27,68 +27,6 @@
 
 class CDib
 {
-// this includes the palette and pixel data
-class CBITMAPINFOHEADER
-{
-public:
-    CBITMAPINFOHEADER() = default;
-    CBITMAPINFOHEADER(std::nullptr_t) : CBITMAPINFOHEADER() {}
-    CBITMAPINFOHEADER(int32_t dwWidth, int32_t dwHeight, size_t wBitCount);
-    CBITMAPINFOHEADER(HBITMAP hBitmap, HPALETTE hPal);
-    CBITMAPINFOHEADER(const CBITMAPINFOHEADER&) = delete;
-    CBITMAPINFOHEADER(const CBITMAPINFOHEADER& other, size_t wBitCount);
-    CBITMAPINFOHEADER(CBITMAPINFOHEADER&&) = default;
-    CBITMAPINFOHEADER& operator=(const CBITMAPINFOHEADER&) = delete;
-    CBITMAPINFOHEADER& operator=(CBITMAPINFOHEADER&&) = default;
-    ~CBITMAPINFOHEADER() = default;
-
-    /* KLUDGE:  need const and non-const to avoid ambiguity with
-                operator BITMAPINFOHEADER* */
-    explicit operator bool() const;
-    explicit operator bool() { return bool(std::as_const(*this)); }
-    size_t size() const { return *this ? buf.size() : size_t(0); }
-
-    const BITMAPINFOHEADER& get() const;
-    BITMAPINFOHEADER& get()
-    {
-        return const_cast<BITMAPINFOHEADER&>(std::as_const(*this).get());
-    }
-    operator const BITMAPINFOHEADER&() const { return get(); }
-    operator BITMAPINFOHEADER&() { return get(); }
-    operator const BITMAPINFOHEADER*() const { return &static_cast<const BITMAPINFOHEADER&>(*this); }
-    operator BITMAPINFOHEADER*() { return &static_cast<BITMAPINFOHEADER&>(*this); }
-
-    operator const BITMAPINFO&() const;
-    operator BITMAPINFO&()
-    {
-        return const_cast<BITMAPINFO&>(static_cast<const BITMAPINFO&>(std::as_const(*this)));
-    }
-    operator const BITMAPINFO*() const { return &static_cast<const BITMAPINFO&>(*this); }
-    operator BITMAPINFO*() { return &static_cast<BITMAPINFO&>(*this); }
-
-    const void* GetBits() const;
-    void* GetBits()
-    {
-        return const_cast<void*>(std::as_const(*this).GetBits());
-    }
-    const void* DibXY(ptrdiff_t x, ptrdiff_t y) const;
-    void* DibXY(ptrdiff_t x, ptrdiff_t y)
-    {
-        return const_cast<void*>(std::as_const(*this).DibXY(x, y));
-    }
-
-    // for reading in CDib
-    void reserve(size_t s);
-    // don't use void* except for serialize-in
-    operator void*();
-
-private:
-    static size_t GetPaletteSize(const BITMAPINFOHEADER& lpbi);
-    static size_t GetNumColors(const BITMAPINFOHEADER& lpbi);
-
-    std::vector<std::byte> buf;
-};
-
 public:
     CDib() { m_nCompressLevel = 0; }
     CDib(const CDib&) = delete;
@@ -97,10 +35,10 @@ public:
     CDib& operator=(CDib&& rhs) noexcept;
     ~CDib() { ClearDib(); }
     void ClearDib();
-    explicit operator bool() const { return bool(m_hDib); }
+    explicit operator bool() const { return m_wximg.IsOk(); }
     CDib(DWORD dwWidth, DWORD dwHeight);
     // ---------- /
-    explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL);
+    explicit CDib(const CBitmap& pBM);
     OwnerPtr<CBitmap> DIBToBitmap() const;
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
@@ -112,8 +50,8 @@ public:
     }
 #endif
     // ---------- //
-    int Height() const { return m_hDib.get().biHeight; }
-    int Width() const { return m_hDib.get().biWidth; }
+    int Height() const { return m_wximg.GetHeight(); }
+    int Width() const { return m_wximg.GetWidth(); }
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     const BITMAPINFO& GetBmi() const { return m_hDib; }
 #endif
@@ -153,7 +91,7 @@ private:
         CDib& pDDib) const;
     static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
 
-    CBITMAPINFOHEADER m_hDib;
+    wxImage m_wximg;
     int   m_nCompressLevel;
     // ---------- //
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);

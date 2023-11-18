@@ -839,7 +839,7 @@ OwnerPtr<CBrush> Clone(const CBrush& brush)
 
 OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot)
 {
-    CDib sourceDib(bmp, GetAppPalette());
+    CDib sourceDib(bmp);
     if (!sourceDib)
     {
         AfxThrowMemoryException();

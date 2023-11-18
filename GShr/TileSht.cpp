@@ -62,7 +62,7 @@ void CTileSheet::Serialize(CArchive& ar)
 
         if (m_pBMap)
         {
-            CDib dib(*m_pBMap, GetAppPalette());
+            CDib dib(*m_pBMap);
             ASSERT(dib);
             if (dib)
             {

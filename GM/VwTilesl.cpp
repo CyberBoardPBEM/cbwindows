@@ -347,8 +347,8 @@ void CTileSelView::DoTileResizeDialog()
 
 void CTileSelView::DoTileRotation(int nAngle)
 {
-    CDib dibFull(*m_bmFull, GetAppPalette());
-    CDib dibHalf(*m_bmHalf, GetAppPalette());
+    CDib dibFull(*m_bmFull);
+    CDib dibHalf(*m_bmHalf);
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
     if (!dibFull)
         return;             // MEMORY ERROR

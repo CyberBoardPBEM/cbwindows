@@ -1191,7 +1191,7 @@ void CBitmapImage::CopyAttributes(const CBitmapImage& source)
     CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_eBaseScale = source.m_eBaseScale;
-    CDib dib(source.m_bitmap, GetAppPalette());
+    CDib dib(source.m_bitmap);
     m_bitmap.Attach(dib.DIBToBitmap()->Detach());
 }
 
@@ -1202,7 +1202,7 @@ void CBitmapImage::Serialize(CArchive& ar)
     {
         ar << (WORD)m_eBaseScale;
 
-        CDib dib(m_bitmap, GetAppPalette());
+        CDib dib(m_bitmap);
 #ifndef GPLAY
         dib.SetCompressLevel(((CGamDoc*)ar.m_pDocument)->GetCompressLevel());
 #endif

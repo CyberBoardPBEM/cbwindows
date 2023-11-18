@@ -59,7 +59,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     CTile tile = m_pTMgr->GetTile(baseTileID, fullScale);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
-    CDib dibSrc(*bmap, GetAppPalette());
+    CDib dibSrc(*bmap);
 
     CDib pRDib = dibSrc.Rotate(nAngleDegCW, m_pTMgr->GetTransparentColor());
     OwnerPtr<CBitmap> pBMapFull = pRDib.DIBToBitmap();
@@ -71,7 +71,7 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
 
     tile = m_pTMgr->GetTile(baseTileID, halfScale);
     bmap = tile.CreateBitmapOfTile();
-    dibSrc = CDib(*bmap, GetAppPalette());
+    dibSrc = CDib(*bmap);
 
     pRDib = dibSrc.Rotate(nAngleDegCW, m_pTMgr->GetTransparentColor());
     OwnerPtr<CBitmap> pBMapHalf = pRDib.DIBToBitmap();

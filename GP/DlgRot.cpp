@@ -103,7 +103,7 @@ void CRotateDialog::OnRotApply()
 //  }
 
     DeleteBMaps();
-    CDib dibSrc(*m_pBMap, GetAppPalette());
+    CDib dibSrc(*m_pBMap);
 
     static int angTbl[12] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 };
     for (int i = 0; i < 12; i++)
