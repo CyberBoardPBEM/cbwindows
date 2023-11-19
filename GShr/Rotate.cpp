@@ -118,66 +118,25 @@ namespace {
 
 /////////////////////////////////////////////////////////////////////
 
-// Assumptions:
-//  o   16 bit color DIB is input.
-//  o   16 bit color DIB is produced with same color table
-//  o   crTrans exists in color table. Since the bitmap is
-//      a rotation it certain that certain areas will be voided.
-
-/////////////////////////////////////////////////////////////////////
-
     // angle is clockwise
     CDib CDib::RotateFast(int angle) const
     {
+        CDib retval;
         switch (angle)
         {
             case 90:
-            {
-                int width = Width(), height = Height();
-                CDib dDib(height, width);
-                for (int srcY = 0, destX = height - 1 ; srcY < height ; ++srcY, --destX)
-                {
-                    // destY always has same value as srcX
-                    for (int srcX = 0 ; srcX < width ; ++srcX)
-                    {
-                        COLORREF color = GetColorAtXY(srcX, srcY);
-                        dDib.SetColorAtXY(destX, srcX, color);
-                    }
-                }
-                return dDib;
-            }
+                retval.m_wximg = m_wximg.Rotate90(true);
+                break;
             case 180:
-            {
-                int width = Width(), height = Height();
-                CDib dDib(width, height);
-                for (int srcY = 0, destY = height - 1 ; srcY < height ; ++srcY, --destY)
-                {
-                    for (int srcX = 0, destX = width - 1 ; srcX < width ; ++srcX, --destX)
-                    {
-                        COLORREF color = GetColorAtXY(srcX, srcY);
-                        dDib.SetColorAtXY(destX, destY, color);
-                    }
-                }
-                return dDib;
-            }
+                retval.m_wximg = m_wximg.Rotate180();
+                break;
             case 270:
-            {
-                int width = Width(), height = Height();
-                CDib dDib(height, width);
-                // destX always has same value as srcY
-                for (int srcY = 0 ; srcY < height ; ++srcY)
-                {
-                    for (int srcX = 0, destY = width - 1 ; srcX < width ; ++srcX, --destY)
-                    {
-                        COLORREF color = GetColorAtXY(srcX, srcY);
-                        dDib.SetColorAtXY(srcY, destY, color);
-                    }
-                }
-                return dDib;
-            }
+                retval.m_wximg = m_wximg.Rotate90(false);
+                break;
             default:
                 AfxThrowInvalidArgException();
         }
+        return retval;
     }
 
 // angle is clockwise
@@ -238,8 +197,15 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
 void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
     CDib& pDDib) const
 {
+    wxImagePixelData srcData(const_cast<wxImage&>(m_wximg));
+    ASSERT(srcData);
+    wxImagePixelData::Iterator src(srcData);
     int dstX = lftEdge.m_dstX;
     int dstXMax = rgtEdge.m_dstX;
+    wxImagePixelData destData(pDDib.m_wximg);
+    ASSERT(destData);
+    wxImagePixelData::Iterator dest(destData);
+    dest.MoveTo(destData, dstX, dstY);
 
     int dstWd = dstXMax - dstX;
 
@@ -249,10 +215,13 @@ void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
     //  TRACE2("For Y = %d, Dest Width = %d\n", dstY, dstWd + 1);
     for (; dstX <= dstXMax; dstX++)
     {
-        COLORREF nColor = GetColorAtXY(srcX.RoundedVal(),
+        src.MoveTo(srcData, srcX.RoundedVal(),
             srcY.RoundedVal());
 
-        pDDib.SetColorAtXY(dstX, dstY, nColor);
+        dest.Red() = src.Red();
+        dest.Green() = src.Green();
+        dest.Blue() = src.Blue();
+        ++dest;
         // TEST CODE:
         //        char str[256];
         //        sprintf(str, "dX=%d, dY=%d : sX=%d, sY=%d\n",

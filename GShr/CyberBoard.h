@@ -64,6 +64,7 @@
 #include <wx/clipbrd.h>
 #include <wx/dataobj.h>
 #include <wx/image.h>
+#include <wx/rawbmp.h>
 #include <wx/msw/mfc.h>
 
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");

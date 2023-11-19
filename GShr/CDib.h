@@ -57,8 +57,6 @@ public:
 #endif
 private:
     void Fill(COLORREF color);
-    COLORREF GetColorAtXY(int x, int y) const;
-    void SetColorAtXY(int x, int y, COLORREF nColor);
 public:
     // angle is clockwise
     CDib Rotate(int angle, COLORREF crTrans) const;

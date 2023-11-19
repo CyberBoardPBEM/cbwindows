@@ -239,6 +239,8 @@ CBITMAPINFOHEADER::operator wxImage() const
 {
     const BITMAPINFOHEADER& bmih = *this;
     wxImage retval(bmih.biWidth, bmih.biHeight, false);
+    wxImagePixelData retvalData(retval);
+    wxImagePixelData::Iterator destRowStart(retvalData);
 
     // this is just used for reading old files, which are < 24bit
     if (bmih.biBitCount == 16)
@@ -249,15 +251,17 @@ CBITMAPINFOHEADER::operator wxImage() const
         for (int y = 0 ; y < bmih.biHeight ; ++y)
         {
             const uint16_t* src = srcRowStart;
+            wxImagePixelData::Iterator dest = destRowStart;
             for (int x = 0 ; x < bmih.biWidth ; ++x)
             {
                 COLORREF cr = RGB565_TO_24(*src++);
-                retval.SetRGB(x, y,
-                                GetRValue(cr),
-                                GetGValue(cr),
-                                GetBValue(cr));
+                dest.Red() = GetRValue(cr);
+                dest.Green() = GetGValue(cr);
+                dest.Blue() = GetBValue(cr);
+                ++dest;
             }
             srcRowStart += srcStride;
+            destRowStart.OffsetY(retvalData, 1);
         }
     }
     else if (bmih.biBitCount == 8)
@@ -269,15 +273,17 @@ CBITMAPINFOHEADER::operator wxImage() const
         for (int y = 0 ; y < bmih.biHeight ; ++y)
         {
             const uint8_t* src = srcRowStart;
+            wxImagePixelData::Iterator dest = destRowStart;
             for (int x = 0 ; x < bmih.biWidth ; ++x)
             {
                 const RGBQUAD& rgbq = bm.bmiColors[*src++];
-                retval.SetRGB(x, y,
-                                rgbq.rgbRed,
-                                rgbq.rgbGreen,
-                                rgbq.rgbBlue);
+                dest.Red() = rgbq.rgbRed;
+                dest.Green() = rgbq.rgbGreen;
+                dest.Blue() = rgbq.rgbBlue;
+                ++dest;
             }
             srcRowStart += srcStride;
+            destRowStart.OffsetY(retvalData, 1);
         }
     }
     else
@@ -292,6 +298,8 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(const wxImage& img, size_t wBitCount)
 {
     int width = img.GetWidth();
     int height = img.GetHeight();
+    wxImagePixelData imgData(const_cast<wxImage&>(img));
+    wxImagePixelData::Iterator srcRowStart(imgData);
     *this = CBITMAPINFOHEADER(width, height, wBitCount);
     if (wBitCount == size_t(24))
     {
@@ -301,14 +309,17 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(const wxImage& img, size_t wBitCount)
         ptrdiff_t destStride = -value_preserving_cast<ptrdiff_t>(CDib::WidthBytes(*this));
         for (int y = 0 ; y < height ; ++y)
         {
+            wxImagePixelData::Iterator src = srcRowStart;
             WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
             for (int x = 0 ; x < width ; ++x)
             {
-                COLORREF cr = RGB(img.GetRed(x, y),
-                                    img.GetGreen(x, y),
-                                    img.GetBlue(x, y));
+                COLORREF cr = RGB(src.Red(),
+                                    src.Green(),
+                                    src.Blue());
+                ++src;
                 *dest++ = cr;
             }
+            srcRowStart.OffsetY(imgData, 1);
             destRowStart += destStride;
         }
     }
@@ -319,14 +330,17 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(const wxImage& img, size_t wBitCount)
         ptrdiff_t destStride = -value_preserving_cast<ptrdiff_t>(CDib::WidthBytes(*this) / sizeof(*destRowStart));
         for (int y = 0 ; y < height ; ++y)
         {
+            wxImagePixelData::Iterator src = srcRowStart;
             uint16_t* dest = destRowStart;
             for (int x = 0 ; x < width ; ++x)
             {
-                COLORREF cr = RGB(img.GetRed(x, y),
-                                    img.GetGreen(x, y),
-                                    img.GetBlue(x, y));
+                COLORREF cr = RGB(src.Red(),
+                                    src.Green(),
+                                    src.Blue());
+                ++src;
                 *dest++ = RGB565(cr);
             }
+            srcRowStart.OffsetY(imgData, 1);
             destRowStart += destStride;
         }
     }
@@ -383,23 +397,6 @@ void CDib::Fill(COLORREF color)
                     GetRValue(color),
                     GetGValue(color),
                     GetBValue(color));
-}
-
-COLORREF CDib::GetColorAtXY(int x, int y) const
-{
-    ASSERT(m_wximg.IsOk());
-    return RGB(m_wximg.GetRed(x, y),
-                m_wximg.GetGreen(x, y),
-                m_wximg.GetBlue(x, y));
-}
-
-void CDib::SetColorAtXY(int x, int y, COLORREF nColor)
-{
-    ASSERT(m_wximg.IsOk());
-    m_wximg.SetRGB(x, y,
-                    GetRValue(nColor),
-                    GetGValue(nColor),
-                    GetBValue(nColor));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -567,6 +564,9 @@ wxImage ToImage(const CBitmap& bmp)
     }
     ASSERT(info.bmWidth > 0 && info.bmHeight > 0);
     wxImage retval(info.bmWidth, info.bmHeight, false);
+    wxImagePixelData retvalData(retval);
+    ASSERT(retvalData);
+    wxImagePixelData::Iterator destRowStart(retvalData);
     switch (info.bmBitsPixel)
     {
         case 16:
@@ -578,15 +578,17 @@ wxImage ToImage(const CBitmap& bmp)
             for (int y = 0 ; y < info.bmHeight ; ++y)
             {
                 const uint16_t* src = srcRowStart;
+                wxImagePixelData::Iterator dest = destRowStart;
                 for (int x = 0 ; x < info.bmWidth ; ++x)
                 {
                     COLORREF cr = RGB565_TO_24(*src++);
-                    retval.SetRGB(x, y,
-                                    GetRValue(cr),
-                                    GetGValue(cr),
-                                    GetBValue(cr));
+                    dest.Red() = GetRValue(cr);
+                    dest.Green() = GetGValue(cr);
+                    dest.Blue() = GetBValue(cr);
+                    ++dest;
                 }
                 srcRowStart += srcStride;
+                destRowStart.OffsetY(retvalData, 1);
             }
             break;
         }
@@ -598,15 +600,17 @@ wxImage ToImage(const CBitmap& bmp)
             for (int y = 0 ; y < info.bmHeight ; ++y)
             {
                 const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+                wxImagePixelData::Iterator dest = destRowStart;
                 for (int x = 0 ; x < info.bmWidth ; ++x)
                 {
-                    retval.SetRGB(x, y,
-                                    src->red,
-                                    src->green,
-                                    src->blue);
+                    dest.Red() = src->red;
+                    dest.Green() = src->green;
+                    dest.Blue() = src->blue;
                     ++src;
+                    ++dest;
                 }
                 srcRowStart += srcStride;
+                destRowStart.OffsetY(retvalData, 1);
             }
             break;
         }
@@ -631,20 +635,26 @@ OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
             dibSect.dsBm.bmHeight == img.GetHeight() &&
             dibSect.dsBmih.biBitCount == 24);
 
+    wxImagePixelData imgData(const_cast<wxImage&>(img));
+    ASSERT(imgData);
+    wxImagePixelData::Iterator srcRowStart(imgData);
     // DIBs are bottom up
     std::byte* destRowStart = static_cast<std::byte*>(Ptr(*retval, size_t(0), size_t(0)));
     ptrdiff_t destStride = -value_preserving_cast<ptrdiff_t>(CDib::WidthBytes(dibSect.dsBmih));
 
     for (int y = 0 ; y < dibSect.dsBm.bmHeight ; ++y)
     {
+        wxImagePixelData::Iterator src = srcRowStart;
         WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
         for (int x = 0 ; x < dibSect.dsBm.bmWidth ; ++x)
         {
-            dest->red = img.GetRed(x, y);
-            dest->green = img.GetGreen(x, y);
-            dest->blue = img.GetBlue(x, y);
+            dest->red = src.Red();
+            dest->green = src.Green();
+            dest->blue = src.Blue();
+            ++src;
             ++dest;
         }
+        srcRowStart.OffsetY(imgData, 1);
         destRowStart += destStride;
     }
 
