@@ -597,6 +597,7 @@ void CGamDoc::Serialize(CArchive& ar)
                 }
                 c_fileFeatures.Add(ftrPiece100Sides);
             }
+            c_fileFeatures.Add(ftrImgBMPZlib);
         }
         else if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();

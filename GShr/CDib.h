@@ -94,6 +94,10 @@ private:
     // ---------- //
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);
     friend CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib);
+    friend CArchive& WriteRGB565Zlib(CArchive& ar, const CDib& dib);
+    friend CArchive& WriteImgBMPZlib(CArchive& ar, const CDib& dib);
+    friend CArchive& ReadRGB565Zlib(CArchive& ar, CDib& dib);
+    friend CArchive& ReadImgBMPZlib(CArchive& ar, CDib& dib);
 };
 
 wxImage ToImage(const CBitmap& bmp);

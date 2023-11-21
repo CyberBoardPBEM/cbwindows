@@ -27,6 +27,7 @@
 #include    <wx/zstream.h>
 #include    "GdiTools.h"
 #include    "CDib.h"
+#include    "Versions.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -113,8 +114,8 @@ namespace {
 
         std::vector<std::byte> buf;
 
-        friend CArchive& AFXAPI ::operator<<(CArchive& ar, const CDib& dib);
-        friend CArchive& AFXAPI ::operator>>(CArchive& ar, CDib& dib);
+        friend CArchive& ::WriteRGB565Zlib(CArchive& ar, const CDib& dib);
+        friend CArchive& ::ReadRGB565Zlib(CArchive& ar, CDib& dib);
     };
 }
 
@@ -464,6 +465,21 @@ OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight)
 
 CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
 {
+#if defined(GPLAY)
+    ASSERT(!"dead code");
+#endif
+    if (CB::GetFeatures(ar).Check(ftrImgBMPZlib))
+    {
+        return WriteImgBMPZlib(ar, dib);
+    }
+    else
+    {
+        return WriteRGB565Zlib(ar, dib);
+    }
+}
+
+CArchive& WriteRGB565Zlib(CArchive& ar, const CDib& dib)
+{
     /* TODO:  Are bmps >= 2g possible?  If so, and we support
                 them, then file format must change */
     if (dib.m_wximg.IsOk())
@@ -513,7 +529,50 @@ CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
     return ar;
 }
 
+CArchive& WriteImgBMPZlib(CArchive& ar, const CDib& dib)
+{
+    if (dib.m_wximg.IsOk())
+    {
+        wxMemoryOutputStream memStream;
+        {
+            wxZlibOutputStream zlibStream(memStream, dib.m_nCompressLevel, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
+            if (!dib.m_wximg.SaveFile(zlibStream, wxBITMAP_TYPE_BMP))
+            {
+                AfxThrowArchiveException(CArchiveException::genericException);
+            }
+        }
+
+        wxStreamBuffer& buff = CheckedDeref(memStream.GetOutputStreamBuffer());
+        wxFileOffset off = buff.Tell();
+        if (off == wxInvalidOffset ||
+            value_preserving_cast<size_t>(off) != buff.GetBufferSize())
+        {
+            AfxThrowArchiveException(CArchiveException::genericException);
+        }
+        size_t size = value_preserving_cast<size_t>(off);
+        ar << size;
+        ar.Write(buff.GetBufferStart(), value_preserving_cast<uint32_t>(size));
+    }
+    else
+    {
+        ar << uint32_t(0);
+    }
+    return ar;
+}
+
 CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
+{
+    if (CB::GetFeatures(ar).Check(ftrImgBMPZlib))
+    {
+        return ReadImgBMPZlib(ar, dib);
+    }
+    else
+    {
+        return ReadRGB565Zlib(ar, dib);
+    }
+}
+
+CArchive& ReadRGB565Zlib(CArchive& ar, CDib& dib)
 {
     dib.ClearDib();
     uint32_t dwSize;
@@ -552,6 +611,30 @@ CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib)
     {
         dib.m_wximg = bmih;
     }
+    return ar;
+}
+
+CArchive& ReadImgBMPZlib(CArchive& ar, CDib& dib)
+{
+    ASSERT(!dib.m_wximg.IsOk());
+
+    size_t size;
+    ar >> size;
+    if (size)
+    {
+        std::vector<std::byte> bytes(size);
+        if (ar.Read(bytes.data(), value_preserving_cast<uint32_t>(size)) != size)
+        {
+            AfxThrowArchiveException(CArchiveException::endOfFile);
+        }
+        wxMemoryInputStream memStream(bytes.data(), size);
+        wxZlibInputStream zlibStream(memStream, wxZLIB_NO_HEADER | wxZLIB_ZLIB);
+        if (!dib.m_wximg.LoadFile(zlibStream, wxBITMAP_TYPE_BMP))
+        {
+            AfxThrowArchiveException(CArchiveException::badIndex);
+        }
+    }
+
     return ar;
 }
 

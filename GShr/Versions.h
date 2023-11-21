@@ -123,6 +123,10 @@ private:
 //              typing these command line switches, Feature
 //              names are case-insensitive.
 //
+// wsu20231119
+//              serialize CDib using (24bpp) wxBMPHandler + Zlib
+inline const Feature ftrImgBMPZlib("img-bmp-zlib");
+//
 // wsu20210731
 //      4.00 - 32-bit TileID/MarkID/PieceID/BoardID
 inline const Feature ftrId32Bit("id-32bit");
@@ -507,6 +511,10 @@ inline const Features& GetCBFeatures()
         if (GetSaveFileVersion() >= NumVersion(4, 0))
         {
             ffp.features = GetCBFile4Features();
+            if (GetSaveFileVersion() >= NumVersion(5, 0))
+            {
+                ffp.features.Add(ftrImgBMPZlib);
+            }
             CbGetApp().ParseCommandLine(ffp);
         }
         const Features& forced = GetCBForcedFeatures();

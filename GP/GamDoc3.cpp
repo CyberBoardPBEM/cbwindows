@@ -153,6 +153,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
             {
                 c_fileFeatures.Add(ftrSizet64Bit);
             }
+            c_fileFeatures.Add(ftrImgBMPZlib);
         }
         else if (NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();
