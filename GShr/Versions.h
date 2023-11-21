@@ -222,11 +222,12 @@ inline int GetSaveFileVersion()
         struct FileFlagParser : public CCommandLineInfo
         {
             int version = NumVersion(5, 0);
-            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            virtual void ParseParam(const CB::string::value_type* pszParam, BOOL bFlag, BOOL bLast) override
             {
                 static const std::regex re(R"(filever:([[:digit:]]+)\.([[:digit:]]+))");
-                std::cmatch m;
-                if (bFlag && std::regex_match(pszParam, m, re))
+                std::string param = CB::string(pszParam).a_str();
+                std::smatch m;
+                if (bFlag && std::regex_match(param, m, re))
                 {
                     version = NumVersion(stoi(m[1]), stoi(m[2]));
                 }
@@ -450,11 +451,12 @@ inline const Features& GetCBForcedFeatures()
         struct FileFlagParser : public CCommandLineInfo
         {
             Features features;
-            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            virtual void ParseParam(const CB::string::value_type* pszParam, BOOL bFlag, BOOL bLast) override
             {
                 static const std::regex re(R"(filever:force-(.+))", std::regex_constants::icase);
-                std::cmatch m;
-                if (bFlag && std::regex_match(pszParam, m, re))
+                std::string param = CB::string(pszParam).a_str();
+                std::smatch m;
+                if (bFlag && std::regex_match(param, m, re))
                 {
                     features.Add(Feature(m[1]));
                 }
@@ -489,11 +491,12 @@ inline const Features& GetCBFeatures()
         struct FileFlagParser : public CCommandLineInfo
         {
             Features features;
-            virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+            virtual void ParseParam(const CB::string::value_type* pszParam, BOOL bFlag, BOOL bLast) override
             {
                 static const std::regex re(R"(filever:no-(.+))", std::regex_constants::icase);
-                std::cmatch m;
-                if (bFlag && std::regex_match(pszParam, m, re))
+                std::string param = CB::string(pszParam).a_str();
+                std::smatch m;
+                if (bFlag && std::regex_match(param, m, re))
                 {
                     Feature f(m[1]);
                     features.Remove(f);
