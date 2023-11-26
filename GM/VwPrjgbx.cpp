@@ -856,17 +856,17 @@ void CGbxProjView::OnEditCopy()
 
         std::unique_ptr<wxCustomDataObject> tiles(new CustomDataObjectFree(CF_TILEIMAGES));
         // paranoid about undefined order of function arg eval
-        size_t len = file.GetLength();
+        size_t len = value_preserving_cast<size_t>(file.GetLength());
         tiles->TakeData(len, file.Detach());
 
         std::unique_ptr<wxCustomDataObject> tids(new CustomDataObjectFree(CF_TIDLIST));
         // paranoid about undefined order of function arg eval
-        len = file2.GetLength();
+        len = value_preserving_cast<size_t>(file2.GetLength());
         tids->TakeData(len, file2.Detach());
 
         std::unique_ptr<wxCustomDataObject> gbox(new CustomDataObjectFree(CF_GBOXID));
         // paranoid about undefined order of function arg eval
-        len = file3.GetLength();
+        len = value_preserving_cast<size_t>(file3.GetLength());
         gbox->TakeData(len, file3.Detach());
 
         std::unique_ptr<wxDataObjectComposite> compos(new wxDataObjectComposite);
