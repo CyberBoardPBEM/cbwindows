@@ -369,11 +369,12 @@ BOOL CGmApp::InitInstance()
         AfxMessageBox(IDP_ERR_MINCOLORS, MB_OK | MB_ICONSTOP);
         return FALSE;
     }
-wxString test = wxString("hello, €") + "world\n";
+wxString test = wxString("hello, €") + "world\nline2\n";
+wxASSERT(CB::string(test).wx_str() == test);
 OutputDebugStringA(test);
 OutputDebugStringW(test);
-CPP20_TRACE("test:  {}", test);
-//CPP20_TRACE(L"test:  {}", test);
+CPP20_TRACE("test:  {}line3\n", test);
+CPP20_TRACE(L"test:  {}line3\n", test);
 
     return TRUE;
 }

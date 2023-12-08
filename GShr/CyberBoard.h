@@ -65,6 +65,7 @@
 #include <wx/dataobj.h>
 #include <wx/image.h>
 #include <wx/rawbmp.h>
+#include <wx/textbuf.h>
 #include <wx/msw/mfc.h>
 
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
@@ -243,21 +244,6 @@ public:
 template<typename CharT>
 struct std::formatter<CRect, CharT> : public std::formatter<RECT, CharT>
 {
-};
-
-template<typename CharT>
-struct std::formatter<wxString, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
-{
-private:
-    using BASE = formatter<std::basic_string<CharT>, CharT>;
-public:
-    using BASE::parse;
-
-    template<typename FormatContext>
-    FormatContext::iterator format(const wxString& s, FormatContext& ctx)
-    {
-        return BASE::format(static_cast<const CharT*>(s), ctx);
-    }
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -857,6 +843,7 @@ namespace CB
         // not impl yet
         string(size_t n, wchar_t c) = delete;
         string(const CString& s) : string(s.GetString()) {}
+        string(const wxString& s);
         string(std::wstring_view s);
         string(const wchar_t* s) : string(std::wstring_view(s)) {}
         string(const std::wstring& s) : string(std::wstring_view(s)) {}
@@ -874,16 +861,16 @@ namespace CB
         const wxString& wx_str() const;
         operator const wxString&() const { return wx_str(); }
         size_t w_size() const { return wx_str().size(); }
-        const wchar_t* w_str() const { return wx_str(); }
+        const wchar_t* w_str() const { return std_wstr().c_str(); }
         operator const wchar_t*() const { return w_str(); }
         std::string std_str() const { return std::string(a_str(), a_size()); }
         std::string_view std_strv() const { return std::string_view(a_str(), a_size()); }
         operator std::string_view() const { return std_strv(); }
         operator std::string() const { return std_str(); }
-        std::wstring std_wstr() const { return std::wstring(w_str(), w_size()); }
-        std::wstring_view std_wstrv() const { return std::wstring_view(w_str(), w_size()); }
+        const std::wstring& std_wstr() const;
+        std::wstring_view std_wstrv() const { return std_wstr(); }
         operator std::wstring_view() const { return std_wstrv(); }
-        operator std::wstring() const { return std_wstr(); }
+        operator const std::wstring&() const { return std_wstr(); }
 #if !defined(_UNICODE)
         size_t v_size() const { return a_size(); }
 #else
@@ -892,6 +879,8 @@ namespace CB
         const value_type* v_str() const { return static_cast<const value_type*>(*this); }
         const char& operator[](size_t s) const { return cp1252[s]; }
         const wchar_t& front() const { return *w_str(); }
+
+        string& operator=(const wxString& s) { return *this = string(s); }
 
         operator std::filesystem::path() const { return std::filesystem::path(std_wstr()); }
 
@@ -919,13 +908,13 @@ namespace CB
 
         int CompareNoCase(const string& rhs) const { return _wcsicmp(*this, rhs); }
 
-        void clear() { wxwide.reset(); cp1252.clear(); }
+        void clear() { wxstr.reset(); stdwide.reset(); cp1252.clear(); }
         // reserve doesn't change cp1252's value, so no need for wide.reset()
         void reserve(size_t s) { cp1252.reserve(s); }
-        void resize(size_t s) { wxwide.reset(); cp1252.resize(s); }
+        void resize(size_t s) { wxstr.reset(); stdwide.reset(); cp1252.resize(s); }
 
-        string& operator+=(const string& rhs) { wxwide.reset(); cp1252 += rhs.cp1252; return *this; }
-        string& operator+=(char c) { wxwide.reset(); cp1252 += c; return *this; }
+        string& operator+=(const string& rhs) { wxstr.reset(); stdwide.reset(); cp1252 += rhs.cp1252; return *this; }
+        string& operator+=(char c) { wxstr.reset(); stdwide.reset(); cp1252 += c; return *this; }
         string& operator+=(wchar_t c) { return *this += CB::string(std::wstring_view(&c, size_t(1))); }
 
         void Serialize(CArchive& ar) const;
@@ -935,7 +924,11 @@ namespace CB
         std::string cp1252;
         /* need to keep object long-term so char* doesn't become
             orphaned */
-        mutable std::unique_ptr<wxString> wxwide;
+        /* need separate wxString and std::wstring because
+            wx edit controls expect \n, but MFC edit controls
+            expect \r\n */
+        mutable std::unique_ptr<wxString> wxstr;
+        mutable std::unique_ptr<std::wstring> stdwide;
     };
 
     inline bool operator==(const string& lhs, const string& rhs) { return lhs.CompareNoCase(rhs) == 0; }
@@ -1099,6 +1092,22 @@ struct std::formatter<std::string, wchar_t> : private std::formatter<std::string
 public:
     using BASE::parse;
     using BASE::format;
+};
+
+template<typename CharT>
+struct std::formatter<wxString, CharT> : private std::formatter<std::basic_string<CharT>, CharT>
+{
+private:
+    using BASE = formatter<std::basic_string<CharT>, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxString& s, FormatContext& ctx)
+    {
+        CB::string temp(s);
+        return BASE::format(static_cast<const CharT*>(temp), ctx);
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////
