@@ -232,6 +232,12 @@ namespace {
         virtual bool OnInit() override
         {
             // handling cmd line w/ MFC, so skip wxCmdLineParser
+
+            wxXmlResource::Get()->InitAllHandlers();
+            wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
+
+            SetTopWindow(&CB::GetMainWndWx());
+
             return true;
         }
     };
@@ -657,3 +663,12 @@ void CGmApp::OnHelpReleases()
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
+wxNativeContainerWindow& CB::GetMainWndWx()
+{
+    return *dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+}
+
+CB::string CB::GetAppName()
+{
+    return AfxGetAppName();
+}

@@ -60,6 +60,8 @@ public:
 
     BOOL IsTilePaletteOn() { return m_bTilePalOn; }
 
+    operator wxNativeContainerWindow&() { return CheckedDeref(m_wxWrapper); }
+
 // Operations
 public:
     BOOL BuildAppGDIPalette();
@@ -92,6 +94,9 @@ public:
     BOOL            m_bTilePalOn;
 
     CPalette        m_appPalette;       // Master app GDI palette
+
+    // N.B.:  wx deletes this when HWND is destroyed
+    wxNativeContainerWindow* m_wxWrapper = nullptr;
 
 // Generated message map functions
 protected:

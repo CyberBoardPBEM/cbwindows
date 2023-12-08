@@ -224,6 +224,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     RestoreProfileSettings();
 
+    m_wxWrapper = new wxNativeContainerWindow(m_hWnd);
+
     return 0;
 }
 

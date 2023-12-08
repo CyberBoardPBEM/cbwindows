@@ -11,6 +11,7 @@ cmake_policy(SET CMP0092 NEW)
 project(CyberBoard VERSION 4.0 LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/runtime)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # std::format requires c++20
 set(CMAKE_CXX_STANDARD 20)
@@ -36,6 +37,7 @@ set(wxUSE_WINRT OFF CACHE BOOL "skip")
 if (MSVC)
 	set(wxBUILD_MSVC_MULTIPROC ON CACHE BOOL "skip")
 endif()
+set(wxBUILD_SAMPLES SOME CACHE STRING "skip")
 add_subdirectory(deps/wxWidgets EXCLUDE_FROM_ALL)
 
 add_compile_definitions($<IF:$<CONFIG:Debug>,_,N>DEBUG)
