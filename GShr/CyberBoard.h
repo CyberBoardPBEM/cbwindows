@@ -61,11 +61,27 @@
 
 #include <WinExt.h>
 
+#include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/clipbrd.h>
+#include <wx/clrpicker.h>
 #include <wx/dataobj.h>
+#include <wx/dialog.h>
 #include <wx/image.h>
+#include <wx/listbox.h>
+#include <wx/msgdlg.h>
+#include <wx/nativewin.h>
 #include <wx/rawbmp.h>
+#include <wx/stattext.h>
+#include <wx/stdpaths.h>
 #include <wx/textbuf.h>
+#include <wx/textctrl.h>
+#include <wx/valgen.h>
+#include <wx/valnum.h>
+#include <wx/valtext.h>
+#include <wx/vlbox.h>
+#include <wx/xrc/xmlres.h>
+#include <wx/zstream.h>
 #include <wx/msw/mfc.h>
 
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
@@ -1776,5 +1792,42 @@ static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdif
     startup, so declare a function that we will guarantee returns
     an object during startup */
 CWinApp& CbGetApp();
+namespace CB
+{
+    wxNativeContainerWindow& GetMainWndWx();
+    string GetAppName();
+}
+
+// provide a more convenient way to set up wxNumValidator<> objects
+namespace CB
+{
+    template<typename T,
+        typename RETVAL = std::conditional_t<std::is_floating_point_v<T>, wxFloatingPointValidator<T>, wxIntegerValidator<T>>>
+    RETVAL MakeValidator(T* value, T min, T max, int style = wxNUM_VAL_DEFAULT)
+    {
+        RETVAL retval(value, style);
+        retval.SetMin(min);
+        retval.SetMax(max);
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            retval.SetPrecision(3);
+        }
+        return retval;
+    }
+}
+
+// provide conversions between COLORREF and wxColour
+namespace CB
+{
+    inline wxColour Convert(COLORREF c)
+    {
+        return wxColour(GetRValue(c), GetGValue(c), GetBValue(c));
+    }
+
+    inline COLORREF Convert(wxColour c)
+    {
+        return RGB(c.Red(), c.Green(), c.Blue());
+    }
+}
 
 #endif

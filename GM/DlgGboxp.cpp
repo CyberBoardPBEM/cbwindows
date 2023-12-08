@@ -23,7 +23,6 @@
 //
 
 #include    "stdafx.h"
-#include    <wx/zstream.h>
 #include    "Gm.h"
 #include    "StrLib.h"
 #include    "DlgGboxp.h"

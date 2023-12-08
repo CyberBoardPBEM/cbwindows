@@ -123,7 +123,7 @@ if (MSVC)
 		_AFX_SECURE_NO_WARNINGS _ATL_SECURE_NO_WARNINGS
 		_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS
 	)
-	target_link_libraries(CBPlay htmlhelp)
+	target_link_libraries(CBPlay htmlhelp.lib)
 	# Unicode MFC expects this entry point
 	target_link_options(CBPlay PRIVATE /ENTRY:wWinMainCRTStartup)
 endif()
@@ -135,4 +135,4 @@ if (MSVC)
 	target_include_directories(CBPlay PRIVATE $ENV{VCToolsInstallDir}atlmfc/src/mfc)
 endif()
 target_precompile_headers(CBPlay PRIVATE StdAfx.h)
-target_link_libraries(CBPlay wx::core)
+target_link_libraries(CBPlay wx::core wx::xrc)
