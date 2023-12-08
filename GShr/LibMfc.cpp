@@ -562,7 +562,8 @@ std::unique_ptr<CB::string> CB::string::DoPromptFileName(CWinApp& app, UINT nIDS
 
 CB::string& CB::string::operator=(const string& other)
 {
-    wxwide.reset();
+    wxstr.reset();
+    stdwide.reset();
     cp1252 = other.cp1252;
     return *this;
 }
@@ -571,6 +572,7 @@ CB::string::~string()
 {
     static size_t strs;
     static size_t wxstrs;
+    static size_t stdwides;
     static class Report
     {
     public:
@@ -578,14 +580,24 @@ CB::string::~string()
         {
             /* WARNING:  don't use CPP20_TRACE here (it creates
                 more CB::string instances) */
-            TRACE("strs %zu, wxstrs %zu\n", strs, wxstrs);
+            TRACE("strs %zu, wxstrs %zu, stdwides %zu\n", strs, wxstrs, stdwides);
         }
     } report;
     ++strs;
-    if (wxwide)
+    if (wxstr)
     {
         ++wxstrs;
     }
+    if (stdwide)
+    {
+        ++stdwides;
+    }
+}
+
+CB::string::string(const wxString& s)
+{
+    wxString temp = wxTextBuffer::Translate(s, wxTextBuffer::typeDefault);
+    *this = temp.ToStdWstring();
 }
 
 CB::string::string(std::wstring_view s)
@@ -600,11 +612,23 @@ CB::string::string(std::wstring_view s)
 
 const wxString& CB::string::wx_str() const
 {
-    if (!wxwide)
+    if (!wxstr)
     {
-        wxwide.reset(new wxString(cp1252.data(), cp1252.size()));
+        wxstr.reset(new wxString(cp1252.data(), cp1252.size()));
+        *wxstr = wxTextBuffer::Translate(*wxstr, wxTextFileType_Unix);
     }
-    return *wxwide;
+    return *wxstr;
+}
+
+const std::wstring& CB::string::std_wstr() const
+{
+    if (!stdwide)
+    {
+        wxString temp = wx_str();
+        temp = wxTextBuffer::Translate(temp, wxTextBuffer::typeDefault);
+        stdwide.reset(new std::wstring(temp.ToStdWstring()));
+    }
+    return *stdwide;
 }
 
 void DDX_Check(CDataExchange* pDX, int nIDC, bool& value)
@@ -719,7 +743,8 @@ void CB::string::Serialize(CArchive& ar) const
 
 void CB::string::Serialize(CArchive& ar)
 {
-    wxwide.reset();
+    wxstr.reset();
+    stdwide.reset();
 #if 0
     CString cs;
     ar >> cs;
