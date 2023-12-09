@@ -429,9 +429,9 @@ BOOL CGamDoc::SetupBlankBoard()
 {
     CGmBoxPropsDialog dlg;
 
-    dlg.m_bPropEdit = FALSE;            // Sets focus to ID field
+    dlg.m_bPropEdit = false;            // Sets focus to ID field
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return FALSE;
 
     m_dwGameID = IssueGameBoxID();
@@ -840,12 +840,12 @@ void CGamDoc::OnEditGbxProperties()
 {
     CGmBoxPropsDialog dlg;
 
-    dlg.m_strAuthor = m_strAuthor;
-    dlg.m_strTitle = m_strTitle;
-    dlg.m_strDescr = m_strDescr;
+    dlg.m_strAuthor = m_strAuthor.wx_str();
+    dlg.m_strTitle = m_strTitle.wx_str();
+    dlg.m_strDescr = m_strDescr.wx_str();
     dlg.m_nCompressLevel = (int)m_wCompressLevel;
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         m_strAuthor = dlg.m_strAuthor;
         m_strTitle = dlg.m_strTitle;

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<resource xmlns="http://www.wxwidgets.org/wxxrc" version="2.5.3.0">
+  <object class="wxDialog" name="IDD_GBOXPROP">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Game Box Properties</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer1">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer2">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag></flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxBoxSizer" name="bSizer3">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxLEFT|wxTOP</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText1">
+                  <label>Author:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxTextCtrl" name="IDC_D_GBXPRP_AUTHOR">
+                  <value></value>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxLEFT|wxTOP</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText2">
+                  <label>Title:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag></flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer4">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_OK">
+                  <label>OK</label>
+                  <default>1</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_CANCEL">
+                  <label>Cancel</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxTextCtrl" name="IDC_D_GBXPRP_TITLE">
+          <value></value>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxLEFT|wxTOP</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticText" name="m_staticText3">
+          <label>Description:</label>
+          <wrap>-1</wrap>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxTextCtrl" name="IDC_D_GBXPRP_DESCR">
+          <style>wxTE_MULTILINE</style>
+          <value>1\n2\n3\n4\n5\n6\n7\n8\n9\n10</value>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer5">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxALIGN_CENTER_VERTICAL|wxALL|wxBOTTOM|wxLEFT|wxTOP</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText4">
+              <label>Compression Level:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxBOTTOM|wxRIGHT|wxTOP</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxChoice" name="IDC_D_GBXPRP_COMPRESSION">
+              <selection>0</selection>
+              <content>
+                <item>No Compression</item>
+                <item>Fastest Compression</item>
+                <item>Medium Compression</item>
+                <item>Most Compression</item>
+              </content>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="IDC_D_SET_PASSWORD">
+              <label>Set Password...</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>

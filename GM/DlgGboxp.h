@@ -1,6 +1,6 @@
 // DlgGboxp.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,38 +25,42 @@
 /////////////////////////////////////////////////////////////////////////////
 // CGmBoxPropsDialog dialog
 
-class CGmBoxPropsDialog : public CDialog
+class CGmBoxPropsDialog : public wxDialog
 {
 // Construction
 public:
-    CGmBoxPropsDialog(CWnd* pParent = NULL);    // standard constructor
+    CGmBoxPropsDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CGmBoxPropsDialog)
-    enum { IDD = IDD_GBOXPROP };
-    CComboBox   m_comboCompress;
-    CEdit   m_editAuthor;
-    CB::string m_strAuthor;
-    CB::string m_strDescr;
-    CB::string m_strTitle;
-    //}}AFX_DATA
-    BOOL    m_bPropEdit;        // Set to true is editing existing props
-    int     m_nCompressLevel;
+    wxString m_strAuthor;
+    wxString m_strDescr;
+    wxString m_strTitle;
 
-    BOOL    m_bPassSet;
-    CB::string m_strPassword;
+    bool m_bPropEdit = true;        // Set to true is editing existing props
+    int m_nCompressLevel = wxZ_BEST_SPEED;
+
+    bool m_bPassSet = false;
+    wxString m_strPassword;
 
 // Implementation
-protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+private:
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CGmBoxPropsDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnSetPassword();
+    void OnSetPassword(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+
+    wxDECLARE_EVENT_TABLE();
+
+    RefPtr<wxObject> m_dummy;
+    RefPtr<wxChoice> m_comboCompress;
+    RefPtr<wxTextCtrl> m_editAuthor;
+    RefPtr<wxTextCtrl> m_editTitle;
+    RefPtr<wxTextCtrl> m_editDescr;
+
+    // adapt between m_nCompressLevel and m_comboCompress
+    int m_nCompressLevelIndex;
 };
