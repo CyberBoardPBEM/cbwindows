@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <resource xmlns="http://www.wxwidgets.org/wxxrc" version="2.5.3.0">
-  <object class="wxDialog" name="IDD_GBOXPROP">
+  <object class="wxDialog" name="CGmBoxPropsDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Game Box Properties</title>
     <centered>1</centered>
@@ -31,7 +31,7 @@
                 <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
                 <border>5</border>
                 <option>0</option>
-                <object class="wxTextCtrl" name="IDC_D_GBXPRP_AUTHOR">
+                <object class="wxTextCtrl" name="m_editAuthor">
                   <value></value>
                 </object>
               </object>
@@ -84,7 +84,7 @@
         <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
         <border>5</border>
         <option>0</option>
-        <object class="wxTextCtrl" name="IDC_D_GBXPRP_TITLE">
+        <object class="wxTextCtrl" name="m_editTitle">
           <value></value>
         </object>
       </object>
@@ -101,7 +101,7 @@
         <flag>wxBOTTOM|wxEXPAND|wxLEFT|wxRIGHT</flag>
         <border>5</border>
         <option>0</option>
-        <object class="wxTextCtrl" name="IDC_D_GBXPRP_DESCR">
+        <object class="wxTextCtrl" name="m_editDescr">
           <style>wxTE_MULTILINE</style>
           <value>1\n2\n3\n4\n5\n6\n7\n8\n9\n10</value>
         </object>
@@ -125,7 +125,7 @@
             <flag>wxBOTTOM|wxRIGHT|wxTOP</flag>
             <border>5</border>
             <option>0</option>
-            <object class="wxChoice" name="IDC_D_GBXPRP_COMPRESSION">
+            <object class="wxChoice" name="m_comboCompress">
               <selection>0</selection>
               <content>
                 <item>No Compression</item>
@@ -139,7 +139,7 @@
             <flag>wxALL</flag>
             <border>5</border>
             <option>0</option>
-            <object class="wxButton" name="IDC_D_SET_PASSWORD">
+            <object class="wxButton" name="OnSetPassword">
               <label>Set Password...</label>
               <default>0</default>
               <auth_needed>0</auth_needed>

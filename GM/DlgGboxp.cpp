@@ -50,11 +50,11 @@ namespace {
 CGmBoxPropsDialog::CGmBoxPropsDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
     /* m_dummy is a way to call LoadDialog()
         before the Refs are initialized */
-    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "IDD_GBOXPROP") ? this : nullptr),
-    m_editAuthor(XRCCTRL(*this, "IDC_D_GBXPRP_AUTHOR", wxTextCtrl)),
-    m_editTitle(XRCCTRL(*this, "IDC_D_GBXPRP_TITLE", wxTextCtrl)),
-    m_editDescr(XRCCTRL(*this, "IDC_D_GBXPRP_DESCR", wxTextCtrl)),
-    m_comboCompress(XRCCTRL(*this, "IDC_D_GBXPRP_COMPRESSION", wxChoice))
+    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CGmBoxPropsDialog") ? this : nullptr),
+    m_editAuthor(XRCCTRL(*this, "m_editAuthor", wxTextCtrl)),
+    m_editTitle(XRCCTRL(*this, "m_editTitle", wxTextCtrl)),
+    m_editDescr(XRCCTRL(*this, "m_editDescr", wxTextCtrl)),
+    m_comboCompress(XRCCTRL(*this, "m_comboCompress", wxChoice))
 {
     m_editAuthor->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strAuthor));
     m_editAuthor->SetMaxLength(40);
@@ -82,7 +82,7 @@ bool CGmBoxPropsDialog::TransferDataFromWindow()
 }
 
 wxBEGIN_EVENT_TABLE(CGmBoxPropsDialog, wxDialog)
-    EVT_BUTTON(XRCID("IDC_D_SET_PASSWORD"), CGmBoxPropsDialog::OnSetPassword)
+    EVT_BUTTON(XRCID("OnSetPassword"), CGmBoxPropsDialog::OnSetPassword)
 #if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
