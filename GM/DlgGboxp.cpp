@@ -34,48 +34,62 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+namespace {
+    const int compressLevels[] = {
+        wxZ_NO_COMPRESSION,
+        wxZ_BEST_SPEED,
+        6,
+        wxZ_BEST_COMPRESSION,
+    };
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CGmBoxPropsDialog dialog
 
 
-CGmBoxPropsDialog::CGmBoxPropsDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CGmBoxPropsDialog::IDD, pParent)
+CGmBoxPropsDialog::CGmBoxPropsDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    /* m_dummy is a way to call LoadDialog()
+        before the Refs are initialized */
+    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "IDD_GBOXPROP") ? this : nullptr),
+    m_editAuthor(XRCCTRL(*this, "IDC_D_GBXPRP_AUTHOR", wxTextCtrl)),
+    m_editTitle(XRCCTRL(*this, "IDC_D_GBXPRP_TITLE", wxTextCtrl)),
+    m_editDescr(XRCCTRL(*this, "IDC_D_GBXPRP_DESCR", wxTextCtrl)),
+    m_comboCompress(XRCCTRL(*this, "IDC_D_GBXPRP_COMPRESSION", wxChoice))
 {
-    //{{AFX_DATA_INIT(CGmBoxPropsDialog)
-    m_strAuthor = "";
-    m_strDescr = "";
-    m_strTitle = "";
-    //}}AFX_DATA_INIT
-    m_nCompressLevel = wxZ_BEST_SPEED;
-    m_bPropEdit = TRUE;
-
-    m_bPassSet = FALSE;
-    m_strPassword = "";
+    m_editAuthor->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strAuthor));
+    m_editAuthor->SetMaxLength(40);
+    m_editTitle->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strTitle));
+    m_editTitle->SetMaxLength(60);
+    m_editDescr->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strDescr));
+    m_editDescr->SetMaxLength(2000);
+    m_comboCompress->SetValidator(wxGenericValidator(&m_nCompressLevelIndex));
 }
 
-void CGmBoxPropsDialog::DoDataExchange(CDataExchange* pDX)
+bool CGmBoxPropsDialog::TransferDataToWindow()
 {
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CGmBoxPropsDialog)
-    DDX_Control(pDX, IDC_D_GBXPRP_COMPRESSION, m_comboCompress);
-    DDX_Control(pDX, IDC_D_GBXPRP_AUTHOR, m_editAuthor);
-    DDX_Text(pDX, IDC_D_GBXPRP_AUTHOR, m_strAuthor);
-    DDV_MaxChars(pDX, m_strAuthor, 40);
-    DDX_Text(pDX, IDC_D_GBXPRP_DESCR, m_strDescr);
-    DDV_MaxChars(pDX, m_strDescr, 2000);
-    DDX_Text(pDX, IDC_D_GBXPRP_TITLE, m_strTitle);
-    DDV_MaxChars(pDX, m_strTitle, 60);
-    //}}AFX_DATA_MAP
+    m_nCompressLevelIndex = value_preserving_cast<int>(std::find(std::begin(compressLevels), std::end(compressLevels), m_nCompressLevel) - std::begin(compressLevels));
+    return wxDialog::TransferDataToWindow();
 }
 
-BEGIN_MESSAGE_MAP(CGmBoxPropsDialog, CDialog)
-    //{{AFX_MSG_MAP(CGmBoxPropsDialog)
-    ON_BN_CLICKED(IDC_D_SET_PASSWORD, OnSetPassword)
+bool CGmBoxPropsDialog::TransferDataFromWindow()
+{
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+    m_nCompressLevel = compressLevels[m_nCompressLevelIndex];
+    return true;
+}
+
+wxBEGIN_EVENT_TABLE(CGmBoxPropsDialog, wxDialog)
+    EVT_BUTTON(XRCID("IDC_D_SET_PASSWORD"), CGmBoxPropsDialog::OnSetPassword)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -98,61 +112,18 @@ void CGmBoxPropsDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
 // CGmBoxPropsDialog message handlers
 
-void CGmBoxPropsDialog::OnOK()
-{
-    CDialog::OnOK();
-    m_nCompressLevel = value_preserving_cast<int>(m_comboCompress.GetItemData(m_comboCompress.GetCurSel()));
-}
-
-
-BOOL CGmBoxPropsDialog::OnInitDialog()
-{
-    CDialog::OnInitDialog();
-
-    CB::string str = CB::string::LoadString(IDS_COMPRESS_NONE);
-    int nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, wxZ_NO_COMPRESSION);
-
-    str = CB::string::LoadString(IDS_COMPRESS_FASTEST);
-    nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, wxZ_BEST_SPEED);
-
-    str = CB::string::LoadString(IDS_COMPRESS_MEDIUM);
-    nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, 6);
-
-    str = CB::string::LoadString(IDS_COMPRESS_MOST);
-    nItem = m_comboCompress.AddString(str);
-    m_comboCompress.SetItemData(nItem, wxZ_BEST_COMPRESSION);
-
-    switch (m_nCompressLevel)
-    {
-        case wxZ_NO_COMPRESSION:    m_comboCompress.SetCurSel(0); break;
-        case wxZ_BEST_SPEED:        m_comboCompress.SetCurSel(1); break;
-        case 6:                     m_comboCompress.SetCurSel(2); break;
-        case wxZ_BEST_COMPRESSION:  m_comboCompress.SetCurSel(3); break;
-        default: ASSERT(FALSE);     m_comboCompress.SetCurSel(1); break;// Shouldn't happen
-    }
-
-//  if (m_bPropEdit)
-//  {
-//      m_editAuthor.SetFocus();
-//      return FALSE;
-//  }
-    return TRUE;  // Return TRUE  unless you set the focus to a control
-}
-
-void CGmBoxPropsDialog::OnSetPassword()
+void CGmBoxPropsDialog::OnSetPassword(wxCommandEvent& /*event*/)
 {
     CSetGameboxPassword dlg;
     if (dlg.DoModal() == IDOK)
     {
-        m_strPassword = dlg.m_strPass1;
-        m_bPassSet = TRUE;
+        m_strPassword = dlg.m_strPass1.wx_str();
+        m_bPassSet = true;
     }
 }
