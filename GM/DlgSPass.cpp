@@ -1,6 +1,6 @@
 // DlgSPass.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,33 +36,25 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSetGameboxPassword dialog
 
-CSetGameboxPassword::CSetGameboxPassword(CWnd* pParent /*=NULL*/)
-    : CDialog(CSetGameboxPassword::IDD, pParent)
+CSetGameboxPassword::CSetGameboxPassword(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    /* m_dummy is a way to call LoadDialog()
+        before the Refs are initialized */
+    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CSetGameboxPassword") ? this : nullptr),
+    m_editPass2(XRCCTRL(*this, "m_editPass2", wxTextCtrl)),
+    m_editPass1(XRCCTRL(*this, "m_editPass1", wxTextCtrl))
 {
-    //{{AFX_DATA_INIT(CSetGameboxPassword)
-    m_strPass1 = "";
-    m_strPass2 = "";
-    //}}AFX_DATA_INIT
+    m_editPass2->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strPass2));
+    m_editPass1->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strPass1));
 }
 
-void CSetGameboxPassword::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSetGameboxPassword)
-    DDX_Control(pDX, IDC_D_SETPASS_PASS_2, m_editPass2);
-    DDX_Control(pDX, IDC_D_SETPASS_PASS_1, m_editPass1);
-    DDX_Text(pDX, IDC_D_SETPASS_PASS_1, m_strPass1);
-    DDX_Text(pDX, IDC_D_SETPASS_PASS_2, m_strPass2);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSetGameboxPassword, CDialog)
-    //{{AFX_MSG_MAP(CSetGameboxPassword)
+wxBEGIN_EVENT_TABLE(CSetGameboxPassword, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -82,21 +74,25 @@ void CSetGameboxPassword::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSetGameboxPassword message handlers
 
-void CSetGameboxPassword::OnOK()
+bool CSetGameboxPassword::TransferDataFromWindow()
 {
-    m_strPass1 = CB::string::GetWindowText(m_editPass1);
-    m_strPass2 = CB::string::GetWindowText(m_editPass2);
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
 
     if (m_strPass1 != m_strPass2)
     {
-        AfxMessageBox(IDS_WARN_PASS_MUST_MATCH);
-        m_editPass1.SetFocus();
-        m_editPass1.SetSel(0, -1);
+        wxMessageBox(CB::string::LoadString(IDS_WARN_PASS_MUST_MATCH), CB::GetAppName());
+        m_editPass1->SetFocus();
+        m_editPass1->SetSelection(-1, -1);
+        return false;
     }
-    else
-        CDialog::OnOK();
+
+    return true;
 }

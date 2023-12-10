@@ -1,6 +1,6 @@
 // DlgSPass.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,39 +32,34 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSetGameboxPassword dialog
 
-class CSetGameboxPassword : public CDialog
+class CSetGameboxPassword : public wxDialog
 {
 // Construction
 public:
-    CSetGameboxPassword(CWnd* pParent = NULL);   // standard constructor
+    CSetGameboxPassword(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CSetGameboxPassword)
-    enum { IDD = IDD_SET_PASSWORD };
-    CEdit   m_editPass2;
-    CEdit   m_editPass1;
-    CB::string m_strPass1;
-    CB::string m_strPass2;
-    //}}AFX_DATA
+    wxString m_strPass1;
+    wxString m_strPass2;
 
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CSetGameboxPassword)
     protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
+    bool TransferDataFromWindow() override;
 
 // Implementation
-protected:
+private:
 
     // Generated message map functions
-    //{{AFX_MSG(CSetGameboxPassword)
-    virtual void OnOK();
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+    RefPtr<wxObject> m_dummy;
+    RefPtr<wxTextCtrl> m_editPass2;
+    RefPtr<wxTextCtrl> m_editPass1;
 };
 
 #endif
