@@ -121,9 +121,9 @@ void CGmBoxPropsDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CGmBoxPropsDialog::OnSetPassword(wxCommandEvent& /*event*/)
 {
     CSetGameboxPassword dlg;
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
-        m_strPassword = dlg.m_strPass1.wx_str();
+        m_strPassword = dlg.m_strPass1;
         m_bPassSet = true;
     }
 }
