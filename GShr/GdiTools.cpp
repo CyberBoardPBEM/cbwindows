@@ -365,8 +365,7 @@ OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
 }
 
 // Draws on the source bitmap over the destination bitmap at the
-// specified position. If crTrans is specified, a masked merge is
-// performed.
+// specified position.
 
 void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst)
 {
