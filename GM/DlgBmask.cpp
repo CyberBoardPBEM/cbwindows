@@ -1,6 +1,6 @@
 // DlgBmask.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,30 +36,29 @@ static char THIS_FILE[] = __FILE__;
 // CBoardMaskDialog dialog
 
 
-CBoardMaskDialog::CBoardMaskDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CBoardMaskDialog::IDD, pParent)
+CBoardMaskDialog::CBoardMaskDialog(CBoardManager& bmgr, wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    m_pBMgr(&bmgr),
+    /* m_dummy is a way to call LoadDialog()
+        before the Refs are initialized */
+    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CBoardMaskDialog") ? this : nullptr),
+    m_lboxBoard(XRCCTRL(*this, "m_lboxBoard", wxListBox))
 {
-    //{{AFX_DATA_INIT(CBoardMaskDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
-    m_pBMgr = NULL;
+    wxASSERT(!m_pBMgr->IsEmpty());
+    m_lboxBoard->SetValidator(wxGenericValidator(&m_nBrdNum));
+
+    m_lboxBoard->Clear();
+    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
+        m_lboxBoard->Append(m_pBMgr->GetBoard(i).GetName());
 }
 
-void CBoardMaskDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CBoardMaskDialog)
-    DDX_Control(pDX, IDC_D_BRDMSK_BOARDS, m_lboxBoard);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CBoardMaskDialog, CDialog)
-    //{{AFX_MSG_MAP(CBoardMaskDialog)
+wxBEGIN_EVENT_TABLE(CBoardMaskDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -78,26 +77,7 @@ void CBoardMaskDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoardMaskDialog message handlers
-
-void CBoardMaskDialog::OnOK()
-{
-    CDialog::OnOK();
-    m_nBrdNum = value_preserving_cast<size_t>(m_lboxBoard.GetCurSel());
-}
-
-BOOL CBoardMaskDialog::OnInitDialog()
-{
-    CDialog::OnInitDialog();
-
-    ASSERT(m_pBMgr);
-
-    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
-        m_lboxBoard.AddString(m_pBMgr->GetBoard(i).GetName());
-
-    m_lboxBoard.SetCurSel(0);
-
-    return TRUE;  // return TRUE  unless you set the focus to a control
-}

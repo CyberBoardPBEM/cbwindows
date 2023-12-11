@@ -1,6 +1,6 @@
 // DlgBmask.h : header file
 //
-//  Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,32 +27,25 @@
 
 class CBoardManager;
 
-class CBoardMaskDialog : public CDialog
+class CBoardMaskDialog : public wxDialog
 {
 // Construction
 public:
-    CBoardMaskDialog(CWnd* pParent = NULL); // standard constructor
+    CBoardMaskDialog(CBoardManager& bmgr, wxWindow* parent = &CB::GetMainWndWx()); // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CBoardMaskDialog)
-    enum { IDD = IDD_MASKBOARD };
-    CListBox    m_lboxBoard;
-    //}}AFX_DATA
-
-    size_t m_nBrdNum;
-    CBoardManager* m_pBMgr;
+    int m_nBrdNum = 0;
 
 // Implementation
-protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CBoardMaskDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
+private:
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+    RefPtr<CBoardManager> m_pBMgr;
+    RefPtr<wxObject> m_dummy;
+    RefPtr<wxListBox> m_lboxBoard;
 };
 

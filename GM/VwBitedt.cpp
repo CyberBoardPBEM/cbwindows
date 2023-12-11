@@ -1123,12 +1123,11 @@ void CBitEditView::OnImageBoardMask()
 {
     CBoardManager* pBMgr = GetDocument().GetBoardManager();
 
-    CBoardMaskDialog dlg;
-    dlg.m_pBMgr = pBMgr;
-    if (dlg.DoModal() != IDOK || dlg.m_nBrdNum == Invalid_v<size_t>)
+    CBoardMaskDialog dlg(CheckedDeref(pBMgr));
+    if (dlg.ShowModal() != wxID_OK || dlg.m_nBrdNum == Invalid_v<size_t>)
         return;
 
-    CBoard& pBoard = pBMgr->GetBoard(dlg.m_nBrdNum);
+    CBoard& pBoard = pBMgr->GetBoard(value_preserving_cast<size_t>(dlg.m_nBrdNum));
 
     const CCellForm& pcf = pBoard.GetBoardArray().
         GetCellForm(m_pSelView->GetCurrentScale());
