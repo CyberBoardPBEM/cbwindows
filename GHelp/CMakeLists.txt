@@ -1,3 +1,5 @@
+# Copyright (c) 2023 By William Su, All Rights Reserved.
+
 # GHelp
 
 # apparently copy can't use cmake paths

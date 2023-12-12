@@ -1,6 +1,6 @@
 // VwBitedt.h : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -48,43 +48,43 @@ protected:
 
 // Attributes
 public:
-    CGamDoc* GetDocument() { return (CGamDoc*)CScrollView::GetDocument(); }
-    void SetTileSelectView(CTileSelView* pSelView) { m_pSelView = pSelView; }
-    CTileSelView* GetTileSelectView() { return m_pSelView; }
-    void SetCurrentBitmap(TileID tid, CBitmap *pBMap, BOOL bFillOnly = FALSE);
-    CBitmap* GetCurrentViewBitmap();
-    CBitmap* GetCurrentMasterBitmap() { return &*m_bmMaster; }
-    CBitmap* GetPasteBitmap() { return &*m_bmPaste; }
-    CSize GetBitmapSize() { return m_size; }
-    CSize GetZoomedSize()
+    CGamDoc& GetDocument() { return CheckedDeref(dynamic_cast<CGamDoc*>(CScrollView::GetDocument())); }
+    void SetTileSelectView(CTileSelView& pSelView) { m_pSelView = &pSelView; }
+    CTileSelView& GetTileSelectView() { return CheckedDeref(m_pSelView); }
+    void SetCurrentBitmap(TileID tid, const CBitmap* pBMap, BOOL bFillOnly = FALSE);
+    OwnerPtr<CBitmap>& GetCurrentViewBitmap();
+    OwnerPtr<CBitmap>& GetCurrentMasterBitmap() { return m_bmMaster; }
+    OwnerPtr<CBitmap>& GetPasteBitmap() { return m_bmPaste; }
+    CSize GetBitmapSize() const { return m_size; }
+    CSize GetZoomedSize() const
         { return CSize(m_size.cx * m_nZoom, m_size.cy * m_nZoom); }
-    CRect GetZoomedSelectBorderRect();
-    CRect GetZoomedSelectRect();
+    CRect GetZoomedSelectBorderRect() const;
+    CRect GetZoomedSelectRect() const;
     void SetSelectRect(const CRect& rct) { m_rctPaste = rct; }
-    CRect GetSelectRect() { return m_rctPaste; }
+    CRect GetSelectRect() const { return m_rctPaste; }
     void OffsetSelectRect(CSize size) { m_rctPaste += (CPoint)size; }
     void SetSelectToolControl(BOOL bCapture) { m_bSelectCapture = bCapture; }
 
     FontID GetBitFont();
     // Current Colors
-    UINT GetLineWidth() { return m_pTMgr->GetLineWidth(); }
-    COLORREF GetForeColor() { return m_pTMgr->GetForeColor(); }
-    COLORREF GetBackColor() { return m_pTMgr->GetBackColor(); }
+    UINT GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
+    COLORREF GetForeColor() const { return m_pTMgr->GetForeColor(); }
+    COLORREF GetBackColor() const { return m_pTMgr->GetBackColor(); }
     void SetForeColor(COLORREF crFore) { m_pTMgr->SetForeColor(crFore); }
     void SetBackColor(COLORREF crBack) { m_pTMgr->SetForeColor(crBack); }
 
 // Operations
 public:
-    BOOL GetImagePixelLoc(CPoint& point);   // degrids it also
-    void GetImagePixelLocClamped(CPoint& point);
-    CBitmap* SetViewImageFromMasterImage();
-    CBitmap* SetMasterImageFromViewImage();
+    BOOL GetImagePixelLoc(CPoint& point) const;   // degrids it also
+    void GetImagePixelLocClamped(CPoint& point) const;
+    void SetViewImageFromMasterImage();
+    void SetMasterImageFromViewImage();
     void ClearPasteImage();
-    void InvalidateViewImage(CRect* pRct, BOOL bUpdate = FALSE);
+    void InvalidateViewImage(bool bUpdate);
     void InvalidateFocusBorder(BOOL bUpdate = FALSE);
-    BOOL IsPtInImage(CPoint point);
-    BOOL IsPtInSelectRect(CPoint point);
-    BOOL IsPasteImage() { return m_bmPaste->m_hObject != NULL; }
+    BOOL IsPtInImage(CPoint point) const;
+    BOOL IsPtInSelectRect(CPoint point) const;
+    BOOL IsPasteImage() const { return m_bmPaste->m_hObject != NULL; }
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
 
     // Draw tools support
@@ -99,12 +99,12 @@ public:
     void DrawPastedImage();
 
     // Coordinate space
-    void ClientToWorkspace(CPoint& pnt);
-    void WorkspaceToClient(CPoint& pnt);
-    void WorkspaceToClient(CRect& rct);
+    void ClientToWorkspace(CPoint& pnt) const;
+    void WorkspaceToClient(CPoint& pnt) const;
+    void WorkspaceToClient(CRect& rct) const;
 
     // Text edit support.
-    int CalcCaretHeight(int yLoc);
+    int CalcCaretHeight(int yLoc) const;
     void SetTextPosition(CPoint ptPos);
     void SetTextCaretPos(CPoint ptPos);
     void CommitCurrentText();
@@ -117,14 +117,14 @@ public:
     void SetUndoFromView();
     void RestoreUndoToView();
     void PurgeUndo();
-    BOOL IsUndoAvailable() { return !m_listUndo.empty(); }
+    BOOL IsUndoAvailable() const { return !m_listUndo.empty(); }
 
 // Implementation
 protected:
     void ClearAllImages();
     void RecalcScrollLimits();
-    CRect GetImageRect();
-    IToolType MapToolType(UINT nToolResID);
+    CRect GetImageRect() const;
+    static IToolType MapToolType(UINT nToolResID);
 
     // ------ //
     FontID      m_fontID;       // Current fontID Shadow variable

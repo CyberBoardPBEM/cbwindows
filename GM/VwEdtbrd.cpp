@@ -213,7 +213,6 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CBrdEditView::OnDraw(CDC* pDC)
 {
     CDC dcMem;
-    CBitmap bmMem;
     CRect oRct;
     CDC* pDrawDC = pDC;
     CBitmap* pPrvBMap = nullptr;
@@ -226,10 +225,10 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     if (m_bOffScreen)
     {
-        bmMem.Attach(Create16BitDIBSection(pDC->m_hDC,
-            oRct.Width(), oRct.Height()));
+        OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
+            oRct.Width(), oRct.Height());
         dcMem.CreateCompatibleDC(pDC);
-        pPrvBMap = dcMem.SelectObject(&bmMem);
+        pPrvBMap = dcMem.SelectObject(&*bmMem);
         dcMem.SetViewportOrg(-oRct.left, -oRct.top);
         dcMem.SetStretchBltMode(COLORONCOLOR);
         SetupPalette(&dcMem);
@@ -1591,7 +1590,7 @@ void CBrdEditView::OnUpdateToolSuspendScaleVsibility(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnEditPaste()
 {
-    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this, GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this);
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
@@ -1635,34 +1634,21 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     if (dlg.DoModal() != IDOK)
         return;
 
-    CFile file;
-    CFileException fe;
-
-    if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
-        &fe))
-    {
-        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
-        return;
-    }
-    CDib dib;
     try
     {
-        dib = CDib(file);
-    }
-    catch (...)
-    {
-        AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
-        return;
-    }
-    OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(GetAppPalette());
+        wxImage img(CB::string(dlg.GetPathName()));
+        OwnerPtr<CBitmap> pBMap = ToBitmap(img);
 
-    {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
         pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
         GetSelectList()->PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
+    }
+    catch (...)
+    {
+        AfxMessageBox(IDP_ERR_LOADBITMAP, MB_ICONEXCLAMATION);
+        return;
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList()->AddObject(pDObj, TRUE);

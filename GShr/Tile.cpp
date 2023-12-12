@@ -101,7 +101,7 @@ void CTile::TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo /* = NU
         else
             m_pTS->TileBlt(pDC, x, y, m_yLoc, SRCCOPY);
     }
-    else if (RGB565(m_crTrans) != RGB565(m_crSmall))
+    else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
         CBrush oBrsh;

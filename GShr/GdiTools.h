@@ -1,6 +1,6 @@
 // GdiTools.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,28 +33,39 @@
 // DIB scan lines are always aligned on DWORD boundries. This inline
 // computes the number of bytes in a 16bits per pixel scan line.
 
-inline UINT ScanBytesFor16bpp(UINT nWidth)
-    { return 2 * nWidth + ((nWidth & 1) ? 2 : 0); }
+inline size_t ScanBytesFor24bpp(size_t nWidth)
+    { return (size_t(3)*nWidth + size_t(3)) & ~size_t(3); }
 
 ////////////////////////////////////////////////////////////////////
 
-class CDib;
-
-////////////////////////////////////////////////////////////////////
-// Converts 24 bit RGB values to 16 bit 5-6-5 format
-
-inline WORD RGB565(COLORREF cref)
+// for 24bpp DIBs
+struct WIN_RGBTRIO
 {
-    return (WORD)(((cref & 0xF8) << 8) | ((cref & 0xFC00) >> 5) | ((cref & 0xF80000) >> 19));
-}
+    uint8_t blue;
+    uint8_t green;
+    uint8_t red;
 
-inline COLORREF RGB565_TO_24(WORD clr16)
-{
-    BYTE r = (((clr16 & 0xF800) >> 11) * 0xFF) / 0x1F;
-    BYTE g = static_cast<BYTE>((((clr16 & 0x7E0) >> 5) * 0xFF) / 0x3F);
-    BYTE b = (( clr16 & 0x1F) * 0xFF) / 0x1F;
-    return RGB(r, g, b);
-}
+    WIN_RGBTRIO() = default;
+    WIN_RGBTRIO(COLORREF cr)
+    {
+        *this = cr;
+    }
+    WIN_RGBTRIO& operator=(COLORREF cr)
+    {
+        blue = GetBValue(cr);
+        green = GetGValue(cr);
+        red = GetRValue(cr);
+        return *this;
+    }
+
+    operator COLORREF() const
+    {
+        return RGB(red, green, blue);
+    }
+};
+static_assert(sizeof(WIN_RGBTRIO) == 3 &&
+                    alignof(WIN_RGBTRIO) == 1,
+                "WIN_RGBTRIO problem");
 
 ////////////////////////////////////////////////////////////////////
 
@@ -123,13 +134,6 @@ typedef struct _DELTAGEN {
 typedef DELTAGEN *PDELTAGEN;
 
 ////////////////////////////////////////////////////////////////////
-// From ROTATE.CPP
-
-CDib Rotate16BitDib(const CDib& pSDib, int angle, COLORREF crTrans);
-void  RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
-void  OffsetPoints(POINT* pPnts, int nPnts, int xOff, int yOff);
-
-////////////////////////////////////////////////////////////////////
 // Some non-class GDI tools...
 
 FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK = FALSE);
@@ -143,71 +147,51 @@ int ScreenPixelsToTenthPoints(int nPixels);
 int TenthPointsToScreenPixels(int nTenthPts);
 int GetCurrentVideoResolution();
 
-void ConvertMonochromeBMapToDIBSection(HDC hDC, BOOL bDelMono = TRUE);
+OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
+OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
+OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 
-LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y);
-
-COLORREF MapWin9xRgbToNtRgb(COLORREF cr);
-WORD     MapWin9xRgbToWin9x565(COLORREF cr);
-void     FixupTransparentColorsAfter256ColorDibUpgrade(
-    HBITMAP hBitmap, COLORREF crTrans);
-void    GetDIBSectDimensions(HBITMAP hBitmap, int& rWidth, int& rHeight);
-
-HBITMAP Create16BitDIBSection(HDC hDC, int nWidth, int nHeight);
-HBITMAP Create16BitColorBar(int nHueDivisions, int nHeight);
-HBITMAP Create16BitSaturationValueWash(int nHue, int nWidth, int nHeight);
-HBITMAP Create16BitColorWash(int nHues, int nHueVertSteps, int cxBlock, int cyBlock);
-HBITMAP Create16BitColorSweep();
-
-void Set16BitDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
-void Set16BitDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);
-COLORREF Get16BitDIBSectPixel(HBITMAP hBitmap, int x, int y);
-
-BOOL Is16BitDIBSectInvisible(HBITMAP hBitmap, COLORREF crTrans, int y = -1, int nHeight = 0);
-
-HBITMAP CreateRGBDIBSection(HDC hDC, int nWidth, int nHeight);
-HBITMAP CreateRGBColorBar(int nHueDivisions, int nHeight);
-HBITMAP CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
-
-void SetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y, COLORREF cr);
-void SetRGBDIBSectPixelBlock(HBITMAP hBitmap, int x, int y, int cx, int cy, COLORREF cr);
-COLORREF GetRGBDIBSectPixel(HBITMAP hBitmap, int x, int y);
+void SetRGBDIBSectPixel(CBitmap& hBitmap, int x, int y, COLORREF cr);
+void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COLORREF cr);
 
 COLORREF HSVtoRGB(int h, int s, int v);
-void HSVtoRGB(double h, double s, double v, double *r, double *g, double *b);
+void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
 void ClearSystemPalette();
 void SetupColorTable(CDWordArray* pTbl, BOOL bInclBlackAndWhite = TRUE);
 void SetupPalette(CDC& pDC);
 void ResetPalette(CDC& pDC);
 OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
-void CopyBitmapPiece(CBitmap *pbmDst, CBitmap *pbmSrc, CRect rctSrc,
-    COLORREF crVoided = noColor);
+// The copy excludes the right and bottom edges of rctSrc.
+// If a crVoided color is supplied, the source bitmap will have its
+// copied region filled with that color.
+OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
+    COLORREF crVoided);
 OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     int nStretchMode = COLORONCOLOR);
-void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst,
-    COLORREF crTrans = noColor);
+void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
 void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
-void TransBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap, COLORREF crTrans);
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
 OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
 
 CPalette* GetAppPalette();
 
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
     CPalette* pPalNew = NULL);
 void AppendBitmap(CBitmap *pBMapTo, CBitmap *pBMapFrm, CPalette *pPalTo,
     CPalette *pPalFrm);
 void RemoveBitmapSlice(CBitmap *pBMap, int yPos, int iHt, CPalette *pPal = NULL);
-#ifdef WE_WANT_THIS_STUFF_DLL940113
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
 #endif
 OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec);
 void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
 void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe);
 void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
+#ifdef WE_WANT_THIS_STUFF_DLL940113
 void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
     CDC& pDCSrc, const CPalette *pPalSrc, const CBitmap& pBMap, int xSrc, int ySrc);
+#endif
 
 OwnerPtr<CBrush> Clone(const CBrush& brush);
 

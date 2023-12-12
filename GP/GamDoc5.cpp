@@ -471,7 +471,6 @@ void CGamDoc::MsgSeperateLegacyMsgIntoPieces(CB::string& strMsg, CB::string& str
     strHistory.clear();
     strReadOnly.clear();
     strEditable.clear();
-ASSERT(!"needs testing");
 
     // Search the message string backwards for a ">>\r\n" or start of buffer.
     size_t i = strMsg.rfind("\xBB\r");

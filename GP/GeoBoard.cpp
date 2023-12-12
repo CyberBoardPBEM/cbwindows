@@ -325,8 +325,18 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             }
         }
     }
-    m_rowToBoardRow.front()[0] = m_rowToBoardRow.front()[1];
-    m_rowToBoardRow.back()[1] = m_rowToBoardRow.back()[0];
+    // fixup border cells that didn't get merge treatment
+    for (size_t i = size_t(0) ; i < m_rowToBoardRow.size() ; ++i)
+    {
+        if (m_rowToBoardRow[i][0] == BoardToSubBoard())
+        {
+            m_rowToBoardRow[i][0] = m_rowToBoardRow[i][1];
+        }
+        else if (m_rowToBoardRow[i][1] == BoardToSubBoard())
+        {
+            m_rowToBoardRow[i][1] = m_rowToBoardRow[i][0];
+        }
+    }
     for (size_t boardCol = size_t(0) ; boardCol < GetBoardColCount() ; ++boardCol)
     {
         ComputeCellOffset(size_t(0), boardCol, row, col);
@@ -368,8 +378,18 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
             }
         }
     }
-    m_colToBoardCol.front()[0] = m_colToBoardCol.front()[1];
-    m_colToBoardCol.back()[1] = m_colToBoardCol.back()[0];
+    // fixup border cells that didn't get merge treatment
+    for (size_t i = size_t(0) ; i < m_colToBoardCol.size() ; ++i)
+    {
+        if (m_colToBoardCol[i][0] == BoardToSubBoard())
+        {
+            m_colToBoardCol[i][0] = m_colToBoardCol[i][1];
+        }
+        else if (m_colToBoardCol[i][1] == BoardToSubBoard())
+        {
+            m_colToBoardCol[i][1] = m_colToBoardCol[i][0];
+        }
+    }
 
     return pBrdNew;
 }
@@ -485,23 +505,23 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 // We need to create a tile that has the half images of the
                 // two hex cells joined as one.
                 // We don't bother trying to perform 4-way merge for mergeLeft && mergeTop
-                CBitmap bmapFull;
-                CBitmap bmapHalf;
+                OwnerOrNullPtr<CBitmap> bmapFull;
+                OwnerOrNullPtr<CBitmap> bmapHalf;
                 if (mergeLeftRight)
                 {
                     // Handle left and right halves
-                    CombineLeftAndRight(bmapFull, fullScale, pBArryTo, pBArryFrom,
+                    bmapFull = CombineLeftAndRight(fullScale, pBArryTo, pBArryFrom,
                         nRowTo, nColTo, nRow, nCol);
-                    CombineLeftAndRight(bmapHalf, halfScale, pBArryTo, pBArryFrom,
+                    bmapHalf = CombineLeftAndRight(halfScale, pBArryTo, pBArryFrom,
                         nRowTo, nColTo, nRow, nCol);
                 }
                 else
                 {
                     ASSERT(mergeTopBottom);
                     // Handle top and bottom halves
-                    CombineTopAndBottom(bmapFull, fullScale, pBArryTo, pBArryFrom,
+                    bmapFull = CombineTopAndBottom(fullScale, pBArryTo, pBArryFrom,
                         nRowTo, nColTo, nRow, nCol);
-                    CombineTopAndBottom(bmapHalf, halfScale, pBArryTo, pBArryFrom,
+                    bmapHalf = CombineTopAndBottom(halfScale, pBArryTo, pBArryFrom,
                         nRowTo, nColTo, nRow, nCol);
                 }
                 // Determine small cell color. Use the 'To' cell as value;
@@ -517,7 +537,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 CSize sizeHalf = pBArryTo.GetCellSize(halfScale);
                 TileID tidNew = pTMgr->CreateTile(pTMgr->GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
-                pTMgr->UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
+                pTMgr->UpdateTile(tidNew, *bmapFull, *bmapHalf, crSmall);
                 pCellTo.SetTID(tidNew);
             }
             else
@@ -526,7 +546,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
     }
 }
 
-void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
+OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
     const CBoardArray& pBALeft, const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft,
     size_t nRowRight, size_t nColRight) const
 {
@@ -536,10 +556,10 @@ void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
     dc.RealizePalette();
 
     CSize sizeCell = pBALeft.GetCellSize(eScale);
-    CreateBitmap(bmap, sizeCell);
+    OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
 
     // Handle left half...
-    CBitmap* prvBMap = dc.SelectObject(&bmap);
+    CBitmap* prvBMap = dc.SelectObject(&*retval);
 
     CRect rct = pBALeft.GetCellRect(nRowLeft, nColLeft, eScale);
 
@@ -561,9 +581,11 @@ void CGeomorphicBoard::CombineLeftAndRight(CBitmap& bmap, TileScale eScale,
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
+
+    return retval;
 }
 
-void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
+OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
     const CBoardArray& pBATop, const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop,
     size_t nRowBottom, size_t nColBottom) const
 {
@@ -573,10 +595,10 @@ void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
     dc.RealizePalette();
 
     CSize sizeCell = pBATop.GetCellSize(eScale);
-    CreateBitmap(bmap, sizeCell);
+    OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
 
     // Handle top half...
-    CBitmap* prvBMap = dc.SelectObject(&bmap);
+    CBitmap* prvBMap = dc.SelectObject(&*retval);
 
     CRect rct = pBATop.GetCellRect(nRowTop, nColTop, eScale);
 
@@ -598,18 +620,20 @@ void CGeomorphicBoard::CombineTopAndBottom(CBitmap& bmap, TileScale eScale,
 
     dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
+
+    return retval;
 }
 
 // Create DIB Section bitmap that's filled with the transparent color.
-void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size) const
+OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
     CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
     dc.RealizePalette();
 
-    m_bmap.Attach(Create16BitDIBSection(dc.m_hDC, size.cx, size.cy));
-    CBitmap* prvBMap = dc.SelectObject(&m_bmap);
+    OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
+    CBitmap* prvBMap = dc.SelectObject(&*retval);
 
     CBrush brush(m_pDoc->GetTileManager()->GetTransparentColor());
     CBrush* prvBrush = dc.SelectObject(&brush);
@@ -619,6 +643,8 @@ void CGeomorphicBoard::CreateBitmap(CBitmap& m_bmap, CSize size) const
     dc.SelectObject(prvBrush);
     dc.SelectObject(prvBMap);
     dc.SelectPalette(prvPal, FALSE);
+
+    return retval;
 }
 
 CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const

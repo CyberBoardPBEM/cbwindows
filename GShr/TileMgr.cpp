@@ -352,12 +352,12 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         ar << (DWORD)tileSmall.GetSmallColor();
 
         OwnerPtr<CBitmap> bitmap = tileFull.CreateBitmapOfTile();
-        CDib dib(*bitmap, GetAppPalette());
+        CDib dib(*bitmap);
         ASSERT(dib);
         ar << dib;
 
         bitmap = tileHalf.CreateBitmapOfTile();
-        dib = CDib(*bitmap, GetAppPalette());
+        dib = CDib(*bitmap);
         ASSERT(dib);
         ar << dib;
     }
@@ -391,10 +391,10 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
         ar >> dwTmp; crSmall = (COLORREF)dwTmp;
 
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap(GetAppPalette()));
+        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap());
 
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap(GetAppPalette()));
+        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap());
 
         VERIFY(pBMapFull->GetObject(sizeof(BITMAP), &bmInfoFull) > 0);
         VERIFY(pBMapHalf->GetObject(sizeof(BITMAP), &bmInfoHalf) > 0);
@@ -764,16 +764,14 @@ void CTileManager::SetForeColor(COLORREF cr)
 {
     m_crFore = cr;
     m_brFore.DeleteObject();
-    COLORREF crTemp = MapWin9xRgbToNtRgb(m_crFore);
-    m_brFore.CreateSolidBrush(crTemp);
+    m_brFore.CreateSolidBrush(m_crFore);
 }
 
 void CTileManager::SetBackColor(COLORREF cr)
 {
     m_crBack = cr;
     m_brBack.DeleteObject();
-    COLORREF crTemp = MapWin9xRgbToNtRgb(m_crBack);
-    m_brBack.CreateSolidBrush(crTemp);
+    m_brBack.CreateSolidBrush(m_crBack);
 }
 
 #ifdef GPLAY

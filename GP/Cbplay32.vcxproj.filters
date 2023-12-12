@@ -36,9 +36,6 @@
     <ClCompile Include="..\GShr\Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GShr\DibApi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgChgGameOwner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

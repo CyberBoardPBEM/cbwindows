@@ -1,6 +1,6 @@
 // FrmBited.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -111,13 +111,13 @@ BOOL CBitEditFrame::OnCreateClient(LPCREATESTRUCT,
     }
 
     // Activate the editor view
-    SetActiveView((CView*)m_wndSplitter.GetPane(0, 1));
+    SetActiveView(dynamic_cast<CView*>(m_wndSplitter.GetPane(0, 1)));
 
     // Link the biteditor view to the tile selector and vice versa
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    CBitEditView *pBitView = (CBitEditView*)m_wndSplitter.GetPane(0, 1);
-    pSelView->SetBitEditor(pBitView);
-    pBitView->SetTileSelectView(pSelView);
+    CTileSelView& pSelView = CheckedDeref(dynamic_cast<CTileSelView*>(m_wndSplitter.GetPane(0, 0)));
+    CBitEditView& pBitView = CheckedDeref(dynamic_cast<CBitEditView*>(m_wndSplitter.GetPane(0, 1)));
+    pSelView.SetBitEditor(pBitView);
+    pBitView.SetTileSelectView(pSelView);
 
     SetWindowPos(NULL, 0, 0, 480, 380, SWP_NOACTIVATE | SWP_NOMOVE |
         SWP_NOREDRAW | SWP_NOZORDER);

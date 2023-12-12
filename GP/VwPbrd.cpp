@@ -442,7 +442,6 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 {
     CBoard*     pBoard = m_pPBoard->GetBoard();
     CDC         dcMem;
-    CBitmap     bmMem;
     CRect       oRct;
     CRect       oRctSave;
     CBitmap*    pPrvBMap;
@@ -453,10 +452,10 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    bmMem.Attach(Create16BitDIBSection(pDC->m_hDC,
-        oRct.Width(), oRct.Height()));
+    OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
+        oRct.Width(), oRct.Height());
     dcMem.CreateCompatibleDC(pDC);
-    pPrvBMap = dcMem.SelectObject(&bmMem);
+    pPrvBMap = dcMem.SelectObject(&*bmMem);
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
@@ -2042,11 +2041,10 @@ void CPlayBoardView::OnEditCopy()
     SetupPalette(scrnDC);
     CSize size = pBoard->GetSize(m_nZoom);
 
-    CBitmap bmap;
-    bmap.Attach(Create16BitDIBSection(scrnDC.m_hDC, size.cx, size.cy));
+    OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(size.cx, size.cy);
     CDC dcMem;
     dcMem.CreateCompatibleDC(&scrnDC);
-    CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
+    CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
     SetupPalette(dcMem);
 
     CRect rct(0, 0, size.cx, size.cy);
@@ -2062,16 +2060,14 @@ void CPlayBoardView::OnEditCopy()
     GdiFlush();
     dcMem.SelectObject(pPrvBMap);
 
-    if (OpenClipboard())
+    LockWxClipboard lockClipbd(std::try_to_lock);
+    if (lockClipbd)
     {
-        BeginWaitCursor();
-        EmptyClipboard();
+        wxBusyCursor busyCursor;
 
-        CDib dib(bmap, GetAppPalette());
-        SetClipboardData(CF_DIB, dib.CopyHandle());
-
-        CloseClipboard();
-        EndWaitCursor();
+        wxImage img = ToImage(*bmap);
+        wxBitmap wxbmp(img);
+        wxTheClipboard->SetData(new wxBitmapDataObject(wxbmp));
     }
 }
 
@@ -2090,30 +2086,17 @@ void CPlayBoardView::OnEditBoardToFile()
     BeginWaitCursor();
     TRY
     {
-        CFile file;
-        CFileException fe;
-
-        if (!file.Open(dlg.GetPathName(),
-            CFile::modeCreate | CFile::modeWrite, &fe))
-        {
-            EndWaitCursor();
-            AfxMessageBox(IDP_ERR_BMPCREATE, MB_ICONEXCLAMATION);
-            EndWaitCursor();
-            return;
-        }
-
         CBoard* pBoard = m_pPBoard->GetBoard();
         CWindowDC scrnDC(this);
 
         SetupPalette(scrnDC);
         CSize size = pBoard->GetSize(m_nZoom);
 
-        CBitmap bmap;
-        bmap.Attach(Create16BitDIBSection(scrnDC.m_hDC,
-            size.cx, size.cy));
+        OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(
+            size.cx, size.cy);
         CDC dcMem;
         dcMem.CreateCompatibleDC(&scrnDC);
-        CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&bmap);
+        CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
         SetupPalette(dcMem);
 
         CRect rct(0, 0, size.cx, size.cy);
@@ -2129,10 +2112,15 @@ void CPlayBoardView::OnEditBoardToFile()
         GdiFlush();
         dcMem.SelectObject(pPrvBMap);
 
-        CDib dib(bmap, GetAppPalette(), uint16_t(24));
+        wxImage img = ToImage(*bmap);
 
-        if (!dib.WriteDIBFile(file))
-            AfxThrowMemoryException();
+        if (!img.SaveFile(CB::string(dlg.GetPathName())))
+        {
+            EndWaitCursor();
+            AfxMessageBox(IDP_ERR_BMPCREATE, MB_ICONEXCLAMATION);
+            EndWaitCursor();
+            return;
+        }
 
         EndWaitCursor();
     }

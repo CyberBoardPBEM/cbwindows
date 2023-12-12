@@ -25,67 +25,83 @@
 #ifndef _CDIB_H
 #define _CDIB_H
 
-#ifndef _INC_DIBAPI
-#include "DibApi.h"
-#endif
-
 class CDib
 {
 public:
-    CDib() { m_hDib = NULL; m_lpDib = NULL; m_nCompressLevel = 0; }
+    CDib() { m_nCompressLevel = 0; }
     CDib(const CDib&) = delete;
     CDib& operator=(const CDib&) = delete;
     CDib(CDib&& rhs) noexcept;
     CDib& operator=(CDib&& rhs) noexcept;
     ~CDib() { ClearDib(); }
     void ClearDib();
-    operator bool() const { return m_hDib; }
-    CDib(DWORD dwWidth, DWORD dwHeight, WORD wBPP = 16);
+    explicit operator bool() const { return m_wximg.IsOk(); }
+    CDib(DWORD dwWidth, DWORD dwHeight);
     // ---------- /
-    explicit CDib(CFile& file);
-    BOOL WriteDIBFile(CFile& file) const;
-    explicit CDib(const CBitmap& pBM, const CPalette* pPal = NULL, uint16_t nBPP = uint16_t(16));
-    OwnerPtr<CBitmap> DIBToBitmap(const CPalette *pPal, BOOL bDibSect = TRUE) const;
-    BOOL AppendDIB(const CDib& pDib);
-    BOOL RemoveDIBSlice(int y, int ht);
-    OwnerPtr<CPalette> CreatePalette() const
-    {
-        OwnerPtr<CPalette> pPal(MakeOwner<CPalette>());
-        ::CreateDIBPalette(m_hDib, &*pPal);
-        return pPal;
-    }
+    explicit CDib(const CBitmap& pBM);
+    OwnerPtr<CBitmap> DIBToBitmap() const;
+#ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
         int xSrc, int ySrc, int cxSrc, int cySrc) const
     {
         return ::StretchDIBits(pDC.m_hDC, xDest, yDest, cxDest, cyDest,
-            xSrc, ySrc, cxSrc, cySrc, FindBits(), GetBmi(), DIB_RGB_COLORS,
+            xSrc, ySrc, cxSrc, cySrc, FindBits(), &GetBmi(), DIB_RGB_COLORS,
             SRCCOPY);
     }
-    explicit CDib(HANDLE hDib);
-    HDIB CopyHandle() const { return static_cast<HDIB>(::CopyHandle(m_hDib)); }
+#endif
     // ---------- //
-    int Height() const { return (int)DIBHeight(m_lpDib); }
-    int Width() const { return (int)DIBWidth(m_lpDib); }
-    int NumColors() const { return ((LPBITMAPINFOHEADER)m_lpDib)->biBitCount; }
-    int NumColorsInColorTable() const { return DIBNumColors(m_lpDib); }
-    const LPBITMAPINFOHEADER GetBmiHdr() const { return (LPBITMAPINFOHEADER)m_lpDib; }
-    const LPBITMAPINFO GetBmi() const { return (LPBITMAPINFO)m_lpDib; }
-    const void* FindBits() const { return FindDIBBits(m_lpDib); }
-    // ---------- for 16bit/pixel Dibs only -------------- //
-    WORD Get16BitColorNumberAtXY(int x, int y) const;
-    void Set16BitColorNumberAtXY(int x, int y, WORD nColor);
+    int Height() const { return m_wximg.GetHeight(); }
+    int Width() const { return m_wximg.GetWidth(); }
+#ifdef WE_WANT_THIS_STUFF_DLL940113
+    const BITMAPINFO& GetBmi() const { return m_hDib; }
+#endif
+private:
+    void Fill(COLORREF color);
+public:
+    // angle is clockwise
+    CDib Rotate(int angle, COLORREF crTrans) const;
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
     // ---------- //
+
+    // convert bits to uint32_t aligned bytes
+    static size_t BitsToBytes(size_t i)
+    {
+        return ((i + size_t(31)) & size_t(~31)) / size_t(8);
+    }
+    static size_t BitsToBytes(LONG i)
+    {
+        return BitsToBytes(value_preserving_cast<size_t>(i));
+    }
+
+    static size_t WidthBytes(const BITMAPINFOHEADER& bmi)
+    {
+        return BitsToBytes(bmi.biWidth * bmi.biBitCount);
+    }
+
+    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight);
+
 private:
-    HDIB  m_hDib;
-    void* m_lpDib;
+    CDib RotateFast(int angle) const;
+    struct ImgEdge;
+    void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
+        CDib& pDDib) const;
+    static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
+
+    wxImage m_wximg;
     int   m_nCompressLevel;
     // ---------- //
     friend CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib);
     friend CArchive& AFXAPI operator>>(CArchive& ar, CDib& dib);
+    friend CArchive& WriteRGB565Zlib(CArchive& ar, const CDib& dib);
+    friend CArchive& WriteImgBMPZlib(CArchive& ar, const CDib& dib);
+    friend CArchive& ReadRGB565Zlib(CArchive& ar, CDib& dib);
+    friend CArchive& ReadImgBMPZlib(CArchive& ar, CDib& dib);
 };
+
+wxImage ToImage(const CBitmap& bmp);
+OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
 
 #endif
 

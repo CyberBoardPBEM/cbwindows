@@ -59,7 +59,6 @@ set(SRCS
 	../GShr/CDib.cpp
 	../GShr/CellForm.cpp
 	../GShr/Color.cpp
-	../GShr/DibApi.cpp
 	../GShr/DragDrop.cpp
 	../GShr/DrawObj.cpp
 	../GShr/Font.cpp

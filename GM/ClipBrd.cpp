@@ -1,6 +1,6 @@
 // ClipBrd.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -39,37 +39,40 @@ BOOL IsClipboardBitmap()
     return IsClipboardFormatAvailable(CF_DIB);
 }
 
-void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap, const CPalette *pPal /* = NULL */)
+void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap)
 {
-    if (pWnd->OpenClipboard())
+    LockWxClipboard lockClipbd(std::try_to_lock);
+    if (lockClipbd)
     {
-        pWnd->BeginWaitCursor();
-        EmptyClipboard();
+        wxBusyCursor busyCursor;
 
-        CDib dib(pBMap, pPal);
-        SetClipboardData(CF_DIB, dib.CopyHandle());
-
-        CloseClipboard();
-        pWnd->EndWaitCursor();
+        wxImage img = ToImage(pBMap);
+        wxBitmap wxbmp(img);
+        if (!wxTheClipboard->SetData(new wxBitmapDataObject(wxbmp)))
+        {
+            AfxThrowMemoryException();
+        }
     }
 }
 
-OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd, const CPalette *pPal /* = NULL */)
+OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd)
 {
-    if (!pWnd->OpenClipboard())
+    LockWxClipboard lockClipbd(std::try_to_lock);
+    if (!lockClipbd)
         return NULL;
 
-    pWnd->BeginWaitCursor();
+    wxBusyCursor busyCursor;
 
-    CDib dib(CopyHandle(::GetClipboardData(CF_DIB)));
-    CloseClipboard();
-    if (!dib)
+    wxBitmapDataObject bdo;
+    bool rc = wxTheClipboard->GetData(bdo);
+    lockClipbd.Unlock();
+    if (!rc)
     {
-        pWnd->EndWaitCursor();
         return NULL;
     }
-    OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap(pPal);
-    pWnd->EndWaitCursor();
+    wxBitmap wxbmp = bdo.GetBitmap();
+    wxImage img = wxbmp.ConvertToImage();
+    OwnerPtr<CBitmap> pBMap = ToBitmap(img);
     return pBMap;
 }
 

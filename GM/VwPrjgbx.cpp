@@ -31,7 +31,6 @@
 #include    "Board.h"
 #include    "Pieces.h"
 #include    "Marks.h"
-#include    "DibApi.h"          // For CopyHandle()
 
 #include    "VwPrjgbx.h"
 #include    "LibMfc.h"
@@ -826,36 +825,62 @@ void CGbxProjView::OnEditCopy()
 
     std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
 
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     TRY
     {
-        CSharedFile file;
+        CMemFile file;
         CArchive ar(&file, CArchive::store);
         pTMgr->CopyTileImagesToArchive(ar, tidtbl);
         ar.Close();
 
-        CSharedFile file2;
+        CMemFile file2;
         CArchive ar2(&file2, CArchive::store);
         ar2 << tidtbl;
         ar2.Close();
 
-        CSharedFile file3(GMEM_DDESHARE | GMEM_MOVEABLE, 16);
-        CArchive ar3(&file3, CArchive::store, 16);
+        CMemFile file3;
+        CArchive ar3(&file3, CArchive::store);
         ar3 << pDoc->GetGameBoxID();
         ar3 << GetCurrentProcessId();// To distinguish between same GBox in other files
         ar3.Close();
 
-        if (OpenClipboard())
+        /* WARNING:  CMemFile and wxCustomDataObject disagree on
+            heap API.  This adapter is not general purpose
+            because the wxCustomDataObject members are private */
+        class CustomDataObjectFree : public wxCustomDataObject
         {
-            EmptyClipboard();
-            SetClipboardData(CF_TILEIMAGES, file.Detach());
-            SetClipboardData(CF_TIDLIST, file2.Detach());
-            SetClipboardData(CF_GBOXID, file3.Detach());
-            CloseClipboard();
+        public:
+            using wxCustomDataObject::wxCustomDataObject;
+            void Free() override { free(GetData()); }
+        };
+
+        std::unique_ptr<wxCustomDataObject> tiles(new CustomDataObjectFree(CF_TILEIMAGES));
+        // paranoid about undefined order of function arg eval
+        size_t len = value_preserving_cast<size_t>(file.GetLength());
+        tiles->TakeData(len, file.Detach());
+
+        std::unique_ptr<wxCustomDataObject> tids(new CustomDataObjectFree(CF_TIDLIST));
+        // paranoid about undefined order of function arg eval
+        len = value_preserving_cast<size_t>(file2.GetLength());
+        tids->TakeData(len, file2.Detach());
+
+        std::unique_ptr<wxCustomDataObject> gbox(new CustomDataObjectFree(CF_GBOXID));
+        // paranoid about undefined order of function arg eval
+        len = value_preserving_cast<size_t>(file3.GetLength());
+        gbox->TakeData(len, file3.Detach());
+
+        std::unique_ptr<wxDataObjectComposite> compos(new wxDataObjectComposite);
+        compos->Add(tiles.release());
+        compos->Add(tids.release());
+        compos->Add(gbox.release());
+
+        LockWxClipboard lockClipbd(std::try_to_lock);
+        if (lockClipbd)
+        {
+            wxTheClipboard->SetData(compos.release());
         }
     }
     END_TRY
-    EndWaitCursor();
 }
 
 void CGbxProjView::OnUpdateEditCopy(CCmdUI* pCmdUI)
@@ -875,15 +900,18 @@ void CGbxProjView::OnEditPaste()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     TRY
     {
-        CSharedFile file;
+        CMemFile file;
         std::vector<TileID> tidtbl;
-        if (OpenClipboard())
+        LockWxClipboard lockClipbd(std::try_to_lock);
+        if (lockClipbd)
         {
-            file.SetHandle(CopyHandle(::GetClipboardData(CF_TILEIMAGES)), FALSE);
-            CloseClipboard();
+            wxCustomDataObject tiles(CF_TILEIMAGES);
+            ASSERT(wxTheClipboard->GetData(tiles));
+            file.Attach(static_cast<BYTE*>(tiles.GetData()), value_preserving_cast<UINT>(tiles.GetDataSize()));
+            lockClipbd.Unlock();
 
             CArchive ar(&file, CArchive::load);
             int nCurSel = m_listTiles.GetTopSelectedItem();
@@ -904,7 +932,6 @@ void CGbxProjView::OnEditPaste()
     }
     END_TRY
     pDoc->SetModifiedFlag();
-    EndWaitCursor();
 }
 
 void CGbxProjView::OnUpdateEditPaste(CCmdUI* pCmdUI)
@@ -924,24 +951,31 @@ void CGbxProjView::OnEditMove()
     CGamDoc* pDoc = GetDocument();
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     TRY
     {
-        CSharedFile file;
-        if (OpenClipboard())
+        CMemFile file;
+        LockWxClipboard lockClipbd(std::try_to_lock);
+        if (lockClipbd)
         {
+            /* WARNING:  wxDataObjectComposite allows setting
+                multiple data types, but will only get one */
+
             // First check if the tid list is ours....
-            LPDWORD pGBoxID = (LPDWORD)GlobalLock(::GetClipboardData(CF_GBOXID));
+            wxCustomDataObject gbox(CF_GBOXID);
+            ASSERT(wxTheClipboard->GetData(gbox));
+            LPDWORD pGBoxID = static_cast<LPDWORD>(gbox.GetData());
             DWORD dwGBoxID = pGBoxID[0];
             DWORD dwProcID = pGBoxID[1];
-            GlobalUnlock(::GetClipboardData(CF_GBOXID));
 
             if (dwGBoxID == pDoc->GetGameBoxID() &&
                 dwProcID == GetCurrentProcessId())
             {
                 // It's our stuff alright!
-                file.SetHandle(CopyHandle(::GetClipboardData(CF_TIDLIST)), FALSE);
-                CloseClipboard();
+                wxCustomDataObject tids(CF_TIDLIST);
+                ASSERT(wxTheClipboard->GetData(tids));
+                file.Attach(static_cast<BYTE*>(tids.GetData()), value_preserving_cast<UINT>(tids.GetDataSize()));
+                lockClipbd.Unlock();
 
                 CArchive ar(&file, CArchive::load);
                 std::vector<TileID> tidtbl;
@@ -955,13 +989,11 @@ void CGbxProjView::OnEditMove()
                 m_listTiles.SetCurSelsMapped(tidtbl);
                 m_listTiles.ShowFirstSelection();
             }
-            CloseClipboard();           // Just to be safe
         }
     }
     END_TRY
 //  pDoc->UpdateAllViews(NULL);
     pDoc->SetModifiedFlag();
-    EndWaitCursor();
 }
 
 void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
@@ -976,14 +1008,15 @@ void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
     if (bFirstRequirement)
     {
         // Final requirement is the tid list has to be this gamebox's
-        if (OpenClipboard())
+        LockWxClipboard lockClipbd(std::try_to_lock);
+        if (lockClipbd)
         {
             // First check if the tid list is ours....
-            LPDWORD pGBoxID = (LPDWORD)GlobalLock(::GetClipboardData(CF_GBOXID));
+            wxCustomDataObject gbox(CF_GBOXID);
+            ASSERT(wxTheClipboard->GetData(gbox));
+            LPDWORD pGBoxID = static_cast<LPDWORD>(gbox.GetData());
             DWORD dwGBoxID = pGBoxID[0];
             DWORD dwProcID = pGBoxID[1];
-            GlobalUnlock(::GetClipboardData(CF_GBOXID));
-            CloseClipboard();
             if (dwGBoxID == GetDocument()->GetGameBoxID() && dwProcID == GetCurrentProcessId())
                 bEnable = TRUE;
         }

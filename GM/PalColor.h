@@ -135,8 +135,8 @@ protected:
     int         m_nSat;             // Current saturation
     COLORREF    m_crCurMix;         // RGB version of above
 
-    CBitmap     m_bmapBar;          // Color bar
-    CBitmap     m_bmapWash;         // Color wash bitmap
+    OwnerOrNullPtr<CBitmap> m_bmapBar;          // Color bar
+    OwnerOrNullPtr<CBitmap> m_bmapWash;         // Color wash bitmap
 
 // Implementation - methods
 protected:

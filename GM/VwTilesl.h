@@ -1,6 +1,6 @@
 // VwTilesl.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -43,12 +43,12 @@ protected:
 
 // Attributes
 public:
-    CGamDoc* GetDocument() { return (CGamDoc*) m_pDocument; }
+    CGamDoc& GetDocument() { return CheckedDeref(dynamic_cast<CGamDoc*>(m_pDocument)); }
 
-    void SetBitEditor(CBitEditView *pEditView);
-    TileScale GetCurrentScale() { return m_eCurTile; }
+    void SetBitEditor(CBitEditView& pEditView);
+    TileScale GetCurrentScale() const { return m_eCurTile; }
     void SetNoUpdate(BOOL bNoUpdate = TRUE) { m_bNoUpdate = bNoUpdate; }
-    TileID GetTileID() { return m_tid; }
+    TileID GetTileID() const { return m_tid; }
 
 // Operations
 public:
@@ -59,7 +59,7 @@ public:
     void DoTileRotation(int nAngle);
     void UpdateDocumentTiles();
     // ------------- //
-    BOOL IsUndoAvailable();
+    BOOL IsUndoAvailable() const;
     void PurgeUndo();
     void RestoreFromUndo();
 
@@ -94,10 +94,10 @@ protected:
     CTileManager* m_pTileMgr;
 
     // ------- //
-    CRect GetActiveTileRect();
-    CPoint GetActiveTileLoc();
+    CRect GetActiveTileRect() const;
+    CPoint GetActiveTileLoc() const;
     OwnerPtr<CBitmap>& GetActiveBitmap();
-    void DrawTile(CDC* pDC, CBitmap* pBMap, CRect rct);
+    void DrawTile(CDC& pDC, CBitmap& pBMap, CRect rct);
     void SelectCurrentBitmap(TileScale eScale);
     void CalcViewLayout();
     // ------- //

@@ -37,7 +37,6 @@
 #include    "GMisc.h"
 #include    "Gm.h"
 #include    "GmDoc.h"
-#include    "DibApi.h"
 #include    "CDib.h"
 #include    "GdiTools.h"
 #include    "Board.h"
@@ -534,7 +533,7 @@ TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
     int yTile = pDib->Height();
     TileID tid = m_pTMgr->CreateTile(nTSet, CSize(xTile, yTile),
         CSize(xTile/2, yTile/2), RGB(255, 255, 255));
-    OwnerPtr<CBitmap> pBMap = pDib->DIBToBitmap(GetAppPalette());
+    OwnerPtr<CBitmap> pBMap = pDib->DIBToBitmap();
     OwnerPtr<CBitmap> bmHalf = CloneScaledBitmap(*pBMap, CSize(xTile/2, yTile/2),
         COLORONCOLOR);
 
@@ -598,6 +597,7 @@ void CGamDoc::Serialize(CArchive& ar)
                 }
                 c_fileFeatures.Add(ftrPiece100Sides);
             }
+            c_fileFeatures.Add(ftrImgBMPZlib);
         }
         else if (NumVersion(fileGbxVerMajor, fileGbxVerMinor) == NumVersion(4, 0)) {
             c_fileFeatures = GetCBFile4Features();
