@@ -71,6 +71,556 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CBoardPropDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Board Properties</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer12">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag></flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer13">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText31">
+              <label>Board Name:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxTextCtrl" name="m_editBrdName">
+              <value></value>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticBoxSizer" name="sbSizer1">
+              <orient>wxVERTICAL</orient>
+              <label>Snap Grid</label>
+              <object class="sizeritem">
+                <flag></flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxFlexGridSizer" name="fgSizer3">
+                  <vgap>0</vgap>
+                  <hgap>0</hgap>
+                  <growablerows>0</growablerows>
+                  <growablecols>0</growablecols>
+                  <rows>2</rows>
+                  <cols>4</cols>
+                  <object class="sizeritem">
+                    <flag>wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText32">
+                      <label>X Pixels:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxTextCtrl" name="m_editXGridSnap">
+                      <value></value>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText33">
+                      <label>X Offset:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxTextCtrl" name="m_editXGridSnapOff">
+                      <value></value>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText34">
+                      <label>Y Pixels:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxTextCtrl" name="m_editYGridSnap">
+                      <value></value>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText35">
+                      <label>Y Offset:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxTextCtrl" name="m_editYGridSnapOff">
+                      <value></value>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkGridSnap">
+                  <label>Enable Snap Grid</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxALL</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxStaticBoxSizer" name="sbSizer2">
+              <orient>wxVERTICAL</orient>
+              <label>Cells</label>
+              <object class="sizeritem">
+                <flag>wxALL|wxEXPAND</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxChoice" name="m_comboStyle">
+                  <selection>0</selection>
+                  <content>
+                    <item>ROW, COL</item>
+                    <item>COL, ROW</item>
+                    <item>0101 - Rows on left</item>
+                    <item>0101 - Columns on left</item>
+                    <item>AA1 - Rows on left</item>
+                    <item>AA1 - Columns on left</item>
+                  </content>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxFlexGridSizer" name="fgSizer4">
+                  <vgap>0</vgap>
+                  <hgap>0</hgap>
+                  <growablerows>0</growablerows>
+                  <growablecols>0</growablecols>
+                  <rows>2</rows>
+                  <cols>2</cols>
+                  <object class="sizeritem">
+                    <flag>wxALL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxCheckBox" name="m_chkRowTrkInvert">
+                      <label>Reverse Rows</label>
+                      <checked>0</checked>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxALL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxCheckBox" name="m_chkColTrkInvert">
+                      <label>Reverse Columns</label>
+                      <checked>0</checked>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxBoxSizer" name="bSizer15">
+                      <orient>wxHORIZONTAL</orient>
+                      <object class="sizeritem">
+                        <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxStaticText" name="m_staticText36">
+                          <label>Row Offset:</label>
+                          <wrap>-1</wrap>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxTextCtrl" name="m_editRowTrkOffset">
+                          <value></value>
+                        </object>
+                      </object>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxBoxSizer" name="bSizer17">
+                      <orient>wxHORIZONTAL</orient>
+                      <object class="sizeritem">
+                        <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxStaticText" name="m_staticText37">
+                          <label>Column Offset:</label>
+                          <wrap>-1</wrap>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxTextCtrl" name="m_editColTrkOffset">
+                          <value></value>
+                        </object>
+                      </object>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkTrackCellNum">
+                  <label>Track mouse movement over cells</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkCellLines">
+                  <label>Show cell border lines.</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkCellBorderOnTop">
+                  <label>Draw cell border lines over top.</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkEnableXParentCells">
+                  <label>Enable transparent tiles in cells</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag></flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxBoxSizer" name="bSizer18">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText38">
+                      <label>Cell Border Color:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxColourPickerCtrl" name="m_cpCellFrame">
+                      <style>wxCLRP_DEFAULT_STYLE</style>
+                      <value>#000000</value>
+                    </object>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag></flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer14">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxFlexGridSizer" name="fgSizer1">
+              <vgap>0</vgap>
+              <hgap>0</hgap>
+              <growablerows>0</growablerows>
+              <growablecols>0</growablecols>
+              <rows>6</rows>
+              <cols>2</cols>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText8">
+                  <label>Cols:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticCols">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText10">
+                  <label>Rows:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticRows">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText12">
+                  <label>Cell Width:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticWidth">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText14">
+                  <label>Cell Height:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticHeight">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText16">
+                  <label>Pixel Width:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticPixelWidth">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText18">
+                  <label>Pixel Height:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticPixelHeight">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxALIGN_RIGHT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnReshape">
+              <label>Reshape...</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxFlexGridSizer" name="fgSizer2">
+              <vgap>0</vgap>
+              <hgap>0</hgap>
+              <growablerows>0</growablerows>
+              <growablecols>0</growablecols>
+              <rows>4</rows>
+              <cols>2</cols>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText20">
+                  <label>Half Width:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticHalfPixelWidth">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText22">
+                  <label>Half Height:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticHalfPixelHeight">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText24">
+                  <label>Small Width:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticSmallPixelWidth">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_RIGHT|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText29">
+                  <label>Small Height:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticSmallPixelHeight">
+                  <label>MyLabel</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CGmBoxPropsDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Game Box Properties</title>

@@ -1,6 +1,6 @@
 // dlgbrdp.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,48 +27,63 @@
 
 enum CellFormType;
 
-class CBoardPropDialog : public CDialog
+class CBoardPropDialog : public wxDialog
 {
 // Construction
 public:
-    CBoardPropDialog(CWnd* pParent = NULL); // standard constructor
+    CBoardPropDialog(wxWindow* parent = &CB::GetMainWndWx()); // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CBoardPropDialog)
-    enum { IDD = IDD_BRDPRP };
-    CStatic m_staticHalfPixelWidth;
-    CStatic m_staticSmallPixelWidth;
-    CStatic m_staticSmallPixelHeight;
-    CStatic m_staticHalfPixelHeight;
-    CStatic m_staticPixelWidth;
-    CStatic m_staticPixelHeight;
-    CEdit   m_editBrdName;
-    CMFCColorButton m_cpCellFrame;
-    CStatic m_staticWidth;
-    CStatic m_staticHeight;
-    CStatic m_staticRows;
-    CStatic m_staticCols;
-    CComboBox m_comboStyle;
-    BOOL    m_bCellLines;
-    BOOL    m_bGridSnap;
-    BOOL    m_bTrackCellNum;
+private:
+    RefPtr<wxObject> m_dummy;
+    RefPtr<wxStaticText> m_staticHalfPixelWidth;
+    RefPtr<wxStaticText> m_staticSmallPixelWidth;
+    RefPtr<wxStaticText> m_staticSmallPixelHeight;
+    RefPtr<wxStaticText> m_staticHalfPixelHeight;
+    RefPtr<wxStaticText> m_staticPixelWidth;
+    RefPtr<wxStaticText> m_staticPixelHeight;
+    RefPtr<wxTextCtrl> m_editBrdName;
+    RefPtr<wxColourPickerCtrl> m_cpCellFrame;
+    RefPtr<wxStaticText> m_staticWidth;
+    RefPtr<wxStaticText> m_staticHeight;
+    RefPtr<wxStaticText> m_staticRows;
+    RefPtr<wxStaticText> m_staticCols;
+    RefPtr<wxChoice> m_comboStyle;
+    RefPtr<wxCheckBox> m_chkCellLines;
+    RefPtr<wxCheckBox> m_chkGridSnap;
+    RefPtr<wxCheckBox> m_chkTrackCellNum;
+    RefPtr<wxTextCtrl> m_editRowTrkOffset;
+    RefPtr<wxTextCtrl> m_editColTrkOffset;
+    RefPtr<wxTextCtrl> m_editXGridSnapOff;
+    RefPtr<wxTextCtrl> m_editYGridSnapOff;
+    RefPtr<wxTextCtrl> m_editXGridSnap;
+    RefPtr<wxTextCtrl> m_editYGridSnap;
+    RefPtr<wxCheckBox> m_chkColTrkInvert;
+    RefPtr<wxCheckBox> m_chkRowTrkInvert;
+    RefPtr<wxCheckBox> m_chkCellBorderOnTop;
+    RefPtr<wxCheckBox> m_chkEnableXParentCells;
+public:
+    bool    m_bCellLines;
+    bool    m_bGridSnap;
+    bool    m_bTrackCellNum;
     int32_t m_nRowTrkOffset;
     int32_t m_nColTrkOffset;
+private:
     float   m_fXGridSnapOff;
     float   m_fYGridSnapOff;
     float   m_fXGridSnap;
     float   m_fYGridSnap;
-    CB::string m_strName;
+public:
+    wxString m_strName;
     int     m_nStyleNum;
-    BOOL    m_bColTrkInvert;
-    BOOL    m_bRowTrkInvert;
-    BOOL    m_bCellBorderOnTop;
-    BOOL    m_bEnableXParentCells;
-    //}}AFX_DATA
+    bool    m_bColTrkInvert;
+    bool    m_bRowTrkInvert;
+    bool    m_bCellBorderOnTop;
+    bool    m_bEnableXParentCells;
 
-    COLORREF        m_crCellFrame;
+    wxColour m_crCellFrame;
 
-    BOOL            m_bShapeChanged;// Set to true if reshape desired
+    bool            m_bShapeChanged;// Set to true if reshape desired
 
     uint32_t        m_xGridSnap;
     uint32_t        m_yGridSnap;
@@ -88,16 +103,14 @@ protected:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CBoardPropDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnReshape();
+    void OnReshape(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
