@@ -40,13 +40,40 @@ static char THIS_FILE[] = __FILE__;
 // CBoardPropDialog dialog
 
 
-CBoardPropDialog::CBoardPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CBoardPropDialog::IDD, pParent)
+CBoardPropDialog::CBoardPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    /* m_dummy is a way to call LoadDialog()
+        before the Refs are initialized */
+    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CBoardPropDialog") ? this : nullptr),
+    m_staticHalfPixelWidth(XRCCTRL(*this, "m_staticHalfPixelWidth", wxStaticText)),
+    m_staticSmallPixelWidth(XRCCTRL(*this, "m_staticSmallPixelWidth", wxStaticText)),
+    m_staticSmallPixelHeight(XRCCTRL(*this, "m_staticSmallPixelHeight", wxStaticText)),
+    m_staticHalfPixelHeight(XRCCTRL(*this, "m_staticHalfPixelHeight", wxStaticText)),
+    m_staticPixelWidth(XRCCTRL(*this, "m_staticPixelWidth", wxStaticText)),
+    m_staticPixelHeight(XRCCTRL(*this, "m_staticPixelHeight", wxStaticText)),
+    m_editBrdName(XRCCTRL(*this, "m_editBrdName", wxTextCtrl)),
+    m_cpCellFrame(XRCCTRL(*this, "m_cpCellFrame", wxColourPickerCtrl)),
+    m_staticWidth(XRCCTRL(*this, "m_staticWidth", wxStaticText)),
+    m_staticHeight(XRCCTRL(*this, "m_staticHeight", wxStaticText)),
+    m_staticRows(XRCCTRL(*this, "m_staticRows", wxStaticText)),
+    m_staticCols(XRCCTRL(*this, "m_staticCols", wxStaticText)),
+    m_comboStyle(XRCCTRL(*this, "m_comboStyle", wxChoice)),
+    m_chkCellLines(XRCCTRL(*this, "m_chkCellLines", wxCheckBox)),
+    m_chkGridSnap(XRCCTRL(*this, "m_chkGridSnap", wxCheckBox)),
+    m_chkTrackCellNum(XRCCTRL(*this, "m_chkTrackCellNum", wxCheckBox)),
+    m_editRowTrkOffset(XRCCTRL(*this, "m_editRowTrkOffset", wxTextCtrl)),
+    m_editColTrkOffset(XRCCTRL(*this, "m_editColTrkOffset", wxTextCtrl)),
+    m_editXGridSnapOff(XRCCTRL(*this, "m_editXGridSnapOff", wxTextCtrl)),
+    m_editYGridSnapOff(XRCCTRL(*this, "m_editYGridSnapOff", wxTextCtrl)),
+    m_editXGridSnap(XRCCTRL(*this, "m_editXGridSnap", wxTextCtrl)),
+    m_editYGridSnap(XRCCTRL(*this, "m_editYGridSnap", wxTextCtrl)),
+    m_chkColTrkInvert(XRCCTRL(*this, "m_chkColTrkInvert", wxCheckBox)),
+    m_chkRowTrkInvert(XRCCTRL(*this, "m_chkRowTrkInvert", wxCheckBox)),
+    m_chkCellBorderOnTop(XRCCTRL(*this, "m_chkCellBorderOnTop", wxCheckBox)),
+    m_chkEnableXParentCells(XRCCTRL(*this, "m_chkEnableXParentCells", wxCheckBox))
 {
-    //{{AFX_DATA_INIT(CBoardPropDialog)
-    m_bCellLines = FALSE;
-    m_bGridSnap = FALSE;
-    m_bTrackCellNum = FALSE;
+    m_bCellLines = false;
+    m_bGridSnap = false;
+    m_bTrackCellNum = false;
     m_nRowTrkOffset = 0;
     m_nColTrkOffset = 0;
     m_fXGridSnapOff = 0.0f;
@@ -55,71 +82,60 @@ CBoardPropDialog::CBoardPropDialog(CWnd* pParent /*=NULL*/)
     m_fYGridSnap = 16.0f;
     m_strName = "";
     m_nStyleNum = -1;
-    m_bColTrkInvert = FALSE;
-    m_bRowTrkInvert = FALSE;
-    m_bCellBorderOnTop = FALSE;
-    m_bEnableXParentCells = FALSE;
-    //}}AFX_DATA_INIT
+    m_bColTrkInvert = false;
+    m_bRowTrkInvert = false;
+    m_bCellBorderOnTop = false;
+    m_bEnableXParentCells = false;
 
     m_xGridSnap = 16u;
     m_yGridSnap = 16u;
     m_xGridSnapOff = 0u;
     m_yGridSnapOff = 0u;
     m_bShapeChanged = FALSE;
-    m_crCellFrame = RGB(0, 0, 0);
+    m_crCellFrame = *wxBLACK;
     m_eCellStyle = cformRect;
+
+    m_chkCellLines->SetValidator(wxGenericValidator(&m_bCellLines));
+    m_chkGridSnap->SetValidator(wxGenericValidator(&m_bGridSnap));
+    m_chkTrackCellNum->SetValidator(wxGenericValidator(&m_bTrackCellNum));
+    m_editRowTrkOffset->SetValidator(CB::MakeValidator(&m_nRowTrkOffset, -250, 250));
+    m_editColTrkOffset->SetValidator(CB::MakeValidator(&m_nColTrkOffset, -250, 250));
+    m_editXGridSnapOff->SetValidator(CB::MakeValidator(&m_fXGridSnapOff, 0.f, 255.999f));
+    m_editYGridSnapOff->SetValidator(CB::MakeValidator(&m_fYGridSnapOff, 0.f, 255.999f));
+    m_editXGridSnap->SetValidator(CB::MakeValidator(&m_fXGridSnap, 2.f, 256.f));
+    m_editYGridSnap->SetValidator(CB::MakeValidator(&m_fYGridSnap, 2.f, 256.f));
+    m_editBrdName->SetValidator(wxTextValidator(wxFILTER_EMPTY, &m_strName));
+    m_editBrdName->SetMaxLength(32);
+    m_cpCellFrame->SetValidator(wxGenericValidator(&m_crCellFrame));
+    m_comboStyle->SetValidator(wxGenericValidator(&m_nStyleNum));
+    m_chkColTrkInvert->SetValidator(wxGenericValidator(&m_bColTrkInvert));
+    m_chkRowTrkInvert->SetValidator(wxGenericValidator(&m_bRowTrkInvert));
+    m_chkCellBorderOnTop->SetValidator(wxGenericValidator(&m_bCellBorderOnTop));
+    m_chkEnableXParentCells->SetValidator(wxGenericValidator(&m_bEnableXParentCells));
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editXGridSnapOff->GetSizeFromText("999.999");
+    m_editRowTrkOffset->SetInitialSize(editSize);
+    m_editColTrkOffset->SetInitialSize(editSize);
+    m_editXGridSnapOff->SetInitialSize(editSize);
+    m_editYGridSnapOff->SetInitialSize(editSize);
+    m_editXGridSnap->SetInitialSize(editSize);
+    m_editYGridSnap->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
 }
 
-void CBoardPropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CBoardPropDialog)
-    DDX_Control(pDX, IDC_D_BRDPRP_HALF_PXLWIDTH, m_staticHalfPixelWidth);
-    DDX_Control(pDX, IDC_D_BRDPRP_SMALL_PXLWIDTH, m_staticSmallPixelWidth);
-    DDX_Control(pDX, IDC_D_BRDPRP_SMALL_PXLHEIGHT, m_staticSmallPixelHeight);
-    DDX_Control(pDX, IDC_D_BRDPRP_HALF_PXLHEIGHT, m_staticHalfPixelHeight);
-    DDX_Control(pDX, IDC_D_BRDPRP_PXLWIDTH, m_staticPixelWidth);
-    DDX_Control(pDX, IDC_D_BRDPRP_PXLHEIGHT, m_staticPixelHeight);
-    DDX_Control(pDX, IDC_D_BRDPRP_BOARDNAME, m_editBrdName);
-    DDX_Control(pDX, IDC_D_BRDPRP_CELLCOLOR, m_cpCellFrame);
-    DDX_Control(pDX, IDC_D_BRDPRP_WIDTH, m_staticWidth);
-    DDX_Control(pDX, IDC_D_BRDPRP_HEIGHT, m_staticHeight);
-    DDX_Control(pDX, IDC_D_BRDPRP_ROWS, m_staticRows);
-    DDX_Control(pDX, IDC_D_BRDPRP_COLS, m_staticCols);
-    DDX_Control(pDX, IDC_D_BRDPRP_TRKSTYLE, m_comboStyle);
-    DDX_Check(pDX, IDC_D_BRDPRP_CELLBORDER, m_bCellLines);
-    DDX_Check(pDX, IDC_D_BRDPRP_SNAPON, m_bGridSnap);
-    DDX_Check(pDX, IDC_D_BRDPRP_TRACK, m_bTrackCellNum);
-    DDX_Text(pDX, IDC_D_BRDPRP_TRKROFF, m_nRowTrkOffset);
-    DDV_MinMaxInt(pDX, m_nRowTrkOffset, -250, 250);
-    DDX_Text(pDX, IDC_D_BRDPRP_TRKCOFF, m_nColTrkOffset);
-    DDV_MinMaxInt(pDX, m_nColTrkOffset, -250, 250);
-    DDX_Text(pDX, IDC_D_BRDPRP_XOFFSET, m_fXGridSnapOff);
-    DDV_MinMaxFloat(pDX, m_fXGridSnapOff, 0.f, 255.999f);
-    DDX_Text(pDX, IDC_D_BRDPRP_YOFFSET, m_fYGridSnapOff);
-    DDV_MinMaxFloat(pDX, m_fYGridSnapOff, 0.f, 255.999f);
-    DDX_Text(pDX, IDC_D_BRDPRP_XPIXELS, m_fXGridSnap);
-    DDV_MinMaxFloat(pDX, m_fXGridSnap, 2.f, 256.f);
-    DDX_Text(pDX, IDC_D_BRDPRP_YPIXELS, m_fYGridSnap);
-    DDV_MinMaxFloat(pDX, m_fYGridSnap, 2.f, 256.f);
-    DDX_Text(pDX, IDC_D_BRDPRP_BOARDNAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    DDX_CBIndex(pDX, IDC_D_BRDPRP_TRKSTYLE, m_nStyleNum);
-    DDX_Check(pDX, IDC_D_BRDPRP_INVCOLS, m_bColTrkInvert);
-    DDX_Check(pDX, IDC_D_BRDPRP_INVROWS, m_bRowTrkInvert);
-    DDX_Check(pDX, IDC_D_BRDPRP_BORDERTOP, m_bCellBorderOnTop);
-    DDX_Check(pDX, IDC_D_BRDPRP_XPARENTCELLS, m_bEnableXParentCells);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CBoardPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CBoardPropDialog)
-    ON_BN_CLICKED(IDC_D_BRDPRP_RESHAPE, OnReshape)
+wxBEGIN_EVENT_TABLE(CBoardPropDialog, wxDialog)
+    EVT_BUTTON(XRCID("OnReshape"), CBoardPropDialog::OnReshape)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -160,23 +176,17 @@ void CBoardPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoardPropDialog message handlers
 
-void CBoardPropDialog::OnOK()
+bool CBoardPropDialog::TransferDataFromWindow()
 {
-    CB::string str = CB::string::GetWindowText(m_editBrdName);
-    if (str.empty())
+    if (!wxDialog::TransferDataFromWindow())
     {
-        AfxMessageBox(IDS_ERR_BOARDNAME, MB_OK | MB_ICONEXCLAMATION);
-        m_editBrdName.SetFocus();
-        return;
+        return false;
     }
-
-    m_crCellFrame = m_cpCellFrame.GetColor();
-
-    CDialog::OnOK();
 
     // Make sure these are within grid size
 
@@ -190,28 +200,28 @@ void CBoardPropDialog::OnOK()
         m_xGridSnapOff = m_xGridSnapOff % m_xGridSnap;
     if (m_yGridSnap > 0u)
         m_yGridSnapOff = m_yGridSnapOff % m_yGridSnap;
+
+    return true;
 }
 
-BOOL CBoardPropDialog::OnInitDialog()
+bool CBoardPropDialog::TransferDataToWindow()
 {
     m_fXGridSnapOff = value_preserving_cast<float>(m_xGridSnapOff) / 1000.f;
     m_fYGridSnapOff = value_preserving_cast<float>(m_yGridSnapOff) / 1000.f;
     m_fXGridSnap = value_preserving_cast<float>(m_xGridSnap) / 1000.f;
     m_fYGridSnap = value_preserving_cast<float>(m_yGridSnap) / 1000.f;
 
-    CDialog::OnInitDialog();
-
     UpdateInfoArea();
 
-    m_cpCellFrame.SetColor(m_crCellFrame);
-
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return wxDialog::TransferDataToWindow();
 }
 
-void CBoardPropDialog::OnReshape()
+void CBoardPropDialog::OnReshape(wxCommandEvent& /*event*/)
 {
-    if (AfxMessageBox(IDS_WARN_RESHAPE, MB_OKCANCEL |
-        MB_ICONEXCLAMATION) == IDOK)
+    if (wxMessageBox(CB::string::LoadString(IDS_WARN_RESHAPE),
+                        CB::GetAppName(),
+                        wxOK | wxCANCEL | wxICON_EXCLAMATION
+        ) == wxOK)
     {
         CBoardReshapeDialog dlg;
 
@@ -251,21 +261,22 @@ void CBoardPropDialog::OnReshape()
 void CBoardPropDialog::UpdateInfoArea()
 {
     CB::string szNum = std::format("{}", m_nRows);
-    m_staticRows.SetWindowText(szNum);
+    m_staticRows->SetLabel(szNum);
     szNum = std::format("{}", m_nCols);
+    m_staticCols->SetLabel(szNum);
 
     if (m_bShapeChanged && m_eCellStyle == cformHexPnt)
         szNum = "??";
     else
         szNum = std::format("{}", m_nCellHt);
-    m_staticHeight.SetWindowText(szNum);
+    m_staticHeight->SetLabel(szNum);
 
     if (m_bShapeChanged && m_eCellStyle == cformHexFlat)
         szNum = "??";
     else
         szNum = std::format("{}", m_nCellWd);
 
-    m_staticWidth.SetWindowText(szNum);
+    m_staticWidth->SetLabel(szNum);
 
     CCellForm cfFull;
     CCellForm cfHalf;
@@ -277,20 +288,20 @@ void CBoardPropDialog::UpdateInfoArea()
 
     CSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);
     szNum = std::format("{}", size.cx);
-    m_staticPixelWidth.SetWindowText(szNum);
+    m_staticPixelWidth->SetLabel(szNum);
     szNum = std::format("{}", size.cy);
-    m_staticPixelHeight.SetWindowText(szNum);
+    m_staticPixelHeight->SetLabel(szNum);
 
     size = cfHalf.CalcBoardSize(m_nRows, m_nCols);
     szNum = std::format("{}", size.cx);
-    m_staticHalfPixelWidth.SetWindowText(szNum);
+    m_staticHalfPixelWidth->SetLabel(szNum);
     szNum = std::format("{}", size.cy);
-    m_staticHalfPixelHeight.SetWindowText(szNum);
+    m_staticHalfPixelHeight->SetLabel(szNum);
 
     size = cfSmall.CalcBoardSize(m_nRows, m_nCols);
     szNum = std::format("{}", size.cx);
-    m_staticSmallPixelWidth.SetWindowText(szNum);
+    m_staticSmallPixelWidth->SetLabel(szNum);
     szNum = std::format("{}", size.cy);
-    m_staticSmallPixelHeight.SetWindowText(szNum);
+    m_staticSmallPixelHeight->SetLabel(szNum);
 }
 
