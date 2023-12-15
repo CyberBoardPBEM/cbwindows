@@ -48,21 +48,13 @@ namespace {
 
 
 CGmBoxPropsDialog::CGmBoxPropsDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
-    /* m_dummy is a way to call LoadDialog()
-        before the Refs are initialized */
-    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CGmBoxPropsDialog") ? this : nullptr),
-    m_editAuthor(XRCCTRL(*this, "m_editAuthor", wxTextCtrl)),
-    m_editTitle(XRCCTRL(*this, "m_editTitle", wxTextCtrl)),
-    m_editDescr(XRCCTRL(*this, "m_editDescr", wxTextCtrl)),
-    m_comboCompress(XRCCTRL(*this, "m_comboCompress", wxChoice))
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CGmBoxPropsDialog)
+        CB_XRC_CTRL_VAL(m_editAuthor, m_strAuthor, wxFILTER_NONE, 40)
+        CB_XRC_CTRL_VAL(m_editTitle, m_strTitle, wxFILTER_NONE, 60)
+        CB_XRC_CTRL_VAL(m_editDescr, m_strDescr, wxFILTER_NONE, 2000)
+        CB_XRC_CTRL_VAL(m_comboCompress, m_nCompressLevelIndex)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    m_editAuthor->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strAuthor));
-    m_editAuthor->SetMaxLength(40);
-    m_editTitle->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strTitle));
-    m_editTitle->SetMaxLength(60);
-    m_editDescr->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strDescr));
-    m_editDescr->SetMaxLength(2000);
-    m_comboCompress->SetValidator(wxGenericValidator(&m_nCompressLevelIndex));
 }
 
 bool CGmBoxPropsDialog::TransferDataToWindow()
