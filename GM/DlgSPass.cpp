@@ -37,14 +37,11 @@ static char THIS_FILE[] = __FILE__;
 // CSetGameboxPassword dialog
 
 CSetGameboxPassword::CSetGameboxPassword(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
-    /* m_dummy is a way to call LoadDialog()
-        before the Refs are initialized */
-    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CSetGameboxPassword") ? this : nullptr),
-    m_editPass2(XRCCTRL(*this, "m_editPass2", wxTextCtrl)),
-    m_editPass1(XRCCTRL(*this, "m_editPass1", wxTextCtrl))
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CSetGameboxPassword)
+        CB_XRC_CTRL_VAL(m_editPass2, m_strPass2, wxFILTER_NONE, 0)
+        CB_XRC_CTRL_VAL(m_editPass1, m_strPass1, wxFILTER_NONE, 0)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    m_editPass2->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strPass2));
-    m_editPass1->SetValidator(wxTextValidator(wxFILTER_NONE, &m_strPass1));
 }
 
 wxBEGIN_EVENT_TABLE(CSetGameboxPassword, wxDialog)
