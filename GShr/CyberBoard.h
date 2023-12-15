@@ -1798,14 +1798,15 @@ namespace CB
     string GetAppName();
 }
 
-// provide a more convenient way to set up wxNumValidator<> objects
+// helpers for setting up wxDialog instances
 namespace CB
 {
+    // provide a more convenient way to set up wxNumValidator<> objects
     template<typename T,
         typename RETVAL = std::conditional_t<std::is_floating_point_v<T>, wxFloatingPointValidator<T>, wxIntegerValidator<T>>>
-    RETVAL MakeValidator(T* value, T min, T max, int style = wxNUM_VAL_DEFAULT)
+    RETVAL MakeValidator(T& var, T min, T max, int style = wxNUM_VAL_DEFAULT)
     {
-        RETVAL retval(value, style);
+        RETVAL retval(&var, style);
         retval.SetMin(min);
         retval.SetMax(max);
         if constexpr (std::is_floating_point_v<T>)
@@ -1814,7 +1815,46 @@ namespace CB
         }
         return retval;
     }
+
+    inline wxTextCtrl& SetValidator(wxTextCtrl& ctrl, wxString& var,
+                                    wxTextValidatorStyle style = wxFILTER_NONE, unsigned long maxLen = 0)
+    {
+        ctrl.SetValidator(wxTextValidator(style, &var));
+        ctrl.SetMaxLength(maxLen);
+        return ctrl;
+    }
+
+    template<typename VAR, typename = std::enable_if_t<std::is_arithmetic_v<VAR>>>
+    wxTextCtrl& SetValidator(wxTextCtrl& ctrl, VAR& var, VAR min, VAR max)
+    {
+        ctrl.SetValidator(CB::MakeValidator(var, min, max));
+        return ctrl;
+    }
+
+    template<typename CTRL, typename VAR>
+    CTRL& SetValidator(CTRL& ctrl, VAR& var)
+    {
+        ctrl.SetValidator(wxGenericValidator(&var));
+        return ctrl;
+    }
 }
+
+/* m_dummy is a way to call LoadDialog()
+    before the Refs are initialized */
+#define CB_XRC_BEGIN_CTRLS_DECL() RefPtr<wxObject> m_dummy;
+#define CB_XRC_END_CTRLS_DECL()
+
+#define CB_XRC_BEGIN_CTRLS_DEFN(parent, id) m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, #id) ? this : nullptr)
+#define CB_XRC_END_CTRLS_DEFN()
+
+#define CB_XRC_CTRL(ctrl) , ctrl(XRCCTRL(*this, #ctrl, std::remove_reference_t<decltype(*ctrl)>))
+
+/* second arg is data var
+    CB_XRC_CTRL_VAL(ctrl*&, bool&)
+    CB_XRC_CTRL_VAL(ctrl*&, wxString&, wxTextValidatorStyle, unsigned long maxlen)
+    CB_XRC_CTRL_VAL(ctrl*&, int&, min, max)
+*/
+#define CB_XRC_CTRL_VAL(ctrl, ...) , ctrl(&CB::SetValidator(*XRCCTRL(*this, #ctrl, std::remove_reference_t<decltype(*ctrl)>), __VA_ARGS__))
 
 // provide conversions between COLORREF and wxColour
 namespace CB
