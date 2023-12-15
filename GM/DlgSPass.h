@@ -57,9 +57,10 @@ private:
 #endif
     wxDECLARE_EVENT_TABLE();
 
-    RefPtr<wxObject> m_dummy;
-    RefPtr<wxTextCtrl> m_editPass2;
-    RefPtr<wxTextCtrl> m_editPass1;
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editPass2;
+        RefPtr<wxTextCtrl> m_editPass1;
+    CB_XRC_END_CTRLS_DECL()
 };
 
 #endif
