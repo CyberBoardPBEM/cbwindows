@@ -38,13 +38,11 @@ static char THIS_FILE[] = __FILE__;
 
 CBoardMaskDialog::CBoardMaskDialog(CBoardManager& bmgr, wxWindow* parent /*= &CB::GetMainWndWx()*/) :
     m_pBMgr(&bmgr),
-    /* m_dummy is a way to call LoadDialog()
-        before the Refs are initialized */
-    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CBoardMaskDialog") ? this : nullptr),
-    m_lboxBoard(XRCCTRL(*this, "m_lboxBoard", wxListBox))
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CBoardMaskDialog)
+        CB_XRC_CTRL_VAL(m_lboxBoard, m_nBrdNum)
+    CB_XRC_END_CTRLS_DEFN()
 {
     wxASSERT(!m_pBMgr->IsEmpty());
-    m_lboxBoard->SetValidator(wxGenericValidator(&m_nBrdNum));
 
     m_lboxBoard->Clear();
     for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)

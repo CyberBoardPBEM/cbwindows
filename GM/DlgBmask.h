@@ -45,7 +45,8 @@ private:
     wxDECLARE_EVENT_TABLE();
 
     RefPtr<CBoardManager> m_pBMgr;
-    RefPtr<wxObject> m_dummy;
-    RefPtr<wxListBox> m_lboxBoard;
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxListBox> m_lboxBoard;
+    CB_XRC_END_CTRLS_DECL()
 };
 
