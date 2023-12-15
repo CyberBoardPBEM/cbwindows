@@ -41,35 +41,34 @@ static char THIS_FILE[] = __FILE__;
 
 
 CBoardPropDialog::CBoardPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
-    /* m_dummy is a way to call LoadDialog()
-        before the Refs are initialized */
-    m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, "CBoardPropDialog") ? this : nullptr),
-    m_staticHalfPixelWidth(XRCCTRL(*this, "m_staticHalfPixelWidth", wxStaticText)),
-    m_staticSmallPixelWidth(XRCCTRL(*this, "m_staticSmallPixelWidth", wxStaticText)),
-    m_staticSmallPixelHeight(XRCCTRL(*this, "m_staticSmallPixelHeight", wxStaticText)),
-    m_staticHalfPixelHeight(XRCCTRL(*this, "m_staticHalfPixelHeight", wxStaticText)),
-    m_staticPixelWidth(XRCCTRL(*this, "m_staticPixelWidth", wxStaticText)),
-    m_staticPixelHeight(XRCCTRL(*this, "m_staticPixelHeight", wxStaticText)),
-    m_editBrdName(XRCCTRL(*this, "m_editBrdName", wxTextCtrl)),
-    m_cpCellFrame(XRCCTRL(*this, "m_cpCellFrame", wxColourPickerCtrl)),
-    m_staticWidth(XRCCTRL(*this, "m_staticWidth", wxStaticText)),
-    m_staticHeight(XRCCTRL(*this, "m_staticHeight", wxStaticText)),
-    m_staticRows(XRCCTRL(*this, "m_staticRows", wxStaticText)),
-    m_staticCols(XRCCTRL(*this, "m_staticCols", wxStaticText)),
-    m_comboStyle(XRCCTRL(*this, "m_comboStyle", wxChoice)),
-    m_chkCellLines(XRCCTRL(*this, "m_chkCellLines", wxCheckBox)),
-    m_chkGridSnap(XRCCTRL(*this, "m_chkGridSnap", wxCheckBox)),
-    m_chkTrackCellNum(XRCCTRL(*this, "m_chkTrackCellNum", wxCheckBox)),
-    m_editRowTrkOffset(XRCCTRL(*this, "m_editRowTrkOffset", wxTextCtrl)),
-    m_editColTrkOffset(XRCCTRL(*this, "m_editColTrkOffset", wxTextCtrl)),
-    m_editXGridSnapOff(XRCCTRL(*this, "m_editXGridSnapOff", wxTextCtrl)),
-    m_editYGridSnapOff(XRCCTRL(*this, "m_editYGridSnapOff", wxTextCtrl)),
-    m_editXGridSnap(XRCCTRL(*this, "m_editXGridSnap", wxTextCtrl)),
-    m_editYGridSnap(XRCCTRL(*this, "m_editYGridSnap", wxTextCtrl)),
-    m_chkColTrkInvert(XRCCTRL(*this, "m_chkColTrkInvert", wxCheckBox)),
-    m_chkRowTrkInvert(XRCCTRL(*this, "m_chkRowTrkInvert", wxCheckBox)),
-    m_chkCellBorderOnTop(XRCCTRL(*this, "m_chkCellBorderOnTop", wxCheckBox)),
-    m_chkEnableXParentCells(XRCCTRL(*this, "m_chkEnableXParentCells", wxCheckBox))
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CBoardPropDialog)
+        CB_XRC_CTRL(m_staticHalfPixelWidth)
+        CB_XRC_CTRL(m_staticSmallPixelWidth)
+        CB_XRC_CTRL(m_staticSmallPixelHeight)
+        CB_XRC_CTRL(m_staticHalfPixelHeight)
+        CB_XRC_CTRL(m_staticPixelWidth)
+        CB_XRC_CTRL(m_staticPixelHeight)
+        CB_XRC_CTRL_VAL(m_editBrdName, m_strName, wxFILTER_EMPTY, 32)
+        CB_XRC_CTRL_VAL(m_cpCellFrame, m_crCellFrame)
+        CB_XRC_CTRL(m_staticWidth)
+        CB_XRC_CTRL(m_staticHeight)
+        CB_XRC_CTRL(m_staticRows)
+        CB_XRC_CTRL(m_staticCols)
+        CB_XRC_CTRL_VAL(m_comboStyle, m_nStyleNum)
+        CB_XRC_CTRL_VAL(m_chkCellLines, m_bCellLines)
+        CB_XRC_CTRL_VAL(m_chkGridSnap, m_bGridSnap)
+        CB_XRC_CTRL_VAL(m_chkTrackCellNum, m_bTrackCellNum)
+        CB_XRC_CTRL_VAL(m_editRowTrkOffset, m_nRowTrkOffset, -250, 250)
+        CB_XRC_CTRL_VAL(m_editColTrkOffset, m_nColTrkOffset, -250, 250)
+        CB_XRC_CTRL_VAL(m_editXGridSnapOff, m_fXGridSnapOff, 0.f, 255.999f)
+        CB_XRC_CTRL_VAL(m_editYGridSnapOff, m_fYGridSnapOff, 0.f, 255.999f)
+        CB_XRC_CTRL_VAL(m_editXGridSnap, m_fXGridSnap, 2.f, 256.f)
+        CB_XRC_CTRL_VAL(m_editYGridSnap, m_fYGridSnap, 2.f, 256.f)
+        CB_XRC_CTRL_VAL(m_chkColTrkInvert, m_bColTrkInvert)
+        CB_XRC_CTRL_VAL(m_chkRowTrkInvert, m_bRowTrkInvert)
+        CB_XRC_CTRL_VAL(m_chkCellBorderOnTop, m_bCellBorderOnTop)
+        CB_XRC_CTRL_VAL(m_chkEnableXParentCells, m_bEnableXParentCells)
+    CB_XRC_END_CTRLS_DEFN()
 {
     m_bCellLines = false;
     m_bGridSnap = false;
@@ -94,24 +93,6 @@ CBoardPropDialog::CBoardPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
     m_bShapeChanged = FALSE;
     m_crCellFrame = *wxBLACK;
     m_eCellStyle = cformRect;
-
-    m_chkCellLines->SetValidator(wxGenericValidator(&m_bCellLines));
-    m_chkGridSnap->SetValidator(wxGenericValidator(&m_bGridSnap));
-    m_chkTrackCellNum->SetValidator(wxGenericValidator(&m_bTrackCellNum));
-    m_editRowTrkOffset->SetValidator(CB::MakeValidator(&m_nRowTrkOffset, -250, 250));
-    m_editColTrkOffset->SetValidator(CB::MakeValidator(&m_nColTrkOffset, -250, 250));
-    m_editXGridSnapOff->SetValidator(CB::MakeValidator(&m_fXGridSnapOff, 0.f, 255.999f));
-    m_editYGridSnapOff->SetValidator(CB::MakeValidator(&m_fYGridSnapOff, 0.f, 255.999f));
-    m_editXGridSnap->SetValidator(CB::MakeValidator(&m_fXGridSnap, 2.f, 256.f));
-    m_editYGridSnap->SetValidator(CB::MakeValidator(&m_fYGridSnap, 2.f, 256.f));
-    m_editBrdName->SetValidator(wxTextValidator(wxFILTER_EMPTY, &m_strName));
-    m_editBrdName->SetMaxLength(32);
-    m_cpCellFrame->SetValidator(wxGenericValidator(&m_crCellFrame));
-    m_comboStyle->SetValidator(wxGenericValidator(&m_nStyleNum));
-    m_chkColTrkInvert->SetValidator(wxGenericValidator(&m_bColTrkInvert));
-    m_chkRowTrkInvert->SetValidator(wxGenericValidator(&m_bRowTrkInvert));
-    m_chkCellBorderOnTop->SetValidator(wxGenericValidator(&m_bCellBorderOnTop));
-    m_chkEnableXParentCells->SetValidator(wxGenericValidator(&m_bEnableXParentCells));
 
     // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
     wxSize editSize = m_editXGridSnapOff->GetSizeFromText("999.999");
