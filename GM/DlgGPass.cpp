@@ -1,6 +1,6 @@
 // DlgGPass.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,31 +36,23 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDlgGetGameboxPassword dialog
 
-CDlgGetGameboxPassword::CDlgGetGameboxPassword(CWnd* pParent /*=NULL*/)
-    : CDialog(CDlgGetGameboxPassword::IDD, pParent)
+CDlgGetGameboxPassword::CDlgGetGameboxPassword(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CDlgGetGameboxPassword)
+        CB_XRC_CTRL_VAL(m_editPassword, m_strPassword, wxFILTER_NONE, 0)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CDlgGetGameboxPassword)
     m_strPassword = "";
-    //}}AFX_DATA_INIT
 }
 
 
-void CDlgGetGameboxPassword::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CDlgGetGameboxPassword)
-    DDX_Text(pDX, IDC_D_GETPASS_PASSWORD, m_strPassword);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CDlgGetGameboxPassword, CDialog)
-    //{{AFX_MSG_MAP(CDlgGetGameboxPassword)
-        // NOTE: the ClassWizard will add message map macros here
+wxBEGIN_EVENT_TABLE(CDlgGetGameboxPassword, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -78,6 +70,7 @@ void CDlgGetGameboxPassword::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDlgGetGameboxPassword message handlers
