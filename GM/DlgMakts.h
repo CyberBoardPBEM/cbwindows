@@ -1,6 +1,6 @@
 // DlgMakts.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -22,28 +22,23 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-class CCreateTSet : public CDialog
+class CCreateTSet : public wxDialog
 {
 // Construction
 public:
-    CCreateTSet(CWnd* pParent = NULL);  // standard constructor
+    CCreateTSet(wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CCreateTSet)
-    enum { IDD = IDD_TILESETNEW };
-    CEdit   m_editTSName;
-    CB::string m_strTSName;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editTSName;
+    CB_XRC_END_CTRLS_DECL()
+public:
+    wxString m_strTSName;
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CCreateTSet)
-    virtual void OnOK();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 };
 
 

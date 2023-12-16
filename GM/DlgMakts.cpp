@@ -1,6 +1,6 @@
 // DlbMakts.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,41 +35,16 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCreateTSet dialog
 
-CCreateTSet::CCreateTSet(CWnd* pParent /*=NULL*/)
-    : CDialog(CCreateTSet::IDD, pParent)
+CCreateTSet::CCreateTSet(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CCreateTSet)
+        CB_XRC_CTRL_VAL(m_editTSName, m_strTSName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CCreateTSet)
     m_strTSName = "";
-    //}}AFX_DATA_INIT
 }
 
-void CCreateTSet::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CCreateTSet)
-    DDX_Control(pDX, IDC_D_CRTGRP_TSETNAME, m_editTSName);
-    DDX_Text(pDX, IDC_D_CRTGRP_TSETNAME, m_strTSName);
-    DDV_MaxChars(pDX, m_strTSName, 32);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CCreateTSet, CDialog)
-    //{{AFX_MSG_MAP(CCreateTSet)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+wxBEGIN_EVENT_TABLE(CCreateTSet, wxDialog)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CCreateTSet message handlers
-
-void CCreateTSet::OnOK()
-{
-    CB::string str = CB::string::GetWindowText(m_editTSName);
-    if (str.empty())
-    {
-        AfxMessageBox(IDS_ERR_TILESETNAME, MB_OK | MB_ICONEXCLAMATION);
-        m_editTSName.SetFocus();
-        return;
-    }
-    CDialog::OnOK();
-}
-

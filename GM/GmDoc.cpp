@@ -931,7 +931,7 @@ void CGamDoc::OnEditCreateBoard()
 void CGamDoc::OnEditCreateTileGroup()
 {
     CCreateTSet dlg;
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         GetTileManager()->CreateTileSet(dlg.m_strTSName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);
