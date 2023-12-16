@@ -1,6 +1,6 @@
 // DlgGPass.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,36 +32,31 @@
 /////////////////////////////////////////////////////////////////////////////
 // DlgGPass dialog
 
-class CDlgGetGameboxPassword : public CDialog
+class CDlgGetGameboxPassword : public wxDialog
 {
 // Construction
 public:
-    CDlgGetGameboxPassword(CWnd* pParent = NULL);   // standard constructor
+    CDlgGetGameboxPassword(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CDlgGetGameboxPassword)
-    enum { IDD = IDD_ENTER_PASSWORD };
-    CB::string m_strPassword;
-    //}}AFX_DATA
+    wxString m_strPassword;
 
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CDlgGetGameboxPassword)
     protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
 
-    // Generated message map functions
-    //{{AFX_MSG(CDlgGetGameboxPassword)
-        // NOTE: the ClassWizard will add member functions here
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editPassword;
+    CB_XRC_END_CTRLS_DECL()
 };
 
 #endif

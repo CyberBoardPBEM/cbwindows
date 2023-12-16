@@ -211,7 +211,7 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
         // Prompt and check the password...
         CDlgGetGameboxPassword dlg;
-        if (dlg.DoModal() == IDOK)
+        if (dlg.ShowModal() == wxID_OK)
         {
             bfr = ComputeGameboxPasskey(dlg.m_strPassword);
             if (bfr == m_abytePass)
