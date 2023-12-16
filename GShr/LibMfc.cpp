@@ -591,6 +591,10 @@ CB::string::~string()
 CB::string::string(std::wstring_view s)
 {
     wxCharBuffer buf = wxConvLibc.cWC2MB(s.data(), s.size(), nullptr);
+    if (!s.empty() && buf.length() == 0)
+    {
+        AfxThrowInvalidArgException();
+    }
     cp1252 = std::string(buf, buf.length());
 }
 
