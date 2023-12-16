@@ -217,7 +217,7 @@ void CBoardPropDialog::OnReshape(wxCommandEvent& /*event*/)
             dlg.m_bStagger = CellStagger::Out;
         }
 
-        if (dlg.DoModal() == IDOK)
+        if (dlg.ShowModal() == wxID_OK)
         {
             m_bShapeChanged = TRUE;
 

@@ -36,47 +36,32 @@ static char THIS_FILE[] = __FILE__;
 // CBoardReshapeDialog dialog
 
 
-CBoardReshapeDialog::CBoardReshapeDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CBoardReshapeDialog::IDD, pParent)
+CBoardReshapeDialog::CBoardReshapeDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CBoardReshapeDialog)
+        CB_XRC_CTRL_VAL(m_checkStaggerIn, m_bStaggerAdapter)
+        CB_XRC_CTRL_VAL(m_editCellWd, m_nCellWd, 4u, 32000u)
+        CB_XRC_CTRL_VAL(m_editCellHt, m_nCellHt, 4u, 32000u)
+        CB_XRC_CTRL_VAL(m_editCols, m_nCols, size_t(1), size_t(1000))
+        CB_XRC_CTRL_VAL(m_editRows, m_nRows, size_t(1), size_t(1000))
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CBoardReshapeDialog)
     m_nCellHt = 0u;
     m_nCellWd = 0u;
     m_nCols = size_t(0);
     m_nRows = size_t(0);
     m_bStagger = CellStagger::Invalid;
-    //}}AFX_DATA_INIT
+
     m_eCellStyle = cformRect;
 }
 
-void CBoardReshapeDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CBoardReshapeDialog)
-    DDX_Control(pDX, IDC_D_BRDSHP_STAGGERIN, m_checkStaggerIn);
-    DDX_Control(pDX, IDC_D_BRDSHP_CELLWD, m_editCellWd);
-    DDX_Control(pDX, IDC_D_BRDSHP_CELLHT, m_editCellHt);
-    DDX_Text(pDX, IDC_D_BRDSHP_CELLHT, m_nCellHt);
-    DDV_MinMaxUInt(pDX, m_nCellHt, 4, 32000);
-    DDX_Text(pDX, IDC_D_BRDSHP_CELLWD, m_nCellWd);
-    DDV_MinMaxUInt(pDX, m_nCellWd, 4, 32000);
-    DDX_Text(pDX, IDC_D_BRDSHP_COLS, m_nCols);
-    DDV_MinMaxUInt(pDX, value_preserving_cast<UINT>(m_nCols), 1, 1000);
-    DDX_Text(pDX, IDC_D_BRDSHP_ROWS, m_nRows);
-    DDV_MinMaxUInt(pDX, value_preserving_cast<UINT>(m_nRows), 1, 1000);
-    int temp = static_cast<int>(m_bStagger);
-    DDX_Check(pDX, IDC_D_BRDSHP_STAGGERIN, temp);
-    m_bStagger = static_cast<CellStagger>(temp);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CBoardReshapeDialog, CDialog)
-    //{{AFX_MSG_MAP(CBoardReshapeDialog)
+wxBEGIN_EVENT_TABLE(CBoardReshapeDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -99,19 +84,35 @@ void CBoardReshapeDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoardReshapeDialog message handlers
 
-BOOL CBoardReshapeDialog::OnInitDialog()
+bool CBoardReshapeDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    m_bStaggerAdapter = static_cast<bool>(m_bStagger);
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
     if (m_eCellStyle == cformHexPnt)
-        m_editCellHt.EnableWindow(FALSE);
+        m_editCellHt->Enable(false);
     else if (m_eCellStyle == cformHexFlat)
-        m_editCellWd.EnableWindow(FALSE);
+        m_editCellWd->Enable(false);
     else if (m_eCellStyle == cformRect)
-        m_checkStaggerIn.EnableWindow(FALSE); // disable stagger
-    return TRUE;  // return TRUE  unless you set the focus to a control
+        m_checkStaggerIn->Enable(false); // disable stagger
+    return true;
+}
+
+bool CBoardReshapeDialog::TransferDataFromWindow()
+{
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+    m_bStagger = static_cast<CellStagger>(m_bStaggerAdapter);
+
+    return true;
 }
