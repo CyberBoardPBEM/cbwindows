@@ -1,6 +1,6 @@
 // dlgbrdsz.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,36 +27,38 @@
 
 enum CellFormType;
 
-class CBoardReshapeDialog : public CDialog
+class CBoardReshapeDialog : public wxDialog
 {
 // Construction
 public:
-    CBoardReshapeDialog(CWnd* pParent = NULL);  // standard constructor
+    CBoardReshapeDialog(wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CBoardReshapeDialog)
-    enum { IDD = IDD_BRDRESHAPE };
-    CButton m_checkStaggerIn;
-    CEdit   m_editCellWd;
-    CEdit   m_editCellHt;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_checkStaggerIn;
+        RefPtr<wxTextCtrl> m_editCellWd;
+        RefPtr<wxTextCtrl> m_editCellHt;
+        RefPtr<wxTextCtrl> m_editCols;
+        RefPtr<wxTextCtrl> m_editRows;
+    CB_XRC_END_CTRLS_DECL()
+    bool m_bStaggerAdapter;
+public:
     uint32_t     m_nCellHt;
     uint32_t     m_nCellWd;
     size_t  m_nCols;
     size_t  m_nRows;
     CellStagger m_bStagger;
-    //}}AFX_DATA
 
     CellFormType m_eCellStyle;  // Used to disable cell a cell dimension
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CBoardReshapeDialog)
-    virtual BOOL OnInitDialog();
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
