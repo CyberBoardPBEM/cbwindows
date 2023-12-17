@@ -1,6 +1,6 @@
 // DlgMEditMulti.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,47 +32,41 @@
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerEditMultipleDialog dialog
 
-class CMarkerEditMultipleDialog : public CDialog
+class CMarkerEditMultipleDialog : public wxDialog
 {
 // Construction
 public:
-    CMarkerEditMultipleDialog(CWnd* pParent = NULL);   // standard constructor
+    CMarkerEditMultipleDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CMarkerEditMultipleDialog)
-    enum { IDD = IDD_MARKER_EDIT_MULTIPLE };
-    CButton m_chkSetText;
-    CStatic m_staticTextLabel;
-    CButton m_chkPromptForText;
-    CEdit   m_editText;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkSetText;
+        RefPtr<wxStaticText> m_staticTextLabel;
+        RefPtr<wxCheckBox> m_chkPromptForText;
+        RefPtr<wxTextCtrl> m_editText;
+    CB_XRC_END_CTRLS_DECL()
 
-    BOOL    m_bSetPromptForText;
-    BOOL    m_bPromptForText;
+public:
+    wxCheckBoxState m_bPromptForText;
 
-    BOOL    m_bSetText;
-    CB::string m_strText;
+    bool    m_bSetText;
+    wxString m_strText;
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CMarkerEditMultipleDialog)
     protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
     void UpdateTextControls();
 
-    // Generated message map functions
-    //{{AFX_MSG(CMarkerEditMultipleDialog)
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
-    afx_msg void OnBtnClickChangeText();
+    void OnInitDialog(wxInitDialogEvent& event);
+    void OnBtnClickChangeText(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif

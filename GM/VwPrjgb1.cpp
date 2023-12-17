@@ -733,7 +733,7 @@ void CGbxProjView::DoMarkEdit()
         m_listMarks.GetSelItems(nNumSelected, tblSel.GetData());
 
         CMarkerEditMultipleDialog dlg;
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
 
         for (int i = 0; i < tblSel.GetSize(); i++)
@@ -741,10 +741,10 @@ void CGbxProjView::DoMarkEdit()
             MarkID mid = m_listMarks.MapIndexToItem(value_preserving_cast<size_t>(tblSel[i]));
             MarkDef& pDef = pDoc->GetMarkManager()->GetMark(mid);
             // Process "prompt for text" change
-            if (dlg.m_bSetPromptForText)
+            if (dlg.m_bPromptForText != wxCHK_UNDETERMINED)
             {
                 pDef.m_flags &= ~MarkDef::flagPromptText;          // Initially clear the flag
-                if (dlg.m_bPromptForText)
+                if (dlg.m_bPromptForText == wxCHK_CHECKED)
                     pDef.m_flags |= MarkDef::flagPromptText;       // Set the flag
             }
             // Process marker text change
@@ -752,7 +752,7 @@ void CGbxProjView::DoMarkEdit()
             {
                 GameElement elem = MakeMarkerElement(mid);
                 if (!dlg.m_strText.empty())
-                    pDoc->GetGameStringMap().SetAt(elem, dlg.m_strText);
+                    pDoc->GetGameStringMap().SetAt(elem, CB::string(dlg.m_strText));
                 else
                     pDoc->GetGameStringMap().RemoveKey(elem);
             }
