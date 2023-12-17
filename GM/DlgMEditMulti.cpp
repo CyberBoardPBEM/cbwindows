@@ -1,6 +1,6 @@
 // DlgMEditMulti.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,37 +36,29 @@ static char THIS_FILE[] = __FILE__;
 // CMarkerEditMultipleDialog dialog
 
 
-CMarkerEditMultipleDialog::CMarkerEditMultipleDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMarkerEditMultipleDialog::IDD, pParent)
+CMarkerEditMultipleDialog::CMarkerEditMultipleDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CMarkerEditMultipleDialog)
+        CB_XRC_CTRL_VAL(m_chkSetText, m_bSetText)
+        CB_XRC_CTRL(m_staticTextLabel)
+        CB_XRC_CTRL_VAL(m_chkPromptForText, m_bPromptForText)
+        CB_XRC_CTRL_VAL(m_editText, m_strText, wxFILTER_NONE, 0)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMarkerEditMultipleDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
-    m_bSetText = FALSE;
-    m_bSetPromptForText = FALSE;
-    m_bPromptForText = FALSE;
+    m_bSetText = false;
+    m_bPromptForText = wxCHK_UNDETERMINED;
 }
 
 
-void CMarkerEditMultipleDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMarkerEditMultipleDialog)
-    DDX_Control(pDX, IDC_D_MMEDIT_CHG_TEXT, m_chkSetText);
-    DDX_Control(pDX, IDC_D_MMEDIT_TEXT_LABEL, m_staticTextLabel);
-    DDX_Control(pDX, IDC_D_MMEDIT_TEXTPROMPT, m_chkPromptForText);
-    DDX_Control(pDX, IDC_D_MMEDIT_TEXT, m_editText);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CMarkerEditMultipleDialog, CDialog)
-    //{{AFX_MSG_MAP(CMarkerEditMultipleDialog)
-    ON_BN_CLICKED(IDC_D_MEDIT_CHG_TEXT, OnBtnClickChangeText)
+wxBEGIN_EVENT_TABLE(CMarkerEditMultipleDialog, wxDialog)
+    EVT_INIT_DIALOG(OnInitDialog)
+    EVT_CHECKBOX(XRCID("m_chkSetText"), OnBtnClickChangeText)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -87,54 +79,39 @@ void CMarkerEditMultipleDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CMarkerEditMultipleDialog::UpdateTextControls()
 {
-    if (m_chkSetText.GetCheck())
+    if (m_chkSetText->IsChecked())
     {
-        m_editText.EnableWindow(TRUE);
-        m_staticTextLabel.EnableWindow(TRUE);
+        m_editText->Enable(true);
+        m_staticTextLabel->Enable(true);
     }
     else
     {
-        m_editText.EnableWindow(FALSE);
-        m_editText.SetWindowText(""_cbstring);
-        m_staticTextLabel.EnableWindow(FALSE);
+        m_editText->Enable(false);
+        m_editText->Clear();
+        m_staticTextLabel->Enable(false);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerEditMultipleDialog message handlers
 
-void CMarkerEditMultipleDialog::OnBtnClickChangeText()
+void CMarkerEditMultipleDialog::OnBtnClickChangeText(wxCommandEvent& /*event*/)
 {
     UpdateTextControls();
 }
 
-BOOL CMarkerEditMultipleDialog::OnInitDialog()
+void CMarkerEditMultipleDialog::OnInitDialog(wxInitDialogEvent& event)
 {
-    CDialog::OnInitDialog();
+    /* UpdateTextControls should be called only after base
+        class does its work.  event.Skip() ensures base
+        class does its work */
+    event.Skip();
 
-    m_chkPromptForText.SetCheck(2);            // Show as indeterminate
-
-    m_chkSetText.SetCheck(0);
-    UpdateTextControls();
-
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    CallAfter(&CMarkerEditMultipleDialog::UpdateTextControls);
 }
-
-void CMarkerEditMultipleDialog::OnOK()
-{
-    m_bSetPromptForText = m_chkPromptForText.GetCheck() != 2;
-    m_bPromptForText = m_chkPromptForText.GetCheck() != 0;
-
-    m_bSetText = m_chkSetText.GetCheck() != 0;
-    m_strText = CB::string::GetWindowText(m_editText);
-
-    CDialog::OnOK();
-}
-
-
