@@ -737,9 +737,9 @@ decltype(*std::declval<const CB::not_null<T>>()) CheckedDeref(const CB::not_null
 template<typename DEST, typename SRC>
 struct is_always_value_preserving
 {
-    static_assert(std::is_integral_v<DEST>,
-                    "only integral types supported");
-    static constexpr bool value = std::is_integral_v<DEST> &&
+    static_assert(std::is_arithmetic_v<DEST>,
+                    "only arithmetic types supported");
+    static constexpr bool value = (std::is_integral_v<DEST> &&
                                     std::is_integral_v<SRC> &&
                                     (
                                         (std::is_signed_v<DEST> == std::is_signed_v<SRC> &&
@@ -747,7 +747,15 @@ struct is_always_value_preserving
                                     ||
                                         (std::is_unsigned_v<SRC> &&
                                         sizeof(DEST) > sizeof(SRC))
-                                    );
+                                    ))
+                                ||
+                                    (std::is_floating_point_v<DEST> &&
+                                        std::is_floating_point_v<SRC> &&
+                                        sizeof(DEST) >= sizeof(SRC))
+                                ||
+                                    (std::is_floating_point_v<DEST> &&
+                                        std::is_integral_v<SRC> &&
+                                        std::numeric_limits<DEST>::digits >= std::numeric_limits<SRC>::digits);
 };
 
 // convenience helper
