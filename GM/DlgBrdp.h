@@ -52,8 +52,8 @@ public:
     BOOL    m_bCellLines;
     BOOL    m_bGridSnap;
     BOOL    m_bTrackCellNum;
-    int     m_nRowTrkOffset;
-    int     m_nColTrkOffset;
+    int32_t m_nRowTrkOffset;
+    int32_t m_nColTrkOffset;
     float   m_fXGridSnapOff;
     float   m_fYGridSnapOff;
     float   m_fXGridSnap;
@@ -70,16 +70,16 @@ public:
 
     BOOL            m_bShapeChanged;// Set to true if reshape desired
 
-    UINT            m_xGridSnap;
-    UINT            m_yGridSnap;
-    UINT            m_xGridSnapOff;
-    UINT            m_yGridSnapOff;
+    uint32_t        m_xGridSnap;
+    uint32_t        m_yGridSnap;
+    uint32_t        m_xGridSnapOff;
+    uint32_t        m_yGridSnapOff;
 
     CellFormType    m_eCellStyle;   // Used to disable cell a cell dimension
     size_t          m_nRows;
     size_t          m_nCols;
-    int             m_nCellHt;
-    int             m_nCellWd;
+    uint32_t        m_nCellHt;
+    uint32_t        m_nCellWd;
     CellStagger     m_bStagger;
 
 // Implementation

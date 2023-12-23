@@ -40,8 +40,8 @@ CBoardReshapeDialog::CBoardReshapeDialog(CWnd* pParent /*=NULL*/)
     : CDialog(CBoardReshapeDialog::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CBoardReshapeDialog)
-    m_nCellHt = 0;
-    m_nCellWd = 0;
+    m_nCellHt = 0u;
+    m_nCellWd = 0u;
     m_nCols = size_t(0);
     m_nRows = size_t(0);
     m_bStagger = CellStagger::Invalid;

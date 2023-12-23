@@ -62,10 +62,10 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_ptPrevPlot = CPoint(-1, -1);
     // ------- //
     m_bGridSnap = FALSE;
-    m_xGridSnap = 4000;
-    m_yGridSnap = 4000;
-    m_xGridSnapOff = 0;
-    m_yGridSnapOff = 0;
+    m_xGridSnap = 4000u;
+    m_yGridSnap = 4000u;
+    m_xGridSnapOff = 0u;
+    m_yGridSnapOff = 0u;
     // ------- //
     m_bCellBorders = TRUE;
     m_bSmallCellBorders = FALSE;
@@ -317,11 +317,11 @@ void CPlayBoard::Serialize(CArchive& ar)
 
         ar << m_nSerialNum;
 
-        ar << (WORD)m_bGridSnap;
-        ar << (DWORD)m_xGridSnap;
-        ar << (DWORD)m_yGridSnap;
-        ar << (DWORD)m_xGridSnapOff;
-        ar << (DWORD)m_yGridSnapOff;
+        ar << static_cast<uint16_t>(m_bGridSnap);
+        ar << m_xGridSnap;
+        ar << m_yGridSnap;
+        ar << m_xGridSnapOff;
+        ar << m_yGridSnapOff;
 
         ar << (WORD)m_xStackStagger;
         ar << (WORD)m_yStackStagger;
@@ -379,8 +379,8 @@ void CPlayBoard::Serialize(CArchive& ar)
         Clear();
         ASSERT(m_pDoc == (CGamDoc*)ar.m_pDocument);
         BYTE cTmp;
-        WORD wTmp;
-        DWORD dwTmp;
+        uint16_t wTmp;
+        uint32_t dwTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 01))  // Ver2.01
         {
@@ -412,17 +412,17 @@ void CPlayBoard::Serialize(CArchive& ar)
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 58))
         {
-            ar >> dwTmp; m_xGridSnap = (int)dwTmp;
-            ar >> dwTmp; m_yGridSnap = (int)dwTmp;
-            ar >> dwTmp; m_xGridSnapOff = (int)dwTmp;
-            ar >> dwTmp; m_yGridSnapOff = (int)dwTmp;
+            ar >> m_xGridSnap;
+            ar >> m_yGridSnap;
+            ar >> m_xGridSnapOff;
+            ar >> m_yGridSnapOff;
         }
         else
         {
-            ar >> wTmp; m_xGridSnap = 1000 * (int)wTmp;
-            ar >> wTmp; m_yGridSnap = 1000 * (int)wTmp;
-            ar >> wTmp; m_xGridSnapOff = 1000 * (int)wTmp;
-            ar >> wTmp; m_yGridSnapOff = 1000 * (int)wTmp;
+            ar >> wTmp; m_xGridSnap = 1000 * static_cast<uint32_t>(wTmp);
+            ar >> wTmp; m_yGridSnap = 1000 * static_cast<uint32_t>(wTmp);
+            ar >> wTmp; m_xGridSnapOff = 1000 * static_cast<uint32_t>(wTmp);
+            ar >> wTmp; m_yGridSnapOff = 1000 * static_cast<uint32_t>(wTmp);
         }
 
         ar >> wTmp; m_xStackStagger = (int)(short)wTmp;

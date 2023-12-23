@@ -527,10 +527,10 @@ void CBoard::Serialize(CArchive& ar)
 CBoardBase::CBoardBase()
 {
     m_bGridSnap = FALSE;
-    m_xGridSnap = 4000;
-    m_yGridSnap = 4000;
-    m_xGridSnapOff = 0;
-    m_yGridSnapOff = 0;
+    m_xGridSnap = 4000u;
+    m_yGridSnap = 4000u;
+    m_xGridSnapOff = 0u;
+    m_yGridSnapOff = 0u;
     // --------- //
     m_crBkGnd = RGB(128, 128, 128);
 }
@@ -604,24 +604,24 @@ void CBoardBase::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_nSerialNum;
-        ar << (WORD)m_bApplyVisibility;
-        ar << (WORD)m_bGridSnap;
-        ar << (DWORD)m_xGridSnap;
-        ar << (DWORD)m_yGridSnap;
-        ar << (DWORD)m_xGridSnapOff;
-        ar << (DWORD)m_yGridSnapOff;
+        ar << static_cast<uint16_t>(m_bApplyVisibility);
+        ar << static_cast<uint16_t>(m_bGridSnap);
+        ar << m_xGridSnap;
+        ar << m_yGridSnap;
+        ar << m_xGridSnapOff;
+        ar << m_yGridSnapOff;
 
         ar << value_preserving_cast<int16_t>(m_iMaxLayer);
-        ar << (DWORD)m_crBkGnd;
+        ar << static_cast<uint32_t>(m_crBkGnd);
         ar << m_strBoardName;
-        ar << (WORD)(m_pBaseDwg != NULL ? 1 : 0);
+        ar << static_cast<uint16_t>(m_pBaseDwg != NULL ? 1 : 0);
     }
     else
     {
         m_pTMgr = ((CGamDoc*)ar.m_pDocument)->GetTileManager();
         m_pBaseDwg = NULL;
         uint16_t wTmp;
-        DWORD dwTmp;
+        uint32_t dwTmp;
         ar >> m_nSerialNum;
 #ifndef GPLAY
         if (CGamDoc::GetLoadingVersion() > NumVersion(0, 54))
@@ -633,17 +633,17 @@ void CBoardBase::Serialize(CArchive& ar)
         ar >> wTmp; m_bGridSnap = (BOOL)wTmp;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(0, 58))
         {
-            ar >> dwTmp; m_xGridSnap = (int)dwTmp;
-            ar >> dwTmp; m_yGridSnap = (int)dwTmp;
-            ar >> dwTmp; m_xGridSnapOff = (int)dwTmp;
-            ar >> dwTmp; m_yGridSnapOff = (int)dwTmp;
+            ar >> m_xGridSnap;
+            ar >> m_yGridSnap;
+            ar >> m_xGridSnapOff;
+            ar >> m_yGridSnapOff;
         }
         else
         {
-            ar >> wTmp; m_xGridSnap = (int)wTmp * 1000;
-            ar >> wTmp; m_yGridSnap = (int)wTmp * 1000;
-            ar >> wTmp; m_xGridSnapOff = (int)wTmp * 1000;
-            ar >> wTmp; m_yGridSnapOff = (int)wTmp * 1000;
+            ar >> wTmp; m_xGridSnap = static_cast<uint32_t>(wTmp) * 1000;
+            ar >> wTmp; m_yGridSnap = static_cast<uint32_t>(wTmp) * 1000;
+            ar >> wTmp; m_xGridSnapOff = static_cast<uint32_t>(wTmp) * 1000;
+            ar >> wTmp; m_yGridSnapOff = static_cast<uint32_t>(wTmp) * 1000;
         }
         int16_t sTmp;
         ar >> sTmp; m_iMaxLayer = value_preserving_cast<decltype(m_iMaxLayer)>(sTmp);

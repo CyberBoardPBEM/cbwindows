@@ -141,7 +141,7 @@ void CBoardArray::GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
 }
 
 /* static */
-void CBoardArray::GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
+void CBoardArray::GenerateCellDefs(CellFormType eType, int32_t nParm1, int32_t nParm2,
     CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall)
 {
     // Set up cell geometry. There are 3 CCellForm objects. One

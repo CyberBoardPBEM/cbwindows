@@ -39,8 +39,8 @@ public:
     CButton m_checkStaggerIn;
     CEdit   m_editCellWd;
     CEdit   m_editCellHt;
-    UINT    m_nCellHt;
-    UINT    m_nCellWd;
+    uint32_t     m_nCellHt;
+    uint32_t     m_nCellWd;
     size_t  m_nCols;
     size_t  m_nRows;
     CellStagger m_bStagger;

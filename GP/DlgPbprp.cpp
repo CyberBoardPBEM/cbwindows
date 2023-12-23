@@ -159,15 +159,15 @@ void CPBrdPropDialog::OnOK()
 
     // Make sure these are within grid size
 
-    m_xGridSnapOff = (UINT)(m_fXGridSnapOff * 1000 + 0.5);
-    m_yGridSnapOff = (UINT)(m_fYGridSnapOff * 1000 + 0.5);
-    m_xGridSnap = (UINT)(m_fXGridSnap * 1000 + 0.5);
-    m_yGridSnap = (UINT)(m_fYGridSnap * 1000 + 0.5);
+    m_xGridSnapOff = value_preserving_cast<uint32_t>(std::round(m_fXGridSnapOff * 1000));
+    m_yGridSnapOff = value_preserving_cast<uint32_t>(std::round(m_fYGridSnapOff * 1000));
+    m_xGridSnap = value_preserving_cast<uint32_t>(std::round(m_fXGridSnap * 1000));
+    m_yGridSnap = value_preserving_cast<uint32_t>(std::round(m_fYGridSnap * 1000));
 
-    ASSERT(m_xGridSnap > 0 && m_yGridSnap > 0);
-    if (m_xGridSnap > 0)
+    ASSERT(m_xGridSnap > 0u && m_yGridSnap > 0u);
+    if (m_xGridSnap > 0u)
         m_xGridSnapOff = m_xGridSnapOff % m_xGridSnap;
-    if (m_yGridSnap > 0)
+    if (m_yGridSnap > 0u)
         m_yGridSnapOff = m_yGridSnapOff % m_yGridSnap;
 
     if (m_pPlayerMgr != NULL && !m_bOwnerInfoIsReadOnly)
@@ -180,10 +180,10 @@ void CPBrdPropDialog::OnOK()
 
 BOOL CPBrdPropDialog::OnInitDialog()
 {
-    m_fXGridSnapOff = (float)m_xGridSnapOff / 1000;
-    m_fYGridSnapOff = (float)m_yGridSnapOff / 1000;
-    m_fXGridSnap = (float)m_xGridSnap / 1000;
-    m_fYGridSnap = (float)m_yGridSnap / 1000;
+    m_fXGridSnapOff = value_preserving_cast<float>(m_xGridSnapOff) / 1000.f;
+    m_fYGridSnapOff = value_preserving_cast<float>(m_yGridSnapOff) / 1000.f;
+    m_fXGridSnap = value_preserving_cast<float>(m_xGridSnap) / 1000.f;
+    m_fYGridSnap = value_preserving_cast<float>(m_yGridSnap) / 1000.f;
 
     CDialog::OnInitDialog();
 
