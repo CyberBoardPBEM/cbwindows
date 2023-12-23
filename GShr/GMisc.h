@@ -65,8 +65,8 @@ inline int MidPnt(int a, int b) { return a+(b-a)/2; }
 CPoint GetMidRect(const CRect& rct);
 CPoint RotatePointAroundPoint(CPoint pntOrigin, CPoint pntXlate, int nAngleDeg);
 
-int GridizeClosest1000(int nVal, int nMultiple, int nOffset);
-int GridizeClosest(int nVal, int nMultiple, int nOffset);
+int32_t GridizeClosest1000(int32_t nVal, int32_t nMultiple, int32_t nOffset);
+int32_t GridizeClosest(int32_t nVal, int32_t nMultiple, int32_t nOffset);
 size_t CalcAllocSize(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize);
 void ScalePoint(POINT& pnt, const CSize& numSize, const CSize& denSize);
 void ScaleRect(RECT& rct, const CSize& numSize, const CSize& denSize);

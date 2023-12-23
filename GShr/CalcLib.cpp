@@ -140,17 +140,17 @@ std::vector<size_t> AllocateAndCalcRandomIndexVector(size_t nNumIndices, size_t 
 // The coord sys is scaled by 1000.  nMultiple and nOffset are
 // already scaled by 1000.
 
-int GridizeClosest1000(int nVal, int nMultiple, int nOffset)
+int32_t GridizeClosest1000(int32_t nVal, int32_t nMultiple, int32_t nOffset)
 {
     return GridizeClosest(1000 * nVal, nMultiple, nOffset) / 1000;
 }
 
 // Force a value to the nearest regular grid location.
-int GridizeClosest(int nVal, int nMultiple, int nOffset)
+int32_t GridizeClosest(int32_t nVal, int32_t nMultiple, int32_t nOffset)
 {
     nVal -= nOffset;
     div_t rslt;
-    rslt = div(nVal, nMultiple);
+    rslt = div(value_preserving_cast<int>(nVal), value_preserving_cast<int>(nMultiple));
     if (rslt.rem * 2 > nMultiple)
         rslt.quot++;
 

@@ -92,14 +92,14 @@ public:
         { m_bTransparentCells = bEnabled; }
     // ------ //
     void SetCellNumTracking(BOOL bTrack = TRUE) { m_bTrackCellNum = bTrack; }
-    void SetRowCellTrackingOffset(int nTrkOff) { m_nRowTrkOffset = nTrkOff; }
-    void SetColCellTrackingOffset(int nTrkOff) { m_nColTrkOffset = nTrkOff; }
+    void SetRowCellTrackingOffset(int32_t nTrkOff) { m_nRowTrkOffset = nTrkOff; }
+    void SetColCellTrackingOffset(int32_t nTrkOff) { m_nColTrkOffset = nTrkOff; }
     void SetRowCellTrackingInvert(BOOL bTrkInv) { m_bRowTrkInvert = bTrkInv; }
     void SetColCellTrackingInvert(BOOL bTrkInv) { m_bColTrkInvert = bTrkInv; }
     void SetCellNumStyle(CellNumStyle eStyle) { m_eNumStyle = eStyle; }
     BOOL GetCellNumTracking() const { return m_bTrackCellNum; }
-    int GetRowCellTrackingOffset() const { return m_nRowTrkOffset; }
-    int GetColCellTrackingOffset() const { return m_nColTrkOffset; }
+    int32_t GetRowCellTrackingOffset() const { return m_nRowTrkOffset; }
+    int32_t GetColCellTrackingOffset() const { return m_nColTrkOffset; }
     BOOL GetRowCellTrackingInvert() const { return m_bRowTrkInvert; }
     BOOL GetColCellTrackingInvert() const { return m_bColTrkInvert; }
     CellNumStyle GetCellNumStyle() const { return m_eNumStyle; }
@@ -134,7 +134,7 @@ public:
     void DestroyBoard();
     void GenerateBoard(CellFormType eType, size_t nRows, size_t nCols,
         int nParm1, int nParm2, CellStagger nStagger, std::vector<BoardCell>&& pMap);
-    static void GenerateCellDefs(CellFormType eType, int nParm1, int nParm2,
+    static void GenerateCellDefs(CellFormType eType, int32_t nParm1, int32_t nParm2,
         CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
     void DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;

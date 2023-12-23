@@ -62,10 +62,10 @@ public:
     COLORREF    m_crPlotColor;
     UINT        m_nPlotWd;
 
-    UINT        m_xGridSnapOff;
-    UINT        m_yGridSnapOff;
-    UINT        m_xGridSnap;
-    UINT        m_yGridSnap;
+    uint32_t    m_xGridSnapOff;
+    uint32_t    m_yGridSnapOff;
+    uint32_t    m_xGridSnap;
+    uint32_t    m_yGridSnap;
 
     BOOL            m_bOwnerInfoIsReadOnly;
     BOOL            m_bNonOwnerAccess;

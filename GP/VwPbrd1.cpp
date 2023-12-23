@@ -540,8 +540,8 @@ void CPlayBoardView::GridizeX(long& xPos) const
 {
     if (IsGridizeActive())
     {
-        xPos = GridizeClosest1000(xPos,
-            m_pPBoard->m_xGridSnap, m_pPBoard->m_xGridSnapOff);
+        xPos = GridizeClosest1000(value_preserving_cast<int32_t>(xPos),
+            value_preserving_cast<int32_t>(m_pPBoard->m_xGridSnap), value_preserving_cast<int32_t>(m_pPBoard->m_xGridSnapOff));
     }
 }
 
@@ -549,8 +549,8 @@ void CPlayBoardView::GridizeY(long& yPos) const
 {
     if (IsGridizeActive())
     {
-        yPos = GridizeClosest1000(yPos,
-            m_pPBoard->m_yGridSnap, m_pPBoard->m_yGridSnapOff);
+        yPos = GridizeClosest1000(value_preserving_cast<int32_t>(yPos),
+            value_preserving_cast<int32_t>(m_pPBoard->m_yGridSnap), value_preserving_cast<int32_t>(m_pPBoard->m_yGridSnapOff));
     }
 }
 

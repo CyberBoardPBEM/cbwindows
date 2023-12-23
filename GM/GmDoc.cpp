@@ -480,8 +480,8 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     dlg.m_nRows = pBrdAry.GetRows();
     dlg.m_nCols = pBrdAry.GetCols();
     CSize size = pBrdAry.GetCellSize(fullScale);
-    dlg.m_nCellHt = size.cy;
-    dlg.m_nCellWd = size.cx;
+    dlg.m_nCellHt = value_preserving_cast<uint32_t>(size.cy);
+    dlg.m_nCellWd = value_preserving_cast<uint32_t>(size.cx);
     const CCellForm& pcf = pBrdAry.GetCellForm(fullScale);
     dlg.m_eCellStyle = pcf.GetCellType();
     dlg.m_bStagger = pcf.GetCellStagger();
@@ -514,7 +514,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
             if (dlg.m_eCellStyle == cformHexPnt) // Only first param is used
                 dlg.m_nCellHt = dlg.m_nCellWd;
             pBrdAry.ReshapeBoard(dlg.m_nRows, dlg.m_nCols,
-                dlg.m_nCellHt, dlg.m_nCellWd, dlg.m_bStagger);
+                value_preserving_cast<int32_t>(dlg.m_nCellHt), value_preserving_cast<int32_t>(dlg.m_nCellWd), dlg.m_bStagger);
             pBoard.ForceObjectsOntoBoard();
         }
         CGmBoxHint hint;

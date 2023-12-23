@@ -143,10 +143,10 @@ public:
 public:
     BOOL    m_bGridSnap;        // TRUE if snap grid is on
     BOOL    m_bGridRectCenters; // TRUE if should snap to centers of rects
-    int     m_xGridSnap;        // X grid multiple * 1000
-    int     m_yGridSnap;        // Y grid multiple * 1000
-    int     m_xGridSnapOff;     // X grid offset (must be < m_xGridSnap) * 1000
-    int     m_yGridSnapOff;     // Y grid offset (must be < m_yGridSnap) * 1000
+    uint32_t m_xGridSnap;        // X grid multiple * 1000
+    uint32_t m_yGridSnap;        // Y grid multiple * 1000
+    uint32_t m_xGridSnapOff;     // X grid offset (must be < m_xGridSnap) * 1000
+    uint32_t m_yGridSnapOff;     // Y grid offset (must be < m_yGridSnap) * 1000
 
     BOOL    m_bOpenBoardOnLoad; // If TRUE automatically open board on project load
     BOOL    m_bShowSelListAndTinyMap;   // If TRUE, shows sel list and tiny map views in window

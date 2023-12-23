@@ -1118,8 +1118,8 @@ void CBrdEditView::GridizeX(long& xPos)
 {
     if (IsGridizeActive())
     {
-        xPos = GridizeClosest1000(xPos,
-            m_pBoard->m_xGridSnap, m_pBoard->m_xGridSnapOff);
+        xPos = GridizeClosest1000(value_preserving_cast<int32_t>(xPos),
+            value_preserving_cast<int32_t>(m_pBoard->m_xGridSnap), value_preserving_cast<int32_t>(m_pBoard->m_xGridSnapOff));
     }
 }
 
@@ -1127,8 +1127,8 @@ void CBrdEditView::GridizeY(long& yPos)
 {
     if (IsGridizeActive())
     {
-        yPos = GridizeClosest1000(yPos,
-            m_pBoard->m_yGridSnap, m_pBoard->m_yGridSnapOff);
+        yPos = GridizeClosest1000(value_preserving_cast<int32_t>(yPos),
+            value_preserving_cast<int32_t>(m_pBoard->m_yGridSnap), value_preserving_cast<int32_t>(m_pBoard->m_yGridSnapOff));
     }
 }
 
@@ -2088,8 +2088,8 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
     if (IsGridizeActive())
     {
         //  get the approximate snap and adjust later
-        dX *= m_pBoard->m_xGridSnap / 1000;
-        dY *= m_pBoard->m_yGridSnap / 1000;
+        dX *= value_preserving_cast<int>(m_pBoard->m_xGridSnap) / 1000;
+        dY *= value_preserving_cast<int>(m_pBoard->m_yGridSnap) / 1000;
     }
 
     CPoint offset (dX, dY);

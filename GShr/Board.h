@@ -75,10 +75,10 @@ public:
 public:
     // (Saved in file...)
     int m_bGridSnap;        // TRUE if edit snap grid is on
-    int m_xGridSnap;        // X grid multiple * 1000
-    int m_yGridSnap;        // Y grid multiple * 1000
-    int m_xGridSnapOff;     // X grid offset (must be < m_xGridSnap) * 1000
-    int m_yGridSnapOff;     // Y grid offset (must be < m_yGridSnap) * 1000
+    uint32_t m_xGridSnap;        // X grid multiple * 1000
+    uint32_t m_yGridSnap;        // Y grid multiple * 1000
+    uint32_t m_xGridSnapOff;     // X grid offset (must be < m_xGridSnap) * 1000
+    uint32_t m_yGridSnapOff;     // Y grid offset (must be < m_yGridSnap) * 1000
     // ------- //
     BoardID GetSerialNumber() const { return m_nSerialNum; }
     void SetSerialNumber(BoardID nSerialNum) { m_nSerialNum = nSerialNum; }

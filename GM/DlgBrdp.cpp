@@ -61,10 +61,10 @@ CBoardPropDialog::CBoardPropDialog(CWnd* pParent /*=NULL*/)
     m_bEnableXParentCells = FALSE;
     //}}AFX_DATA_INIT
 
-    m_xGridSnap = 16;
-    m_yGridSnap = 16;
-    m_xGridSnapOff = 0;
-    m_yGridSnapOff = 0;
+    m_xGridSnap = 16u;
+    m_yGridSnap = 16u;
+    m_xGridSnapOff = 0u;
+    m_yGridSnapOff = 0u;
     m_bShapeChanged = FALSE;
     m_crCellFrame = RGB(0, 0, 0);
     m_eCellStyle = cformRect;
@@ -180,24 +180,24 @@ void CBoardPropDialog::OnOK()
 
     // Make sure these are within grid size
 
-    m_xGridSnapOff = (UINT)(m_fXGridSnapOff * 1000 + 0.5);
-    m_yGridSnapOff = (UINT)(m_fYGridSnapOff * 1000 + 0.5);
-    m_xGridSnap = (UINT)(m_fXGridSnap * 1000 + 0.5);
-    m_yGridSnap = (UINT)(m_fYGridSnap * 1000 + 0.5);
+    m_xGridSnapOff = value_preserving_cast<uint32_t>(std::round(m_fXGridSnapOff * 1000));
+    m_yGridSnapOff = value_preserving_cast<uint32_t>(std::round(m_fYGridSnapOff * 1000));
+    m_xGridSnap = value_preserving_cast<uint32_t>(std::round(m_fXGridSnap * 1000));
+    m_yGridSnap = value_preserving_cast<uint32_t>(std::round(m_fYGridSnap * 1000));
 
-    ASSERT(m_xGridSnap > 0 && m_yGridSnap > 0);
-    if (m_xGridSnap > 0)
+    ASSERT(m_xGridSnap > 0u && m_yGridSnap > 0u);
+    if (m_xGridSnap > 0u)
         m_xGridSnapOff = m_xGridSnapOff % m_xGridSnap;
-    if (m_yGridSnap > 0)
+    if (m_yGridSnap > 0u)
         m_yGridSnapOff = m_yGridSnapOff % m_yGridSnap;
 }
 
 BOOL CBoardPropDialog::OnInitDialog()
 {
-    m_fXGridSnapOff = (float)m_xGridSnapOff / 1000;
-    m_fYGridSnapOff = (float)m_yGridSnapOff / 1000;
-    m_fXGridSnap = (float)m_xGridSnap / 1000;
-    m_fYGridSnap = (float)m_yGridSnap / 1000;
+    m_fXGridSnapOff = value_preserving_cast<float>(m_xGridSnapOff) / 1000.f;
+    m_fYGridSnapOff = value_preserving_cast<float>(m_yGridSnapOff) / 1000.f;
+    m_fXGridSnap = value_preserving_cast<float>(m_xGridSnap) / 1000.f;
+    m_fYGridSnap = value_preserving_cast<float>(m_yGridSnap) / 1000.f;
 
     CDialog::OnInitDialog();
 
@@ -272,7 +272,7 @@ void CBoardPropDialog::UpdateInfoArea()
     CCellForm cfSmall;
 
     CBoardArray::GenerateCellDefs(m_eCellStyle,
-        m_eCellStyle == cformHexPnt ? m_nCellWd : m_nCellHt, m_nCellWd, m_bStagger,
+        value_preserving_cast<int32_t>(m_eCellStyle == cformHexPnt ? m_nCellWd : m_nCellHt), value_preserving_cast<int32_t>(m_nCellWd), m_bStagger,
         cfFull, cfHalf, cfSmall);
 
     CSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);
