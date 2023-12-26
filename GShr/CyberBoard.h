@@ -263,6 +263,48 @@ struct std::formatter<CRect, CharT> : public std::formatter<RECT, CharT>
 {
 };
 
+template<typename CharT>
+struct std::formatter<wxPoint, CharT> : private std::formatter<decltype(wxPoint::x), CharT>
+{
+private:
+    using BASE = formatter<decltype(wxPoint::x), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxPoint& p, FormatContext& ctx) const
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(p.x, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(p.y, ctx);
+        return std::format_to(ctx.out(), ")");
+}
+};
+
+template<typename CharT>
+struct std::formatter<wxRect, CharT> : private std::formatter<decltype(std::declval<wxRect>().GetLeft()), CharT>
+{
+private:
+    using BASE = formatter<decltype(std::declval<wxRect>().GetLeft()), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxRect& r, FormatContext& ctx) const
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(r.GetLeft(), ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.GetTop(), ctx);
+        std::format_to(ctx.out(), " - ");
+        BASE::format(r.GetRight(), ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.GetBottom(), ctx);
+        return std::format_to(ctx.out(), ")");
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////
 
 // emulate c++20 std::remove_cvref_t
