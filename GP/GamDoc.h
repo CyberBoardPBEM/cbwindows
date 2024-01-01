@@ -236,7 +236,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(PlacePos pos, FormatContext& ctx)
+    FormatContext::iterator format(PlacePos pos, FormatContext& ctx) const
     {
         switch (pos)
         {

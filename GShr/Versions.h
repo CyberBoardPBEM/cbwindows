@@ -344,7 +344,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const Feature& f, FormatContext& ctx)
+    FormatContext::iterator format(const Feature& f, FormatContext& ctx) const
     {
         return BASE::format("Feature("_cbstring + f.feature + ")", ctx);
     }
@@ -432,7 +432,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const Features& fs, FormatContext& ctx)
+    FormatContext::iterator format(const Features& fs, FormatContext& ctx) const
     {
         CB::string accum;
         for (const Feature& f : fs)

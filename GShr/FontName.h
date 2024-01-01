@@ -56,7 +56,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const FName& f, FormatContext& ctx)
+    FormatContext::iterator format(const FName& f, FormatContext& ctx) const
     {
         return BASE::format(f.ToString(), ctx);
     }
