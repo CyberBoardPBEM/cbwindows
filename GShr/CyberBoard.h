@@ -196,7 +196,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const SIZE& s, FormatContext& ctx)
+    FormatContext::iterator format(const SIZE& s, FormatContext& ctx) const
     {
         std::format_to(ctx.out(), "(");
         BASE::format(s.cx, ctx);
@@ -220,7 +220,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const POINT& p, FormatContext& ctx)
+    FormatContext::iterator format(const POINT& p, FormatContext& ctx) const
     {
         std::format_to(ctx.out(), "(");
         BASE::format(p.x, ctx);
@@ -244,7 +244,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const RECT& r, FormatContext& ctx)
+    FormatContext::iterator format(const RECT& r, FormatContext& ctx) const
     {
         std::format_to(ctx.out(), "(");
         BASE::format(r.left, ctx);
@@ -979,7 +979,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const CB::string& s, FormatContext& ctx)
+    FormatContext::iterator format(const CB::string& s, FormatContext& ctx) const
     {
         return BASE::format(static_cast<const CharT*>(s), ctx);
     }
@@ -1009,7 +1009,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(wchar_t c, FormatContext& ctx)
+    FormatContext::iterator format(wchar_t c, FormatContext& ctx) const
     {
         return BASE::format(CB::string(std::wstring_view(&c, size_t(1))), ctx);
     }
@@ -1023,7 +1023,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(std::wstring_view s, FormatContext& ctx)
+    FormatContext::iterator format(std::wstring_view s, FormatContext& ctx) const
     {
         return BASE::format(CB::string(s), ctx);
     }
@@ -1064,7 +1064,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(char c, FormatContext& ctx)
+    FormatContext::iterator format(char c, FormatContext& ctx) const
     {
         return BASE::format(CB::string(std::string_view(&c, size_t(1))), ctx);
     }
@@ -1078,7 +1078,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(std::string_view s, FormatContext& ctx)
+    FormatContext::iterator format(std::string_view s, FormatContext& ctx) const
     {
         return BASE::format(CB::string(s), ctx);
     }
@@ -1120,7 +1120,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const wxString& s, FormatContext& ctx)
+    FormatContext::iterator format(const wxString& s, FormatContext& ctx) const
     {
         CB::string temp(s);
         return BASE::format(static_cast<const CharT*>(temp), ctx);
@@ -1241,7 +1241,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& id, FormatContext& ctx)
+    FormatContext::iterator format(const XxxxIDExt<PREFIX, UNDERLYING_TYPE>& id, FormatContext& ctx) const
     {
         return BASE::format(static_cast<UNDERLYING_TYPE>(id), ctx);
     }

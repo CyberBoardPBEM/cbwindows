@@ -346,7 +346,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(ObjectID32 oid, FormatContext& ctx)
+    FormatContext::iterator format(ObjectID32 oid, FormatContext& ctx) const
     {
         return BASE::format(oid.u.buf, ctx);
     }
@@ -519,7 +519,7 @@ public:
     }
 
     template<typename FormatContext>
-    FormatContext::iterator format(ObjectID64 oid, FormatContext& ctx)
+    FormatContext::iterator format(ObjectID64 oid, FormatContext& ctx) const
     {
         switch (oid.u.tag.subtype)
         {

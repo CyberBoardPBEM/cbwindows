@@ -295,7 +295,7 @@ public:
     using BASE::parse;
 
     template<typename FormatContext>
-    FormatContext::iterator format(GameElement32 ge, FormatContext& ctx)
+    FormatContext::iterator format(GameElement32 ge, FormatContext& ctx) const
     {
         return BASE::format(ge.u.buf, ctx);
     }
@@ -674,7 +674,7 @@ public:
     }
 
     template<typename FormatContext>
-    FormatContext::iterator format(GameElement64 ge, FormatContext& ctx)
+    FormatContext::iterator format(GameElement64 ge, FormatContext& ctx) const
     {
         if (ge.IsAPiece())
         {
