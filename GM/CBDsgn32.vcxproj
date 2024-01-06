@@ -299,6 +299,7 @@ echo off
     <ClCompile Include="..\GShr\CDib.cpp" />
     <ClCompile Include="..\GShr\CellForm.cpp" />
     <ClCompile Include="..\GShr\DragDrop.cpp" />
+    <ClCompile Include="..\GShr\LBoxVHScrl.cpp" />
     <ClCompile Include="ClipBrd.cpp" />
     <ClCompile Include="..\GShr\Color.cpp" />
     <ClCompile Include="DlgBmask.cpp" />
@@ -385,6 +386,7 @@ echo off
     <ClInclude Include="..\GShr\CDib.h" />
     <ClInclude Include="..\GShr\CellForm.h" />
     <ClInclude Include="..\GShr\CyberBoard.h" />
+    <ClInclude Include="..\GShr\LBoxVHScrl.h" />
     <ClInclude Include="ClipBrd.h" />
     <ClInclude Include="..\GShr\Ctl3d.h" />
     <ClInclude Include="..\GShr\DibApi.h" />
