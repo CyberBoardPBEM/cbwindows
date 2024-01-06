@@ -1,6 +1,6 @@
 // LBoxTile.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,6 +36,8 @@
 #ifndef     _DRAGDROP_H
 #include    "DragDrop.h"
 #endif
+
+#include    "LBoxVHScrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +76,54 @@ protected:
     //}}AFX_MSG
 
     DECLARE_MESSAGE_MAP()
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+class CTileListBoxWx : public CB::VListBoxHScroll//CGrafixListBoxData<CGrafixListBox, TileID>
+{
+// Construction
+public:
+    CTileListBoxWx();
+
+#if 1   // temp stubs
+    void SetCurSelMapped(TileID nMapVal) {}
+    void SetDocument(CGamDoc* pDoc) { SetItemCount(30); }
+    void SetItemMap(const std::vector<TileID>* pMap, BOOL bKeepPosition = TRUE) {}
+#endif
+
+#if 0
+// Attributes
+public:
+    void SetDrawAllScales(BOOL bDrawAll) { m_bDrawAllScales = bDrawAll; }
+    BOOL GetDrawAllScaled() { return m_bDrawAllScales; }
+
+// Operations
+public:
+    void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
+#endif
+
+// Implementation
+protected:
+#if 0
+    CGamDoc*    m_pDoc;
+    BOOL        m_bDrawAllScales;
+    int         m_bDisplayIDs;     // Set to prop [Settings]:DisplayIDs
+#endif
+
+    // Overrides
+    wxSize GetItemSize(size_t nIndex) const override;
+    void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
+#if 0
+    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
+
+    //{{AFX_MSG(CTileListBox)
+    //}}AFX_MSG
+
+    DECLARE_MESSAGE_MAP()
+#endif
+private:
+    wxDECLARE_DYNAMIC_CLASS(CTileListBoxWx);
 };
 
 #endif
