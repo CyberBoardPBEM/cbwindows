@@ -1,6 +1,6 @@
 // dlgmedt.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,22 +33,23 @@
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerEditDialog dialog
 
-class CMarkerEditDialog : public CDialog
+class CMarkerEditDialog : public wxDialog
 {
 // Construction
 public:
-    CMarkerEditDialog(CWnd* pParent = NULL);    // standard constructor
+    CMarkerEditDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CMarkerEditDialog)
-    enum { IDD = IDD_MARKEREDIT };
-    CButton m_chkPromptText;
-    CEdit   m_editMarkerText;
-    CMarkListBox    m_listMarks;
-    CTileListBox    m_listTiles;
-    CComboBox       m_comboTSet;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkPromptText;
+        RefPtr<wxTextCtrl> m_editMarkerText;
+        RefPtr<CMarkListBoxWx> m_listMarks;
+        RefPtr<CTileListBoxWx> m_listTiles;
+        RefPtr<wxChoice> m_comboTSet;
+    CB_XRC_END_CTRLS_DECL()
 
+public:
     CGamDoc*        m_pDoc;         // Document
     MarkID          m_mid;          // marker to edit
 
@@ -63,16 +64,14 @@ protected:
     TileID GetTileID();
     void SetupMarkerTile();
     // --------- //
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-    // Generated message map functions
-    //{{AFX_MSG(CMarkerEditDialog)
-    virtual void OnOK();
-    afx_msg void OnSelchangeTSet();
-    afx_msg void OnDblclkMarkers();
-    virtual BOOL OnInitDialog();
+    bool TransferDataFromWindow() override;
+    void OnSelchangeTSet(wxCommandEvent& event);
+    void OnDblclkMarkers(wxCommandEvent& event);
+    bool TransferDataToWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };

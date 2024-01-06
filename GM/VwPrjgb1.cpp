@@ -721,7 +721,7 @@ void CGbxProjView::DoMarkEdit()
         dlg.m_pDoc = (CGamDoc*)GetDocument();
         dlg.m_mid = mid;
 
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
     }
     else
