@@ -1,6 +1,6 @@
 // dlgmedt.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,34 +37,27 @@ static char THIS_FILE[] = __FILE__;
 // CMarkerEditDialog dialog
 
 
-CMarkerEditDialog::CMarkerEditDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMarkerEditDialog::IDD, pParent)
+CMarkerEditDialog::CMarkerEditDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CMarkerEditDialog)
+        CB_XRC_CTRL(m_chkPromptText)
+        CB_XRC_CTRL(m_editMarkerText)
+        CB_XRC_CTRL(m_listMarks)
+        CB_XRC_CTRL(m_listTiles)
+        CB_XRC_CTRL(m_comboTSet)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMarkerEditDialog)
-    //}}AFX_DATA_INIT
 }
 
-void CMarkerEditDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMarkerEditDialog)
-    DDX_Control(pDX, IDC_D_MEDIT_TEXTPROMPT, m_chkPromptText);
-    DDX_Control(pDX, IDC_D_MEDIT_TEXT, m_editMarkerText);
-    DDX_Control(pDX, IDC_D_MEDIT_MARKERS, m_listMarks);
-    DDX_Control(pDX, IDC_D_MEDIT_TILES, m_listTiles);
-    DDX_Control(pDX, IDC_D_MEDIT_TSET, m_comboTSet);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CMarkerEditDialog, CDialog)
-    //{{AFX_MSG_MAP(CMarkerEditDialog)
-    ON_CBN_SELCHANGE(IDC_D_MEDIT_TSET, OnSelchangeTSet)
-    ON_LBN_DBLCLK(IDC_D_MEDIT_MARKERS, OnDblclkMarkers)
+wxBEGIN_EVENT_TABLE(CMarkerEditDialog, wxDialog)
+    EVT_CHOICE(XRCID("m_comboTSet"), OnSelchangeTSet)
+    EVT_LISTBOX_DCLICK(XRCID("m_listMarks"), OnDblclkMarkers)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -87,42 +80,43 @@ void CMarkerEditDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CMarkerEditDialog::SetupTileListbox()
 {
-    int nCurSel = m_comboTSet.GetCurSel();
-    if (nCurSel < 0)
+    int nCurSel = m_comboTSet->GetSelection();
+    if (nCurSel == wxNOT_FOUND)
     {
-        m_listTiles.SetItemMap(NULL);
+        m_listTiles->SetItemMap(NULL);
         return;
     }
 
     const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
-    m_listTiles.SetItemMap(&pLstMap);
+    m_listTiles->SetItemMap(&pLstMap);
 }
 
 void CMarkerEditDialog::SetupTileSetNames()
 {
     ASSERT(m_pTMgr);
-    m_comboTSet.ResetContent();
+    m_comboTSet->Clear();
 
-    for (size_t i = 0; i < m_pTMgr->GetNumTileSets(); i++)
-        m_comboTSet.AddString(m_pTMgr->GetTileSet(i).GetName());
+    for (size_t i = size_t(0); i < m_pTMgr->GetNumTileSets(); i++)
+        m_comboTSet->Append(m_pTMgr->GetTileSet(i).GetName());
     if (!m_pTMgr->IsEmpty())
-        m_comboTSet.SetCurSel(0);           // Select the first entry
+        m_comboTSet->SetSelection(0);           // Select the first entry
 }
 
 TileID CMarkerEditDialog::GetTileID()
 {
-    int nCurSel = m_comboTSet.GetCurSel();
-    if (nCurSel < 0)
+    int nCurSel = m_comboTSet->GetSelection();
+    if (nCurSel == wxNOT_FOUND)
         return nullTid;
 
-    int nCurTile = m_listTiles.GetCurSel();
-    if (nCurTile < 0)
+    int nCurTile = m_listTiles->GetSelection();
+    if (nCurTile == wxNOT_FOUND)
         return nullTid;
 
     const CTileSet& pTSet = m_pTMgr->GetTileSet(value_preserving_cast<size_t>(nCurSel));
@@ -140,74 +134,77 @@ void CMarkerEditDialog::SetupMarkerTile()
     size_t nSet = m_pTMgr->FindTileSetFromTileID(pDef.m_tid);
     ASSERT(nSet != Invalid_v<size_t>);
 
-    m_comboTSet.SetCurSel(value_preserving_cast<int>(nSet));
+    m_comboTSet->SetSelection(value_preserving_cast<int>(nSet));
     SetupTileListbox();
-    m_listTiles.SetCurSelMapped(pDef.m_tid);
+    m_listTiles->SetCurSelMapped(pDef.m_tid);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerEditDialog message handlers
 
-void CMarkerEditDialog::OnOK()
+bool CMarkerEditDialog::TransferDataFromWindow()
 {
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+
     MarkDef& pDef = m_pMMgr->GetMark(m_mid);
     TileID tid = GetTileID();
     pDef.m_tid = tid;
-    if (m_chkPromptText.GetCheck() != 0)
+    if (m_chkPromptText->GetValue())
         pDef.m_flags |= MarkDef::flagPromptText;
     else
         pDef.m_flags &= ~MarkDef::flagPromptText;
 
-    CB::string strMarkText = CB::string::GetWindowText(m_editMarkerText);
+    CB::string strMarkText = m_editMarkerText->GetValue();
     if (strMarkText.empty())
         m_pDoc->GetGameStringMap().RemoveKey(MakeMarkerElement(m_mid));
     else
         m_pDoc->GetGameStringMap().SetAt(MakeMarkerElement(m_mid), strMarkText);
 
-    CDialog::OnOK();
+    return true;
 }
 
-void CMarkerEditDialog::OnSelchangeTSet()
+void CMarkerEditDialog::OnSelchangeTSet(wxCommandEvent& /*event*/)
 {
     SetupTileListbox();
 }
 
-void CMarkerEditDialog::OnDblclkMarkers()
+void CMarkerEditDialog::OnDblclkMarkers(wxCommandEvent& /*event*/)
 {
     SetupMarkerTile();
 }
 
 
-BOOL CMarkerEditDialog::OnInitDialog()
+bool CMarkerEditDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-
     ASSERT(m_pDoc);
     m_pMMgr = m_pDoc->GetMarkManager();
     ASSERT(m_pMMgr);
 
-    m_listMarks.SetDocument(m_pDoc);
+    m_listMarks->SetDocument(m_pDoc);
 
     m_tbl.push_back(m_mid);
-    m_listMarks.SetItemMap(&m_tbl);
+    m_listMarks->SetItemMap(&m_tbl);
 
     CB::string strMarkText;
     m_pDoc->GetGameStringMap().Lookup(MakeMarkerElement(m_mid), strMarkText);
     if (!strMarkText.empty())
-        m_editMarkerText.SetWindowText(strMarkText);
+        m_editMarkerText->SetValue(strMarkText);
 
     WORD wMarkFlags = m_pMMgr->GetMark(m_mid).m_flags;
-    m_chkPromptText.SetCheck(wMarkFlags & MarkDef::flagPromptText ? 1 : 0);
+    m_chkPromptText->SetValue(wMarkFlags & MarkDef::flagPromptText);
 
     m_pTMgr = m_pDoc->GetTileManager();
     ASSERT(m_pTMgr);
 
-    m_listTiles.SetDocument(m_pDoc);
+    m_listTiles->SetDocument(m_pDoc);
 
     SetupTileSetNames();
 
     SetupMarkerTile();
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return wxDialog::TransferDataToWindow();
 }
 
