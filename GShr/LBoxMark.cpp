@@ -1,6 +1,6 @@
 // LBoxMark.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -31,6 +31,7 @@
 #include    "ResTbl.h"
 #include    "Marks.h"
 #include    "LBoxMark.h"
+wxIMPLEMENT_DYNAMIC_CLASS(CMarkListBoxWx, wxVListBox);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -253,4 +254,258 @@ BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
     pDI.m_hcsrSuggest = g_res.hcrDragTile;
     return TRUE;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0
+BEGIN_MESSAGE_MAP(CMarkListBox, CTileBaseListBox)
+    //{{AFX_MSG_MAP(CMarkListBox)
+    //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+CMarkListBoxWx::CMarkListBoxWx()
+{
+#if 0
+    m_pDoc = NULL;
+    m_eTrayViz = mtrayVizNormal;
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0
+const CTileManager& CMarkListBox::GetTileManager() const
+{
+    ASSERT(m_pDoc != NULL);
+    return CheckedDeref(m_pDoc->GetTileManager());
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Tool tip processing
+
+BOOL CMarkListBox::OnIsToolTipsEnabled() const
+{
+#ifdef GPLAY
+    return m_pDoc->IsShowingObjectTips();
+#else           // Always show them in the designer
+    return TRUE;
+#endif
+}
+
+GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
+{
+    point = ClientToItem(point);
+
+    BOOL bOutsideClient;
+    UINT nIndex = ItemFromPoint(point, bOutsideClient);
+    if (nIndex >= UINT(65535) || GetCount() <= 0)
+        return Invalid_v<GameElement>;
+
+    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+
+    MarkID mid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
+    MarkDef& pMark = pMMgr->GetMark(mid);
+    std::vector<TileID> tids;
+    tids.push_back(pMark.m_tid);
+
+    std::vector<CRect> rects = GetTileRectsForItem(nIndex, tids);
+    ASSERT(rects.size() == size_t(1));
+    rct = rects[size_t(0)];
+
+    if (rct.PtInRect(point))
+    {
+        rct = ItemToClient(rct);
+        return GameElement(mid);
+    }
+    else
+    {
+        return Invalid_v<GameElement>;
+    }
+}
+
+void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
+    CB::string& strTip) const
+{
+    MarkID mid = static_cast<MarkID>(nItemCode);
+    strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem) const
+{
+    ASSERT(m_eTrayViz == mtrayVizNormal);
+    MarkID mid = MapIndexToItem(nItem);
+    return m_pDoc->HasGameElementString(MakeMarkerElement(mid));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CMarkListBox::SelectMarker(MarkID mid)
+{
+    size_t nIndex = MapItemToIndex(mid);
+    // NO LONGER IMPOSSIBLE SINCE HIDE ALL MARKERS. ASSERT(nIndex != -1);
+    if (nIndex == Invalid_v<size_t>)
+    {
+        if (GetCount() >= 1)
+            SetCurSel(0);           // Just select the first one.
+    }
+    else
+    {
+        ShowListIndex(value_preserving_cast<int>(nIndex));
+        SetCurSel(value_preserving_cast<int>(nIndex));
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CMarkListBox::ShowListIndex(int nPos)
+{
+    if (nPos < GetTopIndex())
+    {
+        SetTopIndex(nPos);
+        return;
+    }
+    CRect rct;
+    GetItemRect(nPos, &rct);
+    CRect rctClient;
+    GetClientRect(&rctClient);
+    if (rct.IntersectRect(&rct, &rctClient))
+        return;
+
+    SetTopIndex(nPos);
+}
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+namespace {
+    template<typename T>
+    CB::string Item(const T* const pThis, size_t n)
+    {
+        CB::string retval;
+        for (int i = 0; i < 5; ++i)
+        {
+            if (i > 0)
+            {
+                retval += ".  ";
+            }
+            retval += std::format(L"{}.{}:  {}", n, i, typeid(*pThis).name());
+        }
+        return retval;
+    }
+
+    constexpr int margin = 2;
+}
+
+wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
+{
+#if 0
+    if (m_eTrayViz == mtrayVizNormal)
+    {
+        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+        ASSERT(pMMgr);
+        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        ASSERT(pMark.m_tid != nullTid);
+
+        std::vector<TileID> tids;
+        tids.push_back(pMark.m_tid);
+
+        return DoOnItemSize(nIndex, tids);
+    }
+    else
+    {
+        // Hidden markers. Account for drawing the supplied text.
+        ASSERT(!m_strHiddenString.empty());
+        // only using DC to measure text, so const_cast safe;
+        CClientDC pDC(const_cast<CMarkListBox*>(this));
+        pDC.SaveDC();
+        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        CSize extent = pDC.GetTextExtent(m_strHiddenString);
+        pDC.SelectObject(prvFont);
+        pDC.RestoreDC(-1);
+        return extent;
+    }
+#else
+    int x, y, descent, externalLeading;
+    GetTextExtent(Item(this, nIndex), &x, &y, &descent, &externalLeading);
+    x += margin * 2;
+    y += margin * 2;
+    CPP20_TRACE(L"{}({}) --> ({}, {}) (descent {}, ext {})\n", __func__, nIndex, x, y, descent, externalLeading);
+    return wxSize(x, y + externalLeading);
+#endif
+}
+
+void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+{
+#if 0
+    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
+    if (nIndex == size_t(UINT(-1)))
+        return;
+
+    if (m_eTrayViz == mtrayVizNormal)
+    {
+        if (m_pDoc == NULL)
+            return;
+
+        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+        if (pMMgr == NULL)
+        {
+            return;
+        }
+
+        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        ASSERT(pMark.m_tid != nullTid);
+
+        std::vector<TileID> tids;
+        tids.push_back(pMark.m_tid);
+        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
+    }
+    else
+    {
+        if (nAction.get_value() & (ODA_DRAWENTIRE | ODA_SELECT))
+        {
+            // Hidden markers. Draw the supplied text.
+            pDC.SetTextAlign(TA_TOP | TA_LEFT);
+            CBrush brBack(GetSysColor(nState.get_value() & ODS_SELECTED ?
+                COLOR_HIGHLIGHT : COLOR_WINDOW));
+            pDC.FillRect(&rctItem, &brBack);       // Fill background color
+            pDC.SetBkMode(TRANSPARENT);
+            CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+            pDC.SetTextColor(GetSysColor(nState.get_value() & ODS_SELECTED ?
+                COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+            pDC.TextOut(rctItem.left, rctItem.top, m_strHiddenString);
+            pDC.SelectObject(pPrvFont);
+        }
+        if (nAction.get_value() & ODA_FOCUS)
+            pDC.DrawFocusRect(&rctItem);
+    }
+#else
+    CPP20_TRACE(L"{}({}, {})\n", __func__, rctItem, nIndex);
+    wxPoint pt(rctItem.GetLeft() + margin, rctItem.GetTop() + margin);
+    pDC.DrawText(Item(this, nIndex), CalcScrolledPosition(pt));
+#endif
+}
+
+#if 0
+BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
+{
+#ifdef GPLAY
+    if (m_pDoc->IsPlaying())
+    {
+        pDI.SetDragType(DRAG_INVALID);
+        return 0;                       // Drags not supported during play
+    }
+#endif
+    pDI.SetDragType(DRAG_MARKER);
+    pDI.GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
+    pDI.GetSubInfo<DRAG_MARKER>().m_size = GetDragSize();
+    pDI.GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
+    pDI.m_hcsrSuggest = g_res.hcrDragTile;
+    return TRUE;
+}
+#endif
 
