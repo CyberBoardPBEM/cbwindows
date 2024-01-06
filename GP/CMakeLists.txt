@@ -93,6 +93,7 @@ set(SRCS
 	../GShr/LBoxProj.cpp
 	../GShr/LBoxTileBase.cpp
 	../GShr/LBoxTileBase2.cpp
+	../GShr/LBoxVHScrl.cpp
 	../GShr/LibMfc.cpp
 	../GShr/MapStrng.cpp
 	../GShr/Marks.cpp
