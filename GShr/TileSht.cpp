@@ -278,6 +278,14 @@ void CTileSheet::TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) co
     pDC.BitBlt(xDst, yDst, m_size.cx, m_size.cy, sheetDC, 0, ySrc, dwRop);
 }
 
+void CTileSheet::TileBlt(wxDC& pDC, wxCoord xDst, wxCoord yDst, wxCoord ySrc, wxRasterOperationMode dwRop) const
+{
+    wxMemoryDC sheetDC;
+    wxBitmap wxbmp(ToImage(CheckedDeref(m_pBMap)));
+    sheetDC.SelectObjectAsSource(wxbmp);
+    pDC.Blit(xDst, yDst, m_size.cx, m_size.cy, &sheetDC, 0, ySrc, dwRop);
+}
+
 void CTileSheet::StretchBlt(CDC& pDC, int xDst, int yDst,
     int xWid, int yWid, int ySrc, DWORD dwRop) const
 {

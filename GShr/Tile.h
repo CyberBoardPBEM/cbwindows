@@ -137,6 +137,7 @@ public:
 // Friendly Access...
 protected:
     void TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) const;
+    void TileBlt(wxDC& pDC, wxCoord xDst, wxCoord yDst, wxCoord ySrc, wxRasterOperationMode dwRop) const;
     void StretchBlt(CDC& pDC, int xDst, int yDst, int xWid, int yWid,
         int ySrc, DWORD dwRop) const;
     void TransBlt(CDC& pDC, int xDst, int yDst, int ySrc, COLORREF crTrans) const;
@@ -350,6 +351,7 @@ public:
 // Operations
 public:
     void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY) const;
+    void BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop = wxCOPY) const;
     void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY) const;
     void TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo = NULL) const;
     OwnerPtr<CBitmap> CreateBitmapOfTile() const;

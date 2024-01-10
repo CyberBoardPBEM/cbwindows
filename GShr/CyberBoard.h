@@ -69,6 +69,7 @@
 #include <wx/dataobj.h>
 #include <wx/dc.h>
 #include <wx/dcclient.h>
+#include <wx/dcmemory.h>
 #include <wx/dialog.h>
 #include <wx/image.h>
 #include <wx/listbox.h>
@@ -79,10 +80,12 @@
 #include <wx/stdpaths.h>
 #include <wx/textbuf.h>
 #include <wx/textctrl.h>
+#include <wx/timer.h>
 #include <wx/valgen.h>
 #include <wx/valnum.h>
 #include <wx/valtext.h>
 #include <wx/vlbox.h>
+#include <wx/wupdlock.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/zstream.h>
 #include <wx/msw/mfc.h>

@@ -178,53 +178,18 @@ BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-BEGIN_MESSAGE_MAP(CTileListBox, CGrafixListBox)
-    //{{AFX_MSG_MAP(CTileListBox)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-
 CTileListBoxWx::CTileListBoxWx()
 {
-#if 0
     m_pDoc = NULL;
     m_bDrawAllScales = FALSE;
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
-#endif
-}
-
-namespace {
-    template<typename T>
-    CB::string Item(const T* const pThis, size_t n)
-    {
-        CB::string retval;
-        for (int i = 0; i < 5; ++i)
-        {
-            if (i > 0)
-            {
-                retval += ".  ";
-            }
-            retval += std::format(L"{}.{}:  {}", n, i, typeid(*pThis).name());
-        }
-        if (n % 2)
-        {
-            retval += "\r\n" + retval;
-        }
-        return retval;
-    }
-
-    constexpr int margin = 2;
 }
 
 wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 {
-#if 0
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
     CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    wxASSERT(pTMgr != NULL);
 
     TileID tid = MapIndexToItem(nIndex);
     CTile tile = pTMgr->GetTile(tid, fullScale);
@@ -238,12 +203,9 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
     {
         CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
         // only using DC to measure text, so const_cast safe;
-        CClientDC pDC(const_cast<CTileListBox*>(this));
-        pDC.SaveDC();
-        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-        x += pDC.GetTextExtent(str).cx;
-        pDC.SelectObject(prvFont);
-        pDC.RestoreDC(-1);
+        wxWindowDC pDC(const_cast<CTileListBoxWx*>(this));
+        pDC.SetFont(g_res.h8ssWx);
+        x += pDC.GetTextExtent(str).x;
     }
 
     x += tile.GetWidth() + tileBorder;
@@ -255,88 +217,52 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
         x += 8;
     }
 
-    return CSize(x, nHt);
-#else
-    // const_cast safe since getextent shouldn't modify wnd
-    wxSize retval = wxWindowDC(const_cast<CTileListBoxWx*>(this)).GetMultiLineTextExtent(Item(this, nIndex));
-    retval.x += margin * 2;
-    retval.y += margin * 2;
-    return retval;
-#endif
+    return wxSize(x, nHt);
 }
 
 void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
-#if 0
-    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
-    if (nIndex == size_t(UINT(-1)))
-        return;
+    wxASSERT(m_pDoc != NULL);
+    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    wxASSERT(pTMgr != NULL);
 
-    if (nAction.get_value() & (ODA_DRAWENTIRE | ODA_SELECT))
+    TileID tid = MapIndexToItem(nIndex);
+
+    CTile tile = pTMgr->GetTile(tid, fullScale);
+
+    pDC.SetClippingRegion(rctItem);
+
+    int x = rctItem.GetLeft() + tileBorder;
+    int y = rctItem.GetTop() + tileBorder;
+    if (m_bDisplayIDs)
     {
-        ASSERT(m_pDoc != NULL);
-        CTileManager* pTMgr = m_pDoc->GetTileManager();
-        ASSERT(pTMgr != NULL);
-
-        TileID tid = MapIndexToItem(nIndex);
-
-        CTile tile = pTMgr->GetTile(tid, fullScale);
-
-        SetupPalette(pDC);
-        pDC.SaveDC();
-
-        pDC.IntersectClipRect(&rctItem);
-
-        COLORREF crBack = GetSysColor(nState.get_value() & ODS_SELECTED ?
-            COLOR_HIGHLIGHT : COLOR_WINDOW);
-        CBrush brBack(crBack);
-
-        pDC.SetTextColor(GetSysColor(nState.get_value() & ODS_SELECTED ?
-            COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-
-        pDC.FillRect(&rctItem, &brBack);       // Fill background color
-
-        int x = rctItem.left + tileBorder;
-        int y = rctItem.top + tileBorder;
-        if (m_bDisplayIDs)
-        {
-            CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
-            CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-            int prevBkMode = pDC.SetBkMode(TRANSPARENT);
-            int y = rctItem.top + rctItem.Height() / 2 -
-                (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
-            pDC.TextOut(x, y, str);
-            x += pDC.GetTextExtent(str).cx;
-            pDC.SetBkMode(prevBkMode);
-            pDC.SelectObject(prvFont);
-        }
-
-        tile.BitBlt(pDC, x, y);
-
-        if (m_bDrawAllScales)
-        {
-            x += tile.GetWidth() + 2 * tileBorder;
-            y += tile.GetHeight() / 4;
-            CTile tileHalf = pTMgr->GetTile(tid, halfScale);
-            tileHalf.BitBlt(pDC, x, y);
-            x += tileHalf.GetWidth() + 2 * tileBorder;
-            y = rctItem.CenterPoint().y - 4;
-            CTile tileSmall = pTMgr->GetTile(tid, smallScale);
-            CBrush brSmall(tileSmall.GetSmallColor());
-            CRect rctSmall(x, y, x + 8, y + 8);
-            pDC.FillRect(&rctSmall, &brSmall);     // Fill background color
-        }
-
-        pDC.RestoreDC(-1);
-        ResetPalette(pDC);
+        CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
+        pDC.SetFont(g_res.h8ssWx);
+        int prevBkMode = pDC.GetBackgroundMode();
+        pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
+        int y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
+            (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
+        pDC.DrawText(str, x, y);
+        x += pDC.GetTextExtent(str).x;
+        pDC.SetBackgroundMode(prevBkMode);
     }
-    if (nAction.get_value() & ODA_FOCUS)
-        pDC.DrawFocusRect(&rctItem);
-#else
-    CPP20_TRACE(L"{}({}, {})\n", __func__, rctItem, nIndex);
-    wxPoint pt(rctItem.GetLeft() + margin, rctItem.GetTop() + margin);
-    pDC.DrawText(Item(this, nIndex), CalcScrolledPosition(pt));
-#endif
+
+    tile.BitBlt(pDC, CalcScrolledX(x), y);
+
+    if (m_bDrawAllScales)
+    {
+        x += tile.GetWidth() + 2 * tileBorder;
+        y += tile.GetHeight() / 4;
+        CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+        tileHalf.BitBlt(pDC, CalcScrolledX(x), y);
+        x += tileHalf.GetWidth() + 2 * tileBorder;
+        y = rctItem.GetTop() + rctItem.GetHeight()/2 - 4;
+        CTile tileSmall = pTMgr->GetTile(tid, smallScale);
+        wxPen penSmall(tileSmall.GetSmallColor());
+        wxBrush brSmall(tileSmall.GetSmallColor());
+        wxRect rctSmall(x, y, 8, 8);
+        pDC.DrawRectangle(rctSmall);     // Fill background color
+    }
 }
 
 #if 0
