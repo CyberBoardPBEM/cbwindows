@@ -160,6 +160,12 @@ void ResourceTable::LoadFonts(void)
     h8ss = CreateFontIndirect(&lf);
     HFONT hFntSave = (HFONT) SelectObject(hDC, h8ss);
     GetTextMetrics(hDC, &tm8ss);
+    h8ssWx = wxFont(nSizeSmall,
+                    wxFONTFAMILY_SWISS,
+                    wxFONTSTYLE_NORMAL,
+                    wxFONTWEIGHT_NORMAL,
+                    false,
+                    strFontName);
 
     lf.lfWeight = FW_BOLD;
     h8ssb = CreateFontIndirect(&lf);

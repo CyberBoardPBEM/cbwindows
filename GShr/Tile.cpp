@@ -69,6 +69,21 @@ void CTile::BitBlt(CDC& pDC, int x, int y, DWORD dwRop) const
     }
 }
 
+void CTile::BitBlt(wxDC & pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop/* = wxCOPY*/) const
+{
+    if (m_pTS != NULL)
+        m_pTS->TileBlt(pDC, x, y, m_yLoc, dwRop);
+    else if (m_crTrans != m_crSmall)
+    {
+        // Only draw color patch if not the transparent color.
+        wxPen pen(m_crSmall);
+        pDC.SetPen(pen);
+        wxBrush brush(m_crSmall);
+        pDC.SetBrush(brush);
+        pDC.DrawRectangle(x, y, m_size.cx, m_size.cy);
+    }
+}
+
 void CTile::StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop) const
 {
     if (m_pTS != NULL)

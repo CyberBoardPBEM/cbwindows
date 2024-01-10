@@ -37,8 +37,6 @@
 #include    "DragDrop.h"
 #endif
 
-#include    "LBoxVHScrl.h"
-
 /////////////////////////////////////////////////////////////////////////////
 
 class CGamDoc;
@@ -80,19 +78,12 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTileListBoxWx : public CB::VListBoxHScroll//CGrafixListBoxData<CGrafixListBox, TileID>
+class CTileListBoxWx : public CGrafixListBoxDataWx<CGrafixListBoxWx, TileID>
 {
 // Construction
 public:
     CTileListBoxWx();
 
-#if 1   // temp stubs
-    void SetCurSelMapped(TileID nMapVal) {}
-    void SetDocument(CGamDoc* pDoc) { SetItemCount(30); }
-    void SetItemMap(const std::vector<TileID>* pMap, BOOL bKeepPosition = TRUE) {}
-#endif
-
-#if 0
 // Attributes
 public:
     void SetDrawAllScales(BOOL bDrawAll) { m_bDrawAllScales = bDrawAll; }
@@ -101,27 +92,20 @@ public:
 // Operations
 public:
     void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
-#endif
 
 // Implementation
 protected:
-#if 0
     CGamDoc*    m_pDoc;
     BOOL        m_bDrawAllScales;
     int         m_bDisplayIDs;     // Set to prop [Settings]:DisplayIDs
-#endif
 
     // Overrides
     wxSize GetItemSize(size_t nIndex) const override;
     void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
 #if 0
     virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-
-    //{{AFX_MSG(CTileListBox)
-    //}}AFX_MSG
-
-    DECLARE_MESSAGE_MAP()
 #endif
+
 private:
     wxDECLARE_DYNAMIC_CLASS(CTileListBoxWx);
 };
