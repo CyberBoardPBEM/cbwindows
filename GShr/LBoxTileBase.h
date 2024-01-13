@@ -1,7 +1,7 @@
 // LBoxTileBase.h - class used to handle a variety of tile
 //      oriented listbox functions
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -82,6 +82,54 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+};
+
+class CTileBaseListBoxWx : public CGrafixListBoxWx
+{
+public:
+    CTileBaseListBoxWx();
+
+    void SetTipMarkVisibility(BOOL bShow = TRUE) { m_bTipMarkItems = bShow; }
+    BOOL GetTipMarkVisibility() const { return m_bTipMarkItems; }
+
+    // Vars...
+protected:
+    int         m_bDisplayIDs;              // Set by property [Settings]:DisplayIDs
+
+    BOOL        m_bTipMarkItems;
+    CB::string  m_strTipMark;
+    wxSize       m_sizeTipMark;
+
+    // Helpers...
+protected:
+    void DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const;
+    void DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const;
+
+    void SetupTipMarkerIfRequired();
+    void DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, wxCoord& x) const;
+
+    wxSize DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const;
+    void DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
+        const std::vector<TileID>& tids) const;
+
+#if 0
+    std::vector<wxRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
+#endif
+
+    // Overrides...
+public:
+    virtual const CTileManager& GetTileManager() const /* override */ = 0;
+
+    // Overrides...
+protected:
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const /* override */ { return FALSE; }
+
+    // see CGrafixListBox::OnGetItemDebugIDCode comment
+    virtual int  OnGetItemDebugIDCode(size_t nItem) const override = 0;
+    virtual CB::string OnGetItemDebugString(size_t nItem) const /* override */;
+
+    void OnCreate(wxWindowCreateEvent& event);
+    wxDECLARE_EVENT_TABLE();
 };
 
 

@@ -1,7 +1,7 @@
 // LBoxTileBase.cpp - base class used to handle a variety of tile oriented
 //      listbox functions
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -263,5 +263,199 @@ std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(size_t nItem, const std
 
     return retval;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+wxBEGIN_EVENT_TABLE(CTileBaseListBoxWx, CGrafixListBoxWx)
+    EVT_WINDOW_CREATE(OnCreate)
+wxEND_EVENT_TABLE()
+
+/////////////////////////////////////////////////////////////////////////////
+
+CTileBaseListBoxWx::CTileBaseListBoxWx()
+{
+    ASSERT(!GetHandle());
+    m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
+
+    m_bTipMarkItems = TRUE;
+    m_sizeTipMark = wxSize(0, 0);
+}
+
+void CTileBaseListBoxWx::OnCreate(wxWindowCreateEvent& event)
+{
+    SetupTipMarkerIfRequired();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+wxSize CTileBaseListBoxWx::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
+{
+    ASSERT(!tids.empty() &&
+            tids[size_t(0)] != nullTid);        // At least one tile needs to exist
+
+    // only using DC for measurement, so const_cast safe
+    wxWindowDC pDC(const_cast<CTileBaseListBoxWx*>(this));
+    wxRect rect(0, 0, 32000, 32000);
+
+    int htTiles = 0;
+    int wdTiles = 0;
+    for (size_t i = size_t(0) ; i < tids.size() ; ++i)
+    {
+        CTile tile = GetTileManager().GetTile(tids[i], fullScale);
+        htTiles = CB::max(htTiles, tile.GetHeight());
+        DrawTileImage(pDC, rect, FALSE, wdTiles, tids[i]);
+    }
+
+    LONG nHt = 2 * tileBorder + htTiles;
+
+    int nWd = wdTiles;
+
+    if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
+    {
+        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+        BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
+        DrawTipMarker(pDC, rect, bItemHasTipText, nWd);
+        DrawItemDebugIDCode(pDC, nItem, rect, false, nWd);
+    }
+
+    return wxSize(nWd , nHt);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CTileBaseListBoxWx::DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
+    const std::vector<TileID>& tids) const
+{
+    ASSERT(!tids.empty() &&
+        tids[size_t(0)] != nullTid);
+
+    BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
+
+    pDC.SetClippingRegion(rctItem);
+
+    pDC.SetTextForeground(wxSystemSettings::GetColour(IsSelected(nItem) ?
+        wxSYS_COLOUR_HIGHLIGHTTEXT : wxSYS_COLOUR_WINDOWTEXT));
+
+    wxCoord x = rctItem.GetLeft() + tileBorder;
+
+    DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
+    DrawItemDebugIDCode(pDC, nItem, rctItem, TRUE, x);
+    for (size_t i = size_t(0) ; i < tids.size() ; ++i)
+    {
+        DrawTileImage(pDC, rctItem, TRUE, x, tids[i]);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CTileBaseListBoxWx::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const
+{
+    if (tid == nullTid)
+        return;                             // Nothing to do
+
+    CTile tile = GetTileManager().GetTile(tid, fullScale);
+
+    if (bDrawIt)
+    {
+        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - tile.GetHeight()) / 2 + rctItem.GetTop());
+    }
+    x += tile.GetWidth() + tileGap;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Optionally draw debug code string for item. If bDrawIt is false,
+// x is advanced the size of the string anyway but nothing is rendered
+
+void CTileBaseListBoxWx::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const
+{
+    if (m_bDisplayIDs)
+    {
+        CB::string str = OnGetItemDebugString(nItem);
+
+        pDC.SetFont(g_res.h8ssWx);
+        wxCoord y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
+            (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
+        if (bDrawIt)
+            pDC.DrawText(str, CalcScrolledX(x), y);
+        x += pDC.GetTextExtent(str).x;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CTileBaseListBoxWx::SetupTipMarkerIfRequired()
+{
+    if (m_bTipMarkItems)
+    {
+        ASSERT(GetHandle());
+        if (m_sizeTipMark.x == 0)
+        {
+            // Hasn't been initialized yet.
+            m_strTipMark = CB::string::LoadString(IDS_TIP_LBOXITEM_MARKER);
+
+            wxWindowDC pDC(this);
+
+            pDC.SetFont(g_res.h8ssWx);
+            m_sizeTipMark.x = pDC.GetTextExtent(m_strTipMark).x;
+            m_sizeTipMark.y = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
+        }
+    }
+}
+
+void CTileBaseListBoxWx::DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, wxCoord& x) const
+{
+    if (m_bTipMarkItems)
+    {
+        pDC.SetFont(g_res.h8ssWx);
+        if (bVisible)   // Draw only if visible. Else just move 'x'
+        {
+            wxCoord y = rctItem.GetTop() + (rctItem.GetHeight() - m_sizeTipMark.y) / 2;
+            pDC.DrawText(m_strTipMark, CalcScrolledX(x), y);
+        }
+        x += m_sizeTipMark.x;
+    }
+}
+
+CB::string CTileBaseListBoxWx::OnGetItemDebugString(size_t nItem) const
+{
+    return std::format(L"[{}] ", OnGetItemDebugIDCode(nItem));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0
+std::vector<CRect> CTileBaseListBoxWx::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
+{
+    ASSERT(!tids.empty() &&
+        tids[size_t(0)] != nullTid);
+
+    CRect rctItem;
+    GetItemRect(value_preserving_cast<int>(nItem), &rctItem);
+
+    int x = rctItem.left + tileBorder;          // Set starting x position
+
+    // Need to account for possible markers and debug strings
+    // rendered to left of tile images
+    /* safe to use const_cast here because the DC isn't
+        actually drawn on; it's just used for measuring text,
+        so this window isn't being changed */
+    CDC& pDC = CheckedDeref(const_cast<CTileBaseListBoxWx*>(this)->GetDC());
+    DrawTipMarker(pDC, rctItem, FALSE, x);
+    DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
+    const_cast<CTileBaseListBoxWx*>(this)->ReleaseDC(&pDC);
+
+    std::vector<CRect> retval(tids.size());
+    for (size_t i = size_t(0); i < tids.size(); ++i)
+    {
+        retval[i].top = rctItem.top;            // Set the top & bottom values
+        retval[i].bottom = rctItem.bottom;
+        retval[i].left = x;
+        DrawTileImage(pDC, rctItem, FALSE, x, tids[i]);
+        retval[i].right = x;
+    }
+
+    return retval;
+}
+#endif
 
 
