@@ -473,7 +473,7 @@ public:
 public:
 #if 0
     virtual wxSize OnItemSize(size_t nIndex) const /* override */ = 0;
-    virtual void OnItemDraw(wxDC& pDC, size_t nIndex, no_demote<UINT> nAction, no_demote<UINT> nState,
+    virtual void OnItemDraw(wxDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         wxRect rctItem) const /* override */ = 0;
     virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
     {
@@ -486,13 +486,13 @@ public:
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const /* override */ { }
+#endif
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it
         in general, and doing it here allows override checks of
         CGrafixListBoxData<>::OnGetItemDebugIDCode. */
     virtual int OnGetItemDebugIDCode(size_t nItem) const /* override */ = 0;
-#endif
 
     // Implementation
 protected:
@@ -752,11 +752,11 @@ protected:
         this->OnDragCleanup(BASE_WND::di);         // Tell subclass we're all done.
         m_multiSelList.clear();
     }
+#endif
 
     /* N.B.:  Only CTileBaseListBox requires providing this, but
         it doesn't hurt much to provide it in general.  */
-    virtual int OnGetItemDebugIDCode(size_t nItem) const override { return value_preserving_cast<int>(static_cast<no_demote<T::UNDERLYING_TYPE>>(MapIndexToItem(nItem))); }
-#endif
+    virtual int OnGetItemDebugIDCode(size_t nItem) const override { return value_preserving_cast<int>(static_cast<T::UNDERLYING_TYPE>(MapIndexToItem(nItem))); }
 
 private:
     const std::vector<T>* m_pItemMap;         // Maps index to item

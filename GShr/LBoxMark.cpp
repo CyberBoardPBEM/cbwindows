@@ -31,7 +31,12 @@
 #include    "ResTbl.h"
 #include    "Marks.h"
 #include    "LBoxMark.h"
-wxIMPLEMENT_DYNAMIC_CLASS(CMarkListBoxWx, wxVListBox);
+
+// KLUDGE:  macro parser can't handle the , in the template args
+namespace {
+    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, MarkID> CMarkListBoxWxBase;
+}
+wxIMPLEMENT_DYNAMIC_CLASS(CMarkListBoxWx, CMarkListBoxWxBase);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -257,27 +262,15 @@ BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-BEGIN_MESSAGE_MAP(CMarkListBox, CTileBaseListBox)
-    //{{AFX_MSG_MAP(CMarkListBox)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-
 CMarkListBoxWx::CMarkListBoxWx()
 {
-#if 0
     m_pDoc = NULL;
     m_eTrayViz = mtrayVizNormal;
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-const CTileManager& CMarkListBox::GetTileManager() const
+const CTileManager& CMarkListBoxWx::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
     return CheckedDeref(m_pDoc->GetTileManager());
@@ -286,6 +279,7 @@ const CTileManager& CMarkListBox::GetTileManager() const
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
+#if 0
 BOOL CMarkListBox::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
@@ -332,18 +326,20 @@ void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem) const
+BOOL CMarkListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 {
-    ASSERT(m_eTrayViz == mtrayVizNormal);
+    wxASSERT(m_eTrayViz == mtrayVizNormal);
     MarkID mid = MapIndexToItem(nItem);
     return m_pDoc->HasGameElementString(MakeMarkerElement(mid));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 void CMarkListBox::SelectMarker(MarkID mid)
 {
     size_t nIndex = MapItemToIndex(mid);
@@ -382,32 +378,12 @@ void CMarkListBox::ShowListIndex(int nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-namespace {
-    template<typename T>
-    CB::string Item(const T* const pThis, size_t n)
-    {
-        CB::string retval;
-        for (int i = 0; i < 5; ++i)
-        {
-            if (i > 0)
-            {
-                retval += ".  ";
-            }
-            retval += std::format(L"{}.{}:  {}", n, i, typeid(*pThis).name());
-        }
-        return retval;
-    }
-
-    constexpr int margin = 2;
-}
-
 wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
 {
-#if 0
     if (m_eTrayViz == mtrayVizNormal)
     {
         CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        ASSERT(pMMgr);
+        wxASSERT(pMMgr);
         MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
@@ -419,33 +395,17 @@ wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
     else
     {
         // Hidden markers. Account for drawing the supplied text.
-        ASSERT(!m_strHiddenString.empty());
+        wxASSERT(!m_strHiddenString.empty());
         // only using DC to measure text, so const_cast safe;
-        CClientDC pDC(const_cast<CMarkListBox*>(this));
-        pDC.SaveDC();
-        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-        CSize extent = pDC.GetTextExtent(m_strHiddenString);
-        pDC.SelectObject(prvFont);
-        pDC.RestoreDC(-1);
+        wxWindowDC pDC(const_cast<CMarkListBoxWx*>(this));
+        pDC.SetFont(g_res.h8ssWx);
+        wxSize extent = pDC.GetTextExtent(m_strHiddenString);
         return extent;
     }
-#else
-    int x, y, descent, externalLeading;
-    GetTextExtent(Item(this, nIndex), &x, &y, &descent, &externalLeading);
-    x += margin * 2;
-    y += margin * 2;
-    CPP20_TRACE(L"{}({}) --> ({}, {}) (descent {}, ext {})\n", __func__, nIndex, x, y, descent, externalLeading);
-    return wxSize(x, y + externalLeading);
-#endif
 }
 
 void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
-#if 0
-    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
-    if (nIndex == size_t(UINT(-1)))
-        return;
-
     if (m_eTrayViz == mtrayVizNormal)
     {
         if (m_pDoc == NULL)
@@ -462,32 +422,17 @@ void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
 
         std::vector<TileID> tids;
         tids.push_back(pMark.m_tid);
-        DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
+        DoOnDrawItem(pDC, nIndex, rctItem, tids);
     }
     else
     {
-        if (nAction.get_value() & (ODA_DRAWENTIRE | ODA_SELECT))
-        {
-            // Hidden markers. Draw the supplied text.
-            pDC.SetTextAlign(TA_TOP | TA_LEFT);
-            CBrush brBack(GetSysColor(nState.get_value() & ODS_SELECTED ?
-                COLOR_HIGHLIGHT : COLOR_WINDOW));
-            pDC.FillRect(&rctItem, &brBack);       // Fill background color
-            pDC.SetBkMode(TRANSPARENT);
-            CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-            pDC.SetTextColor(GetSysColor(nState.get_value() & ODS_SELECTED ?
-                COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-            pDC.TextOut(rctItem.left, rctItem.top, m_strHiddenString);
-            pDC.SelectObject(pPrvFont);
-        }
-        if (nAction.get_value() & ODA_FOCUS)
-            pDC.DrawFocusRect(&rctItem);
+        // Hidden markers. Draw the supplied text.
+        bool selected = IsSelected(nIndex);
+        pDC.SetFont(g_res.h8ssWx);
+        pDC.SetTextForeground(wxSystemSettings::GetColour(selected ?
+            wxSYS_COLOUR_HIGHLIGHTTEXT : wxSYS_COLOUR_WINDOWTEXT));
+        pDC.DrawText(m_strHiddenString, CalcScrolledPosition(rctItem.GetTopLeft()));
     }
-#else
-    CPP20_TRACE(L"{}({}, {})\n", __func__, rctItem, nIndex);
-    wxPoint pt(rctItem.GetLeft() + margin, rctItem.GetTop() + margin);
-    pDC.DrawText(Item(this, nIndex), CalcScrolledPosition(pt));
-#endif
 }
 
 #if 0

@@ -101,18 +101,12 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CMarkListBoxWx : public CB::VListBoxHScroll//CGrafixListBoxData<CTileBaseListBox, MarkID>
+class CMarkListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, MarkID>
 {
 // Construction
 public:
     CMarkListBoxWx();
 
-#if 1   // temp stubs
-    void SetDocument(CGamDoc* pDoc) { SetItemCount(20); }
-    void SetItemMap(const std::vector<MarkID>* pMap, BOOL bKeepPosition = TRUE) {}
-#endif
-
-#if 0
 // Attributes
 public:
     void SetTrayContentVisibility(MarkerTrayViz eTrayViz, const CB::string& pszHiddenString = CB::string())
@@ -127,23 +121,22 @@ public:
 public:
     void SetDocument(CGamDoc* pDoc)
     {
-        CGrafixListBoxData::SetDocument(CheckedDeref(pDoc));
-        if (m_hWnd != NULL)
-            ResetContent();
+        CGrafixListBoxDataWx::SetDocument(CheckedDeref(pDoc));
+        if (GetHandle())
+            Clear();
         m_pDoc = pDoc;
     }
 
+#if 0
     void SelectMarker(MarkID mid);
     void ShowListIndex(int nPos);
 #endif
 
 // Implementation
 protected:
-#if 0
     CGamDoc*        m_pDoc;
     MarkerTrayViz   m_eTrayViz;
     CB::string         m_strHiddenString;
-#endif
 
     // Overrides
     wxSize GetItemSize(size_t nIndex) const override;
@@ -155,13 +148,9 @@ protected:
     virtual BOOL OnIsToolTipsEnabled() const override;
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
+#endif
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
-    //{{AFX_MSG(CMarkListBox)
-//  afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-#endif
 private:
     wxDECLARE_DYNAMIC_CLASS(CMarkListBoxWx);
 };
