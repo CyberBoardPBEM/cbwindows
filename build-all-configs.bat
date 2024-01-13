@@ -13,11 +13,15 @@ echo on
 cmake -G Ninja -B out/build/x64-Debug -DCMAKE_BUILD_TYPE=Debug
 if errorlevel 1 goto fail_cmake
 cmake --build out/build/x64-Debug
+rem KLUDGE:  builds sometimes fail for non-obvious reasons
+if errorlevel 1 cmake --build out/build/x64-Debug
 if errorlevel 1 goto fail_build
 
 cmake -G Ninja -B out/build/x64-Release -DCMAKE_BUILD_TYPE=RelWithDebInfo
 if errorlevel 1 goto fail_cmake
 cmake --build out/build/x64-Release
+rem KLUDGE:  builds sometimes fail for non-obvious reasons
+if errorlevel 1 cmake --build out/build/x64-Release
 if errorlevel 1 goto fail_build
 
 call %VSROOTDIR%"\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
@@ -27,11 +31,15 @@ echo on
 cmake -G Ninja -B out/build/x86-Debug -DCMAKE_BUILD_TYPE=Debug
 if errorlevel 1 goto fail_cmake
 cmake --build out/build/x86-Debug
+rem KLUDGE:  builds sometimes fail for non-obvious reasons
+if errorlevel 1 cmake --build out/build/x86-Debug
 if errorlevel 1 goto fail_build
 
 cmake -G Ninja -B out/build/x86-Release -DCMAKE_BUILD_TYPE=RelWithDebInfo
 if errorlevel 1 goto fail_cmake
 cmake --build out/build/x86-Release
+rem KLUDGE:  builds sometimes fail for non-obvious reasons
+if errorlevel 1 cmake --build out/build/x86-Release
 if errorlevel 1 goto fail_build
 
 goto done
