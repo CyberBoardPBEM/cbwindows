@@ -341,7 +341,7 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_
 }
 
 void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CB::string& strTip, CB::string& strTitle) const
+    CB::string& strTip) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;
