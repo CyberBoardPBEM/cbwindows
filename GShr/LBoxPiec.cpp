@@ -99,7 +99,7 @@ GameElement CPieceListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) con
     const PieceDef& piecedef = m_pPMgr->GetPiece(nPid);
     std::vector<TileID> tids = piecedef.GetTIDs();
 
-    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
+    std::vector<CRect> rects = GetTileRectsForItem(nIndex, tids);
 
     for (size_t i = size_t(0) ; i < rects.size() ; ++i)
     {

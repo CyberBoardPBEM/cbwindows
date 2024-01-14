@@ -112,7 +112,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
         tids.insert(tids.end(), inactives.begin(), inactives.end());
     }
 
-    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
+    std::vector<CRect> rects = GetTileRectsForItem(nIndex, tids);
 
     for (size_t i = size_t(0) ; i < rects.size() ; ++i)
     {

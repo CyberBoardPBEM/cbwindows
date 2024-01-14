@@ -231,13 +231,13 @@ CB::string CTileBaseListBox::OnGetItemDebugString(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(int nItem, const std::vector<TileID>& tids) const
+std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
 {
     ASSERT(!tids.empty() &&
         tids[size_t(0)] != nullTid);
 
     CRect rctItem;
-    GetItemRect(nItem, &rctItem);
+    GetItemRect(value_preserving_cast<int>(nItem), &rctItem);
 
     int x = rctItem.left + tileBorder;          // Set starting x position
 
@@ -248,7 +248,7 @@ std::vector<CRect> CTileBaseListBox::GetTileRectsForItem(int nItem, const std::v
         so this window isn't being changed */
     CDC& pDC = CheckedDeref(const_cast<CTileBaseListBox*>(this)->GetDC());
     DrawTipMarker(pDC, rctItem, FALSE, x);
-    DrawItemDebugIDCode(pDC, value_preserving_cast<size_t>(nItem), rctItem, FALSE, x);
+    DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
     const_cast<CTileBaseListBox*>(this)->ReleaseDC(&pDC);
 
     std::vector<CRect> retval(tids.size());

@@ -64,7 +64,7 @@ protected:
     void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
         const std::vector<TileID>& tids) const;
 
-    std::vector<CRect> GetTileRectsForItem(int nItem, const std::vector<TileID>& tids) const;
+    std::vector<CRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
 
 // Overrides...
 public:
