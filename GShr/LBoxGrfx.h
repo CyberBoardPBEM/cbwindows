@@ -155,7 +155,7 @@ public:
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip, CB::string& strTitle) const /* override */ { }
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const /* override */ { }
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it

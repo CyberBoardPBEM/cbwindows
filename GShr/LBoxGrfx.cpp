@@ -228,15 +228,11 @@ void CGrafixListBox::DoToolTipHitProcessing(CPoint point)
             CB::string strTitle;
 
             // Call subclass for info
-            OnGetTipTextForItemCode(nItemCode, strTip, strTitle);
+            OnGetTipTextForItemCode(nItemCode, strTip);
 
             if (!strTip.empty())
             {
                 m_toolTip.AddTool(this, strTip, rctTool, ID_TIP_LISTITEM_HIT);
-
-                if (!strTitle.empty())
-                    m_toolTip.SendMessage(TTM_SETTITLE, 0, reinterpret_cast<LPARAM>(strTitle.v_str()));
-
                 m_toolTip.Activate(TRUE);
             }
         }

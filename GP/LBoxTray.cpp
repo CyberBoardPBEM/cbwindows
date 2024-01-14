@@ -130,7 +130,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 }
 
 void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CB::string& strTip, CB::string& strTitle) const
+    CB::string& strTip) const
 {
     if (nItemCode == Invalid_v<GameElement>)
         return;

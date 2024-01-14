@@ -108,7 +108,7 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 }
 
 void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CB::string& strTip, CB::string& strTitle) const
+    CB::string& strTip) const
 {
     MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
