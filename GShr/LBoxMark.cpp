@@ -92,7 +92,7 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
     std::vector<TileID> tids;
     tids.push_back(pMark.m_tid);
 
-    std::vector<CRect> rects = GetTileRectsForItem(value_preserving_cast<int>(nIndex), tids);
+    std::vector<CRect> rects = GetTileRectsForItem(nIndex, tids);
     ASSERT(rects.size() == size_t(1));
     rct = rects[size_t(0)];
 
