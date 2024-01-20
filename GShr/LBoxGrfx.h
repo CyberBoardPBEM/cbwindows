@@ -441,6 +441,7 @@ class CGrafixListBoxWx : public CB::VListBoxHScroll
     // Construction
 public:
     CGrafixListBoxWx();
+    ~CGrafixListBoxWx() override;
 
     // Attributes
 public:
@@ -481,12 +482,12 @@ public:
         return FALSE;
     }
     virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
+#endif
 
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
+    virtual GameElement OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const /* override */ { return Invalid_v<GameElement>; }
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const /* override */ { }
-#endif
 
     /* N.B.:  Conceptually, this declaration belongs to
         CTileBaseListBox, but it doesn't hurt much to declare it
@@ -496,12 +497,14 @@ public:
 
     // Implementation
 protected:
-#if 0
     // Tool tip support
+#if 0
     CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
-    CToolTipCtrl m_toolTip;         // Tooltip of tile text popups
+#endif
+    wxTipWindow* m_toolTip = nullptr;         // Tooltip of tile text popups
     GameElement m_nCurItemCode;         // current active tip item code
 
+#if 0
     // Drag and scroll support vars
     static DragInfo di;
     BOOL    m_bAllowDrag;
@@ -517,16 +520,26 @@ protected:
 
     void  DoInsertLineProcessing(const DragInfo& pdi);
     void  DoAutoScrollProcessing(const DragInfo& pdi);
+#endif
     void  DoToolTipHitProcessing(wxPoint point);
 
+#if 0
     wxWindow* GetWindowFromPoint(wxPoint point);
     int   SpecialItemFromPoint(wxPoint pnt) const;
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
+#endif
 
-    wxPoint ClientToItem(wxPoint point) const;
-    wxRect ItemToClient(wxRect rect) const;
+    wxPoint ClientToItem(wxPoint point) const
+    {
+        return CalcUnscrolledPosition(point);
+    }
+    wxRect ItemToClient(wxRect rect) const
+    {
+        return wxRect(CalcScrolledPosition(rect.GetTopLeft()), rect.GetSize());
+    }
 
+#if 0
     // Overrides
     virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMIS) override;
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS) override;

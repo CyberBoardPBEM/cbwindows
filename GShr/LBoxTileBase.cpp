@@ -423,39 +423,37 @@ CB::string CTileBaseListBoxWx::OnGetItemDebugString(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-std::vector<CRect> CTileBaseListBoxWx::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
+std::vector<wxRect> CTileBaseListBoxWx::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
 {
-    ASSERT(!tids.empty() &&
+    wxASSERT(!tids.empty() &&
         tids[size_t(0)] != nullTid);
 
-    CRect rctItem;
-    GetItemRect(value_preserving_cast<int>(nItem), &rctItem);
+    wxRect rctItem = GetItemRect(value_preserving_cast<size_t>(nItem));
 
-    int x = rctItem.left + tileBorder;          // Set starting x position
+    wxCoord x = CalcScrolledX(rctItem.GetLeft()) + tileBorder;          // Set starting x position
 
     // Need to account for possible markers and debug strings
     // rendered to left of tile images
     /* safe to use const_cast here because the DC isn't
         actually drawn on; it's just used for measuring text,
         so this window isn't being changed */
-    CDC& pDC = CheckedDeref(const_cast<CTileBaseListBoxWx*>(this)->GetDC());
+    wxWindowDC pDC(const_cast<CTileBaseListBoxWx*>(this));
     DrawTipMarker(pDC, rctItem, FALSE, x);
-    DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
-    const_cast<CTileBaseListBoxWx*>(this)->ReleaseDC(&pDC);
+    DrawItemDebugIDCode(pDC, value_preserving_cast<size_t>(nItem), rctItem, FALSE, x);
 
-    std::vector<CRect> retval(tids.size());
+    std::vector<wxRect> retval(tids.size());
     for (size_t i = size_t(0); i < tids.size(); ++i)
     {
-        retval[i].top = rctItem.top;            // Set the top & bottom values
-        retval[i].bottom = rctItem.bottom;
-        retval[i].left = x;
+        retval[i].SetTop(rctItem.GetTop());            // Set the top & bottom values
+        retval[i].SetBottom(rctItem.GetBottom());
+        retval[i].SetLeft(x);
         DrawTileImage(pDC, rctItem, FALSE, x, tids[i]);
-        retval[i].right = x;
+        retval[i].SetRight(x);
     }
 
     return retval;
 }
-#endif
+
+/////////////////////////////////////////////////////////////////////////////
 
 

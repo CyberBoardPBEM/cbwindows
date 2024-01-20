@@ -658,6 +658,8 @@ void CGrafixListBox::AssignNewMoveGroup()
 #endif
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_MOTION(OnMouseMove)
@@ -681,6 +683,51 @@ CGrafixListBoxWx::CGrafixListBoxWx() //:
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
 #endif
+}
+
+CGrafixListBoxWx::~CGrafixListBoxWx()
+{
+    if (m_toolTip)
+    {
+        m_toolTip->Close();
+        wxASSERT(false);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
+{
+    if (!OnIsToolTipsEnabled())
+        return;
+
+    wxRect rctTool;
+    GameElement nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
+
+    if (nItemCode != m_nCurItemCode) // && nItemCode >= 0)
+    {
+        // Object changed so delete previous tool definition
+        if (m_toolTip)
+        {
+            m_toolTip->Close();
+            wxASSERT(!m_toolTip);
+        }
+        m_nCurItemCode = nItemCode;
+        if (nItemCode != Invalid_v<GameElement>)
+        {
+            // New object found so create a new tip
+            CB::string strTip;
+
+            // Call subclass for info
+            OnGetTipTextForItemCode(nItemCode, strTip);
+
+            if (!strTip.empty())
+            {
+                wxRect screenTool(ClientToScreen(rctTool.GetTopLeft()), rctTool.GetSize());
+                m_toolTip = new wxTipWindow(this, strTip, MAX_LISTITEM_TIP_WIDTH, &m_toolTip, &screenTool);
+            }
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -730,13 +777,13 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 
 void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 {
-#if 0
-    if (CWnd::GetCapture() != this)
+    if (!HasCapture())
     {
         // Only process tool tips when we aren't draggin stuff around
-        DoToolTipHitProcessing(point);
+        DoToolTipHitProcessing(event.GetPosition());
     }
 
+#if 0
     if (m_bAllowDrag)
     {
         if (CWnd::GetCapture() != this)

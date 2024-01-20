@@ -112,9 +112,7 @@ protected:
     void DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
         const std::vector<TileID>& tids) const;
 
-#if 0
     std::vector<wxRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
-#endif
 
     // Overrides...
 public:

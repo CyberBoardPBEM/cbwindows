@@ -279,8 +279,7 @@ const CTileManager& CMarkListBoxWx::GetTileManager() const
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-#if 0
-BOOL CMarkListBox::OnIsToolTipsEnabled() const
+BOOL CMarkListBoxWx::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
     return m_pDoc->IsShowingObjectTips();
@@ -289,14 +288,15 @@ BOOL CMarkListBox::OnIsToolTipsEnabled() const
 #endif
 }
 
-GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
+GameElement CMarkListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
 {
     point = ClientToItem(point);
 
-    BOOL bOutsideClient;
-    UINT nIndex = ItemFromPoint(point, bOutsideClient);
-    if (nIndex >= UINT(65535) || GetCount() <= 0)
+    int nIndex = VirtualHitTest(point.y);
+    if (nIndex == wxNOT_FOUND)
+    {
         return Invalid_v<GameElement>;
+    }
 
     CMarkManager* pMMgr = m_pDoc->GetMarkManager();
 
@@ -305,11 +305,11 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
     std::vector<TileID> tids;
     tids.push_back(pMark.m_tid);
 
-    std::vector<CRect> rects = GetTileRectsForItem(nIndex, tids);
-    ASSERT(rects.size() == size_t(1));
+    std::vector<wxRect> rects = GetTileRectsForItem(value_preserving_cast<size_t>(nIndex), tids);
+    wxASSERT(rects.size() == size_t(1));
     rct = rects[size_t(0)];
 
-    if (rct.PtInRect(point))
+    if (rct.Contains(point))
     {
         rct = ItemToClient(rct);
         return GameElement(mid);
@@ -320,13 +320,12 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
     }
 }
 
-void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
+void CMarkListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
     CB::string& strTip) const
 {
     MarkID mid = static_cast<MarkID>(nItemCode);
     strTip = m_pDoc->GetGameElementString(MakeMarkerElement(mid));
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

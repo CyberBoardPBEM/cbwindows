@@ -143,12 +143,12 @@ protected:
     void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
 #if 0
     virtual BOOL OnDragSetup(DragInfo& pDI) const override;
+#endif
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
+    virtual GameElement OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const override;
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
-#endif
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
 private:
