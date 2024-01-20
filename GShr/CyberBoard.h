@@ -81,6 +81,7 @@
 #include <wx/textbuf.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
+#include <wx/tipwin.h>
 #include <wx/valgen.h>
 #include <wx/valnum.h>
 #include <wx/valtext.h>
