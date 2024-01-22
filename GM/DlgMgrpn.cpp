@@ -1,6 +1,6 @@
 // dlgmgrpn.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,34 +35,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CMarkGroupNewDialog dialog
 
-CMarkGroupNewDialog::CMarkGroupNewDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMarkGroupNewDialog::IDD, pParent)
+CMarkGroupNewDialog::CMarkGroupNewDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CMarkGroupNewDialog)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMarkGroupNewDialog)
-    m_strName = "";
-    //}}AFX_DATA_INIT
-}
-
-void CMarkGroupNewDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMarkGroupNewDialog)
-    DDX_Control(pDX, IDC_D_MARKGRP_NAME, m_editName);
-    DDX_Text(pDX, IDC_D_MARKGRP_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CMarkGroupNewDialog, CDialog)
-    //{{AFX_MSG_MAP(CMarkGroupNewDialog)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CMarkGroupNewDialog message handlers
-
-void CMarkGroupNewDialog::OnOK()
-{
-    CDialog::OnOK();
 }
 

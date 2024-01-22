@@ -953,7 +953,7 @@ void CGamDoc::OnEditCreatePieceGroup()
 void CGamDoc::OnEditCreateMarkGroup()
 {
     CMarkGroupNewDialog dlg;
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         GetMarkManager()->CreateMarkSet(dlg.m_strName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);

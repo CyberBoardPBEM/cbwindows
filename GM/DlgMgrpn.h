@@ -1,6 +1,6 @@
 // dlgmgrpn.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,26 +25,17 @@
 /////////////////////////////////////////////////////////////////////////////
 // CMarkGroupNewDialog dialog
 
-class CMarkGroupNewDialog : public CDialog
+class CMarkGroupNewDialog : public wxDialog
 {
 // Construction
 public:
-    CMarkGroupNewDialog(CWnd* pParent = NULL);  // standard constructor
+    CMarkGroupNewDialog(wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CMarkGroupNewDialog)
-    enum { IDD = IDD_MARKERNEWGRP };
-    CEdit   m_editName;
-    CB::string m_strName;
-    //}}AFX_DATA
-
-// Implementation
-protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CMarkGroupNewDialog)
-    virtual void OnOK();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editName;
+    CB_XRC_END_CTRLS_DECL()
+public:
+    wxString m_strName;
 };
