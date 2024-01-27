@@ -1,6 +1,6 @@
 // DlbMkbrd.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -22,51 +22,60 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-class CGridType : public CDialog
+class CGridType : public wxDialog
 {
 // Construction
 public:
-    CGridType(CWnd* pParent = NULL);    // standard constructor
+    CGridType(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CGridType)
-    enum { IDD = IDD_BRDNEW };
-    CStatic m_staticPixelSize;
-    CButton m_chkStagger;
-    CEdit   m_editRows;
-    CEdit   m_editCols;
-    CEdit   m_editCellWd;
-    CEdit   m_editCellHt;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxStaticText> m_staticPixelSize;
+        RefPtr<wxCheckBox> m_chkStagger;
+        RefPtr<wxTextCtrl> m_editRows;
+        RefPtr<wxTextCtrl> m_editCols;
+        RefPtr<wxTextCtrl> m_editCellWd;
+        RefPtr<wxTextCtrl> m_editCellHt;
+        RefPtr<wxRadioButton> m_radioRect;
+        RefPtr<wxTextCtrl> m_editBoardName;
+    CB_XRC_END_CTRLS_DECL()
+    int m_nBoardTypeHelper;
+public:
     int     m_iCellWd;
     int     m_iCellHt;
     size_t  m_iCols;
     size_t  m_iRows;
-    CB::string m_strBoardName;
+    wxString m_strBoardName;
     CellStagger m_bStagger;
-    int     m_nBoardType;
-    //}}AFX_DATA
+    CellFormType m_nBoardType;
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override
+    {
+        return TransferDataFromWindowRangeCheck(true);
+    }
 
     void UpdateBoardDimensions();
 
-    // Generated message map functions
-    //{{AFX_MSG(CGridType)
-    virtual void OnOK();
-    afx_msg void OnHBrick();
-    afx_msg void OnVBrick();
-    afx_msg void OnRectCell();
-    afx_msg void OnHexFlat();
-    afx_msg void OnHexPnt();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnChangeDNewbrdCellheight();
-    afx_msg void OnChangeDNewbrdCellwidth();
-    afx_msg void OnChangeDNewbrdGridcols();
-    afx_msg void OnChangeDNewbrdGridrows();
+    void OnHBrick(wxCommandEvent& event);
+    void OnVBrick(wxCommandEvent& event);
+    void OnRectCell(wxCommandEvent& event);
+    void OnHexFlat(wxCommandEvent& event);
+    void OnHexPnt(wxCommandEvent& event);
+    void OnChangeDNewbrdCellheight(wxCommandEvent& event);
+    void OnChangeDNewbrdCellwidth(wxCommandEvent& event);
+    void OnChangeDNewbrdGridcols(wxCommandEvent& event);
+    void OnChangeDNewbrdGridrows(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    class DisableRangeCheck;
+    bool TransferDataFromWindowRangeCheck(bool check);
 };
