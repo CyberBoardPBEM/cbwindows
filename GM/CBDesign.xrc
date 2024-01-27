@@ -1274,6 +1274,141 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CMarkerCreateDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Create Markers</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer44">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer45">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxBoxSizer" name="bSizer46">
+              <minsize>350,250</minsize>
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer47">
+                  <orient>wxVERTICAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxALL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText55">
+                      <label>Tile Image:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxChoice" name="m_comboTSet">
+                      <selection>0</selection>
+                      <content/>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND | wxALL</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxPanel" name="m_listTiles" subclass="CTileListBoxWx">
+                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer48">
+                  <orient>wxVERTICAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText56">
+                      <label>Markers:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND | wxALL</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxPanel" name="m_listMarks" subclass="CMarkListBoxWx">
+                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                    </object>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxCheckBox" name="m_chkPromptText">
+              <label>Prompt for text when this marker is created.</label>
+              <checked>0</checked>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText57">
+              <label>Associate this marker with the following text:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxTextCtrl" name="m_editMarkerText">
+              <style>wxTE_MULTILINE</style>
+              <value></value>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="m_btnCreateMarker">
+              <label>Create Marker</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALL</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxButton" name="wxID_OK">
+          <label>Close</label>
+          <default>0</default>
+          <auth_needed>0</auth_needed>
+          <markup>0</markup>
+          <bitmap/>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CMarkerEditDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Edit Marker</title>

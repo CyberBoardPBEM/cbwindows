@@ -699,7 +699,7 @@ void CGbxProjView::DoMarkNew()
     dlg.m_pDoc = (CGamDoc*)GetDocument();
     dlg.m_nMSet = nGrp;
 
-    dlg.DoModal();
+    dlg.ShowModal();
     pDoc->UpdateAllViews(NULL, HINT_MARKERSETPROPCHANGE, NULL);
     pDoc->SetModifiedFlag();
 }
