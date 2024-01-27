@@ -892,11 +892,11 @@ void CGamDoc::OnEditCreateBoard()
 
     dlg.m_iCellWd = 55;
     dlg.m_iCellHt = 55;
-    dlg.m_nBoardType = (int)cformHexPnt;
+    dlg.m_nBoardType = cformHexPnt;
     dlg.m_iRows = size_t(30);
     dlg.m_iCols = size_t(30);
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         // Create a Game Board
         CBoardManager* pBMgr = GetBoardManager();
@@ -913,7 +913,7 @@ void CGamDoc::OnEditCreateBoard()
         if (dlg.m_nBoardType == cformHexPnt)    // Only first param is used
             dlg.m_iCellHt = dlg.m_iCellWd;
 
-        pBrdAry->CreateBoard((CellFormType)dlg.m_nBoardType,
+        pBrdAry->CreateBoard(dlg.m_nBoardType,
             dlg.m_iRows, dlg.m_iCols, dlg.m_iCellHt, dlg.m_iCellWd,
             dlg.m_bStagger);
 

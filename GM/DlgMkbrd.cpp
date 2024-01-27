@@ -1,6 +1,6 @@
 // DlbMkbrd.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,66 +36,70 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CGridType dialog
 
-CGridType::CGridType(CWnd* pParent /*=NULL*/)
-    : CDialog(CGridType::IDD, pParent)
+CGridType::CGridType(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CGridType)
+        CB_XRC_CTRL(m_staticPixelSize)
+        CB_XRC_CTRL(m_chkStagger)
+        CB_XRC_CTRL_VAL(m_editRows, m_iRows, size_t(1), size_t(1000))
+        CB_XRC_CTRL_VAL(m_editCols, m_iCols, size_t(1), size_t(1000))
+        CB_XRC_CTRL_VAL(m_editCellWd, m_iCellWd, 4, 32000)
+        CB_XRC_CTRL_VAL(m_editCellHt, m_iCellHt, 4, 32000)
+        CB_XRC_CTRL_VAL(m_radioRect, m_nBoardTypeHelper)
+        CB_XRC_CTRL_VAL(m_editBoardName, m_strBoardName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CGridType)
     m_iCellWd = 0;
     m_iCellHt = 0;
     m_iCols = size_t(0);
     m_iRows = size_t(0);
     m_strBoardName = "";
     m_bStagger = CellStagger::Invalid;
-    m_nBoardType = -1;
-    //}}AFX_DATA_INIT
+    m_nBoardType = cformRect;
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editRows->GetSizeFromText("99999");
+    m_editRows->SetInitialSize(editSize);
+    m_editCols->SetInitialSize(editSize);
+    m_editCellWd->SetInitialSize(editSize);
+    m_editCellHt->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
+    /* KLUDGE:  validator uses ChangeValue() instead of SetValue()
+                (see https://groups.google.com/g/wx-dev/c/XQUU4vMjyqI/m/nPQGFABRAAAJ)
+    */
+    auto OnEditKillFocus = [this](wxFocusEvent& event) {
+        UpdateBoardDimensions();
+        event.Skip();
+    };
+    m_editRows->Bind(wxEVT_KILL_FOCUS, OnEditKillFocus);
+    m_editCols->Bind(wxEVT_KILL_FOCUS, OnEditKillFocus);
+    m_editCellWd->Bind(wxEVT_KILL_FOCUS, OnEditKillFocus);
+    m_editCellHt->Bind(wxEVT_KILL_FOCUS, OnEditKillFocus);
 }
 
-void CGridType::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CGridType)
-    DDX_Control(pDX, IDC_D_NEWBRD_PIXSIZE, m_staticPixelSize);
-    DDX_Control(pDX, IDC_D_NEWBRD_STAGGERIN, m_chkStagger);
-    DDX_Control(pDX, IDC_D_NEWBRD_GRIDROWS, m_editRows);
-    DDX_Control(pDX, IDC_D_NEWBRD_GRIDCOLS, m_editCols);
-    DDX_Control(pDX, IDC_D_NEWBRD_CELLWIDTH, m_editCellWd);
-    DDX_Control(pDX, IDC_D_NEWBRD_CELLHEIGHT, m_editCellHt);
-    DDX_Text(pDX, IDC_D_NEWBRD_CELLWIDTH, m_iCellWd);
-    DDV_MinMaxInt(pDX, m_iCellWd, 4, 32000);
-    DDX_Text(pDX, IDC_D_NEWBRD_CELLHEIGHT, m_iCellHt);
-    DDV_MinMaxInt(pDX, m_iCellHt, 4, 32000);
-    DDX_Text(pDX, IDC_D_NEWBRD_GRIDCOLS, m_iCols);
-    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_iCols), 1, 1000);
-    DDX_Text(pDX, IDC_D_NEWBRD_GRIDROWS, m_iRows);
-    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_iRows), 1, 1000);
-    DDX_Text(pDX, IDC_D_NEWBRD_BOARDNAME, m_strBoardName);
-    DDV_MaxChars(pDX, m_strBoardName, 32);
-    int temp = static_cast<int>(m_bStagger);
-    DDX_Check(pDX, IDC_D_NEWBRD_STAGGERIN, temp);
-    m_bStagger = static_cast<CellStagger>(temp);
-    DDX_Radio(pDX, IDC_D_NEWBRD_RECT, m_nBoardType);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CGridType, CDialog)
-    //{{AFX_MSG_MAP(CGridType)
-    ON_BN_CLICKED(IDC_D_NEWBRD_HBRICK, OnHBrick)
-    ON_BN_CLICKED(IDC_D_NEWBRD_VBRICK, OnVBrick)
-    ON_BN_CLICKED(IDC_D_NEWBRD_RECT, OnRectCell)
-    ON_BN_CLICKED(IDC_D_NEWBRD_HEXFLAT, OnHexFlat)
-    ON_BN_CLICKED(IDC_D_NEWBRD_HEXPNT, OnHexPnt)
-    ON_EN_CHANGE(IDC_D_NEWBRD_CELLHEIGHT, OnChangeDNewbrdCellheight)
-    ON_EN_CHANGE(IDC_D_NEWBRD_CELLWIDTH, OnChangeDNewbrdCellwidth)
-    ON_EN_CHANGE(IDC_D_NEWBRD_GRIDCOLS, OnChangeDNewbrdGridcols)
-    ON_EN_CHANGE(IDC_D_NEWBRD_GRIDROWS, OnChangeDNewbrdGridrows)
+wxBEGIN_EVENT_TABLE(CGridType, wxDialog)
+    EVT_RADIOBUTTON(XRCID("m_radioHBrick"), OnHBrick)
+    EVT_RADIOBUTTON(XRCID("m_radioVBrick"), OnVBrick)
+    EVT_RADIOBUTTON(XRCID("m_radioRect"), OnRectCell)
+    EVT_RADIOBUTTON(XRCID("m_radioHexFlat"), OnHexFlat)
+    EVT_RADIOBUTTON(XRCID("m_radioHexPnt"), OnHexPnt)
+    EVT_TEXT(XRCID("m_editCellHt"), OnChangeDNewbrdCellheight)
+    EVT_TEXT(XRCID("m_editCellWd"), OnChangeDNewbrdCellwidth)
+    EVT_TEXT(XRCID("m_editCols"), OnChangeDNewbrdGridcols)
+    EVT_TEXT(XRCID("m_editRows"), OnChangeDNewbrdGridrows)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
+#if 0
 static DWORD adwHelpMap[] =
 {
     IDC_D_NEWBRD_BOARDNAME, IDH_D_NEWBRD_BOARDNAME,
@@ -122,22 +126,66 @@ void CGridType::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGridType message handlers
 
-void CGridType::OnOK()
-{
-    UpdateData(TRUE);
-
-    if (m_strBoardName.empty())
+namespace {
+    template<typename T>
+    class DisableRangeCheck
     {
-        AfxMessageBox(IDS_ERR_BOARDNAME, MB_OK | MB_ICONEXCLAMATION);
-        CWnd* pWnd = GetDlgItem(IDC_D_NEWBRD_BOARDNAME);
-        ASSERT(pWnd != NULL);
-        pWnd->SetFocus();
-        return;
+    public:
+        DisableRangeCheck(wxIntegerValidator<T>& v) :
+            val(v)
+        {
+            val.GetRange(min, max);
+            val.SetRange(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+        }
+        ~DisableRangeCheck()
+        {
+            val.SetRange(min, max);
+        }
+    private:
+        wxIntegerValidator<T>& val;
+        T min, max;
+    };
+}
+
+class CGridType::DisableRangeCheck
+{
+public:
+    DisableRangeCheck(CGridType& d) :
+        cellWd(dynamic_cast<wxIntegerValidator<int>&>(*d.m_editCellWd->GetValidator())),
+        cellHt(dynamic_cast<wxIntegerValidator<int>&>(*d.m_editCellHt->GetValidator())),
+        cols(dynamic_cast<wxIntegerValidator<size_t>&>(*d.m_editCols->GetValidator())),
+        rows(dynamic_cast<wxIntegerValidator<size_t>&>(*d.m_editRows->GetValidator()))
+    {
     }
+private:
+    ::DisableRangeCheck<int> cellWd;
+    ::DisableRangeCheck<int> cellHt;
+    ::DisableRangeCheck<size_t> cols;
+    ::DisableRangeCheck<size_t> rows;
+};
+
+bool CGridType::TransferDataFromWindowRangeCheck(bool check)
+{
+    std::unique_ptr<DisableRangeCheck> disableRangeCheck;
+    if (!check)
+    {
+        disableRangeCheck.reset(new DisableRangeCheck(*this));
+    }
+
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+
+    m_bStagger = static_cast<CellStagger>(m_chkStagger->GetValue());
+    wxASSERT(m_bStagger == CellStagger::In || m_bStagger == CellStagger::Out);
+
+    m_nBoardType = static_cast<CellFormType>(m_nBoardTypeHelper);
 
     // Now check if board is too large....
 
@@ -145,69 +193,68 @@ void CGridType::OnOK()
     if (m_nBoardType == cformHexPnt)// Only first param is used in this case
         m_iCellHt = m_iCellWd;
 
-    cf.CreateCell((CellFormType)m_nBoardType, m_iCellHt, m_iCellWd);
+    if (!check)
+    {
+        return true;
+    }
+
+    cf.CreateCell(m_nBoardType, m_iCellHt, m_iCellWd);
 
     if (!cf.CalcTrialBoardSize(m_iRows, m_iCols))
     {
         AfxMessageBox(IDS_ERR_BOARDSIZE, MB_OK | MB_ICONEXCLAMATION);
-        return;
+        return false;
     }
 
-    CDialog::OnOK();
+    return true;
 }
 
-void CGridType::OnHBrick()
+void CGridType::OnHBrick(wxCommandEvent& /*event*/)
 {
-    m_editCellHt.EnableWindow(TRUE);
-    m_editCellWd.EnableWindow(TRUE);
-    m_chkStagger.EnableWindow(TRUE);
+    m_editCellHt->Enable(TRUE);
+    m_editCellWd->Enable(TRUE);
+    m_chkStagger->Enable(TRUE);
     UpdateBoardDimensions();
 }
 
-void CGridType::OnVBrick()
+void CGridType::OnVBrick(wxCommandEvent& /*event*/)
 {
-    m_editCellHt.EnableWindow(TRUE);
-    m_editCellWd.EnableWindow(TRUE);
-    m_chkStagger.EnableWindow(TRUE);
+    m_editCellHt->Enable(TRUE);
+    m_editCellWd->Enable(TRUE);
+    m_chkStagger->Enable(TRUE);
     UpdateBoardDimensions();
 }
 
-void CGridType::OnRectCell()
+void CGridType::OnRectCell(wxCommandEvent& /*event*/)
 {
-    m_editCellHt.EnableWindow(TRUE);
-    m_editCellWd.EnableWindow(TRUE);
-    m_chkStagger.EnableWindow(FALSE);
+    m_editCellHt->Enable(TRUE);
+    m_editCellWd->Enable(TRUE);
+    m_chkStagger->Enable(FALSE);
     UpdateBoardDimensions();
 }
 
-void CGridType::OnHexFlat()
+void CGridType::OnHexFlat(wxCommandEvent& /*event*/)
 {
-    m_editCellHt.EnableWindow(TRUE);
-    m_editCellWd.EnableWindow(FALSE);
-    m_chkStagger.EnableWindow(TRUE);
+    m_editCellHt->Enable(TRUE);
+    m_editCellWd->Enable(FALSE);
+    m_chkStagger->Enable(TRUE);
     UpdateBoardDimensions();
 }
 
-void CGridType::OnHexPnt()
+void CGridType::OnHexPnt(wxCommandEvent& /*event*/)
 {
-    m_editCellHt.EnableWindow(FALSE);
-    m_editCellWd.EnableWindow(TRUE);
-    m_chkStagger.EnableWindow(TRUE);
+    m_editCellHt->Enable(FALSE);
+    m_editCellWd->Enable(TRUE);
+    m_chkStagger->Enable(TRUE);
     UpdateBoardDimensions();
 }
 
 void CGridType::UpdateBoardDimensions()
 {
-    m_iCellWd = GetDlgItemInt(IDC_D_NEWBRD_CELLWIDTH);
-    m_iCellHt = GetDlgItemInt(IDC_D_NEWBRD_CELLHEIGHT);
-    m_iRows = GetDlgItemInt(IDC_D_NEWBRD_GRIDROWS);
-    m_iCols = GetDlgItemInt(IDC_D_NEWBRD_GRIDCOLS);
-
-    CDataExchange dx(this, TRUE);
-    int temp = static_cast<int>(m_bStagger);
-    DDX_Check(&dx, IDC_D_NEWBRD_STAGGERIN, temp);
-    m_bStagger = static_cast<CellStagger>(temp);
-    DDX_Radio(&dx, IDC_D_NEWBRD_RECT, m_nBoardType);
+    if (!TransferDataFromWindowRangeCheck(false))
+    {
+        return;
+    }
 
     if (m_nBoardType == cformRect)
     {
@@ -220,57 +267,79 @@ void CGridType::UpdateBoardDimensions()
     if (!(m_iRows > size_t(0) && m_iCols > size_t(0) && m_iCellHt >= 4 && m_iCellWd >= 4))
     {
         CB::string str = CB::string::LoadString(IDS_BSIZE_INVALID);
-        m_staticPixelSize.SetWindowText(str);
+        m_staticPixelSize->SetLabel(str);
         return;
     }
 
     CCellForm cf;
-    cf.CreateCell((CellFormType)m_nBoardType, m_iCellHt, m_iCellWd,
-        m_bStagger);
+    // large cell values can cause memory alloc exception
+    try
+    {
+        cf.CreateCell(m_nBoardType, m_iCellHt, m_iCellWd,
+            m_bStagger);
+    }
+    catch (...)
+    {
+        CPP20_TRACE("ignore exception");
+    }
     if (cf.CalcTrialBoardSize(m_iRows, m_iCols))
     {
         CB::string str = CB::string::LoadString(IDS_BSIZE_PATTERN);
         CSize size = cf.CalcBoardSize(m_iRows, m_iCols);
         CB::string szBfr = std::vformat(str, std::make_wformat_args(size.cy, size.cx));
-        m_staticPixelSize.SetWindowText(szBfr);
+        m_staticPixelSize->SetLabel(szBfr);
     }
     else
     {
         CB::string str = CB::string::LoadString(IDS_BSIZE_INVALID);
-        m_staticPixelSize.SetWindowText(str);
+        m_staticPixelSize->SetLabel(str);
     }
 }
 
-BOOL CGridType::OnInitDialog()
+bool CGridType::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    m_nBoardTypeHelper = m_nBoardType;
+    if (!wxDialog::TransferDataToWindow())
+    {
+        wxASSERT(!"TransferDataToWindow failed");
+        return false;
+    }
 
-    if (m_nBoardType == 3)      // Hex flat up
-        OnHexFlat();
-    else if (m_nBoardType == 4)
-        OnHexPnt();
+    // MFC DDX_Check forces to 0 if out of range
+    if (m_bStagger != CellStagger::In &&
+        m_bStagger != CellStagger::Out)
+    {
+        m_bStagger = CellStagger::Out;
+    }
+    m_chkStagger->SetValue(static_cast<bool>(m_bStagger));
+
+    wxCommandEvent dummy;
+    if (m_nBoardType == cformHexFlat)      // Hex flat up
+        OnHexFlat(dummy);
+    else if (m_nBoardType == cformHexPnt)
+        OnHexPnt(dummy);
 
     UpdateBoardDimensions();
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return true;
 }
 
-void CGridType::OnChangeDNewbrdCellheight()
+void CGridType::OnChangeDNewbrdCellheight(wxCommandEvent& /*event*/)
 {
     UpdateBoardDimensions();
 }
 
-void CGridType::OnChangeDNewbrdCellwidth()
+void CGridType::OnChangeDNewbrdCellwidth(wxCommandEvent& /*event*/)
 {
     UpdateBoardDimensions();
 }
 
-void CGridType::OnChangeDNewbrdGridcols()
+void CGridType::OnChangeDNewbrdGridcols(wxCommandEvent& /*event*/)
 {
     UpdateBoardDimensions();
 }
 
-void CGridType::OnChangeDNewbrdGridrows()
+void CGridType::OnChangeDNewbrdGridrows(wxCommandEvent& /*event*/)
 {
     UpdateBoardDimensions();
 }

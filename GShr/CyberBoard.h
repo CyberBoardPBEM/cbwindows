@@ -1,6 +1,6 @@
 // CyberBoard.h
 //
-// Copyright (c) 2020-2023 By William Su, All Rights Reserved.
+// Copyright (c) 2020-2024 By William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -75,6 +75,7 @@
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
 #include <wx/nativewin.h>
+#include <wx/radiobut.h>
 #include <wx/rawbmp.h>
 #include <wx/stattext.h>
 #include <wx/stdpaths.h>
