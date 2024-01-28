@@ -651,13 +651,13 @@ void CGbxProjView::DoMarkGroupProperty()
     CMarkSet& pMSet = pMMgr->GetMarkSet(nGrp);
 
     CMarkerPropDialog dlg;
-    dlg.m_strName = pMSet.GetName();
-    dlg.m_nMarkerViz = (int)pMSet.GetMarkerTrayContentVisibility(); // zero based enum
+    dlg.m_strName = wxString(pMSet.GetName());
+    dlg.m_nMarkerViz = pMSet.GetMarkerTrayContentVisibility(); // zero based enum
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         pMSet.SetName(dlg.m_strName);
-        pMSet.SetMarkerTrayContentVisibility((MarkerTrayViz)dlg.m_nMarkerViz);
+        pMSet.SetMarkerTrayContentVisibility(dlg.m_nMarkerViz);
 
         pDoc->UpdateAllViews(NULL, HINT_MARKERSETPROPCHANGE, NULL);
         pDoc->SetModifiedFlag();
