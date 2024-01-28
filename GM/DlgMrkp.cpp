@@ -1,6 +1,6 @@
 // DlgMrkp.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,15 +34,17 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPropDialog dialog
 
-CMarkerPropDialog::CMarkerPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMarkerPropDialog::IDD, pParent)
+CMarkerPropDialog::CMarkerPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CMarkerPropDialog)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY)
+        CB_XRC_CTRL_VAL(m_radioMarkerViz, m_nMarkerVizHelper)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMarkerPropDialog)
     m_strName = "";
-    m_nMarkerViz = -1;
-    //}}AFX_DATA_INIT
+    m_nMarkerViz = mtrayVizNormal;
 }
 
+#if 0
 void CMarkerPropDialog::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
@@ -52,14 +54,16 @@ void CMarkerPropDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Radio(pDX, IDC_D_MARKGRP_VIZFULL, m_nMarkerViz);
     //}}AFX_DATA_MAP
 }
+#endif
 
-BEGIN_MESSAGE_MAP(CMarkerPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CMarkerPropDialog)
+wxBEGIN_EVENT_TABLE(CMarkerPropDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -81,18 +85,23 @@ void CMarkerPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPropDialog message handlers
 
-void CMarkerPropDialog::OnOK()
+bool CMarkerPropDialog::TransferDataToWindow()
 {
-    CB::string str = CB::string::GetWindowText(m_editName);
-    if (str.empty())
+    m_nMarkerVizHelper = m_nMarkerViz;
+    return wxDialog::TransferDataToWindow();
+}
+
+bool CMarkerPropDialog::TransferDataFromWindow()
+{
+    if (!wxDialog::TransferDataFromWindow())
     {
-        AfxMessageBox(IDS_ERR_MARKERSETNAME, MB_OK | MB_ICONEXCLAMATION);
-        m_editName.SetFocus();
-        return;
+        return false;
     }
-    CDialog::OnOK();
+    m_nMarkerViz = static_cast<MarkerTrayViz>(m_nMarkerVizHelper);
+    return true;
 }
