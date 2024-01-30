@@ -293,7 +293,7 @@ void CGbxProjView::DoTileNew()
 
     CTileManager* pTMgr = pDoc->GetTileManager();
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         TileID tidNew = pTMgr->CreateTile(nGrp,
             CSize(dlg.m_nWidth, dlg.m_nHeight),

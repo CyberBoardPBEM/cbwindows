@@ -1,6 +1,6 @@
 // DlgNtile.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,21 +27,22 @@
 
 class CBoardManager;
 
-class CNewTileDialog : public CDialog
+class CNewTileDialog : public wxDialog
 {
 // Construction
 public:
-    CNewTileDialog(CWnd* pParent = NULL);   // standard constructor
+    CNewTileDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CNewTileDialog)
-    enum { IDD = IDD_NEWTILE };
-    CEdit   m_editWidth;
-    CEdit   m_editHeight;
-    CComboBox   m_comboBoard;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editWidth;
+        RefPtr<wxTextCtrl> m_editHeight;
+        RefPtr<wxChoice> m_comboBoard;
+    CB_XRC_END_CTRLS_DECL()
+public:
     UINT    m_nHeight;
     UINT    m_nWidth;
-    //}}AFX_DATA
 
     UINT    m_nHalfHeight;
     UINT    m_nHalfWidth;
@@ -50,17 +51,15 @@ public:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CNewTileDialog)
-    virtual BOOL OnInitDialog();
-    afx_msg void OnSelChangeBoardName();
-    afx_msg void OnUpdateHeight();
-    afx_msg void OnUpdateWidth();
-    virtual void OnOK();
+    void OnSelChangeBoardName(wxCommandEvent& event);
+    void OnUpdateHeight(wxCommandEvent& event);
+    void OnUpdateWidth(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
