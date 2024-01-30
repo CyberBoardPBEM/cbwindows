@@ -1,6 +1,6 @@
 // DlgNtile.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,42 +35,40 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CNewTileDialog dialog
 
-CNewTileDialog::CNewTileDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CNewTileDialog::IDD, pParent)
+CNewTileDialog::CNewTileDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CNewTileDialog)
+        CB_XRC_CTRL_VAL(m_editWidth, m_nWidth, UINT(2), UINT(512))
+        CB_XRC_CTRL_VAL(m_editHeight, m_nHeight, UINT(2), UINT(512))
+        CB_XRC_CTRL(m_comboBoard)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CNewTileDialog)
     m_nHeight = 0;
     m_nWidth = 0;
-    //}}AFX_DATA_INIT
     m_pBMgr = NULL;
     m_nHalfHeight = 0;          // Zero mean compute on OK
     m_nHalfWidth = 0;
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editWidth->GetSizeFromText("999");
+    m_editWidth->SetInitialSize(editSize);
+    m_editHeight->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
 }
 
-void CNewTileDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CNewTileDialog)
-    DDX_Control(pDX, IDC_D_NTILE_WIDTH, m_editWidth);
-    DDX_Control(pDX, IDC_D_NTILE_HEIGHT, m_editHeight);
-    DDX_Control(pDX, IDC_D_NTILE_BOARDNAME, m_comboBoard);
-    DDX_Text(pDX, IDC_D_NTILE_HEIGHT, m_nHeight);
-    DDV_MinMaxUInt(pDX, m_nHeight, 2, 512);
-    DDX_Text(pDX, IDC_D_NTILE_WIDTH, m_nWidth);
-    DDV_MinMaxUInt(pDX, m_nWidth, 2, 512);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CNewTileDialog, CDialog)
-    //{{AFX_MSG_MAP(CNewTileDialog)
-    ON_CBN_SELCHANGE(IDC_D_NTILE_BOARDNAME, OnSelChangeBoardName)
-    ON_EN_UPDATE(IDC_D_NTILE_HEIGHT, OnUpdateHeight)
-    ON_EN_UPDATE(IDC_D_NTILE_WIDTH, OnUpdateWidth)
+wxBEGIN_EVENT_TABLE(CNewTileDialog, wxDialog)
+    EVT_CHOICE(XRCID("m_comboBoard"), OnSelChangeBoardName)
+    EVT_TEXT(XRCID("m_editHeight"), OnUpdateHeight)
+    EVT_TEXT(XRCID("m_editWidth"), OnUpdateWidth)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -91,40 +89,47 @@ void CNewTileDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CNewTileDialog::OnInitDialog()
+bool CNewTileDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    ASSERT(m_pBMgr != NULL);
+    wxASSERT(m_pBMgr != NULL);
 
+    wxASSERT(m_comboBoard->IsEmpty());
     for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
-        m_comboBoard.AddString(m_pBMgr->GetBoard(i).GetName());
+    {
+        m_comboBoard->Append(m_pBMgr->GetBoard(i).GetName());
+    }
 
-    m_comboBoard.SetCurSel(-1);
+    m_comboBoard->SetSelection(wxNOT_FOUND);
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CNewTileDialog message handlers
 
-void CNewTileDialog::OnSelChangeBoardName()
+void CNewTileDialog::OnSelChangeBoardName(wxCommandEvent& event)
 {
-    int nBrd = m_comboBoard.GetCurSel();
-    if (nBrd >= 0)
+    int nBrd = m_comboBoard->GetSelection();
+    if (nBrd != wxNOT_FOUND)
     {
         CBoard& pBoard = m_pBMgr->GetBoard(value_preserving_cast<size_t>(nBrd));
 
         CSize size = pBoard.GetCellSize(fullScale);
 
         CB::string szNum = std::format("{}", size.cx);
-        m_editWidth.SetWindowText(szNum);
+        m_editWidth->SetValue(szNum);
         szNum = std::format("{}", size.cy);
-        m_editHeight.SetWindowText(szNum);
+        m_editHeight->SetValue(szNum);
 
         size = pBoard.GetCellSize(halfScale);
         m_nHalfWidth = size.cx;
@@ -132,24 +137,30 @@ void CNewTileDialog::OnSelChangeBoardName()
     }
 }
 
-void CNewTileDialog::OnUpdateHeight()
+void CNewTileDialog::OnUpdateHeight(wxCommandEvent& event)
 {
     m_nHalfHeight = 0;
 }
 
-void CNewTileDialog::OnUpdateWidth()
+void CNewTileDialog::OnUpdateWidth(wxCommandEvent& event)
 {
     m_nHalfWidth = 0;
 }
 
-void CNewTileDialog::OnOK()
+bool CNewTileDialog::TransferDataFromWindow()
 {
-    if (UpdateData(TRUE))
+    if (wxDialog::TransferDataFromWindow())
     {
         if (m_nHalfWidth == 0)
+        {
             m_nHalfWidth = m_nWidth / 2 + 1;
+        }
         if (m_nHalfHeight == 0)
+        {
             m_nHalfHeight = m_nHeight / 2 + 1;
-        EndDialog(IDOK);
+        }
+        return true;
     }
+
+    return false;
 }
