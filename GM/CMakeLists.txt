@@ -106,4 +106,12 @@ endif()
 target_include_directories(CBDesign PRIVATE . ../GShr)
 target_precompile_headers(CBDesign PRIVATE StdAfx.h)
 target_link_libraries(CBDesign wx::core wx::xrc)
-configure_file(CBDesign.xrc ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
+
+add_custom_command(
+	OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBDesign.xrc"
+	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/CBDesign.xrc" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBDesign.xrc"
+	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/CBDesign.xrc"
+	VERBATIM
+)
+add_custom_target(CBDesign_copy_files DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBDesign.xrc)
+add_dependencies(CBDesign CBDesign_copy_files)
