@@ -17,7 +17,6 @@ set(SRCS
 	DlgMnew.cpp
 	DlgMrkp.cpp
 	DlgNtile.cpp
-	DlgNum.cpp
 	DlgPaste.cpp
 	DlgPcep.cpp
 	DlgPEditMulti.cpp
