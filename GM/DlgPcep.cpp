@@ -1,6 +1,6 @@
 // DlgPcep.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,40 +35,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPiecePropDialog dialog
 
-CPiecePropDialog::CPiecePropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPiecePropDialog::IDD, pParent)
+CPiecePropDialog::CPiecePropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CPiecePropDialog)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CPiecePropDialog)
     m_strName = "";
-    //}}AFX_DATA_INIT
-}
-
-void CPiecePropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPiecePropDialog)
-    DDX_Control(pDX, IDC_D_PGRP_NAME, m_editName);
-    DDX_Text(pDX, IDC_D_PGRP_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CPiecePropDialog, CDialog)
-    //{{AFX_MSG_MAP(CPiecePropDialog)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CPiecePropDialog message handlers
-
-void CPiecePropDialog::OnOK()
-{
-    CB::string str = CB::string::GetWindowText(m_editName);
-    if (str.empty())
-    {
-        AfxMessageBox(IDS_ERR_PIECESETNAME, MB_OK | MB_ICONEXCLAMATION);
-        m_editName.SetFocus();
-        return;
-    }
-    CDialog::OnOK();
 }

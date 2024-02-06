@@ -457,9 +457,9 @@ void CGbxProjView::DoPieceGroupProperty()
     CPieceManager* pPMgr = pDoc->GetPieceManager();
 
     CPiecePropDialog dlg;
-    dlg.m_strName = pPMgr->GetPieceSet(nGrp).GetName();
+    dlg.m_strName = wxString(pPMgr->GetPieceSet(nGrp).GetName());
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         pPMgr->GetPieceSet(nGrp).SetName(dlg.m_strName);
         pDoc->UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
