@@ -1,6 +1,6 @@
 // DlgPaste.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,30 +35,22 @@ static char THIS_FILE[] = __FILE__;
 // CPasteBitmapDialog dialog
 
 
-CPasteBitmapDialog::CPasteBitmapDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPasteBitmapDialog::IDD, pParent)
+CPasteBitmapDialog::CPasteBitmapDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CPasteBitmapDialog)
+        CB_XRC_CTRL_VAL(m_radioPasteAction, m_nPasteAction)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CPasteBitmapDialog)
     m_nPasteAction = -1;
-    //}}AFX_DATA_INIT
 }
 
-void CPasteBitmapDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPasteBitmapDialog)
-    DDX_Radio(pDX, IDC_D_PASTE_KEEPSIZE, m_nPasteAction);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CPasteBitmapDialog, CDialog)
-    //{{AFX_MSG_MAP(CPasteBitmapDialog)
-        // NOTE: the ClassWizard will add message map macros here
-    //}}AFX_MSG_MAP
+wxBEGIN_EVENT_TABLE(CPasteBitmapDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -78,4 +70,5 @@ void CPasteBitmapDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
