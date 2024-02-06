@@ -1,6 +1,6 @@
 // DlgPaste.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,27 +25,27 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPasteBitmapDialog dialog
 
-class CPasteBitmapDialog : public CDialog
+class CPasteBitmapDialog : public wxDialog
 {
 // Construction
 public:
-    CPasteBitmapDialog(CWnd* pParent = NULL);   // standard constructor
+    CPasteBitmapDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPasteBitmapDialog)
-    enum { IDD = IDD_PASTE };
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxRadioButton> m_radioPasteAction;
+    CB_XRC_END_CTRLS_DECL()
+
+public:
     int     m_nPasteAction;
-    //}}AFX_DATA
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-    // Generated message map functions
-    //{{AFX_MSG(CPasteBitmapDialog)
-        // NOTE: the ClassWizard will add member functions here
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };

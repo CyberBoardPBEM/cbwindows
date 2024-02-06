@@ -1957,6 +1957,82 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CPasteBitmapDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Paste Image</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer57">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer58">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText63">
+              <label>The clipboard bitmap you are pasting is a\ndifferent size than the bitmap being edited.\nPlease choose an action:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxRadioButton" name="m_radioPasteAction">
+              <style>wxRB_GROUP</style>
+              <label>Maintain the pasted bitmap size.</label>
+              <value>0</value>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxRadioButton" name="m_radioBtn10">
+              <label>Rescale pasted bitmap to fit edited bitmap.</label>
+              <value>0</value>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer59">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CSetGameboxPassword">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Set Password</title>
