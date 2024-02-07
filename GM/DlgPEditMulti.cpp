@@ -1,6 +1,6 @@
 // DlgPEditMulti.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,46 +37,39 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPieceEditMultipleDialog dialog
 
-CPieceEditMultipleDialog::CPieceEditMultipleDialog(size_t s, CWnd* pParent /*=NULL*/)
-    : CDialog(CPieceEditMultipleDialog::IDD, pParent),
+CPieceEditMultipleDialog::CPieceEditMultipleDialog(size_t s, wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CPieceEditMultipleDialog)
+        CB_XRC_CTRL(m_chkTopVisibleOwnersToo)
+        CB_XRC_CTRL(m_staticFrontLabel)
+        CB_XRC_CTRL(m_chkSetBackText)
+        CB_XRC_CTRL(m_chkSetFrontText)
+        CB_XRC_CTRL(m_staticBackLabel)
+        CB_XRC_CTRL(m_chkTopVisible)
+        CB_XRC_CTRL(m_editBack)
+        CB_XRC_CTRL(m_editFront)
+        CB_XRC_CTRL(m_currSide)
+    CB_XRC_END_CTRLS_DEFN(),
     m_sides(s)
 {
-    //{{AFX_DATA_INIT(CPieceEditMultipleDialog)
-    //}}AFX_DATA_INIT
     m_bSetTopOnlyVisible = FALSE;
     m_bTopOnlyOwnersToo = FALSE;
     m_bSetTexts.resize(m_sides, false);
     m_strs.resize(m_sides);
 }
 
-void CPieceEditMultipleDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPieceEditMultipleDialog)
-    DDX_Control(pDX, IDC_D_MPEDIT_TOP_VISIBLE_OWNERS_TOO, m_chkTopVisibleOwnersToo);
-    DDX_Control(pDX, IDC_D_MPEDIT_FRONT_LABEL, m_staticFrontLabel);
-    DDX_Control(pDX, IDC_D_MPEDIT_CHG_BACK_TEXT, m_chkSetBackText);
-    DDX_Control(pDX, IDC_D_MPEDIT_CHG_TOP_TEXT, m_chkSetFrontText);
-    DDX_Control(pDX, IDC_D_MPEDIT_BACK_LABEL, m_staticBackLabel);
-    DDX_Control(pDX, IDC_D_MPEDIT_TOP_VISIBLE, m_chkTopVisible);
-    DDX_Control(pDX, IDC_D_MPEDIT_TEXT_BACK, m_editBack);
-    DDX_Control(pDX, IDC_D_MPEDIT_TEXT_FRONT, m_editFront);
-    DDX_Control(pDX, IDC_CURR_SIDE, m_currSide);
-    //}}AFX_DATA_MAP
-}
 
-
-BEGIN_MESSAGE_MAP(CPieceEditMultipleDialog, CDialog)
-    //{{AFX_MSG_MAP(CPieceEditMultipleDialog)
-    ON_BN_CLICKED(IDC_D_MPEDIT_CHG_BACK_TEXT, OnBtnClickChangeBack)
-    ON_BN_CLICKED(IDC_D_MPEDIT_CHG_TOP_TEXT, OnBtnClickChangeFront)
-    ON_BN_CLICKED(IDC_D_MPEDIT_TOP_VISIBLE, OnBtnClickTopVisible)
+wxBEGIN_EVENT_TABLE(CPieceEditMultipleDialog, wxDialog)
+    EVT_CHECKBOX(XRCID("m_chkSetBackText"), OnBtnClickChangeBack)
+    EVT_CHECKBOX(XRCID("m_chkSetFrontText"), OnBtnClickChangeFront)
+    EVT_CHECKBOX(XRCID("m_chkTopVisible"), OnBtnClickTopVisible)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    ON_CBN_SELCHANGE(IDC_CURR_SIDE, &CPieceEditMultipleDialog::OnSelchangeCurrSide)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_CHOICE(XRCID("m_currSide"), OnSelchangeCurrSide)
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -90,25 +83,26 @@ static DWORD adwHelpMap[] =
     IDC_D_MPEDIT_TEXT_FRONT, IDH_D_MPEDIT_TEXT_FRONT,
     0,0
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CPieceEditMultipleDialog::UpdateTextControls()
 {
-    ASSERT(m_bSetTexts[size_t(0)] == bool(m_editFront.IsWindowEnabled()));
+    wxASSERT(m_bSetTexts[size_t(0)] == m_editFront->IsEnabled());
     if (m_bSetTexts[size_t(0)])
     {
-        CB::string str = CB::string::GetWindowText(m_editFront);
+        CB::string str = m_editFront->GetValue();
         m_strs[size_t(0)] = str;
     }
-    if (m_chkSetFrontText.GetCheck())
+    if (m_chkSetFrontText->GetValue())
     {
         if (!m_bSetTexts[size_t(0)])
         {
             m_bSetTexts[size_t(0)] = true;
-            m_editFront.EnableWindow(TRUE);
-            m_editFront.SetWindowText(m_strs[size_t(0)]);
-            m_staticFrontLabel.EnableWindow(TRUE);
+            m_editFront->Enable(TRUE);
+            m_editFront->SetValue(m_strs[size_t(0)]);
+            m_staticFrontLabel->Enable(TRUE);
         }
     }
     else
@@ -116,42 +110,42 @@ void CPieceEditMultipleDialog::UpdateTextControls()
         if (m_bSetTexts[size_t(0)])
         {
             m_bSetTexts[size_t(0)] = false;
-            m_editFront.EnableWindow(FALSE);
-            m_editFront.SetWindowText(""_cbstring);
-            m_staticFrontLabel.EnableWindow(FALSE);
+            m_editFront->Enable(FALSE);
+            m_editFront->Clear();
+            m_staticFrontLabel->Enable(FALSE);
         }
     }
 
     // ASSERT(m_prevSide != std::numeric_limits<size_t>::max() --> 1 <= m_prevSide < sides);
-    ASSERT(m_prevSide == std::numeric_limits<size_t>::max() ||
+    wxASSERT(m_prevSide == std::numeric_limits<size_t>::max() ||
             (size_t(1) <= m_prevSide && m_prevSide < m_sides));
 
     size_t currSide = std::numeric_limits<size_t>::max();
     // ASSERT(m_prevSide != std::numeric_limits<size_t>::max() --> m_currSide.GetCurSel() != CB_ERR);
-    ASSERT(m_prevSide == std::numeric_limits<size_t>::max() ||
-            m_currSide.GetCurSel() != CB_ERR);
-    if (m_currSide.GetCurSel() != CB_ERR)
+    wxASSERT(m_prevSide == std::numeric_limits<size_t>::max() ||
+            m_currSide->GetSelection() != wxNOT_FOUND);
+    if (m_currSide->GetSelection() != wxNOT_FOUND)
     {
-        currSide = value_preserving_cast<size_t>(m_currSide.GetCurSel()) + size_t(1);
-        ASSERT(size_t(1) <= currSide && currSide < m_sides);
+        currSide = value_preserving_cast<size_t>(m_currSide->GetSelection()) + size_t(1);
+        wxASSERT(size_t(1) <= currSide && currSide < m_sides);
 
         if (currSide == m_prevSide)
         {
             // logic here is just like front
-            ASSERT(m_bSetTexts[currSide] == bool(m_editBack.IsWindowEnabled()));
+            wxASSERT(m_bSetTexts[currSide] == m_editBack->IsEnabled());
             if (m_bSetTexts[currSide])
             {
-                CB::string str = CB::string::GetWindowText(m_editBack);
+                CB::string str = m_editBack->GetValue();
                 m_strs[currSide] = str;
             }
-            if (m_chkSetBackText.GetCheck())
+            if (m_chkSetBackText->GetValue())
             {
                 if (!m_bSetTexts[currSide])
                 {
                     m_bSetTexts[currSide] = true;
-                    m_editBack.EnableWindow(TRUE);
-                    m_editBack.SetWindowText(m_strs[currSide]);
-                    m_staticBackLabel.EnableWindow(TRUE);
+                    m_editBack->Enable(TRUE);
+                    m_editBack->SetValue(m_strs[currSide]);
+                    m_staticBackLabel->Enable(TRUE);
                 }
             }
             else
@@ -159,9 +153,9 @@ void CPieceEditMultipleDialog::UpdateTextControls()
                 if (m_bSetTexts[currSide])
                 {
                     m_bSetTexts[currSide] = false;
-                    m_editBack.EnableWindow(FALSE);
-                    m_editBack.SetWindowText(""_cbstring);
-                    m_staticBackLabel.EnableWindow(FALSE);
+                    m_editBack->Enable(FALSE);
+                    m_editBack->Clear();
+                    m_staticBackLabel->Enable(FALSE);
                 }
             }
         }
@@ -171,18 +165,18 @@ void CPieceEditMultipleDialog::UpdateTextControls()
                 then set controls for currSide */
             if (m_prevSide < m_sides)
             {
-                ASSERT(m_bSetTexts[m_prevSide] == bool(m_editBack.IsWindowEnabled()));
+                wxASSERT(m_bSetTexts[m_prevSide] == m_editBack->IsEnabled());
                 if (m_bSetTexts[m_prevSide])
                 {
-                    CB::string str = CB::string::GetWindowText(m_editBack);
+                    CB::string str = m_editBack->GetValue();
                     m_strs[m_prevSide] = str;
                 }
-                m_bSetTexts[m_prevSide] = m_chkSetBackText.GetCheck();
+                m_bSetTexts[m_prevSide] = m_chkSetBackText->GetValue();
             }
-            m_chkSetBackText.SetCheck(m_bSetTexts[currSide] ? BST_CHECKED : BST_UNCHECKED);
-            m_editBack.EnableWindow(m_bSetTexts[currSide]);
-            m_staticBackLabel.EnableWindow(m_bSetTexts[currSide]);
-            m_editBack.SetWindowText(m_strs[currSide]);
+            m_chkSetBackText->SetValue(m_bSetTexts[currSide]);
+            m_editBack->Enable(m_bSetTexts[currSide]);
+            m_staticBackLabel->Enable(m_bSetTexts[currSide]);
+            m_editBack->SetValue(m_strs[currSide]);
         }
     }
 
@@ -192,72 +186,75 @@ void CPieceEditMultipleDialog::UpdateTextControls()
 /////////////////////////////////////////////////////////////////////////////
 // CPieceEditMultipleDialog message handlers
 
-void CPieceEditMultipleDialog::OnBtnClickTopVisible()
+void CPieceEditMultipleDialog::OnBtnClickTopVisible(wxCommandEvent& /*event*/)
 {
-    m_chkTopVisibleOwnersToo.EnableWindow(m_chkTopVisible.GetCheck() == 1);
+    m_chkTopVisibleOwnersToo->Enable(m_chkTopVisible->GetValue());
 }
 
-void CPieceEditMultipleDialog::OnBtnClickChangeBack()
+void CPieceEditMultipleDialog::OnBtnClickChangeBack(wxCommandEvent& /*event*/)
 {
     UpdateTextControls();
 }
 
-void CPieceEditMultipleDialog::OnBtnClickChangeFront()
+void CPieceEditMultipleDialog::OnBtnClickChangeFront(wxCommandEvent& /*event*/)
 {
     UpdateTextControls();
 }
 
-BOOL CPieceEditMultipleDialog::OnInitDialog()
+bool CPieceEditMultipleDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    m_chkTopVisible.SetCheck(2);                    // Show as indeterminate
-    m_chkTopVisibleOwnersToo.SetCheck(0);
-    m_chkTopVisibleOwnersToo.EnableWindow(FALSE);
+    m_chkTopVisible->Set3StateValue(wxCHK_UNDETERMINED);                    // Show as indeterminate
+    m_chkTopVisibleOwnersToo->SetValue(false);
+    m_chkTopVisibleOwnersToo->Enable(FALSE);
 
-    m_chkSetFrontText.SetCheck(0);
-    m_chkSetBackText.SetCheck(0);
+    m_chkSetFrontText->SetValue(false);
+    m_chkSetBackText->SetValue(false);
 
     if (m_sides >= size_t(2))
     {
         for (size_t i = size_t(1); i < m_sides; ++i)
         {
             CB::string str = AfxFormatString1(IDS_SIDE_N, std::format("{}", i + size_t(1)));
-            if (m_currSide.AddString(str) != value_preserving_cast<int>(i - size_t(1)))
+            if (m_currSide->Append(str) != value_preserving_cast<int>(i - size_t(1)))
             {
                 AfxThrowMemoryException();
             }
         }
-        m_currSide.SetCurSel(0);
+        m_currSide->SetSelection(0);
     }
     else
     {
-        m_chkTopVisible.EnableWindow(false);
-        m_currSide.EnableWindow(false);
-        m_chkSetBackText.EnableWindow(false);
-        m_editBack.EnableWindow(false);
-        m_staticBackLabel.EnableWindow(false);
+        m_chkTopVisible->Enable(false);
+        m_currSide->Enable(false);
+        m_chkSetBackText->Enable(false);
+        m_editBack->Enable(false);
+        m_staticBackLabel->Enable(false);
     }
 
     // satisfy UpdateTextControls expectations
-    m_editFront.EnableWindow(false);
+    m_editFront->Enable(false);
     UpdateTextControls();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    return true;
 }
 
-void CPieceEditMultipleDialog::OnOK()
+bool CPieceEditMultipleDialog::TransferDataFromWindow()
 {
     UpdateTextControls();
 
-    m_bSetTopOnlyVisible = m_chkTopVisible.GetCheck() != 2;
-    m_bTopOnlyVisible = m_chkTopVisible.GetCheck() != 0;
-    m_bTopOnlyOwnersToo = m_chkTopVisibleOwnersToo.GetCheck() != 0;
+    m_bSetTopOnlyVisible = m_chkTopVisible->Get3StateValue() != wxCHK_UNDETERMINED;
+    m_bTopOnlyVisible = m_chkTopVisible->GetValue();
+    m_bTopOnlyOwnersToo = m_chkTopVisibleOwnersToo->GetValue();
 
-    CDialog::OnOK();
+    return wxDialog::TransferDataFromWindow();
 }
 
+#if 0
 BOOL CPieceEditMultipleDialog::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     return GetApp()->DoHelpTipHelp(pHelpInfo, adwHelpMap);
@@ -267,8 +264,9 @@ void CPieceEditMultipleDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
-void CPieceEditMultipleDialog::OnSelchangeCurrSide()
+void CPieceEditMultipleDialog::OnSelchangeCurrSide(wxCommandEvent& /*event*/)
 {
     UpdateTextControls();
 }

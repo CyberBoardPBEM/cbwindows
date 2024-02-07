@@ -548,7 +548,7 @@ void CGbxProjView::DoPieceEdit()
         }
 
         CPieceEditMultipleDialog dlg(sides);
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
 
         for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)
