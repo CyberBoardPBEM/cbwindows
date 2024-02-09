@@ -1,6 +1,6 @@
 // DlgPgrpn.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,26 +25,18 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPieceGroupNameDialog dialog
 
-class CPieceGroupNameDialog : public CDialog
+class CPieceGroupNameDialog : public wxDialog
 {
 // Construction
 public:
-    CPieceGroupNameDialog(CWnd* pParent = NULL);    // standard constructor
+    CPieceGroupNameDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPieceGroupNameDialog)
-    enum { IDD = IDD_PIECENEWGRP };
-    CEdit   m_editName;
-    CB::string m_strName;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editName;
+    CB_XRC_END_CTRLS_DECL()
 
-// Implementation
-protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CPieceGroupNameDialog)
-    virtual void OnOK();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+public:
+    wxString m_strName;
 };
