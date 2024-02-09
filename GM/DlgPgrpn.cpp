@@ -1,6 +1,6 @@
 // DlgPgrpn.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,41 +36,10 @@ static char THIS_FILE[] = __FILE__;
 // CPieceGroupNameDialog dialog
 
 
-CPieceGroupNameDialog::CPieceGroupNameDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPieceGroupNameDialog::IDD, pParent)
+CPieceGroupNameDialog::CPieceGroupNameDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CPieceGroupNameDialog)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CPieceGroupNameDialog)
     m_strName = "";
-    //}}AFX_DATA_INIT
-}
-
-void CPieceGroupNameDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPieceGroupNameDialog)
-    DDX_Control(pDX, IDC_D_PIECEGRP_NAME, m_editName);
-    DDX_Text(pDX, IDC_D_PIECEGRP_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CPieceGroupNameDialog, CDialog)
-    //{{AFX_MSG_MAP(CPieceGroupNameDialog)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CPieceGroupNameDialog message handlers
-
-void CPieceGroupNameDialog::OnOK()
-{
-    CB::string str = CB::string::GetWindowText(m_editName);
-    if (str.empty())
-    {
-        AfxMessageBox(IDS_ERR_PIECESETNAME, MB_OK | MB_ICONEXCLAMATION);
-        m_editName.SetFocus();
-        return;
-    }
-    CDialog::OnOK();
 }
