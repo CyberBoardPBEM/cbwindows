@@ -521,7 +521,7 @@ void CGbxProjView::DoPieceEdit()
 
         CPieceEditDialog dlg(*pDoc, pid);
 
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
     }
     else
