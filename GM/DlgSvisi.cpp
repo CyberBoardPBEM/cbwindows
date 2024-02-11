@@ -1,6 +1,6 @@
 // DlgSvisi.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,43 +34,32 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSetScaleVisibilityDialog dialog
 
-CSetScaleVisibilityDialog::CSetScaleVisibilityDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSetScaleVisibilityDialog::IDD, pParent)
+CSetScaleVisibilityDialog::CSetScaleVisibilityDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CSetScaleVisibilityDialog)
+        CB_XRC_CTRL_VAL(m_chkNaturalScale, m_bNaturalScale)
+        CB_XRC_CTRL_VAL(m_chkSmallScale, m_bSmallScale)
+        CB_XRC_CTRL_VAL(m_chkHalfScale, m_bHalfScale)
+        CB_XRC_CTRL_VAL(m_chkFullScale, m_bFullScale)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CSetScaleVisibilityDialog)
     m_bFullScale = FALSE;
     m_bHalfScale = FALSE;
     m_bSmallScale = FALSE;
     m_bNaturalScale = FALSE;
-    //}}AFX_DATA_INIT
 }
 
-void CSetScaleVisibilityDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSetScaleVisibilityDialog)
-    DDX_Control(pDX, IDC_D_SETVISI_NATURAL, m_chkNaturalScale);
-    DDX_Control(pDX, IDC_D_SETVISI_SMALL, m_chkSmallScale);
-    DDX_Control(pDX, IDC_D_SETVISI_HALF, m_chkHalfScale);
-    DDX_Control(pDX, IDC_D_SETVISI_FULL, m_chkFullScale);
-    DDX_Check(pDX, IDC_D_SETVISI_FULL, m_bFullScale);
-    DDX_Check(pDX, IDC_D_SETVISI_HALF, m_bHalfScale);
-    DDX_Check(pDX, IDC_D_SETVISI_SMALL, m_bSmallScale);
-    DDX_Check(pDX, IDC_D_SETVISI_NATURAL, m_bNaturalScale);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSetScaleVisibilityDialog, CDialog)
-    //{{AFX_MSG_MAP(CSetScaleVisibilityDialog)
+wxBEGIN_EVENT_TABLE(CSetScaleVisibilityDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    ON_BN_CLICKED(IDC_D_SETVISI_HALF, OnClickHalf)
-    ON_BN_CLICKED(IDC_D_SETVISI_FULL, OnClickFull)
-    ON_BN_CLICKED(IDC_D_SETVISI_SMALL, OnClickSmall)
-    ON_BN_CLICKED(IDC_D_SETVISI_NATURAL, OnClickNatural)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_CHECKBOX(XRCID("m_chkHalfScale"), OnClickHalf)
+    EVT_CHECKBOX(XRCID("m_chkFullScale"), OnClickFull)
+    EVT_CHECKBOX(XRCID("m_chkSmallScale"), OnClickSmall)
+    EVT_CHECKBOX(XRCID("m_chkNaturalScale"), OnClickNatural)
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -92,70 +81,82 @@ void CSetScaleVisibilityDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSetScaleVisibilityDialog message handlers
 
-void CSetScaleVisibilityDialog::OnClickFull()
+void CSetScaleVisibilityDialog::OnClickFull(wxCommandEvent& /*event*/)
 {
     // Enforce radio button nature of scales if natural scale active
-    if (m_chkNaturalScale.GetCheck() != 0)
+    if (m_chkNaturalScale->GetValue())
     {
-        m_chkHalfScale.SetCheck(0);
-        m_chkSmallScale.SetCheck(0);
+        m_chkHalfScale->SetValue(false);
+        m_chkSmallScale->SetValue(false);
     }
 }
 
-void CSetScaleVisibilityDialog::OnClickHalf()
+void CSetScaleVisibilityDialog::OnClickHalf(wxCommandEvent& /*event*/)
 {
     // Enforce radio button nature of scales if natural scale active
-    if (m_chkNaturalScale.GetCheck() != 0)
+    if (m_chkNaturalScale->GetValue())
     {
-        m_chkFullScale.SetCheck(0);
-        m_chkSmallScale.SetCheck(0);
+        m_chkFullScale->SetValue(false);
+        m_chkSmallScale->SetValue(false);
     }
 }
 
-void CSetScaleVisibilityDialog::OnClickSmall()
+void CSetScaleVisibilityDialog::OnClickSmall(wxCommandEvent& /*event*/)
 {
     // Enforce radio button nature of scales if natural scale active
-    if (m_chkNaturalScale.GetCheck() != 0)
+    if (m_chkNaturalScale->GetValue())
     {
-        m_chkFullScale.SetCheck(0);
-        m_chkHalfScale.SetCheck(0);
+        m_chkFullScale->SetValue(false);
+        m_chkHalfScale->SetValue(false);
     }
 }
 
-void CSetScaleVisibilityDialog::OnClickNatural()
+void CSetScaleVisibilityDialog::OnClickNatural(wxCommandEvent& /*event*/)
 {
-    if (m_chkNaturalScale.GetCheck() != 0)
+    if (m_chkNaturalScale->GetValue())
     {
         // If it is set, then only one scale can be checked.
-        if (m_chkFullScale.GetCheck() != 0)
+        if (m_chkFullScale->GetValue())
             OnClickFull();
-        else if (m_chkHalfScale.GetCheck() != 0)
+        else if (m_chkHalfScale->GetValue())
             OnClickHalf();
-        else if (m_chkSmallScale.GetCheck() != 0)
+        else if (m_chkSmallScale->GetValue())
             OnClickSmall();
     }
 }
 
-void CSetScaleVisibilityDialog::OnOK()
+bool CSetScaleVisibilityDialog::TransferDataFromWindow()
 {
-    if (!UpdateData())
-        return;
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
     if (m_bFullScale || m_bHalfScale || m_bSmallScale)
-        CDialog::OnOK();
+    {
+        return true;
+    }
     else
-        AfxMessageBox(IDS_ERR_NEEDONEOBJECT, MB_OK | MB_ICONEXCLAMATION);
+    {
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NEEDONEOBJECT),
+                    CB::GetAppName(),
+                    wxOK | wxICON_EXCLAMATION);
+        return false;
+    }
 }
 
-BOOL CSetScaleVisibilityDialog::OnInitDialog()
+bool CSetScaleVisibilityDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
     OnClickNatural();           // Ensure proper state of checks
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    return true;
 }
 
