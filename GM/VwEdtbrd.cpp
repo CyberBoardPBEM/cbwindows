@@ -1555,7 +1555,7 @@ void CBrdEditView::OnToolSetVisibleScale()
     dlg.m_bSmallScale = TRUE;
     dlg.m_bNaturalScale = FALSE;
 
-    if (dlg.DoModal())
+    if (dlg.ShowModal() == wxID_OK)
     {
         int mask =
             (dlg.m_bFullScale ? fullScale : 0) |

@@ -1,6 +1,6 @@
 // DlgSvisi.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,39 +25,58 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSetScaleVisibilityDialog dialog
 
-class CSetScaleVisibilityDialog : public CDialog
+class CSetScaleVisibilityDialog : public wxDialog
 {
 // Construction
 public:
-    CSetScaleVisibilityDialog(CWnd* pParent = NULL);    // standard constructor
+    CSetScaleVisibilityDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CSetScaleVisibilityDialog)
-    enum { IDD = IDD_SETSCALEVISIBILITY };
-    CButton m_chkNaturalScale;
-    CButton m_chkSmallScale;
-    CButton m_chkHalfScale;
-    CButton m_chkFullScale;
-    BOOL    m_bFullScale;
-    BOOL    m_bHalfScale;
-    BOOL    m_bSmallScale;
-    BOOL    m_bNaturalScale;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkNaturalScale;
+        RefPtr<wxCheckBox> m_chkSmallScale;
+        RefPtr<wxCheckBox> m_chkHalfScale;
+        RefPtr<wxCheckBox> m_chkFullScale;
+    CB_XRC_END_CTRLS_DECL()
+
+public:
+    bool    m_bFullScale;
+    bool    m_bHalfScale;
+    bool    m_bSmallScale;
+    bool    m_bNaturalScale;
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CSetScaleVisibilityDialog)
-    virtual void OnOK();
+    bool TransferDataFromWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    virtual BOOL OnInitDialog();
-    afx_msg void OnClickHalf();
-    afx_msg void OnClickFull();
-    afx_msg void OnClickSmall();
-    afx_msg void OnClickNatural();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    bool TransferDataToWindow() override;
+    void OnClickHalf(wxCommandEvent& event);
+    void OnClickHalf()
+    {
+        wxCommandEvent dummy;
+        OnClickHalf(dummy);
+    }
+    void OnClickFull(wxCommandEvent& event);
+    void OnClickFull()
+    {
+        wxCommandEvent dummy;
+        OnClickFull(dummy);
+    }
+    void OnClickSmall(wxCommandEvent& event);
+    void OnClickSmall()
+    {
+        wxCommandEvent dummy;
+        OnClickSmall(dummy);
+    }
+    void OnClickNatural(wxCommandEvent& event);
+    void OnClickNatural()
+    {
+        wxCommandEvent dummy;
+        OnClickNatural(dummy);
+    }
+    wxDECLARE_EVENT_TABLE();
 };
