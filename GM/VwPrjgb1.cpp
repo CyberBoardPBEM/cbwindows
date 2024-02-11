@@ -501,7 +501,7 @@ void CGbxProjView::DoPieceNew()
 
     CPieceNewDialog dlg(*(CGamDoc*)GetDocument(), nGrp);
 
-    dlg.DoModal();
+    dlg.ShowModal();
     GetDocument()->UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
     pDoc->SetModifiedFlag();
 }
