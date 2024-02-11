@@ -1,6 +1,6 @@
 // DlgPnew.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,40 +33,41 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPieceNewDialog dialog
 
-class CPieceNewDialog : public CDialog
+class CPieceNewDialog : public wxDialog
 {
 // Construction
 public:
-    CPieceNewDialog(CGamDoc& doc, size_t nPSet, CWnd* pParent = NULL);  // standard constructor
+    CPieceNewDialog(CGamDoc& doc, size_t nPSet, wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPieceNewDialog)
-    enum { IDD = IDD_PIECEFACTORY };
-    CButton m_chkTopOnlyOwnersToo;
-    CButton m_chkTopOnlyVisible;
-    CEdit   m_editTextFront;
-    CEdit   m_editTextBack;
-    CButton m_chkSameAsTop;
-    CTileListBox    m_listFtile;
-    CTileListBox    m_listBtile;
-    CComboBox   m_comboBtset;
-    CComboBox   m_comboFtset;
-    CPieceListBox m_listPieces;
-    CEdit   m_editQty;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkTopOnlyOwnersToo;
+        RefPtr<wxCheckBox> m_chkTopOnlyVisible;
+        RefPtr<wxTextCtrl> m_editTextFront;
+        RefPtr<wxTextCtrl> m_editTextBack;
+        RefPtr<wxCheckBox> m_chkSameAsTop;
+        RefPtr<CTileListBoxWx> m_listFtile;
+        RefPtr<CTileListBoxWx> m_listBtile;
+        RefPtr<wxChoice> m_comboBtset;
+        RefPtr<wxChoice> m_comboFtset;
+        RefPtr<CPieceListBoxWx> m_listPieces;
+        RefPtr<wxTextCtrl> m_editQty;
+        /* sides are 0-based since they are vector indices, but we
+            will display them 1-based for human readability */
+        RefPtr<wxChoice> m_numSides;
+        // m_currSide should contain 2 - sides
+        RefPtr<wxChoice> m_currSide;
+        RefPtr<wxStaticText> m_side_1;
+        RefPtr<wxButton> m_create;
+    CB_XRC_END_CTRLS_DECL()
+    size_t m_qty;
 
     RefPtr<CGamDoc> m_pDoc;             // Pointer to document
     const size_t m_nPSet;            // Number of piece set
 
 // Implementation
 protected:
-    /* sides are 0-based since they are vector indices, but we
-        will display them 1-based for human readability */
-    CComboBox m_numSides;
-    // m_currSide should contain 2 - sides
-    CComboBox m_currSide;
-    CStatic m_side_1;
-
     const CTileManager& m_pTMgr;        // Set internally from m_pDoc
     RefPtr<CPieceManager> m_pPMgr;        // Set internally from m_pDoc
     size_t m_prevSide = std::numeric_limits<size_t>::max();
@@ -75,29 +76,45 @@ protected:
 
     // -------- //
     void RefreshPieceList();
-    void SetupTileSetNames(CComboBox& pCombo) const;
-    void SetupTileListbox(const CComboBox& pCombo, CTileListBox& pList) const;
+    void SetupTileSetNames(wxChoice& pCombo) const;
+    void SetupTileListbox(const wxChoice& pCombo, CTileListBoxWx& pList) const;
     void CreatePiece();
-    TileID GetTileID(const CComboBox& pCombo, const CTileListBox& pList) const;
+    TileID GetTileID(const wxChoice& pCombo, const CTileListBoxWx& pList) const;
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CPieceNewDialog)
-    afx_msg void OnSelchangeBtset();
-    afx_msg void OnSelchangeFtset();
-    afx_msg void OnCreate();
-    afx_msg void OnSelchangeNumSides();
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
-    afx_msg void OnDblClkFrontTile();
-    afx_msg void OnCheckTextSameAsTop();
-    afx_msg void OnBtnClickTopVisible();
+    void OnSelchangeBtset(wxCommandEvent& event);
+    void OnSelchangeFtset(wxCommandEvent& event);
+    void OnCreate(wxCommandEvent& event);
+    void OnCreate()
+    {
+        wxCommandEvent dummy;
+        OnCreate(dummy);
+    }
+    void OnSelchangeNumSides(wxCommandEvent& event);
+    void OnSelchangeNumSides()
+    {
+        wxCommandEvent dummy;
+        OnSelchangeNumSides(dummy);
+    }
+    bool TransferDataToWindow() override;
+    void OnDblClkFrontTile(wxCommandEvent& event);
+    void OnCheckTextSameAsTop(wxCommandEvent& event);
+    void OnCheckTextSameAsTop()
+    {
+        wxCommandEvent dummy;
+        OnCheckTextSameAsTop(dummy);
+    }
+    void OnBtnClickTopVisible(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnSelchangeCurrSide();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnSelchangeCurrSide(wxCommandEvent& event);
+    void OnSelchangeCurrSide()
+    {
+        wxCommandEvent dummy;
+        OnSelchangeCurrSide(dummy);
+    }
+    wxDECLARE_EVENT_TABLE();
 };

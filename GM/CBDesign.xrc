@@ -114,8 +114,8 @@
                 <object class="wxFlexGridSizer" name="fgSizer3">
                   <vgap>0</vgap>
                   <hgap>0</hgap>
-                  <growablerows>0</growablerows>
-                  <growablecols>0</growablecols>
+                  <growablerows></growablerows>
+                  <growablecols></growablecols>
                   <rows>2</rows>
                   <cols>4</cols>
                   <object class="sizeritem">
@@ -229,8 +229,8 @@
                 <object class="wxFlexGridSizer" name="fgSizer4">
                   <vgap>0</vgap>
                   <hgap>0</hgap>
-                  <growablerows>0</growablerows>
-                  <growablecols>0</growablecols>
+                  <growablerows></growablerows>
+                  <growablecols></growablecols>
                   <rows>2</rows>
                   <cols>2</cols>
                   <object class="sizeritem">
@@ -406,8 +406,8 @@
             <object class="wxFlexGridSizer" name="fgSizer1">
               <vgap>0</vgap>
               <hgap>0</hgap>
-              <growablerows>0</growablerows>
-              <growablecols>0</growablecols>
+              <growablerows></growablerows>
+              <growablecols></growablecols>
               <rows>6</rows>
               <cols>2</cols>
               <object class="sizeritem">
@@ -539,8 +539,8 @@
             <object class="wxFlexGridSizer" name="fgSizer2">
               <vgap>0</vgap>
               <hgap>0</hgap>
-              <growablerows>0</growablerows>
-              <growablecols>0</growablecols>
+              <growablerows></growablerows>
+              <growablecols></growablecols>
               <rows>4</rows>
               <cols>2</cols>
               <object class="sizeritem">
@@ -640,8 +640,8 @@
             <object class="wxFlexGridSizer" name="fgSizer5">
               <vgap>0</vgap>
               <hgap>0</hgap>
-              <growablerows>0</growablerows>
-              <growablecols>0</growablecols>
+              <growablerows></growablerows>
+              <growablecols></growablecols>
               <rows>2</rows>
               <cols>4</cols>
               <object class="sizeritem">
@@ -1171,7 +1171,7 @@
         <object class="wxFlexGridSizer" name="fgSizer6">
           <vgap>0</vgap>
           <hgap>0</hgap>
-          <growablerows>0</growablerows>
+          <growablerows></growablerows>
           <growablecols>2</growablecols>
           <rows>2</rows>
           <cols>4</cols>
@@ -2499,6 +2499,294 @@
               <auth_needed>0</auth_needed>
               <markup>0</markup>
               <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
+  <object class="wxDialog" name="CPieceNewDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Create Pieces</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer78">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag></flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer79">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText74">
+              <label>Number of Sides:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxChoice" name="m_numSides">
+              <selection>0</selection>
+              <content/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer80">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>5</option>
+            <object class="wxBoxSizer" name="bSizer83">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer84">
+                  <minsize>600,-1</minsize>
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxEXPAND</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxFlexGridSizer" name="fgSizer7">
+                      <vgap>0</vgap>
+                      <hgap>0</hgap>
+                      <growablerows>2</growablerows>
+                      <growablecols>0,1</growablecols>
+                      <rows>3</rows>
+                      <cols>2</cols>
+                      <object class="sizeritem">
+                        <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxStaticText" name="m_side_1">
+                          <label>Side:  1</label>
+                          <wrap>-1</wrap>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxChoice" name="m_currSide">
+                          <selection>0</selection>
+                          <content/>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxChoice" name="m_comboFtset">
+                          <selection>0</selection>
+                          <content/>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxChoice" name="m_comboBtset">
+                          <selection>0</selection>
+                          <content/>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <object class="wxPanel" name="m_listFtile" subclass="CTileListBoxWx">
+                          <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <object class="wxPanel" name="m_listBtile" subclass="CTileListBoxWx">
+                          <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                        </object>
+                      </object>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag></flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxBoxSizer" name="bSizer85">
+                      <orient>wxVERTICAL</orient>
+                      <object class="spacer">
+                        <flag>wxEXPAND</flag>
+                        <border>5</border>
+                        <option>2</option>
+                        <size>0,0</size>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxALIGN_RIGHT</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <object class="wxBoxSizer" name="bSizer86">
+                          <orient>wxHORIZONTAL</orient>
+                          <object class="sizeritem">
+                            <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                            <border>5</border>
+                            <option>0</option>
+                            <object class="wxStaticText" name="m_staticText79">
+                              <style>wxALIGN_RIGHT</style>
+                              <label>Quantity:</label>
+                              <wrap>-1</wrap>
+                            </object>
+                          </object>
+                          <object class="sizeritem">
+                            <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                            <border>5</border>
+                            <option>0</option>
+                            <object class="wxTextCtrl" name="m_editQty">
+                              <value></value>
+                            </object>
+                          </object>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxButton" name="m_create">
+                          <label>Create Piece -&gt;</label>
+                          <default>0</default>
+                          <auth_needed>0</auth_needed>
+                          <markup>0</markup>
+                          <bitmap/>
+                        </object>
+                      </object>
+                      <object class="spacer">
+                        <flag>wxEXPAND</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <size>0,0</size>
+                      </object>
+                      <object class="sizeritem">
+                        <flag>wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                        <border>5</border>
+                        <option>0</option>
+                        <object class="wxButton" name="wxID_OK">
+                          <label>Close</label>
+                          <default>1</default>
+                          <auth_needed>0</auth_needed>
+                          <markup>0</markup>
+                          <bitmap/>
+                        </object>
+                      </object>
+                      <object class="spacer">
+                        <flag>wxEXPAND</flag>
+                        <border>5</border>
+                        <option>1</option>
+                        <size>0,0</size>
+                      </object>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkTopOnlyVisible">
+                  <label>Only show top image during games.</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkTopOnlyOwnersToo">
+                  <label>Enforce above option for owned pieces too.</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText76">
+                  <label>Associate this piece&apos;s front with the following text:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxTextCtrl" name="m_editTextFront">
+                  <style>wxTE_MULTILINE</style>
+                  <value></value>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxCheckBox" name="m_chkSameAsTop">
+                  <label>All sides have the same text.</label>
+                  <checked>0</checked>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText77">
+                  <label>Associate current side with the following text:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxTextCtrl" name="m_editTextBack">
+                  <style>wxTE_MULTILINE</style>
+                  <value></value>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>2</option>
+            <object class="wxBoxSizer" name="bSizer82">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText75">
+                  <label>Pieces:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxPanel" name="m_listPieces" subclass="CPieceListBoxWx">
+                  <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                </object>
+              </object>
             </object>
           </object>
         </object>
