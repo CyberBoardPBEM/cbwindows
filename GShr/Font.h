@@ -89,9 +89,10 @@ public:
     // -------- //
     FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const CB::string& pszFName);
     // N.B.:  angle is clockwise per CB convention
-    void FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle = 0);
-    HFONT GetFontHandle(FontID id, int angle = 0);
+    void FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle = 0) const;
+    HFONT GetFontHandle(FontID id, int angle = 0) const;
     void ReleaseAllFontHandles(void);
+    wxFontData GetFontData(FontID id) const;
     // -------- //
     int GetFlags(FontID id) const { return id != 0 ? (*id)->taFlags : 0; }
     int GetSize(FontID id) const { return id != 0 ? (*id)->iTypeSize : 0; }
@@ -103,6 +104,9 @@ public:
     // -------- //
     void Archive(CArchive& ar, FontID& rfontID);
 };
+
+wxFont ToWxFont(FontID fid);
+FontID ToFontID(wxFont f);
 
 #endif
 

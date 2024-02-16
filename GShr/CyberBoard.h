@@ -71,6 +71,8 @@
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
 #include <wx/dialog.h>
+#include <wx/fontdlg.h>
+#include <wx/fontutil.h>
 #include <wx/image.h>
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
