@@ -1048,7 +1048,7 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
     dlg.m_pFontMgr = CGamDoc::GetFontManager();
     dlg.SetFontID(m_pBMgr->GetFontID());
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         if (!dlg.m_strText.empty())
         {
@@ -1062,11 +1062,11 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
 void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
 {
     CTextObjDialog dlg;
-    dlg.m_strText = pDObj->m_text;
+    dlg.m_strText = wxString(pDObj->m_text);
     dlg.m_pFontMgr = CGamDoc::GetFontManager();
     dlg.SetFontID(pDObj->m_fontID);
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         if (!dlg.m_strText.empty())
         {

@@ -1,6 +1,6 @@
 // DlgTexto.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,34 +27,38 @@
 
 class CFontTbl;
 
-class CTextObjDialog : public CDialog
+class CTextObjDialog : public wxDialog
 {
 // Construction
 public:
-    CTextObjDialog(CWnd* pParent = NULL);   // standard constructor
+    CTextObjDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
     virtual ~CTextObjDialog();
 
 // Dialog Data
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxButton> m_btnTxtPropFont;
+        RefPtr<wxTextCtrl> m_editText;
+    CB_XRC_END_CTRLS_DECL()
+
+public:
     CFontTbl*   m_pFontMgr;
     FontID      m_fontID;           // Current font.
+private:
     BOOL        m_bNewFont;         // m_bNewFont selected
 
-    //{{AFX_DATA(CTextObjDialog)
-    enum { IDD = IDD_TEXTPROP };
-    CB::string m_strText;
-    //}}AFX_DATA
+public:
+    wxString m_strText;
 
     void SetFontID(FontID fontID);
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
     // Generated message map functions
-    //{{AFX_MSG(CTextObjDialog)
-    afx_msg void OnBtnTxtPropFont();
+    void OnBtnTxtPropFont(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
