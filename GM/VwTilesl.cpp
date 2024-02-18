@@ -304,10 +304,10 @@ void CTileSelView::DoTileResizeDialog()
     CResizeTileDialog dlg;
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
     dlg.m_pBMgr = GetDocument().GetBoardManager();
-    dlg.m_bRescaleBMaps = TRUE;
+    dlg.m_bRescaleBMaps = true;
     dlg.m_nWidth = m_sizeFull.cx;
     dlg.m_nHeight = m_sizeFull.cy;
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         // Copy current bitmaps for undo
         PurgeUndo();            // Make sure no mem leaks.
