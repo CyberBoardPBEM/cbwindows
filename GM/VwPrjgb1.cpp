@@ -240,12 +240,12 @@ void CGbxProjView::DoTileGroupProperty()
 
     CTSetPropDialog dlg;
     CTileManager* pTMgr = pDoc->GetTileManager();
-    dlg.m_crTrans = pTMgr->GetTransparentColor();
-    dlg.m_strName = pTMgr->GetTileSet(nGrp).GetName();
+    dlg.m_crTrans = CB::Convert(pTMgr->GetTransparentColor());
+    dlg.m_strName = wxString(pTMgr->GetTileSet(nGrp).GetName());
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
-        pTMgr->SetTransparentColor(dlg.m_crTrans);
+        pTMgr->SetTransparentColor(CB::Convert(dlg.m_crTrans));
         pTMgr->GetTileSet(nGrp).SetName(dlg.m_strName);
         pDoc->UpdateAllViews(NULL, HINT_TILESETPROPCHANGE, NULL);
         pDoc->SetModifiedFlag();

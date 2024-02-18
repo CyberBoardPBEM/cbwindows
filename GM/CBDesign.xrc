@@ -3352,4 +3352,105 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CTSetPropDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Tile Group Properties</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer101">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer102">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag></flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticBoxSizer" name="sbSizer8">
+              <orient>wxHORIZONTAL</orient>
+              <label>For All Tiles:</label>
+              <object class="sizeritem">
+                <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText89">
+                  <label>Transparent Pixel Color:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxColourPickerCtrl" name="m_cpTrans">
+                  <style>wxCLRP_DEFAULT_STYLE</style>
+                  <value>#000000</value>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer103">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_OK">
+                  <label>OK</label>
+                  <default>1</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_CANCEL">
+                  <label>Cancel</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticBoxSizer" name="sbSizer7">
+          <orient>wxVERTICAL</orient>
+          <label>For This Tile Group</label>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText90">
+              <label>Group Name:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxTextCtrl" name="m_editName">
+              <value></value>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
 </resource>
