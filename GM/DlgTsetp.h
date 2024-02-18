@@ -1,6 +1,6 @@
 // DlgTsetp.h - Tile properties dialog
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,32 +25,30 @@
 /////////////////////////////////////////////////////////////////////////////
 // CTSetPropDialog dialog
 
-class CTSetPropDialog : public CDialog
+class CTSetPropDialog : public wxDialog
 {
 // Construction
 public:
-    CTSetPropDialog(CWnd* pParent = NULL);
+    CTSetPropDialog(wxWindow* parent = &CB::GetMainWndWx());
 
 // Dialog Data
-    //{{AFX_DATA(CTSetPropDialog)
-    enum { IDD = IDD_TILESETPROP };
-    CMFCColorButton m_cpTrans;
-    CB::string m_strName;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxColourPickerCtrl> m_cpTrans;
+        RefPtr<wxTextCtrl> m_editName;
+    CB_XRC_END_CTRLS_DECL()
 
-    COLORREF    m_crTrans;
+public:
+    wxString m_strName;
+
+    wxColour    m_crTrans;
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CTSetPropDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
