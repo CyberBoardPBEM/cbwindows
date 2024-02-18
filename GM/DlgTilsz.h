@@ -1,6 +1,6 @@
 // DlgTilsz.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,24 +27,27 @@
 
 class CBoardManager;
 
-class CResizeTileDialog : public CDialog
+class CResizeTileDialog : public wxDialog
 {
 // Construction
 public:
-    CResizeTileDialog(CWnd* pParent = NULL);    // standard constructor
+    CResizeTileDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CResizeTileDialog)
-    enum { IDD = IDD_TILERESIZE };
-    CEdit   m_editHeight;
-    CEdit   m_editWidth;
-    CStatic m_staticCurWd;
-    CStatic m_staticCurHt;
-    CComboBox   m_comboBrdName;
-    BOOL    m_bRescaleBMaps;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editHeight;
+        RefPtr<wxTextCtrl> m_editWidth;
+        RefPtr<wxStaticText> m_staticCurWd;
+        RefPtr<wxStaticText> m_staticCurHt;
+        RefPtr<wxChoice> m_comboBrdName;
+        RefPtr<wxCheckBox> m_chkRescaleBMaps;
+    CB_XRC_END_CTRLS_DECL()
+
+public:
+    bool    m_bRescaleBMaps;
     UINT    m_nWidth;
     UINT    m_nHeight;
-    //}}AFX_DATA
 
     UINT    m_nHalfHeight;          // If 0, caller computes half size
     UINT    m_nHalfWidth;           // If 0, caller computes half size
@@ -52,17 +55,14 @@ public:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CResizeTileDialog)
-    virtual BOOL OnInitDialog();
-    afx_msg void OnSelchangeBrdName();
-    afx_msg void OnChangeTileWd();
-    afx_msg void OnChangeTileHt();
-    virtual void OnOK();
+    bool TransferDataToWindow() override;
+    void OnSelchangeBrdName(wxCommandEvent& event);
+    void OnChangeTileWd(wxCommandEvent& event);
+    void OnChangeTileHt(wxCommandEvent& event);
+    bool TransferDataFromWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };

@@ -2858,6 +2858,215 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CResizeTileDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Resize Tile</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer94">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer95">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxFlexGridSizer" name="fgSizer8">
+              <vgap>0</vgap>
+              <hgap>0</hgap>
+              <growablerows></growablerows>
+              <growablecols></growablecols>
+              <rows>2</rows>
+              <cols>2</cols>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer98">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText85">
+                      <label>Tile Height:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxTextCtrl" name="m_editHeight">
+                      <value></value>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer100">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText86">
+                      <label>Tile Width:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL</flag>
+                    <border>5</border>
+                    <option>1</option>
+                    <object class="wxTextCtrl" name="m_editWidth">
+                      <value></value>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer103">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText87">
+                      <label>Current Height:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticCurHt">
+                      <label>999</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer104">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticText89">
+                      <label>Current Width:</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxStaticText" name="m_staticCurWd">
+                      <label>999</label>
+                      <wrap>-1</wrap>
+                    </object>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer97">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_OK">
+                  <label>OK</label>
+                  <default>1</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxBOTTOM|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_CANCEL">
+                  <label>Cancel</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxFlexGridSizer" name="fgSizer9">
+          <vgap>0</vgap>
+          <hgap>0</hgap>
+          <growablerows></growablerows>
+          <growablecols></growablecols>
+          <rows>2</rows>
+          <cols>2</cols>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText91">
+              <label>Set tile size based on board:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <flag>wxBOTTOM|wxRIGHT|wxLEFT|wxEXPAND|wxALIGN_CENTER_VERTICAL</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxChoice" name="m_comboBrdName">
+              <selection>0</selection>
+              <content/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALIGN_CENTER_VERTICAL|wxBOTTOM|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxCheckBox" name="m_chkRescaleBMaps">
+              <label>Rescale bitmaps to new size</label>
+              <checked>0</checked>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CSetGameboxPassword">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Set Password</title>
