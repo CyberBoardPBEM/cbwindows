@@ -465,9 +465,7 @@ OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight)
 
 CArchive& AFXAPI operator<<(CArchive& ar, const CDib& dib)
 {
-#if defined(GPLAY)
-    ASSERT(!"dead code");
-#endif
+    // GPLAY uses this when READing a geoboard
     if (CB::GetFeatures(ar).Check(ftrImgBMPZlib))
     {
         return WriteImgBMPZlib(ar, dib);
