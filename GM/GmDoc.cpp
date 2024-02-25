@@ -110,8 +110,7 @@ END_MESSAGE_MAP()
 
 ///////////////////////////////////////////////////////////////////////
 
-CGamDoc::CGamDoc() :
-    m_palTile(*this)
+CGamDoc::CGamDoc()
 {
     m_pBMgr = NULL;
     m_pTMgr = NULL;
@@ -166,7 +165,7 @@ void CGamDoc::OnIdle(BOOL bActive)
     if (bActive)
     {
         CDockTilePalette& pDockTile = GetMainFrame()->GetDockingTileWindow();
-        pDockTile.SetChild(&m_palTile);
+        pDockTile.SetChild(m_palTile.get());
         GetMainFrame()->UpdatePaletteWindow(pDockTile, tblBrd,
             GetMainFrame()->IsTilePaletteOn());
     }
@@ -183,7 +182,7 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
         wHint == HINT_TILESETPROPCHANGE ||
         wHint == HINT_ALWAYSUPDATE
         )
-        m_palTile.UpdatePaletteContents();
+        m_palTile->UpdatePaletteContents();
     CDocument::UpdateAllViews(pSender, lHint, pHint);
 }
 
@@ -260,14 +259,14 @@ void CGamDoc::DeleteContents()
     m_pPMgr = NULL;
     if (m_pMMgr) delete m_pMMgr;
     m_pMMgr = NULL;
-    if (m_palTile.m_hWnd != NULL)
+    if (m_palTile)
     {
-        CDockTilePalette* pFrame = m_palTile.GetDockingFrame();
+        CDockTilePalette* pFrame = m_palTile->GetDockingFrame();
         if (pFrame != NULL)
         {
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
-        m_palTile.DestroyWindow();
+        m_palTile = nullptr;
     }
 
     m_bMajorRevIncd = FALSE;
@@ -318,7 +317,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle
 BOOL CGamDoc::NotifyTileDatabaseChange(BOOL bDelScan /* = TRUE */)
 {
 //  GetMainFrame()->GetTilePalWnd()->SynchronizeTileToolPalette();
-    m_palTile.UpdatePaletteContents();
+    m_palTile->UpdatePaletteContents();
 
     // Verify the boards etc...aren't using nonexistant TileID's.
     if (bDelScan)
@@ -445,7 +444,7 @@ BOOL CGamDoc::SetupBlankBoard()
     m_pMMgr->SetTileManager(&*m_pTMgr);
 
     // Setup tile palette.
-    m_palTile.Create(GetMainFrame()->GetDockingTileWindow());
+    m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
     return TRUE;
 }
 
@@ -811,7 +810,7 @@ void CGamDoc::Serialize(CArchive& ar)
         END_CATCH_ALL
 
         // Setup tile palette.
-        m_palTile.Create(GetMainFrame()->GetDockingTileWindow());
+        m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
     }
 }
 

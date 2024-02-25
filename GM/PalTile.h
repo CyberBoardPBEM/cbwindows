@@ -41,8 +41,7 @@ class CTilePalette : public CWnd
 {
 // Construction
 public:
-    CTilePalette(const CGamDoc& pDoc);
-    BOOL Create(CWnd& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
+    CTilePalette(const CGamDoc& pDoc, CWnd& pOwnerWnd);
 
 // Attributes
 public:

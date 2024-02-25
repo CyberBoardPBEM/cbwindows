@@ -1,6 +1,6 @@
 // GmDoc.h : interface of the CGamDoc class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -220,7 +220,7 @@ public:
     const CPieceManager* GetPieceManager() const { return m_pPMgr; }
     CPieceManager* GetPieceManager() { return const_cast<CPieceManager*>(std::as_const(*this).GetPieceManager()); }
     CMarkManager* GetMarkManager() { return m_pMMgr; }
-    const CTilePalette* GetTilePalWnd() const { return &m_palTile; }
+    const CTilePalette* GetTilePalWnd() const { return m_palTile.get(); }
     // -------- //
     BOOL GetStickyDrawTools() { return m_bStickyDrawTools; }
     // -------- //
@@ -309,7 +309,16 @@ protected:
 
     BOOL            m_bMajorRevIncd;// Major rev number was increased.
 
-    CTilePalette    m_palTile;      // Tile palette child window is in document
+    class WindowDestroy
+    {
+    public:
+        void operator()(CWnd* p) const
+        {
+            p->DestroyWindow();
+            delete p;
+        }
+    };
+    CB::propagate_const<std::unique_ptr<CTilePalette, WindowDestroy>> m_palTile;      // Tile palette child window is in document
 
     LPVOID  m_lpvCreateParam;       // Used to pass parameters to new views
 

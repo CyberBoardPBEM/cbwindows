@@ -55,27 +55,24 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTilePalette::CTilePalette(const CGamDoc& pDoc) :
+CTilePalette::CTilePalette(const CGamDoc& pDoc, CWnd& pOwnerWnd) :
     m_pDoc(pDoc)
 {
     m_pDockingFrame = NULL;
     m_listTile.SetDocument(&pDoc);
     m_listTile.EnableDrag(TRUE);
     m_nComboHeight = 0;
-}
 
-BOOL CTilePalette::Create(CWnd& pOwnerWnd, DWORD dwStyle, UINT nID)
-{
-    dwStyle |= WS_CHILD | WS_VISIBLE;
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
+    UINT nID = 0;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
         CRect(0, 0, 200, 100), &pOwnerWnd, nID))
     {
         TRACE("Failed to create Tile palette window.\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     UpdatePaletteContents();
-    return TRUE;
 }
 
 int CTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
