@@ -100,14 +100,14 @@ public:
     {
         TileID m_tileID;
         CSize m_size;
-        CGamDoc* m_gamDoc;
+        const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_TILELIST>
     {
         const std::vector<TileID>* m_tileIDList;
         CSize m_size;
-        CGamDoc* m_gamDoc;
+        const CGamDoc* m_gamDoc;
     };
     template<>
     struct SubInfo<DRAG_PIECE>

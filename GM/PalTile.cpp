@@ -1,6 +1,6 @@
 // PalTile.cpp - Tile palette window
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,8 +35,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CTilePalette, CWnd)
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -57,19 +55,20 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTilePalette::CTilePalette()
+CTilePalette::CTilePalette(const CGamDoc& pDoc) :
+    m_pDoc(pDoc)
 {
-    m_pDoc = NULL;
     m_pDockingFrame = NULL;
+    m_listTile.SetDocument(&pDoc);
     m_listTile.EnableDrag(TRUE);
     m_nComboHeight = 0;
 }
 
-BOOL CTilePalette::Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID)
+BOOL CTilePalette::Create(CWnd& pOwnerWnd, DWORD dwStyle, UINT nID)
 {
     dwStyle |= WS_CHILD | WS_VISIBLE;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), pOwnerWnd, nID))
+        CRect(0, 0, 200, 100), &pOwnerWnd, nID))
     {
         TRACE("Failed to create Tile palette window.\n");
         return FALSE;
@@ -131,7 +130,7 @@ LRESULT CTilePalette::OnPaletteHide(WPARAM, LPARAM)
 
 /////////////////////////////////////////////////////////////////////////////
 
-TileID CTilePalette::GetCurrentTileID()
+TileID CTilePalette::GetCurrentTileID() const
 {
     if (m_hWnd == NULL)
         return nullTid;
@@ -158,19 +157,9 @@ void CTilePalette::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTilePalette::SetDocument(CGamDoc *pDoc)
-{
-    ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    m_pDoc = pDoc;
-    m_listTile.SetDocument(pDoc);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 void CTilePalette::LoadTileNameList()
 {
-    ASSERT(m_pDoc);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    const CTileManager* pTMgr = m_pDoc.GetTileManager();
     ASSERT(pTMgr != NULL);
 
     m_comboTGrp.ResetContent();
@@ -197,8 +186,7 @@ void CTilePalette::UpdatePaletteContents()
 
 void CTilePalette::UpdateTileList()
 {
-    ASSERT(m_pDoc);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    const CTileManager* pTMgr = m_pDoc.GetTileManager();
     ASSERT(pTMgr != NULL);
 
     int nSel = m_comboTGrp.GetCurSel();
@@ -249,7 +237,7 @@ void CTilePalette::OnTileNameCbnSelchange()
 LRESULT CTilePalette::OnGetDragSize(WPARAM wParam, LPARAM lParam)
 {
     TileID tid = GetCurrentTileID();
-    CTile tile = m_pDoc->GetTileManager()->GetTile(tid, fullScale);
+    CTile tile = m_pDoc.GetTileManager()->GetTile(tid, fullScale);
     CheckedDeref(reinterpret_cast<CSize*>(wParam)) = tile.GetSize();
     return 1;
 }

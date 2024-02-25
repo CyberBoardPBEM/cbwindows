@@ -1,6 +1,6 @@
 // PalTile.h - Tile palette window
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 #ifndef _PALTILE_H
 #define _PALTILE_H
 
+#include    "FrmDockTile.h"
 #ifndef     _LBOXTILE_H
 #include    "LBoxTile.h"
 #endif
@@ -38,16 +39,14 @@ class CGamDoc;
 
 class CTilePalette : public CWnd
 {
-    DECLARE_DYNCREATE(CTilePalette)
 // Construction
 public:
-    CTilePalette();
-    BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
+    CTilePalette(const CGamDoc& pDoc);
+    BOOL Create(CWnd& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
 
 // Attributes
 public:
-    void SetDocument(CGamDoc *pDoc);
-    TileID GetCurrentTileID();
+    TileID GetCurrentTileID() const;
 
 // Operations
 public:
@@ -57,8 +56,8 @@ public:
 
 // Implementation
 protected:
-    CGamDoc*    m_pDoc;
-    CDockablePane* m_pDockingFrame;
+    const CGamDoc& m_pDoc;
+    CDockTilePalette* m_pDockingFrame;
 
     // Enclosed controls....
     CComboBox   m_comboTGrp;
@@ -72,8 +71,8 @@ protected:
 public:
     virtual void PostNcDestroy();
 
-    CDockablePane* GetDockingFrame() { return m_pDockingFrame; }
-    void SetDockingFrame(CDockablePane* pDockingFrame)
+    CDockTilePalette* GetDockingFrame() const { return m_pDockingFrame; }
+    void SetDockingFrame(CDockTilePalette* pDockingFrame)
     {
         m_pDockingFrame = pDockingFrame;
         SetParent(pDockingFrame);
