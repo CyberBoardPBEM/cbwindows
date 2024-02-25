@@ -56,7 +56,7 @@ public:
 
     CView* GetActiveView() const;
 
-    CDockTilePalette* GetDockingTileWindow() { return &m_wndTilePal; }
+    CDockTilePalette& GetDockingTileWindow() { return m_wndTilePal; }
 
     BOOL IsTilePaletteOn() { return m_bTilePalOn; }
 
@@ -80,8 +80,8 @@ public:
     virtual void AssertValid() const;
     virtual void Dump(CDumpContext& dc) const;
 #endif
-    void UpdatePaletteWindow(CWnd* pWnd, CRuntimeClass** pRtc, BOOL IsOn);
-    BOOL IsQualifyingView(CWnd* pWnd, CRuntimeClass** pRtc);
+    void UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL IsOn);
+    BOOL IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc);
 
  protected: // control bar embedded members
     CMFCMenuBar     m_wndMenuBar;       // Main menu

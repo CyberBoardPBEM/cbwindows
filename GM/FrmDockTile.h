@@ -27,6 +27,8 @@
 
 #pragma once
 
+class CTilePalette;
+
 /////////////////////////////////////////////////////////////////////////////
 // CDockTilePalette window
 
@@ -38,7 +40,7 @@ public:
     CDockTilePalette();
 
 // Attributes
-public:
+private:
     CTilePalette*   m_pChildWnd;
 // Operations
 public:

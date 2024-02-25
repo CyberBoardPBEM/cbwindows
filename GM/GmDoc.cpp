@@ -1,6 +1,6 @@
 // GmDoc.cpp : implementation of the CGamDoc class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -110,7 +110,8 @@ END_MESSAGE_MAP()
 
 ///////////////////////////////////////////////////////////////////////
 
-CGamDoc::CGamDoc()
+CGamDoc::CGamDoc() :
+    m_palTile(*this)
 {
     m_pBMgr = NULL;
     m_pTMgr = NULL;
@@ -138,8 +139,6 @@ CGamDoc::CGamDoc()
     m_wReserved4 = 0;
 
     m_pCustomColors = CColorPalette::CustomColorsAllocate();
-
-    m_palTile.SetDocument(this);
 }
 
 CGamDoc::~CGamDoc()
@@ -160,14 +159,14 @@ void CGamDoc::OnCloseDocument()
 
 /////////////////////////////////////////////////////////////////////////////
 
-static CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
+static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 
 void CGamDoc::OnIdle(BOOL bActive)
 {
     if (bActive)
     {
-        CDockTilePalette* pDockTile = GetMainFrame()->GetDockingTileWindow();
-        pDockTile->SetChild(&m_palTile);
+        CDockTilePalette& pDockTile = GetMainFrame()->GetDockingTileWindow();
+        pDockTile.SetChild(&m_palTile);
         GetMainFrame()->UpdatePaletteWindow(pDockTile, tblBrd,
             GetMainFrame()->IsTilePaletteOn());
     }
@@ -263,10 +262,9 @@ void CGamDoc::DeleteContents()
     m_pMMgr = NULL;
     if (m_palTile.m_hWnd != NULL)
     {
-        CDockTilePalette* pFrame = (CDockTilePalette*)m_palTile.GetDockingFrame();
+        CDockTilePalette* pFrame = m_palTile.GetDockingFrame();
         if (pFrame != NULL)
         {
-            ASSERT_KINDOF(CDockTilePalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
         m_palTile.DestroyWindow();

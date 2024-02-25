@@ -220,7 +220,7 @@ public:
     const CPieceManager* GetPieceManager() const { return m_pPMgr; }
     CPieceManager* GetPieceManager() { return const_cast<CPieceManager*>(std::as_const(*this).GetPieceManager()); }
     CMarkManager* GetMarkManager() { return m_pMMgr; }
-    CTilePalette* GetTilePalWnd() { return &m_palTile; }
+    const CTilePalette* GetTilePalWnd() const { return &m_palTile; }
     // -------- //
     BOOL GetStickyDrawTools() { return m_bStickyDrawTools; }
     // -------- //

@@ -51,7 +51,7 @@ CTileListBox::CTileListBox()
 CSize CTileListBox::OnItemSize(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    const CTileManager* pTMgr = m_pDoc->GetTileManager();
     ASSERT(pTMgr != NULL);
 
     TileID tid = MapIndexToItem(nIndex);
@@ -96,7 +96,7 @@ void CTileListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
     {
         ASSERT(m_pDoc != NULL);
-        CTileManager* pTMgr = m_pDoc->GetTileManager();
+        const CTileManager* pTMgr = m_pDoc->GetTileManager();
         ASSERT(pTMgr != NULL);
 
         TileID tid = MapIndexToItem(nIndex);

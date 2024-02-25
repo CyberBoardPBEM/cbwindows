@@ -1,6 +1,6 @@
 // FrmMain.cpp : implementation of the CMainFrame class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -94,13 +94,13 @@ static UINT toolbars[] =
 ///////////////////////////////////////////////////////////////////////
 // These are used to qualify palette visiblility...
 
-static CRuntimeClass *tblColor[] = { RUNTIME_CLASS(CBrdEditView),
+static const CRuntimeClass *tblColor[] = { RUNTIME_CLASS(CBrdEditView),
     RUNTIME_CLASS(CBitEditView), RUNTIME_CLASS(CTileSelView), NULL };
 
-static CRuntimeClass *tblBit[] = { RUNTIME_CLASS(CBitEditView),
+static const CRuntimeClass *tblBit[] = { RUNTIME_CLASS(CBitEditView),
     RUNTIME_CLASS(CTileSelView), NULL };
 
-static CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
+static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
@@ -410,20 +410,20 @@ BOOL CMainFrame::OnQueryNewPalette()
 // pRtc points to a NULL terminated list of CRuntimeClass pointers
 // specifying qualifying active views for the specified palette.
 
-void CMainFrame::UpdatePaletteWindow(CWnd* pWnd, CRuntimeClass** pRtc, BOOL bIsOn)
+void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL bIsOn)
 {
-    if (pWnd->m_hWnd != NULL)       // Handle exists if palette allowed
+    if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
-        BOOL bIsControlBar = pWnd->IsKindOf(RUNTIME_CLASS(CBasePane));
-        BOOL bVisible = ((pWnd->GetStyle() & WS_VISIBLE) != 0);
+        BOOL bIsControlBar = pWnd.IsKindOf(RUNTIME_CLASS(CBasePane));
+        BOOL bVisible = ((pWnd.GetStyle() & WS_VISIBLE) != 0);
 
         CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
         if (pMDIChild == NULL || pMDIChild->IsIconic())
         {
             if (!bIsControlBar && bVisible)
-                pWnd->ShowWindow(SW_HIDE);
+                pWnd.ShowWindow(SW_HIDE);
             else if (bIsControlBar && bVisible)
-                ShowPane((CBasePane*)pWnd, FALSE, FALSE, FALSE);
+                ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
         }
         else
         {
@@ -437,34 +437,34 @@ void CMainFrame::UpdatePaletteWindow(CWnd* pWnd, CRuntimeClass** pRtc, BOOL bIsO
                     if (bIsOn && !bVisible)
                     {
                         if (!bIsControlBar)
-                            pWnd->ShowWindow(SW_SHOW);
+                            pWnd.ShowWindow(SW_SHOW);
                         else
-                            ShowPane((CBasePane*)pWnd, TRUE, FALSE, FALSE);
+                            ShowPane((CBasePane*)&pWnd, TRUE, FALSE, FALSE);
                     }
                     else if (!bIsOn && bVisible)
                     {
                         if (!bIsControlBar)
-                            pWnd->ShowWindow(SW_HIDE);
+                            pWnd.ShowWindow(SW_HIDE);
                         else
-                            ShowPane((CBasePane*)pWnd, FALSE, FALSE, FALSE);
+                            ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
                     }
                     return;
                 }
                 pRtc++;
             }
             if (!bIsControlBar && bVisible)
-                pWnd->ShowWindow(SW_HIDE);
+                pWnd.ShowWindow(SW_HIDE);
             else if (bIsControlBar && bVisible)
-                ShowPane((CBasePane*)pWnd, FALSE, FALSE, FALSE);
+                ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
         }
     }
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CMainFrame::IsQualifyingView(CWnd* pWnd, CRuntimeClass** pRtc)
+BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
 {
-    if (pWnd->m_hWnd != NULL)       // Handle exists if palette allowed
+    if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
         CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
         if (pMDIChild != NULL)
@@ -490,7 +490,7 @@ void CMainFrame::OnIdle()
     if (IsIconic())         // No window palette processing if app minimized
         return;
 
-    UpdatePaletteWindow(&m_wndColorPal, tblColor, m_bColorPalOn);
+    UpdatePaletteWindow(m_wndColorPal, tblColor, m_bColorPalOn);
 
     if (GetCurrentDocument() == NULL)
         ShowPane(&m_wndTilePal, FALSE, FALSE, TRUE);
@@ -547,7 +547,7 @@ void CMainFrame::OnWindowColorPal()
 void CMainFrame::OnUpdateWindowColorPal(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_bColorPalOn);
-    pCmdUI->Enable(IsQualifyingView(&m_wndColorPal, tblColor));
+    pCmdUI->Enable(IsQualifyingView(m_wndColorPal, tblColor));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -560,5 +560,5 @@ void CMainFrame::OnWindowTilePalette()
 void CMainFrame::OnUpdateWindowTilePalette(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_bTilePalOn);
-    pCmdUI->Enable(IsQualifyingView(&m_wndTilePal, tblBrd));
+    pCmdUI->Enable(IsQualifyingView(m_wndTilePal, tblBrd));
 }
