@@ -286,7 +286,26 @@ public:
         std::format_to(ctx.out(), ",");
         BASE::format(p.y, ctx);
         return std::format_to(ctx.out(), ")");
-}
+    }
+};
+
+template<typename CharT>
+struct std::formatter<wxSize, CharT> : private std::formatter<decltype(wxSize::x), CharT>
+{
+private:
+    using BASE = formatter<decltype(wxSize::x), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxSize& s, FormatContext& ctx) const
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(s.x, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(s.y, ctx);
+        return std::format_to(ctx.out(), ")");
+    }
 };
 
 template<typename CharT>
