@@ -48,9 +48,6 @@ public:
 public:
     virtual ~CDockMarkPalette();
 
-protected:
-    virtual void OnPressCloseButton();
-
     // Generated message map functions
 protected:
     afx_msg void OnDestroy();

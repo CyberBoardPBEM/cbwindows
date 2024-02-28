@@ -181,7 +181,6 @@ protected:
     {
         strName = m_strPaneName.mfc_str();
     }
-    virtual void OnPressCloseButton();
 
 // Generated message map functions
 protected:
