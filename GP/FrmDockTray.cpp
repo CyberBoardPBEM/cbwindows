@@ -84,12 +84,6 @@ void CDockTrayPalette::SetChild(CTrayPalette* pChildWnd)
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
 }
 
-void CDockTrayPalette::OnPressCloseButton()
-{
-    CDockablePane::OnPressCloseButton();
-    m_pChildWnd->SendMessage(WM_PALETTE_HIDE);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CDockTrayPalette message handlers
 
