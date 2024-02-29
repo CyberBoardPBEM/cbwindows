@@ -405,6 +405,20 @@ void CMainFrame::OnIdle()
     }
 }
 
+BOOL CMainFrame::OnCloseMiniFrame(CPaneFrameWnd* pWnd)
+{
+    pWnd->SendMessage(WM_PALETTE_HIDE);
+    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
+    return true;
+}
+
+BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
+{
+    pWnd->SendMessage(WM_PALETTE_HIDE);
+    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
+    return true;
+}
+
 void CMainFrame::ShowPalettePanes(BOOL bShow)
 {
     ShowPane(&m_wndTrayPalA, bShow, FALSE, TRUE);

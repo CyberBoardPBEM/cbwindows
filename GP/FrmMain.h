@@ -65,6 +65,8 @@ public:
     void UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn);
     void ShowPalettePanes(BOOL bShow);
     void OnIdle();
+    BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
+    BOOL OnCloseDockingPane(CDockablePane* pWnd) override;
 
 // Implementation
 protected:

@@ -72,6 +72,8 @@ public:
 // Implementation
 public:
     void OnIdle();
+    BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
+    BOOL OnCloseDockingPane(CDockablePane* pWnd) override;
 
     virtual ~CMainFrame();
 #ifdef _DEBUG
