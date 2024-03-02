@@ -46,8 +46,8 @@ file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/fixhhc.bat "if errorlevel 1 exit /b 0\n"
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/fixhhc.bat "exit /b 1\n")
 
 add_custom_command(
-	OUTPUT cboard.chm
-	COMMENT "Make cboard.chm"
+	OUTPUT CBoard.chm
+	COMMENT "Make CBoard.chm"
 	DEPENDS
 			${CMAKE_CURRENT_SOURCE_DIR}/gmhelp.h ${CMAKE_CURRENT_SOURCE_DIR}/gmhelpidmap.h
 			${CMAKE_CURRENT_SOURCE_DIR}/gphelp.h ${CMAKE_CURRENT_SOURCE_DIR}/gphelpidmap.h
