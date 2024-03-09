@@ -1955,6 +1955,16 @@ namespace CB
         ctrl.SetValidator(wxGenericValidator(&var));
         return ctrl;
     }
+
+    inline wxDialog* XrcLoad(wxDialog& pThis, wxWindow* parent, const wxString& id)
+    {
+        return wxXmlResource::Get()->LoadDialog(&pThis, parent, id) ? &pThis : nullptr;
+    }
+
+    inline wxPanel* XrcLoad(wxPanel& pThis, wxWindow* parent, const wxString& id)
+    {
+        return wxXmlResource::Get()->LoadPanel(&pThis, parent, id) ? &pThis : nullptr;
+    }
 }
 
 /* m_dummy is a way to call LoadDialog()
@@ -1962,7 +1972,7 @@ namespace CB
 #define CB_XRC_BEGIN_CTRLS_DECL() RefPtr<wxObject> m_dummy;
 #define CB_XRC_END_CTRLS_DECL()
 
-#define CB_XRC_BEGIN_CTRLS_DEFN(parent, id) m_dummy(wxXmlResource::Get()->LoadDialog(this, parent, #id) ? this : nullptr)
+#define CB_XRC_BEGIN_CTRLS_DEFN(parent, id) m_dummy(CB::XrcLoad(*this, parent, #id))
 #define CB_XRC_END_CTRLS_DEFN()
 
 #define CB_XRC_CTRL(ctrl) , ctrl(XRCCTRL(*this, #ctrl, std::remove_reference_t<decltype(*ctrl)>))
