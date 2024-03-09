@@ -584,16 +584,16 @@ public:
     CGrafixListBoxDataWx() : m_pItemMap(NULL) {}
 
     const std::vector<T>* GetItemMap() const { return m_pItemMap; }
-#if 0
     T GetCurMapItem() const
     {
         ASSERT(!this->IsMultiSelect());
         ASSERT(m_pItemMap);
-        int nItem = this->GetCurSel();
-        ASSERT(nItem >= 0);
-        ASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
+        int nItem = this->GetSelection();
+        wxASSERT(nItem != wxNOT_FOUND);
+        wxASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
         return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
     }
+#if 0
     std::vector<T> GetCurMappedItemList() const
     {
         std::vector<T> pLst;

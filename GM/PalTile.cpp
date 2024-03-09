@@ -41,88 +41,36 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CTilePalette, CWnd)
-    //{{AFX_MSG_MAP(CTilePalette)
-    ON_WM_ERASEBKGND()
-    ON_WM_SIZE()
-    ON_CBN_SELCHANGE(IDC_W_TPAL_TSETS, OnTileNameCbnSelchange)
+wxBEGIN_EVENT_TABLE(CTilePalette, wxPanel)
+    EVT_CHOICE(XRCID("m_comboTGrp"), OnTileNameCbnSelchange)
+#if 0
     ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_HELPINFO()
-    ON_WM_CREATE()
-    //}}AFX_MSG_MAP
-    ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
-END_MESSAGE_MAP()
+#endif
+    EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTilePalette::CTilePalette(const CGamDoc& pDoc, CWnd& pOwnerWnd) :
-    m_pDoc(pDoc)
+CTilePalette::CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd) :
+    m_pDoc(pDoc),
+    CB_XRC_BEGIN_CTRLS_DEFN(&pOwnerWnd, CTilePalette)
+        CB_XRC_CTRL(m_comboTGrp)
+        CB_XRC_CTRL(m_listTile)
+    CB_XRC_END_CTRLS_DEFN()
 {
     m_pDockingFrame = NULL;
-    m_listTile.SetDocument(&pDoc);
-    m_listTile.EnableDrag(TRUE);
-    m_nComboHeight = 0;
-
-    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
-    UINT nID = 0;
-    if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &pOwnerWnd, nID))
-    {
-        TRACE("Failed to create Tile palette window.\n");
-        AfxThrowMemoryException();
-    }
+    m_listTile->SetDocument(&pDoc);
+//    m_listTile->EnableDrag(TRUE);
 
     UpdatePaletteContents();
 }
 
-int CTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    if (CWnd::OnCreate(lpCreateStruct) == -1)
-        return -1;
-
-    CRect rctCombo;
-    GetClientRect(&rctCombo);
-    rctCombo.bottom = 5 * g_res.tm8ssb.tmHeight;
-
-    if (!m_comboTGrp.Create(
-        WS_CHILD | WS_VSCROLL | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST,
-        rctCombo, this, IDC_W_TPAL_TSETS))
-    {
-        TRACE("Failed to create Tile name combo-box\n");
-        return -1;
-    }
-    m_comboTGrp.SetFont(CFont::FromHandle(g_res.h8ssb));
-
-    m_comboTGrp.GetWindowRect(&rctCombo);   // Fetch result of create
-    m_comboTGrp.MoveWindow(0, 0, rctCombo.Width(),
-        5 * rctCombo.Height(), TRUE);
-    m_comboTGrp.SetDroppedWidth(8 * g_res.tm8ssb.tmMaxCharWidth);
-
-    m_nComboHeight = rctCombo.Height();     // Save for later use
-
-    CRect rctLBox;
-    GetClientRect(&rctLBox);
-    rctLBox.top = rctCombo.Height() - 1;
-
-    if (!m_listTile.Create(
-        WS_CHILD | WS_BORDER | WS_VISIBLE | WS_VSCROLL |
-            LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT,
-        rctLBox, this, 0))
-    {
-        TRACE("Failed to create Tile list box.\n");
-        return -1;
-    }
-    m_listTile.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-
-    return 0;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CTilePalette::OnPaletteHide(WPARAM, LPARAM)
+void CTilePalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
     GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
-    return (LRESULT)0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -131,9 +79,9 @@ TileID CTilePalette::GetCurrentTileID() const
 {
     if (m_hWnd == NULL)
         return nullTid;
-    if (m_listTile.GetCurSel() == LB_ERR)
+    if (m_listTile->GetSelection() == wxNOT_FOUND)
         return nullTid;
-    return m_listTile.GetCurMapItem();
+    return m_listTile->GetCurMapItem();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,10 +107,10 @@ void CTilePalette::LoadTileNameList()
     const CTileManager* pTMgr = m_pDoc.GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    m_comboTGrp.ResetContent();
-    for (size_t i = 0; i < pTMgr->GetNumTileSets(); i++)
-        m_comboTGrp.AddString(pTMgr->GetTileSet(i).GetName());
-    m_comboTGrp.SetCurSel(0);
+    m_comboTGrp->Clear();
+    for (size_t i = size_t(0); i < pTMgr->GetNumTileSets(); i++)
+        m_comboTGrp->Append(pTMgr->GetTileSet(i).GetName());
+    m_comboTGrp->SetSelection(0);
     UpdateTileList();
 }
 
@@ -170,12 +118,12 @@ void CTilePalette::LoadTileNameList()
 
 void CTilePalette::UpdatePaletteContents()
 {
-    int nSel = m_comboTGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboTGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
         nSel = 0;               // Force first entry (if any)
     LoadTileNameList();
-    if (nSel < m_comboTGrp.GetCount())
-        m_comboTGrp.SetCurSel(nSel);
+    if (value_preserving_cast<size_t>(nSel) < m_comboTGrp->GetCount())
+        m_comboTGrp->SetSelection(nSel);
     UpdateTileList();
 }
 
@@ -186,51 +134,25 @@ void CTilePalette::UpdateTileList()
     const CTileManager* pTMgr = m_pDoc.GetTileManager();
     ASSERT(pTMgr != NULL);
 
-    int nSel = m_comboTGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboTGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
     {
-        m_listTile.SetItemMap(NULL);
+        m_listTile->SetItemMap(NULL);
         return;
     }
     const std::vector<TileID>& pPieceTbl = pTMgr->GetTileSet(value_preserving_cast<size_t>(nSel)).GetTileIDTable();
-    m_listTile.SetItemMap(&pPieceTbl);
+    m_listTile->SetItemMap(&pPieceTbl);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTilePalette message handlers
 
-BOOL CTilePalette::OnEraseBkgnd(CDC* pDC)
-{
-    return TRUE;        // controls take care of erase
-}
-
-void CTilePalette::OnSize(UINT nType, int cx, int cy)
-{
-    CWnd::OnSize(nType, cx, cy);
-
-    CRect rctCombo;
-
-    if (m_comboTGrp.m_hWnd != NULL)
-    {
-        m_comboTGrp.GetWindowRect(&rctCombo);
-        m_comboTGrp.MoveWindow(0, 0, cx, 5 * m_nComboHeight, TRUE);
-    }
-    if (m_listTile.m_hWnd != NULL)
-    {
-        m_listTile.MoveWindow(0, m_nComboHeight, cx, cy - m_nComboHeight, TRUE);
-    }
-}
-
-void CTilePalette::PostNcDestroy()
-{
-    /* DO NOTHING - FRAME CLASS WOULD DELETE SELF! */
-}
-
-void CTilePalette::OnTileNameCbnSelchange()
+void CTilePalette::OnTileNameCbnSelchange(wxCommandEvent& /*event*/)
 {
     UpdateTileList();
 }
 
+#if 0
 LRESULT CTilePalette::OnGetDragSize(WPARAM wParam, LPARAM lParam)
 {
     TileID tid = GetCurrentTileID();
@@ -244,4 +166,5 @@ BOOL CTilePalette::OnHelpInfo(HELPINFO* pHelpInfo)
     GetApp()->DoHelpTopic("gm-ref-pal-tile.htm");
     return TRUE;
 }
+#endif
 

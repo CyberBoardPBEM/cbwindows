@@ -37,11 +37,11 @@ class CGamDoc;
 /////////////////////////////////////////////////////////////////////////////
 // CTilePalette window - Tile palette's are part of the document object.
 
-class CTilePalette : public CWnd
+class CTilePalette : public wxPanel
 {
 // Construction
 public:
-    CTilePalette(const CGamDoc& pDoc, CWnd& pOwnerWnd);
+    CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd);
 
 // Attributes
 public:
@@ -59,36 +59,32 @@ protected:
     CDockTilePalette* m_pDockingFrame;
 
     // Enclosed controls....
-    CComboBox   m_comboTGrp;
-    CTileListBox m_listTile;
-    int         m_nComboHeight;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxChoice> m_comboTGrp;
+        RefPtr<CTileListBoxWx> m_listTile;
+    CB_XRC_END_CTRLS_DECL()
 
     void LoadTileNameList();
     void UpdateTileList();
 
 // Implementation
 public:
-    virtual void PostNcDestroy();
-
     CDockTilePalette* GetDockingFrame() const { return m_pDockingFrame; }
     void SetDockingFrame(CDockTilePalette* pDockingFrame)
     {
         m_pDockingFrame = pDockingFrame;
-        SetParent(pDockingFrame);
+        Reparent(pDockingFrame ? static_cast<wxWindow*>(*pDockingFrame) : nullptr);
     }
 
-    // Generated message map functions
 protected:
-    //{{AFX_MSG(CTilePalette)
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    afx_msg void OnTileNameCbnSelchange();
+    void OnTileNameCbnSelchange(wxCommandEvent& event);
+#if 0
     afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnPaletteHide(wxCommandEvent& event);
+    wxDECLARE_EVENT_TABLE();
 };
 
 /////////////////////////////////////////////////////////////////////////////
