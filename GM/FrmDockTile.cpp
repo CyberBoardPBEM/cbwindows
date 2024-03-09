@@ -1,6 +1,6 @@
 // FrmDockTile.cpp - container window for the tile palette.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,16 +35,8 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CDockTilePalette, CDockablePane)
-    ON_WM_CREATE()
-    ON_WM_SIZE()
-END_MESSAGE_MAP()
-
-IMPLEMENT_DYNAMIC(CDockTilePalette, CDockablePane);
-
-/////////////////////////////////////////////////////////////////////////////
-
-CDockTilePalette::CDockTilePalette()
+CDockTilePalette::CDockTilePalette() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
     m_pChildWnd = NULL;
 }
@@ -62,7 +54,7 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
 
     if (m_pChildWnd != NULL)
     {
-        m_pChildWnd->ShowWindow(SW_HIDE);
+        m_pChildWnd->Hide();
         m_pChildWnd->SetDockingFrame(NULL);
         Invalidate(TRUE);
     }
@@ -74,33 +66,8 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
     if (pChildWnd != NULL)
     {
         pChildWnd->SetDockingFrame(this);
-        CRect rct;
-        GetClientRect(rct);
-        pChildWnd->MoveWindow(&rct);
-        m_pChildWnd->ShowWindow(SW_SHOW);
+        m_pChildWnd->Show();
     }
     else
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CDockTilePalette message handlers
-
-int CDockTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
-        return -1;
-
-    // TODO:  Add your specialized creation code here
-
-    return 0;
-}
-
-void CDockTilePalette::OnSize(UINT nType, int cx, int cy)
-{
-    CDockablePane::OnSize(nType, cx, cy);
-    CRect rct;
-    GetClientRect(rct);
-    if (m_pChildWnd != NULL)
-        m_pChildWnd->MoveWindow(&rct);
 }

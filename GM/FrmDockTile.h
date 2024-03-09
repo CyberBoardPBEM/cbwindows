@@ -1,6 +1,6 @@
 // FrmDockTile.h - container window for the tile palette.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,9 +32,9 @@ class CTilePalette;
 /////////////////////////////////////////////////////////////////////////////
 // CDockTilePalette window
 
-class CDockTilePalette : public CDockablePane
+class CDockTilePalette : public CDockablePane,
+                            public CB::wxNativeContainerWindowMixin
 {
-    DECLARE_DYNAMIC(CDockTilePalette);
 // Construction
 public:
     CDockTilePalette();
@@ -49,13 +49,6 @@ public:
 // Implementation
 public:
     virtual ~CDockTilePalette();
-
-    // Generated message map functions
-protected:
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    DECLARE_MESSAGE_MAP()
-public:
 };
 
 #endif

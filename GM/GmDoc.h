@@ -312,10 +312,9 @@ protected:
     class WindowDestroy
     {
     public:
-        void operator()(CWnd* p) const
+        void operator()(wxWindow* p) const
         {
-            p->DestroyWindow();
-            delete p;
+            p->Destroy();
         }
     };
     CB::propagate_const<std::unique_ptr<CTilePalette, WindowDestroy>> m_palTile;      // Tile palette child window is in document
