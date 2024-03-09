@@ -105,7 +105,8 @@ static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
 
-CMainFrame::CMainFrame()
+CMainFrame::CMainFrame() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
     m_bColorPalOn = TRUE;
     m_bTilePalOn = TRUE;
@@ -223,8 +224,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndColorPal.DockToWindow(&m_wndTilePal, CBRS_ALIGN_BOTTOM);
 
     RestoreProfileSettings();
-
-    m_wxWrapper = new wxNativeContainerWindow(m_hWnd);
 
     return 0;
 }

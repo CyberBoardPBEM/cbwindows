@@ -42,7 +42,8 @@
 #include    "frmdocktile.h"
 #endif
 
-class CMainFrame : public CMDIFrameWndExCb
+class CMainFrame : public CMDIFrameWndExCb,
+                    public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNAMIC(CMainFrame)
 public:
@@ -59,8 +60,6 @@ public:
     CDockTilePalette& GetDockingTileWindow() { return m_wndTilePal; }
 
     BOOL IsTilePaletteOn() { return m_bTilePalOn; }
-
-    operator wxNativeContainerWindow&() { return CheckedDeref(m_wxWrapper); }
 
 // Operations
 public:
@@ -96,9 +95,6 @@ public:
     BOOL            m_bTilePalOn;
 
     CPalette        m_appPalette;       // Master app GDI palette
-
-    // N.B.:  wx deletes this when HWND is destroyed
-    wxNativeContainerWindow* m_wxWrapper = nullptr;
 
 // Generated message map functions
 protected:

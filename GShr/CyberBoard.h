@@ -56,6 +56,7 @@
 #include <mutex>
 #include <regex>
 #include <string>
+#include <typeinfo>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -1858,6 +1859,52 @@ static_assert(std::is_same_v<std::vector<int>::size_type, size_t>, "std::vector 
 static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdiff_t>, "std::vector iterator offset is not ptrdiff_t");
 
 /////////////////////////////////////////////////////////////////////////////
+
+// adapt between CWnd and wxWindow
+namespace CB
+{
+    class wxNativeContainerWindowMixin
+    {
+    public:
+        // avoid multiple wxWindow for single CWnd
+        wxNativeContainerWindowMixin(const wxNativeContainerWindowMixin&) = delete;
+        wxNativeContainerWindowMixin(CWnd& w) : mfcWnd(w) {}
+
+        operator const wxNativeContainerWindow*() const;
+        operator wxNativeContainerWindow*()
+        {
+            return const_cast<wxNativeContainerWindow*>(static_cast<const wxNativeContainerWindow*>(std::as_const(*this)));
+        }
+
+        operator const wxNativeContainerWindow&() const
+        {
+            return CheckedDeref(static_cast<const wxNativeContainerWindow*>(*this));
+        }
+        operator wxNativeContainerWindow&()
+        {
+            return CheckedDeref(static_cast<wxNativeContainerWindow*>(*this));
+        }
+
+    private:
+        CWnd& mfcWnd;
+        /* N.B.:  wx deletes this when HWND is destroyed,
+                    BUT does not tell us! */
+        mutable wxNativeContainerWindow* wxWnd = nullptr;
+    };
+
+    /* if mfcWnd or one of its descendants has
+        wxNativeContainerWindowMixin, return it */
+    wxWindow* FindWxWindow(CWnd& mfcWnd);
+
+    // emulate CWnd::SendMessageToDescendants()
+    void SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep = true);
+
+    const CWnd* ToCWnd(const wxWindow& w);
+    CWnd* ToCWnd(wxWindow& w) { return const_cast<CWnd*>(ToCWnd(std::as_const(w))); }
+
+    // MFC if possible, wx otherwise
+    const std::type_info& GetPublicTypeid(const wxWindow& w);
+}
 
 /* AfxGetApp() docs say it may return NULL during process
     startup, so declare a function that we will guarantee returns

@@ -1,6 +1,6 @@
 // LibMfc.cpp - Miscellaneous MFC Support Functions
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -762,4 +762,85 @@ void CB::string::Serialize(CArchive& ar)
         AfxThrowArchiveException(CArchiveException::genericException);
     }
 #endif
+}
+
+CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow* () const
+{
+    if (!mfcWnd.m_hWnd)
+    {
+        /* N.B.:  wx deletes this when HWND is destroyed,
+                    BUT does not tell us! */
+        wxASSERT(wxWnd || !"do not call before creating HWND");
+        wxWnd = nullptr;
+    }
+    else if (!wxWnd)
+    {
+        wxWnd = new wxNativeContainerWindow(mfcWnd.m_hWnd);
+    }
+    return wxWnd;
+}
+
+/* if mfcWnd or one of its descendants has
+    wxNativeContainerWindowMixin, return it */
+wxWindow* CB::FindWxWindow(CWnd& mfcWnd)
+{
+    CB::wxNativeContainerWindowMixin* mixin = dynamic_cast<CB::wxNativeContainerWindowMixin*>(&mfcWnd);
+    wxWindow* wxWnd = mixin ? *mixin : nullptr;
+    if (wxWnd)
+    {
+        return wxWnd;
+    }
+    for (CWnd* child = mfcWnd.GetWindow(GW_CHILD) ;
+        child ;
+        child = child->GetWindow(GW_HWNDNEXT))
+    {
+        wxWindow* test = FindWxWindow(*child);
+        if (test)
+        {
+            if (!wxWnd)
+            {
+                wxWnd = test;
+            }
+            else
+            {
+                wxASSERT(!"conflicting wxWindow conversion");
+                return nullptr;
+            }
+        }
+    }
+    return wxWnd;
+}
+
+// emulate CWnd::SendMessageToDescendants()
+void CB::SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep /*= true*/)
+{
+    wxWindowList& children = wnd.GetChildren();
+    for (wxWindowList::iterator i = children.begin() ; i != children.end() ; ++i)
+    {
+        (*i)->GetEventHandler()->ProcessEventLocally(event);
+        if (deep)
+        {
+            SendEventToDescendants(**i, event, true);
+        }
+    }
+}
+
+const CWnd* CB::ToCWnd(const wxWindow& w)
+{
+    const wxNativeContainerWindow* ncw = dynamic_cast<const wxNativeContainerWindow*>(&w);
+    if (!ncw)
+    {
+        return nullptr;
+    }
+    WXHWND wxhwnd = ncw->GetHWND();
+    HWND hwnd = reinterpret_cast<HWND>(wxhwnd);
+    return CWnd::FromHandlePermanent(hwnd);
+}
+
+
+// MFC if possible, wx otherwise
+const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
+{
+    const CWnd* mfcWnd = ToCWnd(w);
+    return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
