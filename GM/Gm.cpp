@@ -119,6 +119,8 @@ public:
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxDEFINE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
+
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
 

@@ -50,6 +50,7 @@ extern const wxDataFormat CF_GBOXID;          // dword gameboxid, dword cur proc
 #define WM_SETLINEWIDTH     (WM_USER + 667)     // See COLORPAL.H
 #define WM_SETCUSTOMCOLOR   (WM_USER + 668)     // See COLORPAL.H
 #define WM_PALETTE_HIDE     (WM_USER + 669)
+wxDECLARE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
 
 /////////////////////////////////////////////////////////////////////////////
 // Context menu offset definitions.
