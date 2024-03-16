@@ -33,6 +33,8 @@ namespace CB
     wxBEGIN_EVENT_TABLE(VListBoxHScroll, wxVListBox)
         EVT_SCROLLWIN(VListBoxHScroll::OnScrollWin)
         EVT_SIZE(OnSize)
+        EVT_LEFT_DOWN(OnLButtonDown)
+        EVT_LEFT_UP(OnLButtonUp)
     wxEND_EVENT_TABLE()
 
     VListBoxHScroll::VListBoxHScroll()
@@ -175,5 +177,22 @@ namespace CB
                     GetClientSize().GetWidth(),
                     GetVirtualSize().GetWidth());
         Refresh();
+    }
+
+    // MFC CListBox captures mouse, so emulate that behavior
+    void VListBoxHScroll::OnLButtonDown(wxMouseEvent& event)
+    {
+        wxASSERT(!GetCapture());
+        CaptureMouse();
+        event.Skip();
+    }
+
+    void VListBoxHScroll::OnLButtonUp(wxMouseEvent& event)
+    {
+        if (HasCapture())
+        {
+            ReleaseMouse();
+        }
+        event.Skip();
     }
 }

@@ -69,6 +69,8 @@ namespace CB
 
         void OnScrollWin(wxScrollWinEvent& event);
         void OnSize(wxSizeEvent& event);
+        void OnLButtonDown(wxMouseEvent& event);
+        void OnLButtonUp(wxMouseEvent& event);
     };
 }
 
