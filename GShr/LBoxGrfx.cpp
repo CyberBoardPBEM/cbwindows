@@ -735,25 +735,30 @@ void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
 
 void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
 {
+    CPP20_TRACE("{}->{}:  sel {}\n", static_cast<void*>(this), __func__, GetSelection());
+    wxASSERT(!GetCapture());
     event.Skip(); // Allow field selection
 
+    CallAfter([this] {
+        CPP20_TRACE("{}->{}:  sel {}\n", static_cast<void*>(this), __func__, GetSelection());
+        wxASSERT(GetCapture() == this);
+        int nIdx;
+        if ((nIdx = GetSelection()) == wxNOT_FOUND)
+            return;
 #if 0
-    /* N.B.:  this may need to be moved to a later msg handler
-                due to needing Skip() */
-    int nIdx;
-    if ((nIdx = GetCurSel()) == -1)
-        return;
-    if (m_bAllowDrag)
-    {
-        m_hLastWnd = NULL;
-        m_clickPoint = point;       // For hysteresis
-        m_triggeredCursor = FALSE;  // -Ditto-
-    }
+        if (m_bAllowDrag)
+        {
+            m_hLastWnd = NULL;
+            m_clickPoint = point;       // For hysteresis
+            m_triggeredCursor = FALSE;  // -Ditto-
+        }
 #endif
+    });
 }
 
 void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 {
+    CPP20_TRACE("{}->{}:  capture {}\n", static_cast<void*>(this), __func__, static_cast<void*>(GetCapture()));
 #if 0
     if (m_nTimerID)
     {
@@ -777,6 +782,7 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 
 void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 {
+    CPP20_TRACE("{}->{}:  capture {}\n", static_cast<void*>(this), __func__, static_cast<void*>(GetCapture()));
     if (!HasCapture())
     {
         // Only process tool tips when we aren't draggin stuff around
