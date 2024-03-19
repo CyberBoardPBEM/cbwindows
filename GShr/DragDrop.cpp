@@ -1,6 +1,6 @@
 // DragDrop.cpp
 //
-// Copyright (c) 2022 By Bill Su, All Rights Reserved.
+// Copyright (c) 2022-2024 By Bill Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -80,6 +80,78 @@ void DragInfo::SetDragType(DragType dt)
         case DRAG_SELECTVIEW:
             new (&subInfos.m_selectView) SubInfo<DRAG_SELECTVIEW>;
             break;
+    }
+    m_dragType = dt;
+}
+
+// keep SubInfos constructed to match m_dragType
+void DragInfoWx::SetDragType(DragType dt)
+{
+    // destruct old subInfo
+    switch (m_dragType)
+    {
+        case DRAG_TILE:
+            subInfos.m_tile.~SubInfo<DRAG_TILE>();
+            break;
+#if 0
+        case DRAG_TILELIST:
+            subInfos.m_tileList.~SubInfo<DRAG_TILELIST>();
+            break;
+        case DRAG_PIECE:
+            subInfos.m_piece.~SubInfo<DRAG_PIECE>();
+            break;
+        case DRAG_PIECELIST:
+            subInfos.m_pieceList.~SubInfo<DRAG_PIECELIST>();
+            break;
+        case DRAG_MARKER:
+            subInfos.m_marker.~SubInfo<DRAG_MARKER>();
+            break;
+        case DRAG_SELECTLIST:
+            subInfos.m_selectList.~SubInfo<DRAG_SELECTLIST>();
+            break;
+        case DRAG_SELECTVIEW:
+            subInfos.m_selectView.~SubInfo<DRAG_SELECTVIEW>();
+            break;
+#endif
+        case DRAG_INVALID:
+            // do nothing
+            break;
+        default:
+            CbThrowBadCastException();
+    }
+    m_dragType = DRAG_INVALID;
+
+    // construct new subInfo
+    switch (dt)
+    {
+        case DRAG_TILE:
+            new (&subInfos.m_tile) SubInfo<DRAG_TILE>;
+            break;
+#if 0
+        case DRAG_TILELIST:
+            new (&subInfos.m_tileList) SubInfo<DRAG_TILELIST>;
+            break;
+        case DRAG_PIECE:
+            new (&subInfos.m_piece) SubInfo<DRAG_PIECE>;
+            break;
+        case DRAG_PIECELIST:
+            new (&subInfos.m_pieceList) SubInfo<DRAG_PIECELIST>;
+            break;
+        case DRAG_MARKER:
+            new (&subInfos.m_marker) SubInfo<DRAG_MARKER>;
+            break;
+        case DRAG_SELECTLIST:
+            new (&subInfos.m_selectList) SubInfo<DRAG_SELECTLIST>;
+            break;
+        case DRAG_SELECTVIEW:
+            new (&subInfos.m_selectView) SubInfo<DRAG_SELECTVIEW>;
+            break;
+#endif
+        case DRAG_INVALID:
+            // do nothing
+            break;
+        default:
+            CbThrowBadCastException();
     }
     m_dragType = dt;
 }

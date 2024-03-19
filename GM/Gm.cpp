@@ -130,6 +130,7 @@ static const CB::string szSectDisableHtmlHelp = "DisableHtmlHelp";
 /////////////////////////////////////////////////////////////////////////////
 
 const UINT WM_DRAGDROP = RegisterWindowMessage("msgDragDrop"_cbstring);
+wxDEFINE_EVENT(WM_DRAGDROP_WX, DragDropEvent);
 
 const wxDataFormat CF_TILEIMAGES(wxString("cfCyberBoardTileImages"_cbstring));
 const wxDataFormat CF_TIDLIST(wxString("cfCyberBoardTileIDList"_cbstring));

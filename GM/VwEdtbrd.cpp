@@ -1,6 +1,6 @@
 // VwEdtbrd.cpp : implementation of the CBrdEditView class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,7 +63,7 @@ BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     ON_WM_CHAR()
     ON_WM_SETCURSOR()
     ON_WM_ERASEBKGND()
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragTileItem)
+//    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragTileItem)
     ON_MESSAGE(WM_SETCOLOR, OnSetColor)
     ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
     ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
@@ -143,6 +143,7 @@ END_MESSAGE_MAP()
 // CBrdEditView construction/destruction
 
 CBrdEditView::CBrdEditView() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     m_selList(*this)
 {
     m_bOffScreen = TRUE;
@@ -175,6 +176,10 @@ void CBrdEditView::OnInitialUpdate()
     m_pBMgr = GetDocument()->GetBoardManager();
     m_pBoard = (CBoard*)GetDocument()->GetCreateParameter();
     SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
+    /* KLUDGE:  this class isn't a wxEvtHandler (yet),
+        so can't have wx event table */
+    wxWindow& wxwnd = *this;
+    wxwnd.Bind(WM_DRAGDROP_WX, &CBrdEditView::OnDragTileItem, this);
 }
 
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -865,58 +870,60 @@ ToolType CBrdEditView::MapToolType(UINT nToolResID)
 //////////////////////////////////////////////////////////////////////
 // Tile drag and drop code.
 
-LRESULT CBrdEditView::OnDragTileItem(WPARAM wParam, LPARAM lParam)
+void CBrdEditView::OnDragTileItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        return;
     }
     m_nCurToolID = ID_TOOL_ARROW;       // Not valid with drag over.
     m_nLastToolID = ID_TOOL_ARROW;      // Not valid with drag over.
 
-    DragInfo* pdi = (DragInfo*)lParam;
+    const DragInfoWx& pdi = event.GetDragInfo();
 
-    if (pdi->GetDragType() != DRAG_TILE)
-        return -1;               // Only tile drops allowed
-    if (pdi->GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
-        return -1;               // Only tiles from our document.
+    if (pdi.GetDragType() != DRAG_TILE)
+        return;               // Only tile drops allowed
+    if (pdi.GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
+        return;               // Only tiles from our document.
 
     // if tile can't fit on board, reject drop
     CSize limit = m_pBoard->GetSize(fullScale);
-    if (pdi->GetSubInfo<DRAG_TILE>().m_size.cx > limit.cx ||
-        pdi->GetSubInfo<DRAG_TILE>().m_size.cy > limit.cy)
+    if (pdi.GetSubInfo<DRAG_TILE>().m_size.x > limit.cx ||
+        pdi.GetSubInfo<DRAG_TILE>().m_size.y > limit.cy)
     {
-        return pdi->m_phase == PhaseDrag::Over ?
-                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
-                :
-                    -1;
+        if (pdi.m_phase == PhaseDrag::Over)
+        {
+            event.SetCursor(g_res.hcrNoDropTooBigWx);
+        }
+        return;
     }
 
-    if (pdi->m_phase == PhaseDrag::Over)
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (pdi->m_phase == PhaseDrag::Drop)
+    if (pdi.m_phase == PhaseDrag::Over)
+    {
+        event.SetCursor(pdi.m_hcsrSuggest);
+    }
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CDrawList* pDwg;
         // Process a tile drop....
-        CPoint pnt = pdi->m_point;
+        CPoint pnt(pdi.m_point.x, pdi.m_point.y);
         ClientToWorkspace(pnt);
         switch (m_pBoard->GetMaxDrawLayer())
         {
             case LAYER_BASE:
                 pDwg = m_pBoard->GetBaseDrawing(TRUE);
-                SetDrawingTile(pDwg, pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
+                SetDrawingTile(pDwg, pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_GRID:
-                SetCellTile(pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
+                SetCellTile(pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_TOP:
                 pDwg = m_pBoard->GetTopDrawing(TRUE);
-                SetDrawingTile(pDwg, pdi->GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
+                SetDrawingTile(pDwg, pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             default: ;
         }
     }
-    return 1;
 }
 
 void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,

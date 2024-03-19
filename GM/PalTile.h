@@ -79,8 +79,8 @@ public:
 
 protected:
     void OnTileNameCbnSelchange(wxCommandEvent& event);
+    void OnGetDragSize(GetDragSizeEvent& event);
 #if 0
-    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 #endif
     void OnPaletteHide(wxCommandEvent& event);

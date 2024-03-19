@@ -101,6 +101,28 @@ struct COverrideInfo<DRAG_TILE> : private COverrideInfoBase
     WM_OVERRIDE_SELECTED_ITEM, this message gets that size from
     parent window. */
 #define WM_GET_DRAG_SIZE (WM_USER + 504) // WPARAM = CSize*
+class GetDragSizeEvent;
+wxDECLARE_EVENT(WM_GET_DRAG_SIZE_WX, GetDragSizeEvent);
+class GetDragSizeEvent : public wxEvent
+{
+public:
+    GetDragSizeEvent() :
+        wxEvent(wxID_ANY, WM_GET_DRAG_SIZE_WX)
+    {
+    }
+
+    wxSize GetSize() const { return size; }
+    void SetSize(wxSize s) { size = s; }
+
+    wxEvent* Clone() const override { return new GetDragSizeEvent(*this); }
+
+private:
+    wxSize size;
+};
+typedef void (wxEvtHandler::* GetDragSizeEventFunction)(GetDragSizeEvent&);
+#define GetDragSizeEventHandler(func) wxEVENT_HANDLER_CAST(GetDragSizeEventFunction, func)
+#define EVT_GET_DRAG_SIZE(func) \
+    wx__DECLARE_EVT0(WM_GET_DRAG_SIZE_WX, GetDragSizeEventHandler(func))
 
 /////////////////////////////////////////////////////////////////////////////
 // Custom Listbox - containing colors
@@ -448,7 +470,9 @@ public:
 #if 0
     CB::string GetText(int nIndex) const;
     int  GetTopSelectedItem() const;
+#endif
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
+#if 0
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
 #endif
@@ -476,13 +500,13 @@ public:
     virtual wxSize OnItemSize(size_t nIndex) const /* override */ = 0;
     virtual void OnItemDraw(wxDC& pDC, size_t nIndex, UINT nAction, UINT nState,
         wxRect rctItem) const /* override */ = 0;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
+#endif
+    virtual BOOL OnDragSetup(DragInfoWx& pDI) const /* override */
     {
         pDI.SetDragType(DRAG_INVALID);
         return FALSE;
     }
-    virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
-#endif
+    virtual void OnDragCleanup(const DragInfoWx& pDI) const /* override */ { }
 
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
@@ -504,9 +528,8 @@ protected:
     wxTipWindow* m_toolTip = nullptr;         // Tooltip of tile text popups
     GameElement m_nCurItemCode;         // current active tip item code
 
-#if 0
     // Drag and scroll support vars
-    static DragInfo di;
+    static DragInfoWx di;
     BOOL    m_bAllowDrag;
     BOOL    m_bAllowSelfDrop;       // Only if m_bAllowDrag == TRUE
     BOOL    m_bAllowDropScroll;     // Scroll on OnDragItem
@@ -514,8 +537,17 @@ protected:
     wxPoint m_clickPoint;
     uintptr_t m_nTimerID;
     BOOL    m_triggeredCursor;
+    /* wxWidgets does not support post-processing of events
+        (see https://docs.wxwidgets.org/stable/overview_events.html#overview_events_virtual),
+        so we need to use wxEvtHandler::CallAfter() to
+        approximate post-processing.  Use m_incompleteHandler to
+        detect if we are waiting for CallAfter() to fire.
+        Unfortunately, it's not clear what to do if we ever find
+        ourselves in this half-baked state... */
+    bool    m_incompleteHandler = false;
     wxWindow* m_hLastWnd;
 
+#if 0
     int     m_nLastInsert;          // Last index with insert line
 
     void  DoInsertLineProcessing(const DragInfo& pdi);
@@ -523,8 +555,8 @@ protected:
 #endif
     void  DoToolTipHitProcessing(wxPoint point);
 
-#if 0
     wxWindow* GetWindowFromPoint(wxPoint point);
+#if 0
     int   SpecialItemFromPoint(wxPoint pnt) const;
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
@@ -545,11 +577,11 @@ protected:
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS) override;
 
     virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+#endif
 
     // send WM_GET_DRAG_SIZE to parent
     wxSize GetDragSize() const;
-    virtual void OnDragEnd(wxPoint point) /* override */ = 0;
-#endif
+    virtual void OnDragEnd(wxMouseEvent event) /* override */ = 0;
 
     void OnLButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
@@ -562,10 +594,8 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 protected:
-#if 0
     // #include "GamDoc.h" causes problems
     void AssignNewMoveGroup();
-#endif
     void SetDocument(CGamDoc& doc) { m_pDoc = &doc; }
 
 private:
@@ -705,9 +735,9 @@ public:
     }
 
 protected:
-#if 0
-    virtual void OnDragEnd(CPoint point) override
+    virtual void OnDragEnd(wxMouseEvent event) override
     {
+        wxPoint point = event.GetPosition();
         this->AssignNewMoveGroup();
         if (BASE_WND::di.GetDragType() == DRAG_INVALID)
         {
@@ -715,40 +745,51 @@ protected:
         }
         else if (this->IsMultiSelect())
         {
+            wxASSERT(!"TODO:");
+#if 0
             // Get the final selection results after the mouse was released.
             m_multiSelList = GetCurMappedItemList();
 
             CWnd* pWnd = this->GetParent();
             ASSERT(pWnd != NULL);
             pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&m_multiSelList), T::PREFIX);
+#endif
         }
         else
         {
             // The parent may want to override the value.
             if (BASE_WND::di.GetDragType() == DRAG_MARKER)
             {
+                wxASSERT(!"TODO:");
+#if 0
                 COverrideInfo<DRAG_MARKER> oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
+#endif
             }
             else if (BASE_WND::di.GetDragType() == DRAG_TILE)
             {
+#if defined(GPLAY)
+                wxASSERT(!"TODO:");
+#if 0
                 COverrideInfo<DRAG_TILE> oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
+#endif
+#endif
             }
             else
             {
-                ASSERT(!"unexpected dragType");
+                wxASSERT(!"unexpected dragType");
             }
         }
 
         ReleaseCapture();
-        SetCursor(LoadCursor(NULL, IDC_ARROW));
+        this->SetCursor(wxCursor(wxCURSOR_ARROW));
 
-        CWnd* pWnd = this->GetWindowFromPoint(point);
+        wxWindow* pWnd = this->GetWindowFromPoint(point);
         if (pWnd == NULL || (!this->m_bAllowSelfDrop && pWnd == this))
         {
             this->OnDragCleanup(BASE_WND::di);         // Tell subclass we're all done.
@@ -756,16 +797,16 @@ protected:
         }
         BASE_WND::di.m_point = point;
         BASE_WND::di.m_pointClient = point;       // list box relative
-        this->ClientToScreen(&BASE_WND::di.m_point);
-        pWnd->ScreenToClient(&BASE_WND::di.m_point);
+        BASE_WND::di.m_point = this->ClientToScreen(BASE_WND::di.m_point);
+        BASE_WND::di.m_point = pWnd->ScreenToClient(BASE_WND::di.m_point);
 
         BASE_WND::di.m_phase = PhaseDrag::Drop;
-        pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-            (LPARAM)(LPVOID)&BASE_WND::di);
+        DragDropEvent dragDropEvent(wxGetProcessId(),
+                                    BASE_WND::di);
+        pWnd->ProcessWindowEvent(dragDropEvent);
         this->OnDragCleanup(BASE_WND::di);         // Tell subclass we're all done.
         m_multiSelList.clear();
     }
-#endif
 
     /* N.B.:  Only CTileBaseListBox requires providing this, but
         it doesn't hurt much to provide it in general.  */

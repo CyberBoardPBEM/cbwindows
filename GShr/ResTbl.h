@@ -39,8 +39,11 @@ struct ResourceTable
     TEXTMETRIC  tm10ss;
     // ======== Cursors ========= //
     HCURSOR     hcrDragTile;
+    wxCursor    hcrDragTileWx;
     HCURSOR     hcrNoDrop;
+    wxCursor    hcrNoDropWx;
     HCURSOR     hcrNoDropTooBig;
+    wxCursor    hcrNoDropTooBigWx;
     HCURSOR     hcrCrossHair;
 #ifndef GPLAY
     HCURSOR     hcrFill;
