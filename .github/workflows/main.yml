@@ -34,7 +34,7 @@ jobs:
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -42,7 +42,7 @@ jobs:
     # required for CMake to find Ninja
     - name: "[Windows] Set up MSVC Developer Command Prompt"
       if: runner.os == 'Windows'
-      uses: wxWidgets/gha-setup-vsdevenv@ac61ecb4b05909261f8f375601c0e15aabdd9f10
+      uses: wxWidgets/gha-setup-vsdevenv@wx
       with:
         arch: ${{ matrix.arch_vsdev }}
 
