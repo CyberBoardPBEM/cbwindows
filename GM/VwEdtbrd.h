@@ -32,7 +32,8 @@
 #include    "ToolObjs.h"
 #endif
 
-class CBrdEditView : public CScrollView
+class CBrdEditView : public CScrollView,
+                        public CB::wxNativeContainerWindowMixin
 {
 protected: // create from serialization only
     CBrdEditView();
@@ -207,7 +208,7 @@ protected:
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg LRESULT OnDragTileItem(WPARAM wParam, LPARAM lParam);
+    void OnDragTileItem(DragDropEvent& event);
     afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);

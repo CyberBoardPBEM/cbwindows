@@ -265,16 +265,18 @@ void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     }
 }
 
-#if 0
-BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
+BOOL CTileListBoxWx::OnDragSetup(DragInfoWx& pDI) const
 {
     if (IsMultiSelect())
     {
+        wxASSERT(!"TODO:");
+#if 0
         pDI.SetDragType(DRAG_TILELIST);
         pDI.GetSubInfo<DRAG_TILELIST>().m_tileIDList = &GetMappedMultiSelectList();
         pDI.GetSubInfo<DRAG_TILELIST>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_TILELIST>().m_gamDoc = m_pDoc;
         pDI.m_hcsrSuggest = g_res.hcrDragTile;
+#endif
     }
     else
     {
@@ -282,10 +284,9 @@ BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
         pDI.GetSubInfo<DRAG_TILE>().m_tileID = GetCurMapItem();
         pDI.GetSubInfo<DRAG_TILE>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_TILE>().m_gamDoc = m_pDoc;
-        pDI.m_hcsrSuggest = g_res.hcrDragTile;
+        pDI.m_hcsrSuggest = g_res.hcrDragTileWx;
     }
     return TRUE;
 }
-#endif
 
 

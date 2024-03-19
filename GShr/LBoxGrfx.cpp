@@ -34,7 +34,10 @@
 #define new DEBUG_NEW
 #endif
 
+wxDEFINE_EVENT(WM_GET_DRAG_SIZE_WX, GetDragSizeEvent);
+
 DragInfo CGrafixListBox::di;
+DragInfoWx CGrafixListBoxWx::di;
 
 const int TRIGGER_THRESHOLD = 3;
 const unsigned defaultItemHeight = 16;
@@ -678,11 +681,11 @@ CGrafixListBoxWx::CGrafixListBoxWx() //:
 {
 #if 0
     m_nLastInsert = -1;
+#endif
     m_nTimerID = uintptr_t(0);
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
-#endif
 }
 
 CGrafixListBoxWx::~CGrafixListBoxWx()
@@ -730,70 +733,90 @@ void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
     }
 }
 
+wxSize CGrafixListBoxWx::GetDragSize() const
+{
+    wxWindow& parent = CheckedDeref(GetParent());
+    GetDragSizeEvent event;
+    if (!parent.ProcessWindowEvent(event))
+    {
+        wxASSERT(!"parent didn't provide drag size");
+        /* parent didn't provide drag size,
+            so assume worst case scenario */
+        wxSize retval;
+        retval.x = std::numeric_limits<decltype(retval.x)>::max();
+        retval.y = std::numeric_limits<decltype(retval.y)>::max();
+        event.SetSize(retval);
+    }
+    return event.GetSize();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CGrafixListBoxWx Message Processing
 
 void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
 {
-    CPP20_TRACE("{}->{}:  sel {}\n", static_cast<void*>(this), __func__, GetSelection());
+    wxASSERT(!m_incompleteHandler);
     wxASSERT(!GetCapture());
     event.Skip(); // Allow field selection
 
-    CallAfter([this] {
-        CPP20_TRACE("{}->{}:  sel {}\n", static_cast<void*>(this), __func__, GetSelection());
+    m_incompleteHandler = true;
+    CallAfter([this, event]{
+        m_incompleteHandler = false;
         wxASSERT(GetCapture() == this);
         int nIdx;
         if ((nIdx = GetSelection()) == wxNOT_FOUND)
             return;
-#if 0
         if (m_bAllowDrag)
         {
             m_hLastWnd = NULL;
-            m_clickPoint = point;       // For hysteresis
+            m_clickPoint = event.GetPosition();       // For hysteresis
             m_triggeredCursor = FALSE;  // -Ditto-
         }
-#endif
     });
 }
 
 void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 {
-    CPP20_TRACE("{}->{}:  capture {}\n", static_cast<void*>(this), __func__, static_cast<void*>(GetCapture()));
+    wxASSERT(!m_incompleteHandler);
 #if 0
     if (m_nTimerID)
     {
         KillTimer(m_nTimerID);
         m_nTimerID = uintptr_t(0);
     }
+#endif
     if (m_bAllowDrag)
     {
-        BOOL bWasDragging = CWnd::GetCapture() == this;
-        CListBox::OnLButtonUp(nFlags, point);
+        BOOL bWasDragging = wxWindow::GetCapture() == this;
+        event.Skip();
 
         if (bWasDragging && m_triggeredCursor)
         {
-            OnDragEnd(point);
+            m_incompleteHandler = true;
+            CallAfter([this, event]{
+                m_incompleteHandler = false;
+                OnDragEnd(event);
+            });
         }
     }
     else
-#endif
         event.Skip();
 }
 
 void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 {
-    CPP20_TRACE("{}->{}:  capture {}\n", static_cast<void*>(this), __func__, static_cast<void*>(GetCapture()));
+    wxASSERT(!m_incompleteHandler);
     if (!HasCapture())
     {
         // Only process tool tips when we aren't draggin stuff around
         DoToolTipHitProcessing(event.GetPosition());
     }
 
-#if 0
     if (m_bAllowDrag)
     {
-        if (CWnd::GetCapture() != this)
+        if (wxWindow::GetCapture() != this)
             return;
+        wxPoint point = event.GetPosition();
         // OK...We are dragging. Let's check if the cursor has been
         // triggered. If not, check if we've moved far enough from
         // the initial mouse down position.
@@ -809,53 +832,61 @@ void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
         OnDragSetup(di);           // Get stuff from subclass
 
         // If we got here, dragging is under way....
-        CWnd* pWnd = GetWindowFromPoint(point);
+        wxWindow* pWnd = GetWindowFromPoint(point);
         if (pWnd == NULL)
         {
             // No window underneath
-            SetCursor(g_res.hcrNoDrop);
+            SetCursor(g_res.hcrNoDropWx);
             return;
         }
         if (pWnd == this && !m_bAllowSelfDrop)
         {
             // The mouse is over us...show drop cursor
-            SetCursor(g_res.hcrDragTile);
+            SetCursor(g_res.hcrDragTileWx);
             return;
         }
-        HWND hWnd = pWnd->m_hWnd;       // Get actual window handle
-        HCURSOR hCursor = NULL;
 
         di.m_point = point;
         di.m_pointClient = point;       // list box relative
-        ClientToScreen(&di.m_point);
-        pWnd->ScreenToClient(&di.m_point);
+        di.m_point = ClientToScreen(di.m_point);
+        di.m_point = pWnd->ScreenToClient(di.m_point);
 
-        if (hWnd != m_hLastWnd)
+        if (pWnd != m_hLastWnd)
         {
             if (m_hLastWnd != NULL)
             {
                 // Inform previous window we are leaving them
-                CWnd* pLstWnd = CWnd::FromHandle(m_hLastWnd);
                 di.m_phase = PhaseDrag::Exit;
-                pLstWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-                    (LPARAM)(LPVOID)&di);
+                DragDropEvent dragDropEvent(wxGetProcessId(), di);
+                m_hLastWnd->ProcessWindowEvent(dragDropEvent);
             }
             di.m_phase = PhaseDrag::Enter;
-            pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()), (LPARAM)(LPVOID)&di);
+            DragDropEvent dragDropEvent(wxGetProcessId(), di);
+            pWnd->ProcessWindowEvent(dragDropEvent);
         }
-        m_hLastWnd = pWnd->m_hWnd;
+        m_hLastWnd = pWnd;
         di.m_phase = PhaseDrag::Over;
-        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-            (LPARAM)(LPVOID)&di);
-        if (hCursor)
+        DragDropEvent dragDropEvent(wxGetProcessId(), di);
+        pWnd->ProcessWindowEvent(dragDropEvent);
+        wxCursor hCursor = dragDropEvent.GetCursor();
+        if (hCursor.IsOk())
             SetCursor(hCursor);
         else
-            SetCursor(g_res.hcrNoDrop);
+            SetCursor(g_res.hcrNoDropWx);
     }
     else
-#endif
         event.Skip();
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+wxWindow* CGrafixListBoxWx::GetWindowFromPoint(wxPoint point)
+{
+    point = ClientToScreen(point);
+    return wxFindWindowAtPoint(point);
+}
+
+/////////////////////////////////////////////////////////////////
 
 void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
 {
@@ -919,6 +950,13 @@ void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
         KillTimer(m_nTimerID);
         m_nTimerID = uintptr_t(0);
     }
+#endif
+}
+
+void CGrafixListBoxWx::AssignNewMoveGroup()
+{
+#if defined(GPLAY)
+    CheckedDeref(m_pDoc).AssignNewMoveGroup();
 #endif
 }
 

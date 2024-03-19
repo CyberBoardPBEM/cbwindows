@@ -61,8 +61,12 @@ ResourceTable::~ResourceTable(void)
 void ResourceTable::LoadCursors(HINSTANCE hInst)
 {
     hcrDragTile = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE));
+    // TODO:  rewrite w/o wxWindows-specific code
+    hcrDragTileWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE))));
     hcrNoDrop = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP));
+    hcrNoDropWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP))));
     hcrNoDropTooBig = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG));
+    hcrNoDropTooBigWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG))));
     hcrCrossHair = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CROSSHAIR));
 #ifndef GPLAY
     hcrFill = LoadCursor(hInst, MAKEINTRESOURCE(IDC_FILL));

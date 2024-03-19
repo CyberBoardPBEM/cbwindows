@@ -43,8 +43,8 @@ static char THIS_FILE[] = __FILE__;
 
 wxBEGIN_EVENT_TABLE(CTilePalette, wxPanel)
     EVT_CHOICE(XRCID("m_comboTGrp"), OnTileNameCbnSelchange)
+    EVT_GET_DRAG_SIZE(OnGetDragSize)
 #if 0
-    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_HELPINFO()
 #endif
     EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
@@ -61,7 +61,7 @@ CTilePalette::CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd) :
 {
     m_pDockingFrame = NULL;
     m_listTile->SetDocument(&pDoc);
-//    m_listTile->EnableDrag(TRUE);
+    m_listTile->EnableDrag(TRUE);
 
     UpdatePaletteContents();
 }
@@ -152,15 +152,15 @@ void CTilePalette::OnTileNameCbnSelchange(wxCommandEvent& /*event*/)
     UpdateTileList();
 }
 
-#if 0
-LRESULT CTilePalette::OnGetDragSize(WPARAM wParam, LPARAM lParam)
+void CTilePalette::OnGetDragSize(GetDragSizeEvent& event)
 {
     TileID tid = GetCurrentTileID();
     CTile tile = m_pDoc.GetTileManager()->GetTile(tid, fullScale);
-    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = tile.GetSize();
-    return 1;
+    CSize size = tile.GetSize();
+    event.SetSize(wxSize(size.cx, size.cy));
 }
 
+#if 0
 BOOL CTilePalette::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     GetApp()->DoHelpTopic("gm-ref-pal-tile.htm");

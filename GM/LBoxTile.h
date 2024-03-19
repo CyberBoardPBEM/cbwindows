@@ -102,9 +102,7 @@ protected:
     // Overrides
     wxSize GetItemSize(size_t nIndex) const override;
     void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
-#if 0
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-#endif
+    virtual BOOL OnDragSetup(DragInfoWx& pDI) const override;
 
 private:
     wxDECLARE_DYNAMIC_CLASS(CTileListBoxWx);

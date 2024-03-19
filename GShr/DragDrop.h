@@ -1,6 +1,6 @@
 // DragDrop.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -48,6 +48,40 @@ class CSelList;
 //           1 - success
 
 extern const UINT WM_DRAGDROP;
+class DragDropEvent;
+struct DragInfoWx;
+wxDECLARE_EVENT(WM_DRAGDROP_WX, DragDropEvent);
+class DragDropEvent : public wxEvent
+{
+public:
+    DragDropEvent(unsigned long pid_, DragInfoWx& di) :
+        wxEvent(wxID_ANY, WM_DRAGDROP_WX),
+        pid(pid_),
+        dragInfo(di)
+    {
+    }
+
+    unsigned long GetProcessId() const { return pid; }
+    const DragInfoWx& GetDragInfo() const { return dragInfo; }
+
+    bool GetAllowScroll() const { return allowScroll; }
+    void SetAllowScroll(bool b) { wxASSERT(!"unused code?"); allowScroll = b; }
+
+    wxCursor GetCursor() const { return cursor; }
+    void SetCursor(wxCursor c) { cursor = c; }
+
+    wxEvent* Clone() const override { return new DragDropEvent(*this); }
+
+private:
+    const unsigned long pid;
+    const DragInfoWx& dragInfo;
+    bool allowScroll = true;
+    wxCursor cursor;
+};
+typedef void (wxEvtHandler::*DragDropEventFunction)(DragDropEvent&);
+#define DragDropEventHandler(func) wxEVENT_HANDLER_CAST(DragDropEventFunction, func)
+#define EVT_DRAGDROP(func) \
+    wx__DECLARE_EVT0(WM_DRAGDROP_WX, DragDropEventHandler(func))
 
 // Drag phase codes...
 
@@ -153,6 +187,116 @@ private:
         SubInfo<DRAG_MARKER> m_marker;
         SubInfo<DRAG_SELECTLIST> m_selectList;
         SubInfo<DRAG_SELECTVIEW> m_selectView;
+
+        SubInfos() {}
+        ~SubInfos() {}
+    } subInfos;
+public:
+    template<DragType DT>
+    const SubInfo<DT>& GetSubInfo() const
+    {
+        ASSERT(m_dragType == DT);
+        /* TODO:  This check could be removed to improve release
+            build performance if we trust ourselves to always
+            catch any m_dragType mistakes in testing.  Also,
+            since this function is inlined, it will often be
+            possible for the optimizer to detect that m_dragType
+            is correct through data analysis and optimize the
+            check out.  */
+        if (m_dragType != DT)
+        {
+            AfxThrowInvalidArgException();
+        }
+        return reinterpret_cast<const SubInfo<DT>&>(subInfos);
+    }
+
+    template<DragType DT>
+    SubInfo<DT>& GetSubInfo() { return const_cast<SubInfo<DT>&>(std::as_const(*this).GetSubInfo<DT>()); }
+};
+
+struct DragInfoWx
+{
+    DragInfoWx() { m_dragType = DRAG_INVALID; }
+    ~DragInfoWx() { SetDragType(DRAG_INVALID); }
+
+    DragType    GetDragType() const { return m_dragType; }
+    // keep SubInfos constructed to match m_dragType
+    void        SetDragType(DragType dt);
+private:
+    DragType    m_dragType;
+public:
+    PhaseDrag   m_phase;
+//  BOOL        m_bDropAccepted;// Set by droppee so source knows what happened
+    wxPoint     m_point;        // Loc of mouse in window (dragOver&dragDrop)
+    wxPoint     m_pointClient;  // list box relative
+    wxCursor    m_hcsrSuggest;  // Suggested cursor to return if can drop
+
+    template<DragType DT>
+    struct SubInfo
+    {
+    };
+    template<>
+    struct SubInfo<DRAG_TILE>
+    {
+        TileID m_tileID;
+        wxSize m_size;
+        const CGamDoc* m_gamDoc;
+    };
+#if 0
+    template<>
+    struct SubInfo<DRAG_TILELIST>
+    {
+        const CB::vector<TileID>* m_tileIDList;
+        CSize m_size;
+        const CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_PIECE>
+    {
+        PieceID m_pieceID;
+        CSize m_size;
+        const CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_PIECELIST>
+    {
+        const CB::vector<PieceID>* m_pieceIDList;
+        CSize m_size;
+        const CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_MARKER>
+    {
+        MarkID m_markID;
+        wxSize m_size;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_SELECTLIST>
+    {
+        CSelList* m_selectList;
+        CGamDoc* m_gamDoc;
+    };
+    template<>
+    struct SubInfo<DRAG_SELECTVIEW>
+    {
+        const CB::vector<CB::not_null<const CDrawObj*>>* m_ptrArray;
+        CGamDoc* m_gamDoc;
+    };
+#endif
+    // TODO:  when upgrade to c++ 17, use std::variant
+private:
+    union SubInfos
+    {
+        SubInfo<DRAG_TILE> m_tile;
+#if 0
+        SubInfo<DRAG_TILELIST> m_tileList;
+        SubInfo<DRAG_PIECE> m_piece;
+        SubInfo<DRAG_PIECELIST> m_pieceList;
+        SubInfo<DRAG_MARKER> m_marker;
+        SubInfo<DRAG_SELECTLIST> m_selectList;
+        SubInfo<DRAG_SELECTVIEW> m_selectView;
+#endif
 
         SubInfos() {}
         ~SubInfos() {}
