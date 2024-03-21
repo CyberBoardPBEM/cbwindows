@@ -942,7 +942,7 @@ void CGamDoc::OnEditCreateTileGroup()
 void CGamDoc::OnEditCreatePieceGroup()
 {
     CPieceGroupNameDialog dlg;
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         GetPieceManager()->CreatePieceSet(dlg.m_strName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);

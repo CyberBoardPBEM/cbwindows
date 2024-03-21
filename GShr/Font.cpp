@@ -120,7 +120,7 @@ CB::string CbFont::ToString(int angle /* = 0 */) const
 // ----------------------------------------------------- //
 
 // N.B.:  angle is clockwise per CB convention
-void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
+void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */) const
 {
     const CbFont *opFnt = &**id;
     const CB::string* pszFace;
@@ -143,7 +143,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */)
 
 // ----------------------------------------------------- //
 
-HFONT CFontTbl::GetFontHandle(FontID id, int angle /* = 0 */)
+HFONT CFontTbl::GetFontHandle(FontID id, int angle /* = 0 */) const
 {
     if (id == 0)
         return NULL;
@@ -194,4 +194,109 @@ bool CbFont::operator==(const CbFont& rhs) const
 {
     return rhs.fnID == fnID && rhs.iTypeSize == iTypeSize &&
             rhs.taFlags == taFlags;
+}
+
+wxFont ToWxFont(FontID fid)
+{
+    LOGFONT lf;
+    CFontTbl& pFontTbl = CheckedDeref(CGamDoc::GetFontManager());
+    pFontTbl.FillLogFontStruct(fid, &lf);
+
+    wxNativeFontInfo nfi;
+
+    wxASSERT(lf.lfHeight <= 0);
+    nfi.SetPixelSize(wxSize(0, -lf.lfHeight));
+
+    if (lf.lfWeight == FW_BOLD)
+    {
+        nfi.SetWeight(wxFONTWEIGHT_BOLD);
+    }
+    else
+    {
+        nfi.SetWeight(wxFONTWEIGHT_NORMAL);
+    }
+
+    nfi.SetStyle(lf.lfItalic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
+
+    nfi.SetUnderlined(lf.lfUnderline);
+
+    wxASSERT((lf.lfPitchAndFamily & 0x3) == DEFAULT_PITCH);
+    switch (lf.lfPitchAndFamily & 0xf)
+    {
+        case FF_DECORATIVE:
+            nfi.SetFamily(wxFONTFAMILY_DECORATIVE);
+            break;
+        case FF_DONTCARE:
+            nfi.SetFamily(wxFONTFAMILY_DEFAULT);
+            break;
+        case FF_MODERN:
+            nfi.SetFamily(wxFONTFAMILY_MODERN);
+            break;
+        case FF_ROMAN:
+            nfi.SetFamily(wxFONTFAMILY_ROMAN);
+            break;
+        case FF_SCRIPT:
+            nfi.SetFamily(wxFONTFAMILY_SCRIPT);
+            break;
+        case FF_SWISS:
+            nfi.SetFamily(wxFONTFAMILY_SWISS);
+            break;
+        default:
+            wxASSERT(!"unknown family");
+    }
+
+    nfi.SetFaceName(lf.lfFaceName);
+
+    return wxFont(nfi);
+}
+
+FontID ToFontID(wxFont f)
+{
+    int size = f.GetPixelSize().GetHeight();
+
+    int flags = 0;
+    if (f.GetWeight() >= wxFONTWEIGHT_SEMIBOLD)
+    {
+        flags |= taBold;
+    }
+    if (f.GetStyle() == wxFONTSTYLE_ITALIC ||
+        f.GetStyle() == wxFONTSTYLE_SLANT)
+    {
+        flags |= taItalic;
+    }
+    if (f.GetUnderlined())
+    {
+        flags |= taULine;
+    }
+
+    uint8_t family;
+    switch (f.GetFamily())
+    {
+        case wxFONTFAMILY_DECORATIVE:
+            family = FF_DECORATIVE;
+            break;
+        case wxFONTFAMILY_DEFAULT:
+            family = FF_DONTCARE;
+            break;
+        case wxFONTFAMILY_MODERN:
+            family = FF_MODERN;
+            break;
+        case wxFONTFAMILY_ROMAN:
+            family = FF_ROMAN;
+            break;
+        case wxFONTFAMILY_SCRIPT:
+            family = FF_SCRIPT;
+            break;
+        case wxFONTFAMILY_SWISS:
+            family = FF_SWISS;
+            break;
+        default:
+            wxASSERT(!"unknown family");
+            family = FF_DONTCARE;
+    }
+
+    CB::string name = f.GetFaceName();
+
+    CFontTbl& pFontTbl = CheckedDeref(CGamDoc::GetFontManager());
+    return pFontTbl.AddFont(size, flags, family, name);
 }

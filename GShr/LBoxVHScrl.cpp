@@ -32,6 +32,7 @@ namespace CB
 
     wxBEGIN_EVENT_TABLE(VListBoxHScroll, wxVListBox)
         EVT_SCROLLWIN(VListBoxHScroll::OnScrollWin)
+        EVT_SIZE(OnSize)
     wxEND_EVENT_TABLE()
 
     VListBoxHScroll::VListBoxHScroll()
@@ -42,13 +43,12 @@ namespace CB
     void VListBoxHScroll::SetItemCount(size_t count)
     {
         wxVListBox::SetItemCount(count);
-        wxSize virtSize = GetVirtualSize();
-        wxCoord width = virtSize.GetWidth();
+        wxCoord width = GetClientSize().GetWidth();
         for (size_t i = 0 ; i < count ; ++i)
         {
             width = std::max(width, GetItemSize(i).GetWidth());
         }
-        SetVirtualSize(width, virtSize.GetHeight());
+        SetVirtualSize(width, GetVirtualSize().GetHeight());
     }
 
     // logical --> device
@@ -163,6 +163,17 @@ namespace CB
         pos = std::max(0, pos);
         pos = std::min(pos, maxWidth);
         SetScrollPos(wxHORIZONTAL, pos);
+        Refresh();
+    }
+
+    void VListBoxHScroll::OnSize(wxSizeEvent& event)
+    {
+        event.Skip();
+
+        SetScrollbar(wxHORIZONTAL,
+                    GetScrollThumb(wxHORIZONTAL),
+                    GetClientSize().GetWidth(),
+                    GetVirtualSize().GetWidth());
         Refresh();
     }
 }

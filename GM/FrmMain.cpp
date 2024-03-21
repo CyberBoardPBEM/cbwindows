@@ -499,6 +499,20 @@ void CMainFrame::OnIdle()
         m_wndColorPal.SendMessage(WM_IDLEUPDATECMDUI, (WPARAM)TRUE);
 }
 
+BOOL CMainFrame::OnCloseMiniFrame(CPaneFrameWnd* pWnd)
+{
+    pWnd->SendMessage(WM_PALETTE_HIDE);
+    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
+    return true;
+}
+
+BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
+{
+    pWnd->SendMessage(WM_PALETTE_HIDE);
+    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
+    return true;
+}
+
 /////////////////////////////////////////////////////////////////
 
 void CMainFrame::OnWindowToolPal()

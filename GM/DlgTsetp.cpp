@@ -1,6 +1,6 @@
 // DlgTsetp.cpp - Tile properties dialog
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,32 +37,24 @@ static char THIS_FILE[] = __FILE__;
 // CTSetPropDialog dialog
 
 
-CTSetPropDialog::CTSetPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CTSetPropDialog::IDD, pParent)
+CTSetPropDialog::CTSetPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CTSetPropDialog)
+        CB_XRC_CTRL_VAL(m_cpTrans, m_crTrans)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 40)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CTSetPropDialog)
     m_strName = "";
-    //}}AFX_DATA_INIT
     m_crTrans = RGB(0,255,255);
 }
 
-void CTSetPropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CTSetPropDialog)
-    DDX_Control(pDX, IDC_D_TGRP_TRANSCOLOR, m_cpTrans);
-    DDX_Text(pDX, IDC_D_TGRP_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 40);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CTSetPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CTSetPropDialog)
+wxBEGIN_EVENT_TABLE(CTSetPropDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -82,21 +74,4 @@ void CTSetPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// CTSetPropDialog message handlers
-
-void CTSetPropDialog::OnOK()
-{
-    m_crTrans = m_cpTrans.GetColor();
-    CDialog::OnOK();
-}
-
-BOOL CTSetPropDialog::OnInitDialog()
-{
-    CDialog::OnInitDialog();
-
-    m_cpTrans.SetColor(m_crTrans);
-
-    return TRUE;  // return TRUE  unless you set the focus to a control
-}
+#endif

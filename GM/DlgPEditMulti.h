@@ -1,6 +1,6 @@
 // DlgPEditMulti.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,26 +32,30 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPieceEditMultipleDialog dialog
 
-class CPieceEditMultipleDialog : public CDialog
+class CPieceEditMultipleDialog : public wxDialog
 {
 // Construction
 public:
-    CPieceEditMultipleDialog(size_t sides, CWnd* pParent = NULL);   // standard constructor
-    const size_t m_sides;
+    CPieceEditMultipleDialog(size_t sides, wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPieceEditMultipleDialog)
-    enum { IDD = IDD_PIECE_EDIT_MULTIPLE };
-    CButton m_chkTopVisibleOwnersToo;
-    CStatic m_staticFrontLabel;
-    CButton m_chkSetBackText;
-    CButton m_chkSetFrontText;
-    CStatic m_staticBackLabel;
-    CButton m_chkTopVisible;
-    CEdit   m_editBack;
-    CEdit   m_editFront;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkTopVisibleOwnersToo;
+        RefPtr<wxStaticText> m_staticFrontLabel;
+        RefPtr<wxCheckBox> m_chkSetBackText;
+        RefPtr<wxCheckBox> m_chkSetFrontText;
+        RefPtr<wxStaticText> m_staticBackLabel;
+        RefPtr<wxCheckBox> m_chkTopVisible;
+        RefPtr<wxTextCtrl> m_editBack;
+        RefPtr<wxTextCtrl> m_editFront;
+        /* sides are 0-based since they are vector indices, but we
+            will display them 1-based for human readability */
+            // m_currSide should contain 2 - sides
+        RefPtr<wxChoice> m_currSide;
+    CB_XRC_END_CTRLS_DECL()
 
+public:
     BOOL    m_bSetTopOnlyVisible;               // TRUE if m_bTopOnlyVisible changed
     BOOL    m_bTopOnlyVisible;
     BOOL    m_bTopOnlyOwnersToo;
@@ -60,33 +64,25 @@ public:
     std::vector<CB::string> m_strs;
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CPieceEditMultipleDialog)
     protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
     void UpdateTextControls();
 
-    // Generated message map functions
-    //{{AFX_MSG(CPieceEditMultipleDialog)
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
-    afx_msg void OnBtnClickChangeBack();
-    afx_msg void OnBtnClickChangeFront();
-    afx_msg void OnBtnClickTopVisible();
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
+    void OnBtnClickChangeBack(wxCommandEvent& event);
+    void OnBtnClickChangeFront(wxCommandEvent& event);
+    void OnBtnClickTopVisible(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnSelchangeCurrSide();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnSelchangeCurrSide(wxCommandEvent& event);
+    wxDECLARE_EVENT_TABLE();
 
-    /* sides are 0-based since they are vector indices, but we
-        will display them 1-based for human readability */
-    // m_currSide should contain 2 - sides
-    CComboBox m_currSide;
+    const size_t m_sides;
     size_t m_prevSide = std::numeric_limits<size_t>::max();
 };
 

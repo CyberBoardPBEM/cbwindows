@@ -68,6 +68,7 @@ namespace CB
         wxDECLARE_EVENT_TABLE();
 
         void OnScrollWin(wxScrollWinEvent& event);
+        void OnSize(wxSizeEvent& event);
     };
 }
 

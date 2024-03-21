@@ -20,6 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MFC_FLAG 1)
 if (MSVC)
+	add_compile_definitions($<$<CONFIG:Debug>:_CRTDBG_MAP_ALLOC>)
 	add_compile_options(/EHs)
 endif()
 

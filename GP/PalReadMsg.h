@@ -75,7 +75,6 @@ protected:
 protected:
     //{{AFX_VIRTUAL(CReadMsgWnd)
     virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
-    virtual void OnPressCloseButton();
     //}}AFX_VIRTUAL
 
     //{{AFX_MSG(CReadMsgWnd)

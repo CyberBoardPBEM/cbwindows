@@ -61,6 +61,27 @@ FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
         static_cast<uint8_t>(lf.lfPitchAndFamily & 0xF0), dlg.GetFaceName());
 }
 
+FontID DoFontDialog(FontID fid, wxWindow* pParentWnd, BOOL bScreenOK)
+{
+    ASSERT(fid != 0);
+
+    wxFontData fd;
+    fd.EnableEffects(false);
+    fd.SetAllowSymbols(false);
+    if (!bScreenOK)
+    {
+        fd.RestrictSelection(wxFONTRESTRICT_SCALABLE);
+    }
+    fd.SetInitialFont(ToWxFont(fid));
+    wxFontDialog dlg(pParentWnd, fd);
+
+    if (dlg.ShowModal() != wxID_OK)
+    {
+        return static_cast<FontID>(0);
+    }
+    return ToFontID(dlg.GetFontData().GetChosenFont());
+}
+
 /////////////////////////////////////////////////////////////////
 
 int GetYPixelsPerLogicalInch()

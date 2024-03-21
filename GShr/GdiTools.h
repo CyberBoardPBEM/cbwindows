@@ -137,6 +137,7 @@ typedef DELTAGEN *PDELTAGEN;
 // Some non-class GDI tools...
 
 FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK = FALSE);
+FontID DoFontDialog(FontID fid, wxWindow* pParentWnd, BOOL bScreenOK = FALSE);
 
 BOOL DeltaGenInit(PDELTAGEN pdg, int x0, int y0, int xf, int yf, int* px,
     int* py);

@@ -240,12 +240,12 @@ void CGbxProjView::DoTileGroupProperty()
 
     CTSetPropDialog dlg;
     CTileManager* pTMgr = pDoc->GetTileManager();
-    dlg.m_crTrans = pTMgr->GetTransparentColor();
-    dlg.m_strName = pTMgr->GetTileSet(nGrp).GetName();
+    dlg.m_crTrans = CB::Convert(pTMgr->GetTransparentColor());
+    dlg.m_strName = wxString(pTMgr->GetTileSet(nGrp).GetName());
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
-        pTMgr->SetTransparentColor(dlg.m_crTrans);
+        pTMgr->SetTransparentColor(CB::Convert(dlg.m_crTrans));
         pTMgr->GetTileSet(nGrp).SetName(dlg.m_strName);
         pDoc->UpdateAllViews(NULL, HINT_TILESETPROPCHANGE, NULL);
         pDoc->SetModifiedFlag();
@@ -457,9 +457,9 @@ void CGbxProjView::DoPieceGroupProperty()
     CPieceManager* pPMgr = pDoc->GetPieceManager();
 
     CPiecePropDialog dlg;
-    dlg.m_strName = pPMgr->GetPieceSet(nGrp).GetName();
+    dlg.m_strName = wxString(pPMgr->GetPieceSet(nGrp).GetName());
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         pPMgr->GetPieceSet(nGrp).SetName(dlg.m_strName);
         pDoc->UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
@@ -501,7 +501,7 @@ void CGbxProjView::DoPieceNew()
 
     CPieceNewDialog dlg(*(CGamDoc*)GetDocument(), nGrp);
 
-    dlg.DoModal();
+    dlg.ShowModal();
     GetDocument()->UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
     pDoc->SetModifiedFlag();
 }
@@ -521,7 +521,7 @@ void CGbxProjView::DoPieceEdit()
 
         CPieceEditDialog dlg(*pDoc, pid);
 
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
     }
     else
@@ -548,7 +548,7 @@ void CGbxProjView::DoPieceEdit()
         }
 
         CPieceEditMultipleDialog dlg(sides);
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
 
         for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)

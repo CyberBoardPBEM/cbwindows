@@ -91,11 +91,11 @@ public:
 
 // Operations
 public:
-    void SetDocument(CGamDoc* pDoc) { m_pDoc = pDoc; }
+    void SetDocument(const CGamDoc* pDoc) { m_pDoc = pDoc; }
 
 // Implementation
 protected:
-    CGamDoc*    m_pDoc;
+    const CGamDoc* m_pDoc;
     BOOL        m_bDrawAllScales;
     int         m_bDisplayIDs;     // Set to prop [Settings]:DisplayIDs
 

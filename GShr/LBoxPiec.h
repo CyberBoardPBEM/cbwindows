@@ -78,5 +78,51 @@ protected:
     DECLARE_MESSAGE_MAP()
 };
 
+/////////////////////////////////////////////////////////////////////////////
+
+class CPieceListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
+{
+// Construction
+public:
+    CPieceListBoxWx();
+
+// Attributes
+public:
+    void SetDocument(CGamDoc& pDoc);
+
+    virtual const CTileManager& GetTileManager() const override;
+
+// Operations
+public:
+
+// Implementation
+protected:
+    const CGamDoc*       m_pDoc;
+    const CPieceManager* m_pPMgr;
+
+    // Overrides
+    wxSize GetItemSize(size_t nIndex) const override;
+    void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
+#if 0
+    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
+#endif
+
+    // Tool tip processing
+    virtual BOOL OnIsToolTipsEnabled() const override;
+    virtual GameElement OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const override;
+    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
+    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
+
+#if 0
+    //{{AFX_MSG(CPieceListBox)
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
+#endif
+
+private:
+    wxDECLARE_DYNAMIC_CLASS(CPieceListBoxWx);
+};
+
 #endif
 

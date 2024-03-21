@@ -188,7 +188,7 @@ CTileListBoxWx::CTileListBoxWx()
 wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    const CTileManager* pTMgr = m_pDoc->GetTileManager();
     wxASSERT(pTMgr != NULL);
 
     TileID tid = MapIndexToItem(nIndex);
@@ -223,7 +223,7 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    const CTileManager* pTMgr = m_pDoc->GetTileManager();
     wxASSERT(pTMgr != NULL);
 
     TileID tid = MapIndexToItem(nIndex);
@@ -242,7 +242,7 @@ void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
         pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
         int y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
             (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
-        pDC.DrawText(str, x, y);
+        pDC.DrawText(str, CalcScrolledX(x), y);
         x += pDC.GetTextExtent(str).x;
         pDC.SetBackgroundMode(prevBkMode);
     }

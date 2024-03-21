@@ -1,6 +1,6 @@
 // DlgTexto.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,37 +38,38 @@ static char THIS_FILE[] = __FILE__;
 // CTextObjDialog dialog
 
 
-CTextObjDialog::CTextObjDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CTextObjDialog::IDD, pParent)
+CTextObjDialog::CTextObjDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CTextObjDialog)
+        CB_XRC_CTRL(m_btnTxtPropFont)
+        CB_XRC_CTRL_VAL(m_editText, m_strText, wxFILTER_NONE, 80)
+    CB_XRC_END_CTRLS_DEFN()
 {
     m_fontID = 0;
     m_pFontMgr = NULL;
-    //{{AFX_DATA_INIT(CTextObjDialog)
     m_strText = "";
-    //}}AFX_DATA_INIT
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editText->GetSizeFromText("MMMMMMMMMMMMMMMMMMMMMMMM");
+    m_editText->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
 }
 
 CTextObjDialog::~CTextObjDialog()
 {
 }
 
-void CTextObjDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CTextObjDialog)
-    DDX_Text(pDX, IDC_D_TXTPRP_TEXT, m_strText);
-    DDV_MaxChars(pDX, m_strText, 80);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CTextObjDialog, CDialog)
-    //{{AFX_MSG_MAP(CTextObjDialog)
-    ON_BN_CLICKED(IDC_D_TXTPRP_FONT, OnBtnTxtPropFont)
+wxBEGIN_EVENT_TABLE(CTextObjDialog, wxDialog)
+    EVT_BUTTON(XRCID("m_btnTxtPropFont"), OnBtnTxtPropFont)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -88,6 +89,7 @@ void CTextObjDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +104,7 @@ void CTextObjDialog::SetFontID(FontID fontID)
 /////////////////////////////////////////////////////////////////////////////
 // CTextObjDialog message handlers
 
-void CTextObjDialog::OnBtnTxtPropFont()
+void CTextObjDialog::OnBtnTxtPropFont(wxCommandEvent& /*event*/)
 {
     ASSERT(m_pFontMgr != NULL);
     FontID newFontID = DoFontDialog(m_fontID, this);

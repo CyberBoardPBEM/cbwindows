@@ -1271,7 +1271,7 @@ void CBitEditView::OnEditPaste()
     {
         CPasteBitmapDialog dlg;
         dlg.m_nPasteAction = nRescale;
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
         {
             return;
         }
