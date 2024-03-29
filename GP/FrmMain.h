@@ -58,8 +58,6 @@ public:
 
     CMFCStatusBar* GetStatusBar() { return &m_wndStatusBar; }
 
-    CPalette* GetMasterPalette() { return &m_appPalette; }
-
 // Operations
 public:
     void UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn);
@@ -87,13 +85,8 @@ protected:
     CWindowPos    m_wndPosition;
      //@@@@@@ CMDIWndTab    m_wndMDITabWindow;
 
-    CPalette        m_appPalette;       // Master app GDI palette
-
 // Implementation
 public:
-    BOOL BuildAppGDIPalette();
-
-
     virtual BOOL LoadFrame(UINT nIDResource,
         DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
         CWnd *pParentWnd = NULL, CCreateContext *pContext = NULL);

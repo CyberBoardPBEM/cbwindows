@@ -362,10 +362,8 @@ void CBitDropperTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 {
     CDC *pDC = pView->GetDC();
     pView->OnPrepareDC(pDC, NULL);
-    SetupPalette(*pDC);
     COLORREF crPxl = pDC->GetPixel(point);
     ASSERT((long)crPxl != -1);
-    ResetPalette(*pDC);
     pView->ReleaseDC(pDC);
     if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
         pView->SetForeColor(crPxl);
@@ -383,10 +381,8 @@ void CBitDropperTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
     pView->ClientToScreen(&point);
 
     CWindowDC dc(CWnd::GetDesktopWindow());
-    SetupPalette(dc);
     COLORREF crPxl = dc.GetPixel(point);
     ASSERT((long)crPxl != -1);
-    ResetPalette(dc);
 
     if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
         pView->SetForeColor(crPxl);

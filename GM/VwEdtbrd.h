@@ -131,8 +131,6 @@ public:
     virtual ~CBrdEditView();
     virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 
-    void SetupPalette(CDC *pDC);
-    void ResetPalette(CDC *pDC);
 #ifdef _DEBUG
     virtual void AssertValid() const;
     virtual void Dump(CDumpContext& dc) const;

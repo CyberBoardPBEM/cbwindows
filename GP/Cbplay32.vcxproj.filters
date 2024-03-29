@@ -33,9 +33,6 @@
     <ClCompile Include="..\GShr\CellForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GShr\Color.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgChgGameOwner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

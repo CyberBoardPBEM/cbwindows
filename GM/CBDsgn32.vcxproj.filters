@@ -36,9 +36,6 @@
     <ClCompile Include="ClipBrd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GShr\Color.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgBmask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

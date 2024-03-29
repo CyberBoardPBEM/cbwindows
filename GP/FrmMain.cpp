@@ -1,6 +1,6 @@
 // FrmMain.cpp : implementation of the CMainFrame class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -156,13 +156,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
         return -1;
-
-    // Build a universal GDI color palette for the app...
-    if (!BuildAppGDIPalette())
-    {
-        TRACE0("Failed to create application wide GDI palette.\n");
-        return -1;      // fail to create
-    }
 
     CMDITabInfo mdiTabParams;
     mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_VS2005; // other styles available...
@@ -462,28 +455,6 @@ void CMainFrame::UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn)
             }
         }
     }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void GenerateColorWash(LPPALETTEENTRY pPE);   // See COLOR.CPP //
-
-BOOL CMainFrame::BuildAppGDIPalette()
-{
-    ClearSystemPalette();
-
-    uint16_t nPalSize = uint16_t(256);
-    std::vector<std::byte> v((sizeof(LOGPALETTE) +
-        value_preserving_cast<size_t>(nPalSize * sizeof(PALETTEENTRY))));
-    LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
-    // Start with speedy identity pal
-    SetupIdentityPalette(nPalSize, pLP);
-    GenerateColorWash(&pLP->palPalEntry[10]);
-
-    m_appPalette.DeleteObject();
-    m_appPalette.CreatePalette(pLP);
-
-    return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////

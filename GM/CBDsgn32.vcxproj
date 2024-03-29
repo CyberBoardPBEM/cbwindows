@@ -301,7 +301,6 @@ echo off
     <ClCompile Include="..\GShr\DragDrop.cpp" />
     <ClCompile Include="..\GShr\LBoxVHScrl.cpp" />
     <ClCompile Include="ClipBrd.cpp" />
-    <ClCompile Include="..\GShr\Color.cpp" />
     <ClCompile Include="DlgBmask.cpp" />
     <ClCompile Include="DlgBrdp.cpp" />
     <ClCompile Include="DlgBrdsz.cpp" />

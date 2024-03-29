@@ -143,7 +143,6 @@ LRESULT CTinyBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 
 void CTinyBoardView::OnDraw(CDC* pDC)
 {
-    SetupPalette(*pDC);          // (moved to top)
     if (!m_pBMap)
         RegenCachedMap(pDC);
     ASSERT(m_pBMap);
@@ -171,7 +170,6 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     }
 
     dcMem.SetViewportOrg(-oRct.left, -oRct.top);
-    SetupPalette(dcMem);
 
     // Draw updated part of board image
     BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
@@ -200,7 +198,6 @@ void CTinyBoardView::OnDraw(CDC* pDC)
             &dcMem, oRct.left, oRct.top, SRCCOPY);
     }
 
-    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
 }
 
@@ -213,7 +210,6 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
     bmap.Attach(CreateRGBDIBSection(size.cx, size.cy)->Detach());
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&bmap);
-    SetupPalette(dcMem);
 
     // Draw updated part of board image
     BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
@@ -232,7 +228,6 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
 void CTinyBoardView::RegenCachedMap(CDC* pDC)
 {
     BeginWaitCursor();
-    SetupPalette(*pDC);
 
     CBoard* pBoard = m_pPBoard->GetBoard();
     CSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
@@ -241,13 +236,11 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
     CDC dcMem;
     dcMem.CreateCompatibleDC(pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&*m_pBMap);
-    SetupPalette(dcMem);
 
     CRect rct(CPoint(0, 0), size);
     pBoard->SetMaxDrawLayer();                  // Make sure all layers are drawn
     pBoard->Draw(dcMem, rct, smallScale, m_pPBoard->m_bSmallCellBorders);
 
-    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
     EndWaitCursor();
 }
@@ -338,9 +331,7 @@ void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
 
     {
         CWindowDC dcRef(NULL);
-        SetupPalette(dcRef);
         DrawFullMap(&dcRef, pTBrd->m_bmap);
-        ResetPalette(dcRef);
     }
 
     pTBrd->m_pWnd = GetParentFrame();

@@ -57,7 +57,6 @@ set(SRCS
 	../GShr/CalcLib.cpp
 	../GShr/CDib.cpp
 	../GShr/CellForm.cpp
-	../GShr/Color.cpp
 	../GShr/DragDrop.cpp
 	../GShr/DrawObj.cpp
 	../GShr/Font.cpp

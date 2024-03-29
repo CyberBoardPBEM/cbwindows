@@ -1,6 +1,6 @@
 // VwPbrd.cpp : implementation of the CPlayBoardView class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -447,7 +447,6 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     CBitmap*    pPrvBMap;
 
     pDC->GetClipBox(&oRct);
-    SetupPalette(*pDC);
 
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
@@ -464,8 +463,6 @@ void CPlayBoardView::OnDraw(CDC* pDC)
             sizeBrd.cy - oRct.top - oRct.Height()), oRct.Size());
     }
     dcMem.SetViewportOrg(-oRct.left, -oRct.top);
-
-    SetupPalette(dcMem);
 
     // Draw base board image...
     pBoard->SetMaxDrawLayer();          // Make sure all layers are drawn
@@ -499,10 +496,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
             &dcMem, oRct.left, oRct.top, SRCCOPY);
     }
 
-    ResetPalette(dcMem);
     dcMem.SelectObject(pPrvBMap);
-
-    ResetPalette(*pDC);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2038,14 +2032,12 @@ void CPlayBoardView::OnEditCopy()
     CBoard* pBoard = m_pPBoard->GetBoard();
     CWindowDC scrnDC(this);
 
-    SetupPalette(scrnDC);
     CSize size = pBoard->GetSize(m_nZoom);
 
     OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(size.cx, size.cy);
     CDC dcMem;
     dcMem.CreateCompatibleDC(&scrnDC);
     CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
-    SetupPalette(dcMem);
 
     CRect rct(0, 0, size.cx, size.cy);
 
@@ -2089,7 +2081,6 @@ void CPlayBoardView::OnEditBoardToFile()
         CBoard* pBoard = m_pPBoard->GetBoard();
         CWindowDC scrnDC(this);
 
-        SetupPalette(scrnDC);
         CSize size = pBoard->GetSize(m_nZoom);
 
         OwnerPtr<CBitmap> bmap = CDib::CreateDIBSection(
@@ -2097,7 +2088,6 @@ void CPlayBoardView::OnEditBoardToFile()
         CDC dcMem;
         dcMem.CreateCompatibleDC(&scrnDC);
         CBitmap* pPrvBMap = (CBitmap*)dcMem.SelectObject(&*bmap);
-        SetupPalette(dcMem);
 
         CRect rct(0, 0, size.cx, size.cy);
 

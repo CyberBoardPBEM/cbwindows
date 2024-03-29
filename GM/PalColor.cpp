@@ -456,19 +456,8 @@ void CColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
 void CColorPalette::OnPaint()
 {
     CPaintDC dc(this); // device context for painting
-    CPalette* pPal = GetMainFrame()->GetMasterPalette();
-
-    if (pPal == NULL || pPal->m_hObject == NULL)
-        pPal = CPalette::FromHandle(
-            (HPALETTE)::GetStockObject(DEFAULT_PALETTE));
-    else
-        dc.SelectPalette(pPal, FALSE);
-    dc.RealizePalette();
 
     DoPaint(&dc);
-
-    dc.SelectPalette(CPalette::FromHandle(
-        (HPALETTE)::GetStockObject(DEFAULT_PALETTE)), TRUE);
 }
 
 void CColorPalette::DoPaint(CDC* pDC)

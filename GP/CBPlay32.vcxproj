@@ -297,7 +297,6 @@ echo off
     <ClCompile Include="..\GShr\CalcLib.cpp" />
     <ClCompile Include="..\GShr\CDib.cpp" />
     <ClCompile Include="..\GShr\CellForm.cpp" />
-    <ClCompile Include="..\GShr\Color.cpp" />
     <ClCompile Include="..\GShr\DragDrop.cpp" />
     <ClCompile Include="..\GShr\LBoxVHScrl.cpp" />
     <ClCompile Include="DlgChgGameOwner.cpp" />

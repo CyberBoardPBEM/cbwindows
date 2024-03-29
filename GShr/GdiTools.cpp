@@ -118,26 +118,6 @@ int GetCurrentVideoResolution()
 
 /////////////////////////////////////////////////////////////////
 
-void SetupPalette(CDC& pDC)
-{
-    CPalette* pPal = GetAppPalette();
-
-    if (pPal == NULL || pPal->m_hObject == NULL)
-        pPal = CPalette::FromHandle(
-            (HPALETTE)::GetStockObject(DEFAULT_PALETTE));
-    else
-        pDC.SelectPalette(pPal, FALSE);
-    pDC.RealizePalette();
-}
-
-void ResetPalette(CDC& pDC)
-{
-    pDC.SelectPalette(CPalette::FromHandle(
-        (HPALETTE)::GetStockObject(DEFAULT_PALETTE)), TRUE);
-}
-
-/////////////////////////////////////////////////////////////////
-
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 {
     pDC.SetBkColor(RGB(255, 255, 255));
@@ -376,9 +356,7 @@ OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     if (crVoided != noColor)
     {
         CBrush brush(crVoided);
-        SetupPalette(g_gt.mDC1);
         g_gt.mDC1.FillRect(&rct, &brush);
-        ResetPalette(g_gt.mDC1);
     }
     g_gt.ClearMemDCBitmaps();
 
@@ -394,11 +372,9 @@ void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst)
     ASSERT(pbmDst.m_hObject != NULL);
 
     g_gt.mDC1.SelectObject(pbmDst);
-    SetupPalette(g_gt.mDC1);
     BITMAP bmi;
     pbmSrc.GetObject(sizeof(bmi), &bmi);
     g_gt.mDC2.SelectObject(pbmSrc);
-    SetupPalette(g_gt.mDC2);
     g_gt.mDC1.BitBlt(pntDst.x, pntDst.y, bmi.bmWidth, bmi.bmHeight,
         &g_gt.mDC2, 0, 0, SRCCOPY);
     g_gt.SelectSafeObjectsForDC2();
@@ -426,8 +402,6 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
         pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, size.cx, size.cy);
 
     g_gt.mDC2.SelectObject(&*pbmDst);
-    SetupPalette(g_gt.mDC1);
-    SetupPalette(g_gt.mDC2);
 
     int nPrvMode = g_gt.mDC2.SetStretchBltMode(nStretchMode);
     g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1,
@@ -435,7 +409,6 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
     g_gt.mDC2.SetStretchBltMode(nPrvMode);
 
     g_gt.ClearMemDCBitmaps();
-    g_gt.ClearMemDCPalettes();
 
     return pbmDst;
 }
@@ -446,7 +419,6 @@ OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
 
     OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(size.cx, size.cy);
     g_gt.mDC1.SelectObject(&*pBMap);
-    SetupPalette(g_gt.mDC1);
 
     CBrush* prvBrush = g_gt.mDC1.SelectObject(&brush);
     g_gt.mDC1.PatBlt(0, 0, size.cx, size.cy, PATCOPY);
@@ -481,49 +453,6 @@ void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap)
 }
 
 /////////////////////////////////////////////////////////////////
-
-CPalette* GetAppPalette()
-{
-    return ((CMainFrame*)AfxGetApp()->m_pMainWnd)->GetMasterPalette();
-}
-
-// ----------------------------------------------------------- //
-// Combines secondary palette and primary palette into new merged
-// Palette. Also makes sure the resulting palette is an 'Identity'
-// palette for Realization speed.
-
-OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec)
-{
-    short nSizePri, nSizeSec;
-    uint16_t nPalSize = uint16_t(256);
-
-    palSec.GetObject(sizeof(short), &nSizeSec);
-    palPri.GetObject(sizeof(short), &nSizePri);
-
-    std::vector<std::byte> v(size_t(sizeof(LOGPALETTE) +
-        nPalSize * sizeof(PALETTEENTRY)));
-    LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
-
-    SetupIdentityPalette(nPalSize, pLP);
-
-    // First merge primary palette (which has priority)
-    for (int i = 0; i < nSizePri; i++)
-    {
-        PALETTEENTRY pe;
-        palPri.GetPaletteEntries(i, 1, &pe);
-        AddEntryToPalette(pLP->palPalEntry, nPalSize, pe);
-    }
-    // Then merge secondary palette
-    for (int i = 0; i < nSizeSec; i++)
-    {
-        PALETTEENTRY pe;
-        palSec.GetPaletteEntries(i, 1, &pe);
-        AddEntryToPalette(pLP->palPalEntry, nPalSize, pe);
-    }
-    OwnerPtr<CPalette> palNew(MakeOwner<CPalette>());
-    palNew->CreatePalette(pLP);
-    return palNew;
-}
 
 #ifdef WE_WANT_THIS_STUFF_DLL940113
 // ----------------------------------------------------------- //
@@ -583,140 +512,6 @@ void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
 }
 #endif
 
-// ----------------------------------------------------------- //
-
-static BYTE sysColors[20*3] =
-{
-      0,   0,   0,
-    128,   0,   0,
-      0, 128,   0,
-    128, 128,   0,
-      0,   0, 128,
-    128,   0, 128,
-      0, 128, 128,
-    192, 192, 192,
-    192, 220, 192,
-    166, 202, 240,
-
-    255, 251, 240,
-    160, 160, 164,
-    128, 128, 128,
-    255,   0,   0,
-      0, 255,   0,
-    255, 255,   0,
-      0,   0, 255,
-    255,   0, 255,
-      0, 255, 255,
-    255, 255, 255,
-};
-
-void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal)
-{
-    pPal->palVersion = 0x300;
-    pPal->palNumEntries = nNumColors;
-    memset(pPal->palPalEntry, 0, sizeof(PALETTEENTRY) * nNumColors);
-    BYTE* tPtr = sysColors;
-    for (int i = 0; i < 256; i++)
-    {
-        PALETTEENTRY *pPe = &pPal->palPalEntry[i];
-        pPe->peRed   = *tPtr++;
-        pPe->peGreen = *tPtr++;
-        pPe->peBlue  = *tPtr++;
-        if (i == 9) i = 245;        // kick it to palette top
-    }
-}
-
-// ----------------------------------------------------------- //
-
-void SetupColorTable(CDWordArray* pTbl, BOOL bInclBlackAndWhite /* = TRUE */)
-{
-    pTbl->RemoveAll();
-    for (int i = bInclBlackAndWhite ? 0 : 1; i < 8; i++)
-    {
-        int nIdx = i * 3;
-        pTbl->Add((DWORD)RGB(sysColors[nIdx], sysColors[nIdx+1],
-            sysColors[nIdx+2]));
-    }
-    for (int i = 0; i < (bInclBlackAndWhite ? 8 : 7); i++)
-    {
-        int nIdx = (i + 12) * 3;
-        pTbl->Add((DWORD)RGB(sysColors[nIdx], sysColors[nIdx+1],
-            sysColors[nIdx+2]));
-    }
-}
-
-// ----------------------------------------------------------- //
-
-void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr)
-{
-    pe.peRed   = GetRValue(cr);
-    pe.peGreen = GetGValue(cr);
-    pe.peBlue  = GetBValue(cr);
-    pe.peFlags = 0;
-}
-
-// ----------------------------------------------------------- //
-
-void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe)
-{
-    LPPALETTEENTRY pPe;
-    int iAvail = -1;
-    for (int i = 0; i < nSize; i++)
-    {
-        pPe = &pPal[i];
-        if (pe.peRed == pPe->peRed && pe.peGreen == pPe->peGreen &&
-                pe.peBlue == pPe->peBlue)
-            return;     // No need to add
-        if ((iAvail == -1) && (i > 0) &&
-                ((pPe->peRed | pPe->peGreen | pPe->peBlue) == 0))
-            iAvail = i;
-    }
-    if (iAvail != -1)
-        pPal[iAvail] = pe;      // Store the value
-}
-
-/////////////////////////////////////////////////////////////////
-//*** Resetting the system palette code here (From WinG)
-
-void ClearSystemPalette()
-{
-    //*** A dummy palette setup
-    struct
-    {
-        WORD Version;
-        WORD NumberOfEntries;
-        PALETTEENTRY aEntries[256];
-    } Palette =
-    {
-        0x300,
-        256
-    };
-
-    HPALETTE ScreenPalette = 0;
-    HDC ScreenDC;
-    int Counter;
-
-    //*** Reset everything in the system palette to black
-    for(Counter = 0; Counter < 256; Counter++)
-    {
-        Palette.aEntries[Counter].peRed = 0;
-        Palette.aEntries[Counter].peGreen = 0;
-        Palette.aEntries[Counter].peBlue = 0;
-
-
-        Palette.aEntries[Counter].peFlags = PC_NOCOLLAPSE;
-    }
-
-    //*** Create, select, realize, deselect, and delete the palette
-    ScreenDC = GetDC(NULL);
-    ScreenPalette = CreatePalette((LOGPALETTE *)&Palette);
-    ScreenPalette = SelectPalette(ScreenDC,ScreenPalette,FALSE);
-    RealizePalette(ScreenDC);
-    ScreenPalette = SelectPalette(ScreenDC,ScreenPalette,FALSE);
-    DeleteObject(ScreenPalette);
-    ReleaseDC(NULL, ScreenDC);
-}
-
 /////////////////////////////////////////////////////////////////
 
 void CGdiTools::InitGdiTools()
@@ -724,7 +519,6 @@ void CGdiTools::InitGdiTools()
     mDC1.CreateCompatibleDC(NULL);
     mDC2.CreateCompatibleDC(NULL);
     mTileDC.CreateCompatibleDC(NULL);
-    hpalSafe = (HPALETTE)GetStockObject(DEFAULT_PALETTE);
     // Make a copy of the stock bitmap that is automatically
     // attached to compatible memory DC's. This stock bitmap
     // is used for EZ deselection of 'real' bitmaps.
@@ -733,17 +527,6 @@ void CGdiTools::InitGdiTools()
     CBitmap* pbmStock = mDC1.SelectObject(&bmTmp);
     hbmSafe = (HBITMAP)pbmStock->m_hObject;
     mDC1.SelectObject(pbmStock);
-}
-
-void CGdiTools::SetupMemDCPalettes(CPalette *pPal1, CPalette *pPal2)
-{
-    if (pPal1)
-    {
-        mDC1.SelectPalette(pPal1, TRUE);
-        mDC1.RealizePalette();
-        mDC2.SelectPalette(pPal2 ? pPal2 : pPal1, TRUE);
-        mDC2.RealizePalette();
-    }
 }
 
 /////////////////////////////////////////////////////////////////
