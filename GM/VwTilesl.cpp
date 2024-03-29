@@ -200,7 +200,6 @@ void CTileSelView::DrawTile(CDC& pDC, CBitmap& pBMap, CRect rct)
 
 void CTileSelView::OnDraw(CDC* pDC)
 {
-    SetupPalette(*pDC);
     CRect rctActive;
 
     if (m_eCurTile != fullScale)
@@ -226,7 +225,6 @@ void CTileSelView::OnDraw(CDC* pDC)
     rctActive.InflateRect(nBorderWidth + 1, nBorderWidth + 1);
     Draw25PctPatBorder(*this, *pDC, rctActive, nBorderWidth);
 
-    ResetPalette(*pDC);
     g_gt.SelectSafeObjectsForDC1();
 }
 
@@ -239,7 +237,6 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
     int nSizeY;
 
     CDC* pDC = GetDC();
-    SetupPalette(*pDC);
 
     CPoint pnt = GetActiveTileLoc();
     CSize size = m_pEditView->GetBitmapSize();
@@ -257,7 +254,6 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
         PATCOPY);
 
     pDC->SelectObject(pPrvBrush);
-    ResetPalette(*pDC);
     ReleaseDC(pDC);
 }
 
@@ -283,7 +279,6 @@ void CTileSelView::UpdateDocumentTiles()
 
     // Get small scale color from tiny bitmap and update tile
     g_gt.mDC1.SelectObject(&*m_bmSmall);
-    SetupPalette(g_gt.mDC1);
     COLORREF crSmall = g_gt.mDC1.GetPixel(0, 0);
     g_gt.SelectSafeObjectsForDC1();
 

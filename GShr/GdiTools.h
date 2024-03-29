@@ -1,6 +1,6 @@
 // GdiTools.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -82,7 +82,6 @@ public:
     CDC mDC2;
     CDC mTileDC;
     HBITMAP hbmSafe;            // 1x1 Stock monochrome object
-    HPALETTE hpalSafe;          // Default stock palatte
     // --------- //
     void ClearMemDCBitmaps()
     {
@@ -90,28 +89,18 @@ public:
         ::SelectObject(mDC2.m_hDC, hbmSafe);
         ::SelectObject(mTileDC.m_hDC, hbmSafe);
     }
-    void ClearMemDCPalettes()
-    {
-        ::SelectPalette(mDC1.m_hDC, hpalSafe, TRUE);
-        ::SelectPalette(mDC2.m_hDC, hpalSafe, TRUE);
-        ::SelectPalette(mTileDC.m_hDC, hpalSafe, TRUE);
-    }
     void SelectSafeObjectsForDC1()
     {
         ::SelectObject(mDC1.m_hDC, hbmSafe);
-        ::SelectPalette(mDC1.m_hDC, hpalSafe, TRUE);
     }
     void SelectSafeObjectsForDC2()
     {
         ::SelectObject(mDC2.m_hDC, hbmSafe);
-        ::SelectPalette(mDC2.m_hDC, hpalSafe, TRUE);
     }
     void SelectSafeObjectsForTileDC()
     {
         ::SelectObject(mTileDC.m_hDC, hbmSafe);
-        ::SelectPalette(mTileDC.m_hDC, hpalSafe, TRUE);
     }
-    void SetupMemDCPalettes(CPalette *pPal1, CPalette *pPal2);
 };
 
 extern CGdiTools g_gt;
@@ -158,10 +147,6 @@ void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COL
 COLORREF HSVtoRGB(int h, int s, int v);
 void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
-void ClearSystemPalette();
-void SetupColorTable(CDWordArray* pTbl, BOOL bInclBlackAndWhite = TRUE);
-void SetupPalette(CDC& pDC);
-void ResetPalette(CDC& pDC);
 OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
 // The copy excludes the right and bottom edges of rctSrc.
 // If a crVoided color is supplied, the source bitmap will have its
@@ -174,8 +159,6 @@ void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
 void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
 OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
-
-CPalette* GetAppPalette();
 
 #ifdef WE_WANT_THIS_STUFF_DLL940113
 void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,

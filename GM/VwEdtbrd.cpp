@@ -226,8 +226,6 @@ void CBrdEditView::OnDraw(CDC* pDC)
     if (oRct.IsRectEmpty())
         return;                 // Nothing to do
 
-    SetupPalette(pDC);
-
     if (m_bOffScreen)
     {
         OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
@@ -236,7 +234,6 @@ void CBrdEditView::OnDraw(CDC* pDC)
         pPrvBMap = dcMem.SelectObject(&*bmMem);
         dcMem.SetViewportOrg(-oRct.left, -oRct.top);
         dcMem.SetStretchBltMode(COLORONCOLOR);
-        SetupPalette(&dcMem);
         pDrawDC = &dcMem;
     }
 
@@ -246,7 +243,6 @@ void CBrdEditView::OnDraw(CDC* pDC)
     {
         pDC->BitBlt(oRct.left, oRct.top, oRct.Width(), oRct.Height(),
             &dcMem, oRct.left, oRct.top, SRCCOPY);
-        ResetPalette(&dcMem);
         dcMem.SelectObject(pPrvBMap);
     }
     if (!pDC->IsPrinting())
@@ -254,30 +250,11 @@ void CBrdEditView::OnDraw(CDC* pDC)
         PrepareScaledDC(pDC);
         m_selList.OnDraw(*pDC);
     }
-    ResetPalette(pDC);
 }
 
 BOOL CBrdEditView::OnEraseBkgnd(CDC* pDC)
 {
     return CScrollView::OnEraseBkgnd(pDC);
-}
-
-void CBrdEditView::SetupPalette(CDC *pDC)
-{
-    CPalette* pPal = GetMainFrame()->GetMasterPalette();
-
-    if (pPal == NULL || pPal->m_hObject == NULL)
-        pPal = CPalette::FromHandle(
-            (HPALETTE)::GetStockObject(DEFAULT_PALETTE));
-    else
-        pDC->SelectPalette(pPal, FALSE);
-    pDC->RealizePalette();
-}
-
-void CBrdEditView::ResetPalette(CDC *pDC)
-{
-    pDC->SelectPalette(CPalette::FromHandle(
-        (HPALETTE)::GetStockObject(DEFAULT_PALETTE)), TRUE);
 }
 
 /////////////////////////////////////////////////////////////////////////////

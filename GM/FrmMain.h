@@ -51,8 +51,6 @@ public:
 
 // Attributes
 public:
-    CPalette* GetMasterPalette() { return &m_appPalette; }
-
     CDocument* GetCurrentDocument();
 
     CView* GetActiveView() const;
@@ -63,8 +61,6 @@ public:
 
 // Operations
 public:
-    BOOL BuildAppGDIPalette();
-
     void SaveProfileSettings();
     void RestoreProfileSettings();
 
@@ -94,16 +90,12 @@ public:
     BOOL            m_bColorPalOn;
     BOOL            m_bTilePalOn;
 
-    CPalette        m_appPalette;       // Master app GDI palette
-
 // Generated message map functions
 protected:
     void WinHelp(DWORD_PTR dwData, UINT nCmd) override;
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnClose();
-    afx_msg void OnPaletteChanged(CWnd* pFocusWnd);
-    afx_msg BOOL OnQueryNewPalette();
     afx_msg void OnWindowToolPal();
     afx_msg void OnWindowIToolPal();
     afx_msg void OnWindowColorPal();

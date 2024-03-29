@@ -128,7 +128,6 @@ void CRotateDialog::OnPaint()
     ScreenToClient(&rct);
     rct.InflateRect(-4, -4);
 
-    SetupPalette(dc);
     for (int i = 0; i < 12; i++)
     {
         int x = (i % 4) * 45;
@@ -136,7 +135,6 @@ void CRotateDialog::OnPaint()
         if (m_bmapTbl[i])
             BitmapBlt(dc, rct.TopLeft() + CSize(x, y), *m_bmapTbl[i]);
     }
-    ResetPalette(dc);
 
     // Do not call CDialog::OnPaint() for painting messages
 }

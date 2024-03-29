@@ -1,6 +1,6 @@
 // VwBitedt.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -179,9 +179,6 @@ void CBitEditView::OnDraw(CDC* pDC)
     if (m_bmView->m_hObject == NULL)
         return;                 // Nothing to draw.
 
-    SetupPalette(*pDC);
-    SetupPalette(g_gt.mDC1);
-
     CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
 
     if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsRectEmpty())
@@ -203,7 +200,6 @@ void CBitEditView::OnDraw(CDC* pDC)
     {
         OwnerPtr<CBitmap> bmTmp = CreateRGBDIBSection(
             size.cx + 1, size.cy + 1);
-        SetupPalette(g_gt.mDC2);
         g_gt.mDC2.SelectObject(&*bmTmp);
         g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1, 0, 0,
             m_size.cx, m_size.cy, SRCCOPY);
@@ -235,7 +231,6 @@ void CBitEditView::OnDraw(CDC* pDC)
             Draw25PctPatBorder(*this, *pDC, rct, xBorder);
         }
     }
-    ResetPalette(*pDC);
     g_gt.SelectSafeObjectsForDC1();  // This does ResetPalette for mDC1
 }
 
@@ -279,7 +274,6 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
     CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
     if (nSize == 0)
@@ -312,7 +306,6 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -345,7 +338,6 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -380,7 +372,6 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
     rct.NormalizeRect();
@@ -407,7 +398,6 @@ void CBitEditView::DrawImageFill(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     CBrush* pBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
 
@@ -428,7 +418,6 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     SetViewImageFromMasterImage();          // Get fresh original
 
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     COLORREF crHit = g_gt.mDC1.GetPixel(pt);
     COLORREF crNew = m_pTMgr->GetForeColor();
@@ -488,7 +477,6 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
     CDC* pDC = GetDC();
 
-    SetupPalette(*pDC);
     CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(m_pTMgr->GetForeBrush())));
     OnPrepareDC(pDC, NULL);
 
@@ -514,12 +502,10 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
         }
     }
     pDC->SelectObject(pPrvBrush);
-    ResetPalette(*pDC);
     ReleaseDC(pDC);
 
     // Now set the point in the view bitmap...
     g_gt.mDC1.SelectObject(*m_bmView);
-    SetupPalette(g_gt.mDC1);
 
     wx = point.x / m_nZoom;
     wy = point.y / m_nZoom;
@@ -761,7 +747,6 @@ void CBitEditView::UpdateTextView()
         // the view with the master bitmap.
         SetViewImageFromMasterImage();          // Get fresh original
         g_gt.mDC1.SelectObject(*m_bmView);
-        SetupPalette(g_gt.mDC1);
         g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
         CFontTbl* pFMgr = GetDocument().GetFontManager();

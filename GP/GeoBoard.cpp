@@ -552,8 +552,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
-    CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
-    dc.RealizePalette();
 
     CSize sizeCell = pBALeft.GetCellSize(eScale);
     OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
@@ -579,7 +577,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
 
     pBARight.FillCell(dc, nRowRight, nColRight, eScale);
 
-    dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
 
     return retval;
@@ -591,8 +588,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
-    CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
-    dc.RealizePalette();
 
     CSize sizeCell = pBATop.GetCellSize(eScale);
     OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
@@ -618,7 +613,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
 
     pBABottom.FillCell(dc, nRowBottom, nColBottom, eScale);
 
-    dc.SelectPalette(prvPal, FALSE);
     dc.SelectObject(prvBMap);
 
     return retval;
@@ -629,8 +623,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
 {
     CDC dc;
     dc.CreateCompatibleDC(NULL);
-    CPalette* prvPal = dc.SelectPalette(GetAppPalette(), FALSE);
-    dc.RealizePalette();
 
     OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
     CBitmap* prvBMap = dc.SelectObject(&*retval);
@@ -642,7 +634,6 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
 
     dc.SelectObject(prvBrush);
     dc.SelectObject(prvBMap);
-    dc.SelectPalette(prvPal, FALSE);
 
     return retval;
 }

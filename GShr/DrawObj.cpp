@@ -1060,7 +1060,6 @@ void CLine::Serialize(CArchive& ar)
 void CBitmapImage::Draw(CDC& pDC, TileScale eScale)
 {
     g_gt.mTileDC.SelectObject(&m_bitmap);
-    SetupPalette(g_gt.mTileDC);
 
     CPoint pnt = m_rctExtent.TopLeft();
 

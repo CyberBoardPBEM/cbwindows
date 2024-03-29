@@ -119,14 +119,12 @@ void CTinyBoardPopup::PostNcDestroy()
 void CTinyBoardPopup::OnPaint()
 {
     CPaintDC dc(this);          // device context for painting
-    SetupPalette(dc);
 
     CDC dcMem;
     CRect oRct;
 
     dcMem.CreateCompatibleDC(&dc);
     CBitmap* pPrvBMap = dcMem.SelectObject(&m_bmap);
-    SetupPalette(dcMem);
 
     CRect rctClient;
     GetClientRect(rctClient);
@@ -142,8 +140,6 @@ void CTinyBoardPopup::OnPaint()
             m_vsize.cx, m_vsize.cy, SRCCOPY);
     }
 
-    ResetPalette(dcMem);
-    ResetPalette(dc);
     dcMem.SelectObject(pPrvBMap);
 }
 

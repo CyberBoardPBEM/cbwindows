@@ -1,6 +1,6 @@
 // TileSht.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -139,9 +139,6 @@ void CTileSheet::CreateTile()
         bmInfo.bmBits = NULL;
         bmInfo.bmHeight += m_size.cy;       // Increase size.
 
-        SetupPalette(g_gt.mDC1);
-        SetupPalette(g_gt.mDC2);
-
         OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
         ASSERT(pBMap->m_hObject != NULL);
@@ -162,7 +159,6 @@ void CTileSheet::CreateTile()
     {
         ASSERT(m_size != CSize(0,0));
         TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        SetupPalette(g_gt.mDC1);
         m_pBMap = CDib::CreateDIBSection(
             m_size.cx, m_size.cy);
         g_gt.mDC1.SelectObject(m_pBMap.get());
@@ -193,13 +189,11 @@ void CTileSheet::DeleteTile(int yLoc)
         bmInfo.bmHeight -= m_size.cy;           // Decrease size.
 
         g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
-        SetupPalette(g_gt.mDC2);
 
         OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
             bmInfo.bmWidth, bmInfo.bmHeight);
 
         g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
-        SetupPalette(g_gt.mDC1);
 
         if (yLoc > 0)
         {
@@ -226,9 +220,7 @@ void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(m_pBMap.get());        // Dest bitmap
-    SetupPalette(g_gt.mDC1);
     g_gt.mDC2.SelectObject(pBMap);          // Source bitmap
-    SetupPalette(g_gt.mDC2);
 
     g_gt.mDC1.BitBlt(0, yLoc, m_size.cx, m_size.cy, &g_gt.mDC2, 0, 0, SRCCOPY);
 
@@ -241,7 +233,6 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
     ASSERT(m_pBMap != NULL);
     ASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(*m_pBMap);        // Source bitmap
-    SetupPalette(g_gt.mDC1);
 
     OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
 
@@ -260,7 +251,6 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
     }
 
     g_gt.mDC2.SelectObject(&*pBMap);          // Activate dest bitmap
-    SetupPalette(g_gt.mDC2);
 
     g_gt.mDC2.BitBlt(0, 0, m_size.cx, m_size.cy, &g_gt.mDC1, 0, yLoc, SRCCOPY);
 
@@ -438,7 +428,6 @@ CTileSheet::SheetDC::SheetDC(const CTileSheet& sheet)
 {
     ASSERT(sheet.m_pBMap);
     g_gt.mTileDC.SelectObject(*sheet.m_pBMap);
-    g_gt.mTileDC.SelectPalette(GetAppPalette(), TRUE);
 }
 
 CTileSheet::SheetDC::~SheetDC()

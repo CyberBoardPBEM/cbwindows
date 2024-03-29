@@ -49,8 +49,6 @@ IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_WM_CREATE()
     ON_WM_CLOSE()
-    ON_WM_PALETTECHANGED()
-    ON_WM_QUERYNEWPALETTE()
     ON_COMMAND(ID_WINDOW_TOOLPAL, OnWindowToolPal)
     ON_COMMAND(ID_WINDOW_ITOOLPAL, OnWindowIToolPal)
     ON_COMMAND(ID_WINDOW_COLORPAL, OnWindowColorPal)
@@ -120,13 +118,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
         return -1;
-
-    // Build a universal GDI color palette for the app...
-    if (!BuildAppGDIPalette())
-    {
-        TRACE0("Failed to create application wide GDI palette.\n");
-        return -1;      // fail to create
-    }
 
     CMDITabInfo mdiTabParams;
     mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_VS2005; // other styles available...
@@ -329,27 +320,6 @@ void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
 }
 
 ///////////////////////////////////////////////////////////////////////
-
-void GenerateColorWash(LPPALETTEENTRY pPE);   // See COLOR.CPP //
-
-BOOL CMainFrame::BuildAppGDIPalette()
-{
-    ClearSystemPalette();
-
-    uint16_t nPalSize = uint16_t(256);
-    std::vector<std::byte> v((sizeof(LOGPALETTE) +
-        value_preserving_cast<size_t>(nPalSize * sizeof(PALETTEENTRY))));
-    LPLOGPALETTE pLP = reinterpret_cast<LPLOGPALETTE>(v.data());
-    SetupIdentityPalette(nPalSize, pLP);    // Start with speedy identity pal
-    GenerateColorWash(&pLP->palPalEntry[10]);
-
-    m_appPalette.DeleteObject();
-    VERIFY(m_appPalette.CreatePalette(pLP));
-
-    return TRUE;
-}
-
-///////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
 #ifdef _DEBUG
@@ -375,34 +345,6 @@ void CMainFrame::OnToggleColorPalette()
 void CMainFrame::OnToggleTilePalette()
 {
     SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
-}
-
-void CMainFrame::OnPaletteChanged(CWnd* pFocusWnd)
-{
-    if (pFocusWnd != this)
-        OnQueryNewPalette();
-}
-
-BOOL CMainFrame::OnQueryNewPalette()
-{
-    if (m_appPalette.m_hObject == NULL)
-        return CMDIFrameWndEx::OnQueryNewPalette();
-
-    CDC* pDC = GetDC();
-    ASSERT(pDC != NULL);
-
-    CPalette* prvPal = pDC->SelectPalette(&m_appPalette, FALSE);
-    UINT nChange = pDC->RealizePalette();
-    pDC->SelectPalette(prvPal, TRUE);
-    pDC->RealizePalette();
-
-    ReleaseDC(pDC);
-
-    // Colors changed...update views
-    if (nChange)
-        GetApp()->UpdateAllViewsForAllDocuments(NULL);
-
-    return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////

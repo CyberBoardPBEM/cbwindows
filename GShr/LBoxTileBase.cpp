@@ -117,8 +117,6 @@ void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT n
 
         BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
-        SetupPalette(pDC);
-
         pDC.SaveDC();
         pDC.IntersectClipRect(&rctItem);
         pDC.SetBkMode(TRANSPARENT);
@@ -140,7 +138,6 @@ void CTileBaseListBox::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT n
         }
 
         pDC.RestoreDC(-1);
-        ResetPalette(pDC);
     }
     if (nAction & ODA_FOCUS)
         pDC.DrawFocusRect(&rctItem);
