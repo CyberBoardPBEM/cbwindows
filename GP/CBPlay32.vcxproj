@@ -299,6 +299,7 @@ echo off
     <ClCompile Include="..\GShr\CellForm.cpp" />
     <ClCompile Include="..\GShr\Color.cpp" />
     <ClCompile Include="..\GShr\DragDrop.cpp" />
+    <ClCompile Include="..\GShr\LBoxVHScrl.cpp" />
     <ClCompile Include="DlgChgGameOwner.cpp" />
     <ClCompile Include="DlgDice.cpp" />
     <ClCompile Include="DlgEdtEl.cpp" />
@@ -401,6 +402,7 @@ echo off
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\GShr\CyberBoard.h" />
+    <ClInclude Include="..\GShr\LBoxVHScrl.h" />
     <ClInclude Include="Arrows.h" />
     <ClInclude Include="..\GShr\Atom.h" />
     <ClInclude Include="..\GShr\BarCbDock.h" />

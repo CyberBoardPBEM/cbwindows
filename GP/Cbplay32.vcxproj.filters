@@ -312,6 +312,9 @@
     <ClCompile Include="..\GShr\DragDrop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\GShr\LBoxVHScrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Cbplay.rc">
@@ -617,6 +620,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\GShr\CyberBoard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GShr\LBoxVHScrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

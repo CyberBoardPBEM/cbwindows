@@ -78,9 +78,6 @@
     <ClCompile Include="DlgNtile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DlgNum.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgPaste.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -317,9 +314,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DlgNtile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgNum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DlgPaste.h">
@@ -580,5 +574,10 @@
     <Xml Include="res\manifest.xml">
       <Filter>Resource Files</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CBDesign.xrc">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
