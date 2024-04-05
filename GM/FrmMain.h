@@ -83,7 +83,7 @@ public:
     CMFCToolBar     m_wndToolBar;       // Main toolbar
     CMFCToolBar     m_wndToolPal;       // Button tool palette for board draw
     CMFCToolBar     m_wndIToolPal;      // Button tool palette for image edit
-    CColorPalette   m_wndColorPal;      // Color tool palette window
+    CDockColorPalette m_wndColorPal;    // Color tool palette window
     CDockTilePalette m_wndTilePal;      // Container window for tile palette
     CMFCStatusBar   m_wndStatusBar;     // Status bar at window bottom
 
