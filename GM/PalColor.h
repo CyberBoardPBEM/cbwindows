@@ -58,17 +58,61 @@ public:
 ///////////////////////////////////////////////////////////////////////
 
 class CMainFrame;
+class CColorPalette;
 
-class CColorPalette : public CDockablePane
+class CDockColorPalette : public CDockablePane
 {
-    DECLARE_DYNCREATE(CColorPalette);
+    DECLARE_DYNCREATE(CDockColorPalette);
     // Construction
+public:
+    CDockColorPalette();
+
+// Operations
+public:
+    void CalculateMinClientSize(CSize& size);
+
+// Overrides
+protected:
+    virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz) override;
+    virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler) override;
+    virtual CSize CalcSize(BOOL bVertDock) override
+    {
+        return CalcSize();
+    }
+    virtual void GetMinSize(CSize& size) const override
+    {
+        // Account for size of caption.
+        size = CalcSize() + CSize(0, GetCaptionHeight());
+    }
+    virtual void GetPaneName(CString &strName) const override
+    {
+        AfxThrowNotSupportedException();
+    }
+
+private:
+    CSize CalcSize() const;
+
+    OwnerPtr<CColorPalette> m_child;
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+
+    DECLARE_MESSAGE_MAP()
+};
+
+class CColorPalette : public CWnd
+{
 public:
     CColorPalette();
     BOOL SetupLineControl();
 
 // Attributes
 public:
+    CSize GetSize() const
+    {
+        return m_sizeClient;
+    }
 
 // Operations
 public:
@@ -90,7 +134,6 @@ public:
 public:
 
 protected:
-    CB::string  m_strPaneName;
     CComboBox   m_comboLine;
 
     CToolTipCtrl m_toolTip;
@@ -158,21 +201,6 @@ protected:
 
 // Overrides
 protected:
-    virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz);
-    virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler);
-    virtual CSize CalcSize(BOOL bVertDock)
-    {
-        return m_sizeClient;
-    }
-    virtual void GetMinSize(CSize& size) const
-    {
-        // Account for size of caption.
-        size = m_sizeClient + CSize(0, GetCaptionHeight());
-    }
-    virtual void GetPaneName(CString &strName) const override
-    {
-        strName = m_strPaneName.mfc_str();
-    }
 
 // Generated message map functions
 protected:
@@ -181,7 +209,6 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-    afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
     afx_msg void OnLineWidthCbnSelchange();
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);

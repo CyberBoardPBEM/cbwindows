@@ -129,12 +129,17 @@ inline COLORREF& CellColor(COLORREF* pCref, int nCol, int nRow)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
+BEGIN_MESSAGE_MAP(CDockColorPalette, CDockablePane)
+    ON_WM_CREATE()
+    ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+    ON_WM_SIZE()
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CColorPalette, CWnd)
     ON_WM_PAINT()
     ON_WM_CREATE()
     ON_WM_LBUTTONDOWN()
     ON_WM_RBUTTONDOWN()
-    ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
     ON_CBN_SELCHANGE(IDC_W_COLORPAL_LINEWIDTH, OnLineWidthCbnSelchange)
 //@@@   ON_WM_SYSCOMMAND()
     ON_WM_HELPINFO()
@@ -146,10 +151,15 @@ BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
 END_MESSAGE_MAP()
 
-IMPLEMENT_DYNCREATE(CColorPalette, CDockablePane);
+IMPLEMENT_DYNCREATE(CDockColorPalette, CDockablePane);
 
 /////////////////////////////////////////////////////////////////////////////
 // CColorPalette
+
+CDockColorPalette::CDockColorPalette() :
+    m_child(MakeOwner<CColorPalette>())
+{
+}
 
 CColorPalette::CColorPalette()
 {
@@ -170,6 +180,33 @@ CColorPalette::CColorPalette()
     m_pCustColors = CustomColorsAllocate();
 }
 
+void CDockColorPalette::CalculateMinClientSize(CSize& size)
+{
+    m_child->CalculateMinClientSize(size);
+}
+
+int CDockColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    CSize sizeClient = m_child->GetSize();
+    lpCreateStruct->cx = sizeClient.cx;
+    lpCreateStruct->cy = sizeClient.cy;
+
+    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
+        return -1;
+
+    if (!m_child->Create(AfxRegisterWndClass(CS_DBLCLKS, LoadCursor(nullptr, IDC_ARROW)),
+                        nullptr,
+                        WS_CHILD | WS_VISIBLE,
+                        CRect(0, 0, sizeClient.cx, sizeClient.cy),
+                        this, 0))
+    {
+        TRACE0("Failed to create color palette window\n");
+        return -1;      // fail to create
+    }
+
+    return 0;
+}
+
 int CColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     ComputeLayout();
@@ -177,7 +214,7 @@ int CColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     lpCreateStruct->cx = m_sizeClient.cx;
     lpCreateStruct->cy = m_sizeClient.cy;
 
-    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
+    if (CWnd::OnCreate(lpCreateStruct) == -1)
         return -1;
 
     if (!SetupLineControl())
@@ -190,12 +227,12 @@ int CColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return 0;
 }
 
-CSize CColorPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
+CSize CDockColorPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
 {
     CRect rctInside(0, 0, 0, 0);
     CalcInsideRect(rctInside, TRUE);
     CSize sizeInside(rctInside.Size());
-    return CSize(m_sizeClient - sizeInside);
+    return CSize(m_child->GetSize() - sizeInside);
     // return CDockablePane::CalcFixedLayout(bStretch, bHorz);
 }
 
@@ -320,7 +357,7 @@ void CColorPalette::ComputeLayout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
+LRESULT CDockColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
 {
     if (IsVisible())             // Ignore if child is invisible
     {
@@ -329,6 +366,12 @@ LRESULT CColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
             OnUpdateCmdUI(pTarget, (BOOL)wParam);
     }
     return 0L;
+}
+
+void CDockColorPalette::OnSize(UINT nType, int cx, int cy)
+{
+    m_child->MoveWindow(0, 0, cx, cy);
+    CDockablePane::OnSize(nType, cx, cy);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -388,10 +431,10 @@ void CColorCmdUI::SetCustomColors(const std::vector<COLORREF>& pCustColors)
     ((CColorPalette*)m_pOther)->SetCustomColors(pCustColors);
 }
 
-void CColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+void CDockColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
 {
     CColorCmdUI state;
-    state.m_pOther = this;
+    state.m_pOther = &*m_child;
     state.m_nID = ID_COLOR_FOREGROUND;
     state.DoUpdate(pTarget, bDisableIfNoHndler);
     state.m_nID = ID_COLOR_BACKGROUND;
@@ -402,6 +445,11 @@ void CColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
     state.DoUpdate(pTarget, bDisableIfNoHndler);
     state.m_nID = ID_LINE_WIDTH;
     state.DoUpdate(pTarget, bDisableIfNoHndler);
+}
+
+CSize CDockColorPalette::CalcSize() const
+{
+    return m_child->GetSize();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -866,7 +914,7 @@ void CColorPalette::OnLButtonDblClk(UINT nFlags, CPoint point)
             return;         // Just the mouse hit
         COLORREF cr = *pCRef == nullColorRef ? 0 : *pCRef;
 
-        CColorDialog dlg(cr, cr);
+        CColorDialog dlg(cr);
         if (dlg.DoModal())
         {
             *pCRef = dlg.GetColor();
@@ -875,20 +923,20 @@ void CColorPalette::OnLButtonDblClk(UINT nFlags, CPoint point)
         }
     }
     else    // Let control bar processing handle it
-        CDockablePane::OnLButtonDblClk(nFlags, point);
+        CWnd::OnLButtonDblClk(nFlags, point);
 }
 
 void CColorPalette::OnLButtonDown(UINT nFlags, CPoint point)
 {
     if (!HandleButtonDown(nFlags, point))
-        CDockablePane::OnLButtonDown(nFlags, point);
+        CWnd::OnLButtonDown(nFlags, point);
 }
 
 void CColorPalette::OnRButtonDown(UINT nFlags, CPoint point)
 {
     if (!HandleButtonDown(nFlags, point))
     {
-        CDockablePane::OnRButtonDown(nFlags, point);
+        CWnd::OnRButtonDown(nFlags, point);
     }
     else
     {
@@ -916,7 +964,7 @@ void CColorPalette::OnMouseMove(UINT nFlags, CPoint point)
             InvalidateRect(m_rctSatValWash, FALSE); // So select lines are updated
         }
     }
-    CDockablePane::OnMouseMove(nFlags, point);
+    CWnd::OnMouseMove(nFlags, point);
 }
 
 void CColorPalette::OnLButtonUp(UINT nFlags, CPoint point)
@@ -925,7 +973,7 @@ void CColorPalette::OnLButtonUp(UINT nFlags, CPoint point)
     m_bTrackSV = FALSE;
     ReleaseCapture();
 
-    CDockablePane::OnLButtonUp(nFlags, point);
+    CWnd::OnLButtonUp(nFlags, point);
 }
 
 void CColorPalette::OnRButtonUp(UINT nFlags, CPoint point)
@@ -937,7 +985,7 @@ void CColorPalette::OnRButtonUp(UINT nFlags, CPoint point)
         return;
     }
 
-    CDockablePane::OnRButtonUp(nFlags, point);
+    CWnd::OnRButtonUp(nFlags, point);
 }
 
 /////////////////////////////////////////////////////////////////////////////
