@@ -1932,12 +1932,20 @@ namespace CB
 {
     inline wxColour Convert(COLORREF c)
     {
-        return wxColour(GetRValue(c), GetGValue(c), GetBValue(c));
+                // match PalColor.h/GdiTools.h
+        return c != 0xFF000000 ?
+                    wxColour(GetRValue(c), GetGValue(c), GetBValue(c))
+                :
+                    wxNullColour;
     }
 
     inline COLORREF Convert(wxColour c)
     {
-        return RGB(c.Red(), c.Green(), c.Blue());
+        return c != wxNullColour ?
+                    RGB(c.Red(), c.Green(), c.Blue())
+                :
+                    // match PalColor.h/GdiTools.h
+                    0xFF000000;
     }
 }
 

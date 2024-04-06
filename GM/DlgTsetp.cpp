@@ -44,7 +44,7 @@ CTSetPropDialog::CTSetPropDialog(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
     CB_XRC_END_CTRLS_DEFN()
 {
     m_strName = "";
-    m_crTrans = RGB(0,255,255);
+    m_crTrans = wxColour(0,255,255);
 }
 
 wxBEGIN_EVENT_TABLE(CTSetPropDialog, wxDialog)
