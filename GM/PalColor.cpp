@@ -121,10 +121,15 @@ COLORREF acrStdColors[cellStdArraySize] =
     RGB(  0,   0, 255), RGB(  0,   0, 128), RGB(228, 228, 228)
 };
 
-inline COLORREF& CellColor(COLORREF* pCref, int nCol, int nRow)
+inline const COLORREF& CellColor(const COLORREF* pCref, int nCol, int nRow)
 {
     return *(pCref + nRow *
         (acrStdColors == pCref ? cellStdArrayCols : cellCustArrayCols) + nCol);
+}
+
+inline COLORREF& CellColor(COLORREF* pCref, int nCol, int nRow)
+{
+    return const_cast<COLORREF&>(CellColor(&std::as_const(*pCref), nCol, nRow));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -255,19 +260,18 @@ void CColorPalette::SetupToolTips(int nMaxWidth)
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
     m_toolTip.SetMaxTipWidth(nMaxWidth);
 
-    SetupToolTip(&m_comboLine, IDS_TT_LINEWIDTH_COMBO, TTF_CENTERTIP);
+    SetupToolTip(m_comboLine, IDS_TT_LINEWIDTH_COMBO, TTF_CENTERTIP);
 
     SetupToolTip(m_rctNoColor, IDS_TT_NULLCOLOR);
     SetupToolTip(m_rctStdColors, IDS_TT_COLORCELLS, TTF_CENTERTIP);
     SetupToolTip(m_rctColorMix, IDS_TT_COLORCELLS, TTF_CENTERTIP);
 
-    CB::string strRes = CB::string::LoadString(IDS_TT_CUST_COLOR_CELLS);
-    SetupToolTip(m_rctCustColors, IDS_TT_CUST_COLOR_CELLS, TTF_CENTERTIP, &strRes);
+    SetupToolTip(m_rctCustColors, IDS_TT_CUST_COLOR_CELLS, TTF_CENTERTIP);
 
     m_toolTip.Activate(TRUE);
 }
 
-void CColorPalette::SetupToolTip(RECT* rct, UINT nID, UINT nFlags, const CB::string* pszText)
+void CColorPalette::SetupToolTip(const RECT& rct, UINT nID, UINT nFlags)
 {
     TOOLINFO ti;
     memset(&ti, 0, sizeof(TOOLINFO));
@@ -276,27 +280,21 @@ void CColorPalette::SetupToolTip(RECT* rct, UINT nID, UINT nFlags, const CB::str
     ti.uFlags |= TTF_SUBCLASS | nFlags;
     ti.hwnd = m_hWnd;
     ti.uId = nID;
-    if (pszText == NULL)
-        ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
-    else
-        ti.lpszText = const_cast<CB::string::value_type*>(pszText->v_str());
+    ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
     ti.hinst = AfxGetResourceHandle();
-    ti.rect = *rct;
+    ti.rect = rct;
     m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 }
 
-void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, const CB::string* pszText)
+void CColorPalette::SetupToolTip(const CWnd& pWnd, UINT nID, UINT nFlags)
 {
     TOOLINFO ti;
     memset(&ti, 0, sizeof(TOOLINFO));
     ti.cbSize = sizeof(TOOLINFO);
     ti.uFlags |= TTF_IDISHWND | TTF_SUBCLASS | nFlags;
     ti.hwnd = m_hWnd;
-    ti.uId = reinterpret_cast<uintptr_t>(pWnd->GetSafeHwnd());
-    if (pszText == NULL)
-        ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
-    else
-        ti.lpszText = const_cast<CB::string::value_type*>(pszText->v_str());
+    ti.uId = reinterpret_cast<uintptr_t>(pWnd.GetSafeHwnd());
+    ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
     ti.hinst = AfxGetResourceHandle();
     m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 }
@@ -462,10 +460,10 @@ void CColorPalette::OnPaint()
 {
     CPaintDC dc(this); // device context for painting
 
-    DoPaint(&dc);
+    DoPaint(dc);
 }
 
-void CColorPalette::DoPaint(CDC* pDC)
+void CColorPalette::DoPaint(CDC& pDC)
 {
     CBrush brBlack;
     brBlack.CreateStockObject(BLACK_BRUSH);
@@ -473,19 +471,19 @@ void CColorPalette::DoPaint(CDC* pDC)
     brWhite.CreateStockObject(WHITE_BRUSH);
 
     // Draw the no color selection area.
-    if (pDC->RectVisible(&m_rctNoColor))
+    if (pDC.RectVisible(&m_rctNoColor))
     {
-        pDC->FillRect(&m_rctNoColor, &brWhite);
+        pDC.FillRect(&m_rctNoColor, &brWhite);
 
-        DrawEdge(pDC->m_hDC, m_rctNoColor, EDGE_BUMP, BF_RECT);
+        DrawEdge(pDC.m_hDC, m_rctNoColor, EDGE_BUMP, BF_RECT);
 
-        CFont* pPrvFont = pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
-        pDC->SetBkMode(TRANSPARENT);
-        pDC->SetTextColor(RGB(0,0,0));
-        pDC->SetTextAlign(TA_CENTER | TA_TOP);
-        pDC->ExtTextOut((m_rctNoColor.left + m_rctNoColor.right) / 2 ,
+        CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        pDC.SetBkMode(TRANSPARENT);
+        pDC.SetTextColor(RGB(0,0,0));
+        pDC.SetTextAlign(TA_CENTER | TA_TOP);
+        pDC.ExtTextOut((m_rctNoColor.left + m_rctNoColor.right) / 2 ,
             m_rctNoColor.top + 1, 0, NULL, "no color"_cbstring, 8, NULL);
-        pDC->SelectObject(pPrvFont);
+        pDC.SelectObject(pPrvFont);
     }
 
     // Paint the selected colors...
@@ -500,60 +498,60 @@ void CColorPalette::DoPaint(CDC* pDC)
     // Paint the color mix preview...
     CBrush brColor;
     brColor.CreateSolidBrush(m_crCurMix);
-    pDC->FillRect(&m_rctColorMix, &brColor);
-    pDC->FrameRect(&m_rctColorMix, &brBlack);
+    pDC.FillRect(&m_rctColorMix, &brColor);
+    pDC.FrameRect(&m_rctColorMix, &brBlack);
 
     // Paint the color bar...
     CDC dcMem;
-    dcMem.CreateCompatibleDC(pDC);
+    dcMem.CreateCompatibleDC(&pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&*m_bmapBar);
-    pDC->BitBlt(m_rctColorBar.left + 1, m_rctColorBar.top + 1,
+    pDC.BitBlt(m_rctColorBar.left + 1, m_rctColorBar.top + 1,
         m_rctColorBar.Width(), m_rctColorBar.Height(), &dcMem, 0, 0, SRCCOPY);
-    pDC->FrameRect(m_rctColorBar, &brBlack);
+    pDC.FrameRect(m_rctColorBar, &brBlack);
 
     // Paint the current hue saturation/value wash...
     dcMem.SelectObject(&*m_bmapWash);
-    pDC->BitBlt(m_rctSatValWash.left + 1, m_rctSatValWash.top + 1,
+    pDC.BitBlt(m_rctSatValWash.left + 1, m_rctSatValWash.top + 1,
         m_rctSatValWash.Width(), m_rctSatValWash.Height(), &dcMem, 0, 0, SRCCOPY);
     dcMem.SelectObject(pPrvBMap);
-    pDC->FrameRect(m_rctSatValWash, &brBlack);
+    pDC.FrameRect(m_rctSatValWash, &brBlack);
 
     // Mark current selections...
     int nHueMark, nSatMark, nValMark;
 
-    MapHSVtoPixelLoc(&nHueMark, &nSatMark, &nValMark);
+    MapHSVtoPixelLoc(nHueMark, nSatMark, nValMark);
 
-    pDC->PatBlt(m_rctColorBar.left + nHueMark + 1, m_rctColorBar.top + 1,
+    pDC.PatBlt(m_rctColorBar.left + nHueMark + 1, m_rctColorBar.top + 1,
         1, m_rctColorBar.Height() - 2, DSTINVERT);
-    pDC->PatBlt(m_rctSatValWash.left + nValMark + 1, m_rctSatValWash.top + 1,
+    pDC.PatBlt(m_rctSatValWash.left + nValMark + 1, m_rctSatValWash.top + 1,
         1, m_rctSatValWash.Height() - 2, DSTINVERT);
-    pDC->PatBlt(m_rctSatValWash.left + 1, m_rctSatValWash.top + nSatMark + 1,
+    pDC.PatBlt(m_rctSatValWash.left + 1, m_rctSatValWash.top + nSatMark + 1,
         m_rctSatValWash.Width() - 2, 1, DSTINVERT);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CColorPalette::PaintSelections(CDC* pDC)
+void CColorPalette::PaintSelections(CDC& pDC)
 {
     PaintCell(pDC, m_rctForeColor, m_crFore);
-    DrawEdge(pDC->m_hDC, m_rctForeColor, EDGE_RAISED, BF_RECT);
+    DrawEdge(pDC.m_hDC, m_rctForeColor, EDGE_RAISED, BF_RECT);
 
-    pDC->SaveDC();
-    pDC->ExcludeClipRect(m_rctForeColor);
+    pDC.SaveDC();
+    pDC.ExcludeClipRect(m_rctForeColor);
     PaintCell(pDC, m_rctBackColor, m_crBack);
-    DrawEdge(pDC->m_hDC, m_rctBackColor, EDGE_SUNKEN, BF_RECT);
-    pDC->RestoreDC(-1);
+    DrawEdge(pDC.m_hDC, m_rctBackColor, EDGE_SUNKEN, BF_RECT);
+    pDC.RestoreDC(-1);
 
     if (m_crTrans != nullColorRef)
     {
         PaintCell(pDC, m_rctTrans, m_crTrans);
-        DrawEdge(pDC->m_hDC, m_rctTrans, EDGE_BUMP, BF_RECT);
+        DrawEdge(pDC.m_hDC, m_rctTrans, EDGE_BUMP, BF_RECT);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CColorPalette::PaintCellGroup(CDC* pDC, COLORREF* pArray, int xLoc, int yLoc)
+void CColorPalette::PaintCellGroup(CDC& pDC, const COLORREF* pArray, int xLoc, int yLoc)
 {
     CBrush brBlack;
     brBlack.CreateStockObject(BLACK_BRUSH);
@@ -573,11 +571,11 @@ void CColorPalette::PaintCellGroup(CDC* pDC, COLORREF* pArray, int xLoc, int yLo
             if (cref != nullColorRef)
             {
                 brColor.CreateSolidBrush(cref);
-                pDC->FillRect(&rct, &brColor);
-                pDC->FrameRect(&rct, &brBlack);
+                pDC.FillRect(&rct, &brColor);
+                pDC.FrameRect(&rct, &brBlack);
             }
             else
-                pDC->FrameRect(&rct, &brGray);
+                pDC.FrameRect(&rct, &brGray);
             y += sizeColorCell + sizeCellGap;
         }
         x += sizeColorCell + sizeCellGap;
@@ -587,11 +585,9 @@ void CColorPalette::PaintCellGroup(CDC* pDC, COLORREF* pArray, int xLoc, int yLo
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CColorPalette::PaintCell(CDC* pDC, CRect& rct, COLORREF cref, BOOL bSelBorder)
+void CColorPalette::PaintCell(CDC& pDC, const CRect& rct, COLORREF cref)
 {
-    if (bSelBorder)
-        rct.InflateRect(1, 1);
-    if (!pDC->RectVisible(&rct))
+    if (!pDC.RectVisible(&rct))
         return;
 
     CBrush brBlack;
@@ -603,18 +599,13 @@ void CColorPalette::PaintCell(CDC* pDC, CRect& rct, COLORREF cref, BOOL bSelBord
     else
         brColor.CreateHatchBrush(HS_DIAGCROSS, RGB(0,0,0));
 
-    if (bSelBorder)
-    {
-        pDC->FrameRect(&rct, &brBlack);
-        rct.InflateRect(-1, -1);
-    }
-    pDC->FillRect(&rct, &brColor);
-    pDC->FrameRect(&rct, &brBlack);
+    pDC.FillRect(&rct, &brColor);
+    pDC.FrameRect(&rct, &brBlack);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-COLORREF* CColorPalette::MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, CRect& rctArray)
+COLORREF* CColorPalette::MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, const CRect& rctArray)
 {
     if (!rctArray.PtInRect(pntClient))
         return NULL;
@@ -636,17 +627,14 @@ COLORREF* CColorPalette::MapMouseToColorCell(COLORREF* pArray, CPoint pntClient,
     return NULL;
 }
 
-void CColorPalette::MapHSVtoPixelLoc(int* pnHLoc, int* pnSLoc, int* pnVLoc)
+void CColorPalette::MapHSVtoPixelLoc(int& pnHLoc, int& pnSLoc, int& pnVLoc) const
 {
-    if (pnHLoc != NULL)
-        *pnHLoc = (m_nHue * (m_rctColorBar.Width() - 2)) / 359;
-    if (pnSLoc != NULL)
-        *pnSLoc = ((255 - m_nSat) * (m_rctSatValWash.Width() - 2)) / 255;
-    if (pnVLoc != NULL)
-        *pnVLoc = (m_nVal * (m_rctSatValWash.Height() - 2)) / 255;
+    pnHLoc = (m_nHue * (m_rctColorBar.Width() - 2)) / 359;
+    pnSLoc = ((255 - m_nSat) * (m_rctSatValWash.Width() - 2)) / 255;
+    pnVLoc = (m_nVal * (m_rctSatValWash.Height() - 2)) / 255;
 }
 
-BOOL CColorPalette::MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPoint)
+BOOL CColorPalette::MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPoint) const
 {
     if (bCheckValidPoint && !m_rctColorBar.PtInRect(pntClient))
         return FALSE;
@@ -656,7 +644,7 @@ BOOL CColorPalette::MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPo
     return m_rctColorBar.PtInRect(pntClient);
 }
 
-BOOL CColorPalette::MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint)
+BOOL CColorPalette::MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint) const
 {
     if (bCheckValidPoint && !m_rctSatValWash.PtInRect(pntClient))
         return FALSE;
