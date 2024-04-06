@@ -45,14 +45,14 @@ class CColorCmdUI : public CCmdUI
 {
 public:
     // Not used...
-    virtual void SetCheck(int nCheck) {}
+    virtual void SetCheck(int nCheck) override {}
     virtual void SetText(LPCTSTR lpszText) override {}
     // Used...
-    virtual void Enable(BOOL bOn);
+    virtual void Enable(BOOL bOn) override;
     // New for color palette
-    virtual void SetColor(COLORREF cr = nullColorRef);
-    virtual void SetLineWidth(UINT uiLineWidth = 0);
-    virtual void SetCustomColors(const std::vector<COLORREF>& pCustColors);
+    virtual void SetColor(COLORREF cr = nullColorRef) /* override */;
+    virtual void SetLineWidth(UINT uiLineWidth = 0) /* override */;
+    virtual void SetCustomColors(const std::vector<COLORREF>& pCustColors) /* override */;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -176,13 +176,13 @@ protected:
 // Implementation - methods
 protected:
     void SetupToolTips(int nMaxWidth);
-    void SetupToolTip(RECT* rct, UINT nID, UINT nFlags = 0, const CB::string* pszText = NULL);
-    void SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags = 0, const CB::string* pszText = NULL);
+    void SetupToolTip(const RECT& rct, UINT nID, UINT nFlags = 0);
+    void SetupToolTip(const CWnd& pWnd, UINT nID, UINT nFlags = 0);
 
-    void DoPaint(CDC* pDC);
-    void PaintCellGroup(CDC* pDC, COLORREF* pArray, int xLoc, int yLoc);
-    void PaintCell(CDC* pDC, CRect& rct, COLORREF cref, BOOL bSelBorder = FALSE);
-    void PaintSelections(CDC* pDC);
+    void DoPaint(CDC& pDC);
+    static void PaintCellGroup(CDC& pDC, const COLORREF* pArray, int xLoc, int yLoc);
+    static void PaintCell(CDC& pDC, const CRect& rct, COLORREF cref);
+    void PaintSelections(CDC& pDC);
 
     void UpdateCurrentColors(BOOL bImmediate);
     void UpdateCurrentColorMix(BOOL bUpdate = TRUE);
@@ -191,13 +191,13 @@ protected:
     void ComputeLayout();
     void GenerateSVWash(BOOL bInvalidate = TRUE);
 
-    void MapHSVtoPixelLoc(int* pnHLoc, int* pnSLoc, int* pnVLoc);
-    BOOL MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPoint = TRUE);
-    BOOL MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint = TRUE);
-    COLORREF* MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, CRect& rctArray);
+    void MapHSVtoPixelLoc(int& pnHLoc, int& pnSLoc, int& pnVLoc) const;
+    BOOL MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPoint = TRUE) const;
+    BOOL MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint = TRUE) const;
+    static COLORREF* MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, const CRect& rctArray);
 
-    void NotifyColorChange(UINT nFlags, COLORREF cref);
-    void NotifyCustomColorChange(const std::vector<COLORREF>& pcrCustomColors);
+    static void NotifyColorChange(UINT nFlags, COLORREF cref);
+    static void NotifyCustomColorChange(const std::vector<COLORREF>& pcrCustomColors);
 
 // Overrides
 protected:
@@ -210,7 +210,6 @@ protected:
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnLineWidthCbnSelchange();
-    afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
