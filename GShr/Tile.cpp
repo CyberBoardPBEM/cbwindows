@@ -76,9 +76,9 @@ void CTile::BitBlt(wxDC & pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop
     else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
-        wxPen pen(m_crSmall);
+        wxPen pen(CB::Convert(m_crSmall));
         pDC.SetPen(pen);
-        wxBrush brush(m_crSmall);
+        wxBrush brush(CB::Convert(m_crSmall));
         pDC.SetBrush(brush);
         pDC.DrawRectangle(x, y, m_size.cx, m_size.cy);
     }
