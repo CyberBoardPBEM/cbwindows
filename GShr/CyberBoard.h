@@ -322,15 +322,15 @@ public:
     template<typename FormatContext>
     FormatContext::iterator format(const wxRect& r, FormatContext& ctx) const
     {
-        std::format_to(ctx.out(), "(");
+        std::format_to(ctx.out(), "[(");
         BASE::format(r.GetLeft(), ctx);
         std::format_to(ctx.out(), ",");
         BASE::format(r.GetTop(), ctx);
-        std::format_to(ctx.out(), " - ");
-        BASE::format(r.GetRight(), ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(r.GetBottom(), ctx);
-        return std::format_to(ctx.out(), ")");
+        std::format_to(ctx.out(), "), [");
+        BASE::format(r.GetWidth(), ctx);
+        std::format_to(ctx.out(), "x");
+        BASE::format(r.GetHeight(), ctx);
+        return std::format_to(ctx.out(), "])");
     }
 };
 
@@ -2003,6 +2003,45 @@ namespace CB
                 :
                     // match PalColor.h/GdiTools.h
                     0xFF000000;
+    }
+
+    inline wxPoint Convert(const CPoint& p)
+    {
+        return wxPoint(p.x, p.y);
+    }
+
+    inline CPoint Convert(const wxPoint& p)
+    {
+        return CPoint(p.x, p.y);
+    }
+
+    inline wxSize Convert(const CSize& sz)
+    {
+        return wxSize(sz.cx, sz.cy);
+    }
+
+    inline CSize Convert(const wxSize& sz)
+    {
+        return CSize(sz.x, sz.y);
+    }
+
+    // see GM.cpp RectDiscrepancy
+    inline wxRect Convert(const CRect& r)
+    {
+        return wxRect(r.left, r.top, r.Width(), r.Height());
+    }
+
+    // see GM.cpp RectDiscrepancy
+    inline CRect Convert(const wxRect& r)
+    {
+        return CRect(r.GetLeft(), r.GetTop(), r.GetRight() + 1, r.GetBottom() + 1);
+    }
+
+    inline bool RectVisible(const wxDC& dc, const wxRect& r)
+    {
+        wxRect rctClip;
+        dc.GetClippingBox(rctClip);
+        return rctClip.Intersects(r);
     }
 }
 

@@ -114,6 +114,75 @@ public:
 } test;
 #endif
 
+#if 1
+namespace {
+    // demonstrate MFC/wx discrepancy
+    class RectDiscrepancy
+    {
+    public:
+        RectDiscrepancy()
+        {
+            CRect cr(11, 11, 20, 20);
+            wxASSERT(cr.TopLeft() == CPoint(11, 11));
+            wxASSERT(cr.BottomRight() == CPoint(20, 20));
+            wxRect wxr(wxPoint(11, 11), wxPoint(20, 20));
+            wxASSERT(wxr.GetTopLeft() == wxPoint(11, 11));
+            wxASSERT(wxr.GetBottomRight() == wxPoint(20, 20));
+            wxASSERT(wxr.GetTopLeft() == CB::Convert(cr.TopLeft()));
+            wxASSERT(wxr.GetBottomRight() == CB::Convert(cr.BottomRight()));
+            wxASSERT(!cr.PtInRect(CPoint(10, 10)));
+            wxASSERT(!wxr.Contains(wxPoint(10, 10)));
+            wxASSERT(cr.PtInRect(CPoint(11, 11)));
+            wxASSERT(wxr.Contains(wxPoint(11, 11)));
+            wxASSERT(cr.PtInRect(CPoint(19, 19)));
+            wxASSERT(wxr.Contains(wxPoint(19, 19)));
+            wxASSERT(!cr.PtInRect(CPoint(21, 21)));
+            wxASSERT(!wxr.Contains(wxPoint(21, 21)));
+
+            // and now, trouble:
+            wxASSERT(!cr.PtInRect(CPoint(20, 20)));
+            wxASSERT(wxr.Contains(wxPoint(20, 20)));
+            wxASSERT(wxr.GetWidth() == cr.Width() + 1);
+            wxASSERT(wxr.GetHeight() == cr.Height() + 1);
+
+            // on the other hand
+            wxRect wxr2(wxPoint(11, 11), wxPoint(19, 19));
+            wxASSERT(wxr2.GetTopLeft() == wxPoint(11, 11));
+            wxASSERT(wxr2.GetBottomRight() == wxPoint(19, 19));
+            wxASSERT(wxr2.GetTopLeft() == CB::Convert(cr.TopLeft()));
+            wxASSERT(wxr2.GetBottomRight() != CB::Convert(cr.BottomRight()));
+            wxASSERT(wxr2.GetWidth() == cr.Width());
+            wxASSERT(wxr2.GetHeight() == cr.Height());
+            wxASSERT(!wxr2.Contains(wxPoint(10, 10)));
+            wxASSERT(wxr2.Contains(wxPoint(11, 11)));
+            wxASSERT(wxr2.Contains(wxPoint(19, 19)));
+            wxASSERT(!wxr2.Contains(wxPoint(20, 20)));
+            wxASSERT(!wxr2.Contains(wxPoint(21, 21)));
+
+            /* given the results above, I think the least bad
+                result is for conversion to preserve which points
+                are in the rectangles (and also size)
+                rather than preserve bottom-right equality */
+            wxRect wxr3 = CB::Convert(cr);
+            wxASSERT(CB::Convert(wxr3) == cr);
+            wxASSERT(wxr3 == wxr2);
+            wxASSERT(wxr3.GetWidth() == cr.Width());
+            wxASSERT(wxr3.GetHeight() == cr.Height());
+            wxASSERT(!wxr3.Contains(wxPoint(10, 10)));
+            wxASSERT(wxr3.Contains(wxPoint(11, 11)));
+            wxASSERT(wxr3.Contains(wxPoint(19, 19)));
+            wxASSERT(!wxr3.Contains(wxPoint(20, 20)));
+            wxASSERT(!wxr3.Contains(wxPoint(21, 21)));
+
+            CPP20_TRACE("cr {}\n", cr);
+            CPP20_TRACE("wxr {}\n", wxr);
+            CPP20_TRACE("wxr2 {}\n", wxr2);
+            CPP20_TRACE("wxr3 {}\n", wxr3);
+        }
+    } rectDiscrepancy;
+}
+#endif
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
