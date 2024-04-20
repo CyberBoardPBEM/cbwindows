@@ -1196,12 +1196,12 @@ void CBrdEditView::PixelToWorkspace(CPoint& point)
 
 void CBrdEditView::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(m_pBMgr->GetForeColor());
+    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetForeColor()));
 }
 
 void CBrdEditView::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(m_pBMgr->GetBackColor());
+    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetBackColor()));
 }
 
 void CBrdEditView::OnUpdateColorCustom(CCmdUI* pCmdUI)
@@ -1251,7 +1251,7 @@ LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 
 LRESULT CBrdEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
-    const std::vector<COLORREF>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<COLORREF>*>(wParam));
+    const std::vector<wxColour>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<wxColour>*>(wParam));
     GetDocument()->SetCustomColors(pCustomColors);
     return (LRESULT)0;
 }

@@ -1,6 +1,6 @@
 // GdiTools.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -176,57 +176,63 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
 /////////////////////////////////////////////////////////////////
 
-void SetRGBDIBSectPixel(CBitmap& hBitmap, int x, int y, COLORREF cr)
+void SetPixel(wxBitmap& hBitmap, int x, int y, wxColour cr)
 {
-    WIN_RGBTRIO* pPxl = static_cast<WIN_RGBTRIO*>(GetDIBSectXYLoc(hBitmap, x, y));
-    *pPxl = cr;
+    wxNativePixelData imgData(hBitmap);
+    wxNativePixelData::Iterator it(imgData);
+    it.MoveTo(imgData, x, y);
+    it.Red() = cr.Red();
+    it.Green() = cr.Green();
+    it.Blue() = cr.Blue();
 }
 
 /////////////////////////////////////////////////////////////////
 
-void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COLORREF cr)
+void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
 {
-    int cxSave = cx;
-    while (cy--)
+    wxNativePixelData imgData(hBitmap, wxPoint(x, y), wxSize(cx, cy));
+    wxNativePixelData::Iterator rowStart(imgData);
+    for (int currY = 0 ; currY < cy ; ++currY)
     {
-        cx = cxSave;
-        WIN_RGBTRIO* pPxl = (WIN_RGBTRIO*)GetDIBSectXYLoc(hBitmap, x, y);
-        while (cx--)
+        wxNativePixelData::Iterator it = rowStart;
+        for (int currX = 0 ; currX < cx ; ++currX)
         {
-            *pPxl++ = cr;
+            it.Red() = cr.Red();
+            it.Green() = cr.Green();
+            it.Blue() = cr.Blue();
         }
-        y++;
+        rowStart.OffsetY(imgData, 1);
     }
 }
 
 /////////////////////////////////////////////////////////////////
 
-OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
+OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
 {
-    OwnerPtr<CBitmap> hBitmap = CreateRGBDIBSection(nHueDivisions, nHeight);
+    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nHueDivisions, nHeight);
 
-    COLORREF cref;
+    wxColour cref;
 
     for (int h = 0; h < nHueDivisions; h++)
     {
-        cref = HSVtoRGB((h * 359) / (nHueDivisions - 1), 255, 255);
-        SetRGBDIBSectPixelBlock(*hBitmap, h, 0, 1, nHeight, cref);
+        cref = CB::Convert(HSVtoRGB((h * 359) / (nHueDivisions - 1), 255, 255));
+        SetPixelBlock(*hBitmap, h, 0, 1, nHeight, cref);
     }
     return hBitmap;
 }
 
-OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
+OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    OwnerPtr<CBitmap> hBitmap = CreateRGBDIBSection(nWidth, nHeight);
+    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nWidth, nHeight);
 
-    COLORREF cref;
+    wxColour cref;
 
     for (int x = 0; x < nWidth; x++)
     {
         for (int y = 0; y < nHeight; y++)
         {
-            cref = HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1));
-            SetRGBDIBSectPixel(*hBitmap, x, y, cref);
+            cref = CB::Convert(HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1)));
+            SetPixel(*hBitmap, x, y, cref);
         }
     }
     return hBitmap;

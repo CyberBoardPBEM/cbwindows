@@ -1068,7 +1068,7 @@ LRESULT CBitEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 
 LRESULT CBitEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
-    const std::vector<COLORREF>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<COLORREF>*>(wParam));
+    const std::vector<wxColour>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<wxColour>*>(wParam));
     GetDocument().SetCustomColors(pCustomColors);
     return (LRESULT)0;
 }
@@ -1081,17 +1081,17 @@ LRESULT CBitEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 
 void CBitEditView::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(m_pTMgr->GetForeColor());
+    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pTMgr->GetForeColor()));
 }
 
 void CBitEditView::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(m_pTMgr->GetBackColor());
+    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pTMgr->GetBackColor()));
 }
 
 void CBitEditView::OnUpdateColorTransparent(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(m_pTMgr->GetTransparentColor());
+    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pTMgr->GetTransparentColor()));
 }
 
 void CBitEditView::OnUpdateColorCustom(CCmdUI* pCmdUI)

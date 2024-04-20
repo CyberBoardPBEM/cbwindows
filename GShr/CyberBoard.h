@@ -67,6 +67,7 @@
 #include <wx/choice.h>
 #include <wx/clipbrd.h>
 #include <wx/clrpicker.h>
+#include <wx/colordlg.h>
 #include <wx/dataobj.h>
 #include <wx/dc.h>
 #include <wx/dcclient.h>

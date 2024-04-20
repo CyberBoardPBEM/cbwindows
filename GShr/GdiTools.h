@@ -138,11 +138,11 @@ int TenthPointsToScreenPixels(int nTenthPts);
 int GetCurrentVideoResolution();
 
 OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
-OwnerPtr<CBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
-OwnerPtr<CBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
+OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
+OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 
-void SetRGBDIBSectPixel(CBitmap& hBitmap, int x, int y, COLORREF cr);
-void SetRGBDIBSectPixelBlock(CBitmap& hBitmap, int x, int y, int cx, int cy, COLORREF cr);
+void SetPixel(wxBitmap& hBitmap, int x, int y, wxColour cr);
+void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr);
 
 COLORREF HSVtoRGB(int h, int s, int v);
 void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);

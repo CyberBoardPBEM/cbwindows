@@ -263,8 +263,8 @@ public:
     int  GetCompressLevel() { return (int)m_wCompressLevel; }
     void SetCompressLevel(int nCompressLevel) { m_wCompressLevel = (WORD)nCompressLevel; }
 
-    const std::vector<COLORREF>& GetCustomColors() const;
-    void   SetCustomColors(const std::vector<COLORREF>& pCustColors);
+    const std::vector<wxColour>& GetCustomColors() const;
+    void   SetCustomColors(const std::vector<wxColour>& pCustColors);
 
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
@@ -300,7 +300,7 @@ protected:
     std::array<std::byte, 16> m_abytePass;// MD5 Hash of password and uuid based box ID
     WORD            m_wCompressLevel;// Amount of compression to apply to bitmaps and such
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
-    std::vector<COLORREF> m_pCustomColors; // Container for custom edit colors
+    std::vector<wxColour> m_pCustomColors; // Container for custom edit colors
     CB::propagate_const<CTileManager*>   m_pTMgr;        // Tiles
     CBoardManager*  m_pBMgr;        // Playing boards
     CPieceManager*  m_pPMgr;        // Playing pieces
