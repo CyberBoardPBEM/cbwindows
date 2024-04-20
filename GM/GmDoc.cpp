@@ -274,12 +274,12 @@ void CGamDoc::DeleteContents()
 
 ///////////////////////////////////////////////////////////////////////
 
-const std::vector<COLORREF>& CGamDoc::GetCustomColors() const
+const std::vector<wxColour>& CGamDoc::GetCustomColors() const
 {
     return m_pCustomColors;
 }
 
-void CGamDoc::SetCustomColors(const std::vector<COLORREF>& pCustColors)
+void CGamDoc::SetCustomColors(const std::vector<wxColour>& pCustColors)
 {
     m_pCustomColors = pCustColors;
     SetModifiedFlag();

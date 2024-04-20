@@ -25,42 +25,72 @@
 #ifndef _PALCOLOR_H
 #define _PALCOLOR_H
 
-const COLORREF nullColorRef = 0xFF000000; //(should match noColor in tile.h)
+inline bool mouseFore(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_LEFT &&
+            event.GetModifiers() == wxMOD_NONE;
+}
+inline bool mouseBack1(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_LEFT &&
+            event.GetModifiers() == wxMOD_SHIFT;
+}
+inline bool mouseBack2(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_RIGHT &&
+            event.GetModifiers() == wxMOD_NONE;
+}
 
-const UINT mouseMask = (MK_CONTROL | MK_SHIFT | MK_LBUTTON | MK_RBUTTON);
-
-const UINT mouseFore = MK_LBUTTON;
-const UINT mouseBack1 = (MK_LBUTTON | MK_SHIFT);
-const UINT mouseBack2 = MK_RBUTTON;
-
-const UINT mouseSetCustomFromFore = (MK_LBUTTON | MK_CONTROL);
-const UINT mouseSetCustomFromBack = (MK_RBUTTON | MK_CONTROL);
-const UINT mouseSetCustomFromMix = (MK_LBUTTON | MK_SHIFT);
-const UINT mouseSetCustomClear = (MK_LBUTTON | MK_SHIFT | MK_CONTROL);
+inline bool mouseSetCustomFromFore(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_LEFT &&
+            event.GetModifiers() == wxMOD_CONTROL;
+}
+inline bool mouseSetCustomFromBack(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_RIGHT &&
+        event.GetModifiers() == wxMOD_CONTROL;
+}
+inline bool mouseSetCustomFromMix(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_LEFT &&
+            event.GetModifiers() == wxMOD_SHIFT;
+}
+inline bool mouseSetCustomClear(const wxMouseEvent& event)
+{
+    return event.GetButton() == wxMOUSE_BTN_LEFT &&
+            event.GetModifiers() == (wxMOD_SHIFT | wxMOD_CONTROL);
+}
 
 ///////////////////////////////////////////////////////////////////////
 // ColorPalette Status Object
 
+class CColorPalette;
+
 class CColorCmdUI : public CCmdUI
 {
 public:
+    CColorCmdUI(CColorPalette& colorPalette);
     // Not used...
     virtual void SetCheck(int nCheck) override {}
     virtual void SetText(LPCTSTR lpszText) override {}
     // Used...
     virtual void Enable(BOOL bOn) override;
     // New for color palette
-    virtual void SetColor(COLORREF cr = nullColorRef) /* override */;
+    virtual void SetColor(wxColour cr = wxNullColour) /* override */;
     virtual void SetLineWidth(UINT uiLineWidth = 0) /* override */;
-    virtual void SetCustomColors(const std::vector<COLORREF>& pCustColors) /* override */;
+    virtual void SetCustomColors(const std::vector<wxColour>& pCustColors) /* override */;
+
+private:
+    RefPtr<CColorPalette> colorPalette;
 };
 
 ///////////////////////////////////////////////////////////////////////
 
 class CMainFrame;
-class CColorPalette;
 
-class CDockColorPalette : public CDockablePane
+class CDockColorPalette : public CDockablePane,
+                            public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNCREATE(CDockColorPalette);
     // Construction
@@ -92,7 +122,8 @@ protected:
 private:
     CSize CalcSize() const;
 
-    OwnerPtr<CColorPalette> m_child;
+    // wx owns m_child
+    RefPtr<CColorPalette> m_child;
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
@@ -101,7 +132,7 @@ private:
     DECLARE_MESSAGE_MAP()
 };
 
-class CColorPalette : public CWnd
+class CColorPalette : public wxPanel
 {
 public:
     CColorPalette();
@@ -109,57 +140,60 @@ public:
 
 // Attributes
 public:
-    CSize GetSize() const
+    wxSize GetSize() const
     {
         return m_sizeClient;
     }
 
 // Operations
 public:
-    void SetIDColor(UINT nID, COLORREF cr);
+    void SetIDColor(UINT nID, wxColour cr);
     void SetLineWidth(UINT nLineWidth);
-    void SetCustomColors(const std::vector<COLORREF>& pCustColors);
-    void CalculateMinClientSize(CSize& size)
+    void SetCustomColors(const std::vector<wxColour>& pCustColors);
+    void CalculateMinClientSize(wxSize& size)
     {
         ComputeLayout();
         size = m_sizeClient;
     }
 
     // Custom color opaque manipulation methods
-    static std::vector<COLORREF> CustomColorsAllocate();
-    static void CustomColorsSerialize(CArchive& ar, std::vector<COLORREF>& pCustColors);
-    static void CustomColorsClear(std::vector<COLORREF>& pCustColors);
+    static std::vector<wxColour> CustomColorsAllocate();
+    static void CustomColorsSerialize(CArchive& ar, std::vector<wxColour>& pCustColors);
+    static void CustomColorsClear(std::vector<wxColour>& pCustColors);
 
 // Implementation
 public:
 
 protected:
-    CComboBox   m_comboLine;
+    // wx owns m_comboLine
+    RefPtr<wxChoice> m_comboLine;
 
+#if 0
     CToolTipCtrl m_toolTip;
+#endif
 
-    CSize       m_sizeClient;
+    wxSize       m_sizeClient;
 
     // Status area vars...
 
-    COLORREF    m_crFore;           // Current colors
-    COLORREF    m_crBack;
-    COLORREF    m_crTrans;
+    wxColour    m_crFore;           // Current colors
+    wxColour    m_crBack;
+    wxColour    m_crTrans;
 
-    CRect       m_rctForeColor;
-    CRect       m_rctBackColor;
-    CRect       m_rctTrans;         // Rect for transparent color selector
-    CRect       m_rctNoColor;       // Rect for no color selector
+    wxRect      m_rctForeColor;
+    wxRect      m_rctBackColor;
+    wxRect      m_rctTrans;         // Rect for transparent color selector
+    wxRect      m_rctNoColor;       // Rect for no color selector
 
     // Color picker area vars...
 
-    std::vector<COLORREF> m_pCustColors;
+    std::vector<wxColour> m_pCustColors;
 
-    CRect       m_rctStdColors;
-    CRect       m_rctCustColors;
-    CRect       m_rctColorMix;
-    CRect       m_rctColorBar;
-    CRect       m_rctSatValWash;
+    wxRect      m_rctStdColors;
+    wxRect      m_rctCustColors;
+    wxRect      m_rctColorMix;
+    wxRect      m_rctColorBar;
+    wxRect      m_rctSatValWash;
 
     BOOL        m_bTrackHue;        // Mouse down in hue picker
     BOOL        m_bTrackSV;         // Mouse down in S/V picker
@@ -168,36 +202,38 @@ protected:
     int         m_nHue;             // Current hue value
     int         m_nVal;             // Current value
     int         m_nSat;             // Current saturation
-    COLORREF    m_crCurMix;         // RGB version of above
+    wxColour    m_crCurMix;         // RGB version of above
 
-    OwnerOrNullPtr<CBitmap> m_bmapBar;          // Color bar
-    OwnerOrNullPtr<CBitmap> m_bmapWash;         // Color wash bitmap
+    OwnerOrNullPtr<wxBitmap> m_bmapBar;          // Color bar
+    OwnerOrNullPtr<wxBitmap> m_bmapWash;         // Color wash bitmap
 
 // Implementation - methods
 protected:
+#if 0
     void SetupToolTips(int nMaxWidth);
-    void SetupToolTip(const RECT& rct, UINT nID, UINT nFlags = 0);
+    void SetupToolTip(const wxRect& rct, UINT nID, UINT nFlags = 0);
     void SetupToolTip(const CWnd& pWnd, UINT nID, UINT nFlags = 0);
+#endif
 
-    void DoPaint(CDC& pDC);
-    static void PaintCellGroup(CDC& pDC, const COLORREF* pArray, int xLoc, int yLoc);
-    static void PaintCell(CDC& pDC, const CRect& rct, COLORREF cref);
-    void PaintSelections(CDC& pDC);
+    void DoPaint(wxDC& pDC);
+    static void PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, int yLoc);
+    static void PaintCell(wxDC& pDC, const wxRect& rct, wxColour cref);
+    void PaintSelections(wxDC& pDC);
 
     void UpdateCurrentColors(BOOL bImmediate);
     void UpdateCurrentColorMix(BOOL bUpdate = TRUE);
-    BOOL HandleButtonDown(UINT nFlags, CPoint point);
+    BOOL HandleButtonDown(const wxMouseEvent& event);
 
     void ComputeLayout();
     void GenerateSVWash(BOOL bInvalidate = TRUE);
 
     void MapHSVtoPixelLoc(int& pnHLoc, int& pnSLoc, int& pnVLoc) const;
-    BOOL MapMouseLocToH(CPoint pntClient, int& nH, BOOL bCheckValidPoint = TRUE) const;
-    BOOL MapMouseLocToSV(CPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint = TRUE) const;
-    static COLORREF* MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, const CRect& rctArray);
+    BOOL MapMouseLocToH(wxPoint pntClient, int& nH, BOOL bCheckValidPoint = TRUE) const;
+    BOOL MapMouseLocToSV(wxPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint = TRUE) const;
+    static wxColour* MapMouseToColorCell(wxColour* pArray, wxPoint pntClient, const wxRect& rctArray);
 
-    static void NotifyColorChange(UINT nFlags, COLORREF cref);
-    static void NotifyCustomColorChange(const std::vector<COLORREF>& pcrCustomColors);
+    static void NotifyColorChange(const wxMouseEvent& event, wxColour cref);
+    static void NotifyCustomColorChange(const std::vector<wxColour>& pcrCustomColors);
 
 // Overrides
 protected:
@@ -205,20 +241,21 @@ protected:
 // Generated message map functions
 protected:
 
-    afx_msg void OnPaint();
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnLineWidthCbnSelchange();
+    void OnPaint(wxPaintEvent& event);
+    void OnCreate(wxWindowCreateEvent& event);
+    void OnLButtonDown(wxMouseEvent& event);
+    void OnRButtonDown(wxMouseEvent& event);
+    void OnLineWidthCbnSelchange(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
+#endif
+    void OnMouseMove(wxMouseEvent& event);
+    void OnLButtonUp(wxMouseEvent& event);
+    void OnRButtonUp(wxMouseEvent& event);
+    void OnLButtonDblClk(wxMouseEvent& event);
+    void OnPaletteHide(wxCommandEvent& event);
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif
