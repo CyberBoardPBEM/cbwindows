@@ -43,7 +43,7 @@ namespace CB
     void VListBoxHScroll::SetItemCount(size_t count)
     {
         wxVListBox::SetItemCount(count);
-        wxCoord width = GetClientSize().GetWidth();
+        wxCoord width = 0;
         for (size_t i = 0 ; i < count ; ++i)
         {
             width = std::max(width, GetItemSize(i).GetWidth());
@@ -171,7 +171,7 @@ namespace CB
         event.Skip();
 
         SetScrollbar(wxHORIZONTAL,
-                    GetScrollThumb(wxHORIZONTAL),
+                    GetScrollPos(wxHORIZONTAL),
                     GetClientSize().GetWidth(),
                     GetVirtualSize().GetWidth());
         Refresh();
