@@ -2037,13 +2037,101 @@ namespace CB
     {
         return CRect(r.GetLeft(), r.GetTop(), r.GetRight() + 1, r.GetBottom() + 1);
     }
+}
 
+// emulate MFC features
+namespace CB
+{
     inline bool RectVisible(const wxDC& dc, const wxRect& r)
     {
         wxRect rctClip;
         dc.GetClippingBox(rctClip);
         return rctClip.Intersects(r);
     }
+
+    class ToolTip : private wxTimer
+    {
+    public:
+        // flags may be or'ed together
+        enum Flags { NONE = 0, CENTER = 1, TRACK = 2 };
+
+        ToolTip() = default;
+        ~ToolTip();
+        ToolTip(const ToolTip&) = delete;
+        ToolTip& operator=(const ToolTip&) = delete;
+        ToolTip(ToolTip&&) = default;
+        ToolTip& operator=(ToolTip&&) = default;
+
+        // enable or disable the tooltips globally
+        void Enable(bool flag);
+        // set the delay after which the tooltip appears
+        void SetDelay(long milliseconds);
+        // set the delay after which the tooltip disappears or how long the
+        // tooltip remains visible
+        void SetAutoPop(long milliseconds);
+        // set the delay between subsequent tooltips to appear
+        void SetReshow(long milliseconds);
+        // set maximum width for the new tooltips: -1 disables wrapping
+        void SetMaxWidth(int width);
+
+        void Add(wxWindow& wnd, const wxRect& rect,
+                    wxString tip, Flags flags = NONE)
+        {
+            Add(wnd, std::optional<wxRect>(rect), std::move(tip), flags);
+        }
+        void Add(wxWindow& wnd,
+                    wxString tip, Flags flags = NONE)
+        {
+            Add(wnd, std::optional<wxRect>(), std::move(tip), flags);
+        }
+        void Delete(wxWindow& wnd, const wxRect& rect)
+        {
+            Delete(wnd, std::optional<wxRect>(rect));
+        }
+        void Delete(wxWindow& wnd)
+        {
+            Delete(wnd, std::optional<wxRect>());
+        }
+
+    private:
+        void Add(wxWindow& wnd, std::optional<wxRect>&& rect,
+                    wxString&& tip, Flags flags);
+        void Delete(wxWindow& wnd, std::optional<wxRect> rect);
+        void Notify() override;     // wxTimer
+        void OnMouseMove(wxMouseEvent& event);
+        void CloseTipWindow();
+
+        int delayMs = -1;
+        int reshowMs = -1;
+        int autopopMs = -1;
+        int maxWidth = -1;
+        bool enabled = false;
+
+        struct ToolInfo
+        {
+            std::reference_wrapper<wxWindow> wnd;
+            std::optional<wxRect> rect;
+            wxString tip;
+            Flags flags;
+
+            ToolInfo(wxWindow& w, std::optional<wxRect>&& r, wxString&& t, Flags f);
+        };
+        // use list to ensure tipTool doesn't get invalidated
+        std::list<ToolInfo> toolInfos;
+
+        // tool shown by tipWindow
+        decltype(toolInfos)::iterator tipTool = toolInfos.end();
+        // owned by wx
+        wxTipWindow* tipWindow = nullptr;
+
+        enum State {
+            sNoTool,
+            sDisplayWait,
+            sDisplay,
+        };
+        State state = sNoTool;
+
+    };
 }
 
 #endif
