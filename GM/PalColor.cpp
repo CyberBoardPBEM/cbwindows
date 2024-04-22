@@ -232,9 +232,7 @@ void CColorPalette::OnCreate(wxWindowCreateEvent& event)
     m_bmapBar = CreateRGBColorBar(m_rctColorBar.GetWidth() - 2, m_rctColorBar.GetHeight() - 2);
     GenerateSVWash(FALSE);
 
-#if 0
     SetupToolTips(m_sizeClient.x);
-#endif
 }
 
 CSize CDockColorPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
@@ -246,56 +244,33 @@ CSize CDockColorPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
     // return CDockablePane::CalcFixedLayout(bStretch, bHorz);
 }
 
-#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing...
 
 void CColorPalette::SetupToolTips(int nMaxWidth)
 {
-    m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
-    m_toolTip.SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-    m_toolTip.SetMaxTipWidth(nMaxWidth);
+    m_toolTip.SetMaxWidth(nMaxWidth);
 
-    SetupToolTip(m_comboLine, IDS_TT_LINEWIDTH_COMBO, TTF_CENTERTIP);
+    SetupToolTip(*m_comboLine, CB::string::LoadString(IDS_TT_LINEWIDTH_COMBO), CB::ToolTip::CENTER);
 
-    SetupToolTip(m_rctNoColor, IDS_TT_NULLCOLOR);
-    SetupToolTip(m_rctStdColors, IDS_TT_COLORCELLS, TTF_CENTERTIP);
-    SetupToolTip(m_rctColorMix, IDS_TT_COLORCELLS, TTF_CENTERTIP);
+    SetupToolTip(m_rctNoColor, CB::string::LoadString(IDS_TT_NULLCOLOR));
+    SetupToolTip(m_rctStdColors, CB::string::LoadString(IDS_TT_COLORCELLS), CB::ToolTip::CENTER);
+    SetupToolTip(m_rctColorMix, CB::string::LoadString(IDS_TT_COLORCELLS), CB::ToolTip::CENTER);
 
-    SetupToolTip(m_rctCustColors, IDS_TT_CUST_COLOR_CELLS, TTF_CENTERTIP);
+    SetupToolTip(m_rctCustColors, CB::string::LoadString(IDS_TT_CUST_COLOR_CELLS), CB::ToolTip::CENTER);
 
-    m_toolTip.Activate(TRUE);
+    m_toolTip.Enable(TRUE);
 }
 
-void CColorPalette::SetupToolTip(const wxRect& rct, UINT nID, UINT nFlags)
+void CColorPalette::SetupToolTip(const wxRect& rct, wxString tip, CB::ToolTip::Flags flags /*= CB::ToolTip::NONE*/)
 {
-    TOOLINFO ti;
-    memset(&ti, 0, sizeof(TOOLINFO));
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.uFlags |= nFlags;
-    ti.uFlags |= TTF_SUBCLASS | nFlags;
-    ti.hwnd = m_hWnd;
-    ti.uId = nID;
-    ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
-    ti.hinst = AfxGetResourceHandle();
-    ti.rect = CB::Convert(rct);
-    m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+    m_toolTip.Add(*this, rct, std::move(tip), flags);
 }
 
-void CColorPalette::SetupToolTip(const CWnd& pWnd, UINT nID, UINT nFlags)
+void CColorPalette::SetupToolTip(wxWindow& pWnd, wxString tip, CB::ToolTip::Flags flags /*= CB::ToolTip::NONE*/)
 {
-    TOOLINFO ti;
-    memset(&ti, 0, sizeof(TOOLINFO));
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.uFlags |= TTF_IDISHWND | TTF_SUBCLASS | nFlags;
-    ti.hwnd = m_hWnd;
-    ti.uId = reinterpret_cast<uintptr_t>(pWnd.GetSafeHwnd());
-    ti.lpszText = const_cast<CB::string::value_type*>(MAKEINTRESOURCE(nID));
-    ti.hinst = AfxGetResourceHandle();
-    m_toolTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+    m_toolTip.Add(pWnd, std::move(tip), flags);
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -715,12 +690,10 @@ void CColorPalette::SetIDColor(UINT nID, wxColour cr)
     {
         if (cr == m_crTrans) return;
         m_crTrans = cr;
-#if 0
         if (m_crTrans == wxNullColour)
-            m_toolTip.DelTool(this, IDS_TT_TRANSCOLOR);
+            m_toolTip.Delete(*this, m_rctTrans);
         else
-            SetupToolTip(m_rctTrans, IDS_TT_TRANSCOLOR);
-#endif
+            SetupToolTip(m_rctTrans, CB::string::LoadString(IDS_TT_TRANSCOLOR));
         RefreshRect(m_rctNoColor);
     }
     else
