@@ -844,3 +844,250 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     const CWnd* mfcWnd = ToCWnd(w);
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
+
+CB::ToolTip::~ToolTip()
+{
+    Enable(false);
+
+    // can't use ++it because Delete invalidates it
+    for (auto it = toolInfos.begin() ;
+        it != toolInfos.end() ;
+        it = toolInfos.begin())
+    {
+        if (it->rect)
+        {
+            Delete(it->wnd, *it->rect);
+        }
+        else
+        {
+            Delete(it->wnd);
+        }
+    }
+}
+
+void CB::ToolTip::Enable(bool b)
+{
+    enabled = b;
+    if (enabled)
+    {
+        if (!toolInfos.empty())
+        {
+            wxWindow& wnd = toolInfos.front().wnd.get();
+            if (delayMs < 0)
+            {
+                delayMs = wxSystemSettingsNative::GetMetric(wxSYS_DCLICK_MSEC, &wnd);
+            }
+            if (reshowMs < 0)
+            {
+                reshowMs = wxSystemSettingsNative::GetMetric(wxSYS_DCLICK_MSEC, &wnd) / 5;
+            }
+            if (autopopMs < 0)
+            {
+                autopopMs = wxSystemSettingsNative::GetMetric(wxSYS_DCLICK_MSEC, &wnd) * 10;
+            }
+            /* TODO:  do we need to synthesize a mouse move in
+                        case mouse is already in a tool? */
+        }
+    }
+    else
+    {
+        CloseTipWindow();
+        state = sNoTool;
+        Stop();
+    }
+}
+
+// set maximum width for the new tooltips: -1 disables wrapping
+void CB::ToolTip::SetMaxWidth(int width)
+{
+    maxWidth = width;
+}
+
+void CB::ToolTip::Add(wxWindow& wnd, std::optional<wxRect>&& rect,
+                            wxString&& tip, Flags flags)
+{
+    wxASSERT(!(flags & TRACK) || !"TRACK not implemented");
+    // center shouldn't move, track should move
+    wxASSERT((flags & (CENTER | TRACK)) != (CENTER | TRACK));
+
+    auto it = std::find_if(toolInfos.begin(), toolInfos.end(),
+                            [&wnd](const ToolInfo& ti)
+                            {
+                                return &ti.wnd.get() == &wnd;
+                            });
+    wxASSERT(it == toolInfos.end() ||
+                rect && it->rect ||
+                "full window only permitted when using one tool");
+
+    // if first tool on this wnd, bind move handler
+    if (it == toolInfos.end())
+    {
+        wnd.Bind(wxEVT_MOTION, &ToolTip::OnMouseMove, this);
+    }
+    toolInfos.emplace_back(wnd, std::move(rect), std::move(tip), flags);
+    Enable(enabled);
+}
+
+void CB::ToolTip::Delete(wxWindow& wnd, std::optional<wxRect> rect)
+{
+    auto it = std::find_if(toolInfos.begin(), toolInfos.end(),
+                            [&wnd, &rect](const ToolInfo& ti)
+                            {
+                                return &ti.wnd.get() == &wnd &&
+                                        ti.rect == rect;
+                            });
+    wxASSERT(it != toolInfos.end());
+
+    if (it == tipTool)
+    {
+        CloseTipWindow();
+    }
+    toolInfos.erase(it);
+
+    // if no more tools on this wnd, unbind move handler
+    it = std::find_if(toolInfos.begin(), toolInfos.end(),
+                        [&wnd](const ToolInfo& ti)
+                        {
+                            return &ti.wnd.get() == &wnd;
+                        });
+    if (it == toolInfos.end())
+    {
+        wnd.Unbind(wxEVT_MOTION, &ToolTip::OnMouseMove, this);
+    }
+}
+
+// wxTimer
+void CB::ToolTip::Notify()
+{
+    switch (state)
+    {
+        case sDisplayWait:
+        {
+            wxASSERT(tipTool != toolInfos.end());
+            wxRect screenRect;
+            if (tipTool->rect)
+            {
+                screenRect = wxRect(tipTool->wnd.get().ClientToScreen(tipTool->rect->GetTopLeft()),
+                    tipTool->rect->GetSize());
+            }
+            else
+            {
+                screenRect = tipTool->wnd.get().GetScreenRect();
+            }
+            tipWindow = new wxTipWindow(&tipTool->wnd.get(),
+                tipTool->tip, maxWidth,
+                &tipWindow,
+                &screenRect);
+            if (tipTool->flags & CENTER)
+            {
+                wxCoord center = screenRect.GetLeft() + screenRect.GetWidth() / 2;
+                wxCoord left = center - tipWindow->GetRect().GetWidth() / 2;
+                tipWindow->Move(left, screenRect.GetBottom() + 1);
+            }
+            Start(autopopMs);
+            state = sDisplay;
+            break;
+        }
+        case sDisplay:
+        {
+            // autopop
+            // don't re-show tooltip until it's the new tip
+            auto temp = tipTool;
+            CloseTipWindow();
+            tipTool = temp;
+            Stop();
+            break;
+        }
+        default:
+            wxASSERT(!"why is timer running?");
+    }
+}
+
+void CB::ToolTip::OnMouseMove(wxMouseEvent& event)
+{
+    event.Skip();
+    if (!enabled)
+    {
+        return;
+    }
+
+    wxASSERT(wxDynamicCast(event.GetEventObject(), wxWindow));
+    wxWindow& wnd = *static_cast<wxWindow*>(event.GetEventObject());
+    const wxPoint& pt = event.GetPosition();
+
+    auto it = std::find_if(toolInfos.begin(), toolInfos.end(),
+                            [&wnd, &pt](const ToolInfo& ti) {
+                                return &ti.wnd.get() == &wnd &&
+                                        (!ti.rect || ti.rect->Contains(pt));
+                            });
+
+    if (it != toolInfos.end())
+    {
+        switch (state)
+        {
+            case sNoTool:
+                wxASSERT(tipTool == toolInfos.end());
+                if (StartOnce(delayMs))
+                {
+                    state = sDisplayWait;
+                }
+                else
+                {
+                    wxASSERT(!"start timer error");
+                }
+                break;
+            case sDisplayWait:
+                if (it != tipTool)
+                {
+                    // restart delay
+                    if (!StartOnce(delayMs))
+                    {
+                        wxASSERT(!"start timer error");
+                    }
+                }
+                // else do nothing
+                break;
+            case sDisplay:
+                if (it != tipTool)
+                {
+                    CloseTipWindow();
+                    if (StartOnce(reshowMs))
+                    {
+                        state = sDisplayWait;
+                    }
+                    else
+                    {
+                        wxASSERT(!"start timer error");
+                        state = sDisplay;
+                    }
+                }
+                // else do nothing
+                break;
+        }
+    }
+    else
+    {
+        CloseTipWindow();
+        state = sNoTool;
+        Stop();
+    }
+    tipTool = it;
+}
+
+void CB::ToolTip::CloseTipWindow()
+{
+    if (tipWindow)
+    {
+        tipWindow->Close();
+        wxASSERT(!tipWindow);
+    }
+    tipTool = toolInfos.end();
+}
+
+CB::ToolTip::ToolInfo::ToolInfo(wxWindow& w, std::optional<wxRect>&& r, wxString&& t, Flags f) :
+    wnd(w),
+    rect(std::move(r)),
+    tip(std::move(t)),
+    flags(f)
+{
+}
