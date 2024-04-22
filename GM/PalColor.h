@@ -168,9 +168,7 @@ protected:
     // wx owns m_comboLine
     RefPtr<wxChoice> m_comboLine;
 
-#if 0
-    CToolTipCtrl m_toolTip;
-#endif
+    CB::ToolTip m_toolTip;
 
     wxSize       m_sizeClient;
 
@@ -209,11 +207,9 @@ protected:
 
 // Implementation - methods
 protected:
-#if 0
     void SetupToolTips(int nMaxWidth);
-    void SetupToolTip(const wxRect& rct, UINT nID, UINT nFlags = 0);
-    void SetupToolTip(const CWnd& pWnd, UINT nID, UINT nFlags = 0);
-#endif
+    void SetupToolTip(const wxRect& rct, wxString tip, CB::ToolTip::Flags flags = CB::ToolTip::NONE);
+    void SetupToolTip(wxWindow& pWnd, wxString tip, CB::ToolTip::Flags flags = CB::ToolTip::NONE);
 
     void DoPaint(wxDC& pDC);
     static void PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, int yLoc);
