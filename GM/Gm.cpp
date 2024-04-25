@@ -1,6 +1,6 @@
 // Gm.cpp : Defines the class behaviors for the application.
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -210,7 +210,27 @@ class CGmApp::CwxGmApp : public wxMFCApp<CGmApp>
 protected:
     BOOL InitMainWnd() override
     {
-        // CGmApp::InitInstance already created MFC main wnd
+        // Create main MDI Frame window
+        CMainFrame* pMainFrame = new CMainFrame;
+        if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
+        {
+            if (pMainFrame != NULL)
+                delete pMainFrame;
+            return FALSE;
+        }
+        m_pMainWnd = pMainFrame;
+
+        // Enable drag/drop open
+        m_pMainWnd->DragAcceptFiles();
+
+        // The main window has been initialized, so show and update it.
+        if (!ReloadWindowPlacement(pMainFrame))
+        {
+            pMainFrame->ShowWindow(m_nCmdShow);
+            pMainFrame->UpdateWindow();
+        }
+
+        wxTheApp->SetTopWindow(&CB::GetMainWndWx());
 
         return TRUE;
     }
@@ -238,8 +258,6 @@ namespace {
 
             wxXmlResource::Get()->InitAllHandlers();
             wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
-
-            SetTopWindow(&CB::GetMainWndWx());
 
             return true;
         }
@@ -325,19 +343,6 @@ BOOL CGmApp::InitInstance()
 
     EnableLoadWindowPlacement(FALSE);
 
-    // Create main MDI Frame window
-    CMainFrame* pMainFrame = new CMainFrame;
-    if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
-    {
-        if (pMainFrame != NULL)
-            delete pMainFrame;
-        return FALSE;
-    }
-    m_pMainWnd = pMainFrame;
-
-    // Enable drag/drop open
-    m_pMainWnd->DragAcceptFiles();
-
     // Enable DDE Execute open
     EnableShellOpen();
     RegisterShellFileTypes(TRUE);
@@ -365,13 +370,6 @@ BOOL CGmApp::InitInstance()
     // Dispatch commands specified on the command line
     if (!ProcessShellCommand(cmdInfo))
         return FALSE;
-
-    // The main window has been initialized, so show and update it.
-    if (!ReloadWindowPlacement(pMainFrame))
-    {
-        pMainFrame->ShowWindow(m_nCmdShow);
-        pMainFrame->UpdateWindow();
-    }
 
     if (GetCurrentVideoResolution() < 16)
     {
