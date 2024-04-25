@@ -1,6 +1,6 @@
 // ColorPal.h : header file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -52,7 +52,7 @@ public:
     // New for color palette
     virtual void SetColor(COLORREF cr = nullColorRef);
     virtual void SetLineWidth(UINT uiLineWidth = 0);
-    virtual void SetCustomColors(LPVOID pCustColors);
+    virtual void SetCustomColors(const std::vector<COLORREF>& pCustColors);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ public:
 public:
     void SetIDColor(UINT nID, COLORREF cr);
     void SetLineWidth(UINT nLineWidth);
-    void SetCustomColors(LPVOID pCustColors);
+    void SetCustomColors(const std::vector<COLORREF>& pCustColors);
     void CalculateMinClientSize(CSize& size)
     {
         ComputeLayout();
@@ -82,26 +82,18 @@ public:
     }
 
     // Custom color opaque manipulation methods
-    static LPVOID CustomColorsAllocate();
-    static void CustomColorsFree(LPVOID pCustColors);
-    static void CustomColorsSerialize(CArchive& ar, LPVOID pCustColors);
-    static void CustomColorsClear(LPVOID pCustColors);
-    static void CustomColorsSet(LPVOID pCustColorsTo, LPVOID pCustColorsFrom);
-    static BOOL CustomColorsCompareEqual(LPVOID pCustColors1, LPVOID pCustColors2);
+    static std::vector<COLORREF> CustomColorsAllocate();
+    static void CustomColorsSerialize(CArchive& ar, std::vector<COLORREF>& pCustColors);
+    static void CustomColorsClear(std::vector<COLORREF>& pCustColors);
 
 // Implementation
 public:
-    virtual ~CColorPalette();
-    virtual void PostNcDestroy();
 
 protected:
     CB::string  m_strPaneName;
     CComboBox   m_comboLine;
 
     CToolTipCtrl m_toolTip;
-
-    int         m_xCurPos;
-    int         m_yCurPos;
 
     CSize       m_sizeClient;
 
@@ -118,7 +110,7 @@ protected:
 
     // Color picker area vars...
 
-    COLORREF*   m_pCustColors;
+    std::vector<COLORREF> m_pCustColors;
 
     CRect       m_rctStdColors;
     CRect       m_rctCustColors;
@@ -162,7 +154,7 @@ protected:
     COLORREF* MapMouseToColorCell(COLORREF* pArray, CPoint pntClient, CRect& rctArray);
 
     void NotifyColorChange(UINT nFlags, COLORREF cref);
-    void NotifyCustomColorChange(COLORREF* pcrCustomColors);
+    void NotifyCustomColorChange(const std::vector<COLORREF>& pcrCustomColors);
 
 // Overrides
 protected:
@@ -186,7 +178,6 @@ protected:
 protected:
 
     afx_msg void OnPaint();
-    afx_msg void OnDestroy();
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
@@ -198,9 +189,6 @@ protected:
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp);
-    afx_msg void OnNcPaint();
-    afx_msg LRESULT OnNcHitTest(CPoint point);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
     afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
 
