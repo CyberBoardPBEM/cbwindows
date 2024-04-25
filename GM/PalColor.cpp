@@ -1,6 +1,6 @@
 // ColorPal.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -131,7 +131,6 @@ inline COLORREF& CellColor(COLORREF* pCref, int nCol, int nRow)
 
 BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
     ON_WM_PAINT()
-    ON_WM_DESTROY()
     ON_WM_CREATE()
     ON_WM_LBUTTONDOWN()
     ON_WM_RBUTTONDOWN()
@@ -143,9 +142,6 @@ BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
     ON_WM_LBUTTONUP()
     ON_WM_RBUTTONUP()
     ON_WM_ERASEBKGND()
-    ON_WM_NCCALCSIZE()
-    ON_WM_NCPAINT()
-    ON_WM_NCHITTEST()
     ON_WM_LBUTTONDBLCLK()
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
 END_MESSAGE_MAP()
@@ -157,9 +153,6 @@ IMPLEMENT_DYNCREATE(CColorPalette, CDockablePane);
 
 CColorPalette::CColorPalette()
 {
-    m_xCurPos = INT_MIN;
-    m_yCurPos = INT_MIN;
-
     m_crFore = RGB(0, 0, 0);
     m_crBack = RGB(255, 255, 255);
     m_crTrans = nullColorRef;
@@ -174,12 +167,7 @@ CColorPalette::CColorPalette()
     m_bTrackSV = FALSE;
     m_bIgnoreRButtonUp = FALSE;
 
-    m_pCustColors = (COLORREF*)CustomColorsAllocate();
-}
-
-CColorPalette::~CColorPalette()
-{
-    CustomColorsFree(m_pCustColors);
+    m_pCustColors = CustomColorsAllocate();
 }
 
 int CColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -218,37 +206,6 @@ BOOL CColorPalette::OnEraseBkgnd(CDC* pDC)
 
     pDC->FillRect(rectClient, &afxGlobalData.brBtnFace);
     return TRUE;
-}
-
-void CColorPalette::OnNcPaint()
-{
-    CDockablePane::OnNcPaint();
-}
-
-void CColorPalette::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
-{
-    CDockablePane::OnNcCalcSize(bCalcValidRects, lpncsp);
-}
-
-LRESULT CColorPalette::OnNcHitTest(CPoint point)
-{
-    return CDockablePane::OnNcHitTest(point);
-}
-
-void CColorPalette::OnDestroy()
-{
-    CDockablePane::OnDestroy();
-//  // Save the current position of the palette
-//  CRect rct;
-//  GetWindowRect(&rct);
-//  m_xCurPos = rct.left;
-//  m_yCurPos = rct.top;
-}
-
-void CColorPalette::PostNcDestroy()
-{
-    CDockablePane::PostNcDestroy();
-    /* DO NOTHING - FRAME CLASS WOULD DELETE ITSELF! */
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -425,7 +382,7 @@ void CColorCmdUI::SetLineWidth(UINT uiLineWidth)
     ((CColorPalette*)m_pOther)->SetLineWidth(uiLineWidth);
 }
 
-void CColorCmdUI::SetCustomColors(LPVOID pCustColors)
+void CColorCmdUI::SetCustomColors(const std::vector<COLORREF>& pCustColors)
 {
     m_bEnableChanged = TRUE;
     ((CColorPalette*)m_pOther)->SetCustomColors(pCustColors);
@@ -490,7 +447,7 @@ void CColorPalette::DoPaint(CDC* pDC)
     PaintCellGroup(pDC, acrStdColors, m_rctStdColors.left, m_rctStdColors.top);
 
     // Paint the custom color selections...
-    PaintCellGroup(pDC, m_pCustColors, m_rctCustColors.left, m_rctCustColors.top);
+    PaintCellGroup(pDC, m_pCustColors.data(), m_rctCustColors.left, m_rctCustColors.top);
 
     // Paint the color mix preview...
     CBrush brColor;
@@ -714,11 +671,11 @@ void CColorPalette::SetIDColor(UINT nID, COLORREF cr)
     UpdateCurrentColors(FALSE);
 }
 
-void CColorPalette::SetCustomColors(LPVOID pCustColors)
+void CColorPalette::SetCustomColors(const std::vector<COLORREF>& pCustColors)
 {
-    if (CustomColorsCompareEqual(m_pCustColors, pCustColors))
+    if (m_pCustColors == pCustColors)
         return;
-    CustomColorsSet(m_pCustColors, pCustColors);
+    m_pCustColors = pCustColors;
     InvalidateRect(m_rctCustColors, FALSE);
 }
 
@@ -747,61 +704,39 @@ void CColorPalette::UpdateCurrentColorMix(BOOL bUpdate /* = TRUE*/)
 /////////////////////////////////////////////////////////////////////////////
 
 /* static */
-LPVOID CColorPalette::CustomColorsAllocate()
+std::vector<COLORREF> CColorPalette::CustomColorsAllocate()
 {
-    COLORREF* pCustColors = new COLORREF[cellCustArraySize];
-    return pCustColors;
+    return std::vector<COLORREF>(cellCustArraySize);
 }
 
 /* static */
-void CColorPalette::CustomColorsFree(LPVOID pCustColors)
+void CColorPalette::CustomColorsSerialize(CArchive& ar, std::vector<COLORREF>& pCustColors)
 {
-    COLORREF* crTbl = (COLORREF*)pCustColors;
-    if (crTbl != NULL)
-        delete [] crTbl;
-}
-
-/* static */
-void CColorPalette::CustomColorsSet(LPVOID pCustColorsTo, LPVOID pCustColorsFrom)
-{
-    memcpy(pCustColorsTo, pCustColorsFrom, cellCustArraySize * sizeof(COLORREF));
-}
-
-/* static */
-BOOL CColorPalette::CustomColorsCompareEqual(LPVOID pCustColors1, LPVOID pCustColors2)
-{
-    return memcmp(pCustColors1, pCustColors2, cellCustArraySize * sizeof(COLORREF)) == 0;
-}
-
-/* static */
-void CColorPalette::CustomColorsSerialize(CArchive& ar, LPVOID pCustColors)
-{
-    ASSERT(pCustColors != NULL);
-    COLORREF* crTbl = (COLORREF*)pCustColors;
+    COLORREF* crTbl = pCustColors.data();
     if (ar.IsStoring())
     {
-        ar << (WORD)cellCustArraySize;
+        ar << value_preserving_cast<uint16_t>(cellCustArraySize);
         for (int i = 0; i < cellCustArraySize; i++)
-            ar << (DWORD)crTbl[i];
+            ar << static_cast<uint32_t>(crTbl[i]);
     }
     else
     {
-        WORD wCount;
-        DWORD dwColor;
+        uint16_t wCount;
+        uint32_t dwColor;
 
         ar >> wCount;
-        for (int i = 0; i < (int)wCount; i++)
+        for (int i = 0; i < wCount; i++)
         {
             ar >> dwColor;
-            crTbl[i] = (COLORREF)dwColor;
+            crTbl[i] = static_cast<COLORREF>(dwColor);
         }
     }
 }
 
 /* static */
-void CColorPalette::CustomColorsClear(LPVOID pCustColors)
+void CColorPalette::CustomColorsClear(std::vector<COLORREF>& pCustColors)
 {
-    COLORREF* crTbl = (COLORREF*)pCustColors;
+    COLORREF* crTbl = pCustColors.data();
     for (int i = 0; i < cellCustArraySize; i++)
         crTbl[i] = nullColorRef;
 }
@@ -848,7 +783,7 @@ BOOL CColorPalette::HandleButtonDown(UINT nFlags, CPoint point)
     {
         NotifyColorChange(nFlags, *pCRef);
     }
-    else if ((pCRef = MapMouseToColorCell(m_pCustColors, point, m_rctCustColors)) != NULL)
+    else if ((pCRef = MapMouseToColorCell(m_pCustColors.data(), point, m_rctCustColors)) != NULL)
     {
         if ((nFlags & mouseMask) == mouseSetCustomFromFore)
         {
@@ -908,13 +843,13 @@ void CColorPalette::NotifyColorChange(UINT nFlags, COLORREF cref)
     }
 }
 
-void CColorPalette::NotifyCustomColorChange(COLORREF* pcrCustomColors)
+void CColorPalette::NotifyCustomColorChange(const std::vector<COLORREF>& pcrCustomColors)
 {
     CView* pView = GetMainFrame()->GetActiveView();
 
     if (pView == NULL)
         return;
-    pView->SendMessage(WM_SETCUSTOMCOLOR, (WPARAM)pcrCustomColors);
+    pView->SendMessage(WM_SETCUSTOMCOLOR, value_preserving_cast<WPARAM>(reinterpret_cast<uintptr_t>(&pcrCustomColors)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -927,7 +862,7 @@ void CColorPalette::OnLButtonDblClk(UINT nFlags, CPoint point)
         // Double clicking in a color cell allows the user to
         // explicitly set the color using a color dialog.
         COLORREF* pCRef = NULL;
-        if ((pCRef = MapMouseToColorCell(m_pCustColors, point, m_rctCustColors)) == NULL)
+        if ((pCRef = MapMouseToColorCell(m_pCustColors.data(), point, m_rctCustColors)) == NULL)
             return;         // Just the mouse hit
         COLORREF cr = *pCRef == nullColorRef ? 0 : *pCRef;
 

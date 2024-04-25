@@ -1068,7 +1068,7 @@ LRESULT CBitEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 
 LRESULT CBitEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
-    LPVOID pCustomColors = (LPVOID)wParam;
+    const std::vector<COLORREF>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<COLORREF>*>(wParam));
     GetDocument().SetCustomColors(pCustomColors);
     return (LRESULT)0;
 }

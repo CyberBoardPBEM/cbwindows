@@ -142,7 +142,6 @@ CGamDoc::CGamDoc()
 
 CGamDoc::~CGamDoc()
 {
-    CColorPalette::CustomColorsFree(m_pCustomColors);
     if (m_pTMgr) delete &*m_pTMgr;
     if (m_pBMgr) delete m_pBMgr;
     if (m_pPMgr) delete m_pPMgr;
@@ -275,16 +274,14 @@ void CGamDoc::DeleteContents()
 
 ///////////////////////////////////////////////////////////////////////
 
-LPVOID CGamDoc::GetCustomColors()
+const std::vector<COLORREF>& CGamDoc::GetCustomColors() const
 {
-    ASSERT(m_pCustomColors != NULL);
     return m_pCustomColors;
 }
 
-void CGamDoc::SetCustomColors(LPVOID pCustColors)
+void CGamDoc::SetCustomColors(const std::vector<COLORREF>& pCustColors)
 {
-    ASSERT(m_pCustomColors != NULL);
-    CColorPalette::CustomColorsSet(m_pCustomColors, pCustColors);
+    m_pCustomColors = pCustColors;
     SetModifiedFlag();
 }
 
