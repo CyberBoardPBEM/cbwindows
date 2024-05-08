@@ -95,7 +95,7 @@ BOOL CBitEditFrame::OnCreateClient(LPCREATESTRUCT,
 
     // Add the first splitter pane - the tile editor selector
     if (!m_wndSplitter.CreateView(0, 0,
-        RUNTIME_CLASS(CTileSelView), CSize(90, 380), pContext))
+        RUNTIME_CLASS(CTileSelViewContainer), CSize(90, 380), pContext))
     {
         TRACE("Failed to create tile editor selector pane.\n");
         return FALSE;
@@ -186,6 +186,6 @@ void CBitEditFrame::OnUpdateRotateTile(CCmdUI* pCmdUI)
 CTileSelView& CBitEditFrame::GetTileSelView()
 {
     CWnd& wnd = CheckedDeref(m_wndSplitter.GetPane(0, 0));
-    CTileSelView& tsvc = dynamic_cast<CTileSelView&>(wnd);
-    return tsvc;
+    CTileSelViewContainer& tsvc = dynamic_cast<CTileSelViewContainer&>(wnd);
+    return tsvc.GetChild();
 }

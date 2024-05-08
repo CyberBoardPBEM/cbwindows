@@ -37,9 +37,8 @@ class CBitEditView;
 class CTileSelView : public CScrollView
 {
     friend class CBitEditFrame;
-    DECLARE_DYNCREATE(CTileSelView)
-protected:
-    CTileSelView();         // protected constructor used by dynamic creation
+public:
+    CTileSelView();
 
 // Attributes
 public:
@@ -136,6 +135,33 @@ protected:
     void OnActivateView(BOOL bActivate,
                         CView* pActivateView,
                         CView* pDeactiveView) override;
+};
+
+class CTileSelViewContainer : public CView
+{
+public:
+    const CTileSelView& GetChild() const { return *child; }
+    CTileSelView& GetChild()
+    {
+        return const_cast<CTileSelView&>(std::as_const(*this).GetChild());
+    }
+    void OnDraw(CDC* pDC) override;
+
+protected:
+    void OnActivateView(BOOL bActivate,
+                        CView* pActivateView,
+                        CView* pDeactiveView) override;
+
+private:
+    CTileSelViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CTileSelViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CTileSelView> child;
 };
 
 /////////////////////////////////////////////////////////////////////////////
