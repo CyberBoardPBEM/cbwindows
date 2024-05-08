@@ -376,10 +376,10 @@ CView* CGamDoc::FindTileEditorView(TileID tid)
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
     {
-        CTileSelView* pView = (CTileSelView*)GetNextView(pos);
-        if (pView->IsKindOf(RUNTIME_CLASS(CTileSelView)))
+        CTileSelViewContainer* pView = (CTileSelViewContainer*)GetNextView(pos);
+        if (pView->IsKindOf(RUNTIME_CLASS(CTileSelViewContainer)))
         {
-            if (pView->GetTileID() == tid)
+            if (pView->GetChild().GetTileID() == tid)
                 return pView;
         }
     }

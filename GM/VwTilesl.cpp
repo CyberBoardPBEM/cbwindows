@@ -42,7 +42,7 @@ const int nBorderWidth = 5;
 /////////////////////////////////////////////////////////////////////////////
 // CTileSelView
 
-IMPLEMENT_DYNCREATE(CTileSelView, CScrollView)
+IMPLEMENT_DYNCREATE(CTileSelViewContainer, CView)
 
 CTileSelView::CTileSelView() :
     m_bmFull(MakeOwner<CBitmap>()),
@@ -98,6 +98,11 @@ BEGIN_MESSAGE_MAP(CTileSelView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_ITOOL_DROPPER, OnUpdateToolPalette)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
     //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CTileSelViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -633,4 +638,54 @@ void CTileSelView::OnActivateView(BOOL bActivate,
         wxASSERT(pActivateView == this);
         GetParentFrame()->SetActiveView(m_pEditView);
     }
+}
+
+void CTileSelViewContainer::OnDraw(CDC* pDC)
+{
+    // do nothing because child covers entire client rect
+}
+
+void CTileSelViewContainer::OnActivateView(BOOL bActivate,
+    CView* pActivateView,
+    CView* /*pDeactiveView*/)
+{
+    WXUNUSED_UNLESS_DEBUG(pActivateView);
+    if (bActivate)
+    {
+        wxASSERT(pActivateView == this);
+        GetParentFrame()->SetActiveView(&*child);
+    }
+}
+
+CTileSelViewContainer::CTileSelViewContainer() :
+    child(new CTileSelView)
+{
+}
+
+int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CTileSelViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
 }

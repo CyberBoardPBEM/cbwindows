@@ -93,10 +93,7 @@ static UINT toolbars[] =
 // These are used to qualify palette visiblility...
 
 static const CRuntimeClass *tblColor[] = { RUNTIME_CLASS(CBrdEditView),
-    RUNTIME_CLASS(CBitEditView), RUNTIME_CLASS(CTileSelView), NULL };
-
-static const CRuntimeClass *tblBit[] = { RUNTIME_CLASS(CBitEditView),
-    RUNTIME_CLASS(CTileSelView), NULL };
+    RUNTIME_CLASS(CBitEditView), RUNTIME_CLASS(CTileSelViewContainer), NULL };
 
 static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
 
@@ -384,7 +381,8 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOO
         {
             CView *pView = pMDIChild->GetActiveView();
             ASSERT(pView != NULL);
-            wxASSERT(typeid(*pView) != typeid(CTileSelView));
+            wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
+                        typeid(*pView) != typeid(CTileSelViewContainer));
 
             while (*pRtc != NULL)
             {
@@ -427,7 +425,8 @@ BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
         {
             CView *pView = pMDIChild->GetActiveView();
             ASSERT(pView != NULL);
-            wxASSERT(typeid(*pView) != typeid(CTileSelView));
+            wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
+                        typeid(*pView) != typeid(CTileSelViewContainer));
 
             while (*pRtc != NULL)
             {
