@@ -297,7 +297,7 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
     g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
@@ -319,7 +319,7 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
     g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 void CBitEditView::DrawPastedImage()
@@ -329,7 +329,7 @@ void CBitEditView::DrawPastedImage()
     MergeBitmap(*m_bmView, *m_bmPaste, m_rctPaste.TopLeft());
 
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
@@ -363,7 +363,7 @@ void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
     g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 // If nSize is Zero. The ellipse is filled. Otherwise it is a frame.
@@ -391,7 +391,7 @@ void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
     g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 void CBitEditView::DrawImageFill(CPoint pt)
@@ -410,7 +410,7 @@ void CBitEditView::DrawImageFill(CPoint pt)
 
     SetMasterImageFromViewImage();
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 void CBitEditView::DrawImageChangeColor(CPoint pt)
@@ -452,7 +452,7 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     g_gt.SelectSafeObjectsForDC1();
     SetMasterImageFromViewImage();
     InvalidateViewImage(true);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 // points are in bit image coordinates
@@ -515,7 +515,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
         g_gt.mDC1.PatBlt(wx - nSize / 2, wy - nSize / 2, nSize, nSize, PATCOPY);
         g_gt.mDC1.SelectObject(pPrvBrush);
 
-        m_pSelView->UpdateViewPixel(bmapPt, nSize, &m_pTMgr->GetForeBrush());
+        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrush());
     }
     g_gt.SelectSafeObjectsForDC1();
 }
@@ -762,7 +762,7 @@ void CBitEditView::UpdateTextView()
         g_gt.mDC1.SetTextAlign(nAlign);
         g_gt.SelectSafeObjectsForDC1();
         InvalidateViewImage(true);
-        m_pSelView->UpdateViewImage(NULL, TRUE);
+        m_pSelView->UpdateViewImage();
     }
     FixupTextCaret();
 }
@@ -1143,7 +1143,7 @@ void CBitEditView::OnImageBoardMask()
 
     SetMasterImageFromViewImage();
     InvalidateViewImage(false);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 void CBitEditView::OnUpdateImageBoardMask(CCmdUI* pCmdUI)
@@ -1223,7 +1223,7 @@ void CBitEditView::OnEditUndo()
     RestoreUndoToView();
     SetMasterImageFromViewImage();
     InvalidateViewImage(false);
-    m_pSelView->UpdateViewImage(NULL, TRUE);
+    m_pSelView->UpdateViewImage();
 }
 
 void CBitEditView::OnUpdateEditUndo(CCmdUI* pCmdUI)

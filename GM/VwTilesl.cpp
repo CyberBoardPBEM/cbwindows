@@ -1,6 +1,6 @@
 // VwTilesl.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -230,7 +230,7 @@ void CTileSelView::OnDraw(CDC* pDC)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBrush)
+void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush& pBrush)
 {
     int nSize;
     int nSizeX;
@@ -240,7 +240,7 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
 
     CPoint pnt = GetActiveTileLoc();
     CSize size = m_pEditView->GetBitmapSize();
-    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(*pBrush)));
+    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(pBrush)));
 
     nSizeX = pt.x - nBrushSize / 2;
     nSizeY = pt.y - nBrushSize / 2;
@@ -257,16 +257,13 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBr
     ReleaseDC(pDC);
 }
 
-void CTileSelView::UpdateViewImage(CRect* pRct, BOOL bImmed /* = FALSE */)
+void CTileSelView::UpdateViewImage()
 {
     CSize size = m_pEditView->GetBitmapSize();
     CRect rct = GetActiveTileRect();
-    if (pRct)
-        rct = *pRct;
     GetDocument().SetModifiedFlag();
     InvalidateRect(&rct, FALSE);
-    if (bImmed)
-        UpdateWindow();
+    UpdateWindow();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -496,6 +493,10 @@ void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
     {
         CScrollView::OnLButtonDown(nFlags, point);
         GetParentFrame()->SetActiveView(m_pEditView);
+        return;
+    }
+    if (GetCurrentScale() == eScale)
+    {
         return;
     }
     GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
