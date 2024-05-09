@@ -1,6 +1,6 @@
 // VwTilesl.h : header file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -52,8 +52,8 @@ public:
 
 // Operations
 public:
-    void UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush *pBrush);
-    void UpdateViewImage(CRect* pRct, BOOL bImmed = FALSE);
+    void UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush& pBrush);
+    void UpdateViewImage();
     // ------------- //
     void DoTileResizeDialog();
     void DoTileRotation(int nAngle);
@@ -101,12 +101,12 @@ protected:
     void SelectCurrentBitmap(TileScale eScale);
     void CalcViewLayout();
     // ------- //
-    virtual ~CTileSelView() = default;
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    ~CTileSelView() override = default;
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
     // Generated message map functions
 protected:

@@ -225,7 +225,7 @@ void CBitSelectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
             pView->InvalidateFocusBorder();
         }
         pView->SetSelectRect(rct);
-        pView->GetTileSelectView().UpdateViewImage(NULL, TRUE);
+        pView->GetTileSelectView().UpdateViewImage();
         pView->InvalidateViewImage(false);
     }
     else
