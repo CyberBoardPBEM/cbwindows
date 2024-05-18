@@ -119,6 +119,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
         return -1;
 
+    /* KLUDGE:  apparently wxNativeContainerWindow doesn't let
+        MFC receive WM_SIZE, but no WM_SIZE means no layout
+        update */
+    wxWindow* pThis = *this;
+    pThis->Bind(wxEVT_SIZE,
+                [this](wxSizeEvent& event)
+                {
+                    /* wx args don't match WM_SIZE, but it looks
+                        like specific args aren't critical */
+                    CMDIFrameWndExCb::OnSize(0, 0, 0);
+                    event.Skip();
+                }
+    );
+
     CMDITabInfo mdiTabParams;
     mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_VS2005; // other styles available...
     mdiTabParams.m_bActiveTabCloseButton = TRUE;      // set to FALSE to place close button at right of tab area
