@@ -33,25 +33,29 @@
 // CTileSelView view
 
 class CBitEditView;
+class CTileSelViewContainer;
 
-class CTileSelView : public CScrollView
+class CTileSelView : public wxScrolledCanvas
 {
     friend class CBitEditFrame;
-public:
-    CTileSelView();
+    friend class CTileSelViewContainer;
+protected:
+    // single-part construction
+    CTileSelView(CTileSelViewContainer& parent);
 
 // Attributes
 public:
-    CGamDoc& GetDocument() { return CheckedDeref(dynamic_cast<CGamDoc*>(m_pDocument)); }
+    CGamDoc& GetDocument() { return *document; }
 
     void SetBitEditor(CBitEditView& pEditView);
+    CBitEditView& GetBitEditor() { return CheckedDeref(m_pEditView); }
     TileScale GetCurrentScale() const { return m_eCurTile; }
     void SetNoUpdate(BOOL bNoUpdate = TRUE) { m_bNoUpdate = bNoUpdate; }
     TileID GetTileID() const { return m_tid; }
 
 // Operations
 public:
-    void UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush& pBrush);
+    void UpdateViewPixel(wxPoint pt, UINT nBrushSize, const wxBrush& pBrush);
     void UpdateViewImage();
     // ------------- //
     void DoTileResizeDialog();
@@ -68,24 +72,24 @@ protected:
 
     TileID      m_tid;
 
-    OwnerOrNullPtr<CBitmap> m_pBmFullUndo;      // Save from previous resize
-    OwnerOrNullPtr<CBitmap> m_pBmHalfUndo;      // Save from previous resize
+    wxBitmap m_pBmFullUndo;      // Save from previous resize
+    wxBitmap m_pBmHalfUndo;      // Save from previous resize
 
-    OwnerPtr<CBitmap> m_bmFull;
-    OwnerPtr<CBitmap> m_bmHalf;
-    OwnerPtr<CBitmap> m_bmSmall;
+    wxBitmap m_bmFull;
+    wxBitmap m_bmHalf;
+    wxBitmap m_bmSmall;
 
-    COLORREF    m_crSmall;
+    wxColour    m_crSmall;
 
-    CSize       m_sizeFull;
-    CSize       m_sizeHalf;
-    CSize       m_sizeSmall;
+    wxSize      m_sizeFull;
+    wxSize      m_sizeHalf;
+    wxSize      m_sizeSmall;
 
-    CRect       m_rctFull;
-    CRect       m_rctHalf;
-    CRect       m_rctSmall;
+    wxRect      m_rctFull;
+    wxRect      m_rctHalf;
+    wxRect      m_rctSmall;
 
-    CSize       m_sizeSelArea;          // Size of selection area.
+    wxSize      m_sizeSelArea;          // Size of selection area.
 
     TileScale   m_eCurTile;
 
@@ -93,23 +97,53 @@ protected:
     CTileManager* m_pTileMgr;
 
     // ------- //
-    CRect GetActiveTileRect() const;
-    CPoint GetActiveTileLoc() const;
-    OwnerPtr<CBitmap>& GetActiveBitmap();
-    void DrawTile(CDC& pDC, CBitmap& pBMap, CRect rct);
+    wxRect GetActiveTileRect() const;
+    wxPoint GetActiveTileLoc() const;
+    wxBitmap& GetActiveBitmap();
+    static void DrawTile(wxDC& pDC, const wxBitmap& pBMap, wxRect rct);
     void SelectCurrentBitmap(TileScale eScale);
     void CalcViewLayout();
     // ------- //
-    ~CTileSelView() override = default;
-    void OnDraw(CDC* pDC) override;      // overridden to draw this view
+    ~CTileSelView() override;
+    void OnDraw(wxDC& dc) override;
 
-    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+public:
+    void OnInitialUpdate();
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+protected:
+    void OnLButtonDown(wxMouseEvent& event);
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    RefPtr<CTileSelViewContainer> parent;
+    RefPtr<CGamDoc> document;
+};
+
+class CTileSelViewContainer : public CView,
+                                public CB::wxNativeContainerWindowMixin
+{
+public:
+    const CTileSelView& GetChild() const { return CheckedDeref(child); }
+    CTileSelView& GetChild()
+    {
+        return const_cast<CTileSelView&>(std::as_const(*this).GetChild());
+    }
+    void OnDraw(CDC* pDC) override;
     void OnInitialUpdate() override;
+
+protected:
+    void OnActivateView(BOOL bActivate,
+                        CView* pActivateView,
+                        CView* pDeactiveView) override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-    // Generated message map functions
-protected:
-    //{{AFX_MSG(CTileSelView)
+private:
+    CTileSelViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CTileSelViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
@@ -118,8 +152,6 @@ protected:
     afx_msg void OnUpdateColorTransparent(CCmdUI* pCmdUI);
     afx_msg void OnUpdateColorCustom(CCmdUI* pCmdUI);
     afx_msg void OnUpdateLineWidth(CCmdUI* pCmdUI);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnDestroy();
     afx_msg void OnUpdateToolPalette(CCmdUI* pCmdUI);
     afx_msg BOOL OnToolPalette(UINT id);
     afx_msg void OnEditPaste();
@@ -129,39 +161,12 @@ protected:
     afx_msg void OnEditCopy();
     afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
     afx_msg void OnViewToggleScale();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 
-    void OnActivateView(BOOL bActivate,
-                        CView* pActivateView,
-                        CView* pDeactiveView) override;
-};
+    // owned by wx
+    CB::propagate_const<CTileSelView*> child = nullptr;
 
-class CTileSelViewContainer : public CView
-{
-public:
-    const CTileSelView& GetChild() const { return *child; }
-    CTileSelView& GetChild()
-    {
-        return const_cast<CTileSelView&>(std::as_const(*this).GetChild());
-    }
-    void OnDraw(CDC* pDC) override;
-
-protected:
-    void OnActivateView(BOOL bActivate,
-                        CView* pActivateView,
-                        CView* pDeactiveView) override;
-
-private:
-    CTileSelViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CTileSelViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    DECLARE_MESSAGE_MAP()
-
-    // owned by MFC
-    RefPtr<CTileSelView> child;
+    friend CTileSelView;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -512,7 +512,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
         g_gt.mDC1.PatBlt(wx - nSize / 2, wy - nSize / 2, nSize, nSize, PATCOPY);
         g_gt.mDC1.SelectObject(pPrvBrush);
 
-        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrushMFC());
+        m_pSelView->UpdateViewPixel(CB::Convert(bmapPt), nSize, m_pTMgr->GetForeBrushWx());
     }
     g_gt.SelectSafeObjectsForDC1();
 }
