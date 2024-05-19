@@ -1,6 +1,6 @@
 // FrmBited.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -114,7 +114,7 @@ BOOL CBitEditFrame::OnCreateClient(LPCREATESTRUCT,
     SetActiveView(dynamic_cast<CView*>(m_wndSplitter.GetPane(0, 1)));
 
     // Link the biteditor view to the tile selector and vice versa
-    CTileSelView& pSelView = CheckedDeref(dynamic_cast<CTileSelView*>(m_wndSplitter.GetPane(0, 0)));
+    CTileSelView& pSelView = GetTileSelView();
     CBitEditView& pBitView = CheckedDeref(dynamic_cast<CBitEditView*>(m_wndSplitter.GetPane(0, 1)));
     pSelView.SetBitEditor(pBitView);
     pBitView.SetTileSelectView(pSelView);
@@ -135,55 +135,37 @@ void CBitEditFrame::OnClose()
 
 void CBitEditFrame::OnImageDiscard()
 {
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
-    pSelView->SetNoUpdate();
+    GetTileSelView().SetNoUpdate();
     PostMessage(WM_CLOSE, 0, 0L);
 }
 
 void CBitEditFrame::OnImageUpdate()
 {
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
-    pSelView->UpdateDocumentTiles();
+    GetTileSelView().UpdateDocumentTiles();
 }
 
 void CBitEditFrame::OnToolsResizeTile()
 {
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
-    pSelView->DoTileResizeDialog();
+    GetTileSelView().DoTileResizeDialog();
 }
 
 void CBitEditFrame::OnEditUndo()
 {
     // The Tile Select view gets first whack at this...
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
-    pSelView->OnEditUndo();
+    GetTileSelView().OnEditUndo();
 }
 
 void CBitEditFrame::OnUpdateEditUndo(CCmdUI* pCmdUI)
 {
     // The Tile Select view gets first whack at this...
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
-    pSelView->OnUpdateEditUndo(pCmdUI);
+    GetTileSelView().OnUpdateEditUndo(pCmdUI);
 }
 
 BOOL CBitEditFrame::OnRotateTile(UINT id)
 {
-    CTileSelView *pSelView = (CTileSelView*)m_wndSplitter.GetPane(0, 0);
-    ASSERT(pSelView != NULL);
-    ASSERT(pSelView->IsKindOf(RUNTIME_CLASS(CTileSelView)));
     int nAngle = (id == ID_TOOLS_ROT90) ? 90 :
         ((id == ID_TOOLS_ROT180) ? 180 : 270);
-    pSelView->DoTileRotation(nAngle);
+    GetTileSelView().DoTileRotation(nAngle);
     return TRUE;
 }
 
@@ -197,4 +179,11 @@ void CBitEditFrame::OnUpdateRotateTile(CCmdUI* pCmdUI)
     }
 
     pCmdUI->Enable(TRUE);
+}
+
+CTileSelView& CBitEditFrame::GetTileSelView()
+{
+    CWnd& wnd = CheckedDeref(m_wndSplitter.GetPane(0, 0));
+    CTileSelView& tsvc = dynamic_cast<CTileSelView&>(wnd);
+    return tsvc;
 }

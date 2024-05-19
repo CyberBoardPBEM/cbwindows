@@ -22,6 +22,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+class CTileSelView;
+
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame frame
 
@@ -57,6 +59,9 @@ protected:
     afx_msg void OnUpdateRotateTile(CCmdUI* pCmdUI);
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    CTileSelView& GetTileSelView();
 };
 
 /////////////////////////////////////////////////////////////////////////////
