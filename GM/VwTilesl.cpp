@@ -367,6 +367,7 @@ void CTileSelView::DoTileRotation(int nAngle)
 
 BOOL CTileSelView::IsUndoAvailable() const
 {
+    wxASSERT(!"unreachable code?");
     return m_pBmFullUndo != NULL;
 }
 
@@ -378,6 +379,7 @@ void CTileSelView::PurgeUndo()
 
 void CTileSelView::RestoreFromUndo()
 {
+    wxASSERT(!"unreachable code?");
     ASSERT(m_pBmFullUndo != NULL);
     ASSERT(m_pBmHalfUndo != NULL);
     if (m_pBmFullUndo == NULL)
@@ -523,76 +525,91 @@ void CTileSelView::OnDestroy()
 
 LRESULT CTileSelView::OnSetColor(WPARAM wParam, LPARAM lParam)
 {
+    wxASSERT(!"unreachable code?");
     return m_pEditView->OnSetColor(wParam, lParam);
 }
 
 LRESULT CTileSelView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
+    wxASSERT(!"unreachable code?");
     return m_pEditView->OnSetCustomColors(wParam, lParam);
 }
 
 LRESULT CTileSelView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 {
+    wxASSERT(!"unreachable code?");
     return m_pEditView->OnSetLineWidth(wParam, lParam);
 }
 
 void CTileSelView::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateColorForeground(pCmdUI);
 }
 
 void CTileSelView::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateColorBackground(pCmdUI);
 }
 
 void CTileSelView::OnUpdateColorTransparent(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateColorTransparent(pCmdUI);
 }
 
 void CTileSelView::OnUpdateColorCustom(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateColorCustom(pCmdUI);
 }
 
 void CTileSelView::OnUpdateLineWidth(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateLineWidth(pCmdUI);
 }
 
 void CTileSelView::OnUpdateToolPalette(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateToolPalette(pCmdUI);
 }
 
 BOOL CTileSelView::OnToolPalette(UINT id)
 {
+    wxASSERT(!"unreachable code?");
     return m_pEditView->OnToolPalette(id);
 }
 
 void CTileSelView::OnEditPaste()
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnEditPaste();
 }
 
 void CTileSelView::OnUpdateEditPaste(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateEditPaste(pCmdUI);
 }
 
 void CTileSelView::OnEditCopy()
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnEditCopy();
 }
 
 void CTileSelView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnUpdateEditCopy(pCmdUI);
 }
 
 void CTileSelView::OnEditUndo()
 {
+    wxASSERT(!"unreachable code?");
     if (IsUndoAvailable())      // Us first.
         RestoreFromUndo();
     else
@@ -601,6 +618,7 @@ void CTileSelView::OnEditUndo()
 
 void CTileSelView::OnUpdateEditUndo(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     if (IsUndoAvailable())      // Us first.
         pCmdUI->Enable(TRUE);
     else
@@ -609,6 +627,7 @@ void CTileSelView::OnUpdateEditUndo(CCmdUI* pCmdUI)
 
 void CTileSelView::OnViewToggleScale()
 {
+    wxASSERT(!"unreachable code?");
     m_pEditView->OnViewToggleScale();
 }
 
