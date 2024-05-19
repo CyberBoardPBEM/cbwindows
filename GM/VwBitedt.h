@@ -41,7 +41,7 @@ class CTileSelView;
 
 class CBitEditView : public CScrollView
 {
-    friend class CTileSelView;
+    friend class CTileSelViewContainer;
     DECLARE_DYNCREATE(CBitEditView)
 protected:
     CBitEditView();         // Protected constructor used by dynamic creation

@@ -44,21 +44,24 @@ const int nBorderWidth = 5;
 
 IMPLEMENT_DYNCREATE(CTileSelViewContainer, CView)
 
-CTileSelView::CTileSelView() :
-    m_bmFull(MakeOwner<CBitmap>()),
-    m_bmHalf(MakeOwner<CBitmap>()),
-    m_bmSmall(MakeOwner<CBitmap>())
+CTileSelView::CTileSelView(CTileSelViewContainer& p) :
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
     m_pTileMgr = NULL;
     m_pEditView = NULL;
     m_tid = nullTid;
     m_bNoUpdate = FALSE;
-    m_pBmFullUndo = NULL;
-    m_pBmHalfUndo = NULL;
+    wxScrolledCanvas::Create(*parent, 0);
 }
 
-BEGIN_MESSAGE_MAP(CTileSelView, CScrollView)
-    //{{AFX_MSG_MAP(CTileSelView)
+wxBEGIN_EVENT_TABLE(CTileSelView, wxScrolledCanvas)
+    EVT_LEFT_DOWN(OnLButtonDown)
+wxEND_EVENT_TABLE()
+
+BEGIN_MESSAGE_MAP(CTileSelViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
     ON_MESSAGE(WM_SETCOLOR, OnSetColor)
     ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
     ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
@@ -67,8 +70,6 @@ BEGIN_MESSAGE_MAP(CTileSelView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_COLOR_TRANSPARENT, OnUpdateColorTransparent)
     ON_UPDATE_COMMAND_UI(ID_COLOR_CUSTOM, OnUpdateColorCustom)
     ON_UPDATE_COMMAND_UI(ID_LINE_WIDTH, OnUpdateLineWidth)
-    ON_WM_LBUTTONDOWN()
-    ON_WM_DESTROY()
     ON_UPDATE_COMMAND_UI(ID_ITOOL_PENCIL, OnUpdateToolPalette)
     ON_COMMAND_EX(ID_ITOOL_SELECT, OnToolPalette)
     ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
@@ -97,49 +98,31 @@ BEGIN_MESSAGE_MAP(CTileSelView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_ITOOL_FILLOVAL, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_ITOOL_DROPPER, OnUpdateToolPalette)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BEGIN_MESSAGE_MAP(CTileSelViewContainer, CView)
-    ON_WM_CREATE()
-    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-
-BOOL CTileSelView::PreCreateWindow(CREATESTRUCT& cs)
-{
-    if (!CScrollView::PreCreateWindow(cs))
-        return FALSE;
-
-    cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS,
-        AfxGetApp()->LoadStandardCursor(IDC_ARROW),
-        (HBRUSH)(COLOR_BTNFACE + 1));
-    return TRUE;
-}
 
 void CTileSelView::OnInitialUpdate()
 {
     m_pTileMgr = GetDocument().GetTileManager();
     ASSERT(m_pTileMgr != NULL);
-    CScrollView::OnInitialUpdate();
     m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
     ASSERT(m_tid != nullTid);
 
     // Fetch full scale tile
     CTile tile = m_pTileMgr->GetTile(m_tid, fullScale);
-    m_bmFull = tile.CreateBitmapOfTile();
-    m_sizeFull = tile.GetSize();
+    m_bmFull = CB::Convert(*tile.CreateBitmapOfTile());
+    m_sizeFull = CB::Convert(tile.GetSize());
 
     // Fetch half scale tile
     tile = m_pTileMgr->GetTile(m_tid, halfScale);
-    m_bmHalf = tile.CreateBitmapOfTile();
-    m_sizeHalf = tile.GetSize();
+    m_bmHalf = CB::Convert(*tile.CreateBitmapOfTile());
+    m_sizeHalf = CB::Convert(tile.GetSize());
 
     // Fetch small scale color and create bogus tile for color editing
     tile = m_pTileMgr->GetTile(m_tid, smallScale);
     m_crSmall = tile.GetSmallColor();
-    m_sizeSmall = CSize(8, 8);
+    m_sizeSmall = wxSize(8, 8);
     m_bmSmall = CreateColorBitmap(m_sizeSmall, m_crSmall);
 
     // Setup rectangles
@@ -148,9 +131,11 @@ void CTileSelView::OnInitialUpdate()
     // Finally hand the full size tile to the bit editor.
     ASSERT(m_pEditView != NULL);
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
+    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
 
-    SetScrollSizes(MM_TEXT, m_sizeSelArea, CSize(64, 64), CSize(8, 8));
+    SetSizer(new wxBoxSizer(wxVERTICAL));
+    GetSizer()->Add(m_sizeSelArea.x, m_sizeSelArea.y);
+    SetScrollRate(8, 8);
 }
 
 void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -162,7 +147,7 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEDELETED>().m_tid == m_tid)
         {
             m_bNoUpdate = TRUE;
-            CFrameWnd* pFrm = GetParentFrame();
+            CFrameWnd* pFrm = parent->GetParentFrame();
             ASSERT(pFrm != NULL);
             pFrm->PostMessage(WM_CLOSE, 0, 0L);
         }
@@ -170,7 +155,7 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (wHint == HINT_TILESETDELETED && !m_pTileMgr->IsTileIDValid(m_tid))
     {
         m_bNoUpdate = TRUE;
-        CFrameWnd* pFrm = GetParentFrame();
+        CFrameWnd* pFrm = parent->GetParentFrame();
         ASSERT(pFrm != NULL);
         pFrm->PostMessage(WM_CLOSE, 0, 0L);
     }
@@ -179,7 +164,7 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         UpdateDocumentTiles();
     }
     else if (wHint == HINT_ALWAYSUPDATE)
-        CScrollView::OnUpdate(pSender, lHint, pHint);
+        parent->CView::OnUpdate(pSender, lHint, pHint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -192,76 +177,73 @@ void CTileSelView::SetBitEditor(CBitEditView& pEditView)
 /////////////////////////////////////////////////////////////////////////////
 // CTileSelView drawing
 
-void CTileSelView::DrawTile(CDC& pDC, CBitmap& pBMap, CRect rct)
+void CTileSelView::DrawTile(wxDC& pDC, const wxBitmap& pBMap, wxRect rct)
 {
-    CBrush brBlack;
-    brBlack.CreateStockObject(BLACK_BRUSH);
-    g_gt.mDC1.SelectObject(&pBMap);
-    pDC.BitBlt(rct.left, rct.top, rct.Width(), rct.Height(),
-        &g_gt.mDC1, 0, 0, SRCCOPY);
-    rct.InflateRect(1, 1);
-    pDC.FrameRect(&rct, &brBlack);
+    wxASSERT(pBMap.GetSize() == rct.GetSize());
+    pDC.DrawBitmap(pBMap, rct.GetTopLeft());
+    rct.Inflate(1, 1);
+    wxDCBrushChanger setBrush(pDC, *wxTRANSPARENT_BRUSH);
+    wxDCPenChanger setPen(pDC, wxPen(*wxBLACK));
+    pDC.DrawRectangle(rct);
 }
 
-void CTileSelView::OnDraw(CDC* pDC)
+void CTileSelView::OnDraw(wxDC& pDC)
 {
-    CRect rctActive;
+    wxRect rctActive;
 
     if (m_eCurTile != fullScale)
-        DrawTile(*pDC, *m_bmFull, m_rctFull);
+        DrawTile(pDC, m_bmFull, m_rctFull);
     else
         rctActive = m_rctFull;
 
     if (m_eCurTile != halfScale)
-        DrawTile(*pDC, *m_bmHalf, m_rctHalf);
+        DrawTile(pDC, m_bmHalf, m_rctHalf);
     else
         rctActive = m_rctHalf;
 
     if (m_eCurTile != smallScale)
-        DrawTile(*pDC, *m_bmSmall, m_rctSmall);
+        DrawTile(pDC, m_bmSmall, m_rctSmall);
     else
         rctActive = m_rctSmall;
 
-    CBitmap& pbm = *m_pEditView->GetCurrentViewBitmap();
-    ASSERT(pbm.m_hObject != NULL);
+    wxBitmap pbm = CB::Convert(*m_pEditView->GetCurrentViewBitmap());
+    wxASSERT(pbm.IsOk());
 
-    DrawTile(*pDC, pbm, rctActive);
+    DrawTile(pDC, pbm, rctActive);
 
-    rctActive.InflateRect(nBorderWidth + 1, nBorderWidth + 1);
-    Draw25PctPatBorder(*this, *pDC, rctActive, nBorderWidth);
-
-    g_gt.SelectSafeObjectsForDC1();
+    rctActive.Inflate(nBorderWidth + 1, nBorderWidth + 1);
+    Draw25PctPatBorder(*this, pDC, rctActive, nBorderWidth);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush& pBrush)
+void CTileSelView::UpdateViewPixel(wxPoint pt, UINT nBrushSize, const wxBrush& pBrush)
 {
     int nSize;
     int nSizeX;
     int nSizeY;
 
-    CPoint pnt = GetActiveTileLoc();
-    CSize size = m_pEditView->GetBitmapSize();
+    wxPoint pnt = GetActiveTileLoc();
+    wxSize size = CB::Convert(m_pEditView->GetBitmapSize());
 
     nSizeX = pt.x - nBrushSize / 2;
     nSizeY = pt.y - nBrushSize / 2;
 
-    CPoint ptScroll = GetDeviceScrollPosition();
+    wxPoint ptScroll = CalcUnscrolledPosition(wxPoint(0, 0));
 
-    InvalidateRect(CRect(CPoint(pnt.x + (nSizeX >= 0 ? nSizeX : 0) - ptScroll.x,
+    RefreshRect(wxRect(wxPoint(pnt.x + (nSizeX >= 0 ? nSizeX : 0) - ptScroll.x,
         pnt.y + (nSizeY >= 0 ? nSizeY : 0) - ptScroll.y),
-        CSize(((nSize = size.cx - nSizeX) >= (int)nBrushSize ? nBrushSize : nSize),
-        ((nSize = size.cy - nSizeY) >= (int)nBrushSize ? nBrushSize : nSize))));
+        wxSize(((nSize = size.x - nSizeX) >= (int)nBrushSize ? nBrushSize : nSize),
+        ((nSize = size.y - nSizeY) >= (int)nBrushSize ? nBrushSize : nSize))));
 }
 
 void CTileSelView::UpdateViewImage()
 {
-    CSize size = m_pEditView->GetBitmapSize();
-    CRect rct = GetActiveTileRect();
+    wxRect rct = GetActiveTileRect();
+    rct.SetLeftTop(CalcScrolledPosition(rct.GetTopLeft()));
     GetDocument().SetModifiedFlag();
-    InvalidateRect(&rct, FALSE);
-    UpdateWindow();
+    RefreshRect(rct, FALSE);
+    Update();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -270,20 +252,20 @@ void CTileSelView::UpdateDocumentTiles()
 {
     CGamDoc& pDoc = GetDocument();
     // Make sure our bitmaps are up to date.
-    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
 
     // Get small scale color from tiny bitmap and update tile
-    g_gt.mDC1.SelectObject(&*m_bmSmall);
-    COLORREF crSmall = g_gt.mDC1.GetPixel(0, 0);
-    g_gt.SelectSafeObjectsForDC1();
+    /* https://docs.wxwidgets.org/stable/classwx_d_c.html#abe0f8a22ec58783bd728f01e493040d1
+        says wxDC::GetPixel() doesn't work in wxOSX */
+    wxColour crSmall = GetPixel(m_bmSmall, 0, 0);
 
     // The update happens here...
-    m_pTileMgr->UpdateTile(m_tid, *m_bmFull, *m_bmHalf, crSmall);
+    m_pTileMgr->UpdateTile(m_tid, *CB::Convert(m_bmFull), *CB::Convert(m_bmHalf), CB::Convert(crSmall));
 
     // Finally handle various notifications
     CGmBoxHint hint;
     hint.GetArgs<HINT_TILEMODIFIED>().m_tid = m_tid;
-    pDoc.UpdateAllViews(this, HINT_TILEMODIFIED, &hint);
+    pDoc.UpdateAllViews(&*parent, HINT_TILEMODIFIED, &hint);
     pDoc.SetModifiedFlag();
 }
 
@@ -292,34 +274,34 @@ void CTileSelView::UpdateDocumentTiles()
 void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
-    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
     dlg.m_pBMgr = GetDocument().GetBoardManager();
     dlg.m_bRescaleBMaps = true;
-    dlg.m_nWidth = m_sizeFull.cx;
-    dlg.m_nHeight = m_sizeFull.cy;
+    dlg.m_nWidth = m_sizeFull.x;
+    dlg.m_nHeight = m_sizeFull.y;
     if (dlg.ShowModal() == wxID_OK)
     {
         // Copy current bitmaps for undo
         PurgeUndo();            // Make sure no mem leaks.
-        m_pBmFullUndo = CloneBitmap(*m_bmFull);
-        m_pBmHalfUndo = CloneBitmap(*m_bmHalf);
+        m_pBmFullUndo = CloneBitmap(m_bmFull);
+        m_pBmHalfUndo = CloneBitmap(m_bmHalf);
 
-        OwnerOrNullPtr<CBitmap> bmFull(MakeOwner<CBitmap>());
-        OwnerOrNullPtr<CBitmap> bmHalf(MakeOwner<CBitmap>());
-        m_sizeFull = CSize(dlg.m_nWidth, dlg.m_nHeight);
-        m_sizeHalf = CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight);
+        wxBitmap bmFull;
+        wxBitmap bmHalf;
+        m_sizeFull = wxSize(dlg.m_nWidth, dlg.m_nHeight);
+        m_sizeHalf = wxSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight);
 
         if (dlg.m_bRescaleBMaps)
         {
-            bmFull = CloneScaledBitmap(*m_bmFull, m_sizeFull);
-            bmHalf = CloneScaledBitmap(*m_bmHalf, m_sizeHalf);
+            bmFull = CloneScaledBitmap(m_bmFull, m_sizeFull);
+            bmHalf = CloneScaledBitmap(m_bmHalf, m_sizeHalf);
         }
         else
         {
-            bmFull = CreateColorBitmap(m_sizeFull, RGB(255, 255, 255));
-            bmHalf = CreateColorBitmap(m_sizeHalf, RGB(255, 255, 255));
-            MergeBitmap(*bmFull, *m_bmFull, CPoint(0,0));
-            MergeBitmap(*bmHalf, *m_bmHalf, CPoint(0,0));
+            bmFull = CreateColorBitmap(m_sizeFull, *wxWHITE);
+            bmHalf = CreateColorBitmap(m_sizeHalf, *wxWHITE);
+            MergeBitmap(bmFull, m_bmFull, wxPoint(0,0));
+            MergeBitmap(bmHalf, m_bmHalf, wxPoint(0,0));
         }
         m_bmFull = std::move(bmFull);
         m_bmHalf = std::move(bmHalf);
@@ -328,8 +310,8 @@ void CTileSelView::DoTileResizeDialog()
 
         // Finally hand the full size tile to the bit editor.
         SelectCurrentBitmap(fullScale);
-        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
-        Invalidate();
+        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+        Refresh();
     }
 }
 
@@ -337,19 +319,30 @@ void CTileSelView::DoTileResizeDialog()
 
 void CTileSelView::DoTileRotation(int nAngle)
 {
-    CDib dibFull(*m_bmFull);
-    CDib dibHalf(*m_bmHalf);
-    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
-    if (!dibFull)
-        return;             // MEMORY ERROR
-    if(!dibHalf)
-        return;             // MEMORY ERROR
+    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
+    wxBitmap dibFull = CloneBitmap(m_bmFull);
+    wxBitmap dibHalf = CloneBitmap(m_bmHalf);
 
-    CDib pDib = dibFull.Rotate(nAngle, RGB(255, 255, 255));
-    OwnerOrNullPtr<CBitmap> pbmFull = pDib.DIBToBitmap();
+    wxBitmap pbmFull;
+    wxBitmap pbmHalf;
 
-    pDib = dibHalf.Rotate(nAngle, RGB(255, 255, 255));
-    OwnerOrNullPtr<CBitmap> pbmHalf = pDib.DIBToBitmap();
+    switch (nAngle)
+    {
+        case 90:
+            pbmFull = wxBitmap(dibFull.ConvertToImage().Rotate90(true));
+            pbmHalf = wxBitmap(dibHalf.ConvertToImage().Rotate90(true));
+            break;
+        case 180:
+            pbmFull = wxBitmap(dibFull.ConvertToImage().Rotate180());
+            pbmHalf = wxBitmap(dibHalf.ConvertToImage().Rotate180());
+            break;
+        case 270:
+            pbmFull = wxBitmap(dibFull.ConvertToImage().Rotate90(false));
+            pbmHalf = wxBitmap(dibHalf.ConvertToImage().Rotate90(false));
+            break;
+        default:
+            wxASSERT("invalid argument");
+    }
 
     m_bmFull = std::move(pbmFull);
     m_bmHalf = std::move(pbmHalf);
@@ -357,8 +350,8 @@ void CTileSelView::DoTileRotation(int nAngle)
     CalcViewLayout();
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
-    Invalidate();
+    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+    Refresh();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -366,21 +359,21 @@ void CTileSelView::DoTileRotation(int nAngle)
 BOOL CTileSelView::IsUndoAvailable() const
 {
     wxASSERT(!"unreachable code?");
-    return m_pBmFullUndo != NULL;
+    return m_pBmFullUndo.IsOk();
 }
 
 void CTileSelView::PurgeUndo()
 {
-    m_pBmFullUndo = NULL;
-    m_pBmHalfUndo = NULL;
+    m_pBmFullUndo = wxBitmap();
+    m_pBmHalfUndo = wxBitmap();
 }
 
 void CTileSelView::RestoreFromUndo()
 {
     wxASSERT(!"unreachable code?");
-    ASSERT(m_pBmFullUndo != NULL);
-    ASSERT(m_pBmHalfUndo != NULL);
-    if (m_pBmFullUndo == NULL)
+    wxASSERT(m_pBmFullUndo.IsOk());
+    wxASSERT(m_pBmHalfUndo.IsOk());
+    if (!m_pBmFullUndo.IsOk())
         return;
 
     m_bmFull = std::move(m_pBmFullUndo);
@@ -393,8 +386,8 @@ void CTileSelView::RestoreFromUndo()
 
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
-    Invalidate();
+    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+    Refresh();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -403,23 +396,20 @@ void CTileSelView::CalcViewLayout()
 {
     // Redo sizes since some callers count on it.
 
-    BITMAP bmi;
-    m_bmFull->GetObject(sizeof(bmi), &bmi);
-    m_sizeFull = CSize(bmi.bmWidth, bmi.bmHeight);
-    m_bmHalf->GetObject(sizeof(bmi), &bmi);
-    m_sizeHalf = CSize(bmi.bmWidth, bmi.bmHeight);
+    m_sizeFull = m_bmFull.GetSize();
+    m_sizeHalf = m_bmHalf.GetSize();
 
-    m_rctFull.SetRect(0, 0, m_sizeFull.cx, m_sizeFull.cy);
-    m_rctFull.OffsetRect(xGap, yGap);
-    m_rctHalf.SetRect(0, 0, m_sizeHalf.cx, m_sizeHalf.cy);
-    m_rctHalf.OffsetRect(xGap + (m_sizeFull.cx - m_sizeHalf.cx) / 2,
-        yGap + m_rctFull.bottom + 2);
-    m_rctSmall.SetRect(0, 0, m_sizeSmall.cx, m_sizeSmall.cy);
-    m_rctSmall.OffsetRect(xGap + (m_sizeFull.cx - m_sizeSmall.cx) / 2,
-        yGap + m_rctHalf.bottom + 2);
+    m_rctFull = wxRect(wxPoint(0, 0), m_sizeFull);
+    m_rctFull.Offset(xGap, yGap);
+    m_rctHalf = wxRect(wxPoint(0, 0), m_sizeHalf);
+    m_rctHalf.Offset(xGap + (m_sizeFull.x - m_sizeHalf.x) / 2,
+        yGap + m_rctFull.GetBottom() + 1 + 2);
+    m_rctSmall = wxRect(wxPoint(0, 0), m_sizeSmall);
+    m_rctSmall.Offset(xGap + (m_sizeFull.x - m_sizeSmall.x) / 2,
+        yGap + m_rctHalf.GetBottom() + 1 + 2);
 
-    m_sizeSelArea.cx = m_rctFull.right + nBorderWidth;
-    m_sizeSelArea.cy = m_rctSmall.bottom + nBorderWidth;
+    m_sizeSelArea.x = m_rctFull.GetRight() + 1 + nBorderWidth;
+    m_sizeSelArea.y = m_rctSmall.GetBottom() + 1 + nBorderWidth;
 
 #ifdef WANTHORIZ_VERSION
     m_rctFull.SetRect(0, 0, m_sizeFull.cx, m_sizeFull.cy);
@@ -435,7 +425,7 @@ void CTileSelView::CalcViewLayout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CRect CTileSelView::GetActiveTileRect() const
+wxRect CTileSelView::GetActiveTileRect() const
 {
     if (m_eCurTile == fullScale)
         return m_rctFull;
@@ -445,17 +435,17 @@ CRect CTileSelView::GetActiveTileRect() const
         return m_rctSmall;
 }
 
-CPoint CTileSelView::GetActiveTileLoc() const
+wxPoint CTileSelView::GetActiveTileLoc() const
 {
     if (m_eCurTile == fullScale)
-        return m_rctFull.TopLeft();
+        return m_rctFull.GetTopLeft();
     else if (m_eCurTile == halfScale)
-        return m_rctHalf.TopLeft();
+        return m_rctHalf.GetTopLeft();
     else
-        return m_rctSmall.TopLeft();
+        return m_rctSmall.GetTopLeft();
 }
 
-OwnerPtr<CBitmap>& CTileSelView::GetActiveBitmap()
+wxBitmap& CTileSelView::GetActiveBitmap()
 {
     if (m_eCurTile == fullScale)
         return m_bmFull;
@@ -468,181 +458,171 @@ OwnerPtr<CBitmap>& CTileSelView::GetActiveBitmap()
 void CTileSelView::SelectCurrentBitmap(TileScale eScale)
 {
     if (eScale == fullScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmFull);
+        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
     else if (eScale == halfScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmHalf);
+        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmHalf));
     else
-        m_pEditView->SetCurrentBitmap(m_tid, &*m_bmSmall, TRUE);
+        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmSmall), TRUE);
     m_eCurTile = eScale;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTileSelView message handlers
 
-void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
+void CTileSelView::OnLButtonDown(wxMouseEvent& event)
 {
-    point += GetDeviceScrollPosition();
+    wxPoint point = CalcUnscrolledPosition(event.GetPosition());
     TileScale eScale;
-    if (m_rctFull.PtInRect(point))
+    if (m_rctFull.Contains(point))
         eScale = fullScale;
-    else if (m_rctHalf.PtInRect(point))
+    else if (m_rctHalf.Contains(point))
         eScale = halfScale;
-    else if (m_rctSmall.PtInRect(point))
+    else if (m_rctSmall.Contains(point))
         eScale = smallScale;
     else
     {
-        CScrollView::OnLButtonDown(nFlags, point);
+        event.Skip();
         return;
     }
     if (GetCurrentScale() == eScale)
     {
         return;
     }
-    GetActiveBitmap() = CloneBitmap(*m_pEditView->GetCurrentViewBitmap());
+    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
 
     SelectCurrentBitmap(eScale);
-    Invalidate();
+    Refresh();
 }
 
-void CTileSelView::OnDestroy()
+CTileSelView::~CTileSelView()
 {
     if (!m_bNoUpdate)
     {
         // Update master copies...
         UpdateDocumentTiles();
     }
-    // Let destroy continue...
-    CScrollView::OnDestroy();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTileSelView command handlers
 // Hot potato most of these to the editor view.
 
-LRESULT CTileSelView::OnSetColor(WPARAM wParam, LPARAM lParam)
+LRESULT CTileSelViewContainer::OnSetColor(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
-    return m_pEditView->OnSetColor(wParam, lParam);
+    return child->GetBitEditor().OnSetColor(wParam, lParam);
 }
 
-LRESULT CTileSelView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
+LRESULT CTileSelViewContainer::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
-    return m_pEditView->OnSetCustomColors(wParam, lParam);
+    return child->GetBitEditor().OnSetCustomColors(wParam, lParam);
 }
 
-LRESULT CTileSelView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
+LRESULT CTileSelViewContainer::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
-    return m_pEditView->OnSetLineWidth(wParam, lParam);
+    return child->GetBitEditor().OnSetLineWidth(wParam, lParam);
 }
 
-void CTileSelView::OnUpdateColorForeground(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateColorForeground(pCmdUI);
+    child->GetBitEditor().OnUpdateColorForeground(pCmdUI);
 }
 
-void CTileSelView::OnUpdateColorBackground(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateColorBackground(pCmdUI);
+    child->GetBitEditor().OnUpdateColorBackground(pCmdUI);
 }
 
-void CTileSelView::OnUpdateColorTransparent(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateColorTransparent(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateColorTransparent(pCmdUI);
+    child->GetBitEditor().OnUpdateColorTransparent(pCmdUI);
 }
 
-void CTileSelView::OnUpdateColorCustom(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateColorCustom(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateColorCustom(pCmdUI);
+    child->GetBitEditor().OnUpdateColorCustom(pCmdUI);
 }
 
-void CTileSelView::OnUpdateLineWidth(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateLineWidth(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateLineWidth(pCmdUI);
+    child->GetBitEditor().OnUpdateLineWidth(pCmdUI);
 }
 
-void CTileSelView::OnUpdateToolPalette(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateToolPalette(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateToolPalette(pCmdUI);
+    child->GetBitEditor().OnUpdateToolPalette(pCmdUI);
 }
 
-BOOL CTileSelView::OnToolPalette(UINT id)
+BOOL CTileSelViewContainer::OnToolPalette(UINT id)
 {
     wxASSERT(!"unreachable code?");
-    return m_pEditView->OnToolPalette(id);
+    return child->GetBitEditor().OnToolPalette(id);
 }
 
-void CTileSelView::OnEditPaste()
+void CTileSelViewContainer::OnEditPaste()
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnEditPaste();
+    child->GetBitEditor().OnEditPaste();
 }
 
-void CTileSelView::OnUpdateEditPaste(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateEditPaste(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateEditPaste(pCmdUI);
+    child->GetBitEditor().OnUpdateEditPaste(pCmdUI);
 }
 
-void CTileSelView::OnEditCopy()
+void CTileSelViewContainer::OnEditCopy()
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnEditCopy();
+    child->GetBitEditor().OnEditCopy();
 }
 
-void CTileSelView::OnUpdateEditCopy(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnUpdateEditCopy(pCmdUI);
+    child->GetBitEditor().OnUpdateEditCopy(pCmdUI);
 }
 
-void CTileSelView::OnEditUndo()
+void CTileSelViewContainer::OnEditUndo()
 {
     wxASSERT(!"unreachable code?");
-    if (IsUndoAvailable())      // Us first.
-        RestoreFromUndo();
+    if (child->IsUndoAvailable())      // Us first.
+        child->RestoreFromUndo();
     else
-        m_pEditView->OnEditUndo();
+        child->GetBitEditor().OnEditUndo();
 }
 
-void CTileSelView::OnUpdateEditUndo(CCmdUI* pCmdUI)
+void CTileSelViewContainer::OnUpdateEditUndo(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
-    if (IsUndoAvailable())      // Us first.
+    if (child->IsUndoAvailable())      // Us first.
         pCmdUI->Enable(TRUE);
     else
-        m_pEditView->OnUpdateEditUndo(pCmdUI);
+        child->GetBitEditor().OnUpdateEditUndo(pCmdUI);
 }
 
-void CTileSelView::OnViewToggleScale()
+void CTileSelViewContainer::OnViewToggleScale()
 {
     wxASSERT(!"unreachable code?");
-    m_pEditView->OnViewToggleScale();
-}
-
-// always pass active status to sibling CBitEditView
-void CTileSelView::OnActivateView(BOOL bActivate,
-                    CView* pActivateView,
-                    CView* /*pDeactiveView*/)
-{
-    WXUNUSED_UNLESS_DEBUG(pActivateView);
-    if (bActivate)
-    {
-        wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(m_pEditView);
-    }
+    child->GetBitEditor().OnViewToggleScale();
 }
 
 void CTileSelViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
+}
+
+void CTileSelViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
 }
 
 void CTileSelViewContainer::OnActivateView(BOOL bActivate,
@@ -653,12 +633,17 @@ void CTileSelViewContainer::OnActivateView(BOOL bActivate,
     if (bActivate)
     {
         wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(&*child);
+        GetParentFrame()->SetActiveView(&child->GetBitEditor());
     }
 }
 
+void CTileSelViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+}
+
 CTileSelViewContainer::CTileSelViewContainer() :
-    child(new CTileSelView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -669,23 +654,13 @@ int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CTileSelView(*this);
 
     return 0;
 }
 
 void CTileSelViewContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
+    child->SetSize(0, 0, cx, cy);
     return CView::OnSize(nType, cx, cy);
 }
