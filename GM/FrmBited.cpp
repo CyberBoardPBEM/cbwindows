@@ -151,12 +151,14 @@ void CBitEditFrame::OnToolsResizeTile()
 
 void CBitEditFrame::OnEditUndo()
 {
+    wxASSERT(!"unreachable code?");
     // The Tile Select view gets first whack at this...
     GetTileSelView().OnEditUndo();
 }
 
 void CBitEditFrame::OnUpdateEditUndo(CCmdUI* pCmdUI)
 {
+    wxASSERT(!"unreachable code?");
     // The Tile Select view gets first whack at this...
     GetTileSelView().OnUpdateEditUndo(pCmdUI);
 }
