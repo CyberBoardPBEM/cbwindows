@@ -132,6 +132,10 @@ protected:
     afx_msg void OnViewToggleScale();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+    void OnActivateView(BOOL bActivate,
+                        CView* pActivateView,
+                        CView* pDeactiveView) override;
 };
 
 /////////////////////////////////////////////////////////////////////////////

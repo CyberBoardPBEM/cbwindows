@@ -494,7 +494,6 @@ void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
     else
     {
         CScrollView::OnLButtonDown(nFlags, point);
-        GetParentFrame()->SetActiveView(m_pEditView);
         return;
     }
     if (GetCurrentScale() == eScale)
@@ -505,7 +504,6 @@ void CTileSelView::OnLButtonDown(UINT nFlags, CPoint point)
 
     SelectCurrentBitmap(eScale);
     Invalidate();
-    GetParentFrame()->SetActiveView(m_pEditView);
 }
 
 void CTileSelView::OnDestroy()
@@ -631,3 +629,15 @@ void CTileSelView::OnViewToggleScale()
     m_pEditView->OnViewToggleScale();
 }
 
+// always pass active status to sibling CBitEditView
+void CTileSelView::OnActivateView(BOOL bActivate,
+                    CView* pActivateView,
+                    CView* /*pDeactiveView*/)
+{
+    WXUNUSED_UNLESS_DEBUG(pActivateView);
+    if (bActivate)
+    {
+        wxASSERT(pActivateView == this);
+        GetParentFrame()->SetActiveView(m_pEditView);
+    }
+}
