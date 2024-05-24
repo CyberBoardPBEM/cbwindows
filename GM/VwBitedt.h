@@ -48,13 +48,29 @@ protected:
 
 // Attributes
 public:
-    CGamDoc& GetDocument() { return CheckedDeref(dynamic_cast<CGamDoc*>(CScrollView::GetDocument())); }
+    const CGamDoc& GetDocument() const { return CheckedDeref(dynamic_cast<CGamDoc*>(CScrollView::GetDocument())); }
+    CGamDoc& GetDocument()
+    {
+        return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
+    }
     void SetTileSelectView(CTileSelView& pSelView) { m_pSelView = &pSelView; }
-    CTileSelView& GetTileSelectView() { return CheckedDeref(m_pSelView); }
+    const CTileSelView& GetTileSelectView() const { return CheckedDeref(m_pSelView); }
+    CTileSelView& GetTileSelectView()
+    {
+        return const_cast<CTileSelView&>(std::as_const(*this).GetTileSelectView());
+    }
     void SetCurrentBitmap(TileID tid, const CBitmap* pBMap, BOOL bFillOnly = FALSE);
-    OwnerPtr<CBitmap>& GetCurrentViewBitmap();
-    OwnerPtr<CBitmap>& GetCurrentMasterBitmap() { return m_bmMaster; }
-    OwnerPtr<CBitmap>& GetPasteBitmap() { return m_bmPaste; }
+    const OwnerPtr<CBitmap>& GetCurrentViewBitmap() const;
+    const OwnerPtr<CBitmap>& GetCurrentMasterBitmap() const { return m_bmMaster; }
+    OwnerPtr<CBitmap>& GetCurrentMasterBitmap()
+    {
+        return const_cast<OwnerPtr<CBitmap>&>(std::as_const(*this).GetCurrentMasterBitmap());
+    }
+    const OwnerPtr<CBitmap>& GetPasteBitmap() const { return m_bmPaste; }
+    OwnerPtr<CBitmap>& GetPasteBitmap()
+    {
+        return const_cast<OwnerPtr<CBitmap>&>(std::as_const(*this).GetPasteBitmap());
+    }
     CSize GetBitmapSize() const { return m_size; }
     CSize GetZoomedSize() const
         { return CSize(m_size.cx * m_nZoom, m_size.cy * m_nZoom); }
