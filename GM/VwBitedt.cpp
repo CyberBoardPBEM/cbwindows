@@ -519,7 +519,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
 /////////////////////////////////////////////////////////////////////////////
 
-OwnerPtr<CBitmap>& CBitEditView::GetCurrentViewBitmap()
+const OwnerPtr<CBitmap>& CBitEditView::GetCurrentViewBitmap() const
 {
     return m_bmView;
 }
