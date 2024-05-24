@@ -606,7 +606,7 @@ void CBitEditView::GetImagePixelLocClamped(CPoint& point) const
     point.y = CB::min(point.y, m_size.cy - 1);
 }
 
-void CBitEditView::InvalidateFocusBorder(BOOL bUpdate /* = FALSE */)
+void CBitEditView::InvalidateFocusBorder()
 {
     CRect rct;
     if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsRectEmpty())
@@ -619,8 +619,6 @@ void CBitEditView::InvalidateFocusBorder(BOOL bUpdate /* = FALSE */)
 
     WorkspaceToClient(rct);
     InvalidateRect(&rct, TRUE);
-    if (bUpdate)
-        UpdateWindow();
 }
 
 void CBitEditView::InvalidateViewImage(bool bUpdate)

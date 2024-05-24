@@ -81,7 +81,7 @@ public:
     void SetMasterImageFromViewImage();
     void ClearPasteImage();
     void InvalidateViewImage(bool bUpdate);
-    void InvalidateFocusBorder(BOOL bUpdate = FALSE);
+    void InvalidateFocusBorder();
     BOOL IsPtInImage(CPoint point) const;
     BOOL IsPtInSelectRect(CPoint point) const;
     BOOL IsPasteImage() const { return m_bmPaste->m_hObject != NULL; }
