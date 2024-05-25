@@ -118,6 +118,7 @@ int GetCurrentVideoResolution()
 
 /////////////////////////////////////////////////////////////////
 
+#ifndef GPLAY
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 {
     pDC.SetBkColor(RGB(255, 255, 255));
@@ -144,6 +145,28 @@ void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
 
     pDC.SelectObject(pPrvBrush);
 }
+
+void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick)
+{
+    // see wxWidgets\src\msw\dc.cpp wxBrushAttrsSetter
+    wxDCTextBgColourChanger setBg(pDC, *wxGREEN);
+    wxDCTextColourChanger setFg(pDC, *wxWHITE);
+
+    wxDCBrushChanger setBrush(pDC, g_res.hbr25PctWx);
+    wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
+
+    // Top border
+    pDC.DrawRectangle(rct.GetTopLeft(), wxSize(rct.GetWidth(), nThick));
+    // Left border
+    pDC.DrawRectangle(wxPoint(rct.GetLeft(), rct.GetTop() + nThick), wxSize(nThick, rct.GetHeight() - nThick));
+    // Bottom border
+    pDC.DrawRectangle(wxPoint(rct.GetLeft() + nThick, rct.GetBottom() + 1 - nThick), wxSize(rct.GetWidth() - nThick,
+        nThick));
+    // Right border
+    pDC.DrawRectangle(wxPoint(rct.GetRight() + 1 - nThick, rct.GetTop() + nThick), wxSize(nThick,
+        rct.GetHeight() - 2 * nThick));
+}
+#endif
 
 /////////////////////////////////////////////////////////////////
 // Creates a 24 bit DIB section.
@@ -483,6 +506,21 @@ OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
     g_gt.SelectSafeObjectsForDC2();
 
     return pBMap;
+}
+
+wxBitmap CreateColorBitmap(wxSize size, wxColour cr)
+{
+    wxBrush brush(cr);
+    wxPen pen(cr);
+
+    wxBitmap bmp(size, 24);
+    wxMemoryDC dc(bmp);
+
+    dc.SetBrush(brush);
+    dc.SetPen(pen);
+    dc.DrawRectangle(wxPoint(0, 0), size);
+
+    return bmp;
 }
 
 /////////////////////////////////////////////////////////////////

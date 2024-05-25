@@ -160,8 +160,12 @@ wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size);
 void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
 void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst);
 void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
+#ifndef GPLAY
 void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
+void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick);
+#endif
 OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
+wxBitmap CreateColorBitmap(wxSize size, wxColour cr);
 
 #ifdef WE_WANT_THIS_STUFF_DLL940113
 void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,

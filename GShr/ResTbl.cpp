@@ -1,6 +1,6 @@
 // ResTbl.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -44,7 +44,7 @@ void ResourceTable::InitResourceTable(HINSTANCE hInst)
     m_bInited = TRUE;
     LoadCursors(hInst);
     LoadFonts();
-    LoadBrushes();
+    LoadBrushes(hInst);
 }
 
 // ----------------------------------------------------- //
@@ -61,7 +61,7 @@ ResourceTable::~ResourceTable(void)
 void ResourceTable::LoadCursors(HINSTANCE hInst)
 {
     hcrDragTile = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE));
-    // TODO:  rewrite w/o wxWindows-specific code
+    // TODO:  rewrite w/o wxMSW-specific code
     hcrDragTileWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE))));
     hcrNoDrop = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP));
     hcrNoDropWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP))));
@@ -109,27 +109,51 @@ void ResourceTable::FreeBrushes(void)
 {
     if (!m_bInited)     // Handles are bad
         return;
-    if (hbr50Pct)   DeleteObject(hbr50Pct);
-    if (hbm50Pct)   DeleteObject(hbm50Pct);
+#ifndef GPLAY
     if (hbr25Pct)   DeleteObject(hbr25Pct);
     if (hbm25Pct)   DeleteObject(hbm25Pct);
 
-    hbm50Pct = NULL;
-    hbr50Pct = NULL;
     hbm25Pct = NULL;
     hbr25Pct = NULL;
+#endif
 }
 
 // ----------------------------------------------------- //
 
-void ResourceTable::LoadBrushes(void)
+void ResourceTable::LoadBrushes(HINSTANCE hInst)
 {
-    hbm50Pct = ::LoadBitmap(AfxGetResourceHandle(),
-        MAKEINTRESOURCE(IDB_50PERCENT));
-    hbr50Pct = ::CreatePatternBrush(hbm50Pct);
+#ifndef GPLAY
     hbm25Pct = ::LoadBitmap(AfxGetResourceHandle(),
         MAKEINTRESOURCE(IDB_25PERCENT));
     hbr25Pct = ::CreatePatternBrush(hbm25Pct);
+
+    // create brush with wxBRUSHSTYLE_STIPPLE_MASK_OPAQUE
+    // TODO:  rewrite w/o wxMSW-specific code
+    static const auto LoadBrush = [](HINSTANCE hInst, WORD id)
+    {
+        HBITMAP hbmp = ::LoadBitmap(hInst, MAKEINTRESOURCE(id));
+        if (!hbmp)
+        {
+            AfxThrowResourceException();
+        }
+        BITMAP bm;
+        if (!::GetObject(hbmp, sizeof(BITMAP), &bm))
+        {
+            DeleteObject(hbmp);
+            AfxThrowResourceException();
+        }
+        wxBitmap mask;
+        if (!mask.InitFromHBITMAP(static_cast<WXHBITMAP>(hbmp), bm.bmWidth, bm.bmHeight, bm.bmBitsPixel))
+        {
+            DeleteObject(hbmp);
+            AfxThrowResourceException();
+        }
+        wxBitmap wxbmp;
+        wxbmp.SetMask(new wxMask(mask));
+        return wxBrush(wxbmp);
+    };
+    hbr25PctWx = LoadBrush(hInst, IDB_25PERCENT);
+#endif
 }
 
 // ----------------------------------------------------- //
