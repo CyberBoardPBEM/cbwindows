@@ -748,7 +748,7 @@ void CBitEditView::UpdateTextView()
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
         CFontTbl* pFMgr = GetDocument().GetFontManager();
         CFont* pPrvFont = g_gt.mDC1.SelectObject(
-            CFont::FromHandle(pFMgr->GetFontHandle(GetBitFont())));
+            CFont::FromHandle(pFMgr->GetFontHandle(UpdateBitFont())));
         g_gt.mDC1.SetBkMode(TRANSPARENT);
 
         g_gt.mDC1.TextOut(m_ptText.x, m_ptText.y, m_strText);
@@ -784,7 +784,7 @@ void CBitEditView::DelChar()
 
 /////////////////////////////////////////////////////////////////////////////
 
-FontID CBitEditView::GetBitFont()
+FontID CBitEditView::UpdateBitFont()
 {
     if (m_fontID != m_pTMgr->GetFontID())
     {
@@ -798,7 +798,7 @@ void CBitEditView::UpdateFontInfo()
 {
     CDC* pDC = GetDC();
     CFontTbl* pFMgr = GetDocument().GetFontManager();
-    CFont *pFont = CFont::FromHandle(pFMgr->GetFontHandle(GetBitFont()));
+    CFont *pFont = CFont::FromHandle(pFMgr->GetFontHandle(UpdateBitFont()));
     CFont* pPrvFont = pDC->SelectObject(pFont);
     TEXTMETRIC tm;
     pDC->GetTextMetrics(&tm);
@@ -1271,7 +1271,7 @@ void CBitEditView::OnEditPaste()
 
     if (nRescale > 0)
     {
-        m_bmPaste = CloneScaledBitmap(*pBMap, m_size, STRETCH_DELETESCANS);
+        m_bmPaste = CloneScaledBitmap(*pBMap, m_size);
         m_rctPaste.SetRect(0, 0, m_size.cx, m_size.cy);
     }
     else

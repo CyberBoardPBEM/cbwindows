@@ -1,6 +1,6 @@
 // CDib.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -102,6 +102,18 @@ private:
 
 wxImage ToImage(const CBitmap& bmp);
 OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
+namespace CB
+{
+    inline wxBitmap Convert(const CBitmap& bmp)
+    {
+        return ToImage(bmp);
+    }
+
+    inline OwnerPtr<CBitmap> Convert(const wxBitmap& bmp)
+    {
+        return ToBitmap(bmp.ConvertToImage());
+    }
+}
 
 #endif
 
