@@ -1,6 +1,6 @@
 // ToolImag.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -130,9 +130,9 @@ void CBitSelectTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
         CSize sizeSel = rct.Size();
         CSize sizeBMap = pView->GetBitmapSize();
         CPoint ptRel = (CPoint)(point - rct.TopLeft());
-        m_rctBound.SetRect(-( sizeSel.cx - ptRel.x - 1),
-            -(sizeSel.cy - ptRel.y - 1),
-            sizeBMap.cx + ptRel.x - 1, sizeBMap.cy + ptRel.y - 1);
+        m_rctBound = CRect(CPoint(- (sizeSel.cx - ptRel.x - 1),
+            -(sizeSel.cy - ptRel.y - 1)),
+            CSize(sizeBMap.cx + sizeSel.cx - 2, sizeBMap.cy + sizeSel.cy - 2));
         // Lock down starting point
         pView->SetSelectToolControl(TRUE);
         CImageTool::OnLButtonDown(pView, nFlags, point);
@@ -211,8 +211,8 @@ void CBitSelectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
         pView->GetImagePixelLocClamped(point);
         pView->SetViewImageFromMasterImage();   // Restore original
 
-        CRect rct(c_ptDown.x, c_ptDown.y, point.x, point.y);
-        rct.NormalizeRect();
+        CRect rct(CPoint(std::min(c_ptDown.x, point.x), std::min(c_ptDown.y, point.y)),
+                    CSize(std::abs(point.x - c_ptDown.x), std::abs(point.y - c_ptDown.y)));
         if (!rct.IsRectEmpty())
         {
             rct.right++;                // Include right and bottom sides
