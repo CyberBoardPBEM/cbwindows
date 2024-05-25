@@ -65,7 +65,7 @@ public:
     void OffsetSelectRect(CSize size) { m_rctPaste += (CPoint)size; }
     void SetSelectToolControl(BOOL bCapture) { m_bSelectCapture = bCapture; }
 
-    FontID GetBitFont();
+    FontID UpdateBitFont();
     // Current Colors
     UINT GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
     COLORREF GetForeColor() const { return m_pTMgr->GetForeColor(); }

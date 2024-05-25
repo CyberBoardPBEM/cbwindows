@@ -219,7 +219,7 @@ void CBitSelectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
             rct.bottom++;
             // Copy selected area into the paste bitmap.
             pView->SetUndoFromView();
-            pView->GetPasteBitmap() = CopyBitmapPiece(
+            pView->GetPasteBitmap() = CutBitmapPiece(
                 *pView->GetCurrentMasterBitmap(), rct,
                 pView->GetBackColor());
             pView->InvalidateFocusBorder();

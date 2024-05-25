@@ -186,6 +186,17 @@ void SetPixel(wxBitmap& hBitmap, int x, int y, wxColour cr)
     it.Blue() = cr.Blue();
 }
 
+wxColour GetPixel(const wxBitmap& hBitmap, int x, int y)
+{
+    // const_cast safe since we only read
+    /* TODO:  create and submit to upstream const version of
+        wxNativePixelData */
+    wxNativePixelData imgData(const_cast<wxBitmap&>(hBitmap));
+    wxNativePixelData::Iterator it(imgData);
+    it.MoveTo(imgData, x, y);
+    return wxColour(it.Red(), it.Green(), it.Blue());
+}
+
 /////////////////////////////////////////////////////////////////
 
 void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
@@ -326,10 +337,16 @@ OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
     return pbmDst;
 }
 
-// The copy excludes the right and bottom edges of rctSrc.
-// If a crVoided color is supplied, the source bitmap will have its
-// copied region filled with that color.
-OwnerPtr<CBitmap> CopyBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
+wxBitmap CloneBitmap(const wxBitmap& pbmSrc)
+{
+    // see https://docs.wxwidgets.org/latest/classwx_bitmap.html#abfaa21ec563a64ea913af918150db900
+    return pbmSrc.GetSubBitmap(wxRect(wxPoint(0, 0), pbmSrc.GetSize()));
+}
+
+// The cut excludes the right and bottom edges of rctSrc.
+// The source bitmap will have its
+// cut region filled with the crVoided color.
+OwnerPtr<CBitmap> CutBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     COLORREF crVoided)
 {
     ASSERT(pbmSrc.m_hObject != NULL);
@@ -388,8 +405,20 @@ void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst)
     g_gt.SelectSafeObjectsForDC1();
 }
 
-OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
-    int nStretchMode /* = STRETCH_DELETESCANS */)
+void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst)
+{
+    wxASSERT(pbmSrc.IsOk());
+    wxASSERT(pbmDst.IsOk());
+
+    wxMemoryDC dstDC(pbmDst);
+    wxSize srcSize = pbmSrc.GetSize();
+    wxMemoryDC srcDC;
+    srcDC.SelectObjectAsSource(pbmSrc);
+    dstDC.Blit(pntDst, srcSize,
+                &srcDC, wxPoint(0, 0));
+}
+
+OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size)
 {
     ASSERT(pbmSrc.m_hObject != NULL);
     OwnerPtr<CBitmap> pbmDst(MakeOwner<CBitmap>());
@@ -409,12 +438,30 @@ OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size,
 
     g_gt.mDC2.SelectObject(&*pbmDst);
 
-    int nPrvMode = g_gt.mDC2.SetStretchBltMode(nStretchMode);
+    int nPrvMode = g_gt.mDC2.SetStretchBltMode(COLORONCOLOR);
     g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1,
         0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY);
     g_gt.mDC2.SetStretchBltMode(nPrvMode);
 
     g_gt.ClearMemDCBitmaps();
+
+    return pbmDst;
+}
+
+wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size)
+{
+    wxMemoryDC srcDC;
+    wxSize srcSize = pbmSrc.GetSize();
+    srcDC.SelectObjectAsSource(pbmSrc);
+
+    wxBitmap pbmDst(size);
+
+    {
+        wxMemoryDC dstDC(pbmDst);
+
+        dstDC.StretchBlit(0, 0, size.x, size.y,
+                            &srcDC, 0, 0, srcSize.x, srcSize.y);
+    }
 
     return pbmDst;
 }
