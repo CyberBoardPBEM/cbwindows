@@ -237,7 +237,8 @@ public:
     COLORREF GetForeColor() const { return m_crFore; }
     COLORREF GetBackColor() const { return m_crBack; }
     int GetLineWidth() const { return m_nLineWidth; }
-    const CBrush& GetForeBrush() const { return m_brFore; }
+    const CBrush& GetForeBrushMFC() const { return m_brForeMFC; }
+    const wxBrush& GetForeBrushWx() const { return m_brForeWx; }
     const CBrush& GetBackBrush() const { return m_brBack; }
     FontID GetFontID() const { return m_fontID; }
 
@@ -294,7 +295,8 @@ protected:
     WORD        m_wReserved4;       // For future need (set to 0)
     // These are shared for all Tile Editors...
     COLORREF    m_crFore;           // Current foreground color
-    CBrush      m_brFore;           // Foreground solid brush
+    CBrush      m_brForeMFC;        // Foreground solid brush
+    wxBrush     m_brForeWx;         // Foreground solid brush
     COLORREF    m_crBack;           // Current background color
     CBrush      m_brBack;           // Background solid brush
     UINT        m_nLineWidth;       // Current line width

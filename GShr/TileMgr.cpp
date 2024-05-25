@@ -763,8 +763,9 @@ BOOL CTileManager::DoBitFontDialog()
 void CTileManager::SetForeColor(COLORREF cr)
 {
     m_crFore = cr;
-    m_brFore.DeleteObject();
-    m_brFore.CreateSolidBrush(m_crFore);
+    m_brForeMFC.DeleteObject();
+    m_brForeMFC.CreateSolidBrush(m_crFore);
+    m_brForeWx = wxBrush(CB::Convert(m_crFore));
 }
 
 void CTileManager::SetBackColor(COLORREF cr)

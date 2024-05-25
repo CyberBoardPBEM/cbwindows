@@ -56,23 +56,22 @@ struct ResourceTable
 #else
     HCURSOR     hcrCompMoveActive;
 #endif
+#ifndef GPLAY
     // ======== Brushes ========= //
-    HBRUSH      hbr50Pct;       // 50% grey brush
     HBRUSH      hbr25Pct;       // 25% grey pattern
+    wxBrush     hbr25PctWx;     // 25% grey pattern
     // ------- //
-    HBITMAP     hbm50Pct;       // Used to create 50% grey brush
     HBITMAP     hbm25Pct;       // Used to create 25% grey brush
+#endif
     // ------ //
     ResourceTable() { m_bInited = FALSE; }
     ~ResourceTable();
     // ------ //
     void InitResourceTable(HINSTANCE hInst);
-    void ProcessSysColorChange(void)
-        { FreeBrushes(); LoadBrushes(); }
 private:
     void LoadCursors(HINSTANCE hInst);
     void FreeCursors(void);
-    void LoadBrushes(void);         // Load new brushes and colors
+    void LoadBrushes(HINSTANCE hInst);  // Load new brushes and colors
     void FreeBrushes(void);         // free the brushes
     void LoadFonts(void);           // Load screen fonts
     void FreeFonts(void);           // Free screen fonts
