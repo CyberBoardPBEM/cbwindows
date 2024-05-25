@@ -1,6 +1,6 @@
 // ToolImag.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -47,10 +47,10 @@ public:
 public:
     static CImageTool& GetTool(IToolType eType);
     // ----------- //
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest)
+    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
+    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) /* override */
         { return FALSE; }
 
 // Implementation
@@ -78,10 +78,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -103,10 +103,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -126,10 +126,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -149,10 +149,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) {}
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -172,10 +172,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) {}
-//  virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) {}
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -195,10 +195,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) {}
-//  virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) {}
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -218,10 +218,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -241,10 +241,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
@@ -264,10 +264,10 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point);
-//  virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) {}
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
+//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
+    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
 
 // Implementation
 public:
