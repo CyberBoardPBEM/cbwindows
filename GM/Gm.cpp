@@ -406,7 +406,7 @@ BOOL CGmApp::InitInstance()
 
     m_pTileEditTmpl = new CMultiDocTemplate(IDR_BITEDITOR,
         RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CBitEditFrame),
-        RUNTIME_CLASS(CBitEditView));
+        RUNTIME_CLASS(CBitEditViewContainer));
 
     EnableLoadWindowPlacement(FALSE);
 

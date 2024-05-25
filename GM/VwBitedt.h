@@ -1,6 +1,6 @@
 // VwBitedt.h : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -41,10 +41,10 @@ class CTileSelView;
 
 class CBitEditView : public CScrollView
 {
+    friend class CBitEditViewContainer;
     friend class CTileSelViewContainer;
-    DECLARE_DYNCREATE(CBitEditView)
 protected:
-    CBitEditView();         // Protected constructor used by dynamic creation
+    CBitEditView();
 
 // Attributes
 public:
@@ -173,14 +173,14 @@ protected:
     CTileSelView* m_pSelView;
     CTileManager* m_pTMgr;
 protected:
-    virtual ~CBitEditView();
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
-    virtual void OnInitialUpdate();     // first time after construct
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-    virtual void OnActivateView(BOOL bActivate, CView *pActivateView,
-        CView* pDeactivateView);
+    ~CBitEditView() override;
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
+    void OnInitialUpdate() override;     // first time after construct
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnActivateView(BOOL bActivate, CView *pActivateView,
+        CView* pDeactivateView) override;
 
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 
     // Generated message map functions
     //{{AFX_MSG(CBitEditView)
@@ -222,6 +222,33 @@ protected:
     afx_msg void OnViewToggleScale();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+};
+
+class CBitEditViewContainer : public CView
+{
+public:
+    const CBitEditView& GetChild() const { return *child; }
+    CBitEditView& GetChild()
+    {
+        return const_cast<CBitEditView&>(std::as_const(*this).GetChild());
+    }
+    void OnDraw(CDC* pDC) override;
+
+protected:
+    void OnActivateView(BOOL bActivate,
+                        CView* pActivateView,
+                        CView* pDeactiveView) override;
+
+private:
+    CBitEditViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CBitEditViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CBitEditView> child;
 };
 
 /////////////////////////////////////////////////////////////////////////////
