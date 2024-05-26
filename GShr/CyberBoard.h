@@ -1901,7 +1901,7 @@ namespace CB
     void SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep = true);
 
     const CWnd* ToCWnd(const wxWindow& w);
-    CWnd* ToCWnd(wxWindow& w) { return const_cast<CWnd*>(ToCWnd(std::as_const(w))); }
+    inline CWnd* ToCWnd(wxWindow& w) { return const_cast<CWnd*>(ToCWnd(std::as_const(w))); }
 
     // MFC if possible, wx otherwise
     const std::type_info& GetPublicTypeid(const wxWindow& w);
