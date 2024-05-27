@@ -51,13 +51,17 @@ const size_t maxUndoLevels = size_t(8);
 wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
 #if 0
     ON_WM_ERASEBKGND()
-    ON_COMMAND(ID_IMAGE_GRIDLINES, OnImageGridLines)
-    ON_COMMAND_EX(ID_ITOOL_PENCIL, OnToolPalette)
+#endif
+    EVT_MENU(XRCID("ID_IMAGE_GRIDLINES"), OnImageGridLines)
+    EVT_MENU(XRCID("ID_ITOOL_PENCIL"), OnToolPalette)
+#if 0
     ON_MESSAGE(WM_SETCOLOR, OnSetColor)
     ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
     ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
-    ON_UPDATE_COMMAND_UI(ID_IMAGE_GRIDLINES, OnUpdateImageGridLines)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_PENCIL, OnUpdateToolPalette)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_IMAGE_GRIDLINES"), OnUpdateImageGridLines)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_PENCIL"), OnUpdateToolPalette)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_COLOR_FOREGROUND, OnUpdateColorForeground)
     ON_UPDATE_COMMAND_UI(ID_COLOR_BACKGROUND, OnUpdateColorBackground)
     ON_UPDATE_COMMAND_UI(ID_COLOR_TRANSPARENT, OnUpdateColorTransparent)
@@ -68,49 +72,58 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     ON_WM_MOUSEMOVE()
     ON_WM_SETCURSOR()
     ON_COMMAND(ID_IMAGE_BOARDMASK, OnImageBoardMask)
-    ON_COMMAND(ID_VIEW_ZOOMIN, OnViewZoomIn)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOMIN, OnUpdateViewZoomIn)
-    ON_COMMAND(ID_VIEW_ZOOMOUT, OnViewZoomOut)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOMOUT, OnUpdateViewZoomOut)
+#endif
+    EVT_MENU(wxID_ZOOM_IN, OnViewZoomIn)
+    EVT_UPDATE_UI(wxID_ZOOM_IN, OnUpdateViewZoomIn)
+    EVT_MENU(wxID_ZOOM_OUT, OnViewZoomOut)
+    EVT_UPDATE_UI(wxID_ZOOM_OUT, OnUpdateViewZoomOut)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_IMAGE_BOARDMASK, OnUpdateImageBoardMask)
     ON_WM_KILLFOCUS()
     ON_WM_SETFOCUS()
     ON_COMMAND(ID_DWG_FONT, OnDwgFont)
     ON_WM_CHAR()
-    ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
 #endif
+    EVT_MENU(wxID_UNDO, OnEditUndo)
     EVT_UPDATE_UI(wxID_UNDO, OnUpdateEditUndo)
 #if 0
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
     ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
     ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_CELLNUM, OnUpdateIndicatorCellNum)
-    ON_WM_CONTEXTMENU()
-    ON_COMMAND_EX(ID_ITOOL_SELECT, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_BRUSH, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_FILL, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_TEXT, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_LINE, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_RECT, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_OVAL, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_FILLRECT, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_FILLOVAL, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_DROPPER, OnToolPalette)
-    ON_COMMAND_EX(ID_ITOOL_COLORCHANGE, OnToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_SELECT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_BRUSH, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_FILL, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_TEXT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_LINE, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_RECT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_OVAL, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_FILLRECT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_FILLOVAL, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_DROPPER, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_COLORCHANGE, OnUpdateToolPalette)
-    ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
 #endif
+    EVT_UPDATE_UI(XRCID("ID_INDICATOR_CELLNUM"), OnUpdateIndicatorCellNum)
+#if 0
+    ON_WM_CONTEXTMENU()
+#endif
+    EVT_MENU(XRCID("ID_ITOOL_SELECT"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_BRUSH"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_FILL"), OnToolPalette)
+#if 0   // TODO:
+    EVT_MENU(XRCID("ID_ITOOL_TEXT"), OnToolPalette)
+#endif
+    EVT_MENU(XRCID("ID_ITOOL_LINE"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_RECT"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_OVAL"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_FILLRECT"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_FILLOVAL"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_DROPPER"), OnToolPalette)
+    EVT_MENU(XRCID("ID_ITOOL_COLORCHANGE"), OnToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_SELECT"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_BRUSH"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_FILL"), OnUpdateToolPalette)
+#if 0   // TODO:
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_TEXT"), OnUpdateToolPalette)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_LINE"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_RECT"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_OVAL"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_FILLRECT"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_FILLOVAL"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_DROPPER"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_COLORCHANGE"), OnUpdateToolPalette)
+    EVT_MENU(XRCID("ID_VIEW_TOGGLE_SCALE"), OnViewToggleScale)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_TOGGLE_SCALE"), OnUpdateEnable)
 wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CBitEditViewContainer, CView)
@@ -224,15 +237,13 @@ void CBitEditView::OnDraw(wxDC& pDC)
     }
     else
     {
-        wxASSERT(!"todo");
-#if 0
-        pDC->StretchBlt(xBorder, yBorder, size.cx, size.cy, &g_gt.mDC1, 0, 0,
-            m_size.cx, m_size.cy, SRCCOPY);
-        pDC->PatBlt(xBorder-1, yBorder-1, 1, size.cy + 2, BLACKNESS);
-        pDC->PatBlt(xBorder-1, yBorder-1, size.cx + 2, 1, BLACKNESS);
-        pDC->PatBlt(xBorder + size.cx, yBorder-1, 1, size.cy + 2, BLACKNESS);
-        pDC->PatBlt(xBorder-1, yBorder + size.cy, size.cx + 2, 1, BLACKNESS);
-#endif
+        pDC.StretchBlit(xBorder, yBorder, size.x, size.y, &sourceDC, 0, 0,
+            m_size.x, m_size.y);
+        pDC.SetPen(*wxBLACK_PEN);
+        pDC.DrawLine(xBorder-1, yBorder-1, xBorder-1, yBorder-1 + size.y + 2);
+        pDC.DrawLine(xBorder-1, yBorder-1, xBorder-1 + size.x + 2, yBorder-1);
+        pDC.DrawLine(xBorder + size.x, yBorder-1, xBorder + size.x, yBorder-1 + size.y + 2);
+        pDC.DrawLine(xBorder-1, yBorder + size.y, xBorder-1 + size.x + 2, yBorder + size.y);
     }
     if (m_nCurToolID == ID_ITOOL_SELECT && !m_bSelectCapture &&
         m_bmPaste.IsOk() && !m_rctPaste.IsEmpty())
@@ -1022,56 +1033,52 @@ IToolType CBitEditView::MapToolType(UINT nToolResID)
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditView command message handlers
 
-#if 0
-void CBitEditView::OnImageGridLines()
+void CBitEditView::OnImageGridLines(wxCommandEvent& /*event*/)
 {
     m_bGridVisible = !m_bGridVisible;
     InvalidateViewImage(false);
 }
 
-void CBitEditView::OnUpdateImageGridLines(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateImageGridLines(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_nZoom > 2 && m_bmMaster->m_hObject != NULL);
-    pCmdUI->SetCheck(m_bGridVisible);
+    pCmdUI.Enable(m_nZoom > 2 && m_bmMaster.IsOk());
+    pCmdUI.Check(m_bGridVisible);
 }
 
-void CBitEditView::OnUpdateToolPalette(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable;
     BOOL bCheck;
     if (m_bFillOnly)
     {
-        bEnable = pCmdUI->m_nID == ID_ITOOL_FILL || pCmdUI->m_nID == ID_ITOOL_DROPPER;
-        bCheck = pCmdUI->m_nID == m_nCurToolID;
+        bEnable = pCmdUI.GetId() == XRCID("ID_ITOOL_FILL") || pCmdUI.GetId() == XRCID("ID_ITOOL_DROPPER");
+        bCheck = pCmdUI.GetId() == m_nCurToolID;
     }
     else
     {
         bEnable = TRUE;
-        bCheck = pCmdUI->m_nID == m_nCurToolID;
+        bCheck = pCmdUI.GetId() == m_nCurToolID;
     }
-    if (pCmdUI->m_pSubMenu != NULL)
-    {
-        // Need to handle menu that the submenu is connected to.
-        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
-            MF_BYPOSITION | (bEnable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
-    }
-    pCmdUI->Enable(bEnable);
-    pCmdUI->SetCheck(bCheck);
+    pCmdUI.Enable(bEnable);
+    pCmdUI.Check(bCheck);
 }
 
-BOOL CBitEditView::OnToolPalette(UINT id)
+void CBitEditView::OnToolPalette(wxCommandEvent& event)
 {
-    if (id != m_nCurToolID)
+    if (event.GetId() != m_nCurToolID)
     {
         m_nLastToolID = m_nCurToolID;
-        m_nCurToolID = id;
-        if (m_nLastToolID == ID_ITOOL_TEXT)
+        m_nCurToolID = event.GetId();
+        if (m_nLastToolID == XRCID("ID_ITOOL_TEXT"))
         {
             CommitCurrentText();
+            wxASSERT(!"TODO:");
+#if 0
             SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
             ::DestroyCaret();
+#endif
         }
-        if (m_nLastToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL)
+        if (m_nLastToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste.IsOk())
         {
             SetMasterImageFromViewImage();
             InvalidateFocusBorder();        // Erase previous focus
@@ -1079,9 +1086,9 @@ BOOL CBitEditView::OnToolPalette(UINT id)
             InvalidateFocusBorder();        // Draw new focus
         }
     }
-    return TRUE;
 }
 
+#if 0
 LRESULT CBitEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 {
     if ((UINT)wParam == ID_COLOR_FOREGROUND)
@@ -1182,18 +1189,19 @@ void CBitEditView::OnUpdateImageBoardMask(CCmdUI* pCmdUI)
     pCmdUI->Enable(m_pSelView->GetCurrentScale() != smallScale &&
         !GetDocument().GetBoardManager()->IsEmpty());
 }
+#endif
 
-void CBitEditView::OnUpdateViewZoomIn(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateViewZoomIn(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_nZoom < 8);
+    pCmdUI.Enable(m_nZoom < 8);
 }
 
-void CBitEditView::OnUpdateViewZoomOut(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateViewZoomOut(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_nZoom > 1);
+    pCmdUI.Enable(m_nZoom > 1);
 }
 
-void CBitEditView::OnViewZoomIn()
+void CBitEditView::OnViewZoomIn(wxCommandEvent& /*event*/)
 {
     switch (m_nZoom)
     {
@@ -1204,10 +1212,10 @@ void CBitEditView::OnViewZoomIn()
     RecalcScrollLimits();
     if (m_nCurToolID == ID_ITOOL_TEXT)
         SetTextCaretPos(m_ptCaret);
-    Invalidate();
+    Refresh();
 }
 
-void CBitEditView::OnViewZoomOut()
+void CBitEditView::OnViewZoomOut(wxCommandEvent& /*event*/)
 {
     switch (m_nZoom)
     {
@@ -1218,10 +1226,10 @@ void CBitEditView::OnViewZoomOut()
     RecalcScrollLimits();
     if (m_nCurToolID == ID_ITOOL_TEXT)
         SetTextCaretPos(m_ptCaret);
-    Invalidate();
+    Refresh();
 }
 
-void CBitEditView::OnViewToggleScale()
+void CBitEditView::OnViewToggleScale(wxCommandEvent& /*event*/)
 {
     switch (m_nZoom)
     {
@@ -1233,9 +1241,15 @@ void CBitEditView::OnViewToggleScale()
     RecalcScrollLimits();
     if (m_nCurToolID == ID_ITOOL_TEXT)
         SetTextCaretPos(m_ptCaret);
-    Invalidate();
+    Refresh();
 }
 
+void CBitEditView::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
+#if 0
 void CBitEditView::OnDwgFont()
 {
     if (m_pTMgr->DoBitFontDialog())
@@ -1246,8 +1260,9 @@ void CBitEditView::OnDwgFont()
             UpdateTextView();
     }
 }
+#endif
 
-void CBitEditView::OnEditUndo()
+void CBitEditView::OnEditUndo(wxCommandEvent& /*event*/)
 {
     if (!IsUndoAvailable())
         return;
@@ -1256,7 +1271,6 @@ void CBitEditView::OnEditUndo()
     InvalidateViewImage(false);
     m_pSelView->UpdateViewImage();
 }
-#endif
 
 void CBitEditView::OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI)
 {
@@ -1334,28 +1348,26 @@ void CBitEditView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!m_bFillOnly);
 }
+#endif
 
-void CBitEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
 {
-    CPoint point;
-    GetCursorPos(&point);
-    ScreenToClient(&point);
+    wxPoint point = wxGetMouseState().GetPosition();
+    point = ScreenToClient(point);
 
-    CRect rct;
-    GetClientRect(&rct);
+    wxRect rct = GetClientRect();
 
-    if (rct.PtInRect(point))
+    if (rct.Contains(point))
     {
         ClientToWorkspace(point);
         if (GetImagePixelLoc(point))
         {
             CB::string szCoord = std::format(L"X={}, Y={}", point.x, point.y);
-            pCmdUI->Enable();
-            pCmdUI->SetText(szCoord);
+            pCmdUI.Enable(true);
+            pCmdUI.SetText(szCoord);
         }
     }
 }
-#endif
 
 void CBitEditViewContainer::OnDraw(CDC* pDC)
 {

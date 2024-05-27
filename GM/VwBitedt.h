@@ -146,8 +146,8 @@ protected:
     FontID      m_fontID;       // Current fontID Shadow variable
     int         m_tmHeight;     // Font's height
     // ------ //
-    UINT        m_nCurToolID;   // Current tool ID
-    UINT        m_nLastToolID;  // Previous tool ID
+    int         m_nCurToolID;   // Current tool ID
+    int         m_nLastToolID;  // Previous tool ID
     BOOL        m_bFillOnly;    // Only allow fills
     // ------ //
     UINT        m_nZoom;        // 1, 2, 6, 8
@@ -186,13 +186,17 @@ protected:
 
 #if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnImageGridLines();
-    afx_msg BOOL OnToolPalette(UINT id);
+#endif
+    void OnImageGridLines(wxCommandEvent& event);
+    void OnToolPalette(wxCommandEvent& event);
+#if 0
     afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnUpdateImageGridLines(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateToolPalette(CCmdUI* pCmdUI);
+#endif
+    void OnUpdateImageGridLines(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnUpdateColorForeground(CCmdUI* pCmdUI);
     afx_msg void OnUpdateColorBackground(CCmdUI* pCmdUI);
     afx_msg void OnUpdateColorTransparent(CCmdUI* pCmdUI);
@@ -203,27 +207,32 @@ protected:
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg void OnImageBoardMask();
-    afx_msg void OnViewZoomIn();
-    afx_msg void OnUpdateViewZoomIn(CCmdUI* pCmdUI);
-    afx_msg void OnViewZoomOut();
-    afx_msg void OnUpdateViewZoomOut(CCmdUI* pCmdUI);
+#endif
+    void OnViewZoomIn(wxCommandEvent& event);
+    void OnUpdateViewZoomIn(wxUpdateUIEvent& pCmdUI);
+    void OnViewZoomOut(wxCommandEvent& event);
+    void OnUpdateViewZoomOut(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnUpdateImageBoardMask(CCmdUI* pCmdUI);
     afx_msg void OnKillFocus(CWnd* pNewWnd);
     afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnDwgFont();
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg void OnEditUndo();
 #endif
+    void OnEditUndo(wxCommandEvent& event);
     void OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI);
 #if 0
     afx_msg void OnEditCopy();
     afx_msg void OnEditPaste();
     afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
     afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnViewToggleScale();
 #endif
+    void OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI);
+#if 0
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+#endif
+    void OnViewToggleScale(wxCommandEvent& event);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     wxDECLARE_EVENT_TABLE();
 
 private:
