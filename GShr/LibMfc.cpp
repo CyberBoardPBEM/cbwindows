@@ -1120,8 +1120,45 @@ namespace CB
                 // TODO:
                 return wxID_NONE;
 #else
-                // TODO:
-                return wxID_NONE;
+                switch (id)
+                {
+                    case ID_IMAGE_GRIDLINES:
+                        return XRCID("ID_IMAGE_GRIDLINES");
+                    case ID_INDICATOR_CELLNUM:
+                        return XRCID("ID_INDICATOR_CELLNUM");
+                    case ID_ITOOL_PENCIL:
+                        return XRCID("ID_ITOOL_PENCIL");
+                    case ID_ITOOL_SELECT:
+                        return XRCID("ID_ITOOL_SELECT");
+                    case ID_ITOOL_BRUSH:
+                        return XRCID("ID_ITOOL_BRUSH");
+                    case ID_ITOOL_FILL:
+                        return XRCID("ID_ITOOL_FILL");
+                    case ID_ITOOL_TEXT:
+                        return XRCID("ID_ITOOL_TEXT");
+                    case ID_ITOOL_LINE:
+                        return XRCID("ID_ITOOL_LINE");
+                    case ID_ITOOL_RECT:
+                        return XRCID("ID_ITOOL_RECT");
+                    case ID_ITOOL_OVAL:
+                        return XRCID("ID_ITOOL_OVAL");
+                    case ID_ITOOL_FILLRECT:
+                        return XRCID("ID_ITOOL_FILLRECT");
+                    case ID_ITOOL_FILLOVAL:
+                        return XRCID("ID_ITOOL_FILLOVAL");
+                    case ID_ITOOL_DROPPER:
+                        return XRCID("ID_ITOOL_DROPPER");
+                    case ID_ITOOL_COLORCHANGE:
+                        return XRCID("ID_ITOOL_COLORCHANGE");
+                    case ID_VIEW_TOGGLE_SCALE:
+                        return XRCID("ID_VIEW_TOGGLE_SCALE");
+                    case ID_VIEW_ZOOMIN:
+                        return wxID_ZOOM_IN;
+                    case ID_VIEW_ZOOMOUT:
+                        return wxID_ZOOM_OUT;
+                    default:
+                        return wxID_NONE;
+                }
 #endif
         }
     }
