@@ -131,7 +131,7 @@ void CTileSelView::OnInitialUpdate()
     // Finally hand the full size tile to the bit editor.
     ASSERT(m_pEditView != NULL);
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+    m_pEditView->SetCurrentBitmap(m_tid, m_bmFull);
 
     SetSizer(new wxBoxSizer(wxVERTICAL));
     GetSizer()->Add(m_sizeSelArea.x, m_sizeSelArea.y);
@@ -206,7 +206,7 @@ void CTileSelView::OnDraw(wxDC& pDC)
     else
         rctActive = m_rctSmall;
 
-    wxBitmap pbm = CB::Convert(*m_pEditView->GetCurrentViewBitmap());
+    const wxBitmap& pbm = m_pEditView->GetCurrentViewBitmap();
     wxASSERT(pbm.IsOk());
 
     DrawTile(pDC, pbm, rctActive);
@@ -224,7 +224,7 @@ void CTileSelView::UpdateViewPixel(wxPoint pt, UINT nBrushSize, const wxBrush& p
     int nSizeY;
 
     wxPoint pnt = GetActiveTileLoc();
-    wxSize size = CB::Convert(m_pEditView->GetBitmapSize());
+    wxSize size = m_pEditView->GetBitmapSize();
 
     nSizeX = pt.x - nBrushSize / 2;
     nSizeY = pt.y - nBrushSize / 2;
@@ -252,7 +252,7 @@ void CTileSelView::UpdateDocumentTiles()
 {
     CGamDoc& pDoc = GetDocument();
     // Make sure our bitmaps are up to date.
-    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
+    GetActiveBitmap() = CloneBitmap(m_pEditView->GetCurrentViewBitmap());
 
     // Get small scale color from tiny bitmap and update tile
     /* https://docs.wxwidgets.org/stable/classwx_d_c.html#abe0f8a22ec58783bd728f01e493040d1
@@ -274,7 +274,7 @@ void CTileSelView::UpdateDocumentTiles()
 void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
-    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
+    GetActiveBitmap() = CloneBitmap(m_pEditView->GetCurrentViewBitmap());
     dlg.m_pBMgr = GetDocument().GetBoardManager();
     dlg.m_bRescaleBMaps = true;
     dlg.m_nWidth = m_sizeFull.x;
@@ -310,7 +310,7 @@ void CTileSelView::DoTileResizeDialog()
 
         // Finally hand the full size tile to the bit editor.
         SelectCurrentBitmap(fullScale);
-        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+        m_pEditView->SetCurrentBitmap(m_tid, m_bmFull);
         Refresh();
     }
 }
@@ -319,7 +319,7 @@ void CTileSelView::DoTileResizeDialog()
 
 void CTileSelView::DoTileRotation(int nAngle)
 {
-    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
+    GetActiveBitmap() = CloneBitmap(m_pEditView->GetCurrentViewBitmap());
     wxBitmap dibFull = CloneBitmap(m_bmFull);
     wxBitmap dibHalf = CloneBitmap(m_bmHalf);
 
@@ -350,7 +350,7 @@ void CTileSelView::DoTileRotation(int nAngle)
     CalcViewLayout();
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+    m_pEditView->SetCurrentBitmap(m_tid, m_bmFull);
     Refresh();
 }
 
@@ -386,7 +386,7 @@ void CTileSelView::RestoreFromUndo()
 
     // Finally hand the full size tile to the bit editor.
     SelectCurrentBitmap(fullScale);
-    m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+    m_pEditView->SetCurrentBitmap(m_tid, m_bmFull);
     Refresh();
 }
 
@@ -458,11 +458,11 @@ wxBitmap& CTileSelView::GetActiveBitmap()
 void CTileSelView::SelectCurrentBitmap(TileScale eScale)
 {
     if (eScale == fullScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmFull));
+        m_pEditView->SetCurrentBitmap(m_tid, m_bmFull);
     else if (eScale == halfScale)
-        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmHalf));
+        m_pEditView->SetCurrentBitmap(m_tid, m_bmHalf);
     else
-        m_pEditView->SetCurrentBitmap(m_tid, &*CB::Convert(m_bmSmall), TRUE);
+        m_pEditView->SetCurrentBitmap(m_tid, m_bmSmall, TRUE);
     m_eCurTile = eScale;
 }
 
@@ -488,7 +488,7 @@ void CTileSelView::OnLButtonDown(wxMouseEvent& event)
     {
         return;
     }
-    GetActiveBitmap() = CB::Convert(*CloneBitmap(*m_pEditView->GetCurrentViewBitmap()));
+    GetActiveBitmap() = CloneBitmap(m_pEditView->GetCurrentViewBitmap());
 
     SelectCurrentBitmap(eScale);
     Refresh();
@@ -510,109 +510,151 @@ CTileSelView::~CTileSelView()
 LRESULT CTileSelViewContainer::OnSetColor(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     return child->GetBitEditor().OnSetColor(wParam, lParam);
+#else
+    return 0;
+#endif
 }
 
 LRESULT CTileSelViewContainer::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     return child->GetBitEditor().OnSetCustomColors(wParam, lParam);
+#else
+    return 0;
+#endif
 }
 
 LRESULT CTileSelViewContainer::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     return child->GetBitEditor().OnSetLineWidth(wParam, lParam);
+#else
+    return 0;
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateColorForeground(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateColorBackground(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateColorTransparent(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateColorTransparent(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateColorCustom(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateColorCustom(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateLineWidth(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateLineWidth(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateToolPalette(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateToolPalette(pCmdUI);
+#endif
 }
 
 BOOL CTileSelViewContainer::OnToolPalette(UINT id)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     return child->GetBitEditor().OnToolPalette(id);
+#else
+    return 0;
+#endif
 }
 
 void CTileSelViewContainer::OnEditPaste()
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnEditPaste();
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateEditPaste(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateEditPaste(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnEditCopy()
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnEditCopy();
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnUpdateEditCopy(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnEditUndo()
 {
     wxASSERT(!"unreachable code?");
+#if 0
     if (child->IsUndoAvailable())      // Us first.
         child->RestoreFromUndo();
     else
         child->GetBitEditor().OnEditUndo();
+#endif
 }
 
 void CTileSelViewContainer::OnUpdateEditUndo(CCmdUI* pCmdUI)
 {
     wxASSERT(!"unreachable code?");
+#if 0
     if (child->IsUndoAvailable())      // Us first.
         pCmdUI->Enable(TRUE);
     else
         child->GetBitEditor().OnUpdateEditUndo(pCmdUI);
+#endif
 }
 
 void CTileSelViewContainer::OnViewToggleScale()
 {
     wxASSERT(!"unreachable code?");
+#if 0
     child->GetBitEditor().OnViewToggleScale();
+#endif
 }
 
 void CTileSelViewContainer::OnDraw(CDC* pDC)
@@ -633,7 +675,10 @@ void CTileSelViewContainer::OnActivateView(BOOL bActivate,
     if (bActivate)
     {
         wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(&child->GetBitEditor());
+        CBitEditView& bitEdit = child->GetBitEditor();
+        wxWindow& bitEditParent = CheckedDeref(bitEdit.GetParent());
+        CView& view = CheckedDeref(dynamic_cast<CView*>(CB::ToCWnd(bitEditParent)));
+        GetParentFrame()->SetActiveView(&view);
     }
 }
 

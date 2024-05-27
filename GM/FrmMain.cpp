@@ -384,7 +384,7 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOO
             ASSERT(pView != NULL);
             wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
                         typeid(*pView) != typeid(CTileSelViewContainer) &&
-                        typeid(*pView) != typeid(CBitEditViewContainer));
+                        typeid(*pView) != typeid(CBitEditView));
 
             while (*pRtc != NULL)
             {
@@ -429,7 +429,7 @@ BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
             ASSERT(pView != NULL);
             wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
                         typeid(*pView) != typeid(CTileSelViewContainer) &&
-                        typeid(*pView) != typeid(CBitEditViewContainer));
+                        typeid(*pView) != typeid(CBitEditView));
 
             while (*pRtc != NULL)
             {

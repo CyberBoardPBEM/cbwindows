@@ -39,16 +39,16 @@
 
 class CTileSelView;
 
-class CBitEditView : public CScrollView
+class CBitEditView : public wxScrolledCanvas
 {
     friend class CBitEditViewContainer;
     friend class CTileSelViewContainer;
 protected:
-    CBitEditView();
+    CBitEditView(CBitEditViewContainer& parent);
 
 // Attributes
 public:
-    const CGamDoc& GetDocument() const { return CheckedDeref(dynamic_cast<CGamDoc*>(CScrollView::GetDocument())); }
+    const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
     {
         return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
@@ -59,70 +59,70 @@ public:
     {
         return const_cast<CTileSelView&>(std::as_const(*this).GetTileSelectView());
     }
-    void SetCurrentBitmap(TileID tid, const CBitmap* pBMap, BOOL bFillOnly = FALSE);
-    const OwnerPtr<CBitmap>& GetCurrentViewBitmap() const;
-    const OwnerPtr<CBitmap>& GetCurrentMasterBitmap() const { return m_bmMaster; }
-    OwnerPtr<CBitmap>& GetCurrentMasterBitmap()
+    void SetCurrentBitmap(TileID tid, const wxBitmap& pBMap, BOOL bFillOnly = FALSE);
+    const wxBitmap& GetCurrentViewBitmap() const;
+    const wxBitmap& GetCurrentMasterBitmap() const { return m_bmMaster; }
+    wxBitmap& GetCurrentMasterBitmap()
     {
-        return const_cast<OwnerPtr<CBitmap>&>(std::as_const(*this).GetCurrentMasterBitmap());
+        return const_cast<wxBitmap&>(std::as_const(*this).GetCurrentMasterBitmap());
     }
-    const OwnerPtr<CBitmap>& GetPasteBitmap() const { return m_bmPaste; }
-    OwnerPtr<CBitmap>& GetPasteBitmap()
+    const wxBitmap& GetPasteBitmap() const { return m_bmPaste; }
+    wxBitmap& GetPasteBitmap()
     {
-        return const_cast<OwnerPtr<CBitmap>&>(std::as_const(*this).GetPasteBitmap());
+        return const_cast<wxBitmap&>(std::as_const(*this).GetPasteBitmap());
     }
-    CSize GetBitmapSize() const { return m_size; }
-    CSize GetZoomedSize() const
-        { return CSize(m_size.cx * m_nZoom, m_size.cy * m_nZoom); }
-    CRect GetZoomedSelectBorderRect() const;
-    CRect GetZoomedSelectRect() const;
-    void SetSelectRect(const CRect& rct) { m_rctPaste = rct; }
-    CRect GetSelectRect() const { return m_rctPaste; }
-    void OffsetSelectRect(CSize size) { m_rctPaste += (CPoint)size; }
+    wxSize GetBitmapSize() const { return m_size; }
+    wxSize GetZoomedSize() const
+        { return wxSize(m_size.x * m_nZoom, m_size.y * m_nZoom); }
+    wxRect GetZoomedSelectBorderRect() const;
+    wxRect GetZoomedSelectRect() const;
+    void SetSelectRect(const wxRect& rct) { m_rctPaste = rct; }
+    wxRect GetSelectRect() const { return m_rctPaste; }
+    void OffsetSelectRect(wxSize size) { m_rctPaste.Offset(size.x, size.y); }
     void SetSelectToolControl(BOOL bCapture) { m_bSelectCapture = bCapture; }
 
     FontID UpdateBitFont();
     // Current Colors
     UINT GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
-    COLORREF GetForeColor() const { return m_pTMgr->GetForeColor(); }
-    COLORREF GetBackColor() const { return m_pTMgr->GetBackColor(); }
-    void SetForeColor(COLORREF crFore) { m_pTMgr->SetForeColor(crFore); }
-    void SetBackColor(COLORREF crBack) { m_pTMgr->SetForeColor(crBack); }
+    wxColour GetForeColor() const { return CB::Convert(m_pTMgr->GetForeColor()); }
+    wxColour GetBackColor() const { return CB::Convert(m_pTMgr->GetBackColor()); }
+    void SetForeColor(wxColour crFore) { m_pTMgr->SetForeColor(CB::Convert(crFore)); }
+    void SetBackColor(wxColour crBack) { m_pTMgr->SetForeColor(CB::Convert(crBack)); }
 
 // Operations
 public:
-    BOOL GetImagePixelLoc(CPoint& point) const;   // degrids it also
-    void GetImagePixelLocClamped(CPoint& point) const;
+    BOOL GetImagePixelLoc(wxPoint& point) const;   // degrids it also
+    void GetImagePixelLocClamped(wxPoint& point) const;
     void SetViewImageFromMasterImage();
     void SetMasterImageFromViewImage();
     void ClearPasteImage();
     void InvalidateViewImage(bool bUpdate);
     void InvalidateFocusBorder();
-    BOOL IsPtInImage(CPoint point) const;
-    BOOL IsPtInSelectRect(CPoint point) const;
-    BOOL IsPasteImage() const { return m_bmPaste->m_hObject != NULL; }
+    BOOL IsPtInImage(wxPoint point) const;
+    BOOL IsPtInSelectRect(wxPoint point) const;
+    BOOL IsPasteImage() const { return m_bmPaste.IsOk(); }
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
 
     // Draw tools support
-    void DrawImagePixel(CPoint point, UINT nSize);
-    void DrawImageToPixel(CPoint prvPt, CPoint curPt, UINT nSize);
-    void DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize);
-    void DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize);
-    void DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize);
-    void DrawImageFill(CPoint pt);
-    void DrawImageChangeColor(CPoint pt);
-    void DrawImageSelectRect(CPoint startPt, CPoint curPt);
+    void DrawImagePixel(wxPoint point, UINT nSize);
+    void DrawImageToPixel(wxPoint prvPt, wxPoint curPt, UINT nSize);
+    void DrawImageLine(wxPoint startPt, wxPoint curPt, UINT nSize);
+    void DrawImageRect(wxPoint startPt, wxPoint curPt, UINT nSize);
+    void DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize);
+    void DrawImageFill(wxPoint pt);
+    void DrawImageChangeColor(wxPoint pt);
+    void DrawImageSelectRect(wxPoint startPt, wxPoint curPt);
     void DrawPastedImage();
 
     // Coordinate space
-    void ClientToWorkspace(CPoint& pnt) const;
-    void WorkspaceToClient(CPoint& pnt) const;
-    void WorkspaceToClient(CRect& rct) const;
+    void ClientToWorkspace(wxPoint& pnt) const;
+    void WorkspaceToClient(wxPoint& pnt) const;
+    void WorkspaceToClient(wxRect& rct) const;
 
     // Text edit support.
     int CalcCaretHeight(int yLoc) const;
-    void SetTextPosition(CPoint ptPos);
-    void SetTextCaretPos(CPoint ptPos);
+    void SetTextPosition(wxPoint ptPos);
+    void SetTextCaretPos(wxPoint ptPos);
     void CommitCurrentText();
     void FixupTextCaret();
     void UpdateTextView();
@@ -139,7 +139,7 @@ public:
 protected:
     void ClearAllImages();
     void RecalcScrollLimits();
-    CRect GetImageRect() const;
+    wxRect GetImageRect() const;
     static IToolType MapToolType(UINT nToolResID);
 
     // ------ //
@@ -153,37 +153,38 @@ protected:
     UINT        m_nZoom;        // 1, 2, 6, 8
     BOOL        m_bGridVisible; // TRUE if grid visible in zoom 6 and 8
     TileID      m_tid;          // Used for image update broadcasts
-    CSize       m_size;         // Size of bitmap
-    CPoint      m_ptCaret;      // Caret position within bitmap (x=-1, disable)
-    CPoint      m_ptText;       // Text position within bitmap
+    wxSize      m_size;         // Size of bitmap
+    wxPoint     m_ptCaret;      // Caret position within bitmap (x=-1, disable)
+    wxPoint     m_ptText;       // Text position within bitmap
     int         m_nTxtExtent;   // Length of text in pixels
     // ------ //
     CB::string  m_strText;      // Text editing.
     // ------ //
-    OwnerPtr<CBitmap> m_bmMaster;     // master (current) bitmap image
-    OwnerPtr<CBitmap> m_bmView;       // bitmap shown in edit window
+    wxBitmap    m_bmMaster;     // master (current) bitmap image
+    wxBitmap    m_bmView;       // bitmap shown in edit window
     // ------ //
-    OwnerPtr<CBitmap> m_bmPaste;      // bitmap being pasted or moved
-    CRect       m_rctPaste;     // rect surrounding the paste bitmap
+    wxBitmap    m_bmPaste;      // bitmap being pasted or moved
+    wxRect      m_rctPaste;     // rect surrounding the paste bitmap
     BOOL        m_bSelectCapture;// Select tool has mouse captured
     // ------ //
     // Undo FIFO
-    std::deque<OwnerPtr<CBitmap>> m_listUndo;     // List of undo bitmaps
+    std::deque<wxBitmap> m_listUndo;     // List of undo bitmaps
     // ------ //
     CTileSelView* m_pSelView;
     CTileManager* m_pTMgr;
 protected:
     ~CBitEditView() override;
-    void OnDraw(CDC* pDC) override;      // overridden to draw this view
-    void OnInitialUpdate() override;     // first time after construct
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnDraw(wxDC& dc) override;
+    void OnInitialUpdate();
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+#if 0
     void OnActivateView(BOOL bActivate, CView *pActivateView,
         CView* pDeactivateView) override;
 
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+#endif
 
-    // Generated message map functions
-    //{{AFX_MSG(CBitEditView)
+#if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnImageGridLines();
     afx_msg BOOL OnToolPalette(UINT id);
@@ -212,7 +213,9 @@ protected:
     afx_msg void OnDwgFont();
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnEditUndo();
-    afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
+#endif
+    void OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnEditCopy();
     afx_msg void OnEditPaste();
     afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
@@ -220,24 +223,30 @@ protected:
     afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnViewToggleScale();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    RefPtr<CBitEditViewContainer> parent;
+    RefPtr<CGamDoc> document;
 };
 
-class CBitEditViewContainer : public CView
+class CBitEditViewContainer : public CB::OnCmdMsgOverride<CView>,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
-    const CBitEditView& GetChild() const { return *child; }
+    const CBitEditView& GetChild() const { return CheckedDeref(child); }
     CBitEditView& GetChild()
     {
         return const_cast<CBitEditView&>(std::as_const(*this).GetChild());
     }
     void OnDraw(CDC* pDC) override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 protected:
-    void OnActivateView(BOOL bActivate,
-                        CView* pActivateView,
-                        CView* pDeactiveView) override;
+    void OnActivateView(BOOL bActivate, CView *pActivateView,
+        CView* pDeactivateView) override;
 
 private:
     CBitEditViewContainer();         // used by dynamic creation
@@ -247,8 +256,16 @@ private:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CBitEditView> child;
+    // IGetEventHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CBitEditView*> child = nullptr;
+
+    friend CBitEditView;
 };
 
 /////////////////////////////////////////////////////////////////////////////

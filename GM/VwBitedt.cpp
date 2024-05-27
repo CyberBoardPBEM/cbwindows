@@ -48,8 +48,8 @@ const size_t maxUndoLevels = size_t(8);
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CBitEditView, CScrollView)
-    //{{AFX_MSG_MAP(CBitEditView)
+wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
+#if 0
     ON_WM_ERASEBKGND()
     ON_COMMAND(ID_IMAGE_GRIDLINES, OnImageGridLines)
     ON_COMMAND_EX(ID_ITOOL_PENCIL, OnToolPalette)
@@ -78,7 +78,9 @@ BEGIN_MESSAGE_MAP(CBitEditView, CScrollView)
     ON_COMMAND(ID_DWG_FONT, OnDwgFont)
     ON_WM_CHAR()
     ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+#endif
+    EVT_UPDATE_UI(wxID_UNDO, OnUpdateEditUndo)
+#if 0
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
     ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
@@ -108,8 +110,8 @@ BEGIN_MESSAGE_MAP(CBitEditView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_ITOOL_DROPPER, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_ITOOL_COLORCHANGE, OnUpdateToolPalette)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CBitEditViewContainer, CView)
     ON_WM_CREATE()
@@ -121,10 +123,9 @@ END_MESSAGE_MAP()
 
 IMPLEMENT_DYNCREATE(CBitEditViewContainer, CView)
 
-CBitEditView::CBitEditView() :
-    m_bmMaster(MakeOwner<CBitmap>()),
-    m_bmView(MakeOwner<CBitmap>()),
-    m_bmPaste(MakeOwner<CBitmap>())
+CBitEditView::CBitEditView(CBitEditViewContainer& p) :
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
     m_pSelView = NULL;
     m_nZoom = 6;
@@ -138,7 +139,7 @@ CBitEditView::CBitEditView() :
     m_nCurToolID = ID_ITOOL_PENCIL;
     m_nLastToolID = ID_ITOOL_PENCIL;
     m_bSelectCapture = FALSE;
-    m_rctPaste.SetRectEmpty();
+    wxScrolledCanvas::Create(*parent, 0);
 }
 
 CBitEditView::~CBitEditView()
@@ -148,6 +149,7 @@ CBitEditView::~CBitEditView()
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 BOOL CBitEditView::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CScrollView::PreCreateWindow(cs))
@@ -159,10 +161,14 @@ BOOL CBitEditView::PreCreateWindow(CREATESTRUCT& cs)
 
     return TRUE;
 }
+#endif
 
 void CBitEditView::OnInitialUpdate()
 {
-    CScrollView::OnInitialUpdate();
+    wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
+    sizer->Add(100, 100);
+    SetScrollRate(4, 4);
     m_pTMgr = GetDocument().GetTileManager();
     UpdateFontInfo();
     RecalcScrollLimits();
@@ -173,107 +179,110 @@ void CBitEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     WORD wHint = LOWORD(lHint);
     // Update for nonspecific notification only
     if (wHint == HINT_ALWAYSUPDATE)
-        CScrollView::OnUpdate(pSender, lHint, pHint);
+        parent->CView::OnUpdate(pSender, lHint, pHint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditView drawing
 
-void CBitEditView::OnDraw(CDC* pDC)
+void CBitEditView::OnDraw(wxDC& pDC)
 {
-    if (m_bmView->m_hObject == NULL)
+    if (!m_bmView.IsOk())
         return;                 // Nothing to draw.
 
-    CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
+    wxSize size(m_size.x * m_nZoom, m_size.y * m_nZoom);
 
-    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsRectEmpty())
+    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
-        if (GetParentFrame()->GetActiveView() == this)
+        if (parent->GetParentFrame()->GetActiveView() == parent)
         {
-            CRect rct(0, 0, 2 * xBorder + size.cx, 2 * yBorder + size.cy);
-            Draw25PctPatBorder(*this, *pDC, rct, xBorder);
+            wxRect rct(0, 0, 2 * xBorder + size.x, 2 * yBorder + size.y);
+            Draw25PctPatBorder(*this, pDC, rct, xBorder);
         }
     }
 
     // Now handle the actual bitmap
 
-    g_gt.mDC1.SelectObject(*m_bmView);
-    pDC->SetStretchBltMode(COLORONCOLOR);
+    wxMemoryDC sourceDC;
+    sourceDC.SelectObjectAsSource(m_bmView);
 
     if (m_bGridVisible && m_nZoom > 2)
     {
-        OwnerPtr<CBitmap> bmTmp = CreateRGBDIBSection(
-            size.cx + 1, size.cy + 1);
-        g_gt.mDC2.SelectObject(&*bmTmp);
-        g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1, 0, 0,
-            m_size.cx, m_size.cy, SRCCOPY);
-        for (int i = 0; i <= size.cx; i += m_nZoom)
-            g_gt.mDC2.PatBlt(i, 0, 1, size.cy + 1, BLACKNESS);
-        for (int i = 0; i <= size.cy; i += m_nZoom)
-            g_gt.mDC2.PatBlt(0, i, size.cx + 1, 1, BLACKNESS);
-        pDC->BitBlt(xBorder - 1, yBorder - 1, size.cx + 1, size.cy + 1, &g_gt.mDC2,
-            0, 0, SRCCOPY);
-        g_gt.SelectSafeObjectsForDC2();
+        wxBitmap bmTmp(
+            size.x + 1, size.y + 1);
+        wxMemoryDC tempDC(bmTmp);
+        tempDC.StretchBlit(0, 0, size.x, size.y, &sourceDC, 0, 0,
+            m_size.x, m_size.y);
+        tempDC.SetPen(*wxBLACK_PEN);
+        for (int i = 0; i <= size.x; i += m_nZoom)
+            tempDC.DrawLine(wxPoint(i, 0), wxPoint(i, size.y + 1));
+        for (int i = 0; i <= size.y; i += m_nZoom)
+            tempDC.DrawLine(wxPoint(0, i), wxPoint(size.x + 1, i));
+        pDC.Blit(xBorder - 1, yBorder - 1, size.x + 1, size.y + 1, &tempDC,
+            0, 0);
     }
     else
     {
+        wxASSERT(!"todo");
+#if 0
         pDC->StretchBlt(xBorder, yBorder, size.cx, size.cy, &g_gt.mDC1, 0, 0,
             m_size.cx, m_size.cy, SRCCOPY);
         pDC->PatBlt(xBorder-1, yBorder-1, 1, size.cy + 2, BLACKNESS);
         pDC->PatBlt(xBorder-1, yBorder-1, size.cx + 2, 1, BLACKNESS);
         pDC->PatBlt(xBorder + size.cx, yBorder-1, 1, size.cy + 2, BLACKNESS);
         pDC->PatBlt(xBorder-1, yBorder + size.cy, size.cx + 2, 1, BLACKNESS);
+#endif
     }
     if (m_nCurToolID == ID_ITOOL_SELECT && !m_bSelectCapture &&
-        m_bmPaste->m_hObject != NULL && !m_rctPaste.IsRectEmpty())
+        m_bmPaste.IsOk() && !m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
-        if (GetParentFrame()->GetActiveView() == this)
+        if (parent->GetParentFrame()->GetActiveView())
         {
             // Convert paste rect to view coordinates.
-            CRect rct = GetZoomedSelectBorderRect();
-            Draw25PctPatBorder(*this, *pDC, rct, xBorder);
+            wxRect rct = GetZoomedSelectBorderRect();
+            Draw25PctPatBorder(*this, pDC, rct, xBorder);
         }
     }
-    g_gt.SelectSafeObjectsForDC1();  // This does ResetPalette for mDC1
 }
 
-void CBitEditView::OnActivateView(BOOL bActivate, CView *pActivateView,
+void CBitEditViewContainer::OnActivateView(BOOL bActivate, CView *pActivateView,
     CView* pDeactivateView)
 {
-    CScrollView::OnActivateView(bActivate, pActivateView, pDeactivateView);
+    CView::OnActivateView(bActivate, pActivateView, pDeactivateView);
     if (pActivateView == pDeactivateView)
         return;
 //  if (m_nCurToolID == ID_ITOOL_TEXT)
 //  {
-//      SetFocus();
-//      SetTextCaretPos(m_ptCaret);
+//      child->SetFocus();
+//      child->SetTextCaretPos(m_ptCaret);
 //  }
-    Invalidate();       // Later only mess with focus rect.
+    child->Refresh();       // Later only mess with focus rect.
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CBitEditView::ClientToWorkspace(CPoint& pnt) const
+void CBitEditView::ClientToWorkspace(wxPoint& pnt) const
 {
-    pnt += (CSize)GetDeviceScrollPosition();
+    pnt = CalcUnscrolledPosition(pnt);
 }
 
-void CBitEditView::WorkspaceToClient(CPoint& pnt) const
+void CBitEditView::WorkspaceToClient(wxPoint& pnt) const
 {
-    pnt -= (CSize)GetDeviceScrollPosition();
+    pnt = CalcScrolledPosition(pnt);
 }
 
-void CBitEditView::WorkspaceToClient(CRect& rct) const
+void CBitEditView::WorkspaceToClient(wxRect& rct) const
 {
-    rct -= GetDeviceScrollPosition();
+    rct.SetLeftTop(CalcScrolledPosition(rct.GetTopLeft()));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Draw tool support.
 // points are in bit image coordinates
 
+#if 0
 void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
@@ -521,33 +530,32 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     }
     g_gt.SelectSafeObjectsForDC1();
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-const OwnerPtr<CBitmap>& CBitEditView::GetCurrentViewBitmap() const
+const wxBitmap& CBitEditView::GetCurrentViewBitmap() const
 {
     return m_bmView;
 }
 
-void CBitEditView::SetCurrentBitmap(TileID tid, const CBitmap* pBMap,
+void CBitEditView::SetCurrentBitmap(TileID tid, const wxBitmap& pBMap,
     BOOL bFillOnly /* = FALSE */)
 {
     if (m_nCurToolID == ID_ITOOL_TEXT)
         CommitCurrentText();
-    SetTextCaretPos(CPoint(-1, -1));        // Turn off the caret
+    SetTextCaretPos(wxPoint(-1, -1));        // Turn off the caret
 
     m_tid = tid;                    // Used for update broadcasts
     m_bFillOnly = bFillOnly;
 
     ClearAllImages();               // clear undos etc...
-    if (pBMap == NULL)
+    if (!pBMap.IsOk())
         return;
-    m_bmMaster = CloneBitmap(*pBMap);
+    m_bmMaster = CloneBitmap(pBMap);
     SetViewImageFromMasterImage();
 
-    BITMAP bmInfo;
-    m_bmMaster->GetObject(sizeof(bmInfo), &bmInfo);
-    m_size = CSize(bmInfo.bmWidth, bmInfo.bmHeight);
+    m_size = m_bmMaster.GetSize();
 
     RecalcScrollLimits();
 
@@ -558,141 +566,153 @@ void CBitEditView::SetCurrentBitmap(TileID tid, const CBitmap* pBMap,
         m_nLastToolID = m_nCurToolID;
     }
 
-    Invalidate();
+    Refresh();
 }
 
 void CBitEditView::SetViewImageFromMasterImage()
 {
-    m_bmView = CloneBitmap(*m_bmMaster);
+    m_bmView = CloneBitmap(m_bmMaster);
 }
 
 void CBitEditView::SetMasterImageFromViewImage()
 {
-    m_bmMaster = CloneBitmap(*m_bmView);
+    m_bmMaster = CloneBitmap(m_bmView);
 }
 
 // Clear main image, undo images,  etc...
 void CBitEditView::ClearAllImages()
 {
     PurgeUndo();
-    m_bmMaster = MakeOwner<CBitmap>();
-    m_bmView = MakeOwner<CBitmap>();
+    m_bmMaster = wxBitmap();
+    m_bmView = wxBitmap();
     ClearPasteImage();
 }
 
 void CBitEditView::ClearPasteImage()
 {
     if (IsPasteImage())
-        m_bmPaste = MakeOwner<CBitmap>();
-    m_rctPaste.SetRectEmpty();
+        m_bmPaste = wxBitmap();
+    m_rctPaste = wxRect();
 }
 
-BOOL CBitEditView::GetImagePixelLoc(CPoint& point) const
+BOOL CBitEditView::GetImagePixelLoc(wxPoint& point) const
 {
 //  point += (CSize)GetDeviceScrollPosition();
-    point -= CSize(xBorder, yBorder);
+    point -= wxSize(xBorder, yBorder);
     point.x = point.x / (int)m_nZoom;
     point.y = point.y / (int)m_nZoom;
     return point.x >= 0 && point.y >= 0 &&
-        point.x < m_size.cx && point.y < m_size.cy;
+        point.x < m_size.x && point.y < m_size.y;
 }
 
 // Same as GetImagePixelLoc except the point is clamped to
 // always be in the image.
-void CBitEditView::GetImagePixelLocClamped(CPoint& point) const
+void CBitEditView::GetImagePixelLocClamped(wxPoint& point) const
 {
 //  point += (CSize)GetDeviceScrollPosition();
-    point -= CSize(xBorder, yBorder);
+    point -= wxSize(xBorder, yBorder);
     point.x = point.x / (int)m_nZoom;
     point.y = point.y / (int)m_nZoom;
     point.x = CB::max(point.x, 0);
-    point.x = CB::min(point.x, m_size.cx - 1);
+    point.x = CB::min(point.x, m_size.x - 1);
     point.y = CB::max(point.y, 0);
-    point.y = CB::min(point.y, m_size.cy - 1);
+    point.y = CB::min(point.y, m_size.y - 1);
 }
 
 void CBitEditView::InvalidateFocusBorder()
 {
-    CRect rct;
-    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsRectEmpty())
+    wxRect rct;
+    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsEmpty())
     {
-        CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
-        rct = CRect(0, 0, 2 * xBorder + size.cx, 2 * yBorder + size.cy);
+        wxSize size(m_size.x * m_nZoom, m_size.y * m_nZoom);
+        rct = wxRect(wxPoint(0, 0), wxSize(2 * xBorder + size.x, 2 * yBorder + size.y));
     }
     else
         rct = GetZoomedSelectBorderRect();
 
     WorkspaceToClient(rct);
-    InvalidateRect(&rct, TRUE);
+    RefreshRect(rct, TRUE);
 }
 
 void CBitEditView::InvalidateViewImage(bool bUpdate)
 {
-    CRect rct = GetImageRect();
+    wxRect rct = GetImageRect();
     WorkspaceToClient(rct);
-    InvalidateRect(&rct, TRUE);
+    RefreshRect(rct, TRUE);
     if (bUpdate)
-        UpdateWindow();
+        Update();
 }
 
-BOOL CBitEditView::IsPtInImage(CPoint point) const
+BOOL CBitEditView::IsPtInImage(wxPoint point) const
 {
-    return GetImageRect().PtInRect(point);
+    return GetImageRect().Contains(point);
 }
 
-CRect CBitEditView::GetImageRect() const
+wxRect CBitEditView::GetImageRect() const
 {
-    CRect rct;
-    if (m_bmMaster->m_hObject != NULL)
+    wxRect rct;
+    if (m_bmMaster.IsOk())
     {
-        CSize size = GetZoomedSize();
-        rct.SetRect(0, 0, size.cx, size.cy);
-        rct.OffsetRect(xBorder, yBorder);
+        wxSize size = GetZoomedSize();
+        rct = wxRect(wxPoint(xBorder, yBorder), wxSize(size.x, size.y));
     }
     else
-        rct.SetRectEmpty();
+        rct = wxRect();
     return rct;
 }
 
 void CBitEditView::RecalcScrollLimits()
 {
-    if (m_bmMaster->m_hObject != NULL)
+    wxSizer* sizer = GetSizer();
+    // this can be called before OnInitialUpdate
+    if (!sizer)
     {
-        CSize size = GetZoomedSize();
-        SetScrollSizes(MM_TEXT, CSize(size.cx + 2 * xBorder,
-            size.cy + 2 * yBorder),
-            CSize(CB::max(size.cx/4, 16),
-            CB::max(size.cy/4, 16)), CSize(4, 4));
+        return;
+    }
+    wxSizerItemList& items = sizer->GetChildren();
+    wxASSERT(items.size() == 1);
+    wxSizerItem* item = items[0];
+    wxASSERT(item->IsSpacer());
+    if (m_bmMaster.IsOk())
+    {
+        wxSize size = GetZoomedSize();
+        item->AssignSpacer(size.x + 2 * xBorder,
+                            size.y + 2 * yBorder);
     }
     else
-        SetScrollSizes(MM_TEXT, CSize(100, 100));
+    {
+        item->AssignSpacer(100, 100);
+    }
+    sizer->FitInside(this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CBitEditView::IsPtInSelectRect(CPoint point) const
+BOOL CBitEditView::IsPtInSelectRect(wxPoint point) const
 {
-    if (m_rctPaste.IsRectEmpty())
+    wxASSERT(!"untested code");
+    if (m_rctPaste.IsEmpty())
         return FALSE;
-    return GetZoomedSelectRect().PtInRect(point);
+    return GetZoomedSelectRect().Contains(point);
 }
 
-CRect CBitEditView::GetZoomedSelectBorderRect() const
+wxRect CBitEditView::GetZoomedSelectBorderRect() const
 {
-    CRect rct = GetZoomedSelectRect();
-    rct.InflateRect(xBorder, yBorder);
+    wxASSERT(!"untested code");
+    wxRect rct = GetZoomedSelectRect();
+    rct.Inflate(xBorder, yBorder);
     return rct;
 }
 
-CRect CBitEditView::GetZoomedSelectRect() const
+wxRect CBitEditView::GetZoomedSelectRect() const
 {
-    CRect rct(m_rctPaste.left * m_nZoom, m_rctPaste.top * m_nZoom,
-        m_rctPaste.right * m_nZoom, m_rctPaste.bottom * m_nZoom);
-    rct.OffsetRect(xBorder, yBorder);
+    wxASSERT(!"untested code");
+    wxRect rct(wxPoint(m_rctPaste.GetLeft() * m_nZoom, m_rctPaste.GetTop() * m_nZoom),
+        wxSize(m_rctPaste.GetWidth() * m_nZoom, m_rctPaste.GetHeight() * m_nZoom));
+    rct.Offset(xBorder, yBorder);
     if (m_bGridVisible && m_nZoom > 2)
     {
-        rct.top--;
-        rct.left--;
+        rct.Offset(-1, -1);
     }
     return rct;
 }
@@ -701,27 +721,33 @@ CRect CBitEditView::GetZoomedSelectRect() const
 
 int CBitEditView::CalcCaretHeight(int yLoc) const
 {
-    if (yLoc >= m_size.cy) return 0;
+    if (yLoc >= m_size.y) return 0;
     int yEnd = yLoc + m_tmHeight;
-    yEnd = CB::min(yEnd, m_size.cy);
+    yEnd = CB::min(yEnd, m_size.y);
     return yEnd - yLoc;
 }
 
-void CBitEditView::SetTextCaretPos(CPoint ptPos)
+void CBitEditView::SetTextCaretPos(wxPoint ptPos)
 {
     int nHt = CalcCaretHeight(ptPos.y);
-    if (nHt > 0 && ptPos.x >= 0 && ptPos.x <= m_size.cx)
+    if (nHt > 0 && ptPos.x >= 0 && ptPos.x <= m_size.x)
     {
-        CreateSolidCaret(1, nHt * m_nZoom);
+        wxCaret* caret = new wxCaret(this, 1, nHt * m_nZoom);
+        SetCaret(caret);
+#if 0
         CPoint pnt = GetDeviceScrollPosition();
         SetCaretPos(CPoint(xBorder + ptPos.x * m_nZoom - pnt.x - 1,
             yBorder + ptPos.y * m_nZoom - pnt.y - 1));
-        ShowCaret();
+#else
+        caret->Move(wxPoint(xBorder + ptPos.x * m_nZoom - 1,
+            yBorder + ptPos.y * m_nZoom - 1));
+#endif
+        caret->Show(true);
     }
     m_ptCaret = ptPos;
 }
 
-void CBitEditView::SetTextPosition(CPoint ptPos)
+void CBitEditView::SetTextPosition(wxPoint ptPos)
 {
     m_ptText = ptPos;
     SetTextCaretPos(ptPos);
@@ -729,7 +755,7 @@ void CBitEditView::SetTextPosition(CPoint ptPos)
 
 void CBitEditView::FixupTextCaret()
 {
-    SetTextCaretPos(CPoint(m_ptText.x + m_nTxtExtent, m_ptText.y));
+    SetTextCaretPos(wxPoint(m_ptText.x + m_nTxtExtent, m_ptText.y));
 }
 
 void CBitEditView::CommitCurrentText()
@@ -741,11 +767,13 @@ void CBitEditView::CommitCurrentText()
 void CBitEditView::UpdateTextView()
 {
 //  if (m_strText.GetLength() > 0 &&
-    if (CRect(CPoint(0, 0), m_size).PtInRect(m_ptText))
+    if (wxRect(wxPoint(0, 0), m_size).Contains(m_ptText))
     {
         // Draw the text on the view bitmap updating
         // the view with the master bitmap.
         SetViewImageFromMasterImage();          // Get fresh original
+        wxASSERT(!"todo");
+#if 0
         g_gt.mDC1.SelectObject(*m_bmView);
         g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
         UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
@@ -761,6 +789,7 @@ void CBitEditView::UpdateTextView()
         g_gt.mDC1.SelectObject(pPrvFont);
         g_gt.mDC1.SetTextAlign(nAlign);
         g_gt.SelectSafeObjectsForDC1();
+#endif
         InvalidateViewImage(true);
         m_pSelView->UpdateViewImage();
     }
@@ -769,7 +798,7 @@ void CBitEditView::UpdateTextView()
 
 void CBitEditView::AddChar(wchar_t nChar)
 {
-    if (CRect(CPoint(0, 0), m_size).PtInRect(m_ptCaret))
+    if (wxRect(wxPoint(0, 0), m_size).Contains(m_ptCaret))
     {
         m_strText += nChar;
         UpdateTextView();
@@ -799,19 +828,15 @@ FontID CBitEditView::UpdateBitFont()
 
 void CBitEditView::UpdateFontInfo()
 {
-    CDC* pDC = GetDC();
-    CFontTbl* pFMgr = GetDocument().GetFontManager();
-    CFont *pFont = CFont::FromHandle(pFMgr->GetFontHandle(UpdateBitFont()));
-    CFont* pPrvFont = pDC->SelectObject(pFont);
-    TEXTMETRIC tm;
-    pDC->GetTextMetrics(&tm);
-    pDC->SelectObject(pPrvFont);
-    m_tmHeight = tm.tmHeight;
-    ReleaseDC(pDC);
+    wxFont font = ToWxFont(UpdateBitFont());
+    wxClientDC pDC(this);
+    pDC.SetFont(font);
+    m_tmHeight = pDC.GetCharHeight();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 void CBitEditView::OnSetFocus(CWnd* pOldWnd)
 {
     CScrollView::OnSetFocus(pOldWnd);
@@ -850,6 +875,7 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Undo support
@@ -862,7 +888,7 @@ void CBitEditView::SetUndoFromView()
     {
         m_listUndo.pop_back();
     }
-    OwnerPtr<CBitmap> pBMap = CloneBitmap(*m_bmView);
+    wxBitmap pBMap = CloneBitmap(m_bmView);
     m_listUndo.push_front(std::move(pBMap));
 }
 
@@ -874,9 +900,9 @@ void CBitEditView::RestoreUndoToView()
     InvalidateFocusBorder();
     ClearPasteImage();
 
-    SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
+    SetTextCaretPos(wxPoint(-1, -1));    // Turn off the caret
     m_strText.clear();
-    m_bmView = CloneBitmap(*m_listUndo.front());
+    m_bmView = CloneBitmap(m_listUndo.front());
     m_listUndo.pop_front();
 }
 
@@ -888,6 +914,7 @@ void CBitEditView::PurgeUndo()
 /////////////////////////////////////////////////////////////////////////////
 // Message handlers
 
+#if 0
 BOOL CBitEditView::OnEraseBkgnd(CDC* pDC)
 {
     CRect rct = GetImageRect();
@@ -903,9 +930,11 @@ BOOL CBitEditView::OnEraseBkgnd(CDC* pDC)
     pDC->RestoreDC(-1);
     return bRet;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 void CBitEditView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     // Make sure window is active.
@@ -964,6 +993,7 @@ BOOL CBitEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     }
     return CScrollView::OnSetCursor(pWnd, nHitTest, message);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // The table needs to be in the same order and the ID_ITOOL_* numbers
@@ -992,6 +1022,7 @@ IToolType CBitEditView::MapToolType(UINT nToolResID)
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditView command message handlers
 
+#if 0
 void CBitEditView::OnImageGridLines()
 {
     m_bGridVisible = !m_bGridVisible;
@@ -1225,12 +1256,14 @@ void CBitEditView::OnEditUndo()
     InvalidateViewImage(false);
     m_pSelView->UpdateViewImage();
 }
+#endif
 
-void CBitEditView::OnUpdateEditUndo(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsUndoAvailable());
+    pCmdUI.Enable(IsUndoAvailable());
 }
 
+#if 0
 void CBitEditView::OnEditCopy()
 {
     if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL &&
@@ -1322,26 +1355,25 @@ void CBitEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         }
     }
 }
+#endif
 
 void CBitEditViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
 }
 
-void CBitEditViewContainer::OnActivateView(BOOL bActivate,
-    CView* pActivateView,
-    CView* /*pDeactiveView*/)
+void CBitEditViewContainer::OnInitialUpdate()
 {
-    WXUNUSED_UNLESS_DEBUG(pActivateView);
-    if (bActivate)
-    {
-        wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(&*child);
-    }
+    child->OnInitialUpdate();
+}
+
+void CBitEditViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
 }
 
 CBitEditViewContainer::CBitEditViewContainer() :
-    child(new CBitEditView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -1352,23 +1384,13 @@ int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CBitEditView(*this);
 
     return 0;
 }
 
 void CBitEditViewContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
+    child->SetSize(0, 0, cx, cy);
     return CView::OnSize(nType, cx, cy);
 }
