@@ -77,6 +77,7 @@
 #include <wx/fontutil.h>
 #include <wx/image.h>
 #include <wx/listbox.h>
+#include "wx/menu.h"
 #include <wx/msgdlg.h>
 #include <wx/nativewin.h>
 #include <wx/radiobut.h>
@@ -95,6 +96,14 @@
 #include <wx/xrc/xmlres.h>
 #include <wx/zstream.h>
 #include <wx/msw/mfc.h>
+// has dependencies that aren't automatically included
+#include <wx/caret.h>
+
+#if !defined(NDEBUG)
+    #define CB_VERIFY(x) wxASSERT(x)
+#else
+    #define CB_VERIFY(x) static_cast<void>(x)
+#endif
 
 static_assert(std::is_same_v<uint8_t, BYTE>, "wrong standard replacement for BYTE");
 static_assert(std::is_same_v<uint16_t, WORD>, "wrong standard replacement for WORD");
@@ -1893,6 +1902,9 @@ namespace CB
         mutable wxNativeContainerWindow* wxWnd = nullptr;
     };
 
+    /* if mfcWnd has
+        wxNativeContainerWindowMixin, return it */
+    wxWindow* GetWxWindow(CWnd& mfcWnd);
     /* if mfcWnd or one of its descendants has
         wxNativeContainerWindowMixin, return it */
     wxWindow* FindWxWindow(CWnd& mfcWnd);
@@ -2145,4 +2157,84 @@ namespace CB
     };
 }
 
+// use these to translate and relay MFC messages to a wx target
+namespace CB
+{
+    /* Derive from this (with multi-inheritance) to allow
+        converting from CView* to wxWindow* without needing
+        to know details of the types involved. */
+    // Note that OnCmdMsgOverride<> already derives from this
+    class IGetEventHandler
+    {
+    public:
+        virtual wxEvtHandler& Get() = 0;
+        operator wxEvtHandler&() { return Get(); }
+        operator wxEvtHandler*() { return &Get(); }
+    };
+
+    BOOL RelayOnCmdMsg(wxEvtHandler& dest,
+                        UINT nID, int nCode, void* pExtra,
+                        AFX_CMDHANDLERINFO* pHandlerInfo);
+
+    template<typename CCMDTARGET>
+    class OnCmdMsgOverride : public CCMDTARGET,
+                                public IGetEventHandler
+    {
+    public:
+        BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra,
+            AFX_CMDHANDLERINFO* pHandlerInfo) override
+        {
+            if (CCMDTARGET::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+            {
+                return true;
+            }
+            else
+            {
+                return RelayOnCmdMsg(*this,
+                                        nID,
+                                        nCode,
+                                        pExtra,
+                                        pHandlerInfo);
+            }
+        }
+    };
+}
+
+// use these to translate and relay wxEvtHandler events to an MFC target
+namespace CB
+{
+    /* Derive from this (with multi-inheritance) to allow
+        converting from wxEvtHandler* to CCmdTarget* without needing
+        to know details of the types involved.
+        (See VwBitedt.cpp for an example) */
+    // Note that ProcessEventOverride<> already derives from this
+    class IGetCmdTarget
+    {
+    public:
+        virtual CCmdTarget& Get() = 0;
+        operator CCmdTarget&() { return Get(); }
+        operator CCmdTarget*() { return &Get(); }
+    };
+
+    bool RelayProcessEvent(CCmdTarget& dest,
+                            wxEvent& event);
+
+    template<typename WXEVTHANDLER>
+    class ProcessEventOverride : public WXEVTHANDLER,
+                                    public IGetCmdTarget
+    {
+    public:
+        bool ProcessEvent(wxEvent& event) override
+        {
+            if (WXEVTHANDLER::ProcessEvent(event))
+            {
+                return true;
+            }
+            else
+            {
+                return RelayProcessEvent(*this, event);
+            }
+        }
+    };
+}
 #endif
