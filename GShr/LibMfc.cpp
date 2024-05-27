@@ -25,7 +25,15 @@
 #include    "stdafx.h"
 #include    <WTYPES.H>
 
+#include    <map>
+
 #include    "LibMfc.h"
+
+#if defined(GPLAY)
+    #include "../GP/Resource.h"
+#else
+    #include "../GM/Resource.h"
+#endif
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -780,12 +788,19 @@ CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow* () con
     return wxWnd;
 }
 
+/* if mfcWnd has
+    wxNativeContainerWindowMixin, return it */
+wxWindow* CB::GetWxWindow(CWnd& mfcWnd)
+{
+    CB::wxNativeContainerWindowMixin* mixin = dynamic_cast<CB::wxNativeContainerWindowMixin*>(&mfcWnd);
+    return mixin ? *mixin : nullptr;
+}
+
 /* if mfcWnd or one of its descendants has
     wxNativeContainerWindowMixin, return it */
 wxWindow* CB::FindWxWindow(CWnd& mfcWnd)
 {
-    CB::wxNativeContainerWindowMixin* mixin = dynamic_cast<CB::wxNativeContainerWindowMixin*>(&mfcWnd);
-    wxWindow* wxWnd = mixin ? *mixin : nullptr;
+    wxWindow* wxWnd = GetWxWindow(mfcWnd);
     if (wxWnd)
     {
         return wxWnd;
@@ -1090,4 +1105,161 @@ CB::ToolTip::ToolInfo::ToolInfo(wxWindow& w, std::optional<wxRect>&& r, wxString
     tip(std::move(t)),
     flags(f)
 {
+}
+
+namespace CB
+{
+    int ToWxID(int id)
+    {
+        switch (id)
+        {
+            case ID_EDIT_UNDO:
+                return wxID_UNDO;
+            default:
+#if defined(GPLAY)
+                // TODO:
+                return wxID_NONE;
+#else
+                // TODO:
+                return wxID_NONE;
+#endif
+        }
+    }
+}
+
+BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
+                        UINT nID, int nCode, void* pExtra,
+                        AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+    switch (nCode)
+    {
+        case CN_COMMAND:
+        {
+            // MFC uses this as part of its CN_UPDATE_COMMAND_UI
+            if (pHandlerInfo)
+            {
+                /* MFC checks whether handler exists, but that's
+                not possible in wx
+                (see https://groups.google.com/g/wx-dev/c/DD9CYFAjbdM/m/ndNP3TZXBgAJ),
+                so approximate this way */
+                CCmdUI dummy;
+                return RelayOnCmdMsg(dest, nID, CN_UPDATE_COMMAND_UI, &dummy, nullptr);
+            }
+            wxCommandEvent event(wxEVT_MENU, CB::ToWxID(nID));
+            return dest.ProcessEvent(event);
+        }
+        case CN_UPDATE_COMMAND_UI:
+        {
+            CCmdUI& pCmdUI = CheckedDeref(static_cast<CCmdUI*>(pExtra));
+            wxUpdateUIEvent event(CB::ToWxID(nID));
+            bool retval = dest.ProcessEvent(event);
+            if (retval)
+            {
+                /* enable the menu, even if the item isn't
+                    (this handles the image tool menu when
+                    the small bmp is selected) */
+                if (pCmdUI.m_pSubMenu != NULL)
+                {
+                    pCmdUI.m_pMenu->EnableMenuItem(pCmdUI.m_nIndex,
+                        MF_BYPOSITION | MF_ENABLED);
+                }
+                if (event.GetSetEnabled())
+                {
+                    pCmdUI.Enable(event.GetEnabled());
+                }
+                if (event.GetSetChecked())
+                {
+                    pCmdUI.SetCheck(event.GetChecked());
+                }
+                if (event.GetSetText())
+                {
+                    pCmdUI.SetText(event.GetText());
+                }
+            }
+            return retval;
+        }
+        default:
+            return false;
+    }
+}
+
+namespace CB
+{
+    int ToMFCID(int wxId)
+    {
+        static const std::map<int, int> ids = {
+#if !defined(GPLAY)
+#else
+#endif
+        };
+        auto it = ids.find(wxId);
+        if (it != ids.end())
+        {
+            return it->second;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}
+
+bool CB::RelayProcessEvent(CCmdTarget& dest,
+                            wxEvent& event)
+{
+    if (event.GetEventType() == wxEVT_MENU)
+    {
+        wxCommandEvent& cmdEvent = dynamic_cast<wxCommandEvent&>(event);
+        if (int mfcId = ToMFCID(cmdEvent.GetId()))
+        {
+            return dest.OnCmdMsg(mfcId, CN_COMMAND, nullptr, nullptr);
+        }
+    }
+    else if (event.GetEventType() == wxEVT_UPDATE_UI)
+    {
+        wxUpdateUIEvent& uuiEvent = dynamic_cast<wxUpdateUIEvent&>(event);
+        if (int mfcId = ToMFCID(uuiEvent.GetId()))
+        {
+            class Adapter : public CCmdUI
+            {
+            public:
+                Adapter(wxUpdateUIEvent& e) : wxUUIEvent(e) {}
+                void Enable(BOOL bOn = TRUE) override
+                {
+                    wxUUIEvent.Enable(bOn);
+                }
+                void SetCheck(int nCheck = 1) override   // 0, 1 or 2 (indeterminate)
+                {
+                    switch (nCheck)
+                    {
+                        case 0:
+                            wxUUIEvent.Check(false);
+                            break;
+                        case 1:
+                            wxUUIEvent.Check(true);
+                            break;
+                        default:
+                            wxASSERT(!"not implemented");
+                    }
+                }
+                void SetRadio(BOOL bOn = TRUE) override
+                {
+                    wxASSERT(!"not implemented");
+                }
+                void SetText(LPCTSTR lpszText) override
+                {
+                    wxUUIEvent.SetText(lpszText);
+                }
+            private:
+                wxUpdateUIEvent& wxUUIEvent;
+            };
+            Adapter cmdui(uuiEvent);
+            if (dest.OnCmdMsg(mfcId, CN_UPDATE_COMMAND_UI, &cmdui, nullptr))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
