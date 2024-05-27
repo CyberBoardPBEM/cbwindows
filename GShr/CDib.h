@@ -106,7 +106,7 @@ namespace CB
 {
     inline wxBitmap Convert(const CBitmap& bmp)
     {
-        return ToImage(bmp);
+        return wxBitmap(ToImage(bmp), 24);
     }
 
     inline OwnerPtr<CBitmap> Convert(const wxBitmap& bmp)

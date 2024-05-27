@@ -178,6 +178,7 @@ LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
 
 void SetPixel(wxBitmap& hBitmap, int x, int y, wxColour cr)
 {
+    wxASSERT(hBitmap.GetDepth() == 24 && hBitmap.IsDIB());
     wxNativePixelData imgData(hBitmap);
     wxNativePixelData::Iterator it(imgData);
     it.MoveTo(imgData, x, y);
@@ -191,6 +192,7 @@ wxColour GetPixel(const wxBitmap& hBitmap, int x, int y)
     // const_cast safe since we only read
     /* TODO:  create and submit to upstream const version of
         wxNativePixelData */
+    wxASSERT(hBitmap.GetDepth() == 24 && hBitmap.IsDIB());
     wxNativePixelData imgData(const_cast<wxBitmap&>(hBitmap));
     wxNativePixelData::Iterator it(imgData);
     it.MoveTo(imgData, x, y);
@@ -201,6 +203,7 @@ wxColour GetPixel(const wxBitmap& hBitmap, int x, int y)
 
 void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
 {
+    wxASSERT(hBitmap.GetDepth() == 24 && hBitmap.IsDIB());
     wxNativePixelData imgData(hBitmap, wxPoint(x, y), wxSize(cx, cy));
     wxNativePixelData::Iterator rowStart(imgData);
     for (int currY = 0 ; currY < cy ; ++currY)
@@ -220,7 +223,7 @@ void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
 
 OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
 {
-    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nHueDivisions, nHeight);
+    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nHueDivisions, nHeight, 24);
 
     wxColour cref;
 
@@ -234,7 +237,7 @@ OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
 
 OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight)
 {
-    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nWidth, nHeight);
+    OwnerPtr<wxBitmap> hBitmap = MakeOwner<wxBitmap>(nWidth, nHeight, 24);
 
     wxColour cref;
 
