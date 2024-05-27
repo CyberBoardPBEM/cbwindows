@@ -113,7 +113,7 @@ BOOL CBitEditFrame::OnCreateClient(LPCREATESTRUCT,
     // Activate the editor view
     CBitEditViewContainer& pBitViewContainer = CheckedDeref(dynamic_cast<CBitEditViewContainer*>(m_wndSplitter.GetPane(0, 1)));
     CBitEditView& pBitView = pBitViewContainer.GetChild();
-    SetActiveView(&pBitView);
+    SetActiveView(&pBitViewContainer);
 
     // Link the biteditor view to the tile selector and vice versa
     CTileSelView& pSelView = GetTileSelView();
