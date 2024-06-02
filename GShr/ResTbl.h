@@ -45,14 +45,21 @@ struct ResourceTable
     HCURSOR     hcrNoDropTooBig;
     wxCursor    hcrNoDropTooBigWx;
     HCURSOR     hcrCrossHair;
+    wxCursor    hcrCrossHairWx;
 #ifndef GPLAY
     HCURSOR     hcrFill;
+    wxCursor    hcrFillWx;
     HCURSOR     hcrDropper;
+    wxCursor    hcrDropperWx;
     HCURSOR     hcrEraser;
     HCURSOR     hcrPencil;
+    wxCursor    hcrPencilWx;
     HCURSOR     hcrBrush;
+    wxCursor    hcrBrushWx;
     HCURSOR     hcrSmall4Way;
+    wxCursor    hcrSmall4WayWx;
     HCURSOR     hcrColorChange;
+    wxCursor    hcrColorChangeWx;
 #else
     HCURSOR     hcrCompMoveActive;
 #endif
