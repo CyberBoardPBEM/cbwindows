@@ -68,14 +68,21 @@ void ResourceTable::LoadCursors(HINSTANCE hInst)
     hcrNoDropTooBig = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG));
     hcrNoDropTooBigWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG))));
     hcrCrossHair = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CROSSHAIR));
+    hcrCrossHairWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_CROSSHAIR))));
 #ifndef GPLAY
     hcrFill = LoadCursor(hInst, MAKEINTRESOURCE(IDC_FILL));
+    hcrFillWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_FILL))));
     hcrDropper = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER));
+    hcrDropperWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER))));
     hcrEraser = LoadCursor(hInst, MAKEINTRESOURCE(IDC_ERASER));
     hcrPencil = LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL));
+    hcrPencilWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL))));
     hcrBrush = LoadCursor(hInst, MAKEINTRESOURCE(IDC_BRUSH));
+    hcrBrushWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_BRUSH))));
     hcrSmall4Way = LoadCursor(hInst, MAKEINTRESOURCE(IDC_SMALL4WAY));
+    hcrSmall4WayWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_SMALL4WAY))));
     hcrColorChange = LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE));
+    hcrColorChangeWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE))));
 #else
     hcrCompMoveActive = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CMOVMODE));
 #endif

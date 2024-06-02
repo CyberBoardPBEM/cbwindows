@@ -226,6 +226,7 @@ wxColour GetPixel(const wxBitmap& hBitmap, int x, int y)
 
 void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
 {
+    wxASSERT(cx == 1 || !"untested code");
     wxASSERT(hBitmap.GetDepth() == 24 && hBitmap.IsDIB());
     wxNativePixelData imgData(hBitmap, wxPoint(x, y), wxSize(cx, cy));
     wxNativePixelData::Iterator rowStart(imgData);
@@ -237,6 +238,7 @@ void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
             it.Red() = cr.Red();
             it.Green() = cr.Green();
             it.Blue() = cr.Blue();
+            ++it;
         }
         rowStart.OffsetY(imgData, 1);
     }
@@ -408,6 +410,28 @@ OwnerPtr<CBitmap> CutBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
         g_gt.mDC1.FillRect(&rct, &brush);
     }
     g_gt.ClearMemDCBitmaps();
+
+    return pbmDst;
+}
+
+// The source bitmap will have its
+// cut region filled with the crVoided color.
+wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
+    wxColour crVoided)
+{
+    wxASSERT(pbmSrc.IsOk());
+    wxRect rct(wxPoint(0, 0), pbmSrc.GetSize());
+    rct.Intersect(rctSrc);
+    wxASSERT(!rct.IsEmpty());
+
+    wxBitmap pbmDst = pbmSrc.GetSubBitmap(rct);
+    if (crVoided != noColor)
+    {
+        wxMemoryDC dc(pbmSrc);
+        dc.SetPen(crVoided);
+        dc.SetBrush(crVoided);
+        dc.DrawRectangle(rct);
+    }
 
     return pbmDst;
 }

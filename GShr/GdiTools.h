@@ -155,6 +155,10 @@ wxBitmap CloneBitmap(const wxBitmap& pbmSrc);
 // cut region filled with the crVoided color.
 OwnerPtr<CBitmap> CutBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
     COLORREF crVoided);
+// The source bitmap will have its
+// cut region filled with the crVoided color.
+wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
+    wxColour crVoided);
 OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size);
 wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size);
 void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
