@@ -64,11 +64,11 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_COLOR_TRANSPARENT"), OnUpdateColorTransparent)
     EVT_UPDATE_UI(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
     EVT_UPDATE_UI(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
-#if 0
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_MOTION(OnMouseMove)
     EVT_SET_CURSOR(OnSetCursor)
+#if 0
     ON_COMMAND(ID_IMAGE_BOARDMASK, OnImageBoardMask)
 #endif
     EVT_MENU(wxID_ZOOM_IN, OnViewZoomIn)
@@ -147,8 +147,8 @@ CBitEditView::CBitEditView(CBitEditViewContainer& p) :
     m_nTxtExtent = 0;
     m_fontID = 0;
     // ------- //
-    m_nCurToolID = ID_ITOOL_PENCIL;
-    m_nLastToolID = ID_ITOOL_PENCIL;
+    m_nCurToolID = XRCID("ID_ITOOL_PENCIL");
+    m_nLastToolID = XRCID("ID_ITOOL_PENCIL");
     m_bSelectCapture = FALSE;
     wxScrolledCanvas::Create(*parent, 0);
 }
@@ -203,7 +203,7 @@ void CBitEditView::OnDraw(wxDC& pDC)
 
     wxSize size(m_size.x * m_nZoom, m_size.y * m_nZoom);
 
-    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsEmpty())
+    if (m_nCurToolID != XRCID("ID_ITOOL_SELECT") || m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
         if (parent->GetParentFrame()->GetActiveView() == parent)
@@ -243,7 +243,7 @@ void CBitEditView::OnDraw(wxDC& pDC)
         pDC.DrawLine(xBorder + size.x, yBorder-1, xBorder + size.x, yBorder-1 + size.y + 2);
         pDC.DrawLine(xBorder-1, yBorder + size.y, xBorder-1 + size.x + 2, yBorder + size.y);
     }
-    if (m_nCurToolID == ID_ITOOL_SELECT && !m_bSelectCapture &&
+    if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && !m_bSelectCapture &&
         m_bmPaste.IsOk() && !m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
@@ -322,24 +322,28 @@ void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
+#endif
 
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
-void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
+void CBitEditView::DrawImageSelectRect(wxPoint startPt, wxPoint curPt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(*m_bmView);
-
-    CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
-    rct.NormalizeRect();
-    if (rct.Width() != 0 && rct.Height() != 0)
     {
-        g_gt.mDC1.PatBlt(rct.left, rct.top, rct.Width(), 1, DSTINVERT);
-        g_gt.mDC1.PatBlt(rct.right, rct.top, 1, rct.Height(), DSTINVERT);
-        g_gt.mDC1.PatBlt(rct.left+1, rct.bottom, rct.Width(), 1, DSTINVERT);
-        g_gt.mDC1.PatBlt(rct.left, rct.top+1, 1, rct.Height(), DSTINVERT);
+        wxMemoryDC dc(m_bmView);
+
+        wxRect rct(wxPoint(std::min(startPt.x, curPt.x), std::min(startPt.y, curPt.y)),
+            wxSize(std::abs(curPt.x - startPt.x), std::abs(curPt.y - startPt.y)));
+        if (rct.GetWidth() != 0 && rct.GetHeight() != 0)
+        {
+            dc.SetPen(*wxWHITE_PEN);
+            dc.SetLogicalFunction(wxINVERT);
+            dc.DrawLine(rct.GetLeft(), rct.GetTop(), rct.GetLeft() + rct.GetWidth(), rct.GetTop());
+            dc.DrawLine(rct.GetLeft() + rct.GetWidth(), rct.GetTop(), rct.GetLeft() + rct.GetWidth(), rct.GetTop() + rct.GetHeight());
+            dc.DrawLine(rct.GetLeft() + 1, rct.GetTop() + rct.GetHeight(), rct.GetLeft() + 1 + rct.GetWidth(), rct.GetTop() + rct.GetHeight());
+            dc.DrawLine(rct.GetLeft(), rct.GetTop() + 1, rct.GetLeft(), rct.GetTop() + 1 + rct.GetHeight());
+        }
     }
-    g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
@@ -347,14 +351,15 @@ void CBitEditView::DrawImageSelectRect(CPoint startPt, CPoint curPt)
 
 void CBitEditView::DrawPastedImage()
 {
-    ASSERT(m_bmPaste->m_hObject != NULL);
+    ASSERT(m_bmPaste.IsOk());
     SetViewImageFromMasterImage();          // Get fresh original
-    MergeBitmap(*m_bmView, *m_bmPaste, m_rctPaste.TopLeft());
+    MergeBitmap(m_bmView, m_bmPaste, m_rctPaste.GetTopLeft());
 
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
 
+#if 0
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
 void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
 {
@@ -551,7 +556,7 @@ const wxBitmap& CBitEditView::GetCurrentViewBitmap() const
 void CBitEditView::SetCurrentBitmap(TileID tid, const wxBitmap& pBMap,
     BOOL bFillOnly /* = FALSE */)
 {
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         CommitCurrentText();
     SetTextCaretPos(wxPoint(-1, -1));        // Turn off the caret
 
@@ -571,7 +576,7 @@ void CBitEditView::SetCurrentBitmap(TileID tid, const wxBitmap& pBMap,
     // Generally we leave the current tool alone.
     if (bFillOnly)
     {
-        m_nCurToolID = (UINT)ID_ITOOL_FILL;
+        m_nCurToolID = XRCID("ID_ITOOL_FILL");
         m_nLastToolID = m_nCurToolID;
     }
 
@@ -631,7 +636,7 @@ void CBitEditView::GetImagePixelLocClamped(wxPoint& point) const
 void CBitEditView::InvalidateFocusBorder()
 {
     wxRect rct;
-    if (m_nCurToolID != ID_ITOOL_SELECT || m_rctPaste.IsEmpty())
+    if (m_nCurToolID != XRCID("ID_ITOOL_SELECT") || m_rctPaste.IsEmpty())
     {
         wxSize size(m_size.x * m_nZoom, m_size.y * m_nZoom);
         rct = wxRect(wxPoint(0, 0), wxSize(2 * xBorder + size.x, 2 * yBorder + size.y));
@@ -699,7 +704,6 @@ void CBitEditView::RecalcScrollLimits()
 
 BOOL CBitEditView::IsPtInSelectRect(wxPoint point) const
 {
-    wxASSERT(!"untested code");
     if (m_rctPaste.IsEmpty())
         return FALSE;
     return GetZoomedSelectRect().Contains(point);
@@ -707,7 +711,6 @@ BOOL CBitEditView::IsPtInSelectRect(wxPoint point) const
 
 wxRect CBitEditView::GetZoomedSelectBorderRect() const
 {
-    wxASSERT(!"untested code");
     wxRect rct = GetZoomedSelectRect();
     rct.Inflate(xBorder, yBorder);
     return rct;
@@ -715,7 +718,6 @@ wxRect CBitEditView::GetZoomedSelectBorderRect() const
 
 wxRect CBitEditView::GetZoomedSelectRect() const
 {
-    wxASSERT(!"untested code");
     wxRect rct(wxPoint(m_rctPaste.GetLeft() * m_nZoom, m_rctPaste.GetTop() * m_nZoom),
         wxSize(m_rctPaste.GetWidth() * m_nZoom, m_rctPaste.GetHeight() * m_nZoom));
     rct.Offset(xBorder, yBorder);
@@ -849,20 +851,20 @@ void CBitEditView::UpdateFontInfo()
 void CBitEditView::OnSetFocus(CWnd* pOldWnd)
 {
     CScrollView::OnSetFocus(pOldWnd);
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         SetTextCaretPos(m_ptCaret);
 }
 
 void CBitEditView::OnKillFocus(CWnd* pNewWnd)
 {
     CScrollView::OnKillFocus(pNewWnd);
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         ::DestroyCaret();
 }
 
 void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
     {
         if (nChar != VK_BACK)
         {
@@ -872,7 +874,7 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         else
             DelChar();
     }
-    else if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL
+    else if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste->m_hObject != NULL
         && GetCapture() != this)
     {
         if (nChar == VK_ESCAPE || nChar == VK_RETURN)
@@ -966,66 +968,67 @@ void CBitEditView::OnContextMenu(CWnd* pWnd, CPoint point)
         END_TRY
     }
 }
-
-void CBitEditView::OnLButtonDown(UINT nFlags, CPoint point)
-{
-    IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool& pTool = CImageTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnLButtonDown(this, nFlags, point);
-}
-
-void CBitEditView::OnMouseMove(UINT nFlags, CPoint point)
-{
-    IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool& pTool = CImageTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnMouseMove(this, nFlags, point);
-}
-
-void CBitEditView::OnLButtonUp(UINT nFlags, CPoint point)
-{
-    IToolType eToolType = MapToolType(m_nCurToolID);
-    CImageTool& pTool = CImageTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnLButtonUp(this, nFlags, point);
-}
-
-BOOL CBitEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-    IToolType eToolType = MapToolType(m_nCurToolID);
-    if (pWnd == this && eToolType != itoolUnknown)
-    {
-        CImageTool& pTool = CImageTool::GetTool(eToolType);
-        if(pTool.OnSetCursor(this, nHitTest))
-            return TRUE;
-    }
-    return CScrollView::OnSetCursor(pWnd, nHitTest, message);
-}
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// The table needs to be in the same order and the ID_ITOOL_* numbers
-
-static IToolType tblTools[] =
+void CBitEditView::OnLButtonDown(wxMouseEvent& event)
 {
-    itoolPencil,        // ID_ITOOL_PENCIL
-    itoolSelect,        // ID_ITOOL_SELECT
-    itoolBrush,         // ID_ITOOL_BRUSH
-    itoolFill,          // ID_ITOOL_FILL
-    itoolText,          // ID_ITOOL_TEXT
-    itoolLine,          // ID_ITOOL_LINE
-    itoolRect,          // ID_ITOOL_RECT
-    itoolOval,          // ID_ITOOL_OVAL
-    itoolFillRect,      // ID_ITOOL_FILLRECT
-    itoolFillOval,      // ID_ITOOL_FILLOVAL
-    itoolEyeDropper,    // ID_ITOOL_DROPPER
-    itoolColorChange,   // ID_ITOOL_COLORCHANGE
-};
+    IToolType eToolType = MapToolType(m_nCurToolID);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonDown(*this, event.GetModifiers(), point);
+}
 
-IToolType CBitEditView::MapToolType(UINT nToolResID)
+void CBitEditView::OnMouseMove(wxMouseEvent& event)
 {
-    return tblTools[nToolResID - ID_ITOOL_PENCIL];
+    IToolType eToolType = MapToolType(m_nCurToolID);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnMouseMove(*this, event.GetModifiers(), point);
+}
+
+void CBitEditView::OnLButtonUp(wxMouseEvent& event)
+{
+    IToolType eToolType = MapToolType(m_nCurToolID);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonUp(*this, event.GetModifiers(), point);
+}
+
+void CBitEditView::OnSetCursor(wxSetCursorEvent& event)
+{
+    IToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType != itoolUnknown)
+    {
+        CImageTool& pTool = CImageTool::GetTool(eToolType);
+        wxPoint point = ClientToWorkspace(wxPoint(event.GetX(), event.GetY()));
+        wxCursor rc = pTool.OnSetCursor(*this, point);
+        if (rc.IsOk())
+        {
+            event.SetCursor(rc);
+            return;
+        }
+    }
+    event.Skip();
+}
+
+IToolType CBitEditView::MapToolType(int nToolResID)
+{
+    // wx doesn't guarantee XRCID() value order
+    static const std::unordered_map<int, IToolType> map {
+        { XRCID("ID_ITOOL_PENCIL"), itoolPencil },
+        { XRCID("ID_ITOOL_SELECT"), itoolSelect },
+        { XRCID("ID_ITOOL_BRUSH"), itoolBrush },
+        { XRCID("ID_ITOOL_FILL"), itoolFill },
+        { XRCID("ID_ITOOL_TEXT"), itoolText },
+        { XRCID("ID_ITOOL_LINE"), itoolLine },
+        { XRCID("ID_ITOOL_RECT"), itoolRect },
+        { XRCID("ID_ITOOL_OVAL"), itoolOval },
+        { XRCID("ID_ITOOL_FILLRECT"), itoolFillRect },
+        { XRCID("ID_ITOOL_FILLOVAL"), itoolFillOval },
+        { XRCID("ID_ITOOL_DROPPER"), itoolEyeDropper },
+        { XRCID("ID_ITOOL_COLORCHANGE"), itoolColorChange },
+    };
+    return map.at(nToolResID);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1219,7 +1222,7 @@ void CBitEditView::OnViewZoomIn(wxCommandEvent& /*event*/)
         case 6: m_nZoom = 8; break;
     }
     RecalcScrollLimits();
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         SetTextCaretPos(m_ptCaret);
     Refresh();
 }
@@ -1233,7 +1236,7 @@ void CBitEditView::OnViewZoomOut(wxCommandEvent& /*event*/)
         case 2: m_nZoom = 1; break;
     }
     RecalcScrollLimits();
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         SetTextCaretPos(m_ptCaret);
     Refresh();
 }
@@ -1248,7 +1251,7 @@ void CBitEditView::OnViewToggleScale(wxCommandEvent& /*event*/)
         case 8: m_nZoom = 1; break;
     }
     RecalcScrollLimits();
-    if (m_nCurToolID == ID_ITOOL_TEXT)
+    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         SetTextCaretPos(m_ptCaret);
     Refresh();
 }
@@ -1265,7 +1268,7 @@ void CBitEditView::OnDwgFont()
     {
         m_fontID = m_pTMgr->GetFontID();
         UpdateFontInfo();
-        if (m_nCurToolID == ID_ITOOL_TEXT)
+        if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
             UpdateTextView();
     }
 }
@@ -1289,7 +1292,7 @@ void CBitEditView::OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI)
 #if 0
 void CBitEditView::OnEditCopy()
 {
-    if (m_nCurToolID == ID_ITOOL_SELECT && m_bmPaste->m_hObject != NULL &&
+    if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste->m_hObject != NULL &&
         !m_rctPaste.IsRectEmpty())
     {
         SetClipboardBitmap(this, *m_bmPaste);
@@ -1341,7 +1344,7 @@ void CBitEditView::OnEditPaste()
 
 
     m_nLastToolID = m_nCurToolID;
-    m_nCurToolID = ID_ITOOL_SELECT;
+    m_nCurToolID = XRCID("ID_ITOOL_SELECT");
 
     DrawPastedImage();
 
