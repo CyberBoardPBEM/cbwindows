@@ -47,11 +47,11 @@ public:
 public:
     static CImageTool& GetTool(IToolType eType);
     // ----------- //
-    virtual void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
-    virtual void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
-    virtual void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) /* override */;
-    virtual BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) /* override */
-        { return FALSE; }
+    virtual void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) /* override */;
+    virtual wxCursor OnSetCursor(CBitEditView& /*pView*/, wxPoint /*point*/) /* override */
+        { return wxNullCursor; }
 
 // Implementation
 private:
@@ -59,8 +59,8 @@ private:
     static std::vector<CImageTool*> c_toolLib;
 protected:
     // Drag related vars....
-    static CPoint c_ptDown;         // Document coords.
-    static CPoint c_ptLast;
+    static wxPoint c_ptDown;         // Document coords.
+    static wxPoint c_ptLast;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -78,15 +78,15 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
     BOOL    m_bMoveMode;
-    CRect   m_rctBound;
+    wxRect  m_rctBound;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -103,10 +103,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -126,10 +126,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -149,10 +149,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override {}
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override {}
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -172,10 +172,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override {}
+//  void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override {}
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -195,10 +195,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override {}
+//  void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override {}
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -218,10 +218,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -241,10 +241,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:
@@ -264,10 +264,10 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point) override;
-    void OnLButtonUp(CBitEditView* pView, UINT nFlags, CPoint point) override;
-//  void OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point) override {}
-    BOOL OnSetCursor(CBitEditView* pView, UINT nHitTest) override;
+    void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
+//  void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override {}
+    wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
 public:

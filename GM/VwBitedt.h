@@ -116,7 +116,19 @@ public:
 
     // Coordinate space
     void ClientToWorkspace(wxPoint& pnt) const;
+    [[nodiscard]] wxPoint ClientToWorkspace(const wxPoint& pnt) const
+    {
+        wxPoint retval = pnt;
+        ClientToWorkspace(retval);
+        return retval;
+    }
     void WorkspaceToClient(wxPoint& pnt) const;
+    [[nodiscard]] wxPoint WorkspaceToClient(const wxPoint& pnt) const
+    {
+        wxPoint retval = pnt;
+        WorkspaceToClient(retval);
+        return retval;
+    }
     void WorkspaceToClient(wxRect& rct) const;
 
     // Text edit support.
@@ -140,7 +152,7 @@ protected:
     void ClearAllImages();
     void RecalcScrollLimits();
     wxRect GetImageRect() const;
-    static IToolType MapToolType(UINT nToolResID);
+    static IToolType MapToolType(int nToolResID);
 
     // ------ //
     FontID      m_fontID;       // Current fontID Shadow variable

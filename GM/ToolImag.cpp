@@ -46,8 +46,8 @@ static char THIS_FILE[] = __FILE__;
 
 std::vector<CImageTool*> CImageTool::c_toolLib;     // Bit Image Tool library
 
-CPoint CImageTool::c_ptDown;        // Mouse down location
-CPoint CImageTool::c_ptLast;        // Last mouse location
+wxPoint CImageTool::c_ptDown;        // Mouse down location
+wxPoint CImageTool::c_ptLast;        // Last mouse location
 
 // The tool objects...
 
@@ -72,7 +72,7 @@ CImageTool::CImageTool(IToolType eType) :
 {
     size_t i = static_cast<size_t>(eType);
     c_toolLib.resize(std::max(i + size_t(1), c_toolLib.size()));
-    ASSERT(!c_toolLib[i]);
+    wxASSERT(!c_toolLib[i]);
     c_toolLib[i] = this;
 }
 
@@ -81,205 +81,178 @@ CImageTool& CImageTool::GetTool(IToolType eToolType)
     if (eToolType == itoolPencil)
         return s_bitPencilTool;            // Optimization
     size_t i = static_cast<size_t>(eToolType);
-    ASSERT(i < c_toolLib.size());
+    wxASSERT(i < c_toolLib.size());
     CImageTool& retval = CheckedDeref(c_toolLib[i]);
-    ASSERT(retval.m_eToolType == eToolType);
+    wxASSERT(retval.m_eToolType == eToolType);
     return retval;
 }
 
-void CImageTool::OnLButtonDown(CBitEditView* pView, UINT nFlags, CPoint point)
+void CImageTool::OnLButtonDown(CBitEditView& pView, int /*nMods*/, wxPoint point)
 {
-#if 0
-    pView->SetCapture();
+    pView.CaptureMouse();
 
     c_ptDown = point;
     c_ptLast = point;
-#endif
 }
 
-void CImageTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CImageTool::OnMouseMove(CBitEditView& pView, int /*nMods*/, wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() == pView)
+    if (pView.HasCapture())
         c_ptLast = point;
 //  SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-#endif
 }
 
-void CImageTool::OnLButtonUp(CBitEditView* pView, UINT, CPoint point)
+void CImageTool::OnLButtonUp(CBitEditView& pView, int /*nMods*/, wxPoint /*point*/)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
         return;
-    ReleaseCapture();
-#endif
+    pView.ReleaseMouse();
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitSelectTool
 
-void CBitSelectTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitSelectTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
-#if 0
     m_bMoveMode = FALSE;
 
     // If the mouse clicked in the rect region of the current paste
     // rect this will be a image move operation. Turn off the focus rect
     // and set image move mode.
-    if (pView->IsPtInSelectRect(point))
+    if (pView.IsPtInSelectRect(point))
     {
         m_bMoveMode = TRUE;
-        pView->GetImagePixelLoc(point); // to image coords
+        pView.GetImagePixelLoc(point); // to image coords
         // Setup allowable bounds of image point.
         // This is done to make sure drag doesn't leave image.
-        CRect rct = pView->GetSelectRect();
-        CSize sizeSel = rct.Size();
-        CSize sizeBMap = pView->GetBitmapSize();
-        CPoint ptRel = (CPoint)(point - rct.TopLeft());
-        m_rctBound = CRect(CPoint(- (sizeSel.cx - ptRel.x - 1),
-            -(sizeSel.cy - ptRel.y - 1)),
-            CSize(sizeBMap.cx + sizeSel.cx - 2, sizeBMap.cy + sizeSel.cy - 2));
+        wxRect rct = pView.GetSelectRect();
+        wxSize sizeSel = rct.GetSize();
+        wxSize sizeBMap = pView.GetBitmapSize();
+        wxPoint ptRel = point - rct.GetTopLeft();
+        m_rctBound = wxRect(wxPoint(- (sizeSel.x - ptRel.x - 1),
+            -(sizeSel.y - ptRel.y - 1)),
+            wxSize(sizeBMap.x + sizeSel.x - 1, sizeBMap.y + sizeSel.y - 1));
         // Lock down starting point
-        pView->SetSelectToolControl(TRUE);
-        CImageTool::OnLButtonDown(pView, nFlags, point);
-        pView->InvalidateFocusBorder();
+        pView.SetSelectToolControl(TRUE);
+        CImageTool::OnLButtonDown(pView, nMods, point);
+        pView.InvalidateFocusBorder();
         return;
     }
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
     // If the mouse click is not in the rect region of the current
     // paste image, or a paste image simply doesn't exist, start tracking
     // a select rectangle. The previous paste image should be merged
     // into the master image prior to select tracking.
-    if (pView->IsPasteImage())
+    if (pView.IsPasteImage())
     {
-        pView->SetUndoFromView();
-        pView->SetMasterImageFromViewImage();
-        pView->ClearPasteImage();
+        pView.SetUndoFromView();
+        pView.SetMasterImageFromViewImage();
+        pView.ClearPasteImage();
     }
-    pView->InvalidateFocusBorder();
-    pView->SetSelectRect(CRect(point, CSize(0, 0)));
-    pView->SetSelectToolControl(TRUE);
-    CImageTool::OnLButtonDown(pView, nFlags, point);
-#endif
+    pView.InvalidateFocusBorder();
+    pView.SetSelectRect(wxRect(point, wxSize(0, 0)));
+    pView.SetSelectToolControl(TRUE);
+    CImageTool::OnLButtonDown(pView, nMods, point);
 }
 
-void CBitSelectTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CBitSelectTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
     {
         m_bMoveMode = FALSE;
-        pView->SetSelectToolControl(FALSE);
+        pView.SetSelectToolControl(FALSE);
         return;
     }
     // If we are in move mode, offset the current paste rect.
     if (m_bMoveMode)
     {
-        pView->GetImagePixelLoc(point);
+        pView.GetImagePixelLoc(point);
         // Make sure drag doesn't leave image.
-        point.x = CB::max(point.x, m_rctBound.left);
-        point.y = CB::max(point.y, m_rctBound.top);
-        point.x = CB::min(point.x, m_rctBound.right);
-        point.y = CB::min(point.y, m_rctBound.bottom);
+        point.x = CB::max(point.x, m_rctBound.GetLeft());
+        point.y = CB::max(point.y, m_rctBound.GetTop());
+        point.x = CB::min(point.x, m_rctBound.GetRight());
+        point.y = CB::min(point.y, m_rctBound.GetBottom());
 
         if (point == c_ptLast)
             return;
-        CSize size = point - c_ptLast;
-        pView->OffsetSelectRect(size);      // Makes sure part always in image.
-        pView->DrawPastedImage();
+        wxPoint size = point - c_ptLast;
+        pView.OffsetSelectRect(wxSize(size.x, size.y));      // Makes sure part always in image.
+        pView.DrawPastedImage();
     }
     else
     {
         // If we are in select mode resize the select rect. The select
         // rect isn't allowed to leave the image.
-        pView->GetImagePixelLocClamped(point);
+        pView.GetImagePixelLocClamped(point);
         if (point == c_ptLast)
             return;
-        pView->DrawImageSelectRect(c_ptDown, point);
+        pView.DrawImageSelectRect(c_ptDown, point);
     }
-    CImageTool::OnMouseMove(pView, nFlags, point);
-#endif
+    CImageTool::OnMouseMove(pView, nMods, point);
 }
 
-void CBitSelectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitSelectTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
     {
         m_bMoveMode = FALSE;
         return;
     }
     if (!m_bMoveMode)
     {
-        pView->InvalidateFocusBorder();
+        pView.InvalidateFocusBorder();
 
         // If we are selecting a part of the image rect we need to
         // extract that part of the image into the paste bitmap.
 
-        pView->GetImagePixelLocClamped(point);
-        pView->SetViewImageFromMasterImage();   // Restore original
+        pView.GetImagePixelLocClamped(point);
+        pView.SetViewImageFromMasterImage();   // Restore original
 
-        CRect rct(CPoint(std::min(c_ptDown.x, point.x), std::min(c_ptDown.y, point.y)),
-                    CSize(std::abs(point.x - c_ptDown.x), std::abs(point.y - c_ptDown.y)));
-        if (!rct.IsRectEmpty())
+        wxRect rct(wxPoint(std::min(c_ptDown.x, point.x), std::min(c_ptDown.y, point.y)),
+                    wxSize(std::abs(point.x - c_ptDown.x), std::abs(point.y - c_ptDown.y)));
+        if (!rct.IsEmpty())
         {
-            rct.right++;                // Include right and bottom sides
-            rct.bottom++;
+            rct.SetWidth(rct.GetWidth() + 1);
+            rct.SetHeight(rct.GetHeight() + 1);
             // Copy selected area into the paste bitmap.
-            pView->SetUndoFromView();
-            pView->GetPasteBitmap() = CutBitmapPiece(
-                *pView->GetCurrentMasterBitmap(), rct,
-                pView->GetBackColor());
-            pView->InvalidateFocusBorder();
+            pView.SetUndoFromView();
+            pView.GetPasteBitmap() = CutBitmapPiece(
+                pView.GetCurrentMasterBitmap(), rct,
+                pView.GetBackColor());
+            pView.InvalidateFocusBorder();
         }
-        pView->SetSelectRect(rct);
-        pView->GetTileSelectView().UpdateViewImage();
-        pView->InvalidateViewImage(false);
+        pView.SetSelectRect(rct);
+        pView.GetTileSelectView().UpdateViewImage();
+        pView.InvalidateViewImage(false);
     }
     else
-        pView->InvalidateFocusBorder();
+        pView.InvalidateFocusBorder();
 
-    pView->SetSelectToolControl(FALSE);
-    CImageTool::OnLButtonUp(pView, nFlags, point);
-#endif
+    pView.SetSelectToolControl(FALSE);
+    CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
-BOOL CBitSelectTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitSelectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-
-    CPoint point;
-    GetCursorPos(&point);
-
     // If the point is in the selected rect, show the move image cursor.
     // If the point is in the bit image, show the crosshair
 
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-
-    if (pView->IsPtInSelectRect(point))
-        SetCursor(g_res.hcrSmall4Way);
-    else if (pView->IsPtInImage(point))
-        SetCursor(g_res.hcrCrossHair);
+    if (pView.IsPtInSelectRect(point))
+        return g_res.hcrSmall4WayWx;
+    else if (pView.IsPtInImage(point))
+        return g_res.hcrCrossHairWx;
     else
-        return FALSE;
-
-    return TRUE;
-#else
-    return FALSE;
-#endif
+        return wxNullCursor;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitPencilTool
 
-void CBitPencilTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitPencilTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -291,7 +264,7 @@ void CBitPencilTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-void CBitPencilTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CBitPencilTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView) return;
@@ -303,8 +276,8 @@ void CBitPencilTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
 #endif
 }
 
-void CBitPencilTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitPencilTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView)
@@ -314,7 +287,7 @@ void CBitPencilTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitPencilTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitPencilTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -329,15 +302,15 @@ BOOL CBitPencilTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(m_eToolType == itoolPencil ? g_res.hcrPencil : g_res.hcrBrush);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitLineTool
 
-void CBitLineTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitLineTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -348,7 +321,7 @@ void CBitLineTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-void CBitLineTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CBitLineTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView) return;
@@ -359,8 +332,8 @@ void CBitLineTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
 #endif
 }
 
-void CBitLineTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitLineTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView)
@@ -370,7 +343,7 @@ void CBitLineTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitLineTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitLineTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -386,15 +359,15 @@ BOOL CBitLineTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrCrossHair);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitDropperTool
 
-void CBitDropperTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitDropperTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     CDC *pDC = pView->GetDC();
@@ -410,8 +383,8 @@ void CBitDropperTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-void CBitDropperTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitDropperTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView)
@@ -433,7 +406,7 @@ void CBitDropperTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitDropperTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitDropperTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -441,15 +414,15 @@ BOOL CBitDropperTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrDropper);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitRectTool
 
-void CBitRectTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitRectTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -459,7 +432,7 @@ void CBitRectTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-void CBitRectTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CBitRectTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView) return;
@@ -477,8 +450,8 @@ void CBitRectTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
 #endif
 }
 
-void CBitRectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitRectTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView)
@@ -488,7 +461,7 @@ void CBitRectTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitRectTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitRectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -504,15 +477,15 @@ BOOL CBitRectTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrCrossHair);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitOvalTool
 
-void CBitOvalTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitOvalTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -522,7 +495,7 @@ void CBitOvalTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-void CBitOvalTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
+void CBitOvalTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView) return;
@@ -540,8 +513,8 @@ void CBitOvalTool::OnMouseMove(CBitEditView* pView, UINT nFlags, CPoint point)
 #endif
 }
 
-void CBitOvalTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitOvalTool::OnLButtonUp(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (CWnd::GetCapture() != pView)
@@ -551,7 +524,7 @@ void CBitOvalTool::OnLButtonUp(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitOvalTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitOvalTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -567,15 +540,15 @@ BOOL CBitOvalTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrCrossHair);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitFillTool
 
-void CBitFillTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitFillTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -585,7 +558,7 @@ void CBitFillTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitFillTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitFillTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -601,15 +574,15 @@ BOOL CBitFillTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrFill);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitColorChangeTool
 
-void CBitColorChangeTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitColorChangeTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -619,7 +592,7 @@ void CBitColorChangeTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitColorChangeTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitColorChangeTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -635,15 +608,15 @@ BOOL CBitColorChangeTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrColorChange);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CBitTextTool
 
-void CBitTextTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
-    CPoint point)
+void CBitTextTool::OnLButtonDown(CBitEditView& pView, int nMods,
+    wxPoint point)
 {
 #if 0
     if (!pView->GetImagePixelLoc(point))
@@ -654,7 +627,7 @@ void CBitTextTool::OnLButtonDown(CBitEditView* pView, UINT nFlags,
 #endif
 }
 
-BOOL CBitTextTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
+wxCursor CBitTextTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
 #if 0
     if (nHitTest != HTCLIENT)
@@ -670,7 +643,7 @@ BOOL CBitTextTool::OnSetCursor(CBitEditView* pView, UINT nHitTest)
     SetCursor(g_res.hcrCrossHair);
     return TRUE;
 #else
-    return FALSE;
+    return wxNullCursor;
 #endif
 }
 
