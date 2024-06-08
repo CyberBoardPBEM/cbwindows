@@ -482,9 +482,10 @@ void CBitEditView::DrawImageChangeColor(CPoint pt)
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
+#endif
 
 // points are in bit image coordinates
-void CBitEditView::DrawImageToPixel(CPoint prvPt, CPoint curPt, UINT nSize)
+void CBitEditView::DrawImageToPixel(wxPoint prvPt, wxPoint curPt, UINT nSize)
 {
     DELTAGEN dg;
     int x = curPt.x;
@@ -492,14 +493,14 @@ void CBitEditView::DrawImageToPixel(CPoint prvPt, CPoint curPt, UINT nSize)
     DeltaGenInit(&dg, prvPt.x, prvPt.y, curPt.x, curPt.y, &x, &y);
     do
     {
-        DrawImagePixel(CPoint(x, y), nSize);
+        DrawImagePixel(wxPoint(x, y), nSize);
     }   while (DeltaGen(&dg, &x, &y));
 }
 
 // point is in bit image coordinates
-void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
+void CBitEditView::DrawImagePixel(wxPoint point, UINT nSize)
 {
-    CPoint bmapPt = point;
+    wxPoint bmapPt = point;
     point.x *= m_nZoom;
     point.y *= m_nZoom;
 
@@ -513,38 +514,36 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
     if (m_bGridVisible && m_nZoom > 2) wStep -= 1;
 
-    CPoint ptScroll = GetDeviceScrollPosition();
+    wxPoint ptScroll = CalcUnscrolledPosition(wxPoint(0, 0));
 
-    CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
-    // Draw the bits directly on the screen.
+    wxSize size(m_size.x * m_nZoom, m_size.y * m_nZoom);
+    // Can't draw the bits directly on the screen, so mark rect for refresh
     for (UINT i = 0; i < nSize; i++, wx += m_nZoom)
     {
         wy = nStartY;
         for (UINT j = 0; j < nSize; j++, wy += m_nZoom)
         {
-            if (wx >= 0 && wy >= 0 && wx < size.cx && wy < size.cy)
+            if (wx >= 0 && wy >= 0 && wx < size.x && wy < size.y)
             {
-                InvalidateRect(CRect(CPoint(xBorder + wx - ptScroll.x, yBorder + wy - ptScroll.y), CSize(wStep, wStep)));
+                RefreshRect(wxRect(wxPoint(xBorder + wx - ptScroll.x, yBorder + wy - ptScroll.y), wxSize(wStep, wStep)));
             }
         }
     }
 
     // Now set the point in the view bitmap...
-    g_gt.mDC1.SelectObject(*m_bmView);
+    wxMemoryDC dc(m_bmView);
 
     wx = point.x / m_nZoom;
     wy = point.y / m_nZoom;
-    if (wx < m_size.cx && wy < m_size.cy)
+    if (wx < m_size.x && wy < m_size.y)
     {
-        CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrushMFC())));
-        g_gt.mDC1.PatBlt(wx - nSize / 2, wy - nSize / 2, nSize, nSize, PATCOPY);
-        g_gt.mDC1.SelectObject(pPrvBrush);
+        dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.DrawRectangle(wxPoint(wx - nSize / 2, wy - nSize / 2), wxSize(nSize, nSize));
 
-        m_pSelView->UpdateViewPixel(CB::Convert(bmapPt), nSize, m_pTMgr->GetForeBrushWx());
+        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrushWx());
     }
-    g_gt.SelectSafeObjectsForDC1();
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -254,56 +254,39 @@ wxCursor CBitSelectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitPencilTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
-    pView->SetUndoFromView();
-    pView->DrawImagePixel(point,
-        m_eToolType == itoolPencil ? 1 : pView->GetLineWidth());
-    CImageTool::OnLButtonDown(pView, nFlags, point);
-#endif
+    pView.SetUndoFromView();
+    pView.DrawImagePixel(point,
+        m_eToolType == itoolPencil ? 1 : pView.GetLineWidth());
+    CImageTool::OnLButtonDown(pView, nMods, point);
 }
 
 void CBitPencilTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView) return;
-    if (!pView->GetImagePixelLoc(point)) return;    // Not in image
+    if (!pView.HasCapture()) return;
+    if (!pView.GetImagePixelLoc(point)) return;    // Not in image
     if (point == c_ptLast) return;
-    pView->DrawImageToPixel(c_ptLast, point,
-        m_eToolType == itoolPencil ? 1 : pView->GetLineWidth());
-    CImageTool::OnMouseMove(pView, nFlags, point);
-#endif
+    pView.DrawImageToPixel(c_ptLast, point,
+        m_eToolType == itoolPencil ? 1 : pView.GetLineWidth());
+    CImageTool::OnMouseMove(pView, nMods, point);
 }
 
 void CBitPencilTool::OnLButtonUp(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
         return;
-    pView->SetMasterImageFromViewImage();
-    CImageTool::OnLButtonUp(pView, nFlags, point);
-#endif
+    pView.SetMasterImageFromViewImage();
+    CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
 wxCursor CBitPencilTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    CPoint point;
-    GetCursorPos(&point);
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-    if (!pView->IsPtInImage(point))
-        return FALSE;
+    if (!pView.IsPtInImage(point))
+        return wxNullCursor;
 
-    SetCursor(m_eToolType == itoolPencil ? g_res.hcrPencil : g_res.hcrBrush);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return m_eToolType == itoolPencil ? g_res.hcrPencilWx : g_res.hcrBrushWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
