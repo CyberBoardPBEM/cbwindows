@@ -236,25 +236,18 @@ void CTileSelView::UpdateViewPixel(CPoint pt, UINT nBrushSize, const CBrush& pBr
     int nSizeX;
     int nSizeY;
 
-    CDC* pDC = GetDC();
-
     CPoint pnt = GetActiveTileLoc();
     CSize size = m_pEditView->GetBitmapSize();
-    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(pBrush)));
 
     nSizeX = pt.x - nBrushSize / 2;
     nSizeY = pt.y - nBrushSize / 2;
 
     CPoint ptScroll = GetDeviceScrollPosition();
 
-    pDC->PatBlt(pnt.x + (nSizeX >= 0 ? nSizeX : 0) - ptScroll.x,
-        pnt.y + (nSizeY >=  0 ? nSizeY :  0) - ptScroll.y,
-        ((nSize = size.cx - nSizeX) >= (int)nBrushSize ? nBrushSize : nSize),
-        ((nSize = size.cy - nSizeY) >= (int)nBrushSize ? nBrushSize : nSize),
-        PATCOPY);
-
-    pDC->SelectObject(pPrvBrush);
-    ReleaseDC(pDC);
+    InvalidateRect(CRect(CPoint(pnt.x + (nSizeX >= 0 ? nSizeX : 0) - ptScroll.x,
+        pnt.y + (nSizeY >= 0 ? nSizeY : 0) - ptScroll.y),
+        CSize(((nSize = size.cx - nSizeX) >= (int)nBrushSize ? nBrushSize : nSize),
+        ((nSize = size.cy - nSizeY) >= (int)nBrushSize ? nBrushSize : nSize))));
 }
 
 void CTileSelView::UpdateViewImage()

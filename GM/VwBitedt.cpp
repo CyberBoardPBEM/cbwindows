@@ -475,11 +475,6 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     point.x *= m_nZoom;
     point.y *= m_nZoom;
 
-    CDC* pDC = GetDC();
-
-    CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(pDC->SelectObject(m_pTMgr->GetForeBrush())));
-    OnPrepareDC(pDC, NULL);
-
     if (nSize == 0)
         nSize = 1;          // Zero width is same as one width
 
@@ -490,6 +485,8 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
 
     if (m_bGridVisible && m_nZoom > 2) wStep -= 1;
 
+    CPoint ptScroll = GetDeviceScrollPosition();
+
     CSize size(m_size.cx * m_nZoom, m_size.cy * m_nZoom);
     // Draw the bits directly on the screen.
     for (UINT i = 0; i < nSize; i++, wx += m_nZoom)
@@ -498,11 +495,11 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
         for (UINT j = 0; j < nSize; j++, wy += m_nZoom)
         {
             if (wx >= 0 && wy >= 0 && wx < size.cx && wy < size.cy)
-                pDC->PatBlt(xBorder + wx, yBorder + wy, wStep, wStep, PATCOPY);
+            {
+                InvalidateRect(CRect(CPoint(xBorder + wx - ptScroll.x, yBorder + wy - ptScroll.y), CSize(wStep, wStep)));
+            }
         }
     }
-    pDC->SelectObject(pPrvBrush);
-    ReleaseDC(pDC);
 
     // Now set the point in the view bitmap...
     g_gt.mDC1.SelectObject(*m_bmView);
@@ -511,7 +508,7 @@ void CBitEditView::DrawImagePixel(CPoint point, UINT nSize)
     wy = point.y / m_nZoom;
     if (wx < m_size.cx && wy < m_size.cy)
     {
-        pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
+        CBrush *pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrush())));
         g_gt.mDC1.PatBlt(wx - nSize / 2, wy - nSize / 2, nSize, nSize, PATCOPY);
         g_gt.mDC1.SelectObject(pPrvBrush);
 
