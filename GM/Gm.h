@@ -47,8 +47,80 @@ extern const wxDataFormat CF_GBOXID;          // dword gameboxid, dword cur proc
 /////////////////////////////////////////////////////////////////////////////
 
 #define WM_SETCOLOR         (WM_USER + 666)     // See COLORPAL.H
+class SetColorEvent : public wxEvent
+{
+public:
+    SetColorEvent(int subId, wxColour color);
+
+    int GetSubId() const { return subId; }
+    wxColour GetColor() const { return color; }
+
+    wxEvent* Clone() const override { return new SetColorEvent(*this); }
+
+private:
+    const int subId;
+    const wxColour color;
+};
+wxDECLARE_EVENT(WM_SETCOLOR_WX, SetColorEvent);
+inline SetColorEvent::SetColorEvent(int s, wxColour c) :
+    wxEvent(wxID_ANY, WM_SETCOLOR_WX),
+    subId(s),
+    color(c)
+{
+}
+typedef void (wxEvtHandler::* SetColorEventFunction)(SetColorEvent&);
+#define SetColorEventHandler(func) wxEVENT_HANDLER_CAST(SetColorEventFunction, func)
+#define EVT_SETCOLOR(func) \
+    wx__DECLARE_EVT0(WM_SETCOLOR_WX, SetColorEventHandler(func))
+
 #define WM_SETLINEWIDTH     (WM_USER + 667)     // See COLORPAL.H
+class SetLineWidthEvent : public wxEvent
+{
+public:
+    SetLineWidthEvent(int width);
+
+    int GetWidth() const { return width; }
+
+    wxEvent* Clone() const override { return new SetLineWidthEvent(*this); }
+
+private:
+    const int width;
+};
+wxDECLARE_EVENT(WM_SETLINEWIDTH_WX, SetLineWidthEvent);
+inline SetLineWidthEvent::SetLineWidthEvent(int w) :
+    wxEvent(wxID_ANY, WM_SETLINEWIDTH_WX),
+    width(w)
+{
+}
+typedef void (wxEvtHandler::* SetLineWidthEventFunction)(SetLineWidthEvent&);
+#define SetLineWidthEventHandler(func) wxEVENT_HANDLER_CAST(SetLineWidthEventFunction, func)
+#define EVT_SETLINEWIDTH(func) \
+    wx__DECLARE_EVT0(WM_SETLINEWIDTH_WX, SetLineWidthEventHandler(func))
+
 #define WM_SETCUSTOMCOLOR   (WM_USER + 668)     // See COLORPAL.H
+class SetCustomColorEvent : public wxEvent
+{
+public:
+    SetCustomColorEvent(const std::vector<wxColour>& colors);
+
+    const std::vector<wxColour>& GetColors() const { return colors; }
+
+    wxEvent* Clone() const override { return new SetCustomColorEvent(*this); }
+
+private:
+    std::vector<wxColour> colors;
+};
+wxDECLARE_EVENT(WM_SETCUSTOMCOLOR_WX, SetCustomColorEvent);
+inline SetCustomColorEvent::SetCustomColorEvent(const std::vector<wxColour>& c) :
+    wxEvent(wxID_ANY, WM_SETCUSTOMCOLOR_WX),
+    colors(c)
+{
+}
+typedef void (wxEvtHandler::* SetCustomColorEventFunction)(SetCustomColorEvent&);
+#define SetCustomColorEventHandler(func) wxEVENT_HANDLER_CAST(SetCustomColorEventFunction, func)
+#define EVT_SETCUSTOMCOLOR(func) \
+    wx__DECLARE_EVT0(WM_SETCUSTOMCOLOR_WX, SetCustomColorEventHandler(func))
+
 #define WM_PALETTE_HIDE     (WM_USER + 669)
 wxDECLARE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
 

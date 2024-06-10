@@ -189,23 +189,21 @@ protected:
 #endif
     void OnImageGridLines(wxCommandEvent& event);
     void OnToolPalette(wxCommandEvent& event);
-#if 0
-    afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
-#endif
+    void OnSetColor(SetColorEvent& event);
+    void OnSetCustomColors(SetCustomColorEvent& event);
+    void OnSetLineWidth(SetLineWidthEvent& event);
     void OnUpdateImageGridLines(wxUpdateUIEvent& pCmdUI);
     void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorTransparent(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI);
+    void OnLButtonDown(wxMouseEvent& event);
+    void OnLButtonUp(wxMouseEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
+    void OnSetCursor(wxSetCursorEvent& event);
 #if 0
-    afx_msg void OnUpdateColorForeground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorBackground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorTransparent(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorCustom(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateLineWidth(CCmdUI* pCmdUI);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg void OnImageBoardMask();
 #endif
     void OnViewZoomIn(wxCommandEvent& event);

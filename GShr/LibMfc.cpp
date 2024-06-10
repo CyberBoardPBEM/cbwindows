@@ -33,6 +33,7 @@
     #include "../GP/Resource.h"
 #else
     #include "../GM/Resource.h"
+    #include "../GM/PalColor.h"
 #endif
 
 #ifdef _DEBUG
@@ -1122,6 +1123,14 @@ namespace CB
 #else
                 switch (id)
                 {
+                    case ID_COLOR_FOREGROUND:
+                        return XRCID("ID_COLOR_FOREGROUND");
+                    case ID_COLOR_BACKGROUND:
+                        return XRCID("ID_COLOR_BACKGROUND");
+                    case ID_COLOR_TRANSPARENT:
+                        return XRCID("ID_COLOR_TRANSPARENT");
+                    case ID_COLOR_CUSTOM:
+                        return XRCID("ID_COLOR_CUSTOM");
                     case ID_IMAGE_GRIDLINES:
                         return XRCID("ID_IMAGE_GRIDLINES");
                     case ID_INDICATOR_CELLNUM:
@@ -1150,6 +1159,8 @@ namespace CB
                         return XRCID("ID_ITOOL_DROPPER");
                     case ID_ITOOL_COLORCHANGE:
                         return XRCID("ID_ITOOL_COLORCHANGE");
+                    case ID_LINE_WIDTH:
+                        return XRCID("ID_LINE_WIDTH");
                     case ID_VIEW_TOGGLE_SCALE:
                         return XRCID("ID_VIEW_TOGGLE_SCALE");
                     case ID_VIEW_ZOOMIN:
@@ -1189,6 +1200,13 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
         {
             CCmdUI& pCmdUI = CheckedDeref(static_cast<CCmdUI*>(pExtra));
             wxUpdateUIEvent event(CB::ToWxID(nID));
+#if !defined(GPLAY)
+            CColorCmdUI* colorCmdUI = dynamic_cast<CColorCmdUI*>(&pCmdUI);
+            if (colorCmdUI)
+            {
+                event.SetClientData(colorCmdUI);
+            }
+#endif
             bool retval = dest.ProcessEvent(event);
             if (retval)
             {
