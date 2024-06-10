@@ -2162,7 +2162,8 @@ namespace CB
 {
     /* Derive from this (with multi-inheritance) to allow
         converting from CView* to wxWindow* without needing
-        to know details of the types involved. */
+        to know details of the types involved.
+        (See PalColor.cpp for an example) */
     // Note that OnCmdMsgOverride<> already derives from this
     class IGetEventHandler
     {

@@ -246,7 +246,7 @@ public:
     template<>
     struct SubInfo<DRAG_TILELIST>
     {
-        const CB::vector<TileID>* m_tileIDList;
+        const std::vector<TileID>* m_tileIDList;
         CSize m_size;
         const CGamDoc* m_gamDoc;
     };
@@ -260,7 +260,7 @@ public:
     template<>
     struct SubInfo<DRAG_PIECELIST>
     {
-        const CB::vector<PieceID>* m_pieceIDList;
+        const std::vector<PieceID>* m_pieceIDList;
         CSize m_size;
         const CGamDoc* m_gamDoc;
     };
@@ -280,7 +280,7 @@ public:
     template<>
     struct SubInfo<DRAG_SELECTVIEW>
     {
-        const CB::vector<CB::not_null<const CDrawObj*>>* m_ptrArray;
+        const std::vector<CB::not_null<const CDrawObj*>>* m_ptrArray;
         CGamDoc* m_gamDoc;
     };
 #endif

@@ -188,6 +188,9 @@ namespace {
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxDEFINE_EVENT(WM_SETCOLOR_WX, SetColorEvent);
+wxDEFINE_EVENT(WM_SETLINEWIDTH_WX, SetLineWidthEvent);
+wxDEFINE_EVENT(WM_SETCUSTOMCOLOR_WX, SetCustomColorEvent);
 wxDEFINE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
 
 /////////////////////////////////////////////////////////////////////////////
