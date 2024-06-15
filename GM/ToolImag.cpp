@@ -295,55 +295,37 @@ wxCursor CBitPencilTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitLineTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
-    pView->SetUndoFromView();
-    pView->DrawImagePixel(point, pView->GetLineWidth());
-    CImageTool::OnLButtonDown(pView, nFlags, point);
-#endif
+    pView.SetUndoFromView();
+    pView.DrawImagePixel(point, pView.GetLineWidth());
+    CImageTool::OnLButtonDown(pView, nMods, point);
 }
 
 void CBitLineTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView) return;
-    pView->GetImagePixelLoc(point);
+    if (!pView.HasCapture()) return;
+    pView.GetImagePixelLoc(point);
     if (point == c_ptLast) return;
-    pView->DrawImageLine(c_ptDown, point, pView->GetLineWidth());
-    CImageTool::OnMouseMove(pView, nFlags, point);
-#endif
+    pView.DrawImageLine(c_ptDown, point, pView.GetLineWidth());
+    CImageTool::OnMouseMove(pView, nMods, point);
 }
 
 void CBitLineTool::OnLButtonUp(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
         return;
-    pView->SetMasterImageFromViewImage();
-    CImageTool::OnLButtonUp(pView, nFlags, point);
-#endif
+    pView.SetMasterImageFromViewImage();
+    CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
 wxCursor CBitLineTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
+    if (!pView.IsPtInImage(point))
+        return wxNullCursor;
 
-    CPoint point;
-    GetCursorPos(&point);
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-    if (!pView->IsPtInImage(point))
-        return FALSE;
-
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////

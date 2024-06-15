@@ -291,38 +291,36 @@ void CBitEditView::WorkspaceToClient(wxRect& rct) const
 // Draw tool support.
 // points are in bit image coordinates
 
-#if 0
-void CBitEditView::DrawImageLine(CPoint startPt, CPoint curPt, UINT nSize)
+void CBitEditView::DrawImageLine(wxPoint startPt, wxPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(*m_bmView);
-    CBrush* pPrvBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrushMFC())));
-
-    if (nSize == 0)
-        nSize = 1;          // Zero width is same as one width
-
-    int x = startPt.x;
-    int y = startPt.y;
-    DELTAGEN dg;
-
-    DeltaGenInit(&dg, startPt.x, startPt.y, curPt.x, curPt.y, &x, &y);
-    do
     {
-        if (x < m_size.cx && y < m_size.cy)
-        {
-            g_gt.mDC1.PatBlt(x - nSize / 2, y - nSize / 2,
-                nSize, nSize, PATCOPY);
-        }
-    }   while (DeltaGen(&dg, &x, &y));
+        wxMemoryDC dc(m_bmView);
+        dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        dc.SetPen(*wxTRANSPARENT_PEN);
 
-    g_gt.mDC1.SelectObject(pPrvBrush);
-    g_gt.SelectSafeObjectsForDC1();
+        if (nSize == 0)
+            nSize = 1;          // Zero width is same as one width
+
+        int x = startPt.x;
+        int y = startPt.y;
+        DELTAGEN dg;
+
+        DeltaGenInit(&dg, startPt.x, startPt.y, curPt.x, curPt.y, &x, &y);
+        do
+        {
+            if (x < m_size.x && y < m_size.y)
+            {
+                dc.DrawRectangle(wxPoint(x - nSize / 2, y - nSize / 2),
+                    wxSize(nSize, nSize));
+            }
+        } while (DeltaGen(&dg, &x, &y));
+    }
 
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
-#endif
 
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
 void CBitEditView::DrawImageSelectRect(wxPoint startPt, wxPoint curPt)
