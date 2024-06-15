@@ -375,61 +375,43 @@ wxCursor CBitDropperTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitRectTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
-    pView->SetUndoFromView();
-    CImageTool::OnLButtonDown(pView, nFlags, point);
-#endif
+    pView.SetUndoFromView();
+    CImageTool::OnLButtonDown(pView, nMods, point);
 }
 
 void CBitRectTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView) return;
-    pView->GetImagePixelLoc(point);
+    if (!pView.HasCapture()) return;
+    pView.GetImagePixelLoc(point);
     if (point == c_ptLast) return;
 
     int nWidth = 0;
     if (m_eToolType == itoolRect)
     {
-        nWidth = pView->GetLineWidth();
+        nWidth = pView.GetLineWidth();
         nWidth = nWidth ? nWidth : 1;           // Make sure never zero
     }
-    pView->DrawImageRect(c_ptDown, point, nWidth);
-    CImageTool::OnMouseMove(pView, nFlags, point);
-#endif
+    pView.DrawImageRect(c_ptDown, point, nWidth);
+    CImageTool::OnMouseMove(pView, nMods, point);
 }
 
 void CBitRectTool::OnLButtonUp(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
         return;
-    pView->SetMasterImageFromViewImage();
-    CImageTool::OnLButtonUp(pView, nFlags, point);
-#endif
+    pView.SetMasterImageFromViewImage();
+    CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
 wxCursor CBitRectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
+    if (!pView.IsPtInImage(point))
+        return wxNullCursor;
 
-    CPoint point;
-    GetCursorPos(&point);
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-    if (!pView->IsPtInImage(point))
-        return FALSE;
-
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
