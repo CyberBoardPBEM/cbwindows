@@ -357,41 +357,37 @@ void CBitEditView::DrawPastedImage()
     m_pSelView->UpdateViewImage();
 }
 
-#if 0
 // If nSize is Zero. The rect is filled. Otherwise it is a frame.
-void CBitEditView::DrawImageRect(CPoint startPt, CPoint curPt, UINT nSize)
+void CBitEditView::DrawImageRect(wxPoint startPt, wxPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(*m_bmView);
-
-    CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
-    rct.NormalizeRect();
-    if (nSize == 0)
     {
-        // const_cast would probably work, but this is guaranteed safe
-        OwnerPtr<CBrush> temp = Clone(m_pTMgr->GetForeBrushMFC());
-        g_gt.mDC1.FillRect(&rct, &*temp);
-        g_gt.mDC1.FrameRect(&rct, &*temp);
+        wxMemoryDC dc(m_bmView);
+
+        wxRect rct(wxPoint(std::min(startPt.x, curPt.x), std::min(startPt.y, curPt.y)),
+                    wxSize(std::abs(curPt.x - startPt.x) + 1, std::abs(curPt.y - startPt.y) + 1));
+        if (nSize == 0)
+        {
+            dc.SetBrush(m_pTMgr->GetForeBrushWx());
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.DrawRectangle(rct);
+        }
+        else
+        {
+            wxPen pen(CB::Convert(m_pTMgr->GetForeColor()), nSize);
+            dc.SetPen(pen);
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+
+            dc.DrawRectangle(rct);
+        }
     }
-    else
-    {
-        CPen pen(PS_SOLID, nSize, m_pTMgr->GetForeColor());
-        CPen* pPrvPen = g_gt.mDC1.SelectObject(&pen);
-        CBrush* pPrvBrsh = (CBrush*)g_gt.mDC1.SelectStockObject(NULL_BRUSH);
-
-        g_gt.mDC1.Rectangle(&rct);
-
-        g_gt.mDC1.SelectObject(pPrvPen);
-        g_gt.mDC1.SelectObject(pPrvBrsh);
-    }
-
-    g_gt.SelectSafeObjectsForDC1();
 
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
 
+#if 0
 // If nSize is Zero. The ellipse is filled. Otherwise it is a frame.
 void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
 {
