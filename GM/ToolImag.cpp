@@ -334,53 +334,39 @@ wxCursor CBitLineTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitDropperTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    CDC *pDC = pView->GetDC();
-    pView->OnPrepareDC(pDC, NULL);
-    COLORREF crPxl = pDC->GetPixel(point);
-    ASSERT((long)crPxl != -1);
-    pView->ReleaseDC(pDC);
-    if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
-        pView->SetForeColor(crPxl);
-    else if (nFlags & MK_SHIFT)
-        pView->SetBackColor(crPxl);
-    pView->SetCapture();
-#endif
+    // wxDC::GetPixel isn't portable
+    pView.GetImagePixelLoc(point);
+    wxColour crPxl = GetPixel(pView.GetCurrentViewBitmap(),
+                                point.x, point.y);
+    if ((nMods & (wxMOD_CMD | wxMOD_SHIFT)) == 0)
+        pView.SetForeColor(crPxl);
+    else if (nMods & wxMOD_SHIFT)
+        pView.SetBackColor(crPxl);
+    pView.CaptureMouse();
 }
 
 void CBitDropperTool::OnLButtonUp(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (CWnd::GetCapture() != pView)
+    if (!pView.HasCapture())
         return;
-    pView->WorkspaceToClient(point);
-    pView->ClientToScreen(&point);
+    // wxDC::GetPixel isn't portable
+    pView.GetImagePixelLoc(point);
+    wxColour crPxl = GetPixel(pView.GetCurrentViewBitmap(),
+                                point.x, point.y);
 
-    CWindowDC dc(CWnd::GetDesktopWindow());
-    COLORREF crPxl = dc.GetPixel(point);
-    ASSERT((long)crPxl != -1);
+    if ((nMods & (wxMOD_CMD | wxMOD_SHIFT)) == 0)
+        pView.SetForeColor(crPxl);
+    else if (nMods & wxMOD_SHIFT)
+        pView.SetBackColor(crPxl);
 
-    if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
-        pView->SetForeColor(crPxl);
-    else if (nFlags & MK_SHIFT)
-        pView->SetBackColor(crPxl);
-
-    ReleaseCapture();
-    pView->RestoreLastTool();           // For convenience.
-#endif
+    pView.ReleaseMouse();
+    pView.RestoreLastTool();           // For convenience.
 }
 
 wxCursor CBitDropperTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrDropper);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return g_res.hcrDropperWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
