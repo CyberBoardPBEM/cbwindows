@@ -87,7 +87,7 @@ public:
     wxColour GetForeColor() const { return CB::Convert(m_pTMgr->GetForeColor()); }
     wxColour GetBackColor() const { return CB::Convert(m_pTMgr->GetBackColor()); }
     void SetForeColor(wxColour crFore) { m_pTMgr->SetForeColor(CB::Convert(crFore)); }
-    void SetBackColor(wxColour crBack) { m_pTMgr->SetForeColor(CB::Convert(crBack)); }
+    void SetBackColor(wxColour crBack) { m_pTMgr->SetBackColor(CB::Convert(crBack)); }
 
 // Operations
 public:
