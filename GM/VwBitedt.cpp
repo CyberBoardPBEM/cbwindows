@@ -387,35 +387,33 @@ void CBitEditView::DrawImageRect(wxPoint startPt, wxPoint curPt, UINT nSize)
     m_pSelView->UpdateViewImage();
 }
 
-#if 0
 // If nSize is Zero. The ellipse is filled. Otherwise it is a frame.
-void CBitEditView::DrawImageEllipse(CPoint startPt, CPoint curPt, UINT nSize)
+void CBitEditView::DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(*m_bmView);
+    {
+        wxMemoryDC dc(m_bmView);
 
-    CRect rct(startPt.x, startPt.y, curPt.x, curPt.y);
-    rct.NormalizeRect();
-    CPen pen(PS_SOLID, nSize, m_pTMgr->GetForeColor());
-    CBrush* pPrvBrsh;
-    if (nSize == 0)
-        pPrvBrsh = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrushMFC())));
-    else
-        pPrvBrsh = (CBrush*)g_gt.mDC1.SelectStockObject(NULL_BRUSH);
-    CPen* pPrvPen = g_gt.mDC1.SelectObject(&pen);
+        /* KLUDGE:  size - 1 due to
+                    https://groups.google.com/g/wx-dev/c/0HZLlbTB6do/m/JMQy61LqAQAJ */
+        wxRect rct(wxPoint(std::min(startPt.x, curPt.x), std::min(startPt.y, curPt.y)),
+                    wxSize(std::abs(curPt.x - startPt.x) + 1 - 1, std::abs(curPt.y - startPt.y) + 1 - 1));
+        wxPen pen(CB::Convert(m_pTMgr->GetForeColor()), nSize);
+        if (nSize == 0)
+            dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        else
+            dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.SetPen(pen);
 
-    g_gt.mDC1.Ellipse(&rct);
-
-    g_gt.mDC1.SelectObject(pPrvPen);
-    g_gt.mDC1.SelectObject(pPrvBrsh);
-
-    g_gt.SelectSafeObjectsForDC1();
+        dc.DrawEllipse(rct);
+    }
 
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
 
+#if 0
 void CBitEditView::DrawImageFill(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
