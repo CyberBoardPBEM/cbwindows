@@ -465,32 +465,18 @@ wxCursor CBitOvalTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitFillTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
-    pView->SetUndoFromView();
-    pView->DrawImageFill(point);
-#endif
+    pView.SetUndoFromView();
+    pView.DrawImageFill(point);
 }
 
 wxCursor CBitFillTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
+    if (!pView.IsPtInImage(point))
+        return wxNullCursor;
 
-    CPoint point;
-    GetCursorPos(&point);
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-    if (!pView->IsPtInImage(point))
-        return FALSE;
-
-    SetCursor(g_res.hcrFill);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return g_res.hcrFillWx;
 }
 
 ////////////////////////////////////////////////////////////////////////

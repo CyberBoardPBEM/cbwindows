@@ -413,26 +413,26 @@ void CBitEditView::DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize)
     m_pSelView->UpdateViewImage();
 }
 
-#if 0
-void CBitEditView::DrawImageFill(CPoint pt)
+void CBitEditView::DrawImageFill(wxPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
-    g_gt.mDC1.SelectObject(*m_bmView);
+    {
+        wxColour oldColor = GetPixel(m_bmView, pt.x, pt.y);
+        wxMemoryDC dc(m_bmView);
 
-    CBrush* pBrush = CBrush::FromHandle(static_cast<HBRUSH>(g_gt.mDC1.SelectObject(m_pTMgr->GetForeBrushMFC())));
+        dc.SetBrush(m_pTMgr->GetForeBrushWx());
 
-    g_gt.mDC1.ExtFloodFill(pt.x, pt.y, g_gt.mDC1.GetPixel(pt), FLOODFILLSURFACE);
-
-    g_gt.mDC1.SelectObject(pBrush);
-
-    g_gt.SelectSafeObjectsForDC1();
-    g_gt.SelectSafeObjectsForDC2();
+        /* TODO:  not portable:
+                    https://docs.wxwidgets.org/latest/classwx_d_c.html#af510e22ffc274d3d3b29659941f2b5a9 */
+        CB_VERIFY(dc.FloodFill(pt.x, pt.y, oldColor, wxFLOOD_SURFACE));
+    }
 
     SetMasterImageFromViewImage();
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
 
+#if 0
 void CBitEditView::DrawImageChangeColor(CPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
