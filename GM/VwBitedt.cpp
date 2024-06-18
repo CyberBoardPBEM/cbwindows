@@ -432,49 +432,40 @@ void CBitEditView::DrawImageFill(wxPoint pt)
     m_pSelView->UpdateViewImage();
 }
 
-#if 0
-void CBitEditView::DrawImageChangeColor(CPoint pt)
+void CBitEditView::DrawImageChangeColor(wxPoint pt)
 {
     SetViewImageFromMasterImage();          // Get fresh original
 
-    g_gt.mDC1.SelectObject(*m_bmView);
+    wxASSERT(m_bmView.GetDepth() == 24 && m_bmView.IsDIB());
+    wxNativePixelData imgData(m_bmView);
+    wxNativePixelData::Iterator it(imgData);
+    it.MoveTo(imgData, pt.x, pt.y);
 
-    COLORREF crHit = g_gt.mDC1.GetPixel(pt);
-    COLORREF crNew = m_pTMgr->GetForeColor();
+    wxColour crHit(it.Red(), it.Green(), it.Blue());
+    wxColour crNew = CB::Convert(m_pTMgr->GetForeColor());
 
-    BITMAP bmap;
-    memset(&bmap, 0, sizeof(BITMAP));
-    VERIFY(m_bmView->GetObject(sizeof(BITMAP), &bmap));
-
-    ASSERT(bmap.bmBits != NULL);
-    ASSERT(bmap.bmBitsPixel == 24);
-    ASSERT(bmap.bmWidthBytes > 1);
-    ASSERT(bmap.bmPlanes == 1);
-
-    std::byte* pxlRowStart = static_cast<std::byte*>(bmap.bmBits);
-    ptrdiff_t pxlStride = bmap.bmWidthBytes;
-    for (int y = 0 ; y < bmap.bmHeight ; ++y)
+    it.Reset(imgData);
+    for (int y = 0 ; y < m_bmView.GetHeight() ; ++y)
     {
-        WIN_RGBTRIO* pxl = reinterpret_cast<WIN_RGBTRIO*>(pxlRowStart);
-        for (int x = 0 ; x < bmap.bmWidth ; ++x)
+        wxNativePixelData::Iterator curr = it;
+        for (int x = 0 ; x < m_bmView.GetWidth(); ++x)
         {
-            COLORREF cr = *pxl;
+            wxColour cr = wxColour(curr.Red(), curr.Green(), curr.Blue());
             if (cr == crHit)
             {
-                *pxl = crNew;
+                curr.Red() = crNew.Red();
+                curr.Green() = crNew.Green();
+                curr.Blue() = crNew.Blue();
             }
-            ++pxl;
+            ++curr;
         }
-        pxlRowStart += pxlStride;
+        it.OffsetY(imgData, 1);
     }
-    ::GdiFlush();
 
-    g_gt.SelectSafeObjectsForDC1();
     SetMasterImageFromViewImage();
     InvalidateViewImage(true);
     m_pSelView->UpdateViewImage();
 }
-#endif
 
 // points are in bit image coordinates
 void CBitEditView::DrawImageToPixel(wxPoint prvPt, wxPoint curPt, UINT nSize)
