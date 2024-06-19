@@ -226,9 +226,9 @@ protected:
     afx_msg void OnUpdateImageBoardMask(CCmdUI* pCmdUI);
     afx_msg void OnKillFocus(CWnd* pNewWnd);
     afx_msg void OnSetFocus(CWnd* pOldWnd);
-    afx_msg void OnDwgFont();
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 #endif
+    void OnDwgFont(wxCommandEvent& event);
+    void OnChar(wxKeyEvent& event);
     void OnEditUndo(wxCommandEvent& event);
     void OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI);
 #if 0
@@ -273,6 +273,7 @@ private:
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
     DECLARE_MESSAGE_MAP()
 
     // IGetEventHandler

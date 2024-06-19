@@ -505,33 +505,19 @@ wxCursor CBitColorChangeTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 void CBitTextTool::OnLButtonDown(CBitEditView& pView, int nMods,
     wxPoint point)
 {
-#if 0
-    if (!pView->GetImagePixelLoc(point))
+    if (!pView.GetImagePixelLoc(point))
         return;                         // Not in image
-    pView->SetUndoFromView();
-    pView->CommitCurrentText();
-    pView->SetTextPosition(point);
-#endif
+    pView.SetUndoFromView();
+    pView.CommitCurrentText();
+    pView.SetTextPosition(point);
 }
 
 wxCursor CBitTextTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
-#if 0
-    if (nHitTest != HTCLIENT)
-        return FALSE;
+    if (!pView.IsPtInImage(point))
+        return wxNullCursor;
 
-    CPoint point;
-    GetCursorPos(&point);
-    pView->ScreenToClient(&point);
-    pView->ClientToWorkspace(point);
-    if (!pView->IsPtInImage(point))
-        return FALSE;
-
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
-#else
-    return wxNullCursor;
-#endif
+    return g_res.hcrCrossHairWx;
 }
 
 
