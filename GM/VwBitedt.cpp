@@ -79,9 +79,10 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     ON_UPDATE_COMMAND_UI(ID_IMAGE_BOARDMASK, OnUpdateImageBoardMask)
     ON_WM_KILLFOCUS()
     ON_WM_SETFOCUS()
-    ON_COMMAND(ID_DWG_FONT, OnDwgFont)
-    ON_WM_CHAR()
 #endif
+    EVT_MENU(XRCID("ID_DWG_FONT"), OnDwgFont)
+    EVT_UPDATE_UI(XRCID("ID_DWG_FONT"), OnUpdateEnable)
+    EVT_CHAR(OnChar)
     EVT_MENU(wxID_UNDO, OnEditUndo)
     EVT_UPDATE_UI(wxID_UNDO, OnUpdateEditUndo)
 #if 0
@@ -97,9 +98,7 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_MENU(XRCID("ID_ITOOL_SELECT"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_BRUSH"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_FILL"), OnToolPalette)
-#if 0   // TODO:
     EVT_MENU(XRCID("ID_ITOOL_TEXT"), OnToolPalette)
-#endif
     EVT_MENU(XRCID("ID_ITOOL_LINE"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_RECT"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_OVAL"), OnToolPalette)
@@ -110,9 +109,7 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_SELECT"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_BRUSH"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_FILL"), OnUpdateToolPalette)
-#if 0   // TODO:
     EVT_UPDATE_UI(XRCID("ID_ITOOL_TEXT"), OnUpdateToolPalette)
-#endif
     EVT_UPDATE_UI(XRCID("ID_ITOOL_LINE"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_RECT"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_OVAL"), OnUpdateToolPalette)
@@ -127,6 +124,7 @@ wxEND_EVENT_TABLE()
 BEGIN_MESSAGE_MAP(CBitEditViewContainer, CView)
     ON_WM_CREATE()
     ON_WM_SIZE()
+    ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -727,14 +725,9 @@ void CBitEditView::SetTextCaretPos(wxPoint ptPos)
     {
         wxCaret* caret = new wxCaret(this, 1, nHt * m_nZoom);
         SetCaret(caret);
-#if 0
-        CPoint pnt = GetDeviceScrollPosition();
-        SetCaretPos(CPoint(xBorder + ptPos.x * m_nZoom - pnt.x - 1,
+        wxPoint pnt = ClientToWorkspace(wxPoint(0, 0));
+        caret->Move(wxPoint(xBorder + ptPos.x * m_nZoom - pnt.x - 1,
             yBorder + ptPos.y * m_nZoom - pnt.y - 1));
-#else
-        caret->Move(wxPoint(xBorder + ptPos.x * m_nZoom - 1,
-            yBorder + ptPos.y * m_nZoom - 1));
-#endif
         caret->Show(true);
     }
     m_ptCaret = ptPos;
@@ -765,24 +758,18 @@ void CBitEditView::UpdateTextView()
         // Draw the text on the view bitmap updating
         // the view with the master bitmap.
         SetViewImageFromMasterImage();          // Get fresh original
-        wxASSERT(!"todo");
-#if 0
-        g_gt.mDC1.SelectObject(*m_bmView);
-        g_gt.mDC1.SetTextColor(m_pTMgr->GetForeColor());
-        UINT nAlign = g_gt.mDC1.SetTextAlign(TA_LEFT | TA_TOP);
-        CFontTbl* pFMgr = GetDocument().GetFontManager();
-        CFont* pPrvFont = g_gt.mDC1.SelectObject(
-            CFont::FromHandle(pFMgr->GetFontHandle(UpdateBitFont())));
-        g_gt.mDC1.SetBkMode(TRANSPARENT);
+        {
+            wxMemoryDC dc(m_bmView);
+            dc.SetTextForeground(CB::Convert(m_pTMgr->GetForeColor()));
+            dc.SetFont(ToWxFont(UpdateBitFont()));
 
-        g_gt.mDC1.TextOut(m_ptText.x, m_ptText.y, m_strText);
-        CSize size = g_gt.mDC1.GetTextExtent(m_strText);
-        m_nTxtExtent = size.cx;
+            dc.DrawText(m_strText, m_ptText.x, m_ptText.y);
+            // GetTextExtent is only for single line
+            wxASSERT(m_strText.find('\n') == CB::string::npos);
+            wxSize size = dc.GetTextExtent(m_strText);
+            m_nTxtExtent = size.x;
+        }
 
-        g_gt.mDC1.SelectObject(pPrvFont);
-        g_gt.mDC1.SetTextAlign(nAlign);
-        g_gt.SelectSafeObjectsForDC1();
-#endif
         InvalidateViewImage(true);
         m_pSelView->UpdateViewImage();
     }
@@ -843,23 +830,30 @@ void CBitEditView::OnKillFocus(CWnd* pNewWnd)
     if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
         ::DestroyCaret();
 }
+#endif
 
-void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CBitEditView::OnChar(wxKeyEvent& event)
 {
+    wxASSERT(event.GetKeyCode() != WXK_NONE ||
+            !"TODO:  unicode");
     if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
     {
-        if (nChar != VK_BACK)
+        if (event.GetKeyCode() == WXK_RETURN)
         {
-            ASSERT(nChar < 0x7f || !"non-ascii needs work");
-            AddChar(value_preserving_cast<wchar_t>(nChar));
+            // ignore return; it doesn't get printed correctly
+        }
+        else if (event.GetKeyCode() != WXK_BACK)
+        {
+            wxASSERT(event.GetKeyCode() < 0x7f || !"non-ascii needs work");
+            AddChar(value_preserving_cast<wchar_t>(event.GetKeyCode()));
         }
         else
             DelChar();
     }
-    else if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste->m_hObject != NULL
-        && GetCapture() != this)
+    else if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste.IsOk()
+        && HasCapture())
     {
-        if (nChar == VK_ESCAPE || nChar == VK_RETURN)
+        if (event.GetKeyCode() == WXK_ESCAPE || event.GetKeyCode() == WXK_RETURN)
         {
             SetMasterImageFromViewImage();
             InvalidateFocusBorder();        // Erase previous focus
@@ -868,7 +862,6 @@ void CBitEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
     }
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Undo support
@@ -1055,11 +1048,9 @@ void CBitEditView::OnToolPalette(wxCommandEvent& event)
         if (m_nLastToolID == XRCID("ID_ITOOL_TEXT"))
         {
             CommitCurrentText();
-            wxASSERT(!"TODO:");
-#if 0
-            SetTextCaretPos(CPoint(-1, -1));    // Turn off the caret
-            ::DestroyCaret();
-#endif
+            SetTextCaretPos(wxPoint(-1, -1));    // Turn off the caret
+            // wx doesn't have precise DestroyCaret() equivalent
+            GetCaret()->Hide();
         }
         if (m_nLastToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste.IsOk())
         {
@@ -1243,8 +1234,7 @@ void CBitEditView::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(true);
 }
 
-#if 0
-void CBitEditView::OnDwgFont()
+void CBitEditView::OnDwgFont(wxCommandEvent& /*event*/)
 {
     if (m_pTMgr->DoBitFontDialog())
     {
@@ -1254,7 +1244,6 @@ void CBitEditView::OnDwgFont()
             UpdateTextView();
     }
 }
-#endif
 
 void CBitEditView::OnEditUndo(wxCommandEvent& /*event*/)
 {
@@ -1399,4 +1388,11 @@ void CBitEditViewContainer::OnSize(UINT nType, int cx, int cy)
 {
     child->SetSize(0, 0, cx, cy);
     return CView::OnSize(nType, cx, cy);
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CBitEditViewContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    CB::OnCmdMsgOverride<CView>::OnSetFocus(pOldWnd);
+    child->SetFocus();
 }
