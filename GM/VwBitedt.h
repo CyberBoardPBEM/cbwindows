@@ -231,12 +231,10 @@ protected:
     void OnChar(wxKeyEvent& event);
     void OnEditUndo(wxCommandEvent& event);
     void OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnEditCopy();
-    afx_msg void OnEditPaste();
-    afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-#endif
+    void OnEditCopy(wxCommandEvent& event);
+    void OnEditPaste(wxCommandEvent& event);
+    void OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
     void OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI);
 #if 0
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
