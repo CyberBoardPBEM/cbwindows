@@ -28,6 +28,8 @@
 BOOL IsClipboardBitmap();
 void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap);
 OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd);
+void SetClipboardBitmap(const wxBitmap& pBMap);
+wxBitmap GetClipboardBitmap();
 
 #endif
 
