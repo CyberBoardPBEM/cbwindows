@@ -1114,6 +1114,10 @@ namespace CB
     {
         switch (id)
         {
+            case ID_EDIT_COPY:
+                return wxID_COPY;
+            case ID_EDIT_PASTE:
+                return wxID_PASTE;
             case ID_EDIT_UNDO:
                 return wxID_UNDO;
             default:

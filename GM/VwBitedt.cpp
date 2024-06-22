@@ -85,12 +85,10 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_CHAR(OnChar)
     EVT_MENU(wxID_UNDO, OnEditUndo)
     EVT_UPDATE_UI(wxID_UNDO, OnUpdateEditUndo)
-#if 0
-    ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-    ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-#endif
+    EVT_MENU(wxID_COPY, OnEditCopy)
+    EVT_MENU(wxID_PASTE, OnEditPaste)
+    EVT_UPDATE_UI(wxID_PASTE, OnUpdateEditPaste)
+    EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
     EVT_UPDATE_UI(XRCID("ID_INDICATOR_CELLNUM"), OnUpdateIndicatorCellNum)
 #if 0
     ON_WM_CONTEXTMENU()
@@ -1260,21 +1258,20 @@ void CBitEditView::OnUpdateEditUndo(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(IsUndoAvailable());
 }
 
-#if 0
-void CBitEditView::OnEditCopy()
+void CBitEditView::OnEditCopy(wxCommandEvent& event)
 {
-    if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste->m_hObject != NULL &&
-        !m_rctPaste.IsRectEmpty())
+    if (m_nCurToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste.IsOk() &&
+        !m_rctPaste.IsEmpty())
     {
-        SetClipboardBitmap(this, *m_bmPaste);
+        SetClipboardBitmap(m_bmPaste);
     }
     else
-        SetClipboardBitmap(this, *m_bmView);
+        SetClipboardBitmap(m_bmView);
 }
 
-void CBitEditView::OnEditPaste()
+void CBitEditView::OnEditPaste(wxCommandEvent& event)
 {
-    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this);
+    wxBitmap pBMap = GetClipboardBitmap();
 
     SetUndoFromView();
 
@@ -1283,10 +1280,7 @@ void CBitEditView::OnEditPaste()
 
     int nRescale = 0;
 
-    BITMAP bmInfo;
-    pBMap->GetObject(sizeof(bmInfo), &bmInfo);
-
-    if (m_size.cx != bmInfo.bmWidth || m_size.cy != bmInfo.bmHeight)
+    if (m_size.x != pBMap.GetWidth() || m_size.y != pBMap.GetHeight())
     {
         CPasteBitmapDialog dlg;
         dlg.m_nPasteAction = nRescale;
@@ -1304,13 +1298,13 @@ void CBitEditView::OnEditPaste()
 
     if (nRescale > 0)
     {
-        m_bmPaste = CloneScaledBitmap(*pBMap, m_size);
-        m_rctPaste.SetRect(0, 0, m_size.cx, m_size.cy);
+        m_bmPaste = CloneScaledBitmap(pBMap, m_size);
+        m_rctPaste = wxRect(wxPoint(0, 0), m_size);
     }
     else
     {
-        m_bmPaste = CloneBitmap(*pBMap);
-        m_rctPaste.SetRect(0, 0, bmInfo.bmWidth, bmInfo.bmHeight);
+        m_bmPaste = pBMap;
+        m_rctPaste = wxRect(wxPoint(0, 0), pBMap.GetSize());
     }
 
 
@@ -1322,16 +1316,15 @@ void CBitEditView::OnEditPaste()
     InvalidateFocusBorder();
 }
 
-void CBitEditView::OnUpdateEditPaste(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsClipboardBitmap() && !m_bFillOnly);
+    pCmdUI.Enable(IsClipboardBitmap() && !m_bFillOnly);
 }
 
-void CBitEditView::OnUpdateEditCopy(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!m_bFillOnly);
+    pCmdUI.Enable(!m_bFillOnly);
 }
-#endif
 
 void CBitEditView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
 {
