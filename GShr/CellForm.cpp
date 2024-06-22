@@ -153,6 +153,8 @@ void CCellForm::CreateHexMask()
     dcMask.PatBlt(0, 0, m_rct.right, m_rct.bottom, WHITENESS);
     dcMask.SelectStockObject(BLACK_BRUSH);
     dcMask.SelectStockObject(BLACK_PEN);
+    wxASSERT((m_eType == cformHexFlat || m_eType == cformHexPnt) &&
+            m_pPoly.size() == size_t(7));
     dcMask.Polygon(m_pPoly.data(), value_preserving_cast<int>(m_pPoly.size()));
     dcMask.SelectObject(prvbmMask);
 

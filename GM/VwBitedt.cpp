@@ -33,6 +33,7 @@
 #include    "ClipBrd.h"
 #include    "DlgBmask.h"
 #include    "DlgPaste.h"
+#include    "CDib.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -68,15 +69,13 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_MOTION(OnMouseMove)
     EVT_SET_CURSOR(OnSetCursor)
-#if 0
-    ON_COMMAND(ID_IMAGE_BOARDMASK, OnImageBoardMask)
-#endif
+    EVT_MENU(XRCID("ID_IMAGE_BOARDMASK"), OnImageBoardMask)
     EVT_MENU(wxID_ZOOM_IN, OnViewZoomIn)
     EVT_UPDATE_UI(wxID_ZOOM_IN, OnUpdateViewZoomIn)
     EVT_MENU(wxID_ZOOM_OUT, OnViewZoomOut)
     EVT_UPDATE_UI(wxID_ZOOM_OUT, OnUpdateViewZoomOut)
+    EVT_UPDATE_UI(XRCID("ID_IMAGE_BOARDMASK"), OnUpdateImageBoardMask)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_IMAGE_BOARDMASK, OnUpdateImageBoardMask)
     ON_WM_KILLFOCUS()
     ON_WM_SETFOCUS()
 #endif
@@ -1124,8 +1123,7 @@ void CBitEditView::OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI)
     colorCmdUI.SetLineWidth(m_pTMgr->GetLineWidth());
 }
 
-#if 0
-void CBitEditView::OnImageBoardMask()
+void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
 {
     CBoardManager* pBMgr = GetDocument().GetBoardManager();
 
@@ -1138,41 +1136,40 @@ void CBitEditView::OnImageBoardMask()
     const CCellForm& pcf = pBoard.GetBoardArray().
         GetCellForm(m_pSelView->GetCurrentScale());
 
-    CSize size = pcf.GetCellSize();
-    g_gt.mDC1.SelectObject(*m_bmView);
-
-    const CBitmap* pMask = pcf.GetMask();
-
-    if (pMask != NULL)
+    wxSize size = CB::Convert(pcf.GetCellSize());
     {
-        g_gt.mDC2.SelectObject(*pMask);
-        g_gt.mDC1.BitBlt(0, 0, size.cx, size.cy, &g_gt.mDC2, 0, 0,
-            0x00220326L /* DSna */);
-        g_gt.SelectSafeObjectsForDC2();
+        wxMemoryDC dc(m_bmView);
+
+        const CBitmap* pMask = pcf.GetMask();
+
+        if (pMask != NULL)
+        {
+            wxBitmap wxMask = CB::Convert(*pMask);
+            wxMemoryDC dc2(wxMask);
+            dc.Blit(0, 0, size.x, size.y, &dc2, 0, 0,
+                wxAND_INVERT);
+        }
+        else
+        {
+            // Rectangular Cell...No mask exists. Just PATBLT the boundries.
+            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetBrush(*wxBLACK_BRUSH);
+            dc.DrawRectangle(wxPoint(size.x, 0), wxSize(1, size.y));
+            dc.DrawRectangle(wxPoint(0, size.y), wxSize(size.x, 1));
+        }
+        g_gt.SelectSafeObjectsForDC1();
     }
-    else
-    {
-        // Rectangular Cell...No mask exists. Just PATBLT the boundries.
-        // This will only be visible if the target tile is larger than
-        // the chosen rectangular. It delineates the interior area
-        // of the chosen masking area. I have no idea if this is
-        // a useful feature though.
-        g_gt.mDC1.PatBlt(size.cx, 0, 1, size.cy, BLACKNESS);
-        g_gt.mDC1.PatBlt(0, size.cy, size.cx, 1, BLACKNESS);
-    }
-    g_gt.SelectSafeObjectsForDC1();
 
     SetMasterImageFromViewImage();
     InvalidateViewImage(false);
     m_pSelView->UpdateViewImage();
 }
 
-void CBitEditView::OnUpdateImageBoardMask(CCmdUI* pCmdUI)
+void CBitEditView::OnUpdateImageBoardMask(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_pSelView->GetCurrentScale() != smallScale &&
+    pCmdUI.Enable(m_pSelView->GetCurrentScale() != smallScale &&
         !GetDocument().GetBoardManager()->IsEmpty());
 }
-#endif
 
 void CBitEditView::OnUpdateViewZoomIn(wxUpdateUIEvent& pCmdUI)
 {

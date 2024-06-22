@@ -1137,6 +1137,8 @@ namespace CB
                         return XRCID("ID_COLOR_CUSTOM");
                     case ID_DWG_FONT:
                         return XRCID("ID_DWG_FONT");
+                    case ID_IMAGE_BOARDMASK:
+                        return XRCID("ID_IMAGE_BOARDMASK");
                     case ID_IMAGE_GRIDLINES:
                         return XRCID("ID_IMAGE_GRIDLINES");
                     case ID_INDICATOR_CELLNUM:
