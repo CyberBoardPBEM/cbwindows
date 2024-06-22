@@ -215,15 +215,13 @@ protected:
     void OnLButtonUp(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnSetCursor(wxSetCursorEvent& event);
-#if 0
-    afx_msg void OnImageBoardMask();
-#endif
+    void OnImageBoardMask(wxCommandEvent& event);
     void OnViewZoomIn(wxCommandEvent& event);
     void OnUpdateViewZoomIn(wxUpdateUIEvent& pCmdUI);
     void OnViewZoomOut(wxCommandEvent& event);
     void OnUpdateViewZoomOut(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateImageBoardMask(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnUpdateImageBoardMask(CCmdUI* pCmdUI);
     afx_msg void OnKillFocus(CWnd* pNewWnd);
     afx_msg void OnSetFocus(CWnd* pOldWnd);
 #endif
