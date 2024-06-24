@@ -1252,6 +1252,13 @@ namespace CB
     {
         static const std::map<int, int> ids = {
 #if !defined(GPLAY)
+            { XRCID("ID_IMAGE_DISCARD"), ID_IMAGE_DISCARD },
+            { XRCID("ID_IMAGE_UPDATE"), ID_IMAGE_UPDATE },
+            { XRCID("ID_STICKY_DRAWTOOLS"), ID_STICKY_DRAWTOOLS },
+            { XRCID("ID_TOOLS_RESIZETILE"), ID_TOOLS_RESIZETILE },
+            { XRCID("ID_TOOLS_ROT90"), ID_TOOLS_ROT90 },
+            { XRCID("ID_TOOLS_ROT180"), ID_TOOLS_ROT180 },
+            { XRCID("ID_TOOLS_ROT270"), ID_TOOLS_ROT270 },
 #else
 #endif
         };

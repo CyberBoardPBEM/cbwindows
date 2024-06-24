@@ -39,7 +39,7 @@
 
 class CTileSelView;
 
-class CBitEditView : public wxScrolledCanvas
+class CBitEditView : public CB::ProcessEventOverride<wxScrolledCanvas>
 {
     friend class CBitEditViewContainer;
     friend class CTileSelViewContainer;
@@ -234,14 +234,18 @@ protected:
     void OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI);
     void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
     void OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-#endif
+    void OnContextMenu(wxContextMenuEvent& event);
     void OnViewToggleScale(wxCommandEvent& event);
     void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     wxDECLARE_EVENT_TABLE();
 
 private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override
+    {
+        return CheckedDeref(AfxGetMainWnd());
+    }
+
     RefPtr<CBitEditViewContainer> parent;
     RefPtr<CGamDoc> document;
 };
