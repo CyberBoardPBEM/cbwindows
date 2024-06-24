@@ -89,9 +89,7 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(wxID_PASTE, OnUpdateEditPaste)
     EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
     EVT_UPDATE_UI(XRCID("ID_INDICATOR_CELLNUM"), OnUpdateIndicatorCellNum)
-#if 0
-    ON_WM_CONTEXTMENU()
-#endif
+    EVT_CONTEXT_MENU(OnContextMenu)
     EVT_MENU(XRCID("ID_ITOOL_SELECT"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_BRUSH"), OnToolPalette)
     EVT_MENU(XRCID("ID_ITOOL_FILL"), OnToolPalette)
@@ -917,30 +915,26 @@ BOOL CBitEditView::OnEraseBkgnd(CDC* pDC)
 
 ///////////////////////////////////////////////////////////////////////
 
-#if 0
-void CBitEditView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CBitEditView::OnContextMenu(wxContextMenuEvent& event)
 {
-    // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
-
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_DESIGN_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_DESIGN_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(MENU_IV_BITEDIT);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu("1=IV_BITEDIT");
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(index));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+            PopupMenu(&*popup);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
-#endif
 
 void CBitEditView::OnLButtonDown(wxMouseEvent& event)
 {

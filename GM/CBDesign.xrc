@@ -3477,4 +3477,169 @@
       </object>
     </object>
   </object>
+  <object class="wxMenuBar" name="IDR_MENU_DESIGN_POPUPS">
+    <object class="wxMenu" name="MENU_IV_BITEDIT">
+      <label>1=IV__BITEDIT</label>
+      <object class="wxMenuItem" name="wxID_UNDO">
+        <label>Undo</label>
+        <accel></accel>
+        <help>Undo the last action\nUndo</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>Copy</label>
+        <accel></accel>
+        <help>Copy the selection and put it on the Clipboard\nCopy</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_PASTE">
+        <label>Paste</label>
+        <accel></accel>
+        <help>Insert Clipboard contents\nPaste</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenu" name="m_menu1">
+        <label>Tile Image Tools</label>
+        <object class="wxMenuItem" name="ID_ITOOL_PENCIL">
+          <label>Pencil</label>
+          <accel></accel>
+          <help>Draws using a singe-pixel pencil\nPixel Pencil</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_SELECT">
+          <label>Selector</label>
+          <accel></accel>
+          <help>Selects a portion the image for move, cut or copy\nSelect</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_BRUSH">
+          <label>Brush</label>
+          <accel></accel>
+          <help>Draw using a brush having the selected size\nBrush</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILL">
+          <label>Fill</label>
+          <accel></accel>
+          <help>Fill a portion of the image with the selected color\nFill</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_COLORCHANGE">
+          <label>Change Color</label>
+          <accel></accel>
+          <help>Change clicked color to current color.\nChange Color</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_TEXT">
+          <label>Text</label>
+          <accel></accel>
+          <help>Draw text on the image using the current font\nText</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_LINE">
+          <label>Line</label>
+          <accel></accel>
+          <help>Draw lines on the the image using the current size\nLine</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_RECT">
+          <label>Rect</label>
+          <accel></accel>
+          <help>Draw a rectagle using the selected color and border width\nRectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_OVAL">
+          <label>Oval</label>
+          <accel></accel>
+          <help>Draw an oval using the selected color and border width\nOval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILLRECT">
+          <label>Filled Rect</label>
+          <accel></accel>
+          <help>Draw a filled rectagle using the selected color and border width\nFilled Rectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILLOVAL">
+          <label>Filled Oval</label>
+          <accel></accel>
+          <help>Draw an filled oval using the selected colors and border width\nFilled Oval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_DROPPER">
+          <label>Pickup Color</label>
+          <accel></accel>
+          <help>Extract a color from the screen\nPickup Color</help>
+          <checkable>1</checkable>
+        </object>
+      </object>
+      <object class="wxMenuItem" name="ID_STICKY_DRAWTOOLS">
+        <label>Image Tools Are Sticky</label>
+        <accel></accel>
+        <help>Toggle automatic selection of Select tool after drawing.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenu" name="m_menu2">
+        <label>Rotate Tile</label>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT90">
+          <label>90°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 90 degrees</help>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT180">
+          <label>180°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 180 degrees</help>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT270">
+          <label>270°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 270 degrees</help>
+        </object>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_FONT">
+        <label>Font...</label>
+        <accel></accel>
+        <help>Set default drawing font.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOLS_RESIZETILE">
+        <label>Resize Tile...</label>
+        <accel></accel>
+        <help>Resize the tile&apos;s bitmaps</help>
+      </object>
+      <object class="wxMenuItem" name="ID_IMAGE_BOARDMASK">
+        <label>Apply Cell Mask toTile...</label>
+        <accel></accel>
+        <help>Apply the cell mask from a board</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ZOOM_IN">
+        <label>Zoom Tile Image In</label>
+        <accel></accel>
+        <help>Zoom the tile image in\nZoom Tile Image In</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_ZOOM_OUT">
+        <label>Zoom Tile Image Out</label>
+        <accel></accel>
+        <help>Zoom the tile image out\nZoom Tile Image Out</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_IMAGE_GRIDLINES">
+        <label>Tile Image Grid Lines</label>
+        <accel></accel>
+        <help>Shows or hides tile editor grid lines\nTile Grid Lines</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_IMAGE_UPDATE">
+        <label>Update Tile Changes</label>
+        <accel></accel>
+        <help>Update Tile Changes</help>
+      </object>
+      <object class="wxMenuItem" name="ID_IMAGE_DISCARD">
+        <label>Discard Tile Changes</label>
+        <accel></accel>
+        <help>Discard changes to tile image</help>
+      </object>
+    </object>
+  </object>
 </resource>
