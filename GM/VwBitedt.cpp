@@ -50,9 +50,6 @@ const size_t maxUndoLevels = size_t(8);
 /////////////////////////////////////////////////////////////////////////////
 
 wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
-#if 0
-    ON_WM_ERASEBKGND()
-#endif
     EVT_MENU(XRCID("ID_IMAGE_GRIDLINES"), OnImageGridLines)
     EVT_MENU(XRCID("ID_ITOOL_PENCIL"), OnToolPalette)
     EVT_SETCOLOR(OnSetColor)
@@ -75,10 +72,6 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_MENU(wxID_ZOOM_OUT, OnViewZoomOut)
     EVT_UPDATE_UI(wxID_ZOOM_OUT, OnUpdateViewZoomOut)
     EVT_UPDATE_UI(XRCID("ID_IMAGE_BOARDMASK"), OnUpdateImageBoardMask)
-#if 0
-    ON_WM_KILLFOCUS()
-    ON_WM_SETFOCUS()
-#endif
     EVT_MENU(XRCID("ID_DWG_FONT"), OnDwgFont)
     EVT_UPDATE_UI(XRCID("ID_DWG_FONT"), OnUpdateEnable)
     EVT_CHAR(OnChar)
@@ -152,20 +145,6 @@ CBitEditView::~CBitEditView()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-#if 0
-BOOL CBitEditView::PreCreateWindow(CREATESTRUCT& cs)
-{
-    if (!CScrollView::PreCreateWindow(cs))
-        return FALSE;
-
-    cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS,
-        AfxGetApp()->LoadStandardCursor(IDC_ARROW),
-        (HBRUSH)(COLOR_BTNFACE + 1));
-
-    return TRUE;
-}
-#endif
 
 void CBitEditView::OnInitialUpdate()
 {
@@ -811,22 +790,6 @@ void CBitEditView::UpdateFontInfo()
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-void CBitEditView::OnSetFocus(CWnd* pOldWnd)
-{
-    CScrollView::OnSetFocus(pOldWnd);
-    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
-        SetTextCaretPos(m_ptCaret);
-}
-
-void CBitEditView::OnKillFocus(CWnd* pNewWnd)
-{
-    CScrollView::OnKillFocus(pNewWnd);
-    if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
-        ::DestroyCaret();
-}
-#endif
-
 void CBitEditView::OnChar(wxKeyEvent& event)
 {
     wxASSERT(event.GetKeyCode() != WXK_NONE ||
@@ -894,26 +857,6 @@ void CBitEditView::PurgeUndo()
 
 /////////////////////////////////////////////////////////////////////////////
 // Message handlers
-
-#if 0
-BOOL CBitEditView::OnEraseBkgnd(CDC* pDC)
-{
-    CRect rct = GetImageRect();
-    if (m_bGridVisible && m_nZoom > 2)
-    {
-        rct.left--;
-        rct.top--;
-    }
-    WorkspaceToClient(rct);
-    pDC->SaveDC();
-    pDC->ExcludeClipRect(&rct);
-    BOOL bRet = CScrollView::OnEraseBkgnd(pDC);
-    pDC->RestoreDC(-1);
-    return bRet;
-}
-#endif
-
-///////////////////////////////////////////////////////////////////////
 
 void CBitEditView::OnContextMenu(wxContextMenuEvent& event)
 {

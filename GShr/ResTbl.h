@@ -65,10 +65,7 @@ struct ResourceTable
 #endif
 #ifndef GPLAY
     // ======== Brushes ========= //
-    HBRUSH      hbr25Pct;       // 25% grey pattern
     wxBrush     hbr25PctWx;     // 25% grey pattern
-    // ------- //
-    HBITMAP     hbm25Pct;       // Used to create 25% grey brush
 #endif
     // ------ //
     ResourceTable() { m_bInited = FALSE; }

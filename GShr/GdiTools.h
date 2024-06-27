@@ -150,25 +150,17 @@ void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
 OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
 wxBitmap CloneBitmap(const wxBitmap& pbmSrc);
-// The cut excludes the right and bottom edges of rctSrc.
-// The source bitmap will have its
-// cut region filled with the crVoided color.
-OwnerPtr<CBitmap> CutBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
-    COLORREF crVoided);
 // The source bitmap will have its
 // cut region filled with the crVoided color.
 wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
     wxColour crVoided);
 OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size);
 wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size);
-void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst);
 void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst);
 void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
 #ifndef GPLAY
-void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick);
 void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick);
 #endif
-OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr);
 wxBitmap CreateColorBitmap(wxSize size, wxColour cr);
 
 #ifdef WE_WANT_THIS_STUFF_DLL940113

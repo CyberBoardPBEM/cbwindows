@@ -189,16 +189,7 @@ protected:
     void OnDraw(wxDC& dc) override;
     void OnInitialUpdate();
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-#if 0
-    void OnActivateView(BOOL bActivate, CView *pActivateView,
-        CView* pDeactivateView) override;
 
-    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
-#endif
-
-#if 0
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-#endif
     void OnImageGridLines(wxCommandEvent& event);
     void OnToolPalette(wxCommandEvent& event);
     void OnSetColor(SetColorEvent& event);
@@ -221,10 +212,6 @@ protected:
     void OnViewZoomOut(wxCommandEvent& event);
     void OnUpdateViewZoomOut(wxUpdateUIEvent& pCmdUI);
     void OnUpdateImageBoardMask(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnKillFocus(CWnd* pNewWnd);
-    afx_msg void OnSetFocus(CWnd* pOldWnd);
-#endif
     void OnDwgFont(wxCommandEvent& event);
     void OnChar(wxKeyEvent& event);
     void OnEditUndo(wxCommandEvent& event);
