@@ -116,13 +116,6 @@ void ResourceTable::FreeBrushes(void)
 {
     if (!m_bInited)     // Handles are bad
         return;
-#ifndef GPLAY
-    if (hbr25Pct)   DeleteObject(hbr25Pct);
-    if (hbm25Pct)   DeleteObject(hbm25Pct);
-
-    hbm25Pct = NULL;
-    hbr25Pct = NULL;
-#endif
 }
 
 // ----------------------------------------------------- //
@@ -130,10 +123,6 @@ void ResourceTable::FreeBrushes(void)
 void ResourceTable::LoadBrushes(HINSTANCE hInst)
 {
 #ifndef GPLAY
-    hbm25Pct = ::LoadBitmap(AfxGetResourceHandle(),
-        MAKEINTRESOURCE(IDB_25PERCENT));
-    hbr25Pct = ::CreatePatternBrush(hbm25Pct);
-
     // create brush with wxBRUSHSTYLE_STIPPLE_MASK_OPAQUE
     // TODO:  rewrite w/o wxMSW-specific code
     static const auto LoadBrush = [](HINSTANCE hInst, WORD id)

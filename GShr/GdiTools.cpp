@@ -119,33 +119,6 @@ int GetCurrentVideoResolution()
 /////////////////////////////////////////////////////////////////
 
 #ifndef GPLAY
-void Draw25PctPatBorder(CWnd& pWnd, CDC& pDC, CRect rct, int nThick)
-{
-    pDC.SetBkColor(RGB(255, 255, 255));
-    pDC.SetTextColor(RGB(0, 255, 0));
-
-    CPoint pt(0, 0);
-    pWnd.ClientToScreen(&pt);
-
-    UnrealizeObject(g_res.hbr25Pct);
-    pDC.SetBrushOrg(pt.x, pt.y);
-    CBrush* pPrvBrush = pDC.SelectObject(CBrush::FromHandle(g_res.hbr25Pct));
-
-    // Top border
-    pDC.PatBlt(rct.left, rct.top, rct.Width(), nThick, PATCOPY);
-    // Left border
-    pDC.PatBlt(rct.left, rct.top + nThick, nThick, rct.Height() - nThick,
-        PATCOPY);
-    // Bottom border
-    pDC.PatBlt(rct.left + nThick, rct.bottom - nThick, rct.Width() - nThick,
-        nThick, PATCOPY);
-    // Right border
-    pDC.PatBlt(rct.right - nThick, rct.top + nThick, nThick,
-        rct.Height() - 2 * nThick, PATCOPY);
-
-    pDC.SelectObject(pPrvBrush);
-}
-
 void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick)
 {
     // see wxWidgets\src\msw\dc.cpp wxBrushAttrsSetter
@@ -371,49 +344,6 @@ wxBitmap CloneBitmap(const wxBitmap& pbmSrc)
     return pbmSrc.GetSubBitmap(wxRect(wxPoint(0, 0), pbmSrc.GetSize()));
 }
 
-// The cut excludes the right and bottom edges of rctSrc.
-// The source bitmap will have its
-// cut region filled with the crVoided color.
-OwnerPtr<CBitmap> CutBitmapPiece(CBitmap& pbmSrc, CRect rctSrc,
-    COLORREF crVoided)
-{
-    ASSERT(pbmSrc.m_hObject != NULL);
-    BITMAP bmInfo;
-    memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
-    CRect rct(0, 0, bmInfo.bmWidth, bmInfo.bmHeight);
-    rct &= rctSrc;
-    ASSERT(!rct.IsRectEmpty());
-
-    g_gt.mDC1.SelectObject(&pbmSrc);
-
-    OwnerPtr<CBitmap> pbmDst = MakeOwner<CBitmap>();
-    if (bmInfo.bmBits != NULL)      // Check for DIB Section
-    {
-        pbmDst = CDib::CreateDIBSection(
-            rct.Width(), rct.Height());
-    }
-    else
-    {
-        pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, rct.Width(), rct.Height());
-    }
-
-    g_gt.mDC2.SelectObject(&*pbmDst);
-
-    // I don't select and realize the palettes since they aren't used
-    // in memory to memory Bitblt operations.
-    g_gt.mDC2.BitBlt(0, 0, rct.Width(), rct.Height(), &g_gt.mDC1, rct.left,
-        rct.top, SRCCOPY);
-    if (crVoided != noColor)
-    {
-        CBrush brush(crVoided);
-        g_gt.mDC1.FillRect(&rct, &brush);
-    }
-    g_gt.ClearMemDCBitmaps();
-
-    return pbmDst;
-}
-
 // The source bitmap will have its
 // cut region filled with the crVoided color.
 wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
@@ -438,22 +368,6 @@ wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
 
 // Draws on the source bitmap over the destination bitmap at the
 // specified position.
-
-void MergeBitmap(CBitmap& pbmDst, const CBitmap& pbmSrc, CPoint pntDst)
-{
-    ASSERT(pbmSrc.m_hObject != NULL);
-    ASSERT(pbmDst.m_hObject != NULL);
-
-    g_gt.mDC1.SelectObject(pbmDst);
-    BITMAP bmi;
-    pbmSrc.GetObject(sizeof(bmi), &bmi);
-    g_gt.mDC2.SelectObject(pbmSrc);
-    g_gt.mDC1.BitBlt(pntDst.x, pntDst.y, bmi.bmWidth, bmi.bmHeight,
-        &g_gt.mDC2, 0, 0, SRCCOPY);
-    g_gt.SelectSafeObjectsForDC2();
-
-    g_gt.SelectSafeObjectsForDC1();
-}
 
 void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst)
 {
@@ -514,22 +428,6 @@ wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size)
     }
 
     return pbmDst;
-}
-
-OwnerPtr<CBitmap> CreateColorBitmap(CSize size, COLORREF cr)
-{
-    CBrush brush(cr);
-
-    OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(size.cx, size.cy);
-    g_gt.mDC1.SelectObject(&*pBMap);
-
-    CBrush* prvBrush = g_gt.mDC1.SelectObject(&brush);
-    g_gt.mDC1.PatBlt(0, 0, size.cx, size.cy, PATCOPY);
-    g_gt.mDC1.SelectObject(prvBrush);
-
-    g_gt.SelectSafeObjectsForDC2();
-
-    return pBMap;
 }
 
 wxBitmap CreateColorBitmap(wxSize size, wxColour cr)
