@@ -405,7 +405,7 @@ BOOL CGmApp::InitInstance()
 
     m_pMapViewTmpl = new CMultiDocTemplate(IDR_BOARDVIEW,
         RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CViewFrame),
-        RUNTIME_CLASS(CBrdEditView));
+        RUNTIME_CLASS(CBrdEditViewContainer));
 
     m_pTileEditTmpl = new CMultiDocTemplate(IDR_BITEDITOR,
         RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CBitEditFrame),

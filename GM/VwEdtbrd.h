@@ -1,6 +1,6 @@
 // VwEdtbrd.h : interface of the CBrdEditView class
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,7 +37,8 @@ class CBrdEditView : public CScrollView,
 {
 protected: // create from serialization only
     CBrdEditView();
-    DECLARE_DYNCREATE(CBrdEditView)
+    DECLARE_DYNAMIC(CBrdEditView)
+
 
     void GetCellDrawBounds(CRect &oRct, CRect &oLim);
     void FillMapCells(CDC* pDC, CRect &oLim);
@@ -77,7 +78,7 @@ public:
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
     void ResetToDefaultTool();
 
-    virtual void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo);
+    void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) override;
     void PrepareScaledDC(CDC *pDC);
 
 // Tools and Selection support
@@ -128,16 +129,16 @@ protected:
     BOOL DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point);
 
 public:
-    virtual ~CBrdEditView();
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    ~CBrdEditView() override;
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
 #ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
+    void AssertValid() const override;
+    void Dump(CDumpContext& dc) const override;
 #endif
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 protected:
     // ------------ //
@@ -250,6 +251,9 @@ protected:
     afx_msg void OnViewToggleScale();
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    friend class CBrdEditViewContainer;
 };
 
 #ifndef _DEBUG  // debug version in gmview.cpp
@@ -257,3 +261,29 @@ inline CGamDoc* CBrdEditView::GetDocument()
    { return (CGamDoc*) m_pDocument; }
 #endif
 
+class CBrdEditViewContainer : public CView
+{
+public:
+    const CBrdEditView& GetChild() const { return *child; }
+    CBrdEditView& GetChild()
+    {
+        return const_cast<CBrdEditView&>(std::as_const(*this).GetChild());
+    }
+    void OnDraw(CDC* pDC) override;
+
+protected:
+    void OnActivateView(BOOL bActivate,
+                        CView *pActivateView,
+                        CView* pDeactivateView) override;
+
+private:
+    CBrdEditViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CBrdEditViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CBrdEditView> child;
+};

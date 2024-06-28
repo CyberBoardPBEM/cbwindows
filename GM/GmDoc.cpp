@@ -157,7 +157,10 @@ void CGamDoc::OnCloseDocument()
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
+static const CRuntimeClass *tblBrd[] = {
+    RUNTIME_CLASS(CBrdEditView), RUNTIME_CLASS(CBrdEditViewContainer),
+    NULL
+};
 
 void CGamDoc::OnIdle(BOOL bActive)
 {
