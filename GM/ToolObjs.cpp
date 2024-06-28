@@ -984,13 +984,13 @@ BOOL CCellPaintTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 void CPaintTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
-    if (pView->m_pBoard->GetMaxDrawLayer() == LAYER_BASE)
+    if (pView->GetBoard()->GetMaxDrawLayer() == LAYER_BASE)
         pView->SetBoardBackColor(pView->GetForeColor(), TRUE);
 }
 
 BOOL CPaintTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 {
-    if (pView->m_pBoard->GetMaxDrawLayer() != LAYER_BASE)
+    if (pView->GetBoard()->GetMaxDrawLayer() != LAYER_BASE)
         return FALSE;
     if (nHitTest != HTCLIENT)
         return FALSE;
@@ -1005,7 +1005,7 @@ void CTileTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
     TileID tid = pView->GetDocument()->GetTilePalWnd()->GetCurrentTileID();
-    if (pView->m_pBoard->GetMaxDrawLayer() == LAYER_GRID)
+    if (pView->GetBoard()->GetMaxDrawLayer() == LAYER_GRID)
         pView->SetCellTile(tid, point, TRUE);
     else
     {
@@ -1018,7 +1018,7 @@ void CTileTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
 void CTileTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
 {
     if ((nFlags & MK_LBUTTON) != 0 &&
-        pView->m_pBoard->GetMaxDrawLayer() == LAYER_GRID)
+        pView->GetBoard()->GetMaxDrawLayer() == LAYER_GRID)
     {
         TileID tid = pView->GetDocument()->GetTilePalWnd()->GetCurrentTileID();
         pView->SetCellTile(tid, point, TRUE);

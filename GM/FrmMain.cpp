@@ -92,11 +92,15 @@ static UINT toolbars[] =
 ///////////////////////////////////////////////////////////////////////
 // These are used to qualify palette visiblility...
 
-static const CRuntimeClass *tblColor[] = { RUNTIME_CLASS(CBrdEditView),
+static const CRuntimeClass *tblColor[] = {
+    RUNTIME_CLASS(CBrdEditView), RUNTIME_CLASS(CBrdEditViewContainer),
     RUNTIME_CLASS(CBitEditViewContainer),
     RUNTIME_CLASS(CTileSelViewContainer), NULL };
 
-static const CRuntimeClass *tblBrd[] = { RUNTIME_CLASS(CBrdEditView), NULL };
+static const CRuntimeClass *tblBrd[] = {
+    RUNTIME_CLASS(CBrdEditView), RUNTIME_CLASS(CBrdEditViewContainer),
+    NULL
+};
 
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction

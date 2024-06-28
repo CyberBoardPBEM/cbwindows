@@ -49,7 +49,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView
 
-IMPLEMENT_DYNCREATE(CBrdEditView, CScrollView)
+IMPLEMENT_DYNAMIC(CBrdEditView, CScrollView)
+IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 
 BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     //{{AFX_MSG_MAP(CBrdEditView)
@@ -134,6 +135,11 @@ BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
     //}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CBrdEditViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2216,6 +2222,56 @@ BOOL CBrdEditView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
         // Don't need the fix so call normal processing.
         return DoMouseWheel(fFlags, zDelta, point);
     }
+}
+
+void CBrdEditViewContainer::OnActivateView(BOOL bActivate,
+    CView* pActivateView,
+    CView* /*pDeactiveView*/)
+{
+    WXUNUSED_UNLESS_DEBUG(pActivateView);
+    if (bActivate)
+    {
+        wxASSERT(pActivateView == this);
+        GetParentFrame()->SetActiveView(&*child);
+    }
+}
+
+void CBrdEditViewContainer::OnDraw(CDC* pDC)
+{
+    // do nothing because child covers entire client rect
+}
+
+CBrdEditViewContainer::CBrdEditViewContainer() :
+    child(new CBrdEditView)
+{
+}
+
+int CBrdEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CBrdEditViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
 }
 
 
