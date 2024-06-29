@@ -636,7 +636,7 @@ void CSelList::Open()
     if (pSel.m_pObj->GetType() != CDrawObj::drawText)
         return;
     CText& pDObj = static_cast<CText&>(*pSel.m_pObj);
-    m_pView->DoEditTextDrawingObject(&pDObj);
+    m_pView->DoEditTextDrawingObject(pDObj);
     pSel.InvalidateHandles();
     pSel.m_rect = pDObj.GetEnclosingRect();
     pSel.InvalidateHandles();

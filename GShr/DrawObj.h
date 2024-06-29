@@ -105,6 +105,7 @@ public:
     virtual void SetRect(const CRect& rct) /* override */ = 0;
 
     virtual CRect GetEnclosingRect() const /* override */ { return GetRect(); }
+    // non-const due to CBitmapImage::Draw()
     virtual BOOL HitTest(CPoint pt) /* override */ { return FALSE; }
 #ifdef GPLAY
     virtual ObjectID GetObjectID() const /* override */;
@@ -128,6 +129,7 @@ public:
 
 // Operations
 public:
+    // non-const due to CBitmapImage::Draw()
     virtual void Draw(CDC& pDC, TileScale eScale) /* override */ = 0;
     // Support required by selection objects
 #ifdef GPLAY
@@ -1073,6 +1075,7 @@ public:
     void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
+    // non-const due to CBitmapImage::Draw()
     CDrawObj* HitTest(CPoint pt, TileScale eScale = (TileScale)AllTileScales,
         BOOL bApplyVisibility = TRUE);
     void DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
