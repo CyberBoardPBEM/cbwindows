@@ -40,12 +40,8 @@ protected: // create from serialization only
     DECLARE_DYNAMIC(CBrdEditView)
 
 
-    void GetCellDrawBounds(CRect &oRct, CRect &oLim);
-    void FillMapCells(CDC* pDC, CRect &oLim);
-    void FrameMapCells(CDC* pDC, CRect &oLim);
-
-    CBoard* m_pBoard;           // Pointer to document's board
-    CBoardManager* m_pBMgr;
+    CB::propagate_const<CBoard*> m_pBoard;           // Pointer to document's board
+    CB::propagate_const<CBoardManager*> m_pBMgr;
 
     // --------------- //
     BOOL        m_bOffScreen;
@@ -56,14 +52,18 @@ protected: // create from serialization only
 
 // Attributes
 public:
-    CGamDoc* GetDocument();
-    TileScale GetCurrentScale() { return m_nZoom; }
-    CBoard* GetBoard() { return m_pBoard; }
+    const CGamDoc& GetDocument() const;
+    CGamDoc& GetDocument()
+    {
+        return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
+    }
+    TileScale GetCurrentScale() const { return m_nZoom; }
+    const CBoard& GetBoard() const { return CheckedDeref(m_pBoard); }
 
     // Current Colors etc...
-    COLORREF GetForeColor() { return m_pBMgr->GetForeColor(); }
-    COLORREF GetBackColor() { return m_pBMgr->GetBackColor(); }
-    UINT GetLineWidth() { return m_pBMgr->GetLineWidth(); }
+    COLORREF GetForeColor() const { return m_pBMgr->GetForeColor(); }
+    COLORREF GetBackColor() const { return m_pBMgr->GetBackColor(); }
+    UINT GetLineWidth() const { return value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()); }
     void SetForeColor(COLORREF crFore) { m_pBMgr->SetForeColor(crFore); }
     void SetBackColor(COLORREF crBack) { m_pBMgr->SetBackColor(crBack); }
 
@@ -72,35 +72,40 @@ public:
     void SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate);
     void SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate);
     void SetBoardBackColor(COLORREF cr, BOOL bUpdate);
-    void SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt, BOOL bUpdate);
+    void SetDrawingTile(CDrawList& pDwg, TileID tid, CPoint pnt, BOOL bUpdate);
     void DoCreateTextDrawingObject(CPoint point);
-    void DoEditTextDrawingObject(CText* pDObj);
+    void DoEditTextDrawingObject(CText& pDObj);
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
     void ResetToDefaultTool();
 
     void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) override;
-    void PrepareScaledDC(CDC *pDC);
+    void PrepareScaledDC(CDC& pDC) const;
 
 // Tools and Selection support
-public:
+private:
     CSelList    m_selList;                      // List of selected objects.
+public:
 
-    CSelList* GetSelectList() { return &m_selList; }
+    const CSelList& GetSelectList() const { return m_selList; }
+    CSelList& GetSelectList()
+    {
+        return const_cast<CSelList&>(std::as_const(*this).GetSelectList());
+    }
 
     void ClientToWorkspace(CPoint& point) const;
     void ClientToWorkspace(CRect& rect) const;
     void WorkspaceToClient(CPoint& point) const;
     void WorkspaceToClient(CRect& rect) const;
-    void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
-    CPoint GetWorkspaceDim();
-    void OnPrepareScaledDC(CDC *pDC);
+    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
+    CPoint GetWorkspaceDim() const;
+    void OnPrepareScaledDC(CDC& pDC);
 
-    void AdjustPoint(CPoint& pnt);              // Limit and grid processing
-    void AdjustRect(CRect& rct);
+    void AdjustPoint(CPoint& pnt) const;              // Limit and grid processing
+    void AdjustRect(CRect& rct) const;
 
     CDrawObj* ObjectHitTest(CPoint point);
     void AddDrawObject(CDrawObj::OwnerPtr pObj);         // Add to active layer
-    void DeleteDrawObject(CDrawObj* pObj);      // Delete from active layer
+    void DeleteDrawObject(CDrawObj::OwnerPtr pObj);      // Delete from active layer
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(CPoint point);
 
@@ -113,12 +118,12 @@ public:
 // Implementation
 protected:
     // Grid and limiting support
-    BOOL IsGridizeActive();
-    void GridizeX(long& xPos);
-    void GridizeY(long& yPos);
-    void LimitPoint(POINT* pPnt);
-    void LimitRect(RECT* pRct);
-    void PixelToWorkspace(CPoint& point);
+    BOOL IsGridizeActive() const;
+    void GridizeX(long& xPos) const;
+    void GridizeY(long& yPos) const;
+    void LimitPoint(POINT& pPnt) const;
+    void LimitRect(RECT& pRct) const;
+    void PixelToWorkspace(CPoint& point) const;
 
     void CreateTextDrawingObject(CPoint pnt, FontID fid, COLORREF crText,
         const CB::string& m_strText, BOOL bInvalidate = TRUE);
@@ -142,7 +147,7 @@ public:
 
 protected:
     // ------------ //
-    ToolType MapToolType(UINT nToolResID);
+    ToolType MapToolType(UINT nToolResID) const;
 
     // Nudge and scroll functions
     void HandleKeyDown ();
@@ -257,8 +262,8 @@ private:
 };
 
 #ifndef _DEBUG  // debug version in gmview.cpp
-inline CGamDoc* CBrdEditView::GetDocument()
-   { return (CGamDoc*) m_pDocument; }
+inline CGamDoc& CBrdEditView::GetDocument() const
+   { return *static_cast<CGamDoc*>(m_pDocument); }
 #endif
 
 class CBrdEditViewContainer : public CView

@@ -397,7 +397,7 @@ CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
         CBrdEditView* pView = (CBrdEditView*)GetNextView(pos);
         if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditView)))
         {
-            if (pView->GetBoard() == &pBoard)
+            if (&pView->GetBoard() == &pBoard)
                 return pView;
         }
     }

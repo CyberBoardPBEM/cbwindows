@@ -176,8 +176,8 @@ BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 void CBrdEditView::OnInitialUpdate()
 {
     CScrollView::OnInitialUpdate();
-    m_pBMgr = GetDocument()->GetBoardManager();
-    m_pBoard = (CBoard*)GetDocument()->GetCreateParameter();
+    m_pBMgr = GetDocument().GetBoardManager();
+    m_pBoard = static_cast<CBoard*>(GetDocument().GetCreateParameter());
     SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
     /* KLUDGE:  this class isn't a wxEvtHandler (yet),
         so can't have wx event table */
@@ -251,7 +251,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
     wxASSERT(!pDC->IsPrinting());
     if (!pDC->IsPrinting())
     {
-        PrepareScaledDC(pDC);
+        PrepareScaledDC(*pDC);
         m_selList.OnDraw(*pDC);
     }
 }
@@ -264,18 +264,18 @@ BOOL CBrdEditView::OnEraseBkgnd(CDC* pDC)
 /////////////////////////////////////////////////////////////////////////////
 // Coordinate space mappings
 
-void CBrdEditView::PrepareScaledDC(CDC *pDC)
+void CBrdEditView::PrepareScaledDC(CDC& pDC) const
 {
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
-    pDC->SetMapMode(MM_ANISOTROPIC);
-    pDC->SetWindowExt(wsize);
-    pDC->SetViewportExt(vsize);
+    pDC.SetMapMode(MM_ANISOTROPIC);
+    pDC.SetWindowExt(wsize);
+    pDC.SetViewportExt(vsize);
 }
 
-void CBrdEditView::OnPrepareScaledDC(CDC *pDC)
+void CBrdEditView::OnPrepareScaledDC(CDC& pDC)
 {
-    OnPrepareDC(pDC, NULL);
+    OnPrepareDC(&pDC, NULL);
     PrepareScaledDC(pDC);
 }
 
@@ -315,7 +315,7 @@ void CBrdEditView::WorkspaceToClient(CRect& rect) const
     rect -= dpnt;
 }
 
-void CBrdEditView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
+void CBrdEditView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
 {
     CRect rct(pRect);
     WorkspaceToClient(rct);
@@ -323,7 +323,7 @@ void CBrdEditView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
     InvalidateRect(&rct, bErase);
 }
 
-CPoint CBrdEditView::GetWorkspaceDim()
+CPoint CBrdEditView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
     CPoint pnt = (CPoint)m_pBoard->GetSize(m_nZoom);
@@ -337,7 +337,7 @@ CPoint CBrdEditView::GetWorkspaceDim()
 
 void CBrdEditView::ResetToDefaultTool()
 {
-    if (!GetDocument()->GetStickyDrawTools())
+    if (!GetDocument().GetStickyDrawTools())
     {
         m_nCurToolID = m_nLastToolID = ID_TOOL_ARROW;
     }
@@ -417,7 +417,7 @@ void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
             pSel->Invalidate();
         delete pSel->m_pObj.get();
     }
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 }
 
 void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
@@ -455,7 +455,7 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     }
     if (bInvalidate)
         m_selList.InvalidateList();
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -490,10 +490,10 @@ void CBrdEditView::Dump(CDumpContext& dc) const
     CView::Dump(dc);
 }
 
-CGamDoc* CBrdEditView::GetDocument() // non-debug version is inline
+const CGamDoc& CBrdEditView::GetDocument() const // non-debug version is inline
 {
-    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    return (CGamDoc*) m_pDocument;
+    wxASSERT(CheckedDeref(m_pDocument).IsKindOf(RUNTIME_CLASS(CGamDoc)));
+    return *static_cast<CGamDoc*>(m_pDocument);
 }
 
 #endif //_DEBUG
@@ -519,8 +519,8 @@ void CBrdEditView::OnViewGridLines()
     EndWaitCursor();
 
     CGmBoxHint hint;
-    hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = m_pBoard;
-    GetDocument()->UpdateAllViews(this, HINT_BOARDPROPCHANGE, &hint);
+    hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = &*m_pBoard;
+    GetDocument().UpdateAllViews(this, HINT_BOARDPROPCHANGE, &hint);
 }
 
 void CBrdEditView::OnUpdateViewGridLines(CCmdUI* pCmdUI)
@@ -818,7 +818,7 @@ static ToolType tblGridTools[] =
     ttypeUnknown,   // ID_TOOL_OVAL
 };
 
-ToolType CBrdEditView::MapToolType(UINT nToolResID)
+ToolType CBrdEditView::MapToolType(UINT nToolResID) const
 {
     return m_pBoard->GetMaxDrawLayer() == LAYER_GRID ?
         tblGridTools[nToolResID - ID_TOOL_ARROW] :
@@ -841,7 +841,7 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
 
     if (pdi.GetDragType() != DRAG_TILE)
         return;               // Only tile drops allowed
-    if (pdi.GetSubInfo<DRAG_TILE>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_TILE>().m_gamDoc != &GetDocument())
         return;               // Only tiles from our document.
 
     // if tile can't fit on board, reject drop
@@ -870,24 +870,24 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
         {
             case LAYER_BASE:
                 pDwg = m_pBoard->GetBaseDrawing(TRUE);
-                SetDrawingTile(pDwg, pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
+                SetDrawingTile(CheckedDeref(pDwg), pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_GRID:
                 SetCellTile(pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             case LAYER_TOP:
                 pDwg = m_pBoard->GetTopDrawing(TRUE);
-                SetDrawingTile(pDwg, pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
+                SetDrawingTile(CheckedDeref(pDwg), pdi.GetSubInfo<DRAG_TILE>().m_tileID, pnt, TRUE);
                 break;
             default: ;
         }
     }
 }
 
-void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,
+void CBrdEditView::SetDrawingTile(CDrawList& pDwg, TileID tid, CPoint pnt,
     BOOL bUpdate)
 {
-    CTileManager* pTMgr = GetDocument()->GetTileManager();
+    CTileManager* pTMgr = GetDocument().GetTileManager();
     {
         OwnerPtr<CTileImage> pTileImage(MakeOwner<CTileImage>(pTMgr));
 
@@ -899,15 +899,15 @@ void CBrdEditView::SetDrawingTile(CDrawList* pDwg, TileID tid, CPoint pnt,
 
         pTileImage->SetTile(rct.left, rct.top, tid);
 
-        pDwg->AddToFront(std::move(pTileImage));
+        pDwg.AddToFront(std::move(pTileImage));
     }
     if (bUpdate)
     {
         CRect rct;
-        rct = pDwg->Front().GetEnclosingRect();   // In board coords.
+        rct = pDwg.Front().GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(&rct);
     }
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 }
 
 void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
@@ -930,7 +930,7 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     }
 }
 
@@ -953,7 +953,7 @@ void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
             rct -= GetDeviceScrollPosition();
             InvalidateRect(&rct, FALSE);
         }
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     }
 }
 
@@ -962,12 +962,12 @@ void CBrdEditView::SetBoardBackColor(COLORREF cr, BOOL bUpdate)
     m_pBoard->SetBkColor(m_pBMgr->GetForeColor());
     if (bUpdate)
         Invalidate();
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 }
 
 CDrawList* CBrdEditView::GetDrawList(BOOL bCanCreateList)
 {
-    ASSERT(m_pBoard != NULL);
+    wxASSERT(m_pBoard);
 
     if (m_pBoard->GetMaxDrawLayer() == LAYER_TOP)
         return m_pBoard->GetTopDrawing(bCanCreateList);
@@ -983,11 +983,11 @@ void CBrdEditView::AddDrawObject(CDrawObj::OwnerPtr pObj)
     if (pDwg != NULL)
     {
         pDwg->AddToFront(std::move(pObj));
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     }
 }
 
-void CBrdEditView::DeleteDrawObject(CDrawObj* pObj)
+void CBrdEditView::DeleteDrawObject(CDrawObj::OwnerPtr pObj)
 {
     CDrawList* pDwg = NULL;
 
@@ -998,9 +998,8 @@ void CBrdEditView::DeleteDrawObject(CDrawObj* pObj)
 
     if (pDwg != NULL)
     {
-        pDwg->RemoveObject(CheckedDeref(pObj));
-        delete pObj;
-        GetDocument()->SetModifiedFlag();
+        pDwg->RemoveObject(*pObj);
+        GetDocument().SetModifiedFlag();
     }
 }
 
@@ -1019,31 +1018,31 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
         {
             CreateTextDrawingObject(point, dlg.m_fontID,
                 m_pBMgr->GetForeColor(), dlg.m_strText, TRUE);
-            GetDocument()->SetModifiedFlag();
+            GetDocument().SetModifiedFlag();
         }
     }
 }
 
-void CBrdEditView::DoEditTextDrawingObject(CText* pDObj)
+void CBrdEditView::DoEditTextDrawingObject(CText& pDObj)
 {
     CTextObjDialog dlg;
-    dlg.m_strText = wxString(pDObj->m_text);
+    dlg.m_strText = wxString(pDObj.m_text);
     dlg.m_pFontMgr = CGamDoc::GetFontManager();
-    dlg.SetFontID(pDObj->m_fontID);
+    dlg.SetFontID(pDObj.m_fontID);
 
     if (dlg.ShowModal() == wxID_OK)
     {
         if (!dlg.m_strText.empty())
         {
-            CRect rct = pDObj->GetEnclosingRect();
+            CRect rct = pDObj.GetEnclosingRect();
             InvalidateWorkspaceRect(&rct);
 
-            pDObj->m_text = dlg.m_strText;
-            pDObj->SetFont(dlg.m_fontID);   // Also resyncs the extent rect
+            pDObj.m_text = dlg.m_strText;
+            pDObj.SetFont(dlg.m_fontID);   // Also resyncs the extent rect
 
-            rct = pDObj->GetEnclosingRect();
+            rct = pDObj.GetEnclosingRect();
             InvalidateWorkspaceRect(&rct);
-            GetDocument()->SetModifiedFlag();
+            GetDocument().SetModifiedFlag();
         }
     }
 }
@@ -1062,7 +1061,7 @@ void CBrdEditView::CreateTextDrawingObject(CPoint pnt, FontID fid,
 
         GetDrawList(TRUE)->AddToFront(std::move(pText));
     }
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
     if (bInvalidate)
     {
         CRect rct = GetDrawList(TRUE)->Front().GetEnclosingRect();
@@ -1072,14 +1071,14 @@ void CBrdEditView::CreateTextDrawingObject(CPoint pnt, FontID fid,
 
 //////////////////////////////////////////////////////////////////////
 
-BOOL CBrdEditView::IsGridizeActive()
+BOOL CBrdEditView::IsGridizeActive() const
 {
     BOOL bGridSnap = m_pBoard->m_bGridSnap;
     int bControl = GetAsyncKeyState(VK_CONTROL) < 0;
     return !(bControl && bGridSnap || !bControl && !bGridSnap);
 }
 
-void CBrdEditView::GridizeX(long& xPos)
+void CBrdEditView::GridizeX(long& xPos) const
 {
     if (IsGridizeActive())
     {
@@ -1088,7 +1087,7 @@ void CBrdEditView::GridizeX(long& xPos)
     }
 }
 
-void CBrdEditView::GridizeY(long& yPos)
+void CBrdEditView::GridizeY(long& yPos) const
 {
     if (IsGridizeActive())
     {
@@ -1097,14 +1096,14 @@ void CBrdEditView::GridizeY(long& yPos)
     }
 }
 
-void CBrdEditView::LimitPoint(POINT* pPnt)
+void CBrdEditView::LimitPoint(POINT& pPnt) const
 {
-    if (pPnt->x < 0) pPnt->x = 0;
-    if (pPnt->x > m_pBoard->GetWidth(fullScale))
-        pPnt->x = m_pBoard->GetWidth(fullScale);
-    if (pPnt->y < 0) pPnt->y = 0;
-    if (pPnt->y > m_pBoard->GetHeight(fullScale))
-        pPnt->y = m_pBoard->GetHeight(fullScale);
+    if (pPnt.x < 0) pPnt.x = 0;
+    if (pPnt.x > m_pBoard->GetWidth(fullScale))
+        pPnt.x = m_pBoard->GetWidth(fullScale);
+    if (pPnt.y < 0) pPnt.y = 0;
+    if (pPnt.y > m_pBoard->GetHeight(fullScale))
+        pPnt.y = m_pBoard->GetHeight(fullScale);
 
 #ifdef WE_WANT_THIS_CRAP_940130
     CSize size = m_pBoard->GetSize(m_nZoom);
@@ -1119,7 +1118,7 @@ void CBrdEditView::LimitPoint(POINT* pPnt)
 #endif
 }
 
-void CBrdEditView::LimitRect(RECT* pRct)
+void CBrdEditView::LimitRect(RECT& pRct) const
 {
     CRect rct(pRct);
     if (rct.left < 0)
@@ -1130,7 +1129,7 @@ void CBrdEditView::LimitRect(RECT* pRct)
         rct.OffsetRect(m_pBoard->GetWidth(fullScale) - rct.right, 0);
     if (rct.bottom > m_pBoard->GetHeight(fullScale))
         rct.OffsetRect(0, m_pBoard->GetHeight(fullScale) - rct.bottom);
-    *pRct = rct;
+    pRct = rct;
 #ifdef WANT_THIS_CRAP_940130
     CSize size = m_pBoard->GetSize(m_nZoom);
     PixelToWorkspace((CPoint)size);
@@ -1148,25 +1147,25 @@ void CBrdEditView::LimitRect(RECT* pRct)
 #endif
 }
 
-void CBrdEditView::AdjustPoint(CPoint& pnt)
+void CBrdEditView::AdjustPoint(CPoint& pnt) const
 {
     GridizeX(pnt.x);
     GridizeY(pnt.y);
-    LimitPoint(&pnt);
+    LimitPoint(pnt);
 }
 
-void CBrdEditView::AdjustRect(CRect& rct)
+void CBrdEditView::AdjustRect(CRect& rct) const
 {
     CPoint pnt = rct.TopLeft();
     GridizeX(pnt.x);
     GridizeY(pnt.y);
-    LimitPoint(&pnt);
+    LimitPoint(pnt);
     if (pnt != rct.TopLeft())
         rct.OffsetRect(pnt - rct.TopLeft());
-    LimitRect(&rct);
+    LimitRect(rct);
 }
 
-void CBrdEditView::PixelToWorkspace(CPoint& point)
+void CBrdEditView::PixelToWorkspace(CPoint& point) const
 {
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
@@ -1177,22 +1176,22 @@ void CBrdEditView::PixelToWorkspace(CPoint& point)
 
 void CBrdEditView::OnUpdateColorForeground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetForeColor()));
+    static_cast<CColorCmdUI*>(pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetForeColor()));
 }
 
 void CBrdEditView::OnUpdateColorBackground(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetBackColor()));
+    static_cast<CColorCmdUI*>(pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetBackColor()));
 }
 
 void CBrdEditView::OnUpdateColorCustom(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetCustomColors(GetDocument()->GetCustomColors());
+    static_cast<CColorCmdUI*>(pCmdUI)->SetCustomColors(GetDocument().GetCustomColors());
 }
 
 void CBrdEditView::OnUpdateLineWidth(CCmdUI* pCmdUI)
 {
-    ((CColorCmdUI*)pCmdUI)->SetLineWidth(m_pBMgr->GetLineWidth());
+    static_cast<CColorCmdUI*>(pCmdUI)->SetLineWidth(value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1224,7 +1223,7 @@ LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
     else
         return 0;
     if (cset.m_bColorAccepted)
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     return 1;
 }
 
@@ -1233,7 +1232,7 @@ LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
 LRESULT CBrdEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
 {
     const std::vector<wxColour>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<wxColour>*>(wParam));
-    GetDocument()->SetCustomColors(pCustomColors);
+    GetDocument().SetCustomColors(pCustomColors);
     return (LRESULT)0;
 }
 
@@ -1254,7 +1253,7 @@ LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
     m_selList.ForAllSelections([&wset](CDrawObj& pObj) { wset.m_bWidthAccepted |= pObj.SetLineWidth(wset.m_nWidth); });
     m_selList.UpdateObjects(TRUE, FALSE);
     if (wset.m_bWidthAccepted)
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     return 1;
 }
 
@@ -1271,7 +1270,7 @@ void CBrdEditView::OnDwgFont()
         m_selList.UpdateObjects(TRUE, FALSE);
         if (fontAccepted)
         {
-            GetDocument()->SetModifiedFlag();
+            GetDocument().SetModifiedFlag();
         }
     }
 }
@@ -1314,7 +1313,7 @@ void CBrdEditView::OnUpdateToolPalette(CCmdUI* pCmdUI)
     switch (pCmdUI->m_nID)
     {
         case ID_TOOL_TILE:
-            tid = GetDocument()->GetTilePalWnd()->GetCurrentTileID();
+            tid = GetDocument().GetTilePalWnd()->GetCurrentTileID();
             bEnable = tid != nullTid;
             if (tid == nullTid && m_nCurToolID == ID_TOOL_TILE)
             {
@@ -1509,7 +1508,7 @@ void CBrdEditView::OnUpdateToolsBrdSnapGrid(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnToolsBrdProps()
 {
-    GetDocument()->DoBoardPropertyDialog(*m_pBoard);
+    GetDocument().DoBoardPropertyDialog(*m_pBoard);
 }
 
 void CBrdEditView::OnToolSetVisibleScale()
@@ -1561,13 +1560,13 @@ void CBrdEditView::OnEditPaste()
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
         pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
-        GetSelectList()->PurgeList(TRUE);           // Clear current select list
+        GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
-    GetSelectList()->AddObject(pDObj, TRUE);
+    GetSelectList().AddObject(pDObj, TRUE);
     CRect rct = pDObj.GetEnclosingRect();
-    InvalidateWorkspaceRect(&rct);
+    InvalidateWorkspaceRect(rct);
 }
 
 void CBrdEditView::OnUpdateEditPaste(CCmdUI* pCmdUI)
@@ -1579,12 +1578,12 @@ void CBrdEditView::OnUpdateEditPaste(CCmdUI* pCmdUI)
 
 void CBrdEditView::OnEditCopy()
 {
-    GetSelectList()->CopyToClipboard();
+    GetSelectList().CopyToClipboard();
 }
 
 void CBrdEditView::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(GetSelectList()->IsCopyToClipboardPossible());
+    pCmdUI->Enable(GetSelectList().IsCopyToClipboardPossible());
 }
 
 void CBrdEditView::OnEditPasteBitmapFromFile()
@@ -1607,7 +1606,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
         pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
 
-        GetSelectList()->PurgeList(TRUE);           // Clear current select list
+        GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
     }
     catch (...)
@@ -1616,7 +1615,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
         return;
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
-    GetSelectList()->AddObject(pDObj, TRUE);
+    GetSelectList().AddObject(pDObj, TRUE);
     CRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(&rct);
 }
@@ -2104,7 +2103,7 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
 
     m_selList.InvalidateList();
     m_selList.InvalidateListHandles();
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 
     //----------------------------------------------------------------
     //  Now we're going to decide if we want to scroll the window

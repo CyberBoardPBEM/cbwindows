@@ -115,10 +115,10 @@ void CTool::OnLButtonUp(CBrdEditView* pView, UINT, CPoint point)
 void CSelectTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
-    CSelList* pSLst = pView->GetSelectList();
+    CSelList& pSLst = pView->GetSelectList();
     // If a a handle is clicked on, immediately start tracking the
     // resize.
-    if ((m_nHandleID = pSLst->HitTestHandles(point)) >= 0)
+    if ((m_nHandleID = pSLst.HitTestHandles(point)) >= 0)
     {
         StartSizingOperation(pView, nFlags, point);
         return;
@@ -127,28 +127,28 @@ void CSelectTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     if (pObj == NULL)
     {
         if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
-            pSLst->PurgeList(TRUE);         // Clear current select list
+            pSLst.PurgeList(TRUE);         // Clear current select list
         // No objects were under the mouse click.
         m_eSelMode = smodeNet;              // Net type selection
         CTool::OnLButtonDown(pView, nFlags, point);
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
         DrawNetRect(&dc, pView);
         return;
     }
     // Object is under mouse. See if also selected. If not,
     // add to list.
-    if (!pSLst->IsObjectSelected(*pObj))
+    if (!pSLst.IsObjectSelected(*pObj))
     {
         if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
-            pSLst->PurgeList(TRUE);         // Clear current select list
+            pSLst.PurgeList(TRUE);         // Clear current select list
         if ((nFlags & MK_CONTROL) != 0)     // Control click drills down
             pView->SelectAllUnderPoint(point);
         else
-            pSLst->AddObject(*pObj, TRUE);
+            pSLst.AddObject(*pObj, TRUE);
         CTool::OnLButtonDown(pView, nFlags, point);
         StartDragTimer(pView);
-        if (pSLst->IsMultipleSelects())
+        if (pSLst.IsMultipleSelects())
         {
             // Setup a trigger zone. If the mouse is moved out of
             // this zone before the drag time expires, the move is
@@ -165,11 +165,11 @@ void CSelectTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     // wont start until it expires.
     if ((nFlags & MK_SHIFT) != 0)
     {
-        pSLst->RemoveObject(*pObj, TRUE);
+        pSLst.RemoveObject(*pObj, TRUE);
         return;
     }
     CTool::OnLButtonDown(pView, nFlags, point);
-    if (pSLst->IsMultipleSelects())
+    if (pSLst.IsMultipleSelects())
     {
         // Setup a trigger zone. If the mouse is moved out of
         // this zone before the drag time expires, the move is
@@ -183,7 +183,7 @@ void CSelectTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
 
 void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
 {
-    CSelList* pSLst = pView->GetSelectList();
+    CSelList& pSLst = pView->GetSelectList();
 
     if (CWnd::GetCapture() != pView)
         return;
@@ -225,17 +225,17 @@ void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
             pView->AdjustPoint(point);
 
             KillDragTimer(pView);
-            m_rectMultiBorder = pSLst->GetEnclosingRect();
+            m_rectMultiBorder = pSLst.GetEnclosingRect();
 
             // Force the rectangle onto the grid.
             pView->AdjustRect(m_rectMultiBorder);
-            pSLst->Offset((CPoint)(m_rectMultiBorder.TopLeft() -
-                pSLst->GetEnclosingRect().TopLeft()));
+            pSLst.Offset((CPoint)(m_rectMultiBorder.TopLeft() -
+                pSLst.GetEnclosingRect().TopLeft()));
 
             m_eSelMode = smodeMove;             // Now in move mode.
-            pSLst->SetTrackingMode(trkMoving);
+            pSLst.SetTrackingMode(trkMoving);
             CClientDC dc(pView);
-            pView->OnPrepareScaledDC(&dc);
+            pView->OnPrepareScaledDC(dc);
             DrawSelectionRect(&dc, &m_rectMultiBorder);
             c_ptLast = point;                   // Save new 'last' position
             return;
@@ -247,7 +247,7 @@ void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
     if (m_eSelMode == smodeNet)
     {
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
         DrawNetRect(&dc, pView);            // Erase previous position
         CTool::OnMouseMove(pView, nFlags, point); // Update position
         DrawNetRect(&dc, pView);            // Draw new position rect
@@ -263,7 +263,7 @@ void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
             return;
         if (m_eSelMode == smodeMove)
         {
-            CRect rct = pSLst->GetEnclosingRect();
+            CRect rct = pSLst.GetEnclosingRect();
             CPoint pnt = pView->GetWorkspaceDim();
             if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
                 point.x = c_ptLast.x - rct.left;
@@ -277,19 +277,19 @@ void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
 
         TrackMode eTrkMode = m_eSelMode == smodeMove ? trkMoving : trkSizing;
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
 
         if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
             DrawSelectionRect(&dc, &m_rectMultiBorder);
         else
-            pSLst->DrawTracker(dc, eTrkMode); // Erase previous tracker
+            pSLst.DrawTracker(dc, eTrkMode); // Erase previous tracker
 
-        MoveSelections(pSLst, point);
+        MoveSelections(&pSLst, point);
 
         if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
             DrawSelectionRect(&dc, &m_rectMultiBorder);
         else
-            pSLst->DrawTracker(dc, eTrkMode); // Erase previous tracker
+            pSLst.DrawTracker(dc, eTrkMode); // Erase previous tracker
     }
     c_ptLast = point;               // Save new 'last' position
 }
@@ -301,7 +301,7 @@ void CSelectTool::OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point)
         if (m_eSelMode == smodeNet)
         {
             CClientDC dc(pView);
-            pView->OnPrepareScaledDC(&dc);
+            pView->OnPrepareScaledDC(dc);
             DrawNetRect(&dc, pView);            // Erase previous position
             // If the control key is down when button was released, fields
             // that intersect the select rect will selected. Otherwise only
@@ -310,8 +310,8 @@ void CSelectTool::OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point)
             CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
             rect.NormalizeRect();
             pView->SelectWithinRect(rect, (nFlags & MK_CONTROL) != 0);
-            CSelList* pSLst = pView->GetSelectList();
-            pSLst->InvalidateListHandles();
+            CSelList& pSLst = pView->GetSelectList();
+            pSLst.InvalidateListHandles();
         }
         else if (m_eSelMode != smodeNormal)
         {
@@ -321,14 +321,14 @@ void CSelectTool::OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point)
             if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
             {
                 CClientDC dc(pView);
-                pView->OnPrepareScaledDC(&dc);
+                pView->OnPrepareScaledDC(dc);
                 DrawSelectionRect(&dc, &m_rectMultiBorder);
             }
-            CSelList* pSLst = pView->GetSelectList();
-            pSLst->SetTrackingMode(trkSelected);
-            pSLst->UpdateObjects(TRUE);
-            pSLst->InvalidateListHandles();
-            pView->GetDocument()->SetModifiedFlag();
+            CSelList& pSLst = pView->GetSelectList();
+            pSLst.SetTrackingMode(trkSelected);
+            pSLst.UpdateObjects(TRUE);
+            pSLst.InvalidateListHandles();
+            pView->GetDocument().SetModifiedFlag();
         }
     }
     m_eSelMode = smodeNormal;
@@ -350,7 +350,7 @@ void CSelectTool::OnTimer(CBrdEditView* pView, uintptr_t nIDEvent)
     }
     if (m_eSelMode == smodeNormal)
     {
-        CSelList* pSLst = pView->GetSelectList();
+        CSelList& pSLst = pView->GetSelectList();
 
         // Mouse is captured and no particular drag operation
         // is underway. Therefore we want a move that draws
@@ -362,24 +362,24 @@ void CSelectTool::OnTimer(CBrdEditView* pView, uintptr_t nIDEvent)
         // --Draw initial tracker(s) so mouse move processing can
         // pick up the work.
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
-        pSLst->DrawTracker(dc, trkSelected);   // Turn off handles
+        pView->OnPrepareScaledDC(dc);
+        pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
 
         // If the snap grid is active. Force the enclosing rect onto
         // the snap grid. Also force the previously saved mouse points
         // to the snap grid.
-        CRect rct = pSLst->GetEnclosingRect();
+        CRect rct = pSLst.GetEnclosingRect();
         pView->AdjustRect(rct);
-        pSLst->Offset((CPoint)(rct.TopLeft() -
-            pSLst->GetEnclosingRect().TopLeft()));
+        pSLst.Offset((CPoint)(rct.TopLeft() -
+            pSLst.GetEnclosingRect().TopLeft()));
         pView->AdjustPoint(c_ptLast);
         pView->AdjustPoint(c_ptDown);
 
         // Move the tracking image to its new location and draw it.
         CPoint ptDelta = (CPoint)(c_ptLast - c_ptDown);
-        pSLst->Offset(ptDelta);
+        pSLst.Offset(ptDelta);
 
-        pSLst->DrawTracker(dc, trkMoving);
+        pSLst.DrawTracker(dc, trkMoving);
     }
     else
     {
@@ -392,9 +392,9 @@ void CSelectTool::OnLButtonDblClk(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
     // "Normal" DblClk opens properties, OLE server, etc...
-    CSelList* pSLst = pView->GetSelectList();
-    if (pSLst->IsSingleSelect())
-        pView->GetSelectList()->Open();
+    CSelList& pSLst = pView->GetSelectList();
+    if (pSLst.IsSingleSelect())
+        pView->GetSelectList().Open();
 //  CTool::OnLButtonDblClk(pView, nFlags, point);
 }
 
@@ -412,12 +412,12 @@ BOOL CSelectTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 
     // Check for movement through handle areas. Set the
     // cursor to the appropriate shape.
-    CSelList* pSLst = pView->GetSelectList();
-    if (pSLst->IsSingleSelect())
+    CSelList& pSLst = pView->GetSelectList();
+    if (pSLst.IsSingleSelect())
     {
         // Check if cursor is over a handle. If it is,
         // get handle cursor.
-        CSelection& pSelObj = *pSLst->front();
+        CSelection& pSelObj = *pSLst.front();
         int nHandle = pSelObj.HitTestHandles(point);
         if (nHandle >= 0)
         {
@@ -431,14 +431,14 @@ BOOL CSelectTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 void CSelectTool::StartSizingOperation(CBrdEditView* pView, UINT nFlags,
     CPoint point, int nHandleID)
 {
-    CSelList* pSLst = pView->GetSelectList();
+    CSelList& pSLst = pView->GetSelectList();
     if (nHandleID != -1)
         m_nHandleID = nHandleID;
     m_eSelMode = smodeSizing;
     CTool::OnLButtonDown(pView, nFlags, point);
     CClientDC dc(pView);
-    pView->OnPrepareScaledDC(&dc);
-    pSLst->DrawTracker(dc, trkSizing);
+    pView->OnPrepareScaledDC(dc);
+    pSLst.DrawTracker(dc, trkSizing);
 }
 
 void CSelectTool::DrawSelectionRect(CDC* pDC, CRect* pRct)
@@ -496,11 +496,11 @@ BOOL CSelectTool::ProcessAutoScroll(CBrdEditView* pView)
         BOOL bValidScroll = pView->OnScroll(nScrollID, 0, FALSE);
         if (bValidScroll)
         {
-            CSelList* pSLst = pView->GetSelectList();
+            CSelList& pSLst = pView->GetSelectList();
             pView->ClientToWorkspace(point);
 
             CClientDC dc(pView);
-            pView->OnPrepareScaledDC(&dc);
+            pView->OnPrepareScaledDC(dc);
 
             if (m_eSelMode == smodeNet)
             {
@@ -512,17 +512,17 @@ BOOL CSelectTool::ProcessAutoScroll(CBrdEditView* pView)
             else if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
                 DrawSelectionRect(&dc, &m_rectMultiBorder);
             else
-                pSLst->DrawTracker(dc);    // Turn off tracker
+                pSLst.DrawTracker(dc);    // Turn off tracker
 
             pView->OnScroll(nScrollID, 0, TRUE);
             pView->UpdateWindow();          // Redraw image content.
 
             AdjustPoint(pView, point);
 
-            MoveSelections(pSLst, point);   // Offset the tracking data
+            MoveSelections(&pSLst, point);   // Offset the tracking data
             c_ptLast = point;               // Save new 'last' position
 
-            pView->OnPrepareScaledDC(&dc);
+            pView->OnPrepareScaledDC(dc);
             if (m_eSelMode == smodeNet)
             {
                 GetCursorPos(&point);
@@ -536,12 +536,12 @@ BOOL CSelectTool::ProcessAutoScroll(CBrdEditView* pView)
             }
             else
             {
-                MoveSelections(pSLst, point);// Offset the tracking data
+                MoveSelections(&pSLst, point);// Offset the tracking data
                 c_ptLast = point;            // Save new 'last' position
                 if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
                     DrawSelectionRect(&dc, &m_rectMultiBorder);
                 else
-                    pSLst->DrawTracker(dc);    // Turn off tracker
+                    pSLst.DrawTracker(dc);    // Turn off tracker
             }
             return TRUE;
         }
@@ -569,7 +569,7 @@ BOOL CSelectTool::AdjustPoint(CBrdEditView* pView, CPoint& point)
         return FALSE;
     if (m_eSelMode == smodeMove)
     {
-        CRect rct = pView->GetSelectList()->GetEnclosingRect();
+        CRect rct = pView->GetSelectList().GetEnclosingRect();
         CPoint pnt = pView->GetWorkspaceDim();
         if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
             point.x = c_ptLast.x - rct.left;
@@ -617,12 +617,12 @@ void CSelectTool::KillScrollTimer(CBrdEditView* pView)
 
 void CShapeTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point)
 {
-    CSelList* pSLst = pView->GetSelectList();
-    pSLst->PurgeList(TRUE);         // Clear current select list
+    CSelList& pSLst = pView->GetSelectList();
+    pSLst.PurgeList(TRUE);         // Clear current select list
     int nDragHandle;
     pView->AdjustPoint(point);
     m_pObj = CreateDrawObj(pView, point, nDragHandle);
-    pSLst->AddObject(*m_pObj, TRUE);
+    pSLst.AddObject(*m_pObj, TRUE);
     s_selectTool.StartSizingOperation(pView, nFlags, point, nDragHandle);
 }
 
@@ -631,7 +631,7 @@ void CShapeTool::OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point)
     if (CWnd::GetCapture() != pView)
         return;
     s_selectTool.OnLButtonUp(pView, nFlags, point);
-    pView->GetSelectList()->PurgeList(TRUE); // Clear current select list
+    pView->GetSelectList().PurgeList(TRUE); // Clear current select list
     if (!IsEmptyObject())
         pView->AddDrawObject(m_pObj);
     else
@@ -740,8 +740,8 @@ void CPolyTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point)
     // Check if this is a new object.
     if (m_pObj == NULL)
     {
-        CSelList* pSLst = pView->GetSelectList();
-        pSLst->PurgeList(TRUE);         // Clear current select list
+        CSelList& pSLst = pView->GetSelectList();
+        pSLst.PurgeList(TRUE);         // Clear current select list
         // First we create a dummy object which will be modified when the
         // Polygon is completed. The dummy object will be draw with
         // black lines and a single pixel line.
@@ -753,7 +753,7 @@ void CPolyTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point)
     else
     {
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
 //      CRect rct;
 //      pView->GetClientRect(&rct);
 //      dc.DPtoLP(&rct);
@@ -791,7 +791,7 @@ void CPolyTool::OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point)
     if (m_pObj)
     {
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
         DrawRubberLine(&dc);                // Turn off rubber band
         FinalizePolygon(pView);
     }
@@ -805,7 +805,7 @@ void CPolyTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
     if (m_pObj == NULL)
         ReleaseCapture();
     CClientDC dc(pView);
-    pView->OnPrepareScaledDC(&dc);
+    pView->OnPrepareScaledDC(dc);
     DrawRubberLine(&dc);
 
     if (nFlags & MK_LBUTTON)
@@ -860,7 +860,7 @@ void CPolyTool::RemoveRubberBand(CBrdEditView* pView)
     if (m_pObj != NULL)
     {
         CClientDC dc(pView);
-        pView->OnPrepareScaledDC(&dc);
+        pView->OnPrepareScaledDC(dc);
         DrawRubberLine(&dc);
         ReleaseCapture();
     }
@@ -881,7 +881,6 @@ void CPolyTool::FinalizePolygon(CBrdEditView* pView,
         m_pObj->SetLineWidth(pView->GetLineWidth());
         CRect rct = m_pObj->GetEnclosingRect();
         pView->InvalidateWorkspaceRect(&rct);
-        m_pObj = NULL;
     }
     else
     {
@@ -984,13 +983,13 @@ BOOL CCellPaintTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 void CPaintTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
-    if (pView->GetBoard()->GetMaxDrawLayer() == LAYER_BASE)
+    if (pView->GetBoard().GetMaxDrawLayer() == LAYER_BASE)
         pView->SetBoardBackColor(pView->GetForeColor(), TRUE);
 }
 
 BOOL CPaintTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 {
-    if (pView->GetBoard()->GetMaxDrawLayer() != LAYER_BASE)
+    if (pView->GetBoard().GetMaxDrawLayer() != LAYER_BASE)
         return FALSE;
     if (nHitTest != HTCLIENT)
         return FALSE;
@@ -1004,13 +1003,12 @@ BOOL CPaintTool::OnSetCursor(CBrdEditView* pView, UINT nHitTest)
 void CTileTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
     CPoint point)
 {
-    TileID tid = pView->GetDocument()->GetTilePalWnd()->GetCurrentTileID();
-    if (pView->GetBoard()->GetMaxDrawLayer() == LAYER_GRID)
+    TileID tid = pView->GetDocument().GetTilePalWnd()->GetCurrentTileID();
+    if (pView->GetBoard().GetMaxDrawLayer() == LAYER_GRID)
         pView->SetCellTile(tid, point, TRUE);
     else
     {
-        CDrawList* pDwg = pView->GetDrawList(TRUE);
-        ASSERT(pDwg != NULL);
+        CDrawList& pDwg = CheckedDeref(pView->GetDrawList(TRUE));
         pView->SetDrawingTile(pDwg, tid, point, TRUE);
     }
 }
@@ -1018,9 +1016,9 @@ void CTileTool::OnLButtonDown(CBrdEditView* pView, UINT nFlags,
 void CTileTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
 {
     if ((nFlags & MK_LBUTTON) != 0 &&
-        pView->GetBoard()->GetMaxDrawLayer() == LAYER_GRID)
+        pView->GetBoard().GetMaxDrawLayer() == LAYER_GRID)
     {
-        TileID tid = pView->GetDocument()->GetTilePalWnd()->GetCurrentTileID();
+        TileID tid = pView->GetDocument().GetTilePalWnd()->GetCurrentTileID();
         pView->SetCellTile(tid, point, TRUE);
     }
 }
