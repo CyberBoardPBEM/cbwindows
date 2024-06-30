@@ -32,13 +32,12 @@
 #include    "ToolObjs.h"
 #endif
 
-class CBrdEditView : public CScrollView,
-                        public CB::wxNativeContainerWindowMixin
+class CBrdEditViewContainer;
+
+class CBrdEditView : public wxScrolledCanvas
 {
 protected: // create from serialization only
-    CBrdEditView();
-    DECLARE_DYNAMIC(CBrdEditView)
-
+    CBrdEditView(CBrdEditViewContainer& p);
 
     CB::propagate_const<CBoard*> m_pBoard;           // Pointer to document's board
     CB::propagate_const<CBoardManager*> m_pBMgr;
@@ -52,7 +51,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
-    const CGamDoc& GetDocument() const;
+    const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
     {
         return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
@@ -61,14 +60,15 @@ public:
     const CBoard& GetBoard() const { return CheckedDeref(m_pBoard); }
 
     // Current Colors etc...
-    COLORREF GetForeColor() const { return m_pBMgr->GetForeColor(); }
-    COLORREF GetBackColor() const { return m_pBMgr->GetBackColor(); }
+    wxColour GetForeColor() const { return CB::Convert(m_pBMgr->GetForeColor()); }
+    wxColour GetBackColor() const { return CB::Convert(m_pBMgr->GetBackColor()); }
     UINT GetLineWidth() const { return value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()); }
-    void SetForeColor(COLORREF crFore) { m_pBMgr->SetForeColor(crFore); }
-    void SetBackColor(COLORREF crBack) { m_pBMgr->SetBackColor(crBack); }
+    void SetForeColor(wxColour crFore) { m_pBMgr->SetForeColor(CB::Convert(crFore)); }
+    void SetBackColor(wxColour crBack) { m_pBMgr->SetBackColor(CB::Convert(crBack)); }
 
 // Operations
 public:
+#if 0
     void SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate);
     void SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate);
     void SetBoardBackColor(COLORREF cr, BOOL bUpdate);
@@ -80,6 +80,7 @@ public:
 
     void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) override;
     void PrepareScaledDC(CDC& pDC) const;
+#endif
 
 // Tools and Selection support
 private:
@@ -92,6 +93,7 @@ public:
         return const_cast<CSelList&>(std::as_const(*this).GetSelectList());
     }
 
+#if 0
     void ClientToWorkspace(CPoint& point) const;
     void ClientToWorkspace(CRect& rect) const;
     void WorkspaceToClient(CPoint& point) const;
@@ -102,8 +104,10 @@ public:
 
     void AdjustPoint(CPoint& pnt) const;              // Limit and grid processing
     void AdjustRect(CRect& rct) const;
+#endif
 
-    CDrawObj* ObjectHitTest(CPoint point);
+    CDrawObj* ObjectHitTest(wxPoint point);
+#if 0
     void AddDrawObject(CDrawObj::OwnerPtr pObj);         // Add to active layer
     void DeleteDrawObject(CDrawObj::OwnerPtr pObj);      // Delete from active layer
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
@@ -114,10 +118,12 @@ public:
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
     void NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll = FALSE); //DFM19991014
     CDrawList* GetDrawList(BOOL bCanCreateList = TRUE);
+#endif
 
 // Implementation
 protected:
     // Grid and limiting support
+#if 0
     BOOL IsGridizeActive() const;
     void GridizeX(long& xPos) const;
     void GridizeY(long& yPos) const;
@@ -132,9 +138,11 @@ protected:
     void CenterViewOnWorkspacePoint(CPoint point);
 
     BOOL DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point);
+#endif
 
 public:
     ~CBrdEditView() override;
+#if 0
     void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
 #ifdef _DEBUG
@@ -142,10 +150,12 @@ public:
     void Dump(CDumpContext& dc) const override;
 #endif
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+#endif
+    void OnInitialUpdate();
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
 protected:
+#if 0
     // ------------ //
     ToolType MapToolType(UINT nToolResID) const;
 
@@ -193,9 +203,11 @@ protected:
     void PageBottom();
     void PageFarLeft();
     void PageFarRight();
+#endif
 
     // Generated message map functions
 protected:
+#if 0
     //{{AFX_MSG(CBrdEditView)
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
@@ -207,7 +219,9 @@ protected:
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+#endif
     void OnDragTileItem(DragDropEvent& event);
+#if 0
     afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
@@ -255,40 +269,53 @@ protected:
     afx_msg void OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI);
     afx_msg void OnViewToggleScale();
     //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnScrollWinLine(wxScrollWinEvent& event);
+    wxDECLARE_EVENT_TABLE();
 
 private:
+    void RecalcScrollLimits();
+
+    RefPtr<CBrdEditViewContainer> parent;
+    RefPtr<CGamDoc> document;
+
+    /* This view should support scrolling by individual pixels,
+        but don't make the line-up and line-down scrolling that
+        slow.  */
+    int m_xScrollPixelsPerLine;
+    int m_yScrollPixelsPerLine;
+
     friend class CBrdEditViewContainer;
 };
 
-#ifndef _DEBUG  // debug version in gmview.cpp
-inline CGamDoc& CBrdEditView::GetDocument() const
-   { return *static_cast<CGamDoc*>(m_pDocument); }
-#endif
-
-class CBrdEditViewContainer : public CView
+class CBrdEditViewContainer : public CB::OnCmdMsgOverride<CView>,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
-    const CBrdEditView& GetChild() const { return *child; }
+    const CBrdEditView& GetChild() const { return CheckedDeref(child); }
     CBrdEditView& GetChild()
     {
         return const_cast<CBrdEditView&>(std::as_const(*this).GetChild());
     }
     void OnDraw(CDC* pDC) override;
-
-protected:
-    void OnActivateView(BOOL bActivate,
-                        CView *pActivateView,
-                        CView* pDeactivateView) override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
     CBrdEditViewContainer();         // used by dynamic creation
     DECLARE_DYNCREATE(CBrdEditViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CBrdEditView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CBrdEditView*> child = nullptr;
+
+    friend CBrdEditView;
 };

@@ -30,6 +30,7 @@
 #include    "SelObjs.h"
 #include    "VwEdtbrd.h"
 #include    "ClipBrd.h"
+#include    "CDib.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -88,14 +89,17 @@ void CSelection::InvalidateHandles()
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
+#if 0
         CRect rct = GetHandleRect(i);
         m_pView->InvalidateWorkspaceRect(&rct, FALSE);
+#endif
     }
 }
 
 // Returns handle rectangle in logical coords.
 CRect CSelection::GetHandleRect(int nHandleID) const
 {
+#if 0
     // Get the center of the handle in logical coords
     CPoint point = GetHandleLoc(nHandleID);
 
@@ -108,13 +112,18 @@ CRect CSelection::GetHandleRect(int nHandleID) const
     m_pView->ClientToWorkspace(rect);
 
     return rect;
+#else
+return CRect();
+#endif
 }
 
 void CSelection::Invalidate()
 {
+#if 0
     CRect rct = m_rect;
     rct = m_pObj->GetEnclosingRect();
     m_pView->InvalidateWorkspaceRect(&rct, FALSE);
+#endif
 }
 
 //=---------------------------------------------------=//
@@ -221,11 +230,13 @@ void CSelRect::UpdateObject(BOOL bInvalidate,
     {
         CRect rctA = pObj.GetEnclosingRect();
         CRect rctB = pObj.GetRect();
+#if 0
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
         rctA |= rctB;               // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA);
+#endif
     }
     if (bUpdateObjectExtent)
     {
@@ -241,8 +252,10 @@ void CSelRect::UpdateObject(BOOL bInvalidate,
     }
     if (bInvalidate)
     {
+#if 0
         CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
+#endif
     }
 }
 
@@ -338,11 +351,13 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
         CRect rctB;
         pObj.GetLine(rctB.left, rctB.top, rctB.right, rctB.bottom);
         rctB.NormalizeRect();
+#if 0
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
         rctA |= rctB;       // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
+#endif
     }
     pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     if (bUpdateObjectExtent)
@@ -358,8 +373,10 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     }
     if (bInvalidate)
     {
+#if 0
         CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
+#endif
     }
 }
 
@@ -435,11 +452,13 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
     {
         CRect rctA = pObj.GetEnclosingRect();
         CRect rctB = pObj.GetRect();
+#if 0
         m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
         rctA |= rctB;               // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA);
+#endif
     }
     if (bUpdateObjectExtent)
     {
@@ -454,8 +473,10 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
     }
     if (bInvalidate)
     {
+#if 0
         CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
+#endif
     }
 }
 
@@ -492,11 +513,13 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     CDrawObj& pObj = static_cast<CRectObj&>(*m_pObj);
     if (bInvalidate)
     {
+#if 0
         CRect rct = pObj.GetRect();
         m_pView->WorkspaceToClient(rct);
         rct.InflateRect(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rct);
         m_pView->InvalidateWorkspaceRect(&rct);
+#endif
     }
     if (bUpdateObjectExtent)
     {
@@ -512,8 +535,10 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     }
     if (bInvalidate)
     {
+#if 0
         CRect rct = pObj.GetEnclosingRect();
         m_pView->InvalidateWorkspaceRect(&rct);
+#endif
     }
 }
 
@@ -624,7 +649,7 @@ void CSelList::CopyToClipboard()
     CSelection& pSel = *front();
     ASSERT(pSel.m_pObj->GetType() == CDrawObj::drawBitmap);
     CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel.m_pObj);
-    SetClipboardBitmap(m_pView.get(), pDObj.m_bitmap);
+    SetClipboardBitmap(CB::Convert(pDObj.m_bitmap));
 }
 
 void CSelList::Open()
@@ -636,10 +661,12 @@ void CSelList::Open()
     if (pSel.m_pObj->GetType() != CDrawObj::drawText)
         return;
     CText& pDObj = static_cast<CText&>(*pSel.m_pObj);
+#if 0
     m_pView->DoEditTextDrawingObject(pDObj);
     pSel.InvalidateHandles();
     pSel.m_rect = pDObj.GetEnclosingRect();
     pSel.InvalidateHandles();
+#endif
 }
 
 // Assumes RECTs are normalized!!
@@ -706,7 +733,7 @@ void CSelList::InvalidateListHandles(BOOL bUpdate)
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
-        m_pView->UpdateWindow();
+        m_pView->Update();
 }
 
 void CSelList::InvalidateList(BOOL bUpdate)
@@ -720,7 +747,7 @@ void CSelList::InvalidateList(BOOL bUpdate)
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
-        m_pView->UpdateWindow();
+        m_pView->Update();
 }
 
 void CSelList::PurgeList(BOOL bInvalidate)

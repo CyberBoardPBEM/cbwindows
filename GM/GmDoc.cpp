@@ -158,7 +158,7 @@ void CGamDoc::OnCloseDocument()
 /////////////////////////////////////////////////////////////////////////////
 
 static const CRuntimeClass *tblBrd[] = {
-    RUNTIME_CLASS(CBrdEditView), RUNTIME_CLASS(CBrdEditViewContainer),
+    RUNTIME_CLASS(CBrdEditViewContainer),
     NULL
 };
 
@@ -394,10 +394,10 @@ CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
     {
-        CBrdEditView* pView = (CBrdEditView*)GetNextView(pos);
-        if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditView)))
+        CBrdEditViewContainer* pView = (CBrdEditViewContainer*)GetNextView(pos);
+        if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditViewContainer)))
         {
-            if (&pView->GetBoard() == &pBoard)
+            if (&pView->GetChild().GetBoard() == &pBoard)
                 return pView;
         }
     }
