@@ -49,11 +49,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView
 
-IMPLEMENT_DYNAMIC(CBrdEditView, CScrollView)
 IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 
-BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
-    //{{AFX_MSG_MAP(CBrdEditView)
+wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
+#if 0
     ON_WM_MOUSEWHEEL()
     ON_WM_LBUTTONDOWN()
     ON_WM_LBUTTONUP()
@@ -64,7 +63,9 @@ BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     ON_WM_CHAR()
     ON_WM_SETCURSOR()
     ON_WM_ERASEBKGND()
-//    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragTileItem)
+#endif
+    EVT_DRAGDROP(OnDragTileItem)
+#if 0
     ON_MESSAGE(WM_SETCOLOR, OnSetColor)
     ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
     ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
@@ -134,20 +135,22 @@ BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_TOOL_OVAL, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
+    EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CBrdEditViewContainer, CView)
     ON_WM_CREATE()
-    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView construction/destruction
 
-CBrdEditView::CBrdEditView() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
-    m_selList(*this)
+CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
+    m_selList(*this),
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
     m_bOffScreen = TRUE;
     m_pBoard = NULL;
@@ -155,12 +158,18 @@ CBrdEditView::CBrdEditView() :
     m_nCurToolID = ID_TOOL_ARROW;       // ID_TOOL_ARROW tool (select)
     m_nLastToolID = ID_TOOL_ARROW;      // ID_TOOL_ARROW tool (select)
     m_nZoom = fullScale;
+    // use sizers for scrolling
+    wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
+    sizer->Add(0, 0);
+    wxScrolledCanvas::Create(*parent, 0);
 }
 
 CBrdEditView::~CBrdEditView()
 {
 }
 
+#if 0
 BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CScrollView::PreCreateWindow(cs))
@@ -172,17 +181,13 @@ BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 
     return TRUE;
 }
+#endif
 
 void CBrdEditView::OnInitialUpdate()
 {
-    CScrollView::OnInitialUpdate();
     m_pBMgr = GetDocument().GetBoardManager();
     m_pBoard = static_cast<CBoard*>(GetDocument().GetCreateParameter());
-    SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
-    /* KLUDGE:  this class isn't a wxEvtHandler (yet),
-        so can't have wx event table */
-    wxWindow& wxwnd = *this;
-    wxwnd.Bind(WM_DRAGDROP_WX, &CBrdEditView::OnDragTileItem, this);
+    RecalcScrollLimits();
 }
 
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -191,14 +196,14 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     if ((wHint == HINT_TILEMODIFIED && m_pBoard->IsTileInUse(static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEMODIFIED>().m_tid)) ||
         wHint == HINT_TILEDELETED || wHint == HINT_TILESETDELETED)
     {
-        Invalidate(FALSE);          // Do redraw
+        Refresh(FALSE);          // Do redraw
         return;
     }
     else if (wHint == HINT_BOARDDELETED)
     {
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDDELETED>().m_pBoard == m_pBoard)
         {
-            CFrameWnd* pFrm = GetParentFrame();
+            CFrameWnd* pFrm = parent->GetParentFrame();
             ASSERT(pFrm != NULL);
             pFrm->SendMessage(WM_CLOSE, 0, 0L);
         }
@@ -207,17 +212,21 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     {
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard == m_pBoard)
         {
-            SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
-            Invalidate(FALSE);
+            RecalcScrollLimits();
+            Refresh(FALSE);
         }
     }
     else if (wHint == HINT_ALWAYSUPDATE)
-        CScrollView::OnUpdate(pSender, lHint, pHint);
+    {
+        wxASSERT(!"untested code");
+        parent->CView::OnUpdate(pSender, lHint, pHint);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView drawing
 
+#if 0
 void CBrdEditView::OnDraw(CDC* pDC)
 {
     CDC dcMem;
@@ -489,13 +498,6 @@ void CBrdEditView::Dump(CDumpContext& dc) const
 {
     CView::Dump(dc);
 }
-
-const CGamDoc& CBrdEditView::GetDocument() const // non-debug version is inline
-{
-    wxASSERT(CheckedDeref(m_pDocument).IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    return *static_cast<CGamDoc*>(m_pDocument);
-}
-
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
@@ -824,6 +826,7 @@ ToolType CBrdEditView::MapToolType(UINT nToolResID) const
         tblGridTools[nToolResID - ID_TOOL_ARROW] :
         tblDrawTools[nToolResID - ID_TOOL_ARROW];
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Tile drag and drop code.
@@ -865,6 +868,7 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
         CDrawList* pDwg;
         // Process a tile drop....
         CPoint pnt(pdi.m_point.x, pdi.m_point.y);
+#if 0
         ClientToWorkspace(pnt);
         switch (m_pBoard->GetMaxDrawLayer())
         {
@@ -881,9 +885,11 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
                 break;
             default: ;
         }
+#endif
     }
 }
 
+#if 0
 void CBrdEditView::SetDrawingTile(CDrawList& pDwg, TileID tid, CPoint pnt,
     BOOL bUpdate)
 {
@@ -1425,7 +1431,7 @@ void CBrdEditView::DoViewScale(TileScale nZoom)
     ClientToWorkspace(pntMid);
 
     m_nZoom = nZoom;
-    SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
+    RecalcScrollLimits();
     BeginWaitCursor();
     Invalidate(FALSE);
     CenterViewOnWorkspacePoint(pntMid);
@@ -2222,55 +2228,101 @@ BOOL CBrdEditView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
         return DoMouseWheel(fFlags, zDelta, point);
     }
 }
+#endif
 
-void CBrdEditViewContainer::OnActivateView(BOOL bActivate,
-    CView* pActivateView,
-    CView* /*pDeactiveView*/)
+/* This view should support scrolling by individual pixels,
+    but don't make the line-up and line-down scrolling that
+    slow.  */
+void CBrdEditView::OnScrollWinLine(wxScrollWinEvent& event)
 {
-    WXUNUSED_UNLESS_DEBUG(pActivateView);
-    if (bActivate)
+    int type = event.GetEventType();
+    wxASSERT(type == wxEVT_SCROLLWIN_LINEDOWN ||
+                type == wxEVT_SCROLLWIN_LINEUP);
+
+    int orient = event.GetOrientation();
+    wxASSERT(orient == wxHORIZONTAL || orient == wxVERTICAL);
+
+    int oldPos;
+    int offset;
+    if (orient == wxHORIZONTAL)
     {
-        wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(&*child);
+        oldPos = GetViewStart().x;
+        offset = m_xScrollPixelsPerLine;
     }
+    else
+    {
+        oldPos = GetViewStart().y;
+        offset = m_yScrollPixelsPerLine;
+    }
+    if (type == wxEVT_SCROLLWIN_LINEUP)
+    {
+        offset = -offset;
+    }
+
+    wxScrollWinEvent thumbEvent(wxEVT_SCROLLWIN_THUMBTRACK, oldPos + offset, orient);
+    ProcessWindowEvent(thumbEvent);
 }
 
-void CBrdEditViewContainer::OnDraw(CDC* pDC)
+void CBrdEditView::RecalcScrollLimits()
+{
+    wxSizer& sizer = CheckedDeref(GetSizer());
+    wxSizerItemList& items = sizer.GetChildren();
+    wxASSERT(items.size() == 1);
+    wxSizerItem& item = CheckedDeref(items[0]);
+    wxASSERT(item.IsSpacer());
+
+    item.AssignSpacer(CB::Convert(m_pBoard->GetSize(m_nZoom)));
+    SetScrollRate(1, 1);
+    sizer.FitInside(this);
+
+    // use size of cell as line increment
+    const CCellForm& cf = m_pBoard->GetBoardArray().GetCellForm(m_nZoom);
+    wxSize cellSize = CB::Convert(cf.GetCellSize());
+    switch (cf.GetCellType())
+    {
+        case cformHexFlat:
+            (cellSize.x *= 3) /= 4;
+            break;
+        case cformHexPnt:
+            (cellSize.y *= 3) /= 4;
+            break;
+        default:
+            ;   // do nothing
+    }
+    m_xScrollPixelsPerLine = cellSize.x;
+    m_yScrollPixelsPerLine = cellSize.y;
+}
+
+void CBrdEditViewContainer::OnDraw(CDC* /*pDC*/)
 {
     // do nothing because child covers entire client rect
 }
 
+void CBrdEditViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+}
+
+void CBrdEditViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+}
+
 CBrdEditViewContainer::CBrdEditViewContainer() :
-    child(new CBrdEditView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
 int CBrdEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CView::OnCreate(lpCreateStruct) == -1)
+    if (CB::OnCmdMsgOverride<CView>::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CBrdEditView(*this);
 
     return 0;
-}
-
-void CBrdEditViewContainer::OnSize(UINT nType, int cx, int cy)
-{
-    child->MoveWindow(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
 }
 
 
