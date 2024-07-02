@@ -1,6 +1,6 @@
 // CellForm.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -418,7 +418,8 @@ void CCellForm::Serialize(CArchive& ar)
             m_pPoly.resize(size_t(5));
         }
         ReadArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
-        CreateHexMask();
+        if (m_eType == cformHexFlat || m_eType == cformHexPnt)
+            CreateHexMask();
     }
 }
 

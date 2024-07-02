@@ -1132,6 +1132,10 @@ void CBitEditView::OnImageBoardMask()
     else
     {
         // Rectangular Cell...No mask exists. Just PATBLT the boundries.
+        // This will only be visible if the target tile is larger than
+        // the chosen rectangular. It delineates the interior area
+        // of the chosen masking area. I have no idea if this is
+        // a useful feature though.
         g_gt.mDC1.PatBlt(size.cx, 0, 1, size.cy, BLACKNESS);
         g_gt.mDC1.PatBlt(0, size.cy, size.cx, 1, BLACKNESS);
     }
