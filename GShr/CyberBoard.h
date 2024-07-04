@@ -2006,7 +2006,7 @@ namespace CB
                     0xFF000000;
     }
 
-    inline wxPoint Convert(const CPoint& p)
+    inline wxPoint Convert(const POINT& p)
     {
         return wxPoint(p.x, p.y);
     }
@@ -2016,7 +2016,7 @@ namespace CB
         return CPoint(p.x, p.y);
     }
 
-    inline wxSize Convert(const CSize& sz)
+    inline wxSize Convert(const SIZE& sz)
     {
         return wxSize(sz.cx, sz.cy);
     }
@@ -2027,15 +2027,26 @@ namespace CB
     }
 
     // see GM.cpp RectDiscrepancy
-    inline wxRect Convert(const CRect& r)
+    inline wxRect Convert(const RECT& r)
     {
-        return wxRect(r.left, r.top, r.Width(), r.Height());
+        return wxRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
     }
 
     // see GM.cpp RectDiscrepancy
     inline CRect Convert(const wxRect& r)
     {
         return CRect(r.GetLeft(), r.GetTop(), r.GetRight() + 1, r.GetBottom() + 1);
+    }
+
+    inline std::vector<wxPoint> Convert(const std::vector<POINT>& v)
+    {
+        std::vector<wxPoint> retval;
+        retval.reserve(v.size());
+        for (const POINT& p : v)
+        {
+            retval.emplace_back(CB::Convert(p));
+        }
+        return retval;
     }
 }
 
