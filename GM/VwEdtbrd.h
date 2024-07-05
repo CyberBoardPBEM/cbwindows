@@ -139,12 +139,7 @@ public:
     virtual void OnInitialUpdate();
     virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
-    // Printing support
 protected:
-    virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-    virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-    virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
-    virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
     // ------------ //
     ToolType MapToolType(UINT nToolResID);
 

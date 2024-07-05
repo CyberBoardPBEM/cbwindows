@@ -134,9 +134,6 @@ BEGIN_MESSAGE_MAP(CBrdEditView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
     ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
     //}}AFX_MSG_MAP
-    // Standard printing commands
-    ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
-    ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -245,6 +242,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
             &dcMem, oRct.left, oRct.top, SRCCOPY);
         dcMem.SelectObject(pPrvBMap);
     }
+    wxASSERT(!pDC->IsPrinting());
     if (!pDC->IsPrinting())
     {
         PrepareScaledDC(pDC);
@@ -457,17 +455,6 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView printing
 
-BOOL CBrdEditView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-    // default preparation
-    return DoPreparePrinting(pInfo);
-}
-
-void CBrdEditView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-    // TODO: add extra initialization before printing
-}
-
 void CBrdEditView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
 {
     CScrollView::OnPrepareDC(pDC, pInfo);
@@ -481,18 +468,6 @@ void CBrdEditView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
 //          pDC->GetDeviceCaps(LOGPIXELSY));
 //      ReleaseDC(pScrnDC);
 //  }
-}
-
-void CBrdEditView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
-{
-    CRect oRct;
-    pDC->GetClipBox(&oRct);
-    m_pBoard->Draw(*pDC, oRct, m_nZoom);
-}
-
-void CBrdEditView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-    // TODO: add cleanup after printing
 }
 
 /////////////////////////////////////////////////////////////////////////////
