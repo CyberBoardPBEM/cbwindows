@@ -192,11 +192,6 @@ protected:
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView,
                     CView* pDeactiveView);
 
-    // Printing support
-    virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-    virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-    virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-
 // Generated message map functions
 protected:
     //{{AFX_MSG(CPlayBoardView)

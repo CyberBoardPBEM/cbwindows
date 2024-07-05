@@ -50,7 +50,6 @@ BEGIN
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
     "#include ""afxres.rc""             // Standard components\r\n"
-    "#include ""afxprint.rc""           // printing/print preview resources\r\n"
     "#if !defined(_AFXDLL)\r\n"
     "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
     "#endif\r\n"
@@ -417,7 +416,6 @@ BEGIN
     "E",            ID_EXPORT_GAMEBOX,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
     "U",            ID_IMAGE_UPDATE,        VIRTKEY, CONTROL, NOINVERT
@@ -1254,10 +1252,6 @@ BEGIN
     ID_FILE_CLOSE           "Close the active document"
     ID_FILE_SAVE            "Save the active GameBox\nSave Active GameBox"
     ID_FILE_SAVE_AS         "Save the active document with a new name"
-    ID_FILE_PAGE_SETUP      "Change the printing options"
-    ID_FILE_PRINT_SETUP     "Change the printer and printing options"
-    ID_FILE_PRINT           "Print the active document"
-    ID_FILE_PRINT_PREVIEW   "Display full pages"
 END
 
 STRINGTABLE
@@ -1560,7 +1554,6 @@ END
 LANGUAGE 9, 1
 #pragma code_page(1252)
 #include "afxres.rc"             // Standard components
-#include "afxprint.rc"           // printing/print preview resources
 #if !defined(_AFXDLL)
 #include "afxribbon.rc"          // MFC ribbon and control bar resources
 #endif

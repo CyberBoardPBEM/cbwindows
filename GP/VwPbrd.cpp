@@ -145,9 +145,6 @@ BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
     ON_UPDATE_COMMAND_UI_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnUpdateRotatePiece)
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
-    // Standard printing commands
-    ON_COMMAND(ID_FILE_PRINT, CScrollView::OnFilePrint)
-    ON_COMMAND(ID_FILE_PRINT_PREVIEW, CScrollView::OnFilePrintPreview)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
     ON_MESSAGE(WM_SELECT_BOARD_OBJLIST, OnMessageSelectBoardObjectList)
 END_MESSAGE_MAP()
@@ -476,6 +473,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 
     m_pPBoard->Draw(dcMem, &rct, m_nZoom);
 
+    wxASSERT(!pDC->IsPrinting());
     if (!pDC->IsPrinting() && GetPlayBoard()->GetPiecesVisible())
         m_selList.OnDraw(dcMem);       // Handle selections.
 
@@ -988,25 +986,6 @@ void CPlayBoardView::RestoreDrawListDC(CDC& pDC) const
 {
     if (m_nZoom != fullScale)
         pDC.RestoreDC(-1);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CPlayBoardView printing
-
-BOOL CPlayBoardView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-    // default preparation
-    return DoPreparePrinting(pInfo);
-}
-
-void CPlayBoardView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-    // TODO: add extra initialization before printing
-}
-
-void CPlayBoardView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-    // TODO: add cleanup after printing
 }
 
 /////////////////////////////////////////////////////////////////////////////
