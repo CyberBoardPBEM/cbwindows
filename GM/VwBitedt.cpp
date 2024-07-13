@@ -1075,6 +1075,7 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
 
     wxSize size = CB::Convert(pcf.GetCellSize());
     {
+        SetUndoFromView();
         wxMemoryDC dc(m_bmView);
 
         const CBitmap* pMask = pcf.GetMask();
