@@ -97,6 +97,10 @@ if (MSVC)
 		_AFX_SECURE_NO_WARNINGS _ATL_SECURE_NO_WARNINGS
 		_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS
 	)
+	# Use manifest from wx.rc for dpiAware
+	set_target_properties(CBDesign PROPERTIES
+		LINK_FLAGS "/MANIFEST:NO"
+	)
 	target_link_libraries(CBDesign htmlhelp.lib)
 	# Unicode MFC expects this entry point
 	target_link_options(CBDesign PRIVATE /ENTRY:wWinMainCRTStartup)
