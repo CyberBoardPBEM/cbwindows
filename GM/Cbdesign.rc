@@ -53,7 +53,13 @@ BEGIN
     "#if !defined(_AFXDLL)\r\n"
     "#include ""afxribbon.rc""          // MFC ribbon and control bar resources\r\n"
     "#endif\r\n"
-    "#endif\0"
+    "#endif\r\n"
+    "\r\n"
+    "#define wxUSE_RC_MANIFEST 1\r\n"
+    "#define WX_CPU_X86\r\n"
+    "#define wxUSE_DPI_AWARE_MANIFEST 1\r\n"
+    "#include ""wx/msw/wx.rc""\r\n"
+    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -1558,6 +1564,12 @@ LANGUAGE 9, 1
 #include "afxribbon.rc"          // MFC ribbon and control bar resources
 #endif
 #endif
+
+#define wxUSE_RC_MANIFEST 1
+#define WX_CPU_X86
+#define wxUSE_DPI_AWARE_MANIFEST 1
+#include "wx/msw/wx.rc"
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
