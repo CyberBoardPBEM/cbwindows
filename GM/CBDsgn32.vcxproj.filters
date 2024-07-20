@@ -531,6 +531,9 @@
     <Image Include="res\ToolBar.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\cbICON_AAA.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Brush.cur">
