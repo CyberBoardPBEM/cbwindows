@@ -80,6 +80,8 @@ IDR_BOARDVIEW           ICON                    "res\\IDR_BOARD.ico"
 
 IDR_BITEDITOR           ICON                    "res\\BitEdit.ico"
 
+cbICON_AAA              ICON                    "res\\cbICON_AAA.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

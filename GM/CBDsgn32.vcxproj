@@ -470,6 +470,7 @@ echo off
     <Image Include="res\BadColum.bmp" />
     <Image Include="res\BitEdit.ico" />
     <Image Include="res\Bmp50Percent.bmp" />
+    <Image Include="res\cbICON_AAA.ico" />
     <Image Include="res\DrawLayer.bmp" />
     <Image Include="res\GBoxDoc.ico" />
     <Image Include="res\IDR_Board.ico" />
