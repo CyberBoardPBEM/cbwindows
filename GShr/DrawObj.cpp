@@ -1,6 +1,6 @@
 // DrawObj.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -242,6 +242,45 @@ void CDrawObj::SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const
 
     c_pPrvPen = pDC.SelectObject(&pPen);
     c_pPrvBrush = pDC.SelectObject(&pBrush);
+}
+
+CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
+{
+    wxPen pPen;
+    if (c_bHitTestDraw)
+    {
+        pPen = *wxBLACK_PEN;
+    }
+    else
+    {
+        if (GetLineColor() != noColor)
+        {
+            pPen = wxPen(CB::Convert(GetLineColor()), GetLineWidth());
+        }
+        else
+        {
+            pPen = *wxTRANSPARENT_PEN;
+        }
+    }
+
+    wxBrush pBrush;
+    if (GetFillColor() != noColor)
+    {
+        if (c_bHitTestDraw)
+        {
+            pBrush = *wxBLACK_BRUSH;
+        }
+        else
+        {
+            pBrush = wxBrush(CB::Convert(GetFillColor()));
+        }
+    }
+    else
+    {
+        pBrush = *wxTRANSPARENT_BRUSH;
+    }
+
+    return SetUpDrawResult({ pDC, pPen }, { pDC, pBrush });
 }
 
 void CDrawObj::CleanUpDraw(CDC& pDC) const
@@ -552,6 +591,12 @@ void CRectObj::Draw(CDC& pDC, TileScale)
     CleanUpDraw(pDC);
 }
 
+void CRectObj::Draw(wxDC& pDC, TileScale)
+{
+    auto guard = SetUpDraw(pDC);
+    pDC.DrawRectangle(CB::Convert(m_rctExtent));
+}
+
 CRect CRectObj::GetEnclosingRect() const
 {
     CRect rct = m_rctExtent;
@@ -639,6 +684,12 @@ void CEllipse::Draw(CDC& pDC, TileScale)
     CleanUpDraw(pDC);
 }
 
+void CEllipse::Draw(wxDC& pDC, TileScale)
+{
+    auto guard = SetUpDraw(pDC);
+    CB::DrawEllipse(pDC, CB::Convert(m_rctExtent));
+}
+
 #ifndef     GPLAY
 OwnerPtr<CSelection> CEllipse::CreateSelectProxy(CBrdEditView& pView)
 {
@@ -674,6 +725,19 @@ void CPolyObj::Draw(CDC& pDC, TileScale)
         pDC.Polygon(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
 
     CleanUpDraw(pDC);
+}
+
+void CPolyObj::Draw(wxDC& pDC, TileScale)
+{
+    if (m_Pnts.empty())
+        return;
+    auto guard = SetUpDraw(pDC);
+
+    std::vector<wxPoint> pnts = CB::Convert(m_Pnts);
+    if (m_crFill == noColor)
+        pDC.DrawLines(value_preserving_cast<int>(pnts.size()), pnts.data());
+    else
+        pDC.DrawPolygon(value_preserving_cast<int>(pnts.size()), pnts.data());
 }
 
 void CPolyObj::AddPoint(CPoint pnt)
@@ -870,6 +934,22 @@ void CLine::Draw(CDC& pDC, TileScale)
     pDC.LineTo(m_ptEnd);
 
     pDC.SelectObject(pPrvPen);
+}
+
+void CLine::Draw(wxDC& pDC, TileScale)
+{
+    wxPen pen;
+    if (c_bHitTestDraw)
+    {
+        pen = *wxBLACK_PEN;
+    }
+    else
+    {
+        pen = wxPen(CB::Convert(m_crLine), m_nLineWidth);
+    }
+    wxDCPenChanger setpen(pDC, pen);
+
+    pDC.DrawLine(CB::Convert(m_ptBeg), CB::Convert(m_ptEnd));
 }
 
 void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
@@ -1097,6 +1177,39 @@ void CBitmapImage::Draw(CDC& pDC, TileScale eScale)
     }
 }
 
+void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
+{
+    wxMemoryDC tileDC;
+    wxBitmap wxm_bitmap = CB::Convert(m_bitmap);
+    tileDC.SelectObjectAsSource(wxm_bitmap);
+
+    wxPoint pnt = CB::Convert(m_rctExtent.TopLeft());
+
+    if ((GetDObjFlags() & dobjFlgLayerNatural) == 0)
+    {
+        pDC.StretchBlit(pnt.x, pnt.y, m_rctExtent.Width(),  m_rctExtent.Height(), &tileDC,
+            0, 0, m_rctExtent.Width(), m_rctExtent.Height());
+    }
+    else
+    {
+        wxASSERT(GetScaleVisibility() ==  fullScale || // there must only be one scale set
+            GetScaleVisibility() == halfScale || GetScaleVisibility() == smallScale);
+
+        // Only draw the bitmap at the proper board scaling.
+        if (GetScaleVisibility() != eScale)
+            return;
+
+        wxPoint pnt = CB::Convert(m_rctExtent).GetTopLeft();
+        ScalePoint(pnt, pDC);
+
+        SynchronizeExtentRect(pDC); // Only time we can find true scale
+
+        CB::DCUserScaleChanger setScale(pDC, 1, 1);
+        pDC.Blit(pnt.x, pnt.y, wxm_bitmap.GetWidth(), wxm_bitmap.GetHeight(),
+                    &tileDC, 0, 0);
+    }
+}
+
 void CBitmapImage::SetBitmap(int x, int y, HBITMAP hBMap,
     TileScale eBaseScale /* = fullScale */)
 {
@@ -1242,6 +1355,21 @@ void CTileImage::Draw(CDC& pDC, TileScale eScale)
         pDC.RestoreDC(-1);
 }
 
+void CTileImage::Draw(wxDC& pDC, TileScale eScale)
+{
+    ASSERT(m_pTMgr != NULL);
+    CTile tile = m_pTMgr->GetTile(m_tid, eScale);
+
+    wxPoint pnt = CB::Convert(m_rctExtent.TopLeft());
+    CB::DCUserScaleChanger setScale;
+    if (eScale == halfScale)
+    {
+        ScalePoint(pnt, pDC);
+        setScale = CB::DCUserScaleChanger(pDC, 1, 1);
+    }
+    tile.TransBlt(pDC, pnt.x, pnt.y);
+}
+
 void CTileImage::SetTile(int x, int y, TileID tid)
 {
     ASSERT(m_pTMgr != NULL);
@@ -1345,6 +1473,19 @@ void CText::Draw(CDC& pDC, TileScale eScale)
     pDC.ExtTextOut(topLeft.x, topLeft.y,
         0, NULL, m_text, NULL);
     pDC.SetTextColor(crPrev);
+}
+
+void CText::Draw(wxDC& pDC, TileScale eScale)
+{
+    if (eScale == smallScale && m_rctExtent.Height() < 16)
+        return;
+
+    wxFont hFont = ToWxFont(m_fontID);
+    wxDCFontChanger setFont(pDC, hFont);
+    pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
+    wxDCTextColourChanger setColor(pDC, CB::Convert(m_crText));
+    wxPoint topLeft = CB::Convert(m_rctExtent.TopLeft() + m_geoOffset);
+    pDC.DrawRotatedText(m_text, topLeft, m_geoRot);
 }
 
 void CText::SetText(int x, int y, const CB::string& pszText, FontID fntID,
@@ -1503,6 +1644,21 @@ static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
         pDC.RestoreDC(-1);
 }
 
+static void DrawObjTile(wxDC& pDC, wxPoint pnt, CTileManager& pTMgr, TileID tid,
+    TileScale eScale)
+{
+    wxASSERT(!"needs testing");
+    CTile tile = pTMgr.GetTile(tid, eScale);
+
+    CB::DCUserScaleChanger setScale;
+    if (eScale == halfScale)
+    {
+        ScalePoint(pnt, pDC);
+        setScale = CB::DCUserScaleChanger(pDC, 1, 1);
+    }
+    tile.TransBlt(pDC, pnt.x, pnt.y);
+}
+
 //////////////////////////////////////////////////////////////////
 // Class CPieceObj
 
@@ -1537,6 +1693,25 @@ void CPieceObj::Draw(CDC& pDC, TileScale eScale)
     ASSERT(tid != nullTid);
 
     CPoint pnt = GetRect().TopLeft();
+    DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
+}
+
+void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
+{
+    wxASSERT(m_pDoc != NULL);
+    CTileManager& pTMgr = CheckedDeref(m_pDoc->GetTileManager());
+    CPieceTable& pPTbl = CheckedDeref(m_pDoc->GetPieceTable());
+
+    TileID tid;
+
+    if (!m_pDoc->IsScenario() &&
+            pPTbl.IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc))
+        tid = pPTbl.GetFrontTileID(m_pid, TRUE);
+    else
+        tid = pPTbl.GetActiveTileID(m_pid, TRUE);  // Show rotations
+    wxASSERT(tid != nullTid);
+
+    wxPoint pnt = CB::Convert(GetRect()).GetTopLeft();
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
 
@@ -1659,6 +1834,17 @@ void CMarkObj::Draw(CDC& pDC, TileScale eScale)
 
     TileID tid = GetCurrentTileID();
     CPoint pnt = m_rctExtent.TopLeft();
+
+    DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
+}
+
+void CMarkObj::Draw(wxDC& pDC, TileScale eScale)
+{
+    wxASSERT(m_pDoc != NULL);
+    CTileManager& pTMgr = CheckedDeref(m_pDoc->GetTileManager());
+
+    TileID tid = GetCurrentTileID();
+    wxPoint pnt = CB::Convert(m_rctExtent).GetTopLeft();
 
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
@@ -1883,6 +2069,59 @@ void CDrawList::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
         }
 
         if (pDObj.IsVisible(pDrawRct))
+            pDObj.Draw(pDC, eScale);
+    }
+}
+
+void CDrawList::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
+    BOOL bApplyVisibility /* = TRUE */, BOOL bDrawPass2Objects /* = FALSE */,
+    BOOL bHideUnlocked /* = FALSE */, BOOL bDrawLockedFirst /* = FALSE */)
+{
+    // We might need to draw locked objects first so they
+    // show up under other object which are unlocked. This is
+    // only valid in a non-pass 2 call.
+    if (!bDrawPass2Objects && bDrawLockedFirst)
+    {
+        for (iterator pos = begin(); pos != end(); ++pos)
+        {
+            CDrawObj& pDObj = **pos;
+
+            // Check if the object should be drawn in this scaling
+            if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
+                continue;                   // Doesn't qualify
+
+            wxASSERT(!((pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 &&
+                (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0));// We'll never have a locked pass 2 object
+
+            if ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0)
+                continue;                  // Only process locked objects
+
+            if (pDObj.IsVisible(CB::Convert(pDrawRct)))
+                pDObj.Draw(pDC, eScale);
+        }
+    }
+
+    for (iterator pos = begin(); pos != end(); ++pos)
+    {
+        CDrawObj& pDObj = **pos;
+
+        // Check if the object should be drawn in this scaling
+        if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
+            continue;                   // Doesn't qualify
+
+        // Check if unlocked objects should be hidden
+        if (bHideUnlocked && ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0))
+            continue;                   // Doesn't qualify
+
+        // Only draw objects in their proper passes
+        if (bDrawLockedFirst && (pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 ||
+            bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) == 0 ||
+           !bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0)
+        {
+            continue;                   // Doesn't qualify
+        }
+
+        if (pDObj.IsVisible(CB::Convert(pDrawRct)))
             pDObj.Draw(pDC, eScale);
     }
 }

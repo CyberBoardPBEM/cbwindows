@@ -1,6 +1,6 @@
 // Board.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -151,6 +151,76 @@ void CBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
     }
 }
 
+void CBoard::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
+    int nCellBorder /* = -1 */, int nApplyVisible /* = -1 */)// -1 means use internal
+{
+    const CBoardArray& brdAry = GetBoardArray();
+
+    wxSize wsize, vsize;
+    brdAry.GetBoardScaling(eScale, wsize, vsize);
+
+    DrawBackground(pDC, pDrawRct);  // Moved here so don't need to scale rect
+    if (m_pBaseDwg != NULL)
+    {
+        wxRect rct(pDrawRct);
+        CB::DCUserScaleChanger setScale;
+        if (eScale != fullScale)
+        {
+            setScale = CB::DCUserScaleChanger(pDC, double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
+            ScaleRect(rct, wsize, vsize);
+        }
+
+        CBoardBase::Draw(pDC, rct, eScale,  nApplyVisible);// Lower Layers
+    }
+
+    wxRect rCellRct;
+    if (IsDrawGridLines(nCellBorder))
+        brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
+
+    if (m_iMaxLayer < 0 || m_iMaxLayer >= 2)
+    {
+        if (!IsDrawGridLines(nCellBorder))
+        {
+            brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
+        }
+        DrawCells(pDC, rCellRct, eScale);
+    }
+    if (!m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
+        DrawCellLines(pDC, rCellRct, eScale);
+
+    if ((m_iMaxLayer < 0 || m_iMaxLayer >= 3) && m_pTopDwg != NULL)
+    {
+        wxRect rct(pDrawRct);
+        CB::DCUserScaleChanger setScale;
+        if (eScale != fullScale)
+        {
+            setScale = CB::DCUserScaleChanger(pDC, double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
+            ScaleRect(rct, wsize, vsize);
+        }
+
+        DrawDrawingList(&*m_pTopDwg, pDC, rct, eScale,
+            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
+    }
+
+    if (m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
+        DrawCellLines(pDC, rCellRct, eScale);
+
+    if ((m_iMaxLayer < 0 || m_iMaxLayer >= 3) && m_pTopDwg != NULL)
+    {
+        wxRect rct(pDrawRct);
+        CB::DCUserScaleChanger setScale;
+        if (eScale != fullScale)
+        {
+            setScale = CB::DCUserScaleChanger(pDC, double(vsize.x) / wsize.x, double(vsize.y) / wsize.y);
+            ScaleRect(rct, wsize, vsize);
+        }
+
+        DrawDrawingList(&*m_pTopDwg, pDC, rct, eScale,
+            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible,
+            TRUE);
+    }
+}
+
 // ----------------------------------------------------- //
 
 void CBoard::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
@@ -159,9 +229,21 @@ void CBoard::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) co
         m_pBrdAry->DrawCellLines(pDC, pCellRct, eScale);
 }
 
+void CBoard::DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
+{
+    if (m_pBrdAry)
+        m_pBrdAry->DrawCellLines(pDC, pCellRct, eScale);
+}
+
 // ----------------------------------------------------- //
 
 void CBoard::DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
+{
+    if (m_pBrdAry)
+        m_pBrdAry->DrawCells(pDC, pCellRct, eScale);
+}
+
+void CBoard::DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
 {
     if (m_pBrdAry)
         m_pBrdAry->DrawCells(pDC, pCellRct, eScale);
@@ -545,6 +627,14 @@ void CBoardBase::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
             nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
 }
 
+void CBoardBase::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
+    int nApplyVisible /*= -1*/)
+{
+    if (m_iMaxLayer < 0 || m_iMaxLayer >= 1)
+        DrawDrawingList(&*m_pBaseDwg, pDC, pDrawRct, eScale,
+            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
+}
+
 // ----------------------------------------------------- //
 
 void CBoardBase::DrawBackground(CDC& pDC, const CRect& pDrawRct) const
@@ -554,10 +644,25 @@ void CBoardBase::DrawBackground(CDC& pDC, const CRect& pDrawRct) const
     pDC.SetBkColor(crPrv);
 }
 
+void CBoardBase::DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const
+{
+    wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
+    wxDCBrushChanger setBrush(pDC, wxBrush(CB::Convert(m_crBkGnd)));
+    pDC.DrawRectangle(pDrawRct);
+}
+
 // ----------------------------------------------------- //
 
 void CBoardBase::DrawDrawingList(CDrawList* pDwg, CDC& pDC, const CRect& pDrawRct,
     TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects)
+{
+    if (pDwg == NULL)
+        return;
+    pDwg->Draw(pDC, pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
+}
+
+void CBoardBase::DrawDrawingList(CDrawList* pDwg, wxDC& pDC, const wxRect& pDrawRct,
+    TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects /*= FALSE*/)
 {
     if (pDwg == NULL)
         return;

@@ -83,6 +83,7 @@ public:
     virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
     // ------- //
     virtual void DrawTracker(CDC& pDC, TrackMode eMode) const /* override */;
+    virtual void DrawTracker(wxDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
     virtual void Invalidate() /* override */;
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -294,7 +295,9 @@ public:
 
     // -------- //
     void OnDraw(CDC& pDC);  // Called by view OnDraw()
+    void OnDraw(wxDC& pDC);  // Called by view OnDraw()
     void DrawTracker(CDC& pDC, TrackMode eTrkMode = trkCurrent);
+    void DrawTracker(wxDC& pDC, TrackMode eTrkMode = trkCurrent);
     // -------- //
     void UpdateObjects(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE );

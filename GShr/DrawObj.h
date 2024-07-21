@@ -1,6 +1,6 @@
 // DrawObj.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -131,6 +131,7 @@ public:
 public:
     // non-const due to CBitmapImage::Draw()
     virtual void Draw(CDC& pDC, TileScale eScale) /* override */ = 0;
+    virtual void Draw(wxDC& pDC, TileScale eScale) /* override */ = 0;
     // Support required by selection objects
 #ifdef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) /* override */ { AfxThrowInvalidArgException(); }
@@ -154,6 +155,12 @@ protected:
     BOOL IsExtentOutOfZone(const CRect& pRctZone, CPoint& pntOffset) const;
     // ------- //
     virtual void SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const /* override */;
+    struct SetUpDrawResult
+    {
+        wxDCPenChanger setPen;
+        wxDCBrushChanger setBrush;
+    };
+    virtual SetUpDrawResult SetUpDraw(wxDC& pDC) const /* override */;
     virtual void CleanUpDraw(CDC& pDC) const /* override */;
     virtual BOOL BitBlockHitTest(CPoint pt) /* override */;
     virtual UINT GetLineWidth() const /* override */ { return 0; }
@@ -616,6 +623,7 @@ public:
 // Operations
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -658,6 +666,7 @@ public:
 // Operations
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
@@ -698,6 +707,7 @@ public:
 // Operations
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifdef GPLAY
@@ -757,6 +767,7 @@ public:
 // Overrides
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -811,6 +822,7 @@ public:
 // Operations
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -853,6 +865,7 @@ public:
 public:
 
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -873,6 +886,14 @@ public:
 
 protected:
     void SynchronizeExtentRect(CSize sizeWorld, CSize sizeView);
+    void SynchronizeExtentRect(const wxDC& dc)
+    {
+        double xScale, yScale;
+        dc.GetUserScale(&xScale, &yScale);
+        wxSize sizeWorld(10000, 10000);
+        wxSize sizeView(static_cast<int>(10000 * xScale), static_cast<int>(10000 * yScale));
+        SynchronizeExtentRect(CB::Convert(sizeWorld), CB::Convert(sizeView));
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -893,6 +914,7 @@ public:
 // Operations
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
 #ifndef GPLAY
@@ -952,6 +974,7 @@ private:
 
 public:
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
@@ -1020,6 +1043,7 @@ public:
     TileID GetCurrentTileID();
     // ------- //
     virtual void Draw(CDC& pDC, TileScale eScale) override;
+    virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
@@ -1073,6 +1097,9 @@ public:
     CDrawObj& Front() { return *back(); }
     CDrawObj& Back() { return *front(); }
     void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
+        BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
+        BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
+    void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
     // non-const due to CBitmapImage::Draw()

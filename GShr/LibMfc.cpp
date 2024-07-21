@@ -1168,6 +1168,12 @@ namespace CB
                         return XRCID("ID_COLOR_CUSTOM");
                     case ID_DWG_FONT:
                         return XRCID("ID_DWG_FONT");
+                    case ID_EDIT_LAYER_BASE:
+                        return XRCID("ID_EDIT_LAYER_BASE");
+                    case ID_EDIT_LAYER_TILE:
+                        return XRCID("ID_EDIT_LAYER_TILE");
+                    case ID_EDIT_LAYER_TOP:
+                        return XRCID("ID_EDIT_LAYER_TOP");
                     case ID_IMAGE_BOARDMASK:
                         return XRCID("ID_IMAGE_BOARDMASK");
                     case ID_IMAGE_GRIDLINES:
@@ -1200,6 +1206,12 @@ namespace CB
                         return XRCID("ID_ITOOL_COLORCHANGE");
                     case ID_LINE_WIDTH:
                         return XRCID("ID_LINE_WIDTH");
+                    case ID_VIEW_FULLSCALE:
+                        return XRCID("ID_VIEW_FULLSCALE");
+                    case ID_VIEW_HALFSCALE:
+                        return XRCID("ID_VIEW_HALFSCALE");
+                    case ID_VIEW_SMALLSCALE:
+                        return XRCID("ID_VIEW_SMALLSCALE");
                     case ID_VIEW_TOGGLE_SCALE:
                         return XRCID("ID_VIEW_TOGGLE_SCALE");
                     case ID_VIEW_ZOOMIN:

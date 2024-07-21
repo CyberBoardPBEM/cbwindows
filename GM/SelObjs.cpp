@@ -1,6 +1,6 @@
 // SelObjs.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -61,6 +61,17 @@ void CSelection::DrawTracker(CDC& pDC, TrackMode eMode) const
         DrawHandles(pDC);
     else if (eMode == trkMoving || eMode == trkSizing)
         DrawTrackingImage(pDC, eMode);
+}
+
+void CSelection::DrawTracker(wxDC& pDC, TrackMode eMode) const
+{
+    wxASSERT(!"TODO:");
+#if 0
+    if (eMode == trkSelected)
+        DrawHandles(pDC);
+    else if (eMode == trkMoving || eMode == trkSizing)
+        DrawTrackingImage(pDC, eMode);
+#endif
 }
 
 void CSelection::DrawHandles(CDC& pDC) const
@@ -710,7 +721,25 @@ void CSelList::OnDraw(CDC& pDC)
         DrawTracker(pDC);
 }
 
+void CSelList::OnDraw(wxDC& pDC)
+{
+    if (m_eTrkMode == trkSelected)
+        DrawTracker(pDC);
+}
+
 void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
+{
+    if (eTrkMode != trkCurrent)
+        m_eTrkMode = eTrkMode;
+
+    for (iterator pos = begin() ; pos != end() ; ++pos)
+    {
+        CSelection& pSel = **pos;
+        pSel.DrawTracker(pDC, m_eTrkMode);
+    }
+}
+
+void CSelList::DrawTracker(wxDC& pDC, TrackMode eTrkMode)
 {
     if (eTrkMode != trkCurrent)
         m_eTrkMode = eTrkMode;
