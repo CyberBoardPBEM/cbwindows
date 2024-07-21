@@ -188,17 +188,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     m_wndStatusBar.SetPaneStyle(0, SBPS_STRETCH);
 
-    CSize colorPalSize;
-    m_wndColorPal.CalculateMinClientSize(colorPalSize);
-    m_wndColorPal.SetMinSize(colorPalSize);
-    if (!m_wndColorPal.Create("Colors"_cbstring, this, colorPalSize, TRUE, IDW_COLOR_PALETTE,
+    // The starting sizes of the Color and Tile palette windows are suggestions. They
+    // will be automatically recomputed when all windows are created and displayed.
+
+    if (!m_wndColorPal.Create("Colors"_cbstring, this, CSize(100, 100), TRUE, IDW_COLOR_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create color palette window\n");
         return -1;      // fail to create
     }
 
-    if (!m_wndTilePal.Create("Tiles"_cbstring, this, CSize(colorPalSize.cx, 800), TRUE, IDW_TILE_PALETTE,
+    if (!m_wndTilePal.Create("Tiles"_cbstring, this, CSize(100, 800), TRUE, IDW_TILE_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tile palette dock window\n");
