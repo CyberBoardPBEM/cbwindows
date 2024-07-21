@@ -212,8 +212,8 @@ protected:
     void SetupToolTip(wxWindow& pWnd, wxString tip, CB::ToolTip::Flags flags = CB::ToolTip::NONE);
 
     void DoPaint(wxDC& pDC);
-    static void PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, int yLoc);
-    static void PaintCell(wxDC& pDC, const wxRect& rct, wxColour cref);
+    void PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, int yLoc);
+    void PaintCell(wxDC& pDC, const wxRect& rct, wxColour cref);
     void PaintSelections(wxDC& pDC);
 
     void UpdateCurrentColors(BOOL bImmediate);
@@ -226,7 +226,7 @@ protected:
     void MapHSVtoPixelLoc(int& pnHLoc, int& pnSLoc, int& pnVLoc) const;
     BOOL MapMouseLocToH(wxPoint pntClient, int& nH, BOOL bCheckValidPoint = TRUE) const;
     BOOL MapMouseLocToSV(wxPoint pntClient, int& nS, int& nV, BOOL bCheckValidPoint = TRUE) const;
-    static wxColour* MapMouseToColorCell(wxColour* pArray, wxPoint pntClient, const wxRect& rctArray);
+    wxColour* MapMouseToColorCell(wxColour* pArray, wxPoint pntClient, const wxRect& rctArray);
 
     static void NotifyColorChange(const wxMouseEvent& event, wxColour cref);
     static void NotifyCustomColorChange(const std::vector<wxColour>& pcrCustomColors);

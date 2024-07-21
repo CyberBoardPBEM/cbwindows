@@ -198,16 +198,12 @@ void CDockColorPalette::CalculateMinClientSize(CSize& size)
 
 int CDockColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    wxSize sizeClient = m_child->GetSize();
-    lpCreateStruct->cx = sizeClient.x;
-    lpCreateStruct->cy = sizeClient.y;
-
     if (CDockablePane::OnCreate(lpCreateStruct) == -1)
         return -1;
 
     if (!m_child->Create(*this,
                         wxID_ANY,
-                        wxPoint(0, 0), sizeClient))
+                        wxPoint(0, 0), wxSize(100, 100)))
     {
         TRACE0("Failed to create color palette window\n");
         return -1;      // fail to create
@@ -279,53 +275,53 @@ void CColorPalette::SetupToolTip(wxWindow& pWnd, wxString tip, CB::ToolTip::Flag
 void CColorPalette::ComputeLayout()
 {
     // Standard color cell group...
-    int x = sizeLeftInset;
-    int y = sizeVertMargin;
-    int nWd = sizeColorCell * cellStdArrayCols + sizeCellGap * (cellStdArrayCols - 1);
-    int nHt = sizeColorCell * cellArrayRows + sizeCellGap * (cellArrayRows - 1);
+    int x = FromDIP(sizeLeftInset);
+    int y = FromDIP(sizeVertMargin);
+    int nWd = FromDIP(sizeColorCell * cellStdArrayCols + sizeCellGap * (cellStdArrayCols - 1));
+    int nHt = FromDIP(sizeColorCell * cellArrayRows + sizeCellGap * (cellArrayRows - 1));
     m_rctStdColors = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Custom color cell group...
-    x = m_rctStdColors.GetRight()  + sizeGroupGap;
-    nWd = sizeColorCell * cellCustArrayCols + sizeCellGap * (cellCustArrayCols - 1);
+    x = m_rctStdColors.GetRight()  + FromDIP(sizeGroupGap);
+    nWd = FromDIP(sizeColorCell * cellCustArrayCols + sizeCellGap * (cellCustArrayCols - 1));
     m_rctCustColors = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Color mix preview area...
-    x = m_rctCustColors.GetRight() + sizeGroupGap;
-    nWd = sizeColorMixWidth;
+    x = m_rctCustColors.GetRight() + FromDIP(sizeGroupGap);
+    nWd = FromDIP(sizeColorMixWidth);
     m_rctColorMix = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Color saturation, value picker area...
-    x = m_rctColorMix.GetRight() + sizeGroupGap;
+    x = m_rctColorMix.GetRight() + FromDIP(sizeGroupGap);
     nWd = nHt;          // Make it square
     m_rctSatValWash = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Hue picker area...
-    x = sizeLeftInset;
-    y = m_rctStdColors.GetBottom() + sizeGroupGap;
+    x = FromDIP(sizeLeftInset);
+    y = m_rctStdColors.GetBottom() + FromDIP(sizeGroupGap);
     nWd = m_rctSatValWash.GetRight() - m_rctStdColors.GetLeft();
-    nHt = sizeColorBarHeight;
+    nHt = FromDIP(sizeColorBarHeight);
     m_rctColorBar = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Compute client size...
-    m_sizeClient.x = m_rctColorBar.GetRight() + sizeHorzMargin;
-    m_sizeClient.y = m_rctColorBar.GetBottom() + sizeVertMargin;
+    m_sizeClient.x = m_rctColorBar.GetRight() + FromDIP(sizeHorzMargin);
+    m_sizeClient.y = m_rctColorBar.GetBottom() + FromDIP(sizeVertMargin);
 
     // Compute various status and selector rectangles...
-    m_rctNoColor = wxRect(wxPoint(posXNoColor, posYNoColor), wxSize(sizeXNoColor,
+    m_rctNoColor = wxRect(FromDIP(wxPoint(posXNoColor, posYNoColor)), wxSize(FromDIP(sizeXNoColor),
         g_res.tm8ss.tmHeight + 2));
 
-    int xOffset = 2*sizeCellGap + 1;
-    int yOffset = 2*sizeCellGap + 1;
-    m_rctForeColor = wxRect(wxPoint(xOffset, yOffset), wxSize(sizeXSelectCell,
-        sizeYSelectCell));
+    int xOffset = FromDIP(2*sizeCellGap + 1);
+    int yOffset = FromDIP(2*sizeCellGap + 1);
+    m_rctForeColor = wxRect(wxPoint(xOffset, yOffset), FromDIP(wxSize(sizeXSelectCell,
+        sizeYSelectCell)));
 
     m_rctBackColor = m_rctForeColor;
     m_rctBackColor.Offset(2 * xOffset, 2 * yOffset);
 
     yOffset += m_rctBackColor.GetBottom() + yOffset;
-    m_rctTrans = wxRect(wxPoint(xOffset, yOffset), wxSize(sizeXTransCell,
-        sizeYTransCell));
+    m_rctTrans = wxRect(wxPoint(xOffset, yOffset), FromDIP(wxSize(sizeXTransCell,
+        sizeYTransCell)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -359,9 +355,11 @@ BOOL CColorPalette::SetupLineControl()
     }
     m_comboLine->SetFont(g_res.h8ssWx);
     wxRect rctCombo = m_comboLine->GetRect();   // Fetch result of create
-    int y = m_sizeClient.y - rctCombo.GetHeight() - sizeCellGap * 2 + 1;
-    m_comboLine->SetSize(wxRect(wxPoint(sizeCellGap * 2 + 1, y), wxSize(sizeXTransCell,
-        wxDefaultCoord)));
+
+    int y = m_sizeClient.y - rctCombo.GetHeight() - FromDIP(sizeCellGap * 2 + 1);
+    m_comboLine->SetSize(wxRect(
+        wxPoint(FromDIP(sizeCellGap * 2 + 1), y), 
+        wxSize(FromDIP(sizeXTransCell), wxDefaultCoord)));
     for (int i = 0; i <= numLineWidths; i++)
     {
         CB::string strNum = std::format("{}", i);
@@ -546,17 +544,22 @@ void CColorPalette::PaintSelections(wxDC& pDC)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// xLoc and yLoc must have been DPI scaled to logical coords.
 
 void CColorPalette::PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, int yLoc)
 {
     int x = xLoc;
     int y = yLoc;
     int nCols = pArray == acrStdColors ? cellStdArrayCols : cellCustArrayCols;
+    wxWindow* pWW = this->GetParent();
+    int sizeCellGapFromDip = FromDIP(sizeCellGap);
+    wxSize sizeCellFromDip(FromDIP(wxSize(sizeColorCell, sizeColorCell)));
+
     for (int nCol = 0; nCol < nCols; nCol++)
     {
         for (int nRow = 0; nRow < cellArrayRows; nRow++)
         {
-            wxRect rct(wxPoint(x, y), wxSize(sizeColorCell, sizeColorCell));
+            wxRect rct(wxPoint(x, y), sizeCellFromDip);
             const wxColour& cref = CellColor(pArray, nCol, nRow);
             if (cref != wxNullColour)
             {
@@ -571,9 +574,9 @@ void CColorPalette::PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, 
                 pDC.SetBrush(*wxTRANSPARENT_BRUSH);
                 pDC.DrawRectangle(rct);
             }
-            y += sizeColorCell + sizeCellGap;
+            y += sizeCellFromDip.GetHeight() + sizeCellGapFromDip;
         }
-        x += sizeColorCell + sizeCellGap;
+        x += sizeCellFromDip.GetWidth() + sizeCellGapFromDip;
         y = yLoc;
     }
 }
@@ -608,19 +611,23 @@ wxColour* CColorPalette::MapMouseToColorCell(wxColour* pArray, wxPoint pntClient
 {
     if (!rctArray.Contains(pntClient))
         return NULL;
+    // x & y have already been DIP to logical coord mapped.
     int x = rctArray.GetLeft();
     int y = rctArray.GetTop();
     int nCols = pArray == acrStdColors ? cellStdArrayCols : cellCustArrayCols;
+    wxWindow* pWW = GetParent();
+    wxSize sizeColorCellFromDIP = FromDIP(wxSize(sizeColorCell, sizeColorCell));
+    int xyStep = FromDIP(sizeColorCell + sizeCellGap);
     for (int nCol = 0; nCol < nCols; nCol++)
     {
         for (int nRow = 0; nRow < cellArrayRows; nRow++)
         {
-            wxRect rct(wxPoint(x, y), wxSize(sizeColorCell, sizeColorCell));
+            wxRect rct(wxPoint(x, y), sizeColorCellFromDIP);
             if (rct.Contains(pntClient))
                 return &CellColor(pArray, nCol, nRow);
-            y += sizeColorCell + sizeCellGap;
+            y += xyStep;
         }
-        x += sizeColorCell + sizeCellGap;
+        x += xyStep;
         y = rctArray.GetTop();
     }
     return NULL;
@@ -715,9 +722,11 @@ void CColorPalette::SetCustomColors(const std::vector<wxColour>& pCustColors)
 
 void CColorPalette::UpdateCurrentColors(BOOL bImmediate)
 {
+    wxWindow* pWW = this->GetParent();
+
     wxRect rct = GetClientRect();
-    rct.SetRight(sizeCellGap * 2 + sizeLeftMarg - 1);
-    rct.SetBottom((rct.GetBottom() * 5) / 8);              // Miss combo box.
+    rct.SetRight(FromDIP(sizeCellGap * 2 + sizeLeftMarg - 1));
+    rct.SetBottom(FromDIP((rct.GetBottom() * 5) / 8));              // Miss combo box.
     RefreshRect(rct, FALSE);
 
     if (bImmediate)
