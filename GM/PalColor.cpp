@@ -277,13 +277,13 @@ void CColorPalette::ComputeLayout()
     // Standard color cell group...
     int x = FromDIP(sizeLeftInset);
     int y = FromDIP(sizeVertMargin);
-    int nWd = FromDIP(sizeColorCell * cellStdArrayCols + sizeCellGap * (cellStdArrayCols - 1));
-    int nHt = FromDIP(sizeColorCell * cellArrayRows + sizeCellGap * (cellArrayRows - 1));
+    int nWd = FromDIP(sizeColorCell) * cellStdArrayCols + FromDIP(sizeCellGap) * (cellStdArrayCols - 1);
+    int nHt = FromDIP(sizeColorCell) * cellArrayRows + FromDIP(sizeCellGap) * (cellArrayRows - 1);
     m_rctStdColors = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Custom color cell group...
     x = m_rctStdColors.GetRight()  + FromDIP(sizeGroupGap);
-    nWd = FromDIP(sizeColorCell * cellCustArrayCols + sizeCellGap * (cellCustArrayCols - 1));
+    nWd = FromDIP(sizeColorCell) * cellCustArrayCols + FromDIP(sizeCellGap) * (cellCustArrayCols - 1);
     m_rctCustColors = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
     // Color mix preview area...
@@ -299,7 +299,7 @@ void CColorPalette::ComputeLayout()
     // Hue picker area...
     x = FromDIP(sizeLeftInset);
     y = m_rctStdColors.GetBottom() + FromDIP(sizeGroupGap);
-    nWd = m_rctSatValWash.GetRight() - m_rctStdColors.GetLeft();
+    nWd = m_rctSatValWash.GetRight() + 1 - m_rctStdColors.GetLeft();
     nHt = FromDIP(sizeColorBarHeight);
     m_rctColorBar = wxRect(wxPoint(x, y), wxSize(nWd, nHt));
 
@@ -551,7 +551,6 @@ void CColorPalette::PaintCellGroup(wxDC& pDC, const wxColour* pArray, int xLoc, 
     int x = xLoc;
     int y = yLoc;
     int nCols = pArray == acrStdColors ? cellStdArrayCols : cellCustArrayCols;
-    wxWindow* pWW = this->GetParent();
     int sizeCellGapFromDip = FromDIP(sizeCellGap);
     wxSize sizeCellFromDip(FromDIP(wxSize(sizeColorCell, sizeColorCell)));
 
@@ -615,7 +614,6 @@ wxColour* CColorPalette::MapMouseToColorCell(wxColour* pArray, wxPoint pntClient
     int x = rctArray.GetLeft();
     int y = rctArray.GetTop();
     int nCols = pArray == acrStdColors ? cellStdArrayCols : cellCustArrayCols;
-    wxWindow* pWW = GetParent();
     wxSize sizeColorCellFromDIP = FromDIP(wxSize(sizeColorCell, sizeColorCell));
     int xyStep = FromDIP(sizeColorCell + sizeCellGap);
     for (int nCol = 0; nCol < nCols; nCol++)
@@ -722,8 +720,6 @@ void CColorPalette::SetCustomColors(const std::vector<wxColour>& pCustColors)
 
 void CColorPalette::UpdateCurrentColors(BOOL bImmediate)
 {
-    wxWindow* pWW = this->GetParent();
-
     wxRect rct = GetClientRect();
     rct.SetRight(FromDIP(sizeCellGap * 2 + sizeLeftMarg - 1));
     rct.SetBottom(FromDIP((rct.GetBottom() * 5) / 8));              // Miss combo box.
