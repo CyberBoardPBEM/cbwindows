@@ -329,6 +329,14 @@ void CCellForm::FrameCell(CDC& pDC, int xPos, int yPos) const
     pDC.Polyline(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
 }
 
+void CCellForm::FrameCell(wxDC& pDC, int xPos, int yPos) const
+{
+    m_pWrk = m_pPoly;
+    OffsetPoly(m_pWrk, xPos, yPos);
+    std::vector<wxPoint> pts = CB::Convert(m_pWrk);
+    pDC.DrawLines(value_preserving_cast<int>(pts.size()), pts.data());
+}
+
 void CCellForm::FillCell(CDC& pDC, int xPos, int yPos) const
 {
     CPen* pPrvPen = (CPen *)pDC.SelectStockObject(NULL_PEN);
@@ -347,6 +355,28 @@ void CCellForm::FillCell(CDC& pDC, int xPos, int yPos) const
         m_pWrk = m_pPoly;
         OffsetPoly(m_pWrk, xPos, yPos);
         pDC.Polygon(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
+    }
+}
+
+void CCellForm::FillCell(wxDC& pDC, int xPos, int yPos) const
+{
+    wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
+    if (m_eType == cformRect || m_eType == cformBrickHorz ||
+        m_eType == cformBrickVert)
+    {
+        wxRect rct = CB::Convert(m_rct);
+        rct.Offset(xPos, yPos);
+        rct.SetWidth(rct.GetWidth() + 1);            // Adjust to include start of next rect
+        rct.SetHeight(rct.GetHeight() + 1);
+        pDC.DrawRectangle(rct);
+    }
+    else
+    {
+        // Hexagonal shapes
+        m_pWrk = m_pPoly;
+        OffsetPoly(m_pWrk, xPos, yPos);
+        std::vector<wxPoint> pts = CB::Convert(m_pWrk);
+        pDC.DrawPolygon(value_preserving_cast<int>(pts.size()), pts.data());
     }
 }
 

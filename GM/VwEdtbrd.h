@@ -79,8 +79,8 @@ public:
     void ResetToDefaultTool();
 
     void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) override;
-    void PrepareScaledDC(CDC& pDC) const;
 #endif
+    void PrepareScaledDC(wxDC& pDC) const;
 
 // Tools and Selection support
 private:
@@ -93,10 +93,12 @@ public:
         return const_cast<CSelList&>(std::as_const(*this).GetSelectList());
     }
 
+    void ClientToWorkspace(wxPoint& point) const;
 #if 0
-    void ClientToWorkspace(CPoint& point) const;
     void ClientToWorkspace(CRect& rect) const;
-    void WorkspaceToClient(CPoint& point) const;
+#endif
+    void WorkspaceToClient(wxPoint& point) const;
+#if 0
     void WorkspaceToClient(CRect& rect) const;
     void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
     CPoint GetWorkspaceDim() const;
@@ -133,18 +135,20 @@ protected:
 
     void CreateTextDrawingObject(CPoint pnt, FontID fid, COLORREF crText,
         const CB::string& m_strText, BOOL bInvalidate = TRUE);
+#endif
 
     void DoViewScale(TileScale nZoom);
-    void CenterViewOnWorkspacePoint(CPoint point);
+    void CenterViewOnWorkspacePoint(wxPoint point);
 
+#if 0
     BOOL DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point);
 #endif
 
 public:
     ~CBrdEditView() override;
-#if 0
-    void OnDraw(CDC* pDC) override;      // overridden to draw this view
+    void OnDraw(wxDC& pDC) override;      // overridden to draw this view
 
+#if 0
 #ifdef _DEBUG
     void AssertValid() const override;
     void Dump(CDumpContext& dc) const override;
@@ -230,23 +234,31 @@ protected:
     afx_msg void OnDwgToBack();
     afx_msg void OnDwgToFront();
     afx_msg BOOL OnToolPalette(UINT id);
-    afx_msg BOOL OnEditLayer(UINT id);
+#endif
+    void OnEditLayer(wxCommandEvent& event);
+#if 0
     afx_msg void OnUpdateViewGridLines(CCmdUI* pCmdUI);
     afx_msg void OnUpdateOffscreen(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateEditLayer(CCmdUI* pCmdUI);
+#endif
+    void OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnUpdateColorForeground(CCmdUI* pCmdUI);
     afx_msg void OnUpdateColorBackground(CCmdUI* pCmdUI);
     afx_msg void OnUpdateColorCustom(CCmdUI* pCmdUI);
     afx_msg void OnUpdateLineWidth(CCmdUI* pCmdUI);
     afx_msg void OnUpdateToolPalette(CCmdUI* pCmdUI);
     afx_msg void OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateViewFullScale(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateViewHalfScale(CCmdUI* pCmdUI);
+#endif
+    void OnUpdateViewFullScale(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateViewHalfScale(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnDwgFont();
-    afx_msg void OnViewFullScale();
-    afx_msg void OnViewHalfScale();
-    afx_msg void OnViewSmallScale();
-    afx_msg void OnUpdateViewSmallScale(CCmdUI* pCmdUI);
+#endif
+    void OnViewFullScale(wxCommandEvent& event);
+    void OnViewHalfScale(wxCommandEvent& event);
+    void OnViewSmallScale(wxCommandEvent& event);
+    void OnUpdateViewSmallScale(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
     afx_msg void OnToolsBrdSnapGrid();
     afx_msg void OnUpdateToolsBrdSnapGrid(CCmdUI* pCmdUI);
@@ -267,9 +279,9 @@ protected:
     afx_msg void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnDwgDrawAboveGrid();
     afx_msg void OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI);
-    afx_msg void OnViewToggleScale();
-    //}}AFX_MSG
 #endif
+    void OnViewToggleScale(wxCommandEvent& event);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     void OnScrollWinLine(wxScrollWinEvent& event);
     wxDECLARE_EVENT_TABLE();
 

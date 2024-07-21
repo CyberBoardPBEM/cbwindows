@@ -141,8 +141,11 @@ protected:
     void StretchBlt(CDC& pDC, int xDst, int yDst, int xWid, int yWid,
         int ySrc, DWORD dwRop) const;
     void TransBlt(CDC& pDC, int xDst, int yDst, int ySrc, COLORREF crTrans) const;
+    void TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc, wxColour crTrans) const;
     void TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
         COLORREF crTrans, const BITMAP& pMaskBMapInfo) const;
+    void TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int ySrc,
+        wxColour crTrans, const wxBitmap& pMaskBMapInfo) const;
 
 // Implementation - vars...
 protected:
@@ -356,6 +359,7 @@ public:
     void BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop = wxCOPY) const;
     void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY) const;
     void TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo = NULL) const;
+    void TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo = wxBitmap()) const;
     OwnerPtr<CBitmap> CreateBitmapOfTile() const;
 
 // Implementation

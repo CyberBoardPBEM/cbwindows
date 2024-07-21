@@ -1,6 +1,6 @@
 // Tile.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -124,6 +124,33 @@ void CTile::TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo /* = NU
         CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
         pDC.PatBlt(x, y, m_size.cx, m_size.cy, PATCOPY);
         pDC.SelectObject(pPrvBrsh);
+    }
+}
+
+void CTile::TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo) const
+{
+    if (m_pTS != NULL)
+    {
+        if (m_crTrans != noColor)
+        {
+            if (pMaskBMapInfo.IsOk())
+            {
+                m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, m_yLoc,
+                    CB::Convert(m_crTrans), pMaskBMapInfo);
+            }
+            else
+                m_pTS->TransBlt(pDC, x, y, m_yLoc, CB::Convert(m_crTrans));
+        }
+        else
+            m_pTS->TileBlt(pDC, x, y, m_yLoc, wxCOPY);
+    }
+    else if (m_crTrans != m_crSmall)
+    {
+        // Only draw color patch if not the transparent color.
+        wxBrush oBrsh(CB::Convert(m_crSmall));
+        wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
+        wxDCBrushChanger setBrush(pDC, oBrsh);
+        pDC.DrawRectangle(wxPoint(x, y), wxSize(m_size.cx, m_size.cy));
     }
 }
 

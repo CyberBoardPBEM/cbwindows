@@ -152,7 +152,9 @@ public:
         CellStagger nStagger = CellStagger::Invalid);
     void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const;
     void FillCell(CDC& pDC, int xPos, int yPos) const;
+    void FillCell(wxDC& pDC, int xPos, int yPos) const;
     void FrameCell(CDC& pDC, int xPos, int yPos) const;
+    void FrameCell(wxDC& pDC, int xPos, int yPos) const;
     CSize CalcBoardSize(size_t nRows, size_t nCols) const;
     BOOL CalcTrialBoardSize(size_t nRows, size_t nCols) const;
 

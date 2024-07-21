@@ -1,6 +1,6 @@
 // BrdCell.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -138,9 +138,13 @@ public:
         CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
     void DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
+    void DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
     void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
+    void DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
     void FillCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
+    void FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
     void FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
+    void FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
     // ------- //
     void SetCellTile(size_t row, size_t col, TileID tid);
     void SetCellColor(size_t row, size_t col, COLORREF cr);
@@ -148,10 +152,26 @@ public:
         size_t colEnd, COLORREF cr);
     // ------- //
     void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize) const;
+    void GetBoardScaling(TileScale eScale, wxSize& worldsize, wxSize& viewSize) const
+    {
+        CSize w, v;
+        GetBoardScaling(eScale, w, v);
+        worldsize = CB::Convert(w);
+        viewSize = CB::Convert(v);
+    }
     BOOL FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale) const;
     CRect GetCellRect(size_t row, size_t col, TileScale eScale) const;
     BOOL MapPixelsToCellBounds(const CRect& pPxlRct, CRect& pCellRct,
         TileScale eScale) const;
+    BOOL MapPixelsToCellBounds(const wxRect& pPxlRct, wxRect& pCellRct,
+        TileScale eScale) const
+    {
+        CRect in = CB::Convert(pPxlRct);
+        CRect out;
+        BOOL rc = MapPixelsToCellBounds(in, out, eScale);
+        pCellRct = CB::Convert(out);
+        return rc;
+    }
     // ------- //
     BOOL PurgeMissingTileIDs();
     BOOL IsTileInUse(TileID tid) const;
@@ -182,6 +202,7 @@ protected:
     std::vector<BoardCell> m_pMap;
     // -------- //
     CPen    m_pnCellFrame;      // Cell frame color pen.
+    wxPen   m_pnCellFrameWx;    // Cell frame color pen.
     // -------- //
     RefPtr<CTileManager> m_pTsa;
     // -------- //

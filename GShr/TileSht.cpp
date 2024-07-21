@@ -344,6 +344,16 @@ void CTileSheet::TransBlt(CDC& pDC, int xDst, int yDst, int ySrc,
     }
 }
 
+void CTileSheet::TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc,
+    wxColour crTrans) const
+{
+    wxBitmap wxBMap = CB::Convert(*m_pBMap);
+    wxBMap.SetMask(new wxMask(wxBMap, crTrans));
+    wxMemoryDC srcDC;
+    srcDC.SelectObjectAsSource(wxBMap);
+    pDC.Blit(xDst, yDst, m_size.cx, m_size.cy, &srcDC, 0, ySrc, wxCOPY, true);
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
@@ -414,6 +424,127 @@ void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int y
         destRowStart += destStride;
         maskRowStart += maskStride;
     }
+}
+
+void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int ySrc,
+    wxColour crTrans, const wxBitmap& pMaskBMapInfo) const
+{
+    /* TODO:  when CB::Convert() no longer required, compare
+        performance of these different implementations */
+#if 0
+    // can't modify bitmap while it's selected
+    class DCBitmapChanger
+    {
+    public:
+        DCBitmapChanger(wxMemoryDC& d, wxBitmap select) :
+            dc(d),
+            oldBitmap(dc.GetSelectedBitmap())
+        {
+            wxASSERT(!oldBitmap.HasAlpha());
+            dc.SelectObject(select);
+        }
+        ~DCBitmapChanger()
+        {
+            // modifying oldBitmap causes it to gain alpha channel
+            oldBitmap.ResetAlpha();
+            dc.SelectObject(oldBitmap);
+        }
+        wxBitmap& GetOldBitmap() { return oldBitmap; }
+    private:
+        wxMemoryDC& dc;
+        wxBitmap oldBitmap;
+    } setBitmap(dynamic_cast<wxMemoryDC&>(pDC), wxNullBitmap);
+    wxBitmap& hBMapDest = setBitmap.GetOldBitmap();
+
+    BITMAP  bmapTile;
+
+    memset(&bmapTile, 0, sizeof(BITMAP));
+
+    m_pBMap->GetObject(sizeof(BITMAP), &bmapTile);
+    wxASSERT(bmapTile.bmBits != NULL && hBMapDest.IsOk());
+
+    wxPoint pntOrg = pDC.GetLogicalOrigin();
+    wxASSERT(pntOrg == wxPoint(0, 0) || !"untested code");
+    xDst += pntOrg.x;
+    yDst += pntOrg.y;
+
+    wxASSERT(bmapTile.bmBitsPixel == 24);
+    no_demote<ptrdiff_t> srcStride = -bmapTile.bmWidthBytes;
+    const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
+                                        (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
+    wxASSERT(hBMapDest.GetDepth() == 32);
+    wxAlphaPixelData hBMapDestData(hBMapDest);
+    wxAlphaPixelData::Iterator destRowStart(hBMapDestData);
+    destRowStart.MoveTo(hBMapDestData, xDst, yDst);
+    wxASSERT(pMaskBMapInfo.GetDepth() == 24);
+    // KLUDGE:  only reading mask, so const_cast safe
+    wxNativePixelData pMaskBMapInfoData(const_cast<wxBitmap&>(pMaskBMapInfo));
+    wxNativePixelData::Iterator maskRowStart(pMaskBMapInfoData);
+
+    for (no_demote<int> y = 0 ;
+        y < std::min(value_preserving_cast<int>(m_size.cy).get_value(), pMaskBMapInfo.GetHeight()) &&
+                yDst + y < hBMapDest.GetHeight() ;
+        ++y)
+    {
+        if (yDst + y >= 0)
+        {
+            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
+            wxAlphaPixelData::Iterator dest = destRowStart;
+            wxNativePixelData::Iterator mask = maskRowStart;
+            for (no_demote<int> x = 0 ;
+                x < std::min(value_preserving_cast<int>(m_size.cx).get_value(), pMaskBMapInfo.GetWidth()) &&
+                        xDst + x < hBMapDest.GetWidth() ;
+                ++x)
+            {
+                wxColour crMask = wxColour(mask.Red(), mask.Green(), mask.Blue());
+                ++mask;
+                wxColour crSrc = CB::Convert(COLORREF(*src++));
+                if (xDst + x >= 0)
+                {
+                    if (crMask == RGB(0, 0, 0) &&   // Only black mask bits get through
+                        crSrc != crTrans)
+                    {
+                        dest.Red() = crSrc.Red();
+                        dest.Green() = crSrc.Green();
+                        dest.Blue() = crSrc.Blue();
+                    }
+                }
+                ++dest;
+            }
+        }
+        srcRowStart += srcStride.get_value();
+        destRowStart.OffsetY(hBMapDestData, 1);
+        maskRowStart.OffsetY(pMaskBMapInfoData, 1);
+    }
+#else
+    wxPoint pntOrg = pDC.GetLogicalOrigin();
+    wxASSERT(pntOrg == wxPoint(0, 0) || !"untested code");
+    xDst += pntOrg.x;
+    yDst += pntOrg.y;
+
+    wxBitmap accum(CB::Convert(m_size));
+    {
+        wxMemoryDC accumDC(accum);
+        {
+            wxMemoryDC tileDC;
+            tileDC.SelectObjectAsSource(CB::Convert(*m_pBMap));
+            accumDC.Blit(wxPoint(0, 0), accum.GetSize(), &tileDC, wxPoint(0, ySrc), wxCOPY);
+        }
+        {
+            wxBitmap trans(accum.GetSize());
+            {
+                wxMemoryDC transDC(trans);
+                transDC.SetPen(wxPen(crTrans));
+                transDC.SetBrush(wxBrush(crTrans));
+                transDC.DrawRectangle(wxPoint(0, 0), trans.GetSize());
+            }
+            trans.SetMask(new wxMask(pMaskBMapInfo, *wxBLACK));
+            accumDC.DrawBitmap(trans, 0, 0, true);
+        }
+    }
+    accum.SetMask(new wxMask(accum, crTrans));
+    pDC.DrawBitmap(accum, xDst, yDst, true);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -74,23 +74,31 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     ON_COMMAND(ID_DWG_TOBACK, OnDwgToBack)
     ON_COMMAND(ID_DWG_TOFRONT, OnDwgToFront)
     ON_COMMAND_EX(ID_TOOL_ARROW, OnToolPalette)
-    ON_COMMAND_EX(ID_EDIT_LAYER_BASE, OnEditLayer)
+#endif
+    EVT_MENU(XRCID("ID_EDIT_LAYER_BASE"), OnEditLayer)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_VIEW_GRIDLINES, OnUpdateViewGridLines)
     ON_UPDATE_COMMAND_UI(ID_OFFSCREEN, OnUpdateOffscreen)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_BASE, OnUpdateEditLayer)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_BASE"), OnUpdateEditLayer)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_COLOR_FOREGROUND, OnUpdateColorForeground)
     ON_UPDATE_COMMAND_UI(ID_COLOR_BACKGROUND, OnUpdateColorBackground)
     ON_UPDATE_COMMAND_UI(ID_COLOR_CUSTOM, OnUpdateColorCustom)
     ON_UPDATE_COMMAND_UI(ID_LINE_WIDTH, OnUpdateLineWidth)
     ON_UPDATE_COMMAND_UI(ID_TOOL_ARROW, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOFRONT, OnUpdateDwgToFrontOrBack)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCALE, OnUpdateViewFullScale)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_HALFSCALE, OnUpdateViewHalfScale)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALE"), OnUpdateViewFullScale)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_HALFSCALE"), OnUpdateViewHalfScale)
+#if 0
     ON_COMMAND(ID_DWG_FONT, OnDwgFont)
-    ON_COMMAND(ID_VIEW_FULLSCALE, OnViewFullScale)
-    ON_COMMAND(ID_VIEW_HALFSCALE, OnViewHalfScale)
-    ON_COMMAND(ID_VIEW_SMALLSCALE, OnViewSmallScale)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SMALLSCALE, OnUpdateViewSmallScale)
+#endif
+    EVT_MENU(XRCID("ID_VIEW_FULLSCALE"), OnViewFullScale)
+    EVT_MENU(XRCID("ID_VIEW_HALFSCALE"), OnViewHalfScale)
+    EVT_MENU(XRCID("ID_VIEW_SMALLSCALE"), OnViewSmallScale)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SMALLSCALE"), OnUpdateViewSmallScale)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_CELLNUM, OnUpdateIndicatorCellNum)
     ON_COMMAND(ID_TOOLS_BRDSNAPGRID, OnToolsBrdSnapGrid)
     ON_UPDATE_COMMAND_UI(ID_TOOLS_BRDSNAPGRID, OnUpdateToolsBrdSnapGrid)
@@ -111,8 +119,10 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     ON_WM_SYSKEYDOWN()
     ON_COMMAND(ID_DWG_DRAWABOVEGRID, OnDwgDrawAboveGrid)
     ON_UPDATE_COMMAND_UI(ID_DWG_DRAWABOVEGRID, OnUpdateDwgDrawAboveGrid)
-    ON_COMMAND_EX(ID_EDIT_LAYER_TILE, OnEditLayer)
-    ON_COMMAND_EX(ID_EDIT_LAYER_TOP, OnEditLayer)
+#endif
+    EVT_MENU(XRCID("ID_EDIT_LAYER_TILE"), OnEditLayer)
+    EVT_MENU(XRCID("ID_EDIT_LAYER_TOP"), OnEditLayer)
+#if 0
     ON_COMMAND_EX(ID_TOOL_ERASER, OnToolPalette)
     ON_COMMAND_EX(ID_TOOL_TILE, OnToolPalette)
     ON_COMMAND_EX(ID_TOOL_TEXT, OnToolPalette)
@@ -122,8 +132,10 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     ON_COMMAND_EX(ID_TOOL_POLYGON, OnToolPalette)
     ON_COMMAND_EX(ID_TOOL_RECT, OnToolPalette)
     ON_COMMAND_EX(ID_TOOL_OVAL, OnToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_TOP, OnUpdateEditLayer)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_TILE, OnUpdateEditLayer)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TOP"), OnUpdateEditLayer)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TILE"), OnUpdateEditLayer)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_TOOL_ERASER, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_TOOL_TILE, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_TOOL_TEXT, OnUpdateToolPalette)
@@ -134,8 +146,9 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     ON_UPDATE_COMMAND_UI(ID_TOOL_RECT, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_TOOL_OVAL, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
-    ON_COMMAND(ID_VIEW_TOGGLE_SCALE, OnViewToggleScale)
 #endif
+    EVT_MENU(XRCID("ID_VIEW_TOGGLE_SCALE"), OnViewToggleScale)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_TOGGLE_SCALE"), OnUpdateEnable)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
 wxEND_EVENT_TABLE()
@@ -226,26 +239,24 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView drawing
 
-#if 0
-void CBrdEditView::OnDraw(CDC* pDC)
+void CBrdEditView::OnDraw(wxDC& pDC)
 {
-    CDC dcMem;
-    CRect oRct;
-    CDC* pDrawDC = pDC;
-    CBitmap* pPrvBMap = nullptr;
+    wxMemoryDC dcMem;
+    wxRect oRct;
+    wxDC* pDrawDC = &pDC;
 
-    pDC->GetClipBox(&oRct);
-    if (oRct.IsRectEmpty())
+    CB_VERIFY(pDC.GetClippingBox(oRct));
+    if (oRct.IsEmpty())
+    {
         return;                 // Nothing to do
+    }
 
     if (m_bOffScreen)
     {
-        OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
-            oRct.Width(), oRct.Height());
-        dcMem.CreateCompatibleDC(pDC);
-        pPrvBMap = dcMem.SelectObject(&*bmMem);
-        dcMem.SetViewportOrg(-oRct.left, -oRct.top);
-        dcMem.SetStretchBltMode(COLORONCOLOR);
+        wxBitmap bmMem = wxBitmap(
+            oRct.GetWidth(), oRct.GetHeight(), pDC);
+        dcMem.SelectObject(bmMem);
+        dcMem.SetDeviceOrigin(-oRct.GetLeft(), -oRct.GetTop());
         pDrawDC = &dcMem;
     }
 
@@ -253,50 +264,52 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     if (m_bOffScreen)
     {
-        pDC->BitBlt(oRct.left, oRct.top, oRct.Width(), oRct.Height(),
-            &dcMem, oRct.left, oRct.top, SRCCOPY);
-        dcMem.SelectObject(pPrvBMap);
+        pDC.Blit(oRct.GetLeftTop(), oRct.GetSize(),
+            &dcMem, oRct.GetLeftTop(), wxCOPY);
     }
-    wxASSERT(!pDC->IsPrinting());
-    if (!pDC->IsPrinting())
+    wxASSERT(!dynamic_cast<wxPrinterDC*>(&pDC));
+    if (!dynamic_cast<wxPrinterDC*>(&pDC))
     {
-        PrepareScaledDC(*pDC);
-        m_selList.OnDraw(*pDC);
+        PrepareScaledDC(pDC);
+        m_selList.OnDraw(pDC);
     }
 }
 
+#if 0
 BOOL CBrdEditView::OnEraseBkgnd(CDC* pDC)
 {
     return CScrollView::OnEraseBkgnd(pDC);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Coordinate space mappings
 
-void CBrdEditView::PrepareScaledDC(CDC& pDC) const
+void CBrdEditView::PrepareScaledDC(wxDC& pDC) const
 {
-    CSize wsize, vsize;
+    wxASSERT(m_selList.empty() || !"needs testing");
+    wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
-    pDC.SetMapMode(MM_ANISOTROPIC);
-    pDC.SetWindowExt(wsize);
-    pDC.SetViewportExt(vsize);
+    pDC.SetUserScale(double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
 }
 
+#if 0
 void CBrdEditView::OnPrepareScaledDC(CDC& pDC)
 {
     OnPrepareDC(&pDC, NULL);
     PrepareScaledDC(pDC);
 }
+#endif
 
-void CBrdEditView::ClientToWorkspace(CPoint& point) const
+void CBrdEditView::ClientToWorkspace(wxPoint& point) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    point += (CSize)dpnt;
-    CSize wsize, vsize;
+    point = CalcUnscrolledPosition(point);
+    wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
 }
 
+#if 0
 void CBrdEditView::ClientToWorkspace(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
@@ -305,16 +318,17 @@ void CBrdEditView::ClientToWorkspace(CRect& rect) const
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
 }
+#endif
 
-void CBrdEditView::WorkspaceToClient(CPoint& point) const
+void CBrdEditView::WorkspaceToClient(wxPoint& point) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, vsize, wsize);
-    point -= (CSize)dpnt;
+    point = CalcScrolledPosition(point);
 }
 
+#if 0
 void CBrdEditView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
@@ -529,34 +543,45 @@ void CBrdEditView::OnUpdateViewGridLines(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_pBoard->GetCellBorder());
 }
+#endif
 
-BOOL CBrdEditView::OnEditLayer(UINT id)
+namespace
+{
+    int IdToLayer(int id)
+    {
+        static const std::map<int, int> map = {
+            { XRCID("ID_EDIT_LAYER_BASE"), LAYER_BASE },
+            { XRCID("ID_EDIT_LAYER_TILE"), LAYER_GRID },
+            { XRCID("ID_EDIT_LAYER_TOP"), LAYER_TOP },
+        };
+        return map.at(id);
+    }
+}
+
+void CBrdEditView::OnEditLayer(wxCommandEvent& event)
 {
     m_nCurToolID = ID_TOOL_ARROW;       // Turn off tool with layer change
     m_nLastToolID = ID_TOOL_ARROW;      // Turn off tool with layer change
     m_selList.PurgeList(TRUE);
 
-    BeginWaitCursor();
-    m_pBoard->SetMaxDrawLayer((int)((UINT)id - ID_EDIT_LAYER_BASE + 1));
-    Invalidate(FALSE);
-    UpdateWindow();
-    EndWaitCursor();
-    return TRUE;
+    wxBusyCursor busyCursor;
+    m_pBoard->SetMaxDrawLayer(IdToLayer(event.GetId()));
+    Refresh(false);
+    Update();
 }
 
-void CBrdEditView::OnUpdateEditLayer(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI)
 {
-    // NOTE!!: The control ID's are assumed to be consecutive and
-    // in the same order as the tool codes defined in MAINFRM.CPP
-    pCmdUI->Enable(TRUE);
-    pCmdUI->SetCheck(m_pBoard->GetMaxDrawLayer() == -1 ?
-        pCmdUI->m_nID == ID_EDIT_LAYER_TOP :
-        pCmdUI->m_nID - ID_EDIT_LAYER_BASE + 1 ==
-            (unsigned)m_pBoard->GetMaxDrawLayer());
+    pCmdUI.Enable(TRUE);
+    pCmdUI.Check(m_pBoard->GetMaxDrawLayer() == -1 ?
+        pCmdUI.GetId() == XRCID("ID_EDIT_LAYER_TOP") :
+        IdToLayer(pCmdUI.GetId()) ==
+            m_pBoard->GetMaxDrawLayer());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 void CBrdEditView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     // Make sure window is active.
@@ -1403,75 +1428,73 @@ void CBrdEditView::OnDwgDrawAboveGrid()
         m_selList.SetDObjFlagInAllSelectedObjects(dobjFlgDrawPass2);
     m_selList.InvalidateList(TRUE);
 }
+#endif
 
-void CBrdEditView::CenterViewOnWorkspacePoint(CPoint point)
+void CBrdEditView::CenterViewOnWorkspacePoint(wxPoint point)
 {
     WorkspaceToClient(point);
-    CRect rct;
-    GetClientRect(&rct);
-    CPoint pt = GetMidRect(rct);
-    CSize size = point - pt;
-    CPoint newUpLeft = GetDeviceScrollPosition() + size;
+    wxRect rct = GetClientRect();
+    wxPoint pt = GetMidRect(rct);
+    wxPoint size = point - pt;
+    wxPoint newUpLeft = CalcUnscrolledPosition(size);
     // If the axis being scrolled is entirely visible then set
     // that scroll position to zero.
-    CSize sizeTotal = GetTotalSize();   // Logical is in device units for us
-    if (rct.Width() >= sizeTotal.cx)
+    wxSize sizeTotal = GetVirtualSize();   // Logical is in device units for us
+    if (rct.GetWidth() >= sizeTotal.x)
         newUpLeft.x = 0;
-    if (rct.Height() >= sizeTotal.cy)
+    if (rct.GetHeight() >= sizeTotal.y)
         newUpLeft.y = 0;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::DoViewScale(TileScale nZoom)
 {
-    CRect rctClient;
-    GetClientRect(&rctClient);
-    CPoint pntMid = rctClient.CenterPoint();
+    wxRect rctClient = GetClientRect();
+    wxPoint pntMid = GetMidRect(rctClient);
     ClientToWorkspace(pntMid);
 
     m_nZoom = nZoom;
     RecalcScrollLimits();
-    BeginWaitCursor();
-    Invalidate(FALSE);
+    wxBusyCursor busyCursor;
+    Refresh(false);
     CenterViewOnWorkspacePoint(pntMid);
-    EndWaitCursor();
 }
 
-void CBrdEditView::OnViewFullScale()
+void CBrdEditView::OnViewFullScale(wxCommandEvent& /*event*/)
 {
     DoViewScale(fullScale);
 }
 
-void CBrdEditView::OnUpdateViewFullScale(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateViewFullScale(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable();
-    pCmdUI->SetCheck(m_nZoom == fullScale);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_nZoom == fullScale);
 }
 
-void CBrdEditView::OnViewHalfScale()
+void CBrdEditView::OnViewHalfScale(wxCommandEvent& /*event*/)
 {
     DoViewScale(halfScale);
 }
 
-void CBrdEditView::OnUpdateViewHalfScale(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateViewHalfScale(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable();
-    pCmdUI->SetCheck(m_nZoom == halfScale);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_nZoom == halfScale);
 }
 
-void CBrdEditView::OnViewSmallScale()
+void CBrdEditView::OnViewSmallScale(wxCommandEvent& /*event*/)
 {
     DoViewScale(smallScale);
 }
 
-void CBrdEditView::OnUpdateViewSmallScale(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateViewSmallScale(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable();
-    pCmdUI->SetCheck(m_nZoom == smallScale);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_nZoom == smallScale);
 }
 
-void CBrdEditView::OnViewToggleScale()
+void CBrdEditView::OnViewToggleScale(wxCommandEvent& /*event*/)
 {
     if (m_nZoom == fullScale)
          DoViewScale(halfScale);
@@ -1481,6 +1504,12 @@ void CBrdEditView::OnViewToggleScale()
          DoViewScale(fullScale);
 }
 
+void CBrdEditView::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
+#if 0
 void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
 {
     CBoardArray& pba = m_pBoard->GetBoardArray();

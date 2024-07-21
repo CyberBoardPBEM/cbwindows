@@ -1,6 +1,6 @@
 // BrdCell.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,6 +33,7 @@
 #endif
 #include    "CellForm.h"
 #include    "BrdCell.h"
+#include    "CDib.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -201,6 +202,14 @@ void CBoardArray::DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) c
             FillCell(pDC, row, col, eScale);
 }
 
+void CBoardArray::DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
+{
+    // Fill the cells with tile bitmaps or solid color or nothing
+    for (size_t row = value_preserving_cast<size_t>(pCellRct.GetTop()); row <= value_preserving_cast<size_t>(pCellRct.GetTop() + pCellRct.GetHeight()); ++row)
+        for (size_t col = value_preserving_cast<size_t>(pCellRct.GetLeft()); col <= value_preserving_cast<size_t>(pCellRct.GetLeft() + pCellRct.GetWidth()); ++col)
+            FillCell(pDC, row, col, eScale);
+}
+
 // ----------------------------------------------------- //
 
 void CBoardArray::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
@@ -212,6 +221,14 @@ void CBoardArray::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScal
         for (size_t col = value_preserving_cast<size_t>(pCellRct.left) ; col <= value_preserving_cast<size_t>(pCellRct.right) ; ++col)
             FrameCell(pDC, row, col, eScale);
     pDC.SelectObject(pPrvPen);
+}
+
+void CBoardArray::DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
+{
+    wxDCPenChanger setPen(pDC, m_pnCellFrameWx);
+    for (size_t row = value_preserving_cast<size_t>(pCellRct.GetTop()) ; row <= value_preserving_cast<size_t>(pCellRct.GetTop() + pCellRct.GetHeight()) ; ++row)
+        for (size_t col = value_preserving_cast<size_t>(pCellRct.GetLeft()) ; col <= value_preserving_cast<size_t>(pCellRct.GetLeft() + pCellRct.GetWidth()) ; ++col)
+            FrameCell(pDC, row, col, eScale);
 }
 
 // ----------------------------------------------------- //
@@ -301,6 +318,60 @@ void CBoardArray::FillCell(CDC& pDC, size_t row, size_t col, TileScale eScale) c
     }
 }
 
+void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const
+{
+    const BoardCell& pCell = GetCell(row, col);
+    const CCellForm& pCF = GetCellForm(eScale);
+
+    wxRect rct = CB::Convert(pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
+
+    if (!CB::RectVisible(pDC, rct))
+        return;
+
+    if (pCell.IsTileID())
+    {
+        CTile tile = m_pTsa->GetTile(pCell.GetTID(), eScale);
+
+        if (eScale != smallScale)
+        {
+            const CBitmap *pBMap = pCF.GetMask();
+            if (pBMap != NULL && m_bTransparentCells)
+                tile.TransBlt(pDC, rct.GetLeft(), rct.GetTop(), CB::Convert(*pBMap));
+            else if (pBMap != NULL)
+            {
+                wxBitmap wxBMap = CB::Convert(*pBMap);
+                wxMemoryDC srcDC;
+                srcDC.SelectObjectAsSource(wxBMap);
+
+                tile.BitBlt(pDC, rct.GetLeft(), rct.GetTop(), wxXOR);
+                pDC.Blit(rct.GetLeftTop(), rct.GetSize(),
+                    &srcDC, wxPoint(0, 0), wxAND);
+                tile.BitBlt(pDC, rct.GetLeft(), rct.GetTop(), wxXOR);
+            }
+            else
+                tile.BitBlt(pDC, rct.GetLeft(), rct.GetTop(), wxCOPY);
+        }
+        else    // Handle small scale tiles here.
+        {
+            if (tile.GetSmallColor() == m_pTsa->GetTransparentColor())
+                return;                 // Dont draw the cell
+            wxBrush oBrsh(CB::Convert(tile.GetSmallColor()));
+            wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
+            wxDCBrushChanger setBrush(pDC, oBrsh);
+            pDC.DrawRectangle(rct);
+        }
+    }
+    else
+    {
+        if (pCell.GetColor() == noColor)
+            return;                 // Let base color show through
+
+        wxBrush oBrsh(CB::Convert(pCell.GetColor()));
+        wxDCBrushChanger setBrush(pDC, oBrsh);
+        pCF.FillCell(pDC, rct.GetLeft(), rct.GetTop());
+    }
+}
+
 // ----------------------------------------------------- //
 
 CRect CBoardArray::GetCellRect(size_t row, size_t col, TileScale eScale) const
@@ -324,6 +395,15 @@ void CBoardArray::FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) 
     if (!pDC.RectVisible(&rct))
         return;
     pCF.FrameCell(pDC, rct.left, rct.top);
+}
+
+void CBoardArray::FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const
+{
+    const CCellForm& pCF = GetCellForm(eScale);
+    wxRect rct = CB::Convert(pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
+    if (!CB::RectVisible(pDC, rct))
+        return;
+    pCF.FrameCell(pDC, rct.GetLeft(), rct.GetTop());
 }
 
 // ----------------------------------------------------- //
@@ -475,6 +555,7 @@ void CBoardArray::SetCellFrameColor(COLORREF cr)
 {
     m_pnCellFrame.DeleteObject();
     m_pnCellFrame.CreatePen(PS_SOLID, 0, cr);
+    m_pnCellFrameWx = wxPen(CB::Convert(cr));
     m_crCellFrame = cr;
 }
 
