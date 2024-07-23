@@ -591,7 +591,7 @@ void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
     }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
-    pTool.OnLButtonDown(this, nFlags, point);
+    pTool.OnLButtonDown(*this, nFlags, point);
 }
 
 void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
@@ -604,7 +604,7 @@ void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
     }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
-    pTool.OnMouseMove(this, nFlags, point);
+    pTool.OnMouseMove(*this, nFlags, point);
 }
 
 void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -617,7 +617,7 @@ void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
     }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
-    pTool.OnLButtonUp(this, nFlags, point);
+    pTool.OnLButtonUp(*this, nFlags, point);
 }
 
 void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
@@ -630,14 +630,14 @@ void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
     }
     CTool& pTool = CTool::GetTool(eToolType);
     ClientToWorkspace(point);
-    pTool.OnLButtonDblClk(this, nFlags, point);
+    pTool.OnLButtonDblClk(*this, nFlags, point);
 }
 
 void CBrdEditView::OnTimer(uintptr_t nIDEvent)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     CTool& pTool = CTool::GetTool(eToolType);
-    pTool.OnTimer(this, nIDEvent);
+    pTool.OnTimer(*this, nIDEvent);
 }
 
 BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -646,7 +646,7 @@ BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     if (pWnd == this && eToolType != ttypeUnknown)
     {
         CTool& pTool = CTool::GetTool(eToolType);
-        if(pTool.OnSetCursor(this, nHitTest))
+        if(pTool.OnSetCursor(*this, nHitTest))
             return TRUE;
     }
     return CScrollView::OnSetCursor(pWnd, nHitTest, message);
@@ -663,13 +663,13 @@ void CBrdEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         CPolyTool& pPolyTool = static_cast<CPolyTool&>(pTool);
         if (nChar == VK_ESCAPE)
         {
-            pPolyTool.RemoveRubberBand(this);
-            pPolyTool.FinalizePolygon(this, TRUE);
+            pPolyTool.RemoveRubberBand(*this);
+            pPolyTool.FinalizePolygon(*this, TRUE);
         }
         else if (nChar == VK_RETURN)
         {
-            pPolyTool.RemoveRubberBand(this);
-            pPolyTool.FinalizePolygon(this, FALSE);
+            pPolyTool.RemoveRubberBand(*this);
+            pPolyTool.FinalizePolygon(*this, FALSE);
         }
     }
     CScrollView::OnChar(nChar, nRepCnt, nFlags);
@@ -1292,8 +1292,8 @@ BOOL CBrdEditView::OnToolPalette(UINT id)
             if (pTool.m_eToolType == ttypePolygon)
             {
                 CPolyTool& pPolyTool = static_cast<CPolyTool&>(pTool);
-                pPolyTool.RemoveRubberBand(this);
-                pPolyTool.FinalizePolygon(this, TRUE);
+                pPolyTool.RemoveRubberBand(*this);
+                pPolyTool.FinalizePolygon(*this, TRUE);
             }
         }
         m_nLastToolID = m_nCurToolID;
