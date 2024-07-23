@@ -56,12 +56,12 @@ public:
 public:
     static CTool& GetTool(ToolType eType);
     // ----------- //
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) /*override*/ {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest)
+    virtual void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) /* override */ {}
+    virtual void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) /* override */ {}
+    virtual BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const /* override */
         { return FALSE; }
 
 // Implementation
@@ -93,29 +93,29 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override;
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override;
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
     uintptr_t m_nTimerID;
     CRect   m_rectMultiBorder;
     // ------- //
-    BOOL ProcessAutoScroll(CBrdEditView* pView);
-    void DrawSelectionRect(CDC* pDC, CRect* pRct);
-    void DrawNetRect(CDC* pDC, CBrdEditView* pView);
-    BOOL AdjustPoint(CBrdEditView* pView, CPoint& point);
-    void MoveSelections(CSelList *pSLst, CPoint point);
-    void StartDragTimer(CBrdEditView* pView);
-    void KillDragTimer(CBrdEditView* pView);
-    void StartScrollTimer(CBrdEditView* pView);
-    void KillScrollTimer(CBrdEditView* pView);
+    BOOL ProcessAutoScroll(CBrdEditView& pView);
+    void DrawSelectionRect(CDC& pDC, const CRect& pRct) const;
+    void DrawNetRect(CDC& pDC, CBrdEditView& pView) const;
+    BOOL AdjustPoint(const CBrdEditView& pView, CPoint& point) const;
+    void MoveSelections(CSelList& pSLst, CPoint point);
+    void StartDragTimer(CBrdEditView& pView);
+    void KillDragTimer(CBrdEditView& pView);
+    void StartScrollTimer(CBrdEditView& pView);
+    void KillScrollTimer(CBrdEditView& pView);
     // ------- //
-    void StartSizingOperation(CBrdEditView* pView, UINT nFlags,
+    void StartSizingOperation(CBrdEditView& pView, UINT nFlags,
         CPoint point, int nHandleID = -1);
 };
 
@@ -130,20 +130,22 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override;
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override;
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CBrdEditView* pView, CPoint point,
-        int& nHandle) = 0;
-    virtual BOOL IsEmptyObject() = 0;
+    virtual CDrawObj::OwnerPtr CreateDrawObj(const CBrdEditView& pView, CPoint point,
+        int& nHandle) const /* override */ = 0;
+    virtual BOOL IsEmptyObject() const /* override */ = 0;
     // --------- //
-    CDrawObj*   m_pObj;
+    /* NOTE:  CShapeTool owns m_pObj, but CPolyTool passes
+        ownership of m_pObj to CBrdEditView immediately */
+    OwnerOrNullPtr<CDrawObj> m_pObj;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -157,9 +159,9 @@ public:
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CBrdEditView* pView, CPoint point,
-        int& nHandle);
-    virtual BOOL IsEmptyObject();
+    CDrawObj::OwnerPtr CreateDrawObj(const CBrdEditView& pView, CPoint point,
+        int& nHandle) const override;
+    BOOL IsEmptyObject() const override;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -173,9 +175,9 @@ public:
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CBrdEditView* pView, CPoint point,
-        int& nHandle);
-    virtual BOOL IsEmptyObject();
+    CDrawObj::OwnerPtr CreateDrawObj(const CBrdEditView& pView, CPoint point,
+        int& nHandle) const override;
+    BOOL IsEmptyObject() const override;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -189,9 +191,9 @@ public:
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CBrdEditView* pView, CPoint point,
-        int& nHandle);
-    virtual BOOL IsEmptyObject();
+    CDrawObj::OwnerPtr CreateDrawObj(const CBrdEditView& pView, CPoint point,
+        int& nHandle) const override;
+    BOOL IsEmptyObject() const override;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -205,21 +207,23 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
     // --------- //
-    void RemoveRubberBand(CBrdEditView* pView);
-    void FinalizePolygon(CBrdEditView* pView, BOOL bForceDestroy = FALSE);
+    void RemoveRubberBand(CBrdEditView& pView);
+    void FinalizePolygon(CBrdEditView& pView, BOOL bForceDestroy = FALSE);
 
 // Implementation
 public:
-    void DrawRubberLine(CDC* pDC);
+    void DrawRubberLine(CDC& pDC);
     // --------- //
+    /* NOTE:  CShapeTool owns m_pObj, but CPolyTool passes
+        ownership of m_pObj to CBrdEditView immediately */
     CPolyObj*   m_pObj;
 };
 
@@ -234,12 +238,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -256,12 +260,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -278,12 +282,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -300,12 +304,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -322,12 +326,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -344,12 +348,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnLButtonUp(CBrdEditView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CBrdEditView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CBrdEditView* pView, UINT nHitTest);
+    void OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point) override {}
+    void OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    BOOL OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
