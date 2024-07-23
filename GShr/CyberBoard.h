@@ -344,6 +344,27 @@ public:
     }
 };
 
+template<typename CharT>
+struct std::formatter<wxColour, CharT> : private std::formatter<decltype(std::declval<wxColour>().Red()), CharT>
+{
+private:
+    using BASE = formatter<decltype(std::declval<wxColour>().Red()), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxColour& c, FormatContext& ctx) const
+    {
+        std::format_to(ctx.out(), "RGB(");
+        BASE::format(c.Red(), ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(c.Green(), ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(c.Blue(), ctx);
+        return std::format_to(ctx.out(), ")");
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////
 
 // emulate c++20 std::remove_cvref_t
