@@ -72,6 +72,7 @@
 #include <wx/dc.h>
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
+#include "wx/dcprint.h"
 #include <wx/dialog.h>
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>
@@ -2258,6 +2259,101 @@ namespace CB
                 return RelayProcessEvent(*this, event);
             }
         }
+    };
+}
+
+namespace CB
+{
+    class DCUserScaleChanger
+    {
+    public:
+        DCUserScaleChanger() = default;
+        DCUserScaleChanger(wxDC& d, double xScale, double yScale) :
+            dc(&d)
+        {
+            dc->GetUserScale(&oldXScale, &oldYScale);
+            dc->SetUserScale(xScale, yScale);
+        }
+        DCUserScaleChanger(const DCUserScaleChanger&) = delete;
+        DCUserScaleChanger(DCUserScaleChanger&& other) noexcept
+        {
+            *this = std::move(other);
+        }
+        DCUserScaleChanger& operator=(const DCUserScaleChanger&) = delete;
+        DCUserScaleChanger& operator=(DCUserScaleChanger&& other) noexcept
+        {
+            if (this != &other)
+            {
+                Reset();
+                dc = other.dc;
+                other.dc = nullptr;
+                oldXScale = other.oldXScale;
+                oldYScale = other.oldYScale;
+            }
+            return *this;
+        }
+        ~DCUserScaleChanger()
+        {
+            Reset();
+        }
+
+    private:
+        void Reset()
+        {
+            if (dc)
+            {
+                dc->SetUserScale(oldXScale, oldYScale);
+            }
+        }
+
+        wxDC* dc = nullptr;
+        double oldXScale;
+        double oldYScale;
+    };
+
+    class DCLogicalFunctionChanger
+    {
+    public:
+        DCLogicalFunctionChanger() = default;
+        DCLogicalFunctionChanger(wxDC& d, wxRasterOperationMode rop) :
+            dc(&d)
+        {
+            oldRop = dc->GetLogicalFunction();
+            dc->SetLogicalFunction(rop);
+        }
+        DCLogicalFunctionChanger(const DCLogicalFunctionChanger&) = delete;
+        DCLogicalFunctionChanger(DCLogicalFunctionChanger&& other) noexcept
+        {
+            *this = std::move(other);
+        }
+        DCLogicalFunctionChanger& operator=(const DCLogicalFunctionChanger&) = delete;
+        DCLogicalFunctionChanger& operator=(DCLogicalFunctionChanger&& other) noexcept
+        {
+            if (this != &other)
+            {
+                Reset();
+                dc = other.dc;
+                other.dc = nullptr;
+                oldRop = other.oldRop;
+            }
+            return *this;
+        }
+        ~DCLogicalFunctionChanger()
+        {
+            Reset();
+        }
+
+    private:
+        void Reset()
+        {
+            if (dc)
+            {
+                dc->SetLogicalFunction(oldRop);
+            }
+        }
+
+        wxDC* dc = nullptr;
+        wxRasterOperationMode oldRop;
     };
 }
 #endif
