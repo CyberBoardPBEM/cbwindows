@@ -52,6 +52,7 @@ struct ResourceTable
     HCURSOR     hcrDropper;
     wxCursor    hcrDropperWx;
     HCURSOR     hcrEraser;
+    wxCursor    hcrEraserWx;
     HCURSOR     hcrPencil;
     wxCursor    hcrPencilWx;
     HCURSOR     hcrBrush;

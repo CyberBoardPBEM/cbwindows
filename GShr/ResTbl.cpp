@@ -75,6 +75,7 @@ void ResourceTable::LoadCursors(HINSTANCE hInst)
     hcrDropper = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER));
     hcrDropperWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER))));
     hcrEraser = LoadCursor(hInst, MAKEINTRESOURCE(IDC_ERASER));
+    hcrEraserWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_ERASER))));
     hcrPencil = LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL));
     hcrPencilWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL))));
     hcrBrush = LoadCursor(hInst, MAKEINTRESOURCE(IDC_BRUSH));
