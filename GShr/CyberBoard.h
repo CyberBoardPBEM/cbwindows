@@ -2073,6 +2073,17 @@ namespace CB
         return CRect(r.GetLeft(), r.GetTop(), r.GetRight() + 1, r.GetBottom() + 1);
     }
 
+    inline std::vector<POINT> Convert(const std::vector<wxPoint>& v)
+    {
+        std::vector<POINT> retval;
+        retval.reserve(v.size());
+        for (const wxPoint& p : v)
+        {
+            retval.emplace_back(CB::Convert(p));
+        }
+        return retval;
+    }
+
     inline std::vector<wxPoint> Convert(const std::vector<POINT>& v)
     {
         std::vector<wxPoint> retval;
@@ -2093,6 +2104,17 @@ namespace CB
         wxRect rctClip;
         dc.GetClippingBox(rctClip);
         return rctClip.Intersects(r);
+    }
+
+    inline void Normalize(wxRect& rect)
+    {
+        typedef decltype(std::declval<wxRect>().GetLeft()) Coord;
+        Coord x1 = rect.GetLeft();
+        Coord x2 = rect.GetRight() + 1;
+        Coord y1 = rect.GetTop();
+        Coord y2 = rect.GetBottom() + 1;
+        rect = wxRect(wxPoint(std::min(x1, x2), std::min(y1, y2)),
+                        wxSize(abs(x2 - x1), abs(y2 - y1)));
     }
 
     class ToolTip : private wxTimer
@@ -2178,6 +2200,12 @@ namespace CB
         State state = sNoTool;
 
     };
+
+    /* emulate CRect::Inflate() and CRect::Normalize() sequence
+        because (contrary to MFC) wxRect::Inflate() doesn't
+        allow negative size, so there's no way to normalize
+        the Inflate() result */
+    void InflateAndNormalize(wxRect& rect, int dx, int dy);
 }
 
 // use these to translate and relay MFC messages to a wx target
@@ -2355,5 +2383,11 @@ namespace CB
         wxDC* dc = nullptr;
         wxRasterOperationMode oldRop;
     };
+}
+
+// provide wxMouseState equivalent of wxKeyboardState::GetModifiers()
+namespace CB
+{
+    int GetMouseButtons(const wxMouseState& event);
 }
 #endif

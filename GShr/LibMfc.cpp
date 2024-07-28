@@ -1108,6 +1108,37 @@ CB::ToolTip::ToolInfo::ToolInfo(wxWindow& w, std::optional<wxRect>&& r, wxString
 {
 }
 
+void CB::InflateAndNormalize(wxRect& rect, int dx, int dy)
+{
+    if (dx < 0 && abs(2*dx) > rect.GetWidth())
+    {
+        wxASSERT(!"needs testing");
+        /* the sides will move so far that
+            left and right will swap
+        newleft = oldright + dx
+                === oldleft + width + dx
+                === oldleft + -1*-width + -1*-dx
+                === oldleft + -1*(-width + -dx)
+                === oldleft - (-width + -dx)
+                === oldleft - (-width + abs(dx))
+                === oldleft - (abs(dx) - width)
+        newright = oldleft - dx
+                === oldright - width - dx
+                === oldright + (- width - dx)
+                === oldright + (-width + -dx)
+                === oldright + (-width + abs(dx))
+                === oldright + (abs(dx) - width)
+        */
+        dx = abs(dx) - rect.GetWidth();
+    }
+    if (dy < 0 && abs(2*dy) > rect.GetHeight())
+    {
+        wxASSERT(!"needs testing");
+        dy = abs(dy) - rect.GetHeight();
+    }
+    rect.Inflate(dx, dy);
+}
+
 namespace CB
 {
     int ToWxID(int id)
@@ -1332,4 +1363,15 @@ bool CB::RelayProcessEvent(CCmdTarget& dest,
     }
 
     return false;
+}
+
+int CB::GetMouseButtons(const wxMouseState& event)
+{
+    int retval = 0;
+    retval |= event.LeftIsDown() ? wxMOUSE_BTN_LEFT : 0;
+    retval |= event.MiddleIsDown() ? wxMOUSE_BTN_MIDDLE : 0;
+    retval |= event.RightIsDown() ? wxMOUSE_BTN_RIGHT : 0;
+    retval |= event.Aux1IsDown() ? wxMOUSE_BTN_AUX1 : 0;
+    retval |= event.Aux2IsDown() ? wxMOUSE_BTN_AUX2 : 0;
+    return retval;
 }
