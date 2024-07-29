@@ -368,10 +368,8 @@ void CBitEditView::DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize)
     {
         wxMemoryDC dc(m_bmView);
 
-        /* KLUDGE:  size - 1 due to
-                    https://groups.google.com/g/wx-dev/c/0HZLlbTB6do/m/JMQy61LqAQAJ */
         wxRect rct(wxPoint(std::min(startPt.x, curPt.x), std::min(startPt.y, curPt.y)),
-                    wxSize(std::abs(curPt.x - startPt.x) + 1 - 1, std::abs(curPt.y - startPt.y) + 1 - 1));
+                    wxSize(std::abs(curPt.x - startPt.x) + 1, std::abs(curPt.y - startPt.y) + 1));
         wxPen pen(CB::Convert(m_pTMgr->GetForeColor()), nSize);
         if (nSize == 0)
             dc.SetBrush(m_pTMgr->GetForeBrushWx());
@@ -379,7 +377,7 @@ void CBitEditView::DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize)
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
         dc.SetPen(pen);
 
-        dc.DrawEllipse(rct);
+        CB::DrawEllipse(dc, rct);
     }
 
     InvalidateViewImage(true);
