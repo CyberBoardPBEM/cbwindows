@@ -2390,4 +2390,16 @@ namespace CB
 {
     int GetMouseButtons(const wxMouseState& event);
 }
+
+// replacement for wxDC::DrawEllipse()
+namespace CB
+{
+    /* KLUDGE:  size - 1 due to
+                https://groups.google.com/g/wx-dev/c/0HZLlbTB6do/m/JMQy61LqAQAJ */
+    inline void DrawEllipse(wxDC& dc, const wxRect& rect)
+    {
+        wxRect temp(rect.GetLeftTop(), wxSize(rect.GetWidth() - 1, rect.GetHeight() - 1));
+        dc.DrawEllipse(temp);
+    }
+}
 #endif
