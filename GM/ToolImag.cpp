@@ -370,7 +370,7 @@ void CBitDropperTool::OnLButtonDown(CBitEditView& pView, int nMods,
     pView.GetImagePixelLoc(point);
     wxColour crPxl = GetPixel(pView.GetCurrentViewBitmap(),
                                 point.x, point.y);
-    if ((nMods & (wxMOD_CMD | wxMOD_SHIFT)) == 0)
+    if ((nMods & (wxMOD_CONTROL | wxMOD_SHIFT)) == 0)
         pView.SetForeColor(crPxl);
     else if (nMods & wxMOD_SHIFT)
         pView.SetBackColor(crPxl);
@@ -387,7 +387,7 @@ void CBitDropperTool::OnLButtonUp(CBitEditView& pView, int nMods,
     wxColour crPxl = GetPixel(pView.GetCurrentViewBitmap(),
                                 point.x, point.y);
 
-    if ((nMods & (wxMOD_CMD | wxMOD_SHIFT)) == 0)
+    if ((nMods & (wxMOD_CONTROL | wxMOD_SHIFT)) == 0)
         pView.SetForeColor(crPxl);
     else if (nMods & wxMOD_SHIFT)
         pView.SetBackColor(crPxl);
