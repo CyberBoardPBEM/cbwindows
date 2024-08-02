@@ -287,7 +287,6 @@ BOOL CBrdEditView::OnEraseBkgnd(CDC* pDC)
 
 void CBrdEditView::PrepareScaledDC(wxDC& pDC) const
 {
-    wxASSERT(m_selList.empty() || !"needs testing");
     wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     pDC.SetUserScale(double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
@@ -309,16 +308,13 @@ void CBrdEditView::ClientToWorkspace(wxPoint& point) const
     ScalePoint(point, wsize, vsize);
 }
 
-#if 0
-void CBrdEditView::ClientToWorkspace(CRect& rect) const
+void CBrdEditView::ClientToWorkspace(wxRect& rect) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    rect += dpnt;
-    CSize wsize, vsize;
+    rect.SetTopLeft(CalcUnscrolledPosition(rect.GetTopLeft()));
+    wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
 }
-#endif
 
 void CBrdEditView::WorkspaceToClient(wxPoint& point) const
 {
@@ -328,24 +324,23 @@ void CBrdEditView::WorkspaceToClient(wxPoint& point) const
     point = CalcScrolledPosition(point);
 }
 
-#if 0
-void CBrdEditView::WorkspaceToClient(CRect& rect) const
+void CBrdEditView::WorkspaceToClient(wxRect& rect) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, vsize, wsize);
-    rect -= dpnt;
+    rect.SetLeftTop(CalcScrolledPosition(rect.GetTopLeft()));
 }
 
-void CBrdEditView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
+void CBrdEditView::InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase)
 {
-    CRect rct(pRect);
+    wxRect rct(pRect);
     WorkspaceToClient(rct);
-    rct.InflateRect(1, 1);
-    InvalidateRect(&rct, bErase);
+    rct.Inflate(1, 1);
+    RefreshRect(rct, bErase);
 }
 
+#if 0
 CPoint CBrdEditView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
@@ -376,8 +371,9 @@ CDrawObj* CBrdEditView::ObjectHitTest(CPoint point)
     else
         return NULL;
 }
+#endif
 
-void CBrdEditView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
+void CBrdEditView::SelectWithinRect(wxRect rctNet, BOOL bInclIntersects)
 {
     CDrawList* pDwg = GetDrawList(FALSE);
     if (pDwg == NULL)
@@ -393,9 +389,9 @@ void CBrdEditView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
         if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
-                ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
+                ((CB::Convert(pObj.GetEnclosingRect()) + rctNet) == rctNet)) ||
                 (bInclIntersects &&
-                (!(pObj.GetEnclosingRect() & rctNet).IsRectEmpty())))
+                (!(CB::Convert(pObj.GetEnclosingRect()) * rctNet).IsEmpty())))
             {
                 m_selList.AddObject(pObj, TRUE);
             }
@@ -403,6 +399,7 @@ void CBrdEditView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
     }
 }
 
+#if 0
 void CBrdEditView::SelectAllUnderPoint(CPoint point)
 {
     CDrawList* pDwg = GetDrawList(FALSE);
@@ -995,6 +992,7 @@ void CBrdEditView::SetBoardBackColor(COLORREF cr, BOOL bUpdate)
         Invalidate();
     GetDocument().SetModifiedFlag();
 }
+#endif
 
 CDrawList* CBrdEditView::GetDrawList(BOOL bCanCreateList)
 {
@@ -1008,6 +1006,7 @@ CDrawList* CBrdEditView::GetDrawList(BOOL bCanCreateList)
         return NULL;
 }
 
+#if 0
 void CBrdEditView::AddDrawObject(CDrawObj::OwnerPtr pObj)
 {
     CDrawList* pDwg = GetDrawList(TRUE);

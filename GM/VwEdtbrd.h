@@ -94,13 +94,11 @@ public:
     }
 
     void ClientToWorkspace(wxPoint& point) const;
-#if 0
-    void ClientToWorkspace(CRect& rect) const;
-#endif
+    void ClientToWorkspace(wxRect& rect) const;
     void WorkspaceToClient(wxPoint& point) const;
+    void WorkspaceToClient(wxRect& rect) const;
+    void InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase = FALSE);
 #if 0
-    void WorkspaceToClient(CRect& rect) const;
-    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
     CPoint GetWorkspaceDim() const;
     void OnPrepareScaledDC(CDC& pDC);
 
@@ -112,15 +110,17 @@ public:
 #if 0
     void AddDrawObject(CDrawObj::OwnerPtr pObj);         // Add to active layer
     void DeleteDrawObject(CDrawObj::OwnerPtr pObj);      // Delete from active layer
-    void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
+#endif
+    void SelectWithinRect(wxRect rctNet, BOOL bInclIntersects = FALSE);
+#if 0
     void SelectAllUnderPoint(CPoint point);
 
     // --- Misc Draw object manipulations
     void DeleteObjsInSelectList(BOOL bInvalidate = TRUE);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
     void NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll = FALSE); //DFM19991014
-    CDrawList* GetDrawList(BOOL bCanCreateList = TRUE);
 #endif
+    CDrawList* GetDrawList(BOOL bCanCreateList = TRUE);
 
 // Implementation
 protected:
