@@ -1,7 +1,7 @@
 // SelObjs.h -- contains class definitions for selection proxies. Used
 //  in concert with the selection tool.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -82,7 +82,6 @@ public:
     virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
     virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
     // ------- //
-    virtual void DrawTracker(CDC& pDC, TrackMode eMode) const /* override */;
     virtual void DrawTracker(wxDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
     virtual void Invalidate() /* override */;
@@ -93,10 +92,10 @@ public:
 
 // Miscellaneous Implementer's Overrides
 protected:
-    virtual CRect GetHandleRect(int nHandleID) const /* override */;
-    virtual CPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
+    virtual wxRect GetHandleRect(int nHandleID) const /* override */;
+    virtual wxPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
     virtual int GetHandleCount() const /* override */ = 0;
-    virtual void DrawHandles(CDC& pDC) const /* override */;
+    virtual void DrawHandles(wxDC& pDC) const /* override */;
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const /* override */ = 0;
 
 // Implementation
@@ -129,7 +128,7 @@ public:
 
 protected:
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 8; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
@@ -170,7 +169,7 @@ public:
 
 protected:
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
@@ -200,7 +199,7 @@ public:
 
 protected:
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override
         { return value_preserving_cast<int>(static_cast<const CPolyObj&>(*m_pObj).m_Pnts.size()); }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -227,7 +226,7 @@ public:
 
 protected:
     virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
@@ -294,9 +293,7 @@ public:
     void ClearDObjFlagInAllSelectedObjects(DWORD dwFlag);
 
     // -------- //
-    void OnDraw(CDC& pDC);  // Called by view OnDraw()
     void OnDraw(wxDC& pDC);  // Called by view OnDraw()
-    void DrawTracker(CDC& pDC, TrackMode eTrkMode = trkCurrent);
     void DrawTracker(wxDC& pDC, TrackMode eTrkMode = trkCurrent);
     // -------- //
     void UpdateObjects(BOOL bInvalidate = TRUE,

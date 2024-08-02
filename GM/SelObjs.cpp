@@ -55,32 +55,28 @@ CBrush* NEAR CSelection::c_pPrvBrush = NULL;
 
 /////////////////////////////////////////////////////////////////////
 
-void CSelection::DrawTracker(CDC& pDC, TrackMode eMode) const
-{
-    if (eMode == trkSelected)
-        DrawHandles(pDC);
-    else if (eMode == trkMoving || eMode == trkSizing)
-        DrawTrackingImage(pDC, eMode);
-}
-
 void CSelection::DrawTracker(wxDC& pDC, TrackMode eMode) const
 {
-    wxASSERT(!"TODO:");
-#if 0
     if (eMode == trkSelected)
         DrawHandles(pDC);
     else if (eMode == trkMoving || eMode == trkSizing)
+#if 0
         DrawTrackingImage(pDC, eMode);
+#else
+        AfxThrowNotSupportedException();
 #endif
 }
 
-void CSelection::DrawHandles(CDC& pDC) const
+void CSelection::DrawHandles(wxDC& pDC) const
 {
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
-        CRect rect = GetHandleRect(i);
-        pDC.PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), DSTINVERT);
+        wxRect rect = GetHandleRect(i);
+        CB::DCLogicalFunctionChanger setLogFunc(pDC, wxXOR);
+        wxDCPenChanger setPen(pDC, *wxWHITE_PEN);
+        wxDCBrushChanger setBrush(pDC, *wxWHITE_BRUSH);
+        pDC.DrawRectangle(rect);
     }
 }
 
@@ -89,7 +85,7 @@ int CSelection::HitTestHandles(CPoint point) const
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
-        if (GetHandleRect(i).PtInRect(point))
+        if (GetHandleRect(i).Contains(CB::Convert(point)))
             return i;
     }
     return hitNothing;
@@ -100,36 +96,31 @@ void CSelection::InvalidateHandles()
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
-#if 0
-        CRect rct = GetHandleRect(i);
-        m_pView->InvalidateWorkspaceRect(&rct, FALSE);
-#endif
+        wxRect rct = GetHandleRect(i);
+        m_pView->InvalidateWorkspaceRect(rct, FALSE);
     }
 }
 
 // Returns handle rectangle in logical coords.
-CRect CSelection::GetHandleRect(int nHandleID) const
+wxRect CSelection::GetHandleRect(int nHandleID) const
 {
-#if 0
     // Get the center of the handle in logical coords
-    CPoint point = GetHandleLoc(nHandleID);
+    wxPoint point = GetHandleLoc(nHandleID);
 
     // Convert point to client coords
     m_pView->WorkspaceToClient(point);
 
     // Calc CRect of handle in device coords
-    CRect rect(point.x-3, point.y-3, point.x+3, point.y+3);
+    wxRect rect(wxPoint(point.x-3, point.y-3), wxSize(6, 6));
 
     m_pView->ClientToWorkspace(rect);
 
     return rect;
-#else
-return CRect();
-#endif
 }
 
 void CSelection::Invalidate()
 {
+    wxASSERT(!"TODO:");
 #if 0
     CRect rct = m_rect;
     rct = m_pObj->GetEnclosingRect();
@@ -184,7 +175,7 @@ HCURSOR CSelRect::GetHandleCursor(int nHandleID) const
 }
 
 // Returns handle location in logical coords.
-CPoint CSelRect::GetHandleLoc(int nHandleID) const
+wxPoint CSelRect::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -206,7 +197,7 @@ CPoint CSelRect::GetHandleLoc(int nHandleID) const
         default: ASSERT(FALSE);
             x = -1; y = -1;
     }
-    return CPoint(x, y);
+    return wxPoint(x, y);
 }
 
 void CSelRect::MoveHandle(int nHandle, CPoint point)
@@ -308,7 +299,7 @@ HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
 }
 
 // Returns handle location in logical coords.
-CPoint CSelLine::GetHandleLoc(int nHandleID) const
+wxPoint CSelLine::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -330,7 +321,7 @@ CPoint CSelLine::GetHandleLoc(int nHandleID) const
         default: ASSERT(FALSE);
             x = -1; y = -1;
     }
-    return CPoint(x, y);
+    return wxPoint(x, y);
 }
 
 void CSelLine::MoveHandle(int nHandle, CPoint point)
@@ -415,10 +406,10 @@ HCURSOR CSelPoly::GetHandleCursor(int nHandleID) const
 }
 
 // Returns handle location in logical coords.
-CPoint CSelPoly::GetHandleLoc(int nHandleID) const
+wxPoint CSelPoly::GetHandleLoc(int nHandleID) const
 {
     ASSERT(m_Pnts.size() > value_preserving_cast<size_t>(nHandleID));
-    return CPoint(m_Pnts[value_preserving_cast<size_t>(nHandleID)]);
+    return wxPoint(CB::Convert(m_Pnts[value_preserving_cast<size_t>(nHandleID)]));
 }
 
 void CSelPoly::MoveHandle(int nHandle, CPoint point)
@@ -502,7 +493,7 @@ void CSelGeneric::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
 }
 
 // Returns handle location in logical coords.
-CPoint CSelGeneric::GetHandleLoc(int nHandleID) const
+wxPoint CSelGeneric::GetHandleLoc(int nHandleID) const
 {
     int x, y;
 
@@ -515,7 +506,7 @@ CPoint CSelGeneric::GetHandleLoc(int nHandleID) const
         default: ASSERT(FALSE);
             x = -1; y = -1;
     }
-    return CPoint(x, y);
+    return wxPoint(x, y);
 }
 
 void CSelGeneric::UpdateObject(BOOL bInvalidate,
@@ -715,28 +706,10 @@ void CSelList::Offset(CPoint ptDelta)
 // Called by view OnDraw(). This entry makes it possible
 // to turn off handles during a drag operation.
 
-void CSelList::OnDraw(CDC& pDC)
-{
-    if (m_eTrkMode == trkSelected)
-        DrawTracker(pDC);
-}
-
 void CSelList::OnDraw(wxDC& pDC)
 {
     if (m_eTrkMode == trkSelected)
         DrawTracker(pDC);
-}
-
-void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
-{
-    if (eTrkMode != trkCurrent)
-        m_eTrkMode = eTrkMode;
-
-    for (iterator pos = begin() ; pos != end() ; ++pos)
-    {
-        CSelection& pSel = **pos;
-        pSel.DrawTracker(pDC, m_eTrkMode);
-    }
 }
 
 void CSelList::DrawTracker(wxDC& pDC, TrackMode eTrkMode)
