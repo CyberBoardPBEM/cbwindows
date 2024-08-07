@@ -62,25 +62,25 @@ class CSelection
 // Constructors
 public:
     CSelection(CBrdEditView& pView, CDrawObj& pObj)
-        : m_pView (&pView), m_pObj (&pObj), m_rect (pObj.GetRect())     //DFM19991221
+        : m_pView (&pView), m_pObj (&pObj), m_rect (CB::Convert(pObj.GetRect()))     //DFM19991221
     {}                                                                 //DFM19991221
     virtual ~CSelection() {}
 
 // Attributes
 public:
     RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
-    CRect     m_rect;           // Enclosing rect for selected object
+    wxRect m_rect;           // Enclosing rect for selected object
 
-    virtual HCURSOR GetHandleCursor(int nHandle) const /* override */
-        { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
-    virtual CRect GetRect() const /* override */ { return m_rect; }
+    virtual wxCursor GetHandleCursor(int nHandle) const /* override */
+        { return wxCursor(wxCURSOR_ARROW); }
+    virtual wxRect GetRect() const /* override */ { return m_rect; }
 
 // Operations
 public:
-    virtual int HitTestHandles(CPoint point) const /* override */;
+    virtual int HitTestHandles(wxPoint point) const /* override */;
     // ------- //
-    virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
-    virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
+    virtual void MoveHandle(int m_nHandle, wxPoint point) /* override */ {}
+    virtual void Offset(wxPoint ptDelta) /* override */ { m_rect.Offset(ptDelta); }
     // ------- //
     virtual void DrawTracker(wxDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
@@ -96,19 +96,23 @@ protected:
     virtual wxPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
     virtual int GetHandleCount() const /* override */ = 0;
     virtual void DrawHandles(wxDC& pDC) const /* override */;
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const /* override */ = 0;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const /* override */ = 0;
 
 // Implementation
 protected:
     RefPtr<CBrdEditView> m_pView;            // Selection's view
     // -- Class level support methods -- //
-    static void SetupTrackingDraw(CDC& pDC);
-    static void CleanUpTrackingDraw(CDC& pDC);
+    class DCSetupTrackingDraw
+    {
+    public:
+        DCSetupTrackingDraw(wxDC& pDC);
+    private:
+        CB::DCLogicalFunctionChanger setLogFunc;
+        wxDCPenChanger setPen;
+        wxDCBrushChanger setBrush;
+    };
     // -- Class variables -- //
-    static CPen     NEAR c_penDot;
-    static int      NEAR c_nPrvROP2;
-    static CPen*    NEAR c_pPrvPen;
-    static CBrush*  NEAR c_pPrvBrush;
+    static const wxPen c_penDot;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -119,15 +123,15 @@ class CSelRect : public CSelection
 // Constructors
 public:
     CSelRect(CBrdEditView& pView, CRectObj& pObj) : CSelection(pView, pObj)
-        { m_rect = pObj.GetRect(); }
+        { m_rect = CB::Convert(pObj.GetRect()); }
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override;
-    virtual void MoveHandle(int m_nHandle, CPoint point) override;
+    virtual wxCursor GetHandleCursor(int nHandle) const override;
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override;
 
 protected:
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 8; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -145,7 +149,7 @@ public:
 
 // Overrides
 protected:
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -156,19 +160,19 @@ class CSelLine : public CSelection
 // Constructors
 public:
     CSelLine(CBrdEditView& pView, CLine& pObj) : CSelection(pView, pObj)
-        { pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
+        { m_rect = pObj.GetLine(); }
 
 // Attributes
 public:
-    virtual CRect GetRect() const override;
+    virtual wxRect GetRect() const override;
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override;
-    virtual void MoveHandle(int m_nHandle, CPoint point) override;
+    virtual wxCursor GetHandleCursor(int nHandle) const override;
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override;
 
 protected:
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -187,18 +191,18 @@ public:
 
 // Attributes
 public:
-    virtual CRect GetRect() const override;
+    virtual wxRect GetRect() const override;
     // -------- //
-    std::vector<POINT> m_Pnts;
+    std::vector<wxPoint> m_Pnts;
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override;
-    virtual void MoveHandle(int m_nHandle, CPoint point) override;
-    virtual void Offset(CPoint ptDelta) override;
+    virtual wxCursor GetHandleCursor(int nHandle) const override;
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override;
+    virtual void Offset(wxPoint ptDelta) override;
 
 protected:
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override
         { return value_preserving_cast<int>(static_cast<const CPolyObj&>(*m_pObj).m_Pnts.size()); }
@@ -216,16 +220,16 @@ class CSelGeneric : public CSelection
 // Constructors
 public:
     CSelGeneric(CBrdEditView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
-        { m_rect = pObj.GetRect(); }
+        { m_rect = CB::Convert(pObj.GetRect()); }
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override
-        { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
-    virtual void MoveHandle(int m_nHandle, CPoint point) override {}
+    virtual wxCursor GetHandleCursor(int nHandle) const override
+        { return wxCursor(wxCURSOR_ARROW); }
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override {}
 
 protected:
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -273,7 +277,7 @@ public:
     // -------- //
     void SetTrackingMode(TrackMode eTrkMode) { m_eTrkMode = eTrkMode; }
     TrackMode GetTrackingMode() const { return m_eTrkMode; }
-    CRect GetEnclosingRect() const { return m_rctEncl; }
+    wxRect GetEnclosingRect() const { return m_rctEncl; }
 
 // Operations
 public:
@@ -284,10 +288,10 @@ public:
     void InvalidateList(BOOL bUpdate = FALSE);
     void PurgeList(BOOL bInvalidate = TRUE);
     // -------- //
-    int HitTestHandles(CPoint point) const;
+    int HitTestHandles(wxPoint point) const;
     // -------- //
-    void Offset(CPoint ptDelta);
-    void MoveHandle(int m_nHandle, CPoint point);
+    void Offset(wxPoint ptDelta);
+    void MoveHandle(int m_nHandle, wxPoint point);
 
     void SetDObjFlagInAllSelectedObjects(DWORD dwFlag);
     void ClearDObjFlagInAllSelectedObjects(DWORD dwFlag);
@@ -306,7 +310,7 @@ public:
 protected:
     RefPtr<CBrdEditView> m_pView;          // Selection's view
     TrackMode     m_eTrkMode;       // Current list tracking mode.
-    CRect         m_rctEncl;        // Enclosing rect.
+    wxRect        m_rctEncl;        // Enclosing rect.
     // -------- //
     void CalcEnclosingRect();
 };

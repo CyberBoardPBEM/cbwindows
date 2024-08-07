@@ -48,10 +48,7 @@ const int handleHalfWidth = 3;
 /////////////////////////////////////////////////////////////////////
 // Class level variables
 
-CPen    NEAR CSelection::c_penDot(PS_DOT, 1, RGB(0,0,0));
-int     NEAR CSelection::c_nPrvROP2;
-CPen*   NEAR CSelection::c_pPrvPen = NULL;
-CBrush* NEAR CSelection::c_pPrvBrush = NULL;
+const wxPen CSelection::c_penDot(*wxWHITE, 1, wxPENSTYLE_DOT);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -60,11 +57,7 @@ void CSelection::DrawTracker(wxDC& pDC, TrackMode eMode) const
     if (eMode == trkSelected)
         DrawHandles(pDC);
     else if (eMode == trkMoving || eMode == trkSizing)
-#if 0
         DrawTrackingImage(pDC, eMode);
-#else
-        AfxThrowNotSupportedException();
-#endif
 }
 
 void CSelection::DrawHandles(wxDC& pDC) const
@@ -80,12 +73,12 @@ void CSelection::DrawHandles(wxDC& pDC) const
     }
 }
 
-int CSelection::HitTestHandles(CPoint point) const
+int CSelection::HitTestHandles(wxPoint point) const
 {
     int n = GetHandleCount();
     for (int i = 0; i < n; i++)
     {
-        if (GetHandleRect(i).Contains(CB::Convert(point)))
+        if (GetHandleRect(i).Contains(point))
             return i;
     }
     return hitNothing;
@@ -120,58 +113,46 @@ wxRect CSelection::GetHandleRect(int nHandleID) const
 
 void CSelection::Invalidate()
 {
-    wxASSERT(!"TODO:");
-#if 0
-    CRect rct = m_rect;
-    rct = m_pObj->GetEnclosingRect();
-    m_pView->InvalidateWorkspaceRect(&rct, FALSE);
-#endif
+    wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
+    m_pView->InvalidateWorkspaceRect(rct, FALSE);
 }
 
 //=---------------------------------------------------=//
 // Static methods...
 
-void CSelection::SetupTrackingDraw(CDC& pDC)
+CSelection::DCSetupTrackingDraw::DCSetupTrackingDraw(wxDC& pDC) :
+    setLogFunc(pDC, wxXOR),
+    setPen(pDC, c_penDot),
+    setBrush(pDC, *wxTRANSPARENT_BRUSH)
 {
-    c_nPrvROP2 = pDC.SetROP2(R2_XORPEN);
-    c_pPrvPen = pDC.SelectObject(&c_penDot);
-    c_pPrvBrush = static_cast<CBrush*>(pDC.SelectStockObject(NULL_BRUSH));
-}
-
-void CSelection::CleanUpTrackingDraw(CDC& pDC)
-{
-    pDC.SetROP2(c_nPrvROP2);
-    pDC.SelectObject(c_pPrvPen);
-    pDC.SelectObject(c_pPrvBrush);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Rectangle Selection Processing
 
-void CSelRect::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelRect::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
-    SetupTrackingDraw(pDC);
-    pDC.Rectangle(m_rect);
-    CleanUpTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
+    pDC.DrawRectangle(m_rect);
 }
 
-HCURSOR CSelRect::GetHandleCursor(int nHandleID) const
+wxCursor CSelRect::GetHandleCursor(int nHandleID) const
 {
-    const CB::string::value_type* id;
+    wxStockCursor id;
     switch (nHandleID)
     {
         case hitTopLeft:
-        case hitBottomRight: id = IDC_SIZENWSE;  break;
+        case hitBottomRight: id = wxCURSOR_SIZENWSE;  break;
         case hitTop:
-        case hitBottom:      id = IDC_SIZENS;    break;
+        case hitBottom:      id = wxCURSOR_SIZENS;    break;
         case hitTopRight:
-        case hitBottomLeft:  id = IDC_SIZENESW;  break;
+        case hitBottomLeft:  id = wxCURSOR_SIZENESW;  break;
         case hitRight:
-        case hitLeft:        id = IDC_SIZEWE;    break;
+        case hitLeft:        id = wxCURSOR_SIZEWE;    break;
         default: ASSERT(FALSE);
-            id = nullptr;
+            id = wxCURSOR_NONE;
     }
-    return AfxGetApp()->LoadStandardCursor(id);
+    return wxCursor(id);
 }
 
 // Returns handle location in logical coords.
@@ -181,45 +162,47 @@ wxPoint CSelRect::GetHandleLoc(int nHandleID) const
 
     // This gets the center regardless of left/right and
     // top/bottom ordering
-    int xCenter = m_rect.left + m_rect.Width() / 2;
-    int yCenter = m_rect.top + m_rect.Height() / 2;
+    wxPoint center = GetMidRect(m_rect);
 
+    // + 1:  wxRect right/bottom != CRect right/bottom
     switch (nHandleID)
     {
-        case hitTopLeft:     x = m_rect.left;  y = m_rect.top;    break;
-        case hitTopRight:    x = m_rect.right; y = m_rect.top;    break;
-        case hitBottomRight: x = m_rect.right; y = m_rect.bottom; break;
-        case hitBottomLeft:  x = m_rect.left;  y = m_rect.bottom; break;
-        case hitTop:         x = xCenter;      y = m_rect.top;    break;
-        case hitRight:       x = m_rect.right; y = yCenter;       break;
-        case hitBottom:      x = xCenter;      y = m_rect.bottom; break;
-        case hitLeft:        x = m_rect.left;  y = yCenter;       break;
+        case hitTopLeft:     x = m_rect.GetLeft();      y = m_rect.GetTop();        break;
+        case hitTopRight:    x = m_rect.GetRight() + 1; y = m_rect.GetTop();        break;
+        case hitBottomRight: x = m_rect.GetRight() + 1; y = m_rect.GetBottom() + 1; break;
+        case hitBottomLeft:  x = m_rect.GetLeft();      y = m_rect.GetBottom() + 1; break;
+        case hitTop:         x = center.x;              y = m_rect.GetTop();        break;
+        case hitRight:       x = m_rect.GetRight() + 1; y = center.y;               break;
+        case hitBottom:      x = center.x;              y = m_rect.GetBottom() + 1; break;
+        case hitLeft:        x = m_rect.GetLeft();      y = center.y;               break;
         default: ASSERT(FALSE);
             x = -1; y = -1;
     }
     return wxPoint(x, y);
 }
 
-void CSelRect::MoveHandle(int nHandle, CPoint point)
+void CSelRect::MoveHandle(int nHandle, wxPoint point)
 {
+    wxASSERT(!"TODO:  needs testing");
+    // SetLeft() and SetTop() also change right and bottom
     switch (nHandle)
     {
         case hitTopLeft:
-            m_rect.left = point.x; m_rect.top = point.y; break;
+            m_rect = wxRect(point, wxSize(m_rect.GetRight() + 1 - point.x, m_rect.GetBottom() + 1 - point.y)); break;
         case hitTopRight:
-            m_rect.right = point.x; m_rect.top = point.y; break;
+            m_rect = wxRect(wxPoint(m_rect.GetLeft(), point.y), wxSize(point.x - m_rect.GetLeft(), m_rect.GetBottom() + 1 - point.y)); break;
         case hitBottomRight:
-            m_rect.right = point.x; m_rect.bottom = point.y; break;
+            m_rect = wxRect(m_rect.GetLeftTop(), wxSize(point.x - m_rect.GetLeft(), point.y - m_rect.GetTop())); break;
         case hitBottomLeft:
-            m_rect.left = point.x; m_rect.bottom = point.y; break;
+            m_rect = wxRect(wxPoint(point.x, m_rect.GetTop()), wxSize(m_rect.GetRight() + 1 - point.x, point.y - m_rect.GetTop())); break;
         case hitTop:
-            m_rect.top = point.y; break;
+            m_rect = wxRect(wxPoint(m_rect.GetLeft(), point.y), wxSize(m_rect.GetWidth(), m_rect.GetBottom() + 1 - point.y)); break;
         case hitRight:
-            m_rect.right = point.x; break;
+            m_rect = wxRect(m_rect.GetLeftTop(), wxSize(point.x - m_rect.GetLeft(), m_rect.GetHeight())); break;
         case hitBottom:
-            m_rect.bottom = point.y; break;
+            m_rect = wxRect(m_rect.GetLeftTop(), wxSize(m_rect.GetWidth(), point.y - m_rect.GetTop())); break;
         case hitLeft:
-            m_rect.left = point.x; break;
+            m_rect = wxRect(wxPoint(point.x, m_rect.GetTop()), wxSize(m_rect.GetRight() + 1 - point.x, m_rect.GetHeight())); break;
         default: ASSERT(FALSE);
     }
 }
@@ -230,72 +213,65 @@ void CSelRect::UpdateObject(BOOL bInvalidate,
     CRectObj& pObj = static_cast<CRectObj&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj.GetEnclosingRect();
-        CRect rctB = pObj.GetRect();
-#if 0
+        wxRect rctA = CB::Convert(pObj.GetEnclosingRect());
+        wxRect rctB = CB::Convert(pObj.GetRect());
         m_pView->WorkspaceToClient(rctB);
-        rctB.InflateRect(handleHalfWidth, handleHalfWidth);
+        rctB.Inflate(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
-        rctA |= rctB;               // Make sure we erase the handles
-        m_pView->InvalidateWorkspaceRect(&rctA);
-#endif
+        rctA += rctB;               // Make sure we erase the handles
+        m_pView->InvalidateWorkspaceRect(rctA);
     }
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        m_rect.NormalizeRect();
-        pObj.SetRect(m_rect);
+        CB::Normalize(m_rect);
+        pObj.SetRect(CB::Convert(m_rect));
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = pObj.GetRect();
+        m_rect = CB::Convert(pObj.GetRect());
     }
     if (bInvalidate)
     {
-#if 0
-        CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
-#endif
+        wxRect rct = CB::Convert(pObj.GetEnclosingRect());
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 
 /////////////////////////////////////////////////////////////////////
 // Ellipse Selection Processing
 
-void CSelEllipse::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelEllipse::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
-    SetupTrackingDraw(pDC);
-    pDC.Ellipse(m_rect);
-    CleanUpTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
+    CB::DrawEllipse(pDC, m_rect);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Line Selection Processing
 
-void CSelLine::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelLine::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
-    SetupTrackingDraw(pDC);
-    pDC.MoveTo(m_rect.left, m_rect.top);
-    pDC.LineTo(m_rect.right, m_rect.bottom);
-    CleanUpTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
+    pDC.DrawLine(m_rect.GetLeftTop(), m_rect.GetRightBottom() += wxPoint(1, 1));
 }
 
-HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
+wxCursor CSelLine::GetHandleCursor(int nHandleID) const
 {
-    const CB::string::value_type* id;
+    wxStockCursor id;
     switch (nHandleID)
     {
 
         case hitPtA:
         case hitPtB:
-            id = IDC_CROSS;
+            id = wxCURSOR_CROSS;
             break;
         default: ASSERT(FALSE);
-            id = nullptr;
+            id = wxCURSOR_NONE;
     }
-    return AfxGetApp()->LoadStandardCursor(id);
+    return wxCursor(id);
 }
 
 // Returns handle location in logical coords.
@@ -305,14 +281,14 @@ wxPoint CSelLine::GetHandleLoc(int nHandleID) const
 
     switch (nHandleID)
     {
-        case hitPtA: x = m_rect.left;  y = m_rect.top;    break;
+        case hitPtA: x = m_rect.GetLeft();  y = m_rect.GetTop();    break;
         case hitPtB:
-            x = m_rect.right;
-            y = m_rect.bottom;
+            x = m_rect.GetRight() + 1;
+            y = m_rect.GetBottom() + 1;
             // If the points are right on top of each other,
             // nudge this hit point over a bit.
-            if (m_rect.left == m_rect.right &&
-                m_rect.top == m_rect.bottom)
+            if (m_rect.GetLeft() == m_rect.GetRight() + 1 &&
+                m_rect.GetTop() == m_rect.GetBottom() + 1)
             {
                 x++;
                 y++;
@@ -324,22 +300,22 @@ wxPoint CSelLine::GetHandleLoc(int nHandleID) const
     return wxPoint(x, y);
 }
 
-void CSelLine::MoveHandle(int nHandle, CPoint point)
+void CSelLine::MoveHandle(int nHandle, wxPoint point)
 {
     switch (nHandle)
     {
         case hitPtA:
-            m_rect.left = point.x; m_rect.top = point.y; break;
+            m_rect = wxRect(wxPoint(point.x, point.y), wxSize(m_rect.GetRight() + 1 - point.x, m_rect.GetBottom() + 1 - point.y)); break;
         case hitPtB:
-            m_rect.right = point.x; m_rect.bottom = point.y; break;
+            m_rect = wxRect(m_rect.GetLeftTop(), wxSize(point.x - m_rect.GetLeft(), point.y - m_rect.GetTop())); break;
         default: ASSERT(FALSE);
     }
 }
 
-CRect CSelLine::GetRect() const
+wxRect CSelLine::GetRect() const
 {
-    CRect rct = m_rect;
-    rct.NormalizeRect();
+    wxRect rct = m_rect;
+    CB::Normalize(rct);
     return rct;
 }
 
@@ -349,36 +325,30 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     CLine& pObj = static_cast<CLine&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj.GetEnclosingRect();
-        CRect rctB;
-        pObj.GetLine(rctB.left, rctB.top, rctB.right, rctB.bottom);
-        rctB.NormalizeRect();
-#if 0
+        wxRect rctA = CB::Convert(pObj.GetEnclosingRect());
+        wxRect rctB = pObj.GetLine();
         m_pView->WorkspaceToClient(rctB);
-        rctB.InflateRect(handleHalfWidth, handleHalfWidth);
+        rctB.Inflate(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
-        rctA |= rctB;       // Make sure we erase the handles
-        m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
-#endif
+        rctA += rctB;       // Make sure we erase the handles
+        m_pView->InvalidateWorkspaceRect(rctA, FALSE);
     }
-    pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+    pObj.SetLine(m_rect.GetLeft(), m_rect.GetTop(), m_rect.GetRight() + 1, m_rect.GetBottom() + 1);
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+        pObj.SetLine(m_rect.GetLeft(), m_rect.GetTop(), m_rect.GetRight() + 1, m_rect.GetBottom() + 1);
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
+        m_rect = pObj.GetLine();
     }
     if (bInvalidate)
     {
-#if 0
-        CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
-#endif
+        wxRect rct = CB::Convert(pObj.GetEnclosingRect());
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 
@@ -389,36 +359,35 @@ CSelPoly::CSelPoly(CBrdEditView& pView, CPolyObj& pObj) :
     CSelection(pView, pObj)
 {
     ASSERT(!pObj.m_Pnts.empty());
-    m_Pnts = pObj.m_Pnts;
+    m_Pnts = CB::Convert(pObj.m_Pnts);
 }
 
-void CSelPoly::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelPoly::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
     ASSERT(!m_Pnts.empty());
-    SetupTrackingDraw(pDC);
-    pDC.Polyline(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
-    CleanUpTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
+    pDC.DrawLines(value_preserving_cast<int>(m_Pnts.size()), m_Pnts.data());
 }
 
-HCURSOR CSelPoly::GetHandleCursor(int nHandleID) const
+wxCursor CSelPoly::GetHandleCursor(int nHandleID) const
 {
-    return AfxGetApp()->LoadStandardCursor(IDC_CROSS);
+    return wxCursor(wxCURSOR_CROSS);
 }
 
 // Returns handle location in logical coords.
 wxPoint CSelPoly::GetHandleLoc(int nHandleID) const
 {
     ASSERT(m_Pnts.size() > value_preserving_cast<size_t>(nHandleID));
-    return wxPoint(CB::Convert(m_Pnts[value_preserving_cast<size_t>(nHandleID)]));
+    return m_Pnts[value_preserving_cast<size_t>(nHandleID)];
 }
 
-void CSelPoly::MoveHandle(int nHandle, CPoint point)
+void CSelPoly::MoveHandle(int nHandle, wxPoint point)
 {
     ASSERT(m_Pnts.size() > value_preserving_cast<size_t>(nHandle));
     m_Pnts[value_preserving_cast<size_t>(nHandle)] = point;
 }
 
-void CSelPoly::Offset(CPoint ptDelta)
+void CSelPoly::Offset(wxPoint ptDelta)
 {
     ASSERT(!m_Pnts.empty());
     for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
@@ -428,10 +397,9 @@ void CSelPoly::Offset(CPoint ptDelta)
     }
 }
 
-CRect CSelPoly::GetRect() const
+wxRect CSelPoly::GetRect() const
 {
-    CRect rct;
-    rct.SetRectEmpty();
+    wxRect rct;
     if (m_Pnts.empty())
         return rct;
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
@@ -442,7 +410,7 @@ CRect CSelPoly::GetRect() const
         ymin = CB::min(ymin, m_Pnts[i].y);
         ymax = CB::max(ymax, m_Pnts[i].y);
     }
-    rct.SetRect(xmin, ymin, xmax, ymax);
+    rct = wxRect(wxPoint(xmin, ymin), wxSize(xmax - xmin, ymax - ymin));
     return rct;
 }
 
@@ -452,44 +420,39 @@ void CSelPoly::UpdateObject(BOOL bInvalidate,
     CPolyObj& pObj = static_cast<CPolyObj&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj.GetEnclosingRect();
-        CRect rctB = pObj.GetRect();
-#if 0
+        wxRect rctA = CB::Convert(pObj.GetEnclosingRect());
+        wxRect rctB = CB::Convert(pObj.GetRect());
         m_pView->WorkspaceToClient(rctB);
-        rctB.InflateRect(handleHalfWidth, handleHalfWidth);
+        rctB.Inflate(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rctB);
-        rctA |= rctB;               // Make sure we erase the handles
-        m_pView->InvalidateWorkspaceRect(&rctA);
-#endif
+        rctA += rctB;               // Make sure we erase the handles
+        m_pView->InvalidateWorkspaceRect(rctA);
     }
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        pObj.SetNewPolygon(m_Pnts);
+        pObj.SetNewPolygon(CB::Convert(m_Pnts));
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_Pnts = pObj.m_Pnts;
+        m_Pnts = CB::Convert(pObj.m_Pnts);
     }
     if (bInvalidate)
     {
-#if 0
-        CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
-#endif
+        wxRect rct = CB::Convert(pObj.GetEnclosingRect());
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 
 /////////////////////////////////////////////////////////////////////
 // Generic Object Selection Processing
 
-void CSelGeneric::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelGeneric::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
-    SetupTrackingDraw(pDC);
-    pDC.Rectangle(m_rect);
-    CleanUpTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
+    pDC.DrawRectangle(m_rect);
 }
 
 // Returns handle location in logical coords.
@@ -499,10 +462,10 @@ wxPoint CSelGeneric::GetHandleLoc(int nHandleID) const
 
     switch (nHandleID)
     {
-        case hitTopLeft:     x = m_rect.left;  y = m_rect.top;    break;
-        case hitTopRight:    x = m_rect.right; y = m_rect.top;    break;
-        case hitBottomRight: x = m_rect.right; y = m_rect.bottom; break;
-        case hitBottomLeft:  x = m_rect.left;  y = m_rect.bottom; break;
+        case hitTopLeft:     x = m_rect.GetLeft();       y = m_rect.GetTop();        break;
+        case hitTopRight:    x = m_rect.GetRight() + 1;  y = m_rect.GetTop();        break;
+        case hitBottomRight: x = m_rect.GetRight() + 1 ; y = m_rect.GetBottom() + 1; break;
+        case hitBottomLeft:  x = m_rect.GetLeft();       y = m_rect.GetBottom() + 1; break;
         default: ASSERT(FALSE);
             x = -1; y = -1;
     }
@@ -515,45 +478,41 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     CDrawObj& pObj = static_cast<CRectObj&>(*m_pObj);
     if (bInvalidate)
     {
-#if 0
-        CRect rct = pObj.GetRect();
+        wxRect rct = CB::Convert(pObj.GetRect());
         m_pView->WorkspaceToClient(rct);
-        rct.InflateRect(handleHalfWidth, handleHalfWidth);
+        rct.Inflate(handleHalfWidth, handleHalfWidth);
         m_pView->ClientToWorkspace(rct);
-        m_pView->InvalidateWorkspaceRect(&rct);
-#endif
+        m_pView->InvalidateWorkspaceRect(rct);
     }
     if (bUpdateObjectExtent)
     {
         // Normal case is when object needs to be updated.
-        m_rect.NormalizeRect();
-        pObj.SetRect(m_rect);
+        CB::Normalize(m_rect);
+        pObj.SetRect(CB::Convert(m_rect));
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = pObj.GetRect();
+        m_rect = CB::Convert(pObj.GetRect());
     }
     if (bInvalidate)
     {
-#if 0
-        CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
-#endif
+        wxRect rct = CB::Convert(pObj.GetEnclosingRect());
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 
 /////////////////////////////////////////////////////////////////////
 // Selection List Processing
 
-int CSelList::HitTestHandles(CPoint point) const
+int CSelList::HitTestHandles(wxPoint point) const
 {
     // No support for multiselect handles.
     return IsSingleSelect() ? front()->HitTestHandles(point) : hitNothing;
 }
 
-void CSelList::MoveHandle(int m_nHandle, CPoint point)
+void CSelList::MoveHandle(int m_nHandle, wxPoint point)
 {
     // No support for multiselect handles.
     if (IsSingleSelect())
@@ -649,7 +608,7 @@ void CSelList::CopyToClipboard()
     ASSERT(IsCopyToClipboardPossible());
 
     CSelection& pSel = *front();
-    ASSERT(pSel.m_pObj->GetType() == CDrawObj::drawBitmap);
+    wxASSERT(pSel.m_pObj->GetType() == CDrawObj::drawBitmap);
     CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel.m_pObj);
     SetClipboardBitmap(CB::Convert(pDObj.m_bitmap));
 }
@@ -663,37 +622,37 @@ void CSelList::Open()
     if (pSel.m_pObj->GetType() != CDrawObj::drawText)
         return;
     CText& pDObj = static_cast<CText&>(*pSel.m_pObj);
-#if 0
     m_pView->DoEditTextDrawingObject(pDObj);
     pSel.InvalidateHandles();
-    pSel.m_rect = pDObj.GetEnclosingRect();
+    pSel.m_rect = CB::Convert(pDObj.GetEnclosingRect());
     pSel.InvalidateHandles();
-#endif
 }
 
 // Assumes RECTs are normalized!!
-void CbUnionRect(RECT& pRctDst, const RECT& pRctSrc1, const RECT& pRctSrc2)
+void CbUnionRect(wxRect& pRctDst, const wxRect& pRctSrc1, const wxRect& pRctSrc2)
 {
-    pRctDst.left = CB::min(pRctSrc1.left, pRctSrc2.left);
-    pRctDst.top = CB::min(pRctSrc1.top, pRctSrc2.top);
-    pRctDst.right = CB::max(pRctSrc1.right, pRctSrc2.right);
-    pRctDst.bottom = CB::max(pRctSrc1.bottom, pRctSrc2.bottom);
+    typedef decltype(std::declval<wxRect>().GetLeft()) Coord;
+    Coord left = CB::min(pRctSrc1.GetLeft(), pRctSrc2.GetLeft());
+    Coord top = CB::min(pRctSrc1.GetTop(), pRctSrc2.GetTop());
+    Coord right = CB::max(pRctSrc1.GetRight(), pRctSrc2.GetRight());
+    Coord bottom = CB::max(pRctSrc1.GetBottom(), pRctSrc2.GetBottom());
+    pRctDst = wxRect(wxPoint(left, top), wxPoint(right, bottom));
 }
 
 void CSelList::CalcEnclosingRect()
 {
-    m_rctEncl.SetRectEmpty();
+    m_rctEncl = wxRect();
     for (iterator pos = begin() ; pos != end() ; ++pos)
     {
         CSelection& pSel = **pos;
-        if (m_rctEncl.IsRectNull())
+        if (m_rctEncl == wxRect())
             m_rctEncl = pSel.GetRect();
         else
             CbUnionRect(m_rctEncl, m_rctEncl, pSel.GetRect());
     }
 }
 
-void CSelList::Offset(CPoint ptDelta)
+void CSelList::Offset(wxPoint ptDelta)
 {
     for (iterator pos = begin() ; pos != end() ; ++pos)
     {

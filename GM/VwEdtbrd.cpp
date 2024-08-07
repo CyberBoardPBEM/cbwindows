@@ -1052,6 +1052,7 @@ void CBrdEditView::DoCreateTextDrawingObject(CPoint point)
         }
     }
 }
+#endif
 
 void CBrdEditView::DoEditTextDrawingObject(CText& pDObj)
 {
@@ -1064,19 +1065,20 @@ void CBrdEditView::DoEditTextDrawingObject(CText& pDObj)
     {
         if (!dlg.m_strText.empty())
         {
-            CRect rct = pDObj.GetEnclosingRect();
-            InvalidateWorkspaceRect(&rct);
+            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
+            InvalidateWorkspaceRect(rct);
 
             pDObj.m_text = dlg.m_strText;
             pDObj.SetFont(dlg.m_fontID);   // Also resyncs the extent rect
 
-            rct = pDObj.GetEnclosingRect();
-            InvalidateWorkspaceRect(&rct);
+            rct = CB::Convert(pDObj.GetEnclosingRect());
+            InvalidateWorkspaceRect(rct);
             GetDocument().SetModifiedFlag();
         }
     }
 }
 
+#if 0
 void CBrdEditView::CreateTextDrawingObject(CPoint pnt, FontID fid,
     COLORREF crText, const CB::string& strText, BOOL bInvalidate /* = TRUE */)
 {
