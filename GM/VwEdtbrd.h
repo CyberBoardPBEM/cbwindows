@@ -74,7 +74,9 @@ public:
     void SetBoardBackColor(COLORREF cr, BOOL bUpdate);
     void SetDrawingTile(CDrawList& pDwg, TileID tid, CPoint pnt, BOOL bUpdate);
     void DoCreateTextDrawingObject(CPoint point);
+#endif
     void DoEditTextDrawingObject(CText& pDObj);
+#if 0
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
     void ResetToDefaultTool();
 

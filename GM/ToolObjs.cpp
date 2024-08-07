@@ -118,7 +118,7 @@ void CSelectTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
     CSelList& pSLst = pView.GetSelectList();
     // If a a handle is clicked on, immediately start tracking the
     // resize.
-    if ((m_nHandleID = pSLst.HitTestHandles(point)) >= 0)
+    if ((m_nHandleID = pSLst.HitTestHandles(CB::Convert(point))) >= 0)
     {
         StartSizingOperation(pView, nFlags, point);
         return;
@@ -575,12 +575,12 @@ void CSelectTool::MoveSelections(CSelList& pSLst, CPoint point)
     if (m_eSelMode == smodeMove)
     {
         CPoint ptDelta = (CPoint)(point - c_ptLast);
-        pSLst.Offset(ptDelta);
+        pSLst.Offset(CB::Convert(ptDelta));
         if (!m_rectMultiBorder.IsRectNull())
             m_rectMultiBorder += ptDelta;
     }
     else
-        pSLst.MoveHandle(m_nHandleID, point);
+        pSLst.MoveHandle(m_nHandleID, CB::Convert(point));
 }
 
 BOOL CSelectTool::AdjustPoint(const CBrdEditView& pView, CPoint& point) const
