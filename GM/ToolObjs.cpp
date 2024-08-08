@@ -1,6 +1,6 @@
 // ToolObjs.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -49,8 +49,8 @@ const int scrollZone = 8;                   //From INI?
 
 std::vector<CTool*> CTool::c_toolLib;          // Tool library
 
-CPoint CTool::c_ptDown;             // Mouse down location
-CPoint CTool::c_ptLast;             // Last mouse location
+wxPoint CTool::c_ptDown;             // Mouse down location
+wxPoint CTool::c_ptLast;             // Last mouse location
 
 // The tool objects...
 
@@ -87,7 +87,7 @@ CTool& CTool::GetTool(ToolType eToolType)
     return retval;
 }
 
-void CTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CTool::OnLButtonDown(CBrdEditView& pView, int nMods, wxPoint point)
 {
     pView.CaptureMouse();
 
@@ -95,14 +95,14 @@ void CTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
     c_ptLast = point;
 }
 
-void CTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CTool::OnMouseMove(CBrdEditView& pView, int nMods, int /*nButs*/, wxPoint point)
 {
     if (pView.HasCapture())
         c_ptLast = point;
-//    SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+    pView.SetCursor(wxCursor(wxCURSOR_ARROW));
 }
 
-void CTool::OnLButtonUp(CBrdEditView& pView, UINT, CPoint point)
+void CTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
 {
     if (!pView.HasCapture())
         return;
@@ -112,52 +112,49 @@ void CTool::OnLButtonUp(CBrdEditView& pView, UINT, CPoint point)
 ////////////////////////////////////////////////////////////////////////
 // CSelectTool - Object Selection/Manipulation tool
 
-void CSelectTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CSelectTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
     CSelList& pSLst = pView.GetSelectList();
     // If a a handle is clicked on, immediately start tracking the
     // resize.
-    if ((m_nHandleID = pSLst.HitTestHandles(CB::Convert(point))) >= 0)
+    if ((m_nHandleID = pSLst.HitTestHandles(point)) >= 0)
     {
-        StartSizingOperation(pView, nFlags, point);
+        StartSizingOperation(pView, nMods, point);
         return;
     }
-    wxASSERT(!"TODO:");
-#if 0
     CDrawObj* pObj = pView.ObjectHitTest(point);
     if (pObj == NULL)
     {
-        if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
+        if ((nMods & wxMOD_SHIFT) == 0)       // Shift click adds to list
             pSLst.PurgeList(TRUE);         // Clear current select list
         // No objects were under the mouse click.
         m_eSelMode = smodeNet;              // Net type selection
-        CTool::OnLButtonDown(pView, nFlags, point);
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc);
-        DrawNetRect(dc, pView);
+        CTool::OnLButtonDown(pView, nMods, point);
         return;
     }
     // Object is under mouse. See if also selected. If not,
     // add to list.
     if (!pSLst.IsObjectSelected(*pObj))
     {
-        if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
+        if ((nMods & wxMOD_SHIFT) == 0)       // Shift click adds to list
             pSLst.PurgeList(TRUE);         // Clear current select list
-        if ((nFlags & MK_CONTROL) != 0)     // Control click drills down
+        if ((nMods & wxMOD_CONTROL) != 0)     // Control click drills down
             pView.SelectAllUnderPoint(point);
         else
             pSLst.AddObject(*pObj, TRUE);
-        CTool::OnLButtonDown(pView, nFlags, point);
+        CTool::OnLButtonDown(pView, nMods, point);
+#if 0
         StartDragTimer(pView);
+#endif
         if (pSLst.IsMultipleSelects())
         {
             // Setup a trigger zone. If the mouse is moved out of
             // this zone before the drag time expires, the move is
             // represented by a perimeter rectangle. Otherwise, it
             // is shown using proxy object tracker images.
-            m_rectMultiBorder += point;
-            m_rectMultiBorder.InflateRect(2, 2);
+            m_rectMultiBorder.Offset(point);
+            m_rectMultiBorder.Inflate(2, 2);
         }
         return;
     }
@@ -165,83 +162,92 @@ void CSelectTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
     // already selected. If SHIFT is held we'll remove it from
     // the list. Otherwise, a timer is started and drag tracking
     // wont start until it expires.
-    if ((nFlags & MK_SHIFT) != 0)
+    if ((nMods & wxMOD_SHIFT) != 0)
     {
         pSLst.RemoveObject(*pObj, TRUE);
         return;
     }
-    CTool::OnLButtonDown(pView, nFlags, point);
+    CTool::OnLButtonDown(pView, nMods, point);
     if (pSLst.IsMultipleSelects())
     {
         // Setup a trigger zone. If the mouse is moved out of
         // this zone before the drag time expires, the move is
         // represented by a perimeter rectangle. Otherwise, it
         // is shown using proxy object tracker images.
-        m_rectMultiBorder += point;
-        m_rectMultiBorder.InflateRect(2, 2);
+        m_rectMultiBorder.Offset(point);
+        m_rectMultiBorder.Inflate(2, 2);
     }
+#if 0
     StartDragTimer(pView);
 #endif
 }
 
-void CSelectTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CSelectTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
     CSelList& pSLst = pView.GetSelectList();
 
     if (!pView.HasCapture())
         return;
 
-    wxASSERT(!"TODO:");
-#if 0
     if (m_eSelMode != smodeNormal)
     {
         // Autoscroll initiate possibility processing (sounds like a
         // scifi flic). Autoscroll is enabled when the mouse is captured
         // and the mouse is outside of the client area.
-        CRect rct;
-        CPoint pt;
-        GetCursorPos(&pt);
-        pView.ScreenToClient(&pt);
-        pView.GetClientRect(&rct);
-        if (rct.PtInRect(pt))           // In client area
+        wxRect rct = pView.GetClientRect();
+        wxPoint pt = pView.WorkspaceToClient(std::as_const(point));
+        if (rct.Contains(pt))           // In client area
         {
-            rct.InflateRect(-scrollZone, -scrollZone);
-            rct.NormalizeRect();        // Just in case client is too small
-            if (!rct.PtInRect(pt))
+            CB::InflateAndNormalize(rct, -scrollZone, -scrollZone);        // Just in case client is too small
+            if (!rct.Contains(pt))
             {
+#if 0
                 // It's in the scroll zone
                 if (m_nTimerID == uintptr_t(0))        // Only start if not scrolling
                     StartScrollTimer(pView);
+#endif
             }
             else
+            {
+#if 0
                 KillScrollTimer(pView);
+#endif
+            }
         }
         else
+        {
+            wxASSERT(!"TODO:");
+#if 0
             KillScrollTimer(pView);
+#endif
+        }
     }
-    else if (!m_rectMultiBorder.IsRectNull())
+    else if (m_rectMultiBorder != wxRect())
     {
         // Mode is normal and a trigger rectangle is set.
         // The trigger rectangle is only set if multiple objects are
         // selected.
-        if (!m_rectMultiBorder.PtInRect(point))
+        if (!m_rectMultiBorder.Contains(point))
         {
             // Force the point onto the snap grid.
             pView.AdjustPoint(point);
 
+#if 0
             KillDragTimer(pView);
+#endif
             m_rectMultiBorder = pSLst.GetEnclosingRect();
 
             // Force the rectangle onto the grid.
             pView.AdjustRect(m_rectMultiBorder);
-            pSLst.Offset((CPoint)(m_rectMultiBorder.TopLeft() -
-                pSLst.GetEnclosingRect().TopLeft()));
+            pSLst.Offset(m_rectMultiBorder.GetTopLeft() -
+                pSLst.GetEnclosingRect().GetTopLeft());
 
             m_eSelMode = smodeMove;             // Now in move mode.
             pSLst.SetTrackingMode(trkMoving);
-            CClientDC dc(&pView);
+            wxOverlayDC dc(pView.GetOverlay(), &pView);
             pView.OnPrepareScaledDC(dc);
-            DrawSelectionRect(dc, &m_rectMultiBorder);
+            dc.Clear();
+            DrawSelectionRect(dc, m_rectMultiBorder);
             c_ptLast = point;                   // Save new 'last' position
             return;
         }
@@ -251,10 +257,10 @@ void CSelectTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
     // we are doing a "net select".
     if (m_eSelMode == smodeNet)
     {
-        CClientDC dc(&pView);
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
-        DrawNetRect(dc, pView);            // Erase previous position
-        CTool::OnMouseMove(pView, nFlags, point); // Update position
+        dc.Clear();
+        CTool::OnMouseMove(pView, nMods, nButs, point); // Update position
         DrawNetRect(dc, pView);            // Draw new position rect
         return;
     }
@@ -268,70 +274,52 @@ void CSelectTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
             return;
         if (m_eSelMode == smodeMove)
         {
-            CRect rct = pSLst.GetEnclosingRect();
-            CPoint pnt = pView.GetWorkspaceDim();
-            if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
-                point.x = c_ptLast.x - rct.left;
-            if (rct.top + point.y - c_ptLast.y < 0)         // Clamp
-                point.y = c_ptLast.y - rct.top;
-            if (rct.right + point.x - c_ptLast.x > pnt.x)   // Clamp
-                point.x = pnt.x - (rct.right - c_ptLast.x);
-            if (rct.bottom + point.y - c_ptLast.y > pnt.y)  // Clamp
-                point.y = pnt.y - (rct.bottom - c_ptLast.y);
+            wxRect rct = pSLst.GetEnclosingRect();
+            wxPoint pnt = pView.GetWorkspaceDim();
+            if (rct.GetLeft() + point.x - c_ptLast.x < 0)        // Clamp
+                point.x = c_ptLast.x - rct.GetLeft();
+            if (rct.GetTop() + point.y - c_ptLast.y < 0)         // Clamp
+                point.y = c_ptLast.y - rct.GetTop();
+            if (rct.GetRight() + point.x - c_ptLast.x > pnt.x)   // Clamp
+                point.x = pnt.x - (rct.GetRight() - c_ptLast.x);
+            if (rct.GetBottom() + point.y - c_ptLast.y > pnt.y)  // Clamp
+                point.y = pnt.y - (rct.GetBottom() - c_ptLast.y);
         }
 
         TrackMode eTrkMode = m_eSelMode == smodeMove ? trkMoving : trkSizing;
-        CClientDC dc(&pView);
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
-
-        if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
-            DrawSelectionRect(dc, m_rectMultiBorder);
-        else
-            pSLst.DrawTracker(dc, eTrkMode); // Erase previous tracker
+        dc.Clear();
 
         MoveSelections(pSLst, point);
 
-        if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
+        if (m_eSelMode == smodeMove && m_rectMultiBorder != wxRect())
             DrawSelectionRect(dc, m_rectMultiBorder);
         else
             pSLst.DrawTracker(dc, eTrkMode); // Erase previous tracker
     }
     c_ptLast = point;               // Save new 'last' position
-#endif
 }
 
-void CSelectTool::OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CSelectTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
     if (pView.HasCapture())
     {
         if (m_eSelMode == smodeNet)
         {
-            CClientDC dc(&pView);
-            pView.OnPrepareScaledDC(dc);
-            DrawNetRect(dc, pView);            // Erase previous position
+            pView.GetOverlay().Reset();
             // If the control key is down when button was released, fields
             // that intersect the select rect will selected. Otherwise only
             // those fields that are entirely within the select rect
             // will be selected.
-            CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-            rect.NormalizeRect();
-            pView.SelectWithinRect(rect, (nFlags & MK_CONTROL) != 0);
+            wxRect rect(wxPoint(std::min(c_ptDown.x, c_ptLast.x), std::min(c_ptDown.y, c_ptLast.y)),
+                        wxSize(std::abs(c_ptLast.x - c_ptDown.x), std::abs(c_ptLast.y - c_ptDown.y)));
+            pView.SelectWithinRect(rect, (nMods & wxMOD_CONTROL) != 0);
             CSelList& pSLst = pView.GetSelectList();
             pSLst.InvalidateListHandles();
         }
         else if (m_eSelMode != smodeNormal)
         {
-            // Instruct the selected objects to resize or reposition
-            // themselves based on the new data within the selection
-            // objects.
-            if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
-            {
-                CClientDC dc(&pView);
-                pView.OnPrepareScaledDC(dc);
-                DrawSelectionRect(dc, &m_rectMultiBorder);
-            }
             CSelList& pSLst = pView.GetSelectList();
             pSLst.SetTrackingMode(trkSelected);
             pSLst.UpdateObjects(TRUE);
@@ -340,11 +328,12 @@ void CSelectTool::OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point)
         }
     }
     m_eSelMode = smodeNormal;
+#if 0
     KillDragTimer(pView);           // Make sure timers are released
     KillScrollTimer(pView);
 #endif
-    m_rectMultiBorder.SetRectEmpty();// Make sure trigger rect is empty
-    CTool::OnLButtonUp(pView, nFlags, point);
+    m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
+    CTool::OnLButtonUp(pView, nMods, point);
 }
 
 void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
@@ -356,7 +345,7 @@ void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
         m_eSelMode = smodeNormal;
         KillDragTimer(pView);
         KillScrollTimer(pView);
-        m_rectMultiBorder.SetRectEmpty();// Make sure trigger rect is empty
+        m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
         return;
     }
     if (m_eSelMode == smodeNormal)
@@ -370,11 +359,9 @@ void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
         m_rectMultiBorder.SetRectEmpty(); // Make sure trigger rect is empty
         KillDragTimer(pView);
 
-        // --Draw initial tracker(s) so mouse move processing can
-        // pick up the work.
-        CClientDC dc(&pView);
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
-        pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
+        dc.Clear();
 
         // If the snap grid is active. Force the enclosing rect onto
         // the snap grid. Also force the previously saved mouse points
@@ -400,8 +387,8 @@ void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
 #endif
 }
 
-void CSelectTool::OnLButtonDblClk(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CSelectTool::OnLButtonDblClk(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
     // "Normal" DblClk opens properties, OLE server, etc...
     CSelList& pSLst = pView.GetSelectList();
@@ -410,20 +397,8 @@ void CSelectTool::OnLButtonDblClk(CBrdEditView& pView, UINT nFlags,
 //  CTool::OnLButtonDblClk(pView, nFlags, point);
 }
 
-BOOL CSelectTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CSelectTool::OnSetCursor(const CBrdEditView& pView, wxPoint point) const
 {
-    wxASSERT(!"TODO:");
-#if 0
-    // Process only within the client area
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-
-    // Convert cursor position to document coordinates
-    CPoint point;
-    GetCursorPos(&point);
-    pView.ScreenToClient(&point);
-    pView.ClientToWorkspace(point);
-
     // Check for movement through handle areas. Set the
     // cursor to the appropriate shape.
     const CSelList& pSLst = pView.GetSelectList();
@@ -435,51 +410,38 @@ BOOL CSelectTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
         int nHandle = pSelObj.HitTestHandles(point);
         if (nHandle >= 0)
         {
-            SetCursor(pSelObj.GetHandleCursor(nHandle));
-            return TRUE;
+            return pSelObj.GetHandleCursor(nHandle);
         }
     }
-#endif
-    return FALSE;       // Show default cursor
+    return wxNullCursor;       // Show default cursor
 }
 
-void CSelectTool::StartSizingOperation(CBrdEditView& pView, UINT nFlags,
-    CPoint point, int nHandleID)
+void CSelectTool::StartSizingOperation(CBrdEditView& pView, int nMods,
+    wxPoint point, int nHandleID)
 {
     CSelList& pSLst = pView.GetSelectList();
     if (nHandleID != -1)
         m_nHandleID = nHandleID;
     m_eSelMode = smodeSizing;
-    wxASSERT(!"TODO:");
-#if 0
-    CTool::OnLButtonDown(pView, nFlags, point);
-    CClientDC dc(&pView);
+    CTool::OnLButtonDown(pView, nMods, point);
+    wxOverlayDC dc(pView.GetOverlay(), &pView);
     pView.OnPrepareScaledDC(dc);
+    dc.Clear();
     pSLst.DrawTracker(dc, trkSizing);
-#endif
 }
 
-void CSelectTool::DrawSelectionRect(CDC& pDC, const CRect& pRct) const
+void CSelectTool::DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const
 {
-    CPen pen;
-    pen.CreateStockObject(WHITE_PEN);
-    CPen* pPrvPen = pDC.SelectObject(&pen);
-    int nPrvROP2 = pDC.SetROP2(R2_XORPEN);
+    wxDCPenChanger setPen(pDC, *wxLIGHT_GREY);
+    wxDCBrushChanger setBrush(pDC, *wxTRANSPARENT_BRUSH);
 
-    pDC.MoveTo(pRct.TopLeft());
-    pDC.LineTo(pRct.right, pRct.top);
-    pDC.LineTo(pRct.BottomRight());
-    pDC.LineTo(pRct.left, pRct.bottom);
-    pDC.LineTo(pRct.TopLeft());
-
-    pDC.SetROP2(nPrvROP2);
-    pDC.SelectObject(pPrvPen);
+    pDC.DrawRectangle(pRct);
 }
 
-void CSelectTool::DrawNetRect(CDC& pDC, CBrdEditView& /*pView*/) const
+void CSelectTool::DrawNetRect(wxDC& pDC, CBrdEditView& /*pView*/) const
 {
-    CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-    rect.NormalizeRect();
+    wxRect rect(wxPoint(std::min(c_ptDown.x, c_ptLast.x), std::min(c_ptDown.y, c_ptLast.y)),
+                wxSize(std::abs(c_ptLast.x - c_ptDown.x), std::abs(c_ptLast.y - c_ptDown.y)));
     DrawSelectionRect(pDC, rect);
 }
 
@@ -570,20 +532,20 @@ BOOL CSelectTool::ProcessAutoScroll(CBrdEditView& pView)
     return FALSE;
 }
 
-void CSelectTool::MoveSelections(CSelList& pSLst, CPoint point)
+void CSelectTool::MoveSelections(CSelList& pSLst, wxPoint point)
 {
     if (m_eSelMode == smodeMove)
     {
-        CPoint ptDelta = (CPoint)(point - c_ptLast);
-        pSLst.Offset(CB::Convert(ptDelta));
-        if (!m_rectMultiBorder.IsRectNull())
-            m_rectMultiBorder += ptDelta;
+        wxPoint ptDelta = point - c_ptLast;
+        pSLst.Offset(ptDelta);
+        if (m_rectMultiBorder != wxRect())
+            m_rectMultiBorder.Offset(ptDelta);
     }
     else
-        pSLst.MoveHandle(m_nHandleID, CB::Convert(point));
+        pSLst.MoveHandle(m_nHandleID, point);
 }
 
-BOOL CSelectTool::AdjustPoint(const CBrdEditView& pView, CPoint& point) const
+BOOL CSelectTool::AdjustPoint(const CBrdEditView& pView, wxPoint& point) const
 {
     wxASSERT(!"TODO:");
 #if 0
@@ -651,28 +613,23 @@ void CSelectTool::KillScrollTimer(CBrdEditView& pView)
 ////////////////////////////////////////////////////////////////////////
 // CShapeTool - tool used to create rectangles.
 
-void CShapeTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CShapeTool::OnLButtonDown(CBrdEditView& pView, int nMods, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
     CSelList& pSLst = pView.GetSelectList();
     pSLst.PurgeList(TRUE);         // Clear current select list
     int nDragHandle;
     pView.AdjustPoint(point);
     m_pObj = CreateDrawObj(pView, point, nDragHandle);
     pSLst.AddObject(*m_pObj, TRUE);
-    s_selectTool.StartSizingOperation(pView, nFlags, point, nDragHandle);
-#endif
+    s_selectTool.StartSizingOperation(pView, nMods, point, nDragHandle);
 }
 
-void CShapeTool::OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CShapeTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
 {
     if (!pView.HasCapture())
         return;
-    s_selectTool.OnLButtonUp(pView, nFlags, point);
+    s_selectTool.OnLButtonUp(pView, nMods, point);
     pView.GetSelectList().PurgeList(TRUE); // Clear current select list
-    wxASSERT(!"TODO:");
-#if 0
     if (!IsEmptyObject())
         pView.AddDrawObject(std::move(m_pObj));
     else
@@ -680,13 +637,12 @@ void CShapeTool::OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point)
         m_pObj = nullptr;
     }
     pView.ResetToDefaultTool();
-#endif
 }
 
-void CShapeTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CShapeTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
     if (pView.HasCapture())
-        s_selectTool.OnMouseMove(pView, nFlags, point);
+        s_selectTool.OnMouseMove(pView, nMods, nButs, point);
 }
 
 void CShapeTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
@@ -694,22 +650,20 @@ void CShapeTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
     s_selectTool.OnTimer(pView, nIDEvent);
 }
 
-BOOL CShapeTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CShapeTool::OnSetCursor(const CBrdEditView& pView, wxPoint point) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    wxASSERT(pView.GetClientRect().Contains(pView.WorkspaceToClient(std::as_const(point))));
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CRectTool - tool used to create rectangles.
 
-CDrawObj::OwnerPtr CRectTool::CreateDrawObj(const CBrdEditView& pView, CPoint point,
+CDrawObj::OwnerPtr CRectTool::CreateDrawObj(const CBrdEditView& pView, wxPoint point,
     int& nHandle) const
 {
     CRectObj::OwnerPtr pObj = new CRectObj;
-    pObj->SetRect(CRect(point, CSize(0,0)));
+    pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
     pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
     pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
     pObj->SetLineWidth(pView.GetLineWidth());
@@ -726,11 +680,11 @@ BOOL CRectTool::IsEmptyObject() const
 ////////////////////////////////////////////////////////////////////////
 // CEllipseTool - tool used to create ellipses.
 
-CDrawObj::OwnerPtr CEllipseTool::CreateDrawObj(const CBrdEditView& pView, CPoint point,
+CDrawObj::OwnerPtr CEllipseTool::CreateDrawObj(const CBrdEditView& pView, wxPoint point,
     int& nHandle) const
 {
     CEllipse::OwnerPtr pObj = new CEllipse;
-    pObj->SetRect(CRect(point, CSize(0,0)));
+    pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
     pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
     pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
     pObj->SetLineWidth(pView.GetLineWidth());
@@ -747,7 +701,7 @@ BOOL CEllipseTool::IsEmptyObject() const
 ////////////////////////////////////////////////////////////////////////
 // CLineTool - tool used to create lines
 
-CDrawObj::OwnerPtr CLineTool::CreateDrawObj(const CBrdEditView& pView, CPoint point,
+CDrawObj::OwnerPtr CLineTool::CreateDrawObj(const CBrdEditView& pView, wxPoint point,
     int& nHandle) const
 {
     OwnerPtr<CLine> pObj = new CLine;
@@ -768,18 +722,15 @@ BOOL CLineTool::IsEmptyObject() const
 ////////////////////////////////////////////////////////////////////////
 // CPolyTool - tool used to create polygons and polylines
 
-void CPolyTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CPolyTool::OnLButtonDown(CBrdEditView& pView, int nMods, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    CRect rctClient;
-    pView.GetClientRect(&rctClient);
-    CPoint pntClient(point);
+    wxRect rctClient = pView.GetClientRect();
+    wxPoint pntClient(point);
     pView.WorkspaceToClient(pntClient);
-    if (!rctClient.PtInRect(pntClient))
+    if (!rctClient.Contains(pntClient))
         return;
 
-    CPoint rawPoint(point);         // Make copy of unadjusted point
+    wxPoint rawPoint(point);         // Make copy of unadjusted point
 
     pView.AdjustPoint(point);
 
@@ -792,14 +743,15 @@ void CPolyTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
         // Polygon is completed. The dummy object will be draw with
         // black lines and a single pixel line.
         m_pObj = new CPolyObj;
-        m_pObj->AddPoint(point);
+        m_pObj->AddPoint(CB::Convert(point));
         pView.AddDrawObject(m_pObj);
-        CTool::OnLButtonDown(pView, nFlags, point); // Capture and save point
+        CTool::OnLButtonDown(pView, nMods, point); // Capture and save point
     }
     else
     {
-        CClientDC dc(&pView);
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
+        dc.Clear();
 //      CRect rct;
 //      pView->GetClientRect(&rct);
 //      dc.DPtoLP(&rct);
@@ -808,14 +760,14 @@ void CPolyTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
             DrawRubberLine(dc);            // Turn off last rubber line
 
             // Check if back at the original point
-            CPoint pnt(m_pObj->m_Pnts[size_t(0)]);
+            wxPoint pnt(CB::Convert(m_pObj->m_Pnts[size_t(0)]));
             if (pnt == point)
             {
                 FinalizePolygon(pView);
-                pView->ReleaseMouse();
+                pView.ReleaseMouse();
                 return;
             }
-            m_pObj->AddPoint(point);
+            m_pObj->AddPoint(CB::Convert(point));
             c_ptDown = point;
             c_ptLast = rawPoint;
             DrawRubberLine(dc);            // Turn on last rubber line
@@ -824,100 +776,78 @@ void CPolyTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags, CPoint point)
             m_pObj->Draw(dc, pView.GetCurrentScale());
 //      }
     }
-#endif
 }
 
-void CPolyTool::OnLButtonDblClk(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CPolyTool::OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    CRect rctClient;
-    pView.GetClientRect(&rctClient);
-    CPoint pntClient(point);
+    wxRect rctClient = pView.GetClientRect();
+    wxPoint pntClient(point);
     pView.WorkspaceToClient(pntClient);
-    if (!rctClient.PtInRect(pntClient))
+    if (!rctClient.Contains(pntClient))
         return;
     if (m_pObj)
     {
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc);
-        DrawRubberLine(dc);                // Turn off rubber band
         FinalizePolygon(pView);
     }
-#endif
     pView.ReleaseMouse();
 }
 
-void CPolyTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CPolyTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
     if (!pView.HasCapture())
         return;
     if (m_pObj == NULL)
         pView.ReleaseMouse();
-    wxASSERT(!"TODO:");
-#if 0
-    CClientDC dc(&pView);
+    wxOverlayDC dc(pView.GetOverlay(), &pView);
     pView.OnPrepareScaledDC(dc);
-    DrawRubberLine(dc);
+    dc.Clear();
 
-    if (nFlags & MK_LBUTTON)
+    if (nButs & wxMOUSE_BTN_LEFT)
     {
-        CPoint rawPoint(point);         // Make copy of unadjusted point
+        wxPoint rawPoint(point);         // Make copy of unadjusted point
 
         pView.AdjustPoint(point);
         // Check if back at the original point
-        CPoint pnt(m_pObj->m_Pnts[size_t(0)]);
+        wxPoint pnt(CB::Convert(m_pObj->m_Pnts[size_t(0)]));
         if (pnt == point)
         {
             FinalizePolygon(pView);
-            pView->ReleaseMouse();
+            pView.ReleaseMouse();
             return;
         }
-        m_pObj->AddPoint(point);
+        m_pObj->AddPoint(CB::Convert(point));
         c_ptDown = point;
         c_ptLast = rawPoint;
         // Directly draw the object.
         m_pObj->Draw(dc, pView.GetCurrentScale());
     }
     else
+    {
+        // draw needed for wxOverlay
+        m_pObj->Draw(dc, pView.GetCurrentScale());
         c_ptLast = point;
+    }
     DrawRubberLine(dc);
-#endif
 }
 
-BOOL CPolyTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CPolyTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    return g_res.hcrCrossHairWx;
 }
 
-void CPolyTool::DrawRubberLine(CDC& pDC)
+void CPolyTool::DrawRubberLine(wxDC& pDC)
 {
-    CPen pen(PS_DOT, 1, RGB(0,0,0));
-    int nPrvRop = pDC.SetROP2(R2_XORPEN);
-    CPen* pPrvPen = pDC.SelectObject(&pen);
-    CBrush* pPrvBrush = (CBrush*)pDC.SelectStockObject(NULL_BRUSH);
+    wxPen pen(*wxLIGHT_GREY, 1, wxPENSTYLE_LONG_DASH);
+    wxDCPenChanger setPen(pDC, pen);
+    wxDCBrushChanger setBrush(pDC, *wxTRANSPARENT_BRUSH);
 
-    pDC.MoveTo(c_ptDown);      // Erase previous
-    pDC.LineTo(c_ptLast);
-
-    pDC.SetROP2(nPrvRop);
-    pDC.SelectObject(pPrvPen);
-    pDC.SelectObject(pPrvBrush);
+    pDC.DrawLine(c_ptDown, c_ptLast);
 }
 
 void CPolyTool::RemoveRubberBand(CBrdEditView& pView)
 {
     if (m_pObj != NULL)
     {
-        wxASSERT(!"TODO:");
-#if 0
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc);
-        DrawRubberLine(dc);
-#endif
         pView.ReleaseMouse();
     }
 }
@@ -925,8 +855,6 @@ void CPolyTool::RemoveRubberBand(CBrdEditView& pView)
 void CPolyTool::FinalizePolygon(CBrdEditView& pView,
     BOOL bForceDestroy /* = FALSE */)
 {
-    wxASSERT(!"TODO:");
-#if 0
     pView.ResetToDefaultTool();
     if (m_pObj == NULL)
         return;         // Nothing to do.
@@ -934,153 +862,126 @@ void CPolyTool::FinalizePolygon(CBrdEditView& pView,
     if (m_pObj->m_Pnts.size() >= size_t(2) && !bForceDestroy)
     {
         // Update the "dummy" object to make it the real thing.
-        m_pObj->SetForeColor(pView.GetForeColor());
-        m_pObj->SetBackColor(pView.GetBackColor());
+        m_pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
+        m_pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
         m_pObj->SetLineWidth(pView.GetLineWidth());
-        CRect rct = m_pObj->GetEnclosingRect();
-        pView.InvalidateWorkspaceRect(&rct);
+        wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
+        pView.InvalidateWorkspaceRect(rct);
     }
     else
     {
         // Not enough to work with...
-        CRect rct = m_pObj->GetEnclosingRect();
-        pView.InvalidateWorkspaceRect(&rct);
+        wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
+        pView.InvalidateWorkspaceRect(rct);
         pView.DeleteDrawObject(m_pObj);
     }
-#endif
     m_pObj = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CTextTool - Text drawing object tool
 
-void CTextTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CTextTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
     pView.DoCreateTextDrawingObject(point);
     pView.ResetToDefaultTool();
-#endif
 }
 
-BOOL CTextTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CTextTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CColorPickupTool - Used to extract colors from view.
 
-void CColorPickupTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CColorPickupTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
     pView.WorkspaceToClient(point);
-    CWindowDC dc(&pView);
-    COLORREF crPxl = dc.GetPixel(point);
-    if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
+    /* TODO:  wxClientDC and wxDC::GetPixel are non-portable
+        (https://groups.google.com/g/wx-dev/c/qBMM0PxEJ48/m/rPysSjWVCgAJ) */
+    wxClientDC dc(&pView);
+    wxColour crPxl;
+    CB_VERIFY(dc.GetPixel(point.x, point.y, &crPxl));
+    if ((nMods & (wxMOD_CONTROL | wxMOD_SHIFT)) == 0)
         pView.SetForeColor(crPxl);
-    else if (nFlags & MK_SHIFT)
+    else if (nMods & wxMOD_SHIFT)
         pView.SetBackColor(crPxl);
-    pView.SetCapture();
-#endif
+    pView.CaptureMouse();
 }
 
-void CColorPickupTool::OnLButtonUp(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CColorPickupTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
 {
     if (!pView.HasCapture())
         return;
-    wxASSERT(!"TODO:");
-#if 0
     pView.WorkspaceToClient(point);
 
-    CWindowDC dc(&pView);
-    COLORREF crPxl = dc.GetPixel(point);
+    /* TODO:  wxClientDC and wxDC::GetPixel are non-portable
+        (https://groups.google.com/g/wx-dev/c/qBMM0PxEJ48/m/rPysSjWVCgAJ) */
+    wxClientDC dc(&pView);
+    wxColour crPxl;
+    CB_VERIFY(dc.GetPixel(point.x, point.y, &crPxl));
 
-    if ((nFlags & (MK_CONTROL | MK_SHIFT)) == 0)
+    if ((nMods & (wxMOD_CONTROL | wxMOD_SHIFT)) == 0)
         pView.SetForeColor(crPxl);
-    else if (nFlags & MK_SHIFT)
+    else if (nMods & wxMOD_SHIFT)
         pView.SetBackColor(crPxl);
 
     pView.RestoreLastTool();               // For convenience
-#endif
     pView.ReleaseMouse();
 }
 
-BOOL CColorPickupTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CColorPickupTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrDropper);
-    return TRUE;
+    return g_res.hcrDropperWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CCellPaintTool - Paint bucket tool for cell grid layer
 
-void CCellPaintTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CCellPaintTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    pView.SetCellColor(pView->GetForeColor(), point, TRUE);
-#endif
+    pView.SetCellColor(pView.GetForeColor(), point, TRUE);
 }
 
-void CCellPaintTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CCellPaintTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    if (nFlags & MK_LBUTTON)
-        pView.SetCellColor(pView->GetForeColor(), point, TRUE);
-#endif
+    if (nButs & wxMOUSE_BTN_LEFT)
+        pView.SetCellColor(pView.GetForeColor(), point, TRUE);
 }
 
-BOOL CCellPaintTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CCellPaintTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrFill);
-    return TRUE;
+    return g_res.hcrFillWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CPaintTool - Paint bucket tool for base layer
 
-void CPaintTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CPaintTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
     if (pView.GetBoard().GetMaxDrawLayer() == LAYER_BASE)
         pView.SetBoardBackColor(pView.GetForeColor(), TRUE);
-#endif
 }
 
-BOOL CPaintTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CPaintTool::OnSetCursor(const CBrdEditView& pView, wxPoint /*point*/) const
 {
     if (pView.GetBoard().GetMaxDrawLayer() != LAYER_BASE)
-        return FALSE;
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrFill);
-    return TRUE;
+        return wxNullCursor;
+    return g_res.hcrFillWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CTileTool - Tile painting tool
 
-void CTileTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CTileTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
     TileID tid = pView.GetDocument().GetTilePalWnd()->GetCurrentTileID();
-    wxASSERT(!"TODO:");
-#if 0
     if (pView.GetBoard().GetMaxDrawLayer() == LAYER_GRID)
         pView.SetCellTile(tid, point, TRUE);
     else
@@ -1088,61 +989,45 @@ void CTileTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
         CDrawList& pDwg = CheckedDeref(pView.GetDrawList(TRUE));
         pView.SetDrawingTile(pDwg, tid, point, TRUE);
     }
-#endif
 }
 
-void CTileTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CTileTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    if ((nFlags & MK_LBUTTON) != 0 &&
+    if ((nButs & wxMOUSE_BTN_LEFT) != 0 &&
         pView.GetBoard().GetMaxDrawLayer() == LAYER_GRID)
     {
         TileID tid = pView.GetDocument().GetTilePalWnd()->GetCurrentTileID();
         pView.SetCellTile(tid, point, TRUE);
     }
-#endif
 }
 
-BOOL CTileTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CTileTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrDragTile);
-    return TRUE;
+    return g_res.hcrDragTileWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CCellEraserTool - eraser tool for cell grid layer
 
-void CCellEraserTool::OnLButtonDown(CBrdEditView& pView, UINT nFlags,
-    CPoint point)
+void CCellEraserTool::OnLButtonDown(CBrdEditView& pView, int nMods,
+    wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
         pView.SetCellColor(noColor, point, TRUE);
 //      pView->SetCellTile(nullTid, point, TRUE);
-#endif
 }
 
-void CCellEraserTool::OnMouseMove(CBrdEditView& pView, UINT nFlags, CPoint point)
+void CCellEraserTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    if (nFlags & MK_LBUTTON)
+    if (nButs & wxMOUSE_BTN_LEFT)
     {
         pView.SetCellColor(noColor, point, TRUE);
 //      pView->SetCellTile(nullTid, point, TRUE);
     }
-#endif
 }
 
-BOOL CCellEraserTool::OnSetCursor(const CBrdEditView& pView, UINT nHitTest) const
+wxCursor CCellEraserTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrEraser);
-    return TRUE;
+    return g_res.hcrEraserWx;
 }
 
 
