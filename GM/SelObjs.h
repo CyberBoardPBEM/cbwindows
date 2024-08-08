@@ -107,7 +107,6 @@ protected:
     public:
         DCSetupTrackingDraw(wxDC& pDC);
     private:
-        CB::DCLogicalFunctionChanger setLogFunc;
         wxDCPenChanger setPen;
         wxDCBrushChanger setBrush;
     };

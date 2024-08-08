@@ -51,6 +51,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
+    wxOverlay& GetOverlay() { return overlay; }
     const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
     {
@@ -68,18 +69,16 @@ public:
 
 // Operations
 public:
-#if 0
-    void SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate);
-    void SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate);
-    void SetBoardBackColor(COLORREF cr, BOOL bUpdate);
-    void SetDrawingTile(CDrawList& pDwg, TileID tid, CPoint pnt, BOOL bUpdate);
-    void DoCreateTextDrawingObject(CPoint point);
-#endif
+    void SetCellTile(TileID tid, wxPoint pnt, BOOL bUpdate);
+    void SetCellColor(wxColour crCell, wxPoint pnt, BOOL bUpdate);
+    void SetBoardBackColor(wxColour cr, BOOL bUpdate);
+    void SetDrawingTile(CDrawList& pDwg, TileID tid, wxPoint pnt, BOOL bUpdate);
+    void DoCreateTextDrawingObject(wxPoint point);
     void DoEditTextDrawingObject(CText& pDObj);
-#if 0
     void RestoreLastTool() { m_nCurToolID = m_nLastToolID; }
     void ResetToDefaultTool();
 
+#if 0
     void OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) override;
 #endif
     void PrepareScaledDC(wxDC& pDC) const;
@@ -98,25 +97,27 @@ public:
     void ClientToWorkspace(wxPoint& point) const;
     void ClientToWorkspace(wxRect& rect) const;
     void WorkspaceToClient(wxPoint& point) const;
+    [[nodiscard]] wxPoint WorkspaceToClient(const wxPoint& pnt) const
+    {
+        wxPoint retval = pnt;
+        WorkspaceToClient(retval);
+        return retval;
+    }
     void WorkspaceToClient(wxRect& rect) const;
     void InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase = FALSE);
-#if 0
-    CPoint GetWorkspaceDim() const;
-    void OnPrepareScaledDC(CDC& pDC);
+    wxPoint GetWorkspaceDim() const;
+    void OnPrepareScaledDC(wxDC& pDC);
 
-    void AdjustPoint(CPoint& pnt) const;              // Limit and grid processing
-    void AdjustRect(CRect& rct) const;
-#endif
+    void AdjustPoint(wxPoint& pnt) const;              // Limit and grid processing
+    void AdjustRect(wxRect& rct) const;
 
     CDrawObj* ObjectHitTest(wxPoint point);
-#if 0
     void AddDrawObject(CDrawObj::OwnerPtr pObj);         // Add to active layer
     void DeleteDrawObject(CDrawObj::OwnerPtr pObj);      // Delete from active layer
-#endif
     void SelectWithinRect(wxRect rctNet, BOOL bInclIntersects = FALSE);
-#if 0
-    void SelectAllUnderPoint(CPoint point);
+    void SelectAllUnderPoint(wxPoint point);
 
+#if 0
     // --- Misc Draw object manipulations
     void DeleteObjsInSelectList(BOOL bInvalidate = TRUE);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
@@ -127,17 +128,17 @@ public:
 // Implementation
 protected:
     // Grid and limiting support
-#if 0
     BOOL IsGridizeActive() const;
-    void GridizeX(long& xPos) const;
-    void GridizeY(long& yPos) const;
-    void LimitPoint(POINT& pPnt) const;
-    void LimitRect(RECT& pRct) const;
+    void GridizeX(decltype(wxPoint::x)& xPos) const;
+    void GridizeY(decltype(wxPoint::y)& yPos) const;
+    void LimitPoint(wxPoint& pPnt) const;
+    void LimitRect(wxRect& pRct) const;
+#if 0
     void PixelToWorkspace(CPoint& point) const;
-
-    void CreateTextDrawingObject(CPoint pnt, FontID fid, COLORREF crText,
-        const CB::string& m_strText, BOOL bInvalidate = TRUE);
 #endif
+
+    void CreateTextDrawingObject(wxPoint pnt, FontID fid, wxColour crText,
+        const CB::string& m_strText, BOOL bInvalidate = TRUE);
 
     void DoViewScale(TileScale nZoom);
     void CenterViewOnWorkspacePoint(wxPoint point);
@@ -292,6 +293,7 @@ private:
 
     RefPtr<CBrdEditViewContainer> parent;
     RefPtr<CGamDoc> document;
+    wxOverlay overlay;
 
     /* This view should support scrolling by individual pixels,
         but don't make the line-up and line-down scrolling that

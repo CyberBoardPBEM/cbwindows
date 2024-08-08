@@ -48,7 +48,7 @@ const int handleHalfWidth = 3;
 /////////////////////////////////////////////////////////////////////
 // Class level variables
 
-const wxPen CSelection::c_penDot(*wxWHITE, 1, wxPENSTYLE_DOT);
+const wxPen CSelection::c_penDot(*wxLIGHT_GREY, 1, wxPENSTYLE_SHORT_DASH);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -121,7 +121,6 @@ void CSelection::Invalidate()
 // Static methods...
 
 CSelection::DCSetupTrackingDraw::DCSetupTrackingDraw(wxDC& pDC) :
-    setLogFunc(pDC, wxXOR),
     setPen(pDC, c_penDot),
     setBrush(pDC, *wxTRANSPARENT_BRUSH)
 {
@@ -183,7 +182,6 @@ wxPoint CSelRect::GetHandleLoc(int nHandleID) const
 
 void CSelRect::MoveHandle(int nHandle, wxPoint point)
 {
-    wxASSERT(!"TODO:  needs testing");
     // SetLeft() and SetTop() also change right and bottom
     switch (nHandle)
     {
