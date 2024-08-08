@@ -54,39 +54,44 @@ IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
 #if 0
     ON_WM_MOUSEWHEEL()
-    ON_WM_LBUTTONDOWN()
-    ON_WM_LBUTTONUP()
-    ON_WM_MOUSEMOVE()
-    ON_WM_LBUTTONDBLCLK()
+#endif
+    EVT_LEFT_DOWN(OnLButtonDown)
+    EVT_LEFT_UP(OnLButtonUp)
+    EVT_MOTION(OnMouseMove)
+    EVT_LEFT_DCLICK(OnLButtonDblClk)
+    EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
+#if 0
     ON_WM_TIMER()
     ON_WM_KEYDOWN()
     ON_WM_CHAR()
-    ON_WM_SETCURSOR()
+#endif
+    EVT_SET_CURSOR(OnSetCursor)
+#if 0
     ON_WM_ERASEBKGND()
 #endif
     EVT_DRAGDROP(OnDragTileItem)
+    EVT_SETCOLOR(OnSetColor)
+    EVT_SETCUSTOMCOLOR(OnSetCustomColors)
+    EVT_SETLINEWIDTH(OnSetLineWidth)
 #if 0
-    ON_MESSAGE(WM_SETCOLOR, OnSetColor)
-    ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
-    ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
     ON_COMMAND(ID_OFFSCREEN, OnOffscreen)
     ON_COMMAND(ID_VIEW_GRIDLINES, OnViewGridLines)
     ON_COMMAND(ID_DWG_TOBACK, OnDwgToBack)
     ON_COMMAND(ID_DWG_TOFRONT, OnDwgToFront)
-    ON_COMMAND_EX(ID_TOOL_ARROW, OnToolPalette)
 #endif
+    EVT_MENU(XRCID("ID_TOOL_ARROW"), OnToolPalette)
     EVT_MENU(XRCID("ID_EDIT_LAYER_BASE"), OnEditLayer)
 #if 0
     ON_UPDATE_COMMAND_UI(ID_VIEW_GRIDLINES, OnUpdateViewGridLines)
     ON_UPDATE_COMMAND_UI(ID_OFFSCREEN, OnUpdateOffscreen)
 #endif
     EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_BASE"), OnUpdateEditLayer)
+    EVT_UPDATE_UI(XRCID("ID_COLOR_FOREGROUND"), OnUpdateColorForeground)
+    EVT_UPDATE_UI(XRCID("ID_COLOR_BACKGROUND"), OnUpdateColorBackground)
+    EVT_UPDATE_UI(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
+    EVT_UPDATE_UI(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_ARROW"), OnUpdateToolPalette)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_COLOR_FOREGROUND, OnUpdateColorForeground)
-    ON_UPDATE_COMMAND_UI(ID_COLOR_BACKGROUND, OnUpdateColorBackground)
-    ON_UPDATE_COMMAND_UI(ID_COLOR_CUSTOM, OnUpdateColorCustom)
-    ON_UPDATE_COMMAND_UI(ID_LINE_WIDTH, OnUpdateLineWidth)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_ARROW, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOFRONT, OnUpdateDwgToFrontOrBack)
 #endif
     EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALE"), OnUpdateViewFullScale)
@@ -122,29 +127,27 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
 #endif
     EVT_MENU(XRCID("ID_EDIT_LAYER_TILE"), OnEditLayer)
     EVT_MENU(XRCID("ID_EDIT_LAYER_TOP"), OnEditLayer)
-#if 0
-    ON_COMMAND_EX(ID_TOOL_ERASER, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_TILE, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_TEXT, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_FILL, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_DROPPER, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_LINE, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_POLYGON, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_RECT, OnToolPalette)
-    ON_COMMAND_EX(ID_TOOL_OVAL, OnToolPalette)
-#endif
+    EVT_MENU(XRCID("ID_TOOL_ERASER"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_TILE"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_TEXT"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_FILL"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_DROPPER"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_LINE"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_POLYGON"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_RECT"), OnToolPalette)
+    EVT_MENU(XRCID("ID_TOOL_OVAL"), OnToolPalette)
     EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TOP"), OnUpdateEditLayer)
     EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TILE"), OnUpdateEditLayer)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_ERASER"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_TILE"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_TEXT"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_FILL"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_DROPPER"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_LINE"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_POLYGON"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_RECT"), OnUpdateToolPalette)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_OVAL"), OnUpdateToolPalette)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_TOOL_ERASER, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_TILE, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_TEXT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_FILL, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_DROPPER, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_LINE, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_POLYGON, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_RECT, OnUpdateToolPalette)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_OVAL, OnUpdateToolPalette)
     ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
 #endif
     EVT_MENU(XRCID("ID_VIEW_TOGGLE_SCALE"), OnViewToggleScale)
@@ -168,8 +171,8 @@ CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
     m_bOffScreen = TRUE;
     m_pBoard = NULL;
     m_pBMgr = NULL;
-    m_nCurToolID = ID_TOOL_ARROW;       // ID_TOOL_ARROW tool (select)
-    m_nLastToolID = ID_TOOL_ARROW;      // ID_TOOL_ARROW tool (select)
+    m_nCurToolID = XRCID("ID_TOOL_ARROW");       // ID_TOOL_ARROW tool (select)
+    m_nLastToolID = XRCID("ID_TOOL_ARROW");      // ID_TOOL_ARROW tool (select)
     m_nZoom = fullScale;
     // use sizers for scrolling
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -333,8 +336,7 @@ void CBrdEditView::WorkspaceToClient(wxRect& rect) const
 
 void CBrdEditView::InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase)
 {
-    wxRect rct(pRect);
-    WorkspaceToClient(rct);
+    wxRect rct = WorkspaceToClient(pRect);
     rct.Inflate(1, 1);
     RefreshRect(rct, bErase);
 }
@@ -356,7 +358,7 @@ void CBrdEditView::ResetToDefaultTool()
 {
     if (!GetDocument().GetStickyDrawTools())
     {
-        m_nCurToolID = m_nLastToolID = ID_TOOL_ARROW;
+        m_nCurToolID = m_nLastToolID = XRCID("ID_TOOL_ARROW");
     }
 }
 
@@ -555,8 +557,8 @@ namespace
 
 void CBrdEditView::OnEditLayer(wxCommandEvent& event)
 {
-    m_nCurToolID = ID_TOOL_ARROW;       // Turn off tool with layer change
-    m_nLastToolID = ID_TOOL_ARROW;      // Turn off tool with layer change
+    m_nCurToolID = XRCID("ID_TOOL_ARROW");       // Turn off tool with layer change
+    m_nLastToolID = XRCID("ID_TOOL_ARROW");      // Turn off tool with layer change
     m_selList.PurgeList(TRUE);
 
     wxBusyCursor busyCursor;
@@ -599,83 +601,110 @@ void CBrdEditView::OnContextMenu(CWnd* pWnd, CPoint point)
         END_TRY
     }
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView mouse and timer message handlers
 
-void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
+void CBrdEditView::OnLButtonDown(wxMouseEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     if (eToolType == ttypeUnknown)
     {
-        CScrollView::OnMouseMove(nFlags, point);
+        OwnerPtr<wxEvent> moveEvent = event.Clone();
+        moveEvent->SetEventType(wxEVT_MOTION);
+        ProcessWindowEvent(*moveEvent);
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnLButtonDown(*this, nFlags, point);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonDown(*this, event.GetModifiers(), point);
 }
 
-void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
+void CBrdEditView::OnMouseMove(wxMouseEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     if (eToolType == ttypeUnknown)
     {
-        CScrollView::OnMouseMove(nFlags, point);
+        event.Skip();
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnMouseMove(*this, nFlags, point);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnMouseMove(*this, event.GetModifiers(), CB::GetMouseButtons(event), point);
 }
 
-void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
+void CBrdEditView::OnLButtonUp(wxMouseEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     if (eToolType == ttypeUnknown)
     {
-        CScrollView::OnMouseMove(nFlags, point);
+        OwnerPtr<wxEvent> moveEvent = event.Clone();
+        moveEvent->SetEventType(wxEVT_MOTION);
+        ProcessWindowEvent(*moveEvent);
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnLButtonUp(*this, nFlags, point);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonUp(*this, event.GetModifiers(), point);
 }
 
-void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
+void CBrdEditView::OnLButtonDblClk(wxMouseEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     if (eToolType == ttypeUnknown)
     {
-        CScrollView::OnMouseMove(nFlags, point);
+        OwnerPtr<wxEvent> moveEvent = event.Clone();
+        moveEvent->SetEventType(wxEVT_MOTION);
+        ProcessWindowEvent(*moveEvent);
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
-    pTool.OnLButtonDblClk(*this, nFlags, point);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonDblClk(*this, event.GetModifiers(), point);
 }
 
+void CBrdEditView::OnMouseCaptureLost(wxMouseCaptureLostEvent& event)
+{
+    ToolType eToolType = MapToolType(m_nCurToolID);
+    if (eToolType == ttypeUnknown)
+    {
+        return;
+    }
+    CTool& pTool = CTool::GetTool(eToolType);
+    pTool.OnMouseCaptureLost(*this);
+}
+
+#if 0
 void CBrdEditView::OnTimer(uintptr_t nIDEvent)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     CTool& pTool = CTool::GetTool(eToolType);
     pTool.OnTimer(*this, nIDEvent);
 }
+#endif
 
-BOOL CBrdEditView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+void CBrdEditView::OnSetCursor(wxSetCursorEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    if (pWnd == this && eToolType != ttypeUnknown)
+    wxASSERT(event.GetEventObject() == this);
+    if (event.GetEventObject() == this && eToolType != ttypeUnknown)
     {
         CTool& pTool = CTool::GetTool(eToolType);
-        if(pTool.OnSetCursor(*this, nHitTest))
-            return TRUE;
+        wxPoint point = ClientToWorkspace(wxPoint(event.GetX(), event.GetY()));
+        wxCursor rc = pTool.OnSetCursor(*this, point);
+        if (rc.IsOk())
+        {
+            event.SetCursor(rc);
+            return;
+        }
     }
-    return CScrollView::OnSetCursor(pWnd, nHitTest, message);
+    event.Skip();
 }
 
 //////////////////////////////////////////////////////////////////////
 
+#if 0
 void CBrdEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
@@ -809,44 +838,45 @@ void CBrdEditView::OnUpdateEditClear(CCmdUI* pCmdUI)
     pCmdUI->Enable(m_pBoard->GetMaxDrawLayer() != LAYER_GRID &&
         m_selList.IsAnySelects());
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
-static ToolType tblDrawTools[] =
+ToolType CBrdEditView::MapToolType(int nToolResID) const
 {
-    ttypeSelect,    // ID_TOOL_ARROW
-    ttypeUnknown,   // ID_TOOL_ERASER
-    ttypeTile,      // ID_TOOL_TILE
-    ttypeText,      // ID_TOOL_TEXT
-    ttypePaintBack, // ID_TOOL_FILL
-    ttypeColorPick, // ID_TOOL_DROPPER
-    ttypeLine,      // ID_TOOL_LINE
-    ttypePolygon,   // ID_TOOL_POLYGON
-    ttypeRect,      // ID_TOOL_RECT
-    ttypeEllipse,   // ID_TOOL_OVAL
-};
+    // wx doesn't guarantee XRCID() value order
+    static const std::unordered_map<int, ToolType> tblDrawTools
+    {
+        { XRCID("ID_TOOL_ARROW"), ttypeSelect },
+        { XRCID("ID_TOOL_ERASER"), ttypeUnknown },
+        { XRCID("ID_TOOL_TILE"), ttypeTile },
+        { XRCID("ID_TOOL_TEXT"), ttypeText },
+        { XRCID("ID_TOOL_FILL"), ttypePaintBack },
+        { XRCID("ID_TOOL_DROPPER"), ttypeColorPick },
+        { XRCID("ID_TOOL_LINE"), ttypeLine },
+        { XRCID("ID_TOOL_POLYGON"), ttypePolygon },
+        { XRCID("ID_TOOL_RECT"), ttypeRect },
+        { XRCID("ID_TOOL_OVAL"), ttypeEllipse },
+    };
 
-static ToolType tblGridTools[] =
-{
-    ttypeUnknown,   // ID_TOOL_ARROW
-    ttypeCellEraser,// ID_TOOL_ERASER
-    ttypeTile,      // ID_TOOL_TILE
-    ttypeUnknown,   // ID_TOOL_TEXT
-    ttypeCellPaint, // ID_TOOL_FILL
-    ttypeColorPick, // ID_TOOL_DROPPER
-    ttypeUnknown,   // ID_TOOL_LINE
-    ttypeUnknown,   // ID_TOOL_POLYGON
-    ttypeUnknown,   // ID_TOOL_RECT
-    ttypeUnknown,   // ID_TOOL_OVAL
-};
+    static const std::unordered_map<int, ToolType> tblGridTools
+    {
+        { XRCID("ID_TOOL_ARROW"), ttypeUnknown },
+        { XRCID("ID_TOOL_ERASER"), ttypeCellEraser },
+        { XRCID("ID_TOOL_TILE"), ttypeTile },
+        { XRCID("ID_TOOL_TEXT"), ttypeUnknown },
+        { XRCID("ID_TOOL_FILL"), ttypeCellPaint },
+        { XRCID("ID_TOOL_DROPPER"), ttypeColorPick },
+        { XRCID("ID_TOOL_LINE"), ttypeUnknown },
+        { XRCID("ID_TOOL_POLYGON"), ttypeUnknown },
+        { XRCID("ID_TOOL_RECT"), ttypeUnknown },
+        { XRCID("ID_TOOL_OVAL"), ttypeUnknown },
+    };
 
-ToolType CBrdEditView::MapToolType(UINT nToolResID) const
-{
     return m_pBoard->GetMaxDrawLayer() == LAYER_GRID ?
-        tblGridTools[nToolResID - ID_TOOL_ARROW] :
-        tblDrawTools[nToolResID - ID_TOOL_ARROW];
+        tblGridTools.at(nToolResID) :
+        tblDrawTools.at(nToolResID);
 }
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Tile drag and drop code.
@@ -857,8 +887,8 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
     {
         return;
     }
-    m_nCurToolID = ID_TOOL_ARROW;       // Not valid with drag over.
-    m_nLastToolID = ID_TOOL_ARROW;      // Not valid with drag over.
+    m_nCurToolID = XRCID("ID_TOOL_ARROW");       // Not valid with drag over.
+    m_nLastToolID = XRCID("ID_TOOL_ARROW");      // Not valid with drag over.
 
     const DragInfoWx& pdi = event.GetDragInfo();
 
@@ -1194,33 +1224,42 @@ void CBrdEditView::PixelToWorkspace(CPoint& point) const
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
-void CBrdEditView::OnUpdateColorForeground(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI)
 {
-    static_cast<CColorCmdUI*>(pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetForeColor()));
+    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
+    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
+    colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetForeColor()));
 }
 
-void CBrdEditView::OnUpdateColorBackground(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI)
 {
-    static_cast<CColorCmdUI*>(pCmdUI)->SetColor(CB::Convert(m_pBMgr->GetBackColor()));
+    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
+    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
+    colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetBackColor()));
 }
 
-void CBrdEditView::OnUpdateColorCustom(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI)
 {
-    static_cast<CColorCmdUI*>(pCmdUI)->SetCustomColors(GetDocument().GetCustomColors());
+    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
+    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
+    colorCmdUI.SetCustomColors(GetDocument().GetCustomColors());
 }
 
-void CBrdEditView::OnUpdateLineWidth(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI)
 {
-    static_cast<CColorCmdUI*>(pCmdUI)->SetLineWidth(value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()));
+    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
+    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
+    colorCmdUI.SetLineWidth(value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()));
 }
 
 //////////////////////////////////////////////////////////////////////
 
 
-LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
+void CBrdEditView::OnSetColor(SetColorEvent& event)
 {
     struct ColorSetting
     {
@@ -1229,39 +1268,40 @@ LRESULT CBrdEditView::OnSetColor(WPARAM wParam, LPARAM lParam)
     };
     ColorSetting cset = { RGB(0,0,0), FALSE };
 
-    if ((UINT)wParam == ID_COLOR_FOREGROUND)
+    if (event.GetSubId() == XRCID("ID_COLOR_FOREGROUND"))
     {
-        m_pBMgr->SetForeColor((COLORREF)lParam);
+        m_pBMgr->SetForeColor(CB::Convert(event.GetColor()));
         cset.m_cr = m_pBMgr->GetForeColor();
         m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetForeColor(cset.m_cr); });
         m_selList.UpdateObjects();
     }
-    else if ((UINT)wParam == ID_COLOR_BACKGROUND)
+    else if (event.GetSubId() == XRCID("ID_COLOR_BACKGROUND"))
     {
-        m_pBMgr->SetBackColor((COLORREF)lParam);
+        m_pBMgr->SetBackColor(CB::Convert(event.GetColor()));
         cset.m_cr = m_pBMgr->GetBackColor();
         m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetBackColor(cset.m_cr); });
         m_selList.UpdateObjects();
     }
     else
-        return 0;
+    {
+        event.Skip();
+        return;
+    }
     if (cset.m_bColorAccepted)
         GetDocument().SetModifiedFlag();
-    return 1;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-LRESULT CBrdEditView::OnSetCustomColors(WPARAM wParam, LPARAM lParam)
+void CBrdEditView::OnSetCustomColors(SetCustomColorEvent& event)
 {
-    const std::vector<wxColour>& pCustomColors = CheckedDeref(reinterpret_cast<const std::vector<wxColour>*>(wParam));
+    const std::vector<wxColour>& pCustomColors = event.GetColors();
     GetDocument().SetCustomColors(pCustomColors);
-    return (LRESULT)0;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
+void CBrdEditView::OnSetLineWidth(SetLineWidthEvent& event)
 {
     struct WidthSetting
     {
@@ -1270,18 +1310,18 @@ LRESULT CBrdEditView::OnSetLineWidth(WPARAM wParam, LPARAM lParam)
     };
     WidthSetting wset = { 1, FALSE };
 
-    m_pBMgr->SetLineWidth((UINT)wParam);
+    m_pBMgr->SetLineWidth(event.GetWidth());
     m_selList.UpdateObjects();
     wset.m_nWidth = m_pBMgr->GetLineWidth();
     m_selList.ForAllSelections([&wset](CDrawObj& pObj) { wset.m_bWidthAccepted |= pObj.SetLineWidth(wset.m_nWidth); });
     m_selList.UpdateObjects(TRUE, FALSE);
     if (wset.m_bWidthAccepted)
         GetDocument().SetModifiedFlag();
-    return 1;
 }
 
 // ------------------------------------------------------ //
 
+#if 0
 void CBrdEditView::OnDwgFont()
 {
     if (m_pBMgr->DoBoardFontDialog())
@@ -1297,16 +1337,17 @@ void CBrdEditView::OnDwgFont()
         }
     }
 }
+#endif
 
 // ------------------------------------------------------ //
 
-BOOL CBrdEditView::OnToolPalette(UINT id)
+void CBrdEditView::OnToolPalette(wxCommandEvent& event)
 {
-    if (id != ID_TOOL_ARROW)
+    if (event.GetId() != XRCID("ID_TOOL_ARROW"))
         m_selList.PurgeList(TRUE);
-    if (id != m_nCurToolID)
+    if (event.GetId() != m_nCurToolID)
     {
-        if (m_nCurToolID == ID_TOOL_POLYGON)
+        if (m_nCurToolID == XRCID("ID_TOOL_POLYGON"))
         {
             // If we're changing away from the polygon tool
             // we need to act as if the escape key was hit.
@@ -1320,62 +1361,57 @@ BOOL CBrdEditView::OnToolPalette(UINT id)
             }
         }
         m_nLastToolID = m_nCurToolID;
-        m_nCurToolID = id;
+        m_nCurToolID = event.GetId();
     }
-    return TRUE;
 }
 
 // ---------------------------------------------------- //
 
-void CBrdEditView::OnUpdateToolPalette(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
 {
     TileID tid;
     int iLayer = m_pBoard->GetMaxDrawLayer();
     BOOL bEnable;
 
-    switch (pCmdUI->m_nID)
+    if (pCmdUI.GetId() == XRCID("ID_TOOL_TILE"))
     {
-        case ID_TOOL_TILE:
-            tid = GetDocument().GetTilePalWnd()->GetCurrentTileID();
-            bEnable = tid != nullTid;
-            if (tid == nullTid && m_nCurToolID == ID_TOOL_TILE)
-            {
-                m_nCurToolID = ID_TOOL_ARROW;
-                m_nLastToolID = ID_TOOL_ARROW;
-            }
-            break;
-        case ID_TOOL_ARROW:
-        case ID_TOOL_DROPPER:
-            bEnable = TRUE;
-            break;
-        case ID_TOOL_FILL:
-        case ID_TOOL_ERASER:
-            bEnable = iLayer == LAYER_BASE || iLayer == LAYER_GRID;
-            break;
-        case ID_TOOL_TEXT:
-        case ID_TOOL_LINE:
-        case ID_TOOL_POLYGON:
-        case ID_TOOL_RECT:
-        case ID_TOOL_OVAL:
-            bEnable = iLayer == LAYER_BASE || iLayer == LAYER_TOP;
-            break;
-        default:
-            ASSERT(!"unexpected tool id");
-            bEnable = false;
+        tid = GetDocument().GetTilePalWnd()->GetCurrentTileID();
+        bEnable = tid != nullTid;
+        if (tid == nullTid && m_nCurToolID == XRCID("ID_TOOL_TILE"))
+        {
+            m_nCurToolID = XRCID("ID_TOOL_ARROW");
+            m_nLastToolID = XRCID("ID_TOOL_ARROW");
+        }
     }
-    if (pCmdUI->m_pSubMenu != NULL)
+    else if (pCmdUI.GetId() == XRCID("ID_TOOL_ARROW") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_DROPPER"))
     {
-        // Need to handle menu that the submenu is connected to.
-        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
-            MF_BYPOSITION | (bEnable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
+        bEnable = TRUE;
+    }
+    else if (pCmdUI.GetId() == XRCID("ID_TOOL_FILL") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_ERASER"))
+    {
+        bEnable = iLayer == LAYER_BASE || iLayer == LAYER_GRID;
+    }
+    else if (pCmdUI.GetId() == XRCID("ID_TOOL_TEXT") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_LINE") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_POLYGON") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_RECT") ||
+            pCmdUI.GetId() == XRCID("ID_TOOL_OVAL"))
+    {
+        bEnable = iLayer == LAYER_BASE || iLayer == LAYER_TOP;
+    }
+    else
+    {
+        ASSERT(!"unexpected tool id");
+        bEnable = false;
     }
 
-    pCmdUI->Enable(bEnable);
-    // NOTE!!: The control ID's are assumed to be consecutive and
-    // in the same order as the tool codes defined in MAINFRM.C
-    pCmdUI->SetCheck(pCmdUI->m_nID == m_nCurToolID);
+    pCmdUI.Enable(bEnable);
+    pCmdUI.Check(pCmdUI.GetId()  == m_nCurToolID);
 }
 
+#if 0
 void CBrdEditView::OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!m_selList.empty());
@@ -1514,7 +1550,7 @@ void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         GetClientRect(&rct);
         if (rct.PtInRect(point))
         {
-            point += (CSize)GetDeviceScrollPosition();
+            point = CalcUnscrolledPosition(point);
             CB::string str = pba.GetCellNumberStr(point, m_nZoom);
             pCmdUI->Enable();
             pCmdUI->SetText(str);

@@ -1206,6 +1206,26 @@ namespace CB
                         return XRCID("ID_ITOOL_COLORCHANGE");
                     case ID_LINE_WIDTH:
                         return XRCID("ID_LINE_WIDTH");
+                    case ID_TOOL_ARROW:
+                        return XRCID("ID_TOOL_ARROW");
+                    case ID_TOOL_DROPPER:
+                        return XRCID("ID_TOOL_DROPPER");
+                    case ID_TOOL_ERASER:
+                        return XRCID("ID_TOOL_ERASER");
+                    case ID_TOOL_FILL:
+                        return XRCID("ID_TOOL_FILL");
+                    case ID_TOOL_LINE:
+                        return XRCID("ID_TOOL_LINE");
+                    case ID_TOOL_OVAL:
+                        return XRCID("ID_TOOL_OVAL");
+                    case ID_TOOL_POLYGON:
+                        return XRCID("ID_TOOL_POLYGON");
+                    case ID_TOOL_RECT:
+                        return XRCID("ID_TOOL_RECT");
+                    case ID_TOOL_TEXT:
+                        return XRCID("ID_TOOL_TEXT");
+                    case ID_TOOL_TILE:
+                        return XRCID("ID_TOOL_TILE");
                     case ID_VIEW_FULLSCALE:
                         return XRCID("ID_VIEW_FULLSCALE");
                     case ID_VIEW_HALFSCALE:
