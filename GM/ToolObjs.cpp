@@ -109,6 +109,10 @@ void CTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
     pView.ReleaseMouse();
 }
 
+void CTool::OnMouseCaptureLost(CBrdEditView& pView)
+{
+}
+
 ////////////////////////////////////////////////////////////////////////
 // CSelectTool - Object Selection/Manipulation tool
 
@@ -334,6 +338,20 @@ void CSelectTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
 #endif
     m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
     CTool::OnLButtonUp(pView, nMods, point);
+}
+
+void CSelectTool::OnMouseCaptureLost(CBrdEditView& pView)
+{
+    pView.GetOverlay().Reset();
+    m_eSelMode = smodeNormal;
+    KillDragTimer(pView);           // Make sure timers are released
+    m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
+    CSelList& pSLst = pView.GetSelectList();
+    pSLst.SetTrackingMode(trkSelected);
+    // undo move the tracking image
+    wxPoint ptDelta = c_ptDown - c_ptLast;
+    pSLst.Offset(ptDelta);
+    CTool::OnMouseCaptureLost(pView);
 }
 
 void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
@@ -645,6 +663,14 @@ void CShapeTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint 
         s_selectTool.OnMouseMove(pView, nMods, nButs, point);
 }
 
+void CShapeTool::OnMouseCaptureLost(CBrdEditView& pView)
+{
+    s_selectTool.OnMouseCaptureLost(pView);
+    pView.GetSelectList().PurgeList(TRUE); // Clear current select list
+    m_pObj = nullptr;
+    pView.ResetToDefaultTool();
+}
+
 void CShapeTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
 {
     s_selectTool.OnTimer(pView, nIDEvent);
@@ -830,6 +856,11 @@ void CPolyTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint p
     DrawRubberLine(dc);
 }
 
+void CPolyTool::OnMouseCaptureLost(CBrdEditView& pView)
+{
+    FinalizePolygon(pView, TRUE);
+}
+
 wxCursor CPolyTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const
 {
     return g_res.hcrCrossHairWx;
@@ -931,6 +962,11 @@ void CColorPickupTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point
 
     pView.RestoreLastTool();               // For convenience
     pView.ReleaseMouse();
+}
+
+void CColorPickupTool::OnMouseCaptureLost(CBrdEditView& pView)
+{
+    pView.RestoreLastTool();               // For convenience
 }
 
 wxCursor CColorPickupTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/) const

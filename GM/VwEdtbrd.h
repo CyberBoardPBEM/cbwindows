@@ -46,8 +46,8 @@ protected: // create from serialization only
     BOOL        m_bOffScreen;
     TileScale   m_nZoom;
     // --------------- //
-    UINT        m_nCurToolID;   // Current tool ID
-    UINT        m_nLastToolID;  // Previous tool ID
+    int         m_nCurToolID;   // Current tool ID
+    int         m_nLastToolID;  // Previous tool ID
 
 // Attributes
 public:
@@ -95,6 +95,12 @@ public:
     }
 
     void ClientToWorkspace(wxPoint& point) const;
+    [[nodiscard]] wxPoint ClientToWorkspace(const wxPoint& pnt) const
+    {
+        wxPoint retval = pnt;
+        ClientToWorkspace(retval);
+        return retval;
+    }
     void ClientToWorkspace(wxRect& rect) const;
     void WorkspaceToClient(wxPoint& point) const;
     [[nodiscard]] wxPoint WorkspaceToClient(const wxPoint& pnt) const
@@ -104,6 +110,12 @@ public:
         return retval;
     }
     void WorkspaceToClient(wxRect& rect) const;
+    [[nodiscard]] wxRect WorkspaceToClient(const wxRect& rect) const
+    {
+        wxRect retval = rect;
+        WorkspaceToClient(retval);
+        return retval;
+    }
     void InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase = FALSE);
     wxPoint GetWorkspaceDim() const;
     void OnPrepareScaledDC(wxDC& pDC);
@@ -162,10 +174,10 @@ public:
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
 protected:
-#if 0
     // ------------ //
-    ToolType MapToolType(UINT nToolResID) const;
+    ToolType MapToolType(int nToolResID) const;
 
+#if 0
     // Nudge and scroll functions
     void HandleKeyDown ();
     void HandleKeyUp ();
@@ -217,39 +229,44 @@ protected:
 #if 0
     //{{AFX_MSG(CBrdEditView)
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+#endif
+    void OnLButtonDown(wxMouseEvent& event);
+    void OnLButtonUp(wxMouseEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
+    void OnLButtonDblClk(wxMouseEvent& event);
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
+#if 0
     afx_msg void OnTimer(uintptr_t nIDEvent);
     afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+#endif
+    void OnSetCursor(wxSetCursorEvent& event);
+#if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 #endif
     void OnDragTileItem(DragDropEvent& event);
+    void OnSetColor(SetColorEvent& event);
+    void OnSetCustomColors(SetCustomColorEvent& event);
+    void OnSetLineWidth(SetLineWidthEvent& event);
 #if 0
-    afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
     afx_msg void OnOffscreen();
     afx_msg void OnViewGridLines();
     afx_msg void OnDwgToBack();
     afx_msg void OnDwgToFront();
-    afx_msg BOOL OnToolPalette(UINT id);
 #endif
+    void OnToolPalette(wxCommandEvent& event);
     void OnEditLayer(wxCommandEvent& event);
 #if 0
     afx_msg void OnUpdateViewGridLines(CCmdUI* pCmdUI);
     afx_msg void OnUpdateOffscreen(CCmdUI* pCmdUI);
 #endif
     void OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnUpdateColorForeground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorBackground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorCustom(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateLineWidth(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateToolPalette(CCmdUI* pCmdUI);
     afx_msg void OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI);
 #endif
     void OnUpdateViewFullScale(wxUpdateUIEvent& pCmdUI);
