@@ -41,10 +41,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////
-
-const int scrollZone = 8;                   //From INI?
-
-/////////////////////////////////////////////////////////////////
 // Class variables
 
 std::vector<CTool*> CTool::c_toolLib;          // Tool library
@@ -148,9 +144,7 @@ void CSelectTool::OnLButtonDown(CBrdEditView& pView, int nMods,
         else
             pSLst.AddObject(*pObj, TRUE);
         CTool::OnLButtonDown(pView, nMods, point);
-#if 0
         StartDragTimer(pView);
-#endif
         if (pSLst.IsMultipleSelects())
         {
             // Setup a trigger zone. If the mouse is moved out of
@@ -181,9 +175,7 @@ void CSelectTool::OnLButtonDown(CBrdEditView& pView, int nMods,
         m_rectMultiBorder.Offset(point);
         m_rectMultiBorder.Inflate(2, 2);
     }
-#if 0
     StartDragTimer(pView);
-#endif
 }
 
 void CSelectTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point)
@@ -193,40 +185,8 @@ void CSelectTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint
     if (!pView.HasCapture())
         return;
 
-    if (m_eSelMode != smodeNormal)
-    {
-        // Autoscroll initiate possibility processing (sounds like a
-        // scifi flic). Autoscroll is enabled when the mouse is captured
-        // and the mouse is outside of the client area.
-        wxRect rct = pView.GetClientRect();
-        wxPoint pt = pView.WorkspaceToClient(std::as_const(point));
-        if (rct.Contains(pt))           // In client area
-        {
-            CB::InflateAndNormalize(rct, -scrollZone, -scrollZone);        // Just in case client is too small
-            if (!rct.Contains(pt))
-            {
-#if 0
-                // It's in the scroll zone
-                if (m_nTimerID == uintptr_t(0))        // Only start if not scrolling
-                    StartScrollTimer(pView);
-#endif
-            }
-            else
-            {
-#if 0
-                KillScrollTimer(pView);
-#endif
-            }
-        }
-        else
-        {
-            wxASSERT(!"TODO:");
-#if 0
-            KillScrollTimer(pView);
-#endif
-        }
-    }
-    else if (m_rectMultiBorder != wxRect())
+    if (m_eSelMode == smodeNormal &&
+        m_rectMultiBorder != wxRect())
     {
         // Mode is normal and a trigger rectangle is set.
         // The trigger rectangle is only set if multiple objects are
@@ -236,9 +196,7 @@ void CSelectTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint
             // Force the point onto the snap grid.
             pView.AdjustPoint(point);
 
-#if 0
             KillDragTimer(pView);
-#endif
             m_rectMultiBorder = pSLst.GetEnclosingRect();
 
             // Force the rectangle onto the grid.
@@ -332,10 +290,7 @@ void CSelectTool::OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point)
         }
     }
     m_eSelMode = smodeNormal;
-#if 0
     KillDragTimer(pView);           // Make sure timers are released
-    KillScrollTimer(pView);
-#endif
     m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
     CTool::OnLButtonUp(pView, nMods, point);
 }
@@ -354,15 +309,12 @@ void CSelectTool::OnMouseCaptureLost(CBrdEditView& pView)
     CTool::OnMouseCaptureLost(pView);
 }
 
-void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
+void CSelectTool::OnTimer(CBrdEditView& pView)
 {
-    wxASSERT(!"TODO:");
-#if 0
     if (!pView.HasCapture())
     {
         m_eSelMode = smodeNormal;
         KillDragTimer(pView);
-        KillScrollTimer(pView);
         m_rectMultiBorder = wxRect();// Make sure trigger rect is empty
         return;
     }
@@ -374,7 +326,7 @@ void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
         // is underway. Therefore we want a move that draws
         // object outlines.
         m_eSelMode = smodeMove;
-        m_rectMultiBorder.SetRectEmpty(); // Make sure trigger rect is empty
+        m_rectMultiBorder = wxRect(); // Make sure trigger rect is empty
         KillDragTimer(pView);
 
         wxOverlayDC dc(pView.GetOverlay(), &pView);
@@ -384,25 +336,19 @@ void CSelectTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
         // If the snap grid is active. Force the enclosing rect onto
         // the snap grid. Also force the previously saved mouse points
         // to the snap grid.
-        CRect rct = pSLst.GetEnclosingRect();
+        wxRect rct = pSLst.GetEnclosingRect();
         pView.AdjustRect(rct);
-        pSLst.Offset((CPoint)(rct.TopLeft() -
-            pSLst.GetEnclosingRect().TopLeft()));
+        pSLst.Offset(rct.GetTopLeft() -
+            pSLst.GetEnclosingRect().GetTopLeft());
         pView.AdjustPoint(c_ptLast);
         pView.AdjustPoint(c_ptDown);
 
         // Move the tracking image to its new location and draw it.
-        CPoint ptDelta = (CPoint)(c_ptLast - c_ptDown);
+        wxPoint ptDelta = c_ptLast - c_ptDown;
         pSLst.Offset(ptDelta);
 
         pSLst.DrawTracker(dc, trkMoving);
     }
-    else
-    {
-        if (!ProcessAutoScroll(pView))
-            KillScrollTimer(pView);
-    }
-#endif
 }
 
 void CSelectTool::OnLButtonDblClk(CBrdEditView& pView, int nMods,
@@ -463,93 +409,6 @@ void CSelectTool::DrawNetRect(wxDC& pDC, CBrdEditView& /*pView*/) const
     DrawSelectionRect(pDC, rect);
 }
 
-BOOL CSelectTool::ProcessAutoScroll(CBrdEditView& pView)
-{
-    wxASSERT(!"TODO:");
-#if 0
-    CPoint point;
-    CRect  rectClient;
-    CRect  rect;
-
-    GetCursorPos(&point);
-    pView.ScreenToClient(&point);
-    pView.GetClientRect(&rectClient);
-    rect = rectClient;
-    rect.InflateRect(-scrollZone, -scrollZone);
-    rect.NormalizeRect();
-
-    UINT nScrollID = MAKEWORD(-1, -1);
-    if (rectClient.PtInRect(point) && !rect.PtInRect(point))
-    {
-        // Mouse is in the scroll zone....
-        // Determine which way to scroll along both X & Y axis
-        if (point.x < rect.left)
-            nScrollID = MAKEWORD(SB_LINEUP, HIBYTE(nScrollID));
-        else if (point.x >= rect.right)
-            nScrollID = MAKEWORD(SB_LINEDOWN, HIBYTE(nScrollID));
-        if (point.y < rect.top)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEUP);
-        else if (point.y >= rect.bottom)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEDOWN);
-        ASSERT(nScrollID != MAKEWORD(-1, -1));
-        // First check if scroll can happen.
-        BOOL bValidScroll = pView.OnScroll(nScrollID, 0, FALSE);
-        if (bValidScroll)
-        {
-            CSelList& pSLst = pView.GetSelectList();
-            pView.ClientToWorkspace(point);
-
-            CClientDC dc(&pView);
-            pView.OnPrepareScaledDC(dc);
-
-            if (m_eSelMode == smodeNet)
-            {
-                // Erase previous position
-                CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-                rect.NormalizeRect();
-                DrawSelectionRect(dc, rect);
-            }
-            else if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
-                DrawSelectionRect(dc, m_rectMultiBorder);
-            else
-                pSLst.DrawTracker(dc);    // Turn off tracker
-
-            pView.OnScroll(nScrollID, 0, TRUE);
-            pView.UpdateWindow();          // Redraw image content.
-
-            AdjustPoint(pView, point);
-
-            MoveSelections(pSLst, point);   // Offset the tracking data
-            c_ptLast = point;               // Save new 'last' position
-
-            pView.OnPrepareScaledDC(dc);
-            if (m_eSelMode == smodeNet)
-            {
-                GetCursorPos(&point);
-                pView.ScreenToClient(&point);
-                pView.ClientToWorkspace(point);
-                c_ptLast = point;            // Set new 'last' position
-                // Draw updated net rect
-                CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-                rect.NormalizeRect();
-                DrawSelectionRect(dc, &rect);
-            }
-            else
-            {
-                MoveSelections(pSLst, point);// Offset the tracking data
-                c_ptLast = point;            // Save new 'last' position
-                if (m_eSelMode == smodeMove && !m_rectMultiBorder.IsRectNull())
-                    DrawSelectionRect(dc, &m_rectMultiBorder);
-                else
-                    pSLst.DrawTracker(dc);    // Turn off tracker
-            }
-            return TRUE;
-        }
-    }
-#endif
-    return FALSE;
-}
-
 void CSelectTool::MoveSelections(CSelList& pSLst, wxPoint point)
 {
     if (m_eSelMode == smodeMove)
@@ -589,43 +448,13 @@ BOOL CSelectTool::AdjustPoint(const CBrdEditView& pView, wxPoint& point) const
 
 void CSelectTool::StartDragTimer(CBrdEditView& pView)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    m_nTimerID = pView.SetTimer(timerIDSelectDelay,
-        timerSelDelay, NULL);
-#endif
+    wxASSERT(!pView.GetTimer().IsRunning());
+    pView.GetTimer().Start(timerSelDelay);
 }
 
 void CSelectTool::KillDragTimer(CBrdEditView& pView)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    if (m_nTimerID != uintptr_t(0))
-    {
-        pView.KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
-    }
-#endif
-}
-
-void CSelectTool::StartScrollTimer(CBrdEditView& pView)
-{
-    wxASSERT(!"TODO:");
-#if 0
-    m_nTimerID = pView.SetTimer(timerIDAutoScroll, timerAutoScroll, NULL);
-#endif
-}
-
-void CSelectTool::KillScrollTimer(CBrdEditView& pView)
-{
-    wxASSERT(!"TODO:");
-#if 0
-    if (m_nTimerID != uintptr_t(0))
-    {
-        pView.KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
-    }
-#endif
+    pView.GetTimer().Stop();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -671,9 +500,9 @@ void CShapeTool::OnMouseCaptureLost(CBrdEditView& pView)
     pView.ResetToDefaultTool();
 }
 
-void CShapeTool::OnTimer(CBrdEditView& pView, uintptr_t nIDEvent)
+void CShapeTool::OnTimer(CBrdEditView& pView)
 {
-    s_selectTool.OnTimer(pView, nIDEvent);
+    s_selectTool.OnTimer(pView);
 }
 
 wxCursor CShapeTool::OnSetCursor(const CBrdEditView& pView, wxPoint point) const

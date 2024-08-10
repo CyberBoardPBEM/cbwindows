@@ -60,8 +60,8 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
+    EVT_TIMER(wxID_ANY, OnTimer)
 #if 0
-    ON_WM_TIMER()
     ON_WM_KEYDOWN()
     ON_WM_CHAR()
 #endif
@@ -166,7 +166,8 @@ END_MESSAGE_MAP()
 CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
     m_selList(*this),
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
+    timer(this)
 {
     m_bOffScreen = TRUE;
     m_pBoard = NULL;
@@ -675,14 +676,12 @@ void CBrdEditView::OnMouseCaptureLost(wxMouseCaptureLostEvent& event)
     pTool.OnMouseCaptureLost(*this);
 }
 
-#if 0
-void CBrdEditView::OnTimer(uintptr_t nIDEvent)
+void CBrdEditView::OnTimer(wxTimerEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     CTool& pTool = CTool::GetTool(eToolType);
-    pTool.OnTimer(*this, nIDEvent);
+    pTool.OnTimer(*this);
 }
-#endif
 
 void CBrdEditView::OnSetCursor(wxSetCursorEvent& event)
 {

@@ -31,10 +31,7 @@
 
 class CBrdEditView;
 
-const UINT timerIDSelectDelay = 666;    // Select timer ID
-const UINT timerIDAutoScroll  = 999;    // Autoscroll timer ID
 const int  timerSelDelay      = 150;    // Delay until select
-const int  timerAutoScroll    = 150;    // Interval of autoscrolls
 
 enum ToolType { ttypeUnknown, ttypeSelect, ttypeText, ttypeRect,
     ttypeEllipse, ttypeLine, ttypeTile, ttypeColorPick, ttypeCellPaint,
@@ -61,7 +58,7 @@ public:
     virtual void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) /* override */;
     virtual void OnMouseCaptureLost(CBrdEditView& pView) /* override */;
-    virtual void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) /* override */ {}
+    virtual void OnTimer(CBrdEditView& pView) /* override */ {}
     virtual wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const /* override */
         { return wxNullCursor; }
 
@@ -82,7 +79,7 @@ class CSelectTool : public CTool
 {
 // Constructors
 public:
-    CSelectTool() : CTool(ttypeSelect) { m_nTimerID = uintptr_t(0); }
+    CSelectTool() : CTool(ttypeSelect) {}
 
 // Attributes
 public:
@@ -99,23 +96,19 @@ public:
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
     void OnMouseCaptureLost(CBrdEditView& pView) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override;
+    void OnTimer(CBrdEditView& pView) override;
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
 public:
-    uintptr_t m_nTimerID;
     wxRect  m_rectMultiBorder;
     // ------- //
-    BOOL ProcessAutoScroll(CBrdEditView& pView);
     void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
     void DrawNetRect(wxDC& pDC, CBrdEditView& pView) const;
     BOOL AdjustPoint(const CBrdEditView& pView, wxPoint& point) const;
     void MoveSelections(CSelList& pSLst, wxPoint point);
     void StartDragTimer(CBrdEditView& pView);
     void KillDragTimer(CBrdEditView& pView);
-    void StartScrollTimer(CBrdEditView& pView);
-    void KillScrollTimer(CBrdEditView& pView);
     // ------- //
     void StartSizingOperation(CBrdEditView& pView, int nMods,
         wxPoint point, int nHandleID = -1);
@@ -137,7 +130,7 @@ public:
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
     void OnMouseCaptureLost(CBrdEditView& pView) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override;
+    void OnTimer(CBrdEditView& pView) override;
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -215,7 +208,7 @@ public:
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
     void OnMouseCaptureLost(CBrdEditView& pView) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
     // --------- //
@@ -246,7 +239,7 @@ public:
     void OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override {}
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -269,7 +262,7 @@ public:
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override {}
     void OnMouseCaptureLost(CBrdEditView& pView) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -291,7 +284,7 @@ public:
     void OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -313,7 +306,7 @@ public:
     void OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -335,7 +328,7 @@ public:
     void OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override {}
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation
@@ -357,7 +350,7 @@ public:
     void OnLButtonDblClk(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnLButtonUp(CBrdEditView& pView, int nMods, wxPoint point) override {}
     void OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint point) override;
-    void OnTimer(CBrdEditView& pView, uintptr_t nIDEvent) override {}
+    void OnTimer(CBrdEditView& pView) override {}
     wxCursor OnSetCursor(const CBrdEditView& pView, wxPoint point) const override;
 
 // Implementation

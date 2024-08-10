@@ -51,6 +51,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
+    wxTimer& GetTimer() { return timer; }
     wxOverlay& GetOverlay() { return overlay; }
     const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
@@ -235,8 +236,8 @@ protected:
     void OnMouseMove(wxMouseEvent& event);
     void OnLButtonDblClk(wxMouseEvent& event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void OnTimer(wxTimerEvent& event);
 #if 0
-    afx_msg void OnTimer(uintptr_t nIDEvent);
     afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 #endif
@@ -310,6 +311,7 @@ private:
 
     RefPtr<CBrdEditViewContainer> parent;
     RefPtr<CGamDoc> document;
+    wxTimer timer;
     wxOverlay overlay;
 
     /* This view should support scrolling by individual pixels,
