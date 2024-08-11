@@ -422,30 +422,6 @@ void CSelectTool::MoveSelections(CSelList& pSLst, wxPoint point)
         pSLst.MoveHandle(m_nHandleID, point);
 }
 
-BOOL CSelectTool::AdjustPoint(const CBrdEditView& pView, wxPoint& point) const
-{
-    wxASSERT(!"TODO:");
-#if 0
-    pView.AdjustPoint(point);
-    if (point == c_ptLast)
-        return FALSE;
-    if (m_eSelMode == smodeMove)
-    {
-        CRect rct = pView.GetSelectList().GetEnclosingRect();
-        CPoint pnt = pView.GetWorkspaceDim();
-        if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
-            point.x = c_ptLast.x - rct.left;
-        if (rct.top + point.y - c_ptLast.y < 0)         // Clamp
-            point.y = c_ptLast.y - rct.top;
-        if (rct.right + point.x - c_ptLast.x > pnt.x)   // Clamp
-            point.x = pnt.x - (rct.right - c_ptLast.x);
-        if (rct.bottom + point.y - c_ptLast.y > pnt.y)  // Clamp
-            point.y = pnt.y - (rct.bottom - c_ptLast.y);
-    }
-#endif
-    return TRUE;
-}
-
 void CSelectTool::StartDragTimer(CBrdEditView& pView)
 {
     wxASSERT(!pView.GetTimer().IsRunning());
