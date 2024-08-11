@@ -105,7 +105,6 @@ public:
     // ------- //
     void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
     void DrawNetRect(wxDC& pDC, CBrdEditView& pView) const;
-    BOOL AdjustPoint(const CBrdEditView& pView, wxPoint& point) const;
     void MoveSelections(CSelList& pSLst, wxPoint point);
     void StartDragTimer(CBrdEditView& pView);
     void KillDragTimer(CBrdEditView& pView);
