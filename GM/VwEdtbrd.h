@@ -130,10 +130,10 @@ public:
     void SelectWithinRect(wxRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(wxPoint point);
 
-#if 0
     // --- Misc Draw object manipulations
     void DeleteObjsInSelectList(BOOL bInvalidate = TRUE);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
+#if 0
     void NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll = FALSE); //DFM19991014
 #endif
     CDrawList* GetDrawList(BOOL bCanCreateList = TRUE);
@@ -251,14 +251,14 @@ protected:
     void OnSetLineWidth(SetLineWidthEvent& event);
 #if 0
     afx_msg void OnOffscreen();
-    afx_msg void OnViewGridLines();
-    afx_msg void OnDwgToBack();
-    afx_msg void OnDwgToFront();
 #endif
+    void OnViewGridLines(wxCommandEvent& event);
+    void OnDwgToBack(wxCommandEvent& event);
+    void OnDwgToFront(wxCommandEvent& event);
     void OnToolPalette(wxCommandEvent& event);
     void OnEditLayer(wxCommandEvent& event);
+    void OnUpdateViewGridLines(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnUpdateViewGridLines(CCmdUI* pCmdUI);
     afx_msg void OnUpdateOffscreen(CCmdUI* pCmdUI);
 #endif
     void OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI);
@@ -267,40 +267,38 @@ protected:
     void OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI);
     void OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI);
     void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI);
-#endif
+    void OnUpdateDwgToFrontOrBack(wxUpdateUIEvent& pCmdUI);
     void OnUpdateViewFullScale(wxUpdateUIEvent& pCmdUI);
     void OnUpdateViewHalfScale(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnDwgFont();
-#endif
+    void OnDwgFont(wxCommandEvent& event);
     void OnViewFullScale(wxCommandEvent& event);
     void OnViewHalfScale(wxCommandEvent& event);
     void OnViewSmallScale(wxCommandEvent& event);
     void OnUpdateViewSmallScale(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI);
+    void OnToolsBrdSnapGrid(wxCommandEvent& event);
+    void OnUpdateToolsBrdSnapGrid(wxUpdateUIEvent& pCmdUI);
+    void OnToolsBrdProps(wxCommandEvent& event);
+    void OnToolSetVisibleScale(wxCommandEvent& event);
+    void OnUpdateToolSetVisibleScale(wxUpdateUIEvent& pCmdUI);
+    void OnToolSuspendScaleVisibility(wxCommandEvent& event);
+    void OnUpdateToolSuspendScaleVsibility(wxUpdateUIEvent& pCmdUI);
+    void OnEditPaste(wxCommandEvent& event);
+    void OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI);
+    void OnEditPasteBitmapFromFile(wxCommandEvent& event);
+    void OnUpdateEditPasteBitmapFromFile(wxUpdateUIEvent& pCmdUI);
+    void OnEditClear(wxCommandEvent& event);
+    void OnUpdateEditClear(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
-    afx_msg void OnToolsBrdSnapGrid();
-    afx_msg void OnUpdateToolsBrdSnapGrid(CCmdUI* pCmdUI);
-    afx_msg void OnToolsBrdProps();
-    afx_msg void OnToolSetVisibleScale();
-    afx_msg void OnUpdateToolSetVisibleScale(CCmdUI* pCmdUI);
-    afx_msg void OnToolSuspendScaleVisibility();
-    afx_msg void OnUpdateToolSuspendScaleVsibility(CCmdUI* pCmdUI);
-    afx_msg void OnEditPaste();
-    afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
-    afx_msg void OnEditPasteBitmapFromFile();
-    afx_msg void OnUpdateEditPasteBitmapFromFile(CCmdUI* pCmdUI);
-    afx_msg void OnEditClear();
-    afx_msg void OnUpdateEditClear(CCmdUI* pCmdUI);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnEditCopy();
-    afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-    afx_msg void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg void OnDwgDrawAboveGrid();
-    afx_msg void OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI);
 #endif
+    void OnEditCopy(wxCommandEvent& event);
+    void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
+#if 0
+    afx_msg void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+#endif
+    void OnDwgDrawAboveGrid(wxCommandEvent& event);
+    void OnUpdateDwgDrawAboveGrid(wxUpdateUIEvent& pCmdUI);
     void OnViewToggleScale(wxCommandEvent& event);
     void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     void OnScrollWinLine(wxScrollWinEvent& event);
