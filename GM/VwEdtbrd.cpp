@@ -75,14 +75,14 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_SETLINEWIDTH(OnSetLineWidth)
 #if 0
     ON_COMMAND(ID_OFFSCREEN, OnOffscreen)
-    ON_COMMAND(ID_VIEW_GRIDLINES, OnViewGridLines)
-    ON_COMMAND(ID_DWG_TOBACK, OnDwgToBack)
-    ON_COMMAND(ID_DWG_TOFRONT, OnDwgToFront)
 #endif
+    EVT_MENU(XRCID("ID_VIEW_GRIDLINES"), OnViewGridLines)
+    EVT_MENU(XRCID("ID_DWG_TOBACK"), OnDwgToBack)
+    EVT_MENU(XRCID("ID_DWG_TOFRONT"), OnDwgToFront)
     EVT_MENU(XRCID("ID_TOOL_ARROW"), OnToolPalette)
     EVT_MENU(XRCID("ID_EDIT_LAYER_BASE"), OnEditLayer)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_GRIDLINES"), OnUpdateViewGridLines)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_VIEW_GRIDLINES, OnUpdateViewGridLines)
     ON_UPDATE_COMMAND_UI(ID_OFFSCREEN, OnUpdateOffscreen)
 #endif
     EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_BASE"), OnUpdateEditLayer)
@@ -91,40 +91,38 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
     EVT_UPDATE_UI(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
     EVT_UPDATE_UI(XRCID("ID_TOOL_ARROW"), OnUpdateToolPalette)
-#if 0
-    ON_UPDATE_COMMAND_UI(ID_DWG_TOFRONT, OnUpdateDwgToFrontOrBack)
-#endif
+    EVT_UPDATE_UI(XRCID("ID_DWG_TOFRONT"), OnUpdateDwgToFrontOrBack)
     EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALE"), OnUpdateViewFullScale)
     EVT_UPDATE_UI(XRCID("ID_VIEW_HALFSCALE"), OnUpdateViewHalfScale)
-#if 0
-    ON_COMMAND(ID_DWG_FONT, OnDwgFont)
-#endif
+    EVT_MENU(XRCID("ID_DWG_FONT"), OnDwgFont)
     EVT_MENU(XRCID("ID_VIEW_FULLSCALE"), OnViewFullScale)
     EVT_MENU(XRCID("ID_VIEW_HALFSCALE"), OnViewHalfScale)
     EVT_MENU(XRCID("ID_VIEW_SMALLSCALE"), OnViewSmallScale)
     EVT_UPDATE_UI(XRCID("ID_VIEW_SMALLSCALE"), OnUpdateViewSmallScale)
+    EVT_UPDATE_UI(XRCID("ID_INDICATOR_CELLNUM"), OnUpdateIndicatorCellNum)
+    EVT_MENU(XRCID("ID_TOOLS_BRDSNAPGRID"), OnToolsBrdSnapGrid)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_BRDSNAPGRID"), OnUpdateToolsBrdSnapGrid)
+    EVT_MENU(XRCID("ID_TOOLS_BRDPROPS"), OnToolsBrdProps)
+    EVT_MENU(XRCID("ID_TOOL_SETVISIBLESCALE"), OnToolSetVisibleScale)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_SETVISIBLESCALE"), OnUpdateToolSetVisibleScale)
+    EVT_MENU(XRCID("ID_TOOL_SUSPENDSCALEVISIBILITY"), OnToolSuspendScaleVisibility)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_SUSPENDSCALEVISIBILITY"), OnUpdateToolSuspendScaleVsibility)
+    EVT_MENU(wxID_PASTE, OnEditPaste)
+    EVT_UPDATE_UI(wxID_PASTE, OnUpdateEditPaste)
+    EVT_MENU(XRCID("ID_EDIT_PASTEBITMAPFROMFILE"), OnEditPasteBitmapFromFile)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_PASTEBITMAPFROMFILE"), OnUpdateEditPasteBitmapFromFile)
+    EVT_MENU(wxID_CLEAR, OnEditClear)
+    EVT_UPDATE_UI(wxID_CLEAR, OnUpdateEditClear)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_CELLNUM, OnUpdateIndicatorCellNum)
-    ON_COMMAND(ID_TOOLS_BRDSNAPGRID, OnToolsBrdSnapGrid)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_BRDSNAPGRID, OnUpdateToolsBrdSnapGrid)
-    ON_COMMAND(ID_TOOLS_BRDPROPS, OnToolsBrdProps)
-    ON_COMMAND(ID_TOOL_SETVISIBLESCALE, OnToolSetVisibleScale)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_SETVISIBLESCALE, OnUpdateToolSetVisibleScale)
-    ON_COMMAND(ID_TOOL_SUSPENDSCALEVISIBILITY, OnToolSuspendScaleVisibility)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_SUSPENDSCALEVISIBILITY, OnUpdateToolSuspendScaleVsibility)
-    ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
-    ON_COMMAND(ID_EDIT_PASTEBITMAPFROMFILE, OnEditPasteBitmapFromFile)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_PASTEBITMAPFROMFILE, OnUpdateEditPasteBitmapFromFile)
-    ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateEditClear)
     ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-    ON_WM_SYSKEYDOWN()
-    ON_COMMAND(ID_DWG_DRAWABOVEGRID, OnDwgDrawAboveGrid)
-    ON_UPDATE_COMMAND_UI(ID_DWG_DRAWABOVEGRID, OnUpdateDwgDrawAboveGrid)
 #endif
+    EVT_MENU(wxID_COPY, OnEditCopy)
+    EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
+#if 0
+    ON_WM_SYSKEYDOWN()
+#endif
+    EVT_MENU(XRCID("ID_DWG_DRAWABOVEGRID"), OnDwgDrawAboveGrid)
+    EVT_UPDATE_UI(XRCID("ID_DWG_DRAWABOVEGRID"), OnUpdateDwgDrawAboveGrid)
     EVT_MENU(XRCID("ID_EDIT_LAYER_TILE"), OnEditLayer)
     EVT_MENU(XRCID("ID_EDIT_LAYER_TOP"), OnEditLayer)
     EVT_MENU(XRCID("ID_TOOL_ERASER"), OnToolPalette)
@@ -147,10 +145,10 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_TOOL_POLYGON"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_TOOL_RECT"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_TOOL_OVAL"), OnUpdateToolPalette)
-#if 0
-    ON_UPDATE_COMMAND_UI(ID_DWG_TOBACK, OnUpdateDwgToFrontOrBack)
-#endif
+    EVT_UPDATE_UI(XRCID("ID_DWG_TOBACK"), OnUpdateDwgToFrontOrBack)
     EVT_MENU(XRCID("ID_VIEW_TOGGLE_SCALE"), OnViewToggleScale)
+    EVT_UPDATE_UI(XRCID("ID_DWG_FONT"), OnUpdateEnable)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_BRDPROPS"), OnUpdateEnable)
     EVT_UPDATE_UI(XRCID("ID_VIEW_TOGGLE_SCALE"), OnUpdateEnable)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
@@ -418,7 +416,6 @@ void CBrdEditView::SelectAllUnderPoint(wxPoint point)
     }
 }
 
-#if 0
 void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
 {
     CDrawList* pDwg = GetDrawList(FALSE);
@@ -428,7 +425,6 @@ void CBrdEditView::DeleteObjsInSelectList(BOOL bInvalidate)
     if (bInvalidate)
         m_selList.InvalidateListHandles();
 
-    CRect rct;
     while (!m_selList.empty())
     {
         OwnerPtr<CSelection> pSel = std::move(m_selList.front());
@@ -482,6 +478,7 @@ void CBrdEditView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView printing
 
+#if 0
 void CBrdEditView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
 {
     CScrollView::OnPrepareDC(pDC, pInfo);
@@ -523,25 +520,24 @@ void CBrdEditView::OnUpdateOffscreen(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_bOffScreen);
 }
+#endif
 
-void CBrdEditView::OnViewGridLines()
+void CBrdEditView::OnViewGridLines(wxCommandEvent& event)
 {
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     m_pBoard->SetCellBorder(!m_pBoard->GetCellBorder());
-    Invalidate(FALSE);
-    UpdateWindow();
-    EndWaitCursor();
+    Refresh(FALSE);
+    Update();
 
     CGmBoxHint hint;
     hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = &*m_pBoard;
-    GetDocument().UpdateAllViews(this, HINT_BOARDPROPCHANGE, &hint);
+    GetDocument().UpdateAllViews(&*parent, HINT_BOARDPROPCHANGE, &hint);
 }
 
-void CBrdEditView::OnUpdateViewGridLines(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateViewGridLines(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_pBoard->GetCellBorder());
+    pCmdUI.Check(m_pBoard->GetCellBorder());
 }
-#endif
 
 namespace
 {
@@ -822,22 +818,22 @@ void CBrdEditView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     }
     //...DFM19991118
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
-void CBrdEditView::OnEditClear()
+void CBrdEditView::OnEditClear(wxCommandEvent& /*event*/)
 {
-    ASSERT(m_pBoard->GetMaxDrawLayer() != LAYER_GRID &&
+    wxASSERT(m_pBoard->GetMaxDrawLayer() != LAYER_GRID &&
         m_selList.IsAnySelects());
     DeleteObjsInSelectList(TRUE);
 }
 
-void CBrdEditView::OnUpdateEditClear(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateEditClear(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_pBoard->GetMaxDrawLayer() != LAYER_GRID &&
+    pCmdUI.Enable(m_pBoard->GetMaxDrawLayer() != LAYER_GRID &&
         m_selList.IsAnySelects());
 }
-#endif
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1320,8 +1316,7 @@ void CBrdEditView::OnSetLineWidth(SetLineWidthEvent& event)
 
 // ------------------------------------------------------ //
 
-#if 0
-void CBrdEditView::OnDwgFont()
+void CBrdEditView::OnDwgFont(wxCommandEvent& /*event*/)
 {
     if (m_pBMgr->DoBoardFontDialog())
     {
@@ -1336,7 +1331,6 @@ void CBrdEditView::OnDwgFont()
         }
     }
 }
-#endif
 
 // ------------------------------------------------------ //
 
@@ -1410,52 +1404,49 @@ void CBrdEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Check(pCmdUI.GetId()  == m_nCurToolID);
 }
 
-#if 0
-void CBrdEditView::OnUpdateDwgToFrontOrBack(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateDwgToFrontOrBack(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!m_selList.empty());
+    pCmdUI.Enable(!m_selList.empty());
 }
 
-void CBrdEditView::OnDwgToBack()
+void CBrdEditView::OnDwgToBack(wxCommandEvent& /*event*/)
 {
     MoveObjsInSelectList(FALSE, TRUE);
 }
 
-void CBrdEditView::OnDwgToFront()
+void CBrdEditView::OnDwgToFront(wxCommandEvent& /*event*/)
 {
     MoveObjsInSelectList(TRUE, TRUE);
 }
 
-void CBrdEditView::OnUpdateDwgDrawAboveGrid(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateDwgDrawAboveGrid(wxUpdateUIEvent& pCmdUI)
 {
     if (m_pBoard->GetMaxDrawLayer() == LAYER_TOP && !m_selList.empty())
     {
-        pCmdUI->Enable(TRUE);
+        pCmdUI.Enable(TRUE);
         if (m_selList.IsDObjFlagSetInAllSelectedObjects(dobjFlgDrawPass2))
-            pCmdUI->SetCheck(1);
+            pCmdUI.Check(true);
         else if (m_selList.IsDObjFlagSetInSomeSelectedObjects(dobjFlgDrawPass2))
-            pCmdUI->SetCheck(2);
+            pCmdUI.Set3StateValue(pCmdUI.Is3State() ?  wxCHK_UNDETERMINED : wxCHK_CHECKED);
         else
-            pCmdUI->SetCheck(0);
+            pCmdUI.Check(false);
     }
     else
     {
-        pCmdUI->Enable(FALSE);
-        pCmdUI->SetCheck(0);
+        pCmdUI.Enable(FALSE);
+        pCmdUI.Check(false);
     }
-
 }
 
-void CBrdEditView::OnDwgDrawAboveGrid()
+void CBrdEditView::OnDwgDrawAboveGrid(wxCommandEvent& /*event*/)
 {
-    ASSERT(!m_selList.empty());
+    wxASSERT(!m_selList.empty());
     if (m_selList.IsDObjFlagSetInAllSelectedObjects(dobjFlgDrawPass2))
         m_selList.ClearDObjFlagInAllSelectedObjects(dobjFlgDrawPass2);
     else
         m_selList.SetDObjFlagInAllSelectedObjects(dobjFlgDrawPass2);
     m_selList.InvalidateList(TRUE);
 }
-#endif
 
 void CBrdEditView::CenterViewOnWorkspacePoint(wxPoint point)
 {
@@ -1536,44 +1527,41 @@ void CBrdEditView::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(true);
 }
 
-#if 0
-void CBrdEditView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
 {
     CBoardArray& pba = m_pBoard->GetBoardArray();
     if (pba.GetCellNumTracking())
     {
-        CPoint point;
-        GetCursorPos(&point);
-        ScreenToClient(&point);
-        CRect rct;
-        GetClientRect(&rct);
-        if (rct.PtInRect(point))
+        wxPoint point = wxGetMouseState().GetPosition();
+        point = ScreenToClient(point);
+        wxRect rct = GetClientRect();
+        if (rct.Contains(point))
         {
             point = CalcUnscrolledPosition(point);
-            CB::string str = pba.GetCellNumberStr(point, m_nZoom);
-            pCmdUI->Enable();
-            pCmdUI->SetText(str);
+            CB::string str = pba.GetCellNumberStr(CB::Convert(point), m_nZoom);
+            pCmdUI.Enable(true);
+            pCmdUI.SetText(str);
         }
     }
 }
 
-void CBrdEditView::OnToolsBrdSnapGrid()
+void CBrdEditView::OnToolsBrdSnapGrid(wxCommandEvent& /*event*/)
 {
     m_pBoard->m_bGridSnap = !m_pBoard->m_bGridSnap;
 }
 
-void CBrdEditView::OnUpdateToolsBrdSnapGrid(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateToolsBrdSnapGrid(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(TRUE);
-    pCmdUI->SetCheck(m_pBoard->m_bGridSnap);
+    pCmdUI.Enable(TRUE);
+    pCmdUI.Check(m_pBoard->m_bGridSnap);
 }
 
-void CBrdEditView::OnToolsBrdProps()
+void CBrdEditView::OnToolsBrdProps(wxCommandEvent& /*event*/)
 {
     GetDocument().DoBoardPropertyDialog(*m_pBoard);
 }
 
-void CBrdEditView::OnToolSetVisibleScale()
+void CBrdEditView::OnToolSetVisibleScale(wxCommandEvent& /*event*/)
 {
     CSetScaleVisibilityDialog dlg;
     dlg.m_bFullScale = TRUE;
@@ -1598,57 +1586,57 @@ void CBrdEditView::OnToolSetVisibleScale()
     }
 }
 
-void CBrdEditView::OnUpdateToolSetVisibleScale(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateToolSetVisibleScale(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_selList.IsAnySelects());
+    pCmdUI.Enable(m_selList.IsAnySelects());
 }
 
-void CBrdEditView::OnToolSuspendScaleVisibility()
+void CBrdEditView::OnToolSuspendScaleVisibility(wxCommandEvent& /*event*/)
 {
     m_pBoard->SetApplyVisible(!m_pBoard->GetApplyVisible());
-    Invalidate(FALSE);
+    Refresh(FALSE);
 }
 
-void CBrdEditView::OnUpdateToolSuspendScaleVsibility(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateToolSuspendScaleVsibility(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(!m_pBoard->GetApplyVisible());
+    pCmdUI.Check(!m_pBoard->GetApplyVisible());
 }
 
-void CBrdEditView::OnEditPaste()
+void CBrdEditView::OnEditPaste(wxCommandEvent& /*event*/)
 {
-    OwnerPtr<CBitmap> pBMap = GetClipboardBitmap(this);
+    wxBitmap pBMap = GetClipboardBitmap();
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
-        pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
+        pDObj->SetBitmap(0, 0, static_cast<HBITMAP>(CB::Convert(pBMap)->Detach()), fullScale);
 
         GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList().AddObject(pDObj, TRUE);
-    CRect rct = pDObj.GetEnclosingRect();
+    wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
     InvalidateWorkspaceRect(rct);
 }
 
-void CBrdEditView::OnUpdateEditPaste(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI)
 {
     int nMaxLayer = m_pBoard->GetMaxDrawLayer();
-    pCmdUI->Enable(IsClipboardBitmap() &&
+    pCmdUI.Enable(IsClipboardBitmap() &&
         (nMaxLayer < 0 || nMaxLayer == LAYER_BASE || nMaxLayer == LAYER_TOP));
 }
 
-void CBrdEditView::OnEditCopy()
+void CBrdEditView::OnEditCopy(wxCommandEvent& /*event*/)
 {
     GetSelectList().CopyToClipboard();
 }
 
-void CBrdEditView::OnUpdateEditCopy(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(GetSelectList().IsCopyToClipboardPossible());
+    pCmdUI.Enable(GetSelectList().IsCopyToClipboardPossible());
 }
 
-void CBrdEditView::OnEditPasteBitmapFromFile()
+void CBrdEditView::OnEditPasteBitmapFromFile(wxCommandEvent& /*event*/)
 {
     CB::string strFilter = CB::string::LoadString(IDS_BMP_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_BITMAPFILE);
@@ -1663,10 +1651,10 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     try
     {
         wxImage img(CB::string(dlg.GetPathName()));
-        OwnerPtr<CBitmap> pBMap = ToBitmap(img);
+        wxBitmap pBMap = img;
 
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
-        pDObj->SetBitmap(0, 0, (HBITMAP)pBMap->Detach(), fullScale);
+        pDObj->SetBitmap(0, 0, (HBITMAP)CB::Convert(pBMap)->Detach(), fullScale);
 
         GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
@@ -1678,17 +1666,18 @@ void CBrdEditView::OnEditPasteBitmapFromFile()
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList().AddObject(pDObj, TRUE);
-    CRect rct = pDObj.GetEnclosingRect();
-    InvalidateWorkspaceRect(&rct);
+    wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
+    InvalidateWorkspaceRect(rct);
 }
 
-void CBrdEditView::OnUpdateEditPasteBitmapFromFile(CCmdUI* pCmdUI)
+void CBrdEditView::OnUpdateEditPasteBitmapFromFile(wxUpdateUIEvent& pCmdUI)
 {
     int nMaxLayer = m_pBoard->GetMaxDrawLayer();
-    pCmdUI->Enable(nMaxLayer < 0 || nMaxLayer == LAYER_BASE ||
+    pCmdUI.Enable(nMaxLayer < 0 || nMaxLayer == LAYER_BASE ||
         nMaxLayer == LAYER_TOP);
 }
 
+#if 0
 //DFM 19991014...
 //GetKeyState()
 static const short KEY_STATE_VALUE = static_cast<short>(static_cast<unsigned short>(0x8000));

@@ -1145,6 +1145,8 @@ namespace CB
     {
         switch (id)
         {
+            case ID_EDIT_CLEAR:
+                return wxID_CLEAR;
             case ID_EDIT_COPY:
                 return wxID_COPY;
             case ID_EDIT_PASTE:
@@ -1166,14 +1168,22 @@ namespace CB
                         return XRCID("ID_COLOR_TRANSPARENT");
                     case ID_COLOR_CUSTOM:
                         return XRCID("ID_COLOR_CUSTOM");
+                    case ID_DWG_DRAWABOVEGRID:
+                        return XRCID("ID_DWG_DRAWABOVEGRID");
                     case ID_DWG_FONT:
                         return XRCID("ID_DWG_FONT");
+                    case ID_DWG_TOBACK:
+                        return XRCID("ID_DWG_TOBACK");
+                    case ID_DWG_TOFRONT:
+                        return XRCID("ID_DWG_TOFRONT");
                     case ID_EDIT_LAYER_BASE:
                         return XRCID("ID_EDIT_LAYER_BASE");
                     case ID_EDIT_LAYER_TILE:
                         return XRCID("ID_EDIT_LAYER_TILE");
                     case ID_EDIT_LAYER_TOP:
                         return XRCID("ID_EDIT_LAYER_TOP");
+                    case ID_EDIT_PASTEBITMAPFROMFILE:
+                        return XRCID("ID_EDIT_PASTEBITMAPFROMFILE");
                     case ID_IMAGE_BOARDMASK:
                         return XRCID("ID_IMAGE_BOARDMASK");
                     case ID_IMAGE_GRIDLINES:
@@ -1222,12 +1232,22 @@ namespace CB
                         return XRCID("ID_TOOL_POLYGON");
                     case ID_TOOL_RECT:
                         return XRCID("ID_TOOL_RECT");
+                    case ID_TOOL_SETVISIBLESCALE:
+                        return XRCID("ID_TOOL_SETVISIBLESCALE");
+                    case ID_TOOL_SUSPENDSCALEVISIBILITY:
+                        return XRCID("ID_TOOL_SUSPENDSCALEVISIBILITY");
                     case ID_TOOL_TEXT:
                         return XRCID("ID_TOOL_TEXT");
                     case ID_TOOL_TILE:
                         return XRCID("ID_TOOL_TILE");
+                    case ID_TOOLS_BRDPROPS:
+                        return XRCID("ID_TOOLS_BRDPROPS");
+                    case ID_TOOLS_BRDSNAPGRID:
+                        return XRCID("ID_TOOLS_BRDSNAPGRID");
                     case ID_VIEW_FULLSCALE:
                         return XRCID("ID_VIEW_FULLSCALE");
+                    case ID_VIEW_GRIDLINES:
+                        return XRCID("ID_VIEW_GRIDLINES");
                     case ID_VIEW_HALFSCALE:
                         return XRCID("ID_VIEW_HALFSCALE");
                     case ID_VIEW_SMALLSCALE:
@@ -1261,7 +1281,11 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
                 not possible in wx
                 (see https://groups.google.com/g/wx-dev/c/DD9CYFAjbdM/m/ndNP3TZXBgAJ),
                 so approximate this way */
-                CCmdUI dummy;
+                class CDummyCmdUI : public CCmdUI
+                {
+                    void SetCheck(int nCheck = 1) override {}   // 0, 1 or 2 (indeterminate)
+                };
+                CDummyCmdUI dummy;
                 return RelayOnCmdMsg(dest, nID, CN_UPDATE_COMMAND_UI, &dummy, nullptr);
             }
             wxCommandEvent event(wxEVT_MENU, CB::ToWxID(nID));
@@ -1371,8 +1395,12 @@ bool CB::RelayProcessEvent(CCmdTarget& dest,
                         case 1:
                             wxUUIEvent.Check(true);
                             break;
+                        case 2:
+                            wxASSERT(!"untested code");
+                            wxUUIEvent.Set3StateValue(wxCHK_UNDETERMINED);
+                            break;
                         default:
-                            wxASSERT(!"not implemented");
+                            wxASSERT(!"unknown value");
                     }
                 }
                 void SetRadio(BOOL bOn = TRUE) override
