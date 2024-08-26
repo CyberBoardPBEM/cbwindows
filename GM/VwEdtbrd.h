@@ -133,9 +133,7 @@ public:
     // --- Misc Draw object manipulations
     void DeleteObjsInSelectList(BOOL bInvalidate = TRUE);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
-#if 0
     void NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll = FALSE); //DFM19991014
-#endif
     CDrawList* GetDrawList(BOOL bCanCreateList = TRUE);
 
 // Implementation
@@ -178,16 +176,15 @@ protected:
     // ------------ //
     ToolType MapToolType(int nToolResID) const;
 
-#if 0
     // Nudge and scroll functions
-    void HandleKeyDown ();
-    void HandleKeyUp ();
-    void HandleKeyLeft ();
-    void HandleKeyRight ();
-    void HandleKeyPageUp ();
-    void HandleKeyPageDown ();
-    void HandleKeyTop ();
-    void HandleKeyBottom ();
+    void HandleKeyDown (const wxKeyEvent& event);
+    void HandleKeyUp (const wxKeyEvent& event);
+    void HandleKeyLeft (const wxKeyEvent& event);
+    void HandleKeyRight (const wxKeyEvent& event);
+    void HandleKeyPageUp (const wxKeyEvent& event);
+    void HandleKeyPageDown (const wxKeyEvent& event);
+    void HandleKeyTop (const wxKeyEvent& event);
+    void HandleKeyBottom (const wxKeyEvent& event);
 
     void ScrollDown();
     void ScrollUp();
@@ -223,7 +220,6 @@ protected:
     void PageBottom();
     void PageFarLeft();
     void PageFarRight();
-#endif
 
     // Generated message map functions
 protected:
@@ -237,10 +233,8 @@ protected:
     void OnLButtonDblClk(wxMouseEvent& event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnTimer(wxTimerEvent& event);
-#if 0
-    afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-#endif
+    void OnKeyDown(wxKeyEvent& event);
+    void OnChar(wxKeyEvent& event);
     void OnSetCursor(wxSetCursorEvent& event);
 #if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -339,6 +333,7 @@ private:
     DECLARE_DYNCREATE(CBrdEditViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
     DECLARE_MESSAGE_MAP()
 
     // IGetEvtHandler

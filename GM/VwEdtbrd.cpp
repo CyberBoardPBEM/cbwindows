@@ -61,10 +61,8 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
     EVT_TIMER(wxID_ANY, OnTimer)
-#if 0
-    ON_WM_KEYDOWN()
-    ON_WM_CHAR()
-#endif
+    EVT_KEY_DOWN(OnKeyDown)
+    EVT_CHAR(OnChar)
     EVT_SET_CURSOR(OnSetCursor)
 #if 0
     ON_WM_ERASEBKGND()
@@ -156,6 +154,7 @@ wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CBrdEditViewContainer, CView)
     ON_WM_CREATE()
+    ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -699,28 +698,28 @@ void CBrdEditView::OnSetCursor(wxSetCursorEvent& event)
 
 //////////////////////////////////////////////////////////////////////
 
-#if 0
-void CBrdEditView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CBrdEditView::OnChar(wxKeyEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
     CTool& pTool = CTool::GetTool(eToolType);
     if (pTool.m_eToolType == ttypePolygon)
     {
         CPolyTool& pPolyTool = static_cast<CPolyTool&>(pTool);
-        if (nChar == VK_ESCAPE)
+        if (event.GetKeyCode() == WXK_ESCAPE)
         {
             pPolyTool.RemoveRubberBand(*this);
             pPolyTool.FinalizePolygon(*this, TRUE);
         }
-        else if (nChar == VK_RETURN)
+        else if (event.GetKeyCode() == WXK_RETURN)
         {
             pPolyTool.RemoveRubberBand(*this);
             pPolyTool.FinalizePolygon(*this, FALSE);
         }
     }
-    CScrollView::OnChar(nChar, nRepCnt, nFlags);
+    event.Skip();
 }
 
+#if 0
 void CBrdEditView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (nChar == VK_DOWN)
@@ -768,57 +767,74 @@ void CBrdEditView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     }
 //  OnKeyDown (nChar, nRepCnt, nFlags);
 }
+#endif
 
-void CBrdEditView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CBrdEditView::OnKeyDown(wxKeyEvent& event)
 {
-    if (nChar == VK_DELETE && m_pBoard->GetMaxDrawLayer() != LAYER_GRID)
+    if ((event.GetKeyCode() == WXK_DELETE ||
+            event.GetKeyCode() == WXK_NUMPAD_DELETE) &&
+        m_pBoard->GetMaxDrawLayer() != LAYER_GRID)
     {
         DeleteObjsInSelectList(TRUE);
     }
 
     //...DFM19991118
-    else if (nChar == VK_DOWN)
+    else if (event.GetKeyCode() == WXK_DOWN ||
+                event.GetKeyCode() == WXK_NUMPAD_DOWN)
     {
-        HandleKeyDown ();
+        HandleKeyDown (event);
     }
 
-    else if (nChar == VK_UP)
+    else if (event.GetKeyCode() == WXK_UP ||
+                event.GetKeyCode() == WXK_NUMPAD_UP)
     {
-        HandleKeyUp ();
+        HandleKeyUp (event);
     }
 
-    else if (nChar == VK_LEFT)
+    else if (event.GetKeyCode() == WXK_LEFT ||
+                event.GetKeyCode() == WXK_NUMPAD_LEFT)
     {
-        HandleKeyLeft ();
+        HandleKeyLeft (event);
     }
 
-    else if (nChar == VK_RIGHT)
+    else if (event.GetKeyCode() == WXK_RIGHT ||
+                event.GetKeyCode() == WXK_NUMPAD_RIGHT)
     {
-        HandleKeyRight ();
+        HandleKeyRight (event);
     }
 
-    else if (nChar == VK_NEXT)
+    else if (event.GetKeyCode() == WXK_PAGEDOWN ||
+                event.GetKeyCode() == WXK_NUMPAD_PAGEDOWN)
     {
-        HandleKeyPageDown ();
+        HandleKeyPageDown (event);
     }
 
-    else if (nChar == VK_PRIOR)
+    else if (event.GetKeyCode() == WXK_PAGEUP ||
+                event.GetKeyCode() == WXK_NUMPAD_PAGEUP)
     {
-        HandleKeyPageUp ();
+        HandleKeyPageUp (event);
     }
 
-    else if (nChar == VK_HOME)
+    else if (event.GetKeyCode() == WXK_HOME ||
+                event.GetKeyCode() == WXK_NUMPAD_HOME)
     {
-        HandleKeyTop ();
+        HandleKeyTop (event);
     }
 
-    else if (nChar == VK_END)
+    else if (event.GetKeyCode() == WXK_END ||
+                event.GetKeyCode() == WXK_NUMPAD_END)
     {
-        HandleKeyBottom ();
+        HandleKeyBottom (event);
     }
     //...DFM19991118
+
+    /* so other keys get to EVT_CHAR
+        (see https://docs.wxwidgets.org/stable/classwx_key_event.html) */
+    else
+    {
+        event.Skip();
+    }
 }
-#endif
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1677,17 +1693,11 @@ void CBrdEditView::OnUpdateEditPasteBitmapFromFile(wxUpdateUIEvent& pCmdUI)
         nMaxLayer == LAYER_TOP);
 }
 
-#if 0
-//DFM 19991014...
-//GetKeyState()
-static const short KEY_STATE_VALUE = static_cast<short>(static_cast<unsigned short>(0x8000));
-
-void CBrdEditView::HandleKeyDown ()
+void CBrdEditView::HandleKeyDown (const wxKeyEvent& event)
 {
-    int modifierState = 4 * (GetKeyState (VK_SHIFT) & KEY_STATE_VALUE) +
-                        2 * (GetKeyState (VK_CONTROL) & KEY_STATE_VALUE) +
-                            (GetKeyState (VK_MENU) & KEY_STATE_VALUE);
-    modifierState /= KEY_STATE_VALUE;
+    int modifierState = 4 * event.ShiftDown() +
+                        2 * event.ControlDown() +
+                            event.AltDown();
 
     switch (modifierState)
     {
@@ -1716,12 +1726,11 @@ void CBrdEditView::HandleKeyDown ()
     }
 }
 
-void CBrdEditView::HandleKeyUp ()
+void CBrdEditView::HandleKeyUp (const wxKeyEvent& event)
 {
-    int modifierState = 4 * (GetKeyState (VK_SHIFT) & KEY_STATE_VALUE) +
-                        2 * (GetKeyState (VK_CONTROL) & KEY_STATE_VALUE) +
-                            (GetKeyState (VK_MENU) & KEY_STATE_VALUE);
-    modifierState /= KEY_STATE_VALUE;
+    int modifierState = 4 * event.ShiftDown() +
+                        2 * event.ControlDown() +
+                            event.AltDown();
 
     switch (modifierState)
     {
@@ -1750,12 +1759,11 @@ void CBrdEditView::HandleKeyUp ()
     }
 }
 
-void CBrdEditView::HandleKeyLeft ()
+void CBrdEditView::HandleKeyLeft (const wxKeyEvent& event)
 {
-    int modifierState = 4 * (GetKeyState (VK_SHIFT) & KEY_STATE_VALUE) +
-                        2 * (GetKeyState (VK_CONTROL) & KEY_STATE_VALUE) +
-                            (GetKeyState (VK_MENU) & KEY_STATE_VALUE);
-    modifierState /= KEY_STATE_VALUE;
+    int modifierState = 4 * event.ShiftDown() +
+                        2 * event.ControlDown() +
+                            event.AltDown();
 
     switch (modifierState)
     {
@@ -1784,12 +1792,11 @@ void CBrdEditView::HandleKeyLeft ()
     }
 }
 
-void CBrdEditView::HandleKeyRight ()
+void CBrdEditView::HandleKeyRight (const wxKeyEvent& event)
 {
-    int modifierState = 4 * (GetKeyState (VK_SHIFT) & KEY_STATE_VALUE) +
-                        2 * (GetKeyState (VK_CONTROL) & KEY_STATE_VALUE) +
-                            (GetKeyState (VK_MENU) & KEY_STATE_VALUE);
-    modifierState /= KEY_STATE_VALUE;
+    int modifierState = 4 * event.ShiftDown() +
+                        2 * event.ControlDown() +
+                            event.AltDown();
 
     switch (modifierState)
     {
@@ -1818,9 +1825,9 @@ void CBrdEditView::HandleKeyRight ()
     }
 }
 
-void CBrdEditView::HandleKeyPageUp ()
+void CBrdEditView::HandleKeyPageUp (const wxKeyEvent& event)
 {
-    if ((GetKeyState (VK_CONTROL) & 0x8000) != 0)
+    if (event.ControlDown())
     {
         PageLeft ();
     }
@@ -1830,9 +1837,9 @@ void CBrdEditView::HandleKeyPageUp ()
     }
 }
 
-void CBrdEditView::HandleKeyPageDown ()
+void CBrdEditView::HandleKeyPageDown (const wxKeyEvent& event)
 {
-    if ((GetKeyState (VK_CONTROL) & 0x8000) != 0)
+    if (event.ControlDown())
     {
         PageRight ();
     }
@@ -1842,9 +1849,9 @@ void CBrdEditView::HandleKeyPageDown ()
     }
 }
 
-void CBrdEditView::HandleKeyTop ()
+void CBrdEditView::HandleKeyTop (const wxKeyEvent& event)
 {
-    if ((GetKeyState (VK_CONTROL) & 0x8000) != 0)
+    if (event.ControlDown())
     {
         PageFarLeft ();
     }
@@ -1854,9 +1861,9 @@ void CBrdEditView::HandleKeyTop ()
     }
 }
 
-void CBrdEditView::HandleKeyBottom ()
+void CBrdEditView::HandleKeyBottom (const wxKeyEvent& event)
 {
-    if ((GetKeyState (VK_CONTROL) & 0x8000) != 0)
+    if (event.ControlDown())
     {
         PageFarRight ();
     }
@@ -1868,146 +1875,142 @@ void CBrdEditView::HandleKeyBottom ()
 
 void CBrdEditView::ScrollDown()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.y += 5;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::ScrollUp()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.y -= 5;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::ScrollLeft()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.x -= 5;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::ScrollRight()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.x += 5;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::FastScrollDown()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.y += 25;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::FastScrollUp()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.y -= 25;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::FastScrollLeft()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.x -= 25;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::FastScrollRight()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.x += 25;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageDown()
 {
-    CRect windowSize;
-    GetClientRect(windowSize);
+    wxRect windowSize = GetClientRect();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.y += windowSize.Height();
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.y += windowSize.GetHeight();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageUp()
 {
-    CRect windowSize;
-    GetClientRect(windowSize);
+    wxRect windowSize = GetClientRect();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.y -= windowSize.Height();
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.y -= windowSize.GetHeight();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageLeft()
 {
-    CRect windowSize;
-    GetClientRect(windowSize);
+    wxRect windowSize = GetClientRect();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.x -= windowSize.Width();
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.x -= windowSize.GetWidth();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageRight()
 {
-    CRect windowSize;
-    GetClientRect(windowSize);
+    wxRect windowSize = GetClientRect();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.x += windowSize.Width();
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.x += windowSize.GetWidth();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageBottom()
 {
-    CSize boardSize = GetTotalSize();
+    wxSize boardSize = GetVirtualSize();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.y = boardSize.cy;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.y = boardSize.y;
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageTop()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.y = 0;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageFarLeft()
 {
-    CPoint newUpLeft = GetScrollPosition();
+    wxPoint newUpLeft = GetViewStart();
     newUpLeft.x = 0;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::PageFarRight()
 {
-    CSize boardSize = GetTotalSize();
+    wxSize boardSize = GetVirtualSize();
 
-    CPoint newUpLeft = GetScrollPosition();
-    newUpLeft.x += boardSize.cx;
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    wxPoint newUpLeft = GetViewStart();
+    newUpLeft.x += boardSize.x;
+    Scroll(newUpLeft);
+    Update();
 }
 
 void CBrdEditView::NudgeDown()
@@ -2107,7 +2110,7 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
         dY *= value_preserving_cast<int>(m_pBoard->m_yGridSnap) / 1000;
     }
 
-    CPoint offset (dX, dY);
+    wxPoint offset (dX, dY);
 
     //---------------------------------------------------------------
     //  First we are going to make sure that the region spanned by
@@ -2116,16 +2119,16 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
     //---------------------------------------------------------------
     CSelList::iterator pos = m_selList.begin();
     CSelection& pSel = **pos;
-    CRect selectRegion(pSel.m_rect);
+    wxRect selectRegion(pSel.m_rect);
     for ( ; pos != m_selList.end() ; ++pos)
     {
         CSelection& pSel = **pos;
-        selectRegion.UnionRect (pSel.m_rect,selectRegion);
+        selectRegion.Union (pSel.m_rect);
     }
 
     AdjustRect (selectRegion);
-    CRect originalRect (selectRegion);
-    selectRegion.OffsetRect(offset);
+    wxRect originalRect (selectRegion);
+    selectRegion.Offset(offset);
     AdjustRect (selectRegion);
 
     if (selectRegion == originalRect)
@@ -2146,10 +2149,10 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
         pSel.Offset(offset);
         AdjustRect(pSel.m_rect);
 
-        pSel.m_pObj->OffsetObject(offset);
-        CRect temp = pSel.m_pObj->GetRect();
+        pSel.m_pObj->OffsetObject(CB::Convert(offset));
+        wxRect temp = CB::Convert(pSel.m_pObj->GetRect());
         AdjustRect(temp);
-        pSel.m_pObj->SetRect(temp);
+        pSel.m_pObj->SetRect(CB::Convert(temp));
     }
 
     m_selList.InvalidateList();
@@ -2161,19 +2164,18 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
     //  to keep objects in view.
     //----------------------------------------------------------------
     BOOL doScroll = forceScroll;
-    CPoint scrollPos = GetScrollPosition();
+    wxPoint scrollPos = GetViewStart();
 
     if (!doScroll)
     {
-        CRect windowSize;
-        GetClientRect(windowSize);
-        windowSize.OffsetRect(scrollPos);
+        wxRect windowSize = GetClientRect();
+        windowSize.Offset(scrollPos);
 
-        CRect beforeRect;
-        beforeRect.UnionRect(windowSize,originalRect);
+        wxRect beforeRect(windowSize);
+        beforeRect.Union(originalRect);
 
-        CRect afterRect;
-        afterRect.UnionRect(windowSize,selectRegion);
+        wxRect afterRect(windowSize);
+        afterRect.Union(selectRegion);
 
         if (beforeRect != afterRect)
         {
@@ -2183,9 +2185,9 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
 
     if (doScroll)
     {
-        scrollPos.Offset(offset);
-        ScrollToPosition(scrollPos);
-        UpdateWindow();
+        scrollPos += offset;
+        Scroll(scrollPos);
+        Update();
     }
 }
 //...DFM 19991014
@@ -2193,6 +2195,7 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
 /////////////////////////////////////////////////////////////////////////////
 // Fix MFC problems with mouse wheel handling in Win98 and WinME systems
 
+#if 0
 BOOL CBrdEditView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
     return DoMouseWheelFix(nFlags, zDelta, pt);
@@ -2368,6 +2371,13 @@ int CBrdEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CBrdEditView(*this);
 
     return 0;
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CBrdEditViewContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    CB::OnCmdMsgOverride<CView>::OnSetFocus(pOldWnd);
+    child->SetFocus();
 }
 
 
