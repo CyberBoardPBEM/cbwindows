@@ -34,7 +34,7 @@
 
 class CBrdEditViewContainer;
 
-class CBrdEditView : public wxScrolledCanvas
+class CBrdEditView : public CB::ProcessEventOverride<wxScrolledCanvas>
 {
 protected: // create from serialization only
     CBrdEditView(CBrdEditViewContainer& p);
@@ -283,9 +283,7 @@ protected:
     void OnUpdateEditPasteBitmapFromFile(wxUpdateUIEvent& pCmdUI);
     void OnEditClear(wxCommandEvent& event);
     void OnUpdateEditClear(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-#endif
+    void OnContextMenu(wxContextMenuEvent& event);
     void OnEditCopy(wxCommandEvent& event);
     void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
 #if 0
@@ -299,6 +297,12 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override
+    {
+        return CheckedDeref(AfxGetMainWnd());
+    }
+
     void RecalcScrollLimits();
 
     RefPtr<CBrdEditViewContainer> parent;

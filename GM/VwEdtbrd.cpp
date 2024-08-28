@@ -111,9 +111,7 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_EDIT_PASTEBITMAPFROMFILE"), OnUpdateEditPasteBitmapFromFile)
     EVT_MENU(wxID_CLEAR, OnEditClear)
     EVT_UPDATE_UI(wxID_CLEAR, OnUpdateEditClear)
-#if 0
-    ON_WM_CONTEXTMENU()
-#endif
+    EVT_CONTEXT_MENU(OnContextMenu)
     EVT_MENU(wxID_COPY, OnEditCopy)
     EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
 #if 0
@@ -574,30 +572,26 @@ void CBrdEditView::OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI)
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-void CBrdEditView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CBrdEditView::OnContextMenu(wxContextMenuEvent& event)
 {
-    // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
-
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_DESIGN_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_DESIGN_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(MENU_BV_DRAWING);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu("0=BV_EDIT");
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+            PopupMenu(&*popup);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView mouse and timer message handlers
