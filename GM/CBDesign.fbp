@@ -18635,6 +18635,452 @@
       <property name="window_name"></property>
       <property name="window_style"></property>
       <object class="wxMenu" expanded="false">
+        <property name="label">0=BV_EDIT</property>
+        <property name="name">MENU_BV_DRAWING</property>
+        <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Undo the last action&#x0A;Undo</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Undo</property>
+          <property name="name">wxID_UNDO</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator6</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Copy the selection and put it on the Clipboard&#x0A;Copy</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Copy</property>
+          <property name="name">wxID_COPY</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Insert Clipboard contents&#x0A;Paste</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Paste</property>
+          <property name="name">wxID_PASTE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Erase the current selection&#x0A;Delete (Del)</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Delete</property>
+          <property name="name">wxID_CLEAR</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator7</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="submenu" expanded="false">
+          <property name="bitmap"></property>
+          <property name="label">Board Drawing Tools</property>
+          <property name="name">m_menu3</property>
+          <property name="permission">protected</property>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Selects objects&#x0A;Select Objects</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Selector</property>
+            <property name="name">ID_TOOL_ARROW</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Extract a color from the screen&#x0A;Pickup Color</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Pickup Color</property>
+            <property name="name">ID_TOOL_DROPPER</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Places tiles on the board&#x0A;Tile</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Tile</property>
+            <property name="name">ID_TOOL_TILE</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Places text on the board&#x0A;Text</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Text</property>
+            <property name="name">ID_TOOL_TEXT</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Draw a line on the board&#x0A;Line</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Line</property>
+            <property name="name">ID_TOOL_LINE</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Draw a rectangle on the board&#x0A;Rectangle</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Rectangle</property>
+            <property name="name">ID_TOOL_RECT</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Draw a polygon or polyline on board&#x0A;Polygon or Polyline</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Polygon</property>
+            <property name="name">ID_TOOL_POLYGON</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Draw an oval on the board&#x0A;Oval</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Draw Oval</property>
+            <property name="name">ID_TOOL_OVAL</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Fills board cell with a single color&#x0A;Color Cell</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Color Cell</property>
+            <property name="name">ID_TOOL_FILL</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+          <object class="wxMenuItem" expanded="false">
+            <property name="bitmap"></property>
+            <property name="checked">0</property>
+            <property name="enabled">1</property>
+            <property name="help">Erases contents of board cell&#x0A;Erase Cell</property>
+            <property name="id">wxID_ANY</property>
+            <property name="kind">wxITEM_CHECK</property>
+            <property name="label">Erase Cell</property>
+            <property name="name">ID_TOOL_ERASER</property>
+            <property name="permission">none</property>
+            <property name="shortcut"></property>
+            <property name="unchecked_bitmap"></property>
+          </object>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Toggle automatic selection of Select tool after drawing.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Drawing Tools Are Sticky</property>
+          <property name="name">ID_STICKY_DRAWTOOLS</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Set default drawing font.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Font...</property>
+          <property name="name">ID_DWG_FONT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator8</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Brings the selected drawing objects to the front of the drawing&#x0A;Move Object to Front</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Bring Objects to Front</property>
+          <property name="name">ID_DWG_TOFRONT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Sends the selected drawing objects to the back of the drawing&#x0A;Move Object to Back</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Send Objects to Back</property>
+          <property name="name">ID_DWG_TOBACK</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Draw selected objects above the grid lines&#x0A;Draw Above Grid</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Draw Objects Above Grid</property>
+          <property name="name">ID_DWG_DRAWABOVEGRID</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator9</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Enable or disables the board editor snap grid&#x0A;Board Snap Grid</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Snap Grid</property>
+          <property name="name">ID_TOOLS_BRDSNAPGRID</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Select which scales the objects are visible</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Set Scale Related Visibility...</property>
+          <property name="name">ID_TOOL_SETVISIBLESCALE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Turn off scaled visibility for drawn objects</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Suspend Scale Related Visibility</property>
+          <property name="name">ID_TOOL_SUSPENDSCALEVISIBILITY</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator10</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit the board&apos;s base drawing layer&#x0A;Base Drawing Layer</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Edit Base Board Layer</property>
+          <property name="name">ID_EDIT_LAYER_BASE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit the board&apos;s cell layer&#x0A;Board Cell Layer</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Edit Cell Board Layer</property>
+          <property name="name">ID_EDIT_LAYER_TILE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit the board&apos;s top drawing layer&#x0A;Top Drawing Layer</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">Edit Top Board Layer</property>
+          <property name="name">ID_EDIT_LAYER_TOP</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator11</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Show full scale board view</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">View Full Scale Board</property>
+          <property name="name">ID_VIEW_FULLSCALE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Show half scale board view</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">View Half Scale Board</property>
+          <property name="name">ID_VIEW_HALFSCALE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Show small scale board view</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">View Small Scale Board</property>
+          <property name="name">ID_VIEW_SMALLSCALE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator12</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Hides or shows cell layer border lines&#x0A;Cell Border Lines</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_CHECK</property>
+          <property name="label">View Cell Border Lines</property>
+          <property name="name">ID_VIEW_GRIDLINES</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator13</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Change the board properties</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Board Properties...</property>
+          <property name="name">ID_TOOLS_BRDPROPS</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help"></property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Paste Bitmap From File...</property>
+          <property name="name">ID_EDIT_PASTEBITMAPFROMFILE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+      </object>
+      <object class="wxMenu" expanded="false">
         <property name="label">1=IV_BITEDIT</property>
         <property name="name">MENU_IV_BITEDIT</property>
         <property name="permission">protected</property>

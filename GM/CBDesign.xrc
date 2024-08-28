@@ -3478,6 +3478,196 @@
     </object>
   </object>
   <object class="wxMenuBar" name="IDR_MENU_DESIGN_POPUPS">
+    <object class="wxMenu" name="MENU_BV_DRAWING">
+      <label>0=BV__EDIT</label>
+      <object class="wxMenuItem" name="wxID_UNDO">
+        <label>Undo</label>
+        <accel></accel>
+        <help>Undo the last action\nUndo</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>Copy</label>
+        <accel></accel>
+        <help>Copy the selection and put it on the Clipboard\nCopy</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_PASTE">
+        <label>Paste</label>
+        <accel></accel>
+        <help>Insert Clipboard contents\nPaste</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_CLEAR">
+        <label>Delete</label>
+        <accel></accel>
+        <help>Erase the current selection\nDelete (Del)</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenu" name="m_menu3">
+        <label>Board Drawing Tools</label>
+        <object class="wxMenuItem" name="ID_TOOL_ARROW">
+          <label>Selector</label>
+          <accel></accel>
+          <help>Selects objects\nSelect Objects</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_DROPPER">
+          <label>Pickup Color</label>
+          <accel></accel>
+          <help>Extract a color from the screen\nPickup Color</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_TILE">
+          <label>Draw Tile</label>
+          <accel></accel>
+          <help>Places tiles on the board\nTile</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_TEXT">
+          <label>Draw Text</label>
+          <accel></accel>
+          <help>Places text on the board\nText</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_LINE">
+          <label>Draw Line</label>
+          <accel></accel>
+          <help>Draw a line on the board\nLine</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_RECT">
+          <label>Draw Rectangle</label>
+          <accel></accel>
+          <help>Draw a rectangle on the board\nRectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_POLYGON">
+          <label>Draw Polygon</label>
+          <accel></accel>
+          <help>Draw a polygon or polyline on board\nPolygon or Polyline</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_OVAL">
+          <label>Draw Oval</label>
+          <accel></accel>
+          <help>Draw an oval on the board\nOval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_FILL">
+          <label>Color Cell</label>
+          <accel></accel>
+          <help>Fills board cell with a single color\nColor Cell</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_ERASER">
+          <label>Erase Cell</label>
+          <accel></accel>
+          <help>Erases contents of board cell\nErase Cell</help>
+          <checkable>1</checkable>
+        </object>
+      </object>
+      <object class="wxMenuItem" name="ID_STICKY_DRAWTOOLS">
+        <label>Drawing Tools Are Sticky</label>
+        <accel></accel>
+        <help>Toggle automatic selection of Select tool after drawing.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_FONT">
+        <label>Font...</label>
+        <accel></accel>
+        <help>Set default drawing font.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_DWG_TOFRONT">
+        <label>Bring Objects to Front</label>
+        <accel></accel>
+        <help>Brings the selected drawing objects to the front of the drawing\nMove Object to Front</help>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_TOBACK">
+        <label>Send Objects to Back</label>
+        <accel></accel>
+        <help>Sends the selected drawing objects to the back of the drawing\nMove Object to Back</help>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_DRAWABOVEGRID">
+        <label>Draw Objects Above Grid</label>
+        <accel></accel>
+        <help>Draw selected objects above the grid lines\nDraw Above Grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TOOLS_BRDSNAPGRID">
+        <label>Snap Grid</label>
+        <accel></accel>
+        <help>Enable or disables the board editor snap grid\nBoard Snap Grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOL_SETVISIBLESCALE">
+        <label>Set Scale Related Visibility...</label>
+        <accel></accel>
+        <help>Select which scales the objects are visible</help>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOL_SUSPENDSCALEVISIBILITY">
+        <label>Suspend Scale Related Visibility</label>
+        <accel></accel>
+        <help>Turn off scaled visibility for drawn objects</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_BASE">
+        <label>Edit Base Board Layer</label>
+        <accel></accel>
+        <help>Edit the board&apos;s base drawing layer\nBase Drawing Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_TILE">
+        <label>Edit Cell Board Layer</label>
+        <accel></accel>
+        <help>Edit the board&apos;s cell layer\nBoard Cell Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_TOP">
+        <label>Edit Top Board Layer</label>
+        <accel></accel>
+        <help>Edit the board&apos;s top drawing layer\nTop Drawing Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALE">
+        <label>View Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALE">
+        <label>View Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALE">
+        <label>View Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_GRIDLINES">
+        <label>View Cell Border Lines</label>
+        <accel></accel>
+        <help>Hides or shows cell layer border lines\nCell Border Lines</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TOOLS_BRDPROPS">
+        <label>Board Properties...</label>
+        <accel></accel>
+        <help>Change the board properties</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_PASTEBITMAPFROMFILE">
+        <label>Paste Bitmap From File...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+    </object>
     <object class="wxMenu" name="MENU_IV_BITEDIT">
       <label>1=IV__BITEDIT</label>
       <object class="wxMenuItem" name="wxID_UNDO">
