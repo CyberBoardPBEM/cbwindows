@@ -65,6 +65,7 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_MOTION(OnMouseMove)
+    EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
     EVT_SET_CURSOR(OnSetCursor)
     EVT_MENU(XRCID("ID_IMAGE_BOARDMASK"), OnImageBoardMask)
     EVT_MENU(wxID_ZOOM_IN, OnViewZoomIn)
@@ -901,6 +902,13 @@ void CBitEditView::OnLButtonUp(wxMouseEvent& event)
     CImageTool& pTool = CImageTool::GetTool(eToolType);
     wxPoint point = ClientToWorkspace(event.GetPosition());
     pTool.OnLButtonUp(*this, event.GetModifiers(), point);
+}
+
+void CBitEditView::OnMouseCaptureLost(wxMouseCaptureLostEvent& /*event*/)
+{
+    IToolType eToolType = MapToolType(m_nCurToolID);
+    CImageTool& pTool = CImageTool::GetTool(eToolType);
+    pTool.OnMouseCaptureLost(*this);
 }
 
 void CBitEditView::OnSetCursor(wxSetCursorEvent& event)
