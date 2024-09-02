@@ -249,6 +249,7 @@ protected:
     void OnLButtonUp(wxMouseEvent& event);
     void OnRButtonUp(wxMouseEvent& event);
     void OnLButtonDblClk(wxMouseEvent& event);
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnPaletteHide(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
