@@ -155,6 +155,7 @@ wxBEGIN_EVENT_TABLE(CColorPalette, wxPanel)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_RIGHT_UP(OnRButtonUp)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
+    EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
     EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
 wxEND_EVENT_TABLE()
 
@@ -1011,6 +1012,13 @@ void CColorPalette::OnRButtonUp(wxMouseEvent& event)
     }
 
     event.Skip();
+}
+
+void CColorPalette::OnMouseCaptureLost(wxMouseCaptureLostEvent& /*event*/)
+{
+    m_bTrackHue = FALSE;
+    m_bTrackSV = FALSE;
+    m_bIgnoreRButtonUp = FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
