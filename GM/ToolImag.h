@@ -50,6 +50,7 @@ public:
     virtual void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnMouseCaptureLost(CBitEditView& pView) /* override */;
     virtual wxCursor OnSetCursor(CBitEditView& /*pView*/, wxPoint /*point*/) /* override */
         { return wxNullCursor; }
 
@@ -81,6 +82,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
@@ -106,6 +108,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
@@ -129,6 +132,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
@@ -221,6 +225,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
@@ -244,6 +249,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override;
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation
@@ -267,6 +273,7 @@ public:
     void OnLButtonDown(CBitEditView& pView, int nMods, wxPoint point) override;
     void OnLButtonUp(CBitEditView& pView, int nMods, wxPoint point) override;
 //  void OnMouseMove(CBitEditView& pView, int nMods, wxPoint point) override {}
+    void OnMouseCaptureLost(CBitEditView& pView) override;
     wxCursor OnSetCursor(CBitEditView& pView, wxPoint point) override;
 
 // Implementation

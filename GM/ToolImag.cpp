@@ -109,6 +109,10 @@ void CImageTool::OnLButtonUp(CBitEditView& pView, int /*nMods*/, wxPoint /*point
     pView.ReleaseMouse();
 }
 
+void CImageTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+}
+
 ////////////////////////////////////////////////////////////////////////
 // CBitSelectTool
 
@@ -235,6 +239,19 @@ void CBitSelectTool::OnLButtonUp(CBitEditView& pView, int nMods,
     CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
+void CBitSelectTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.InvalidateFocusBorder();
+    if (!m_bMoveMode)
+    {
+        pView.SetViewImageFromMasterImage();   // Restore original
+        pView.InvalidateViewImage(false);
+    }
+
+    pView.SetSelectToolControl(FALSE);
+    CImageTool::OnMouseCaptureLost(pView);
+}
+
 wxCursor CBitSelectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
     // If the point is in the selected rect, show the move image cursor.
@@ -281,6 +298,14 @@ void CBitPencilTool::OnLButtonUp(CBitEditView& pView, int nMods,
     CImageTool::OnLButtonUp(pView, nMods, point);
 }
 
+void CBitPencilTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.InvalidateFocusBorder();
+    pView.SetViewImageFromMasterImage();   // Restore original
+    pView.InvalidateViewImage(false);
+    CImageTool::OnMouseCaptureLost(pView);
+}
+
 wxCursor CBitPencilTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
     if (!pView.IsPtInImage(point))
@@ -318,6 +343,13 @@ void CBitLineTool::OnLButtonUp(CBitEditView& pView, int nMods,
         return;
     pView.SetMasterImageFromViewImage();
     CImageTool::OnLButtonUp(pView, nMods, point);
+}
+
+void CBitLineTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.SetViewImageFromMasterImage();   // Restore original
+    pView.InvalidateViewImage(false);
+    CImageTool::OnMouseCaptureLost(pView);
 }
 
 wxCursor CBitLineTool::OnSetCursor(CBitEditView& pView, wxPoint point)
@@ -364,6 +396,12 @@ void CBitDropperTool::OnLButtonUp(CBitEditView& pView, int nMods,
     pView.RestoreLastTool();           // For convenience.
 }
 
+void CBitDropperTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.RestoreLastTool();           // For convenience.
+    CImageTool::OnMouseCaptureLost(pView);
+}
+
 wxCursor CBitDropperTool::OnSetCursor(CBitEditView& pView, wxPoint point)
 {
     return g_res.hcrDropperWx;
@@ -404,6 +442,13 @@ void CBitRectTool::OnLButtonUp(CBitEditView& pView, int nMods,
         return;
     pView.SetMasterImageFromViewImage();
     CImageTool::OnLButtonUp(pView, nMods, point);
+}
+
+void CBitRectTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.SetViewImageFromMasterImage();   // Restore original
+    pView.InvalidateViewImage(false);
+    CImageTool::OnMouseCaptureLost(pView);
 }
 
 wxCursor CBitRectTool::OnSetCursor(CBitEditView& pView, wxPoint point)
@@ -449,6 +494,13 @@ void CBitOvalTool::OnLButtonUp(CBitEditView& pView, int nMods,
         return;
     pView.SetMasterImageFromViewImage();
     CImageTool::OnLButtonUp(pView, nMods, point);
+}
+
+void CBitOvalTool::OnMouseCaptureLost(CBitEditView& pView)
+{
+    pView.SetViewImageFromMasterImage();   // Restore original
+    pView.InvalidateViewImage(false);
+    CImageTool::OnMouseCaptureLost(pView);
 }
 
 wxCursor CBitOvalTool::OnSetCursor(CBitEditView& pView, wxPoint point)

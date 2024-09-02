@@ -205,6 +205,7 @@ protected:
     void OnLButtonDown(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
     void OnSetCursor(wxSetCursorEvent& event);
     void OnImageBoardMask(wxCommandEvent& event);
     void OnViewZoomIn(wxCommandEvent& event);
