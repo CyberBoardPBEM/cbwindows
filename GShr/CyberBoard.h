@@ -80,6 +80,7 @@
 #include "wx/menu.h"
 #include <wx/msgdlg.h>
 #include <wx/nativewin.h>
+#include <wx/overlay.h>
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>
 #include <wx/stattext.h>
