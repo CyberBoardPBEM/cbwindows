@@ -1,6 +1,6 @@
 // VwPrjgbx.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -76,7 +76,8 @@ protected:
 
 // Attributes
 public:
-    CGamDoc* GetDocument() { return (CGamDoc*)m_pDocument; }
+    const CGamDoc& GetDocument() const { return CheckedDeref((CGamDoc*)m_pDocument); }
+    CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
 
     // Various controls...
     CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
@@ -160,11 +161,11 @@ protected:
 
 // Implementation
 protected:
-    virtual ~CGbxProjView();
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    ~CGbxProjView() override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
     // Generated message map functions
 protected:

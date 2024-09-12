@@ -1,6 +1,6 @@
 // VwPrjgbx.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -239,9 +239,9 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGbxProjView::OnInitialUpdate()
 {
-    m_listTiles.SetDocument(GetDocument());
-    m_listPieces.SetDocument(CheckedDeref(GetDocument()));
-    m_listMarks.SetDocument(GetDocument());
+    m_listTiles.SetDocument(&GetDocument());
+    m_listPieces.SetDocument(GetDocument());
+    m_listMarks.SetDocument(&GetDocument());
 
     CView::OnInitialUpdate();
 }
@@ -257,7 +257,7 @@ void CGbxProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CGbxProjView::OnDraw(CDC* pDC)
 {
-    CDocument* pDoc = GetDocument();
+    CDocument& pDoc = GetDocument();
     // TODO: add draw code here
 }
 
@@ -425,15 +425,14 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
     {
         return -1;
     }
-    CGamDoc* pDoc = GetDocument();
-    ASSERT(pDoc);
+    CGamDoc& pDoc = GetDocument();
 
     DragInfo* pdi = (DragInfo*)lParam;
 
     if (pdi->GetDragType() != DRAG_TILELIST)
         return -1;               // Only tile list drops allowed
 
-    if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != pDoc)
+    if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != &pDoc)
         return -1;               // Only pieces from our document.
 
     // no size restriction
@@ -452,7 +451,7 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
             m_listProj.GetItemGroupCode(nProjSel) == grpTile);
         size_t nGrpSel = m_listProj.GetItemSourceCode(nProjSel);
 
-        CTileManager* pTMgr = pDoc->GetTileManager();
+        CTileManager* pTMgr = pDoc.GetTileManager();
         const CTileSet& pTGrp = pTMgr->GetTileSet(nGrpSel);
 
         // Force selection of item under the mouse
@@ -471,10 +470,10 @@ LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
 
         pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
         DoUpdateTileList();
-        GetDocument()->NotifyTileDatabaseChange();
+        pDoc.NotifyTileDatabaseChange();
         m_listTiles.SetCurSelsMapped(*pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList);
         m_listTiles.ShowFirstSelection();
-        pDoc->SetModifiedFlag();
+        pDoc.SetModifiedFlag();
     }
     return 1;
 }
@@ -565,8 +564,7 @@ void CGbxProjView::UpdateItemControls(int nGrp)
 
 void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 {
-    CGamDoc* pDoc = GetDocument();
-    ASSERT(pDoc);
+    CGamDoc& pDoc = GetDocument();
 
     m_listProj.SetRedraw(FALSE);
 
@@ -584,7 +582,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_BOARDS);
     m_listProj.AddItem(grpBHdr, str);
 
-    CBoardManager* pBMgr = pDoc->GetBoardManager();
+    CBoardManager* pBMgr = pDoc.GetBoardManager();
     ASSERT(pBMgr);
     for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
     {
@@ -607,7 +605,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_TILES);
     m_listProj.AddItem(grpTHdr, str);
 
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CTileManager* pTMgr = pDoc.GetTileManager();
     ASSERT(pTMgr);
     for (size_t i = 0; i < pTMgr->GetNumTileSets(); i++)
         m_listProj.AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
@@ -616,7 +614,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_PIECES);
     m_listProj.AddItem(grpPHdr, str);
 
-    CPieceManager* pPMgr = pDoc->GetPieceManager();
+    CPieceManager* pPMgr = pDoc.GetPieceManager();
     ASSERT(pPMgr);
     for (size_t i = 0; i < pPMgr->GetNumPieceSets(); i++)
         m_listProj.AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
@@ -625,7 +623,7 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_MARKS);
     m_listProj.AddItem(grpMHdr, str);
 
-    CMarkManager* pMMgr = pDoc->GetMarkManager();
+    CMarkManager* pMMgr = pDoc.GetMarkManager();
     ASSERT(pMMgr);
     for (size_t i = 0; i < pMMgr->GetNumMarkSets(); i++)
         m_listProj.AddItem(grpMark, pMMgr->GetMarkSet(i).GetName(), i);
@@ -820,8 +818,8 @@ void CGbxProjView::OnEditCopy()
         m_listTiles.GetSelCount() > 0);
 #endif
 
-    CGamDoc* pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CGamDoc& pDoc = GetDocument();
+    CTileManager* pTMgr = pDoc.GetTileManager();
 
     std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
 
@@ -840,7 +838,7 @@ void CGbxProjView::OnEditCopy()
 
         CMemFile file3;
         CArchive ar3(&file3, CArchive::store);
-        ar3 << pDoc->GetGameBoxID();
+        ar3 << pDoc.GetGameBoxID();
         ar3 << GetCurrentProcessId();// To distinguish between same GBox in other files
         ar3.Close();
 
@@ -897,8 +895,8 @@ void CGbxProjView::OnEditPaste()
         IsClipboardFormatAvailable(CF_TILEIMAGES));
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CGamDoc* pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CGamDoc& pDoc = GetDocument();
+    CTileManager* pTMgr = pDoc.GetTileManager();
 
     wxBusyCursor busyCursor;
     TRY
@@ -920,18 +918,18 @@ void CGbxProjView::OnEditPaste()
             ar.Close();
         }
         DoUpdateTileList();
-        pDoc->NotifyTileDatabaseChange();
+        pDoc.NotifyTileDatabaseChange();
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
         {
             CGmBoxHint hint;
             hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
-            pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
+            pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
         }
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
     }
     END_TRY
-    pDoc->SetModifiedFlag();
+    pDoc.SetModifiedFlag();
 }
 
 void CGbxProjView::OnUpdateEditPaste(CCmdUI* pCmdUI)
@@ -948,8 +946,8 @@ void CGbxProjView::OnEditMove()
         IsClipboardFormatAvailable(CF_TIDLIST));
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CGamDoc* pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CGamDoc& pDoc = GetDocument();
+    CTileManager* pTMgr = pDoc.GetTileManager();
 
     wxBusyCursor busyCursor;
     TRY
@@ -968,7 +966,7 @@ void CGbxProjView::OnEditMove()
             DWORD dwGBoxID = pGBoxID[0];
             DWORD dwProcID = pGBoxID[1];
 
-            if (dwGBoxID == pDoc->GetGameBoxID() &&
+            if (dwGBoxID == pDoc.GetGameBoxID() &&
                 dwProcID == GetCurrentProcessId())
             {
                 // It's our stuff alright!
@@ -985,7 +983,7 @@ void CGbxProjView::OnEditMove()
                 size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
                 pTMgr->MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel2);
                 DoUpdateTileList();
-                pDoc->NotifyTileDatabaseChange();
+                pDoc.NotifyTileDatabaseChange();
                 m_listTiles.SetCurSelsMapped(tidtbl);
                 m_listTiles.ShowFirstSelection();
             }
@@ -993,7 +991,7 @@ void CGbxProjView::OnEditMove()
     }
     END_TRY
 //  pDoc->UpdateAllViews(NULL);
-    pDoc->SetModifiedFlag();
+    pDoc.SetModifiedFlag();
 }
 
 void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
@@ -1017,7 +1015,7 @@ void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
             LPDWORD pGBoxID = static_cast<LPDWORD>(gbox.GetData());
             DWORD dwGBoxID = pGBoxID[0];
             DWORD dwProcID = pGBoxID[1];
-            if (dwGBoxID == GetDocument()->GetGameBoxID() && dwProcID == GetCurrentProcessId())
+            if (dwGBoxID == GetDocument().GetGameBoxID() && dwProcID == GetCurrentProcessId())
                 bEnable = TRUE;
         }
     }
@@ -1047,8 +1045,8 @@ void CGbxProjView::OnProjectSaveTileFile()
         m_listTiles.GetSelCount() > 0);
 #endif
 
-    CGamDoc* pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CGamDoc& pDoc = GetDocument();
+    CTileManager* pTMgr = pDoc.GetTileManager();
 
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_SAVETILELIBRARY);
@@ -1105,8 +1103,8 @@ void CGbxProjView::OnProjectLoadTileFile()
     ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CGamDoc* pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc->GetTileManager();
+    CGamDoc& pDoc = GetDocument();
+    CTileManager* pTMgr = pDoc.GetTileManager();
 
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_LOADTILELIBRARY);
@@ -1159,12 +1157,12 @@ void CGbxProjView::OnProjectLoadTileFile()
         ar.Close();
 
         DoUpdateTileList();
-        pDoc->NotifyTileDatabaseChange();
+        pDoc.NotifyTileDatabaseChange();
         for (size_t i = size_t(0); i < tidtbl.size(); i++)
         {
             CGmBoxHint hint;
             hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
-            pDoc->UpdateAllViews(NULL, HINT_TILECREATED, &hint);
+            pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
         }
         m_listTiles.SetCurSelsMapped(tidtbl);
         m_listTiles.ShowFirstSelection();
