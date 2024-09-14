@@ -70,7 +70,7 @@ namespace CB { namespace Impl
 
 class CGbxProjView : public CView, private CB::Impl::CGbxProjViewBase
 {
-    DECLARE_DYNCREATE(CGbxProjView)
+    DECLARE_DYNAMIC(CGbxProjView)
 protected:
     CGbxProjView();         // protected constructor used by dynamic creation
 
@@ -223,6 +223,41 @@ protected:
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
+
+private:
+    friend class CGbxProjViewContainer;
+};
+
+class CGbxProjViewContainer : public CView
+{
+public:
+    const CGbxProjView& GetChild() const { return *child; }
+    CGbxProjView& GetChild()
+    {
+        return const_cast<CGbxProjView&>(std::as_const(*this).GetChild());
+    }
+    void OnDraw(CDC* pDC) override;
+
+protected:
+    void OnActivateView(BOOL bActivate,
+                        CView *pActivateView,
+                        CView* pDeactivateView) override;
+
+private:
+    CGbxProjViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CGbxProjViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CGbxProjView> child;
+#if 0
+
+    friend CGbxProjView;
+#endif
 };
 
 /////////////////////////////////////////////////////////////////////////////

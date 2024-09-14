@@ -401,7 +401,7 @@ BOOL CGmApp::InitInstance()
     AddDocTemplate(new CMultiDocTemplate(IDR_GAMEBOX,
         RUNTIME_CLASS(CGamDoc),
         RUNTIME_CLASS(CDocFrame),
-        RUNTIME_CLASS(CGbxProjView)));
+        RUNTIME_CLASS(CGbxProjViewContainer)));
 
     m_pMapViewTmpl = new CMultiDocTemplate(IDR_BOARDVIEW,
         RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CViewFrame),

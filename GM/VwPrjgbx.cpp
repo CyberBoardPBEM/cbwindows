@@ -40,7 +40,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGbxProjView, CView)
+IMPLEMENT_DYNAMIC(CGbxProjView, CView)
+IMPLEMENT_DYNCREATE(CGbxProjViewContainer, CView)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -153,6 +154,12 @@ BEGIN_MESSAGE_MAP(CGbxProjView, CView)
     //}}AFX_MSG_MAP
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CGbxProjViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1386,5 +1393,62 @@ void CGbxProjView::OnMarkerDelete()
 void CGbxProjView::OnUpdateMarkerDelete(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_listMarks.GetSelCount() >= 0);
+}
+
+void CGbxProjViewContainer::OnActivateView(BOOL bActivate,
+    CView* pActivateView,
+    CView* /*pDeactiveView*/)
+{
+    WXUNUSED_UNLESS_DEBUG(pActivateView);
+    if (bActivate)
+    {
+        wxASSERT(pActivateView == this);
+        GetParentFrame()->SetActiveView(&*child);
+    }
+}
+
+void CGbxProjViewContainer::OnDraw(CDC* /*pDC*/)
+{
+    // do nothing because child covers entire client rect
+}
+
+CGbxProjViewContainer::CGbxProjViewContainer() :
+    child(new CGbxProjView)
+{
+}
+
+int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CGbxProjViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CGbxProjViewContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    CView::OnSetFocus(pOldWnd);
+    child->SetFocus();
 }
 
