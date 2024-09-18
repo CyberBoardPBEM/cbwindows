@@ -115,6 +115,98 @@ public:
     }
 };
 
+class CProjListBoxBaseWx : public CGrafixListBoxWx
+{
+// Construction
+public:
+    CProjListBoxBaseWx()
+    {
+        m_nMarkGrp = -1;
+        m_nMarkSourceCode = Invalid_v<size_t>;
+    }
+
+
+// Attributes
+public:
+
+// Operations
+protected:
+    size_t AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode);
+    size_t AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
+        size_t nSourceCode);
+    void MarkGroupItem(int nGroupCode, size_t nSourceCode)
+        { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
+    int GetItemGroupCode(size_t nIndex) const;
+public:
+    // delete all items from the control
+    void Clear();
+
+    size_t GetItemSourceCode(size_t nIndex) const;
+    CB::string GetItemText(size_t nIndex) const;
+
+    unsigned GetItemWidth(size_t nItem) const;
+
+    /* N.B.:  CTileBaseListBox requires providing this, and it
+        doesn't hurt much to provide it in general. */
+    virtual int OnGetItemDebugIDCode(size_t nItem) const override
+    {
+        ASSERT(!"not impl");
+        throw std::logic_error("not implemented");
+    }
+
+// Implementation
+protected:
+    int     m_nMarkGrp;
+    size_t  m_nMarkSourceCode;
+
+    // Overrides
+    wxSize GetItemSize(size_t nIndex) const override;
+    void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
+
+    virtual void OnDragEnd(wxMouseEvent /*event*/) override { ASSERT(!"not used"); throw std::logic_error("not used"); }
+
+private:
+    wxDECLARE_EVENT_TABLE();
+    /* XRC requires default constructor, and Create() is not
+        virtual, so initialization must be done here */
+    void OnCreate(wxWindowCreateEvent& event);
+
+    size_t AddString(CB::string s);
+    void SetItemData(size_t index, uintptr_t data);
+    const CB::string& GetString(size_t index) const;
+    uintptr_t GetItemData(size_t index) const;
+
+    struct Item
+    {
+        CB::string string;
+        uintptr_t data = Invalid_v<uintptr_t>;
+    };
+    std::vector<Item> items;
+};
+
+template<typename T>
+class CProjListBoxWx : public CProjListBoxBaseWx
+{
+public:
+    size_t AddItem(T nGroupCode, const CB::string& pszText, size_t nSourceCode = Invalid_v<size_t>)
+    {
+        return CProjListBoxBaseWx::AddItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSourceCode);
+    }
+    size_t AddSeqItem(T nGroupCode, const CB::string& pszText, int nSeqNum,
+        size_t nSourceCode = Invalid_v<size_t>)
+    {
+        return CProjListBoxBaseWx::AddSeqItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSeqNum, nSourceCode);
+    }
+    void MarkGroupItem(T nGroupCode = Invalid_v<T>, size_t nSourceCode = Invalid_v<size_t>)
+    {
+        CProjListBoxBaseWx::MarkGroupItem(static_cast<std::underlying_type_t<T>>(nGroupCode), nSourceCode);
+    }
+    T GetItemGroupCode(size_t nIndex) const
+    {
+        return static_cast<T>(CProjListBoxBaseWx::GetItemGroupCode(nIndex).get_value());
+    }
+};
+
 #endif
 
 

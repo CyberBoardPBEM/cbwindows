@@ -32,6 +32,7 @@ struct ResourceTable
     HFONT   h8ss;               // 8pt Sans Serif
     wxFont  h8ssWx;
     HFONT   h8ssb;              // 8pt Sans Serif Bold
+    wxFont  h8ssbWx;
     HFONT   h10ss;              // 10pt Sans Serif
     // Text metrics for associated screen fonts
     TEXTMETRIC  tm8ss;
