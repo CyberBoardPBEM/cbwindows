@@ -74,6 +74,7 @@
 #include <wx/dcmemory.h>
 #include "wx/dcprint.h"
 #include <wx/dialog.h>
+#include <wx/filedlg.h>
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>
 #include <wx/image.h>
@@ -84,6 +85,7 @@
 #include <wx/overlay.h>
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>
+#include <wx/renderer.h>
 #include <wx/stattext.h>
 #include <wx/stdpaths.h>
 #include <wx/textbuf.h>
@@ -1056,6 +1058,7 @@ namespace CB
     inline bool operator==(const string& lhs, const char* rhs) { return lhs == CB::string(rhs); }
     inline bool operator!=(const string& lhs, const string& rhs) { return !(lhs == rhs); }
     inline bool operator!=(const string& lhs, const char* rhs) { return !(lhs == rhs); }
+    inline bool operator<(const string& lhs, const string& rhs) { return lhs.CompareNoCase(rhs) < 0; }
     inline std::string& operator+=(std::string& lhs, const string& rhs) { return lhs += rhs.a_str(); }
     inline string operator+(string lhs, const string& rhs) { return lhs += rhs; }
     inline string operator+(string lhs, const char* rhs) { return lhs += static_cast<string>(rhs); }
