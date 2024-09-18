@@ -196,6 +196,12 @@ void ResourceTable::LoadFonts(void)
     h8ssb = CreateFontIndirect(&lf);
     SelectObject(hDC, h8ssb);
     GetTextMetrics(hDC, &tm8ssb);
+    h8ssbWx = wxFont(nSizeSmall,
+                    wxFONTFAMILY_SWISS,
+                    wxFONTSTYLE_NORMAL,
+                    wxFONTWEIGHT_BOLD,
+                    false,
+                    strFontName);
 
     lf.lfHeight = -(nSizeBig * yLogPix) / 72;
     lf.lfWeight = FW_NORMAL;
