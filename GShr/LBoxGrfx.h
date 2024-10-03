@@ -25,6 +25,8 @@
 #ifndef _LBOXGRFX_H
 #define _LBOXGRFX_H
 
+#include <queue>
+
 #ifndef     _DRAGDROP_H
 #include    "DragDrop.h"
 #endif
@@ -540,11 +542,12 @@ protected:
     /* wxWidgets does not support post-processing of events
         (see https://docs.wxwidgets.org/stable/overview_events.html#overview_events_virtual),
         so we need to use wxEvtHandler::CallAfter() to
-        approximate post-processing.  Use m_incompleteHandler to
-        detect if we are waiting for CallAfter() to fire.
-        Unfortunately, it's not clear what to do if we ever find
-        ourselves in this half-baked state... */
-    bool    m_incompleteHandler = false;
+        approximate post-processing. */
+    void PushPostProcessEvent(std::function<void ()>&& f);
+    void ExecutePostProcessEvents();
+private:
+    std::queue<std::function<void ()>> postProcessEvents;
+protected:
     wxWindow* m_hLastWnd;
 
 #if 0
@@ -584,6 +587,7 @@ protected:
     virtual void OnDragEnd(wxMouseEvent event) /* override */ = 0;
 
     void OnLButtonDown(wxMouseEvent& event);
+    void OnLButtonDblClk(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
     void OnTimer(wxTimerEvent& event);

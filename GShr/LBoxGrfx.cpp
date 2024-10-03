@@ -665,6 +665,7 @@ void CGrafixListBox::AssignNewMoveGroup()
 
 wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
     EVT_LEFT_DOWN(OnLButtonDown)
+    EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_TIMER(wxID_ANY, OnTimer)
@@ -753,15 +754,36 @@ wxSize CGrafixListBoxWx::GetDragSize() const
 /////////////////////////////////////////////////////////////////////////////
 // CGrafixListBoxWx Message Processing
 
+void CGrafixListBoxWx::PushPostProcessEvent(std::function<void ()>&& f)
+{
+    // I'm pretty sure we should have at most one partial event
+    /* TODO:  after confirming at most one,
+                convert to std::optional<> instead of queue<> */
+    wxASSERT(postProcessEvents.empty());
+    postProcessEvents.push(std::move(f));
+    CallAfter([this]{ ExecutePostProcessEvents(); });
+}
+
+void CGrafixListBoxWx::ExecutePostProcessEvents()
+{
+    // I'm pretty sure we should have at most one partial event
+    wxASSERT(postProcessEvents.size() <= 1);
+    while (!postProcessEvents.empty())
+    {
+        // need to pop before executing to avoid recursion
+        std::function<void ()> f = std::move(postProcessEvents.front());
+        postProcessEvents.pop();
+        f();
+    }
+}
+
 void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
 {
-    wxASSERT(!m_incompleteHandler);
+    ExecutePostProcessEvents();
     wxASSERT(!GetCapture());
     event.Skip(); // Allow field selection
 
-    m_incompleteHandler = true;
-    CallAfter([this, event]{
-        m_incompleteHandler = false;
+    PushPostProcessEvent([this, event]{
         wxASSERT(GetCapture() == this);
         int nIdx;
         if ((nIdx = GetSelection()) == wxNOT_FOUND)
@@ -775,9 +797,16 @@ void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
     });
 }
 
+// keep event processing in correct order
+void CGrafixListBoxWx::OnLButtonDblClk(wxMouseEvent& event)
+{
+    ExecutePostProcessEvents();
+    event.Skip();
+}
+
 void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 {
-    wxASSERT(!m_incompleteHandler);
+    ExecutePostProcessEvents();
 #if 0
     if (m_nTimerID)
     {
@@ -792,9 +821,7 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 
         if (bWasDragging && m_triggeredCursor)
         {
-            m_incompleteHandler = true;
-            CallAfter([this, event]{
-                m_incompleteHandler = false;
+            PushPostProcessEvent([this, event]{
                 OnDragEnd(event);
             });
         }
@@ -805,7 +832,7 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 
 void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 {
-    wxASSERT(!m_incompleteHandler);
+    ExecutePostProcessEvents();
     if (!HasCapture())
     {
         // Only process tool tips when we aren't draggin stuff around
