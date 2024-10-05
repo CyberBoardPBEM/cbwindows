@@ -203,7 +203,7 @@ public:
     }
     T GetItemGroupCode(size_t nIndex) const
     {
-        return static_cast<T>(CProjListBoxBaseWx::GetItemGroupCode(nIndex).get_value());
+        return static_cast<T>(CProjListBoxBaseWx::GetItemGroupCode(nIndex));
     }
 };
 
