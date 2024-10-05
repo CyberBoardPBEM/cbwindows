@@ -48,7 +48,6 @@ CDocFrame::~CDocFrame()
 
 BEGIN_MESSAGE_MAP(CDocFrame, CMDIChildWndEx)
     //{{AFX_MSG_MAP(CDocFrame)
-    ON_WM_SYSCOMMAND()
     //}}AFX_MSG_MAP
     ON_WM_CLOSE()
 END_MESSAGE_MAP()
@@ -74,23 +73,6 @@ void CDocFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
     CB::string strType = CB::string::LoadString(IDS_PROJTYPE_GAMEBOX);
     str += strType;
     SetWindowText(str);
-}
-
-void CDocFrame::OnSysCommand(UINT nID, LPARAM lParam)
-{
-    if ((nID & 0xFFF0) == SC_CLOSE)
-    {
-        CView *pView = GetActiveView();
-        if (pView)
-        {
-            if (pView->IsKindOf(RUNTIME_CLASS(CGbxProjView)))
-            {
-                ((CGamDoc*)GetActiveDocument())->OnFileClose();
-                return;
-            }
-        }
-    }
-    CMDIChildWndEx::OnSysCommand(nID, lParam);
 }
 
 void CDocFrame::OnClose()
