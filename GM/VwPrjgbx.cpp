@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CGbxProjView, CView)
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBoxWx)
 IMPLEMENT_DYNCREATE(CGbxProjViewContainer, CView)
 
 #ifdef _DEBUG
@@ -49,6 +49,7 @@ IMPLEMENT_DYNCREATE(CGbxProjViewContainer, CView)
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 const int XBORDER = 5;
 const int YBORDER = 5;
 
@@ -62,6 +63,7 @@ const int BTN_ITEM_WD = 10 * 4;
 const int BTN_ITEM_HT = 12;
 
 const int PROJ_LIST_WIDTH = 200;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Button content tables - selected based on current type of item selected
@@ -100,11 +102,13 @@ static UINT * btnGroupTbl[nNumGroups + 1] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CGbxProjView, CView)
-    //{{AFX_MSG_MAP(CGbxProjView)
+wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
+#if 0
     ON_WM_SIZE()
     ON_WM_CREATE()
-    ON_LBN_SELCHANGE(IDC_V_PROJLIST, OnSelChangeProjList)
+#endif
+    EVT_LISTBOX(XRCID("m_listProj"), OnSelChangeProjList)
+#if 0
     ON_LBN_DBLCLK(IDC_V_PROJLIST, OnDblClkProjList)
     ON_LBN_DBLCLK(IDC_V_TILELIST, OnDblClkTileList)
     ON_LBN_DBLCLK(IDC_V_PIECELIST, OnDblClkPieceList)
@@ -151,21 +155,35 @@ BEGIN_MESSAGE_MAP(CGbxProjView, CView)
     ON_UPDATE_COMMAND_UI(ID_MARKER_DELETE, OnUpdateMarkerDelete)
     ON_COMMAND(ID_PROJECT_CLONEBOARD, OnProjectCloneBoard)
     ON_UPDATE_COMMAND_UI(ID_PROJECT_CLONEBOARD, OnUpdateProjectCloneBoard)
-    //}}AFX_MSG_MAP
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CGbxProjViewContainer, CView)
     ON_WM_CREATE()
-    ON_WM_SIZE()
     ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView
 
-CGbxProjView::CGbxProjView()
+CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
+    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGbxProjView)
+        CB_XRC_CTRL(m_listProj)
+        CB_XRC_CTRL(m_editInfo)
+        CB_XRC_CTRL(m_listTiles)
+        CB_XRC_CTRL(m_listPieces)
+        CB_XRC_CTRL(m_listMarks)
+        CB_XRC_CTRL(m_btnPrjA)
+        CB_XRC_CTRL(m_btnPrjB)
+        CB_XRC_CTRL(m_btnItmA)
+        CB_XRC_CTRL(m_btnItmB)
+        CB_XRC_CTRL(m_btnItmC)
+        CB_XRC_CTRL(m_btnItmD)
+    CB_XRC_END_CTRLS_DEFN(),
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
@@ -175,6 +193,7 @@ CGbxProjView::~CGbxProjView()
 {
 }
 
+#if 0
 int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CView::OnCreate(lpCreateStruct) == -1)
@@ -241,24 +260,23 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CGbxProjView::OnInitialUpdate()
 {
-    m_listTiles.SetDocument(&GetDocument());
-    m_listPieces.SetDocument(GetDocument());
-    m_listMarks.SetDocument(&GetDocument());
-
-    CView::OnInitialUpdate();
+    m_listTiles->SetDocument(&GetDocument());
+    m_listPieces->SetDocument(GetDocument());
+    m_listMarks->SetDocument(&GetDocument());
 }
 
-void CGbxProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CGbxProjView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
 {
     DoUpdateProjectList();
-//  CView::OnUpdate(pSender, lHint, pHint);
 }
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView drawing
 
@@ -498,6 +516,7 @@ LRESULT CGbxProjView::OnGetDragSize(WPARAM wParam, LPARAM lParam)
     CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
     return 1;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Updates buttons for specified group
@@ -506,24 +525,24 @@ void CGbxProjView::UpdateButtons(int nGrp)
 {
     nGrp++;                     // -1 means no selection so bump to zero
     UINT* pTbl = btnGroupTbl[nGrp];
-    SetButtonState(m_btnPrjA, pTbl[0]);
-    SetButtonState(m_btnPrjB, pTbl[1]);
-    SetButtonState(m_btnItmA, pTbl[2]);
-    SetButtonState(m_btnItmB, pTbl[3]);
-    SetButtonState(m_btnItmC, pTbl[4]);
-    SetButtonState(m_btnItmD, pTbl[5]);
+    SetButtonState(*m_btnPrjA, pTbl[0]);
+    SetButtonState(*m_btnPrjB, pTbl[1]);
+    SetButtonState(*m_btnItmA, pTbl[2]);
+    SetButtonState(*m_btnItmB, pTbl[3]);
+    SetButtonState(*m_btnItmC, pTbl[4]);
+    SetButtonState(*m_btnItmD, pTbl[5]);
 }
 
-void CGbxProjView::SetButtonState(CButton& btn, UINT nStringID)
+void CGbxProjView::SetButtonState(wxButton& btn, UINT nStringID)
 {
     if (nStringID == 0)
-        btn.SetWindowText(""_cbstring);
+        btn.SetLabel(""_cbstring);
     else
     {
         CB::string str = CB::string::LoadString(nStringID);
-        btn.SetWindowText(str);
+        btn.SetLabel(str);
     }
-    btn.EnableWindow(nStringID != 0);
+    btn.Enable(nStringID != 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -531,40 +550,30 @@ void CGbxProjView::SetButtonState(CButton& btn, UINT nStringID)
 
 void CGbxProjView::UpdateItemControls(int nGrp)
 {
-    HDWP hDwp = BeginDeferWindowPos(8);
-    #define EzDefer(h, c, flg) \
-        DeferWindowPos(h, c.m_hWnd, NULL, 0, 0, 0, 0, \
-            SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | flg)
+    wxWindowUpdateLocker freezer(this);
+    ChildrenRepositioningGuard crg(this);
 
+    m_listTiles->Hide();
+    m_listPieces->Hide();
+    m_listMarks->Hide();
+    m_editInfo->Hide();
     if (nGrp == grpTile)            // Tiles
     {
-        hDwp = EzDefer(hDwp, m_listTiles, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_listPieces, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_listMarks, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_HIDEWINDOW);
+        m_listTiles->Show();
     }
     else if (nGrp == grpPce)        // Pieces
     {
-        hDwp = EzDefer(hDwp, m_listPieces, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_listTiles, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_listMarks, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_HIDEWINDOW);
+        m_listPieces->Show();
     }
     else if (nGrp == grpMark)       // Markers
     {
-        hDwp = EzDefer(hDwp, m_listMarks, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_listTiles, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_listPieces, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_HIDEWINDOW);
+        m_listMarks->Show();
     }
     else    // Board, headings and no selection
     {
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_listTiles, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_listPieces, SWP_HIDEWINDOW);
-        hDwp = EzDefer(hDwp, m_listMarks, SWP_HIDEWINDOW);
+        m_editInfo->Show();
     }
-    EndDeferWindowPos(hDwp);
+    Layout();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -573,25 +582,26 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 {
     CGamDoc& pDoc = GetDocument();
 
-    m_listProj.SetRedraw(FALSE);
-
     // Preserve the current selection
-    int nTopIdx = m_listProj.GetTopIndex();
-    int nCurSel = m_listProj.GetCurSel();
+    size_t nTopIdx = m_listProj->GetVisibleRowsBegin();
+    int nCurSel = m_listProj->GetSelection();
 
-    m_listProj.ResetContent();
+    {
+    wxWindowUpdateLocker freezer(&*m_listProj);
+
+    m_listProj->Clear();
 
     // Document type....
     CB::string str = CB::string::LoadString(IDS_PHEAD_DOCTYPE);
-    m_listProj.AddItem(grpDoc, str);
+    m_listProj->AddItem(grpDoc, str);
 
     // Boards....
     str = CB::string::LoadString(IDS_PHEAD_BOARDS);
-    m_listProj.AddItem(grpBHdr, str);
+    m_listProj->AddItem(grpBHdr, str);
 
     CBoardManager* pBMgr = pDoc.GetBoardManager();
-    ASSERT(pBMgr);
-    for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
+    wxASSERT(pBMgr);
+    for (size_t i = size_t(0); i < pBMgr->GetNumBoards(); i++)
     {
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
@@ -605,49 +615,49 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             str = std::format(L"[{}] {}",
                 pBMgr->GetBoard(i).GetSerialNumber(), strTmp);
         }
-        m_listProj.AddItem(grpBrd, str, i);
+        m_listProj->AddItem(grpBrd, str, i);
     }
 
     // Tiles....
     str = CB::string::LoadString(IDS_PHEAD_TILES);
-    m_listProj.AddItem(grpTHdr, str);
+    m_listProj->AddItem(grpTHdr, str);
 
     CTileManager* pTMgr = pDoc.GetTileManager();
-    ASSERT(pTMgr);
-    for (size_t i = 0; i < pTMgr->GetNumTileSets(); i++)
-        m_listProj.AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
+    wxASSERT(pTMgr);
+    for (size_t i = size_t(0); i < pTMgr->GetNumTileSets(); i++)
+        m_listProj->AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
 
     // Pieces....
     str = CB::string::LoadString(IDS_PHEAD_PIECES);
-    m_listProj.AddItem(grpPHdr, str);
+    m_listProj->AddItem(grpPHdr, str);
 
     CPieceManager* pPMgr = pDoc.GetPieceManager();
-    ASSERT(pPMgr);
-    for (size_t i = 0; i < pPMgr->GetNumPieceSets(); i++)
-        m_listProj.AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
+    wxASSERT(pPMgr);
+    for (size_t i = size_t(0); i < pPMgr->GetNumPieceSets(); i++)
+        m_listProj->AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
 
     // Marks....
     str = CB::string::LoadString(IDS_PHEAD_MARKS);
-    m_listProj.AddItem(grpMHdr, str);
+    m_listProj->AddItem(grpMHdr, str);
 
     CMarkManager* pMMgr = pDoc.GetMarkManager();
-    ASSERT(pMMgr);
-    for (size_t i = 0; i < pMMgr->GetNumMarkSets(); i++)
-        m_listProj.AddItem(grpMark, pMMgr->GetMarkSet(i).GetName(), i);
+    wxASSERT(pMMgr);
+    for (size_t i = size_t(0); i < pMMgr->GetNumMarkSets(); i++)
+        m_listProj->AddItem(grpMark, pMMgr->GetMarkSet(i).GetName(), i);
 
     // OK...Show the updates
-    m_listProj.SetRedraw(TRUE);
-    m_listProj.Invalidate();
+    }
+    m_listProj->Refresh();
 
-    m_listProj.SetTopIndex(nTopIdx);
+    m_listProj->ScrollToRow(nTopIdx);
     if (nCurSel >= 0)
     {
-        if (nCurSel >= m_listProj.GetCount())
-            nCurSel = m_listProj.GetCount() - 1;
-        m_listProj.SetCurSel(nCurSel);
+        if (nCurSel >= value_preserving_cast<int>(m_listProj->GetItemCount()))
+            nCurSel = value_preserving_cast<int>(m_listProj->GetItemCount()) - 1;
+        m_listProj->SetSelection(nCurSel);
     }
     else
-        m_listProj.SetCurSel(0);
+        m_listProj->SetSelection(0);
 
     if (bUpdateItem)
     {
@@ -660,14 +670,14 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 /////////////////////////////////////////////////////////////////////////////
 // List box notifications
 
-void CGbxProjView::OnSelChangeProjList()
+void CGbxProjView::OnSelChangeProjList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (m_nLastSel == nSel)
         return;
 
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoUpdateGbxInfo(); break;
@@ -682,12 +692,13 @@ void CGbxProjView::OnSelChangeProjList()
     }
     if (nGrp != m_nLastGrp)
     {
-        UpdateItemControls(nGrp);
-        UpdateButtons(nGrp);
-        m_nLastGrp = nGrp;
+        UpdateItemControls(value_preserving_cast<int>(nGrp));
+        UpdateButtons(value_preserving_cast<int>(nGrp));
+        m_nLastGrp = value_preserving_cast<int>(nGrp);
     }
 }
 
+#if 0
 void CGbxProjView::OnDblClkProjList()
 {
     int nSel = m_listProj.GetCurSel();
@@ -1406,14 +1417,29 @@ void CGbxProjViewContainer::OnActivateView(BOOL bActivate,
         GetParentFrame()->SetActiveView(&*child);
     }
 }
+#endif
 
 void CGbxProjViewContainer::OnDraw(CDC* /*pDC*/)
 {
     // do nothing because child covers entire client rect
 }
 
+void CGbxProjViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+
+    CB::OnCmdMsgOverride<CView>::OnInitialUpdate();
+}
+
+void CGbxProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+
+    CB::OnCmdMsgOverride<CView>::OnUpdate(pSender, lHint, pHint);
+}
+
 CGbxProjViewContainer::CGbxProjViewContainer() :
-    child(new CGbxProjView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -1424,25 +1450,9 @@ int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CGbxProjView(*this);
 
     return 0;
-}
-
-void CGbxProjViewContainer::OnSize(UINT nType, int cx, int cy)
-{
-    child->MoveWindow(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
 }
 
 // MFC puts the focus here, so move it to the useful window

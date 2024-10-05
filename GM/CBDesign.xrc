@@ -911,6 +911,176 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CGbxProjView">
+    <size>-1,300</size>
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer105">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer106">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listProj" subclass="CProjListBoxGm">
+              <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer108">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnPrjA">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnPrjB">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="spacer">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <size>50,0</size>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticLine" name="m_staticline1">
+          <style>wxLI_VERTICAL|wxWANTS_CHARS</style>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer107">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxTextCtrl" name="m_editInfo">
+              <style>wxTE_LEFT|wxTE_MULTILINE|wxTE_READONLY|wxBORDER_SIMPLE|wxVSCROLL|wxWANTS_CHARS</style>
+              <value></value>
+              <maxlength>0</maxlength>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <hidden>1</hidden>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <hidden>1</hidden>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <hidden>1</hidden>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer109">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnItmA">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnItmB">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnItmC">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnItmD">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CGmBoxPropsDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Game Box Properties</title>

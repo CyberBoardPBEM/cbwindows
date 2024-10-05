@@ -75,12 +75,13 @@ void CGbxProjView::DoUpdateGbxInfo()
         str += "AUTHOR: " + pDoc.m_strAuthor + "\r\n\r\n";
     if (!pDoc.m_strDescr.empty())
         str += "DESCRIPTION:\r\n\r\n" + pDoc.m_strDescr;
-    m_editInfo.SetWindowText(str);
+    m_editInfo->SetValue(str);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Playing Board Support Methods
 
+#if 0
 void CGbxProjView::DoBoardCreate()
 {
     GetDocument().DoCreateBoard();
@@ -200,22 +201,24 @@ void CGbxProjView::DoBoardEdit()
         pDoc.CreateNewFrame(GetApp()->m_pMapViewTmpl, strTitle, &pBoard);
     }
 }
+#endif
 
 void CGbxProjView::DoUpdateBoardHelpInfo()
 {
 // m_editInfo.SetWindowText("Board Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateBoardInfo()
 {
 // m_editInfo.SetWindowText("Board Info Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Tile Image Support Methods
 
+#if 0
 void CGbxProjView::DoTileManagerProperty()
 {
     m_editInfo.SetWindowText(""_cbstring);
@@ -413,30 +416,32 @@ void CGbxProjView::DoTileDelete()
     if (bTilesInUse)                        // (don't increase if tiles weren't used)
         pDoc.IncrMajorRevLevel();
 }
+#endif
 
 void CGbxProjView::DoUpdateTileHelpInfo()
 {
     // m_editInfo.SetWindowText("Tile Tips Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateTileList()
 {
     CGamDoc& pDoc = GetDocument();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTile);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     const CTileSet& pTSet = pDoc.GetTileManager()->GetTileSet(nGrp);
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
-    m_listTiles.SetItemMap(&pLstMap);
+    m_listTiles->SetItemMap(&pLstMap);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Playing Piece Support Methods
 
+#if 0
 void CGbxProjView::DoPieceGroupCreate()
 {
     GetDocument().DoCreatePieceGroup();
@@ -606,30 +611,32 @@ void CGbxProjView::DoPieceDelete()
     pDoc.SetModifiedFlag();
     pDoc.IncrMajorRevLevel();
 }
+#endif
 
 void CGbxProjView::DoUpdatePieceHelpInfo()
 {
     // m_editInfo.SetWindowText("Piece Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGbxProjView::DoUpdatePieceList()
 {
     CGamDoc& pDoc = GetDocument();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpPce);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpPce);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CPieceSet& pPSet = pDoc.GetPieceManager()->GetPieceSet(nGrp);
     const std::vector<PieceID>& pLstMap = pPSet.GetPieceIDTable();
-    m_listPieces.SetItemMap(&pLstMap);
+    m_listPieces->SetItemMap(&pLstMap);
 }
 
 /////////////////////////////////////////////////////////////////////
 // Marker Support Methods
 
+#if 0
 void CGbxProjView::DoMarkGroupCreate()
 {
     GetDocument().DoCreateMarkGroup();
@@ -783,23 +790,24 @@ void CGbxProjView::DoMarkDelete()
     pDoc.SetModifiedFlag();
     pDoc.IncrMajorRevLevel();
 }
+#endif
 
 void CGbxProjView::DoUpdateMarkHelpInfo()
 {
     // m_editInfo.SetWindowText("Marker Help Coming Soon....\r\nTo a theatre near you!");
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGbxProjView::DoUpdateMarkList()
 {
     CGamDoc& pDoc = GetDocument();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpMark);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpMark);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CMarkSet& pMSet = pDoc.GetMarkManager()->GetMarkSet(nGrp);
     const std::vector<MarkID>& pLstMap = pMSet.GetMarkIDTable();
-    m_listMarks.SetItemMap(&pLstMap);
+    m_listMarks->SetItemMap(&pLstMap);
 }
