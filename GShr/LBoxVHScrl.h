@@ -30,7 +30,7 @@ namespace CB
     class VListBoxHScroll : public wxVListBox
     {
     public:
-        VListBoxHScroll();
+        VListBoxHScroll() = default;
 
         void SetItemCount(size_t count) override;
 
