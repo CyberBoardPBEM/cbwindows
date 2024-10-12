@@ -37,11 +37,6 @@ namespace CB
         EVT_LEFT_UP(OnLButtonUp)
     wxEND_EVENT_TABLE()
 
-    VListBoxHScroll::VListBoxHScroll()
-    {
-        SetBackgroundStyle(wxBG_STYLE_PAINT);
-    }
-
     void VListBoxHScroll::SetItemCount(size_t count)
     {
         wxVListBox::SetItemCount(count);
