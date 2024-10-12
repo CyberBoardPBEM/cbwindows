@@ -785,8 +785,7 @@ void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
 
     PushPostProcessEvent([this, event]{
         wxASSERT(GetCapture() == this);
-        int nIdx;
-        if ((nIdx = GetSelection()) == wxNOT_FOUND)
+        if (GetSelectedCount() == 0)
             return;
         if (m_bAllowDrag)
         {
