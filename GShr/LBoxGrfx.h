@@ -627,21 +627,20 @@ public:
         wxASSERT(value_preserving_cast<size_t>(nItem) < m_pItemMap->size());
         return m_pItemMap->at(value_preserving_cast<size_t>(nItem));
     }
-#if 0
     std::vector<T> GetCurMappedItemList() const
     {
         std::vector<T> pLst;
-        ASSERT(this->IsMultiSelect());
-        int nSels = this->GetSelCount();
-        if (nSels == LB_ERR || nSels == 0)
+        wxASSERT(this->IsMultiSelect());
+        size_t nSels = this->GetSelectedCount();
+        if (nSels == size_t(0))
             return pLst;
-        std::vector<int> pSelTbl(value_preserving_cast<size_t>(nSels));
-        this->GetSelItems(nSels, pSelTbl.data());
+        std::vector<size_t> pSelTbl = this->GetSelections();
         pLst.reserve(pSelTbl.size());
         for (size_t i = size_t(0); i < pSelTbl.size(); i++)
-            pLst.push_back(MapIndexToItem(value_preserving_cast<size_t>(pSelTbl[i])));
+            pLst.push_back(MapIndexToItem(pSelTbl[i]));
         return pLst;
     }
+#if 0
     // Note: the following reference is only good during drag and drop.
     // the data is only good during the drop. It is essentially a
     // hack to have valid data when selecting items with Shift-Click.
