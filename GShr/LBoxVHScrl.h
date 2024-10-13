@@ -33,6 +33,7 @@ namespace CB
         VListBoxHScroll() = default;
 
         void SetItemCount(size_t count) override;
+        std::vector<size_t> GetSelections() const;
 
         // the derived class must implement this function to actually draw the item
         // with the given index on the provided DC
