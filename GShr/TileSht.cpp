@@ -469,7 +469,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
     yDst += pntOrg.y;
 
     wxASSERT(bmapTile.bmBitsPixel == 24);
-    no_demote<ptrdiff_t> srcStride = -bmapTile.bmWidthBytes;
+    ptrdiff_t srcStride = -bmapTile.bmWidthBytes;
     const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
                                         (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
     wxASSERT(hBMapDest.GetDepth() == 32);
@@ -481,7 +481,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
     wxNativePixelData pMaskBMapInfoData(const_cast<wxBitmap&>(pMaskBMapInfo));
     wxNativePixelData::Iterator maskRowStart(pMaskBMapInfoData);
 
-    for (no_demote<int> y = 0 ;
+    for (int y = 0 ;
         y < std::min(value_preserving_cast<int>(m_size.cy).get_value(), pMaskBMapInfo.GetHeight()) &&
                 yDst + y < hBMapDest.GetHeight() ;
         ++y)
@@ -491,7 +491,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
             const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
             wxAlphaPixelData::Iterator dest = destRowStart;
             wxNativePixelData::Iterator mask = maskRowStart;
-            for (no_demote<int> x = 0 ;
+            for (int x = 0 ;
                 x < std::min(value_preserving_cast<int>(m_size.cx).get_value(), pMaskBMapInfo.GetWidth()) &&
                         xDst + x < hBMapDest.GetWidth() ;
                 ++x)

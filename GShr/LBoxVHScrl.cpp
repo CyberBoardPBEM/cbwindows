@@ -48,6 +48,20 @@ namespace CB
         SetVirtualSize(width, GetVirtualSize().GetHeight());
     }
 
+    std::vector<size_t> VListBoxHScroll::GetSelections() const
+    {
+        std::vector<size_t> retval;
+        retval.reserve(GetSelectedCount());
+        unsigned long cookie;
+        for (int sel = GetFirstSelected(cookie) ;
+            sel != wxNOT_FOUND ;
+            sel = GetNextSelected(cookie))
+        {
+            retval.push_back(value_preserving_cast<size_t>(sel));
+        }
+        return retval;
+    }
+
     // logical --> device
     wxCoord VListBoxHScroll::CalcScrolledX(wxCoord x) const
     {
