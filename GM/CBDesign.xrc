@@ -98,6 +98,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editBrdName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -133,6 +134,7 @@
                     <option>0</option>
                     <object class="wxTextCtrl" name="m_editXGridSnap">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                   <object class="sizeritem">
@@ -150,6 +152,7 @@
                     <option>0</option>
                     <object class="wxTextCtrl" name="m_editXGridSnapOff">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                   <object class="sizeritem">
@@ -167,6 +170,7 @@
                     <option>0</option>
                     <object class="wxTextCtrl" name="m_editYGridSnap">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                   <object class="sizeritem">
@@ -184,6 +188,7 @@
                     <option>0</option>
                     <object class="wxTextCtrl" name="m_editYGridSnapOff">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                 </object>
@@ -272,6 +277,7 @@
                         <option>0</option>
                         <object class="wxTextCtrl" name="m_editRowTrkOffset">
                           <value></value>
+                          <maxlength>0</maxlength>
                         </object>
                       </object>
                     </object>
@@ -297,6 +303,7 @@
                         <option>0</option>
                         <object class="wxTextCtrl" name="m_editColTrkOffset">
                           <value></value>
+                          <maxlength>0</maxlength>
                         </object>
                       </object>
                     </object>
@@ -659,6 +666,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editRows">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -676,6 +684,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editCellHt">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -693,6 +702,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editCols">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -710,6 +720,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editCellWd">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -786,6 +797,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editTSName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -858,6 +870,7 @@
                 <object class="wxTextCtrl" name="m_editPassword">
                   <style>wxTE_PASSWORD</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -931,6 +944,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editAuthor">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -984,6 +998,7 @@
         <option>0</option>
         <object class="wxTextCtrl" name="m_editTitle">
           <value></value>
+          <maxlength>0</maxlength>
         </object>
       </object>
       <object class="sizeritem">
@@ -1002,6 +1017,7 @@
         <object class="wxTextCtrl" name="m_editDescr">
           <style>wxTE_MULTILINE</style>
           <value>1\n2\n3\n4\n5\n6\n7\n8\n9\n10</value>
+          <maxlength>0</maxlength>
         </object>
       </object>
       <object class="sizeritem">
@@ -1190,6 +1206,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editRows">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -1207,6 +1224,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editCellHt">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -1224,6 +1242,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editCols">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -1241,6 +1260,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editCellWd">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -1270,6 +1290,7 @@
         <option>0</option>
         <object class="wxTextCtrl" name="m_editBoardName">
           <value></value>
+          <maxlength>0</maxlength>
         </object>
       </object>
     </object>
@@ -1318,10 +1339,10 @@
                     </object>
                   </object>
                   <object class="sizeritem">
-                    <flag>wxEXPAND | wxALL</flag>
+                    <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listTiles" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1343,10 +1364,10 @@
                     </object>
                   </object>
                   <object class="sizeritem">
-                    <flag>wxEXPAND | wxALL</flag>
+                    <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listMarks" subclass="CMarkListBoxWx">
+                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1379,6 +1400,7 @@
             <object class="wxTextCtrl" name="m_editMarkerText">
               <style>wxTE_MULTILINE</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -1453,10 +1475,10 @@
                     </object>
                   </object>
                   <object class="sizeritem">
-                    <flag>wxEXPAND | wxALL</flag>
+                    <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listTiles" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1481,7 +1503,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listMarks" subclass="CMarkListBoxWx">
+                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1514,6 +1536,7 @@
             <object class="wxTextCtrl" name="m_editMarkerText">
               <style>wxTE_MULTILINE</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -1615,6 +1638,7 @@
                 <object class="wxTextCtrl" name="m_editText">
                   <style>wxTE_MULTILINE</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -1689,6 +1713,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editName">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -1802,6 +1827,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -1882,6 +1908,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editHeight">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -1899,6 +1926,7 @@
                 <option>0</option>
                 <object class="wxTextCtrl" name="m_editWidth">
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -2106,7 +2134,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listFtile" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2140,7 +2168,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listBtile" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2165,7 +2193,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxPanel" name="m_listPieces" subclass="CPieceListBoxWx">
+                    <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
                       <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2207,6 +2235,7 @@
             <object class="wxTextCtrl" name="m_editTextFront">
               <style>wxTE_MULTILINE</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -2234,6 +2263,7 @@
             <object class="wxTextCtrl" name="m_editTextBack">
               <style>wxTE_MULTILINE</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -2350,6 +2380,7 @@
                 <object class="wxTextCtrl" name="m_editFront">
                   <style>wxTE_MULTILINE</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="spacer">
@@ -2400,6 +2431,7 @@
                 <object class="wxTextCtrl" name="m_editBack">
                   <style>wxTE_MULTILINE</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -2467,6 +2499,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -2607,7 +2640,7 @@
                         <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                         <border>5</border>
                         <option>1</option>
-                        <object class="wxPanel" name="m_listFtile" subclass="CTileListBoxWx">
+                        <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
                           <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                         </object>
                       </object>
@@ -2615,7 +2648,7 @@
                         <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
                         <border>5</border>
                         <option>1</option>
-                        <object class="wxPanel" name="m_listBtile" subclass="CTileListBoxWx">
+                        <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
                           <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                         </object>
                       </object>
@@ -2655,6 +2688,7 @@
                             <option>0</option>
                             <object class="wxTextCtrl" name="m_editQty">
                               <value></value>
+                              <maxlength>0</maxlength>
                             </object>
                           </object>
                         </object>
@@ -2733,6 +2767,7 @@
                 <object class="wxTextCtrl" name="m_editTextFront">
                   <style>wxTE_MULTILINE</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
               <object class="sizeritem">
@@ -2760,6 +2795,7 @@
                 <object class="wxTextCtrl" name="m_editTextBack">
                   <style>wxTE_MULTILINE</style>
                   <value></value>
+                  <maxlength>0</maxlength>
                 </object>
               </object>
             </object>
@@ -2783,7 +2819,7 @@
                 <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
                 <border>5</border>
                 <option>1</option>
-                <object class="wxPanel" name="m_listPieces" subclass="CPieceListBoxWx">
+                <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
                   <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
                 </object>
               </object>
@@ -2820,6 +2856,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -2902,6 +2939,7 @@
                     <option>1</option>
                     <object class="wxTextCtrl" name="m_editHeight">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                 </object>
@@ -2927,6 +2965,7 @@
                     <option>1</option>
                     <object class="wxTextCtrl" name="m_editWidth">
                       <value></value>
+                      <maxlength>0</maxlength>
                     </object>
                   </object>
                 </object>
@@ -3095,6 +3134,7 @@
             <object class="wxTextCtrl" name="m_editPass1">
               <style>wxTE_PASSWORD</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
           <object class="sizeritem">
@@ -3113,6 +3153,7 @@
             <object class="wxTextCtrl" name="m_editPass2">
               <style>wxTE_PASSWORD</style>
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -3314,6 +3355,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editText">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
@@ -3370,7 +3412,7 @@
         <flag>wxEXPAND</flag>
         <border>5</border>
         <option>1</option>
-        <object class="wxPanel" name="m_listTile" subclass="CTileListBoxWx">
+        <object class="wxVListBox" name="m_listTile" subclass="CTileListBoxWx">
           <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
         </object>
       </object>
@@ -3471,6 +3513,7 @@
             <option>0</option>
             <object class="wxTextCtrl" name="m_editName">
               <value></value>
+              <maxlength>0</maxlength>
             </object>
           </object>
         </object>
