@@ -393,6 +393,8 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
         ar >> dib;
         OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap());
 
+        // >> expects empty dib
+        dib.ClearDib();
         ar >> dib;
         OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap());
 
