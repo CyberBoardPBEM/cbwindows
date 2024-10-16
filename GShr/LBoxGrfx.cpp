@@ -691,8 +691,6 @@ CGrafixListBoxWx::CGrafixListBoxWx() //:
     m_bAllowDropScroll = FALSE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
 CGrafixListBoxWx::~CGrafixListBoxWx()
 {
     if (m_toolTip)
@@ -772,18 +770,19 @@ void CALLBACK CGrafixListBoxWx::NotificationTipTimeoutHandler(HWND hwnd,
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
 void CGrafixListBoxWx::ShowFirstSelection()
 {
     int nTopSel = GetTopSelectedItem();
-    CRect rctLBoxClient;
-    GetClientRect(&rctLBoxClient);
-    CRect rct;
-    GetItemRect(nTopSel, &rct);
-    if (!rct.IntersectRect(rct, rctLBoxClient))
-        SetTopIndex(nTopSel);
+    wxASSERT(nTopSel != wxNOT_FOUND);
+    wxRect rctLBoxClient = GetClientRect();
+    wxRect rct = GetItemRect(value_preserving_cast<size_t>(nTopSel));
+    if (!rct.Intersects(rctLBoxClient))
+    {
+        ScrollToRow(value_preserving_cast<size_t>(nTopSel));
+    }
 }
 
+#if 0
 CB::string CGrafixListBoxWx::GetText(int nIndex) const
 {
     CString temp;
@@ -791,6 +790,22 @@ CB::string CGrafixListBoxWx::GetText(int nIndex) const
     return temp;
 }
 #endif
+
+int CGrafixListBoxWx::GetTopSelectedItem() const
+{
+    if (IsMultiSelect())
+    {
+        if (GetSelectedCount() == 0)
+        {
+            return wxNOT_FOUND;
+        }
+        return value_preserving_cast<int>(GetSelections().front());
+    }
+    else
+    {
+        return GetSelection();
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // If the selection is out of view, force it into view.

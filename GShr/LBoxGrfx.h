@@ -471,8 +471,8 @@ public:
 public:
 #if 0
     CB::string GetText(int nIndex) const;
-    int  GetTopSelectedItem() const;
 #endif
+    int  GetTopSelectedItem() const;
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
 #if 0
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
@@ -485,7 +485,9 @@ public:
 public:
 #if 0
     void SetSelFromPoint(wxPoint point);
+#endif
     void ShowFirstSelection();
+#if 0
     void MakeItemVisible(int nItem);
 
     // Notification Tooltip Support
@@ -702,23 +704,21 @@ public:
             }
         }
     }
-#if 0
     void SetCurSelsMapped(const std::vector<T>& items)
     {
-        ASSERT(m_pItemMap);
-        ASSERT(this->IsMultiSelect());
+        wxASSERT(m_pItemMap);
+        wxASSERT(this->IsMultiSelect());
 
-        this->SetSel(-1, FALSE);      // Deselect all
+        this->DeselectAll();
         for (size_t i = size_t(0); i < items.size(); i++)
         {
             for (size_t j = size_t(0); j < m_pItemMap->size(); j++)
             {
                 if (m_pItemMap->at(j) == items[i])
-                    this->SetSel(value_preserving_cast<int>(j));
+                    this->Select(j);
             }
         }
     }
-#endif
 
     T MapIndexToItem(size_t nIndex) const
     {
