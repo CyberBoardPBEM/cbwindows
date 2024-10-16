@@ -195,29 +195,31 @@ protected:
         wxCommandEvent dummy;
         OnSelChangeProjList(dummy);
     }
+    void OnDblClkProjList(wxCommandEvent& event);
+    void OnDblClkTileList(wxCommandEvent& event);
+    void OnDblClkPieceList(wxCommandEvent& event);
+    void OnDblClkMarkList(wxCommandEvent& event);
+    void OnClickedProjBtnA(wxCommandEvent& event);
+    void OnClickedProjBtnB(wxCommandEvent& event);
+    void OnClickedItemBtnA(wxCommandEvent& event);
+    void OnClickedItemBtnB(wxCommandEvent& event);
+    void OnClickedItemBtnC(wxCommandEvent& event);
+    void OnClickedItemBtnD(wxCommandEvent& event);
 #if 0
-    afx_msg void OnDblClkProjList();
-    afx_msg void OnDblClkTileList();
-    afx_msg void OnDblClkPieceList();
-    afx_msg void OnDblClkMarkList();
-    afx_msg void OnClickedProjBtnA();
-    afx_msg void OnClickedProjBtnB();
-    afx_msg void OnClickedItemBtnA();
-    afx_msg void OnClickedItemBtnB();
-    afx_msg void OnClickedItemBtnC();
-    afx_msg void OnClickedItemBtnD();
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-    afx_msg void OnEditCopy();
-    afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-    afx_msg void OnEditPaste();
-    afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
-    afx_msg void OnEditMove();
-    afx_msg void OnUpdateEditMove(CCmdUI* pCmdUI);
-    afx_msg void OnProjectSaveTileFile();
-    afx_msg void OnUpdateProjectSaveTileFile(CCmdUI* pCmdUI);
-    afx_msg void OnProjectLoadTileFile();
-    afx_msg void OnUpdateProjectLoadTileFile(CCmdUI* pCmdUI);
+#endif
+    void OnEditCopy(wxCommandEvent& event);
+    void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
+    void OnEditPaste(wxCommandEvent& event);
+    void OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI);
+    void OnEditMove(wxCommandEvent& event);
+    void OnUpdateEditMove(wxUpdateUIEvent& pCmdUI);
+    void OnProjectSaveTileFile(wxCommandEvent& event);
+    void OnUpdateProjectSaveTileFile(wxUpdateUIEvent& pCmdUI);
+    void OnProjectLoadTileFile(wxCommandEvent& event);
+    void OnUpdateProjectLoadTileFile(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnProjItemProperties();
     afx_msg void OnUpdateProjItemProperties(CCmdUI* pCmdUI);

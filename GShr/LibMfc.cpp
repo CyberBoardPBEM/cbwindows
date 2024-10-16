@@ -1182,6 +1182,8 @@ namespace CB
                         return XRCID("ID_EDIT_LAYER_TILE");
                     case ID_EDIT_LAYER_TOP:
                         return XRCID("ID_EDIT_LAYER_TOP");
+                    case ID_EDIT_MOVE:
+                        return XRCID("ID_EDIT_MOVE");
                     case ID_EDIT_PASTEBITMAPFROMFILE:
                         return XRCID("ID_EDIT_PASTEBITMAPFROMFILE");
                     case ID_IMAGE_BOARDMASK:
@@ -1216,6 +1218,10 @@ namespace CB
                         return XRCID("ID_ITOOL_COLORCHANGE");
                     case ID_LINE_WIDTH:
                         return XRCID("ID_LINE_WIDTH");
+                    case ID_PROJECT_SAVETILEFILE:
+                        return XRCID("ID_PROJECT_SAVETILEFILE");
+                    case ID_PROJECT_LOADTILEFILE:
+                        return XRCID("ID_PROJECT_LOADTILEFILE");
                     case ID_TOOL_ARROW:
                         return XRCID("ID_TOOL_ARROW");
                     case ID_TOOL_DROPPER:

@@ -108,29 +108,31 @@ wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
     ON_WM_CREATE()
 #endif
     EVT_LISTBOX(XRCID("m_listProj"), OnSelChangeProjList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listProj"), OnDblClkProjList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listTiles"), OnDblClkTileList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listPieces"), OnDblClkPieceList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listMarks"), OnDblClkMarkList)
+    EVT_BUTTON(XRCID("m_btnPrjA"), OnClickedProjBtnA)
+    EVT_BUTTON(XRCID("m_btnPrjB"), OnClickedProjBtnB)
+    EVT_BUTTON(XRCID("m_btnItmA"), OnClickedItemBtnA)
+    EVT_BUTTON(XRCID("m_btnItmB"), OnClickedItemBtnB)
+    EVT_BUTTON(XRCID("m_btnItmC"), OnClickedItemBtnC)
+    EVT_BUTTON(XRCID("m_btnItmD"), OnClickedItemBtnD)
 #if 0
-    ON_LBN_DBLCLK(IDC_V_PROJLIST, OnDblClkProjList)
-    ON_LBN_DBLCLK(IDC_V_TILELIST, OnDblClkTileList)
-    ON_LBN_DBLCLK(IDC_V_PIECELIST, OnDblClkPieceList)
-    ON_LBN_DBLCLK(IDC_V_MARKLIST, OnDblClkMarkList)
-    ON_BN_CLICKED(IDC_V_BTN_PRJA, OnClickedProjBtnA)
-    ON_BN_CLICKED(IDC_V_BTN_PRJB, OnClickedProjBtnB)
-    ON_BN_CLICKED(IDC_V_BTN_ITMA, OnClickedItemBtnA)
-    ON_BN_CLICKED(IDC_V_BTN_ITMB, OnClickedItemBtnB)
-    ON_BN_CLICKED(IDC_V_BTN_ITMC, OnClickedItemBtnC)
-    ON_BN_CLICKED(IDC_V_BTN_ITMD, OnClickedItemBtnD)
     ON_WM_ERASEBKGND()
     ON_WM_CTLCOLOR()
-    ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-    ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
-    ON_COMMAND(ID_EDIT_MOVE, OnEditMove)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE, OnUpdateEditMove)
-    ON_COMMAND(ID_PROJECT_SAVETILEFILE, OnProjectSaveTileFile)
-    ON_UPDATE_COMMAND_UI(ID_PROJECT_SAVETILEFILE, OnUpdateProjectSaveTileFile)
-    ON_COMMAND(ID_PROJECT_LOADTILEFILE, OnProjectLoadTileFile)
-    ON_UPDATE_COMMAND_UI(ID_PROJECT_LOADTILEFILE, OnUpdateProjectLoadTileFile)
+#endif
+    EVT_MENU(wxID_COPY, OnEditCopy)
+    EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
+    EVT_MENU(wxID_PASTE, OnEditPaste)
+    EVT_UPDATE_UI(wxID_PASTE, OnUpdateEditPaste)
+    EVT_MENU(XRCID("ID_EDIT_MOVE"), OnEditMove)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_MOVE"), OnUpdateEditMove)
+    EVT_MENU(XRCID("ID_PROJECT_SAVETILEFILE"), OnProjectSaveTileFile)
+    EVT_UPDATE_UI(XRCID("ID_PROJECT_SAVETILEFILE"), OnUpdateProjectSaveTileFile)
+    EVT_MENU(XRCID("ID_PROJECT_LOADTILEFILE"), OnProjectLoadTileFile)
+    EVT_UPDATE_UI(XRCID("ID_PROJECT_LOADTILEFILE"), OnUpdateProjectLoadTileFile)
+#if 0
     ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_PROJITEM_PROPERTIES, OnProjItemProperties)
     ON_UPDATE_COMMAND_UI(ID_PROJITEM_PROPERTIES, OnUpdateProjItemProperties)
@@ -698,14 +700,13 @@ void CGbxProjView::OnSelChangeProjList(wxCommandEvent& /*event*/)
     }
 }
 
-#if 0
-void CGbxProjView::OnDblClkProjList()
+void CGbxProjView::OnDblClkProjList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (nSel < 0)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGbxProperty(); break;
@@ -720,18 +721,18 @@ void CGbxProjView::OnDblClkProjList()
     }
 }
 
-void CGbxProjView::OnDblClkTileList()
+void CGbxProjView::OnDblClkTileList(wxCommandEvent& /*event*/)
 {
     DoTileEdit();
 }
 
-void CGbxProjView::OnDblClkPieceList()
+void CGbxProjView::OnDblClkPieceList(wxCommandEvent& /*event*/)
 {
-    if (m_listPieces.GetSelCount() > 0)
+    if (m_listPieces->GetSelectedCount() > 0)
         DoPieceEdit();
 }
 
-void CGbxProjView::OnDblClkMarkList()
+void CGbxProjView::OnDblClkMarkList(wxCommandEvent& /*event*/)
 {
     DoMarkEdit();
 }
@@ -739,12 +740,12 @@ void CGbxProjView::OnDblClkMarkList()
 /////////////////////////////////////////////////////////////////////////////
 // Button notifications
 
-void CGbxProjView::OnClickedProjBtnA()
+void CGbxProjView::OnClickedProjBtnA(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGbxProperty(); break;
@@ -759,12 +760,12 @@ void CGbxProjView::OnClickedProjBtnA()
     }
 }
 
-void CGbxProjView::OnClickedProjBtnB()
+void CGbxProjView::OnClickedProjBtnB(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardDelete(); break;
@@ -775,12 +776,12 @@ void CGbxProjView::OnClickedProjBtnB()
     }
 }
 
-void CGbxProjView::OnClickedItemBtnA()
+void CGbxProjView::OnClickedItemBtnA(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardEdit(); break;
@@ -790,12 +791,12 @@ void CGbxProjView::OnClickedItemBtnA()
     }
 }
 
-void CGbxProjView::OnClickedItemBtnB()
+void CGbxProjView::OnClickedItemBtnB(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpTile:   DoTileEdit(); break;
@@ -804,12 +805,12 @@ void CGbxProjView::OnClickedItemBtnB()
     }
 }
 
-void CGbxProjView::OnClickedItemBtnC()
+void CGbxProjView::OnClickedItemBtnC(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpTile:   DoTileClone(); break;
@@ -818,28 +819,28 @@ void CGbxProjView::OnClickedItemBtnC()
     }
 }
 
-void CGbxProjView::OnClickedItemBtnD()
+void CGbxProjView::OnClickedItemBtnD(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     if (nGrp == grpTile)
         DoTileDelete();
 }
 
-void CGbxProjView::OnEditCopy()
+void CGbxProjView::OnEditCopy(wxCommandEvent& /*event*/)
 {
 #ifdef _DEBUG
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        m_listTiles.GetSelCount() > 0);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        m_listTiles->GetSelectedCount() > size_t(0));
 #endif
 
     CGamDoc& pDoc = GetDocument();
     CTileManager* pTMgr = pDoc.GetTileManager();
 
-    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
+    std::vector<TileID> tidtbl = m_listTiles->GetCurMappedItemList();
 
     wxBusyCursor busyCursor;
     TRY
@@ -856,8 +857,8 @@ void CGbxProjView::OnEditCopy()
 
         CMemFile file3;
         CArchive ar3(&file3, CArchive::store);
-        ar3 << pDoc.GetGameBoxID();
-        ar3 << GetCurrentProcessId();// To distinguish between same GBox in other files
+        ar3 << value_preserving_cast<uintptr_t>(pDoc.GetGameBoxID());
+        ar3 << value_preserving_cast<uintptr_t>(wxGetProcessId());// To distinguish between same GBox in other files
         ar3.Close();
 
         /* WARNING:  CMemFile and wxCustomDataObject disagree on
@@ -899,19 +900,19 @@ void CGbxProjView::OnEditCopy()
     END_TRY
 }
 
-void CGbxProjView::OnUpdateEditCopy(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        m_listTiles.GetSelCount() > 0);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        m_listTiles->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnEditPaste()
+void CGbxProjView::OnEditPaste(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        IsClipboardFormatAvailable(CF_TILEIMAGES));
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        wxIsClipboardFormatAvailable(CF_TILEIMAGES));
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
     CTileManager* pTMgr = pDoc.GetTileManager();
@@ -930,8 +931,8 @@ void CGbxProjView::OnEditPaste()
             lockClipbd.Unlock();
 
             CArchive ar(&file, CArchive::load);
-            int nCurSel = m_listTiles.GetTopSelectedItem();
-            size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
+            int nCurSel = m_listTiles->GetTopSelectedItem();
+            size_t nCurSel2 = nCurSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
             pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
             ar.Close();
         }
@@ -943,26 +944,26 @@ void CGbxProjView::OnEditPaste()
             hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
             pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
         }
-        m_listTiles.SetCurSelsMapped(tidtbl);
-        m_listTiles.ShowFirstSelection();
+        m_listTiles->SetCurSelsMapped(tidtbl);
+        m_listTiles->ShowFirstSelection();
     }
     END_TRY
     pDoc.SetModifiedFlag();
 }
 
-void CGbxProjView::OnUpdateEditPaste(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateEditPaste(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        IsClipboardFormatAvailable(CF_TILEIMAGES));
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        wxIsClipboardFormatAvailable(CF_TILEIMAGES));
 }
 
-void CGbxProjView::OnEditMove()
+void CGbxProjView::OnEditMove(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        IsClipboardFormatAvailable(CF_TIDLIST));
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        wxIsClipboardFormatAvailable(CF_TIDLIST));
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
     CTileManager* pTMgr = pDoc.GetTileManager();
@@ -979,17 +980,17 @@ void CGbxProjView::OnEditMove()
 
             // First check if the tid list is ours....
             wxCustomDataObject gbox(CF_GBOXID);
-            ASSERT(wxTheClipboard->GetData(gbox));
-            LPDWORD pGBoxID = static_cast<LPDWORD>(gbox.GetData());
-            DWORD dwGBoxID = pGBoxID[0];
-            DWORD dwProcID = pGBoxID[1];
+            wxASSERT(wxTheClipboard->GetData(gbox));
+            uintptr_t* pGBoxID = static_cast<uintptr_t*>(gbox.GetData());
+            uintptr_t dwGBoxID = pGBoxID[0];
+            uintptr_t dwProcID = pGBoxID[1];
 
             if (dwGBoxID == pDoc.GetGameBoxID() &&
-                dwProcID == GetCurrentProcessId())
+                dwProcID == wxGetProcessId())
             {
                 // It's our stuff alright!
                 wxCustomDataObject tids(CF_TIDLIST);
-                ASSERT(wxTheClipboard->GetData(tids));
+                wxASSERT(wxTheClipboard->GetData(tids));
                 file.Attach(static_cast<BYTE*>(tids.GetData()), value_preserving_cast<UINT>(tids.GetDataSize()));
                 lockClipbd.Unlock();
 
@@ -997,13 +998,13 @@ void CGbxProjView::OnEditMove()
                 std::vector<TileID> tidtbl;
                 ar >> tidtbl;
                 ar.Close();
-                int nCurSel = m_listTiles.GetTopSelectedItem();
+                int nCurSel = m_listTiles->GetTopSelectedItem();
                 size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
                 pTMgr->MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel2);
                 DoUpdateTileList();
                 pDoc.NotifyTileDatabaseChange();
-                m_listTiles.SetCurSelsMapped(tidtbl);
-                m_listTiles.ShowFirstSelection();
+                m_listTiles->SetCurSelsMapped(tidtbl);
+                m_listTiles->ShowFirstSelection();
             }
         }
     }
@@ -1012,14 +1013,14 @@ void CGbxProjView::OnEditMove()
     pDoc.SetModifiedFlag();
 }
 
-void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateEditMove(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
 
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     BOOL bFirstRequirement = nSel >= 0 &&
-        m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        IsClipboardFormatAvailable(CF_TIDLIST);
+        m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        wxIsClipboardFormatAvailable(CF_TIDLIST);
 
     if (bFirstRequirement)
     {
@@ -1029,19 +1030,20 @@ void CGbxProjView::OnUpdateEditMove(CCmdUI* pCmdUI)
         {
             // First check if the tid list is ours....
             wxCustomDataObject gbox(CF_GBOXID);
-            ASSERT(wxTheClipboard->GetData(gbox));
-            LPDWORD pGBoxID = static_cast<LPDWORD>(gbox.GetData());
-            DWORD dwGBoxID = pGBoxID[0];
-            DWORD dwProcID = pGBoxID[1];
-            if (dwGBoxID == GetDocument().GetGameBoxID() && dwProcID == GetCurrentProcessId())
+            wxASSERT(wxTheClipboard->GetData(gbox));
+            uintptr_t* pGBoxID = static_cast<uintptr_t*>(gbox.GetData());
+            uintptr_t dwGBoxID = pGBoxID[0];
+            uintptr_t dwProcID = pGBoxID[1];
+            if (dwGBoxID == GetDocument().GetGameBoxID() && dwProcID == wxGetProcessId())
                 bEnable = TRUE;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 void CGbxProjView::OnProjectCloneBoard()
 {
     DoBoardClone();
@@ -1052,15 +1054,16 @@ void CGbxProjView::OnUpdateProjectCloneBoard(CCmdUI* pCmdUI)
     int nSel = m_listProj.GetCurSel();
     pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpBrd);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
-void CGbxProjView::OnProjectSaveTileFile()
+void CGbxProjView::OnProjectSaveTileFile(wxCommandEvent& /*event*/)
 {
 #ifdef _DEBUG
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        m_listTiles.GetSelCount() > 0);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        m_listTiles->GetSelectedCount() > 0);
 #endif
 
     CGamDoc& pDoc = GetDocument();
@@ -1069,26 +1072,27 @@ void CGbxProjView::OnProjectSaveTileFile()
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_SAVETILELIBRARY);
 
-    CFileDialog dlg(FALSE, FILEEXT_GTLB, NULL, OFN_HIDEREADONLY |
-        OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
-    dlg.m_ofn.lpstrTitle = strTitle;
+    wxFileDialog dlg(this, strTitle,
+                    wxEmptyString, wxEmptyString,
+                    strFilter, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
-    std::vector<TileID> tidtbl = m_listTiles.GetCurMappedItemList();
+    std::vector<TileID> tidtbl = m_listTiles->GetCurMappedItemList();
 
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     TRY
     {
         CFile file;
         CFileException fe;
 
-        if (!file.Open(dlg.GetPathName(),
+        if (!file.Open(dlg.GetPath(),
             CFile::modeCreate | CFile::modeWrite, &fe))
         {
-            EndWaitCursor();
-            AfxMessageBox(IDP_ERR_GTLBCREATE, MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDP_ERR_GTLBCREATE),
+                        CB::GetAppName(),
+                        wxICON_EXCLAMATION);
             return;
         }
         CArchive ar(&file, CArchive::store);
@@ -1098,28 +1102,28 @@ void CGbxProjView::OnProjectSaveTileFile()
         pTMgr->CopyTileImagesToArchive(ar, tidtbl);
         ar.Close();
         file.Close();
-        EndWaitCursor();
     }
     CATCH_ALL (e)
     {
-        EndWaitCursor();
-        AfxMessageBox(IDP_ERR_GTLBWRITE, MB_ICONEXCLAMATION);
+        wxMessageBox(CB::string::LoadString(IDP_ERR_GTLBWRITE),
+                    CB::GetAppName(),
+                    wxICON_EXCLAMATION);
     }
     END_CATCH_ALL
 }
 
-void CGbxProjView::OnUpdateProjectSaveTileFile(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateProjectSaveTileFile(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile &&
-        m_listTiles.GetSelCount() > 0);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile &&
+        m_listTiles->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnProjectLoadTileFile()
+void CGbxProjView::OnProjectLoadTileFile(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
     CTileManager* pTMgr = pDoc.GetTileManager();
@@ -1127,25 +1131,27 @@ void CGbxProjView::OnProjectLoadTileFile()
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_LOADTILELIBRARY);
 
-    CFileDialog dlg(TRUE, FILEEXT_GTLB, NULL,
-        OFN_HIDEREADONLY|OFN_PATHMUSTEXIST, strFilter, NULL, 0);
-    dlg.m_ofn.lpstrTitle = strTitle;
+    wxFileDialog dlg(this, strTitle,
+                    wxEmptyString, wxEmptyString,
+                    strFilter, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     CFile file;
     CFileException fe;
 
-    if (!file.Open(dlg.GetPathName(), CFile::modeRead | CFile::shareDenyWrite,
+    if (!file.Open(dlg.GetPath(), CFile::modeRead | CFile::shareDenyWrite,
         &fe))
     {
-        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, CB::string(dlg.GetPathName()));
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPath());
+        wxMessageBox(strErr,
+                    CB::GetAppName(),
+                    wxOK | wxICON_EXCLAMATION);
         return;
     }
 
-    BeginWaitCursor();
+    wxBusyCursor busyCursor;
     TRY
     {
         CArchive ar(&file, CArchive::load);
@@ -1155,8 +1161,9 @@ void CGbxProjView::OnProjectLoadTileFile()
 
         if (memcmp(chSig, FILEGTLSIGNATURE, 4) != 0)
         {
-            EndWaitCursor();
-            AfxMessageBox(IDP_ERR_NOTGTLB, MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDP_ERR_NOTGTLB),
+                        CB::GetAppName(),
+                        wxICON_EXCLAMATION);
             return;
 
         }
@@ -1164,13 +1171,14 @@ void CGbxProjView::OnProjectLoadTileFile()
         ar >> wVersion;
         if (wVersion > (WORD)NumVersion(fileGtlVerMajor, fileGtlVerMinor))
         {
-            EndWaitCursor();
-            AfxMessageBox(IDP_ERR_GTLBVERSION, MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDP_ERR_GTLBVERSION),
+                        CB::GetAppName(),
+                        wxICON_EXCLAMATION);
             return;
         }
         std::vector<TileID> tidtbl;
-        int nCurSel = m_listTiles.GetTopSelectedItem();
-        size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
+        int nCurSel = m_listTiles->GetTopSelectedItem();
+        size_t nCurSel2 = nCurSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
         pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
         ar.Close();
 
@@ -1182,26 +1190,27 @@ void CGbxProjView::OnProjectLoadTileFile()
             hint.GetArgs<HINT_TILECREATED>().m_tid = tidtbl[i];
             pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
         }
-        m_listTiles.SetCurSelsMapped(tidtbl);
-        m_listTiles.ShowFirstSelection();
-        EndWaitCursor();
+        m_listTiles->SetCurSelsMapped(tidtbl);
+        m_listTiles->ShowFirstSelection();
     }
     CATCH_ALL (e)
     {
-        EndWaitCursor();
-        AfxMessageBox(IDP_ERR_GTLBREAD, MB_ICONEXCLAMATION);
+        wxMessageBox(CB::string::LoadStringW(IDP_ERR_GTLBREAD),
+                    CB::GetAppName(),
+                    wxICON_EXCLAMATION);
     }
     END_CATCH_ALL
 }
 
-void CGbxProjView::OnUpdateProjectLoadTileFile(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateProjectLoadTileFile(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpTile);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel >= 0 && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 void CGbxProjView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     // Make sure window is active.
