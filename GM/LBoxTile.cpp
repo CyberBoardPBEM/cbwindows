@@ -257,7 +257,9 @@ void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
         y = rctItem.GetTop() + rctItem.GetHeight()/2 - 4;
         CTile tileSmall = pTMgr->GetTile(tid, smallScale);
         wxPen penSmall(CB::Convert(tileSmall.GetSmallColor()));
+        wxDCPenChanger setPen(pDC, penSmall);
         wxBrush brSmall(CB::Convert(tileSmall.GetSmallColor()));
+        wxDCBrushChanger setBrush(pDC, brSmall);
         wxRect rctSmall(x, y, 8, 8);
         pDC.DrawRectangle(rctSmall);     // Fill background color
     }
