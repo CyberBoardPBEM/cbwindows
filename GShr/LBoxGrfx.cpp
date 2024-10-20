@@ -675,6 +675,8 @@ wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
 #endif
 wxEND_EVENT_TABLE()
 
+/////////////////////////////////////////////////////////////////////////////
+
 CGrafixListBoxWx::CGrafixListBoxWx() //:
 #if 0
     m_nCurItemCode(Invalid_v<GameElement>)
@@ -689,6 +691,8 @@ CGrafixListBoxWx::CGrafixListBoxWx() //:
     m_bAllowDropScroll = FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 CGrafixListBoxWx::~CGrafixListBoxWx()
 {
     if (m_toolTip)
@@ -697,6 +701,124 @@ CGrafixListBoxWx::~CGrafixListBoxWx()
         wxASSERT(false);
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0
+void CGrafixListBoxWx::SetNotificationTip(int nItem, UINT nResID)
+{
+    CB::string str = CB::string::LoadString(nResID);
+    SetNotificationTip(nItem, str);
+}
+
+// Shows a notification tip over a specified item. If the item
+// doesn't exist, the center of the listbox receives the tip.
+void CGrafixListBoxWx::SetNotificationTip(int nItem, const CB::string& pszTip)
+{
+    if (m_toolMsgTip.m_hWnd == NULL)
+    {
+        m_toolMsgTip.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
+        m_toolMsgTip.SetMaxTipWidth(MAX_LISTITEM_TIP_WIDTH);
+    }
+
+    ClearNotificationTip();
+
+    TOOLINFO ti;
+    m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_LISTITEM_MSG);
+    ti.uFlags |= TTF_TRACK;
+    ti.lpszText = const_cast<CB::string::value_type*>(pszTip.v_str());
+
+    m_toolMsgTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+
+    MakeItemVisible(nItem);
+
+    CRect rctItem;
+    if (!GetItemRect(nItem, rctItem))
+        GetClientRect(rctItem);
+
+    CPoint pntClient = rctItem.CenterPoint();
+
+    CPoint pntScreen(pntClient);
+    ClientToScreen(&pntScreen);
+
+    m_toolMsgTip.Activate(TRUE);
+    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
+    m_toolMsgTip.SendMessage(TTM_TRACKPOSITION, 0,
+        (LPARAM)MAKELONG(static_cast<int16_t>(pntScreen.x), static_cast<int16_t>(pntScreen.y)));
+
+    SetTimer(ID_TIP_LISTITEM_MSG_TIMER, MAX_TIP_LISTITEM_MSG_TIME,
+        NotificationTipTimeoutHandler);
+}
+
+void CGrafixListBoxWx::ClearNotificationTip()
+{
+    KillTimer(ID_TIP_LISTITEM_MSG_TIMER);  // Kill it in case it's still running
+
+    CToolInfo ti;
+    m_toolMsgTip.GetToolInfo(ti, this, ID_TIP_LISTITEM_MSG);
+    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
+    m_toolMsgTip.DelTool(this, ID_TIP_LISTITEM_MSG);
+    m_toolMsgTip.Activate(FALSE);
+}
+
+void CALLBACK CGrafixListBoxWx::NotificationTipTimeoutHandler(HWND hwnd,
+    UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+    CGrafixListBox* pWnd = (CGrafixListBox*)CWnd::FromHandle(hwnd);
+    ASSERT(pWnd != NULL);
+    pWnd->ClearNotificationTip();
+}
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0
+void CGrafixListBoxWx::ShowFirstSelection()
+{
+    int nTopSel = GetTopSelectedItem();
+    CRect rctLBoxClient;
+    GetClientRect(&rctLBoxClient);
+    CRect rct;
+    GetItemRect(nTopSel, &rct);
+    if (!rct.IntersectRect(rct, rctLBoxClient))
+        SetTopIndex(nTopSel);
+}
+
+CB::string CGrafixListBoxWx::GetText(int nIndex) const
+{
+    CString temp;
+    CListBox::GetText(nIndex, temp);
+    return temp;
+}
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// If the selection is out of view, force it into view.
+
+#if 0
+void CGrafixListBoxWx::MakeItemVisible(int nItem)
+{
+    CRect rctLBoxClient;
+    GetClientRect(&rctLBoxClient);
+    CRect rct;
+    GetItemRect(nItem, &rct);
+    if (!rct.IntersectRect(rct, rctLBoxClient))
+        SetTopIndex(nItem);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void CGrafixListBoxWx::SetSelFromPoint(CPoint point)
+{
+    // Short circuit drag processing
+    m_bAllowDrag = FALSE;
+    SendMessage(WM_LBUTTONDOWN, (WPARAM)MK_LBUTTON,
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
+    SendMessage(WM_LBUTTONUP, (WPARAM)MK_LBUTTON,
+        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
+    m_bAllowDrag = TRUE;
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -734,6 +856,26 @@ void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
     }
 }
 
+#if 0
+LRESULT CGrafixListBoxWx::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
+    {
+        MSG msg;
+        memset(&msg, 0, sizeof(MSG));
+        msg.hwnd = m_hWnd;
+        msg.message = message;
+        msg.wParam = wParam;
+        msg.lParam = lParam;
+        if (m_toolTip.m_hWnd != NULL)
+            m_toolTip.RelayEvent(&msg);
+        if (m_toolMsgTip.m_hWnd != NULL)
+            m_toolMsgTip.RelayEvent(&msg);
+    }
+    return CListBox::WindowProc(message, wParam, lParam);
+}
+#endif
+
 wxSize CGrafixListBoxWx::GetDragSize() const
 {
     wxWindow& parent = CheckedDeref(GetParent());
@@ -752,7 +894,30 @@ wxSize CGrafixListBoxWx::GetDragSize() const
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CGrafixListBoxWx Message Processing
+
+#if 0
+void CGrafixListBoxWx::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
+{
+    unsigned nHt = value_preserving_cast<unsigned>(OnItemSize(value_preserving_cast<size_t>(lpMIS->itemID)).cy);
+
+    if (nHt >= 256) nHt = 255;
+    if (nHt == 0) nHt = defaultItemHeight;
+
+    lpMIS->itemHeight = value_preserving_cast<UINT>(nHt);
+}
+
+void CGrafixListBoxWx::DrawItem(LPDRAWITEMSTRUCT lpDIS)
+{
+    size_t nIndex = value_preserving_cast<size_t>(lpDIS->itemID);
+    CDC& pDC = CheckedDeref(CDC::FromHandle(lpDIS->hDC));
+
+    CRect rct(lpDIS->rcItem);
+    OnItemDraw(pDC, nIndex, lpDIS->itemAction, lpDIS->itemState, rct);
+}
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CGrafixListBox Message Processing
 
 void CGrafixListBoxWx::PushPostProcessEvent(std::function<void ()>&& f)
 {
@@ -912,7 +1077,82 @@ wxWindow* CGrafixListBoxWx::GetWindowFromPoint(wxPoint point)
     return wxFindWindowAtPoint(point);
 }
 
+#if 0
+int CGrafixListBoxWx::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CListBox::OnCreate(lpCreateStruct) == -1)
+        return -1;
+
+    m_nTimerID = uintptr_t(0);
+
+    return 0;
+}
+
 /////////////////////////////////////////////////////////////////
+
+void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfo& pdi)
+{
+    if (m_bAllowDropScroll)
+    {
+        // Handle drawing of insert line
+        CPoint pnt = pdi.m_point;
+        int nSel = SpecialItemFromPoint(pnt);
+        if (pdi.m_phase == PhaseDrag::Enter)
+        {
+            m_nLastInsert = nSel;
+            DrawSingle(m_nLastInsert);      // Turn line on
+        }
+        else if (pdi.m_phase == PhaseDrag::Exit || pdi.m_phase == PhaseDrag::Drop)
+        {
+            DrawSingle(m_nLastInsert);          // Turn line off
+            m_nLastInsert = -1;
+        }
+        else
+        {
+            DrawInsert(nSel);                   // Move insert line
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////
+
+void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfo& pdi)
+{
+    if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
+    {
+        CRect rct;
+        GetClientRect(&rct);
+        rct.InflateRect(0, -scrollZonePixels);
+        rct.NormalizeRect();
+        if (!rct.PtInRect(pdi.m_point))
+        {
+            // Trigger time is usually longer
+            m_nTimerID = SetTimer(timerScrollIDStart, timerScrollStart, NULL);
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////
+// Pass it up to the parent by default.
+
+LRESULT CGrafixListBoxWx::OnDragItem(WPARAM wParam, LPARAM lParam)
+{
+    if (wParam != GetProcessId(GetCurrentProcess()))
+    {
+        return -1;
+    }
+    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
+    DoInsertLineProcessing(pdi);
+
+    CWnd *pWnd = GetParent();
+    ASSERT(pWnd != NULL);
+    LRESULT lResult = pWnd->SendMessage(WM_DRAGDROP, wParam, lParam);
+
+    if (pdi.m_phase == PhaseDrag::Over && lResult != 0)
+        DoAutoScrollProcessing(pdi);
+    return lResult;
+}
+#endif
 
 void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
 {
@@ -979,12 +1219,97 @@ void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
 #endif
 }
 
+/////////////////////////////////////////////////////////////////
+// This routine selects the next item if the point is past
+// the y midpoint of the item.
+
+#if 0
+int CGrafixListBoxWx::SpecialItemFromPoint(CPoint pnt) const
+{
+    BOOL bBucket;
+    int nSel = (int)ItemFromPoint(pnt, bBucket);
+    CRect rct;
+    GetItemRect(nSel, &rct);
+    // Note: it is possible for the item number to exceed the
+    // number of items in the listbox. This is figured into our
+    // coding.
+    if (pnt.y > (rct.top + rct.bottom) / 2)
+        nSel++;                                 // Step to next item
+    return nSel;
+}
+
+/////////////////////////////////////////////////////////////////
+
+void CGrafixListBoxWx::DrawInsert(int nIndex)
+{
+    if (m_nLastInsert != nIndex)
+    {
+        DrawSingle(m_nLastInsert);
+        DrawSingle(nIndex);
+        m_nLastInsert = nIndex;
+    }
+}
+
+void CGrafixListBoxWx::DrawSingle(int nIndex)
+{
+    if (nIndex == -1)
+        return;
+    CBrush* pBrush = CDC::GetHalftoneBrush();
+    CRect rect;
+    GetClientRect(&rect);
+    CRgn rgn;
+    rgn.CreateRectRgnIndirect(&rect);
+
+    CDC* pDC = GetDC();
+    // Prevent drawing outside of listbox. This can happen at the
+    // top of the listbox since the listbox's DC is the parent's DC.
+    pDC->SelectClipRgn(&rgn);
+
+    // Account for possibility of nIndex equal to number
+    // of listbox items....
+    if (nIndex < GetCount())
+    {
+        GetItemRect(nIndex, &rect);
+        rect.bottom = rect.top + 2;
+        rect.top -= 2;
+    }
+    else
+    {
+        GetItemRect(nIndex - 1, &rect);
+        rect.top = rect.bottom - 2;
+        rect.bottom += 2;
+    }
+
+    CBrush* pBrushOld = pDC->SelectObject(pBrush);
+    // Draw main line
+    pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
+
+    pDC->SelectObject(pBrushOld);
+    ReleaseDC(pDC);
+}
+
+CPoint CGrafixListBoxWx::ClientToItem(CPoint point) const
+{
+    // account for horz scroll
+    int xOffset = GetScrollPos(SB_HORZ);
+    ASSERT(xOffset >= 0);
+    point.x += xOffset;
+    return point;
+}
+
+CRect CGrafixListBoxWx::ItemToClient(CRect rect) const
+{
+    // account for horz scroll
+    int xOffset = GetScrollPos(SB_HORZ);
+    ASSERT(xOffset >= 0);
+    rect.OffsetRect(-xOffset, 0);
+    return rect;
+}
+#endif
+
 void CGrafixListBoxWx::AssignNewMoveGroup()
 {
 #if defined(GPLAY)
     CheckedDeref(m_pDoc).AssignNewMoveGroup();
 #endif
 }
-
-
-
