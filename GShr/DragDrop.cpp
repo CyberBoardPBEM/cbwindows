@@ -93,10 +93,10 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_TILE:
             subInfos.m_tile.~SubInfo<DRAG_TILE>();
             break;
-#if 0
         case DRAG_TILELIST:
             subInfos.m_tileList.~SubInfo<DRAG_TILELIST>();
             break;
+#if 0
         case DRAG_PIECE:
             subInfos.m_piece.~SubInfo<DRAG_PIECE>();
             break;
@@ -127,10 +127,10 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_TILE:
             new (&subInfos.m_tile) SubInfo<DRAG_TILE>;
             break;
-#if 0
         case DRAG_TILELIST:
             new (&subInfos.m_tileList) SubInfo<DRAG_TILELIST>;
             break;
+#if 0
         case DRAG_PIECE:
             new (&subInfos.m_piece) SubInfo<DRAG_PIECE>;
             break;
