@@ -269,14 +269,11 @@ BOOL CTileListBoxWx::OnDragSetup(DragInfoWx& pDI) const
 {
     if (IsMultiSelect())
     {
-        wxASSERT(!"TODO:");
-#if 0
         pDI.SetDragType(DRAG_TILELIST);
         pDI.GetSubInfo<DRAG_TILELIST>().m_tileIDList = &GetMappedMultiSelectList();
         pDI.GetSubInfo<DRAG_TILELIST>().m_size = GetDragSize();
         pDI.GetSubInfo<DRAG_TILELIST>().m_gamDoc = m_pDoc;
-        pDI.m_hcsrSuggest = g_res.hcrDragTile;
-#endif
+        pDI.m_hcsrSuggest = g_res.hcrDragTileWx;
     }
     else
     {

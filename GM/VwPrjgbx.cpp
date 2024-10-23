@@ -157,9 +157,9 @@ wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
     ON_UPDATE_COMMAND_UI(ID_MARKER_DELETE, OnUpdateMarkerDelete)
     ON_COMMAND(ID_PROJECT_CLONEBOARD, OnProjectCloneBoard)
     ON_UPDATE_COMMAND_UI(ID_PROJECT_CLONEBOARD, OnUpdateProjectCloneBoard)
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
-    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
 #endif
+    EVT_DRAGDROP(OnDragItem)
+    EVT_GET_DRAG_SIZE(OnGetDragSize)
 wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CGbxProjViewContainer, CView)
@@ -189,6 +189,11 @@ CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
+
+    m_listTiles->SetDrawAllScales(TRUE);
+    m_listTiles->EnableDrag();
+    m_listTiles->EnableSelfDrop();
+    m_listTiles->EnableDropScroll();
 }
 
 CGbxProjView::~CGbxProjView()
@@ -443,82 +448,85 @@ BOOL CGbxProjView::CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct)
     ebox.SetFont(CFont::FromHandle(g_res.h8ss));
     return bOk;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CGbxProjView::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CGbxProjView::OnDragItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        return;
     }
     CGamDoc& pDoc = GetDocument();
 
-    DragInfo* pdi = (DragInfo*)lParam;
+    const DragInfoWx& pdi = event.GetDragInfo();
 
-    if (pdi->GetDragType() != DRAG_TILELIST)
-        return -1;               // Only tile list drops allowed
+    if (pdi.GetDragType() != DRAG_TILELIST)
+        return;               // Only tile list drops allowed
 
-    if (pdi->GetSubInfo<DRAG_TILELIST>().m_gamDoc != &pDoc)
-        return -1;               // Only pieces from our document.
+    if (pdi.GetSubInfo<DRAG_TILELIST>().m_gamDoc != &pDoc)
+        return;               // Only pieces from our document.
 
     // no size restriction
 
-    CRect rct;
-    m_listTiles.GetClientRect(&rct);
-    if (!rct.PtInRect(pdi->m_pointClient))
-        return -1;
+    wxRect rct = m_listTiles->GetClientRect();
+    if (!rct.Contains(pdi.m_pointClient))
+        return;
 
-    if (pdi->m_phase == PhaseDrag::Over)
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (pdi->m_phase == PhaseDrag::Drop && pdi->GetDragType() == DRAG_TILELIST)
+    if (pdi.m_phase == PhaseDrag::Over)
     {
-        int nProjSel = m_listProj.GetCurSel();
-        ASSERT(nProjSel >= 0 &&
-            m_listProj.GetItemGroupCode(nProjSel) == grpTile);
-        size_t nGrpSel = m_listProj.GetItemSourceCode(nProjSel);
+        event.SetCursor(pdi.m_hcsrSuggest);
+        return;
+    }
+    else if (pdi.m_phase == PhaseDrag::Drop && pdi.GetDragType() == DRAG_TILELIST)
+    {
+        int nProjSel = m_listProj->GetSelection();
+        wxASSERT(nProjSel >= 0 &&
+            m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nProjSel)) == grpTile);
+        size_t nGrpSel = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nProjSel));
 
         CTileManager* pTMgr = pDoc.GetTileManager();
         const CTileSet& pTGrp = pTMgr->GetTileSet(nGrpSel);
 
         // Force selection of item under the mouse
-        m_listTiles.SetSelFromPoint(pdi->m_point);
-        int nSel = m_listTiles.GetCurSel();
+        m_listTiles->SetSelFromPoint(pdi.m_point);
+        int nSel = [this]{
+            std::vector<size_t> sels = m_listTiles->GetSelections();
+            wxASSERT(sels.size() <= size_t(1));
+            return !sels.empty() ? value_preserving_cast<int>(sels.front()) : wxNOT_FOUND;
+        }();
 
         if (nSel >= 0)
         {
             // Check if the mouse is above or below the half point.
             // If above, insert before. If below, insert after.
-            CRect rct;
-            m_listTiles.GetItemRect(nSel, &rct);
-            if (pdi->m_point.y > (rct.top + rct.bottom) / 2)
+            wxRect rct = m_listTiles->GetItemRect(value_preserving_cast<size_t>(nSel));
+            if (pdi.m_point.y > (rct.GetTop() + rct.GetBottom()) / 2)
                 nSel++;
         }
 
-        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
+        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi.GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
         DoUpdateTileList();
         pDoc.NotifyTileDatabaseChange();
-        m_listTiles.SetCurSelsMapped(*pdi->GetSubInfo<DRAG_TILELIST>().m_tileIDList);
-        m_listTiles.ShowFirstSelection();
+        m_listTiles->SetCurSelsMapped(*pdi.GetSubInfo<DRAG_TILELIST>().m_tileIDList);
+        m_listTiles->ShowFirstSelection();
         pDoc.SetModifiedFlag();
     }
-    return 1;
 }
 
-LRESULT CGbxProjView::OnGetDragSize(WPARAM wParam, LPARAM lParam)
+void CGbxProjView::OnGetDragSize(GetDragSizeEvent& event)
 {
     /* I don't expect this to be a source for any limited dest,
         so report max size since it is easy to generate and
         will make it obvious if any limited dest does receive
         this */
-    CSize retval;
-    retval.cx = std::numeric_limits<decltype(retval.cx)>::max();
-    retval.cy = std::numeric_limits<decltype(retval.cy)>::max();
+    wxSize retval;
+    retval.x = std::numeric_limits<decltype(retval.x)>::max();
+    retval.y = std::numeric_limits<decltype(retval.y)>::max();
 
-    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
-    return 1;
+    event.SetSize(retval);
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Updates buttons for specified group

@@ -245,9 +245,9 @@ protected:
     afx_msg void OnProjectCloneBoard();
     afx_msg void OnUpdateProjectCloneBoard(CCmdUI* pCmdUI);
     //}}AFX_MSG
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
 #endif
+    void OnDragItem(DragDropEvent& event);
+    void OnGetDragSize(GetDragSizeEvent& event);
     wxDECLARE_EVENT_TABLE();
 
 private:

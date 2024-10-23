@@ -671,21 +671,17 @@ wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
     EVT_TIMER(wxID_ANY, OnTimer)
 #if 0
     ON_WM_CREATE()
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
 #endif
+    EVT_DRAGDROP(OnDragItem)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGrafixListBoxWx::CGrafixListBoxWx() //:
-#if 0
-    m_nCurItemCode(Invalid_v<GameElement>)
-#endif
+CGrafixListBoxWx::CGrafixListBoxWx() :
+    m_nCurItemCode(Invalid_v<GameElement>),
+    m_nTimerID(this)
 {
-#if 0
-    m_nLastInsert = -1;
-#endif
-    m_nTimerID = uintptr_t(0);
+    m_nLastInsert = wxNOT_FOUND;
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
@@ -820,20 +816,24 @@ void CGrafixListBoxWx::MakeItemVisible(int nItem)
     if (!rct.IntersectRect(rct, rctLBoxClient))
         SetTopIndex(nItem);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::SetSelFromPoint(CPoint point)
+void CGrafixListBoxWx::SetSelFromPoint(wxPoint point)
 {
+    wxASSERT(postProcessEvents.empty());
     // Short circuit drag processing
     m_bAllowDrag = FALSE;
-    SendMessage(WM_LBUTTONDOWN, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
-    SendMessage(WM_LBUTTONUP, (WPARAM)MK_LBUTTON,
-        MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
+    wxMouseEvent down(wxEVT_LEFT_DOWN);
+    down.SetPosition(point);
+    ProcessWindowEvent(down);
+    wxMouseEvent up(wxEVT_LEFT_UP);
+    up.SetPosition(point);
+    ProcessWindowEvent(up);
     m_bAllowDrag = TRUE;
+    wxASSERT(postProcessEvents.empty());
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -986,13 +986,10 @@ void CGrafixListBoxWx::OnLButtonDblClk(wxMouseEvent& event)
 void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
 {
     ExecutePostProcessEvents();
-#if 0
-    if (m_nTimerID)
+    if (m_nTimerID.IsRunning())
     {
-        KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
+        m_nTimerID.Stop();
     }
-#endif
     if (m_bAllowDrag)
     {
         BOOL bWasDragging = wxWindow::GetCapture() == this;
@@ -1001,7 +998,10 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
         if (bWasDragging && m_triggeredCursor)
         {
             PushPostProcessEvent([this, event]{
-                OnDragEnd(event);
+                if (GetSelectedCount() != 0)
+                {
+                    OnDragEnd(event);
+                }
             });
         }
     }
@@ -1020,8 +1020,12 @@ void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 
     if (m_bAllowDrag)
     {
-        if (wxWindow::GetCapture() != this)
+        // unlike MFC, wx can have no selection here
+        if (wxWindow::GetCapture() != this ||
+            GetSelectedCount() == 0)
+        {
             return;
+        }
         wxPoint point = event.GetPosition();
         // OK...We are dragging. Let's check if the cursor has been
         // triggered. If not, check if we've moved far enough from
@@ -1102,15 +1106,16 @@ int CGrafixListBoxWx::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfo& pdi)
+void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfoWx& pdi)
 {
     if (m_bAllowDropScroll)
     {
         // Handle drawing of insert line
-        CPoint pnt = pdi.m_point;
+        wxPoint pnt = pdi.m_point;
         int nSel = SpecialItemFromPoint(pnt);
         if (pdi.m_phase == PhaseDrag::Enter)
         {
@@ -1119,8 +1124,8 @@ void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfo& pdi)
         }
         else if (pdi.m_phase == PhaseDrag::Exit || pdi.m_phase == PhaseDrag::Drop)
         {
-            DrawSingle(m_nLastInsert);          // Turn line off
-            m_nLastInsert = -1;
+            EraseSingle();          // Turn line off
+            m_nLastInsert = wxNOT_FOUND;
         }
         else
         {
@@ -1131,18 +1136,16 @@ void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfo& pdi)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfo& pdi)
+void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfoWx& pdi)
 {
-    if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
+    if (m_bAllowDropScroll && !m_nTimerID.IsRunning())
     {
-        CRect rct;
-        GetClientRect(&rct);
-        rct.InflateRect(0, -scrollZonePixels);
-        rct.NormalizeRect();
-        if (!rct.PtInRect(pdi.m_point))
+        wxRect rct = GetClientRect();
+        CB::InflateAndNormalize(rct, 0, -scrollZonePixels);
+        if (!rct.Contains(pdi.m_point))
         {
             // Trigger time is usually longer
-            m_nTimerID = SetTimer(timerScrollIDStart, timerScrollStart, NULL);
+            CB_VERIFY(m_nTimerID.Start(timerScrollStart));
         }
     }
 }
@@ -1150,76 +1153,70 @@ void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfo& pdi)
 /////////////////////////////////////////////////////////////////
 // Pass it up to the parent by default.
 
-LRESULT CGrafixListBoxWx::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CGrafixListBoxWx::OnDragItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        wxASSERT(!"bad event process");
+        return;
     }
-    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
+    const DragInfoWx& pdi = event.GetDragInfo();
     DoInsertLineProcessing(pdi);
 
-    CWnd *pWnd = GetParent();
-    ASSERT(pWnd != NULL);
-    LRESULT lResult = pWnd->SendMessage(WM_DRAGDROP, wParam, lParam);
+    wxWindow& pWnd = CheckedDeref(GetParent());
+    pWnd.ProcessWindowEvent(event);
 
-    if (pdi.m_phase == PhaseDrag::Over && lResult != 0)
+    if (pdi.m_phase == PhaseDrag::Over && event.GetCursor().IsOk())
+    {
         DoAutoScrollProcessing(pdi);
-    return lResult;
+    }
 }
-#endif
 
 void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
 {
-#if 0
-    if (nIDEvent != m_nTimerID)
+    wxASSERT(m_nTimerID.IsRunning() &&
+                event.GetId() == m_nTimerID.GetId());
+    if (!m_nTimerID.IsRunning())
         return;
 
-    CPoint point;
-    CRect  rctClient;
-    CRect  rct;
+    wxPoint point = wxGetMouseState().GetPosition();
+    point = ScreenToClient(point);
+    wxRect rctClient = GetClientRect();
+    wxRect rct = rctClient;
+    CB::InflateAndNormalize(rct, 0, -scrollZonePixels);
 
-    GetCursorPos(&point);
-    ScreenToClient(&point);
-    GetClientRect(&rctClient);
-    rct = rctClient;
-    rct.InflateRect(0, -scrollZonePixels);
-    rct.NormalizeRect();
-
-    if (rctClient.PtInRect(point) && !rct.PtInRect(point))
+    if (rctClient.Contains(point) && !rct.Contains(point))
     {
         // Restart the timer.
-        if (m_nTimerID == timerScrollIDStart)
+        if (m_nTimerID.GetInterval() == timerScrollStart)
         {
-            KillTimer(m_nTimerID);
-            m_nTimerID = SetTimer(timerScrollID, timerScroll, NULL);
+            CB_VERIFY(m_nTimerID.Start(timerScroll));
         }
-        BOOL bHaveFocus = GetFocus() == this;
+        BOOL bHaveFocus = HasCapture();
         if (bHaveFocus)
         {
             GetParent()->SetFocus();
-            SetCapture();           // Reestablish the mouse capture
+            wxASSERT(HasCapture());
         }
 
         // Hide insert line
-        DrawSingle(m_nLastInsert);
+        EraseSingle();
 
-        int nTopIndex = GetTopIndex();
-        if (point.y <= rct.top)
+        size_t nTopIndex = GetVisibleRowsBegin();
+        if (point.y <= rct.GetTop())
         {
-            if (nTopIndex > 0)
-                SetTopIndex(nTopIndex - 1);
+            if (nTopIndex > size_t(0))
+                ScrollToRow(nTopIndex - size_t(1));
         }
         else
         {
-            if (nTopIndex < GetCount() - 1 && nTopIndex >= 0)
-                SetTopIndex(nTopIndex + 1);
+            if (nTopIndex < GetItemCount() - size_t(1))
+                ScrollToRow(nTopIndex + size_t(1));
         }
 
         // Restore insert line in new position
-        CPoint pnt;
-        GetCursorPos(&pnt);
-        ScreenToClient(&pnt);
+        wxPoint pnt = wxGetMouseState().GetPosition();
+        pnt = ScreenToClient(pnt);
         m_nLastInsert = SpecialItemFromPoint(pnt);
         DrawSingle(m_nLastInsert);
 
@@ -1228,27 +1225,26 @@ void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
     }
     else
     {
-        KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
+        m_nTimerID.Stop();
     }
-#endif
 }
 
 /////////////////////////////////////////////////////////////////
 // This routine selects the next item if the point is past
 // the y midpoint of the item.
 
-#if 0
-int CGrafixListBoxWx::SpecialItemFromPoint(CPoint pnt) const
+int CGrafixListBoxWx::SpecialItemFromPoint(wxPoint pnt) const
 {
-    BOOL bBucket;
-    int nSel = (int)ItemFromPoint(pnt, bBucket);
-    CRect rct;
-    GetItemRect(nSel, &rct);
+    int nSel = VirtualHitTest(pnt.y);
+    if (nSel == wxNOT_FOUND)
+    {
+        return nSel;
+    }
+    wxRect rct = GetItemRect(value_preserving_cast<size_t>(nSel));
     // Note: it is possible for the item number to exceed the
     // number of items in the listbox. This is figured into our
     // coding.
-    if (pnt.y > (rct.top + rct.bottom) / 2)
+    if (pnt.y > (rct.GetTop() + rct.GetBottom()) / 2)
         nSel++;                                 // Step to next item
     return nSel;
 }
@@ -1259,7 +1255,7 @@ void CGrafixListBoxWx::DrawInsert(int nIndex)
 {
     if (m_nLastInsert != nIndex)
     {
-        DrawSingle(m_nLastInsert);
+        EraseSingle();
         DrawSingle(nIndex);
         m_nLastInsert = nIndex;
     }
@@ -1267,42 +1263,37 @@ void CGrafixListBoxWx::DrawInsert(int nIndex)
 
 void CGrafixListBoxWx::DrawSingle(int nIndex)
 {
-    if (nIndex == -1)
+    if (nIndex == wxNOT_FOUND)
         return;
-    CBrush* pBrush = CDC::GetHalftoneBrush();
-    CRect rect;
-    GetClientRect(&rect);
-    CRgn rgn;
-    rgn.CreateRectRgnIndirect(&rect);
-
-    CDC* pDC = GetDC();
-    // Prevent drawing outside of listbox. This can happen at the
-    // top of the listbox since the listbox's DC is the parent's DC.
-    pDC->SelectClipRgn(&rgn);
 
     // Account for possibility of nIndex equal to number
     // of listbox items....
-    if (nIndex < GetCount())
+    wxRect rect;
+    if (nIndex < value_preserving_cast<int>(GetItemCount()))
     {
-        GetItemRect(nIndex, &rect);
-        rect.bottom = rect.top + 2;
-        rect.top -= 2;
+        rect = GetItemRect(value_preserving_cast<size_t>(nIndex));
+        rect = wxRect(wxPoint(rect.GetLeft(), rect.GetTop() - 2),
+                        wxSize(rect.GetWidth(), 4));
     }
     else
     {
-        GetItemRect(nIndex - 1, &rect);
-        rect.top = rect.bottom - 2;
-        rect.bottom += 2;
+        rect = GetItemRect(value_preserving_cast<size_t>(nIndex - 1));
+        rect = wxRect(wxPoint(rect.GetLeft(), rect.GetBottom() - 2),
+                        wxSize(rect.GetWidth(), 4));
     }
 
-    CBrush* pBrushOld = pDC->SelectObject(pBrush);
-    // Draw main line
-    pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
-
-    pDC->SelectObject(pBrushOld);
-    ReleaseDC(pDC);
+    wxOverlayDC dc(overlay, this);
+    dc.Clear();
+    wxRendererNative& rend = wxRendererNative::Get();
+    rend.DrawItemSelectionRect(this, dc, rect, wxCONTROL_FOCUSED | wxCONTROL_SELECTED);
 }
 
+void CGrafixListBoxWx::EraseSingle()
+{
+    overlay.Reset();
+}
+
+#if 0
 CPoint CGrafixListBoxWx::ClientToItem(CPoint point) const
 {
     // account for horz scroll

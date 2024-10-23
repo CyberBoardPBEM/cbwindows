@@ -242,14 +242,14 @@ public:
         wxSize m_size;
         const CGamDoc* m_gamDoc;
     };
-#if 0
     template<>
     struct SubInfo<DRAG_TILELIST>
     {
         const std::vector<TileID>* m_tileIDList;
-        CSize m_size;
+        wxSize m_size;
         const CGamDoc* m_gamDoc;
     };
+#if 0
     template<>
     struct SubInfo<DRAG_PIECE>
     {
@@ -289,8 +289,8 @@ private:
     union SubInfos
     {
         SubInfo<DRAG_TILE> m_tile;
-#if 0
         SubInfo<DRAG_TILELIST> m_tileList;
+#if 0
         SubInfo<DRAG_PIECE> m_piece;
         SubInfo<DRAG_PIECELIST> m_pieceList;
         SubInfo<DRAG_MARKER> m_marker;

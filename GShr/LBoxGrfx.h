@@ -474,18 +474,14 @@ public:
 #endif
     int  GetTopSelectedItem() const;
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
-#if 0
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-#endif
     BOOL IsMultiSelect() const
         { return HasMultipleSelection(); }
 
     // Operations
 public:
-#if 0
     void SetSelFromPoint(wxPoint point);
-#endif
     void ShowFirstSelection();
 #if 0
     void MakeItemVisible(int nItem);
@@ -539,7 +535,7 @@ protected:
     BOOL    m_bAllowDropScroll;     // Scroll on OnDragItem
 
     wxPoint m_clickPoint;
-    uintptr_t m_nTimerID;
+    wxTimer m_nTimerID;
     BOOL    m_triggeredCursor;
     /* wxWidgets does not support post-processing of events
         (see https://docs.wxwidgets.org/stable/overview_events.html#overview_events_virtual),
@@ -552,20 +548,20 @@ private:
 protected:
     wxWindow* m_hLastWnd;
 
-#if 0
     int     m_nLastInsert;          // Last index with insert line
 
-    void  DoInsertLineProcessing(const DragInfo& pdi);
-    void  DoAutoScrollProcessing(const DragInfo& pdi);
-#endif
+    void  DoInsertLineProcessing(const DragInfoWx& pdi);
+    void  DoAutoScrollProcessing(const DragInfoWx& pdi);
     void  DoToolTipHitProcessing(wxPoint point);
 
     wxWindow* GetWindowFromPoint(wxPoint point);
-#if 0
     int   SpecialItemFromPoint(wxPoint pnt) const;
     void  DrawInsert(int nIndex);
     void  DrawSingle(int nIndex);
-#endif
+    void  EraseSingle();
+private:
+    wxOverlay overlay;
+protected:
 
     wxPoint ClientToItem(wxPoint point) const
     {
@@ -595,8 +591,8 @@ protected:
     void OnTimer(wxTimerEvent& event);
 #if 0
     int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
 #endif
+    void OnDragItem(DragDropEvent& event);
     wxDECLARE_EVENT_TABLE();
 
 protected:
@@ -642,7 +638,6 @@ public:
             pLst.push_back(MapIndexToItem(pSelTbl[i]));
         return pLst;
     }
-#if 0
     // Note: the following reference is only good during drag and drop.
     // the data is only good during the drop. It is essentially a
     // hack to have valid data when selecting items with Shift-Click.
@@ -651,7 +646,6 @@ public:
     // is released. Makes it tough to use a pre setup list during the
     // drag operation.
     const std::vector<T>& GetMappedMultiSelectList() const { return m_multiSelList; }
-#endif
 
     void SetItemMap(const std::vector<T>* pMap, BOOL bKeepPosition = TRUE)
     {
@@ -748,14 +742,17 @@ protected:
         }
         else if (this->IsMultiSelect())
         {
-            wxASSERT(!"TODO:");
-#if 0
             // Get the final selection results after the mouse was released.
             m_multiSelList = GetCurMappedItemList();
 
+            // this is only needed for PalTray, so don't implement now
+#if defined(GPLAY)
+            wxASSERT(!"TODO:");
+#if 0
             CWnd* pWnd = this->GetParent();
             ASSERT(pWnd != NULL);
             pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&m_multiSelList), T::PREFIX);
+#endif
 #endif
         }
         else
