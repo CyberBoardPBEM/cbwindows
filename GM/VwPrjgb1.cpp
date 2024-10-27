@@ -130,18 +130,17 @@ void CGbxProjView::DoBoardDelete()
     }
 }
 
-#if 0
 void CGbxProjView::DoBoardClone()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CBoardManager* pBMgr = pDoc.GetBoardManager();
 
-    ASSERT(nBrd < pBMgr->GetNumBoards());
+    wxASSERT(nBrd < pBMgr->GetNumBoards());
     CBoard& pOrigBoard = pBMgr->GetBoard(nBrd);
 
     TRY
@@ -179,7 +178,6 @@ void CGbxProjView::DoBoardClone()
     pDoc.UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);
     pDoc.SetModifiedFlag();
 }
-#endif
 
 void CGbxProjView::DoBoardEdit()
 {

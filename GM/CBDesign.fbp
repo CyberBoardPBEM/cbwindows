@@ -20370,6 +20370,323 @@
           <property name="unchecked_bitmap"></property>
         </object>
       </object>
+      <object class="wxMenu" expanded="false">
+        <property name="label">2=PJ_DEFAULT</property>
+        <property name="name">MENU_PJ_DEFAULT</property>
+        <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create game play board.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Create Playing Board...</property>
+          <property name="name">ID_EDIT_CREATEBOARD</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create tile image grouping</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Create Tile Image Group...</property>
+          <property name="name">ID_EDIT_CREATETILEGROUP</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create a grouping for playing pieces</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Create Playing Piece Group...</property>
+          <property name="name">ID_EDIT_CREATEPIECEGROUP</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create a grouping for markers</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Create Marker Group...</property>
+          <property name="name">ID_EDIT_CREATEMARKGROUP</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator14</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help"></property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Clone Selected Board</property>
+          <property name="name">ID_PROJECT_CLONEBOARD</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator15</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Delete selected item.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Delete...</property>
+          <property name="name">ID_PROJITEM_DELETE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator16</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Change GameBox Fingerprint.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Change GameBox Finger Print...</property>
+          <property name="name">ID_PROJECT_CHGID</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Examine item properties.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Properties...</property>
+          <property name="name">ID_PROJITEM_PROPERTIES</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+      </object>
+      <object class="wxMenu" expanded="false">
+        <property name="label">3=PJ_TILELIST</property>
+        <property name="name">MENU_PJ_TILELIST</property>
+        <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit selected tile.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Edit Tile</property>
+          <property name="name">ID_TILE_EDIT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Clone selected tile.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Clone Tile</property>
+          <property name="name">ID_TILE_CLONE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create new tile.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">New Tile...</property>
+          <property name="name">ID_TILE_NEW</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator17</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Delete select tile.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Delete Tile</property>
+          <property name="name">ID_TILE_DELETE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator18</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Move clipboard objects to new locations&#x0A;Move</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Move Tiles Here</property>
+          <property name="name">ID_EDIT_MOVE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="separator" expanded="false">
+          <property name="name">m_separator19</property>
+          <property name="permission">none</property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Save tiles in a tile library file&#x0A;Save Tile File</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Save Tile Library File...</property>
+          <property name="name">ID_PROJECT_SAVETILEFILE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Load tiles from a tile library file&#x0A;Load Tile File</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Load Tile Library File...</property>
+          <property name="name">ID_PROJECT_LOADTILEFILE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+      </object>
+      <object class="wxMenu" expanded="false">
+        <property name="label">4=PJ_PIECELIST</property>
+        <property name="name">MENU_PJ_PIECELIST</property>
+        <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create new pieces.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">New Pieces...</property>
+          <property name="name">ID_PIECE_NEW</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit selected piece.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Edit Piece...</property>
+          <property name="name">ID_PIECE_EDIT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Delete selected piece.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Delete Piece</property>
+          <property name="name">ID_PIECE_DELETE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+      </object>
+      <object class="wxMenu" expanded="false">
+        <property name="label">5=PJ_MARKERLIST</property>
+        <property name="name">MENU_PJ_MARKERLIST</property>
+        <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Create new markers.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">New Markers...</property>
+          <property name="name">ID_MARKER_NEW</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Edit selected marker.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Edit Marker...</property>
+          <property name="name">ID_MARKER_EDIT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Delete selected marker.</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">Delete Marker</property>
+          <property name="name">ID_MARKER_DELETE</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+      </object>
     </object>
   </object>
 </wxFormBuilder_Project>

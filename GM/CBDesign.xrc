@@ -4044,5 +4044,128 @@
         <help>Discard changes to tile image</help>
       </object>
     </object>
+    <object class="wxMenu" name="MENU_PJ_DEFAULT">
+      <label>2=PJ__DEFAULT</label>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEBOARD">
+        <label>Create Playing Board...</label>
+        <accel></accel>
+        <help>Create game play board.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATETILEGROUP">
+        <label>Create Tile Image Group...</label>
+        <accel></accel>
+        <help>Create tile image grouping</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEPIECEGROUP">
+        <label>Create Playing Piece Group...</label>
+        <accel></accel>
+        <help>Create a grouping for playing pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEMARKGROUP">
+        <label>Create Marker Group...</label>
+        <accel></accel>
+        <help>Create a grouping for markers</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PROJECT_CLONEBOARD">
+        <label>Clone Selected Board</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PROJITEM_DELETE">
+        <label>Delete...</label>
+        <accel></accel>
+        <help>Delete selected item.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PROJECT_CHGID">
+        <label>Change GameBox Finger Print...</label>
+        <accel></accel>
+        <help>Change GameBox Fingerprint.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PROJITEM_PROPERTIES">
+        <label>Properties...</label>
+        <accel></accel>
+        <help>Examine item properties.</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="MENU_PJ_TILELIST">
+      <label>3=PJ__TILELIST</label>
+      <object class="wxMenuItem" name="ID_TILE_EDIT">
+        <label>Edit Tile</label>
+        <accel></accel>
+        <help>Edit selected tile.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_TILE_CLONE">
+        <label>Clone Tile</label>
+        <accel></accel>
+        <help>Clone selected tile.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_TILE_NEW">
+        <label>New Tile...</label>
+        <accel></accel>
+        <help>Create new tile.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TILE_DELETE">
+        <label>Delete Tile</label>
+        <accel></accel>
+        <help>Delete select tile.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_MOVE">
+        <label>Move Tiles Here</label>
+        <accel></accel>
+        <help>Move clipboard objects to new locations\nMove</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PROJECT_SAVETILEFILE">
+        <label>Save Tile Library File...</label>
+        <accel></accel>
+        <help>Save tiles in a tile library file\nSave Tile File</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PROJECT_LOADTILEFILE">
+        <label>Load Tile Library File...</label>
+        <accel></accel>
+        <help>Load tiles from a tile library file\nLoad Tile File</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="MENU_PJ_PIECELIST">
+      <label>4=PJ__PIECELIST</label>
+      <object class="wxMenuItem" name="ID_PIECE_NEW">
+        <label>New Pieces...</label>
+        <accel></accel>
+        <help>Create new pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PIECE_EDIT">
+        <label>Edit Piece...</label>
+        <accel></accel>
+        <help>Edit selected piece.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PIECE_DELETE">
+        <label>Delete Piece</label>
+        <accel></accel>
+        <help>Delete selected piece.</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="MENU_PJ_MARKERLIST">
+      <label>5=PJ__MARKERLIST</label>
+      <object class="wxMenuItem" name="ID_MARKER_NEW">
+        <label>New Markers...</label>
+        <accel></accel>
+        <help>Create new markers.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_MARKER_EDIT">
+        <label>Edit Marker...</label>
+        <accel></accel>
+        <help>Edit selected marker.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_MARKER_DELETE">
+        <label>Delete Marker</label>
+        <accel></accel>
+        <help>Delete selected marker.</help>
+      </object>
+    </object>
   </object>
 </resource>

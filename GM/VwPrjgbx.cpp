@@ -132,32 +132,30 @@ wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
     EVT_UPDATE_UI(XRCID("ID_PROJECT_SAVETILEFILE"), OnUpdateProjectSaveTileFile)
     EVT_MENU(XRCID("ID_PROJECT_LOADTILEFILE"), OnProjectLoadTileFile)
     EVT_UPDATE_UI(XRCID("ID_PROJECT_LOADTILEFILE"), OnUpdateProjectLoadTileFile)
-#if 0
-    ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_PROJITEM_PROPERTIES, OnProjItemProperties)
-    ON_UPDATE_COMMAND_UI(ID_PROJITEM_PROPERTIES, OnUpdateProjItemProperties)
-    ON_COMMAND(ID_TILE_CLONE, OnTileClone)
-    ON_UPDATE_COMMAND_UI(ID_TILE_CLONE, OnUpdateTileClone)
-    ON_COMMAND(ID_TILE_DELETE, OnTileDelete)
-    ON_UPDATE_COMMAND_UI(ID_TILE_DELETE, OnUpdateTileDelete)
-    ON_COMMAND(ID_TILE_EDIT, OnTileEdit)
-    ON_UPDATE_COMMAND_UI(ID_TILE_EDIT, OnUpdateTileEdit)
-    ON_COMMAND(ID_TILE_NEW, OnTileNew)
-    ON_COMMAND(ID_PROJITEM_DELETE, OnProjItemDelete)
-    ON_UPDATE_COMMAND_UI(ID_PROJITEM_DELETE, OnUpdateProjItemDelete)
-    ON_COMMAND(ID_PIECE_NEW, OnPieceNew)
-    ON_COMMAND(ID_PIECE_EDIT, OnPieceEdit)
-    ON_UPDATE_COMMAND_UI(ID_PIECE_EDIT, OnUpdatePieceEdit)
-    ON_COMMAND(ID_PIECE_DELETE, OnPieceDelete)
-    ON_UPDATE_COMMAND_UI(ID_PIECE_DELETE, OnUpdatePieceDelete)
-    ON_COMMAND(ID_MARKER_NEW, OnMarkerNew)
-    ON_COMMAND(ID_MARKER_EDIT, OnMarkerEdit)
-    ON_UPDATE_COMMAND_UI(ID_MARKER_EDIT, OnUpdateMarkerEdit)
-    ON_COMMAND(ID_MARKER_DELETE, OnMarkerDelete)
-    ON_UPDATE_COMMAND_UI(ID_MARKER_DELETE, OnUpdateMarkerDelete)
-    ON_COMMAND(ID_PROJECT_CLONEBOARD, OnProjectCloneBoard)
-    ON_UPDATE_COMMAND_UI(ID_PROJECT_CLONEBOARD, OnUpdateProjectCloneBoard)
-#endif
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU(XRCID("ID_PROJITEM_PROPERTIES"), OnProjItemProperties)
+    EVT_UPDATE_UI(XRCID("ID_PROJITEM_PROPERTIES"), OnUpdateProjItemProperties)
+    EVT_MENU(XRCID("ID_TILE_CLONE"), OnTileClone)
+    EVT_UPDATE_UI(XRCID("ID_TILE_CLONE"), OnUpdateTileClone)
+    EVT_MENU(XRCID("ID_TILE_DELETE"), OnTileDelete)
+    EVT_UPDATE_UI(XRCID("ID_TILE_DELETE"), OnUpdateTileDelete)
+    EVT_MENU(XRCID("ID_TILE_EDIT"), OnTileEdit)
+    EVT_UPDATE_UI(XRCID("ID_TILE_EDIT"), OnUpdateTileEdit)
+    EVT_MENU(XRCID("ID_TILE_NEW"), OnTileNew)
+    EVT_MENU(XRCID("ID_PROJITEM_DELETE"), OnProjItemDelete)
+    EVT_UPDATE_UI(XRCID("ID_PROJITEM_DELETE"), OnUpdateProjItemDelete)
+    EVT_MENU(XRCID("ID_PIECE_NEW"), OnPieceNew)
+    EVT_MENU(XRCID("ID_PIECE_EDIT"), OnPieceEdit)
+    EVT_UPDATE_UI(XRCID("ID_PIECE_EDIT"), OnUpdatePieceEdit)
+    EVT_MENU(XRCID("ID_PIECE_DELETE"), OnPieceDelete)
+    EVT_UPDATE_UI(XRCID("ID_PIECE_DELETE"), OnUpdatePieceDelete)
+    EVT_MENU(XRCID("ID_MARKER_NEW"), OnMarkerNew)
+    EVT_MENU(XRCID("ID_MARKER_EDIT"), OnMarkerEdit)
+    EVT_UPDATE_UI(XRCID("ID_MARKER_EDIT"), OnUpdateMarkerEdit)
+    EVT_MENU(XRCID("ID_MARKER_DELETE"), OnMarkerDelete)
+    EVT_UPDATE_UI(XRCID("ID_MARKER_DELETE"), OnUpdateMarkerDelete)
+    EVT_MENU(XRCID("ID_PROJECT_CLONEBOARD"), OnProjectCloneBoard)
+    EVT_UPDATE_UI(XRCID("ID_PROJECT_CLONEBOARD"), OnUpdateProjectCloneBoard)
     EVT_DRAGDROP(OnDragItem)
     EVT_GET_DRAG_SIZE(OnGetDragSize)
 wxEND_EVENT_TABLE()
@@ -1051,18 +1049,16 @@ void CGbxProjView::OnUpdateEditMove(wxUpdateUIEvent& pCmdUI)
 
 ///////////////////////////////////////////////////////////////////////
 
-#if 0
-void CGbxProjView::OnProjectCloneBoard()
+void CGbxProjView::OnProjectCloneBoard(wxCommandEvent& /*event*/)
 {
     DoBoardClone();
 }
 
-void CGbxProjView::OnUpdateProjectCloneBoard(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateProjectCloneBoard(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 && m_listProj.GetItemGroupCode(nSel) == grpBrd);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel != wxNOT_FOUND && m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1218,51 +1214,49 @@ void CGbxProjView::OnUpdateProjectLoadTileFile(wxUpdateUIEvent& pCmdUI)
 
 ///////////////////////////////////////////////////////////////////////
 
-#if 0
-void CGbxProjView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CGbxProjView::OnContextMenu(wxContextMenuEvent& event)
 {
-    // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
-    UINT nID = (UINT)-1;
+    const char* nID = nullptr;
 
-    if (pWnd->GetDlgCtrlID() == IDC_V_PROJLIST)
-        nID = MENU_PJ_DEFAULT;
-    else if (pWnd->GetDlgCtrlID() == IDC_V_TILELIST)
-        nID = MENU_PJ_TILELIST;
-    else if (pWnd->GetDlgCtrlID() == IDC_V_PIECELIST)
-        nID = MENU_PJ_PIECELIST;
-    else if (pWnd->GetDlgCtrlID() == IDC_V_MARKLIST)
-        nID = MENU_PJ_MARKERLIST;
+    if (event.GetEventObject() == &*m_listProj)
+        nID = "2=PJ_DEFAULT";
+    else if (event.GetEventObject() == &*m_listTiles)
+        nID = "3=PJ_TILELIST";
+    else if (event.GetEventObject() == &*m_listPieces)
+        nID = "4=PJ_PIECELIST";
+    else if (event.GetEventObject() == &*m_listMarks)
+        nID = "5=PJ_MARKERLIST";
 
-    if ((int)nID < 0)
+    if (!nID)
         return;
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_DESIGN_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_DESIGN_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(nID);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu(nID);
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+            PopupMenu(&*popup);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 
 }
 
-void CGbxProjView::OnProjItemProperties()
+void CGbxProjView::OnProjItemProperties(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (nSel < 0)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(static_cast<int>(nGrp) >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGbxProperty(); break;
@@ -1275,14 +1269,14 @@ void CGbxProjView::OnProjItemProperties()
     }
 }
 
-void CGbxProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (nSel >= 0)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(static_cast<int>(nGrp) >= 0);
         switch (nGrp)
         {
             case grpDoc:
@@ -1296,16 +1290,16 @@ void CGbxProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
             default: ;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGbxProjView::OnProjItemDelete()
+void CGbxProjView::OnProjItemDelete(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(static_cast<int>(nGrp) >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardDelete(); break;
@@ -1316,14 +1310,14 @@ void CGbxProjView::OnProjItemDelete()
     }
 }
 
-void CGbxProjView::OnUpdateProjItemDelete(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateProjItemDelete(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(CB::Impl::CGbxProjViewBase::grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(static_cast<int>(nGrp) >= 0);
         switch (nGrp)
         {
         case grpBrd:
@@ -1335,94 +1329,95 @@ void CGbxProjView::OnUpdateProjItemDelete(CCmdUI* pCmdUI)
             default: ;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGbxProjView::OnTileClone()
+void CGbxProjView::OnTileClone(wxCommandEvent& /*event*/)
 {
     DoTileClone();
 }
 
-void CGbxProjView::OnUpdateTileClone(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateTileClone(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listTiles.GetSelCount() > 0);
+    pCmdUI.Enable(m_listTiles->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnTileDelete()
+void CGbxProjView::OnTileDelete(wxCommandEvent& /*event*/)
 {
     DoTileDelete();
 }
 
-void CGbxProjView::OnUpdateTileDelete(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateTileDelete(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listTiles.GetSelCount() > 0);
+    pCmdUI.Enable(m_listTiles->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnTileEdit()
+void CGbxProjView::OnTileEdit(wxCommandEvent& /*event*/)
 {
     DoTileEdit();
 }
 
-void CGbxProjView::OnUpdateTileEdit(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateTileEdit(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listTiles.GetSelCount() > 0);
+    pCmdUI.Enable(m_listTiles->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnTileNew()
+void CGbxProjView::OnTileNew(wxCommandEvent& /*event*/)
 {
     DoTileNew();
 }
 
-void CGbxProjView::OnPieceNew()
+void CGbxProjView::OnPieceNew(wxCommandEvent& /*event*/)
 {
     DoPieceNew();
 }
 
-void CGbxProjView::OnPieceEdit()
+void CGbxProjView::OnPieceEdit(wxCommandEvent& /*event*/)
 {
     DoPieceEdit();
 }
 
-void CGbxProjView::OnUpdatePieceEdit(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdatePieceEdit(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listPieces.GetSelCount() > 0);
+    pCmdUI.Enable(m_listPieces->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnPieceDelete()
+void CGbxProjView::OnPieceDelete(wxCommandEvent& /*event*/)
 {
     DoPieceDelete();
 }
 
-void CGbxProjView::OnUpdatePieceDelete(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdatePieceDelete(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listPieces.GetSelCount() > 0);
+    pCmdUI.Enable(m_listPieces->GetSelectedCount() > 0);
 }
 
-void CGbxProjView::OnMarkerNew()
+void CGbxProjView::OnMarkerNew(wxCommandEvent& /*event*/)
 {
     DoMarkNew();
 }
 
-void CGbxProjView::OnMarkerEdit()
+void CGbxProjView::OnMarkerEdit(wxCommandEvent& /*event*/)
 {
     DoMarkEdit();
 }
 
-void CGbxProjView::OnUpdateMarkerEdit(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateMarkerEdit(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listMarks.GetSelCount() >= 0);
+    pCmdUI.Enable(m_listMarks->GetSelectedCount() >= 0);
 }
 
-void CGbxProjView::OnMarkerDelete()
+void CGbxProjView::OnMarkerDelete(wxCommandEvent& /*event*/)
 {
     DoMarkDelete();
 }
 
-void CGbxProjView::OnUpdateMarkerDelete(CCmdUI* pCmdUI)
+void CGbxProjView::OnUpdateMarkerDelete(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(m_listMarks.GetSelCount() >= 0);
+    pCmdUI.Enable(m_listMarks->GetSelectedCount() >= 0);
 }
 
+#if 0
 void CGbxProjViewContainer::OnActivateView(BOOL bActivate,
     CView* pActivateView,
     CView* /*pDeactiveView*/)
