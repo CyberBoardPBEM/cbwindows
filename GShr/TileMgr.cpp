@@ -1,6 +1,6 @@
 // TileMgr.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -55,7 +55,7 @@ CTileManager::CTileManager()
     SetForeColor(RGB(0, 0, 0));
     SetBackColor(RGB(255, 255, 255));
     SetLineWidth(1);
-    m_fontID = CGamDoc::GetFontManager()->AddFont(TenthPointsToScreenPixels(80),
+    m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(80),
         0, uint8_t(FF_SWISS), "Arial");
     // --------- //
     m_wReserved1 = 0;
@@ -426,8 +426,8 @@ void CTileManager::Serialize(CArchive& ar)
         ar << (DWORD)m_crFore;
         ar << (DWORD)m_crBack;
         ar << (WORD)m_nLineWidth;
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        pFontMgr->Archive(ar, m_fontID);
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
+        pFontMgr.Archive(ar, m_fontID);
 
         ar << m_wReserved1;
         ar << m_wReserved2;
@@ -453,8 +453,8 @@ void CTileManager::Serialize(CArchive& ar)
             reference */
         FontID tempRef = std::move(m_fontID);
 
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        pFontMgr->Archive(ar, m_fontID);
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
+        pFontMgr.Archive(ar, m_fontID);
 
         ar >> m_wReserved1;
         ar >> m_wReserved2;

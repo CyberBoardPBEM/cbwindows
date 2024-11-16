@@ -94,7 +94,7 @@ void CGbxProjView::DoBoardProperty()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
     size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CBoard& pBoard = pDoc.GetBoardManager()->GetBoard(nBrd);
+    CBoard& pBoard = pDoc.GetBoardManager().GetBoard(nBrd);
 
     if (pDoc.DoBoardPropertyDialog(pBoard))
     {
@@ -118,9 +118,9 @@ void CGbxProjView::DoBoardDelete()
                         wxYES_NO | wxICON_EXCLAMATION) == wxYES)
     {
         CGmBoxHint hint;
-        hint.GetArgs<HINT_BOARDDELETED>().m_pBoard = &pDoc.GetBoardManager()->GetBoard(nBrd);
+        hint.GetArgs<HINT_BOARDDELETED>().m_pBoard = &pDoc.GetBoardManager().GetBoard(nBrd);
 
-        pDoc.GetBoardManager()->DeleteBoard(nBrd);
+        pDoc.GetBoardManager().DeleteBoard(nBrd);
 
         // Make sure any views on the board are closed.
         pDoc.UpdateAllViews(NULL, HINT_BOARDDELETED, &hint);
@@ -138,10 +138,10 @@ void CGbxProjView::DoBoardClone()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
     size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CBoardManager* pBMgr = pDoc.GetBoardManager();
+    CBoardManager& pBMgr = pDoc.GetBoardManager();
 
-    wxASSERT(nBrd < pBMgr->GetNumBoards());
-    CBoard& pOrigBoard = pBMgr->GetBoard(nBrd);
+    wxASSERT(nBrd < pBMgr.GetNumBoards());
+    CBoard& pOrigBoard = pBMgr.GetBoard(nBrd);
 
     TRY
     {
@@ -164,10 +164,10 @@ void CGbxProjView::DoBoardClone()
         CB::string strNewName = CB::string::LoadString(IDS_COPY_OF);
         strNewName += pNewBoard->GetName();
         pNewBoard->SetName(strNewName);
-        pNewBoard->SetSerialNumber(pBMgr->IssueSerialNumber());
+        pNewBoard->SetSerialNumber(pBMgr.IssueSerialNumber());
 
         // Add it to the board list
-        pBMgr->Add(std::move(pNewBoard));
+        pBMgr.Add(std::move(pNewBoard));
     }
     CATCH_ALL(e)
     {
@@ -187,7 +187,7 @@ void CGbxProjView::DoBoardEdit()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
     size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CBoard& pBoard = pDoc.GetBoardManager()->GetBoard(nBrd);
+    CBoard& pBoard = pDoc.GetBoardManager().GetBoard(nBrd);
     CView* pView = pDoc.FindBoardEditorView(pBoard);
     if (pView != NULL)
     {
@@ -199,7 +199,7 @@ void CGbxProjView::DoBoardEdit()
     else
     {
         CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
-        pDoc.CreateNewFrame(GetApp()->m_pMapViewTmpl, strTitle, &pBoard);
+        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pMapViewTmpl), strTitle, &pBoard);
     }
 }
 
@@ -238,14 +238,14 @@ void CGbxProjView::DoTileGroupProperty()
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CTSetPropDialog dlg;
-    CTileManager* pTMgr = pDoc.GetTileManager();
-    dlg.m_crTrans = CB::Convert(pTMgr->GetTransparentColor());
-    dlg.m_strName = wxString(pTMgr->GetTileSet(nGrp).GetName());
+    CTileManager& pTMgr = pDoc.GetTileManager();
+    dlg.m_crTrans = CB::Convert(pTMgr.GetTransparentColor());
+    dlg.m_strName = wxString(pTMgr.GetTileSet(nGrp).GetName());
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        pTMgr->SetTransparentColor(CB::Convert(dlg.m_crTrans));
-        pTMgr->GetTileSet(nGrp).SetName(dlg.m_strName);
+        pTMgr.SetTransparentColor(CB::Convert(dlg.m_crTrans));
+        pTMgr.GetTileSet(nGrp).SetName(dlg.m_strName);
         pDoc.UpdateAllViews(NULL, HINT_TILESETPROPCHANGE, NULL);
         pDoc.SetModifiedFlag();
     }
@@ -266,7 +266,7 @@ void CGbxProjView::DoTileGroupDelete()
                     CB::GetAppName(),
                     wxYES_NO | wxICON_EXCLAMATION) == wxYES)
     {
-        pDoc.GetTileManager()->DeleteTileSet(nGrp);
+        pDoc.GetTileManager().DeleteTileSet(nGrp);
 
         // Make sure no TileID references survive
         pDoc.NotifyTileDatabaseChange();
@@ -290,20 +290,20 @@ void CGbxProjView::DoTileNew()
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CNewTileDialog dlg;
-    dlg.m_pBMgr = pDoc.GetBoardManager();
+    dlg.m_pBMgr = &pDoc.GetBoardManager();
 
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        TileID tidNew = pTMgr->CreateTile(nGrp,
+        TileID tidNew = pTMgr.CreateTile(nGrp,
             CSize(dlg.m_nWidth, dlg.m_nHeight),
             CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight),
             RGB(255, 255, 255));
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
         pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
-        pDoc.CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
+        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
         pDoc.SetModifiedFlag();
     }
@@ -320,7 +320,6 @@ void CGbxProjView::DoTileEdit()
     if (m_listTiles->GetSelectedCount() <= 0) return;
 
     std::vector<TileID> tidtbl = m_listTiles->GetCurMappedItemList();
-    CTileManager* pTMgr = pDoc.GetTileManager();
 
     for (size_t i = 0; i < tidtbl.size(); i++)
     {
@@ -336,7 +335,7 @@ void CGbxProjView::DoTileEdit()
         }
         else
         {
-            pDoc.CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
+            pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
                 reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tid)));
         }
     }
@@ -354,32 +353,32 @@ void CGbxProjView::DoTileClone()
     if (m_listTiles->GetSelectedCount() <= 0) return;
 
     std::vector<TileID> tidtbl = m_listTiles->GetCurMappedItemList();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     for (size_t i = 0; i < tidtbl.size(); i++)
     {
         TileID tid = tidtbl[i];
 
-        CTileUpdatable tileFull = pTMgr->GetTile(tid, fullScale);
-        CTileUpdatable tileHalf = pTMgr->GetTile(tid, halfScale);
-        CTile tileSmall = pTMgr->GetTile(tid, smallScale);
+        CTileUpdatable tileFull = pTMgr.GetTile(tid, fullScale);
+        CTileUpdatable tileHalf = pTMgr.GetTile(tid, halfScale);
+        CTile tileSmall = pTMgr.GetTile(tid, smallScale);
 
-        TileID tidNew = pTMgr->CreateTile(nGrp, tileFull.GetSize(),
+        TileID tidNew = pTMgr.CreateTile(nGrp, tileFull.GetSize(),
             tileHalf.GetSize(), tileSmall.GetSmallColor());
 
         OwnerPtr<CBitmap> bmap = tileFull.CreateBitmapOfTile();
-        tileFull = pTMgr->GetTile(tidNew, fullScale);
+        tileFull = pTMgr.GetTile(tidNew, fullScale);
         tileFull.Update(*bmap);
 
         bmap = tileHalf.CreateBitmapOfTile();
-        tileHalf = pTMgr->GetTile(tidNew, halfScale);
+        tileHalf = pTMgr.GetTile(tidNew, halfScale);
         tileHalf.Update(*bmap);
 
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
         pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
 
-        pDoc.CreateNewFrame(GetApp()->m_pTileEditTmpl, "Tile Editor",
+        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
             reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
     }
     pDoc.SetModifiedFlag();
@@ -405,10 +404,10 @@ void CGbxProjView::DoTileDelete()
                             wxYES_NO | wxICON_EXCLAMATION | wxNO_DEFAULT) != wxYES)
             return;
     }
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
     for (size_t i = size_t(0); i < tidtbl.size(); i++)
     {
-        pTMgr->DeleteTile(tidtbl[i]);
+        pTMgr.DeleteTile(tidtbl[i]);
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILEDELETED>().m_tid = tidtbl[i];
         pDoc.UpdateAllViews(NULL, HINT_TILEDELETED, &hint);
@@ -434,7 +433,7 @@ void CGbxProjView::DoUpdateTileList()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTile);
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    const CTileSet& pTSet = pDoc.GetTileManager()->GetTileSet(nGrp);
+    const CTileSet& pTSet = pDoc.GetTileManager().GetTileSet(nGrp);
     const std::vector<TileID>& pLstMap = pTSet.GetTileIDTable();
     m_listTiles->SetItemMap(&pLstMap);
 }
@@ -456,14 +455,14 @@ void CGbxProjView::DoPieceGroupProperty()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpPce);
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CPieceManager* pPMgr = pDoc.GetPieceManager();
+    CPieceManager& pPMgr = pDoc.GetPieceManager();
 
     CPiecePropDialog dlg;
-    dlg.m_strName = wxString(pPMgr->GetPieceSet(nGrp).GetName());
+    dlg.m_strName = wxString(pPMgr.GetPieceSet(nGrp).GetName());
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        pPMgr->GetPieceSet(nGrp).SetName(dlg.m_strName);
+        pPMgr.GetPieceSet(nGrp).SetName(dlg.m_strName);
         pDoc.UpdateAllViews(NULL, HINT_PIECESETPROPCHANGE, NULL);
         pDoc.SetModifiedFlag();
     }
@@ -483,7 +482,7 @@ void CGbxProjView::DoPieceGroupDelete()
                         CB::GetAppName(),
                         wxYES_NO | wxICON_EXCLAMATION) == wxYES)
     {
-        pDoc.GetPieceManager()->DeletePieceSet(nGrp, &pDoc.GetGameStringMap());
+        pDoc.GetPieceManager().DeletePieceSet(nGrp, &pDoc.GetGameStringMap());
 
         // Make sure any views on the tileset informed.
         CGmBoxHint hint;
@@ -542,7 +541,7 @@ void CGbxProjView::DoPieceEdit()
         for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)
         {
             pids[i] = m_listPieces->MapIndexToItem(value_preserving_cast<size_t>(tblSel[i]));
-            pDefs.push_back(&pDoc.GetPieceManager()->GetPiece(pids[i]));
+            pDefs.push_back(&pDoc.GetPieceManager().GetPiece(pids[i]));
             sides = CB::max(sides, pDefs[i]->GetSides());
         }
 
@@ -600,7 +599,7 @@ void CGbxProjView::DoPieceDelete()
 
     m_listPieces->SetItemMap(NULL);
     for (size_t i = size_t(0); i < pieces.size(); i++)
-        pDoc.GetPieceManager()->DeletePiece(pieces[i], &pDoc.GetGameStringMap());
+        pDoc.GetPieceManager().DeletePiece(pieces[i], &pDoc.GetGameStringMap());
 
     pDoc.UpdateAllViews(NULL, HINT_PIECEDELETED, NULL);
     pDoc.SetModifiedFlag();
@@ -622,7 +621,7 @@ void CGbxProjView::DoUpdatePieceList()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpPce);
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CPieceSet& pPSet = pDoc.GetPieceManager()->GetPieceSet(nGrp);
+    CPieceSet& pPSet = pDoc.GetPieceManager().GetPieceSet(nGrp);
     const std::vector<PieceID>& pLstMap = pPSet.GetPieceIDTable();
     m_listPieces->SetItemMap(&pLstMap);
 }
@@ -644,8 +643,8 @@ void CGbxProjView::DoMarkGroupProperty()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpMark);
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CMarkManager* pMMgr = pDoc.GetMarkManager();
-    CMarkSet& pMSet = pMMgr->GetMarkSet(nGrp);
+    CMarkManager& pMMgr = pDoc.GetMarkManager();
+    CMarkSet& pMSet = pMMgr.GetMarkSet(nGrp);
 
     CMarkerPropDialog dlg;
     dlg.m_strName = wxString(pMSet.GetName());
@@ -675,7 +674,7 @@ void CGbxProjView::DoMarkGroupDelete()
                         CB::GetAppName(),
                         wxYES_NO | wxICON_EXCLAMATION) == wxYES)
     {
-        pDoc.GetMarkManager()->DeleteMarkSet(nGrp, &pDoc.GetGameStringMap());
+        pDoc.GetMarkManager().DeleteMarkSet(nGrp, &pDoc.GetGameStringMap());
 
         CGmBoxHint hint;
         hint.GetArgs<HINT_MARKSETDELETED>().m_markSet = nGrp;
@@ -732,7 +731,7 @@ void CGbxProjView::DoMarkEdit()
         for (size_t i = size_t(0) ; i < tblSel.size() ; ++i)
         {
             MarkID mid = m_listMarks->MapIndexToItem(tblSel[i]);
-            MarkDef& pDef = pDoc.GetMarkManager()->GetMark(mid);
+            MarkDef& pDef = pDoc.GetMarkManager().GetMark(mid);
             // Process "prompt for text" change
             if (dlg.m_bPromptForText != wxCHK_UNDETERMINED)
             {
@@ -771,7 +770,7 @@ void CGbxProjView::DoMarkDelete()
 
     m_listMarks->SetItemMap(NULL);
     for (size_t i = size_t(0); i < markers.size(); i++)
-        pDoc.GetMarkManager()->DeleteMark(markers[i], &pDoc.GetGameStringMap());
+        pDoc.GetMarkManager().DeleteMark(markers[i], &pDoc.GetGameStringMap());
 
     pDoc.UpdateAllViews(NULL, HINT_MARKERDELETED, NULL);
     pDoc.SetModifiedFlag();
@@ -793,7 +792,7 @@ void CGbxProjView::DoUpdateMarkList()
     wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpMark);
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
-    CMarkSet& pMSet = pDoc.GetMarkManager()->GetMarkSet(nGrp);
+    CMarkSet& pMSet = pDoc.GetMarkManager().GetMarkSet(nGrp);
     const std::vector<MarkID>& pLstMap = pMSet.GetMarkIDTable();
     m_listMarks->SetItemMap(&pLstMap);
 }

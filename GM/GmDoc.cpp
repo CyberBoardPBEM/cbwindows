@@ -140,21 +140,6 @@ CGamDoc::CGamDoc()
     m_pCustomColors = CColorPalette::CustomColorsAllocate();
 }
 
-CGamDoc::~CGamDoc()
-{
-    if (m_pTMgr) delete &*m_pTMgr;
-    if (m_pBMgr) delete m_pBMgr;
-    if (m_pPMgr) delete m_pPMgr;
-    if (m_pMMgr) delete m_pMMgr;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void CGamDoc::OnCloseDocument()
-{
-    CDocument::OnCloseDocument();
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 static const CRuntimeClass *tblBrd[] = {
@@ -253,13 +238,9 @@ BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
 
 void CGamDoc::DeleteContents()
 {
-    if (m_pTMgr) delete &*m_pTMgr;
     m_pTMgr = NULL;
-    if (m_pBMgr) delete m_pBMgr;
     m_pBMgr = NULL;
-    if (m_pPMgr) delete m_pPMgr;
     m_pPMgr = NULL;
-    if (m_pMMgr) delete m_pMMgr;
     m_pMMgr = NULL;
     if (m_palTile)
     {
@@ -291,11 +272,11 @@ void CGamDoc::SetCustomColors(const std::vector<wxColour>& pCustColors)
 ///////////////////////////////////////////////////////////////////////
 // Support for new unique views on this document
 
-BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
+BOOL CGamDoc::CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle,
     LPVOID lpvCreateParam)
 {
     CMDIChildWndEx* pNewFrame
-        = (CMDIChildWndEx*)(pTemplate->CreateNewFrame(this, NULL));
+        = (CMDIChildWndEx*)(pTemplate.CreateNewFrame(this, NULL));
     if (pNewFrame == NULL)
         return FALSE;               // Not created
     ASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
@@ -304,7 +285,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle
     str += pszTitle;
     pNewFrame->SetWindowText(str);
     m_lpvCreateParam = lpvCreateParam;
-    pTemplate->InitialUpdateFrame(pNewFrame, this);
+    pTemplate.InitialUpdateFrame(pNewFrame, this);
     // KLUDGE:  work around https://github.com/CyberBoardPBEM/cbwindows/issues/23
     GetMainFrame()->RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
     m_lpvCreateParam = NULL;
@@ -374,7 +355,7 @@ DWORD CGamDoc::IssueGameBoxID()
 
 ///////////////////////////////////////////////////////////////////////
 
-CView* CGamDoc::FindTileEditorView(TileID tid)
+CView* CGamDoc::FindTileEditorView(TileID tid) const
 {
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -389,7 +370,7 @@ CView* CGamDoc::FindTileEditorView(TileID tid)
     return NULL;
 }
 
-CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard)
+CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard) const
 {
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -524,13 +505,13 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
 
 ///////////////////////////////////////////////////////////////////////
 
-TileID CGamDoc::CreateTileFromDib(CDib* pDib, size_t nTSet)
+TileID CGamDoc::CreateTileFromDib(const CDib& pDib, size_t nTSet)
 {
-    int xTile = pDib->Width();
-    int yTile = pDib->Height();
+    int xTile = pDib.Width();
+    int yTile = pDib.Height();
     TileID tid = m_pTMgr->CreateTile(nTSet, CSize(xTile, yTile),
         CSize(xTile/2, yTile/2), RGB(255, 255, 255));
-    OwnerPtr<CBitmap> pBMap = pDib->DIBToBitmap();
+    OwnerPtr<CBitmap> pBMap = pDib.DIBToBitmap();
     OwnerPtr<CBitmap> bmHalf = CloneScaledBitmap(*pBMap, CSize(xTile/2, yTile/2));
 
     CTileUpdatable tile = m_pTMgr->GetTile(tid, fullScale);
@@ -567,10 +548,10 @@ void CGamDoc::Serialize(CArchive& ar)
             /* these features are global in the sense that, if
                 any ID needs 32 bits, then we store all IDs in
                 32 bit format */
-            if (GetBoardManager()->Needs32BitIDs() ||
-                GetTileManager()->Needs32BitIDs() ||
-                GetPieceManager()->Needs32BitIDs() ||
-                GetMarkManager()->Needs32BitIDs())
+            if (GetBoardManager().Needs32BitIDs() ||
+                GetTileManager().Needs32BitIDs() ||
+                GetPieceManager().Needs32BitIDs() ||
+                GetMarkManager().Needs32BitIDs())
             {
                 if (!GetCBFeatures().Check(ftrId32Bit))
                 {
@@ -862,7 +843,7 @@ void CGamDoc::OnEditGbxProperties()
 // Do an MD5 hash of the password, append the box ID and
 // hash it again. This value is the password key used to
 // allow editing of the gamebox.
-std::array<std::byte, 16> CGamDoc::ComputeGameboxPasskey(const CB::string& pszPassword)
+std::array<std::byte, 16> CGamDoc::ComputeGameboxPasskey(const CB::string& pszPassword) const
 {
     CB::string strPassword = pszPassword;
     strPassword += KEY_PASS_POSTFIX;
@@ -895,12 +876,12 @@ void CGamDoc::OnEditCreateBoard()
     if (dlg.ShowModal() == wxID_OK)
     {
         // Create a Game Board
-        CBoardManager* pBMgr = GetBoardManager();
+        CBoardManager& pBMgr = GetBoardManager();
         CBoard* pBoard = new CBoard;
-        pBoard->SetSerialNumber(pBMgr->IssueSerialNumber());
+        pBoard->SetSerialNumber(pBMgr.IssueSerialNumber());
         pBoard->SetName(dlg.m_strBoardName);
 
-        OwnerOrNullPtr<CBoardArray> pBrdAry = MakeOwner<CBoardArray>(CheckedDeref(GetTileManager()));
+        OwnerOrNullPtr<CBoardArray> pBrdAry = MakeOwner<CBoardArray>(GetTileManager());
 
         if (dlg.m_nBoardType == cformRect)
         {
@@ -915,7 +896,7 @@ void CGamDoc::OnEditCreateBoard()
 
         pBoard->SetBoardArray(std::move(pBrdAry));
         pBoard->SetBkColor(RGB(255, 255, 255));
-        pBMgr->Add(pBoard);
+        pBMgr.Add(pBoard);
         pBoard->SetMaxDrawLayer(LAYER_TOP);
 
         SetModifiedFlag();
@@ -929,7 +910,7 @@ void CGamDoc::OnEditCreateTileGroup()
     CCreateTSet dlg;
     if (dlg.ShowModal() == wxID_OK)
     {
-        GetTileManager()->CreateTileSet(dlg.m_strTSName);
+        GetTileManager().CreateTileSet(dlg.m_strTSName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);
         SetModifiedFlag();
     }
@@ -940,7 +921,7 @@ void CGamDoc::OnEditCreatePieceGroup()
     CPieceGroupNameDialog dlg;
     if (dlg.ShowModal() == wxID_OK)
     {
-        GetPieceManager()->CreatePieceSet(dlg.m_strName);
+        GetPieceManager().CreatePieceSet(dlg.m_strName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);
         SetModifiedFlag();
     }
@@ -951,7 +932,7 @@ void CGamDoc::OnEditCreateMarkGroup()
     CMarkGroupNewDialog dlg;
     if (dlg.ShowModal() == wxID_OK)
     {
-        GetMarkManager()->CreateMarkSet(dlg.m_strName);
+        GetMarkManager().CreateMarkSet(dlg.m_strName);
         UpdateAllViews(NULL, HINT_UPDATEPROJVIEW);
         SetModifiedFlag();
     }
@@ -987,7 +968,7 @@ void CGamDoc::OnDumpTileData()
         "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
     if (dlg.DoModal() == IDOK)
     {
-        GetTileManager()->DumpTileDatabaseInfoToFile(dlg.GetPathName(), TRUE);
+        GetTileManager().DumpTileDatabaseInfoToFile(dlg.GetPathName(), TRUE);
     }
 }
 
@@ -998,7 +979,7 @@ void CGamDoc::OnBugFixDumpBadTiles()
         "appropriately blessed holy minions should use it. You have been WARNED!"_cbstring,
         MB_OKCANCEL | MB_ICONEXCLAMATION) == IDOK)
     {
-        if (GetTileManager()->PruneTilesOnSheet255())
+        if (GetTileManager().PruneTilesOnSheet255())
             SetModifiedFlag();
     }
 }

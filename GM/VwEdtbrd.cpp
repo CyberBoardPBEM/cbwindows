@@ -197,7 +197,7 @@ BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CBrdEditView::OnInitialUpdate()
 {
-    m_pBMgr = GetDocument().GetBoardManager();
+    m_pBMgr = &GetDocument().GetBoardManager();
     m_pBoard = static_cast<CBoard*>(GetDocument().GetCreateParameter());
     RecalcScrollLimits();
 }
@@ -945,12 +945,12 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
 void CBrdEditView::SetDrawingTile(CDrawList& pDwg, TileID tid, wxPoint pnt,
     BOOL bUpdate)
 {
-    CTileManager* pTMgr = GetDocument().GetTileManager();
+    CTileManager& pTMgr = GetDocument().GetTileManager();
     {
         OwnerPtr<CTileImage> pTileImage(MakeOwner<CTileImage>(pTMgr));
 
         // Center the image on the drop point.
-        CTile tile = pTMgr->GetTile(tid);
+        CTile tile = pTMgr.GetTile(tid);
         wxRect rct(pnt, CB::Convert(tile.GetSize()));
         rct.Offset(-rct.GetWidth() / 2, -rct.GetHeight() / 2);
         AdjustRect(rct);
@@ -1066,7 +1066,7 @@ void CBrdEditView::DoCreateTextDrawingObject(wxPoint point)
         return;                     // No text here!
 
     CTextObjDialog dlg;
-    dlg.m_pFontMgr = CGamDoc::GetFontManager();
+    dlg.m_pFontMgr = &CGamDoc::GetFontManager();
     dlg.SetFontID(m_pBMgr->GetFontID());
 
     if (dlg.ShowModal() == wxID_OK)
@@ -1084,7 +1084,7 @@ void CBrdEditView::DoEditTextDrawingObject(CText& pDObj)
 {
     CTextObjDialog dlg;
     dlg.m_strText = wxString(pDObj.m_text);
-    dlg.m_pFontMgr = CGamDoc::GetFontManager();
+    dlg.m_pFontMgr = &CGamDoc::GetFontManager();
     dlg.SetFontID(pDObj.m_fontID);
 
     if (dlg.ShowModal() == wxID_OK)
@@ -1378,7 +1378,7 @@ void CBrdEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
 
     if (pCmdUI.GetId() == XRCID("ID_TOOL_TILE"))
     {
-        tid = GetDocument().GetTilePalWnd()->GetCurrentTileID();
+        tid = GetDocument().GetTilePalWnd().GetCurrentTileID();
         bEnable = tid != nullTid;
         if (tid == nullTid && m_nCurToolID == XRCID("ID_TOOL_TILE"))
         {

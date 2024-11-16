@@ -180,8 +180,7 @@ void CMarkerEditDialog::OnDblclkMarkers(wxCommandEvent& /*event*/)
 bool CMarkerEditDialog::TransferDataToWindow()
 {
     ASSERT(m_pDoc);
-    m_pMMgr = m_pDoc->GetMarkManager();
-    ASSERT(m_pMMgr);
+    m_pMMgr = &m_pDoc->GetMarkManager();
 
     m_listMarks->SetDocument(m_pDoc);
 
@@ -196,8 +195,7 @@ bool CMarkerEditDialog::TransferDataToWindow()
     WORD wMarkFlags = m_pMMgr->GetMark(m_mid).m_flags;
     m_chkPromptText->SetValue(wMarkFlags & MarkDef::flagPromptText);
 
-    m_pTMgr = m_pDoc->GetTileManager();
-    ASSERT(m_pTMgr);
+    m_pTMgr = &m_pDoc->GetTileManager();
 
     m_listTiles->SetDocument(m_pDoc);
 

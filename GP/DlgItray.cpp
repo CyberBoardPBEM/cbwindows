@@ -1,6 +1,6 @@
 // DlgITray.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -91,17 +91,17 @@ BOOL CImportTraysDlg::OnInitDialog()
     ASSERT(m_pDoc != NULL);         // MUST BE SET
     CDialog::OnInitDialog();
 
-    const CPieceManager* pPMgr = m_pDoc->GetPieceManager();
+    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    ASSERT(pYMgr != NULL && pPMgr != NULL);
+    ASSERT(pYMgr != NULL);
 
     // Loop through all the piece groups in the gamebox. If a group
     // already doesn't exist as a tray in the scenario, add it to the
     // listbox.
 
-    for (size_t nPSet = 0; nPSet < pPMgr->GetNumPieceSets(); nPSet++)
+    for (size_t nPSet = size_t(0); nPSet < pPMgr.GetNumPieceSets(); nPSet++)
     {
-        CB::string strName = pPMgr->GetPieceSet(nPSet).GetName();
+        CB::string strName = pPMgr.GetPieceSet(nPSet).GetName();
         size_t nTray;
         for (nTray = size_t(0); nTray < pYMgr->GetNumTraySets(); nTray++)
         {
@@ -123,7 +123,7 @@ BOOL CImportTraysDlg::OnInitDialog()
 
 void CImportTraysDlg::OnOK()
 {
-    const CPieceManager* pPMgr = m_pDoc->GetPieceManager();
+    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
     CTrayManager* pYMgr = m_pDoc->GetTrayManager();
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
@@ -133,7 +133,7 @@ void CImportTraysDlg::OnOK()
         if (m_listGroups.GetCheck(i) > 0)
         {
             size_t nPSet = value_preserving_cast<size_t>(m_listGroups.GetItemData(i));
-            const CPieceSet& pPSet = pPMgr->GetPieceSet(nPSet);
+            const CPieceSet& pPSet = pPMgr.GetPieceSet(nPSet);
 
             // Create tray and add pieces...
             size_t nTray = pYMgr->CreateTraySet(pPSet.GetName());

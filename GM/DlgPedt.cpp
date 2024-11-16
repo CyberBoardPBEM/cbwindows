@@ -57,8 +57,8 @@ CPieceEditDialog::CPieceEditDialog(CGamDoc& doc, PieceID pid, wxWindow* parent /
     m_pDoc(&doc),
     m_pid(pid),
     m_tbl(1, m_pid),
-    m_pTMgr(*m_pDoc->GetTileManager()),
-    m_pPMgr(m_pDoc->GetPieceManager())
+    m_pTMgr(m_pDoc->GetTileManager()),
+    m_pPMgr(&m_pDoc->GetPieceManager())
 {
 }
 

@@ -822,7 +822,7 @@ wxCursor CPaintTool::OnSetCursor(const CBrdEditView& pView, wxPoint /*point*/) c
 void CTileTool::OnLButtonDown(CBrdEditView& pView, int nMods,
     wxPoint point)
 {
-    TileID tid = pView.GetDocument().GetTilePalWnd()->GetCurrentTileID();
+    TileID tid = pView.GetDocument().GetTilePalWnd().GetCurrentTileID();
     if (pView.GetBoard().GetMaxDrawLayer() == LAYER_GRID)
         pView.SetCellTile(tid, point, TRUE);
     else
@@ -837,7 +837,7 @@ void CTileTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint p
     if ((nButs & wxMOUSE_BTN_LEFT) != 0 &&
         pView.GetBoard().GetMaxDrawLayer() == LAYER_GRID)
     {
-        TileID tid = pView.GetDocument().GetTilePalWnd()->GetCurrentTileID();
+        TileID tid = pView.GetDocument().GetTilePalWnd().GetCurrentTileID();
         pView.SetCellTile(tid, point, TRUE);
     }
 }

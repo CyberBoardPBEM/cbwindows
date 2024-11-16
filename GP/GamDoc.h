@@ -1,6 +1,6 @@
 // GamDoc.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -268,7 +268,7 @@ protected: // create from serialization only
     static Features c_fileFeatures;
 
 public:
-    static CFontTbl* GetFontManager()
+    static CFontTbl& GetFontManager()
         { return CGameBox::GetFontManager(); }
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
     using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
@@ -314,15 +314,15 @@ public:
     void* GetNewViewParameter() { return m_pvParam; }
 
     // Major game related objects...
-    const CTileManager* GetTileManager() const;
-    CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
-    CMarkManager* GetMarkManager();
-    const CBoardManager* GetBoardManager() const;
-    CBoardManager* GetBoardManager()
+    const CTileManager& GetTileManager() const;
+    CTileManager& GetTileManager() { return const_cast<CTileManager&>(std::as_const(*this).GetTileManager()); }
+    CMarkManager& GetMarkManager();
+    const CBoardManager& GetBoardManager() const;
+    CBoardManager& GetBoardManager()
     {
-        return const_cast<CBoardManager*>(std::as_const(*this).GetBoardManager());
+        return const_cast<CBoardManager&>(std::as_const(*this).GetBoardManager());
     }
-    const CPieceManager* GetPieceManager() const;
+    const CPieceManager& GetPieceManager() const;
     const CPieceTable* GetPieceTable() const { return m_pPTbl; }
     CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
     const CTrayManager* GetTrayManager() const { return m_pYMgr; }

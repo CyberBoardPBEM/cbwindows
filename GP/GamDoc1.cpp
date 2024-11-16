@@ -719,14 +719,13 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     if (dwObjID == ObjectID())
         dwObjID = CreateObjectID(CDrawObj::drawMarkObj);
 
-    CMarkManager* pMMgr = GetMarkManager();
-    ASSERT(pMMgr != NULL);
+    CMarkManager& pMMgr = GetMarkManager();
 
-    MarkDef& pMark = pMMgr->GetMark(mid);
+    MarkDef& pMark = pMMgr.GetMark(mid);
     ASSERT(pMark.m_tid != nullTid);
 
     // Marker is centered on point.
-    CTile tile = GetTileManager()->GetTile(pMark.m_tid, fullScale);
+    CTile tile = GetTileManager().GetTile(pMark.m_tid, fullScale);
     CRect rct(pnt, tile.GetSize());
     rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
     pPBrd->LimitRectToBoard(rct);

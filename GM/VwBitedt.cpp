@@ -153,7 +153,7 @@ void CBitEditView::OnInitialUpdate()
     SetSizer(sizer);
     sizer->Add(100, 100);
     SetScrollRate(4, 4);
-    m_pTMgr = GetDocument().GetTileManager();
+    m_pTMgr = &GetDocument().GetTileManager();
     UpdateFontInfo();
     RecalcScrollLimits();
 }
@@ -1068,13 +1068,13 @@ void CBitEditView::OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI)
 
 void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
 {
-    CBoardManager* pBMgr = GetDocument().GetBoardManager();
+    CBoardManager& pBMgr = GetDocument().GetBoardManager();
 
-    CBoardMaskDialog dlg(CheckedDeref(pBMgr));
+    CBoardMaskDialog dlg(pBMgr);
     if (dlg.ShowModal() != wxID_OK || dlg.m_nBrdNum == Invalid_v<size_t>)
         return;
 
-    CBoard& pBoard = pBMgr->GetBoard(value_preserving_cast<size_t>(dlg.m_nBrdNum));
+    CBoard& pBoard = pBMgr.GetBoard(value_preserving_cast<size_t>(dlg.m_nBrdNum));
 
     const CCellForm& pcf = pBoard.GetBoardArray().
         GetCellForm(m_pSelView->GetCurrentScale());
@@ -1112,7 +1112,7 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
 void CBitEditView::OnUpdateImageBoardMask(wxUpdateUIEvent& pCmdUI)
 {
     pCmdUI.Enable(m_pSelView->GetCurrentScale() != smallScale &&
-        !GetDocument().GetBoardManager()->IsEmpty());
+        !GetDocument().GetBoardManager().IsEmpty());
 }
 
 void CBitEditView::OnUpdateViewZoomIn(wxUpdateUIEvent& pCmdUI)

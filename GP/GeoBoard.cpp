@@ -1,6 +1,6 @@
 // GeoBoard.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -218,7 +218,7 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
 
     // CBoard::Rotate() requires unrotated source
     const CGeoBoardElement& gbe = GetBoardElt(size_t(0), size_t(0));
-    CBoardManager& boardMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    CBoardManager& boardMgr = m_pDoc->GetBoardManager();
     size_t index = boardMgr.FindBoardBySerial(gbe.m_nBoardSerialNum);
     const CBoard& pBrd0 = boardMgr.GetBoard(index);
     OwnerPtr<CBoard> pBrdNew = pBrd0.Clone(*m_pDoc, gbe.m_rotation);
@@ -396,12 +396,9 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
 
 void CGeomorphicBoard::DeleteFromBoardManager()
 {
-    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-    if (pBMgr != NULL)
-    {
-        size_t nBrd = pBMgr->FindBoardBySerial(GetSerialNumber());
-        pBMgr->DeleteBoard(nBrd);
-    }
+    CBoardManager& pBMgr = m_pDoc->GetBoardManager();
+    size_t nBrd = pBMgr.FindBoardBySerial(GetSerialNumber());
+    pBMgr.DeleteBoard(nBrd);
 }
 
 size_t CTileManager::GetSpecialTileSet()
@@ -430,7 +427,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
     bool mergeTop = NeedsMerge(gbeFrom, Edge::Top);
     bool mergeLeft = NeedsMerge(gbeFrom, Edge::Left);
 
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
     for (size_t nRow = size_t(0) ; nRow < pBArryFrom.GetRows() ; ++nRow)
     {
         for (size_t nCol = size_t(0) ; nCol < pBArryFrom.GetCols() ; ++nCol)
@@ -528,16 +525,16 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 COLORREF crSmall;
                 if (pCellTo.IsTileID())
                 {
-                    CTile tile = pTMgr->GetTile(pCellTo.GetTID(), smallScale);
+                    CTile tile = pTMgr.GetTile(pCellTo.GetTID(), smallScale);
                     crSmall = tile.GetSmallColor();
                 }
                 else
                     crSmall = pCellTo.GetColor();
                 CSize sizeFull = pBArryTo.GetCellSize(fullScale);
                 CSize sizeHalf = pBArryTo.GetCellSize(halfScale);
-                TileID tidNew = pTMgr->CreateTile(pTMgr->GetSpecialTileSet(),
+                TileID tidNew = pTMgr.CreateTile(pTMgr.GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
-                pTMgr->UpdateTile(tidNew, *bmapFull, *bmapHalf, crSmall);
+                pTMgr.UpdateTile(tidNew, *bmapFull, *bmapHalf, crSmall);
                 pCellTo.SetTID(tidNew);
             }
             else
@@ -627,7 +624,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
     OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
     CBitmap* prvBMap = dc.SelectObject(&*retval);
 
-    CBrush brush(m_pDoc->GetTileManager()->GetTransparentColor());
+    CBrush brush(m_pDoc->GetTileManager().GetTransparentColor());
     CBrush* prvBrush = dc.SelectObject(&brush);
 
     dc.PatBlt(0, 0, size.cx, size.cy, PATCOPY);
@@ -756,7 +753,7 @@ const CGeoBoardElement& CGeomorphicBoard::GetBoardElt(size_t nBoardRow, size_t n
 
 const CBoard& CGeomorphicBoard::GetBoard(const CGeoBoardElement& geo) const
 {
-    return m_pDoc->GetBoardManager()->Get(geo);
+    return m_pDoc->GetBoardManager().Get(geo);
 }
 
 namespace
@@ -1159,7 +1156,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
 CB::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
 {
     // find sub-board containing pnt
-    const CBoardManager& brdMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    const CBoardManager& brdMgr = m_pDoc->GetBoardManager();
     size_t index = brdMgr.FindBoardBySerial(m_nSerialNum);
     const CBoard& brd = brdMgr.GetBoard(index);
     const CBoardArray& ba = brd.GetBoardArray();

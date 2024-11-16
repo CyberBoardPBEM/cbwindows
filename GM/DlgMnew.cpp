@@ -161,13 +161,11 @@ void CMarkerCreateDialog::OnCreateMarker(wxCommandEvent& event)
 void CMarkerCreateDialog::OnInitDialog(wxInitDialogEvent& event)
 {
     ASSERT(m_pDoc);
-    m_pMMgr = m_pDoc->GetMarkManager();
-    ASSERT(m_pMMgr);
+    m_pMMgr = &m_pDoc->GetMarkManager();
 
     m_listMarks->SetDocument(m_pDoc);
 
-    m_pTMgr = m_pDoc->GetTileManager();
-    ASSERT(m_pTMgr);
+    m_pTMgr = &m_pDoc->GetTileManager();
 
     m_listTiles->SetDocument(m_pDoc);
 

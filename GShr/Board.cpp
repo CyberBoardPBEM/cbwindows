@@ -591,7 +591,7 @@ void CBoard::Serialize(CArchive& ar)
         if (wTmp != 0)
         {
             CGamDoc& doc = CheckedDeref((CGamDoc*)ar.m_pDocument);
-            m_pBrdAry = new CBoardArray(CheckedDeref(doc.GetTileManager()));
+            m_pBrdAry = new CBoardArray(doc.GetTileManager());
             m_pBrdAry->Serialize(ar);
         }
         ar >> wTmp;
@@ -723,7 +723,7 @@ void CBoardBase::Serialize(CArchive& ar)
     }
     else
     {
-        m_pTMgr = ((CGamDoc*)ar.m_pDocument)->GetTileManager();
+        m_pTMgr = &((CGamDoc*)ar.m_pDocument)->GetTileManager();
         m_pBaseDwg = NULL;
         uint16_t wTmp;
         uint32_t dwTmp;
@@ -801,7 +801,7 @@ CBoardManager::CBoardManager(CGamDoc& doc)
     SetForeColor(RGB(0, 0, 0));
     SetBackColor(RGB(255, 255, 255));
     SetLineWidth(3);
-    m_fontID = CGamDoc::GetFontManager()->AddFont(TenthPointsToScreenPixels(100),
+    m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(100),
         taBold, uint8_t(FF_SWISS), "Arial");
     // ------ //
     m_wReserved1 = 0;
@@ -885,8 +885,8 @@ void CBoardManager::Serialize(CArchive& ar)
         ar << (DWORD)m_crBack;
         ar << (WORD)m_nLineWidth;
 
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        pFontMgr->Archive(ar, m_fontID);
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
+        pFontMgr.Archive(ar, m_fontID);
 
         ar << m_wReserved1;
         ar << m_wReserved2;
@@ -918,8 +918,8 @@ void CBoardManager::Serialize(CArchive& ar)
         ar >> dwTmp; m_crBack = (COLORREF)dwTmp;
         ar >> wTmp; m_nLineWidth = (UINT)wTmp;
 
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        pFontMgr->Archive(ar, m_fontID);
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
+        pFontMgr.Archive(ar, m_fontID);
 
         ar >> m_wReserved1;
         ar >> m_wReserved2;

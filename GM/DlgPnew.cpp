@@ -58,8 +58,8 @@ CPieceNewDialog::CPieceNewDialog(CGamDoc& doc, size_t nPSet, wxWindow* parent /*
     CB_XRC_END_CTRLS_DEFN(),
     m_pDoc(&doc),
     m_nPSet(nPSet),
-    m_pTMgr(*m_pDoc->GetTileManager()),
-    m_pPMgr(m_pDoc->GetPieceManager())
+    m_pTMgr(m_pDoc->GetTileManager()),
+    m_pPMgr(&m_pDoc->GetPieceManager())
 {
     wxSize editSize = m_editQty->GetSizeFromText("999");
     m_editQty->SetInitialSize(editSize);

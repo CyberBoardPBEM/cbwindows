@@ -156,7 +156,11 @@ public:
 
 // Operations
 public:
-    MarkDef& GetMark(MarkID mid);
+    const MarkDef& GetMark(MarkID mid) const;
+    MarkDef& GetMark(MarkID mid)
+    {
+        return const_cast<MarkDef&>(std::as_const(*this).GetMark(mid));
+    }
     BOOL IsMarkIDValid(MarkID mid) const;
     MarkID CreateMark(size_t nMSet, TileID tid, WORD wFlags = 0);
     void DeleteMark(MarkID mid, CGameElementStringMap* pMapString = NULL,
@@ -166,7 +170,7 @@ public:
     size_t FindMarkInMarkSet(MarkID mid) const;
     // ------- //
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapString = NULL);
-    BOOL IsTileInUse(TileID tid);
+    BOOL IsTileInUse(TileID tid) const;
     // ------- //
     CSize GetMarkSize(MarkID mid);
     // ------- //

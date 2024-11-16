@@ -377,7 +377,7 @@ void CPlayBoardView::SelectAllMarkers()
 void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
 {
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
-    CMarkManager& pMgr = CheckedDeref(GetDocument()->GetMarkManager());
+    CMarkManager& pMgr = GetDocument()->GetMarkManager();
 
     m_selList.PurgeList();
 

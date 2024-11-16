@@ -67,7 +67,7 @@ CMarkListBox::CMarkListBox()
 const CTileManager& CMarkListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -91,10 +91,10 @@ GameElement CMarkListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
     if (nIndex >= 65535 || GetCount() <= 0)
         return Invalid_v<GameElement>;
 
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     MarkID mid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    MarkDef& pMark = pMMgr->GetMark(mid);
+    MarkDef& pMark = pMMgr.GetMark(mid);
     std::vector<TileID> tids;
     tids.push_back(pMark.m_tid);
 
@@ -172,9 +172,8 @@ CSize CMarkListBox::OnItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
-        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        ASSERT(pMMgr);
-        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+        MarkDef& pMark = pMMgr.GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
         std::vector<TileID> tids;
@@ -209,13 +208,9 @@ void CMarkListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
         if (m_pDoc == NULL)
             return;
 
-        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        if (pMMgr == NULL)
-        {
-            return;
-        }
+        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
-        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        MarkDef& pMark = pMMgr.GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
         std::vector<TileID> tids;
@@ -273,7 +268,7 @@ CMarkListBoxWx::CMarkListBoxWx()
 const CTileManager& CMarkListBoxWx::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -298,10 +293,10 @@ GameElement CMarkListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) 
         return Invalid_v<GameElement>;
     }
 
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     MarkID mid = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
-    MarkDef& pMark = pMMgr->GetMark(mid);
+    MarkDef& pMark = pMMgr.GetMark(mid);
     std::vector<TileID> tids;
     tids.push_back(pMark.m_tid);
 
@@ -381,9 +376,8 @@ wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
-        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        wxASSERT(pMMgr);
-        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+        MarkDef& pMark = pMMgr.GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
         std::vector<TileID> tids;
@@ -410,13 +404,9 @@ void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
         if (m_pDoc == NULL)
             return;
 
-        CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-        if (pMMgr == NULL)
-        {
-            return;
-        }
+        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
-        MarkDef& pMark = pMMgr->GetMark(MapIndexToItem(nIndex));
+        MarkDef& pMark = pMMgr.GetMark(MapIndexToItem(nIndex));
         ASSERT(pMark.m_tid != nullTid);
 
         std::vector<TileID> tids;

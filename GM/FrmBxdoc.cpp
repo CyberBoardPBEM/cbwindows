@@ -67,7 +67,7 @@ BOOL CDocFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 void CDocFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-    CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
+    CDocument* pDoc = GetActiveDocument();
     CB::string str = pDoc->GetTitle();
     str += " - ";
     CB::string strType = CB::string::LoadString(IDS_PROJTYPE_GAMEBOX);
@@ -78,5 +78,5 @@ void CDocFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 void CDocFrame::OnClose()
 {
     // Close the document when the main document window is closed.
-    ((CGamDoc*)GetActiveDocument())->OnFileClose();
+    GetActiveDocument()->OnCmdMsg(ID_FILE_CLOSE, CN_COMMAND, nullptr, nullptr);
 }

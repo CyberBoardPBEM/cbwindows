@@ -65,7 +65,7 @@ END_MESSAGE_MAP()
 const CTileManager& CSelectListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -398,8 +398,6 @@ CB::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
 CSize CSelectListBox::OnItemSize(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
 
     std::vector<TileID> tids = GetTileIDs(nIndex);
     ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
@@ -439,7 +437,7 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
             return retval;
         }
 
-        const PieceDef& pPce = m_pDoc->GetPieceManager()->GetPiece(pid);
+        const PieceDef& pPce = m_pDoc->GetPieceManager().GetPiece(pid);
 
         std::vector<TileID> retval;
         if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) &&
@@ -461,7 +459,7 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
         MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
-        CMarkManager& pMMgr = CheckedDeref(m_pDoc->GetMarkManager());
+        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
         std::vector<TileID> retval;
         retval.push_back(pMMgr.GetMark(mid).m_tid);
         return retval;
