@@ -1448,7 +1448,7 @@ void CTileImage::Serialize(CArchive& ar)
     }
     else
     {
-        m_pTMgr = ((CGamDoc*)ar.m_pDocument)->GetTileManager();
+        m_pTMgr = &((CGamDoc*)ar.m_pDocument)->GetTileManager();
         ar >> m_tid;
     }
 }
@@ -1465,7 +1465,7 @@ void CText::Draw(CDC& pDC, TileScale eScale)
     if (eScale == smallScale && m_rctExtent.Height() < 16)
         return;
 
-    HFONT hFont = CGamDoc::GetFontManager()->GetFontHandle(m_fontID, m_geoRot);
+    HFONT hFont = CGamDoc::GetFontManager().GetFontHandle(m_fontID, m_geoRot);
     CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(hFont));
     pDC.SetBkMode(TRANSPARENT);
     COLORREF crPrev = pDC.SetTextColor(m_crText);
@@ -1501,11 +1501,11 @@ void CText::SetText(int x, int y, const CB::string& pszText, FontID fntID,
 
 BOOL CText::SetFont(FontID fid)
 {
-    CFontTbl* pFontMgr = CGamDoc::GetFontManager();
+    CFontTbl& pFontMgr = CGamDoc::GetFontManager();
 
     m_fontID = fid;
 
-    HFONT hFont = pFontMgr->GetFontHandle(m_fontID);
+    HFONT hFont = pFontMgr.GetFontHandle(m_fontID);
     CFont* pPrvFont = g_gt.mDC1.SelectObject(CFont::FromHandle(hFont));
 
     // Compute (new) dimensions
@@ -1578,8 +1578,6 @@ CDrawObj::OwnerPtr CText::Clone() const
 
 void CText::CopyAttributes(const CText& source)
 {
-    CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-
     CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_nAngle = source.m_nAngle;
@@ -1595,7 +1593,7 @@ void CText::CopyAttributes(const CText& source)
 void CText::Serialize(CArchive& ar)
 {
     CDrawObj::Serialize(ar);
-    CFontTbl* pFontMgr = CGamDoc::GetFontManager();
+    CFontTbl& pFontMgr = CGamDoc::GetFontManager();
     if (ar.IsStoring())
     {
         if (m_geoRot)
@@ -1606,7 +1604,7 @@ void CText::Serialize(CArchive& ar)
         ar << (WORD)m_nAngle;
         ar << (DWORD)m_crText;
         ar << m_text;
-        pFontMgr->Archive(ar, m_fontID);
+        pFontMgr.Archive(ar, m_fontID);
     }
     else
     {
@@ -1616,7 +1614,7 @@ void CText::Serialize(CArchive& ar)
         ar >> wTmp; m_nAngle = (int)wTmp;
         ar >> dwTmp; m_crText = (COLORREF)dwTmp;
         ar >> m_text;
-        pFontMgr->Archive(ar, m_fontID);
+        pFontMgr.Archive(ar, m_fontID);
     }
 }
 
@@ -1678,8 +1676,7 @@ void CPieceObj::SetRect(const CRect& rct)
 void CPieceObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
 
@@ -1693,13 +1690,13 @@ void CPieceObj::Draw(CDC& pDC, TileScale eScale)
     ASSERT(tid != nullTid);
 
     CPoint pnt = GetRect().TopLeft();
-    DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
+    DrawObjTile(pDC, pnt, &pTMgr, tid, eScale);
 }
 
 void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
 {
     wxASSERT(m_pDoc != NULL);
-    CTileManager& pTMgr = CheckedDeref(m_pDoc->GetTileManager());
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable& pPTbl = CheckedDeref(m_pDoc->GetPieceTable());
 
     TileID tid;
@@ -1756,8 +1753,7 @@ void CPieceObj::SetPiece(const CRect& rct, PieceID pid)
 CSize CPieceObj::GetSize() const
 {
     ASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl != NULL);
 
@@ -1770,7 +1766,7 @@ CSize CPieceObj::GetSize() const
         tid = pPTbl->GetActiveTileID(m_pid, TRUE);
     ASSERT(tid != nullTid);
 
-    CTile tile = pTMgr->GetTile(tid);
+    CTile tile = pTMgr.GetTile(tid);
     return tile.GetSize();
 }
 
@@ -1829,19 +1825,18 @@ void CPieceObj::Serialize(CArchive& ar)
 void CMarkObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = GetCurrentTileID();
     CPoint pnt = m_rctExtent.TopLeft();
 
-    DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
+    DrawObjTile(pDC, pnt, &pTMgr, tid, eScale);
 }
 
 void CMarkObj::Draw(wxDC& pDC, TileScale eScale)
 {
     wxASSERT(m_pDoc != NULL);
-    CTileManager& pTMgr = CheckedDeref(m_pDoc->GetTileManager());
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = GetCurrentTileID();
     wxPoint pnt = CB::Convert(m_rctExtent).GetTopLeft();
@@ -1858,12 +1853,10 @@ void CMarkObj::SetMark(CRect& rct, MarkID mid)
 TileID CMarkObj::GetCurrentTileID()
 {
     ASSERT(m_pDoc != NULL);
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    ASSERT(pMMgr != NULL);
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
 
-    MarkDef& pMark = pMMgr->GetMark(m_mid);
+    MarkDef& pMark = pMMgr.GetMark(m_mid);
     ASSERT(pMark.m_tid != nullTid);
 
     if (m_nFacingDegCW != 0)
@@ -1882,13 +1875,12 @@ TileID CMarkObj::GetCurrentTileID()
 
 void CMarkObj::ResyncExtentRect()
 {
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = GetCurrentTileID();
     ASSERT(tid != nullTid);
 
-    CTile tile = pTMgr->GetTile(tid);
+    CTile tile = pTMgr.GetTile(tid);
     CPoint pnt = m_rctExtent.CenterPoint();
     pnt.x -= tile.GetWidth() / 2;
     pnt.y -= tile.GetHeight() / 2;

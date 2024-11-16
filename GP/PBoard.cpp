@@ -1,6 +1,6 @@
 // PBoard.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -79,7 +79,7 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_nLineWidth = 1;
     m_crTextColor = RGB(0, 0, 0);
     m_crTextBoxColor = RGB(255, 255, 255);
-    m_fontID = CGameBox::GetFontManager()->AddFont(
+    m_fontID = CGameBox::GetFontManager().AddFont(
         TenthPointsToScreenPixels(100), taBold, uint8_t(FF_SWISS), "Arial");
 
     m_bLockedDrawnBeneath = TRUE;
@@ -146,8 +146,7 @@ void CPlayBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale)
 
 CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 {
-    CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr);
+    CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable* pPTbl = m_pDoc->GetPieceTable();
     ASSERT(pPTbl);
     TileID tid = pPTbl->GetActiveTileID(pid);
@@ -156,7 +155,7 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
     if (IsOwned())
         pPTbl->SetOwnerMask(pid, GetOwnerMask());// Force piece to be owned by this player
 
-    CTile tile = pTMgr->GetTile(tid, fullScale);
+    CTile tile = pTMgr.GetTile(tid, fullScale);
     CRect rct(pnt, tile.GetSize());
     rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
     LimitRectToBoard(rct);
@@ -243,7 +242,7 @@ CBoard& CPlayBoard::CreateGeoBoard()
     ASSERT(m_pGeoBoard);
     OwnerPtr<CBoard> pBrd = m_pGeoBoard->CreateBoard();
     CBoard& retval = *pBrd;
-    m_pDoc->GetBoardManager()->Add(std::move(pBrd));
+    m_pDoc->GetBoardManager().Add(std::move(pBrd));
     return retval;
 }
 
@@ -341,8 +340,8 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar << (DWORD)m_crTextColor;
         ar << (DWORD)m_crTextBoxColor;
 
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
-        pFontMgr->Archive(ar, m_fontID);
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
+        pFontMgr.Archive(ar, m_fontID);
 
         ar << (WORD)m_bGridRectCenters;
         ar << (WORD)m_bSnapMovePlot;
@@ -397,15 +396,14 @@ void CPlayBoard::Serialize(CArchive& ar)
 
         ar >> m_nSerialNum;
 
-        CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-        ASSERT(pBMgr);
-        size_t nBrdNum = pBMgr->FindBoardBySerial(m_nSerialNum);
+        CBoardManager& pBMgr = m_pDoc->GetBoardManager();
+        size_t nBrdNum = pBMgr.FindBoardBySerial(m_nSerialNum);
         if (nBrdNum == Invalid_v<size_t>)
         {
             AfxMessageBox(IDS_ERR_BOARDMISSING, MB_OK | MB_ICONSTOP);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
-        CBoard& pBrd = pBMgr->GetBoard(nBrdNum);
+        CBoard& pBrd = pBMgr.GetBoard(nBrdNum);
         SetBoard(pBrd);
 
         ar >> wTmp; m_bGridSnap = (BOOL)wTmp;
@@ -458,9 +456,9 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar >> dwTmp; m_crTextColor = (COLORREF)dwTmp;
         ar >> dwTmp; m_crTextBoxColor = (COLORREF)dwTmp;
 
-        CFontTbl* pFontMgr = CGamDoc::GetFontManager();
+        CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         m_fontID = 0;
-        pFontMgr->Archive(ar, m_fontID);
+        pFontMgr.Archive(ar, m_fontID);
 
         ar >> wTmp; m_bGridRectCenters = (BOOL)wTmp;
         ar >> wTmp; m_bSnapMovePlot = (BOOL)wTmp;
@@ -619,7 +617,7 @@ void CPBoardManager::SetPBoardList(const std::vector<BoardID>& tblBrds)
 
 void CPBoardManager::AddBoard(BoardID nSerialNum, BOOL bInheritSettings)
 {
-    CBoardManager& m_pBMgr = CheckedDeref(m_pDoc->GetBoardManager());
+    CBoardManager& m_pBMgr = m_pDoc->GetBoardManager();
     size_t nBrd = m_pBMgr.FindBoardBySerial(nSerialNum);
     ASSERT(nBrd != Invalid_v<size_t>);
     CBoard& pBoard = m_pBMgr.GetBoard(nBrd);

@@ -1,6 +1,6 @@
 // DlgNewGeoBoard.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -110,11 +110,11 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
     // All boards must use hexes and have an odd number of columns
     // or rows along the flat side of the hex.
     // New option:  cformRect
-    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
+    CBoardManager& pBMgr = m_pDoc->GetBoardManager();
 
-    for (size_t i = 0; i < pBMgr->GetNumBoards(); i++)
+    for (size_t i = size_t(0); i < pBMgr.GetNumBoards(); i++)
     {
-        CBoard& pBrd = pBMgr->GetBoard(i);
+        CBoard& pBrd = pBMgr.GetBoard(i);
         CBoardArray& pBArray = pBrd.GetBoardArray();
         const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
 
@@ -141,7 +141,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             }
 
             std::unique_ptr<CGeoBoardElement> ge(new CGeoBoardElement(Invalid_v<size_t>, Invalid_v<size_t>, pBrd.GetSerialNumber(), r));
-            const CBoard& pBrd = pBMgr->Get(*ge);
+            const CBoard& pBrd = pBMgr.Get(*ge);
             const CBoardArray& pBArray = pBrd.GetBoardArray();
             const CCellForm& pCellForm = pBArray.GetCellForm(fullScale);
 
@@ -149,7 +149,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             {
                 // Already have at least one map selected. The rest must
                 // comply with the geometry of the root one.
-                const CBoard& rootBoard = pBMgr->Get(*m_pRootBoard);
+                const CBoard& rootBoard = pBMgr.Get(*m_pRootBoard);
                 const CBoardArray& rootBArray = rootBoard.GetBoardArray();
                 const CCellForm& rootCellForm = rootBArray.GetCellForm(fullScale);
                 if (!rootCellForm.CompareEqual(pCellForm))
@@ -247,8 +247,8 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
 {
     ASSERT(m_listBoard.GetCurSel() >= 0);
     CGeoBoardElement& ge = *static_cast<CGeoBoardElement*>(m_listBoard.GetItemDataPtr(m_listBoard.GetCurSel()));
-    CBoardManager* pBMgr = m_pDoc->GetBoardManager();
-    const CBoard& pBrd = pBMgr->Get(ge);
+    CBoardManager& pBMgr = m_pDoc->GetBoardManager();
+    const CBoard& pBrd = pBMgr.Get(ge);
     const CBoardArray& pBArray = pBrd.GetBoardArray();
     m_pRootBoard.reset(new CGeoBoardElement(ge));
 

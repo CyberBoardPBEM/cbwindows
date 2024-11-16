@@ -64,7 +64,7 @@ void CMarkManager::Clear()
 
 ///////////////////////////////////////////////////////////////////////
 
-MarkDef& CMarkManager::GetMark(MarkID mid)
+const MarkDef& CMarkManager::GetMark(MarkID mid) const
 {
     ASSERT(m_pMarkTbl != NULL);
     ASSERT(m_pMarkTbl.Valid(mid));
@@ -82,11 +82,11 @@ CSize CMarkManager::GetMarkSize(MarkID mid)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CMarkManager::IsTileInUse(TileID tid)
+BOOL CMarkManager::IsTileInUse(TileID tid) const
 {
     for (size_t i = 0; i < m_pMarkTbl.GetSize(); i++)
     {
-        MarkDef& pDef = GetMark(static_cast<MarkID>(i));
+        const MarkDef& pDef = GetMark(static_cast<MarkID>(i));
         if (pDef.m_tid == tid)
             return TRUE;
     }

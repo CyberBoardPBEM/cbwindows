@@ -51,11 +51,10 @@ CTileListBox::CTileListBox()
 CSize CTileListBox::OnItemSize(size_t nIndex) const
 {
     ASSERT(m_pDoc != NULL);
-    const CTileManager* pTMgr = m_pDoc->GetTileManager();
-    ASSERT(pTMgr != NULL);
+    const CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = MapIndexToItem(nIndex);
-    CTile tile = pTMgr->GetTile(tid, fullScale);
+    CTile tile = pTMgr.GetTile(tid, fullScale);
 
     LONG nHt = 2 * tileBorder + tile.GetHeight();
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
@@ -78,7 +77,7 @@ CSize CTileListBox::OnItemSize(size_t nIndex) const
 
     if (m_bDrawAllScales)
     {
-        CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+        CTile tileHalf = pTMgr.GetTile(tid, halfScale);
         x += tileHalf.GetWidth() + 2 * tileBorder;
         x += 8;
     }
@@ -96,12 +95,11 @@ void CTileListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
     if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
     {
         ASSERT(m_pDoc != NULL);
-        const CTileManager* pTMgr = m_pDoc->GetTileManager();
-        ASSERT(pTMgr != NULL);
+        const CTileManager& pTMgr = m_pDoc->GetTileManager();
 
         TileID tid = MapIndexToItem(nIndex);
 
-        CTile tile = pTMgr->GetTile(tid, fullScale);
+        CTile tile = pTMgr.GetTile(tid, fullScale);
 
         pDC.SaveDC();
 
@@ -137,11 +135,11 @@ void CTileListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
         {
             x += tile.GetWidth() + 2 * tileBorder;
             y += tile.GetHeight() / 4;
-            CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+            CTile tileHalf = pTMgr.GetTile(tid, halfScale);
             tileHalf.BitBlt(pDC, x, y);
             x += tileHalf.GetWidth() + 2 * tileBorder;
             y = rctItem.CenterPoint().y - 4;
-            CTile tileSmall = pTMgr->GetTile(tid, smallScale);
+            CTile tileSmall = pTMgr.GetTile(tid, smallScale);
             CBrush brSmall(tileSmall.GetSmallColor());
             CRect rctSmall(x, y, x + 8, y + 8);
             pDC.FillRect(&rctSmall, &brSmall);     // Fill background color
@@ -186,11 +184,10 @@ CTileListBoxWx::CTileListBoxWx()
 wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
-    const CTileManager* pTMgr = m_pDoc->GetTileManager();
-    wxASSERT(pTMgr != NULL);
+    const CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = MapIndexToItem(nIndex);
-    CTile tile = pTMgr->GetTile(tid, fullScale);
+    CTile tile = pTMgr.GetTile(tid, fullScale);
 
     LONG nHt = 2 * tileBorder + tile.GetHeight();
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
@@ -210,7 +207,7 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 
     if (m_bDrawAllScales)
     {
-        CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+        CTile tileHalf = pTMgr.GetTile(tid, halfScale);
         x += tileHalf.GetWidth() + 2 * tileBorder;
         x += 8;
     }
@@ -221,12 +218,11 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
 void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
-    const CTileManager* pTMgr = m_pDoc->GetTileManager();
-    wxASSERT(pTMgr != NULL);
+    const CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = MapIndexToItem(nIndex);
 
-    CTile tile = pTMgr->GetTile(tid, fullScale);
+    CTile tile = pTMgr.GetTile(tid, fullScale);
 
     pDC.SetClippingRegion(rctItem);
 
@@ -251,11 +247,11 @@ void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     {
         x += tile.GetWidth() + 2 * tileBorder;
         y += tile.GetHeight() / 4;
-        CTile tileHalf = pTMgr->GetTile(tid, halfScale);
+        CTile tileHalf = pTMgr.GetTile(tid, halfScale);
         tileHalf.BitBlt(pDC, CalcScrolledX(x), y);
         x += tileHalf.GetWidth() + 2 * tileBorder;
         y = rctItem.GetTop() + rctItem.GetHeight()/2 - 4;
-        CTile tileSmall = pTMgr->GetTile(tid, smallScale);
+        CTile tileSmall = pTMgr.GetTile(tid, smallScale);
         wxPen penSmall(CB::Convert(tileSmall.GetSmallColor()));
         wxDCPenChanger setPen(pDC, penSmall);
         wxBrush brSmall(CB::Convert(tileSmall.GetSmallColor()));

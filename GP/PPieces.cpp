@@ -306,13 +306,13 @@ void CPieceTable::SetOwnerMask(PieceID pid, uint32_t dwMask)
 
 CSize CPieceTable::GetPieceSize(PieceID pid) const
 {
-    CTile tile = m_pDoc->GetTileManager()->GetTile(GetActiveTileID(pid));
+    CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid));
     return tile.GetSize();
 }
 
 CSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
 {
-    CTile tile = m_pDoc->GetTileManager()->GetTile(GetActiveTileID(pid, bWithFacing));
+    CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid, bWithFacing));
     return tile.GetSize();
 }
 
@@ -398,7 +398,7 @@ TileID CPieceTable::GetFrontTileID(PieceID pid, BOOL bWithFacing)
 BOOL CPieceTable::IsPieceInvisible(PieceID pid) const
 {
     TileID tid = GetActiveTileID(pid);
-    CTile tile = m_pDoc->GetTileManager()->GetTile(tid, smallScale);
+    CTile tile = m_pDoc->GetTileManager().GetTile(tid, smallScale);
     return tile.GetTransparent() == tile.GetSmallColor();
 }
 

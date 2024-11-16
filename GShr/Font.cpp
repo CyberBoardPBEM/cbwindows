@@ -199,7 +199,7 @@ bool CbFont::operator==(const CbFont& rhs) const
 wxFont ToWxFont(FontID fid)
 {
     LOGFONT lf;
-    CFontTbl& pFontTbl = CheckedDeref(CGamDoc::GetFontManager());
+    CFontTbl& pFontTbl = CGamDoc::GetFontManager();
     pFontTbl.FillLogFontStruct(fid, &lf);
 
     wxNativeFontInfo nfi;
@@ -297,6 +297,6 @@ FontID ToFontID(wxFont f)
 
     CB::string name = f.GetFaceName();
 
-    CFontTbl& pFontTbl = CheckedDeref(CGamDoc::GetFontManager());
+    CFontTbl& pFontTbl = CGamDoc::GetFontManager();
     return pFontTbl.AddFont(size, flags, family, name);
 }

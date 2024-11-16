@@ -53,7 +53,7 @@ class CGameBox
 
 // Static class functions
 public:
-    static CFontTbl* GetFontManager() { return &m_fontTbl; }
+    static CFontTbl& GetFontManager() { return m_fontTbl; }
 
     static void SetLoadingVersion(int ver) { c_gbxFileVersion = ver; }
     static int GetLoadingVersion() { return c_gbxFileVersion; }

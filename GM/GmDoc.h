@@ -195,7 +195,7 @@ protected:
 // Class Global Attributes
 public:
     static CFontTbl m_fontTbl;
-    static CFontTbl* GetFontManager() { return &m_fontTbl; }
+    static CFontTbl& GetFontManager() { return m_fontTbl; }
     // Version of file being loaded
     static int c_fileVersion;
     // load and save can't be simultaneous, so use for both
@@ -203,7 +203,7 @@ public:
 
 // Attributes
 public:
-    void ExportGamebox(const CB::string& pszPathName);
+    void ExportGamebox(const CB::string& pszPathName) const;
 
     static void SetLoadingVersion(int ver) { c_fileVersion = ver; }
     using SetLoadingVersionGuard = ::SetLoadingVersionGuard<CGamDoc>;
@@ -212,31 +212,31 @@ public:
     static void SetFileFeatures(const Features& feat) { SetFileFeatures(Features(feat)); }
     static const Features& GetFileFeatures() { return c_fileFeatures; }
     // -------- //
-    DWORD GetGameBoxID() { return m_dwGameID; }
+    DWORD GetGameBoxID() const { return m_dwGameID; }
     // -------- //
-    CBoardManager* GetBoardManager() { return m_pBMgr; }
-    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
-    CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
-    const CPieceManager* GetPieceManager() const { return m_pPMgr; }
-    CPieceManager* GetPieceManager() { return const_cast<CPieceManager*>(std::as_const(*this).GetPieceManager()); }
-    CMarkManager* GetMarkManager() { return m_pMMgr; }
-    const CTilePalette* GetTilePalWnd() const { return m_palTile.get(); }
+    CBoardManager& GetBoardManager() { return CheckedDeref(m_pBMgr); }
+    const CTileManager& GetTileManager() const { return CheckedDeref(m_pTMgr); }
+    CTileManager& GetTileManager() { return const_cast<CTileManager&>(std::as_const(*this).GetTileManager()); }
+    const CPieceManager& GetPieceManager() const { return CheckedDeref(m_pPMgr); }
+    CPieceManager& GetPieceManager() { return const_cast<CPieceManager&>(std::as_const(*this).GetPieceManager()); }
+    CMarkManager& GetMarkManager() { return CheckedDeref(m_pMMgr); }
+    const CTilePalette& GetTilePalWnd() const { return CheckedDeref(m_palTile); }
     // -------- //
-    BOOL GetStickyDrawTools() { return m_bStickyDrawTools; }
+    BOOL GetStickyDrawTools() const { return m_bStickyDrawTools; }
     // -------- //
     void IncrMajorRevLevel();
-    DWORD IssueGameBoxID();
+    static DWORD IssueGameBoxID();
 
     // If you need to pass a pointer to the views to be created,
     // bracket the view can call the GetCreateParameter() method.
     // It is only valid during the InitialUpdate() method.
-    LPVOID GetCreateParameter() { return m_lpvCreateParam; }
+    LPVOID GetCreateParameter() const { return m_lpvCreateParam; }
 
 // Operations
 public:
     BOOL SetupBlankBoard();
 
-    BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
+    BOOL CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle,
         LPVOID lpvCreateParam = NULL);
 
     BOOL NotifyTileDatabaseChange(BOOL bPurgeScan = TRUE);
@@ -244,9 +244,9 @@ public:
     BOOL QueryTileInUse(TileID tid) const;
     BOOL QueryAnyOfTheseTilesInUse(const std::vector<TileID>& tbl) const;
 
-    TileID CreateTileFromDib(CDib* pDib, size_t nTSet);
-    CView* FindTileEditorView(TileID tid);
-    CView* FindBoardEditorView(const CBoard& pBoard);
+    TileID CreateTileFromDib(const CDib& pDib, size_t nTSet);
+    CView* FindTileEditorView(TileID tid) const;
+    CView* FindBoardEditorView(const CBoard& pBoard) const;
 
     // Support for strings associated with game elements (pieces, markers)
     CB::string  GetGameElementString(GameElement gelem) const;
@@ -260,7 +260,7 @@ public:
     void DoCreatePieceGroup() { OnEditCreatePieceGroup(); }
     void DoCreateMarkGroup() { OnEditCreateMarkGroup(); }
 
-    int  GetCompressLevel() { return (int)m_wCompressLevel; }
+    int  GetCompressLevel() const { return (int)m_wCompressLevel; }
     void SetCompressLevel(int nCompressLevel) { m_wCompressLevel = (WORD)nCompressLevel; }
 
     const std::vector<wxColour>& GetCustomColors() const;
@@ -269,10 +269,8 @@ public:
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 
-    std::array<std::byte, 16> ComputeGameboxPasskey(const CB::string& pszPassword);
+    std::array<std::byte, 16> ComputeGameboxPasskey(const CB::string& pszPassword) const;
     void ClearGameboxPasskey();
-
-    void OnFileClose() { CDocument::OnFileClose(); }    // Expose protected
 
     // OnIdle is called by the App object to inform
     // documents of idle condition. A flag indicates if
@@ -301,10 +299,10 @@ protected:
     WORD            m_wCompressLevel;// Amount of compression to apply to bitmaps and such
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
     std::vector<wxColour> m_pCustomColors; // Container for custom edit colors
-    CB::propagate_const<CTileManager*>   m_pTMgr;        // Tiles
-    CBoardManager*  m_pBMgr;        // Playing boards
-    CPieceManager*  m_pPMgr;        // Playing pieces
-    CMarkManager*   m_pMMgr;        // Annotation markers
+    OwnerOrNullPtr<CTileManager>   m_pTMgr;        // Tiles
+    OwnerOrNullPtr<CBoardManager>  m_pBMgr;        // Playing boards
+    OwnerOrNullPtr<CPieceManager>  m_pPMgr;        // Playing pieces
+    OwnerOrNullPtr<CMarkManager>   m_pMMgr;        // Annotation markers
     BOOL            m_bStickyDrawTools; // If TRUE, don't select the select tool after drawing
 
     BOOL            m_bMajorRevIncd;// Major rev number was increased.
@@ -322,19 +320,18 @@ protected:
     LPVOID  m_lpvCreateParam;       // Used to pass parameters to new views
 
 public:
-    virtual ~CGamDoc();
-    virtual void Serialize(CArchive& ar);   // overridden for document i/o
+    virtual ~CGamDoc() = default;
+    virtual void Serialize(CArchive& ar) override;   // overridden for document i/o
 #ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const override;
+    virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 protected:
-    virtual BOOL OnNewDocument();
+    virtual BOOL OnNewDocument() override;
     virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
     virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override;
-    virtual void DeleteContents();
-    virtual void OnCloseDocument();
+    virtual void DeleteContents() override;
 
 // Generated message map functions
 protected:

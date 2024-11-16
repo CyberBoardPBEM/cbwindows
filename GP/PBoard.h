@@ -227,7 +227,7 @@ public:
 
 // Attributes
 public:
-    const CBoardManager* GetBoardManager() const { return m_pDoc->GetBoardManager(); }
+    const CBoardManager* GetBoardManager() const { return &m_pDoc->GetBoardManager(); }
     size_t GetNumPBoards() const { return size(); }
     bool IsEmpty() const { return empty(); }
     const CPlayBoard& GetPBoard(size_t nBrd) const { return *at(nBrd); }

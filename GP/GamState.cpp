@@ -127,7 +127,7 @@ void CGameState::Serialize(CArchive& ar)
 
         CGamDoc& doc = CheckedDeref(static_cast<CGamDoc*>(ar.m_pDocument));
         m_pPBMgr = new CPBoardManager(doc);
-        m_pPTbl = new CPieceTable(*doc.GetPieceManager(), doc);
+        m_pPTbl = new CPieceTable(doc.GetPieceManager(), doc);
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
             m_mapString.Serialize(ar);                  // V2.0

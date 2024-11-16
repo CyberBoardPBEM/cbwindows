@@ -60,7 +60,7 @@ CTrayListBox::CTrayListBox(CGamDoc& pDoc) :
 
 const CTileManager& CTrayListBox::GetTileManager() const
 {
-    return CheckedDeref(m_pDoc.GetTileManager());
+    return m_pDoc.GetTileManager();
 }
 
 BOOL CTrayListBox::IsShowingTileImages() const
@@ -328,7 +328,7 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 bool CTrayListBox::IsShowAllSides(PieceID pid) const
 {
     const CPieceTable& pPTbl = CheckedDeref(m_pDoc.GetPieceTable());
-    const PieceDef& pPce = m_pDoc.GetPieceManager()->GetPiece(pid);
+    const PieceDef& pPce = m_pDoc.GetPieceManager().GetPiece(pid);
 
     BOOL bIsOwnedByCurrentPlayer = m_pDoc.HasPlayers() &&
         pPTbl.IsPieceOwnedBy(pid, m_pDoc.GetCurrentPlayerMask());

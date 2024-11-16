@@ -648,7 +648,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
-        CMarkManager* pMMgr = pDoc->GetMarkManager();
+        CMarkManager& pMMgr = pDoc->GetMarkManager();
         CPoint pnt = pdi.m_point;
         MarkID mid = pdi.GetSubInfo<DRAG_MARKER>().m_markID;
         ClientToWorkspace(pnt);
@@ -666,7 +666,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
             ASSERT(nMrkGrp != Invalid_v<size_t>);
             if (nMrkGrp == Invalid_v<size_t>)
                 goto NASTY_GOTO_TARGET;
-            CMarkSet& pMSet = pMMgr->GetMarkSet(nMrkGrp);
+            CMarkSet& pMSet = pMMgr.GetMarkSet(nMrkGrp);
 
             CMarkerCountDialog dlg;
             dlg.m_nMarkerCount = 2;
@@ -696,7 +696,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
             int i;
             for (i = 0; i < dlg.m_nMarkerCount; i++)
             {
-                CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
+                CSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 sizeMin.cx += size.cx;
                 sizeMin.cy = CB::max(sizeMin.cy, size.cy);
                 if (i < dlg.m_nMarkerCount - 1)
@@ -713,7 +713,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
             // corresponding to left to right.
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
-                CSize size = pMMgr->GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
+                CSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
@@ -726,7 +726,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
 NASTY_GOTO_TARGET:
         m_selList.PurgeList();
         // If the snap grid is on, adjust the point.
-        CSize sz = pMMgr->GetMarkSize(mid);
+        CSize sz = pMMgr.GetMarkSize(mid);
         ASSERT(sz.cx != 0 && sz.cy != 0);
         CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
         AdjustRect(rct);
@@ -737,7 +737,7 @@ NASTY_GOTO_TARGET:
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
-        if (pMMgr->GetMark(mid).m_flags & MarkDef::flagPromptText)
+        if (pMMgr.GetMark(mid).m_flags & MarkDef::flagPromptText)
         {
             CEditElementTextDialog dlg;
 
@@ -1736,11 +1736,11 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
     CGamDoc* pDoc = GetDocument();
     m_selList.LoadTableWithPieceIDs(tbl);
     TileID tid = pDoc->GetPieceTable()->GetActiveTileID(tbl.front());
-    CTile tile = pDoc->GetTileManager()->GetTile(tid);
+    CTile tile = pDoc->GetTileManager().GetTile(tid);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     CRotateDialog dlg;
     dlg.m_pBMap = &*bmap;
-    dlg.m_crTrans = pDoc->GetTileManager()->GetTransparentColor();
+    dlg.m_crTrans = pDoc->GetTileManager().GetTransparentColor();
     dlg.DoModal();
 }
 
@@ -2115,14 +2115,14 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 {
     if (pCmdUI->m_pSubMenu != NULL)
     {
-        CMarkManager* pMgr = GetDocument()->GetMarkManager();
-        if (pMgr->IsEmpty())
+        CMarkManager& pMgr = GetDocument()->GetMarkManager();
+        if (pMgr.IsEmpty())
             return;
         std::vector<CB::string> tbl;
-        tbl.reserve(pMgr->GetNumMarkSets());
-        for (size_t i = size_t(0) ; i < pMgr->GetNumMarkSets() ; ++i)
+        tbl.reserve(pMgr.GetNumMarkSets());
+        for (size_t i = size_t(0) ; i < pMgr.GetNumMarkSets() ; ++i)
         {
-            tbl.push_back(pMgr->GetMarkSet(i).GetName());
+            tbl.push_back(pMgr.GetMarkSet(i).GetName());
         }
         CMenu menu;
         VERIFY(menu.CreatePopupMenu());

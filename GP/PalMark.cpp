@@ -1,6 +1,6 @@
 // PalMark.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -191,8 +191,8 @@ LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
     if (nSel == Invalid_v<size_t>)
         return (LRESULT)0;
 
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+    CMarkSet& pMSet = pMMgr.GetMarkSet(nSel);
     if (pMSet.IsRandomMarkerPull())
     {
         COverrideInfo<DRAG_MARKER>& oi = *reinterpret_cast<COverrideInfo<DRAG_MARKER>*>(wParam);
@@ -219,8 +219,8 @@ LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
         ASSERT(!"bad tray");
         return 0;
     }
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+    CMarkSet& pMSet = pMMgr.GetMarkSet(nSel);
 
     std::vector<int> items;
     if (pMSet.IsRandomMarkerPull())
@@ -236,12 +236,12 @@ LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
         items.push_back(m_listMark.GetCurSel());
     }
 
-    CTileManager& tileMgr = CheckedDeref(m_pDoc->GetTileManager());
+    CTileManager& tileMgr = m_pDoc->GetTileManager();
     CSize retval(0, 0);
     for (int item : items)
     {
         MarkID mid = m_listMark.MapIndexToItem(value_preserving_cast<size_t>(item));
-        MarkDef& pMark = pMMgr->GetMark(mid);
+        MarkDef& pMark = pMMgr.GetMark(mid);
         ASSERT(pMark.m_tid != nullTid);
         CSize size = tileMgr.GetTile(pMark.m_tid).GetSize();
         retval.cx = std::max(retval.cx, size.cx);
@@ -256,7 +256,7 @@ LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
 
 void CMarkerPalette::SelectMarker(MarkID mid)
 {
-    size_t nGrp = m_pDoc->GetMarkManager()->FindMarkInMarkSet(mid);
+    size_t nGrp = m_pDoc->GetMarkManager().FindMarkInMarkSet(mid);
     ASSERT(nGrp != Invalid_v<size_t>);
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel != nGrp)
@@ -323,13 +323,12 @@ void CMarkerPalette::SetDocument(CGamDoc *pDoc)
 void CMarkerPalette::LoadMarkerNameList()
 {
     ASSERT(m_pDoc);
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    ASSERT(pMMgr != NULL);
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     m_comboMGrp.ResetContent();
-    for (size_t i = 0; i < pMMgr->GetNumMarkSets(); i++)
+    for (size_t i = size_t(0); i < pMMgr.GetNumMarkSets(); i++)
     {
-        int nIdx = m_comboMGrp.AddString(pMMgr->GetMarkSet(i).GetName());
+        int nIdx = m_comboMGrp.AddString(pMMgr.GetMarkSet(i).GetName());
         m_comboMGrp.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(i));    // Store the marker index in the data item
     }
     m_comboMGrp.SetCurSel(0);
@@ -354,8 +353,7 @@ void CMarkerPalette::UpdatePaletteContents()
 void CMarkerPalette::UpdateMarkerList()
 {
     ASSERT(m_pDoc);
-    CMarkManager* pMMgr = m_pDoc->GetMarkManager();
-    ASSERT(pMMgr != NULL);
+    CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel == Invalid_v<size_t>)
@@ -364,7 +362,7 @@ void CMarkerPalette::UpdateMarkerList()
         return;
     }
 
-    CMarkSet& pMSet = pMMgr->GetMarkSet(nSel);
+    CMarkSet& pMSet = pMMgr.GetMarkSet(nSel);
     const std::vector<MarkID>* pMarkTbl = &pMSet.GetMarkIDTable();
 
     CB::string str = "";

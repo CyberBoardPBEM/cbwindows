@@ -104,12 +104,11 @@ void CTilePalette::Serialize(CArchive& ar)
 
 void CTilePalette::LoadTileNameList()
 {
-    const CTileManager* pTMgr = m_pDoc.GetTileManager();
-    ASSERT(pTMgr != NULL);
+    const CTileManager& pTMgr = m_pDoc.GetTileManager();
 
     m_comboTGrp->Clear();
-    for (size_t i = size_t(0); i < pTMgr->GetNumTileSets(); i++)
-        m_comboTGrp->Append(pTMgr->GetTileSet(i).GetName());
+    for (size_t i = size_t(0); i < pTMgr.GetNumTileSets(); i++)
+        m_comboTGrp->Append(pTMgr.GetTileSet(i).GetName());
     m_comboTGrp->SetSelection(0);
     UpdateTileList();
 }
@@ -131,8 +130,7 @@ void CTilePalette::UpdatePaletteContents()
 
 void CTilePalette::UpdateTileList()
 {
-    const CTileManager* pTMgr = m_pDoc.GetTileManager();
-    ASSERT(pTMgr != NULL);
+    const CTileManager& pTMgr = m_pDoc.GetTileManager();
 
     int nSel = m_comboTGrp->GetSelection();
     if (nSel == wxNOT_FOUND)
@@ -140,7 +138,7 @@ void CTilePalette::UpdateTileList()
         m_listTile->SetItemMap(NULL);
         return;
     }
-    const std::vector<TileID>& pPieceTbl = pTMgr->GetTileSet(value_preserving_cast<size_t>(nSel)).GetTileIDTable();
+    const std::vector<TileID>& pPieceTbl = pTMgr.GetTileSet(value_preserving_cast<size_t>(nSel)).GetTileIDTable();
     m_listTile->SetItemMap(&pPieceTbl);
 }
 
@@ -155,7 +153,7 @@ void CTilePalette::OnTileNameCbnSelchange(wxCommandEvent& /*event*/)
 void CTilePalette::OnGetDragSize(GetDragSizeEvent& event)
 {
     TileID tid = GetCurrentTileID();
-    CTile tile = m_pDoc.GetTileManager()->GetTile(tid, fullScale);
+    CTile tile = m_pDoc.GetTileManager().GetTile(tid, fullScale);
     CSize size = tile.GetSize();
     event.SetSize(wxSize(size.cx, size.cy));
 }

@@ -913,7 +913,7 @@ class CTileImage : public CDrawObj_SimplRctExtent
 // Constructors
 public:
     CTileImage() : m_tid(nullTid) { m_pTMgr = NULL; }
-    CTileImage(CTileManager* pTMgr) : m_tid(nullTid) { m_pTMgr = pTMgr; }
+    CTileImage(CTileManager& pTMgr) : m_tid(nullTid) { m_pTMgr = &pTMgr; }
 // Attributes
 public:
     TileID          m_tid;

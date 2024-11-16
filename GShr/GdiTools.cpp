@@ -47,8 +47,8 @@ FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
     ASSERT(fid != 0);
     LOGFONT lf;
 
-    CFontTbl* pFontTbl = CGamDoc::GetFontManager();
-    pFontTbl->FillLogFontStruct(fid, &lf);
+    CFontTbl& pFontTbl = CGamDoc::GetFontManager();
+    pFontTbl.FillLogFontStruct(fid, &lf);
 
     CFontDialog dlg(&lf, CF_SCREENFONTS |
         (bScreenOK ? 0 : CF_SCALABLEONLY) | CF_NOVECTORFONTS,
@@ -56,7 +56,7 @@ FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
 
     if (dlg.DoModal() != IDOK)
         return (FontID)0;
-    return pFontTbl->AddFont(TenthPointsToScreenPixels(dlg.GetSize()),
+    return pFontTbl.AddFont(TenthPointsToScreenPixels(dlg.GetSize()),
         (dlg.IsBold()?taBold:0)|(dlg.IsItalic()?taItalic:0),
         static_cast<uint8_t>(lf.lfPitchAndFamily & 0xF0), dlg.GetFaceName());
 }

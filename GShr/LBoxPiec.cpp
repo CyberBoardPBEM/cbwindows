@@ -68,13 +68,13 @@ void CPieceListBox::SetDocument(CGamDoc& pDoc)
     CGrafixListBoxData::SetDocument(pDoc);
     ResetContent();
     m_pDoc = &pDoc;
-    m_pPMgr = pDoc.GetPieceManager();
+    m_pPMgr = &pDoc.GetPieceManager();
 }
 
 const CTileManager& CPieceListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -221,13 +221,13 @@ void CPieceListBoxWx::SetDocument(CGamDoc& pDoc)
     CGrafixListBoxDataWx::SetDocument(pDoc);
     Clear();
     m_pDoc = &pDoc;
-    m_pPMgr = pDoc.GetPieceManager();
+    m_pPMgr = &pDoc.GetPieceManager();
 }
 
 const CTileManager& CPieceListBoxWx::GetTileManager() const
 {
     wxASSERT(m_pDoc != NULL);
-    return CheckedDeref(m_pDoc->GetTileManager());
+    return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////

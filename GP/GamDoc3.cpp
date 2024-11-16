@@ -1,6 +1,6 @@
 // GamDoc3.cpp -- serialization support for the document.
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -128,10 +128,10 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
             /* these features are global in the sense that, if
                 any ID needs 32 bits, then we store all IDs in
                 32 bit format */
-            if (GetBoardManager()->Needs32BitIDs() ||
-                GetTileManager()->Needs32BitIDs() ||
-                GetPieceManager()->Needs32BitIDs() ||
-                GetMarkManager()->Needs32BitIDs())
+            if (GetBoardManager().Needs32BitIDs() ||
+                GetTileManager().Needs32BitIDs() ||
+                GetPieceManager().Needs32BitIDs() ||
+                GetMarkManager().Needs32BitIDs())
             {
                 if (!GetCBFeatures().Check(ftrId32Bit))
                 {
@@ -139,7 +139,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
                 }
                 c_fileFeatures.Add(ftrId32Bit);
             }
-            if (GetPieceManager()->Needs100SidePieces())
+            if (GetPieceManager().Needs100SidePieces())
             {
                 if (!GetCBFeatures().Check(ftrPiece100Sides))
                 {
@@ -606,10 +606,10 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             /* these features are global in the sense that, if
                 any ID needs 32 bits, then we store all IDs in
                 32 bit format */
-            if (GetBoardManager()->Needs32BitIDs() ||
-                GetTileManager()->Needs32BitIDs() ||
-                GetPieceManager()->Needs32BitIDs() ||
-                GetMarkManager()->Needs32BitIDs())
+            if (GetBoardManager().Needs32BitIDs() ||
+                GetTileManager().Needs32BitIDs() ||
+                GetPieceManager().Needs32BitIDs() ||
+                GetMarkManager().Needs32BitIDs())
             {
                 if (!GetCBFeatures().Check(ftrId32Bit))
                 {
@@ -617,7 +617,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
                 }
                 c_fileFeatures.Add(ftrId32Bit);
             }
-            if (GetPieceManager()->Needs100SidePieces())
+            if (GetPieceManager().Needs100SidePieces())
             {
                 if (!GetCBFeatures().Check(ftrPiece100Sides))
                 {

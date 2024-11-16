@@ -104,8 +104,7 @@ END_MESSAGE_MAP()
 
 void CTileSelView::OnInitialUpdate()
 {
-    m_pTileMgr = GetDocument().GetTileManager();
-    ASSERT(m_pTileMgr != NULL);
+    m_pTileMgr = &GetDocument().GetTileManager();
     m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
     ASSERT(m_tid != nullTid);
 
@@ -275,7 +274,7 @@ void CTileSelView::DoTileResizeDialog()
 {
     CResizeTileDialog dlg;
     GetActiveBitmap() = CloneBitmap(m_pEditView->GetCurrentViewBitmap());
-    dlg.m_pBMgr = GetDocument().GetBoardManager();
+    dlg.m_pBMgr = &GetDocument().GetBoardManager();
     dlg.m_bRescaleBMaps = true;
     dlg.m_nWidth = m_sizeFull.x;
     dlg.m_nHeight = m_sizeFull.y;

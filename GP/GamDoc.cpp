@@ -1,6 +1,6 @@
 // GamDoc.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -367,10 +367,10 @@ void CGamDoc::DeleteContents()
         delete m_pTileFacingMap;
     m_pTileFacingMap = NULL;
 
-    if (m_pGbx != NULL) delete m_pGbx;
-    m_pGbx = NULL;
     if (m_pPBMgr != NULL) delete m_pPBMgr;
     m_pPBMgr = NULL;
+    if (m_pGbx != NULL) delete m_pGbx;
+    m_pGbx = NULL;
     if (m_pYMgr != NULL) delete m_pYMgr;
     m_pYMgr = NULL;
     if (m_pPTbl != NULL) delete m_pPTbl;
@@ -956,28 +956,24 @@ DWORD CGamDoc::IssueScenarioID()
 
 /////////////////////////////////////////////////////////////////////////////
 
-const CTileManager* CGamDoc::GetTileManager() const
+const CTileManager& CGamDoc::GetTileManager() const
 {
-    if (m_pGbx == NULL) return NULL;
-    return m_pGbx->GetTileManager();
+    return CheckedDeref(CheckedDeref(m_pGbx).GetTileManager());
 }
 
-CMarkManager* CGamDoc::GetMarkManager()
+CMarkManager& CGamDoc::GetMarkManager()
 {
-    if (m_pGbx == NULL) return NULL;
-    return m_pGbx->GetMarkManager();
+    return CheckedDeref(CheckedDeref(m_pGbx).GetMarkManager());
 }
 
-const CBoardManager* CGamDoc::GetBoardManager() const
+const CBoardManager& CGamDoc::GetBoardManager() const
 {
-    if (m_pGbx == NULL) return NULL;
-    return m_pGbx->GetBoardManager();
+    return CheckedDeref(CheckedDeref(m_pGbx).GetBoardManager());
 }
 
-const CPieceManager* CGamDoc::GetPieceManager() const
+const CPieceManager& CGamDoc::GetPieceManager() const
 {
-    if (m_pGbx == NULL) return NULL;
-    return m_pGbx->GetPieceManager();
+    return CheckedDeref(CheckedDeref(m_pGbx).GetPieceManager());
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -990,7 +986,7 @@ CTileFacingMap* CGamDoc::GetFacingMap()
         return m_pTileFacingMap;
     else
     {
-        m_pTileFacingMap = new CTileFacingMap(GetTileManager());
+        m_pTileFacingMap = new CTileFacingMap(&GetTileManager());
         return m_pTileFacingMap;
     }
 }

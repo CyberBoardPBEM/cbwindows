@@ -484,8 +484,8 @@ void CGbxProjView::OnDragItem(DragDropEvent& event)
             m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nProjSel)) == grpTile);
         size_t nGrpSel = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nProjSel));
 
-        CTileManager* pTMgr = pDoc.GetTileManager();
-        const CTileSet& pTGrp = pTMgr->GetTileSet(nGrpSel);
+        CTileManager& pTMgr = pDoc.GetTileManager();
+        const CTileSet& pTGrp = pTMgr.GetTileSet(nGrpSel);
 
         // Force selection of item under the mouse
         m_listTiles->SetSelFromPoint(pdi.m_point);
@@ -504,7 +504,7 @@ void CGbxProjView::OnDragItem(DragDropEvent& event)
                 nSel++;
         }
 
-        pTMgr->MoveTileIDsToTileSet(nGrpSel, *pdi.GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
+        pTMgr.MoveTileIDsToTileSet(nGrpSel, *pdi.GetSubInfo<DRAG_TILELIST>().m_tileIDList, value_preserving_cast<size_t>(nSel));
         DoUpdateTileList();
         pDoc.NotifyTileDatabaseChange();
         m_listTiles->SetCurSelsMapped(*pdi.GetSubInfo<DRAG_TILELIST>().m_tileIDList);
@@ -607,21 +607,20 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_BOARDS);
     m_listProj->AddItem(grpBHdr, str);
 
-    CBoardManager* pBMgr = pDoc.GetBoardManager();
-    wxASSERT(pBMgr);
-    for (size_t i = size_t(0); i < pBMgr->GetNumBoards(); i++)
+    CBoardManager& pBMgr = pDoc.GetBoardManager();
+    for (size_t i = size_t(0); i < pBMgr.GetNumBoards(); i++)
     {
         static int bDisplayIDs = -1;
         if (bDisplayIDs == -1)
         {
             bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
         }
-        str = pBMgr->GetBoard(i).GetName();
+        str = pBMgr.GetBoard(i).GetName();
         if (bDisplayIDs)
         {
             CB::string strTmp = std::move(str);
             str = std::format(L"[{}] {}",
-                pBMgr->GetBoard(i).GetSerialNumber(), strTmp);
+                pBMgr.GetBoard(i).GetSerialNumber(), strTmp);
         }
         m_listProj->AddItem(grpBrd, str, i);
     }
@@ -630,28 +629,25 @@ void CGbxProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_TILES);
     m_listProj->AddItem(grpTHdr, str);
 
-    CTileManager* pTMgr = pDoc.GetTileManager();
-    wxASSERT(pTMgr);
-    for (size_t i = size_t(0); i < pTMgr->GetNumTileSets(); i++)
-        m_listProj->AddItem(grpTile, pTMgr->GetTileSet(i).GetName(), i);
+    CTileManager& pTMgr = pDoc.GetTileManager();
+    for (size_t i = size_t(0); i < pTMgr.GetNumTileSets(); i++)
+        m_listProj->AddItem(grpTile, pTMgr.GetTileSet(i).GetName(), i);
 
     // Pieces....
     str = CB::string::LoadString(IDS_PHEAD_PIECES);
     m_listProj->AddItem(grpPHdr, str);
 
-    CPieceManager* pPMgr = pDoc.GetPieceManager();
-    wxASSERT(pPMgr);
-    for (size_t i = size_t(0); i < pPMgr->GetNumPieceSets(); i++)
-        m_listProj->AddItem(grpPce, pPMgr->GetPieceSet(i).GetName(), i);
+    CPieceManager& pPMgr = pDoc.GetPieceManager();
+    for (size_t i = size_t(0); i < pPMgr.GetNumPieceSets(); i++)
+        m_listProj->AddItem(grpPce, pPMgr.GetPieceSet(i).GetName(), i);
 
     // Marks....
     str = CB::string::LoadString(IDS_PHEAD_MARKS);
     m_listProj->AddItem(grpMHdr, str);
 
-    CMarkManager* pMMgr = pDoc.GetMarkManager();
-    wxASSERT(pMMgr);
-    for (size_t i = size_t(0); i < pMMgr->GetNumMarkSets(); i++)
-        m_listProj->AddItem(grpMark, pMMgr->GetMarkSet(i).GetName(), i);
+    CMarkManager& pMMgr = pDoc.GetMarkManager();
+    for (size_t i = size_t(0); i < pMMgr.GetNumMarkSets(); i++)
+        m_listProj->AddItem(grpMark, pMMgr.GetMarkSet(i).GetName(), i);
 
     // OK...Show the updates
     }
@@ -844,7 +840,7 @@ void CGbxProjView::OnEditCopy(wxCommandEvent& /*event*/)
 #endif
 
     CGamDoc& pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     std::vector<TileID> tidtbl = m_listTiles->GetCurMappedItemList();
 
@@ -853,7 +849,7 @@ void CGbxProjView::OnEditCopy(wxCommandEvent& /*event*/)
     {
         CMemFile file;
         CArchive ar(&file, CArchive::store);
-        pTMgr->CopyTileImagesToArchive(ar, tidtbl);
+        pTMgr.CopyTileImagesToArchive(ar, tidtbl);
         ar.Close();
 
         CMemFile file2;
@@ -921,7 +917,7 @@ void CGbxProjView::OnEditPaste(wxCommandEvent& event)
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     wxBusyCursor busyCursor;
     TRY
@@ -939,7 +935,7 @@ void CGbxProjView::OnEditPaste(wxCommandEvent& event)
             CArchive ar(&file, CArchive::load);
             int nCurSel = m_listTiles->GetTopSelectedItem();
             size_t nCurSel2 = nCurSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
-            pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
+            pTMgr.CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
             ar.Close();
         }
         DoUpdateTileList();
@@ -972,7 +968,7 @@ void CGbxProjView::OnEditMove(wxCommandEvent& event)
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     wxBusyCursor busyCursor;
     TRY
@@ -1006,7 +1002,7 @@ void CGbxProjView::OnEditMove(wxCommandEvent& event)
                 ar.Close();
                 int nCurSel = m_listTiles->GetTopSelectedItem();
                 size_t nCurSel2 = nCurSel == LB_ERR ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
-                pTMgr->MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel2);
+                pTMgr.MoveTileIDsToTileSet(nGrp, tidtbl, nCurSel2);
                 DoUpdateTileList();
                 pDoc.NotifyTileDatabaseChange();
                 m_listTiles->SetCurSelsMapped(tidtbl);
@@ -1071,7 +1067,7 @@ void CGbxProjView::OnProjectSaveTileFile(wxCommandEvent& /*event*/)
 #endif
 
     CGamDoc& pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_SAVETILELIBRARY);
@@ -1103,7 +1099,7 @@ void CGbxProjView::OnProjectSaveTileFile(wxCommandEvent& /*event*/)
         ar.Write(FILEGTLSIGNATURE, 4);
         // TODO:  if new format ever needed, use Features
         ar << (WORD)NumVersion(fileGtlVerMajor, fileGtlVerMinor);
-        pTMgr->CopyTileImagesToArchive(ar, tidtbl);
+        pTMgr.CopyTileImagesToArchive(ar, tidtbl);
         ar.Close();
         file.Close();
     }
@@ -1130,7 +1126,7 @@ void CGbxProjView::OnProjectLoadTileFile(wxCommandEvent& /*event*/)
     size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CGamDoc& pDoc = GetDocument();
-    CTileManager* pTMgr = pDoc.GetTileManager();
+    CTileManager& pTMgr = pDoc.GetTileManager();
 
     CB::string strFilter = CB::string::LoadString(IDS_GTL_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_LOADTILELIBRARY);
@@ -1183,7 +1179,7 @@ void CGbxProjView::OnProjectLoadTileFile(wxCommandEvent& /*event*/)
         std::vector<TileID> tidtbl;
         int nCurSel = m_listTiles->GetTopSelectedItem();
         size_t nCurSel2 = nCurSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nCurSel);
-        pTMgr->CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
+        pTMgr.CreateTilesFromTileImageArchive(ar, nGrp, &tidtbl, nCurSel2);
         ar.Close();
 
         DoUpdateTileList();
