@@ -72,6 +72,7 @@
 #include <wx/dc.h>
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
+#include <wx/docview.h>
 #include "wx/dcprint.h"
 #include <wx/dialog.h>
 #include <wx/filedlg.h>
