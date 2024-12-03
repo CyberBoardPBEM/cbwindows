@@ -61,7 +61,6 @@ wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CTileSelViewContainer, CView)
     ON_WM_CREATE()
-    ON_WM_SIZE()
     ON_MESSAGE(WM_SETCOLOR, OnSetColor)
     ON_MESSAGE(WM_SETCUSTOMCOLOR, OnSetCustomColors)
     ON_MESSAGE(WM_SETLINEWIDTH, OnSetLineWidth)
@@ -701,10 +700,4 @@ int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CTileSelView(*this);
 
     return 0;
-}
-
-void CTileSelViewContainer::OnSize(UINT nType, int cx, int cy)
-{
-    child->SetSize(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
 }

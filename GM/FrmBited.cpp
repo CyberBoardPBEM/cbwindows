@@ -39,7 +39,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CBitEditFrame, CMDIChildWndEx)
 
-CBitEditFrame::CBitEditFrame()
+CBitEditFrame::CBitEditFrame() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 

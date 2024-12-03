@@ -28,7 +28,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // CDocFrame frame
 
-class CDocFrame : public CMDIChildWndEx
+class CDocFrame : public CMDIChildWndEx,
+                    public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNCREATE(CDocFrame)
 protected:

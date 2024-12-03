@@ -28,7 +28,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // CViewFrame frame
 
-class CViewFrame : public CMDIChildWndEx
+class CViewFrame : public CMDIChildWndEx,
+                    public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNCREATE(CViewFrame)
 protected:

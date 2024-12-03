@@ -143,7 +143,6 @@ private:
     DECLARE_DYNCREATE(CTileSelViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);

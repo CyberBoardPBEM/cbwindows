@@ -36,7 +36,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CViewFrame, CMDIChildWndEx)
 
-CViewFrame::CViewFrame()
+CViewFrame::CViewFrame() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 

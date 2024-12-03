@@ -27,7 +27,8 @@ class CTileSelView;
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame frame
 
-class CBitEditFrame : public CMDIChildWndEx
+class CBitEditFrame : public CMDIChildWndEx,
+                        public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNCREATE(CBitEditFrame)
 protected:

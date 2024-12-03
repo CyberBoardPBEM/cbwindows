@@ -59,6 +59,9 @@ class CMDIFrameWndExCb : public CMDIFrameWndEx
 {
     DECLARE_DYNAMIC(CMDIFrameWndExCb)
 
+public:
+    using CMDIFrameWndExCb::OnSize;
+
 protected:
     CMDIFrameWndExCb();
 
