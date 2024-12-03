@@ -1905,7 +1905,7 @@ namespace CB
     public:
         // avoid multiple wxWindow for single CWnd
         wxNativeContainerWindowMixin(const wxNativeContainerWindowMixin&) = delete;
-        wxNativeContainerWindowMixin(CWnd& w) : mfcWnd(w) {}
+        wxNativeContainerWindowMixin(CWnd& w) : mfcWnd(&w) {}
 
         operator const wxNativeContainerWindow*() const;
         operator wxNativeContainerWindow*()
@@ -1923,10 +1923,10 @@ namespace CB
         }
 
     private:
-        CWnd& mfcWnd;
+        RefPtr<CWnd> mfcWnd;
         /* N.B.:  wx deletes this when HWND is destroyed,
                     BUT does not tell us! */
-        mutable wxNativeContainerWindow* wxWnd = nullptr;
+        mutable propagate_const<wxNativeContainerWindow*> wxWnd = nullptr;
     };
 
     /* if mfcWnd has

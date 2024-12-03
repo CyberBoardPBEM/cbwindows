@@ -38,7 +38,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CDocFrame, CMDIChildWndEx)
 
-CDocFrame::CDocFrame()
+CDocFrame::CDocFrame() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 

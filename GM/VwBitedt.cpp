@@ -112,7 +112,6 @@ wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CBitEditViewContainer, CView)
     ON_WM_CREATE()
-    ON_WM_SIZE()
     ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
@@ -1316,12 +1315,6 @@ int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CBitEditView(*this);
 
     return 0;
-}
-
-void CBitEditViewContainer::OnSize(UINT nType, int cx, int cy)
-{
-    child->SetSize(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
 }
 
 // MFC puts the focus here, so move it to the useful window

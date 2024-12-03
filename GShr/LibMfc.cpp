@@ -773,9 +773,9 @@ void CB::string::Serialize(CArchive& ar)
 #endif
 }
 
-CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow* () const
+CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() const
 {
-    if (!mfcWnd.m_hWnd)
+    if (!mfcWnd->m_hWnd)
     {
         /* N.B.:  wx deletes this when HWND is destroyed,
                     BUT does not tell us! */
@@ -784,9 +784,53 @@ CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow* () con
     }
     else if (!wxWnd)
     {
-        wxWnd = new wxNativeContainerWindow(mfcWnd.m_hWnd);
+        wxWnd = new wxNativeContainerWindow(mfcWnd->m_hWnd);
+
+        // N.B.:  this is a dirty hack
+        wxNativeContainerWindowMixin* ncThis = const_cast<wxNativeContainerWindowMixin*>(this);
+        wxWindow& rThis = const_cast<wxNativeContainerWindowMixin&>(*ncThis);
+
+        // fill in wx children list
+        for (CWnd* mfcChild = mfcWnd->GetWindow(GW_CHILD) ;
+            mfcChild ;
+            mfcChild = mfcChild->GetWindow(GW_HWNDNEXT))
+        {
+            wxWindow* wxChild = CB::GetWxWindow(*mfcChild);
+            if (wxChild)
+            {
+                rThis.AddChild(wxChild);
+                wxASSERT(wxChild->GetParent() == &rThis);
+            }
+        }
+
+        /* in some cases, wx Layout() won't do anything,
+            so we may need to resize child ourselves */
+        rThis.Bind(wxEVT_SIZE,
+                    [ncThis](wxSizeEvent& event)
+                    {
+                        if (!ncThis->mfcWnd->IsKindOf(RUNTIME_CLASS(CMDIFrameWndExCb)))
+                        {
+                            wxWindowList& children = ncThis->wxWnd->GetChildren();
+                            if (children.size() == size_t(1) &&
+                                children.front()->IsTopLevel())
+                            {
+                                wxSize size = ncThis->wxWnd->GetClientSize();
+                                wxWindow& child = CheckedDeref(children.front());
+                                child.SetSize(0, 0, size.x, size.y);
+                            }
+                        }
+                        else
+                        {
+                            /* wx args don't match WM_SIZE, but it looks
+                                like specific args aren't critical */
+                            CMDIFrameWndExCb& mfcMdiWnd = static_cast<CMDIFrameWndExCb&>(*ncThis->mfcWnd);
+                            mfcMdiWnd.OnSize(0, 0, 0);
+                        }
+                        event.Skip();
+                    }
+        );
     }
-    return wxWnd;
+    return &*wxWnd;
 }
 
 /* if mfcWnd has
