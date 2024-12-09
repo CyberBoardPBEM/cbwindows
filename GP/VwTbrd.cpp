@@ -307,8 +307,9 @@ void CTinyBoardView::ClientToWorkspace(CPoint& pnt)
 #ifdef _DEBUG
 CGamDoc* CTinyBoardView::GetDocument() // non-debug version is inline
 {
-    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    return (CGamDoc*)m_pDocument;
+    CGamDoc* retval = CB::ToCGamDoc(m_pDocument);
+    wxASSERT(retval);
+    return retval;
 }
 #endif //_DEBUG
 

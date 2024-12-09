@@ -590,7 +590,7 @@ void CBoard::Serialize(CArchive& ar)
         ar >> wTmp;
         if (wTmp != 0)
         {
-            CGamDoc& doc = CheckedDeref((CGamDoc*)ar.m_pDocument);
+            CGamDoc& doc = CheckedDeref(CB::ToCGamDoc(ar.m_pDocument));
             m_pBrdAry = new CBoardArray(doc.GetTileManager());
             m_pBrdAry->Serialize(ar);
         }
@@ -723,7 +723,7 @@ void CBoardBase::Serialize(CArchive& ar)
     }
     else
     {
-        m_pTMgr = &((CGamDoc*)ar.m_pDocument)->GetTileManager();
+        m_pTMgr = &CheckedDeref(CB::ToCGamDoc(ar.m_pDocument)).GetTileManager();
         m_pBaseDwg = NULL;
         uint16_t wTmp;
         uint32_t dwTmp;

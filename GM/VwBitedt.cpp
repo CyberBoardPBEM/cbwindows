@@ -123,7 +123,7 @@ IMPLEMENT_DYNCREATE(CBitEditViewContainer, CView)
 
 CBitEditView::CBitEditView(CBitEditViewContainer& p) :
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
+    document(CB::ToCGamDoc(parent->GetDocument()))
 {
     m_pSelView = NULL;
     m_nZoom = 6;

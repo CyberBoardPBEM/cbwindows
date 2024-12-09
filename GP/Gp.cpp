@@ -479,7 +479,7 @@ BOOL CGpApp::OnIdle(LONG lCount)
         POSITION pos2 = pTemplate->GetFirstDocPosition();
         while (pos2)
         {
-            CGamDoc* pDoc = (CGamDoc*)pTemplate->GetNextDoc(pos2);
+            CGamDoc* pDoc = CB::ToCGamDoc(pTemplate->GetNextDoc(pos2));
             ASSERT(pDoc != NULL);
             ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
             pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);

@@ -67,7 +67,7 @@ protected:
 
 // Attributes
 public:
-    CGamDoc* GetDocument() { return (CGamDoc*)m_pDocument; }
+    CGamDoc* GetDocument() { return CB::ToCGamDoc(m_pDocument); }
 
     // Various controls...
     CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box

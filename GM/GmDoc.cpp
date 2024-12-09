@@ -68,7 +68,7 @@ Features CGamDoc::c_fileFeatures;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGamDoc, CDocument)
+IMPLEMENT_DYNCREATE(CGamDocMfc, CDocument)
 IMPLEMENT_DYNCREATE(CGmBoxHint, CObject)
 
 #ifdef  _DEBUG
@@ -94,7 +94,8 @@ void SetFileFeatures(Features&& fs)
 ///////////////////////////////////////////////////////////////////////
 // CGamDoc - message dispatch table
 
-BEGIN_MESSAGE_MAP(CGamDoc, CDocument)
+wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
+#if 0
     ON_COMMAND(ID_EDIT_GBOXPROPERTIES, OnEditGbxProperties)
     ON_COMMAND(ID_EDIT_CREATEBOARD, OnEditCreateBoard)
     ON_COMMAND(ID_EDIT_CREATETILEGROUP, OnEditCreateTileGroup)
@@ -106,11 +107,13 @@ BEGIN_MESSAGE_MAP(CGamDoc, CDocument)
     ON_COMMAND(ID_DUMP_TILEDATA, OnDumpTileData)
     ON_COMMAND(ID_BUGFIX_DUMPBADTILES, OnBugFixDumpBadTiles)
     ON_COMMAND(ID_EXPORT_GAMEBOX, OnExportGamebox)
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 ///////////////////////////////////////////////////////////////////////
 
-CGamDoc::CGamDoc()
+CGamDoc::CGamDoc(CGamDocMfc& md) :
+    mfcDoc(&md)
 {
     m_pBMgr = NULL;
     m_pTMgr = NULL;
@@ -162,6 +165,7 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+    CPP20_TRACE("{}({}, {}, {})\n", __func__, static_cast<void*>(pSender), lHint, static_cast<void*>(pHint));
     WORD wHint = LOWORD(lHint);
     if (
         ((wHint & HINT_TILEGROUP) && !(wHint & ~HINT_TILEGROUP)) ||
@@ -170,21 +174,27 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
         wHint == HINT_ALWAYSUPDATE
         )
         m_palTile->UpdatePaletteContents();
-    CDocument::UpdateAllViews(pSender, lHint, pHint);
+    mfcDoc->CDocument::UpdateAllViews(pSender, lHint, pHint);
+}
+
+// wxWidgets
+void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nullptr*/)
+{
+    CPP20_TRACE("{}({}, {})\n", __func__, static_cast<void*>(sender), static_cast<void*>(hint));
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::OnNewDocument()
+bool CGamDoc::OnNewDocument()
 {
-    if (!CDocument::OnNewDocument())
+    if (!mfcDoc->CDocument::OnNewDocument())
         return FALSE;
     return SetupBlankBoard();
 }
 
-BOOL CGamDoc::OnOpenDocument(LPCTSTR lpszPathName)
+bool CGamDoc::OnOpenDocument(const wxString& lpszPathName)
 {
-    BOOL bOK = CDocument::OnOpenDocument(lpszPathName);
+    BOOL bOK = wxDocument::OnOpenDocument(lpszPathName);
     // If the game loaded OK, check if it's password protected.
     if (bOK)
     {
@@ -210,11 +220,11 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR lpszPathName)
     return bOK;
 }
 
-BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
+bool CGamDoc::OnSaveDocument(const wxString& pszPathName)
 {
     // Make sure tile edits are saved.
     UpdateAllViews(NULL, HINT_FORCETILEUPDATE, NULL);
-    if (std::filesystem::exists(pszPathName))
+    if (std::filesystem::exists(CB::string(pszPathName)))
     {
         CB::string szTmp = SetFileExt(pszPathName, "gb_");
         if (_access(szTmp, 0) != -1)        // Remove previous backup
@@ -233,10 +243,10 @@ BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
         }
         CFile::Rename(pszPathName, szTmp);
     }
-    return CDocument::OnSaveDocument(pszPathName);
+    return wxDocument::OnSaveDocument(pszPathName);
 }
 
-void CGamDoc::DeleteContents()
+bool CGamDoc::DeleteContents()
 {
     m_pTMgr = NULL;
     m_pBMgr = NULL;
@@ -254,6 +264,23 @@ void CGamDoc::DeleteContents()
 
     m_bMajorRevIncd = FALSE;
     CColorPalette::CustomColorsClear(m_pCustomColors);
+
+    mfcDoc->CDocument::DeleteContents();
+    return wxDocument::DeleteContents();
+}
+
+// wxDocument
+// Called by OnSaveDocument and OnOpenDocument to implement standard
+// Save/Load behaviour. Re-implement in derived class for custom
+// behaviour.
+bool CGamDoc::DoSaveDocument(const wxString& file)
+{
+    return mfcDoc->CDocument::OnSaveDocument(file);
+}
+
+bool CGamDoc::DoOpenDocument(const wxString& file)
+{
+    return mfcDoc->CDocument::OnOpenDocument(file);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -276,16 +303,16 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle
     LPVOID lpvCreateParam)
 {
     CMDIChildWndEx* pNewFrame
-        = (CMDIChildWndEx*)(pTemplate.CreateNewFrame(this, NULL));
+        = static_cast<CMDIChildWndEx*>(pTemplate.CreateNewFrame(*this, NULL));
     if (pNewFrame == NULL)
         return FALSE;               // Not created
-    ASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
-    CB::string str = GetTitle();
+    wxASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
+    CB::string str = GetUserReadableName();
     str += " - ";
     str += pszTitle;
     pNewFrame->SetWindowText(str);
     m_lpvCreateParam = lpvCreateParam;
-    pTemplate.InitialUpdateFrame(pNewFrame, this);
+    pTemplate.InitialUpdateFrame(pNewFrame, *this);
     // KLUDGE:  work around https://github.com/CyberBoardPBEM/cbwindows/issues/23
     GetMainFrame()->RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
     m_lpvCreateParam = NULL;
@@ -357,10 +384,10 @@ DWORD CGamDoc::IssueGameBoxID()
 
 CView* CGamDoc::FindTileEditorView(TileID tid) const
 {
-    POSITION pos = GetFirstViewPosition();
+    POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CTileSelViewContainer* pView = (CTileSelViewContainer*)GetNextView(pos);
+        CTileSelViewContainer* pView = static_cast<CTileSelViewContainer*>(mfcDoc->GetNextView(pos));
         if (pView->IsKindOf(RUNTIME_CLASS(CTileSelViewContainer)))
         {
             if (pView->GetChild().GetTileID() == tid)
@@ -372,10 +399,10 @@ CView* CGamDoc::FindTileEditorView(TileID tid) const
 
 CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard) const
 {
-    POSITION pos = GetFirstViewPosition();
+    POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CBrdEditViewContainer* pView = (CBrdEditViewContainer*)GetNextView(pos);
+        CBrdEditViewContainer* pView = static_cast<CBrdEditViewContainer*>(mfcDoc->GetNextView(pos));
         if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditViewContainer)))
         {
             if (&pView->GetChild().GetBoard() == &pBoard)
@@ -527,7 +554,7 @@ TileID CGamDoc::CreateTileFromDib(const CDib& pDib, size_t nTSet)
 
 void CGamDoc::Serialize(CArchive& ar)
 {
-    ar.m_pDocument = this;
+    ar.m_pDocument = &*mfcDoc;
     if (ar.IsStoring())
     {
         // File Header
@@ -800,12 +827,12 @@ void CGamDoc::Serialize(CArchive& ar)
 #ifdef _DEBUG
 void CGamDoc::AssertValid() const
 {
-    CDocument::AssertValid();
+    mfcDoc->CDocument::AssertValid();
 }
 
 void CGamDoc::Dump(CDumpContext& dc) const
 {
-    CDocument::Dump(dc);
+    mfcDoc->CDocument::Dump(dc);
 }
 
 #endif //_DEBUG

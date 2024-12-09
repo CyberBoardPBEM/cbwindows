@@ -161,7 +161,7 @@ END_MESSAGE_MAP()
 CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
     m_selList(*this),
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
+    document(CB::ToCGamDoc(parent->GetDocument())),
     timer(this)
 {
     m_bOffScreen = TRUE;

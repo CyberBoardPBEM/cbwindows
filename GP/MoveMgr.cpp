@@ -2463,7 +2463,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             block of moves involving the same hidden board(s) */
         /* need to examine moves in original context,
             so push current state */
-        CGamDoc& doc = CheckedDeref((CGamDoc*)ar.m_pDocument);
+        CGamDoc& doc = CheckedDeref(CB::ToCGamDoc(ar.m_pDocument));
         class PushGameState
         {
         public:

@@ -184,8 +184,9 @@ BOOL CSelectedPieceView::OnEraseBkgnd(CDC* pDC)
 #ifdef _DEBUG
 CGamDoc* CSelectedPieceView::GetDocument() // non-debug version is inline
 {
-    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    return (CGamDoc*)m_pDocument;
+    CGamDoc* retval = CB::ToCGamDoc(m_pDocument);
+    wxASSERT(retval);
+    return retval;
 }
 #endif //_DEBUG
 

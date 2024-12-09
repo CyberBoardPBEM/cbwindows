@@ -77,6 +77,6 @@ protected:
 
 #ifndef _DEBUG  // debug version in vwselpce.cpp
 inline CGamDoc* CSelectedPieceView::GetDocument()
-   { return (CGamDoc*)m_pDocument; }
+   { return CB::ToCGamDoc(m_pDocument); }
 #endif
 

@@ -68,7 +68,7 @@ void CTileSheet::Serialize(CArchive& ar)
             {
                 ar << (WORD)1;      // Store "HasBitmap" flag
 #ifndef GPLAY
-                dib.SetCompressLevel(((CGamDoc*)ar.m_pDocument)->
+                dib.SetCompressLevel(CB::ToCGamDoc(ar.m_pDocument)->
                     GetCompressLevel());
 #endif
                 ar << dib;

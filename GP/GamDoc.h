@@ -818,6 +818,15 @@ protected:
     DECLARE_MESSAGE_MAP()
 };
 
+inline const CGamDoc* CB::ToCGamDoc(const CDocument* p)
+{
+    if (!p)
+    {
+        return nullptr;
+    }
+    return dynamic_cast<const CGamDoc*>(p);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 #endif  // _GAMDOC_H

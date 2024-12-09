@@ -46,7 +46,7 @@ IMPLEMENT_DYNCREATE(CTileSelViewContainer, CView)
 
 CTileSelView::CTileSelView(CTileSelViewContainer& p) :
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
+    document(CB::ToCGamDoc(parent->GetDocument()))
 {
     m_pTileMgr = NULL;
     m_pEditView = NULL;
