@@ -329,6 +329,8 @@ namespace {
             wxXmlResource::Get()->InitAllHandlers();
             wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
 
+            static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+
             return true;
         }
     };
