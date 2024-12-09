@@ -125,7 +125,7 @@ void CGameState::Serialize(CArchive& ar)
     {
         Clear();
 
-        CGamDoc& doc = CheckedDeref(static_cast<CGamDoc*>(ar.m_pDocument));
+        CGamDoc& doc = CheckedDeref(CB::ToCGamDoc(ar.m_pDocument));
         m_pPBMgr = new CPBoardManager(doc);
         m_pPTbl = new CPieceTable(doc.GetPieceManager(), doc);
 

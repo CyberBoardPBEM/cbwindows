@@ -77,7 +77,7 @@ protected:
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
 inline CGamDoc* CTinyBoardView::GetDocument()
-   { return (CGamDoc*)m_pDocument; }
+   { return CB::ToCGamDoc(m_pDocument); }
 #endif
 
 

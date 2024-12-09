@@ -183,14 +183,25 @@ public:
 class CDib;
 class CPieceManager;
 class CMarkManager;
+class CGamDocMfc;
 
-class CGamDoc : public CDocument
+class CGamDoc : public wxDocument
 {
+// impersonate CDocument
+public:
+    operator const CGamDocMfc&() const { return *mfcDoc; }
+    operator CGamDocMfc&() { return *mfcDoc; }
+    operator const CGamDocMfc*() const { return &*mfcDoc; }
+    operator CGamDocMfc*() { return &*mfcDoc; }
+    void SetModifiedFlag(BOOL b = TRUE) { Modify(b); }
+
+private:
     friend class CGbxProjView;
 
-protected:
-    CGamDoc();
+    CGamDoc(CGamDocMfc& md);
+#if 0
     DECLARE_DYNCREATE(CGamDoc)
+#endif
 
 // Class Global Attributes
 public:
@@ -281,6 +292,13 @@ public:
     void UpdateAllViews(CView* pSender, LPARAM lHint = 0L,
         CObject* pHint = NULL);
 
+    // wxWidgets
+    // lifetime is controlled by MFC (not wx), so override:
+    // Called after a view is added or removed. The default implementation
+    // deletes the document if this is there are no more views.
+    void OnChangedViewList() override {}
+    void UpdateAllViews(wxView* sender = nullptr, wxObject* hint = nullptr) override;
+
 // Implementation
 protected:
     BYTE            m_abyteBoxID[16];// Special hashed UUID assigned to this gamebox.
@@ -321,35 +339,97 @@ protected:
 
 public:
     virtual ~CGamDoc() = default;
-    virtual void Serialize(CArchive& ar) override;   // overridden for document i/o
+    void Serialize(CArchive& ar);
 #ifdef _DEBUG
-    virtual void AssertValid() const override;
-    virtual void Dump(CDumpContext& dc) const override;
+    void AssertValid() const;
+    void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
-    virtual BOOL OnNewDocument() override;
-    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
-    virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override;
-    virtual void DeleteContents() override;
+    bool OnNewDocument() override;
+    bool OnOpenDocument(const wxString&  lpszPathName) override;
+    bool OnSaveDocument(const wxString& lpszPathName) override;
+    bool DeleteContents() override;
 
-// Generated message map functions
+    // wxDocument
+    // Called by OnSaveDocument and OnOpenDocument to implement standard
+    // Save/Load behaviour. Re-implement in derived class for custom
+    // behaviour.
+    bool DoSaveDocument(const wxString& file) override;
+    bool DoOpenDocument(const wxString& file) override;
+
 protected:
-    afx_msg void OnEditGbxProperties();
-    afx_msg void OnEditCreateBoard();
-    afx_msg void OnEditCreateTileGroup();
-    afx_msg void OnEditCreatePieceGroup();
-    afx_msg void OnEditCreateMarkGroup();
-    afx_msg void OnProjectChangeFingerPrint();
-    afx_msg void OnStickyDrawTools();
-    afx_msg void OnUpdateStickyDrawTools(CCmdUI* pCmdUI);
-    afx_msg void OnDumpTileData();
-    afx_msg void OnBugFixDumpBadTiles();
+    void OnEditGbxProperties();
+    void OnEditGbxProperties(wxCommandEvent& /*event*/) { OnEditGbxProperties(); }
+    void OnEditCreateBoard();
+    void OnEditCreateTileGroup();
+    void OnEditCreatePieceGroup();
+    void OnEditCreateMarkGroup();
+    void OnProjectChangeFingerPrint();
+    void OnStickyDrawTools();
+    void OnUpdateStickyDrawTools(CCmdUI* pCmdUI);
+    void OnDumpTileData();
+    void OnBugFixDumpBadTiles();
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 public:
-    afx_msg void OnExportGamebox();
+    void OnExportGamebox();
+
+private:
+    RefPtr<CGamDocMfc> mfcDoc;
+
+    friend CGamDocMfc;
 };
+
+class CGamDocMfc : public CDocument
+{
+public:
+    operator const CGamDoc&() const { return *wxDoc; }
+    operator CGamDoc&() { return *wxDoc; }
+    operator const CGamDoc*() const { return &*wxDoc; }
+    operator CGamDoc*() { return &*wxDoc; }
+
+protected:
+    CGamDocMfc() = default;
+    ~CGamDocMfc() override = default;
+    DECLARE_DYNCREATE(CGamDocMfc)
+
+public:
+    // Forced override of this (note not virtual)
+    void UpdateAllViews(CView* pSender, LPARAM lHint = 0L,
+        CObject* pHint = NULL) { wxASSERT(!"Do not use!  (use CGamDoc)"); }
+
+    virtual void Serialize(CArchive& ar) override   // overridden for document i/o
+        { wxDoc->Serialize(ar); }
+#ifdef _DEBUG
+    virtual void AssertValid() const override
+        { wxDoc->AssertValid(); }
+    virtual void Dump(CDumpContext& dc) const override
+        { wxDoc->Dump(dc); }
+#endif
+
+protected:
+    virtual BOOL OnNewDocument() override
+        { return wxDoc->OnNewDocument(); }
+    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override
+        { return wxDoc->OnOpenDocument(lpszPathName); }
+    virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override
+        { return wxDoc->OnSaveDocument(pszPathName); }
+    virtual void DeleteContents() override
+        { CB_VERIFY(wxDoc->DeleteContents()); }
+
+private:
+    OwnerPtr<CGamDoc> wxDoc = new CGamDoc(*this);
+};
+
+inline const CGamDoc* CB::ToCGamDoc(const CDocument* p)
+{
+    if (!p)
+    {
+        return nullptr;
+    }
+    return dynamic_cast<const CGamDocMfc&>(*p);
+}
 
 #endif
 

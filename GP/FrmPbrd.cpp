@@ -121,7 +121,7 @@ BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-    CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
+    CGamDoc* pDoc = CB::ToCGamDoc(GetActiveDocument());
     CB::string str = pDoc->GetTitle();
 
     CB::string strBoardName = m_pPBoard->GetBoard()->GetName();
@@ -144,7 +144,7 @@ void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
      CCreateContext* pContext)
 {
-    CGamDoc* pDoc = (CGamDoc*)pContext->m_pCurrentDoc;
+    CGamDoc* pDoc = CB::ToCGamDoc(pContext->m_pCurrentDoc);
     m_pPBoard = (CPlayBoard*)pDoc->GetNewViewParameter();
     ASSERT(m_pPBoard != NULL);
 

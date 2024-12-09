@@ -69,7 +69,7 @@ BOOL CProjFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 void CProjFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-    CGamDoc* pDoc = (CGamDoc*)GetActiveDocument();
+    CGamDoc* pDoc = CB::ToCGamDoc(GetActiveDocument());
     CB::string str = pDoc->GetTitle();
     str += " - ";
     CB::string strType;
@@ -92,7 +92,7 @@ void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
             if (pView->IsKindOf(RUNTIME_CLASS(CGsnProjView)) ||
                 pView->IsKindOf(RUNTIME_CLASS(CGamProjView)))
             {
-                ((CGamDoc*)GetActiveDocument())->OnFileClose();
+                CB::ToCGamDoc(GetActiveDocument())->OnFileClose();
                 return;
             }
         }
@@ -103,5 +103,5 @@ void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
 void CProjFrame::OnClose()
 {
     // Close the document when the main document window is closed.
-    ((CGamDoc*)GetActiveDocument())->OnFileClose();
+    CB::ToCGamDoc(GetActiveDocument())->OnFileClose();
 }

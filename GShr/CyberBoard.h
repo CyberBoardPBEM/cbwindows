@@ -1946,6 +1946,17 @@ namespace CB
     const std::type_info& GetPublicTypeid(const wxWindow& w);
 }
 
+// CGamDoc is currently a wxDoc in GM, CDoc in GP, so need workaround
+class CGamDoc;
+namespace CB
+{
+    const CGamDoc* ToCGamDoc(const CDocument* p);
+    inline CGamDoc* ToCGamDoc(CDocument* p)
+    {
+        return const_cast<CGamDoc*>(ToCGamDoc(static_cast<const CDocument*>(p)));
+    }
+}
+
 /* AfxGetApp() docs say it may return NULL during process
     startup, so declare a function that we will guarantee returns
     an object during startup */

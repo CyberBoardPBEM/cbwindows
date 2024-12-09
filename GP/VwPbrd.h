@@ -283,7 +283,7 @@ public:
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
 inline const CGamDoc* CPlayBoardView::GetDocument() const
-   { return (const CGamDoc*)m_pDocument; }
+   { return CB::ToCGamDoc(m_pDocument); }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

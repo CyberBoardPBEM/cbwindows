@@ -68,7 +68,7 @@ protected:
 
 // Attributes
 public:
-    const CGamDoc* GetDocument() const { return (const CGamDoc*)m_pDocument; }
+    const CGamDoc* GetDocument() const { return CB::ToCGamDoc(m_pDocument); }
     CGamDoc* GetDocument()
     {
         return const_cast<CGamDoc*>(std::as_const(*this).GetDocument());

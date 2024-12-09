@@ -34,6 +34,7 @@
 
 #include    "VwPrjgbx.h"
 #include    "LibMfc.h"
+#include    "FrmMain.h"     // TODO:  remove?
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -183,7 +184,7 @@ CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
         CB_XRC_CTRL(m_btnItmD)
     CB_XRC_END_CTRLS_DEFN(),
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
+    document(CB::ToCGamDoc(parent->GetDocument()))
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;

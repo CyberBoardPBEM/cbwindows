@@ -401,16 +401,16 @@ BOOL CGmApp::InitInstance()
     // Register the application's document templates.  Document templates
     // serve as the connection between documents, frame windows and views.
     AddDocTemplate(new CMultiDocTemplate(IDR_GAMEBOX,
-        RUNTIME_CLASS(CGamDoc),
+        RUNTIME_CLASS(CGamDocMfc),
         RUNTIME_CLASS(CDocFrame),
         RUNTIME_CLASS(CGbxProjViewContainer)));
 
     m_pMapViewTmpl = new CMultiDocTemplate(IDR_BOARDVIEW,
-        RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CViewFrame),
+        RUNTIME_CLASS(CGamDocMfc), RUNTIME_CLASS(CViewFrame),
         RUNTIME_CLASS(CBrdEditViewContainer));
 
     m_pTileEditTmpl = new CMultiDocTemplate(IDR_BITEDITOR,
-        RUNTIME_CLASS(CGamDoc), RUNTIME_CLASS(CBitEditFrame),
+        RUNTIME_CLASS(CGamDocMfc), RUNTIME_CLASS(CBitEditFrame),
         RUNTIME_CLASS(CBitEditViewContainer));
 
     EnableLoadWindowPlacement(FALSE);
@@ -631,10 +631,9 @@ BOOL CGmApp::OnIdle(LONG lCount)
         POSITION pos2 = pTemplate->GetFirstDocPosition();
         while (pos2)
         {
-            CGamDoc* pDoc = (CGamDoc*)pTemplate->GetNextDoc(pos2);
-            ASSERT(pDoc != NULL);
-            ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-            pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);
+            CGamDoc* pDoc = CB::ToCGamDoc(pTemplate->GetNextDoc(pos2));
+            wxASSERT(pDoc != NULL);
+            pDoc->OnIdle(bAppVisible && pDoc == CB::ToCGamDoc(pCurDoc));
 
         }
     }

@@ -148,14 +148,14 @@ void CGbxProjView::DoBoardClone()
         CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(fileGbxVerMajor, fileGbxVerMinor));
         CMemFile file;
         CArchive arSave(&file, CArchive::store);
-        arSave.m_pDocument = &pDoc;
+        arSave.m_pDocument = pDoc;
         SetFileFeaturesGuard setFileFeaturesGuard(arSave, GetCBFeatures());
         pOrigBoard.Serialize(arSave);      // Make a copy of the board
         arSave.Close();
 
         file.SeekToBegin();
         CArchive arRestore(&file, CArchive::load);
-        arRestore.m_pDocument = &pDoc;
+        arRestore.m_pDocument = pDoc;
         OwnerPtr<CBoard> pNewBoard = new CBoard();
         pNewBoard->Serialize(arRestore);
 

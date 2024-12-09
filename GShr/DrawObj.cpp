@@ -1316,7 +1316,7 @@ void CBitmapImage::Serialize(CArchive& ar)
 
         CDib dib(m_bitmap);
 #ifndef GPLAY
-        dib.SetCompressLevel(((CGamDoc*)ar.m_pDocument)->GetCompressLevel());
+        dib.SetCompressLevel(CB::ToCGamDoc(ar.m_pDocument)->GetCompressLevel());
 #endif
         ar << dib;
     }
@@ -1448,7 +1448,7 @@ void CTileImage::Serialize(CArchive& ar)
     }
     else
     {
-        m_pTMgr = &((CGamDoc*)ar.m_pDocument)->GetTileManager();
+        m_pTMgr = &CB::ToCGamDoc(ar.m_pDocument)->GetTileManager();
         ar >> m_tid;
     }
 }
@@ -1814,7 +1814,7 @@ void CPieceObj::Serialize(CArchive& ar)
     }
     else
     {
-        m_pDoc = (CGamDoc*)ar.m_pDocument;
+        m_pDoc = CB::ToCGamDoc(ar.m_pDocument);
         ar >> m_pid;
     }
 }
@@ -1939,7 +1939,7 @@ void CMarkObj::Serialize(CArchive& ar)
     }
     else
     {
-        m_pDoc = ((CGamDoc*)ar.m_pDocument);
+        m_pDoc = CB::ToCGamDoc(ar.m_pDocument);
         ar >> m_dwObjectID;
         ar >> m_mid;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))       //Ver2.0
