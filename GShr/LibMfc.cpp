@@ -1204,6 +1204,8 @@ namespace CB
 #else
                 switch (id)
                 {
+                    case ID_BUGFIX_DUMPBADTILES:
+                        return XRCID("ID_BUGFIX_DUMPBADTILES");
                     case ID_COLOR_FOREGROUND:
                         return XRCID("ID_COLOR_FOREGROUND");
                     case ID_COLOR_BACKGROUND:
@@ -1212,6 +1214,8 @@ namespace CB
                         return XRCID("ID_COLOR_TRANSPARENT");
                     case ID_COLOR_CUSTOM:
                         return XRCID("ID_COLOR_CUSTOM");
+                    case ID_DUMP_TILEDATA:
+                        return XRCID("ID_DUMP_TILEDATA");
                     case ID_DWG_DRAWABOVEGRID:
                         return XRCID("ID_DWG_DRAWABOVEGRID");
                     case ID_DWG_FONT:
@@ -1220,6 +1224,16 @@ namespace CB
                         return XRCID("ID_DWG_TOBACK");
                     case ID_DWG_TOFRONT:
                         return XRCID("ID_DWG_TOFRONT");
+                    case ID_EDIT_CREATEBOARD:
+                        return XRCID("ID_EDIT_CREATEBOARD");
+                    case ID_EDIT_CREATEMARKGROUP:
+                        return XRCID("ID_EDIT_CREATEMARKGROUP");
+                    case ID_EDIT_CREATEPIECEGROUP:
+                        return XRCID("ID_EDIT_CREATEPIECEGROUP");
+                    case ID_EDIT_CREATETILEGROUP:
+                        return XRCID("ID_EDIT_CREATETILEGROUP");
+                    case ID_EDIT_GBOXPROPERTIES:
+                        return XRCID("ID_EDIT_GBOXPROPERTIES");
                     case ID_EDIT_LAYER_BASE:
                         return XRCID("ID_EDIT_LAYER_BASE");
                     case ID_EDIT_LAYER_TILE:
@@ -1230,6 +1244,8 @@ namespace CB
                         return XRCID("ID_EDIT_MOVE");
                     case ID_EDIT_PASTEBITMAPFROMFILE:
                         return XRCID("ID_EDIT_PASTEBITMAPFROMFILE");
+                    case ID_EXPORT_GAMEBOX:
+                        return XRCID("ID_EXPORT_GAMEBOX");
                     case ID_IMAGE_BOARDMASK:
                         return XRCID("ID_IMAGE_BOARDMASK");
                     case ID_IMAGE_GRIDLINES:
@@ -1262,10 +1278,14 @@ namespace CB
                         return XRCID("ID_ITOOL_COLORCHANGE");
                     case ID_LINE_WIDTH:
                         return XRCID("ID_LINE_WIDTH");
-                    case ID_PROJECT_SAVETILEFILE:
-                        return XRCID("ID_PROJECT_SAVETILEFILE");
+                    case ID_PROJECT_CHGID:
+                        return XRCID("ID_PROJECT_CHGID");
                     case ID_PROJECT_LOADTILEFILE:
                         return XRCID("ID_PROJECT_LOADTILEFILE");
+                    case ID_PROJECT_SAVETILEFILE:
+                        return XRCID("ID_PROJECT_SAVETILEFILE");
+                    case ID_STICKY_DRAWTOOLS:
+                        return XRCID("ID_STICKY_DRAWTOOLS");
                     case ID_TOOL_ARROW:
                         return XRCID("ID_TOOL_ARROW");
                     case ID_TOOL_DROPPER:
