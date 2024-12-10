@@ -362,18 +362,23 @@ protected:
     void OnEditGbxProperties();
     void OnEditGbxProperties(wxCommandEvent& /*event*/) { OnEditGbxProperties(); }
     void OnEditCreateBoard();
+    void OnEditCreateBoard(wxCommandEvent& /*event*/) { OnEditCreateBoard(); }
     void OnEditCreateTileGroup();
+    void OnEditCreateTileGroup(wxCommandEvent& /*event*/) { OnEditCreateTileGroup(); }
     void OnEditCreatePieceGroup();
+    void OnEditCreatePieceGroup(wxCommandEvent& /*event*/) { OnEditCreatePieceGroup(); }
     void OnEditCreateMarkGroup();
-    void OnProjectChangeFingerPrint();
-    void OnStickyDrawTools();
-    void OnUpdateStickyDrawTools(CCmdUI* pCmdUI);
-    void OnDumpTileData();
-    void OnBugFixDumpBadTiles();
+    void OnEditCreateMarkGroup(wxCommandEvent& /*event*/) { OnEditCreateMarkGroup(); }
+    void OnProjectChangeFingerPrint(wxCommandEvent& event);
+    void OnStickyDrawTools(wxCommandEvent& event);
+    void OnUpdateStickyDrawTools(wxUpdateUIEvent& pCmdUI);
+    void OnDumpTileData(wxCommandEvent& event);
+    void OnBugFixDumpBadTiles(wxCommandEvent& event);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
 
     wxDECLARE_EVENT_TABLE();
 public:
-    void OnExportGamebox();
+    void OnExportGamebox(wxCommandEvent& event);
 
 private:
     RefPtr<CGamDocMfc> mfcDoc;

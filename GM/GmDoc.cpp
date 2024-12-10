@@ -95,19 +95,26 @@ void SetFileFeatures(Features&& fs)
 // CGamDoc - message dispatch table
 
 wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
-#if 0
-    ON_COMMAND(ID_EDIT_GBOXPROPERTIES, OnEditGbxProperties)
-    ON_COMMAND(ID_EDIT_CREATEBOARD, OnEditCreateBoard)
-    ON_COMMAND(ID_EDIT_CREATETILEGROUP, OnEditCreateTileGroup)
-    ON_COMMAND(ID_EDIT_CREATEPIECEGROUP, OnEditCreatePieceGroup)
-    ON_COMMAND(ID_EDIT_CREATEMARKGROUP, OnEditCreateMarkGroup)
-    ON_COMMAND(ID_PROJECT_CHGID, OnProjectChangeFingerPrint)
-    ON_COMMAND(ID_STICKY_DRAWTOOLS, OnStickyDrawTools)
-    ON_UPDATE_COMMAND_UI(ID_STICKY_DRAWTOOLS, OnUpdateStickyDrawTools)
-    ON_COMMAND(ID_DUMP_TILEDATA, OnDumpTileData)
-    ON_COMMAND(ID_BUGFIX_DUMPBADTILES, OnBugFixDumpBadTiles)
-    ON_COMMAND(ID_EXPORT_GAMEBOX, OnExportGamebox)
-#endif
+    EVT_MENU(XRCID("ID_EDIT_GBOXPROPERTIES"), OnEditGbxProperties)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_GBOXPROPERTIES"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_EDIT_CREATEBOARD"), OnEditCreateBoard)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATEBOARD"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_EDIT_CREATETILEGROUP"), OnEditCreateTileGroup)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATETILEGROUP"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_EDIT_CREATEPIECEGROUP"), OnEditCreatePieceGroup)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATEPIECEGROUP"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_EDIT_CREATEMARKGROUP"), OnEditCreateMarkGroup)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATEMARKGROUP"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_PROJECT_CHGID"), OnProjectChangeFingerPrint)
+    EVT_UPDATE_UI(XRCID("ID_PROJECT_CHGID"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_STICKY_DRAWTOOLS"), OnStickyDrawTools)
+    EVT_UPDATE_UI(XRCID("ID_STICKY_DRAWTOOLS"), OnUpdateStickyDrawTools)
+    EVT_MENU(XRCID("ID_DUMP_TILEDATA"), OnDumpTileData)
+    EVT_UPDATE_UI(XRCID("ID_DUMP_TILEDATA"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_BUGFIX_DUMPBADTILES"), OnBugFixDumpBadTiles)
+    EVT_UPDATE_UI(XRCID("ID_BUGFIX_DUMPBADTILES"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_EXPORT_GAMEBOX"), OnExportGamebox)
+    EVT_UPDATE_UI(XRCID("ID_EXPORT_GAMEBOX"), OnUpdateEnable)
 wxEND_EVENT_TABLE()
 
 ///////////////////////////////////////////////////////////////////////
@@ -966,7 +973,7 @@ void CGamDoc::OnEditCreateMarkGroup()
 }
 
 
-void CGamDoc::OnProjectChangeFingerPrint()
+void CGamDoc::OnProjectChangeFingerPrint(wxCommandEvent& /*event*/)
 {
     if (AfxMessageBox(IDP_WARN_CHGID, MB_YESNO | MB_DEFBUTTON2 |
             MB_ICONEXCLAMATION) != IDYES)
@@ -979,17 +986,17 @@ void CGamDoc::OnProjectChangeFingerPrint()
     SetModifiedFlag();
 }
 
-void CGamDoc::OnStickyDrawTools()
+void CGamDoc::OnStickyDrawTools(wxCommandEvent& /*event*/)
 {
     m_bStickyDrawTools = !m_bStickyDrawTools;
 }
 
-void CGamDoc::OnUpdateStickyDrawTools(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateStickyDrawTools(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bStickyDrawTools);
+    pCmdUI.Check(m_bStickyDrawTools);
 }
 
-void CGamDoc::OnDumpTileData()
+void CGamDoc::OnDumpTileData(wxCommandEvent& /*event*/)
 {
     CFileDialog dlg(FALSE, "txt"_cbstring, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
         "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
@@ -999,7 +1006,7 @@ void CGamDoc::OnDumpTileData()
     }
 }
 
-void CGamDoc::OnBugFixDumpBadTiles()
+void CGamDoc::OnBugFixDumpBadTiles(wxCommandEvent& /*event*/)
 {
     if (AfxMessageBox("This is a secret function that will attempt to remove illegal tiles "
         "assigned to tile sheet 255. It can also trash your GameBox. Therefore, only Dale Larson and his "
@@ -1011,7 +1018,12 @@ void CGamDoc::OnBugFixDumpBadTiles()
     }
 }
 
-void CGamDoc::OnExportGamebox()
+void CGamDoc::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
+void CGamDoc::OnExportGamebox(wxCommandEvent& /*event*/)
 {
     //TBD??? Formally used as experimental XML exporter.
 }
