@@ -29,6 +29,7 @@
 #include    "VwTilesl.h"
 #include    "VwBitedt.h"
 #include    "DlgTilsz.h"
+#include    "FrmMain.h"     // TODO:  remove?
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -53,9 +54,14 @@ CTileSelView::CTileSelView(CTileSelViewContainer& p) :
     m_tid = nullTid;
     m_bNoUpdate = FALSE;
     wxScrolledCanvas::Create(*parent, 0);
+    wxView->SetDocument(&*document);
+    wxView->SetFrame(this);
 }
 
-wxBEGIN_EVENT_TABLE(CTileSelView, wxScrolledCanvas)
+namespace {
+    typedef wxDocChildFrameAny<CB::PseudoFrame<wxScrolledCanvas>, wxWindow> NoCommas;
+}
+wxBEGIN_EVENT_TABLE(CTileSelView, NoCommas)
     EVT_LEFT_DOWN(OnLButtonDown)
 wxEND_EVENT_TABLE()
 
@@ -103,6 +109,8 @@ END_MESSAGE_MAP()
 
 void CTileSelView::OnInitialUpdate()
 {
+    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+
     m_pTileMgr = &GetDocument().GetTileManager();
     m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
     ASSERT(m_tid != nullTid);
@@ -677,6 +685,9 @@ void CTileSelViewContainer::OnActivateView(BOOL bActivate,
         wxWindow& bitEditParent = CheckedDeref(bitEdit.GetParent());
         CView& view = CheckedDeref(dynamic_cast<CView*>(CB::ToCWnd(bitEditParent)));
         GetParentFrame()->SetActiveView(&view);
+
+        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
+        bitEdit.ProcessWindowEvent(event);
     }
 }
 
@@ -696,6 +707,9 @@ int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return -1;
     }
+
+    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
+    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
 
     child = new CTileSelView(*this);
 

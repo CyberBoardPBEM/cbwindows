@@ -35,7 +35,7 @@
 class CBitEditView;
 class CTileSelViewContainer;
 
-class CTileSelView : public wxScrolledCanvas
+class CTileSelView : public wxDocChildFrameAny<CB::PseudoFrame<wxScrolledCanvas>, wxWindow>
 {
     friend class CBitEditFrame;
     friend class CTileSelViewContainer;
@@ -118,6 +118,7 @@ protected:
 private:
     RefPtr<CTileSelViewContainer> parent;
     RefPtr<CGamDoc> document;
+    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
 };
 
 class CTileSelViewContainer : public CView,

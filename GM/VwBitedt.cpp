@@ -34,6 +34,7 @@
 #include    "DlgBmask.h"
 #include    "DlgPaste.h"
 #include    "CDib.h"
+#include    "FrmMain.h"     // TODO:  remove?
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -49,7 +50,10 @@ const size_t maxUndoLevels = size_t(8);
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
+namespace {
+    typedef wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow> NoCommas;
+}
+wxBEGIN_EVENT_TABLE(CBitEditView, NoCommas)
     EVT_MENU(XRCID("ID_IMAGE_GRIDLINES"), OnImageGridLines)
     EVT_MENU(XRCID("ID_ITOOL_PENCIL"), OnToolPalette)
     EVT_SETCOLOR(OnSetColor)
@@ -137,6 +141,8 @@ CBitEditView::CBitEditView(CBitEditViewContainer& p) :
     m_nLastToolID = XRCID("ID_ITOOL_PENCIL");
     m_bSelectCapture = FALSE;
     wxScrolledCanvas::Create(*parent, 0);
+    wxView->SetDocument(&*document);
+    wxView->SetFrame(this);
 }
 
 CBitEditView::~CBitEditView()
@@ -148,6 +154,8 @@ CBitEditView::~CBitEditView()
 
 void CBitEditView::OnInitialUpdate()
 {
+    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->Add(100, 100);
@@ -231,7 +239,15 @@ void CBitEditView::OnDraw(wxDC& pDC)
 void CBitEditViewContainer::OnActivateView(BOOL bActivate, CView *pActivateView,
     CView* pDeactivateView)
 {
-    CView::OnActivateView(bActivate, pActivateView, pDeactivateView);
+    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactivateView);
+
+    // KLUDGE:  often get deactivate w/o activate
+    if (bActivate)
+    {
+        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
+        child->ProcessWindowEvent(event);
+    }
+
     if (pActivateView == pDeactivateView)
         return;
 //  if (m_nCurToolID == ID_ITOOL_TEXT)
@@ -1311,6 +1327,9 @@ int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return -1;
     }
+
+    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
+    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
 
     child = new CBitEditView(*this);
 
