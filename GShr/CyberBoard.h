@@ -1946,6 +1946,58 @@ namespace CB
     const std::type_info& GetPublicTypeid(const wxWindow& w);
 }
 
+// helpers for providing wx/docview
+namespace CB
+{
+    // satisfy wxDocChildFrameAny<> requirements
+    template<typename BASE>
+    class PseudoFrame : public BASE
+    {
+    public:
+        bool Create(wxWindow* parent,
+            wxWindowID id,
+            const wxString& title,
+            const wxPoint& pos = wxDefaultPosition,
+            const wxSize& size = wxDefaultSize,
+            long style = wxDEFAULT_FRAME_STYLE,
+            const wxString& name = wxASCII_STR(wxFrameNameStr))
+        {
+            return true;
+        }
+
+        // from wxTopLevelWindowBase:
+        // this should go away, but for now it's called from docview.cpp,
+        // so should be there for all platforms
+        void OnActivate(wxActivateEvent& WXUNUSED(event)) { }
+    };
+
+    /* wxView must be separate from wxWindow
+        (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
+    class wxView : public ::wxView
+    {
+    public:
+        wxView(wxWindow& v) :
+            window(&v)
+        {
+        }
+
+        ~wxView()
+        {
+            // wnd dtor deletes this, so avoid wx trying to delete wnd
+            SetDocChildFrame(nullptr);
+        }
+
+        void OnDraw(wxDC* dc) override
+        {
+            CPP20_TRACE("{}({})\n", __func__, typeid(*window).name());
+            wxASSERT(!"not impl");
+        }
+
+    private:
+        RefPtr<wxWindow> window;
+    };
+}
+
 // CGamDoc is currently a wxDoc in GM, CDoc in GP, so need workaround
 class CGamDoc;
 namespace CB

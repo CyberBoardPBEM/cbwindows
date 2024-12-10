@@ -39,7 +39,7 @@
 
 class CTileSelView;
 
-class CBitEditView : public CB::ProcessEventOverride<wxScrolledCanvas>
+class CBitEditView : public wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow>
 {
     friend class CBitEditViewContainer;
     friend class CTileSelViewContainer;
@@ -236,6 +236,7 @@ private:
 
     RefPtr<CBitEditViewContainer> parent;
     RefPtr<CGamDoc> document;
+    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
 };
 
 class CBitEditViewContainer : public CB::OnCmdMsgOverride<CView>,

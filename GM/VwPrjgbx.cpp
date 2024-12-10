@@ -103,7 +103,10 @@ static UINT * btnGroupTbl[nNumGroups + 1] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
+namespace {
+    typedef wxDocChildFrameAny<CB::PseudoFrame<wxPanel>, wxWindow> NoCommas;
+}
+wxBEGIN_EVENT_TABLE(CGbxProjView, NoCommas)
 #if 0
     ON_WM_SIZE()
     ON_WM_CREATE()
@@ -193,6 +196,8 @@ CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
     m_listTiles->EnableDrag();
     m_listTiles->EnableSelfDrop();
     m_listTiles->EnableDropScroll();
+    wxView->SetDocument(&*document);
+    wxView->SetFrame(this);
 }
 
 CGbxProjView::~CGbxProjView()
@@ -272,6 +277,8 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGbxProjView::OnInitialUpdate()
 {
+    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+
     m_listTiles->SetDocument(&GetDocument());
     m_listPieces->SetDocument(GetDocument());
     m_listMarks->SetDocument(&GetDocument());
@@ -1447,6 +1454,18 @@ void CGbxProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHin
     CB::OnCmdMsgOverride<CView>::OnUpdate(pSender, lHint, pHint);
 }
 
+void CGbxProjViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+{
+    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactiveView);
+
+    // KLUDGE:  often get deactivate w/o activate
+    if (bActivate)
+    {
+        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
+        child->ProcessWindowEvent(event);
+    }
+}
+
 CGbxProjViewContainer::CGbxProjViewContainer() :
     CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
@@ -1458,6 +1477,9 @@ int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return -1;
     }
+
+    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
+    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
 
     child = new CGbxProjView(*this);
 

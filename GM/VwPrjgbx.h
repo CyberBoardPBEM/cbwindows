@@ -75,7 +75,7 @@ class CProjListBoxGm : public CProjListBoxWx<decltype(CB::Impl::CGbxProjViewBase
 
 class CGbxProjViewContainer;
 
-class CGbxProjView : public wxPanel, private CB::Impl::CGbxProjViewBase
+class CGbxProjView : public wxDocChildFrameAny<CB::PseudoFrame<wxPanel>, wxWindow>, private CB::Impl::CGbxProjViewBase
 {
 protected:
     CGbxProjView(CGbxProjViewContainer& p);
@@ -250,6 +250,7 @@ protected:
 private:
     RefPtr<CGbxProjViewContainer> parent;
     RefPtr<CGamDoc> document;
+    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
 
     friend class CGbxProjViewContainer;
 };
@@ -266,6 +267,7 @@ public:
     void OnDraw(CDC* pDC) override;
     void OnInitialUpdate() override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
 
 private:
     CGbxProjViewContainer();         // used by dynamic creation

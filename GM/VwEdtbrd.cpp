@@ -51,7 +51,10 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 
-wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
+namespace {
+    typedef wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow> NoCommas;
+}
+wxBEGIN_EVENT_TABLE(CBrdEditView, NoCommas)
 #if 0
     ON_WM_MOUSEWHEEL()
 #endif
@@ -175,6 +178,8 @@ CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
     SetSizer(sizer);
     sizer->Add(0, 0);
     wxScrolledCanvas::Create(*parent, 0);
+    wxView->SetDocument(&*document);
+    wxView->SetFrame(this);
 }
 
 CBrdEditView::~CBrdEditView()
@@ -197,6 +202,8 @@ BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CBrdEditView::OnInitialUpdate()
 {
+    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+
     m_pBMgr = &GetDocument().GetBoardManager();
     m_pBoard = static_cast<CBoard*>(GetDocument().GetCreateParameter());
     RecalcScrollLimits();
@@ -2350,6 +2357,18 @@ void CBrdEditViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHin
     child->OnUpdate(pSender, lHint, pHint);
 }
 
+void CBrdEditViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+{
+    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactiveView);
+
+    // KLUDGE:  often get deactivate w/o activate
+    if (bActivate)
+    {
+        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
+        child->ProcessWindowEvent(event);
+    }
+}
+
 CBrdEditViewContainer::CBrdEditViewContainer() :
     CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
@@ -2361,6 +2380,9 @@ int CBrdEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         return -1;
     }
+
+    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
+    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
 
     child = new CBrdEditView(*this);
 

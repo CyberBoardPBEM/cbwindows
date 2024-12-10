@@ -34,7 +34,7 @@
 
 class CBrdEditViewContainer;
 
-class CBrdEditView : public CB::ProcessEventOverride<wxScrolledCanvas>
+class CBrdEditView : public wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow>
 {
 protected: // create from serialization only
     CBrdEditView(CBrdEditViewContainer& p);
@@ -307,6 +307,7 @@ private:
 
     RefPtr<CBrdEditViewContainer> parent;
     RefPtr<CGamDoc> document;
+    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
     wxTimer timer;
     wxOverlay overlay;
 
@@ -331,6 +332,7 @@ public:
     void OnDraw(CDC* pDC) override;
     void OnInitialUpdate() override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
 
 private:
     CBrdEditViewContainer();         // used by dynamic creation
