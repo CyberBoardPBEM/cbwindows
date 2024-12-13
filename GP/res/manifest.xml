@@ -4,7 +4,7 @@
 	processorArchitecture="x86" 
 	version="5.1.0.0"
 	type="win32"
-	name="CBDesign"
+	name="CBPlay"
 />
 <description>CyberBoard Player Program</description>
 <dependency>
