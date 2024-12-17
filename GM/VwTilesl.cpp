@@ -1,6 +1,6 @@
 // VwTilesl.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -109,7 +109,9 @@ END_MESSAGE_MAP()
 
 void CTileSelView::OnInitialUpdate()
 {
+#if 0
     CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+#endif
 
     m_pTileMgr = &GetDocument().GetTileManager();
     m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
@@ -703,6 +705,7 @@ CTileSelViewContainer::CTileSelViewContainer() :
 
 int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
+#if 0
     if (CView::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
@@ -714,4 +717,7 @@ int CTileSelViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CTileSelView(*this);
 
     return 0;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }

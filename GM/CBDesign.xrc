@@ -3690,6 +3690,514 @@
       </object>
     </object>
   </object>
+  <object class="wxMenuBar" name="IDR_GAMEBOX">
+    <object class="wxMenu" name="m_menu11">
+      <label>_File</label>
+      <object class="wxMenuItem" name="wxID_NEW">
+        <label>New</label>
+        <accel>Ctrl+N</accel>
+        <help>Create a new GameBox\nNew GameBox</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_OPEN">
+        <label>Open</label>
+        <accel>Ctrl+O</accel>
+        <help>Open an existing GameBox\nOpen GameBox</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_CLOSE">
+        <label>_Close</label>
+        <accel></accel>
+        <help>Close the active document</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVE">
+        <label>_Save</label>
+        <accel>Ctrl+S</accel>
+        <help>Save the active GameBox\nSave Active GameBox</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVEAS">
+        <label>Save _As...</label>
+        <accel></accel>
+        <help>Save the active document with a new name</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_EXIT">
+        <label>E_xit</label>
+        <accel>Alt+F4</accel>
+        <help>Quit the application; prompts to save documents</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu12">
+      <label>_Edit</label>
+      <object class="wxMenuItem" name="wxID_UNDO">
+        <label>_Undo</label>
+        <accel>Ctrl+Z</accel>
+        <help>Undo the last action\nUndo</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>_Copy</label>
+        <accel>Ctrl+C</accel>
+        <help>Copy the selection and put it on the Clipboard\nCopy</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_PASTE">
+        <label>_Paste</label>
+        <accel>Ctrl+V</accel>
+        <help>Insert Clipboard contents\nPaste</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_MOVE">
+        <label>_Move</label>
+        <accel>Ctrl+M</accel>
+        <help>Move clipboard objects to new locations\nMove</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_DELETE">
+        <label>_Delete</label>
+        <accel>Del</accel>
+        <help>Erase the current selection\nDelete (Del)</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_PASTEBITMAPFROMFILE">
+        <label>Paste _Bitmap From File...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_BASE">
+        <label>B_ase Board Layer</label>
+        <accel>Ctrl+1</accel>
+        <help>Edit the board&apos;s base drawing layer\nBase Drawing Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_TILE">
+        <label>C_ell Board Layer</label>
+        <accel>Ctrl+2</accel>
+        <help>Edit the board&apos;s cell layer\nBoard Cell Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_LAYER_TOP">
+        <label>_Top Board Layer</label>
+        <accel>Ctrl+3</accel>
+        <help>Edit the board&apos;s top drawing layer\nTop Drawing Layer</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TOOLS_BRDPROPS">
+        <label>Board Properties...</label>
+        <accel></accel>
+        <help>Change the board properties</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu13">
+      <label>_View</label>
+      <object class="wxMenuItem" name="ID_VIEW_STATUS_BAR">
+        <label>Status Bar</label>
+        <accel></accel>
+        <help>Show or hide the status bar</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ZOOM_IN">
+        <label>Zoom Tile Image _In</label>
+        <accel></accel>
+        <help>Zoom the tile image in\nZoom Tile Image In</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_ZOOM_OUT">
+        <label>Zoom Tile Image _Out</label>
+        <accel></accel>
+        <help>Zoom the tile image out\nZoom Tile Image Out</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_IMAGE_GRIDLINES">
+        <label>Tile Image _Grid Lines</label>
+        <accel></accel>
+        <help>Shows or hides tile editor grid lines\nTile Grid Lines</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALE">
+        <label>_Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALE">
+        <label>_Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALE">
+        <label>S_mall Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board view</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_GRIDLINES">
+        <label>_Cell Border Lines</label>
+        <accel></accel>
+        <help>Hides or shows cell layer border lines\nCell Border Lines</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu14">
+      <label>_Project</label>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEBOARD">
+        <label>Create Playing _Board...</label>
+        <accel></accel>
+        <help>Create game play board.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATETILEGROUP">
+        <label>Create Tile _Image Group...</label>
+        <accel></accel>
+        <help>Create tile image grouping</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEPIECEGROUP">
+        <label>Create Playing _Piece Group...</label>
+        <accel></accel>
+        <help>Create a grouping for playing pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATEMARKGROUP">
+        <label>Create _Marker Group...</label>
+        <accel></accel>
+        <help>Create a grouping for markers</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_GBOXPROPERTIES">
+        <label>_GameBox Properties...</label>
+        <accel></accel>
+        <help>Edit the game box properties</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PROJECT_CHGID">
+        <label>Change GameBox _Fingerprint...</label>
+        <accel></accel>
+        <help>Change GameBox Fingerprint.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PROJECT_SAVETILEFILE">
+        <label>_Save Tile Library File...</label>
+        <accel></accel>
+        <help>Save tiles in a tile library file\nSave Tile File</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PROJECT_LOADTILEFILE">
+        <label>_Load Tile Library File...</label>
+        <accel></accel>
+        <help>Load tiles from a tile library file\nLoad Tile File</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu15">
+      <label>_Tools</label>
+      <object class="wxMenuItem" name="ID_DWG_FONT">
+        <label>Fo_nt...</label>
+        <accel></accel>
+        <help>Set default drawing font.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_DWG_TOFRONT">
+        <label>Bring Objects to _Front</label>
+        <accel></accel>
+        <help>Brings the selected drawing objects to the front of the drawing\nMove Object to Front</help>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_TOBACK">
+        <label>Send Objects to _Back</label>
+        <accel></accel>
+        <help>Sends the selected drawing objects to the back of the drawing\nMove Object to Back</help>
+      </object>
+      <object class="wxMenuItem" name="ID_DWG_DRAWABOVEGRID">
+        <label>Draw Objects Above Grid</label>
+        <accel></accel>
+        <help>Draw selected objects above the grid lines\nDraw Above Grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TOOL_SETVISIBLESCALE">
+        <label>Set Scale _Visibility...</label>
+        <accel></accel>
+        <help>Select which scales the objects are visible</help>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOL_SUSPENDSCALEVISIBILITY">
+        <label>_Suspend Scale Visibility</label>
+        <accel></accel>
+        <help>Turn off scaled visibility for drawn objects</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_TOOLS_BRDSNAPGRID">
+        <label>Snap _Grid</label>
+        <accel></accel>
+        <help>Enable or disables the board editor snap grid\nBoard Snap Grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOLS_BRDPROPS">
+        <label>Bo_ard Properties...</label>
+        <accel></accel>
+        <help>Change the board properties</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_STICKY_DRAWTOOLS">
+        <label>Drawing Tools Are Sticky</label>
+        <accel></accel>
+        <help>Toggle automatic selection of Select tool after drawing.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenu" name="m_menu5">
+        <label>Board Drawing Tools</label>
+        <object class="wxMenuItem" name="ID_TOOL_ARROW">
+          <label>_Selector</label>
+          <accel></accel>
+          <help>Selects objects\nSelect Objects</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_DROPPER">
+          <label>Pick_up Color</label>
+          <accel></accel>
+          <help>Extract a color from the screen\nPickup Color</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_TILE">
+          <label>Draw _Tile</label>
+          <accel></accel>
+          <help>Places tiles on the board\nTile</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_TEXT">
+          <label>Draw Te_xt</label>
+          <accel></accel>
+          <help>Places text on the board\nText</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_LINE">
+          <label>Draw _Line</label>
+          <accel></accel>
+          <help>Draw a line on the board\nLine</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_RECT">
+          <label>Draw _Rectangle</label>
+          <accel></accel>
+          <help>Draw a rectangle on the board\nRectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_POLYGON">
+          <label>Draw _Polygon</label>
+          <accel></accel>
+          <help>Draw a polygon or polyline on board\nPolygon or Polyline</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_OVAL">
+          <label>Draw _Oval</label>
+          <accel></accel>
+          <help>Draw an oval on the board\nOval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_FILL">
+          <label>_Color Cell</label>
+          <accel></accel>
+          <help>Fills board cell with a single color\nColor Cell</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOL_ERASER">
+          <label>_Erase Cell</label>
+          <accel></accel>
+          <help>Erases contents of board cell\nErase Cell</help>
+          <checkable>1</checkable>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_IMAGE_UPDATE">
+        <label>_Update Tile Changes</label>
+        <accel>Ctrl+U</accel>
+        <help>Update original tile with changes</help>
+      </object>
+      <object class="wxMenuItem" name="ID_IMAGE_DISCARD">
+        <label>_Discard Tile Changes</label>
+        <accel></accel>
+        <help>Discard changes to tile image</help>
+      </object>
+      <object class="wxMenu" name="m_menu6">
+        <label>Rotate Tile</label>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT90">
+          <label>90°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 90 degrees</help>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT180">
+          <label>180°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 180 degrees</help>
+        </object>
+        <object class="wxMenuItem" name="ID_TOOLS_ROT270">
+          <label>270°</label>
+          <accel></accel>
+          <help>Rotate the tile image clockwise 270 degrees</help>
+        </object>
+      </object>
+      <object class="wxMenuItem" name="ID_TOOLS_RESIZETILE">
+        <label>R_esize Tile...</label>
+        <accel></accel>
+        <help>Resize the tile&apos;s bitmaps</help>
+      </object>
+      <object class="wxMenuItem" name="ID_IMAGE_BOARDMASK">
+        <label>Apply Cell _Mask to Tile...</label>
+        <accel></accel>
+        <help>Apply the cell mask from a board</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenu" name="m_menu7">
+        <label>Tile Image Tools</label>
+        <object class="wxMenuItem" name="ID_ITOOL_PENCIL">
+          <label>_Pencil</label>
+          <accel></accel>
+          <help>Draws using a singe-pixel pencil\nPixel Pencil</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_SELECT">
+          <label>_Selector</label>
+          <accel></accel>
+          <help>Selects a portion the image for move, cut or copy\nSelect</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_BRUSH">
+          <label>_Brush</label>
+          <accel></accel>
+          <help>Draw using a brush having the selected size\nBrush</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILL">
+          <label>_Fill</label>
+          <accel></accel>
+          <help>Fill a portion of the image with the selected color\nFill</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_COLORCHANGE">
+          <label>_Change Color</label>
+          <accel></accel>
+          <help>Change clicked color to current color.\nChange Color</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_TEXT">
+          <label>_Text</label>
+          <accel></accel>
+          <help>Draw text on the image using the current font\nText</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_LINE">
+          <label>_Line</label>
+          <accel></accel>
+          <help>Draw lines on the the image using the current size\nLine</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_RECT">
+          <label>_Rect</label>
+          <accel></accel>
+          <help>Draw a rectagle using the selected color and border width\nRectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_OVAL">
+          <label>_Oval</label>
+          <accel></accel>
+          <help>Draw an oval using the selected color and border width\nOval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILLRECT">
+          <label>Filled R_ect</label>
+          <accel></accel>
+          <help>Draw a filled rectagle using the selected color and border width\nFilled Rectangle</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_FILLOVAL">
+          <label>Filled O_val</label>
+          <accel></accel>
+          <help>Draw an filled oval using the selected colors and border width\nFilled Oval</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ITOOL_DROPPER">
+          <label>P_ickup Color</label>
+          <accel></accel>
+          <help>Extract a color from the screen\nPickup Color</help>
+          <checkable>1</checkable>
+        </object>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu17">
+      <label>Help</label>
+      <object class="wxMenuItem" name="ID_HELP_INDEX">
+        <label>Contents</label>
+        <accel></accel>
+        <help>List Help topics</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_HELP_WEBSITE">
+        <label>Visit the CyberBoard Web Site...</label>
+        <accel></accel>
+        <help>Opens a web browser and takes you to the CyberBoard web site.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_HELP_RELEASES">
+        <label>Latest CyberBoard Releases...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ABOUT">
+        <label>_About CyberBoard...</label>
+        <accel></accel>
+        <help>Display program information, version number and copyright\nProgram Information</help>
+      </object>
+    </object>
+  </object>
+  <object class="wxMenuBar" name="IDR_MAINFRAME">
+    <object class="wxMenu" name="m_menu7">
+      <label>File</label>
+      <object class="wxMenuItem" name="wxID_NEW">
+        <label>New</label>
+        <accel>Ctrl+N</accel>
+        <help>Create a new GameBox\nNew GameBox</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_OPEN">
+        <label>Open</label>
+        <accel>Ctrl+O</accel>
+        <help>Open an existing GameBox\nOpen GameBox</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_EXIT">
+        <label>Exit</label>
+        <accel>Alt+F4</accel>
+        <help>Quit the application; prompts to save documents</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu8">
+      <label>View</label>
+      <object class="wxMenuItem" name="ID_VIEW_STATUS_BAR">
+        <label>Status Bar</label>
+        <accel></accel>
+        <help>Show or hide the status bar</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu9">
+      <label>Help</label>
+      <object class="wxMenuItem" name="ID_HELP_INDEX">
+        <label>Contents</label>
+        <accel></accel>
+        <help>List Help topics</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_HELP_WEBSITE">
+        <label>Visit the CyberBoard Web Site...</label>
+        <accel></accel>
+        <help>Opens a web browser and takes you to the CyberBoard web site.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_HELP_RELEASES">
+        <label>Latest CyberBoard Releases...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ABOUT">
+        <label>_About CyberBoard...</label>
+        <accel></accel>
+        <help>Display program information, version number and copyright\nProgram Information</help>
+      </object>
+    </object>
+  </object>
   <object class="wxMenuBar" name="IDR_MENU_DESIGN_POPUPS">
     <object class="wxMenu" name="MENU_BV_DRAWING">
       <label>0=BV__EDIT</label>

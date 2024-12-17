@@ -70,7 +70,9 @@ CTilePalette::CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd) :
 
 void CTilePalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
+#if 0
     GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

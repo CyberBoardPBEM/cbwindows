@@ -49,6 +49,7 @@ CDockTilePalette::~CDockTilePalette()
 
 void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
 {
+#if 0
     if (m_pChildWnd == pChildWnd)
         return;
 
@@ -70,4 +71,7 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
     }
     else
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }

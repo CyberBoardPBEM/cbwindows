@@ -1,6 +1,6 @@
 // Gm.cpp : Defines the class behaviors for the application.
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -30,7 +30,6 @@
 
 #include    "FrmMain.h"
 #include    "FrmView.h"
-#include    "FrmBxdoc.h"
 #include    "FrmBited.h"
 #include    "VwEdtbrd.h"
 #include    "VwBitedt.h"
@@ -278,6 +277,7 @@ CGmApp::CGmApp()
 class CGmApp::CwxGmApp : public wxMFCApp<CGmApp>
 {
 protected:
+#if 0
     BOOL InitMainWnd() override
     {
         // Create main MDI Frame window
@@ -304,6 +304,7 @@ protected:
 
         return TRUE;
     }
+#endif
 };
 
 CGmApp& CGmApp::Get()
@@ -329,9 +330,30 @@ namespace {
             wxXmlResource::Get()->InitAllHandlers();
             wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
 
+            // Fill in the application information fields before creating wxConfig.
+            SetVendorName("CyberBoardPBEM");
+            SetAppName("CBDesign");
+            SetAppDisplayName(CB::GetAppName());
             static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+            new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
+                              "CGamDoc", "wxGbxProjView",
+                              CLASSINFO(CGamDoc), CLASSINFO(wxGbxProjView));
+            wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+            docMgr.FileHistoryLoad(*wxConfig::Get());
+
+            CMainFrame& pMainFrame = *new CMainFrame;
+            wxTheApp->SetTopWindow(&pMainFrame);
+            pMainFrame.Show();
 
             return true;
+        }
+
+        int OnExit() override
+        {
+            wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+            docMgr.FileHistorySave(*wxConfig::Get());
+
+            return wxAppWithMFC::OnExit();
         }
     };
 }
@@ -400,11 +422,6 @@ BOOL CGmApp::InitInstance()
 
     // Register the application's document templates.  Document templates
     // serve as the connection between documents, frame windows and views.
-    AddDocTemplate(new CMultiDocTemplate(IDR_GAMEBOX,
-        RUNTIME_CLASS(CGamDocMfc),
-        RUNTIME_CLASS(CDocFrame),
-        RUNTIME_CLASS(CGbxProjViewContainer)));
-
     m_pMapViewTmpl = new CMultiDocTemplate(IDR_BOARDVIEW,
         RUNTIME_CLASS(CGamDocMfc), RUNTIME_CLASS(CViewFrame),
         RUNTIME_CLASS(CBrdEditViewContainer));
@@ -415,9 +432,11 @@ BOOL CGmApp::InitInstance()
 
     EnableLoadWindowPlacement(FALSE);
 
+#if 0
     // Enable DDE Execute open
     EnableShellOpen();
     RegisterShellFileTypes(TRUE);
+#endif
 
     // Remove the ShellNew key since we don't support it...
     AfxRegDeleteKey(HKEY_CLASSES_ROOT, szGbxShellNew);
@@ -566,9 +585,13 @@ BOOL CGmApp::DispatchMessages()
     {
         if (msg.message == WM_QUIT)
         {
+#if 0
             if (GetMainFrame() != NULL && ::IsWindow(GetMainFrame()->GetSafeHwnd()))
                 GetMainFrame()->PostMessage(WM_QUIT, 0, 0);
             return TRUE;                // Inform caller the WM_QUIT was queued
+#else
+            AfxThrowNotSupportedException();
+#endif
         }
         if (!PreTranslateMessage(&msg))
         {
@@ -610,35 +633,30 @@ BOOL CGmApp::OnIdle(LONG lCount)
     // as when a context menu is visible. Therefore we also
     // cause the quit message to be reposted so the message
     // pump will exit.
-    if (GetMainFrame() == NULL)
+    CMainFrame* mainWnd = GetMainFrame();
+    if (mainWnd == NULL)
     {
         PostQuitMessage(0);
         return TRUE;
     }
 
     // Inform all open documents of idle condition.
-    CDocument* pCurDoc = GetMainFrame()->GetCurrentDocument();
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocument* pCurDoc = docMgr.GetCurrentDocument();
 
-    POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
+    BOOL bAppVisible = mainWnd->IsShown() &&
+        !mainWnd->IsIconized();
 
-    BOOL bAppVisible = m_pMainWnd->IsWindowVisible() &&
-        !m_pMainWnd->IsIconic();
-
-    while (pos != NULL)
+    wxList& docs = docMgr.GetDocuments();
+    for (auto it = docs.begin() ; it != docs.end() ; ++it)
     {
-        CDocTemplate* pTemplate =
-            (CDocTemplate*)m_pDocManager->GetNextDocTemplate(pos);
-        POSITION pos2 = pTemplate->GetFirstDocPosition();
-        while (pos2)
-        {
-            CGamDoc* pDoc = CB::ToCGamDoc(pTemplate->GetNextDoc(pos2));
-            wxASSERT(pDoc != NULL);
-            pDoc->OnIdle(bAppVisible && pDoc == CB::ToCGamDoc(pCurDoc));
+        CGamDoc* pDoc = dynamic_cast<CGamDoc*>(*it);
+        wxASSERT(pDoc != NULL);
+        pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);
 
-        }
     }
     // Main idle processing...
-    ((CMainFrame*)m_pMainWnd)->OnIdle();
+    mainWnd->OnIdle();
     // Finally MFC idle processing...
     return CWinAppEx::OnIdle(lCount);
 }
@@ -735,9 +753,9 @@ void CGmApp::OnHelpReleases()
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
-wxNativeContainerWindow& CB::GetMainWndWx()
+wxWindow* CB::pGetMainWndWx()
 {
-    return *dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+    return wxTheApp->GetTopWindow();
 }
 
 CB::string CB::GetAppName()

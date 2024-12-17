@@ -1,6 +1,6 @@
 // GmDoc.cpp : implementation of the CGamDoc class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -68,7 +68,8 @@ Features CGamDoc::c_fileFeatures;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGamDocMfc, CDocument)
+wxIMPLEMENT_DYNAMIC_CLASS(CGamDoc, wxDocument);
+IMPLEMENT_DYNAMIC(CGamDocMfc, CDocument)
 IMPLEMENT_DYNCREATE(CGmBoxHint, CObject)
 
 #ifdef  _DEBUG
@@ -119,8 +120,8 @@ wxEND_EVENT_TABLE()
 
 ///////////////////////////////////////////////////////////////////////
 
-CGamDoc::CGamDoc(CGamDocMfc& md) :
-    mfcDoc(&md)
+CGamDoc::CGamDoc() :
+    mfcDoc(new CGamDocMfc(*this))
 {
     m_pBMgr = NULL;
     m_pTMgr = NULL;
@@ -161,19 +162,58 @@ void CGamDoc::OnIdle(BOOL bActive)
 {
     if (bActive)
     {
+#if 0
         CDockTilePalette& pDockTile = GetMainFrame()->GetDockingTileWindow();
         pDockTile.SetChild(m_palTile.get());
         GetMainFrame()->UpdatePaletteWindow(pDockTile, tblBrd,
             GetMainFrame()->IsTilePaletteOn());
+#endif
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+/* whichever UpdateAllViews() is used,
+    pass it also to other version,
+    but don't infinitely recurse */
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+    // avoid recursion due to wx and mfc UpdateAllViews()
+    static wxRecursionGuardFlag s_flag;
+    wxRecursionGuard guard(s_flag);
+    if (guard.IsInside())
+    {
+        // don't allow reentrancy
+        return;
+    }
+
     CPP20_TRACE("{}({}, {}, {})\n", __func__, static_cast<void*>(pSender), lHint, static_cast<void*>(pHint));
-    WORD wHint = LOWORD(lHint);
+    mfcDoc->CDocument::UpdateAllViews(pSender, lHint, pHint);
+    CGmBoxHint* hint = dynamic_cast<CGmBoxHint*>(pHint);
+    wxASSERT(!pHint || hint);       // pHint --> hint
+    UpdateAllViews(nullptr, CGmBoxHintWx(lHint, hint));
+}
+
+// wxWidgets
+void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nullptr*/)
+{
+    // avoid recursion due to wx and mfc UpdateAllViews()
+    static wxRecursionGuardFlag s_flag;
+    wxRecursionGuard guard(s_flag);
+    if (guard.IsInside())
+    {
+        // don't allow reentrancy
+        return;
+    }
+
+    CPP20_TRACE("{}({}, {})\n", __func__, static_cast<void*>(sender), static_cast<void*>(hint));
+    wxDocument::UpdateAllViews(sender, hint);
+
+    CGmBoxHintWx* cbhint = dynamic_cast<CGmBoxHintWx*>(hint);
+    wxASSERT(!hint || cbhint);      // hint --> cbhint
+    WORD wHint = static_cast<WORD>(cbhint ? cbhint->hint : HINT_ALWAYSUPDATE);
+    CObject* mfcHintObject = cbhint ? cbhint->hintObj : nullptr;
+#if 0
     if (
         ((wHint & HINT_TILEGROUP) && !(wHint & ~HINT_TILEGROUP)) ||
         wHint == HINT_TILESETDELETED ||
@@ -181,13 +221,28 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
         wHint == HINT_ALWAYSUPDATE
         )
         m_palTile->UpdatePaletteContents();
-    mfcDoc->CDocument::UpdateAllViews(pSender, lHint, pHint);
+#endif
+    UpdateAllViews(nullptr, wHint, mfcHintObject);
 }
 
-// wxWidgets
-void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nullptr*/)
+// give bit editor chance to update doc before doc closes
+bool CGamDoc::OnSaveModified()
 {
-    CPP20_TRACE("{}({}, {})\n", __func__, static_cast<void*>(sender), static_cast<void*>(hint));
+    if (++saveMods != 1)
+    {
+        // avoid double-query (save/discard) on closing app w/ open bit editor
+        return true;
+    }
+
+    // Make sure tile edits are saved.
+    UpdateAllViews(nullptr, CGmBoxHintWx(HINT_FORCETILEUPDATE));
+
+    bool retval = wxDocument::OnSaveModified();
+    if (!retval)
+    {
+        saveMods = 0;
+    }
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -196,12 +251,47 @@ bool CGamDoc::OnNewDocument()
 {
     if (!mfcDoc->CDocument::OnNewDocument())
         return FALSE;
-    return SetupBlankBoard();
+    if (!wxDocument::OnNewDocument())
+    {
+        return false;
+    }
+    bool retval = SetupBlankBoard();
+    if (retval)
+    {
+        // success, so tell views that doc is ready
+        UpdateAllViews(nullptr, CGmBoxHintWx(HINT_DOCREADY));
+    }
+    return retval;
 }
 
 bool CGamDoc::OnOpenDocument(const wxString& lpszPathName)
 {
-    BOOL bOK = wxDocument::OnOpenDocument(lpszPathName);
+    // on success, tell views that doc is ready
+    class Retval
+    {
+    public:
+        Retval(CGamDoc& d) : doc(d) {}
+        ~Retval()
+        {
+            if (retval)
+            {
+                doc.UpdateAllViews(nullptr, CGmBoxHintWx(HINT_DOCREADY));
+            }
+        }
+        operator bool&() { return retval; }
+        bool& operator=(bool b)
+        {
+            bool& rc = *this;
+            rc = b;
+            return rc;
+        }
+    private:
+        CGamDoc& doc;
+        bool retval = false;
+    };
+
+    Retval bOK(*this);
+    bOK = wxDocument::OnOpenDocument(lpszPathName);
     // If the game loaded OK, check if it's password protected.
     if (bOK)
     {
@@ -217,12 +307,12 @@ bool CGamDoc::OnOpenDocument(const wxString& lpszPathName)
         {
             bfr = ComputeGameboxPasskey(dlg.m_strPassword);
             if (bfr == m_abytePass)
-                return TRUE;
+                return (bOK = TRUE);
             AfxMessageBox(IDS_ERR_BAD_PASSWORD);
         }
         else
             AfxMessageBox(IDS_ERR_NEED_PASSWORD);
-        return FALSE;
+        return (bOK = FALSE);
     }
     return bOK;
 }
@@ -253,7 +343,7 @@ bool CGamDoc::OnSaveDocument(const wxString& pszPathName)
     return wxDocument::OnSaveDocument(pszPathName);
 }
 
-bool CGamDoc::DeleteContents()
+CGamDoc::~CGamDoc()
 {
     m_pTMgr = NULL;
     m_pBMgr = NULL;
@@ -273,7 +363,7 @@ bool CGamDoc::DeleteContents()
     CColorPalette::CustomColorsClear(m_pCustomColors);
 
     mfcDoc->CDocument::DeleteContents();
-    return wxDocument::DeleteContents();
+    wxDocument::DeleteContents();
 }
 
 // wxDocument
@@ -320,8 +410,10 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle
     pNewFrame->SetWindowText(str);
     m_lpvCreateParam = lpvCreateParam;
     pTemplate.InitialUpdateFrame(pNewFrame, *this);
+#if 0
     // KLUDGE:  work around https://github.com/CyberBoardPBEM/cbwindows/issues/23
     GetMainFrame()->RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
+#endif
     m_lpvCreateParam = NULL;
     return TRUE;
 }
@@ -332,7 +424,9 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle
 BOOL CGamDoc::NotifyTileDatabaseChange(BOOL bDelScan /* = TRUE */)
 {
 //  GetMainFrame()->GetTilePalWnd()->SynchronizeTileToolPalette();
+#if 0
     m_palTile->UpdatePaletteContents();
+#endif
 
     // Verify the boards etc...aren't using nonexistant TileID's.
     if (bDelScan)
@@ -459,7 +553,9 @@ BOOL CGamDoc::SetupBlankBoard()
     m_pMMgr->SetTileManager(&*m_pTMgr);
 
     // Setup tile palette.
+#if 0
     m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
+#endif
     return TRUE;
 }
 
@@ -824,7 +920,9 @@ void CGamDoc::Serialize(CArchive& ar)
         END_CATCH_ALL
 
         // Setup tile palette.
+#if 0
         m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
+#endif
     }
 }
 

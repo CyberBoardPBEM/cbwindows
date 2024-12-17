@@ -186,10 +186,7 @@ public:
     DECLARE_MESSAGE_MAP()
 };
 
-class CMainFrame;
-
 inline CGmApp* GetApp() { return (CGmApp*)AfxGetApp(); }
-inline CMainFrame* GetMainFrame() { return (CMainFrame*)(GetApp()->m_pMainWnd); }
 
 /////////////////////////////////////////////////////////////////////////////
 

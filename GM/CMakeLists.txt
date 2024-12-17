@@ -29,7 +29,6 @@ set(SRCS
 	DlgTilsz.cpp
 	DlgTsetp.cpp
 	FrmBited.cpp
-	FrmBxdoc.cpp
 	FrmDockTile.cpp
 	FrmMain.cpp
 	FrmView.cpp

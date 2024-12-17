@@ -1,6 +1,6 @@
 // FrmMain.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -42,10 +42,8 @@
 #include    "frmdocktile.h"
 #endif
 
-class CMainFrame : public CMDIFrameWndExCb,
-                    public CB::wxNativeContainerWindowMixin
+class CMainFrame : public wxDocParentFrameAny<CB::wxAuiMDIParentFrame>
 {
-    DECLARE_DYNAMIC(CMainFrame)
 public:
     CMainFrame();
 
@@ -55,7 +53,9 @@ public:
 
     CView* GetActiveView() const;
 
+#if 0
     CDockTilePalette& GetDockingTileWindow() { return m_wndTilePal; }
+#endif
 
     BOOL IsTilePaletteOn() { return m_bTilePalOn; }
 
@@ -67,18 +67,23 @@ public:
 // Implementation
 public:
     void OnIdle();
+#if 0
     BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
     BOOL OnCloseDockingPane(CDockablePane* pWnd) override;
+#endif
 
     virtual ~CMainFrame();
+#if 0
 #ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
+    void AssertValid() const override;
+    void Dump(CDumpContext& dc) const override;
+#endif
 #endif
     void UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL IsOn);
     BOOL IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc);
 
  protected: // control bar embedded members
+#if 0
     CMFCMenuBar     m_wndMenuBar;       // Main menu
     CMFCToolBar     m_wndToolBar;       // Main toolbar
     CMFCToolBar     m_wndToolPal;       // Button tool palette for board draw
@@ -86,14 +91,18 @@ public:
     CDockColorPalette m_wndColorPal;    // Color tool palette window
     CDockTilePalette m_wndTilePal;      // Container window for tile palette
     CMFCStatusBar   m_wndStatusBar;     // Status bar at window bottom
+#endif
 
     BOOL            m_bColorPalOn;
     BOOL            m_bTilePalOn;
 
 // Generated message map functions
 protected:
+#if 0
     void WinHelp(DWORD_PTR dwData, UINT nCmd) override;
+#endif
 
+#if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnClose();
     afx_msg void OnWindowToolPal();
@@ -109,9 +118,22 @@ protected:
     afx_msg void OnUpdateWindowTilePalette(CCmdUI* pCmdUI);
     afx_msg void OnToggleColorPalette();
     afx_msg void OnToggleTilePalette();
+#endif
+    void OnTile(wxCommandEvent& event);
+    void OnUpdateTile(wxUpdateUIEvent& event);
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    wxAuiManager auiManager;
 };
+
+inline CMainFrame* GetMainFrame()
+{
+    // KLUDGE:  wx may return non-mainframe during shutdown
+    wxWindow* w = CB::pGetMainWndWx();
+    return w ? dynamic_cast<CMainFrame*>(w) : nullptr;
+}
 
 #endif
 

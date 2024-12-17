@@ -1,6 +1,6 @@
 // VwBitedt.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -154,7 +154,9 @@ CBitEditView::~CBitEditView()
 
 void CBitEditView::OnInitialUpdate()
 {
+#if 0
     CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
+#endif
 
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
@@ -1327,6 +1329,7 @@ CBitEditViewContainer::CBitEditViewContainer() :
 
 int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
+#if 0
     if (CView::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
@@ -1338,6 +1341,9 @@ int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CBitEditView(*this);
 
     return 0;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 // MFC puts the focus here, so move it to the useful window
