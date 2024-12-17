@@ -1,6 +1,6 @@
 // ColorPal.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -331,9 +331,13 @@ LRESULT CDockColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
 {
     if (IsVisible())             // Ignore if child is invisible
     {
+#if 0
         CFrameWnd* pTarget = GetMainFrame();
         if (pTarget != NULL)
             OnUpdateCmdUI(pTarget, (BOOL)wParam);
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
     return 0L;
 }
@@ -1053,6 +1057,10 @@ BOOL CColorPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 
 void CColorPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
+#if 0
     GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_COLORPAL);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 

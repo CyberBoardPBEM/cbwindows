@@ -1,6 +1,6 @@
 // GmDoc.h : interface of the CGamDoc class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -84,6 +84,7 @@ enum CGamDocHint
     HINT_MARKERSETPROPCHANGE=0x23,
 
     HINT_FORCETILEUPDATE =  0x40,   // Used before a save is done
+    HINT_DOCREADY =         0x80,   // Used when safe to create CGbxProjView
 
     HINT_UPDATEPROJVIEW =   0x0100, // Used to reload prject window
 
@@ -178,6 +179,23 @@ public:
     }
 };
 
+class CGmBoxHintWx : public wxObject
+{
+public:
+    CGmBoxHintWx(LPARAM h, CGmBoxHint* hObj = nullptr) :
+        hint(static_cast<CGamDocHint>(h)),
+        hintObj(hObj)
+    {
+    }
+    /* KLUDGE:  Temporary objects are const, but UpdateAllViews()
+                requires a non-const wxObject.  The const_cast
+                isn't fully safe, but I don't expect
+                UpdateAllViews() to modify the hint.  */
+    operator wxObject*() const { return const_cast<CGmBoxHintWx*>(this); }
+    const CGamDocHint hint;
+    CGmBoxHint* const hintObj;
+};
+
 //////////////////////////////////////////////////////////////////////
 
 class CDib;
@@ -198,10 +216,8 @@ public:
 private:
     friend class CGbxProjView;
 
-    CGamDoc(CGamDocMfc& md);
-#if 0
-    DECLARE_DYNCREATE(CGamDoc)
-#endif
+    CGamDoc();
+    wxDECLARE_DYNAMIC_CLASS(CGamDoc);
 
 // Class Global Attributes
 public:
@@ -292,12 +308,10 @@ public:
     void UpdateAllViews(CView* pSender, LPARAM lHint = 0L,
         CObject* pHint = NULL);
 
-    // wxWidgets
-    // lifetime is controlled by MFC (not wx), so override:
-    // Called after a view is added or removed. The default implementation
-    // deletes the document if this is there are no more views.
-    void OnChangedViewList() override {}
+    // wxDocument
     void UpdateAllViews(wxView* sender = nullptr, wxObject* hint = nullptr) override;
+    // give bit editor chance to update doc before doc closes
+    bool OnSaveModified() override;
 
 // Implementation
 protected:
@@ -338,7 +352,7 @@ protected:
     LPVOID  m_lpvCreateParam;       // Used to pass parameters to new views
 
 public:
-    virtual ~CGamDoc() = default;
+    ~CGamDoc() override;
     void Serialize(CArchive& ar);
 #ifdef _DEBUG
     void AssertValid() const;
@@ -349,7 +363,6 @@ protected:
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString&  lpszPathName) override;
     bool OnSaveDocument(const wxString& lpszPathName) override;
-    bool DeleteContents() override;
 
     // wxDocument
     // Called by OnSaveDocument and OnOpenDocument to implement standard
@@ -381,7 +394,8 @@ public:
     void OnExportGamebox(wxCommandEvent& event);
 
 private:
-    RefPtr<CGamDocMfc> mfcDoc;
+    OwnerPtr<CGamDocMfc> mfcDoc;
+    unsigned saveMods = 0;
 
     friend CGamDocMfc;
 };
@@ -395,9 +409,11 @@ public:
     operator CGamDoc*() { return &*wxDoc; }
 
 protected:
-    CGamDocMfc() = default;
+    CGamDocMfc(CGamDoc& wd) : wxDoc(&wd) {}
+public:
     ~CGamDocMfc() override = default;
-    DECLARE_DYNCREATE(CGamDocMfc)
+protected:
+    DECLARE_DYNAMIC(CGamDocMfc)
 
 public:
     // Forced override of this (note not virtual)
@@ -424,7 +440,9 @@ protected:
         { CB_VERIFY(wxDoc->DeleteContents()); }
 
 private:
-    OwnerPtr<CGamDoc> wxDoc = new CGamDoc(*this);
+    RefPtr<CGamDoc> wxDoc;
+
+    friend CGamDoc;
 };
 
 inline const CGamDoc* CB::ToCGamDoc(const CDocument* p)

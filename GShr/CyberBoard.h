@@ -2059,7 +2059,8 @@ namespace CB
 CWinApp& CbGetApp();
 namespace CB
 {
-    wxNativeContainerWindow& GetMainWndWx();
+    wxWindow* pGetMainWndWx();
+    inline wxWindow& GetMainWndWx() { return CheckedDeref(pGetMainWndWx()); }
     string GetAppName();
 }
 

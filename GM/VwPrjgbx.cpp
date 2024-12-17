@@ -1,6 +1,6 @@
 // VwPrjgbx.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -41,8 +41,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBoxWx)
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBoxWx);
 IMPLEMENT_DYNCREATE(CGbxProjViewContainer, CView)
+wxIMPLEMENT_DYNAMIC_CLASS(wxGbxProjView, wxView);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,10 +104,7 @@ static UINT * btnGroupTbl[nNumGroups + 1] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-namespace {
-    typedef wxDocChildFrameAny<CB::PseudoFrame<wxPanel>, wxWindow> NoCommas;
-}
-wxBEGIN_EVENT_TABLE(CGbxProjView, NoCommas)
+wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
 #if 0
     ON_WM_SIZE()
     ON_WM_CREATE()
@@ -172,8 +170,8 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView
 
-CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
-    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGbxProjView)
+CGbxProjView::CGbxProjView(wxView& v) :
+    CB_XRC_BEGIN_CTRLS_DEFN(v.GetFrame(), CGbxProjView)
         CB_XRC_CTRL(m_listProj)
         CB_XRC_CTRL(m_editInfo)
         CB_XRC_CTRL(m_listTiles)
@@ -186,8 +184,9 @@ CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
         CB_XRC_CTRL(m_btnItmC)
         CB_XRC_CTRL(m_btnItmD)
     CB_XRC_END_CTRLS_DEFN(),
-    parent(&p),
-    document(CB::ToCGamDoc(parent->GetDocument()))
+    view(&v),
+    parent(view->GetFrame()),
+    document(dynamic_cast<CGamDoc*>(view->GetDocument()))
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
@@ -196,8 +195,6 @@ CGbxProjView::CGbxProjView(CGbxProjViewContainer& p) :
     m_listTiles->EnableDrag();
     m_listTiles->EnableSelfDrop();
     m_listTiles->EnableDropScroll();
-    wxView->SetDocument(&*document);
-    wxView->SetFrame(this);
 }
 
 CGbxProjView::~CGbxProjView()
@@ -277,14 +274,12 @@ int CGbxProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGbxProjView::OnInitialUpdate()
 {
-    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
-
     m_listTiles->SetDocument(&GetDocument());
     m_listPieces->SetDocument(GetDocument());
     m_listMarks->SetDocument(&GetDocument());
 }
 
-void CGbxProjView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
+void CGbxProjView::OnUpdate()
 {
     DoUpdateProjectList();
 }
@@ -1449,7 +1444,7 @@ void CGbxProjViewContainer::OnInitialUpdate()
 
 void CGbxProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    child->OnUpdate(pSender, lHint, pHint);
+    child->OnUpdate();
 
     CB::OnCmdMsgOverride<CView>::OnUpdate(pSender, lHint, pHint);
 }
@@ -1473,6 +1468,7 @@ CGbxProjViewContainer::CGbxProjViewContainer() :
 
 int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
+#if 0
     if (CView::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
@@ -1484,6 +1480,9 @@ int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CGbxProjView(*this);
 
     return 0;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 // MFC puts the focus here, so move it to the useful window
@@ -1491,5 +1490,113 @@ void CGbxProjViewContainer::OnSetFocus(CWnd* pOldWnd)
 {
     CView::OnSetFocus(pOldWnd);
     child->SetFocus();
+}
+
+const CDocFrame& wxGbxProjView::GetFrame() const
+{
+    const wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
+    return dynamic_cast<const CDocFrame&>(frame);
+}
+
+CGbxProjView& wxGbxProjView::GetWindow()
+{
+    wxWindowList& children = GetFrame().GetChildren();
+    wxASSERT(children.size() == size_t(1));
+    wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<CGbxProjView*>(&child));
+    return static_cast<CGbxProjView&>(child);
+}
+
+bool wxGbxProjView::OnClose(bool deleteWindow)
+{
+    if (wxView::OnClose(deleteWindow))
+    {
+        /* can't draw w/ doc gone,
+            but load failure doesn't create wnd */
+        if (HasWindow())
+        {
+            GetWindow().Hide();
+        }
+        wxMenuBar& menubar = CheckedDeref(GetFrame().GetMenuBar());
+        wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+        wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+        docMgr.FileHistoryRemoveMenu(&menuFile);
+
+        /* CB defines doc's life only by proj view,
+            so delete rest */
+        wxViewVector views = GetDocument()->GetViewsVector();
+        for (auto it = views.begin() ; it != views.end() ; ++it)
+        {
+            ::wxView* view = *it;
+            if (view != this)
+            {
+                delete view;
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool wxGbxProjView::OnCreate(wxDocument* doc, long flags)
+{
+    if (!wxView::OnCreate(doc, flags))
+    {
+        return false;
+    }
+
+    CB::string str = doc->GetUserReadableName();
+    str += " - ";
+    str += CB::string::LoadString(IDS_PROJTYPE_GAMEBOX);
+
+    CDocFrame* frame = new CDocFrame(doc,
+                    this,
+                    GetMainFrame(),
+                    wxID_ANY,
+                    str);
+    frame->SetIcon(wxIcon(std::format("#{}", IDR_GAMEBOX),
+                            wxBITMAP_TYPE_ICO_RESOURCE,
+                            16, 16));
+    /* KLUDGE:  giving each frame its own menu
+        seems to avoid crashes on process close */
+    wxMenuBar& menubar = CheckedDeref(wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring));
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryUseMenu(&menuFile);
+    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+    /* postpone because this gets called before OnOpenDocument()
+    new CGbxProjView(*this);
+    frame->Show();
+    */
+
+    return true;
+}
+
+void wxGbxProjView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+{
+    CGmBoxHintWx* gbxHint = dynamic_cast<CGmBoxHintWx*>(hint);
+    if (gbxHint && gbxHint->hint == HINT_DOCREADY)
+    {
+        new CGbxProjView(*this);
+        GetFrame().Show();
+        GetWindow().OnInitialUpdate();
+        isDocReady = true;
+    }
+
+    CB::wxView::OnUpdate(sender, hint);
+
+    if (isDocReady)
+    {
+        GetWindow().OnUpdate();
+    }
+}
+
+bool wxGbxProjView::HasWindow() const
+{
+    return !GetFrame().GetChildren().empty();
 }
 

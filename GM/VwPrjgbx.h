@@ -1,6 +1,6 @@
 // VwPrjgbx.h : header file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -43,6 +43,8 @@
 #include    "LBoxMark.h"
 #endif
 
+using CDocFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
+
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView view
 
@@ -75,10 +77,10 @@ class CProjListBoxGm : public CProjListBoxWx<decltype(CB::Impl::CGbxProjViewBase
 
 class CGbxProjViewContainer;
 
-class CGbxProjView : public wxDocChildFrameAny<CB::PseudoFrame<wxPanel>, wxWindow>, private CB::Impl::CGbxProjViewBase
+class CGbxProjView : public wxPanel, private CB::Impl::CGbxProjViewBase
 {
 protected:
-    CGbxProjView(CGbxProjViewContainer& p);
+    CGbxProjView(wxView& v);
 
 // Attributes
 public:
@@ -176,7 +178,7 @@ protected:
 protected:
     ~CGbxProjView() override;
     void OnInitialUpdate();
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    void OnUpdate();
 
 #if 0
     void OnDraw(CDC* pDC) override;      // overridden to draw this view
@@ -248,10 +250,11 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    RefPtr<CGbxProjViewContainer> parent;
+    RefPtr<wxView> view;
+    RefPtr<wxWindow> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
 
+    friend class wxGbxProjView;
     friend class CGbxProjViewContainer;
 };
 
@@ -287,6 +290,28 @@ private:
     CB::propagate_const<CGbxProjView*> child = nullptr;
 
     friend CGbxProjView;
+};
+
+class wxGbxProjView : public CB::wxView
+{
+public:
+    const CDocFrame& GetFrame() const;
+    CDocFrame& GetFrame()
+    {
+        return const_cast<CDocFrame&>(std::as_const(*this).GetFrame());
+    }
+    CGbxProjView& GetWindow() override;
+
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+
+private:
+    wxGbxProjView() = default;
+    wxDECLARE_DYNAMIC_CLASS(wxGbxProjView);
+    bool HasWindow() const;
+
+    bool isDocReady = false;
 };
 
 /////////////////////////////////////////////////////////////////////////////

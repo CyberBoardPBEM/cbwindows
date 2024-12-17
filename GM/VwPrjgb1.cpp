@@ -198,8 +198,12 @@ void CGbxProjView::DoBoardEdit()
     }
     else
     {
+#if 0
         CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
         pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pMapViewTmpl), strTitle, &pBoard);
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
 }
 
@@ -335,8 +339,12 @@ void CGbxProjView::DoTileEdit()
         }
         else
         {
+#if 0
             pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
                 reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tid)));
+#else
+            AfxThrowNotSupportedException();
+#endif
         }
     }
 }

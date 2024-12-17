@@ -1,6 +1,6 @@
 // FrmMain.cpp : implementation of the CMainFrame class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -44,9 +44,8 @@ static char THIS_FILE[] = __FILE__;
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
-
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
+wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::wxAuiMDIParentFrame>)
+#if 0
     ON_WM_CREATE()
     ON_WM_CLOSE()
     ON_COMMAND(ID_WINDOW_TOOLPAL, OnWindowToolPal)
@@ -72,7 +71,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_COMMAND(ID_HELP_FINDER, CMDIFrameWndEx::OnHelpFinder)
     ON_COMMAND(ID_HELP, CMDIFrameWndEx::OnHelp)
     ON_COMMAND(ID_CONTEXT_HELP, CMDIFrameWndEx::OnContextHelp)
-END_MESSAGE_MAP()
+#endif
+    EVT_MENU(XRCID("ID_WINDOW_TILE_HORZ"), OnTile)
+    EVT_MENU(XRCID("ID_WINDOW_TILE_VERT"), OnTile)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_HORZ"), OnUpdateTile)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
+wxEND_EVENT_TABLE()
 
 static UINT indicators[] =
 {
@@ -106,16 +110,38 @@ static const CRuntimeClass *tblBrd[] = {
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+    wxDocParentFrameAny<wxAuiMDIParentFrame>(wxDocManager::GetDocumentManager(),
+                                            nullptr, wxID_ANY,
+                                            wxTheApp->GetAppDisplayName())
 {
+    auiManager.SetManagedWindow(this);
+    SetIcon(wxIcon(std::format("#{}", IDR_MAINFRAME)));
+    GetClientWindow()->SetWindowStyleFlag(
+                            GetClientWindow()->GetWindowStyleFlag() |
+                            wxAUI_NB_WINDOWLIST_BUTTON);
     m_bColorPalOn = TRUE;
     m_bTilePalOn = TRUE;
+
+    wxMenuBar& menubar = CheckedDeref(wxXmlResource::Get()->LoadMenuBar(this, "IDR_MAINFRAME"_cbstring));
+    // mru File menu
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryUseMenu(&menuFile);
+    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+
+    /* KLUDGE:  wx wants to construct Window menu itself, so we
+                can't put Split commands in .xrc */
+    wxMenu& wndMenu = CheckedDeref(GetWindowMenu());
+    wndMenu.AppendSeparator();
+    wndMenu.Append(XRCID("ID_WINDOW_TILE_HORZ"), "Split Tabs &Horizontally"_cbstring, "Split active tab into a new group horizontally"_cbstring);
+    wndMenu.Append(XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, "Split active tab into a new group vertically"_cbstring);
 }
 
 CMainFrame::~CMainFrame()
 {
 }
 
+#if 0
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
@@ -246,11 +272,13 @@ void CMainFrame::OnHelpIndex()
 {
     GetApp()->DoHelpContents();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
 CDocument* CMainFrame::GetCurrentDocument()
 {
+#if 0
     CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
     if (pMDIChild != NULL)
     {
@@ -260,14 +288,28 @@ CDocument* CMainFrame::GetCurrentDocument()
         return pView->GetDocument();
     }
     return NULL;
+#else
+    wxASSERT(!"untested code");
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocument* doc = docMgr.GetCurrentDocument();
+    if (!doc)
+    {
+        return nullptr;
+    }
+    return dynamic_cast<CGamDoc&>(*doc);
+#endif
 }
 
 CView* CMainFrame::GetActiveView() const
 {
+#if 0
     CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
     if (pMDIChild != NULL)
         return pMDIChild->GetActiveView();
     return NULL;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -283,6 +325,7 @@ static const CB::string szEntryStatusBar = "StatusBar";
 
 void CMainFrame::SaveProfileSettings()
 {
+#if 0
     SaveBarState(szSectControlBars);
 
     GetApp()->WriteProfileInt(szSectSettings, szEntryColorPal, m_bColorPalOn);
@@ -290,10 +333,14 @@ void CMainFrame::SaveProfileSettings()
 
     GetApp()->WriteProfileInt(szSectSettings, szEntryStatusBar,
         (m_wndStatusBar.GetStyle() & WS_VISIBLE) ? 1 : 0);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 void CMainFrame::RestoreProfileSettings()
 {
+#if 0
     // Note: I only send a message to turn off the tool and status bars
     // since MFC sets them on by default.
     if (!GetApp()->GetProfileInt(szSectSettings, szEntryStatusBar, 1))
@@ -301,6 +348,9 @@ void CMainFrame::RestoreProfileSettings()
 
     m_bColorPalOn = GetApp()->GetProfileInt(szSectSettings, szEntryColorPal, TRUE);
     m_bTilePalOn = GetApp()->GetProfileInt(szSectSettings, szEntryTilePal, TRUE);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -309,6 +359,7 @@ void CMainFrame::RestoreProfileSettings()
 // do you mean 'we'? Is there anyone else here?) simply disable
 // the 'items'.
 
+#if 0
 void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
 {
     if (pCmdUI->m_pSubMenu != NULL)
@@ -320,10 +371,12 @@ void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
     pCmdUI->SetCheck(0);
     pCmdUI->Enable(0);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
+#if 0
 #ifdef _DEBUG
 void CMainFrame::AssertValid() const
 {
@@ -348,6 +401,17 @@ void CMainFrame::OnToggleTilePalette()
 {
     SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
 }
+#endif
+
+void CMainFrame::OnTile(wxCommandEvent& event)
+{
+    Tile(event.GetId() == XRCID("ID_WINDOW_TILE_HORZ") ? wxHORIZONTAL : wxVERTICAL);
+}
+
+void CMainFrame::OnUpdateTile(wxUpdateUIEvent& event)
+{
+    event.Enable(GetClientWindow()->GetPageCount() >= 2);
+}
 
 ///////////////////////////////////////////////////////////////////////
 // pRtc points to a NULL terminated list of CRuntimeClass pointers
@@ -355,6 +419,7 @@ void CMainFrame::OnToggleTilePalette()
 
 void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL bIsOn)
 {
+#if 0
     if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
         BOOL bIsControlBar = pWnd.IsKindOf(RUNTIME_CLASS(CBasePane));
@@ -404,12 +469,16 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOO
                 ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
         }
     }
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
 {
+#if 0
     if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
         CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
@@ -430,15 +499,19 @@ BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
         }
     }
     return FALSE;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void CMainFrame::OnIdle()
 {
-    if (IsIconic())         // No window palette processing if app minimized
+    if (IsIconized())         // No window palette processing if app minimized
         return;
 
+#if 0
     UpdatePaletteWindow(m_wndColorPal, tblColor, m_bColorPalOn);
 
     if (GetCurrentDocument() == NULL)
@@ -446,6 +519,7 @@ void CMainFrame::OnIdle()
 
     if (m_wndColorPal.m_hWnd != NULL && m_wndColorPal.IsWindowVisible())
         m_wndColorPal.SendMessage(WM_IDLEUPDATECMDUI, (WPARAM)TRUE);
+#endif
 }
 
 namespace {
@@ -466,6 +540,7 @@ namespace {
     }
 }
 
+#if 0
 BOOL CMainFrame::OnCloseMiniFrame(CPaneFrameWnd* pWnd)
 {
     return OnClosePalette(CheckedDeref(pWnd));
@@ -525,3 +600,4 @@ void CMainFrame::OnUpdateWindowTilePalette(CCmdUI* pCmdUI)
     pCmdUI->SetCheck(m_bTilePalOn);
     pCmdUI->Enable(IsQualifyingView(m_wndTilePal, tblBrd));
 }
+#endif
