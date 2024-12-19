@@ -250,7 +250,7 @@ protected:
 private:
     RefPtr<CGbxProjViewContainer> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
+    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
 
     friend class CGbxProjViewContainer;
 };
