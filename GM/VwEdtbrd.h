@@ -1,6 +1,6 @@
 // VwEdtbrd.h : interface of the CBrdEditView class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,10 +34,12 @@
 
 class CBrdEditViewContainer;
 
-class CBrdEditView : public wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow>
+using CViewFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
+
+class CBrdEditView : public wxScrolledCanvas
 {
-protected: // create from serialization only
-    CBrdEditView(CBrdEditViewContainer& p);
+private:
+    CBrdEditView(wxView& v, CBoard& b);
 
     CB::propagate_const<CBoard*> m_pBoard;           // Pointer to document's board
     CB::propagate_const<CBoardManager*> m_pBMgr;
@@ -297,17 +299,11 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override
-    {
-        return CheckedDeref(AfxGetMainWnd());
-    }
-
     void RecalcScrollLimits();
 
-    RefPtr<CBrdEditViewContainer> parent;
+    RefPtr<wxView> view;
+    RefPtr<wxWindow> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
     wxTimer timer;
     wxOverlay overlay;
 
@@ -317,6 +313,7 @@ private:
     int m_xScrollPixelsPerLine;
     int m_yScrollPixelsPerLine;
 
+    friend class wxBrdEditView;
     friend class CBrdEditViewContainer;
 };
 
@@ -352,4 +349,21 @@ private:
     CB::propagate_const<CBrdEditView*> child = nullptr;
 
     friend CBrdEditView;
+};
+
+class wxBrdEditView : public CB::wxView
+{
+public:
+    static wxBrdEditView* New(CGamDoc& doc, CBoard& board);
+
+    CViewFrame& GetFrame();
+    CBrdEditView& GetWindow() override;
+
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+
+private:
+    wxBrdEditView() = default;
+    wxDECLARE_DYNAMIC_CLASS(wxBrdEditView);
 };

@@ -202,6 +202,7 @@ class CDib;
 class CPieceManager;
 class CMarkManager;
 class CGamDocMfc;
+class wxBrdEditView;
 
 class CGamDoc : public wxDocument
 {
@@ -273,7 +274,7 @@ public:
 
     TileID CreateTileFromDib(const CDib& pDib, size_t nTSet);
     CView* FindTileEditorView(TileID tid) const;
-    CView* FindBoardEditorView(const CBoard& pBoard) const;
+    wxBrdEditView* FindBoardEditorView(const CBoard& pBoard) const;
 
     // Support for strings associated with game elements (pieces, markers)
     CB::string  GetGameElementString(GameElement gelem) const;

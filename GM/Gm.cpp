@@ -29,7 +29,6 @@
 #include    "GmDoc.h"
 
 #include    "FrmMain.h"
-#include    "FrmView.h"
 #include    "FrmBited.h"
 #include    "VwEdtbrd.h"
 #include    "VwBitedt.h"
@@ -267,7 +266,6 @@ CGmApp::CGmApp()
     m_dwHtmlHelpCookie = 0;
     m_bDisableHtmlHelp = FALSE;
     m_hHtmlProcessHandle = NULL;
-    m_pMapViewTmpl = NULL;
     m_pTileEditTmpl = NULL;
 }
 
@@ -338,6 +336,10 @@ namespace {
             new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
                               "CGamDoc", "wxGbxProjView",
                               CLASSINFO(CGamDoc), CLASSINFO(wxGbxProjView));
+            new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
+                                "CGamDoc", "wxBrdEditView",
+                                CLASSINFO(CGamDoc), CLASSINFO(wxBrdEditView),
+                                wxTEMPLATE_INVISIBLE);
             wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
             docMgr.FileHistoryLoad(*wxConfig::Get());
 
@@ -422,10 +424,6 @@ BOOL CGmApp::InitInstance()
 
     // Register the application's document templates.  Document templates
     // serve as the connection between documents, frame windows and views.
-    m_pMapViewTmpl = new CMultiDocTemplate(IDR_BOARDVIEW,
-        RUNTIME_CLASS(CGamDocMfc), RUNTIME_CLASS(CViewFrame),
-        RUNTIME_CLASS(CBrdEditViewContainer));
-
     m_pTileEditTmpl = new CMultiDocTemplate(IDR_BITEDITOR,
         RUNTIME_CLASS(CGamDocMfc), RUNTIME_CLASS(CBitEditFrame),
         RUNTIME_CLASS(CBitEditViewContainer));
@@ -487,7 +485,6 @@ int CGmApp::ExitInstance()
 
     CWinAppEx::ExitInstance();
 
-    if (m_pMapViewTmpl != NULL) delete m_pMapViewTmpl;
     if (m_pTileEditTmpl != NULL) delete m_pTileEditTmpl;
     return 0;
 }

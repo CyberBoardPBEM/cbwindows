@@ -155,7 +155,6 @@ public:
     HANDLE  m_hHtmlProcessHandle;
     UINT    m_nAppLook;
 
-    CMultiDocTemplate* m_pMapViewTmpl;
     CMultiDocTemplate* m_pTileEditTmpl;
 
 // Operations
