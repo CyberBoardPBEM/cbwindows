@@ -307,7 +307,7 @@ private:
 
     RefPtr<CBrdEditViewContainer> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
+    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
     wxTimer timer;
     wxOverlay overlay;
 

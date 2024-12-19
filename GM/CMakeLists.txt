@@ -108,7 +108,7 @@ endif()
 
 target_include_directories(CBDesign PRIVATE . ../GShr)
 target_precompile_headers(CBDesign PRIVATE StdAfx.h)
-target_link_libraries(CBDesign wx::core wx::xrc)
+target_link_libraries(CBDesign wx::aui wx::core wx::xrc)
 
 add_custom_command(
 	OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBDesign.xrc"

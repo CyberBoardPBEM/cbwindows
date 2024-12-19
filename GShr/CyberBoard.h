@@ -1,6 +1,6 @@
 // CyberBoard.h
 //
-// Copyright (c) 2020-2024 By William Su, All Rights Reserved.
+// Copyright (c) 2020-2025 By William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,11 +63,14 @@
 
 #include <WinExt.h>
 
+#include <wx/aui/aui.h>
+#include <wx/aui/tabmdi.h>
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/clipbrd.h>
 #include <wx/clrpicker.h>
 #include <wx/colordlg.h>
+#include <wx/config.h>
 #include <wx/dataobj.h>
 #include <wx/dc.h>
 #include <wx/dcclient.h>
@@ -87,12 +90,15 @@
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>
 #include <wx/renderer.h>
+#include <wx/splitter.h>
+#include <wx/statbmp.h>
 #include <wx/stattext.h>
 #include <wx/stdpaths.h>
 #include <wx/textbuf.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/tipwin.h>
+#include <wx/tokenzr.h>
 #include <wx/valgen.h>
 #include <wx/valnum.h>
 #include <wx/valtext.h>
@@ -346,6 +352,24 @@ public:
         std::format_to(ctx.out(), "x");
         BASE::format(r.GetHeight(), ctx);
         return std::format_to(ctx.out(), "])");
+    }
+};
+
+template<std::derived_from<wxObject> T, typename CharT>
+struct std::formatter<T, CharT> : private std::formatter<const char*, CharT>
+{
+private:
+    using BASE = formatter<const char*, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const wxObject& o, FormatContext& ctx) const
+    {
+        return std::format_to(ctx.out(),
+                                "{}({})",
+                                typeid(o).name(),
+                                static_cast<const void*>(&o));
     }
 };
 
@@ -1973,15 +1997,15 @@ namespace CB
 
     /* wxView must be separate from wxWindow
         (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
-    class wxView : public ::wxView
+    class wxView_deprecated : public ::wxView
     {
     public:
-        wxView(wxWindow& v) :
+        wxView_deprecated(wxWindow& v) :
             window(&v)
         {
         }
 
-        ~wxView()
+        ~wxView_deprecated()
         {
             // wnd dtor deletes this, so avoid wx trying to delete wnd
             SetDocChildFrame(nullptr);
@@ -1995,6 +2019,26 @@ namespace CB
 
     private:
         RefPtr<wxWindow> window;
+    };
+
+    /* wxView must be separate from wxWindow
+        (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
+    /* wx passes events to wxView, but, for historical reasons, all
+        of our event handlers are in the corresponding wxWindow,
+        so use this class as an adapter */
+    class wxView : public ::wxView
+    {
+    public:
+        virtual wxWindow& GetWindow() = 0;
+
+        void OnDraw(wxDC* dc) override;
+
+    protected:
+        // this one is called before trying our own event table to allow plugging
+        // in the event handlers overriding the default logic, this is used by e.g.
+        // validators.
+        // for CB, forward events to window here
+        bool TryBefore(wxEvent& event) override;
     };
 }
 
@@ -2456,6 +2500,78 @@ namespace CB
 namespace CB
 {
     int GetMouseButtons(const wxMouseState& event);
+}
+
+namespace CB
+{
+    wxDocTemplate& FindDocTemplateByView(const wxClassInfo& classInfo);
+}
+
+namespace CB
+{
+    struct ToolArgs
+    {
+        const int xrcId;
+        const unsigned stringId = 0;
+        const wxItemKind kind = wxITEM_NORMAL;
+    };
+    wxAuiToolBar& CreateToolbar(wxWindow& parent, const ToolArgs (&toolArgs)[], size_t count, unsigned bmapID);
+
+    // tell compiler to count array elements
+    template<size_t COUNT>
+    wxAuiToolBar& CreateToolbar(wxWindow& parent, const ToolArgs (&toolArgs)[COUNT], unsigned bmapID)
+    {
+        return CreateToolbar(parent, toolArgs, COUNT, bmapID);
+    }
+}
+
+namespace CB
+{
+    /* emulate MFC support for displaying
+    CAPS lock and NUM lock indicators */
+    class wxStatusBar : public ::wxStatusBar
+    {
+    public:
+        using ::wxStatusBar::wxStatusBar;
+
+        void SetIndicators(const int (&ids)[],
+                            size_t count);
+
+        template<size_t COUNT>
+        void SetIndicators(const int (&ids)[COUNT])
+        {
+            SetIndicators(ids, COUNT);
+        }
+
+    private:
+        void OnIdle(wxIdleEvent& event);
+        void OnUpdateUI(wxUpdateUIEvent& event);
+        wxDECLARE_EVENT_TABLE();
+
+        std::vector<int> indicators;
+    };
+
+    // create CB::wxStatusBar instead of ::wxStatusBar
+    class wxAuiMDIParentFrame : public ::wxAuiMDIParentFrame
+    {
+    public:
+        using ::wxAuiMDIParentFrame::wxAuiMDIParentFrame;
+
+        wxStatusBar& CreateStatusBar(const int (&ids)[],
+                                        size_t count);
+
+        template<size_t COUNT>
+        wxStatusBar& CreateStatusBar(const int (&ids)[COUNT])
+        {
+            return CreateStatusBar(ids, COUNT);
+        }
+
+        // return a new status bar
+        wxStatusBar* OnCreateStatusBar(int number,
+                                               long style,
+                                               wxWindowID winid,
+                                               const wxString& name) override;
+    };
 }
 
 // replacement for wxDC::DrawEllipse()

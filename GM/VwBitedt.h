@@ -236,7 +236,7 @@ private:
 
     RefPtr<CBitEditViewContainer> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
+    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
 };
 
 class CBitEditViewContainer : public CB::OnCmdMsgOverride<CView>,

@@ -1,6 +1,6 @@
 // LibMfc.cpp - Miscellaneous MFC Support Functions
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -905,6 +905,86 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
 
+void CB::wxView::OnDraw(wxDC * dc)
+{
+    CPP20_TRACE("{}({})\n", __func__, *this);
+    wxASSERT(!"not impl");
+}
+
+// for CB, forward events to window here
+bool CB::wxView::TryBefore(wxEvent& event)
+{
+    /* wx expects TryBefore() to be checked before the event
+        handlers specific to the current class, and I think
+        the wxWindow handlers are equivalent to what wx would
+        expect to be the wxView handlers, so check them after
+        base class TryBefore() */
+    if (::wxView::TryBefore(event))
+    {
+        return true;
+    }
+
+    /* KLUDGE:  there is time during doc setup where
+                wxGbxProjView exists, but can't create
+                corresponding window because the doc
+                isn't ready yet */
+    wxWindowList& children = GetFrame()->GetChildren();
+    if (children.empty())
+    {
+        return false;
+    }
+
+    /* only process wxFocusEvent for setting focus to
+        view's frame or descendants */
+    if (event.GetEventType() == wxEVT_KILL_FOCUS)
+    {
+        return false;
+    }
+    else
+    {
+        wxFocusEvent* fe = dynamic_cast<wxFocusEvent*>(&event);
+        if (fe)
+        {
+            wxASSERT(fe->GetEventType() == wxEVT_SET_FOCUS &&
+                fe->GetEventObject() &&
+                dynamic_cast<wxWindow*>(fe->GetEventObject()));
+            if (!GetFrame()->IsDescendant(static_cast<wxWindow*>(fe->GetEventObject())))
+            {
+                return false;
+            }
+        }
+    }
+
+    // only process wxChildFocusEvent for frame's (strict) descendants
+    wxChildFocusEvent* cfe = dynamic_cast<wxChildFocusEvent*>(&event);
+    if (cfe)
+    {
+        if (GetFrame() == cfe->GetWindow() ||
+            !GetFrame()->IsDescendant(cfe->GetWindow()))
+        {
+            return false;
+        }
+    }
+
+    if (dynamic_cast<wxWindowCreateEvent*>(&event))
+    {
+        /* KLUDGE:  passing this to window causes
+            problems because vwbitedit isn't ready,
+            and I don't know of a need for this,
+            so drop it */
+        return false;
+    }
+
+    // view shouldn't process a different window's mouse events
+    if (dynamic_cast<wxMouseEvent*>(&event) &&
+        event.GetEventObject() != &GetWindow())
+    {
+        return false;
+    }
+
+    return GetWindow().ProcessWindowEventLocally(event);
+}
+
 CB::ToolTip::~ToolTip()
 {
     Enable(false);
@@ -1504,4 +1584,177 @@ int CB::GetMouseButtons(const wxMouseState& event)
     retval |= event.Aux1IsDown() ? wxMOUSE_BTN_AUX1 : 0;
     retval |= event.Aux2IsDown() ? wxMOUSE_BTN_AUX2 : 0;
     return retval;
+}
+
+wxDocTemplate& CB::FindDocTemplateByView(const wxClassInfo& classInfo)
+{
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxList& templates = docMgr.GetTemplates();
+    for (auto it = templates.begin() ; it != templates.end() ; ++it)
+    {
+        wxDocTemplate& templ = dynamic_cast<wxDocTemplate&>(**it);
+        if (templ.GetViewClassInfo() == &classInfo)
+        {
+            return templ;
+        }
+    }
+
+    AfxThrowInvalidArgException();
+}
+
+#if !defined(GPLAY)
+wxAuiToolBar& CB::CreateToolbar(wxWindow& parent, const ToolArgs(&toolArgs)[], size_t count, unsigned bmapID)
+{
+    wxBitmap tools(std::format("#{}", bmapID),
+                    wxBITMAP_TYPE_BMP_RESOURCE);
+    wxAuiToolBar& toolbar = *new wxAuiToolBar(&parent);
+    int separators = 0;
+    for (int i = 0 ; i < value_preserving_cast<int>(count) ; ++i)
+    {
+        int id = toolArgs[i].xrcId;
+        if (id != wxID_SEPARATOR)
+        {
+            CB::string str = CB::string::LoadString(toolArgs[i].stringId);
+            std::vector<wxString> tokens;
+            wxStringTokenizer tokenizer(str, "\n");
+            while (tokenizer.HasMoreTokens())
+            {
+                tokens.push_back(tokenizer.GetNextToken());
+            }
+            if (tokens.size() == size_t(1))
+            {
+                tokens.push_back(wxEmptyString);
+            }
+            wxASSERT(tokens.size() == size_t(2));
+            wxBitmap tool = tools.GetSubBitmap(wxRect(wxPoint(16*(i - separators), 0),
+                                                wxSize(16, 16)));
+            toolbar.AddTool(id,
+                            wxEmptyString,
+                            tool,
+                            wxNullBitmap,
+                            toolArgs[i].kind,
+                            tokens.back(),
+                            tokens.front(),
+                            nullptr);
+        }
+        else
+        {
+            ++separators;
+            toolbar.AddSeparator();
+        }
+    }
+    wxASSERT(tools.GetSize() == wxSize(
+        value_preserving_cast<int>(size_t(16) * (count - value_preserving_cast<size_t>(separators))), 16));
+    toolbar.Realize();
+    return toolbar;
+}
+#endif
+
+wxBEGIN_EVENT_TABLE(CB::wxStatusBar, ::wxStatusBar)
+    EVT_IDLE(OnIdle)
+    EVT_UPDATE_UI(wxID_SEPARATOR, OnUpdateUI)
+    EVT_UPDATE_UI(ID_INDICATOR_CAPS, OnUpdateUI)
+    EVT_UPDATE_UI(ID_INDICATOR_NUM, OnUpdateUI)
+wxEND_EVENT_TABLE()
+
+void CB::wxStatusBar::SetIndicators(
+                                const int (&ids)[],
+                                size_t count)
+{
+    wxASSERT(value_preserving_cast<size_t>(GetFieldsCount()) == count);
+    indicators.resize(count);
+
+    wxInfoDC dc(this);
+    std::vector<int> widths(count);
+    for (size_t i = size_t(0) ; i < count ; ++i)
+    {
+        indicators[i] = ids[value_preserving_cast<ptrdiff_t>(i)];
+        if (indicators[i] != wxID_SEPARATOR)
+        {
+            CB::string s = CB::string::LoadString(indicators[i]);
+            widths[i] = dc.GetTextExtent(s).x;
+            SetStatusText(s, value_preserving_cast<int>(i));
+        }
+        else
+        {
+            widths[i] = -1;
+        }
+    }
+    SetStatusWidths(value_preserving_cast<int>(widths.size()), widths.data());
+}
+
+void CB::wxStatusBar::OnIdle(wxIdleEvent& WXUNUSED(event))
+{
+    // represent disabled fields as ""
+    // use the status field stacks to remember enabled value
+    for (int i = 0 ; i < GetFieldsCount() ; ++i)
+    {
+        wxUpdateUIEvent uievent(indicators[value_preserving_cast<size_t>(i)]);
+        bool rc = ProcessWindowEvent(uievent);
+        wxASSERT(rc == !uievent.GetSkipped());
+        if (rc)
+        {
+            bool wasEnabled = !GetStatusText(i).empty();
+            if (uievent.GetSetText())
+            {
+                // reserve "" for disabled fields
+                wxString s = uievent.GetText();
+                if (s.empty())
+                {
+                    s = wxString("\0", 1);
+                }
+                SetStatusText(s, i);
+            }
+            if (uievent.GetSetEnabled())
+            {
+                if (wasEnabled && !uievent.GetEnabled())
+                {
+                    PushStatusText(wxEmptyString, i);
+                }
+                else if (!wasEnabled && uievent.GetEnabled())
+                {
+                    PopStatusText(i);
+                }
+            }
+        }
+    }
+}
+
+void CB::wxStatusBar::OnUpdateUI(wxUpdateUIEvent& event)
+{
+    if (event.GetId() == ID_INDICATOR_CAPS)
+    {
+        event.Enable(wxGetKeyState(WXK_CAPITAL));
+    }
+    else if (event.GetId() == ID_INDICATOR_NUM)
+    {
+        event.Enable(wxGetKeyState(WXK_NUMLOCK));
+    }
+    else
+    {
+        event.Skip();
+    }
+}
+
+CB::wxStatusBar& CB::wxAuiMDIParentFrame::CreateStatusBar(
+                                const int (&ids)[],
+                                size_t count)
+{
+    ::wxStatusBar* psb = ::wxAuiMDIParentFrame::CreateStatusBar(value_preserving_cast<int>(count));
+    ::wxStatusBar& sb = CheckedDeref(psb);
+    CB::wxStatusBar& retval = dynamic_cast<CB::wxStatusBar&>(sb);
+    retval.SetIndicators(ids, count);
+    return retval;
+}
+
+CB::wxStatusBar* CB::wxAuiMDIParentFrame::OnCreateStatusBar(int number,
+                                            long style,
+                                            wxWindowID id,
+                                            const wxString& name)
+{
+    CB::wxStatusBar* statusBar = new CB::wxStatusBar(this, id, style, "CB::" + name);
+
+    statusBar->SetFieldsCount(number);
+
+    return statusBar;
 }

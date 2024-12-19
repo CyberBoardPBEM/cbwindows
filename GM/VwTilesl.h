@@ -118,7 +118,7 @@ protected:
 private:
     RefPtr<CTileSelViewContainer> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView> wxView = MakeOwner<CB::wxView>(*this);
+    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
 };
 
 class CTileSelViewContainer : public CView,
