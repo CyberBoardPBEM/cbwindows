@@ -498,16 +498,18 @@ CView* CGamDoc::FindTileEditorView(TileID tid) const
     return NULL;
 }
 
-CView* CGamDoc::FindBoardEditorView(const CBoard& pBoard) const
+wxBrdEditView* CGamDoc::FindBoardEditorView(const CBoard& pBoard) const
 {
-    POSITION pos = mfcDoc->GetFirstViewPosition();
-    while (pos != NULL)
+    const wxList& views = GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
     {
-        CBrdEditViewContainer* pView = static_cast<CBrdEditViewContainer*>(mfcDoc->GetNextView(pos));
-        if (pView->IsKindOf(RUNTIME_CLASS(CBrdEditViewContainer)))
+        wxBrdEditView* pView = dynamic_cast<wxBrdEditView*>(*it);
+        if (pView)
         {
-            if (&pView->GetChild().GetBoard() == &pBoard)
+            if (&pView->GetWindow().GetBoard() == &pBoard)
+            {
                 return pView;
+            }
         }
     }
     return NULL;

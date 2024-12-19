@@ -31,7 +31,6 @@ set(SRCS
 	FrmBited.cpp
 	FrmDockTile.cpp
 	FrmMain.cpp
-	FrmView.cpp
 	Gm.cpp
 	GmDoc.cpp
 	LBoxTile.cpp

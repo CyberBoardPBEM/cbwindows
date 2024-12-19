@@ -49,6 +49,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView
 
+wxIMPLEMENT_DYNAMIC_CLASS(wxBrdEditView, wxView);
 IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 
 namespace {
@@ -161,14 +162,15 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView construction/destruction
 
-CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
+CBrdEditView::CBrdEditView(wxView& v, CBoard& b) :
     m_selList(*this),
-    parent(&p),
-    document(CB::ToCGamDoc(parent->GetDocument())),
+    view(&v),
+    parent(view->GetFrame()),
+    document(dynamic_cast<CGamDoc*>(view->GetDocument())),
     timer(this)
 {
     m_bOffScreen = TRUE;
-    m_pBoard = NULL;
+    m_pBoard = &b;
     m_pBMgr = NULL;
     m_nCurToolID = XRCID("ID_TOOL_ARROW");       // ID_TOOL_ARROW tool (select)
     m_nLastToolID = XRCID("ID_TOOL_ARROW");      // ID_TOOL_ARROW tool (select)
@@ -177,9 +179,8 @@ CBrdEditView::CBrdEditView(CBrdEditViewContainer& p) :
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->Add(0, 0);
-    wxScrolledCanvas::Create(*parent, 0);
-    wxView->SetDocument(&*document);
-    wxView->SetFrame(this);
+    wxScrolledCanvas::Create(&*parent, 0);
+    OnInitialUpdate();
 }
 
 CBrdEditView::~CBrdEditView()
@@ -202,12 +203,7 @@ BOOL CBrdEditView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CBrdEditView::OnInitialUpdate()
 {
-#if 0
-    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
-#endif
-
     m_pBMgr = &GetDocument().GetBoardManager();
-    m_pBoard = static_cast<CBoard*>(GetDocument().GetCreateParameter());
     RecalcScrollLimits();
 }
 
@@ -224,9 +220,10 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     {
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDDELETED>().m_pBoard == m_pBoard)
         {
-            CFrameWnd* pFrm = parent->GetParentFrame();
-            ASSERT(pFrm != NULL);
-            pFrm->SendMessage(WM_CLOSE, 0, 0L);
+            // close this view
+            /* can't delete now
+                because iterator in caller would be invalidated */
+            wxTheApp->ScheduleForDestruction(&*view);
         }
     }
     else if (wHint == HINT_BOARDPROPCHANGE)
@@ -240,7 +237,9 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (wHint == HINT_ALWAYSUPDATE)
     {
         wxASSERT(!"untested code");
+#if 0
         parent->CView::OnUpdate(pSender, lHint, pHint);
+#endif
     }
 }
 
@@ -537,7 +536,7 @@ void CBrdEditView::OnViewGridLines(wxCommandEvent& event)
 
     CGmBoxHint hint;
     hint.GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard = &*m_pBoard;
-    GetDocument().UpdateAllViews(&*parent, HINT_BOARDPROPCHANGE, &hint);
+    GetDocument().UpdateAllViews(&*view, CGmBoxHintWx(HINT_BOARDPROPCHANGE, &hint));
 }
 
 void CBrdEditView::OnUpdateViewGridLines(wxUpdateUIEvent& pCmdUI)
@@ -684,7 +683,7 @@ void CBrdEditView::OnTimer(wxTimerEvent& event)
 void CBrdEditView::OnSetCursor(wxSetCursorEvent& event)
 {
     ToolType eToolType = MapToolType(m_nCurToolID);
-    wxASSERT(event.GetEventObject() == this);
+//    wxASSERT(event.GetEventObject() == this);
     if (event.GetEventObject() == this && eToolType != ttypeUnknown)
     {
         CTool& pTool = CTool::GetTool(eToolType);
@@ -1387,7 +1386,11 @@ void CBrdEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
 
     if (pCmdUI.GetId() == XRCID("ID_TOOL_TILE"))
     {
+#if 0
         tid = GetDocument().GetTilePalWnd().GetCurrentTileID();
+#else
+        tid = nullTid;
+#endif
         bEnable = tid != nullTid;
         if (tid == nullTid && m_nCurToolID == XRCID("ID_TOOL_TILE"))
         {
@@ -2400,6 +2403,93 @@ void CBrdEditViewContainer::OnSetFocus(CWnd* pOldWnd)
 {
     CB::OnCmdMsgOverride<CView>::OnSetFocus(pOldWnd);
     child->SetFocus();
+}
+
+namespace {
+    CBoard* createParam = nullptr;
+}
+
+wxBrdEditView* wxBrdEditView::New(CGamDoc& doc, CBoard& board)
+{
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocTemplate& templ = CB::FindDocTemplateByView(*CLASSINFO(wxBrdEditView));
+
+    class CreateParamManager
+    {
+    public:
+        CreateParamManager(CBoard& board)
+        {
+            wxASSERT(!createParam);
+            createParam = &board;
+        }
+        ~CreateParamManager()
+        {
+            createParam = nullptr;
+        }
+    } createParamMgr(board);
+    ::wxView* retval = templ.CreateView(&doc);
+    wxASSERT(dynamic_cast<wxBrdEditView*>(retval));
+    return static_cast<wxBrdEditView*>(retval);
+}
+
+CViewFrame& wxBrdEditView::GetFrame()
+{
+    wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
+    wxASSERT(dynamic_cast<CViewFrame*>(&frame));
+    return static_cast<CViewFrame&>(frame);
+}
+
+CBrdEditView& wxBrdEditView::GetWindow()
+{
+    wxWindowList& children = GetFrame().GetChildren();
+    wxASSERT(children.size() == size_t(1));
+    wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<CBrdEditView*>(&child));
+    return static_cast<CBrdEditView&>(child);
+}
+
+bool wxBrdEditView::OnClose(bool /*deleteWindow*/)
+{
+    /* doc's life determined by wxGbxProjView, not this,
+        so bypass wxView::OnClose() */
+    return true;
+}
+
+bool wxBrdEditView::OnCreate(wxDocument* doc, long flags)
+{
+    if (!wxView::OnCreate(doc, flags))
+    {
+        return false;
+    }
+
+    CB::string str = doc->GetUserReadableName();
+    str += " - ";
+    str += CheckedDeref(createParam).GetName();
+
+    CViewFrame* frame = new CViewFrame(doc,
+                            this,
+                            GetMainFrame(),
+                            wxID_ANY,
+                            str);
+    frame->SetIcon(wxIcon(std::format("#{}", IDR_BOARDVIEW),
+                            wxBITMAP_TYPE_ICO_RESOURCE,
+                            16, 16));
+    /* KLUDGE:  giving each frame its own menu
+        seems to avoid crashes on process close */
+    wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring);
+    new CBrdEditView(*this, *createParam);
+    frame->Show();
+
+    return true;
+}
+
+void wxBrdEditView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+{
+    CB::wxView::OnUpdate(sender, hint);
+
+    CGmBoxHintWx& hint2 = dynamic_cast<CGmBoxHintWx&>(CheckedDeref(hint));
+    GetWindow().OnUpdate(nullptr, hint2.hint, hint2.hintObj);
+    // WARNING:  this might be deleted now!
 }
 
 

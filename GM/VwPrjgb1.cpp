@@ -1,6 +1,6 @@
 // VwPrjgb1.cpp : Support file for vwprjgbx.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -46,6 +46,7 @@
 #include    "DlgMedt.h"
 #include    "DlgPEditMulti.h"
 #include    "DlgMEditMulti.h"
+#include    "VwEdtbrd.h"
 #include    "VwPrjgbx.h"
 
 #ifdef _DEBUG
@@ -188,22 +189,15 @@ void CGbxProjView::DoBoardEdit()
     size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CBoard& pBoard = pDoc.GetBoardManager().GetBoard(nBrd);
-    CView* pView = pDoc.FindBoardEditorView(pBoard);
+    wxBrdEditView* pView = pDoc.FindBoardEditorView(pBoard);
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.
-        CFrameWnd* pFrm = pView->GetParentFrame();
-        wxASSERT(pFrm);
-        pFrm->ActivateFrame();
+        pView->GetFrame().Activate();
     }
     else
     {
-#if 0
-        CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
-        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pMapViewTmpl), strTitle, &pBoard);
-#else
-        AfxThrowNotSupportedException();
-#endif
+        wxBrdEditView::New(pDoc, pBoard);
     }
 }
 
