@@ -46,6 +46,7 @@
 #include    "DlgMedt.h"
 #include    "DlgPEditMulti.h"
 #include    "DlgMEditMulti.h"
+#include    "FrmBited.h"
 #include    "VwEdtbrd.h"
 #include    "VwPrjgbx.h"
 
@@ -301,8 +302,7 @@ void CGbxProjView::DoTileNew()
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
         pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
-        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
-            reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
+        wxBitEditView::New(pDoc, tidNew);
         pDoc.SetModifiedFlag();
     }
 }
@@ -323,22 +323,15 @@ void CGbxProjView::DoTileEdit()
     {
         TileID tid = tidtbl[i];
 
-        CView *pView = pDoc.FindTileEditorView(tid);
-        if (pView)
+        wxBitEditView* pView = pDoc.FindTileEditorView(tid);
+        if (pView != NULL)
         {
             // Already has an editor. Activate that view.
-            CFrameWnd* pFrm = pView->GetParentFrame();
-            wxASSERT(pFrm);
-            pFrm->ActivateFrame();
+            pView->GetFrame().Activate();
         }
         else
         {
-#if 0
-            pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
-                reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tid)));
-#else
-            AfxThrowNotSupportedException();
-#endif
+            wxBitEditView::New(pDoc, tid);
         }
     }
 }
@@ -380,8 +373,7 @@ void CGbxProjView::DoTileClone()
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
         pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
 
-        pDoc.CreateNewFrame(CheckedDeref(GetApp()->m_pTileEditTmpl), "Tile Editor",
-            reinterpret_cast<LPVOID>(value_preserving_cast<uintptr_t>(tidNew)));
+        wxBitEditView::New(pDoc, tidNew);
     }
     pDoc.SetModifiedFlag();
 

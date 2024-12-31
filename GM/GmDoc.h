@@ -202,6 +202,7 @@ class CDib;
 class CPieceManager;
 class CMarkManager;
 class CGamDocMfc;
+class wxBitEditView;
 class wxBrdEditView;
 
 class CGamDoc : public wxDocument
@@ -255,17 +256,9 @@ public:
     void IncrMajorRevLevel();
     static DWORD IssueGameBoxID();
 
-    // If you need to pass a pointer to the views to be created,
-    // bracket the view can call the GetCreateParameter() method.
-    // It is only valid during the InitialUpdate() method.
-    LPVOID GetCreateParameter() const { return m_lpvCreateParam; }
-
 // Operations
 public:
     BOOL SetupBlankBoard();
-
-    BOOL CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle,
-        LPVOID lpvCreateParam = NULL);
 
     BOOL NotifyTileDatabaseChange(BOOL bPurgeScan = TRUE);
     BOOL PurgeMissingTileIDs();
@@ -273,7 +266,7 @@ public:
     BOOL QueryAnyOfTheseTilesInUse(const std::vector<TileID>& tbl) const;
 
     TileID CreateTileFromDib(const CDib& pDib, size_t nTSet);
-    CView* FindTileEditorView(TileID tid) const;
+    wxBitEditView* FindTileEditorView(TileID tid) const;
     wxBrdEditView* FindBoardEditorView(const CBoard& pBoard) const;
 
     // Support for strings associated with game elements (pieces, markers)
@@ -349,8 +342,6 @@ protected:
         }
     };
     CB::propagate_const<std::unique_ptr<CTilePalette, WindowDestroy>> m_palTile;      // Tile palette child window is in document
-
-    LPVOID  m_lpvCreateParam;       // Used to pass parameters to new views
 
 public:
     ~CGamDoc() override;

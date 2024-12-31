@@ -1,6 +1,6 @@
 // VwBitedt.h : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,14 +37,16 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditView view
 
+class wxBitEditView;
 class CTileSelView;
 
-class CBitEditView : public wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow>
+class CBitEditView : public wxScrolledCanvas
 {
     friend class CBitEditViewContainer;
     friend class CTileSelViewContainer;
+    friend class CBitEditFrame;
 protected:
-    CBitEditView(CBitEditViewContainer& parent);
+    CBitEditView(wxSplitterWindow& parent, wxBitEditView& view);
 
 // Attributes
 public:
@@ -188,7 +190,9 @@ protected:
     ~CBitEditView() override;
     void OnDraw(wxDC& dc) override;
     void OnInitialUpdate();
+public:
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+protected:
 
     void OnImageGridLines(wxCommandEvent& event);
     void OnToolPalette(wxCommandEvent& event);
@@ -228,15 +232,9 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override
-    {
-        return CheckedDeref(AfxGetMainWnd());
-    }
-
-    RefPtr<CBitEditViewContainer> parent;
+    RefPtr<wxSplitterWindow> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
+    RefPtr<wxBitEditView> view;
 };
 
 class CBitEditViewContainer : public CB::OnCmdMsgOverride<CView>,

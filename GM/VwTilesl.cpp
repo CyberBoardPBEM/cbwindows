@@ -27,6 +27,7 @@
 #include    "GmDoc.h"
 #include    "CDib.h"
 #include    "VwTilesl.h"
+#include    "FrmBited.h"
 #include    "VwBitedt.h"
 #include    "DlgTilsz.h"
 #include    "FrmMain.h"     // TODO:  remove?
@@ -45,23 +46,21 @@ const int nBorderWidth = 5;
 
 IMPLEMENT_DYNCREATE(CTileSelViewContainer, CView)
 
-CTileSelView::CTileSelView(CTileSelViewContainer& p) :
+CTileSelView::CTileSelView(wxSplitterWindow& p,
+                            wxBitEditView& v,
+                            TileID tid) :
+    m_tid(tid),
     parent(&p),
-    document(CB::ToCGamDoc(parent->GetDocument()))
+    document(&v.GetDocument()),
+    view(&v)
 {
     m_pTileMgr = NULL;
     m_pEditView = NULL;
-    m_tid = nullTid;
     m_bNoUpdate = FALSE;
-    wxScrolledCanvas::Create(*parent, 0);
-    wxView->SetDocument(&*document);
-    wxView->SetFrame(this);
+    wxScrolledCanvas::Create(&*parent, 0);
 }
 
-namespace {
-    typedef wxDocChildFrameAny<CB::PseudoFrame<wxScrolledCanvas>, wxWindow> NoCommas;
-}
-wxBEGIN_EVENT_TABLE(CTileSelView, NoCommas)
+wxBEGIN_EVENT_TABLE(CTileSelView, wxScrolledCanvas)
     EVT_LEFT_DOWN(OnLButtonDown)
 wxEND_EVENT_TABLE()
 
@@ -109,13 +108,8 @@ END_MESSAGE_MAP()
 
 void CTileSelView::OnInitialUpdate()
 {
-#if 0
-    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
-#endif
-
     m_pTileMgr = &GetDocument().GetTileManager();
-    m_tid = static_cast<TileID>(reinterpret_cast<uintptr_t>(GetDocument().GetCreateParameter()));
-    ASSERT(m_tid != nullTid);
+    wxASSERT(m_tid != nullTid);
 
     // Fetch full scale tile
     CTile tile = m_pTileMgr->GetTile(m_tid, fullScale);
@@ -155,24 +149,31 @@ void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEDELETED>().m_tid == m_tid)
         {
             m_bNoUpdate = TRUE;
-            CFrameWnd* pFrm = parent->GetParentFrame();
-            ASSERT(pFrm != NULL);
-            pFrm->PostMessage(WM_CLOSE, 0, 0L);
+            // close this view
+            /* can't delete now
+                because iterator in caller would be invalidated */
+            wxTheApp->ScheduleForDestruction(&*view);
         }
     }
     else if (wHint == HINT_TILESETDELETED && !m_pTileMgr->IsTileIDValid(m_tid))
     {
         m_bNoUpdate = TRUE;
-        CFrameWnd* pFrm = parent->GetParentFrame();
-        ASSERT(pFrm != NULL);
-        pFrm->PostMessage(WM_CLOSE, 0, 0L);
+        // close this view
+        /* can't delete now
+            because iterator in caller would be invalidated */
+        wxTheApp->ScheduleForDestruction(&*view);
     }
     else if (wHint == HINT_FORCETILEUPDATE)
     {
         UpdateDocumentTiles();
     }
     else if (wHint == HINT_ALWAYSUPDATE)
+    {
+        wxASSERT(!"untested code");
+#if 0
         parent->CView::OnUpdate(pSender, lHint, pHint);
+#endif
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -273,7 +274,7 @@ void CTileSelView::UpdateDocumentTiles()
     // Finally handle various notifications
     CGmBoxHint hint;
     hint.GetArgs<HINT_TILEMODIFIED>().m_tid = m_tid;
-    pDoc.UpdateAllViews(&*parent, HINT_TILEMODIFIED, &hint);
+    pDoc.UpdateAllViews(&*view, CGmBoxHintWx(HINT_TILEMODIFIED, &hint));
     pDoc.SetModifiedFlag();
 }
 

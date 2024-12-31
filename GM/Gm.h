@@ -155,8 +155,6 @@ public:
     HANDLE  m_hHtmlProcessHandle;
     UINT    m_nAppLook;
 
-    CMultiDocTemplate* m_pTileEditTmpl;
-
 // Operations
 public:
     void DoHelpShellLaunch();
