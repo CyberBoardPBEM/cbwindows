@@ -1,6 +1,6 @@
 // FrmBited.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -22,22 +22,26 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#include "VwBitedt.h"
+
 class CTileSelView;
+class wxBitEditView;
 
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame frame
 
-class CBitEditFrame : public CMDIChildWndEx,
-                        public CB::wxNativeContainerWindowMixin
+class CBitEditFrame : public wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>
 {
-    DECLARE_DYNCREATE(CBitEditFrame)
 protected:
-    CBitEditFrame();            // protected constructor used by dynamic creation
+    CBitEditFrame(wxDocument& doc,
+                    wxBitEditView& view,
+                    wxAuiMDIParentFrame& parent);
 
 // Attributes
 protected:
-    CSplitterWndEx m_wndSplitter;
+    RefPtr<wxSplitterWindow> m_wndSplitter;
 
+#if 0
 // Operations
 public:
 
@@ -51,18 +55,50 @@ protected:
     // Generated message map functions
     //{{AFX_MSG(CBitEditFrame)
     afx_msg void OnClose();
-    afx_msg void OnImageDiscard();
-    afx_msg void OnImageUpdate();
-    afx_msg void OnToolsResizeTile();
+#endif
+    void OnImageDiscard(wxCommandEvent& event);
+    void OnImageUpdate(wxCommandEvent& event);
+    void OnToolsResizeTile(wxCommandEvent& event);
+#if 0
     afx_msg void OnEditUndo();
     afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
-    afx_msg BOOL OnRotateTile(UINT id);
-    afx_msg void OnUpdateRotateTile(CCmdUI* pCmdUI);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnRotateTile(wxCommandEvent& event);
+    void OnUpdateRotateTile(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
+    wxDECLARE_EVENT_TABLE();
 
 private:
+    using BASE = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
+
+    CBitEditView& GetBitEditView();
     CTileSelView& GetTileSelView();
+
+    friend class wxBitEditView;
+};
+
+class wxBitEditView : public CB::wxView
+{
+public:
+    static wxBitEditView* New(CGamDoc& doc, TileID tid);
+
+    CGamDoc& GetDocument();
+    CBitEditFrame& GetFrame();
+    CBitEditView& GetWindow() override { return GetBitEditView(); }
+    CBitEditView& GetBitEditView() { return GetFrame().GetBitEditView(); }
+    CTileSelView& GetTileSelView() { return GetFrame().GetTileSelView(); }
+
+    void OnActivateView(bool activate, ::wxView* activeView, ::wxView* deactiveView) override;
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+
+private:
+    wxBitEditView() = default;
+    wxDECLARE_DYNAMIC_CLASS(wxBitEditView);
+
+    // wx tries to activate this before it is ready
+    bool ready = false;
 };
 
 /////////////////////////////////////////////////////////////////////////////

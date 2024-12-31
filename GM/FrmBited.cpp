@@ -1,6 +1,6 @@
 // FrmBited.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,6 +26,7 @@
 #include    "Gm.h"
 #include    "GmDoc.h"
 #include    "FrmBited.h"
+#include    "FrmMain.h"
 #include    "VwBitedt.h"
 #include    "VwTilesl.h"
 
@@ -34,41 +35,86 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxIMPLEMENT_DYNAMIC_CLASS(wxBitEditView, wxView);
+
+namespace {
+    TileID createParam = nullTid;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame
 
-IMPLEMENT_DYNCREATE(CBitEditFrame, CMDIChildWndEx)
-
-CBitEditFrame::CBitEditFrame() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+CBitEditFrame::CBitEditFrame(wxDocument& doc,
+                wxBitEditView& view,
+                wxAuiMDIParentFrame& parent) :
+    BASE(&doc, &view, &parent, wxID_ANY,
+        doc.GetUserReadableName() + " - Tile Editor"),
+    m_wndSplitter([this, &view]{
+        wxSplitterWindow* retval = new wxSplitterWindow(this,
+            wxID_ANY,
+            wxDefaultPosition,
+            wxDefaultSize,
+            /* this seems to be the only combo of flags
+                that creates a visible sash */
+            wxSP_3D | wxSP_NO_XP_THEME);
+        retval->SetMinimumPaneSize(20);
+        retval->SetSashGravity(0.0);
+        CTileSelView* pSelView = new CTileSelView(*retval, view, createParam);
+        CBitEditView* pBitView = new CBitEditView(*retval, view);
+        if (!retval->SplitVertically(pSelView, pBitView, 90))
+        {
+            AfxThrowMemoryException();
+        }
+        // Link the biteditor view to the tile selector and vice versa
+        pSelView->SetBitEditor(*pBitView);
+        pBitView->SetTileSelectView(*pSelView);
+        pSelView->OnInitialUpdate();
+        pBitView->OnInitialUpdate();
+        return retval;
+    }())
 {
+    SetIcon(wxIcon(std::format("#{}", IDR_BITEDITOR),
+                            wxBITMAP_TYPE_ICO_RESOURCE,
+                            16, 16));
+    /* KLUDGE:  giving each frame its own menu
+        seems to avoid crashes on process close */
+    wxXmlResource::Get()->LoadMenuBar(this, "IDR_GAMEBOX"_cbstring);
+    Layout();
 }
 
+#if 0
 CBitEditFrame::~CBitEditFrame()
 {
 }
+#endif
 
 
-BEGIN_MESSAGE_MAP(CBitEditFrame, CMDIChildWndEx)
-    //{{AFX_MSG_MAP(CBitEditFrame)
+wxBEGIN_EVENT_TABLE(CBitEditFrame, CBitEditFrame::BASE)
+#if 0
     ON_WM_CLOSE()
-    ON_COMMAND(ID_IMAGE_DISCARD, OnImageDiscard)
-    ON_COMMAND(ID_IMAGE_UPDATE, OnImageUpdate)
-    ON_COMMAND(ID_TOOLS_RESIZETILE, OnToolsResizeTile)
+#endif
+    EVT_MENU(XRCID("ID_IMAGE_DISCARD"), OnImageDiscard)
+    EVT_MENU(XRCID("ID_IMAGE_UPDATE"), OnImageUpdate)
+    EVT_MENU(XRCID("ID_TOOLS_RESIZETILE"), OnToolsResizeTile)
+    EVT_UPDATE_UI(XRCID("ID_IMAGE_DISCARD"), OnUpdateEnable)
+    EVT_UPDATE_UI(XRCID("ID_IMAGE_UPDATE"), OnUpdateEnable)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_RESIZETILE"), OnUpdateEnable)
+#if 0
     ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
     ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
-    ON_COMMAND_EX(ID_TOOLS_ROT90, OnRotateTile)
-    ON_COMMAND_EX(ID_TOOLS_ROT180, OnRotateTile)
-    ON_COMMAND_EX(ID_TOOLS_ROT270, OnRotateTile)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_ROT90, OnUpdateRotateTile)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_ROT180, OnUpdateRotateTile)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_ROT270, OnUpdateRotateTile)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_MENU(XRCID("ID_TOOLS_ROT90"), OnRotateTile)
+    EVT_MENU(XRCID("ID_TOOLS_ROT180"), OnRotateTile)
+    EVT_MENU(XRCID("ID_TOOLS_ROT270"), OnRotateTile)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_ROT90"), OnUpdateRotateTile)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_ROT180"), OnUpdateRotateTile)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_ROT270"), OnUpdateRotateTile)
+wxEND_EVENT_TABLE()
 
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 BOOL CBitEditFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CMDIChildWndEx::PreCreateWindow(cs))
@@ -134,23 +180,25 @@ void CBitEditFrame::OnClose()
 {
     CWnd::OnClose();            // Short circuit frame's doc close code
 }
+#endif
 
-void CBitEditFrame::OnImageDiscard()
+void CBitEditFrame::OnImageDiscard(wxCommandEvent& WXUNUSED(event))
 {
     GetTileSelView().SetNoUpdate();
-    PostMessage(WM_CLOSE, 0, 0L);
+    Close();
 }
 
-void CBitEditFrame::OnImageUpdate()
+void CBitEditFrame::OnImageUpdate(wxCommandEvent& WXUNUSED(event))
 {
     GetTileSelView().UpdateDocumentTiles();
 }
 
-void CBitEditFrame::OnToolsResizeTile()
+void CBitEditFrame::OnToolsResizeTile(wxCommandEvent& WXUNUSED(event))
 {
     GetTileSelView().DoTileResizeDialog();
 }
 
+#if 0
 void CBitEditFrame::OnEditUndo()
 {
     wxASSERT(!"unreachable code?");
@@ -168,30 +216,121 @@ void CBitEditFrame::OnUpdateEditUndo(CCmdUI* pCmdUI)
     GetTileSelView().OnUpdateEditUndo(pCmdUI);
 #endif
 }
+#endif
 
-BOOL CBitEditFrame::OnRotateTile(UINT id)
+void CBitEditFrame::OnRotateTile(wxCommandEvent& event)
 {
-    int nAngle = (id == ID_TOOLS_ROT90) ? 90 :
-        ((id == ID_TOOLS_ROT180) ? 180 : 270);
+    int id = event.GetId();
+    int nAngle = (id == XRCID("ID_TOOLS_ROT90")) ? 90 :
+        ((id == XRCID("ID_TOOLS_ROT180")) ? 180 : 270);
     GetTileSelView().DoTileRotation(nAngle);
-    return TRUE;
 }
 
-void CBitEditFrame::OnUpdateRotateTile(CCmdUI* pCmdUI)
+void CBitEditFrame::OnUpdateRotateTile(wxUpdateUIEvent& pCmdUI)
 {
-    if (pCmdUI->m_pSubMenu != NULL && pCmdUI->m_nID == ID_TOOLS_ROT90)
-    {
-        // Need to enable menu that the submenu is connected to.
-        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
-            MF_BYPOSITION | MF_ENABLED);
-    }
+    pCmdUI.Enable(TRUE);
+}
 
-    pCmdUI->Enable(TRUE);
+void CBitEditFrame::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
+wxBitEditView* wxBitEditView::New(CGamDoc& doc, TileID tid)
+{
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocTemplate& templ = CB::FindDocTemplateByView(*CLASSINFO(wxBitEditView));
+
+    class CreateParamManager
+    {
+    public:
+        CreateParamManager(TileID tid)
+        {
+            wxASSERT(createParam == nullTid);
+            createParam = tid;
+        }
+        ~CreateParamManager()
+        {
+            createParam = nullTid;
+        }
+    } createParamMgr(tid);
+    ::wxView* retval = templ.CreateView(&doc);
+    wxASSERT(dynamic_cast<wxBitEditView*>(retval));
+    return static_cast<wxBitEditView*>(retval);
+}
+
+CGamDoc& wxBitEditView::GetDocument()
+{
+    wxDocument& doc = CheckedDeref(wxView::GetDocument());
+    wxASSERT(dynamic_cast<CGamDoc*>(&doc));
+    return static_cast<CGamDoc&>(doc);
+}
+
+CBitEditFrame& wxBitEditView::GetFrame()
+{
+    wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
+    wxASSERT(dynamic_cast<CBitEditFrame*>(&frame));
+    return static_cast<CBitEditFrame&>(frame);
+}
+
+CBitEditView& CBitEditFrame::GetBitEditView()
+{
+    wxWindow& wnd = CheckedDeref(m_wndSplitter->GetWindow2());
+    CBitEditView& bev = dynamic_cast<CBitEditView&>(wnd);
+    return bev;
 }
 
 CTileSelView& CBitEditFrame::GetTileSelView()
 {
-    CWnd& wnd = CheckedDeref(m_wndSplitter.GetPane(0, 0));
-    CTileSelViewContainer& tsvc = dynamic_cast<CTileSelViewContainer&>(wnd);
-    return tsvc.GetChild();
+    wxWindow& wnd = CheckedDeref(m_wndSplitter->GetWindow1());
+    CTileSelView& tsvc = dynamic_cast<CTileSelView&>(wnd);
+    return tsvc;
+}
+
+void wxBitEditView::OnActivateView(bool activate, ::wxView* activeView, ::wxView* deactiveView)
+{
+    wxASSERT(activeView == this);
+    if (!activate)
+    {
+        return;
+    }
+    // wx tries to activate this before it's ready
+    if (ready)
+    {
+        GetBitEditView().SetFocus();
+    }
+}
+
+bool wxBitEditView::OnClose(bool /*deleteWindow*/)
+{
+    /* doc's life determined by wxGbxProjView, not this,
+        so bypass wxView::OnClose() */
+    return true;
+}
+
+bool wxBitEditView::OnCreate(wxDocument* doc, long flags)
+{
+    if (!wxView::OnCreate(doc, flags))
+    {
+        return false;
+    }
+
+    new CBitEditFrame(CheckedDeref(doc),
+                    *this,
+                    CheckedDeref(GetMainFrame()));
+    /* wx tried to activate this before it was ready,
+        so do it now */
+    ready = true;
+    Activate(true);
+
+    return true;
+}
+
+void wxBitEditView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+{
+    CB::wxView::OnUpdate(sender, hint);
+
+    CGmBoxHintWx& hint2 = dynamic_cast<CGmBoxHintWx&>(CheckedDeref(hint));
+    GetTileSelView().OnUpdate(nullptr, hint2.hint, hint2.hintObj);
+    GetBitEditView().OnUpdate(nullptr, hint2.hint, hint2.hintObj);
 }

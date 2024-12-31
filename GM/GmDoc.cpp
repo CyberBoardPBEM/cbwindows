@@ -44,6 +44,7 @@
 #include    "Marks.h"
 
 #include    "FrmMain.h"
+#include    "FrmBited.h"
 #include    "VwTilesl.h"
 #include    "VwEdtbrd.h"
 
@@ -187,7 +188,6 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
         return;
     }
 
-    CPP20_TRACE("{}({}, {}, {})\n", __func__, static_cast<void*>(pSender), lHint, static_cast<void*>(pHint));
     mfcDoc->CDocument::UpdateAllViews(pSender, lHint, pHint);
     CGmBoxHint* hint = dynamic_cast<CGmBoxHint*>(pHint);
     wxASSERT(!pHint || hint);       // pHint --> hint
@@ -206,7 +206,6 @@ void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nu
         return;
     }
 
-    CPP20_TRACE("{}({}, {})\n", __func__, static_cast<void*>(sender), static_cast<void*>(hint));
     wxDocument::UpdateAllViews(sender, hint);
 
     CGmBoxHintWx* cbhint = dynamic_cast<CGmBoxHintWx*>(hint);
@@ -394,31 +393,6 @@ void CGamDoc::SetCustomColors(const std::vector<wxColour>& pCustColors)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Support for new unique views on this document
-
-BOOL CGamDoc::CreateNewFrame(CDocTemplate& pTemplate, const CB::string& pszTitle,
-    LPVOID lpvCreateParam)
-{
-    CMDIChildWndEx* pNewFrame
-        = static_cast<CMDIChildWndEx*>(pTemplate.CreateNewFrame(*this, NULL));
-    if (pNewFrame == NULL)
-        return FALSE;               // Not created
-    wxASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
-    CB::string str = GetUserReadableName();
-    str += " - ";
-    str += pszTitle;
-    pNewFrame->SetWindowText(str);
-    m_lpvCreateParam = lpvCreateParam;
-    pTemplate.InitialUpdateFrame(pNewFrame, *this);
-#if 0
-    // KLUDGE:  work around https://github.com/CyberBoardPBEM/cbwindows/issues/23
-    GetMainFrame()->RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
-#endif
-    m_lpvCreateParam = NULL;
-    return TRUE;
-}
-
-///////////////////////////////////////////////////////////////////////
 // Returns TRUE if views may have been affected
 
 BOOL CGamDoc::NotifyTileDatabaseChange(BOOL bDelScan /* = TRUE */)
@@ -483,16 +457,18 @@ DWORD CGamDoc::IssueGameBoxID()
 
 ///////////////////////////////////////////////////////////////////////
 
-CView* CGamDoc::FindTileEditorView(TileID tid) const
+wxBitEditView* CGamDoc::FindTileEditorView(TileID tid) const
 {
-    POSITION pos = mfcDoc->GetFirstViewPosition();
-    while (pos != NULL)
+    const wxList& views = GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
     {
-        CTileSelViewContainer* pView = static_cast<CTileSelViewContainer*>(mfcDoc->GetNextView(pos));
-        if (pView->IsKindOf(RUNTIME_CLASS(CTileSelViewContainer)))
+        wxBitEditView* pView = dynamic_cast<wxBitEditView*>(*it);
+        if (pView)
         {
-            if (pView->GetChild().GetTileID() == tid)
+            if (pView->GetTileSelView().GetTileID() == tid)
+            {
                 return pView;
+            }
         }
     }
     return NULL;

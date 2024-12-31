@@ -27,6 +27,7 @@
 #include    "GmDoc.h"
 #include    "ResTbl.h"
 #include    "CellForm.h"
+#include    "FrmBited.h"
 #include    "VwBitedt.h"
 #include    "VwTilesl.h"
 #include    "PalColor.h"
@@ -50,10 +51,7 @@ const size_t maxUndoLevels = size_t(8);
 
 /////////////////////////////////////////////////////////////////////////////
 
-namespace {
-    typedef wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow> NoCommas;
-}
-wxBEGIN_EVENT_TABLE(CBitEditView, NoCommas)
+wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_MENU(XRCID("ID_IMAGE_GRIDLINES"), OnImageGridLines)
     EVT_MENU(XRCID("ID_ITOOL_PENCIL"), OnToolPalette)
     EVT_SETCOLOR(OnSetColor)
@@ -124,9 +122,10 @@ END_MESSAGE_MAP()
 
 IMPLEMENT_DYNCREATE(CBitEditViewContainer, CView)
 
-CBitEditView::CBitEditView(CBitEditViewContainer& p) :
+CBitEditView::CBitEditView(wxSplitterWindow& p, wxBitEditView& v) :
     parent(&p),
-    document(CB::ToCGamDoc(parent->GetDocument()))
+    document(&v.GetDocument()),
+    view(&v)
 {
     m_pSelView = NULL;
     m_nZoom = 6;
@@ -140,9 +139,7 @@ CBitEditView::CBitEditView(CBitEditViewContainer& p) :
     m_nCurToolID = XRCID("ID_ITOOL_PENCIL");
     m_nLastToolID = XRCID("ID_ITOOL_PENCIL");
     m_bSelectCapture = FALSE;
-    wxScrolledCanvas::Create(*parent, 0);
-    wxView->SetDocument(&*document);
-    wxView->SetFrame(this);
+    wxScrolledCanvas::Create(&*parent, 0);
 }
 
 CBitEditView::~CBitEditView()
@@ -154,10 +151,6 @@ CBitEditView::~CBitEditView()
 
 void CBitEditView::OnInitialUpdate()
 {
-#if 0
-    CB_VERIFY(Create(&GetDocument(), &*wxView, *GetMainFrame(), wxID_ANY, "dummy"));
-#endif
-
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->Add(100, 100);
@@ -172,7 +165,12 @@ void CBitEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     WORD wHint = LOWORD(lHint);
     // Update for nonspecific notification only
     if (wHint == HINT_ALWAYSUPDATE)
+    {
+        wxASSERT(!"untested code");
+#if 0
         parent->CView::OnUpdate(pSender, lHint, pHint);
+#endif
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -188,7 +186,11 @@ void CBitEditView::OnDraw(wxDC& pDC)
     if (m_nCurToolID != XRCID("ID_ITOOL_SELECT") || m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
+#if 0   /* wx frames don't support multiple views.
+            Fortunately, I don't think CB3 ever let
+            tile selector be active. */
         if (parent->GetParentFrame()->GetActiveView() == parent)
+#endif
         {
             wxRect rct(0, 0, 2 * xBorder + size.x, 2 * yBorder + size.y);
             Draw25PctPatBorder(*this, pDC, rct, xBorder);
@@ -229,7 +231,11 @@ void CBitEditView::OnDraw(wxDC& pDC)
         m_bmPaste.IsOk() && !m_rctPaste.IsEmpty())
     {
         // Handle fancy focus rect
+#if 0   /* wx frames don't support multiple views.
+            Fortunately, I don't think CB3 ever let
+            tile selector be active. */
         if (parent->GetParentFrame()->GetActiveView())
+#endif
         {
             // Convert paste rect to view coordinates.
             wxRect rct = GetZoomedSelectBorderRect();
@@ -929,7 +935,8 @@ void CBitEditView::OnMouseCaptureLost(wxMouseCaptureLostEvent& /*event*/)
 void CBitEditView::OnSetCursor(wxSetCursorEvent& event)
 {
     IToolType eToolType = MapToolType(m_nCurToolID);
-    if (eToolType != itoolUnknown)
+//    wxASSERT(event.GetEventObject() == this);
+    if (event.GetEventObject() == this && eToolType != itoolUnknown)
     {
         CImageTool& pTool = CImageTool::GetTool(eToolType);
         wxPoint point = ClientToWorkspace(wxPoint(event.GetX(), event.GetY()));

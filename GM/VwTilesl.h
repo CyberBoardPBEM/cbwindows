@@ -1,6 +1,6 @@
 // VwTilesl.h : header file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,15 +33,18 @@
 // CTileSelView view
 
 class CBitEditView;
+class wxBitEditView;
 class CTileSelViewContainer;
 
-class CTileSelView : public wxDocChildFrameAny<CB::PseudoFrame<wxScrolledCanvas>, wxWindow>
+class CTileSelView : public wxScrolledCanvas
 {
     friend class CBitEditFrame;
     friend class CTileSelViewContainer;
 protected:
     // single-part construction
-    CTileSelView(CTileSelViewContainer& parent);
+    CTileSelView(wxSplitterWindow& parent,
+                    wxBitEditView& view,
+                    TileID tid);
 
 // Attributes
 public:
@@ -70,7 +73,7 @@ public:
 protected:
     BOOL        m_bNoUpdate;        // TRUE if should discard changes
 
-    TileID      m_tid;
+    const TileID      m_tid;
 
     wxBitmap m_pBmFullUndo;      // Save from previous resize
     wxBitmap m_pBmHalfUndo;      // Save from previous resize
@@ -116,9 +119,9 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    RefPtr<CTileSelViewContainer> parent;
+    RefPtr<wxSplitterWindow> parent;
     RefPtr<CGamDoc> document;
-    OwnerPtr<CB::wxView_deprecated> wxView = MakeOwner<CB::wxView_deprecated>(*this);
+    RefPtr<wxBitEditView> view;
 };
 
 class CTileSelViewContainer : public CView,
