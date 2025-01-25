@@ -183,6 +183,25 @@ CBrdEditView::CBrdEditView(wxView& v, CBoard& b) :
     OnInitialUpdate();
 }
 
+wxAuiToolBar& CBrdEditView::CreateToolbar(wxWindow& parent)
+{
+    static const CB::ToolArgs toolArgs[] = {
+        { XRCID("ID_TOOL_ARROW"), ID_TOOL_ARROW, wxITEM_CHECK },
+        { XRCID("ID_TOOL_ERASER"), ID_TOOL_ERASER, wxITEM_CHECK },
+        { XRCID("ID_TOOL_TILE"), ID_TOOL_TILE, wxITEM_CHECK },
+        { XRCID("ID_TOOL_TEXT"), ID_TOOL_TEXT, wxITEM_CHECK },
+        { XRCID("ID_TOOL_FILL"), ID_TOOL_FILL, wxITEM_CHECK },
+        { XRCID("ID_TOOL_DROPPER"), ID_TOOL_DROPPER, wxITEM_CHECK },
+        { XRCID("ID_TOOL_LINE"), ID_TOOL_LINE, wxITEM_CHECK },
+        { XRCID("ID_TOOL_POLYGON"), ID_TOOL_POLYGON, wxITEM_CHECK },
+        { XRCID("ID_TOOL_RECT"), ID_TOOL_RECT, wxITEM_CHECK },
+        { XRCID("ID_TOOL_OVAL"), ID_TOOL_OVAL, wxITEM_CHECK },
+    };
+    return CB::CreateToolbar(parent,
+                                toolArgs,
+                                IDB_DRAWLAYERTOOLS);
+}
+
 CBrdEditView::~CBrdEditView()
 {
 }

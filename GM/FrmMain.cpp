@@ -76,11 +76,15 @@ wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::wxAuiMDIParentFrame>)
     EVT_MENU(XRCID("ID_WINDOW_TILE_VERT"), OnTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_HORZ"), OnUpdateTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
+    EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
 wxEND_EVENT_TABLE()
 
-static UINT indicators[] =
+static const int indicators[] =
 {
-    ID_SEPARATOR,           // status line indicator
+    value_preserving_cast<int>(wxID_SEPARATOR),           // status line indicator
+    /* N.B.:  do not use XRCID with these because they are
+        also string identifiers in .rc */
     ID_INDICATOR_CAPS,
     ID_INDICATOR_NUM,
     ID_INDICATOR_CELLNUM,
@@ -135,6 +139,58 @@ CMainFrame::CMainFrame() :
     wndMenu.AppendSeparator();
     wndMenu.Append(XRCID("ID_WINDOW_TILE_HORZ"), "Split Tabs &Horizontally"_cbstring, "Split active tab into a new group horizontally"_cbstring);
     wndMenu.Append(XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, "Split active tab into a new group vertically"_cbstring);
+
+    // Build the main window tool bar.
+    static const CB::ToolArgs standardArgs[] = {
+        { wxID_NEW, ID_FILE_NEW },
+        { wxID_OPEN, ID_FILE_OPEN },
+        { wxID_SAVE, ID_FILE_SAVE },
+        { wxID_SEPARATOR },
+        { wxID_CUT, ID_EDIT_CUT },
+        { wxID_COPY, ID_EDIT_COPY },
+        { wxID_PASTE, ID_EDIT_PASTE },
+        { wxID_SEPARATOR },
+        { XRCID("ID_WINDOW_TILEPAL"), ID_WINDOW_TILEPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_TOOLPAL"), ID_WINDOW_TOOLPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_COLORPAL"), ID_WINDOW_COLORPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_ITOOLPAL"), ID_WINDOW_ITOOLPAL, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_VIEW_TOGGLE_SCALE"), ID_VIEW_TOGGLE_SCALE },
+        { wxID_SEPARATOR },
+        { XRCID("ID_EDIT_LAYER_BASE"), ID_EDIT_LAYER_BASE, wxITEM_CHECK },
+        { XRCID("ID_EDIT_LAYER_TILE"), ID_EDIT_LAYER_TILE, wxITEM_CHECK },
+        { XRCID("ID_EDIT_LAYER_TOP"), ID_EDIT_LAYER_TOP, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_VIEW_GRIDLINES"), ID_VIEW_GRIDLINES, wxITEM_CHECK },
+        { XRCID("ID_TOOLS_BRDSNAPGRID"), ID_TOOLS_BRDSNAPGRID, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_DWG_TOFRONT"), ID_DWG_TOFRONT },
+        { XRCID("ID_DWG_TOBACK"), ID_DWG_TOBACK },
+        { wxID_SEPARATOR },
+        { wxID_HELP_CONTEXT, ID_CONTEXT_HELP },
+    };
+    m_wndToolBar = &CB::CreateToolbar(*this,
+                                        standardArgs,
+                                        IDR_MAINFRAME);
+    auiManager.AddPane(m_wndToolBar, wxAuiPaneInfo().
+                        Name("IDR_MAINFRAME"_cbstring).Caption("Standard"_cbstring).
+                        ToolbarPane().Top().Layer(0));
+
+    m_wndToolPal = &CBrdEditView::CreateToolbar(*this);
+    auiManager.AddPane(m_wndToolPal, wxAuiPaneInfo().
+                        Name("IDB_DRAWLAYERTOOLS"_cbstring).Caption("Board Tools"_cbstring).
+                        ToolbarPane().Right().Layer(1));
+
+    m_wndIToolPal = &CBitEditView::CreateToolbar(*this);
+    auiManager.AddPane(m_wndIToolPal, wxAuiPaneInfo().
+                        Name("IDB_IMAGETOOLS").Caption("Tile Tools"_cbstring).
+                        ToolbarPane().Right().Layer(2));
+
+    m_wndStatusBar = nullptr;
+    wxCommandEvent dummy;
+    OnViewStatusBar(dummy);
+
+    auiManager.Update();
 }
 
 CMainFrame::~CMainFrame()
@@ -411,6 +467,26 @@ void CMainFrame::OnTile(wxCommandEvent& event)
 void CMainFrame::OnUpdateTile(wxUpdateUIEvent& event)
 {
     event.Enable(GetClientWindow()->GetPageCount() >= 2);
+}
+
+void CMainFrame::OnViewStatusBar(wxCommandEvent& event)
+{
+    if (!m_wndStatusBar)
+    {
+        m_wndStatusBar = &CreateStatusBar(indicators);
+    }
+    else
+    {
+        SetStatusBar(nullptr);
+        delete m_wndStatusBar;
+        m_wndStatusBar = nullptr;
+    }
+}
+
+void CMainFrame::OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_wndStatusBar);
 }
 
 ///////////////////////////////////////////////////////////////////////

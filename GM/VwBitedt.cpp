@@ -142,6 +142,27 @@ CBitEditView::CBitEditView(wxSplitterWindow& p, wxBitEditView& v) :
     wxScrolledCanvas::Create(&*parent, 0);
 }
 
+wxAuiToolBar& CBitEditView::CreateToolbar(wxWindow& parent)
+{
+    static const CB::ToolArgs toolArgs[] = {
+        { XRCID("ID_ITOOL_PENCIL"), ID_ITOOL_PENCIL, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_SELECT"), ID_ITOOL_SELECT, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_BRUSH"), ID_ITOOL_BRUSH, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_FILL"), ID_ITOOL_FILL, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_COLORCHANGE"), ID_ITOOL_COLORCHANGE, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_TEXT"), ID_ITOOL_TEXT, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_LINE"), ID_ITOOL_LINE, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_RECT"), ID_ITOOL_RECT, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_OVAL"), ID_ITOOL_OVAL, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_FILLRECT"), ID_ITOOL_FILLRECT, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_FILLOVAL"), ID_ITOOL_FILLOVAL, wxITEM_CHECK },
+        { XRCID("ID_ITOOL_DROPPER"), ID_ITOOL_DROPPER, wxITEM_CHECK },
+    };
+    return CB::CreateToolbar(parent,
+                                toolArgs,
+                                IDB_IMAGETOOLS);
+}
+
 CBitEditView::~CBitEditView()
 {
     PurgeUndo();

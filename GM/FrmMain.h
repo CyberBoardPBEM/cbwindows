@@ -85,13 +85,15 @@ public:
  protected: // control bar embedded members
 #if 0
     CMFCMenuBar     m_wndMenuBar;       // Main menu
-    CMFCToolBar     m_wndToolBar;       // Main toolbar
-    CMFCToolBar     m_wndToolPal;       // Button tool palette for board draw
-    CMFCToolBar     m_wndIToolPal;      // Button tool palette for image edit
+#endif
+    wxAuiToolBar*   m_wndToolBar;       // Main toolbar
+    wxAuiToolBar*   m_wndToolPal;       // Button tool palette for board draw
+    wxAuiToolBar*   m_wndIToolPal;      // Button tool palette for image edit
+#if 0
     CDockColorPalette m_wndColorPal;    // Color tool palette window
     CDockTilePalette m_wndTilePal;      // Container window for tile palette
-    CMFCStatusBar   m_wndStatusBar;     // Status bar at window bottom
 #endif
+    CB::wxStatusBar*  m_wndStatusBar;   // Status bar at window bottom
 
     BOOL            m_bColorPalOn;
     BOOL            m_bTilePalOn;
@@ -121,6 +123,8 @@ protected:
 #endif
     void OnTile(wxCommandEvent& event);
     void OnUpdateTile(wxUpdateUIEvent& event);
+    void OnViewStatusBar(wxCommandEvent& event);
+    void OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI);
 
     wxDECLARE_EVENT_TABLE();
 
