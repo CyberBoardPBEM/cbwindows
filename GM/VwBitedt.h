@@ -50,6 +50,8 @@ protected:
 
 // Attributes
 public:
+    static wxAuiToolBar& CreateToolbar(wxWindow& parent);
+
     const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
     {

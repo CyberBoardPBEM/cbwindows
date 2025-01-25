@@ -53,6 +53,8 @@ private:
 
 // Attributes
 public:
+    static wxAuiToolBar& CreateToolbar(wxWindow& parent);
+
     wxTimer& GetTimer() { return timer; }
     wxOverlay& GetOverlay() { return overlay; }
     const CGamDoc& GetDocument() const { return *document; }
