@@ -773,6 +773,7 @@ void CB::string::Serialize(CArchive& ar)
 #endif
 }
 
+#if 0
 CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() const
 {
     if (!mfcWnd->m_hWnd)
@@ -870,6 +871,7 @@ wxWindow* CB::FindWxWindow(CWnd& mfcWnd)
     }
     return wxWnd;
 }
+#endif
 
 // emulate CWnd::SendMessageToDescendants()
 void CB::SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep /*= true*/)
@@ -885,6 +887,7 @@ void CB::SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep /*= tru
     }
 }
 
+#if 0
 const CWnd* CB::ToCWnd(const wxWindow& w)
 {
     const wxNativeContainerWindow* ncw = dynamic_cast<const wxNativeContainerWindow*>(&w);
@@ -904,6 +907,7 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     const CWnd* mfcWnd = ToCWnd(w);
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
+#endif
 
 void CB::wxView::OnDraw(wxDC * dc)
 {
@@ -1263,6 +1267,7 @@ void CB::InflateAndNormalize(wxRect& rect, int dx, int dy)
     rect.Inflate(dx, dy);
 }
 
+#if 0
 namespace CB
 {
     int ToWxID(int id)
@@ -1482,6 +1487,7 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
             return false;
     }
 }
+#endif
 
 namespace CB
 {
@@ -1511,6 +1517,7 @@ namespace CB
     }
 }
 
+#if 0
 bool CB::RelayProcessEvent(CCmdTarget& dest,
                             wxEvent& event)
 {
@@ -1574,6 +1581,7 @@ bool CB::RelayProcessEvent(CCmdTarget& dest,
 
     return false;
 }
+#endif
 
 int CB::GetMouseButtons(const wxMouseState& event)
 {
