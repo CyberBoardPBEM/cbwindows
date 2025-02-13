@@ -190,6 +190,22 @@ CMainFrame::CMainFrame() :
     wxCommandEvent dummy;
     OnViewStatusBar(dummy);
 
+    m_wndColorPal = new CColorPalette;
+    m_wndColorPal->Create(this);
+    auiManager.AddPane(m_wndColorPal, wxAuiPaneInfo().
+                        Name("CColorPalette").Caption("Colors"_cbstring).
+                        BestSize(m_wndColorPal->GetBestSize()).
+                        MaxSize(m_wndColorPal->GetBestSize()).
+                        Right().Layer(0).Position(0));
+
+    m_wndTilePal = new CDockTilePalette;
+    m_wndTilePal->Create(this);
+    auiManager.AddPane(m_wndTilePal, wxAuiPaneInfo().
+                        Name("CTilePalette").Caption("Tiles"_cbstring).
+                        Right().Layer(0).Position(1));
+
+    // default width doesn't leave enough space for color palette
+    SetClientSize(4*m_wndColorPal->GetBestSize().x, GetClientSize().y);
     auiManager.Update();
 }
 

@@ -35,8 +35,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-CDockTilePalette::CDockTilePalette() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+CDockTilePalette::CDockTilePalette()
 {
     m_pChildWnd = NULL;
 }

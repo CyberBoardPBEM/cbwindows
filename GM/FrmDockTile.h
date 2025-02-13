@@ -32,8 +32,7 @@ class CTilePalette;
 /////////////////////////////////////////////////////////////////////////////
 // CDockTilePalette window
 
-class CDockTilePalette : public CDockablePane,
-                            public CB::wxNativeContainerWindowMixin
+class CDockTilePalette : public wxPanel
 {
 // Construction
 public:
