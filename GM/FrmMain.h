@@ -89,10 +89,8 @@ public:
     wxAuiToolBar*   m_wndToolBar;       // Main toolbar
     wxAuiToolBar*   m_wndToolPal;       // Button tool palette for board draw
     wxAuiToolBar*   m_wndIToolPal;      // Button tool palette for image edit
-#if 0
-    CDockColorPalette m_wndColorPal;    // Color tool palette window
-    CDockTilePalette m_wndTilePal;      // Container window for tile palette
-#endif
+    CColorPalette*  m_wndColorPal;      // Color tool palette window
+    CDockTilePalette* m_wndTilePal;     // Container window for tile palette
     CB::wxStatusBar*  m_wndStatusBar;   // Status bar at window bottom
 
     BOOL            m_bColorPalOn;

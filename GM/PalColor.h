@@ -139,8 +139,8 @@ public:
     BOOL SetupLineControl();
 
 // Attributes
-public:
-    wxSize GetSize() const
+protected:
+    wxSize DoGetBestClientSize() const override
     {
         return m_sizeClient;
     }

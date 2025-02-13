@@ -74,7 +74,7 @@ public:
     void SetDockingFrame(CDockTilePalette* pDockingFrame)
     {
         m_pDockingFrame = pDockingFrame;
-        Reparent(pDockingFrame ? static_cast<wxWindow*>(*pDockingFrame) : nullptr);
+        Reparent(pDockingFrame);
     }
 
 protected:
