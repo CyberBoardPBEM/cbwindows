@@ -38,6 +38,7 @@
 // CBitEditView view
 
 class wxBitEditView;
+class CColorCmdUI;
 class CTileSelView;
 
 class CBitEditView : public wxScrolledCanvas
@@ -203,11 +204,11 @@ protected:
     void OnSetLineWidth(SetLineWidthEvent& event);
     void OnUpdateImageGridLines(wxUpdateUIEvent& pCmdUI);
     void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorTransparent(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorForeground(CColorCmdUI& colorCmdUI);
+    void OnUpdateColorBackground(CColorCmdUI& colorCmdUI);
+    void OnUpdateColorTransparent(CColorCmdUI& colorCmdUI);
+    void OnUpdateColorCustom(CColorCmdUI& colorCmdUI);
+    void OnUpdateLineWidth(CColorCmdUI& colorCmdUI);
     void OnLButtonDown(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);

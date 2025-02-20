@@ -1,6 +1,6 @@
 // ColorPal.h : header file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -67,70 +67,33 @@ inline bool mouseSetCustomClear(const wxMouseEvent& event)
 
 class CColorPalette;
 
-class CColorCmdUI : public CCmdUI
+class CColorCmdUI : public wxCommandEvent
 {
 public:
     CColorCmdUI(CColorPalette& colorPalette);
-    // Not used...
-    virtual void SetCheck(int nCheck) override {}
-    virtual void SetText(LPCTSTR lpszText) override {}
+
     // Used...
-    virtual void Enable(BOOL bOn) override;
+    void Enable(BOOL bOn);
     // New for color palette
-    virtual void SetColor(wxColour cr = wxNullColour) /* override */;
-    virtual void SetLineWidth(UINT uiLineWidth = 0) /* override */;
-    virtual void SetCustomColors(const std::vector<wxColour>& pCustColors) /* override */;
+    void SetColor(wxColour cr = wxNullColour);
+    void SetLineWidth(UINT uiLineWidth = 0);
+    void SetCustomColors(const std::vector<wxColour>& pCustColors);
+
+    void DoUpdate();
 
 private:
     RefPtr<CColorPalette> colorPalette;
+    bool m_bEnableChanged;
 };
+wxDECLARE_EVENT(cbEVT_UPDATE_UI_COLOR, CColorCmdUI);
+typedef void (wxEvtHandler::* CColorCmdUIFunction)(CColorCmdUI&);
+#define CColorCmdUIHandler(func) wxEVENT_HANDLER_CAST(CColorCmdUIFunction, func)
+#define EVT_UPDATE_UI_COLOR(id, func) \
+    wx__DECLARE_EVT1(cbEVT_UPDATE_UI_COLOR, id, CColorCmdUIHandler(func))
 
 ///////////////////////////////////////////////////////////////////////
 
 class CMainFrame;
-
-class CDockColorPalette : public CDockablePane,
-                            public CB::wxNativeContainerWindowMixin
-{
-    DECLARE_DYNCREATE(CDockColorPalette);
-    // Construction
-public:
-    CDockColorPalette();
-
-// Operations
-public:
-    void CalculateMinClientSize(CSize& size);
-
-// Overrides
-protected:
-    virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz) override;
-    virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler) override;
-    virtual CSize CalcSize(BOOL bVertDock) override
-    {
-        return CalcSize();
-    }
-    virtual void GetMinSize(CSize& size) const override
-    {
-        // Account for size of caption.
-        size = CalcSize() + CSize(0, GetCaptionHeight());
-    }
-    virtual void GetPaneName(CString &strName) const override
-    {
-        AfxThrowNotSupportedException();
-    }
-
-private:
-    CSize CalcSize() const;
-
-    // wx owns m_child
-    RefPtr<CColorPalette> m_child;
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-
-    DECLARE_MESSAGE_MAP()
-};
 
 class CColorPalette : public wxPanel
 {
@@ -147,7 +110,7 @@ protected:
 
 // Operations
 public:
-    void SetIDColor(UINT nID, wxColour cr);
+    void SetIDColor(int nID, wxColour cr);
     void SetLineWidth(UINT nLineWidth);
     void SetCustomColors(const std::vector<wxColour>& pCustColors);
     void CalculateMinClientSize(wxSize& size)
@@ -241,6 +204,7 @@ protected:
     void OnCreate(wxWindowCreateEvent& event);
     void OnLButtonDown(wxMouseEvent& event);
     void OnRButtonDown(wxMouseEvent& event);
+    void OnUpdateCmdUI(wxUpdateUIEvent& pCmdUI);
     void OnLineWidthCbnSelchange(wxCommandEvent& event);
 #if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
