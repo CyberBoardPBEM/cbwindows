@@ -33,6 +33,7 @@
 #endif
 
 class CBrdEditViewContainer;
+class CColorCmdUI;
 
 using CViewFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
 
@@ -260,10 +261,10 @@ protected:
     afx_msg void OnUpdateOffscreen(CCmdUI* pCmdUI);
 #endif
     void OnUpdateEditLayer(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI);
-    void OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateColorForeground(CColorCmdUI& colorCmdUI);
+    void OnUpdateColorBackground(CColorCmdUI& colorCmdUI);
+    void OnUpdateColorCustom(CColorCmdUI& colorCmdUI);
+    void OnUpdateLineWidth(CColorCmdUI& colorCmdUI);
     void OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI);
     void OnUpdateDwgToFrontOrBack(wxUpdateUIEvent& pCmdUI);
     void OnUpdateViewFullScale(wxUpdateUIEvent& pCmdUI);

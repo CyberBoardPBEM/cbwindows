@@ -88,10 +88,10 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, NoCommas)
     ON_UPDATE_COMMAND_UI(ID_OFFSCREEN, OnUpdateOffscreen)
 #endif
     EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_BASE"), OnUpdateEditLayer)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_FOREGROUND"), OnUpdateColorForeground)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_BACKGROUND"), OnUpdateColorBackground)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
-    EVT_UPDATE_UI(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_FOREGROUND"), OnUpdateColorForeground)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_BACKGROUND"), OnUpdateColorBackground)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
     EVT_UPDATE_UI(XRCID("ID_TOOL_ARROW"), OnUpdateToolPalette)
     EVT_UPDATE_UI(XRCID("ID_DWG_TOFRONT"), OnUpdateDwgToFrontOrBack)
     EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALE"), OnUpdateViewFullScale)
@@ -1260,31 +1260,23 @@ void CBrdEditView::PixelToWorkspace(CPoint& point) const
 
 //////////////////////////////////////////////////////////////////////
 
-void CBrdEditView::OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI)
+void CBrdEditView::OnUpdateColorForeground(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetForeColor()));
 }
 
-void CBrdEditView::OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI)
+void CBrdEditView::OnUpdateColorBackground(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetBackColor()));
 }
 
-void CBrdEditView::OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI)
+void CBrdEditView::OnUpdateColorCustom(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetCustomColors(GetDocument().GetCustomColors());
 }
 
-void CBrdEditView::OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI)
+void CBrdEditView::OnUpdateLineWidth(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetLineWidth(value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()));
 }
 

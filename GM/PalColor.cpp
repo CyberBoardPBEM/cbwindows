@@ -46,6 +46,8 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+wxDEFINE_EVENT(cbEVT_UPDATE_UI_COLOR, CColorCmdUI);
+
 /////////////////////////////////////////////////////////////////////////////
 
 static const CB::string szColorPalDefPos = "140 350";
@@ -136,17 +138,12 @@ inline wxColour& CellColor(wxColour* pCref, int nCol, int nRow)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CDockColorPalette, CDockablePane)
-    ON_WM_CREATE()
-    ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
-    ON_WM_SIZE()
-END_MESSAGE_MAP()
-
 wxBEGIN_EVENT_TABLE(CColorPalette, wxPanel)
     EVT_PAINT(OnPaint)
     EVT_WINDOW_CREATE(OnCreate)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_RIGHT_DOWN(OnRButtonDown)
+    EVT_UPDATE_UI(wxID_ANY, OnUpdateCmdUI)
     EVT_CHOICE(XRCID("IDC_W_COLORPAL_LINEWIDTH"), OnLineWidthCbnSelchange)
 #if 0
     ON_WM_HELPINFO()
@@ -159,16 +156,8 @@ wxBEGIN_EVENT_TABLE(CColorPalette, wxPanel)
     EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
 wxEND_EVENT_TABLE()
 
-IMPLEMENT_DYNCREATE(CDockColorPalette, CDockablePane);
-
 /////////////////////////////////////////////////////////////////////////////
 // CColorPalette
-
-CDockColorPalette::CDockColorPalette() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
-    m_child(new CColorPalette)
-{
-}
 
 CColorPalette::CColorPalette() :
     m_comboLine(new wxChoice)
@@ -190,29 +179,6 @@ CColorPalette::CColorPalette() :
     m_pCustColors = CustomColorsAllocate();
 }
 
-void CDockColorPalette::CalculateMinClientSize(CSize& size)
-{
-    wxSize temp;
-    m_child->CalculateMinClientSize(temp);
-    size = CB::Convert(temp);
-}
-
-int CDockColorPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
-        return -1;
-
-    if (!m_child->Create(*this,
-                        wxID_ANY,
-                        wxPoint(0, 0), wxSize(100, 100)))
-    {
-        TRACE0("Failed to create color palette window\n");
-        return -1;      // fail to create
-    }
-
-    return 0;
-}
-
 void CColorPalette::OnCreate(wxWindowCreateEvent& event)
 {
     if (event.GetWindow() != this)
@@ -232,15 +198,6 @@ void CColorPalette::OnCreate(wxWindowCreateEvent& event)
     GenerateSVWash(FALSE);
 
     SetupToolTips(m_sizeClient.x);
-}
-
-CSize CDockColorPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
-{
-    CRect rctInside(0, 0, 0, 0);
-    CalcInsideRect(rctInside, TRUE);
-    CSize sizeInside(rctInside.Size());
-    return CSize(CB::Convert(m_child->GetSize()) - sizeInside);
-    // return CDockablePane::CalcFixedLayout(bStretch, bHorz);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -327,29 +284,6 @@ void CColorPalette::ComputeLayout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CDockColorPalette::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
-{
-    if (IsVisible())             // Ignore if child is invisible
-    {
-#if 0
-        CFrameWnd* pTarget = GetMainFrame();
-        if (pTarget != NULL)
-            OnUpdateCmdUI(pTarget, (BOOL)wParam);
-#else
-        AfxThrowNotSupportedException();
-#endif
-    }
-    return 0L;
-}
-
-void CDockColorPalette::OnSize(UINT nType, int cx, int cy)
-{
-    m_child->SetSize(0, 0, cx, cy);
-    CDockablePane::OnSize(nType, cx, cy);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 BOOL CColorPalette::SetupLineControl()
 {
     if (!m_comboLine->Create(this,
@@ -378,9 +312,9 @@ BOOL CColorPalette::SetupLineControl()
 // Command UI Stuff
 
 CColorCmdUI::CColorCmdUI(CColorPalette& cp) :
+    wxCommandEvent(cbEVT_UPDATE_UI_COLOR),
     colorPalette(&cp)
 {
-    m_pOther = nullptr;
 }
 
 // Only used for auto disable
@@ -388,13 +322,13 @@ void CColorCmdUI::Enable(BOOL bOn)
 {
     m_bEnableChanged = TRUE;
     if (!bOn)
-        colorPalette->SetIDColor(m_nID, wxNullColour);
+        colorPalette->SetIDColor(GetId(), wxNullColour);
 }
 
 void CColorCmdUI::SetColor(wxColour cr)
 {
     m_bEnableChanged = TRUE;
-    colorPalette->SetIDColor(m_nID, cr);
+    colorPalette->SetIDColor(GetId(), cr);
 }
 
 void CColorCmdUI::SetLineWidth(UINT uiLineWidth)
@@ -409,24 +343,34 @@ void CColorCmdUI::SetCustomColors(const std::vector<wxColour>& pCustColors)
     colorPalette->SetCustomColors(pCustColors);
 }
 
-void CDockColorPalette::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+void CColorPalette::OnUpdateCmdUI(wxUpdateUIEvent& /*pCmdUI*/)
 {
-    CColorCmdUI state(*m_child);
-    state.m_nID = ID_COLOR_FOREGROUND;
-    state.DoUpdate(pTarget, bDisableIfNoHndler);
-    state.m_nID = ID_COLOR_BACKGROUND;
-    state.DoUpdate(pTarget, bDisableIfNoHndler);
-    state.m_nID = ID_COLOR_TRANSPARENT;
-    state.DoUpdate(pTarget, bDisableIfNoHndler);
-    state.m_nID = ID_COLOR_CUSTOM;
-    state.DoUpdate(pTarget, bDisableIfNoHndler);
-    state.m_nID = ID_LINE_WIDTH;
-    state.DoUpdate(pTarget, bDisableIfNoHndler);
+    if (!IsShownOnScreen())             // Ignore if wnd is invisible
+    {
+        return;
+    }
+
+    CColorCmdUI state(*this);
+    state.SetId(XRCID("ID_COLOR_FOREGROUND"));
+    state.DoUpdate();
+    state.SetId(XRCID("ID_COLOR_BACKGROUND"));
+    state.DoUpdate();
+    state.SetId(XRCID("ID_COLOR_TRANSPARENT"));
+    state.DoUpdate();
+    state.SetId(XRCID("ID_COLOR_CUSTOM"));
+    state.DoUpdate();
+    state.SetId(XRCID("ID_LINE_WIDTH"));
+    state.DoUpdate();
 }
 
-CSize CDockColorPalette::CalcSize() const
+void CColorCmdUI::DoUpdate()
 {
-    return CB::Convert(m_child->GetSize());
+    m_bEnableChanged = false;
+    CB::GetMainWndWx().ProcessWindowEvent(*this);
+    if (!m_bEnableChanged)
+    {
+        Enable(false);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -686,19 +630,19 @@ void CColorPalette::SetLineWidth(UINT nLineWidth)
         m_comboLine->SetSelection(nLineWidth);
 }
 
-void CColorPalette::SetIDColor(UINT nID, wxColour cr)
+void CColorPalette::SetIDColor(int nID, wxColour cr)
 {
-    if (nID == ID_COLOR_FOREGROUND)
+    if (nID == XRCID("ID_COLOR_FOREGROUND"))
     {
         if (cr == m_crFore) return;
         m_crFore = cr;
     }
-    else if (nID == ID_COLOR_BACKGROUND)
+    else if (nID == XRCID("ID_COLOR_BACKGROUND"))
     {
         if (cr == m_crBack) return;
         m_crBack = cr;
     }
-    else if (nID == ID_COLOR_TRANSPARENT)
+    else if (nID == XRCID("ID_COLOR_TRANSPARENT"))
     {
         if (cr == m_crTrans) return;
         m_crTrans = cr;
@@ -881,6 +825,7 @@ void CColorPalette::NotifyColorChange(const wxMouseEvent& event, wxColour cref)
     {
         if (!evtHandler)
         {
+            wxASSERT(!"dead code");
             pView->SendMessage(WM_SETCOLOR, (WPARAM)ID_COLOR_FOREGROUND, static_cast<LPARAM>(CB::Convert(cref)));
         }
         else
@@ -894,6 +839,7 @@ void CColorPalette::NotifyColorChange(const wxMouseEvent& event, wxColour cref)
     {
         if (!evtHandler)
         {
+            wxASSERT(!"dead code");
             pView->SendMessage(WM_SETCOLOR, (WPARAM)ID_COLOR_BACKGROUND, static_cast<LPARAM>(CB::Convert(cref)));
         }
         else

@@ -59,11 +59,11 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_SETLINEWIDTH(OnSetLineWidth)
     EVT_UPDATE_UI(XRCID("ID_IMAGE_GRIDLINES"), OnUpdateImageGridLines)
     EVT_UPDATE_UI(XRCID("ID_ITOOL_PENCIL"), OnUpdateToolPalette)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_FOREGROUND"), OnUpdateColorForeground)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_BACKGROUND"), OnUpdateColorBackground)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_TRANSPARENT"), OnUpdateColorTransparent)
-    EVT_UPDATE_UI(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
-    EVT_UPDATE_UI(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_FOREGROUND"), OnUpdateColorForeground)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_BACKGROUND"), OnUpdateColorBackground)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_TRANSPARENT"), OnUpdateColorTransparent)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_COLOR_CUSTOM"), OnUpdateColorCustom)
+    EVT_UPDATE_UI_COLOR(XRCID("ID_LINE_WIDTH"), OnUpdateLineWidth)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_MOTION(OnMouseMove)
@@ -1080,38 +1080,28 @@ void CBitEditView::OnSetLineWidth(SetLineWidthEvent& event)
     m_pTMgr->SetLineWidth(event.GetWidth());
 }
 
-void CBitEditView::OnUpdateColorForeground(wxUpdateUIEvent& pCmdUI)
+void CBitEditView::OnUpdateColorForeground(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetForeColor()));
 }
 
-void CBitEditView::OnUpdateColorBackground(wxUpdateUIEvent& pCmdUI)
+void CBitEditView::OnUpdateColorBackground(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetBackColor()));
 }
 
-void CBitEditView::OnUpdateColorTransparent(wxUpdateUIEvent& pCmdUI)
+void CBitEditView::OnUpdateColorTransparent(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetTransparentColor()));
 }
 
-void CBitEditView::OnUpdateColorCustom(wxUpdateUIEvent& pCmdUI)
+void CBitEditView::OnUpdateColorCustom(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetCustomColors(GetDocument().GetCustomColors());
 }
 
-void CBitEditView::OnUpdateLineWidth(wxUpdateUIEvent& pCmdUI)
+void CBitEditView::OnUpdateLineWidth(CColorCmdUI& colorCmdUI)
 {
-    CCmdUI* cmdui = static_cast<CCmdUI*>(pCmdUI.GetClientData());
-    CColorCmdUI& colorCmdUI = CheckedDeref(dynamic_cast<CColorCmdUI*>(cmdui));
     colorCmdUI.SetLineWidth(m_pTMgr->GetLineWidth());
 }
 
