@@ -49,9 +49,9 @@ public:
 
 // Attributes
 public:
-    CDocument* GetCurrentDocument();
+    wxDocument* GetCurrentDocument();
 
-    CView* GetActiveView() const;
+    wxView* GetActiveView() const;
 
 #if 0
     CDockTilePalette& GetDockingTileWindow() { return m_wndTilePal; }
