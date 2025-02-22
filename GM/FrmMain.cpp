@@ -194,6 +194,7 @@ CMainFrame::CMainFrame() :
     m_wndColorPal->Create(this);
     auiManager.AddPane(m_wndColorPal, wxAuiPaneInfo().
                         Name("CColorPalette").Caption("Colors"_cbstring).
+                        MinSize(m_wndColorPal->GetBestSize()).
                         BestSize(m_wndColorPal->GetBestSize()).
                         MaxSize(m_wndColorPal->GetBestSize()).
                         Right().Layer(0).Position(0));
@@ -348,40 +349,14 @@ void CMainFrame::OnHelpIndex()
 
 ///////////////////////////////////////////////////////////////////////
 
-CDocument* CMainFrame::GetCurrentDocument()
+wxDocument* CMainFrame::GetCurrentDocument()
 {
-#if 0
-    CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
-    if (pMDIChild != NULL)
-    {
-        CView *pView = pMDIChild->GetActiveView();
-        ASSERT(pView != NULL);
-        ASSERT(pView->IsKindOf(RUNTIME_CLASS(CView)));
-        return pView->GetDocument();
-    }
-    return NULL;
-#else
-    wxASSERT(!"untested code");
-    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-    wxDocument* doc = docMgr.GetCurrentDocument();
-    if (!doc)
-    {
-        return nullptr;
-    }
-    return dynamic_cast<CGamDoc&>(*doc);
-#endif
+    return GetDocumentManager()->GetCurrentDocument();
 }
 
-CView* CMainFrame::GetActiveView() const
+wxView* CMainFrame::GetActiveView() const
 {
-#if 0
-    CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
-    if (pMDIChild != NULL)
-        return pMDIChild->GetActiveView();
-    return NULL;
-#else
-    AfxThrowNotSupportedException();
-#endif
+    return GetDocumentManager()->GetCurrentView();
 }
 
 ///////////////////////////////////////////////////////////////////////

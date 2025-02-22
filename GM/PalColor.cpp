@@ -813,61 +813,32 @@ BOOL CColorPalette::HandleButtonDown(const wxMouseEvent& event)
 
 void CColorPalette::NotifyColorChange(const wxMouseEvent& event, wxColour cref)
 {
-    CView* pView = GetMainFrame()->GetActiveView();
+    wxView* pView = GetMainFrame()->GetActiveView();
 
     if (pView == NULL)
         return;
-    wxASSERT(!dynamic_cast<CTileSelViewContainer*>(pView));
-    CB::IGetEventHandler* getter = dynamic_cast<CB::IGetEventHandler*>(pView);
-    wxEvtHandler* evtHandler = getter ? *getter : nullptr;
 
     if (mouseFore(event))
     {
-        if (!evtHandler)
-        {
-            wxASSERT(!"dead code");
-            pView->SendMessage(WM_SETCOLOR, (WPARAM)ID_COLOR_FOREGROUND, static_cast<LPARAM>(CB::Convert(cref)));
-        }
-        else
-        {
-            SetColorEvent event2(XRCID("ID_COLOR_FOREGROUND"), cref);
-            evtHandler->ProcessEvent(event2);
-        }
+        SetColorEvent event2(XRCID("ID_COLOR_FOREGROUND"), cref);
+        pView->ProcessEvent(event2);
     }
     else if (mouseBack1(event) ||
         mouseBack2(event))
     {
-        if (!evtHandler)
-        {
-            wxASSERT(!"dead code");
-            pView->SendMessage(WM_SETCOLOR, (WPARAM)ID_COLOR_BACKGROUND, static_cast<LPARAM>(CB::Convert(cref)));
-        }
-        else
-        {
-            SetColorEvent event2(XRCID("ID_COLOR_BACKGROUND"), cref);
-            evtHandler->ProcessEvent(event2);
-        }
+        SetColorEvent event2(XRCID("ID_COLOR_BACKGROUND"), cref);
+        pView->ProcessEvent(event2);
     }
 }
 
 void CColorPalette::NotifyCustomColorChange(const std::vector<wxColour>& pcrCustomColors)
 {
-    CView* pView = GetMainFrame()->GetActiveView();
+    wxView* pView = GetMainFrame()->GetActiveView();
 
     if (pView == NULL)
         return;
-    wxASSERT(!dynamic_cast<CTileSelViewContainer*>(pView));
-    CB::IGetEventHandler* getter = dynamic_cast<CB::IGetEventHandler*>(pView);
-    wxEvtHandler* evtHandler = getter ? *getter : nullptr;
-    if (!evtHandler)
-    {
-        pView->SendMessage(WM_SETCUSTOMCOLOR, value_preserving_cast<WPARAM>(reinterpret_cast<uintptr_t>(&pcrCustomColors)));
-    }
-    else
-    {
-        SetCustomColorEvent event2(pcrCustomColors);
-        evtHandler->ProcessEvent(event2);
-    }
+    SetCustomColorEvent event2(pcrCustomColors);
+    pView->ProcessEvent(event2);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -975,20 +946,9 @@ void CColorPalette::OnMouseCaptureLost(wxMouseCaptureLostEvent& /*event*/)
 
 void CColorPalette::OnLineWidthCbnSelchange(wxCommandEvent& /*event*/)
 {
-    CView* pView = GetMainFrame()->GetActiveView();
-    wxASSERT(!dynamic_cast<CTileSelViewContainer*>(pView));
-    CB::IGetEventHandler* getter = dynamic_cast<CB::IGetEventHandler*>(pView);
-    wxEvtHandler* evtHandler = getter ? *getter : nullptr;
-    if (!evtHandler)
-    {
-        pView->SendMessage(WM_SETLINEWIDTH,
-            (WPARAM)m_comboLine->GetSelection(), (LPARAM)0);
-    }
-    else
-    {
-        SetLineWidthEvent event2(m_comboLine->GetSelection());
-        evtHandler->ProcessEvent(event2);
-    }
+    wxView* pView = GetMainFrame()->GetActiveView();
+    SetLineWidthEvent event2(m_comboLine->GetSelection());
+    pView->ProcessEvent(event2);
 }
 
 #if 0
