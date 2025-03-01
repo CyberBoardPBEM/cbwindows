@@ -1,6 +1,6 @@
 // LBoxVHScrl.cpp
 //
-// Copyright (c) 2024 By William Su, All Rights Reserved.
+// Copyright (c) 2024-2025 By William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -40,12 +40,22 @@ namespace CB
     void VListBoxHScroll::SetItemCount(size_t count)
     {
         wxVListBox::SetItemCount(count);
-        wxCoord width = 0;
+        wxSize virtSize(0, 0);
         for (size_t i = 0 ; i < count ; ++i)
         {
-            width = std::max(width, GetItemSize(i).GetWidth());
+            wxSize itemSize = GetItemSize(i);
+            virtSize.x = std::max(virtSize.x, itemSize.GetWidth());
+            virtSize.y += itemSize.y;
         }
-        SetVirtualSize(width, GetVirtualSize().GetHeight());
+        SetVirtualSize(virtSize);
+
+        bestClientSize = virtSize;
+        if (count)
+        {
+            bestClientSize.x += wxSystemSettings::GetMetric(wxSYS_VSCROLL_X, this);
+            bestClientSize.y += wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y, this);
+        }
+        InvalidateBestSize();
     }
 
     std::vector<size_t> VListBoxHScroll::GetSelections() const

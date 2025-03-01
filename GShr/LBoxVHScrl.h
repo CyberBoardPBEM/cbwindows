@@ -1,6 +1,6 @@
 // LBoxVHScrl.h
 //
-// Copyright (c) 2024 By William Su, All Rights Reserved.
+// Copyright (c) 2024-2025 By William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -62,6 +62,7 @@ namespace CB
         }
 
     protected:
+        wxSize DoGetBestClientSize() const override { return bestClientSize; }
         void DoSetVirtualSize(int x, int y) override;
 
     private:
@@ -72,6 +73,11 @@ namespace CB
         void OnSize(wxSizeEvent& event);
         void OnLButtonDown(wxMouseEvent& event);
         void OnLButtonUp(wxMouseEvent& event);
+
+        /* GetVirtualSize() never returns less than
+            GetClientSize(), so need this to preserve
+            actual bestClientSize */
+        wxSize bestClientSize;
     };
 }
 
