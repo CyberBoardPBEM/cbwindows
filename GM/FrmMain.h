@@ -53,9 +53,7 @@ public:
 
     wxView* GetActiveView() const;
 
-#if 0
-    CDockTilePalette& GetDockingTileWindow() { return m_wndTilePal; }
-#endif
+    CDockTilePalette& GetDockingTileWindow() { return CheckedDeref(m_wndTilePal); }
 
     BOOL IsTilePaletteOn() { return m_bTilePalOn; }
 
@@ -67,10 +65,7 @@ public:
 // Implementation
 public:
     void OnIdle();
-#if 0
-    BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
-    BOOL OnCloseDockingPane(CDockablePane* pWnd) override;
-#endif
+    void OnPaneClose(wxAuiManagerEvent& event);
 
     virtual ~CMainFrame();
 #if 0
@@ -79,8 +74,8 @@ public:
     void Dump(CDumpContext& dc) const override;
 #endif
 #endif
-    void UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL IsOn);
-    BOOL IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc);
+    void UpdatePaletteWindow(wxWindow& pWnd, const wxClassInfo** pRtc, BOOL IsOn);
+    BOOL IsQualifyingView(wxWindow& pWnd, const wxClassInfo** pRtc);
 
  protected: // control bar embedded members
 #if 0
@@ -105,22 +100,25 @@ protected:
 #if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnClose();
-    afx_msg void OnWindowToolPal();
-    afx_msg void OnWindowIToolPal();
-    afx_msg void OnWindowColorPal();
-    afx_msg void OnUpdateWindowToolPal(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateWindowIToolPal(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateWindowColorPal(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
+#endif
+    void OnWindowToolPal(wxCommandEvent& event);
+    void OnWindowIToolPal(wxCommandEvent& event);
+    void OnWindowColorPal(wxCommandEvent& event);
+    void OnUpdateWindowToolPal(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateWindowIToolPal(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateWindowColorPal(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateDisable(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnHelpIndex();
-    afx_msg void OnWindowTilePalette();
-    afx_msg void OnUpdateWindowTilePalette(CCmdUI* pCmdUI);
-    afx_msg void OnToggleColorPalette();
-    afx_msg void OnToggleTilePalette();
 #endif
+    void OnWindowTilePalette(wxCommandEvent& event);
+    void OnUpdateWindowTilePalette(wxUpdateUIEvent& pCmdUI);
+    void OnToggleColorPalette(wxCommandEvent& event);
+    void OnToggleTilePalette(wxCommandEvent& event);
     void OnTile(wxCommandEvent& event);
-    void OnUpdateTile(wxUpdateUIEvent& event);
+    void OnUpdateTile(wxUpdateUIEvent& pCmdUI);
     void OnViewStatusBar(wxCommandEvent& event);
     void OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI);
 
@@ -128,6 +126,9 @@ protected:
 
 private:
     wxAuiManager auiManager;
+    /* performing all idle updates as a single transaction
+        improves AUI's sizing choices */
+    bool auiMgrScheduleUpdate = false;
 };
 
 inline CMainFrame* GetMainFrame()

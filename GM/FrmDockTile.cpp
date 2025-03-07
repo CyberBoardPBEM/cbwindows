@@ -1,6 +1,6 @@
 // FrmDockTile.cpp - container window for the tile palette.
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,6 +38,7 @@ static char THIS_FILE[] = __FILE__;
 CDockTilePalette::CDockTilePalette()
 {
     m_pChildWnd = NULL;
+    SetSizer(new wxBoxSizer(wxVERTICAL));
 }
 
 CDockTilePalette::~CDockTilePalette()
@@ -48,15 +49,18 @@ CDockTilePalette::~CDockTilePalette()
 
 void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
 {
-#if 0
     if (m_pChildWnd == pChildWnd)
         return;
 
+    InvalidateBestSize();
+    wxAuiManager& auiMgr = CheckedDeref(wxAuiManager::GetManager(this));
+    wxAuiPaneInfo& pane = auiMgr.GetPane(this);
     if (m_pChildWnd != NULL)
     {
         m_pChildWnd->Hide();
+        GetSizer()->Detach(m_pChildWnd);
         m_pChildWnd->SetDockingFrame(NULL);
-        Invalidate(TRUE);
+        Refresh(TRUE);
     }
     // We need to set this field explicitly rather than
     // using CDockablePane::SetChild() since this function
@@ -67,10 +71,23 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
     {
         pChildWnd->SetDockingFrame(this);
         m_pChildWnd->Show();
+        GetSizer()->Add(m_pChildWnd, 1, wxEXPAND);
+        Layout();
+        SetMinClientSize(m_pChildWnd->GetMinSize());
+        pane.BestSize(GetBestSize()).
+                MinSize(GetMinSize());
     }
     else
-        GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
-#else
-    AfxThrowNotSupportedException();
-#endif
+    {
+        pane.Show(false);
+    }
+    auiMgr.Update();
+}
+
+wxSize CDockTilePalette::DoGetBestClientSize() const
+{
+    return m_pChildWnd ?
+                m_pChildWnd->GetBestSize()
+            :
+                wxPanel::DoGetBestClientSize();
 }

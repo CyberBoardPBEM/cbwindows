@@ -560,6 +560,7 @@ void CBrdEditView::OnViewGridLines(wxCommandEvent& event)
 
 void CBrdEditView::OnUpdateViewGridLines(wxUpdateUIEvent& pCmdUI)
 {
+    pCmdUI.Enable(true);
     pCmdUI.Check(m_pBoard->GetCellBorder());
 }
 

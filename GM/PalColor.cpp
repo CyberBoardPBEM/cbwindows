@@ -963,10 +963,7 @@ BOOL CColorPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 
 void CColorPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
-#if 0
-    GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_COLORPAL);
-#else
-    AfxThrowNotSupportedException();
-#endif
+    wxCommandEvent event(wxEVT_MENU, XRCID("ID_WINDOW_COLORPAL"));
+    GetMainFrame()->ProcessWindowEvent(event);
 }
 

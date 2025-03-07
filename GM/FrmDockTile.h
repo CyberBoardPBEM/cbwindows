@@ -48,6 +48,9 @@ public:
 // Implementation
 public:
     virtual ~CDockTilePalette();
+
+protected:
+    wxSize DoGetBestClientSize() const override;
 };
 
 #endif

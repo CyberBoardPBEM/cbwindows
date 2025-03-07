@@ -18890,7 +18890,7 @@
       <property name="minimum_size"></property>
       <property name="name">CTilePalette</property>
       <property name="pos"></property>
-      <property name="size">500,300</property>
+      <property name="size">-1,-1</property>
       <property name="subclass">CTilePalette; forward_declare</property>
       <property name="tooltip"></property>
       <property name="two_step_creation">0</property>

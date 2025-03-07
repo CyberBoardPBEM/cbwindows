@@ -78,6 +78,7 @@ public:
     }
 
 protected:
+    wxSize DoGetBestClientSize() const override;
     void OnTileNameCbnSelchange(wxCommandEvent& event);
     void OnGetDragSize(GetDragSizeEvent& event);
 #if 0
