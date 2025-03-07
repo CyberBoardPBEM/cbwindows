@@ -25,16 +25,15 @@
 #include    "stdafx.h"
 #include    "Gm.h"
 #include    "GmDoc.h"
+#include    "FrmBited.h"
 #include    "FrmMain.h"
 #include    "VwEdtbrd.h"
-#include    "VwBitedt.h"
+#include    "VwPrjgbx.h"
 #include    "VwTilesl.h"
 #include    "PalColor.h"
 #include    "LibMfc.h"
 
 #include    "HtmlHelp.h"
-
-#include    "afxpriv.h"     // For WM_IDLEUPDATECMDUI
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -48,26 +47,30 @@ wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::wxAuiMDIParentFrame>)
 #if 0
     ON_WM_CREATE()
     ON_WM_CLOSE()
-    ON_COMMAND(ID_WINDOW_TOOLPAL, OnWindowToolPal)
-    ON_COMMAND(ID_WINDOW_ITOOLPAL, OnWindowIToolPal)
-    ON_COMMAND(ID_WINDOW_COLORPAL, OnWindowColorPal)
-    ON_UPDATE_COMMAND_UI(ID_WINDOW_TOOLPAL, OnUpdateWindowToolPal)
-    ON_UPDATE_COMMAND_UI(ID_WINDOW_ITOOLPAL, OnUpdateWindowIToolPal)
-    ON_UPDATE_COMMAND_UI(ID_WINDOW_COLORPAL, OnUpdateWindowColorPal)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_BASE, OnUpdateDisable)
+#endif
+    EVT_MENU(XRCID("ID_WINDOW_TOOLPAL"), OnWindowToolPal)
+    EVT_MENU(XRCID("ID_WINDOW_ITOOLPAL"), OnWindowIToolPal)
+    EVT_MENU(XRCID("ID_WINDOW_COLORPAL"), OnWindowColorPal)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TOOLPAL"), OnUpdateWindowToolPal)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_ITOOLPAL"), OnUpdateWindowIToolPal)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_COLORPAL"), OnUpdateWindowColorPal)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_BASE"), OnUpdateDisable)
+#if 0
     ON_WM_HELPINFO()
     ON_COMMAND(ID_HELP_INDEX, OnHelpIndex)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_TILE, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_LAYER_TOP, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_GRIDLINES, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_BRDSNAPGRID, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_ROT90, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_ITOOL_PENCIL, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_TOOL_ARROW, OnUpdateDisable)
-    ON_COMMAND(ID_WINDOW_TILEPAL, OnWindowTilePalette)
-    ON_UPDATE_COMMAND_UI(ID_WINDOW_TILEPAL, OnUpdateWindowTilePalette)
-    ON_COMMAND(IDW_COLOR_PALETTE, OnToggleColorPalette)
-    ON_COMMAND(IDW_TILE_PALETTE, OnToggleTilePalette)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TILE"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_LAYER_TOP"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_GRIDLINES"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_BRDSNAPGRID"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_TOOLS_ROT90"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_ITOOL_PENCIL"), OnUpdateDisable)
+    EVT_UPDATE_UI(XRCID("ID_TOOL_ARROW"), OnUpdateDisable)
+    EVT_MENU(XRCID("ID_WINDOW_TILEPAL"), OnWindowTilePalette)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TILEPAL"), OnUpdateWindowTilePalette)
+    EVT_MENU(XRCID("IDW_COLOR_PALETTE"), OnToggleColorPalette)
+    EVT_MENU(XRCID("IDW_TILE_PALETTE"), OnToggleTilePalette)
+#if 0
     ON_COMMAND(ID_HELP_FINDER, CMDIFrameWndEx::OnHelpFinder)
     ON_COMMAND(ID_HELP, CMDIFrameWndEx::OnHelp)
     ON_COMMAND(ID_CONTEXT_HELP, CMDIFrameWndEx::OnContextHelp)
@@ -76,6 +79,9 @@ wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::wxAuiMDIParentFrame>)
     EVT_MENU(XRCID("ID_WINDOW_TILE_VERT"), OnTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_HORZ"), OnUpdateTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
+    EVT_AUI_PANE_CLOSE(OnPaneClose)
+    EVT_UPDATE_UI(wxID_EXIT, OnUpdateEnable)
+    EVT_UPDATE_UI_RANGE(wxID_FILE1, wxID_FILE9, OnUpdateEnable)
     EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
     EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
 wxEND_EVENT_TABLE()
@@ -100,13 +106,13 @@ static UINT toolbars[] =
 ///////////////////////////////////////////////////////////////////////
 // These are used to qualify palette visiblility...
 
-static const CRuntimeClass *tblColor[] = {
-    RUNTIME_CLASS(CBrdEditViewContainer),
-    RUNTIME_CLASS(CBitEditViewContainer),
-    RUNTIME_CLASS(CTileSelViewContainer), NULL };
+static const wxClassInfo *tblColor[] = {
+    wxCLASSINFO(wxBrdEditView),
+    wxCLASSINFO(wxBitEditView),
+    NULL };
 
-static const CRuntimeClass *tblBrd[] = {
-    RUNTIME_CLASS(CBrdEditViewContainer),
+static const wxClassInfo *tblBrd[] = {
+    wxCLASSINFO(wxBrdEditView),
     NULL
 };
 
@@ -136,9 +142,41 @@ CMainFrame::CMainFrame() :
     /* KLUDGE:  wx wants to construct Window menu itself, so we
                 can't put Split commands in .xrc */
     wxMenu& wndMenu = CheckedDeref(GetWindowMenu());
-    wndMenu.AppendSeparator();
-    wndMenu.Append(XRCID("ID_WINDOW_TILE_HORZ"), "Split Tabs &Horizontally"_cbstring, "Split active tab into a new group horizontally"_cbstring);
-    wndMenu.Append(XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, "Split active tab into a new group vertically"_cbstring);
+    static const struct
+    {
+        int xrcId;
+        CB::string menuString;
+        int helpId;
+        wxItemKind kind;
+    } windowMenuArgs[] = {
+        { wxID_SEPARATOR },
+        { XRCID("ID_WINDOW_TILE_HORZ"), "Split Tabs &Horizontally"_cbstring, ID_WINDOW_TILE_HORZ, wxITEM_NORMAL },
+        { XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, ID_WINDOW_TILE_VERT, wxITEM_NORMAL },
+        { wxID_SEPARATOR },
+        { XRCID("ID_WINDOW_TOOLPAL"), "T&ool Palette"_cbstring, ID_WINDOW_TOOLPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_COLORPAL"), "Co&lor Palette"_cbstring, ID_WINDOW_TOOLPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_TILEPAL"), "T&ile Palette"_cbstring, ID_WINDOW_TOOLPAL, wxITEM_CHECK },
+        { XRCID("ID_WINDOW_ITOOLPAL"), "I&mage Palette"_cbstring, ID_WINDOW_TOOLPAL, wxITEM_CHECK },
+    };
+    for (const auto& arg : windowMenuArgs)
+    {
+        if (arg.xrcId != wxID_SEPARATOR)
+        {
+            CB::string str = CB::string::LoadString(arg.helpId);
+            std::vector<wxString> tokens;
+            wxStringTokenizer tokenizer(str, "\n");
+            while (tokenizer.HasMoreTokens())
+            {
+                tokens.push_back(tokenizer.GetNextToken());
+            }
+            wxASSERT(!tokens.empty());
+            wndMenu.Append(arg.xrcId, arg.menuString, tokens.front(), arg.kind);
+        }
+        else
+        {
+            wndMenu.AppendSeparator();
+        }
+    }
 
     // Build the main window tool bar.
     static const CB::ToolArgs standardArgs[] = {
@@ -197,13 +235,16 @@ CMainFrame::CMainFrame() :
                         MinSize(m_wndColorPal->GetBestSize()).
                         BestSize(m_wndColorPal->GetBestSize()).
                         MaxSize(m_wndColorPal->GetBestSize()).
-                        Right().Layer(0).Position(0));
+                        Right().Layer(0).Position(0).
+                        Hide());
 
     m_wndTilePal = new CDockTilePalette;
     m_wndTilePal->Create(this);
     auiManager.AddPane(m_wndTilePal, wxAuiPaneInfo().
                         Name("CTilePalette").Caption("Tiles"_cbstring).
-                        Right().Layer(0).Position(1));
+                        BestSize(m_wndTilePal->GetBestSize()).
+                        Right().Layer(0).Position(1).
+                        Hide());
 
     // default width doesn't leave enough space for color palette
     SetClientSize(4*m_wndColorPal->GetBestSize().x, GetClientSize().y);
@@ -400,25 +441,25 @@ void CMainFrame::RestoreProfileSettings()
 #endif
 }
 
+void CMainFrame::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
 ///////////////////////////////////////////////////////////////////////
 // Default attribute handlers. If no views respond to certain update
 // commands, the main frame window then gets a whack at it. We (what
 // do you mean 'we'? Is there anyone else here?) simply disable
 // the 'items'.
 
-#if 0
-void CMainFrame::OnUpdateDisable(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateDisable(wxUpdateUIEvent& pCmdUI)
 {
-    if (pCmdUI->m_pSubMenu != NULL)
+    if (pCmdUI.IsCheckable())
     {
-        // Need to handle menu that the submenu is connected to.
-        pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
-            MF_BYPOSITION | MF_DISABLED | MF_GRAYED);
+        pCmdUI.Check(false);
     }
-    pCmdUI->SetCheck(0);
-    pCmdUI->Enable(0);
+    pCmdUI.Enable(false);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
@@ -435,29 +476,31 @@ void CMainFrame::Dump(CDumpContext& dc) const
     CMDIFrameWndEx::Dump(dc);
 }
 #endif //_DEBUG
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // System color palette message handlers
 
-void CMainFrame::OnToggleColorPalette()
+void CMainFrame::OnToggleColorPalette(wxCommandEvent& /*event*/)
 {
-    SendMessage(WM_COMMAND, ID_WINDOW_COLORPAL);
+    wxCommandEvent event(wxEVT_MENU, XRCID("ID_WINDOW_COLORPAL"));
+    ProcessWindowEvent(event);
 }
 
-void CMainFrame::OnToggleTilePalette()
+void CMainFrame::OnToggleTilePalette(wxCommandEvent& /*event*/)
 {
-    SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
+    wxCommandEvent event(wxEVT_MENU, XRCID("ID_WINDOW_TILEPAL"));
+    ProcessWindowEvent(event);
 }
-#endif
 
 void CMainFrame::OnTile(wxCommandEvent& event)
 {
     Tile(event.GetId() == XRCID("ID_WINDOW_TILE_HORZ") ? wxHORIZONTAL : wxVERTICAL);
 }
 
-void CMainFrame::OnUpdateTile(wxUpdateUIEvent& event)
+void CMainFrame::OnUpdateTile(wxUpdateUIEvent& pCmdUI)
 {
-    event.Enable(GetClientWindow()->GetPageCount() >= 2);
+    pCmdUI.Enable(GetClientWindow()->GetPageCount() >= 2);
 }
 
 void CMainFrame::OnViewStatusBar(wxCommandEvent& event)
@@ -484,29 +527,27 @@ void CMainFrame::OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI)
 // pRtc points to a NULL terminated list of CRuntimeClass pointers
 // specifying qualifying active views for the specified palette.
 
-void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOOL bIsOn)
+void CMainFrame::UpdatePaletteWindow(wxWindow& pWnd, const wxClassInfo** pRtc, BOOL bIsOn)
 {
-#if 0
-    if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
+    if (pWnd.GetHandle())       // Handle exists if palette allowed
     {
-        BOOL bIsControlBar = pWnd.IsKindOf(RUNTIME_CLASS(CBasePane));
-        BOOL bVisible = ((pWnd.GetStyle() & WS_VISIBLE) != 0);
+        wxAuiPaneInfo& pane = auiManager.GetPane(&pWnd);
+        BOOL bVisible = pane.IsShown();
 
-        CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
-        if (pMDIChild == NULL || pMDIChild->IsIconic())
+        wxView* pView = GetDocumentManager()->GetCurrentView();
+        if (!pView)
         {
-            if (!bIsControlBar && bVisible)
-                pWnd.ShowWindow(SW_HIDE);
-            else if (bIsControlBar && bVisible)
-                ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
+            if (bVisible)
+            {
+                pane.Show(false);
+                auiMgrScheduleUpdate = true;
+            }
         }
         else
         {
-            CView *pView = pMDIChild->GetActiveView();
-            ASSERT(pView != NULL);
-            wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
-                        typeid(*pView) != typeid(CTileSelViewContainer) &&
-                        typeid(*pView) != typeid(CBitEditView));
+            wxASSERT(typeid(*pView) == typeid(wxBitEditView) ||
+                    typeid(*pView) == typeid(wxBrdEditView) ||
+                    typeid(*pView) == typeid(wxGbxProjView));
 
             while (*pRtc != NULL)
             {
@@ -514,48 +555,39 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, const CRuntimeClass** pRtc, BOO
                 {
                     if (bIsOn && !bVisible)
                     {
-                        if (!bIsControlBar)
-                            pWnd.ShowWindow(SW_SHOW);
-                        else
-                            ShowPane((CBasePane*)&pWnd, TRUE, FALSE, FALSE);
+                        pane.Show(true);
+                        auiMgrScheduleUpdate = true;
                     }
                     else if (!bIsOn && bVisible)
                     {
-                        if (!bIsControlBar)
-                            pWnd.ShowWindow(SW_HIDE);
-                        else
-                            ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
+                        pane.Show(false);
+                        auiMgrScheduleUpdate = true;
                     }
                     return;
                 }
                 pRtc++;
             }
-            if (!bIsControlBar && bVisible)
-                pWnd.ShowWindow(SW_HIDE);
-            else if (bIsControlBar && bVisible)
-                ShowPane((CBasePane*)&pWnd, FALSE, FALSE, FALSE);
+            if (bVisible)
+            {
+                pane.Show(false);
+                auiMgrScheduleUpdate = true;
+            }
         }
     }
-#else
-    AfxThrowNotSupportedException();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
+BOOL CMainFrame::IsQualifyingView(wxWindow& pWnd, const wxClassInfo** pRtc)
 {
-#if 0
-    if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
+    if (pWnd.GetHandle())       // Handle exists if palette allowed
     {
-        CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
-        if (pMDIChild != NULL)
+        wxView* pView = GetDocumentManager()->GetCurrentView();
+        if (pView)
         {
-            CView *pView = pMDIChild->GetActiveView();
-            ASSERT(pView != NULL);
-            wxASSERT(typeid(*pView) != typeid(CTileSelView) &&
-                        typeid(*pView) != typeid(CTileSelViewContainer) &&
-                        typeid(*pView) != typeid(CBitEditView));
+            wxASSERT(typeid(*pView) == typeid(wxBitEditView) ||
+                    typeid(*pView) == typeid(wxBrdEditView) ||
+                    typeid(*pView) == typeid(wxGbxProjView));
 
             while (*pRtc != NULL)
             {
@@ -566,9 +598,6 @@ BOOL CMainFrame::IsQualifyingView(CWnd& pWnd, const CRuntimeClass** pRtc)
         }
     }
     return FALSE;
-#else
-    AfxThrowNotSupportedException();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -578,93 +607,112 @@ void CMainFrame::OnIdle()
     if (IsIconized())         // No window palette processing if app minimized
         return;
 
-#if 0
-    UpdatePaletteWindow(m_wndColorPal, tblColor, m_bColorPalOn);
+    UpdatePaletteWindow(*m_wndColorPal, tblColor, m_bColorPalOn);
 
+    wxAuiPaneInfo& pane = auiManager.GetPane(m_wndTilePal);
     if (GetCurrentDocument() == NULL)
-        ShowPane(&m_wndTilePal, FALSE, FALSE, TRUE);
-
-    if (m_wndColorPal.m_hWnd != NULL && m_wndColorPal.IsWindowVisible())
-        m_wndColorPal.SendMessage(WM_IDLEUPDATECMDUI, (WPARAM)TRUE);
-#endif
-}
-
-namespace {
-    /* CB is currently a mix of MFC and wx,
-        so need to send both kinds of msg */
-    BOOL OnClosePalette(CWnd& pWnd)
     {
-        pWnd.SendMessage(WM_PALETTE_HIDE);
-        pWnd.SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
-        wxWindow* wxWnd = CB::FindWxWindow(pWnd);
-        if (wxWnd)
+        pane.Show(false);
+        auiMgrScheduleUpdate = true;
+    }
+    else
+    {
+        wxSize newSize = m_wndTilePal->GetBestSize();
+        if (pane.best_size != newSize)
         {
-            wxCommandEvent event(WM_PALETTE_HIDE_WX);
-            wxWnd->GetEventHandler()->ProcessEventLocally(event);
-            CB::SendEventToDescendants(*wxWnd, event, true);
+            pane.BestSize(newSize);
+            auiMgrScheduleUpdate = true;
         }
-        return true;
+    }
+
+    if (m_wndColorPal->GetHandle() && m_wndColorPal->IsShownOnScreen())
+    {
+        wxCommandEvent event(wxEVT_MENU, XRCID("WM_IDLEUPDATECMDUI"));
+        m_wndColorPal->ProcessWindowEvent(event);
+    }
+
+    if (auiMgrScheduleUpdate)
+    {
+        auiMgrScheduleUpdate = false;
+        auiManager.Update();
     }
 }
 
-#if 0
-BOOL CMainFrame::OnCloseMiniFrame(CPaneFrameWnd* pWnd)
-{
-    return OnClosePalette(CheckedDeref(pWnd));
+namespace {
+    void OnClosePalette(wxWindow& wxWnd)
+    {
+        wxCommandEvent event(WM_PALETTE_HIDE_WX);
+        // for color palette
+        wxWnd.GetEventHandler()->ProcessEventLocally(event);
+        // for tile palette
+        CB::SendEventToDescendants(wxWnd, event, true);
+    }
 }
 
-BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
+void CMainFrame::OnPaneClose(wxAuiManagerEvent& event)
 {
-    return OnClosePalette(CheckedDeref(pWnd));
-}
-
-/////////////////////////////////////////////////////////////////
-
-void CMainFrame::OnWindowToolPal()
-{
-    ShowPane(&m_wndToolPal, (m_wndToolPal.GetStyle() & WS_VISIBLE) == 0, FALSE, TRUE);
-}
-
-void CMainFrame::OnUpdateWindowToolPal(CCmdUI* pCmdUI)
-{
-    pCmdUI->SetCheck((m_wndToolPal.GetStyle() & WS_VISIBLE) != 0);
-}
-
-/////////////////////////////////////////////////////////////////
-
-void CMainFrame::OnWindowIToolPal()
-{
-    ShowPane(&m_wndIToolPal, (m_wndIToolPal.GetStyle() & WS_VISIBLE) == 0, FALSE, TRUE);
-}
-
-void CMainFrame::OnUpdateWindowIToolPal(CCmdUI* pCmdUI)
-{
-    pCmdUI->SetCheck((m_wndIToolPal.GetStyle() & WS_VISIBLE) != 0);
+    wxAuiPaneInfo& pane = CheckedDeref(event.GetPane());
+    if (pane.name == "CColorPalette" ||
+        pane.name == "CTilePalette")
+    {
+        OnClosePalette(CheckedDeref(pane.window));
+    }
+    else
+    {
+        event.Skip();
+    }
 }
 
 /////////////////////////////////////////////////////////////////
 
-void CMainFrame::OnWindowColorPal()
+void CMainFrame::OnWindowToolPal(wxCommandEvent& /*event*/)
+{
+    wxAuiPaneInfo& pane = auiManager.GetPane(m_wndToolPal);
+    pane.Show(!pane.IsShown());
+    auiManager.Update();
+}
+
+void CMainFrame::OnUpdateWindowToolPal(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Check(m_wndToolPal->IsShownOnScreen());
+}
+
+/////////////////////////////////////////////////////////////////
+
+void CMainFrame::OnWindowIToolPal(wxCommandEvent& /*event*/)
+{
+    wxAuiPaneInfo& pane = auiManager.GetPane(m_wndIToolPal);
+    pane.Show(!pane.IsShown());
+    auiManager.Update();
+}
+
+void CMainFrame::OnUpdateWindowIToolPal(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Check(m_wndIToolPal->IsShownOnScreen());
+}
+
+/////////////////////////////////////////////////////////////////
+
+void CMainFrame::OnWindowColorPal(wxCommandEvent& /*event*/)
 {
     m_bColorPalOn = !m_bColorPalOn;
 }
 
-void CMainFrame::OnUpdateWindowColorPal(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateWindowColorPal(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bColorPalOn);
-    pCmdUI->Enable(IsQualifyingView(m_wndColorPal, tblColor));
+    pCmdUI.Check(m_bColorPalOn);
+    pCmdUI.Enable(IsQualifyingView(*m_wndColorPal, tblColor));
 }
 
 /////////////////////////////////////////////////////////////////
 
-void CMainFrame::OnWindowTilePalette()
+void CMainFrame::OnWindowTilePalette(wxCommandEvent& /*event*/)
 {
     m_bTilePalOn = !m_bTilePalOn;
 }
 
-void CMainFrame::OnUpdateWindowTilePalette(CCmdUI* pCmdUI)
+void CMainFrame::OnUpdateWindowTilePalette(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bTilePalOn);
-    pCmdUI->Enable(IsQualifyingView(m_wndTilePal, tblBrd));
+    pCmdUI.Check(m_bTilePalOn);
+    pCmdUI.Enable(IsQualifyingView(*m_wndTilePal, tblBrd));
 }
-#endif

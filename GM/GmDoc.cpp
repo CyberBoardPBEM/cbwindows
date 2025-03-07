@@ -154,8 +154,8 @@ CGamDoc::CGamDoc() :
 
 /////////////////////////////////////////////////////////////////////////////
 
-static const CRuntimeClass *tblBrd[] = {
-    RUNTIME_CLASS(CBrdEditViewContainer),
+static const wxClassInfo *tblBrd[] = {
+    wxCLASSINFO(wxBrdEditView),
     NULL
 };
 
@@ -163,12 +163,10 @@ void CGamDoc::OnIdle(BOOL bActive)
 {
     if (bActive)
     {
-#if 0
         CDockTilePalette& pDockTile = GetMainFrame()->GetDockingTileWindow();
         pDockTile.SetChild(m_palTile.get());
         GetMainFrame()->UpdatePaletteWindow(pDockTile, tblBrd,
             GetMainFrame()->IsTilePaletteOn());
-#endif
     }
 }
 
@@ -212,7 +210,6 @@ void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nu
     wxASSERT(!hint || cbhint);      // hint --> cbhint
     WORD wHint = static_cast<WORD>(cbhint ? cbhint->hint : HINT_ALWAYSUPDATE);
     CObject* mfcHintObject = cbhint ? cbhint->hintObj : nullptr;
-#if 0
     if (
         ((wHint & HINT_TILEGROUP) && !(wHint & ~HINT_TILEGROUP)) ||
         wHint == HINT_TILESETDELETED ||
@@ -220,7 +217,6 @@ void CGamDoc::UpdateAllViews(wxView* sender /*= nullptr*/, wxObject* hint /*= nu
         wHint == HINT_ALWAYSUPDATE
         )
         m_palTile->UpdatePaletteContents();
-#endif
     UpdateAllViews(nullptr, wHint, mfcHintObject);
 }
 
@@ -398,9 +394,7 @@ void CGamDoc::SetCustomColors(const std::vector<wxColour>& pCustColors)
 BOOL CGamDoc::NotifyTileDatabaseChange(BOOL bDelScan /* = TRUE */)
 {
 //  GetMainFrame()->GetTilePalWnd()->SynchronizeTileToolPalette();
-#if 0
     m_palTile->UpdatePaletteContents();
-#endif
 
     // Verify the boards etc...aren't using nonexistant TileID's.
     if (bDelScan)
@@ -531,9 +525,7 @@ BOOL CGamDoc::SetupBlankBoard()
     m_pMMgr->SetTileManager(&*m_pTMgr);
 
     // Setup tile palette.
-#if 0
     m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
-#endif
     return TRUE;
 }
 
@@ -898,9 +890,7 @@ void CGamDoc::Serialize(CArchive& ar)
         END_CATCH_ALL
 
         // Setup tile palette.
-#if 0
         m_palTile = new CTilePalette(*this, GetMainFrame()->GetDockingTileWindow());
-#endif
     }
 }
 

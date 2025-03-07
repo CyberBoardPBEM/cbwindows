@@ -1,6 +1,6 @@
 // PalTile.cpp - Tile palette window
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -59,6 +59,10 @@ CTilePalette::CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd) :
         CB_XRC_CTRL(m_listTile)
     CB_XRC_END_CTRLS_DEFN()
 {
+    wxInfoDC dc(&*m_comboTGrp);
+    int minX = dc.GetTextExtent("MMMMMMMM"_cbstring).x;
+    int minY = m_comboTGrp->GetBestSize().y * 3;
+    SetMinClientSize(wxSize(minX, minY));
     m_pDockingFrame = NULL;
     m_listTile->SetDocument(&pDoc);
     m_listTile->EnableDrag(TRUE);
@@ -70,17 +74,19 @@ CTilePalette::CTilePalette(const CGamDoc& pDoc, wxWindow& pOwnerWnd) :
 
 void CTilePalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
-#if 0
-    GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_TILEPAL);
-#endif
+    wxCommandEvent event(wxEVT_MENU, XRCID("ID_WINDOW_TILEPAL"));
+    GetMainFrame()->ProcessWindowEvent(event);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 TileID CTilePalette::GetCurrentTileID() const
 {
-    if (m_hWnd == NULL)
+    wxASSERT(GetHandle());
+    if (!GetHandle())
+    {
         return nullTid;
+    }
     if (m_listTile->GetSelection() == wxNOT_FOUND)
         return nullTid;
     return m_listTile->GetCurMapItem();
@@ -142,6 +148,18 @@ void CTilePalette::UpdateTileList()
     }
     const std::vector<TileID>& pPieceTbl = pTMgr.GetTileSet(value_preserving_cast<size_t>(nSel)).GetTileIDTable();
     m_listTile->SetItemMap(&pPieceTbl);
+}
+
+wxSize CTilePalette::DoGetBestClientSize() const
+{
+    wxSize choiceBestSize = m_comboTGrp->GetBestSize();
+    wxSize tilesBestSize = m_listTile->GetBestSize();
+    wxSize bestClientSize(std::max(choiceBestSize.x, tilesBestSize.x),
+                            m_listTile->GetPosition().y + tilesBestSize.y);
+    // limit best size to no more than 1/4 of screen dims
+    bestClientSize.x = std::min(bestClientSize.x, wxSystemSettings::GetMetric(wxSYS_SCREEN_X, this)/4);
+    bestClientSize.y = std::min(bestClientSize.y, wxSystemSettings::GetMetric(wxSYS_SCREEN_Y, this)/4);
+    return bestClientSize;
 }
 
 /////////////////////////////////////////////////////////////////////////////

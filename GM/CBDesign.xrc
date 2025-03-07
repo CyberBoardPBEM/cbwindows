@@ -3565,7 +3565,6 @@
     </object>
   </object>
   <object class="wxPanel" name="CTilePalette" subclass="CTilePalette">
-    <size>500,300</size>
     <style>wxTAB_TRAVERSAL</style>
     <object class="wxBoxSizer" name="bSizer104">
       <orient>wxVERTICAL</orient>
