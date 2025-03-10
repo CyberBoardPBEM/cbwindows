@@ -1,6 +1,6 @@
 // Gm.h : main header file for the GM application
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -172,15 +172,28 @@ public:
     virtual BOOL InitInstance();
     virtual int ExitInstance();
     virtual BOOL OnIdle(LONG lCount);
+};
 
+class wxCGmApp : public wxAppWithMFC
+{
+public:
+    bool OnInit() override;
+    int OnExit() override;
+
+protected:
+    /* for safety, and to approximate MFC,
+        disable toolbar/menu commands that aren't
+        explicitly enabled */
+    bool TryAfter(wxEvent& event) override;
+
+private:
 // Implementation
 
-    //{{AFX_MSG(CGmApp)
-    afx_msg void OnAppAbout();
-    afx_msg void OnHelpWebsite();
-    afx_msg void OnHelpReleases();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    void OnAppAbout(wxCommandEvent& event);
+    void OnHelpWebsite(wxCommandEvent& event);
+    void OnHelpReleases(wxCommandEvent& event);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
+    wxDECLARE_EVENT_TABLE();
 };
 
 inline CGmApp* GetApp() { return (CGmApp*)AfxGetApp(); }
