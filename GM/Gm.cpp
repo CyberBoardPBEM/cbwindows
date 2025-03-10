@@ -229,16 +229,19 @@ static void DeletePrintKeys(const CB::string& szFileClass);
 /////////////////////////////////////////////////////////////////////////////
 // CGmApp
 
-BEGIN_MESSAGE_MAP(CGmApp, CWinAppEx)
-    //{{AFX_MSG_MAP(CGmApp)
-    ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-    ON_COMMAND(ID_HELP_WEBSITE, OnHelpWebsite)
-    ON_COMMAND(ID_HELP_RELEASES, OnHelpReleases)
-    //}}AFX_MSG_MAP
+wxBEGIN_EVENT_TABLE(wxCGmApp, wxAppWithMFC)
+    EVT_MENU(wxID_ABOUT, OnAppAbout)
+    EVT_MENU(XRCID("ID_HELP_WEBSITE"), OnHelpWebsite)
+    EVT_MENU(XRCID("ID_HELP_RELEASES"), OnHelpReleases)
+    EVT_UPDATE_UI(wxID_ABOUT, OnUpdateEnable)
+    EVT_UPDATE_UI(XRCID("ID_HELP_WEBSITE"), OnUpdateEnable)
+    EVT_UPDATE_UI(XRCID("ID_HELP_RELEASES"), OnUpdateEnable)
+#if 0
     // Standard file based document commands
     ON_COMMAND(ID_FILE_NEW, CWinAppEx::OnFileNew)
     ON_COMMAND(ID_FILE_OPEN, CWinAppEx::OnFileOpen)
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -316,112 +319,106 @@ CWinApp& CbGetApp()
     return CGmApp::Get();
 }
 
-namespace {
-    class wxCGmApp : public wxAppWithMFC
+bool wxCGmApp::OnInit()
+{
+    // handling cmd line w/ MFC, so skip wxCmdLineParser
+
+    wxXmlResource::Get()->InitAllHandlers();
+    wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
+
+    // Fill in the application information fields before creating wxConfig.
+    SetVendorName("CyberBoardPBEM");
+    SetAppName("CBDesign");
+    SetAppDisplayName(CB::GetAppName());
+    static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+    new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
+                        "CGamDoc", "wxGbxProjView",
+                        CLASSINFO(CGamDoc), CLASSINFO(wxGbxProjView));
+    new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
+                        "CGamDoc", "wxBrdEditView",
+                        CLASSINFO(CGamDoc), CLASSINFO(wxBrdEditView),
+                        wxTEMPLATE_INVISIBLE);
+    new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
+                        "CGamDoc", "wxTileEditView",
+                        CLASSINFO(CGamDoc), CLASSINFO(wxBitEditView),
+                        wxTEMPLATE_INVISIBLE);
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryLoad(*wxConfig::Get());
+
+    CMainFrame& pMainFrame = *new CMainFrame;
+    wxTheApp->SetTopWindow(&pMainFrame);
+    pMainFrame.Show();
+
+    return true;
+}
+
+int wxCGmApp::OnExit()
+{
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistorySave(*wxConfig::Get());
+
+    return wxAppWithMFC::OnExit();
+}
+
+/* for safety, and to approximate MFC,
+    disable toolbar/menu commands that aren't
+    explicitly enabled */
+bool wxCGmApp::TryAfter(wxEvent& event)
+{
+    if (wxAppWithMFC::TryAfter(event))
     {
-    public:
-        virtual bool OnInit() override
+        return true;
+    }
+
+    /* for safety, and to approximate MFC,
+        disable toolbar/menu commands that aren't
+        explicitly enabled */
+    if (event.GetEventType() == wxEVT_UPDATE_UI)
+    {
+        wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
+        wxAuiToolBar* toolbar = dynamic_cast<wxAuiToolBar*>(pCmdUI.GetEventObject());
+        wxMenu* menu = dynamic_cast<wxMenu*>(pCmdUI.GetEventObject());
+        wxMenuItem* item = menu ? menu->FindItem(pCmdUI.GetId()) : nullptr;
+        wxMenu* submenu = item ? item->GetSubMenu() : nullptr;
+        if ((toolbar && pCmdUI.GetId() != toolbar->GetId()) ||
+            // a submenu isn't a command, so don't disable it
+            (menu && !submenu))
         {
-            // handling cmd line w/ MFC, so skip wxCmdLineParser
-
-            wxXmlResource::Get()->InitAllHandlers();
-            wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBDesign.xrc"), false);
-
-            // Fill in the application information fields before creating wxConfig.
-            SetVendorName("CyberBoardPBEM");
-            SetAppName("CBDesign");
-            SetAppDisplayName(CB::GetAppName());
-            static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
-            new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
-                              "CGamDoc", "wxGbxProjView",
-                              CLASSINFO(CGamDoc), CLASSINFO(wxGbxProjView));
-            new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
-                                "CGamDoc", "wxBrdEditView",
-                                CLASSINFO(CGamDoc), CLASSINFO(wxBrdEditView),
-                                wxTEMPLATE_INVISIBLE);
-            new wxDocTemplate(&*docManager, "CyberBoard GameBox", "*.gbx", "", "gbx",
-                                "CGamDoc", "wxTileEditView",
-                                CLASSINFO(CGamDoc), CLASSINFO(wxBitEditView),
-                                wxTEMPLATE_INVISIBLE);
-            wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-            docMgr.FileHistoryLoad(*wxConfig::Get());
-
-            CMainFrame& pMainFrame = *new CMainFrame;
-            wxTheApp->SetTopWindow(&pMainFrame);
-            pMainFrame.Show();
-
-            return true;
-        }
-
-        int OnExit() override
-        {
-            wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-            docMgr.FileHistorySave(*wxConfig::Get());
-
-            return wxAppWithMFC::OnExit();
-        }
-
-    protected:
-        /* for safety, and to approximate MFC,
-            disable toolbar/menu commands that aren't
-            explicitly enabled */
-        bool TryAfter(wxEvent& event) override
-        {
-            if (wxAppWithMFC::TryAfter(event))
+            /* if xrcid is empty, then id is something
+                wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
+                so don't interfere with it */
+            wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
+            if (!xrcid.empty())
             {
+                if (pCmdUI.IsCheckable())
+                {
+                    pCmdUI.Check(false);
+                }
+                pCmdUI.Enable(false);
                 return true;
             }
-
-            /* for safety, and to approximate MFC,
-                disable toolbar/menu commands that aren't
-                explicitly enabled */
-            if (event.GetEventType() == wxEVT_UPDATE_UI)
+        }
+        // but a submenu with all items disabled should be disabled
+        else if (menu && submenu)
+        {
+            CallAfter([item, submenu]()
             {
-                wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
-                wxAuiToolBar* toolbar = dynamic_cast<wxAuiToolBar*>(pCmdUI.GetEventObject());
-                wxMenu* menu = dynamic_cast<wxMenu*>(pCmdUI.GetEventObject());
-                wxMenuItem* item = menu ? menu->FindItem(pCmdUI.GetId()) : nullptr;
-                wxMenu* submenu = item ? item->GetSubMenu() : nullptr;
-                if ((toolbar && pCmdUI.GetId() != toolbar->GetId()) ||
-                    // a submenu isn't a command, so don't disable it
-                    (menu && !submenu))
+                for (size_t i = size_t(0) ; i < submenu->GetMenuItemCount() ; ++i)
                 {
-                    /* if xrcid is empty, then id is something
-                        wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
-                        so don't interfere with it */
-                    wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
-                    if (!xrcid.empty())
+                    wxMenuItem* curr = submenu->FindItemByPosition(i);
+                    if (curr->IsEnabled())
                     {
-                        if (pCmdUI.IsCheckable())
-                        {
-                            pCmdUI.Check(false);
-                        }
-                        pCmdUI.Enable(false);
-                        return true;
+                        return;
                     }
                 }
-                // but a submenu with all items disabled should be disabled
-                else if (menu && submenu)
-                {
-                    CallAfter([item, submenu]()
-                    {
-                        for (size_t i = size_t(0) ; i < submenu->GetMenuItemCount() ; ++i)
-                        {
-                            wxMenuItem* curr = submenu->FindItemByPosition(i);
-                            if (curr->IsEnabled())
-                            {
-                                return;
-                            }
-                        }
-                        item->Enable(false);
-                    });
-                }
-            }
-
-            return false;
+                item->Enable(false);
+            });
         }
-    };
+    }
+
+    return false;
 }
+
 wxDECLARE_APP(wxCGmApp);
 // Notice use of wxIMPLEMENT_APP_NO_MAIN() instead of the usual wxIMPLEMENT_APP!
 wxIMPLEMENT_APP_NO_MAIN(wxCGmApp);
@@ -717,93 +714,84 @@ BOOL CGmApp::OnIdle(LONG lCount)
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialog
+class CAboutDlg : public wxDialog
 {
 public:
-    CAboutDlg();
+    CAboutDlg(wxWindow* parent = &CB::GetMainWndWx());
 
 // Dialog Data
-    //{{AFX_DATA(CAboutDlg)
-    enum { IDD = IDD_GM_ABOUTBOX };
-    CStatic m_staticGenDate;
-    CStatic m_staticProgVer;
-    CStatic m_staticFileVer;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxStaticText> m_staticGenDate;
+        RefPtr<wxStaticText> m_staticProgVer;
+        RefPtr<wxStaticText> m_staticFileVer;
+        RefPtr<wxStaticBitmap> m_bitmap1;
+        RefPtr<wxStaticBitmap> m_bitmap2;
+    CB_XRC_END_CTRLS_DECL()
 
-// Implementation
-protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //{{AFX_MSG(CAboutDlg)
-    virtual BOOL OnInitDialog();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    bool TransferDataToWindow() override;
 };
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CAboutDlg)
+        CB_XRC_CTRL(m_staticGenDate)
+        CB_XRC_CTRL(m_staticProgVer)
+        CB_XRC_CTRL(m_staticFileVer)
+        CB_XRC_CTRL(m_bitmap1)
+        CB_XRC_CTRL(m_bitmap2)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CAboutDlg)
-    //}}AFX_DATA_INIT
+    m_bitmap1->SetIcon(wxIcon(std::format("#{}", IDR_MAINFRAME)));
+    m_bitmap2->SetIcon(wxIcon(std::format("#{}", IDR_MAINFRAME)));
 }
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CAboutDlg)
-    DDX_Control(pDX, IDC_D_ABOUT_GENDATE, m_staticGenDate);
-    DDX_Control(pDX, IDC_D_ABOUT_VERSION, m_staticProgVer);
-    DDX_Control(pDX, IDC_D_ABOUT_FILEVER, m_staticFileVer);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-    //{{AFX_MSG_MAP(CAboutDlg)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
 
 // App command to run the dialog
-void CGmApp::OnAppAbout()
+void wxCGmApp::OnAppAbout(wxCommandEvent& WXUNUSED(event))
 {
     CAboutDlg aboutDlg;
-    aboutDlg.DoModal();
+    aboutDlg.ShowModal();
 }
 
 #ifdef _DEBUG
 static const CB::string szGenDate = __DATE__;
 #endif
 
-BOOL CAboutDlg::OnInitDialog()
+bool CAboutDlg::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-
     CB::string str = CB::string::Format(IDP_PROGVER, progVerMajor, progVerMinor);
-    m_staticProgVer.SetWindowText(str);
+    m_staticProgVer->SetLabel(str);
 
     str = CB::string::Format(IDP_FILEVER, fileGbxVerMajor, fileGbxVerMinor);
-    m_staticFileVer.SetWindowText(str);
+    m_staticFileVer->SetLabel(str);
 #ifdef _DEBUG
-    m_staticGenDate.SetWindowText(szGenDate);
+    m_staticGenDate->SetLabel(szGenDate);
 #else
-    m_staticGenDate.ShowWindow(SW_HIDE);
+    m_staticGenDate->Hide();
 #endif
 
-    CenterWindow();
+    Centre();
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return wxDialog::TransferDataToWindow();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CGmApp commands
 
-void CGmApp::OnHelpWebsite()
+void wxCGmApp::OnHelpWebsite(wxCommandEvent& WXUNUSED(event))
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
-void CGmApp::OnHelpReleases()
+void wxCGmApp::OnHelpReleases(wxCommandEvent& WXUNUSED(event))
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void wxCGmApp::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
 }
 
 wxWindow* CB::pGetMainWndWx()
