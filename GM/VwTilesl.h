@@ -34,12 +34,10 @@
 
 class CBitEditView;
 class wxBitEditView;
-class CTileSelViewContainer;
 
 class CTileSelView : public wxScrolledCanvas
 {
     friend class CBitEditFrame;
-    friend class CTileSelViewContainer;
 protected:
     // single-part construction
     CTileSelView(wxSplitterWindow& parent,
@@ -122,54 +120,6 @@ private:
     RefPtr<wxSplitterWindow> parent;
     RefPtr<CGamDoc> document;
     RefPtr<wxBitEditView> view;
-};
-
-class CTileSelViewContainer : public CView,
-                                public CB::wxNativeContainerWindowMixin
-{
-public:
-    const CTileSelView& GetChild() const { return CheckedDeref(child); }
-    CTileSelView& GetChild()
-    {
-        return const_cast<CTileSelView&>(std::as_const(*this).GetChild());
-    }
-    void OnDraw(CDC* pDC) override;
-    void OnInitialUpdate() override;
-
-protected:
-    void OnActivateView(BOOL bActivate,
-                        CView* pActivateView,
-                        CView* pDeactiveView) override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-
-private:
-    CTileSelViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CTileSelViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg LRESULT OnSetColor(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetCustomColors(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnSetLineWidth(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnUpdateColorForeground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorBackground(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorTransparent(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateColorCustom(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateLineWidth(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateToolPalette(CCmdUI* pCmdUI);
-    afx_msg BOOL OnToolPalette(UINT id);
-    afx_msg void OnEditPaste();
-    afx_msg void OnUpdateEditPaste(CCmdUI* pCmdUI);
-    afx_msg void OnEditUndo();
-    afx_msg void OnUpdateEditUndo(CCmdUI* pCmdUI);
-    afx_msg void OnEditCopy();
-    afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
-    afx_msg void OnViewToggleScale();
-    DECLARE_MESSAGE_MAP()
-
-    // owned by wx
-    CB::propagate_const<CTileSelView*> child = nullptr;
-
-    friend CTileSelView;
 };
 
 /////////////////////////////////////////////////////////////////////////////

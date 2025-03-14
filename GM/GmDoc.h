@@ -404,8 +404,6 @@ protected:
     CGamDocMfc(CGamDoc& wd) : wxDoc(&wd) {}
 public:
     ~CGamDocMfc() override = default;
-protected:
-    DECLARE_DYNAMIC(CGamDocMfc)
 
 public:
     // Forced override of this (note not virtual)

@@ -43,8 +43,6 @@ class CTileSelView;
 
 class CBitEditView : public wxScrolledCanvas
 {
-    friend class CBitEditViewContainer;
-    friend class CTileSelViewContainer;
     friend class CBitEditFrame;
 protected:
     CBitEditView(wxSplitterWindow& parent, wxBitEditView& view);
@@ -238,43 +236,6 @@ private:
     RefPtr<wxSplitterWindow> parent;
     RefPtr<CGamDoc> document;
     RefPtr<wxBitEditView> view;
-};
-
-class CBitEditViewContainer : public CB::OnCmdMsgOverride<CView>,
-                                public CB::wxNativeContainerWindowMixin
-{
-public:
-    const CBitEditView& GetChild() const { return CheckedDeref(child); }
-    CBitEditView& GetChild()
-    {
-        return const_cast<CBitEditView&>(std::as_const(*this).GetChild());
-    }
-    void OnDraw(CDC* pDC) override;
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-
-protected:
-    void OnActivateView(BOOL bActivate, CView *pActivateView,
-        CView* pDeactivateView) override;
-
-private:
-    CBitEditViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CBitEditViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSetFocus(CWnd* pOldWnd);
-    DECLARE_MESSAGE_MAP()
-
-    // IGetEventHandler
-    wxEvtHandler& Get() override
-    {
-        return CheckedDeref(CheckedDeref(child).GetEventHandler());
-    }
-
-    // owned by wx
-    CB::propagate_const<CBitEditView*> child = nullptr;
-
-    friend CBitEditView;
 };
 
 /////////////////////////////////////////////////////////////////////////////

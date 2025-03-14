@@ -112,15 +112,8 @@ wxBEGIN_EVENT_TABLE(CBitEditView, wxScrolledCanvas)
     EVT_UPDATE_UI(XRCID("ID_VIEW_TOGGLE_SCALE"), OnUpdateEnable)
 wxEND_EVENT_TABLE()
 
-BEGIN_MESSAGE_MAP(CBitEditViewContainer, CView)
-    ON_WM_CREATE()
-    ON_WM_SETFOCUS()
-END_MESSAGE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditView
-
-IMPLEMENT_DYNCREATE(CBitEditViewContainer, CView)
 
 CBitEditView::CBitEditView(wxSplitterWindow& p, wxBitEditView& v) :
     parent(&p),
@@ -263,28 +256,6 @@ void CBitEditView::OnDraw(wxDC& pDC)
             Draw25PctPatBorder(*this, pDC, rct, xBorder);
         }
     }
-}
-
-void CBitEditViewContainer::OnActivateView(BOOL bActivate, CView *pActivateView,
-    CView* pDeactivateView)
-{
-    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactivateView);
-
-    // KLUDGE:  often get deactivate w/o activate
-    if (bActivate)
-    {
-        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
-        child->ProcessWindowEvent(event);
-    }
-
-    if (pActivateView == pDeactivateView)
-        return;
-//  if (m_nCurToolID == ID_ITOOL_TEXT)
-//  {
-//      child->SetFocus();
-//      child->SetTextCaretPos(m_ptCaret);
-//  }
-    child->Refresh();       // Later only mess with focus rect.
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1323,50 +1294,4 @@ void CBitEditView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
             pCmdUI.SetText(szCoord);
         }
     }
-}
-
-void CBitEditViewContainer::OnDraw(CDC* pDC)
-{
-    // do nothing because child covers entire client rect
-}
-
-void CBitEditViewContainer::OnInitialUpdate()
-{
-    child->OnInitialUpdate();
-}
-
-void CBitEditViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    child->OnUpdate(pSender, lHint, pHint);
-}
-
-CBitEditViewContainer::CBitEditViewContainer() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
-{
-}
-
-int CBitEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-#if 0
-    if (CView::OnCreate(lpCreateStruct) == -1)
-    {
-        return -1;
-    }
-
-    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
-    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
-
-    child = new CBitEditView(*this);
-
-    return 0;
-#else
-    AfxThrowNotSupportedException();
-#endif
-}
-
-// MFC puts the focus here, so move it to the useful window
-void CBitEditViewContainer::OnSetFocus(CWnd* pOldWnd)
-{
-    CB::OnCmdMsgOverride<CView>::OnSetFocus(pOldWnd);
-    child->SetFocus();
 }

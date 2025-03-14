@@ -50,12 +50,8 @@ static char THIS_FILE[] = __FILE__;
 // CBrdEditView
 
 wxIMPLEMENT_DYNAMIC_CLASS(wxBrdEditView, wxView);
-IMPLEMENT_DYNCREATE(CBrdEditViewContainer, CView)
 
-namespace {
-    typedef wxDocChildFrameAny<CB::PseudoFrame<CB::ProcessEventOverride<wxScrolledCanvas>>, wxWindow> NoCommas;
-}
-wxBEGIN_EVENT_TABLE(CBrdEditView, NoCommas)
+wxBEGIN_EVENT_TABLE(CBrdEditView, wxScrolledCanvas)
 #if 0
     ON_WM_MOUSEWHEEL()
 #endif
@@ -153,11 +149,6 @@ wxBEGIN_EVENT_TABLE(CBrdEditView, NoCommas)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
 wxEND_EVENT_TABLE()
-
-BEGIN_MESSAGE_MAP(CBrdEditViewContainer, CView)
-    ON_WM_CREATE()
-    ON_WM_SETFOCUS()
-END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBrdEditView construction/destruction
@@ -2357,64 +2348,6 @@ void CBrdEditView::RecalcScrollLimits()
     }
     m_xScrollPixelsPerLine = cellSize.x;
     m_yScrollPixelsPerLine = cellSize.y;
-}
-
-void CBrdEditViewContainer::OnDraw(CDC* /*pDC*/)
-{
-    // do nothing because child covers entire client rect
-}
-
-void CBrdEditViewContainer::OnInitialUpdate()
-{
-    child->OnInitialUpdate();
-}
-
-void CBrdEditViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    child->OnUpdate(pSender, lHint, pHint);
-}
-
-void CBrdEditViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
-{
-    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactiveView);
-
-    // KLUDGE:  often get deactivate w/o activate
-    if (bActivate)
-    {
-        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
-        child->ProcessWindowEvent(event);
-    }
-}
-
-CBrdEditViewContainer::CBrdEditViewContainer() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
-{
-}
-
-int CBrdEditViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-#if 0
-    if (CB::OnCmdMsgOverride<CView>::OnCreate(lpCreateStruct) == -1)
-    {
-        return -1;
-    }
-
-    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
-    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
-
-    child = new CBrdEditView(*this);
-
-    return 0;
-#else
-    AfxThrowNotSupportedException();
-#endif
-}
-
-// MFC puts the focus here, so move it to the useful window
-void CBrdEditViewContainer::OnSetFocus(CWnd* pOldWnd)
-{
-    CB::OnCmdMsgOverride<CView>::OnSetFocus(pOldWnd);
-    child->SetFocus();
 }
 
 namespace {
