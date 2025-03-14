@@ -75,8 +75,6 @@ class CProjListBoxGm : public CProjListBoxWx<decltype(CB::Impl::CGbxProjViewBase
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGm);
 };
 
-class CGbxProjViewContainer;
-
 class CGbxProjView : public wxPanel, private CB::Impl::CGbxProjViewBase
 {
 protected:
@@ -255,41 +253,6 @@ private:
     RefPtr<CGamDoc> document;
 
     friend class wxGbxProjView;
-    friend class CGbxProjViewContainer;
-};
-
-class CGbxProjViewContainer : public CB::OnCmdMsgOverride<CView>,
-                                public CB::wxNativeContainerWindowMixin
-{
-public:
-    const CGbxProjView& GetChild() const { return CheckedDeref(child); }
-    CGbxProjView& GetChild()
-    {
-        return const_cast<CGbxProjView&>(std::as_const(*this).GetChild());
-    }
-    void OnDraw(CDC* pDC) override;
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-    void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
-
-private:
-    CGbxProjViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CGbxProjViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSetFocus(CWnd* pOldWnd);
-    DECLARE_MESSAGE_MAP()
-
-    // IGetEvtHandler
-    wxEvtHandler& Get() override
-    {
-        return CheckedDeref(CheckedDeref(child).GetEventHandler());
-    }
-
-    // owned by wx
-    CB::propagate_const<CGbxProjView*> child = nullptr;
-
-    friend CGbxProjView;
 };
 
 class wxGbxProjView : public CB::wxView

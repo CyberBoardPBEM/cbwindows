@@ -42,7 +42,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBoxWx);
-IMPLEMENT_DYNCREATE(CGbxProjViewContainer, CView)
 wxIMPLEMENT_DYNAMIC_CLASS(wxGbxProjView, wxView);
 
 #ifdef _DEBUG
@@ -161,11 +160,6 @@ wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
     EVT_DRAGDROP(OnDragItem)
     EVT_GET_DRAG_SIZE(OnGetDragSize)
 wxEND_EVENT_TABLE()
-
-BEGIN_MESSAGE_MAP(CGbxProjViewContainer, CView)
-    ON_WM_CREATE()
-    ON_WM_SETFOCUS()
-END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView
@@ -1414,82 +1408,6 @@ void CGbxProjView::OnMarkerDelete(wxCommandEvent& /*event*/)
 void CGbxProjView::OnUpdateMarkerDelete(wxUpdateUIEvent& pCmdUI)
 {
     pCmdUI.Enable(m_listMarks->GetSelectedCount() >= 0);
-}
-
-#if 0
-void CGbxProjViewContainer::OnActivateView(BOOL bActivate,
-    CView* pActivateView,
-    CView* /*pDeactiveView*/)
-{
-    WXUNUSED_UNLESS_DEBUG(pActivateView);
-    if (bActivate)
-    {
-        wxASSERT(pActivateView == this);
-        GetParentFrame()->SetActiveView(&*child);
-    }
-}
-#endif
-
-void CGbxProjViewContainer::OnDraw(CDC* /*pDC*/)
-{
-    // do nothing because child covers entire client rect
-}
-
-void CGbxProjViewContainer::OnInitialUpdate()
-{
-    child->OnInitialUpdate();
-
-    CB::OnCmdMsgOverride<CView>::OnInitialUpdate();
-}
-
-void CGbxProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    child->OnUpdate();
-
-    CB::OnCmdMsgOverride<CView>::OnUpdate(pSender, lHint, pHint);
-}
-
-void CGbxProjViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
-{
-    CB::OnCmdMsgOverride<CView>::OnActivateView(bActivate, pActivateView, pDeactiveView);
-
-    // KLUDGE:  often get deactivate w/o activate
-    if (bActivate)
-    {
-        wxActivateEvent event(wxEVT_ACTIVATE, bActivate);
-        child->ProcessWindowEvent(event);
-    }
-}
-
-CGbxProjViewContainer::CGbxProjViewContainer() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
-{
-}
-
-int CGbxProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-#if 0
-    if (CView::OnCreate(lpCreateStruct) == -1)
-    {
-        return -1;
-    }
-
-    static_cast<wxWindow&>(*GetMainFrame()).AddChild(*this);
-    wxASSERT(static_cast<wxWindow&>(*this).GetParent() == *GetMainFrame());
-
-    child = new CGbxProjView(*this);
-
-    return 0;
-#else
-    AfxThrowNotSupportedException();
-#endif
-}
-
-// MFC puts the focus here, so move it to the useful window
-void CGbxProjViewContainer::OnSetFocus(CWnd* pOldWnd)
-{
-    CView::OnSetFocus(pOldWnd);
-    child->SetFocus();
 }
 
 const CDocFrame& wxGbxProjView::GetFrame() const

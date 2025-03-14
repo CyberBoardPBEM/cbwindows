@@ -32,7 +32,6 @@
 #include    "ToolObjs.h"
 #endif
 
-class CBrdEditViewContainer;
 class CColorCmdUI;
 
 using CViewFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
@@ -317,41 +316,6 @@ private:
     int m_yScrollPixelsPerLine;
 
     friend class wxBrdEditView;
-    friend class CBrdEditViewContainer;
-};
-
-class CBrdEditViewContainer : public CB::OnCmdMsgOverride<CView>,
-                                public CB::wxNativeContainerWindowMixin
-{
-public:
-    const CBrdEditView& GetChild() const { return CheckedDeref(child); }
-    CBrdEditView& GetChild()
-    {
-        return const_cast<CBrdEditView&>(std::as_const(*this).GetChild());
-    }
-    void OnDraw(CDC* pDC) override;
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-    void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
-
-private:
-    CBrdEditViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CBrdEditViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSetFocus(CWnd* pOldWnd);
-    DECLARE_MESSAGE_MAP()
-
-    // IGetEvtHandler
-    wxEvtHandler& Get() override
-    {
-        return CheckedDeref(CheckedDeref(child).GetEventHandler());
-    }
-
-    // owned by wx
-    CB::propagate_const<CBrdEditView*> child = nullptr;
-
-    friend CBrdEditView;
 };
 
 class wxBrdEditView : public CB::wxView

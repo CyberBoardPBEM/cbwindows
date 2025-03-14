@@ -70,7 +70,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CGamDoc, wxDocument);
-IMPLEMENT_DYNAMIC(CGamDocMfc, CDocument)
 IMPLEMENT_DYNCREATE(CGmBoxHint, CObject)
 
 #ifdef  _DEBUG
