@@ -1005,7 +1005,11 @@ void CBitEditView::OnToolPalette(wxCommandEvent& event)
             CommitCurrentText();
             SetTextCaretPos(wxPoint(-1, -1));    // Turn off the caret
             // wx doesn't have precise DestroyCaret() equivalent
-            GetCaret()->Hide();
+            wxCaret* caret = GetCaret();
+            if (caret)
+            {
+                caret->Hide();
+            }
         }
         if (m_nLastToolID == XRCID("ID_ITOOL_SELECT") && m_bmPaste.IsOk())
         {
