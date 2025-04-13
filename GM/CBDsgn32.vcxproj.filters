@@ -120,16 +120,10 @@
     <ClCompile Include="FrmBited.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrmBxdoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FrmDockTile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FrmMain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FrmView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\GShr\GdiTools.cpp">
@@ -361,16 +355,10 @@
     <ClInclude Include="FrmBited.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FrmBxdoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FrmDockTile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FrmMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrmView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\GShr\GdiTools.h">
