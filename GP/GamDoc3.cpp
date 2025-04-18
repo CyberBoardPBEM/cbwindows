@@ -957,7 +957,7 @@ void CGamDoc::LoadGameBoxFileForSerialize()
 
         szFPath = StrBuildFullFilename(szPath, szGbxRootName);
 
-        if (std::filesystem::exists(szFPath))
+        if (!std::filesystem::exists(szFPath))
         {
             // File doesn't exist where the game file is.
             // Use open file dialog to locate file.
