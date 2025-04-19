@@ -773,7 +773,6 @@ void CB::string::Serialize(CArchive& ar)
 #endif
 }
 
-#if 0
 CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() const
 {
     if (!mfcWnd->m_hWnd)
@@ -871,7 +870,6 @@ wxWindow* CB::FindWxWindow(CWnd& mfcWnd)
     }
     return wxWnd;
 }
-#endif
 
 // emulate CWnd::SendMessageToDescendants()
 void CB::SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep /*= true*/)

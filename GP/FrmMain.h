@@ -39,7 +39,8 @@
 #include "PalReadMsg.h"
 #endif
 
-class CMainFrame : public CMDIFrameWndExCb
+class CMainFrame : public CMDIFrameWndExCb,
+                    public CB::wxNativeContainerWindowMixin
 {
     DECLARE_DYNAMIC(CMainFrame)
 public:

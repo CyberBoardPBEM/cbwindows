@@ -91,7 +91,8 @@ static const CB::string szSectControlBars = "ControlBars";
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
 
-CMainFrame::CMainFrame()
+CMainFrame::CMainFrame() :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
     // TODO: add member initialization code here
 }

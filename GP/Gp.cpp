@@ -1,6 +1,6 @@
 //  Gp.cpp : Defines the class behaviors for the application.
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -141,6 +141,8 @@ protected:
             pMainFrame->UpdateWindow();
         }
 
+        wxTheApp->SetTopWindow(&CB::GetMainWndWx());
+
         OnIdle(0);   // Run idle so control bars are in sync prior to message boxes
 
         return TRUE;
@@ -166,6 +168,10 @@ namespace {
         virtual bool OnInit() override
         {
             // handling cmd line w/ MFC, so skip wxCmdLineParser
+
+            wxXmlResource::Get()->InitAllHandlers();
+            wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBPlay.xrc"), false);
+
             return true;
         }
     };
@@ -640,3 +646,7 @@ void CGpApp::OnHelpReleases()
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
+wxWindow* CB::pGetMainWndWx()
+{
+    return *dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+}
