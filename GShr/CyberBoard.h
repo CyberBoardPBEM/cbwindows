@@ -1925,7 +1925,6 @@ static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdif
 // adapt between CWnd and wxWindow
 namespace CB
 {
-#if 0
     class wxNativeContainerWindowMixin
     {
     public:
@@ -1961,7 +1960,6 @@ namespace CB
     /* if mfcWnd or one of its descendants has
         wxNativeContainerWindowMixin, return it */
     wxWindow* FindWxWindow(CWnd& mfcWnd);
-#endif
 
     // emulate CWnd::SendMessageToDescendants()
     void SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep = true);

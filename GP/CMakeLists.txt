@@ -136,3 +136,12 @@ if (MSVC)
 endif()
 target_precompile_headers(CBPlay PRIVATE StdAfx.h)
 target_link_libraries(CBPlay wx::core wx::xrc)
+
+add_custom_command(
+	OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBPlay.xrc"
+	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/CBPlay.xrc" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBPlay.xrc"
+	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/CBPlay.xrc"
+	VERBATIM
+)
+add_custom_target(CBPlay_copy_files DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBPlay.xrc)
+add_dependencies(CBPlay CBPlay_copy_files)
