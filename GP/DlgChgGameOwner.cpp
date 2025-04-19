@@ -1,6 +1,6 @@
 // DlgChangeOwner.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,15 +36,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CChgGameOwnerDialog dialog
 
-CChgGameOwnerDialog::CChgGameOwnerDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CChgGameOwnerDialog::IDD, pParent)
+CChgGameOwnerDialog::CChgGameOwnerDialog(CPlayerManager& pm, CWnd* pParent /*=NULL*/)
+    : CDialog(CChgGameOwnerDialog::IDD, pParent),
+    m_pPlayerMgr(pm)
 {
     //{{AFX_DATA_INIT(CChgGameOwnerDialog)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 
     m_nPlayer = -1;
-    m_pPlayerMgr = NULL;
 }
 
 void CChgGameOwnerDialog::DoDataExchange(CDataExchange* pDX)
@@ -76,8 +76,8 @@ BOOL CChgGameOwnerDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-        m_listPlayers.AddString(m_pPlayerMgr->ElementAt(i).m_strName);
+    for (int i = 0; i < m_pPlayerMgr.GetSize(); i++)
+        m_listPlayers.AddString(m_pPlayerMgr.ElementAt(i).m_strName);
 
     if (m_nPlayer >= 0)
         m_listPlayers.SetCurSel(m_nPlayer);
