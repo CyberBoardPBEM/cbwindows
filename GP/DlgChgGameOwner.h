@@ -37,7 +37,7 @@ class CChgGameOwnerDialog : public CDialog
 {
 // Construction
 public:
-    CChgGameOwnerDialog(CWnd* pParent = NULL);   // standard constructor
+    CChgGameOwnerDialog(CPlayerManager& pm, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CChgGameOwnerDialog )
@@ -47,7 +47,7 @@ public:
     //}}AFX_DATA
 
     int                 m_nPlayer;
-    CPlayerManager*     m_pPlayerMgr;
+    CPlayerManager&     m_pPlayerMgr;
 
 // Overrides
     // ClassWizard generated virtual function overrides

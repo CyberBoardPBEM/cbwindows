@@ -2060,8 +2060,7 @@ void CGamDoc::OnFileChangeGameOwner()
         return;
     }
 
-    CChgGameOwnerDialog dlg2;
-    dlg2.m_pPlayerMgr = GetPlayerManager();
+    CChgGameOwnerDialog dlg2(CheckedDeref(GetPlayerManager()));
     if (dlg2.DoModal() != IDOK)
         return;
 
