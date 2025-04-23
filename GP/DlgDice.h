@@ -1,6 +1,6 @@
 // DlgDice.h : header file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -66,11 +66,11 @@ CArchive& operator>>(CArchive& ar, CRollState& rs);
 /////////////////////////////////////////////////////////////////////////////
 // CDieRollerDlg dialog
 
-class CDieRollerDlg : public CDialog
+class CDieRollerDlg : public wxDialog
 {
 // Construction
 public:
-    CDieRollerDlg(CWnd* pParent = NULL);   // standard constructor
+    CDieRollerDlg(wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Methods
 public:
@@ -80,15 +80,7 @@ public:
     void SetRollState(const CRollState& rstate);
 
 // Dialog Data
-    //{{AFX_DATA(CDieRollerDlg)
-    enum { IDD = IDD_DIEROLLER };
-    CButton m_btnResetSeed;
-    CEdit   m_editSeed;
-    CButton m_btnOK;
-    CButton m_chkRoll3;
-    CButton m_chkRoll2;
-    CButton m_chkRoll1;
-    CB::string m_strSeed;
+    wxString m_strSeed;
     uint32_t m_nFaces1;
     uint32_t m_nFaces2;
     uint32_t m_nFaces3;
@@ -100,15 +92,29 @@ public:
     bool    m_bRoll3;
     int32_t m_nBias;
     uint32_t m_nSets;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxButton> m_btnResetSeed;
+        RefPtr<wxTextCtrl> m_editSeed;
+        RefPtr<wxButton> m_btnOK;
+        RefPtr<wxCheckBox> m_chkRoll3;
+        RefPtr<wxCheckBox> m_chkRoll2;
+        RefPtr<wxCheckBox> m_chkRoll1;
+        RefPtr<wxTextCtrl> m_editSets;
+        RefPtr<wxTextCtrl> m_editDice1;
+        RefPtr<wxTextCtrl> m_editFaces1;
+        RefPtr<wxTextCtrl> m_editDice2;
+        RefPtr<wxTextCtrl> m_editFaces2;
+        RefPtr<wxTextCtrl> m_editDice3;
+        RefPtr<wxTextCtrl> m_editFaces3;
+        RefPtr<wxTextCtrl> m_editBias;
+    CB_XRC_END_CTRLS_DECL()
 
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CDieRollerDlg)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
+protected:
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 
 // Implementation
 protected:
@@ -125,21 +131,18 @@ protected:
     uint32_t    m_nSeedCarryOver;
 
 
-    // Generated message map functions
-    //{{AFX_MSG(CDieRollerDlg)
-    virtual void OnOK();
-    afx_msg void OnDieRoll1();
-    afx_msg void OnDieRoll2();
-    afx_msg void OnDieRoll3();
-    afx_msg void OnChangeDieNumdies1();
-    afx_msg void OnChangeDieNumdies2();
-    afx_msg void OnChangeDieNumdies3();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnDieResetSeed();
+    void OnDieRoll1(wxCommandEvent& event);
+    void OnDieRoll2(wxCommandEvent& event);
+    void OnDieRoll3(wxCommandEvent& event);
+    void OnChangeDieNumdies1(wxCommandEvent& event);
+    void OnChangeDieNumdies2(wxCommandEvent& event);
+    void OnChangeDieNumdies3(wxCommandEvent& event);
+    void OnDieResetSeed(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif
