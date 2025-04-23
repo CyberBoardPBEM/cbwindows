@@ -295,7 +295,7 @@ void CSendMsgDialog::OnRollDice()
     if (m_pRollState)
         dlg.SetRollState(*m_pRollState);
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         m_pRollState = dlg.GetRollState();
 

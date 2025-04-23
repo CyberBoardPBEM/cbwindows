@@ -1,6 +1,6 @@
 // DlgDice.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -91,10 +91,24 @@ CArchive& operator>>(CArchive& ar, CRollState& rs)
 /////////////////////////////////////////////////////////////////////////////
 // CDieRollerDlg dialog
 
-CDieRollerDlg::CDieRollerDlg(CWnd* pParent /*=NULL*/)
-    : CDialog(CDieRollerDlg::IDD, pParent)
+CDieRollerDlg::CDieRollerDlg(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CDieRollerDlg)
+        CB_XRC_CTRL(m_btnResetSeed)
+        CB_XRC_CTRL_VAL(m_editSeed, m_strSeed, wxFILTER_ASCII, 40)
+        , m_btnOK(XRCCTRL(*this, "wxID_OK", std::remove_reference_t<decltype(*m_btnOK)>))
+        CB_XRC_CTRL_VAL(m_chkRoll3, m_bRoll3)
+        CB_XRC_CTRL_VAL(m_chkRoll2, m_bRoll2)
+        CB_XRC_CTRL_VAL(m_chkRoll1, m_bRoll1)
+        CB_XRC_CTRL_VAL(m_editSets, m_nSets, uint32_t(1), uint32_t(75))
+        CB_XRC_CTRL_VAL(m_editDice1, m_nDice1, uint32_t(0), uint32_t(100))
+        CB_XRC_CTRL_VAL(m_editFaces1, m_nFaces1, uint32_t(2), uint32_t(32767))
+        CB_XRC_CTRL_VAL(m_editDice2, m_nDice2, uint32_t(0), uint32_t(100))
+        CB_XRC_CTRL_VAL(m_editFaces2, m_nFaces2, uint32_t(2), uint32_t(32767))
+        CB_XRC_CTRL_VAL(m_editDice3, m_nDice3, uint32_t(0), uint32_t(100))
+        CB_XRC_CTRL_VAL(m_editFaces3, m_nFaces3, uint32_t(2), uint32_t(32767))
+        CB_XRC_CTRL_VAL(m_editBias, m_nBias, -5000, 5000)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CDieRollerDlg)
     m_strSeed = "";
     m_nFaces1 = uint32_t(6);
     m_nFaces2 = uint32_t(6);
@@ -107,59 +121,41 @@ CDieRollerDlg::CDieRollerDlg(CWnd* pParent /*=NULL*/)
     m_bRoll3 = FALSE;
     m_nBias = int32_t(0);
     m_nSets = uint32_t(1);
-    //}}AFX_DATA_INIT
     m_bFirstRoll = TRUE;
     m_strInitialSeed = "";
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editSets->GetSizeFromText("999");
+    m_editSets->SetInitialSize(editSize);
+    m_editDice1->SetInitialSize(editSize);
+    m_editDice2->SetInitialSize(editSize);
+    m_editDice3->SetInitialSize(editSize);
+    editSize = m_editFaces1->GetSizeFromText("99999");
+    m_editFaces1->SetInitialSize(editSize);
+    m_editFaces2->SetInitialSize(editSize);
+    m_editFaces3->SetInitialSize(editSize);
+    m_editBias->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
 }
 
-void CDieRollerDlg::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CDieRollerDlg)
-    DDX_Control(pDX, IDC_DIE_RESET_SEED, m_btnResetSeed);
-    DDX_Control(pDX, IDC_DIE_SEED, m_editSeed);
-    DDX_Control(pDX, IDOK, m_btnOK);
-    DDX_Control(pDX, IDC_DIE_ROLL3, m_chkRoll3);
-    DDX_Control(pDX, IDC_DIE_ROLL2, m_chkRoll2);
-    DDX_Control(pDX, IDC_DIE_ROLL1, m_chkRoll1);
-    DDX_Text(pDX, IDC_DIE_SEED, m_strSeed);
-    DDV_MaxChars(pDX, m_strSeed, 40);
-    DDX_Text(pDX, IDC_DIE_FACES1, m_nFaces1);
-    DDV_MinMaxUInt(pDX, m_nFaces1, 2, 32767);
-    DDX_Text(pDX, IDC_DIE_FACES2, m_nFaces2);
-    DDV_MinMaxUInt(pDX, m_nFaces2, 2, 32767);
-    DDX_Text(pDX, IDC_DIE_FACES3, m_nFaces3);
-    DDV_MinMaxUInt(pDX, m_nFaces3, 2, 32767);
-    DDX_Text(pDX, IDC_DIE_NUMDIES1, m_nDice1);
-    DDV_MinMaxUInt(pDX, m_nDice1, 0, 100);
-    DDX_Text(pDX, IDC_DIE_NUMDIES2, m_nDice2);
-    DDV_MinMaxUInt(pDX, m_nDice2, 0, 100);
-    DDX_Text(pDX, IDC_DIE_NUMDIES3, m_nDice3);
-    DDV_MinMaxUInt(pDX, m_nDice3, 0, 100);
-    DDX_Check(pDX, IDC_DIE_ROLL1, m_bRoll1);
-    DDX_Check(pDX, IDC_DIE_ROLL2, m_bRoll2);
-    DDX_Check(pDX, IDC_DIE_ROLL3, m_bRoll3);
-    DDX_Text(pDX, IDC_DIE_BIAS, m_nBias);
-    DDV_MinMaxInt(pDX, m_nBias, -5000, 5000);
-    DDX_Text(pDX, IDC_DIE_SETS, m_nSets);
-    DDV_MinMaxUInt(pDX, m_nSets, 1, 75);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CDieRollerDlg, CDialog)
-    //{{AFX_MSG_MAP(CDieRollerDlg)
-    ON_BN_CLICKED(IDC_DIE_ROLL1, OnDieRoll1)
-    ON_BN_CLICKED(IDC_DIE_ROLL2, OnDieRoll2)
-    ON_BN_CLICKED(IDC_DIE_ROLL3, OnDieRoll3)
-    ON_EN_CHANGE(IDC_DIE_NUMDIES1, OnChangeDieNumdies1)
-    ON_EN_CHANGE(IDC_DIE_NUMDIES2, OnChangeDieNumdies2)
-    ON_EN_CHANGE(IDC_DIE_NUMDIES3, OnChangeDieNumdies3)
-    ON_BN_CLICKED(IDC_DIE_RESET_SEED, OnDieResetSeed)
+wxBEGIN_EVENT_TABLE(CDieRollerDlg, wxDialog)
+    EVT_CHECKBOX(XRCID("m_chkRoll1"), OnDieRoll1)
+    EVT_CHECKBOX(XRCID("m_chkRoll2"), OnDieRoll2)
+    EVT_CHECKBOX(XRCID("m_chkRoll3"), OnDieRoll3)
+    EVT_TEXT(XRCID("m_editDice1"), OnChangeDieNumdies1)
+    EVT_TEXT(XRCID("m_editDice2"), OnChangeDieNumdies2)
+    EVT_TEXT(XRCID("m_editDice3"), OnChangeDieNumdies3)
+    EVT_BUTTON(XRCID("m_btnResetSeed"), OnDieResetSeed)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -184,6 +180,7 @@ static DWORD adwHelpMap[] =
     IDC_DIE_SETS, IDH_DIE_SETS,
     0, 0
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -340,7 +337,7 @@ void CDieRollerDlg::SetRollState(const CRollState& rstate)
 {
     m_bFirstRoll = rstate.m_bFirstRoll;
     m_nSets = rstate.m_nSetsToRoll;
-    m_strSeed = rstate.m_strUserSeed;
+    m_strSeed = rstate.m_strUserSeed.wx_str();
     m_strInitialSeed = rstate.m_strUserSeed;    // Saved to detect changes
 
     m_nSeedCarryOver = rstate.m_nSeedCarryOver;
@@ -364,79 +361,93 @@ void CDieRollerDlg::SetRollState(const CRollState& rstate)
 
 bool CDieRollerDlg::IsAnyDieSelected() const
 {
-    return (m_chkRoll1.GetCheck() && GetDlgItemInt(IDC_DIE_NUMDIES1) > 0) ||
-        (m_chkRoll2.GetCheck() && GetDlgItemInt(IDC_DIE_NUMDIES2) > 0) ||
-        (m_chkRoll3.GetCheck() && GetDlgItemInt(IDC_DIE_NUMDIES3) > 0);
+    static const auto GetDlgItemInt = [](const wxTextCtrl& tc) -> int
+    {
+        CB::string s = tc.GetValue();
+        return std::stoi(s.w_str());
+    };
+    return (m_chkRoll1->GetValue() && GetDlgItemInt(*m_editDice1) > 0) ||
+        (m_chkRoll2->GetValue() && GetDlgItemInt(*m_editDice2) > 0) ||
+        (m_chkRoll3->GetValue() && GetDlgItemInt(*m_editDice3) > 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CDieRollerDlg::UpdateControls()
 {
-    m_btnOK.EnableWindow(IsAnyDieSelected());
+    m_btnOK->Enable(IsAnyDieSelected());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CDieRollerDlg message handlers
 
-BOOL CDieRollerDlg::OnInitDialog()
+bool CDieRollerDlg::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
     UpdateControls();
 
     if (!m_bFirstRoll && !m_strSeed.empty())
-        m_editSeed.EnableWindow(FALSE);
+        m_editSeed->Enable(false);
     else
-        m_btnResetSeed.EnableWindow(FALSE);
+        m_btnResetSeed->Enable(false);
 
     return TRUE;
 }
 
-void CDieRollerDlg::OnOK()
+bool CDieRollerDlg::TransferDataFromWindow()
 {
-    CDialog::OnOK();
-    if (m_strInitialSeed != m_strSeed)
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+    if (m_strInitialSeed.wx_str() != m_strSeed)
         m_bFirstRoll = TRUE;
     MakeFormattedRollResult();
+
+    return true;
 }
 
-void CDieRollerDlg::OnDieRoll1()
+void CDieRollerDlg::OnDieRoll1(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnDieRoll2()
+void CDieRollerDlg::OnDieRoll2(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnDieRoll3()
+void CDieRollerDlg::OnDieRoll3(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnChangeDieNumdies1()
+void CDieRollerDlg::OnChangeDieNumdies1(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnChangeDieNumdies2()
+void CDieRollerDlg::OnChangeDieNumdies2(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnChangeDieNumdies3()
+void CDieRollerDlg::OnChangeDieNumdies3(wxCommandEvent& /*event*/)
 {
     UpdateControls();
 }
 
-void CDieRollerDlg::OnDieResetSeed()
+void CDieRollerDlg::OnDieResetSeed(wxCommandEvent& /*event*/)
 {
-    m_editSeed.EnableWindow(TRUE);
-    m_btnResetSeed.EnableWindow(FALSE);
+    m_editSeed->Enable(true);
+    m_btnResetSeed->Enable(false);
     m_bFirstRoll = TRUE;
 }
 
+#if 0
 BOOL CDieRollerDlg::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     return GetApp()->DoHelpTipHelp(pHelpInfo, adwHelpMap);
@@ -446,4 +457,5 @@ void CDieRollerDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
