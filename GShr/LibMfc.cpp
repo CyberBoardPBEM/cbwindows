@@ -86,7 +86,6 @@ BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
 {
     if (bEnsureNewline)
     {
-ASSERT(!"needs testing");
         CB::string str = CB::string::GetWindowText(edit);
         if (!str.empty() && str[str.a_size() - size_t(1)] != '\n')
             AppendStringToEditBox(edit, L"\r\n", FALSE);
