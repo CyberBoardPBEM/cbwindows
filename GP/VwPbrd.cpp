@@ -743,7 +743,7 @@ NASTY_GOTO_TARGET:
 
             dlg.m_strText = pDoc->GetGameElementString(MakeMarkerElement(mid));
 
-            if (dlg.DoModal() == IDOK)
+            if (dlg.ShowModal() == wxID_OK)
             {
                 GameElement elem = pDoc->GetGameElementCodeForObject(pObj);
                 pDoc->SetObjectText(elem, dlg.m_strText.empty() ? NULL :

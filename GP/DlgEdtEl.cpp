@@ -1,6 +1,6 @@
 // DlgEdtEl.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,35 +36,26 @@ static char THIS_FILE[] = __FILE__;
 // CEditElementTextDialog dialog
 
 
-CEditElementTextDialog::CEditElementTextDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CEditElementTextDialog::IDD, pParent)
+CEditElementTextDialog::CEditElementTextDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CEditElementTextDialog)
+        CB_XRC_CTRL_VAL(m_chkAllSides, m_bSetAllSides)
+        CB_XRC_CTRL_VAL(m_editText, m_strTextTemp)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CEditElementTextDialog)
     m_strText = "";
     m_bSetAllSides = FALSE;
-    //}}AFX_DATA_INIT
     m_nSides = size_t(1);
 }
 
 
-void CEditElementTextDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CEditElementTextDialog)
-    DDX_Control(pDX, IDC_D_EDITELEM_SETALL, m_chkAllSides);
-    DDX_Control(pDX, IDC_D_EDITELEM_TEXT, m_editText);
-    DDX_Text(pDX, IDC_D_EDITELEM_TEXT, m_strText);
-    DDX_Check(pDX, IDC_D_EDITELEM_SETALL, m_bSetAllSides);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CEditElementTextDialog, CDialog)
-    //{{AFX_MSG_MAP(CEditElementTextDialog)
+wxBEGIN_EVENT_TABLE(CEditElementTextDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -84,17 +75,32 @@ void CEditElementTextDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditElementTextDialog message handlers
 
-BOOL CEditElementTextDialog::OnInitDialog()
+bool CEditElementTextDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    m_strTextTemp = m_strText.wx_str();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    int nChars = m_editText.GetWindowTextLength();
-    m_editText.SetFocus();
-    m_editText.SetSel(nChars, nChars, TRUE);
-    m_chkAllSides.EnableWindow(m_nSides >= size_t(2));
-    return FALSE;
+    wxTextPos nChars = m_editText->GetLastPosition();
+    m_editText->SetFocus();
+    m_editText->SetSelection(value_preserving_cast<long>(nChars), value_preserving_cast<long>(nChars));
+    m_chkAllSides->Enable(m_nSides >= size_t(2));
+    return true;
+}
+
+bool CEditElementTextDialog::TransferDataFromWindow()
+{
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+    m_strText = m_strTextTemp;
+    return true;
 }

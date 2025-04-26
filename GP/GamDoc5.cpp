@@ -239,7 +239,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
         }
     }
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     AssignNewMoveGroup();
@@ -274,7 +274,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
 
     dlg.m_strText = strTip;
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     GameElement elem = GetGameElementCodeForObject(pDObj);
