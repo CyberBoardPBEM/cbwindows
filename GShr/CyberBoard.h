@@ -2045,6 +2045,9 @@ namespace CB
         // validators.
         // for CB, forward events to window here
         bool TryBefore(wxEvent& event) override;
+
+        void FileHistoryAddMenu();
+        void FileHistoryRemoveMenu();
     };
 }
 

@@ -305,6 +305,7 @@ bool wxBitEditView::OnClose(bool /*deleteWindow*/)
 {
     /* doc's life determined by wxGbxProjView, not this,
         so bypass wxView::OnClose() */
+    FileHistoryRemoveMenu();
     return true;
 }
 
@@ -318,6 +319,7 @@ bool wxBitEditView::OnCreate(wxDocument* doc, long flags)
     new CBitEditFrame(CheckedDeref(doc),
                     *this,
                     CheckedDeref(GetMainFrame()));
+    FileHistoryAddMenu();
     /* wx tried to activate this before it was ready,
         so do it now */
     ready = true;
