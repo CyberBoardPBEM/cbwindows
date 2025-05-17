@@ -2397,6 +2397,7 @@ bool wxBrdEditView::OnClose(bool /*deleteWindow*/)
 {
     /* doc's life determined by wxGbxProjView, not this,
         so bypass wxView::OnClose() */
+    FileHistoryRemoveMenu();
     return true;
 }
 
@@ -2422,6 +2423,7 @@ bool wxBrdEditView::OnCreate(wxDocument* doc, long flags)
     /* KLUDGE:  giving each frame its own menu
         seems to avoid crashes on process close */
     wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring);
+    FileHistoryAddMenu();
     new CBrdEditView(*this, *createParam);
     frame->Show();
 

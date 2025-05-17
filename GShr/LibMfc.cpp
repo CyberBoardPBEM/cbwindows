@@ -989,6 +989,35 @@ bool CB::wxView::TryBefore(wxEvent& event)
     return GetWindow().ProcessWindowEventLocally(event);
 }
 
+void CB::wxView::FileHistoryAddMenu()
+{
+    wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
+    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryUseMenu(&menuFile);
+    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+    /*KLUDGE:  MRU menu items don't always respect
+                wxFileHistoryMenuPathStyle without this */
+    wxFileHistory& fileHist = CheckedDeref(docMgr.GetFileHistory());
+    wxFileHistoryMenuPathStyle style = fileHist.GetMenuPathStyle();
+    wxFileHistoryMenuPathStyle tempStyle = style == wxFH_PATH_SHOW_IF_DIFFERENT ?
+                                                wxFH_PATH_SHOW_NEVER
+                                            :
+                                                wxFH_PATH_SHOW_IF_DIFFERENT;
+    fileHist.SetMenuPathStyle(tempStyle);
+    fileHist.SetMenuPathStyle(style);
+}
+
+void CB::wxView::FileHistoryRemoveMenu()
+{
+    wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
+    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryRemoveMenu(&menuFile);
+}
+
 CB::ToolTip::~ToolTip()
 {
     Enable(false);

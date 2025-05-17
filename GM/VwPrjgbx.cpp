@@ -1435,20 +1435,21 @@ bool wxGbxProjView::OnClose(bool deleteWindow)
         {
             GetWindow().Hide();
         }
-        wxMenuBar& menubar = CheckedDeref(GetFrame().GetMenuBar());
-        wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
-        wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-        docMgr.FileHistoryRemoveMenu(&menuFile);
+        FileHistoryRemoveMenu();
 
         /* CB defines doc's life only by proj view,
-            so delete rest */
+            so close rest */
         wxViewVector views = GetDocument()->GetViewsVector();
         for (auto it = views.begin() ; it != views.end() ; ++it)
         {
             ::wxView* view = *it;
             if (view != this)
             {
-                delete view;
+                /* KLUDGE:  need to close frame because
+                    closing non-proj views is disabled
+                    in order to override standard doc
+                    lifetime */
+                CB_VERIFY(view->GetFrame()->Close(true));
             }
         }
 
@@ -1482,10 +1483,7 @@ bool wxGbxProjView::OnCreate(wxDocument* doc, long flags)
     /* KLUDGE:  giving each frame its own menu
         seems to avoid crashes on process close */
     wxMenuBar& menubar = CheckedDeref(wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring));
-    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
-    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-    docMgr.FileHistoryUseMenu(&menuFile);
-    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+    FileHistoryAddMenu();
     /* postpone because this gets called before OnOpenDocument()
     new CGbxProjView(*this);
     frame->Show();
