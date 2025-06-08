@@ -61,6 +61,9 @@ CBitEditFrame::CBitEditFrame(wxDocument& doc,
         retval->SetSashGravity(0.0);
         CTileSelView* pSelView = new CTileSelView(*retval, view, createParam);
         CBitEditView* pBitView = new CBitEditView(*retval, view);
+        // don't steal Ctrl-Tab from MDI client
+        wxASSERT(retval->HasFlag(wxTAB_TRAVERSAL));
+        retval->ToggleWindowStyle(wxTAB_TRAVERSAL);
         if (!retval->SplitVertically(pSelView, pBitView, 90))
         {
             AfxThrowMemoryException();

@@ -5932,7 +5932,7 @@
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
-                <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
               </object>
             </object>
             <object class="sizeritem" expanded="false">
@@ -6295,7 +6295,7 @@
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
-                <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
               </object>
             </object>
             <object class="sizeritem" expanded="false">
@@ -6354,7 +6354,7 @@
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
-                <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
               </object>
             </object>
             <object class="sizeritem" expanded="false">
@@ -6413,7 +6413,7 @@
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
-                <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
               </object>
             </object>
             <object class="sizeritem" expanded="false">
@@ -9110,7 +9110,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -9242,7 +9242,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -9836,7 +9836,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -9968,7 +9968,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -13251,7 +13251,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -13451,7 +13451,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -13583,7 +13583,7 @@
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
-                        <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                        <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                       </object>
                     </object>
                   </object>
@@ -15952,7 +15952,7 @@
                             <property name="tooltip"></property>
                             <property name="window_extra_style"></property>
                             <property name="window_name"></property>
-                            <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                            <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                           </object>
                         </object>
                         <object class="sizeritem" expanded="false">
@@ -16011,7 +16011,7 @@
                             <property name="tooltip"></property>
                             <property name="window_extra_style"></property>
                             <property name="window_name"></property>
-                            <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                            <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                           </object>
                         </object>
                       </object>
@@ -16923,7 +16923,7 @@
                     <property name="tooltip"></property>
                     <property name="window_extra_style"></property>
                     <property name="window_name"></property>
-                    <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+                    <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
                   </object>
                 </object>
               </object>
@@ -19841,7 +19841,7 @@
             <property name="tooltip"></property>
             <property name="window_extra_style"></property>
             <property name="window_name"></property>
-            <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</property>
+            <property name="window_style">wxBORDER_SIMPLE|wxWANTS_CHARS</property>
           </object>
         </object>
       </object>
