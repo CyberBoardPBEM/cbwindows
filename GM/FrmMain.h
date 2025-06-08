@@ -61,6 +61,7 @@ public:
 public:
     void SaveProfileSettings();
     void RestoreProfileSettings();
+    void AuiScheduleUpdate() { auiMgrScheduleUpdate = true; }
 
 // Implementation
 public:
