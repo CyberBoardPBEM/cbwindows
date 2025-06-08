@@ -62,10 +62,6 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
         m_pChildWnd->SetDockingFrame(NULL);
         Refresh(TRUE);
     }
-    // We need to set this field explicitly rather than
-    // using CDockablePane::SetChild() since this function
-    // insists that the window be non-NULL even though it's
-    // perfectly fine to be NULL!
     m_pChildWnd = pChildWnd;
     if (pChildWnd != NULL)
     {
@@ -75,13 +71,14 @@ void CDockTilePalette::SetChild(CTilePalette* pChildWnd)
         Layout();
         SetMinClientSize(m_pChildWnd->GetMinSize());
         pane.BestSize(GetBestSize()).
+                FloatingClientSize(GetBestSize()).
                 MinSize(GetMinSize());
     }
     else
     {
         pane.Show(false);
     }
-    auiMgr.Update();
+    GetMainFrame()->AuiScheduleUpdate();
 }
 
 wxSize CDockTilePalette::DoGetBestClientSize() const

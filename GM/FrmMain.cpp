@@ -235,6 +235,7 @@ CMainFrame::CMainFrame() :
                         MinSize(m_wndColorPal->GetBestSize()).
                         BestSize(m_wndColorPal->GetBestSize()).
                         MaxSize(m_wndColorPal->GetBestSize()).
+                        FloatingClientSize(m_wndColorPal->GetBestSize()).
                         Right().Layer(0).Position(0).
                         Hide());
 
@@ -243,6 +244,7 @@ CMainFrame::CMainFrame() :
     auiManager.AddPane(m_wndTilePal, wxAuiPaneInfo().
                         Name("CTilePalette").Caption("Tiles"_cbstring).
                         BestSize(m_wndTilePal->GetBestSize()).
+                        FloatingClientSize(m_wndTilePal->GetBestSize()).
                         Right().Layer(0).Position(1).
                         Hide());
 
@@ -608,22 +610,6 @@ void CMainFrame::OnIdle()
         return;
 
     UpdatePaletteWindow(*m_wndColorPal, tblColor, m_bColorPalOn);
-
-    wxAuiPaneInfo& pane = auiManager.GetPane(m_wndTilePal);
-    if (GetCurrentDocument() == NULL)
-    {
-        pane.Show(false);
-        auiMgrScheduleUpdate = true;
-    }
-    else
-    {
-        wxSize newSize = m_wndTilePal->GetBestSize();
-        if (pane.best_size != newSize)
-        {
-            pane.BestSize(newSize);
-            auiMgrScheduleUpdate = true;
-        }
-    }
 
     if (m_wndColorPal->GetHandle() && m_wndColorPal->IsShownOnScreen())
     {
