@@ -245,6 +245,7 @@ protected:
     void OnUpdateProjectCloneBoard(wxUpdateUIEvent& pCmdUI);
     void OnDragItem(DragDropEvent& event);
     void OnGetDragSize(GetDragSizeEvent& event);
+    void OnNavigationKey(wxNavigationKeyEvent& event);
     wxDECLARE_EVENT_TABLE();
 
 private:

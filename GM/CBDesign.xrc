@@ -1074,7 +1074,7 @@
             <border>5</border>
             <option>1</option>
             <object class="wxVListBox" name="m_listProj" subclass="CProjListBoxGm">
-              <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
             </object>
           </object>
           <object class="sizeritem">
@@ -1146,7 +1146,7 @@
             <border>5</border>
             <option>1</option>
             <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
-              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
           </object>
@@ -1155,7 +1155,7 @@
             <border>5</border>
             <option>1</option>
             <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
-              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
           </object>
@@ -1164,7 +1164,7 @@
             <border>5</border>
             <option>1</option>
             <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
-              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+              <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
           </object>
@@ -1660,7 +1660,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -1685,7 +1685,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -1796,7 +1796,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -1821,7 +1821,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -2452,7 +2452,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -2486,7 +2486,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -2511,7 +2511,7 @@
                     <border>5</border>
                     <option>1</option>
                     <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
-                      <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                      <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
                 </object>
@@ -2958,7 +2958,7 @@
                         <border>5</border>
                         <option>1</option>
                         <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
-                          <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                          <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                         </object>
                       </object>
                       <object class="sizeritem">
@@ -2966,7 +2966,7 @@
                         <border>5</border>
                         <option>1</option>
                         <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
-                          <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                          <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                         </object>
                       </object>
                     </object>
@@ -3137,7 +3137,7 @@
                 <border>5</border>
                 <option>1</option>
                 <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
-                  <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+                  <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                 </object>
               </object>
             </object>
@@ -3729,7 +3729,7 @@
         <border>5</border>
         <option>1</option>
         <object class="wxVListBox" name="m_listTile" subclass="CTileListBoxWx">
-          <style>wxBORDER_SIMPLE|wxTAB_TRAVERSAL|wxWANTS_CHARS</style>
+          <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
         </object>
       </object>
     </object>

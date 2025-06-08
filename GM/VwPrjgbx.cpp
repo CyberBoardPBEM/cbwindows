@@ -159,6 +159,7 @@ wxBEGIN_EVENT_TABLE(CGbxProjView, wxPanel)
     EVT_UPDATE_UI(XRCID("ID_PROJECT_CLONEBOARD"), OnUpdateProjectCloneBoard)
     EVT_DRAGDROP(OnDragItem)
     EVT_GET_DRAG_SIZE(OnGetDragSize)
+    EVT_NAVIGATION_KEY(OnNavigationKey)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -189,6 +190,17 @@ CGbxProjView::CGbxProjView(wxView& v) :
     m_listTiles->EnableDrag();
     m_listTiles->EnableSelfDrop();
     m_listTiles->EnableDropScroll();
+    // don't steal Ctrl-Tab from MDI client
+    wxASSERT(HasFlag(wxTAB_TRAVERSAL));
+    ToggleWindowStyle(wxTAB_TRAVERSAL);
+    /* KLUDGE:  even w/o wxTAB_TRAVERSAL, we still need this
+        hack as well, or  dynamic handlers trigger infinite
+        recursion before executing event table handler */
+    Bind(wxEVT_NAVIGATION_KEY,
+        [this](wxNavigationKeyEvent& event)
+        {
+            OnNavigationKey(event);
+        });
 }
 
 CGbxProjView::~CGbxProjView()
@@ -521,6 +533,25 @@ void CGbxProjView::OnGetDragSize(GetDragSizeEvent& event)
     retval.y = std::numeric_limits<decltype(retval.y)>::max();
 
     event.SetSize(retval);
+}
+
+void CGbxProjView::OnNavigationKey(wxNavigationKeyEvent& event)
+{
+    // don't steal Ctrl-Tab from MDI client
+    if (event.IsWindowChange())
+    {
+        GetMainFrame()->GetClientWindow()->ProcessWindowEvent(event);
+    }
+    else
+    {
+        // KLUDGE:  avoid infinite recursion at end of children
+        static wxRecursionGuardFlag flag;
+        wxRecursionGuard guard(flag);
+        if (!guard.IsInside())
+        {
+            wxPanel::OnNavigationKey(event);
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
