@@ -1911,7 +1911,7 @@ void CGamDoc::OnEditEditPlayers()
 {
     CEditPlayersDialog dlg;
     dlg.SetDialogsPlayerNames(*m_pPlayerMgr);
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
     dlg.GetPlayerNamesFromDialog(*m_pPlayerMgr);
     SetModifiedFlag();
