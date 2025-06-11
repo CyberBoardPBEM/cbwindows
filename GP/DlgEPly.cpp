@@ -86,17 +86,17 @@ void CEditPlayersDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CEditPlayersDialog::SetDialogsPlayerNames(CPlayerManager* pPlayerMgr)
+void CEditPlayersDialog::SetDialogsPlayerNames(const CPlayerManager& pPlayerMgr)
 {
-    m_tblNames.reserve(m_tblNames.size() + value_preserving_cast<size_t>(pPlayerMgr->GetSize()));
-    for (int i = 0; i < pPlayerMgr->GetSize(); i++)
-        m_tblNames.push_back(pPlayerMgr->ElementAt(i).m_strName);
+    m_tblNames.reserve(m_tblNames.size() + value_preserving_cast<size_t>(pPlayerMgr.GetSize()));
+    for (int i = 0; i < pPlayerMgr.GetSize(); i++)
+        m_tblNames.push_back(pPlayerMgr.ElementAt(i).m_strName);
 }
 
-void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager* pPlayerMgr)
+void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager& pPlayerMgr) const
 {
-    for (int i = 0; i < pPlayerMgr->GetSize(); i++)
-        pPlayerMgr->ElementAt(i).m_strName = m_tblNames[value_preserving_cast<size_t>(i)];
+    for (int i = 0; i < pPlayerMgr.GetSize(); i++)
+        pPlayerMgr.ElementAt(i).m_strName = m_tblNames[value_preserving_cast<size_t>(i)];
 }
 
 /////////////////////////////////////////////////////////////////////////////
