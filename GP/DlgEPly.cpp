@@ -1,6 +1,6 @@
 // DlgEPly.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,6 +26,7 @@
 #include "Gp.h"
 #include "Player.h"
 #include "DlgEply.h"
+#include <numeric>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,33 +37,25 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CEditPlayersDialog dialog
 
-CEditPlayersDialog::CEditPlayersDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CEditPlayersDialog::IDD, pParent)
+CEditPlayersDialog::CEditPlayersDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CEditPlayersDialog)
+        CB_XRC_CTRL(m_btnUpdate)
+        CB_XRC_CTRL(m_listNames)
+        CB_XRC_CTRL(m_editName)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CEditPlayersDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
 }
 
-void CEditPlayersDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CEditPlayersDialog)
-    DDX_Control(pDX, IDC_D_EPLAY_UPDATE_NAME, m_btnUpdate);
-    DDX_Control(pDX, IDC_D_EPLAY_NAME_LIST, m_listNames);
-    DDX_Control(pDX, IDC_D_EPLAY_EDIT_NAME, m_editName);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CEditPlayersDialog, CDialog)
-    //{{AFX_MSG_MAP(CEditPlayersDialog)
-    ON_LBN_SELCHANGE(IDC_D_EPLAY_NAME_LIST, OnSelChangeNameList)
-    ON_BN_CLICKED(IDC_D_EPLAY_UPDATE_NAME, OnBtnPressUpdateName)
+wxBEGIN_EVENT_TABLE(CEditPlayersDialog, wxDialog)
+    EVT_LISTBOX(XRCID("m_listNames"), OnSelChangeNameList)
+    EVT_BUTTON(XRCID("m_btnUpdate"), OnBtnPressUpdateName)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -83,6 +76,7 @@ void CEditPlayersDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -102,51 +96,69 @@ void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager& pPlayerMgr) co
 /////////////////////////////////////////////////////////////////////////////
 // CEditPlayersDialog message handlers
 
-void CEditPlayersDialog::OnSelChangeNameList()
+void CEditPlayersDialog::OnSelChangeNameList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listNames.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listNames->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        CB::string strEdit = CB::string::GetText(m_listNames, nSel);
-        m_editName.SetWindowText(strEdit);
+        wxString strEdit = m_listNames->GetString(value_preserving_cast<unsigned>(nSel));
+        m_editName->SetValue(strEdit);
     }
 }
 
-void CEditPlayersDialog::OnBtnPressUpdateName()
+void CEditPlayersDialog::OnBtnPressUpdateName(wxCommandEvent& /*event*/)
 {
-    CB::string strEdit = CB::string::GetWindowText(m_editName);
+    CB::string strEdit = m_editName->GetValue();
     if (!strEdit.empty())
     {
-        int nSel = m_listNames.GetCurSel();
-        if (nSel >= 0)
+        int nSel = m_listNames->GetSelection();
+        if (nSel != wxNOT_FOUND)
         {
-            m_listNames.DeleteString(nSel);
-            m_listNames.InsertString(nSel, strEdit);
+            m_listNames->Delete(value_preserving_cast<unsigned>(nSel));
+            m_listNames->Insert(strEdit, value_preserving_cast<unsigned>(nSel));
         }
     }
 }
 
-BOOL CEditPlayersDialog::OnInitDialog()
+bool CEditPlayersDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    /* display the player names initially sorted,
+        but don't actually reorder them */
+    m_tblNamesSorted.resize(m_tblNames.size());
+    std::iota(m_tblNamesSorted.begin(), m_tblNamesSorted.end(), size_t(0));
+    std::sort(m_tblNamesSorted.begin(), m_tblNamesSorted.end(),
+                [this](const size_t left, const size_t right)
+                {
+                    return m_tblNames[left] < m_tblNames[right];
+                });
 
     for (size_t i = size_t(0) ; i < m_tblNames.size() ; ++i)
-        m_listNames.AddString(m_tblNames[i]);
+        m_listNames->AppendString(m_tblNames[m_tblNamesSorted[i]]);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
+    return true;
 }
 
-void CEditPlayersDialog::OnOK()
+bool CEditPlayersDialog::TransferDataFromWindow()
 {
-    m_tblNames.clear();
-    m_tblNames.reserve(value_preserving_cast<size_t>(m_listNames.GetCount()));
-    for (int i = 0; i < m_listNames.GetCount(); i++)
+    if (!wxDialog::TransferDataFromWindow())
     {
-        CB::string strName = CB::string::GetText(m_listNames, i);
+        return false;
+    }
+
+    m_tblNames.clear();
+    m_tblNames.reserve(m_listNames->GetCount());
+    for (size_t i = size_t(0) ; i < m_tblNamesSorted.size() ; ++i)
+    {
+        unsigned j = value_preserving_cast<unsigned>(m_tblNamesSorted[i]);
+        CB::string strName = m_listNames->GetString(j);
         m_tblNames.push_back(std::move(strName));
     }
 
-    CDialog::OnOK();
+    return true;
 }
 
 
