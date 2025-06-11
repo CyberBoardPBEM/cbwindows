@@ -47,8 +47,8 @@ public:
     CEdit   m_editName;
     //}}AFX_DATA
 
-    void SetDialogsPlayerNames(CPlayerManager* pPlayerMgr);
-    void GetPlayerNamesFromDialog(CPlayerManager* pPlayerMgr);
+    void SetDialogsPlayerNames(const CPlayerManager& pPlayerMgr);
+    void GetPlayerNamesFromDialog(CPlayerManager& pPlayerMgr) const;
 
     std::vector<CB::string> m_tblNames;
 

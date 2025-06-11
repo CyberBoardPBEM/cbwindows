@@ -1910,10 +1910,10 @@ void CGamDoc::OnUpdateEditCreatePlayers(CCmdUI* pCmdUI)
 void CGamDoc::OnEditEditPlayers()
 {
     CEditPlayersDialog dlg;
-    dlg.SetDialogsPlayerNames(m_pPlayerMgr);
+    dlg.SetDialogsPlayerNames(*m_pPlayerMgr);
     if (dlg.DoModal() != IDOK)
         return;
-    dlg.GetPlayerNamesFromDialog(m_pPlayerMgr);
+    dlg.GetPlayerNamesFromDialog(*m_pPlayerMgr);
     SetModifiedFlag();
     UpdateAllViews(NULL);
 }
