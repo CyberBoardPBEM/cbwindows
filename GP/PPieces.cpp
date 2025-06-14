@@ -1,6 +1,6 @@
 // PPieces.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -107,10 +107,8 @@ void CPieceTable::SetPieceListAsFrontUp(const std::vector<PieceID>& pPTbl)
 
 void CPieceTable::PurgeUndefinedPieceIDs()
 {
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    ASSERT(pYMgr != NULL);
-    CPBoardManager* pPBMgr = m_pDoc->GetPBoardManager();
-    ASSERT(pPBMgr != NULL);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CPBoardManager& pPBMgr = m_pDoc->GetPBoardManager();
 
     size_t nPiecesDeleted = 0;
 
@@ -125,8 +123,8 @@ void CPieceTable::PurgeUndefinedPieceIDs()
             {
                 TRACE1("ERROR: Piece %zu was defined but had no Tile Images. "
                        "Piece removed from game!\n", i);
-                pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
-                OwnerPtr<CDrawObj> pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
+                pYMgr.RemovePieceIDFromTraySets(static_cast<PieceID>(i));
+                OwnerPtr<CDrawObj> pObj = pPBMgr.RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
                 pPce->SetUnused();      // Render it gone!
                 nPiecesDeleted++;
             }
@@ -471,11 +469,11 @@ TileID CPieceTable::GetFacedTileID(PieceID pid, TileID tidBase, uint16_t nFacing
 {
     // Handle rotated pieces...
     ElementState state(pid, nFacing, nSide);
-    CTileFacingMap* pMapFacing = m_pDoc->GetFacingMap();
-    TileID tidFacing = pMapFacing->GetFacingTileID(state);
+    CTileFacingMap& pMapFacing = m_pDoc->GetFacingMap();
+    TileID tidFacing = pMapFacing.GetFacingTileID(state);
     if (tidFacing != nullTid)
         return tidFacing;
-    tidFacing = pMapFacing->CreateFacingTileID(state, tidBase);
+    tidFacing = pMapFacing.CreateFacingTileID(state, tidBase);
     return tidFacing;
 }
 
@@ -579,12 +577,12 @@ void CPieceTable::Serialize(CArchive& ar)
             size_t nOldTblSize = m_pPieceTbl.GetSize();
             m_pPieceTbl.ResizeTable(nDefSize, nullptr);
             // Purge pieces in use that don't exist anymore
-            CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-            CPBoardManager* pPBMgr = m_pDoc->GetPBoardManager();
+            CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+            CPBoardManager& pPBMgr = m_pDoc->GetPBoardManager();
             for (size_t i = m_pPieceTbl.GetSize(); i < nOldTblSize; i++)
             {
-                pYMgr->RemovePieceIDFromTraySets(static_cast<PieceID>(i));
-                OwnerPtr<CDrawObj> pObj = pPBMgr->RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
+                pYMgr.RemovePieceIDFromTraySets(static_cast<PieceID>(i));
+                OwnerPtr<CDrawObj> pObj = pPBMgr.RemoveObjectID(static_cast<ObjectID>(static_cast<PieceID>(i)));
             }
         }
     }

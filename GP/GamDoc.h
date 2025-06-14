@@ -1,6 +1,6 @@
 // GamDoc.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -281,7 +281,7 @@ public:
     // to the file. Normally the histories are simply copied
     // with the file.
     int m_nLoadedFileVersion;
-    int GetLoadedVersion() { return m_nLoadedFileVersion; }
+    int GetLoadedVersion() const { return m_nLoadedFileVersion; }
 
 // Attributes
 public:
@@ -290,23 +290,23 @@ public:
     enum GameState { stateNotRecording, stateRecording,
         stateMovePlay, stateHistPlay };
 
-    GameState GetGameState() { return m_eState; }
+    GameState GetGameState() const { return m_eState; }
     void SetGameState(GameState eState) { m_eState = eState; }
-    BOOL IsRecording() { return m_eState == stateRecording; }
-    BOOL IsAnyRecorded() { return m_eState == stateRecording && m_pRcdMoves != NULL; }
+    BOOL IsRecording() const { return m_eState == stateRecording; }
+    BOOL IsAnyRecorded() const { return m_eState == stateRecording && m_pRcdMoves != NULL; }
     BOOL IsPlaying() const
         { return m_eState == stateMovePlay || m_eState == stateHistPlay; }
-    BOOL IsPlayingMoves() { return m_eState == stateMovePlay; }
-    BOOL IsPlayingHistory() { return m_eState == stateHistPlay; }
-    BOOL IsPlayingLastHistory();
+    BOOL IsPlayingMoves() const { return m_eState == stateMovePlay; }
+    BOOL IsPlayingHistory() const { return m_eState == stateHistPlay; }
+    BOOL IsPlayingLastHistory() const;
 
-    BOOL IsQuietPlayback() { return m_bQuietPlayback; }
+    BOOL IsQuietPlayback() const { return m_bQuietPlayback; }
     void SetQuietPlayback(BOOL bBeQuite) { m_bQuietPlayback = bBeQuite; }
 
     BOOL IsScenario() const { return m_bScenario; }
     BOOL IsShowingObjectTips() const { return m_bShowObjTipText; }
 
-    BOOL IsRecordingCompoundMove();
+    BOOL IsRecordingCompoundMove() const;
 
     size_t GetCurrentHistoryRecNum() const { return m_nCurHist; }
 
@@ -323,12 +323,12 @@ public:
         return const_cast<CBoardManager&>(std::as_const(*this).GetBoardManager());
     }
     const CPieceManager& GetPieceManager() const;
-    const CPieceTable* GetPieceTable() const { return m_pPTbl; }
-    CPieceTable* GetPieceTable() { return const_cast<CPieceTable*>(std::as_const(*this).GetPieceTable()); }
-    const CTrayManager* GetTrayManager() const { return m_pYMgr; }
-    CTrayManager* GetTrayManager() { return const_cast<CTrayManager*>(std::as_const(*this).GetTrayManager()); }
-    const CPBoardManager* GetPBoardManager() const { return m_pPBMgr; }
-    CPBoardManager* GetPBoardManager() { return const_cast<CPBoardManager*>(std::as_const(*this).GetPBoardManager()); }
+    const CPieceTable& GetPieceTable() const { return CheckedDeref(m_pPTbl); }
+    CPieceTable& GetPieceTable() { return const_cast<CPieceTable&>(std::as_const(*this).GetPieceTable()); }
+    const CTrayManager& GetTrayManager() const { return CheckedDeref(m_pYMgr); }
+    CTrayManager& GetTrayManager() { return const_cast<CTrayManager&>(std::as_const(*this).GetTrayManager()); }
+    const CPBoardManager& GetPBoardManager() const { return CheckedDeref(m_pPBMgr); }
+    CPBoardManager& GetPBoardManager() { return const_cast<CPBoardManager&>(std::as_const(*this).GetPBoardManager()); }
     const CPlayerManager* GetPlayerManager() const { return m_pPlayerMgr; }
     CPlayerManager* GetPlayerManager() { return const_cast<CPlayerManager*>(std::as_const(*this).GetPlayerManager()); }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
@@ -337,21 +337,21 @@ public:
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 
     // Fetch map of temporary tile rotations.
-    CTileFacingMap* GetFacingMap();
+    CTileFacingMap& GetFacingMap();
 
-    uint32_t GetRandomNumberSeed() { return m_nSeedCarryOver; }
+    uint32_t GetRandomNumberSeed() const { return m_nSeedCarryOver; }
     void SetRandomNumberSeed(uint32_t nSeedCarryOver) { m_nSeedCarryOver = nSeedCarryOver; }
 
 // Operations
 public:
     BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
         LPVOID lpvCreateParam);
-    CGamProjView& FindProjectView();
-    CView* FindPBoardView(const CPlayBoard& pPBoard);
+    CGamProjView& FindProjectView() const;
+    CView* FindPBoardView(const CPlayBoard& pPBoard) const;
     CView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
-    void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
+    void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames) const;
 
-    BOOL IsWindowStateAvailable() { return m_pWinState != NULL; }
+    BOOL IsWindowStateAvailable() const { return m_pWinState != NULL; }
     void RestoreWindowState();
     void DiscardWindowState();
 
@@ -359,25 +359,25 @@ public:
     BOOL  HasPlayers() const { return m_pPlayerMgr != NULL; }
     DWORD  GetCurrentPlayerMask() const;
     void  SetCurrentPlayerMask(WORD dwMask) { m_dwCurrentPlayer = dwMask; }
-    BOOL  IsCurrentPlayerReferee();
+    BOOL  IsCurrentPlayerReferee() const;
     void  ClearAllOwnership();
     CB::string GetPieceOwnerName(PieceID pid) const;
 
-    BOOL  IsCurrentPlayer(DWORD dwMask) { return (BOOL)(GetCurrentPlayerMask() & dwMask); }
+    BOOL  IsCurrentPlayer(DWORD dwMask) const { return (BOOL)(GetCurrentPlayerMask() & dwMask); }
 
-    DWORD CalculateHashForCurrentPlayerMask();
-    BOOL  VerifyCurrentPlayerMask();
+    DWORD CalculateHashForCurrentPlayerMask() const;
+    BOOL  VerifyCurrentPlayerMask() const;
 
-    BOOL  IsOwnerTipsDisabled() { return m_bDisableOwnerTips; }
+    BOOL  IsOwnerTipsDisabled() const { return m_bDisableOwnerTips; }
 
     // Support for strings associated with game elements (pieces, markers)
     CB::string  GetGameElementString(GameElement gelem) const;
     BOOL        HasGameElementString(GameElement gelem) const;
     void        SetGameElementString(GameElement gelem, const CB::string* pszString);
-    void        GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip, CB::string* pStrTitle = NULL);
+    void        GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip, CB::string* pStrTitle = NULL) const;
     // Invalid_v<size_t> = top
-    GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
-    GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>);
+    GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>) const;
+    GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>) const;
     void        DoEditPieceText(PieceID pid);
     void        DoEditObjectText(const CDrawObj& pDObj);
 
@@ -468,7 +468,7 @@ public:
     void RemoveObjectFromCurrentLocation(CDrawObj* pObj);
     void ExpungeUnusedPiecesFromBoards();
 
-    void FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct);
+    void FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct) const;
 
     // Object and piece locator methods...
     BOOL FindPieceCurrentLocation(PieceID pid, const CTraySet*& pTraySet,

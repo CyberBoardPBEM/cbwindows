@@ -238,9 +238,9 @@ BOOL CSetPiecesDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
     ASSERT(m_pDoc != NULL);
-    m_pYMgr = m_pDoc->GetTrayManager();
+    m_pYMgr = &m_pDoc->GetTrayManager();
     ASSERT(m_pYMgr != NULL);
-    m_pPTbl = m_pDoc->GetPieceTable();
+    m_pPTbl = &m_pDoc->GetPieceTable();
     ASSERT(m_pPTbl != NULL);
 
     m_listPiece.SetDocument(*m_pDoc);

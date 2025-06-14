@@ -1,6 +1,6 @@
 // PBoard.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -147,13 +147,12 @@ void CPlayBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale)
 CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 {
     CTileManager& pTMgr = m_pDoc->GetTileManager();
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl);
-    TileID tid = pPTbl->GetActiveTileID(pid);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    TileID tid = pPTbl.GetActiveTileID(pid);
     ASSERT(tid != nullTid);
 
     if (IsOwned())
-        pPTbl->SetOwnerMask(pid, GetOwnerMask());// Force piece to be owned by this player
+        pPTbl.SetOwnerMask(pid, GetOwnerMask());// Force piece to be owned by this player
 
     CTile tile = pTMgr.GetTile(tid, fullScale);
     CRect rct(pnt, tile.GetSize());
@@ -600,7 +599,7 @@ void CPBoardManager::SetPBoardList(const std::vector<BoardID>& tblBrds)
             CDrawList* pDwg = pPBrd.GetPieceList();
             std::vector<PieceID> tblPid;
             pDwg->GetPieceIDTable(tblPid);
-            m_pDoc->GetPieceTable()->SetPieceListAsUnused(tblPid);
+            m_pDoc->GetPieceTable().SetPieceListAsUnused(tblPid);
 
             erase(begin() + value_preserving_cast<ptrdiff_t>(i));
             i--;                // Recycle 'i' to look at next element
@@ -643,7 +642,7 @@ void CPBoardManager::DeletePBoard(size_t nBrd)
     CDrawList* pDwg = pPBrd.GetPieceList();
     std::vector<PieceID> tblPid;
     pDwg->GetPieceIDTable(tblPid);
-    m_pDoc->GetPieceTable()->SetPieceListAsUnused(tblPid);
+    m_pDoc->GetPieceTable().SetPieceListAsUnused(tblPid);
 
     erase(begin() + value_preserving_cast<ptrdiff_t>(nBrd));
 }

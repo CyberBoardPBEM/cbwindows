@@ -1,6 +1,6 @@
 // DrawObj.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -1677,16 +1677,15 @@ void CPieceObj::Draw(CDC& pDC, TileScale eScale)
 {
     ASSERT(m_pDoc != NULL);
     CTileManager& pTMgr = m_pDoc->GetTileManager();
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
     TileID tid;
 
     if (!m_pDoc->IsScenario() &&
-            pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc))
-        tid = pPTbl->GetFrontTileID(m_pid, TRUE);
+            pPTbl.IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc))
+        tid = pPTbl.GetFrontTileID(m_pid, TRUE);
     else
-        tid = pPTbl->GetActiveTileID(m_pid, TRUE);  // Show rotations
+        tid = pPTbl.GetActiveTileID(m_pid, TRUE);  // Show rotations
     ASSERT(tid != nullTid);
 
     CPoint pnt = GetRect().TopLeft();
@@ -1697,7 +1696,7 @@ void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
 {
     wxASSERT(m_pDoc != NULL);
     CTileManager& pTMgr = m_pDoc->GetTileManager();
-    CPieceTable& pPTbl = CheckedDeref(m_pDoc->GetPieceTable());
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
     TileID tid;
 
@@ -1715,33 +1714,29 @@ void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
 void CPieceObj::SetOwnerMask(DWORD dwMask)
 {
     ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
-    pPTbl->SetOwnerMask(m_pid, dwMask);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    pPTbl.SetOwnerMask(m_pid, dwMask);
 }
 
 BOOL CPieceObj::IsOwned() const
 {
     ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
-    return pPTbl->IsPieceOwned(m_pid);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    return pPTbl.IsPieceOwned(m_pid);
 }
 
 BOOL CPieceObj::IsOwnedBy(DWORD dwMask) const
 {
     ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
-    return pPTbl->IsPieceOwnedBy(m_pid, dwMask);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    return pPTbl.IsPieceOwnedBy(m_pid, dwMask);
 }
 
 BOOL CPieceObj::IsOwnedButNotByCurrentPlayer() const
 {
     ASSERT(m_pDoc != NULL);
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
-    return pPTbl->IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    return pPTbl.IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc);
 }
 
 void CPieceObj::SetPiece(const CRect& rct, PieceID pid)
@@ -1754,16 +1749,15 @@ CSize CPieceObj::GetSize() const
 {
     ASSERT(m_pDoc != NULL);
     CTileManager& pTMgr = m_pDoc->GetTileManager();
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
     TileID tid;
 
-    if (pPTbl->IsPieceOwned(m_pid) &&
-            !pPTbl->IsPieceOwnedBy(m_pid, m_pDoc->GetCurrentPlayerMask()))
-        tid = pPTbl->GetFrontTileID(m_pid, TRUE);
+    if (pPTbl.IsPieceOwned(m_pid) &&
+            !pPTbl.IsPieceOwnedBy(m_pid, m_pDoc->GetCurrentPlayerMask()))
+        tid = pPTbl.GetFrontTileID(m_pid, TRUE);
     else
-        tid = pPTbl->GetActiveTileID(m_pid, TRUE);
+        tid = pPTbl.GetActiveTileID(m_pid, TRUE);
     ASSERT(tid != nullTid);
 
     CTile tile = pTMgr.GetTile(tid);
@@ -1863,10 +1857,10 @@ TileID CMarkObj::GetCurrentTileID()
     {
         // Handle rotated markers...
         ElementState state(m_mid, m_nFacingDegCW);
-        CTileFacingMap* pMapFacing = m_pDoc->GetFacingMap();
-        TileID tidFacing = pMapFacing->GetFacingTileID(state);
+        CTileFacingMap& pMapFacing = m_pDoc->GetFacingMap();
+        TileID tidFacing = pMapFacing.GetFacingTileID(state);
         if (tidFacing == nullTid)
-            tidFacing = pMapFacing->CreateFacingTileID(state, pMark.m_tid);
+            tidFacing = pMapFacing.CreateFacingTileID(state, pMark.m_tid);
         return tidFacing;
     }
     else

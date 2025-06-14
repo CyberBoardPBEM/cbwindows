@@ -1,6 +1,6 @@
 // VwPrjgsn.cpp : Scenario Project View
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -173,15 +173,14 @@ void CGsnProjView::OnInitialUpdate()
     GetDocument()->DoInitialUpdate();   // Since UpdateAllViews isn't virtual
     CView::OnInitialUpdate();
     CGamDoc* pDoc = GetDocument();
-    CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
-    ASSERT(pPBMgr);
+    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
     // Only honor the open-on-load flags if the save window state
     // is disabled.
     if (!pDoc->m_bSaveWindowPositions)
     {
-        for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
+        for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
         {
-            CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+            CPlayBoard& pPBoard = pPBMgr.GetPBoard(i);
             if (pPBoard.m_bOpenBoardOnLoad)
             {
                 // Defer opening the view until our view init
@@ -421,11 +420,10 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_GSN_BOARDS);
     m_listProj.AddItem(grpBrdHdr, str);
 
-    CPBoardManager* pPBMgr = pDoc->GetPBoardManager();
-    ASSERT(pPBMgr);
-    for (size_t i = 0; i < pPBMgr->GetNumPBoards(); i++)
+    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
+    for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
     {
-        CPlayBoard& pPBoard = pPBMgr->GetPBoard(i);
+        CPlayBoard& pPBoard = pPBMgr.GetPBoard(i);
         str = pPBoard.GetBoard()->GetName();
         if (bDisplayIDs)
         {
@@ -447,11 +445,10 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_GSN_TRAYS);
     m_listProj.AddItem(grpTrayHdr, str);
 
-    CTrayManager* pYMgr = pDoc->GetTrayManager();
-    ASSERT(pYMgr);
-    for (size_t i = 0; i < pYMgr->GetNumTraySets(); i++)
+    CTrayManager& pYMgr = pDoc->GetTrayManager();
+    for (size_t i = size_t(0); i < pYMgr.GetNumTraySets(); i++)
     {
-        CTraySet& pYSet = pYMgr->GetTraySet(i);
+        CTraySet& pYSet = pYMgr.GetTraySet(i);
         str = pYSet.GetName();
         if (bDisplayIDs)
         {
@@ -748,7 +745,7 @@ void CGsnProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
 LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 {
     CGamDoc* pDoc = GetDocument();
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(value_preserving_cast<size_t>(wParam));
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
     ASSERT(pPBoard.m_bOpenBoardOnLoad);
     pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
         pPBoard.GetBoard()->GetName(), &pPBoard);

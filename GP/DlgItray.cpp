@@ -1,6 +1,6 @@
 // DlgITray.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -92,8 +92,7 @@ BOOL CImportTraysDlg::OnInitDialog()
     CDialog::OnInitDialog();
 
     const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    ASSERT(pYMgr != NULL);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     // Loop through all the piece groups in the gamebox. If a group
     // already doesn't exist as a tray in the scenario, add it to the
@@ -103,12 +102,12 @@ BOOL CImportTraysDlg::OnInitDialog()
     {
         CB::string strName = pPMgr.GetPieceSet(nPSet).GetName();
         size_t nTray;
-        for (nTray = size_t(0); nTray < pYMgr->GetNumTraySets(); nTray++)
+        for (nTray = size_t(0); nTray < pYMgr.GetNumTraySets(); nTray++)
         {
-            if (strName.CompareNoCase(pYMgr->GetTraySet(nTray).GetName()) == 0)
+            if (strName.CompareNoCase(pYMgr.GetTraySet(nTray).GetName()) == 0)
                 break;
         }
-        if (nTray >= pYMgr->GetNumTraySets())
+        if (nTray >= pYMgr.GetNumTraySets())
         {
             // Found one...
             int nIdx = m_listGroups.AddString(strName);
@@ -124,9 +123,8 @@ BOOL CImportTraysDlg::OnInitDialog()
 void CImportTraysDlg::OnOK()
 {
     const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-    ASSERT(pPTbl != NULL);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
     for (int i = 0; i < m_listGroups.GetCount(); i++)
     {
@@ -136,12 +134,12 @@ void CImportTraysDlg::OnOK()
             const CPieceSet& pPSet = pPMgr.GetPieceSet(nPSet);
 
             // Create tray and add pieces...
-            size_t nTray = pYMgr->CreateTraySet(pPSet.GetName());
-            CTraySet& pYSet = pYMgr->GetTraySet(nTray);
+            size_t nTray = pYMgr.CreateTraySet(pPSet.GetName());
+            CTraySet& pYSet = pYMgr.GetTraySet(nTray);
 
             // Locate only those pieces that aren't currently being used.
-            std::vector<PieceID> arrUnusedPieces = pPTbl->LoadUnusedPieceList(nPSet);
-            pPTbl->SetPieceListAsFrontUp(arrUnusedPieces);
+            std::vector<PieceID> arrUnusedPieces = pPTbl.LoadUnusedPieceList(nPSet);
+            pPTbl.SetPieceListAsFrontUp(arrUnusedPieces);
             pYSet.AddPieceList(arrUnusedPieces);
         }
     }

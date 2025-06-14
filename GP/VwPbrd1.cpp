@@ -71,7 +71,7 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
         {
             CPieceObj* pPObj = (CPieceObj*)pDObj;
             if (pPObj->IsOwned() &&
-                !pDoc->GetPieceTable()->IsPieceInvisible(pPObj->m_pid))
+                !pDoc->GetPieceTable().IsPieceInvisible(pPObj->m_pid))
             {
                 CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
                 CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
@@ -106,7 +106,7 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             {
                 CPieceObj* pPObj = (CPieceObj*)pDObj;
                 if (pPObj->IsOwned() &&
-                    !pDoc->GetPieceTable()->IsPieceInvisible(pPObj->m_pid))
+                    !pDoc->GetPieceTable().IsPieceInvisible(pPObj->m_pid))
                 {
                     CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
                     CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
