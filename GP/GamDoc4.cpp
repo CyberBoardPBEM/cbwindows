@@ -1,6 +1,6 @@
 //  GamDoc4.cpp - various game playback support routines
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -136,7 +136,7 @@ void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
                     pRcd.GetGameState().RestoreState(*this);
                     // Make sure we account for possible deletions
                     // of pieces in move file (for crash resistance)
-                    GetPieceTable()->PurgeUndefinedPieceIDs();
+                    GetPieceTable().PurgeUndefinedPieceIDs();
 
                     bUpdatedGameState = TRUE;
                     // File's positions match current positions.
@@ -266,7 +266,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         // Make sure we account for possible deletions
         // of pieces in move file (for crash resistance)
-        GetPieceTable()->PurgeUndefinedPieceIDs();
+        GetPieceTable().PurgeUndefinedPieceIDs();
 
         m_nFirstMove = size_t(1);       // Restart location (state rec)
         m_nCurMove = size_t(2);         // Set to start of actual moves
@@ -357,7 +357,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
 
         // Make sure we account for possible deletions
         // of pieces in move file (for crash resistance)
-        GetPieceTable()->PurgeUndefinedPieceIDs();
+        GetPieceTable().PurgeUndefinedPieceIDs();
 
         pHist.m_dwFilePos = 0;             // Just to be clean. Never used again
         pHist.m_pMList = std::move(pMoves);
@@ -491,7 +491,7 @@ void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos)
         OnViewTrayA();
 
     // Make sure item nPos is visible.
-    size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
+    size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
     m_palTrayA.ShowTrayIndex(nGroup, nPos);
 }
@@ -544,7 +544,7 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
         OnViewTrayA();
 
     // Select the piece in the appropriate trayset.
-    size_t nGroup = GetTrayManager()->FindTrayByRef(pYSet);
+    size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
     m_palTrayA.SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
 }

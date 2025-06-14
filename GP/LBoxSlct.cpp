@@ -1,6 +1,6 @@
 // LBoxSlct.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -326,7 +326,7 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_
             if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
                 const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
-                CPieceTable& pieceTbl = CheckedDeref(m_pDoc->GetPieceTable());
+                CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
                 uint8_t side = pieceTbl.GetSide(pieceObj.m_pid, i);
                 return (m_pDoc->*func)(pieceObj, side);
             }
@@ -356,7 +356,7 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
-        CPieceTable& pieceTbl = CheckedDeref(m_pDoc->GetPieceTable());
+        CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
         size_t sides = pieceTbl.GetSides(pObj.m_pid);
         for (size_t i = size_t(0); i < sides; ++i)
         {
@@ -424,16 +424,15 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
 
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceTable* pPTbl = m_pDoc->GetPieceTable();
-        ASSERT(pPTbl != NULL);
+        CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
         PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
 
-        if (!m_pDoc->IsScenario() && pPTbl->IsPieceOwned(pid) &&
-            !pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
+        if (!m_pDoc->IsScenario() && pPTbl.IsPieceOwned(pid) &&
+            !pPTbl.IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()))
         {
             std::vector<TileID> retval;
-            retval.push_back(pPTbl->GetFrontTileID(pid));
+            retval.push_back(pPTbl.GetFrontTileID(pid));
             return retval;
         }
 
@@ -441,16 +440,16 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
 
         std::vector<TileID> retval;
         if ((pPce.m_flags & PieceDef::flagShowOnlyVisibleSide) &&
-            (!pPTbl->IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()) ||
+            (!pPTbl.IsPieceOwnedBy(pid, m_pDoc->GetCurrentPlayerMask()) ||
              pPce.m_flags & PieceDef::flagShowOnlyOwnersToo))
         {
-            retval.push_back(pPTbl->GetActiveTileID(pid));
+            retval.push_back(pPTbl.GetActiveTileID(pid));
         }
         else
         {
-            retval.reserve(pPTbl->GetSides(pid));
-            retval.push_back(pPTbl->GetActiveTileID(pid));
-            std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(pid);
+            retval.reserve(pPTbl.GetSides(pid));
+            retval.push_back(pPTbl.GetActiveTileID(pid));
+            std::vector<TileID> inactives = pPTbl.GetInactiveTileIDs(pid);
             retval.insert(retval.end(), inactives.begin(), inactives.end());
         }
         return retval;

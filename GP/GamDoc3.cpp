@@ -1,6 +1,6 @@
 // GamDoc3.cpp -- serialization support for the document.
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -515,17 +515,17 @@ void CGamDoc::SerializeGame(CArchive& ar)
         // in trays. It will only fix the gamebox if the actual piece is
         // on a board somewhere.
 
-        if (GetPBoardManager()->FindPieceOnBoard(PieceID(0)) != NULL)
+        if (GetPBoardManager().FindPieceOnBoard(PieceID(0)) != NULL)
         {
-            CTrayManager *pTMgr = GetTrayManager();
-            while (pTMgr->FindPieceIDInTraySet(PieceID(0)) != NULL)
+            CTrayManager& pTMgr = GetTrayManager();
+            while (pTMgr.FindPieceIDInTraySet(PieceID(0)) != NULL)
             {
                 TRACE0("Removed bogus PieceID 0 from tray\n");
-                pTMgr->RemovePieceIDFromTraySets(PieceID(0));
+                pTMgr.RemovePieceIDFromTraySets(PieceID(0));
             }
         }
-        GetTrayManager()->PropagateOwnerMaskToAllPieces(this);
-        GetPBoardManager()->PropagateOwnerMaskToAllPieces();
+        GetTrayManager().PropagateOwnerMaskToAllPieces(this);
+        GetPBoardManager().PropagateOwnerMaskToAllPieces();
         GetMainFrame()->GetMessageWindow()->SetText(this);
     }
 }
@@ -572,13 +572,13 @@ void CGamDoc::SerializeScenario(CArchive& ar)
     // This code will repair a game containing extraneous ID 0 Pieces
     // in trays. It will only fix the gamebox if the actual piece is
     // on a board somewhere.
-    if (GetPBoardManager()->FindPieceOnBoard(PieceID(0)) != NULL)
+    if (GetPBoardManager().FindPieceOnBoard(PieceID(0)) != NULL)
     {
-        CTrayManager *pTMgr = GetTrayManager();
-        while (pTMgr->FindPieceIDInTraySet(PieceID(0)) != NULL)
+        CTrayManager& pTMgr = GetTrayManager();
+        while (pTMgr.FindPieceIDInTraySet(PieceID(0)) != NULL)
         {
             TRACE0("Removed bogus PieceID 0 from tray\n");
-            pTMgr->RemovePieceIDFromTraySets(PieceID(0));
+            pTMgr.RemovePieceIDFromTraySets(PieceID(0));
         }
     }
 }

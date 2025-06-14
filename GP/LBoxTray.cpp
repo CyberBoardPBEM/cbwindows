@@ -1,6 +1,6 @@
 // LBoxTray.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -95,12 +95,11 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 
     ASSERT(m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide);
 
-    const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
-    ASSERT(pPTbl != NULL);
+    const CPieceTable& pPTbl = m_pDoc.GetPieceTable();
 
     PieceID nPid = MapIndexToItem(nIndex);
 
-    TileID tidLeft = pPTbl->GetActiveTileID(nPid);
+    TileID tidLeft = pPTbl.GetActiveTileID(nPid);
     ASSERT(tidLeft != nullTid);            // Should exist
 
     std::vector<TileID> tids;
@@ -108,7 +107,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
 
     if (IsShowAllSides(nPid))
     {
-        std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(nPid);
+        std::vector<TileID> inactives = pPTbl.GetInactiveTileIDs(nPid);
         tids.insert(tids.end(), inactives.begin(), inactives.end());
     }
 
@@ -120,7 +119,7 @@ GameElement CTrayListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) cons
         if (!rects[i].IsRectEmpty() && rects[i].PtInRect(point))
         {
             rct = ItemToClient(rects[i]);
-            const CPieceTable& pieceTbl = CheckedDeref(m_pDoc.GetPieceTable());
+            const CPieceTable& pieceTbl = m_pDoc.GetPieceTable();
             uint8_t side = pieceTbl.GetSide(nPid, i);
             return GameElement(nPid, side);
         }
@@ -146,12 +145,12 @@ BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem) const
     PieceID pid = MapIndexToItem(nItem);
     if (m_eTrayViz != trayVizAllSides)
     {
-        uint8_t side = m_pDoc.GetPieceTable()->GetSide(pid);
+        uint8_t side = m_pDoc.GetPieceTable().GetSide(pid);
         return m_pDoc.HasGameElementString(MakePieceElement(pid, side));
     }
     else
     {
-        size_t sides = m_pDoc.GetPieceTable()->GetSides(pid);
+        size_t sides = m_pDoc.GetPieceTable().GetSides(pid);
         for (unsigned i = unsigned(0) ; i < sides ; ++i)
         {
             if (m_pDoc.HasGameElementString(MakePieceElement(pid, i)))
@@ -267,29 +266,28 @@ void CTrayListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState
 
 std::vector<TileID> CTrayListBox::GetPieceTileIDs(size_t nIndex) const
 {
-    const CPieceTable* pPTbl = m_pDoc.GetPieceTable();
-    ASSERT(pPTbl != NULL);
+    const CPieceTable& pPTbl = m_pDoc.GetPieceTable();
 
     PieceID pid = MapIndexToItem(nIndex);
 
     std::vector<TileID> retval;
 
     if (!m_pDoc.IsScenario() &&
-        m_pDoc.HasPlayers() && pPTbl->IsPieceOwned(pid) &&
-        !pPTbl->IsPieceOwnedBy(pid, m_pDoc.GetCurrentPlayerMask()))
+        m_pDoc.HasPlayers() && pPTbl.IsPieceOwned(pid) &&
+        !pPTbl.IsPieceOwnedBy(pid, m_pDoc.GetCurrentPlayerMask()))
     {
         // Piece is owned but not by the current player. Only show the
         // top image.
-        retval.push_back(pPTbl->GetFrontTileID(pid));
+        retval.push_back(pPTbl.GetFrontTileID(pid));
     }
     else
     {
-        retval.push_back(pPTbl->GetActiveTileID(pid));
+        retval.push_back(pPTbl.GetActiveTileID(pid));
         ASSERT(retval.front() != nullTid);
 
         if (IsShowAllSides(pid))
         {
-            std::vector<TileID> inactives = pPTbl->GetInactiveTileIDs(pid);
+            std::vector<TileID> inactives = pPTbl.GetInactiveTileIDs(pid);
             retval.insert(retval.end(), inactives.begin(), inactives.end());
         }
     }
@@ -327,7 +325,7 @@ BOOL CTrayListBox::OnDragSetup(DragInfo& pDI) const
 
 bool CTrayListBox::IsShowAllSides(PieceID pid) const
 {
-    const CPieceTable& pPTbl = CheckedDeref(m_pDoc.GetPieceTable());
+    const CPieceTable& pPTbl = m_pDoc.GetPieceTable();
     const PieceDef& pPce = m_pDoc.GetPieceManager().GetPiece(pid);
 
     BOOL bIsOwnedByCurrentPlayer = m_pDoc.HasPlayers() &&

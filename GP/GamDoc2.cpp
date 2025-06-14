@@ -324,7 +324,7 @@ void CGamDoc::RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t n
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
-    size_t nYGrp = GetTrayManager()->FindTrayByRef(pYGrp);
+    size_t nYGrp = GetTrayManager().FindTrayByRef(pYGrp);
     ASSERT(nYGrp != Invalid_v<size_t>);
     OwnerPtr<CTrayPieceMove> pRcd = MakeOwner<CTrayPieceMove>(nYGrp, pid, nPos);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));

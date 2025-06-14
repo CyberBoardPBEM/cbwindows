@@ -1,6 +1,6 @@
 // GamDoc.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -518,7 +518,7 @@ BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGamProjView& CGamDoc::FindProjectView()
+CGamProjView& CGamDoc::FindProjectView() const
 {
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
@@ -533,7 +533,7 @@ CGamProjView& CGamDoc::FindProjectView()
     AfxThrowNotSupportedException();
 }
 
-CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard)
+CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
 {
     if (!IsScenario() &&
         pPBoard.IsPrivate() &&
@@ -558,7 +558,7 @@ CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames)
+void CGamDoc::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames) const
 {
     tblFrames.clear();
 
@@ -812,7 +812,7 @@ BOOL CGamDoc::OnNewGame()
 
 /////////////////////////////////////////////////////////////////////////////
 
-DWORD CGamDoc::CalculateHashForCurrentPlayerMask()
+DWORD CGamDoc::CalculateHashForCurrentPlayerMask() const
 {
     ASSERT(!m_strPlayerFileDescr.empty());
     std::array<std::byte, 18> bfr1 =
@@ -826,7 +826,7 @@ DWORD CGamDoc::CalculateHashForCurrentPlayerMask()
     return *reinterpret_cast<DWORD*>(bfr2.data());
 }
 
-BOOL CGamDoc::VerifyCurrentPlayerMask()
+BOOL CGamDoc::VerifyCurrentPlayerMask() const
 {
     DWORD dwCalcedKey = CalculateHashForCurrentPlayerMask();
     return m_dwPlayerHash == dwCalcedKey;
@@ -978,16 +978,16 @@ const CPieceManager& CGamDoc::GetPieceManager() const
 
 ////////////////////////////////////////////////////////////////////////
 
-CTileFacingMap* CGamDoc::GetFacingMap()
+CTileFacingMap& CGamDoc::GetFacingMap()
 {
     ASSERT(m_pGbx != NULL);
     ASSERT(m_pGbx->GetTileManager());
     if (m_pTileFacingMap != NULL)
-        return m_pTileFacingMap;
+        return *m_pTileFacingMap;
     else
     {
         m_pTileFacingMap = new CTileFacingMap(&GetTileManager());
-        return m_pTileFacingMap;
+        return *m_pTileFacingMap;
     }
 }
 
@@ -1005,7 +1005,7 @@ void CGamDoc::CloseTrayPalettes()
 
 void CGamDoc::DoBoardProperties(size_t nBrd)
 {
-    CPlayBoard& pPBoard = GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = GetPBoardManager().GetPBoard(nBrd);
     DoBoardProperties(pPBoard);
 }
 
@@ -1570,7 +1570,7 @@ void CGamDoc::OnEditCreateTray()
 {
     ASSERT(IsScenario());
     CTrayNewDialog dlg;
-    dlg.m_pYMgr =GetTrayManager();
+    dlg.m_pYMgr = &GetTrayManager();
     if (dlg.DoModal() == IDOK)
     {
         dlg.m_pYMgr->CreateTraySet(dlg.m_strName);
@@ -1615,21 +1615,20 @@ void CGamDoc::OnEditSelectBoards()
 {
     ASSERT(IsScenario());
 
-    CPBoardManager* pPBMgr = GetPBoardManager();
-    ASSERT(pPBMgr);
+    CPBoardManager& pPBMgr = GetPBoardManager();
 
     CSelectBoardsDialog dlg;
 
-    dlg.m_pBMgr = pPBMgr->GetBoardManager();
-    pPBMgr->GetPBoardList(dlg.m_tblBrds);
+    dlg.m_pBMgr = pPBMgr.GetBoardManager();
+    pPBMgr.GetPBoardList(dlg.m_tblBrds);
 
     if (dlg.DoModal() == IDOK)
     {
         // First close all the views of boards that are going
         // to be removed from the play list.
         std::vector<CB::not_null<CPlayBoard*>> tblNotInList;
-        pPBMgr->FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
-        for (size_t i = 0; i < tblNotInList.size(); i++)
+        pPBMgr.FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
+        for (size_t i = size_t(0); i < tblNotInList.size(); i++)
         {
             CView* pView = FindPBoardView(*tblNotInList.at(i));
             if (pView != NULL)
@@ -1641,7 +1640,7 @@ void CGamDoc::OnEditSelectBoards()
         }
 
         // Then change the play list.
-        pPBMgr->SetPBoardList(dlg.m_tblBrds);
+        pPBMgr.SetPBoardList(dlg.m_tblBrds);
         UpdateAllViews(NULL, HINT_BOARDCHANGE);
         SetModifiedFlag();
     }
@@ -1675,8 +1674,7 @@ void CGamDoc::OnUpdateEditImportPieceGroups(CCmdUI* pCmdUI)
 
 void CGamDoc::OnEditSelectGamePieces()
 {
-    ASSERT(IsScenario() && GetTrayManager()->GetNumTraySets() > 0);
-    CTrayManager* pYMgr = GetTrayManager();
+    wxASSERT(IsScenario() && GetTrayManager().GetNumTraySets() > 0);
 
     CSetPiecesDialog dlg(*this);
     dlg.m_nYSel = 0;                    // Default is first tray
@@ -1694,7 +1692,7 @@ void CGamDoc::OnEditSelectGamePieces()
 
 void CGamDoc::OnUpdateEditSelectGamePieces(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(IsScenario() && GetTrayManager()->GetNumTraySets() > 0);
+    pCmdUI->Enable(IsScenario() && GetTrayManager().GetNumTraySets() > 0);
 }
 
 void CGamDoc::OnFileLoadMoveFile()
@@ -1726,7 +1724,7 @@ void CGamDoc::OnUpdateFileLoadMoveFile(CCmdUI* pCmdUI)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::IsRecordingCompoundMove()
+BOOL CGamDoc::IsRecordingCompoundMove() const
 {
     return IsRecording() && m_pRcdMoves != NULL &&
         m_pRcdMoves->IsRecordingCompoundMove();
@@ -1951,7 +1949,7 @@ void CGamDoc::OnEditCreateGeomorphic()
         return;
     OwnerPtr<CGeomorphicBoard> pGeoBoard = dlg.DetachGeomorphicBoard();
 
-    GetPBoardManager()->AddBoard(std::move(pGeoBoard));     // Add to list of active boards
+    GetPBoardManager().AddBoard(std::move(pGeoBoard));     // Add to list of active boards
 
     UpdateAllViews(NULL, HINT_BOARDCHANGE);
     SetModifiedFlag();

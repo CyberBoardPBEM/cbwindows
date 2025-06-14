@@ -82,7 +82,7 @@ protected:
     virtual BOOL OnIsToolTipsEnabled() const override;
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
 private:
-    typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide);
+    typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide) const;
     GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const;
 public:
     virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;

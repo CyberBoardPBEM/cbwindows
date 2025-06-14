@@ -1,6 +1,6 @@
 // VwPbrd.cpp : implementation of the CPlayBoardView class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -214,7 +214,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_BOARDCHANGE)
     {
         // Make sure we still exist!
-        if (GetDocument()->GetPBoardManager()->FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
+        if (GetDocument()->GetPBoardManager().FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
         {
             CFrameWnd* pFrm = GetParentFrame();
             ASSERT(pFrm != NULL);
@@ -590,7 +590,7 @@ LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
         ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
-        CSize sz = GetDocument()->GetPieceTable()->GetStackedSize(pTbl,
+        CSize sz = GetDocument()->GetPieceTable().GetStackedSize(pTbl,
             m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger);
         ASSERT(sz.cx != 0 && sz.cy != 0);
         CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
@@ -1736,7 +1736,7 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
     std::vector<PieceID> tbl;
     CGamDoc* pDoc = GetDocument();
     m_selList.LoadTableWithPieceIDs(tbl);
-    TileID tid = pDoc->GetPieceTable()->GetActiveTileID(tbl.front());
+    TileID tid = pDoc->GetPieceTable().GetActiveTileID(tbl.front());
     CTile tile = pDoc->GetTileManager().GetTile(tid);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     CRotateDialog dlg;
@@ -1857,7 +1857,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
     CRotatePieceDialog dlg(this);
     CGamDoc* pDoc = GetDocument();
-    CPieceTable* pPTbl = pDoc->GetPieceTable();
+    CPieceTable& pPTbl = pDoc->GetPieceTable();
 
     // Get a list of the selected pieces and save their current
     // rotations.
@@ -1877,7 +1877,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj& pObj = static_cast<CPieceObj&>(pDObj);
-            m_tblCurAngles.push_back(pPTbl->GetPieceFacing(pObj.m_pid));
+            m_tblCurAngles.push_back(pPTbl.GetPieceFacing(pObj.m_pid));
         }
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {

@@ -98,7 +98,7 @@ void CGamProjView::DoBoardView()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(nBrd);
     if (pPBoard.IsPrivate() &&
         pPBoard.IsOwnedButNotByCurrentPlayer(*pDoc))
     {

@@ -1,6 +1,6 @@
 // MoveMgr.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -91,7 +91,7 @@ void CMoveRecord::SerializeHiddenByPrivate(CGamDoc& /*doc*/,
 
 bool CMoveRecord::IsPrivateBoard(CGamDoc& pDoc, BoardID bid)
 {
-    CPlayBoard& pbrd = CheckedDeref(pDoc.GetPBoardManager()->
+    CPlayBoard& pbrd = CheckedDeref(pDoc.GetPBoardManager().
                                             GetPBoardBySerial(bid));
     return IsPrivateBoard(pDoc, pbrd);
 }
@@ -119,12 +119,12 @@ CBoardPieceMove::CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt,
 BOOL CBoardPieceMove::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable().IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CBoardPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable().IsPieceUsed(m_pid);
 #endif
 }
 
@@ -139,7 +139,7 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
         pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
         pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().Size());
@@ -154,7 +154,7 @@ void CBoardPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CTraySet* pTrayFrom;
     CPieceObj* pObj;
 
-    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
     pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
@@ -281,12 +281,12 @@ CTrayPieceMove::CTrayPieceMove(size_t nTrayNum, PieceID pid, size_t nPos)
 BOOL CTrayPieceMove::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable().IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CTrayPieceMove::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable().IsPieceUsed(m_pid);
 #endif
 }
 
@@ -309,13 +309,13 @@ void CTrayPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 
 void CTrayPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CTraySet& pYGrp = pDoc.GetTrayManager()->GetTraySet(m_nTrayNum);
+    CTraySet& pYGrp = pDoc.GetTrayManager().GetTraySet(m_nTrayNum);
     pDoc.PlacePieceInTray(m_pid, pYGrp, m_nPos);
 }
 
 void CTrayPieceMove::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CTraySet& pYGrp = pDoc.GetTrayManager()->GetTraySet(m_nTrayNum);
+    CTraySet& pYGrp = pDoc.GetTrayManager().GetTraySet(m_nTrayNum);
     pDoc.SelectTrayItem(pYGrp, m_pid);
 }
 
@@ -370,12 +370,12 @@ void CTrayPieceMove::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 BOOL CPieceSetSide::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable().IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetSide::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable().IsPieceUsed(m_pid);
 #endif
 }
 
@@ -396,7 +396,7 @@ BOOL CPieceSetSide::IsMoveHidden(const CGamDoc& pDoc,
     const CTraySet* pTray;
     const CPieceObj* pObj;
 
-    if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(m_pid, pDoc))
+    if (pDoc.GetPieceTable().IsOwnedButNotByCurrentPlayer(m_pid, pDoc))
         return TRUE;
 
     if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
@@ -555,7 +555,7 @@ void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
             }
         }(m_flip),
         [](const CGamDoc& pDoc, PieceID pid, size_t side) {
-            if (pDoc.GetPieceTable()->GetSides(pid) <= size_t(2))
+            if (pDoc.GetPieceTable().GetSides(pid) <= size_t(2))
             {
                 return side == size_t(0) ? "front"_cbstring : "back"_cbstring;
             }
@@ -574,12 +574,12 @@ void CPieceSetSide::DumpToTextFile(const CGamDoc& pDoc, CFile& file) const
 BOOL CPieceSetFacing::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable().IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetFacing::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable().IsPieceUsed(m_pid);
 #endif
 }
 
@@ -679,12 +679,12 @@ void CPieceSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 BOOL CPieceSetOwnership::ValidatePieces(const CGamDoc& pDoc) const
 {
 #ifdef _DEBUG
-    BOOL bUsed = pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    BOOL bUsed = pDoc.GetPieceTable().IsPieceUsed(m_pid);
     if (!bUsed)
         TRACE1("CPieceSetOwnership::ValidatePieces - Piece %u not in piece table.\n", value_preserving_cast<UINT>(static_cast<PieceID::UNDERLYING_TYPE>(m_pid)));
     return bUsed;
 #else
-    return pDoc.GetPieceTable()->IsPieceUsed(m_pid);
+    return pDoc.GetPieceTable().IsPieceUsed(m_pid);
 #endif
 }
 
@@ -901,7 +901,7 @@ void CBoardMarkerMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
         CRect rct = pObj->GetRect();
         CPoint ptCtr = GetMidRect(rct);
         pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
-        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+        CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
         pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().Size());
@@ -912,7 +912,7 @@ void CBoardMarkerMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 
 void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager()->
+    CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
     pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
@@ -1107,7 +1107,7 @@ BOOL CObjectSetText::IsMoveHidden(const CGamDoc& pDoc,
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
+        if (pDoc.GetPieceTable().IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
 
         pDoc.FindPieceCurrentLocation(pid, pTray, pPBoard, pPObj);
@@ -1247,7 +1247,7 @@ BOOL CObjectLockdown::IsMoveHidden(const CGamDoc& pDoc,
     if (IsGameElementAPiece(m_elem))
     {
         PieceID pid = GetPieceIDFromElement(m_elem);
-        if (pDoc.GetPieceTable()->IsOwnedButNotByCurrentPlayer(pid, pDoc))
+        if (pDoc.GetPieceTable().IsOwnedButNotByCurrentPlayer(pid, pDoc))
             return TRUE;
         pPBoard = pDoc.FindPieceOnBoard(GetPieceIDFromElement(m_elem), pPObj);
         pObj = pPObj;
@@ -1437,7 +1437,7 @@ void CMovePlotList::SavePlotList(const CDrawList& pDwg)
 
 void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager()->GetPBoardBySerial(m_nBrdNum));
+    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager().GetPBoardBySerial(m_nBrdNum));
     pPBrd.SetPlotMoveMode(TRUE);
     for (int i = 0; i < m_tblPlot.GetSize(); i += 2)
     {
@@ -1449,7 +1449,7 @@ void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 
 void CMovePlotList::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
-    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager()->GetPBoardBySerial(m_nBrdNum));
+    CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager().GetPBoardBySerial(m_nBrdNum));
     pPBrd.SetPlotMoveMode(FALSE);
 }
 

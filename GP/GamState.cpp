@@ -1,6 +1,6 @@
 // GamState.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -54,13 +54,13 @@ BOOL CGameState::CompareState(const CGamDoc& doc) const
     // Compare the string tables
 
     // Compare the piece tables
-    if (!doc.GetPieceTable()->Compare(*m_pPTbl))
+    if (!doc.GetPieceTable().Compare(*m_pPTbl))
         return FALSE;
     // Compare the play boards
-    if (!doc.GetPBoardManager()->Compare(*m_pPBMgr))
+    if (!doc.GetPBoardManager().Compare(*m_pPBMgr))
         return FALSE;
     // Compare the trays
-    if (!doc.GetTrayManager()->Compare(m_pYMgr))
+    if (!doc.GetTrayManager().Compare(m_pYMgr))
         return FALSE;
     return TRUE;
 }
@@ -71,11 +71,11 @@ BOOL CGameState::SaveState(CGamDoc& doc)
     TRY
     {
         m_mapString.Clone(doc.GetGameStringMap());
-        OwnerPtr<CPBoardManager> temp1 = doc.GetPBoardManager()->Clone(doc);
+        OwnerPtr<CPBoardManager> temp1 = doc.GetPBoardManager().Clone(doc);
         OwnerOrNullPtr<CPBoardManager> temp2 = std::move(temp1);
         m_pPBMgr = CB::get_underlying(std::move(temp2)).release();
-        m_pYMgr = doc.GetTrayManager()->Clone(&doc);
-        m_pPTbl = doc.GetPieceTable()->Clone();
+        m_pYMgr = doc.GetTrayManager().Clone(&doc);
+        m_pPTbl = doc.GetPieceTable().Clone();
     }
     CATCH_ALL(e)
     {
@@ -94,9 +94,9 @@ BOOL CGameState::RestoreState(CGamDoc& doc) const
     TRY
     {
         doc.GetGameStringMap().Clone(m_mapString);
-        doc.GetPBoardManager()->Restore(doc, *m_pPBMgr);
-        doc.GetTrayManager()->Restore(&doc, m_pYMgr);
-        doc.GetPieceTable()->Restore(*m_pPTbl);
+        doc.GetPBoardManager().Restore(doc, *m_pPBMgr);
+        doc.GetTrayManager().Restore(&doc, m_pYMgr);
+        doc.GetPieceTable().Restore(*m_pPTbl);
     }
     CATCH_ALL(e)
     {

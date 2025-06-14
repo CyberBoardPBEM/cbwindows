@@ -323,7 +323,7 @@ void CCreateGeomorphicBoardDialog::OnOK()
 
     CB::string strName = CB::string::GetWindowText(m_editBoardName);
     m_pGeoBoard->SetName(strName);
-    m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager()->IssueGeoSerialNumber());
+    m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager().IssueGeoSerialNumber());
 
     m_pGeoBoard->SetBoardRowCount(m_nRowNumber + size_t(1));
     m_pGeoBoard->SetBoardColCount(m_tblColWidth.size());

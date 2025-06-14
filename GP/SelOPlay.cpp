@@ -1,6 +1,6 @@
 // SelOPlay.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -642,14 +642,14 @@ BOOL CSelList::HasPieces() const
 
 BOOL CSelList::HasNonOwnedPieces() const
 {
-    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(*pSel.m_pObj);
-            if (pPTbl->GetOwnerMask(pPObj.m_pid) == uint32_t(0))
+            if (pPTbl.GetOwnerMask(pPObj.m_pid) == uint32_t(0))
                 return TRUE;
         }
     }
@@ -658,14 +658,14 @@ BOOL CSelList::HasNonOwnedPieces() const
 
 BOOL CSelList::HasOwnedPieces() const
 {
-    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(*pSel.m_pObj);
-            if (pPTbl->GetOwnerMask(pPObj.m_pid) != uint32_t(0))
+            if (pPTbl.GetOwnerMask(pPObj.m_pid) != uint32_t(0))
                 return TRUE;
         }
     }
@@ -674,15 +674,15 @@ BOOL CSelList::HasOwnedPieces() const
 
 BOOL CSelList::HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const
 {
-    const CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(*pSel.m_pObj);
-            if (pPTbl->IsPieceOwned(pPObj.m_pid) &&
-               !pPTbl->IsPieceOwnedBy(pPObj.m_pid, dwOwnerMask))
+            if (pPTbl.IsPieceOwned(pPObj.m_pid) &&
+               !pPTbl.IsPieceOwnedBy(pPObj.m_pid, dwOwnerMask))
             {
                 return TRUE;
             }
@@ -709,7 +709,7 @@ BOOL CSelList::HasFlippablePieces() const
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            if (m_pView->GetDocument()->GetPieceTable()->GetSides(
+            if (m_pView->GetDocument()->GetPieceTable().GetSides(
                     static_cast<const CPieceObj&>(*pSel.m_pObj).m_pid) >= size_t(2))
                 return TRUE;
         }
@@ -783,7 +783,7 @@ void CSelList::LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrd
 void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned,
     BOOL bVisualOrder /* = TRUE */)
 {
-    CPieceTable* pPTbl = m_pView->GetDocument()->GetPieceTable();
+    CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
 
     pTbl.clear();
     pTbl.reserve(size());
@@ -793,8 +793,8 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel.m_pObj);
-            if (eWantOwned == LF_OWNED    && pPTbl->GetOwnerMask(pPObj.m_pid) != uint32_t(0) ||
-                eWantOwned == LF_NOTOWNED && pPTbl->GetOwnerMask(pPObj.m_pid) == uint32_t(0) ||
+            if (eWantOwned == LF_OWNED    && pPTbl.GetOwnerMask(pPObj.m_pid) != uint32_t(0) ||
+                eWantOwned == LF_NOTOWNED && pPTbl.GetOwnerMask(pPObj.m_pid) == uint32_t(0) ||
                 eWantOwned == LF_BOTH)
             {
                 pTbl.push_back(pPObj.m_pid);

@@ -1,6 +1,6 @@
 // VwPrjgs1.cpp : Scenario View Support Routines
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -95,7 +95,7 @@ void CGsnProjView::DoBoardView()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager()->GetPBoard(nBrd);
+    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(nBrd);
     CView* pView = pDoc->FindPBoardView(pPBoard);
     if (pView != NULL)
     {
@@ -120,7 +120,7 @@ void CGsnProjView::DoBoardRemove()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    pDoc->GetPBoardManager()->DeletePBoard(nBrd);
+    pDoc->GetPBoardManager().DeletePBoard(nBrd);
     pDoc->SetModifiedFlag(TRUE);
     pDoc->UpdateAllViews(NULL, HINT_BOARDCHANGE);
 }
@@ -154,10 +154,10 @@ void CGsnProjView::DoTrayProperty()
 
     CTrayPropDialog dlg;
     dlg.m_nYSel = nGrp;
-    dlg.m_pYMgr = pDoc->GetTrayManager();
+    dlg.m_pYMgr = &pDoc->GetTrayManager();
     dlg.m_pPlayerMgr = pDoc->GetPlayerManager();
 
-    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
+    CTraySet& pYGrp = pDoc->GetTrayManager().GetTraySet(nGrp);
     dlg.m_bRandomSel = pYGrp.IsRandomPiecePull();
     dlg.m_bRandomSide = pYGrp.IsRandomSidePull();
     dlg.SetTrayViz(pYGrp.GetTrayContentVisibility());
@@ -194,7 +194,7 @@ void CGsnProjView::DoTrayEdit()
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
-    CTrayManager* pYMgr = pDoc->GetTrayManager();
+    CTrayManager& pYMgr = pDoc->GetTrayManager();
 
     CSetPiecesDialog dlg(*pDoc);
     dlg.m_nYSel = value_preserving_cast<int>(nGrp);
@@ -214,24 +214,24 @@ void CGsnProjView::DoTrayEdit()
 void CGsnProjView::DoTrayDelete()
 {
     CGamDoc* pDoc = GetDocument();
-    CTrayManager *pYMgr = pDoc->GetTrayManager();
-    CPieceTable *pPTbl = pDoc->GetPieceTable();
+    CTrayManager& pYMgr = pDoc->GetTrayManager();
+    CPieceTable& pPTbl = pDoc->GetPieceTable();
 
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    if (!pYMgr->GetTraySet(nGrp).IsEmpty())
+    if (!pYMgr.GetTraySet(nGrp).IsEmpty())
     {
         if (AfxMessageBox(IDS_ERR_TRAYHASPIECES,
                 MB_OKCANCEL | MB_ICONEXCLAMATION) != IDOK)
             return;
         // Mark those pieces as unused.
-        pPTbl->SetPieceListAsUnused(
-            pYMgr->GetTraySet(nGrp).GetPieceIDTable());
+        pPTbl.SetPieceListAsUnused(
+            pYMgr.GetTraySet(nGrp).GetPieceIDTable());
     }
-    pYMgr->DeleteTraySet(nGrp);
+    pYMgr.DeleteTraySet(nGrp);
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
     pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
@@ -252,7 +252,7 @@ void CGsnProjView::DoUpdateTrayList()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CTraySet& pYGrp = pDoc->GetTrayManager()->GetTraySet(nGrp);
+    CTraySet& pYGrp = pDoc->GetTrayManager().GetTraySet(nGrp);
     const std::vector<PieceID>& pLstMap = pYGrp.GetPieceIDTable();
     m_listTrays->SetItemMap(&pLstMap);
 }

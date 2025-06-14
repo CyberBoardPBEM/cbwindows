@@ -1,6 +1,6 @@
 // PalTray.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -343,8 +343,8 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
     if (nSel == Invalid_v<size_t> || !wParam || prefix != L'P')
         return (LRESULT)0;
 
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CTraySet& pYSet = pYMgr.GetTraySet(nSel);
 
     if (pYSet.IsRandomPiecePull() ||
         pYSet.IsRandomSidePull())
@@ -368,7 +368,7 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
             }
         }
 
-        CPieceTable& pieceTable = CheckedDeref(m_pDoc->GetPieceTable());
+        CPieceTable& pieceTable = m_pDoc->GetPieceTable();
         for (size_t i = size_t(0); i < pPceArray.size(); i++)
         {
             pPceArray.at(i) = pYSet.GetPieceIDTable().at(value_preserving_cast<size_t>(pnIndices[i]));
@@ -402,8 +402,8 @@ LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
         ASSERT(!"bad tray");
         return 0;
     }
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CTraySet& pYSet = pYMgr.GetTraySet(nSel);
 
     std::vector<int> items;
     if (pYSet.IsRandomPiecePull() ||
@@ -422,7 +422,7 @@ LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
     }
 
     // check all sides of all items
-    CPieceTable& pieceTable = CheckedDeref(m_pDoc->GetPieceTable());
+    CPieceTable& pieceTable = m_pDoc->GetPieceTable();
     CTileManager& tileMgr = m_pDoc->GetTileManager();
     DWORD player = m_pDoc->GetCurrentPlayerMask();
     CSize retval(0, 0);
@@ -496,13 +496,12 @@ void CTrayPalette::Serialize(CArchive& ar)
 
 void CTrayPalette::LoadTrayNameList()
 {
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    ASSERT(pYMgr != NULL);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     m_comboYGrp.ResetContent();
-    for (size_t i = 0; i < pYMgr->GetNumTraySets(); i++)
+    for (size_t i = size_t(0); i < pYMgr.GetNumTraySets(); i++)
     {
-        CTraySet& pYSet = pYMgr->GetTraySet(i);
+        CTraySet& pYSet = pYMgr.GetTraySet(i);
         CB::string strTrayName = pYSet.GetName();
         if (pYSet.IsOwned())
         {
@@ -524,8 +523,8 @@ void CTrayPalette::UpdatePaletteContents(const CTraySet* pTray)
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t> && pTray != NULL)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        if (&pYMgr->GetTraySet(nSel) != pTray)
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        if (&pYMgr.GetTraySet(nSel) != pTray)
             return;             // Not visible in palette at present.
     }
     if (nSel == Invalid_v<size_t>)
@@ -582,8 +581,7 @@ void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
 
 void CTrayPalette::UpdateTrayList()
 {
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    ASSERT(pYMgr != NULL);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     m_toolTipCombo.DelTool(&m_comboYGrp);   // Always delete current tool
 
@@ -601,7 +599,7 @@ void CTrayPalette::UpdateTrayList()
     ti.lpszText = const_cast<CB::string::value_type*>(strTrayName.v_str());
     m_toolTipCombo.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
 
-    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+    CTraySet& pYSet = pYMgr.GetTraySet(nSel);
     const std::vector<PieceID>* pPieceTbl = &pYSet.GetPieceIDTable();
 
     CB::string str = "";
@@ -701,8 +699,8 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
     else if (pdi->m_phase == PhaseDrag::Drop)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYGrp = pYMgr->GetTraySet(nGrpSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYGrp = pYMgr.GetTraySet(nGrpSel);
 
         // Force selection of item under the mouse
         m_listTray.SetSelFromPoint(pdi->m_point);
@@ -894,8 +892,8 @@ void CTrayPalette::OnTrayListDoubleClick()
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         if (pYSet.IsOwned() &&
             !pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()))
             return;
@@ -923,7 +921,7 @@ void CTrayPalette::OnPieceTrayShuffle()
     m_pDoc->AssignNewMoveGroup();
 
     size_t nSel = GetSelectedTray();
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     if (m_pDoc->IsRecording())
     {
@@ -931,7 +929,7 @@ void CTrayPalette::OnPieceTrayShuffle()
         m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
-    m_pDoc->PlacePieceListInTray(tblPids, pYMgr->GetTraySet(nSel), 0);
+    m_pDoc->PlacePieceListInTray(tblPids, pYMgr.GetTraySet(nSel), 0);
 }
 
 void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
@@ -940,8 +938,8 @@ void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
             !pYSet.IsNonOwnerAccessAllowed());
     }
@@ -973,7 +971,7 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
     m_pDoc->AssignNewMoveGroup();
 
     size_t nSel = GetSelectedTray();
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     if (m_pDoc->IsRecording())
     {
@@ -981,7 +979,7 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
         m_pDoc->RecordEventMessage(strMsg, nSel, tblPids.front());
     }
 
-    m_pDoc->PlacePieceListInTray(tblPids, pYMgr->GetTraySet(nSel), value_preserving_cast<size_t>(nTopSel));
+    m_pDoc->PlacePieceListInTray(tblPids, pYMgr.GetTraySet(nSel), value_preserving_cast<size_t>(nTopSel));
 }
 
 void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
@@ -990,8 +988,8 @@ void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
             !pYSet.IsNonOwnerAccessAllowed());
     }
@@ -1011,8 +1009,8 @@ void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
     pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
@@ -1102,9 +1100,9 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
         }
         m_pDoc->InvertPlayingPieceInTray(pid, flip, side, false, false);
     }
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
-    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr->GetTraySet(nSel);
+    hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr.GetTraySet(nSel);
     m_pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
 
     /* flipping pieces shouldn't change tray content,
@@ -1143,8 +1141,8 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
     size_t nSel = GetSelectedTray();
     if (nSel != Invalid_v<size_t>)
     {
-        CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-        CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+        CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+        CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
 
@@ -1165,8 +1163,8 @@ void CTrayPalette::OnPieceTrayAbout()
     size_t nSel = GetSelectedTray();
     if (nSel == Invalid_v<size_t>)
         return;
-    CTrayManager* pYMgr = m_pDoc->GetTrayManager();
-    CTraySet& pYSet = pYMgr->GetTraySet(nSel);
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CTraySet& pYSet = pYMgr.GetTraySet(nSel);
     CB::string strMsg = CB::string::Format(IDS_MSG_TRAY_INFO, pYSet.GetName());
     CB::string strTmp;
 

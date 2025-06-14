@@ -1,6 +1,6 @@
 // GamDoc1.cpp - Command and Control for document wide operations
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -58,7 +58,7 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
     // If the destination is owned, force the piece to take on the
     // same ownership. Otherwise, leave it's ownership state alone.
     if (pPBrd->IsOwned())
-        GetPieceTable()->SetOwnerMask(pid, pPBrd->GetOwnerMask());
+        GetPieceTable().SetOwnerMask(pid, pPBrd->GetOwnerMask());
 
     if (!IsQuietPlayback())
     {
@@ -93,7 +93,7 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
 
     // Force the piece to take on the same ownership as the
     // tray has.
-    GetPieceTable()->SetOwnerMask(pid, pYGrp.IsOwned() ? pYGrp.GetOwnerMask() : 0);
+    GetPieceTable().SetOwnerMask(pid, pYGrp.IsOwned() ? pYGrp.GetOwnerMask() : 0);
 
     pYGrp.AddPieceID(pid, nPos);
 
@@ -164,7 +164,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     if (pPBrd->IsOwned() && pObj.GetType() == CDrawObj::drawPieceObj)
     {
         CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-        GetPieceTable()->SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
+        GetPieceTable().SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
     }
 
     if (!IsQuietPlayback())
@@ -329,7 +329,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
         if (pPBrd->IsOwned() && pObj.GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-            GetPieceTable()->SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
+            GetPieceTable().SetOwnerMask(pPObj.m_pid, pPBrd->GetOwnerMask());
         }
 
         if (!IsQuietPlayback())
@@ -481,7 +481,7 @@ void CGamDoc::InvertPlayingPieceOnBoard(CPieceObj& pObj, const CPlayBoard& pPBrd
     m_pPTbl->FlipPieceOver(pObj.m_pid, flip, side);
 
     // Record processing
-    RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable()->GetSide(pObj.m_pid), false);
+    RecordPieceSetSide(pObj.m_pid, flip, GetPieceTable().GetSide(pObj.m_pid), false);
 
     if (!IsQuietPlayback())
     {
@@ -514,7 +514,7 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size
     CTraySet* pYGrp = FindPieceInTray(pid);
 
     // Record processing
-    RecordPieceSetSide(pid, flip, GetPieceTable()->GetSide(pid), forceHide);
+    RecordPieceSetSide(pid, flip, GetPieceTable().GetSide(pid), forceHide);
 
     if (!IsQuietPlayback() && bOkToNotifyTray)
     {
@@ -694,7 +694,7 @@ void CGamDoc::SetObjectLockdown(CDrawObj& pDObj, BOOL bLockState)
 
 void CGamDoc::SetPieceOwnership(PieceID pid, DWORD dwOwnerMask)
 {
-    GetPieceTable()->SetOwnerMask(pid, dwOwnerMask);
+    GetPieceTable().SetOwnerMask(pid, dwOwnerMask);
 
     // Record processing
     RecordPieceSetOwnership(pid, dwOwnerMask);
@@ -963,7 +963,7 @@ void CGamDoc::RemoveObjectFromCurrentLocation(CDrawObj* pObj)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct)
+void CGamDoc::FindObjectTableUnionRect(const std::vector<CB::not_null<CDrawObj*>>& pLst, CRect& rct) const
 {
     rct.SetRectEmpty();
 

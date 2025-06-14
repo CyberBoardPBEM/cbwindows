@@ -1,6 +1,6 @@
 // GamDoc5.cpp : just plain miscellaneous stuff
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -74,14 +74,14 @@ DWORD  CGamDoc::GetCurrentPlayerMask() const
 
 void CGamDoc::ClearAllOwnership()
 {
-    GetPieceTable()->ClearAllOwnership();
-    GetTrayManager()->ClearAllOwnership();
-    GetPBoardManager()->ClearAllOwnership();
+    GetPieceTable().ClearAllOwnership();
+    GetTrayManager().ClearAllOwnership();
+    GetPBoardManager().ClearAllOwnership();
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::IsCurrentPlayerReferee()
+BOOL CGamDoc::IsCurrentPlayerReferee() const
 {
     return HasPlayers() && CPlayerManager::IsReferee(GetCurrentPlayerMask());
 }
@@ -92,10 +92,10 @@ BOOL CGamDoc::IsCurrentPlayerReferee()
 CB::string CGamDoc::GetPieceOwnerName(PieceID pid) const
 {
     CB::string strName;
-    if (GetPieceTable()->IsPieceOwned(pid))
+    if (GetPieceTable().IsPieceOwned(pid))
     {
         strName = GetPlayerManager()->GetPlayerUsingMask(
-            GetPieceTable()->GetOwnerMask(pid)).m_strName;
+            GetPieceTable().GetOwnerMask(pid)).m_strName;
     }
     return strName;
 }
@@ -138,7 +138,7 @@ void CGamDoc::SetGameElementString(GameElement gelem, const CB::string* pszStrin
 }
 
 GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
-    size_t nSide /*= Invalid_v<size_t>*/)
+    size_t nSide /*= Invalid_v<size_t>*/) const
 {
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
@@ -146,7 +146,7 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
         PieceID pid = pObj.m_pid;
         if (nSide == Invalid_v<size_t>)
         {
-            nSide = GetPieceTable()->GetSide(pid);
+            nSide = GetPieceTable().GetSide(pid);
         }
         return MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
     }
@@ -160,7 +160,7 @@ GameElement CGamDoc::GetGameElementCodeForObject(const CDrawObj& pDObj,
 }
 
 GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
-    size_t nSide /*= Invalid_v<size_t>*/)
+    size_t nSide /*= Invalid_v<size_t>*/) const
 {
     GameElement elem = Invalid_v<GameElement>;
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
@@ -169,7 +169,7 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
         PieceID pid = pObj.m_pid;
         if (nSide == Invalid_v<size_t>)
         {
-            nSide = GetPieceTable()->GetSide(pid);
+            nSide = GetPieceTable().GetSide(pid);
         }
 
         elem = MakePieceElement(pid, value_preserving_cast<unsigned>(nSide));
@@ -196,13 +196,13 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
 }
 
 void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip,
-    CB::string* pStrTitle /* = NULL */)
+    CB::string* pStrTitle /* = NULL */) const
 {
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
         PieceID pid = pObj.m_pid;
-        uint8_t nSide = GetPieceTable()->GetSide(pid);
+        uint8_t nSide = GetPieceTable().GetSide(pid);
         strTip = GetGameElementString(MakePieceElement(pid, nSide));
     }
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
@@ -220,10 +220,10 @@ void CGamDoc::DoEditPieceText(PieceID pid)
 {
     CEditElementTextDialog dlg;
 
-    uint8_t nSide = GetPieceTable()->GetSide(pid);
+    uint8_t nSide = GetPieceTable().GetSide(pid);
     GameElement elem = MakePieceElement(pid, nSide);
     dlg.m_strText = GetGameElementString(elem);
-    dlg.m_nSides = GetPieceTable()->GetSides(pid);
+    dlg.m_nSides = GetPieceTable().GetSides(pid);
 
     /* dlg.m_bSetAllSides = sides >= 2 &&
                             all side texts are currently same */
@@ -285,7 +285,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
 
 ////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::IsPlayingLastHistory()
+BOOL CGamDoc::IsPlayingLastHistory() const
 {
     return IsPlayingHistory() &&
         m_nCurHist == m_pHistTbl->GetNumHistRecords() - 1;
@@ -312,7 +312,7 @@ void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, c
 {
     if (IsQuietPlayback()) return;
 
-    CPlayBoard* pPBoard = GetPBoardManager()->GetPBoardBySerial(nBrdSerNum);
+    CPlayBoard* pPBoard = GetPBoardManager().GetPBoardBySerial(nBrdSerNum);
     ASSERT(pPBoard);
     CPlayBoardView* pView;
 
@@ -342,7 +342,7 @@ void CGamDoc::EventShowTrayNotification(size_t nTrayNum, PieceID pid, const CB::
 {
     if (IsQuietPlayback()) return;
 
-    CTraySet& pYGrp = GetTrayManager()->GetTraySet(nTrayNum);
+    CTraySet& pYGrp = GetTrayManager().GetTraySet(nTrayNum);
     SelectTrayItem(pYGrp, pid, &strMsg);
 }
 

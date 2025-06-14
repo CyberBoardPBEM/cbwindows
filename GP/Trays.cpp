@@ -144,7 +144,7 @@ void CTraySet::PropagateOwnerMaskToAllPieces(CGamDoc* pDoc)
 {
     for (size_t i = 0; i < m_pidTbl.size(); i++)
     {
-        pDoc->GetPieceTable()->SetOwnerMask(
+        pDoc->GetPieceTable().SetOwnerMask(
             m_pidTbl[i], GetOwnerMask());
     }
 }
