@@ -36,7 +36,7 @@ class CImportTraysDlg : public CDialog
 {
 // Construction
 public:
-    CImportTraysDlg(CWnd* pParent = NULL);   // standard constructor
+    CImportTraysDlg(CGamDoc& doc, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CImportTraysDlg)
@@ -44,7 +44,7 @@ public:
     CCheckListBox   m_listGroups;
     //}}AFX_DATA
 
-    CGamDoc* m_pDoc;
+    CGamDoc& m_pDoc;
 
 // Overrides
     // ClassWizard generated virtual function overrides
