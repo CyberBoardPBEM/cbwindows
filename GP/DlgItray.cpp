@@ -38,13 +38,13 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CImportTraysDlg dialog
 
-CImportTraysDlg::CImportTraysDlg(CWnd* pParent /*=NULL*/)
-    : CDialog(CImportTraysDlg::IDD, pParent)
+CImportTraysDlg::CImportTraysDlg(CGamDoc& doc, CWnd* pParent /*=NULL*/)
+    : CDialog(CImportTraysDlg::IDD, pParent),
+    m_pDoc(doc)
 {
     //{{AFX_DATA_INIT(CImportTraysDlg)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
-    m_pDoc = NULL;
 }
 
 void CImportTraysDlg::DoDataExchange(CDataExchange* pDX)
@@ -88,11 +88,10 @@ void CImportTraysDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 
 BOOL CImportTraysDlg::OnInitDialog()
 {
-    ASSERT(m_pDoc != NULL);         // MUST BE SET
     CDialog::OnInitDialog();
 
-    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
-    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    const CPieceManager& pPMgr = m_pDoc.GetPieceManager();
+    CTrayManager& pYMgr = m_pDoc.GetTrayManager();
 
     // Loop through all the piece groups in the gamebox. If a group
     // already doesn't exist as a tray in the scenario, add it to the
@@ -122,9 +121,9 @@ BOOL CImportTraysDlg::OnInitDialog()
 
 void CImportTraysDlg::OnOK()
 {
-    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
-    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
-    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+    const CPieceManager& pPMgr = m_pDoc.GetPieceManager();
+    CTrayManager& pYMgr = m_pDoc.GetTrayManager();
+    CPieceTable& pPTbl = m_pDoc.GetPieceTable();
 
     for (int i = 0; i < m_listGroups.GetCount(); i++)
     {

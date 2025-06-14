@@ -1655,8 +1655,7 @@ void CGamDoc::OnEditImportPieceGroups()
 {
     ASSERT(IsScenario());
 
-    CImportTraysDlg dlg;
-    dlg.m_pDoc = this;
+    CImportTraysDlg dlg(*this);
 
     if (dlg.DoModal() == IDOK)
     {
