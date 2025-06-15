@@ -1,6 +1,6 @@
 // DlgMarkCount.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,29 +36,18 @@ static char THIS_FILE[] = __FILE__;
 // CMarkerCountDialog dialog
 
 
-CMarkerCountDialog::CMarkerCountDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMarkerCountDialog::IDD, pParent)
+CMarkerCountDialog::CMarkerCountDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CMarkerCountDialog)
+        CB_XRC_CTRL_VAL(m_editMarkerCount, m_nMarkerCount, 2, 25)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMarkerCountDialog)
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editMarkerCount->GetSizeFromText("99");
+    m_editMarkerCount->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
     m_nMarkerCount = 0;
-    //}}AFX_DATA_INIT
 }
-
-
-void CMarkerCountDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMarkerCountDialog)
-    DDX_Text(pDX, IDC_MRKCNT_NUMBER, m_nMarkerCount);
-    DDV_MinMaxInt(pDX, m_nMarkerCount, 2, 25);
-    //}}AFX_DATA_MAP
-}
-
-
-BEGIN_MESSAGE_MAP(CMarkerCountDialog, CDialog)
-    //{{AFX_MSG_MAP(CMarkerCountDialog)
-        // NOTE: the ClassWizard will add message map macros here
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
