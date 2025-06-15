@@ -38,32 +38,33 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CImportTraysDlg dialog
 
-CImportTraysDlg::CImportTraysDlg(CGamDoc& doc, CWnd* pParent /*=NULL*/)
-    : CDialog(CImportTraysDlg::IDD, pParent),
-    m_pDoc(doc)
+CImportTraysDlg::CImportTraysDlg(CGamDoc& doc, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CImportTraysDlg)
+        CB_XRC_CTRL(m_listGroups)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pDoc(&doc)
 {
-    //{{AFX_DATA_INIT(CImportTraysDlg)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
+    // adjust m_listGroups size
+    for (int i = 0; i < 12; ++i)
+    {
+        m_listGroups->Append(wxEmptyString);
+    }
+    Layout();
+    Fit();
+    Centre();
+    m_listGroups->Clear();
 }
 
-void CImportTraysDlg::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CImportTraysDlg)
-    DDX_Control(pDX, IDC_D_IMPPCE_GROUPLIST, m_listGroups);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CImportTraysDlg, CDialog)
-    //{{AFX_MSG_MAP(CImportTraysDlg)
+wxBEGIN_EVENT_TABLE(CImportTraysDlg, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-    ON_BN_CLICKED(IDC_D_IMPPCE_SELECTALL, OnBnClickedSelectAll)
-    ON_BN_CLICKED(IDC_D_IMPPCE_CLEARALL, OnBnClickedClearAll)
-END_MESSAGE_MAP()
+#endif
+    EVT_BUTTON(XRCID("OnBnClickedSelectAll"), OnBnClickedSelectAll)
+    EVT_BUTTON(XRCID("OnBnClickedClearAll"), OnBnClickedClearAll)
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -82,16 +83,20 @@ void CImportTraysDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CImportTraysDlg message handlers
 
-BOOL CImportTraysDlg::OnInitDialog()
+bool CImportTraysDlg::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    const CPieceManager& pPMgr = m_pDoc.GetPieceManager();
-    CTrayManager& pYMgr = m_pDoc.GetTrayManager();
+    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
     // Loop through all the piece groups in the gamebox. If a group
     // already doesn't exist as a tray in the scenario, add it to the
@@ -109,27 +114,31 @@ BOOL CImportTraysDlg::OnInitDialog()
         if (nTray >= pYMgr.GetNumTraySets())
         {
             // Found one...
-            int nIdx = m_listGroups.AddString(strName);
-            m_listGroups.SetItemData(nIdx, nPSet);
-            m_listGroups.SetCheck(nIdx, 0);
+            int nIdx = m_listGroups->Append(strName);
+            m_listGroups->SetClientData(value_preserving_cast<unsigned int>(nIdx), reinterpret_cast<void*>(value_preserving_cast<uintptr_t>(nPSet)));
+            m_listGroups->Check(value_preserving_cast<unsigned int>(nIdx), false);
         }
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    return TRUE;
 }
 
-void CImportTraysDlg::OnOK()
+bool CImportTraysDlg::TransferDataFromWindow()
 {
-    const CPieceManager& pPMgr = m_pDoc.GetPieceManager();
-    CTrayManager& pYMgr = m_pDoc.GetTrayManager();
-    CPieceTable& pPTbl = m_pDoc.GetPieceTable();
-
-    for (int i = 0; i < m_listGroups.GetCount(); i++)
+    if (!wxDialog::TransferDataFromWindow())
     {
-        if (m_listGroups.GetCheck(i) > 0)
+        return false;
+    }
+
+    const CPieceManager& pPMgr = m_pDoc->GetPieceManager();
+    CTrayManager& pYMgr = m_pDoc->GetTrayManager();
+    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+
+    for (unsigned int i = 0u ; i < m_listGroups->GetCount() ; ++i)
+    {
+        if (m_listGroups->IsChecked(i))
         {
-            size_t nPSet = value_preserving_cast<size_t>(m_listGroups.GetItemData(i));
+            size_t nPSet = value_preserving_cast<size_t>(reinterpret_cast<uintptr_t>(m_listGroups->GetClientData(i)));
             const CPieceSet& pPSet = pPMgr.GetPieceSet(nPSet);
 
             // Create tray and add pieces...
@@ -142,17 +151,21 @@ void CImportTraysDlg::OnOK()
             pYSet.AddPieceList(arrUnusedPieces);
         }
     }
-    CDialog::OnOK();
+    return true;
 }
 
-void CImportTraysDlg::OnBnClickedSelectAll()
+void CImportTraysDlg::OnBnClickedSelectAll(wxCommandEvent& /*event*/)
 {
-    for (int i = 0; i < m_listGroups.GetCount(); i++)
-        m_listGroups.SetCheck(i, 1);
+    for (unsigned int i = 0u ; i < m_listGroups->GetCount() ; ++i)
+    {
+        m_listGroups->Check(i, true);
+    }
 }
 
-void CImportTraysDlg::OnBnClickedClearAll()
+void CImportTraysDlg::OnBnClickedClearAll(wxCommandEvent& /*event*/)
 {
-    for (int i = 0; i < m_listGroups.GetCount(); i++)
-        m_listGroups.SetCheck(i, 0);
+    for (unsigned int i = 0u ; i < m_listGroups->GetCount() ; ++i)
+    {
+        m_listGroups->Check(i, false);
+    }
 }

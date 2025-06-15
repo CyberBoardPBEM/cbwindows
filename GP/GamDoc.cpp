@@ -1657,7 +1657,7 @@ void CGamDoc::OnEditImportPieceGroups()
 
     CImportTraysDlg dlg(*this);
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
