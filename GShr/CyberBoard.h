@@ -66,6 +66,7 @@
 #include <wx/aui/aui.h>
 #include <wx/aui/tabmdi.h>
 #include <wx/checkbox.h>
+#include <wx/checklst.h>
 #include <wx/choice.h>
 #include <wx/clipbrd.h>
 #include <wx/clrpicker.h>
