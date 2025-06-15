@@ -670,9 +670,9 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
 
             CMarkerCountDialog dlg;
             dlg.m_nMarkerCount = 2;
-            if (dlg.DoModal() != IDOK)
+            if (dlg.ShowModal() != wxID_OK)
                 goto NASTY_GOTO_TARGET;
-            ASSERT(dlg.m_nMarkerCount > 0);
+            wxASSERT(dlg.m_nMarkerCount > 0);
 
             m_selList.PurgeList();
 
