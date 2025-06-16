@@ -1,6 +1,6 @@
 // dlgmdesc.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,34 +34,24 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CMovDescDialog dialog
 
-CMovDescDialog::CMovDescDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMovDescDialog::IDD, pParent)
+CMovDescDialog::CMovDescDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CMovDescDialog)
+        CB_XRC_CTRL_VAL(m_editDesc, m_strDesc, wxFILTER_NONE, 2048)
+        CB_XRC_CTRL_VAL(m_editTitle, m_strTitle, wxFILTER_NONE, 64)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CMovDescDialog)
     m_strDesc = "";
     m_strTitle = "";
-    //}}AFX_DATA_INIT
 }
 
-void CMovDescDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMovDescDialog)
-    DDX_Text(pDX, IDC_D_MDESC_DESCR, m_strDesc);
-    DDV_MaxChars(pDX, m_strDesc, 2048);
-    DDX_Text(pDX, IDC_D_MDESC_TITLE, m_strTitle);
-    DDV_MaxChars(pDX, m_strTitle, 64);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CMovDescDialog, CDialog)
-    //{{AFX_MSG_MAP(CMovDescDialog)
-        // NOTE: the ClassWizard will add message map macros here
+wxBEGIN_EVENT_TABLE(CMovDescDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -81,6 +71,7 @@ void CMovDescDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMovDescDialog message handlers

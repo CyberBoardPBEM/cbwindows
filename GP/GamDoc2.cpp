@@ -136,7 +136,7 @@ void CGamDoc::SaveRecordedMoves()
 
     // Get a description from user.
     CMovDescDialog dlg2;
-    if (dlg2.DoModal() != IDOK)
+    if (dlg2.ShowModal() != wxID_OK)
         return;
 
     // Set up history record.
