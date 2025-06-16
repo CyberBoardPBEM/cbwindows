@@ -32,14 +32,14 @@ public:
     CPasteBitmapDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
+    int     m_nPasteAction;
+
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxRadioButton> m_radioPasteAction;
     CB_XRC_END_CTRLS_DECL()
 
 public:
-    int     m_nPasteAction;
-
 // Implementation
 protected:
 

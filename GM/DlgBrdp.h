@@ -34,36 +34,6 @@ public:
     CBoardPropDialog(wxWindow* parent = &CB::GetMainWndWx()); // standard constructor
 
 // Dialog Data
-private:
-    CB_XRC_BEGIN_CTRLS_DECL()
-        RefPtr<wxStaticText> m_staticHalfPixelWidth;
-        RefPtr<wxStaticText> m_staticSmallPixelWidth;
-        RefPtr<wxStaticText> m_staticSmallPixelHeight;
-        RefPtr<wxStaticText> m_staticHalfPixelHeight;
-        RefPtr<wxStaticText> m_staticPixelWidth;
-        RefPtr<wxStaticText> m_staticPixelHeight;
-        RefPtr<wxTextCtrl> m_editBrdName;
-        RefPtr<wxColourPickerCtrl> m_cpCellFrame;
-        RefPtr<wxStaticText> m_staticWidth;
-        RefPtr<wxStaticText> m_staticHeight;
-        RefPtr<wxStaticText> m_staticRows;
-        RefPtr<wxStaticText> m_staticCols;
-        RefPtr<wxChoice> m_comboStyle;
-        RefPtr<wxCheckBox> m_chkCellLines;
-        RefPtr<wxCheckBox> m_chkGridSnap;
-        RefPtr<wxCheckBox> m_chkTrackCellNum;
-        RefPtr<wxTextCtrl> m_editRowTrkOffset;
-        RefPtr<wxTextCtrl> m_editColTrkOffset;
-        RefPtr<wxTextCtrl> m_editXGridSnapOff;
-        RefPtr<wxTextCtrl> m_editYGridSnapOff;
-        RefPtr<wxTextCtrl> m_editXGridSnap;
-        RefPtr<wxTextCtrl> m_editYGridSnap;
-        RefPtr<wxCheckBox> m_chkColTrkInvert;
-        RefPtr<wxCheckBox> m_chkRowTrkInvert;
-        RefPtr<wxCheckBox> m_chkCellBorderOnTop;
-        RefPtr<wxCheckBox> m_chkEnableXParentCells;
-    CB_XRC_END_CTRLS_DECL()
-public:
     bool    m_bCellLines;
     bool    m_bGridSnap;
     bool    m_bTrackCellNum;
@@ -97,6 +67,36 @@ public:
     uint32_t        m_nCellHt;
     uint32_t        m_nCellWd;
     CellStagger     m_bStagger;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxStaticText> m_staticHalfPixelWidth;
+        RefPtr<wxStaticText> m_staticSmallPixelWidth;
+        RefPtr<wxStaticText> m_staticSmallPixelHeight;
+        RefPtr<wxStaticText> m_staticHalfPixelHeight;
+        RefPtr<wxStaticText> m_staticPixelWidth;
+        RefPtr<wxStaticText> m_staticPixelHeight;
+        RefPtr<wxTextCtrl> m_editBrdName;
+        RefPtr<wxColourPickerCtrl> m_cpCellFrame;
+        RefPtr<wxStaticText> m_staticWidth;
+        RefPtr<wxStaticText> m_staticHeight;
+        RefPtr<wxStaticText> m_staticRows;
+        RefPtr<wxStaticText> m_staticCols;
+        RefPtr<wxChoice> m_comboStyle;
+        RefPtr<wxCheckBox> m_chkCellLines;
+        RefPtr<wxCheckBox> m_chkGridSnap;
+        RefPtr<wxCheckBox> m_chkTrackCellNum;
+        RefPtr<wxTextCtrl> m_editRowTrkOffset;
+        RefPtr<wxTextCtrl> m_editColTrkOffset;
+        RefPtr<wxTextCtrl> m_editXGridSnapOff;
+        RefPtr<wxTextCtrl> m_editYGridSnapOff;
+        RefPtr<wxTextCtrl> m_editXGridSnap;
+        RefPtr<wxTextCtrl> m_editYGridSnap;
+        RefPtr<wxCheckBox> m_chkColTrkInvert;
+        RefPtr<wxCheckBox> m_chkRowTrkInvert;
+        RefPtr<wxCheckBox> m_chkCellBorderOnTop;
+        RefPtr<wxCheckBox> m_chkEnableXParentCells;
+    CB_XRC_END_CTRLS_DECL()
+public:
 
 // Implementation
 protected:

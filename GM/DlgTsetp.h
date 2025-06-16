@@ -32,16 +32,14 @@ public:
     CTSetPropDialog(wxWindow* parent = &CB::GetMainWndWx());
 
 // Dialog Data
+    wxString m_strName;
+
+    wxColour    m_crTrans;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxColourPickerCtrl> m_cpTrans;
         RefPtr<wxTextCtrl> m_editName;
     CB_XRC_END_CTRLS_DECL()
-
-public:
-    wxString m_strName;
-
-    wxColour    m_crTrans;
 
 // Implementation
 protected:

@@ -29,12 +29,12 @@ public:
     CCreateTSet(wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
+    wxString m_strTSName;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxTextCtrl> m_editTSName;
     CB_XRC_END_CTRLS_DECL()
 public:
-    wxString m_strTSName;
 
 // Implementation
 protected:

@@ -41,6 +41,7 @@ public:
 
 // Dialog Data
 private:
+    size_t m_qty;
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxCheckBox> m_chkTopOnlyOwnersToo;
         RefPtr<wxCheckBox> m_chkTopOnlyVisible;
@@ -61,7 +62,6 @@ private:
         RefPtr<wxStaticText> m_side_1;
         RefPtr<wxButton> m_create;
     CB_XRC_END_CTRLS_DECL()
-    size_t m_qty;
 
     RefPtr<CGamDoc> m_pDoc;             // Pointer to document
     const size_t m_nPSet;            // Number of piece set

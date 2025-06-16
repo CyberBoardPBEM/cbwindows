@@ -34,6 +34,13 @@ public:
     CResizeTileDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
+    bool    m_bRescaleBMaps;
+    UINT    m_nWidth;
+    UINT    m_nHeight;
+
+    UINT    m_nHalfHeight;          // If 0, caller computes half size
+    UINT    m_nHalfWidth;           // If 0, caller computes half size
+    CBoardManager* m_pBMgr;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxTextCtrl> m_editHeight;
@@ -43,15 +50,6 @@ private:
         RefPtr<wxChoice> m_comboBrdName;
         RefPtr<wxCheckBox> m_chkRescaleBMaps;
     CB_XRC_END_CTRLS_DECL()
-
-public:
-    bool    m_bRescaleBMaps;
-    UINT    m_nWidth;
-    UINT    m_nHeight;
-
-    UINT    m_nHalfHeight;          // If 0, caller computes half size
-    UINT    m_nHalfWidth;           // If 0, caller computes half size
-    CBoardManager* m_pBMgr;
 
 // Implementation
 protected:
