@@ -738,4 +738,112 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CMovDescDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Enter Move Description</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer23">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer24">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxBoxSizer" name="bSizer25">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText18">
+                  <label>Enter a description for this recorded set of moves.\nThe title is presented in the move history list.</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+              <object class="spacer">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <size>0,0</size>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxStaticText" name="m_staticText19">
+                  <label>Title:</label>
+                  <wrap>-1</wrap>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag></flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer26">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_OK">
+                  <label>OK</label>
+                  <default>1</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxALL</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="wxID_CANCEL">
+                  <label>Cancel</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxTextCtrl" name="m_editTitle">
+          <value></value>
+          <maxlength>0</maxlength>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticText" name="m_staticText20">
+          <label>Description:</label>
+          <wrap>-1</wrap>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxTextCtrl" name="m_editDesc">
+          <style>wxTE_MULTILINE</style>
+          <value>\n\n\n\n\n\n\n\n\n</value>
+          <maxlength>0</maxlength>
+        </object>
+      </object>
+    </object>
+  </object>
 </resource>

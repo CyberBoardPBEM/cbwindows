@@ -1,6 +1,6 @@
 // DlgMdesc.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,28 +25,26 @@
 /////////////////////////////////////////////////////////////////////////////
 // CMovDescDialog dialog
 
-class CMovDescDialog : public CDialog
+class CMovDescDialog : public wxDialog
 {
 // Construction
 public:
-    CMovDescDialog(CWnd* pParent = NULL);   // standard constructor
+    CMovDescDialog(wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CMovDescDialog)
-    enum { IDD = IDD_GMOVDESCR };
-    CB::string m_strDesc;
-    CB::string m_strTitle;
-    //}}AFX_DATA
+    wxString m_strDesc;
+    wxString m_strTitle;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editDesc;
+        RefPtr<wxTextCtrl> m_editTitle;
+    CB_XRC_END_CTRLS_DECL()
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CMovDescDialog)
-        // NOTE: the ClassWizard will add member functions here
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
