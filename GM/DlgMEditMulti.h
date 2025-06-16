@@ -39,6 +39,10 @@ public:
     CMarkerEditMultipleDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
+    wxCheckBoxState m_bPromptForText;
+
+    bool    m_bSetText;
+    wxString m_strText;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxCheckBox> m_chkSetText;
@@ -48,10 +52,6 @@ private:
     CB_XRC_END_CTRLS_DECL()
 
 public:
-    wxCheckBoxState m_bPromptForText;
-
-    bool    m_bSetText;
-    wxString m_strText;
 
 // Overrides
     protected:

@@ -34,13 +34,6 @@ public:
     CNewTileDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-private:
-    CB_XRC_BEGIN_CTRLS_DECL()
-        RefPtr<wxTextCtrl> m_editWidth;
-        RefPtr<wxTextCtrl> m_editHeight;
-        RefPtr<wxChoice> m_comboBoard;
-    CB_XRC_END_CTRLS_DECL()
-public:
     UINT    m_nHeight;
     UINT    m_nWidth;
 
@@ -48,6 +41,13 @@ public:
     UINT    m_nHalfWidth;
 
     CBoardManager* m_pBMgr;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editWidth;
+        RefPtr<wxTextCtrl> m_editHeight;
+        RefPtr<wxChoice> m_comboBoard;
+    CB_XRC_END_CTRLS_DECL()
+public:
 
 // Implementation
 protected:

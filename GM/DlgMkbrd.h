@@ -29,7 +29,15 @@ public:
     CGridType(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
+    int     m_iCellWd;
+    int     m_iCellHt;
+    size_t  m_iCols;
+    size_t  m_iRows;
+    wxString m_strBoardName;
+    CellStagger m_bStagger;
+    CellFormType m_nBoardType;
 private:
+    int m_nBoardTypeHelper;
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxStaticText> m_staticPixelSize;
         RefPtr<wxCheckBox> m_chkStagger;
@@ -40,15 +48,7 @@ private:
         RefPtr<wxRadioButton> m_radioRect;
         RefPtr<wxTextCtrl> m_editBoardName;
     CB_XRC_END_CTRLS_DECL()
-    int m_nBoardTypeHelper;
 public:
-    int     m_iCellWd;
-    int     m_iCellHt;
-    size_t  m_iCols;
-    size_t  m_iRows;
-    wxString m_strBoardName;
-    CellStagger m_bStagger;
-    CellFormType m_nBoardType;
 
 // Implementation
 protected:

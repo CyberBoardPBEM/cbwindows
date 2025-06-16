@@ -55,13 +55,13 @@ private:
 
     wxDECLARE_EVENT_TABLE();
 
+    // adapt between m_nCompressLevel and m_comboCompress
+    int32_t m_nCompressLevelIndex;
+
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxChoice> m_comboCompress;
         RefPtr<wxTextCtrl> m_editAuthor;
         RefPtr<wxTextCtrl> m_editTitle;
         RefPtr<wxTextCtrl> m_editDescr;
     CB_XRC_END_CTRLS_DECL()
-
-    // adapt between m_nCompressLevel and m_comboCompress
-    int m_nCompressLevelIndex;
 };

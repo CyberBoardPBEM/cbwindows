@@ -35,13 +35,6 @@ public:
     virtual ~CTextObjDialog();
 
 // Dialog Data
-private:
-    CB_XRC_BEGIN_CTRLS_DECL()
-        RefPtr<wxButton> m_btnTxtPropFont;
-        RefPtr<wxTextCtrl> m_editText;
-    CB_XRC_END_CTRLS_DECL()
-
-public:
     CFontTbl*   m_pFontMgr;
     FontID      m_fontID;           // Current font.
 private:
@@ -49,6 +42,13 @@ private:
 
 public:
     wxString m_strText;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxButton> m_btnTxtPropFont;
+        RefPtr<wxTextCtrl> m_editText;
+    CB_XRC_END_CTRLS_DECL()
+
+public:
 
     void SetFontID(FontID fontID);
 

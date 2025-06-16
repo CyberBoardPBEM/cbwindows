@@ -35,15 +35,15 @@ public:
     CMarkerPropDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
+    wxString m_strName;
+    MarkerTrayViz m_nMarkerViz;
 private:
+    int m_nMarkerVizHelper;
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxTextCtrl> m_editName;
         RefPtr<wxRadioButton> m_radioMarkerViz;
     CB_XRC_END_CTRLS_DECL()
-    int m_nMarkerVizHelper;
 public:
-    wxString m_strName;
-    MarkerTrayViz m_nMarkerViz;
 
 // Implementation
 protected:

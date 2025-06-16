@@ -39,6 +39,12 @@ public:
     CPieceEditMultipleDialog(size_t sides, wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
+    BOOL    m_bSetTopOnlyVisible;               // TRUE if m_bTopOnlyVisible changed
+    BOOL    m_bTopOnlyVisible;
+    BOOL    m_bTopOnlyOwnersToo;
+
+    std::vector<bool> m_bSetTexts;                      // TRUE if text should change
+    std::vector<CB::string> m_strs;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxCheckBox> m_chkTopVisibleOwnersToo;
@@ -56,12 +62,6 @@ private:
     CB_XRC_END_CTRLS_DECL()
 
 public:
-    BOOL    m_bSetTopOnlyVisible;               // TRUE if m_bTopOnlyVisible changed
-    BOOL    m_bTopOnlyVisible;
-    BOOL    m_bTopOnlyOwnersToo;
-
-    std::vector<bool> m_bSetTexts;                      // TRUE if text should change
-    std::vector<CB::string> m_strs;
 
 // Overrides
     protected:

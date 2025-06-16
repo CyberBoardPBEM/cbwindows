@@ -32,6 +32,10 @@ public:
     CSetScaleVisibilityDialog(wxWindow* parent = &CB::GetMainWndWx());    // standard constructor
 
 // Dialog Data
+    bool    m_bFullScale;
+    bool    m_bHalfScale;
+    bool    m_bSmallScale;
+    bool    m_bNaturalScale;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxCheckBox> m_chkNaturalScale;
@@ -41,10 +45,6 @@ private:
     CB_XRC_END_CTRLS_DECL()
 
 public:
-    bool    m_bFullScale;
-    bool    m_bHalfScale;
-    bool    m_bSmallScale;
-    bool    m_bNaturalScale;
 
 // Implementation
 protected:

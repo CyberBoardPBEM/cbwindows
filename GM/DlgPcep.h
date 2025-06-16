@@ -32,11 +32,9 @@ public:
     CPiecePropDialog(wxWindow* parent = &CB::GetMainWndWx()); // standard constructor
 
 // Dialog Data
+    wxString m_strName;
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxTextCtrl> m_editName;
     CB_XRC_END_CTRLS_DECL()
-
-public:
-    wxString m_strName;
 };
