@@ -1,6 +1,6 @@
 // DlgMPly.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,34 +36,36 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CMultiplayerGameDialog dialog
 
-CMultiplayerGameDialog::CMultiplayerGameDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CMultiplayerGameDialog::IDD, pParent)
+CMultiplayerGameDialog::CMultiplayerGameDialog(CPlayerManager& pm, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CMultiplayerGameDialog)
+        CB_XRC_CTRL(m_static1)
+        CB_XRC_CTRL_VAL(m_chkCreateReferee, m_bCreateReferee)
+        CB_XRC_CTRL(m_static2)
+        CB_XRC_CTRL(m_editPlayer)
+        CB_XRC_CTRL(m_listPlayers)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pPlayerMgr(&pm)
 {
-    //{{AFX_DATA_INIT(CMultiplayerGameDialog)
     m_bCreateReferee = FALSE;
-    //}}AFX_DATA_INIT
-    m_pPlayerMgr = NULL;
+
+    wxSize chkSize = m_chkCreateReferee->GetBestSize();
+    m_static1->Wrap(chkSize.GetWidth());
+    m_static2->Wrap(chkSize.GetWidth());
+    /* adding content to listbox may change its size, so no
+        reason to adjust layout yet despite changing static
+        wrap */
 }
 
-void CMultiplayerGameDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CMultiplayerGameDialog)
-    DDX_Control(pDX, IDC_D_MPGAME_PLAYER_NAME, m_editPlayer);
-    DDX_Control(pDX, IDC_D_MPGAME_PLAYER_LIST, m_listPlayers);
-    DDX_Check(pDX, IDC_D_MPGAME_CREATE_REFEREE, m_bCreateReferee);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CMultiplayerGameDialog, CDialog)
-    //{{AFX_MSG_MAP(CMultiplayerGameDialog)
-    ON_BN_CLICKED(IDC_D_MPGAME, OnBtnPressUpdateName)
-    ON_LBN_SELCHANGE(IDC_D_MPGAME_PLAYER_LIST, OnSelChangePlayerList)
+wxBEGIN_EVENT_TABLE(CMultiplayerGameDialog, wxDialog)
+    EVT_BUTTON(XRCID("OnBtnPressUpdateName"), OnBtnPressUpdateName)
+    EVT_LISTBOX(XRCID("m_listPlayers"), OnSelChangePlayerList)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -85,50 +87,67 @@ void CMultiplayerGameDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMultiplayerGameDialog message handlers
 
-void CMultiplayerGameDialog::OnBtnPressUpdateName()
+void CMultiplayerGameDialog::OnBtnPressUpdateName(wxCommandEvent& /*event*/)
 {
-    CB::string strEdit = CB::string::GetWindowText(m_editPlayer);
+    CB::string strEdit = m_editPlayer->GetValue();
     if (!strEdit.empty())
     {
-        int nSel = m_listPlayers.GetCurSel();
-        if (nSel >= 0)
+        int nSel = m_listPlayers->GetSelection();
+        if (nSel != wxNOT_FOUND)
         {
-            m_listPlayers.DeleteString(nSel);
-            m_listPlayers.InsertString(nSel, strEdit);
+            m_listPlayers->Delete(value_preserving_cast<unsigned int>(nSel));
+            m_listPlayers->Insert(strEdit, value_preserving_cast<unsigned int>(nSel));
         }
     }
 }
 
-void CMultiplayerGameDialog::OnSelChangePlayerList()
+void CMultiplayerGameDialog::OnSelChangePlayerList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listPlayers.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listPlayers->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        CB::string strEdit = CB::string::GetText(m_listPlayers, nSel);
-        m_editPlayer.SetWindowText(strEdit);
+        CB::string strEdit = m_listPlayers->GetString(value_preserving_cast<unsigned int>(nSel));
+        m_editPlayer->SetValue(strEdit);
     }
 }
 
-BOOL CMultiplayerGameDialog::OnInitDialog()
+bool CMultiplayerGameDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-    ASSERT(m_pPlayerMgr != NULL);
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-        m_listPlayers.AddString(m_pPlayerMgr->ElementAt(i).m_strName);
+    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
+    {
+        m_listPlayers->Append(m_pPlayerMgr->ElementAt(i).m_strName);
+    }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    // all controls are ready, so now adjust layout
+    SetMinSize(wxDefaultSize);
+    Fit();
+    Centre();
+
+    return TRUE;
 }
 
-void CMultiplayerGameDialog::OnOK()
+bool CMultiplayerGameDialog::TransferDataFromWindow()
 {
-    for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-        m_pPlayerMgr->ElementAt(i).m_strName = CB::string::GetText(m_listPlayers, i);
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
 
-    CDialog::OnOK();
+    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
+    {
+        m_pPlayerMgr->ElementAt(i).m_strName = m_listPlayers->GetString(value_preserving_cast<unsigned int>(i));
+    }
+
+    return true;
 }
 

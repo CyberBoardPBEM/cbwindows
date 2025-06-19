@@ -846,4 +846,109 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CMultiplayerGameDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Creating Multiplayer Game</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer27">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer28">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_static1">
+              <label>This scenario is for a multi-player game. You will be prompted for a base file name that will be used to create a unique game file for each player. The generated files should be distributed to the appropriate players after which you may begin play.</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxCheckBox" name="m_chkCreateReferee">
+              <label>Create a Referee game file. It has unlimited player access.</label>
+              <checked>0</checked>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_static2">
+              <label>The names below are the default player names. You may change them now before creating the games. Press OK when you are done.</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxListBox" name="m_listPlayers">
+              <style>wxLB_SINGLE</style>
+              <content/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxTextCtrl" name="m_editPlayer">
+              <value></value>
+              <maxlength>0</maxlength>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxALIGN_CENTER_HORIZONTAL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnBtnPressUpdateName">
+              <label>Update Name</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag></flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer29">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
 </resource>

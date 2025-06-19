@@ -1,6 +1,6 @@
 // DlgMPly.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,42 +34,39 @@
 
 class CPlayerManager;
 
-class CMultiplayerGameDialog : public CDialog
+class CMultiplayerGameDialog : public wxDialog
 {
 // Construction
 public:
-    CMultiplayerGameDialog(CWnd* pParent = NULL);   // standard constructor
+    CMultiplayerGameDialog(CPlayerManager& pm, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CMultiplayerGameDialog)
-    enum { IDD = IDD_MULTIPLAYER_GAME };
-    CEdit   m_editPlayer;
-    CListBox    m_listPlayers;
-    BOOL    m_bCreateReferee;
-    //}}AFX_DATA
+    bool    m_bCreateReferee;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxStaticText> m_static1;
+        RefPtr<wxCheckBox> m_chkCreateReferee;
+        RefPtr<wxStaticText> m_static2;
+        RefPtr<wxTextCtrl> m_editPlayer;
+        RefPtr<wxListBox>  m_listPlayers;
+    CB_XRC_END_CTRLS_DECL()
 
-    CPlayerManager* m_pPlayerMgr;
+    RefPtr<CPlayerManager> m_pPlayerMgr;
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CMultiplayerGameDialog)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
 
-    // Generated message map functions
-    //{{AFX_MSG(CMultiplayerGameDialog)
-    afx_msg void OnBtnPressUpdateName();
-    afx_msg void OnSelChangePlayerList();
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
+    void OnBtnPressUpdateName(wxCommandEvent& event);
+    void OnSelChangePlayerList(wxCommandEvent& event);
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif
