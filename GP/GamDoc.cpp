@@ -703,9 +703,8 @@ BOOL CGamDoc::OnNewGame()
 
         // First prompt for name changes...
 
-        CMultiplayerGameDialog dlgMultiplay;
-        dlgMultiplay.m_pPlayerMgr = m_pPlayerMgr;
-        if (dlgMultiplay.DoModal() != IDOK)
+        CMultiplayerGameDialog dlgMultiplay(*m_pPlayerMgr);
+        if (dlgMultiplay.ShowModal() != wxID_OK)
             return FALSE;
 
         // Prompt for a base file name...
