@@ -1,6 +1,6 @@
 // DlgNewGeoBoard.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,11 +35,13 @@
 class CGamDoc;
 class CGeomorphicBoard;
 
-class CCreateGeomorphicBoardDialog : public CDialog
+class CCreateGeomorphicBoardDialog : public wxDialog
 {
 // Construction
 public:
-    CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* pParent = NULL);   // standard constructor
+    CCreateGeomorphicBoardDialog(CGamDoc& doc, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
+    // see https://docs.wxwidgets.org/latest/classwx_window_destroy_event.html
+    ~CCreateGeomorphicBoardDialog();
 
 // Operations
 public:
@@ -47,28 +49,22 @@ public:
     OwnerPtr<CGeomorphicBoard> DetachGeomorphicBoard();
 
 // Dialog Data
-    //{{AFX_DATA(CCreateGeomorphicBoardDialog)
-    enum { IDD = IDD_GEOMORPHIC_BOARD };
-    CButton m_btnOK;
-    CButton m_btnClearList;
-    CButton m_btnAddBreak;
-    CButton m_btnAddBoard;
-    CListBox    m_listGeo;
-    CEdit   m_editBoardName;
-    CListBox    m_listBoard;
-    //}}AFX_DATA
-
 private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxButton> m_btnOK;
+        RefPtr<wxButton> m_btnClearList;
+        RefPtr<wxButton> m_btnAddBreak;
+        RefPtr<wxButton> m_btnAddBoard;
+        RefPtr<wxListBox>    m_listGeo;
+        RefPtr<wxTextCtrl>   m_editBoardName;
+        RefPtr<wxListBox>    m_listBoard;
+    CB_XRC_END_CTRLS_DECL()
+
     RefPtr<CGamDoc> m_pDoc;
 public:
 
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CCreateGeomorphicBoardDialog)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation - vars
 protected:
@@ -89,24 +85,22 @@ protected:
     void LoadBoardListWithCompliantBoards();
     void UpdateButtons();
 
-    // Generated message map functions
-    //{{AFX_MSG(CCreateGeomorphicBoardDialog)
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
-    afx_msg void OnSelChangeBoardList();
-    afx_msg void OnBtnPressedAddBoard();
-    afx_msg void OnBtnPressedAddBreak();
-    afx_msg void OnBtnPressClear();
-    afx_msg void OnChangeBoardName();
-    afx_msg void OnDblClickBoardList();
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
+    void OnSelChangeBoardList(wxCommandEvent& event);
+    void OnBtnPressedAddBoard(wxCommandEvent& event);
+    void OnBtnPressedAddBreak(wxCommandEvent& event);
+    void OnBtnPressClear(wxCommandEvent& event);
+    void OnChangeBoardName(wxCommandEvent& event);
+    void OnDblClickBoardList(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnBtnPressedHelp();
-    afx_msg void OnDestroy();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 
-    static void ResetContent(CListBox& lb);
+    static void ResetContent(wxListBox& lb);
 };
 
 #endif
