@@ -1,6 +1,6 @@
 // DlgNewGeoBoard.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -40,12 +40,18 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCreateGeomorphicBoardDialog dialog
 
-CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
-    : CDialog(CCreateGeomorphicBoardDialog::IDD, pParent),
+CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CCreateGeomorphicBoardDialog)
+        , m_btnOK(XRCCTRL(*this, "wxID_OK", std::remove_reference_t<decltype(*m_btnOK)>))
+        CB_XRC_CTRL(m_btnClearList)
+        CB_XRC_CTRL(m_btnAddBreak)
+        CB_XRC_CTRL(m_btnAddBoard)
+        CB_XRC_CTRL(m_listGeo)
+        CB_XRC_CTRL(m_editBoardName)
+        CB_XRC_CTRL(m_listBoard)
+    CB_XRC_END_CTRLS_DEFN(),
     m_pDoc(&doc)
 {
-    //{{AFX_DATA_INIT(CCreateGeomorphicBoardDialog)
-    //}}AFX_DATA_INIT
     m_nCurrentRowHeight = size_t(0);
     m_nCurrentColumn = size_t(0);
     m_nMaxColumns = size_t(0);
@@ -54,37 +60,21 @@ CCreateGeomorphicBoardDialog::CCreateGeomorphicBoardDialog(CGamDoc& doc, CWnd* p
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CCreateGeomorphicBoardDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CCreateGeomorphicBoardDialog)
-    DDX_Control(pDX, IDOK, m_btnOK);
-    DDX_Control(pDX, IDC_D_NEWGEO_CLEAR, m_btnClearList);
-    DDX_Control(pDX, IDC_D_NEWGEO_ADD_BREAK, m_btnAddBreak);
-    DDX_Control(pDX, IDC_D_NEWGEO_ADD_BOARD, m_btnAddBoard);
-    DDX_Control(pDX, IDC_D_NEWGEO_GEOMORPHIC_LIST, m_listGeo);
-    DDX_Control(pDX, IDC_D_NEWGEO_BOARD_NAME, m_editBoardName);
-    DDX_Control(pDX, IDC_D_NEWGEO_BOARD_LIST, m_listBoard);
-    //}}AFX_DATA_MAP
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(CCreateGeomorphicBoardDialog, CDialog)
-    //{{AFX_MSG_MAP(CCreateGeomorphicBoardDialog)
-    ON_LBN_SELCHANGE(IDC_D_NEWGEO_BOARD_LIST, OnSelChangeBoardList)
-    ON_BN_CLICKED(IDC_D_NEWGEO_ADD_BOARD, OnBtnPressedAddBoard)
-    ON_BN_CLICKED(IDC_D_NEWGEO_ADD_BREAK, OnBtnPressedAddBreak)
-    ON_BN_CLICKED(IDC_D_NEWGEO_CLEAR, OnBtnPressClear)
-    ON_EN_CHANGE(IDC_D_NEWGEO_BOARD_NAME, OnChangeBoardName)
-    ON_LBN_DBLCLK(IDC_D_NEWGEO_BOARD_LIST, OnDblClickBoardList)
+wxBEGIN_EVENT_TABLE(CCreateGeomorphicBoardDialog, wxDialog)
+    EVT_LISTBOX(XRCID("m_listBoard"), OnSelChangeBoardList)
+    EVT_BUTTON(XRCID("m_btnAddBoard"), OnBtnPressedAddBoard)
+    EVT_BUTTON(XRCID("m_btnAddBreak"), OnBtnPressedAddBreak)
+    EVT_BUTTON(XRCID("m_btnClearList"), OnBtnPressClear)
+    EVT_TEXT(XRCID("m_editBoardName"), OnChangeBoardName)
+    EVT_LISTBOX_DCLICK(XRCID("m_listBoard"), OnDblClickBoardList)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
     ON_BN_CLICKED(IDC_D_NEWGEO_HELP, OnBtnPressedHelp)
-    ON_WM_DESTROY()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -98,12 +88,13 @@ static DWORD adwHelpMap[] =
     IDC_D_NEWGEO_BOARD_LIST, IDH_D_NEWGEO_BOARD_LIST,
     0,0
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
 {
-    ResetContent(m_listBoard);
+    ResetContent(*m_listBoard);
     if (m_nMaxColumns != size_t(0) && m_nCurrentColumn == m_nMaxColumns)
         return;               // No boards allowed since row break is only option
 
@@ -176,47 +167,47 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
                     continue;
             }
             static const CB::string suffix[] = { "", " -  90°", " - 180°", " - 270°" };
-            int nItem = m_listBoard.AddString(pBrd.GetName() + suffix[ptrdiff_t(r)]);
-            m_listBoard.SetItemDataPtr(nItem, ge.release());
+            int nItem = m_listBoard->Append(pBrd.GetName() + suffix[ptrdiff_t(r)]);
+            m_listBoard->SetClientData(value_preserving_cast<unsigned int>(nItem), ge.release());
         }
     }
-    if (m_listBoard.GetCount() > 0)
-        m_listBoard.SetCurSel(0);
+    if (m_listBoard->GetCount() > 0)
+        m_listBoard->SetSelection(0);
 }
 
 void CCreateGeomorphicBoardDialog::UpdateButtons()
 {
-    BOOL bEnableOK = m_editBoardName.GetWindowTextLength() > size_t(0) &&
-         m_listGeo.GetCount() > size_t(0) &&
+    BOOL bEnableOK = !m_editBoardName->GetValue().empty() &&
+         m_listGeo->GetCount() > size_t(0) &&
         (m_nCurrentColumn == m_nMaxColumns || m_nMaxColumns == size_t(0));
-    m_btnOK.EnableWindow(bEnableOK);
+    m_btnOK->Enable(bEnableOK);
 
     if (m_pRootBoard == NULL)
     {
         // Nothing added yet. Don't allow row break.
-        m_btnAddBreak.EnableWindow(FALSE);
-        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+        m_btnAddBreak->Enable(FALSE);
+        m_btnAddBoard->Enable(m_listBoard->GetSelection() != wxNOT_FOUND);
     }
     else if (m_nMaxColumns == size_t(0) && !m_tblColWidth.empty())
     {
         // At least one column but no row break yet. Allow anything.
-        m_btnAddBreak.EnableWindow(TRUE);
-        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+        m_btnAddBreak->Enable(TRUE);
+        m_btnAddBoard->Enable(m_listBoard->GetSelection() != wxNOT_FOUND);
     }
     else if (m_nMaxColumns > size_t(0) && m_nCurrentColumn == m_nMaxColumns)
     {
-        m_btnAddBreak.EnableWindow(TRUE);
-        m_btnAddBoard.EnableWindow(FALSE);
+        m_btnAddBreak->Enable(TRUE);
+        m_btnAddBoard->Enable(FALSE);
     }
     else
     {
         // Somewhere other than the end of a follow on row
         // of boards. Only allow adding a board.
-        m_btnAddBreak.EnableWindow(FALSE);
-        m_btnAddBoard.EnableWindow(m_listBoard.GetCurSel() >= 0);
+        m_btnAddBreak->Enable(FALSE);
+        m_btnAddBoard->Enable(m_listBoard->GetSelection() != wxNOT_FOUND);
     }
 
-    m_btnClearList.EnableWindow(m_listGeo.GetCount() > 0);
+    m_btnClearList->Enable(m_listGeo->GetCount() > 0);
 }
 
 OwnerPtr<CGeomorphicBoard> CCreateGeomorphicBoardDialog::DetachGeomorphicBoard()
@@ -227,26 +218,26 @@ OwnerPtr<CGeomorphicBoard> CCreateGeomorphicBoardDialog::DetachGeomorphicBoard()
 /////////////////////////////////////////////////////////////////////////////
 // CCreateGeomorphicBoardDialog message handlers
 
-void CCreateGeomorphicBoardDialog::OnSelChangeBoardList()
+void CCreateGeomorphicBoardDialog::OnSelChangeBoardList(wxCommandEvent& /*event*/)
 {
     UpdateButtons();
 }
 
-void CCreateGeomorphicBoardDialog::OnChangeBoardName()
+void CCreateGeomorphicBoardDialog::OnChangeBoardName(wxCommandEvent& /*event*/)
 {
     UpdateButtons();
 }
 
-void CCreateGeomorphicBoardDialog::OnDblClickBoardList()
+void CCreateGeomorphicBoardDialog::OnDblClickBoardList(wxCommandEvent& event)
 {
-    if (m_btnAddBoard.IsWindowEnabled())
-        OnBtnPressedAddBoard();
+    if (m_btnAddBoard->IsEnabled())
+        OnBtnPressedAddBoard(event);
 }
 
-void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
+void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard(wxCommandEvent& /*event*/)
 {
-    ASSERT(m_listBoard.GetCurSel() >= 0);
-    CGeoBoardElement& ge = *static_cast<CGeoBoardElement*>(m_listBoard.GetItemDataPtr(m_listBoard.GetCurSel()));
+    wxASSERT(m_listBoard->GetSelection() != wxNOT_FOUND);
+    CGeoBoardElement& ge = *static_cast<CGeoBoardElement*>(m_listBoard->GetClientData(m_listBoard->GetSelection()));
     CBoardManager& pBMgr = m_pDoc->GetBoardManager();
     const CBoard& pBrd = pBMgr.Get(ge);
     const CBoardArray& pBArray = pBrd.GetBoardArray();
@@ -258,30 +249,30 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBoard()
     if (m_nCurrentRowHeight == size_t(0))
         m_nCurrentRowHeight = pBArray.GetRows();
 
-    CB::string strLabel = CB::string::GetText(m_listBoard, m_listBoard.GetCurSel());
+    CB::string strLabel = m_listBoard->GetString(m_listBoard->GetSelection());
 
-    int nItem = m_listGeo.AddString(strLabel);
-    m_listGeo.SetItemDataPtr(nItem, new CGeoBoardElement(ge));
+    int nItem = m_listGeo->Append(strLabel);
+    m_listGeo->SetClientData(value_preserving_cast<unsigned int>(nItem), new CGeoBoardElement(ge));
 
     m_nCurrentColumn++;
     if (m_nCurrentColumn == m_nMaxColumns)
     {
-        m_btnAddBoard.EnableWindow(FALSE);
-        m_btnAddBreak.EnableWindow(TRUE);
+        m_btnAddBoard->Enable(FALSE);
+        m_btnAddBreak->Enable(TRUE);
     }
     else if (m_nMaxColumns == size_t(0) && !m_tblColWidth.empty())
-        m_btnAddBreak.EnableWindow(TRUE);
+        m_btnAddBreak->Enable(TRUE);
 
     LoadBoardListWithCompliantBoards();
     UpdateButtons();
 }
 
-void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
+void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak(wxCommandEvent& /*event*/)
 {
     CB::string str = CB::string::LoadString(IDS_ROW_BREAK);
 
-    int nItem = m_listGeo.AddString(str);
-    m_listGeo.SetItemDataPtr(nItem, nullptr);
+    int nItem = m_listGeo->Append(str);
+    m_listGeo->SetClientData(value_preserving_cast<unsigned int>(nItem), nullptr);
 
     m_nMaxColumns = m_tblColWidth.size();
     m_nRowNumber++;
@@ -292,9 +283,9 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedAddBreak()
     UpdateButtons();
 }
 
-void CCreateGeomorphicBoardDialog::OnBtnPressClear()
+void CCreateGeomorphicBoardDialog::OnBtnPressClear(wxCommandEvent& /*event*/)
 {
-    ResetContent(m_listGeo);
+    ResetContent(*m_listGeo);
     m_nMaxColumns = size_t(0);
     m_nCurrentColumn = size_t(0);
     m_nCurrentRowHeight = size_t(0);
@@ -306,39 +297,50 @@ void CCreateGeomorphicBoardDialog::OnBtnPressClear()
     UpdateButtons();
 }
 
-BOOL CCreateGeomorphicBoardDialog::OnInitDialog()
+bool CCreateGeomorphicBoardDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
     LoadBoardListWithCompliantBoards();
     UpdateButtons();
+    // update layout after filling in m_listBoard
+    Fit();
+    Centre();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    return TRUE;
 }
 
-void CCreateGeomorphicBoardDialog::OnOK()
+bool CCreateGeomorphicBoardDialog::TransferDataFromWindow()
 {
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+
     m_pGeoBoard = MakeOwner<CGeomorphicBoard>(*m_pDoc);
 
-    CB::string strName = CB::string::GetWindowText(m_editBoardName);
+    CB::string strName = m_editBoardName->GetValue();
     m_pGeoBoard->SetName(strName);
     m_pGeoBoard->SetSerialNumber(m_pDoc->GetPBoardManager().IssueGeoSerialNumber());
 
     m_pGeoBoard->SetBoardRowCount(m_nRowNumber + size_t(1));
     m_pGeoBoard->SetBoardColCount(m_tblColWidth.size());
 
-    for (int i = 0; i < m_listGeo.GetCount(); i++)
+    for (unsigned int i = 0u; i < m_listGeo->GetCount(); i++)
     {
-        CGeoBoardElement* ge = static_cast<CGeoBoardElement*>(m_listGeo.GetItemDataPtr(i));
+        CGeoBoardElement* ge = static_cast<CGeoBoardElement*>(m_listGeo->GetClientData(i));
         if (!ge)
             continue;                       // Skip the row break
         m_pGeoBoard->AddElement(ge->m_nBoardSerialNum, ge->m_rotation);
     }
 
-    CDialog::OnOK();
+    return true;
 }
 
+#if 0
 BOOL CCreateGeomorphicBoardDialog::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     return GetApp()->DoHelpTipHelp(pHelpInfo, adwHelpMap);
@@ -353,18 +355,20 @@ void CCreateGeomorphicBoardDialog::OnBtnPressedHelp()
 {
     GetApp()->DoHelpTopic("gp-adv-geomorphic.htm");
 }
+#endif
 
-void CCreateGeomorphicBoardDialog::OnDestroy()
+// see https://docs.wxwidgets.org/latest/classwx_window_destroy_event.html
+CCreateGeomorphicBoardDialog::~CCreateGeomorphicBoardDialog()
 {
-    ResetContent(m_listBoard);
-    ResetContent(m_listGeo);
+    ResetContent(*m_listBoard);
+    ResetContent(*m_listGeo);
 }
 
-void CCreateGeomorphicBoardDialog::ResetContent(CListBox& lb)
+void CCreateGeomorphicBoardDialog::ResetContent(wxListBox& lb)
 {
-    for (int i = 0; i < lb.GetCount(); ++i)
+    for (unsigned int i = 0u; i < lb.GetCount(); ++i)
     {
-        delete static_cast<CGeoBoardElement*>(lb.GetItemDataPtr(i));
+        delete static_cast<CGeoBoardElement*>(lb.GetClientData(i));
     }
-    lb.ResetContent();
+    lb.Clear();
 }
