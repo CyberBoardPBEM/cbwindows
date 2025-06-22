@@ -1,6 +1,6 @@
 // DlgNPly.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,34 +32,18 @@
 /////////////////////////////////////////////////////////////////////////////
 // CCreatePlayersDialog dialog
 
-class CCreatePlayersDialog : public CDialog
+class CCreatePlayersDialog : public wxDialog
 {
 // Construction
 public:
-    CCreatePlayersDialog(CWnd* pParent = NULL);   // standard constructor
+    CCreatePlayersDialog(wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CCreatePlayersDialog)
-    enum { IDD = IDD_CREATE_PLAYERS };
     size_t m_nPlayerCount;
-    //}}AFX_DATA
-
-
-// Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CCreatePlayersDialog)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
-
-// Implementation
-protected:
-
-    // Generated message map functions
-    //{{AFX_MSG(CCreatePlayersDialog)
-        // NOTE: the ClassWizard will add member functions here
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editPlayerCount;
+    CB_XRC_END_CTRLS_DECL()
 };
 
 #endif

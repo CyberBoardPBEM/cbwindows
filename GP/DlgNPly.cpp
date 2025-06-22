@@ -1,6 +1,6 @@
 // DlgNPly.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,27 +35,17 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCreatePlayersDialog dialog
 
-CCreatePlayersDialog::CCreatePlayersDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CCreatePlayersDialog::IDD, pParent)
+CCreatePlayersDialog::CCreatePlayersDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CCreatePlayersDialog)
+        CB_XRC_CTRL_VAL(m_editPlayerCount, m_nPlayerCount, size_t(0), size_t(26))
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CCreatePlayersDialog)
     m_nPlayerCount = size_t(0);
-    //}}AFX_DATA_INIT
+
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize editSize = m_editPlayerCount->GetSizeFromText("99");
+    m_editPlayerCount->SetInitialSize(editSize);
+    SetMinSize(wxDefaultSize);
+    Fit();
+    Centre();
 }
-
-void CCreatePlayersDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CCreatePlayersDialog)
-    DDX_Text(pDX, IDC_D_CPLAY_NUM_PLAYERS, m_nPlayerCount);
-    DDV_MinMaxUInt(pDX, value_preserving_cast<unsigned>(m_nPlayerCount), 0, 26);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CCreatePlayersDialog, CDialog)
-    //{{AFX_MSG_MAP(CCreatePlayersDialog)
-        // NOTE: the ClassWizard will add message map macros here
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
