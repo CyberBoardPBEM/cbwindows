@@ -1875,7 +1875,7 @@ void CGamDoc::OnEditCreatePlayers()
 {
     CCreatePlayersDialog dlg;
     dlg.m_nPlayerCount = value_preserving_cast<size_t>(m_pPlayerMgr != NULL ? m_pPlayerMgr->GetSize() : 0);
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     if (m_pPlayerMgr != NULL)
