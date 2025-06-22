@@ -1,6 +1,6 @@
 // DlgPass.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,29 +36,34 @@ static char THIS_FILE[] = __FILE__;
 // CPasswordDialog dialog
 
 
-CPasswordDialog::CPasswordDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPasswordDialog::IDD, pParent)
+CPasswordDialog::CPasswordDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CPasswordDialog)
+        CB_XRC_CTRL_VAL(m_editPassword, tempPassword)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CPasswordDialog)
     m_strPassword = "";
-    //}}AFX_DATA_INIT
 }
 
-
-void CPasswordDialog::DoDataExchange(CDataExchange* pDX)
+bool CPasswordDialog::TransferDataToWindow()
 {
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPasswordDialog)
-    DDX_Text(pDX, IDC_D_GETPASS_PASSWORD, m_strPassword);
-    //}}AFX_DATA_MAP
+    tempPassword = m_strPassword.wx_str();
+
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
+
+    return TRUE;
 }
 
+bool CPasswordDialog::TransferDataFromWindow()
+{
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
 
-BEGIN_MESSAGE_MAP(CPasswordDialog, CDialog)
-    //{{AFX_MSG_MAP(CPasswordDialog)
-        // NOTE: the ClassWizard will add message map macros here
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+    m_strPassword = tempPassword;
 
-/////////////////////////////////////////////////////////////////////////////
-// CPasswordDialog message handlers
+    return true;
+}

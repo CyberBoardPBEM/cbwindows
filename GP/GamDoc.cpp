@@ -1969,7 +1969,7 @@ static BYTE szPassWord[16] =
 void CGamDoc::OnFileCreateReferee()
 {
     CPasswordDialog dlg;
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
     MD5_CTX md5Context;
     /* use CP1252 (not wchar_t, not UTF8) to remain
@@ -2043,7 +2043,7 @@ void CGamDoc::OnUpdateFileCreateReferee(CCmdUI* pCmdUI)
 void CGamDoc::OnFileChangeGameOwner()
 {
     CPasswordDialog dlg;
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
     MD5_CTX md5Context;
     /* use CP1252 (not wchar_t, not UTF8) to remain

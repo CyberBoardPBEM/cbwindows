@@ -1,6 +1,6 @@
 // DlgPass.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,34 +32,24 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPasswordDialog dialog
 
-class CPasswordDialog : public CDialog
+class CPasswordDialog : public wxDialog
 {
 // Construction
 public:
-    CPasswordDialog(CWnd* pParent = NULL);   // standard constructor
+    CPasswordDialog(wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPasswordDialog)
-    enum { IDD = IDD_GET_PASSWORD };
     CB::string m_strPassword;
-    //}}AFX_DATA
-
+private:
+    wxString tempPassword;
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editPassword;
+    CB_XRC_END_CTRLS_DECL()
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CPasswordDialog)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
-
-// Implementation
-protected:
-
-    // Generated message map functions
-    //{{AFX_MSG(CPasswordDialog)
-        // NOTE: the ClassWizard will add member functions here
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+public:
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 };
 
 #endif
