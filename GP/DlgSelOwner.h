@@ -45,7 +45,7 @@ public:
     CListBox    m_listPlayers;
     //}}AFX_DATA
 
-    int                 m_nPlayer;
+    PlayerId            m_nPlayer;
     CPlayerManager*     m_pPlayerMgr;
 
 // Overrides

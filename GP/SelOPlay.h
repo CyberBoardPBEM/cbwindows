@@ -213,7 +213,7 @@ public:
     BOOL HasPieces() const;
     BOOL HasOwnedPieces() const;
     BOOL HasNonOwnedPieces() const;
-    BOOL HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const;
+    BOOL HasOwnedPiecesNotMatching(PlayerMask dwOwnerMask) const;
     BOOL HasMarkers() const;
     BOOL HasFlippablePieces() const;
     BOOL IsMarkerSelected() const;

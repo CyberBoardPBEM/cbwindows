@@ -1,6 +1,6 @@
 // DlgYprop.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -46,7 +46,7 @@ CTrayPropDialog::CTrayPropDialog(CWnd* pParent /*=NULL*/)
     m_bRandomSide = false;
     //}}AFX_DATA_INIT
     m_nYSel = Invalid_v<size_t>;
-    m_nOwnerSel = -1;
+    m_nOwnerSel = INVALID_PLAYER;
     m_bNonOwnerAccess = FALSE;
     m_pPlayerMgr = NULL;
     m_pYMgr = NULL;
@@ -145,10 +145,10 @@ void CTrayPropDialog::OnOK()
     }
     if (m_pPlayerMgr != NULL)
     {
-        m_nOwnerSel = m_comboOwners.GetCurSel() - 1;
+        m_nOwnerSel = PlayerId(m_comboOwners.GetCurSel() - 1);
         m_bNonOwnerAccess = m_chkAllowAccess.GetCheck() != 0;
         m_bEnforceVizForOwnerToo = m_chkVizOwnerToo.GetCheck() != 0;
-        if (m_nOwnerSel < 0)
+        if (m_nOwnerSel == INVALID_PLAYER)
         {
             m_bNonOwnerAccess = FALSE;
             m_bEnforceVizForOwnerToo = FALSE;
@@ -176,9 +176,11 @@ BOOL CTrayPropDialog::OnInitDialog()
     {
         CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
         m_comboOwners.AddString(str);
-        for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-            m_comboOwners.AddString(m_pPlayerMgr->GetAt(i).m_strName);
-        m_comboOwners.SetCurSel(m_nOwnerSel + 1);
+        for (const Player& player : *m_pPlayerMgr)
+        {
+            m_comboOwners.AddString(player.m_strName);
+        }
+        m_comboOwners.SetCurSel(static_cast<int>(m_nOwnerSel) + 1);
         if (m_comboOwners.GetCurSel() <= 0)
         {
             m_chkAllowAccess.SetCheck(0);

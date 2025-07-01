@@ -229,7 +229,7 @@ class CPieceSetOwnership : public CMoveRecord
 {
 public:
     CPieceSetOwnership() { m_eType = mrecPOwner; }
-    CPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
+    CPieceSetOwnership(PieceID pid, PlayerMask dwOwnerMask)
         { m_eType = mrecPOwner; m_pid = pid; m_dwOwnerMask = dwOwnerMask; }
 
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
@@ -247,7 +247,7 @@ public:
 #endif
 protected:
     PieceID     m_pid;
-    DWORD       m_dwOwnerMask;
+    PlayerMask  m_dwOwnerMask;
 };
 
 ///////////////////////////////////////////////////////////////////////

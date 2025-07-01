@@ -38,6 +38,9 @@
 #if !defined(_MARKS_H) && defined(GPLAY)
 #include "Marks.h"
 #endif
+#if defined(GPLAY)
+#include    "Player.h"
+#endif
 
 class CSelection;
 
@@ -971,9 +974,9 @@ public:
     void SetPiece(const CRect& rct, PieceID pid);
 
     BOOL IsOwned() const;
-    BOOL IsOwnedBy(DWORD dwMask) const;
+    BOOL IsOwnedBy(PlayerMask dwMask) const;
     BOOL IsOwnedButNotByCurrentPlayer() const;
-    void SetOwnerMask(DWORD dwMask);
+    void SetOwnerMask(PlayerMask dwMask);
 
     virtual enum CDrawObjType GetType() const override { return drawPieceObj; }
     virtual ObjectID GetObjectID() const override { return static_cast<ObjectID>(m_pid); }
@@ -1126,7 +1129,7 @@ public:
     void ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
     void ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
 #ifdef GPLAY
-    void SetOwnerMasks(DWORD dwOwnerMask);
+    void SetOwnerMasks(PlayerMask dwOwnerMask);
 
     const CPieceObj* FindPieceID(PieceID pid) const;
     CPieceObj* FindPieceID(PieceID pid)

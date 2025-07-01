@@ -242,7 +242,7 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
                 if (pObj.GetType() == CDrawObj::drawPieceObj)
                 {
                     CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-                    DWORD dwCurrentPlayer = pDoc->GetCurrentPlayerMask();
+                    PlayerMask dwCurrentPlayer = pDoc->GetCurrentPlayerMask();
                     bOwnedByCurrentPlayer =
                         !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer) ||
                         m_pPBoard->IsNonOwnerAccessAllowed();
@@ -293,7 +293,7 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
             if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
                 CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-                DWORD dwCurrentPlayer = GetDocument()->GetCurrentPlayerMask();
+                PlayerMask dwCurrentPlayer = GetDocument()->GetCurrentPlayerMask();
                 bOwnedByCurrentPlayer =
                     !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer);
             }

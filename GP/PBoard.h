@@ -1,6 +1,6 @@
 // PBoard.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -91,10 +91,10 @@ public:
     BoardID GetSerialNumber() const { return m_nSerialNum; }
     void SetSerialNumber(BoardID nSerialNum) { m_nSerialNum = nSerialNum; }
 
-    DWORD GetOwnerMask() const { return m_dwOwnerMask; }
-    void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned() const { return m_dwOwnerMask != 0; }
-    BOOL IsOwnedBy(DWORD dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
+    PlayerMask GetOwnerMask() const { return m_dwOwnerMask; }
+    void SetOwnerMask(PlayerMask dwMask) { m_dwOwnerMask = dwMask; }
+    bool IsOwned() const { return bool(m_dwOwnerMask); }
+    bool IsOwnedBy(PlayerMask dwMask) const { return bool(m_dwOwnerMask & dwMask); }
     BOOL IsOwnedButNotByCurrentPlayer(const CGamDoc& pDoc) const;
 
     void PropagateOwnerMaskToAllPieces();
@@ -179,7 +179,7 @@ public:
 public:
     FontID   m_fontID;          // Text font
 
-    DWORD    m_dwOwnerMask;     // Who can change it
+    PlayerMask m_dwOwnerMask;     // Who can change it
     BOOL     m_bNonOwnerAccess; // Allow non-owner access to owned stuff.
                                 // ..Visiblity is still enforced.
 

@@ -127,7 +127,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView* pView, UINT nFlags,
     if (pObj != NULL && pObj->GetType() == CDrawObj::drawPieceObj)
     {
         CPieceObj* pPObj = (CPieceObj*)pObj;
-        DWORD dwCurrentPlayer = pView->GetDocument()->GetCurrentPlayerMask();
+        PlayerMask dwCurrentPlayer = pView->GetDocument()->GetCurrentPlayerMask();
         bOwnedButNotOkToSelect = !pView->GetDocument()->IsScenario() &&
             !pPBoard->IsNonOwnerAccessAllowed() &&
             pPObj->IsOwned() && !pPObj->IsOwnedBy(dwCurrentPlayer);

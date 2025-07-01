@@ -28,6 +28,7 @@
 #ifndef     _PPIECES_H
 #include    "PPieces.h"
 #endif
+#include    "Player.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -78,10 +79,10 @@ public:
     BOOL IsNonOwnerAccessAllowed() { return m_bNonOwnerAccess; }
     void SetNonOwnerAccess(BOOL bAllowAccess) { m_bNonOwnerAccess = bAllowAccess; }
 
-    DWORD GetOwnerMask() { return m_dwOwnerMask; }
-    void SetOwnerMask(DWORD dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned() const { return m_dwOwnerMask != 0; }
-    BOOL IsOwnedBy(DWORD dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
+    PlayerMask GetOwnerMask() { return m_dwOwnerMask; }
+    void SetOwnerMask(PlayerMask dwMask) { m_dwOwnerMask = dwMask; }
+    bool IsOwned() const { return bool(m_dwOwnerMask); }
+    BOOL IsOwnedBy(PlayerMask dwMask) const { return bool(m_dwOwnerMask & dwMask); }
     BOOL IsOwnedButNotByCurrentPlayer(const CGamDoc& pDOc) const;
 
 // Operations
@@ -105,7 +106,7 @@ protected:
     CB::string m_strName;
     std::vector<PieceID> m_pidTbl;
 
-    DWORD     m_dwOwnerMask;        // Who can change the tray (0=no owners)
+    PlayerMask m_dwOwnerMask;       // Who can change the tray (0=no owners)
     BOOL      m_bNonOwnerAccess;    // Allow non-owner access. Visiblity is still enforced.
     BOOL      m_bRandomPull;        // Pieces are randomly selected on drags
     bool      m_bRandomSidePull;    // Piece sidess are randomly selected on drags

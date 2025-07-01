@@ -1,6 +1,6 @@
 // DlgSelOwner.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -43,7 +43,7 @@ CSelectNewOwnerDialog::CSelectNewOwnerDialog(CWnd* pParent /*=NULL*/)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 
-    m_nPlayer = -1;
+    m_nPlayer = INVALID_PLAYER;
     m_pPlayerMgr = NULL;
 }
 
@@ -89,7 +89,7 @@ void CSelectNewOwnerDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CSelectNewOwnerDialog::OnOK()
 {
-    m_nPlayer = m_listPlayers.GetCurSel();
+    m_nPlayer = PlayerId(m_listPlayers.GetCurSel());
     CDialog::OnOK();
 }
 
@@ -97,11 +97,13 @@ BOOL CSelectNewOwnerDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-        m_listPlayers.AddString(m_pPlayerMgr->ElementAt(i).m_strName);
+    for (const Player& player : *m_pPlayerMgr)
+    {
+        m_listPlayers.AddString(player.m_strName);
+    }
 
-    if (m_nPlayer >= 0)
-        m_listPlayers.SetCurSel(m_nPlayer);
+    if (m_nPlayer != INVALID_PLAYER)
+        m_listPlayers.SetCurSel(static_cast<int>(m_nPlayer));
     m_btnOK.EnableWindow(m_listPlayers.GetCurSel() >= 0);
 
     return TRUE;  // return TRUE unless you set the focus to a control

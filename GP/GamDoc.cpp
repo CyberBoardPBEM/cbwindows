@@ -247,7 +247,7 @@ CGamDoc::CGamDoc() :
     m_pWinState = NULL;
 
     m_pPlayerMgr = NULL;
-    m_dwCurrentPlayer = 0;
+    m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
     m_dwPlayerHash = 0;
 
     m_bSimulateSpectator = FALSE;
@@ -434,7 +434,7 @@ void CGamDoc::DeleteContents()
 
     if (m_pPlayerMgr != NULL) delete m_pPlayerMgr;
     m_pPlayerMgr = NULL;
-    m_dwCurrentPlayer = 0;
+    m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
     m_dwPlayerHash = 0;
     m_strPlayerFileDescr.clear();
 
@@ -738,9 +738,11 @@ BOOL CGamDoc::OnNewGame()
             // the scenario description.
 
             CB::string strPlayers;
-            for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-                strPlayers += m_pPlayerMgr->ElementAt(i).m_strName + "\r\n";
-            CB::string strGamInfo = CB::string::Format(IDS_INFO_MPLAY_CREATE, m_pPlayerMgr->GetSize(),
+            for (const Player& player : *m_pPlayerMgr)
+            {
+                strPlayers += player.m_strName + "\r\n";
+            }
+            CB::string strGamInfo = CB::string::Format(IDS_INFO_MPLAY_CREATE, m_pPlayerMgr->size(),
                 strPlayers);
             if (dlgMultiplay.m_bCreateReferee)
             {
@@ -750,14 +752,15 @@ BOOL CGamDoc::OnNewGame()
 
             // First create each of the player game files...
 
-            for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
+            for (size_t i = size_t(0) ; i < m_pPlayerMgr->size() ; ++i)
             {
+                PlayerId id(i);
                 CB::string strPlayName;
-                strPlayName = m_pPlayerMgr->ElementAt(i).m_strName;
+                strPlayName = (*m_pPlayerMgr)[id].m_strName;
                 CB::string strFName = strBaseName + "-" + strPlayName + "." + dlg.GetFileExt();
 
                 m_strPlayerFileDescr = strGamInfo + "@" + strFName;  // For hash check and calc
-                m_dwCurrentPlayer = CPlayerManager::GetMaskFromPlayerNum(i);
+                m_dwCurrentPlayer = CPlayerManager::GetMaskFromPlayerNum(id);
                 m_dwPlayerHash = CalculateHashForCurrentPlayerMask();
 
                 if (!DoSaveGameFile(strFName))
@@ -772,7 +775,7 @@ BOOL CGamDoc::OnNewGame()
             CB::string strFName = strBaseName + strSpec + dlg.GetFileExt();
 
             m_strPlayerFileDescr = strGamInfo + "@" + strFName; // For hash check and calc
-            m_dwCurrentPlayer = 0;
+            m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
             m_dwPlayerHash = CalculateHashForCurrentPlayerMask();
 
             if (!DoSaveGameFile(strFName))
@@ -819,8 +822,8 @@ DWORD CGamDoc::CalculateHashForCurrentPlayerMask() const
         compatible with CB3 */
     Compute16ByteHash<18>(m_strPlayerFileDescr.a_str(),
         m_strPlayerFileDescr.a_size());
-    bfr1[16] = static_cast<std::byte>(m_dwCurrentPlayer >> 8);
-    bfr1[17] = static_cast<std::byte>(m_dwCurrentPlayer & 0xFF);
+    bfr1[16] = static_cast<std::byte>((static_cast<uint32_t>(m_dwCurrentPlayer) >> 8));
+    bfr1[17] = static_cast<std::byte>((static_cast<uint32_t>(m_dwCurrentPlayer) & uint32_t(0xFF)));
     std::array<std::byte, 16> bfr2 = Compute16ByteHash(bfr1.data(), bfr1.size());
     return *reinterpret_cast<DWORD*>(bfr2.data());
 }
@@ -838,9 +841,9 @@ BOOL CGamDoc::CheckIfPlayerFilesExist(const CB::string& strBaseName, const CB::s
 {
     BOOL bFilesExist = FALSE;
 
-    for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
+    for (const Player& player : *m_pPlayerMgr)
     {
-        CB::string strPlayName = m_pPlayerMgr->ElementAt(i).m_strName;
+        CB::string strPlayName = player.m_strName;
         CB::string strFName = strBaseName + "-" + strPlayName + "." + strFileExt;
 
         if (std::filesystem::exists(strFName))
@@ -1782,12 +1785,12 @@ void CGamDoc::OnFileSaveGameAsScenario()
     m_bScenario = TRUE;
     CB::string strPlayerFileDescr = m_strPlayerFileDescr;
     DWORD dwPlayerHash = m_dwPlayerHash;
-    DWORD dwCurrentPlayer = m_dwCurrentPlayer;
+    PlayerMask dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwScenarioID = m_dwScenarioID;    // Cache scenario ID
 
     m_strPlayerFileDescr.clear();
     m_dwPlayerHash = 0;
-    m_dwCurrentPlayer = 0;
+    m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
     m_dwScenarioID = IssueScenarioID();     // Create new scenario ID
 
     std::unique_ptr<CB::string> fileName = CB::string::DoPromptFileName(*GetApp(), IDS_SAVEGAMEASSCENARIO,
@@ -1874,7 +1877,7 @@ void CGamDoc::OnUpdateViewSaveWinState(CCmdUI* pCmdUI)
 void CGamDoc::OnEditCreatePlayers()
 {
     CCreatePlayersDialog dlg;
-    dlg.m_nPlayerCount = value_preserving_cast<size_t>(m_pPlayerMgr != NULL ? m_pPlayerMgr->GetSize() : 0);
+    dlg.m_nPlayerCount = m_pPlayerMgr != NULL ? m_pPlayerMgr->size() : size_t(0);
     if (dlg.ShowModal() != wxID_OK)
         return;
 
@@ -1917,7 +1920,7 @@ void CGamDoc::OnEditEditPlayers()
 void CGamDoc::OnUpdateEditEditPlayers(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(IsScenario() && m_pPlayerMgr != NULL &&
-        m_pPlayerMgr->GetSize() > 0);
+        !m_pPlayerMgr->empty());
 }
 
 void CGamDoc::OnActSimulateSpectator()
@@ -1928,7 +1931,7 @@ void CGamDoc::OnActSimulateSpectator()
 
 void CGamDoc::OnUpdateActSimulateSpectator(CCmdUI* pCmdUI)
 {
-    if (!IsScenario() && m_dwCurrentPlayer != 0)
+    if (!IsScenario() && bool(m_dwCurrentPlayer))
     {
         pCmdUI->Enable(TRUE);
         pCmdUI->SetCheck(m_bSimulateSpectator ? 1 : 0);
@@ -1984,7 +1987,7 @@ void CGamDoc::OnFileCreateReferee()
 
     // Save so we can later restore.
     CB::string strPlayerFileDescr = m_strPlayerFileDescr;
-    DWORD dwCurrentPlayer = m_dwCurrentPlayer;
+    PlayerMask dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwPlayerHash = m_dwPlayerHash;
 
     CB::string strReferee = CB::string::LoadString(IDS_GAME_REFEREE);
@@ -2060,15 +2063,15 @@ void CGamDoc::OnFileChangeGameOwner()
     if (dlg2.ShowModal() != wxID_OK)
         return;
 
-    if (dlg2.m_nPlayer == -1)
+    if (dlg2.m_nPlayer == INVALID_PLAYER)
         return;                         // No player selected
 
-    DWORD dwPlayerMask = CPlayerManager::GetMaskFromPlayerNum(dlg2.m_nPlayer);
-    CB::string strPlayerName = m_pPlayerMgr->ElementAt(dlg2.m_nPlayer).m_strName;
+    PlayerMask dwPlayerMask = CPlayerManager::GetMaskFromPlayerNum(dlg2.m_nPlayer);
+    CB::string strPlayerName = (*m_pPlayerMgr)[dlg2.m_nPlayer].m_strName;
 
     // Save so we can later restore.
     CB::string strPlayerFileDescr = m_strPlayerFileDescr;
-    DWORD dwCurrentPlayer = m_dwCurrentPlayer;
+    PlayerMask dwCurrentPlayer = m_dwCurrentPlayer;
     DWORD dwPlayerHash = m_dwPlayerHash;
 
     // Rip apart current player string to get the raw stuff

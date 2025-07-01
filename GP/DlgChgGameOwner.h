@@ -40,7 +40,7 @@ public:
     CChgGameOwnerDialog(CPlayerManager& pm, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    int                 m_nPlayer;
+    PlayerId            m_nPlayer;
     RefPtr<CPlayerManager>     m_pPlayerMgr;
 
 private:

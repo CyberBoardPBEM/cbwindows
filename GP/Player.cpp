@@ -1,6 +1,6 @@
 // Player.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,38 +26,39 @@
 #include    "Versions.h"
 #include    "Player.h"
 
-intptr_t CPlayerManager::AddPlayer(CB::string pszName)
+PlayerId CPlayerManager::AddPlayer(CB::string pszName)
 {
-    Player player(std::move(pszName));
-    return Add(player);
+    emplace_back(std::move(pszName));
+    return PlayerId(size() - size_t(1));
 }
 
-const Player& CPlayerManager::GetPlayerUsingMask(DWORD dwMask) const
+const Player& CPlayerManager::GetPlayerUsingMask(PlayerMask dwMask) const
 {
-    ASSERT(dwMask != 0);
-    int nPlayerNum = GetPlayerNumFromMask(dwMask);
-    return ElementAt(nPlayerNum);
+    wxASSERT(dwMask);
+    PlayerId nPlayerNum = GetPlayerNumFromMask(dwMask);
+    return (*this)[nPlayerNum];
 }
 
-DWORD CPlayerManager::GetMaskFromPlayerNum(int nPlayerNumber)
+PlayerMask CPlayerManager::GetMaskFromPlayerNum(PlayerId nPlayerNumber)
 {
-    if (nPlayerNumber < 0)
-        return 0;
-	return (DWORD)1 << nPlayerNumber;
+    if (nPlayerNumber == INVALID_PLAYER)
+        return OWNER_MASK_SPECTATOR;
+	return PlayerMask(uint32_t(1) << static_cast<uint8_t>(nPlayerNumber));
 }
 
 // Returns -1 if no bit set. Otherwise, returns number of
 // the rightmost set bit.
-int CPlayerManager::GetPlayerNumFromMask(DWORD dwMask)
+PlayerId CPlayerManager::GetPlayerNumFromMask(PlayerMask dwMask)
 {
-    if (dwMask == 0) return -1;          // For a bit more speed
+    if (!dwMask) return INVALID_PLAYER;          // For a bit more speed
+    uint32_t u32(dwMask);
     for (int i = 0; i < MAX_OWNER_ACCOUNTS; i++)
     {
-        if ((dwMask & 1) != 0)
-            return i;
-        dwMask >>= 1;
+        if ((u32 & uint32_t(1)) != uint32_t(0))
+            return PlayerId(i);
+        u32 >>= 1;
     }
-    return -1;
+    return INVALID_PLAYER;
 }
 
 void CPlayerManager::Serialize(CArchive& ar)
@@ -66,20 +67,22 @@ void CPlayerManager::Serialize(CArchive& ar)
     {
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ar << value_preserving_cast<WORD>(GetSize());
+            ar << value_preserving_cast<uint16_t>(size());
         }
         else
         {
-            CB::WriteCount(ar, value_preserving_cast<size_t>(GetSize()));
+            CB::WriteCount(ar, size());
         }
-        for (int i = 0; i < GetSize(); i++)
-            GetAt(i).Serialize(ar);
+        for (Player& player : *this)
+        {
+            player.Serialize(ar);
+        }
     }
     else
     {
-        RemoveAll();
+        clear();
         size_t nCount;
-        WORD wTmp;
+        uint16_t wTmp;
 
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
@@ -94,7 +97,7 @@ void CPlayerManager::Serialize(CArchive& ar)
         {
             Player player;
             player.Serialize(ar);
-            Add(player);
+            push_back(std::move(player));
         }
     }
 }

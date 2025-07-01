@@ -1711,9 +1711,9 @@ void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
 
-void CPieceObj::SetOwnerMask(DWORD dwMask)
+void CPieceObj::SetOwnerMask(PlayerMask dwMask)
 {
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
     CPieceTable& pPTbl = m_pDoc->GetPieceTable();
     pPTbl.SetOwnerMask(m_pid, dwMask);
 }
@@ -1725,9 +1725,9 @@ BOOL CPieceObj::IsOwned() const
     return pPTbl.IsPieceOwned(m_pid);
 }
 
-BOOL CPieceObj::IsOwnedBy(DWORD dwMask) const
+BOOL CPieceObj::IsOwnedBy(PlayerMask dwMask) const
 {
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
     CPieceTable& pPTbl = m_pDoc->GetPieceTable();
     return pPTbl.IsPieceOwnedBy(m_pid, dwMask);
 }
@@ -2320,7 +2320,7 @@ void CDrawList::RemoveObject(const CDrawObj& pDrawObj)
 
 #ifdef GPLAY
 
-void CDrawList::SetOwnerMasks(DWORD dwOwnerMask)
+void CDrawList::SetOwnerMasks(PlayerMask dwOwnerMask)
 {
     for (iterator pos = begin(); pos != end(); ++pos)
     {

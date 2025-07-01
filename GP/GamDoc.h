@@ -357,13 +357,13 @@ public:
 
     // Support for player accounts
     BOOL  HasPlayers() const { return m_pPlayerMgr != NULL; }
-    DWORD  GetCurrentPlayerMask() const;
-    void  SetCurrentPlayerMask(WORD dwMask) { m_dwCurrentPlayer = dwMask; }
+    PlayerMask GetCurrentPlayerMask() const;
+    void  SetCurrentPlayerMask(PlayerMask dwMask) { m_dwCurrentPlayer = dwMask; }
     BOOL  IsCurrentPlayerReferee() const;
     void  ClearAllOwnership();
     CB::string GetPieceOwnerName(PieceID pid) const;
 
-    BOOL  IsCurrentPlayer(DWORD dwMask) const { return (BOOL)(GetCurrentPlayerMask() & dwMask); }
+    bool  IsCurrentPlayer(PlayerMask dwMask) const { return bool(GetCurrentPlayerMask() & dwMask); }
 
     DWORD CalculateHashForCurrentPlayerMask() const;
     BOOL  VerifyCurrentPlayerMask() const;
@@ -404,7 +404,7 @@ public:
     void RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos);
     void RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side, bool forceHide);
     void RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW);
-    void RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask);
+    void RecordPieceSetOwnership(PieceID pid, PlayerMask dwOwnerMask);
     void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
     void RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
         MarkID mid, CPoint pnt, PlacePos ePos = placeDefault);
@@ -448,8 +448,8 @@ public:
     void ChangePlayingPieceFacingInTray(PieceID pid, uint16_t nFacingDegCW);
     void ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
         uint16_t nFacingDegCW);
-    void SetPieceOwnership(PieceID pid, DWORD dwOwnerMask);
-    void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask);
+    void SetPieceOwnership(PieceID pid, PlayerMask dwOwnerMask);
+    void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, PlayerMask dwOwnerMask);
 
     CDrawObj& CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         ObjectID dwObjID = ObjectID());
@@ -612,7 +612,7 @@ public:
     CB::string  m_strScnTitle;  // Scenario title
     CB::string  m_strScnDescr;  // Scenario description
     CPlayerManager* m_pPlayerMgr;// Pointer to player manager (if has player accounts)
-    DWORD       m_dwCurrentPlayer;// Mask for game file's player
+    PlayerMask  m_dwCurrentPlayer;// Mask for game file's player
     DWORD       m_dwPlayerHash; // MS 32 bits of MD5 hash of m_wCurrentPlayer ..
                                 // .. and player file description text. Used as ..
                                 // .. a tamper check.

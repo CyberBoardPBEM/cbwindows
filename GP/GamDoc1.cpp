@@ -93,7 +93,7 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
 
     // Force the piece to take on the same ownership as the
     // tray has.
-    GetPieceTable().SetOwnerMask(pid, pYGrp.IsOwned() ? pYGrp.GetOwnerMask() : 0);
+    GetPieceTable().SetOwnerMask(pid, pYGrp.IsOwned() ? pYGrp.GetOwnerMask() : OWNER_MASK_SPECTATOR);
 
     pYGrp.AddPieceID(pid, nPos);
 
@@ -692,7 +692,7 @@ void CGamDoc::SetObjectLockdown(CDrawObj& pDObj, BOOL bLockState)
 //////////////////////////////////////////////////////////////////////
 // (RECORDS)
 
-void CGamDoc::SetPieceOwnership(PieceID pid, DWORD dwOwnerMask)
+void CGamDoc::SetPieceOwnership(PieceID pid, PlayerMask dwOwnerMask)
 {
     GetPieceTable().SetOwnerMask(pid, dwOwnerMask);
 
@@ -702,7 +702,7 @@ void CGamDoc::SetPieceOwnership(PieceID pid, DWORD dwOwnerMask)
     SetModifiedFlag();
 }
 
-void CGamDoc::SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, DWORD dwOwnerMask)
+void CGamDoc::SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, PlayerMask dwOwnerMask)
 {
     for (size_t i = 0; i < pTblPieces.size(); i++)
         SetPieceOwnership(pTblPieces.at(i), dwOwnerMask);

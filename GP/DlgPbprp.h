@@ -70,7 +70,7 @@ public:
     BOOL            m_bOwnerInfoIsReadOnly;
     BOOL            m_bNonOwnerAccess;
     BOOL            m_bPrivate;
-    int             m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
+    PlayerId        m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
     CPlayerManager* m_pPlayerMgr;
 
 // Implementation

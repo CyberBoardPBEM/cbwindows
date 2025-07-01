@@ -90,7 +90,7 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_bEnforceLocks = TRUE;
 
     m_bNonOwnerAccess = FALSE;                  // Owned stuff can't be messed with
-    m_dwOwnerMask = 0;                          // No player owns it
+    m_dwOwnerMask = OWNER_MASK_SPECTATOR;                          // No player owns it
 
     m_bPrivate = false;
 
@@ -376,7 +376,7 @@ void CPlayBoard::Serialize(CArchive& ar)
     {
         Clear();
         ASSERT(m_pDoc == (CGamDoc*)ar.m_pDocument);
-        BYTE cTmp;
+        uint8_t cTmp;
         uint16_t wTmp;
         uint32_t dwTmp;
 
@@ -472,13 +472,13 @@ void CPlayBoard::Serialize(CArchive& ar)
 
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 0))
         {
-            m_dwOwnerMask = 0;
+            m_dwOwnerMask = OWNER_MASK_SPECTATOR;
             m_bNonOwnerAccess = FALSE;
         }
         else if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
         {
             ar >> wTmp;
-            m_dwOwnerMask = UPGRADE_OWNER_MASK(wTmp);
+            m_dwOwnerMask = PlayerMask(UPGRADE_OWNER_MASK(wTmp));
             ar >> wTmp;
             m_bNonOwnerAccess = (BOOL)wTmp;
         }
@@ -668,8 +668,8 @@ size_t CPBoardManager::FindPBoardBySerial(BoardID nSerialNum) const
 
 void CPBoardManager::ClearAllOwnership()
 {
-    for (size_t i = 0; i < GetNumPBoards(); i++)
-        GetPBoard(i).SetOwnerMask(0);
+    for (size_t i = size_t(0); i < GetNumPBoards(); i++)
+        GetPBoard(i).SetOwnerMask(OWNER_MASK_SPECTATOR);
 }
 
 void CPBoardManager::PropagateOwnerMaskToAllPieces()

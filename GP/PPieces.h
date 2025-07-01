@@ -1,6 +1,6 @@
 // PPieces.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,6 +32,7 @@
 #ifndef     _PIECES_H
 #include    "Pieces.h"
 #endif
+#include    "Player.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -66,10 +67,10 @@ public:
     void SetFacing(uint16_t nFacing) { m_nFacing = nFacing; }
     uint16_t GetFacing() const  { return m_nFacing; }
 
-    uint32_t GetOwnerMask() const  { return m_dwOwnerMask; }
-    void SetOwnerMask(uint32_t dwMask) { m_dwOwnerMask = dwMask; }
-    BOOL IsOwned() const        { return m_dwOwnerMask != uint32_t(0); }
-    BOOL IsOwnedBy(uint32_t dwMask) const { return (BOOL)(m_dwOwnerMask & dwMask); }
+    PlayerMask GetOwnerMask() const  { return m_dwOwnerMask; }
+    void SetOwnerMask(PlayerMask dwMask) { m_dwOwnerMask = dwMask; }
+    bool IsOwned() const        { return m_dwOwnerMask != OWNER_MASK_SPECTATOR; }
+    bool IsOwnedBy(PlayerMask dwMask) const { return bool(m_dwOwnerMask & dwMask); }
 
     BOOL operator != (const Piece& pce) const
         { return m_nSide != pce.m_nSide || m_nFacing != pce.m_nFacing; }
@@ -82,7 +83,7 @@ protected:
     // If m_nSide is == 0xFF, the piece is not used.
     uint8_t     m_nSide;        // Visible side of piece (0 is front, 1 is back)
     uint16_t    m_nFacing;      // (1 deg incrs) 0 is normal facing
-    uint32_t    m_dwOwnerMask;  // Who owns the piece
+    PlayerMask  m_dwOwnerMask;  // Who owns the piece
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -131,10 +132,10 @@ public:
     BOOL IsPieceUsed(PieceID pid) const;
 
     BOOL IsPieceOwned(PieceID pid) const;
-    BOOL IsPieceOwnedBy(PieceID pid, uint32_t dwOwnerMask) const;
+    BOOL IsPieceOwnedBy(PieceID pid, PlayerMask dwOwnerMask) const;
     BOOL IsOwnedButNotByCurrentPlayer(PieceID pid, const CGamDoc& pDoc) const;
-    uint32_t GetOwnerMask(PieceID pid) const;
-    void SetOwnerMask(PieceID pid, uint32_t wwMask);
+    PlayerMask GetOwnerMask(PieceID pid) const;
+    void SetOwnerMask(PieceID pid, PlayerMask wwMask);
     void ClearAllOwnership();
 
     BOOL IsPieceInvisible(PieceID pid) const;

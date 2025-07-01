@@ -734,12 +734,12 @@ void CPieceSetOwnership::Serialize(CArchive& ar)
     }
     else
     {
-        WORD wTmp;
+        uint16_t wTmp;
         ar >> m_pid;
         if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
         {
             ar >> wTmp;
-            m_dwOwnerMask = UPGRADE_OWNER_MASK(wTmp);
+            m_dwOwnerMask = PlayerMask(UPGRADE_OWNER_MASK(wTmp));
         }
         else
             ar >> m_dwOwnerMask;

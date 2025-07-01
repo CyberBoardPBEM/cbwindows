@@ -43,7 +43,7 @@ CChgGameOwnerDialog::CChgGameOwnerDialog(CPlayerManager& pm, wxWindow* pParent /
     CB_XRC_END_CTRLS_DEFN(),
     m_pPlayerMgr(&pm)
 {
-    m_nPlayer = wxNOT_FOUND;
+    m_nPlayer = INVALID_PLAYER;
 }
 
 wxBEGIN_EVENT_TABLE(CChgGameOwnerDialog, wxDialog)
@@ -61,7 +61,7 @@ bool CChgGameOwnerDialog::TransferDataFromWindow()
         return false;
     }
 
-    m_nPlayer = m_listPlayers->GetSelection();
+    m_nPlayer = PlayerId(m_listPlayers->GetSelection());
 
     return true;
 }
@@ -69,11 +69,11 @@ bool CChgGameOwnerDialog::TransferDataFromWindow()
 bool CChgGameOwnerDialog::TransferDataToWindow()
 {
     m_listPlayers->Clear();
-    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
-        m_listPlayers->AppendString(m_pPlayerMgr->ElementAt(i).m_strName);
+    for (const Player& player : *m_pPlayerMgr)
+        m_listPlayers->AppendString(player.m_strName);
 
-    if (m_nPlayer != wxNOT_FOUND)
-        m_listPlayers->SetSelection(m_nPlayer);
+    if (m_nPlayer != INVALID_PLAYER)
+        m_listPlayers->SetSelection(static_cast<int>(m_nPlayer));
     m_btnOK->Enable(m_listPlayers->GetSelection() != wxNOT_FOUND);
 
     return wxDialog::TransferDataToWindow();

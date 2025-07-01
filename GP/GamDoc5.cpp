@@ -64,9 +64,9 @@ void CModelessDialogCleaner::operator()(CDialog* p) const
 
 ////////////////////////////////////////////////////////////////////////////
 
-DWORD  CGamDoc::GetCurrentPlayerMask() const
+PlayerMask CGamDoc::GetCurrentPlayerMask() const
 {
-    return m_bSimulateSpectator ? 0 :  m_dwCurrentPlayer;
+    return m_bSimulateSpectator ? OWNER_MASK_SPECTATOR :  m_dwCurrentPlayer;
 }
 
 ////////////////////////////////////////////////////////////////////////////

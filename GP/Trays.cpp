@@ -1,6 +1,6 @@
 // Trays.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 CTraySet::CTraySet()
 {
-    m_dwOwnerMask = 0;
+    m_dwOwnerMask = OWNER_MASK_SPECTATOR;
     m_bNonOwnerAccess = FALSE;
     m_bRandomPull = FALSE;
     m_bRandomSidePull = false;
@@ -204,7 +204,7 @@ void CTraySet::Serialize(CArchive& ar)
             if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
             {
                 ar >> wTmp;
-                m_dwOwnerMask = UPGRADE_OWNER_MASK(wTmp);
+                m_dwOwnerMask = PlayerMask(UPGRADE_OWNER_MASK(wTmp));
             }
             else
                 ar >> m_dwOwnerMask;
@@ -269,7 +269,7 @@ void CTrayManager::ClearAllOwnership()
     for (size_t i = 0; i < GetNumTraySets(); i++)
     {
         CTraySet& pYSet = GetTraySet(i);
-        pYSet.SetOwnerMask(0);
+        pYSet.SetOwnerMask(OWNER_MASK_SPECTATOR);
     }
 }
 
