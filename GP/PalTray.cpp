@@ -424,7 +424,7 @@ LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
     // check all sides of all items
     CPieceTable& pieceTable = m_pDoc->GetPieceTable();
     CTileManager& tileMgr = m_pDoc->GetTileManager();
-    DWORD player = m_pDoc->GetCurrentPlayerMask();
+    PlayerMask player = m_pDoc->GetCurrentPlayerMask();
     CSize retval(0, 0);
     for (int item : items)
     {

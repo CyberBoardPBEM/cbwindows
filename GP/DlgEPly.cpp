@@ -82,15 +82,20 @@ void CEditPlayersDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CEditPlayersDialog::SetDialogsPlayerNames(const CPlayerManager& pPlayerMgr)
 {
-    m_tblNames.reserve(m_tblNames.size() + value_preserving_cast<size_t>(pPlayerMgr.GetSize()));
-    for (int i = 0; i < pPlayerMgr.GetSize(); i++)
-        m_tblNames.push_back(pPlayerMgr.ElementAt(i).m_strName);
+    m_tblNames.reserve(m_tblNames.size() + pPlayerMgr.size());
+    for (const Player& player : pPlayerMgr)
+    {
+        m_tblNames.push_back(player.m_strName);
+    }
 }
 
 void CEditPlayersDialog::GetPlayerNamesFromDialog(CPlayerManager& pPlayerMgr) const
 {
-    for (int i = 0; i < pPlayerMgr.GetSize(); i++)
-        pPlayerMgr.ElementAt(i).m_strName = m_tblNames[value_preserving_cast<size_t>(i)];
+    wxASSERT(pPlayerMgr.size() <= m_tblNames.size());
+    for (size_t i = size_t(0) ; i < pPlayerMgr.size() ; ++i)
+    {
+        pPlayerMgr[PlayerId(i)].m_strName = m_tblNames[i];
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////

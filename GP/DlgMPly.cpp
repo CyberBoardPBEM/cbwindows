@@ -123,9 +123,9 @@ bool CMultiplayerGameDialog::TransferDataToWindow()
         return false;
     }
 
-    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
+    for (const Player& player : *m_pPlayerMgr)
     {
-        m_listPlayers->Append(m_pPlayerMgr->ElementAt(i).m_strName);
+        m_listPlayers->Append(player.m_strName);
     }
 
     // all controls are ready, so now adjust layout
@@ -143,9 +143,9 @@ bool CMultiplayerGameDialog::TransferDataFromWindow()
         return false;
     }
 
-    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
+    for (size_t i = size_t(0) ; i < m_pPlayerMgr->size() ; ++i)
     {
-        m_pPlayerMgr->ElementAt(i).m_strName = m_listPlayers->GetString(value_preserving_cast<unsigned int>(i));
+        (*m_pPlayerMgr)[PlayerId(i)].m_strName = m_listPlayers->GetString(value_preserving_cast<unsigned int>(i));
     }
 
     return true;

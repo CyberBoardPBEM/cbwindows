@@ -1,6 +1,6 @@
 // DlgPbprp.cpp - Playing board properties
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -61,7 +61,7 @@ CPBrdPropDialog::CPBrdPropDialog(CWnd* pParent /*=NULL*/)
     m_nPlotWd = 1;
     m_bNonOwnerAccess = FALSE;
     m_bPrivate = FALSE;
-    m_nOwnerSel = -1;
+    m_nOwnerSel = INVALID_PLAYER;
     m_pPlayerMgr = NULL;
     m_bOwnerInfoIsReadOnly = FALSE;
 }
@@ -172,7 +172,7 @@ void CPBrdPropDialog::OnOK()
 
     if (m_pPlayerMgr != NULL && !m_bOwnerInfoIsReadOnly)
     {
-        m_nOwnerSel = m_comboOwners.GetCurSel() - 1;
+        m_nOwnerSel = PlayerId(m_comboOwners.GetCurSel() - 1);
         m_bNonOwnerAccess = m_chkAllowAccess.GetCheck() != 0;
         m_bPrivate = m_chkPrivate.GetCheck() != 0;
     }
@@ -207,9 +207,11 @@ BOOL CPBrdPropDialog::OnInitDialog()
     {
         CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
         m_comboOwners.AddString(str);
-        for (int i = 0; i < m_pPlayerMgr->GetSize(); i++)
-            m_comboOwners.AddString(m_pPlayerMgr->GetAt(i).m_strName);
-        m_comboOwners.SetCurSel(m_nOwnerSel + 1);
+        for (const Player& player : *m_pPlayerMgr)
+        {
+            m_comboOwners.AddString(player.m_strName);
+        }
+        m_comboOwners.SetCurSel(static_cast<int>(m_nOwnerSel) + 1);
         m_chkAllowAccess.SetCheck(m_bNonOwnerAccess ? 1 : 0);
         m_chkPrivate.SetCheck(m_bPrivate ? 1 : 0);
     }

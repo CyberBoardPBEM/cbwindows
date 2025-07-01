@@ -272,7 +272,7 @@ size_t CPieceTable::GetSides(PieceID pid) const
 void CPieceTable::ClearAllOwnership()
 {
     for (size_t i = size_t(0); i < m_pPieceTbl.GetSize(); i++)
-        m_pPieceTbl[static_cast<PieceID>(i)].SetOwnerMask(uint32_t(0));
+        m_pPieceTbl[static_cast<PieceID>(i)].SetOwnerMask(OWNER_MASK_SPECTATOR);
 }
 
 BOOL CPieceTable::IsPieceOwned(PieceID pid) const
@@ -280,7 +280,7 @@ BOOL CPieceTable::IsPieceOwned(PieceID pid) const
     return GetPiece(pid).IsOwned();
 }
 
-BOOL CPieceTable::IsPieceOwnedBy(PieceID pid, uint32_t dwOwnerMask) const
+BOOL CPieceTable::IsPieceOwnedBy(PieceID pid, PlayerMask dwOwnerMask) const
 {
     return GetPiece(pid).IsOwnedBy(dwOwnerMask);
 }
@@ -290,12 +290,12 @@ BOOL CPieceTable::IsOwnedButNotByCurrentPlayer(PieceID pid, const CGamDoc& pDoc)
     return IsPieceOwned(pid) && !IsPieceOwnedBy(pid, pDoc.GetCurrentPlayerMask());
 }
 
-uint32_t CPieceTable::GetOwnerMask(PieceID pid) const
+PlayerMask CPieceTable::GetOwnerMask(PieceID pid) const
 {
     return GetPiece(pid).GetOwnerMask();
 }
 
-void CPieceTable::SetOwnerMask(PieceID pid, uint32_t dwMask)
+void CPieceTable::SetOwnerMask(PieceID pid, PlayerMask dwMask)
 {
     GetPiece(pid).SetOwnerMask(dwMask);
 }
@@ -612,12 +612,12 @@ void Piece::Serialize(CArchive& ar)
         else
             ar >> m_nFacing;
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 0))
-            m_dwOwnerMask = uint32_t(0);
+            m_dwOwnerMask = OWNER_MASK_SPECTATOR;
         else if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
         {
-            WORD wTmp;
+            uint16_t wTmp;
             ar >> wTmp;
-            m_dwOwnerMask = UPGRADE_OWNER_MASK(wTmp);
+            m_dwOwnerMask = PlayerMask(UPGRADE_OWNER_MASK(wTmp));
         }
         else
             ar >> m_dwOwnerMask;
@@ -659,7 +659,7 @@ void Piece::SetUnused()
 {
     m_nSide = uint8_t(0xFF);
     m_nFacing = uint16_t(0);
-    m_dwOwnerMask = uint32_t(0);
+    m_dwOwnerMask = OWNER_MASK_SPECTATOR;
 }
 
 

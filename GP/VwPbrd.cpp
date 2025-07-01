@@ -2282,7 +2282,7 @@ void CPlayBoardView::OnUpdateActTakeOwnership(CCmdUI* pCmdUI)
     else
     {
         pCmdUI->Enable(pDoc->HasPlayers() && m_selList.HasNonOwnedPieces() &&
-            pDoc->GetCurrentPlayerMask() != 0);
+            pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
@@ -2311,7 +2311,7 @@ void CPlayBoardView::OnActReleaseOwnership()
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(tblPieces, 0);
+    pDoc->SetPieceOwnershipTable(tblPieces, OWNER_MASK_SPECTATOR);
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
@@ -2331,7 +2331,7 @@ void CPlayBoardView::OnUpdateActReleaseOwnership(CCmdUI* pCmdUI)
     else
     {
         pCmdUI->Enable(pDoc->HasPlayers() && m_selList.HasOwnedPieces() &&
-            pDoc->GetCurrentPlayerMask() != 0);
+            pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
@@ -2350,7 +2350,7 @@ void CPlayBoardView::OnActSetOwner()
     if (dlg.DoModal() != IDOK)
         return;
 
-    DWORD dwNewOwnerMask = CPlayerManager::GetMaskFromPlayerNum(dlg.m_nPlayer);
+    PlayerMask dwNewOwnerMask = CPlayerManager::GetMaskFromPlayerNum(dlg.m_nPlayer);
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
@@ -2388,7 +2388,7 @@ void CPlayBoardView::OnUpdateActSetOwner(CCmdUI* pCmdUI)
     else
     {
         pCmdUI->Enable(pDoc->HasPlayers() &&
-            (m_selList.HasPieces() && pDoc->GetCurrentPlayerMask() != 0));
+            (m_selList.HasPieces() && pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR));
     }
 }
 

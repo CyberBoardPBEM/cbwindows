@@ -51,7 +51,7 @@ public:
     //}}AFX_DATA
 
     size_t          m_nYSel;
-    int             m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
+    PlayerId        m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
     BOOL            m_bNonOwnerAccess;
     BOOL            m_bEnforceVizForOwnerToo;
 

@@ -414,7 +414,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     CB::string str = CB::string::LoadString(IDS_PHEAD_GAM_DOCTYPE);
     if (pDoc->HasPlayers())
     {
-        if (pDoc->GetCurrentPlayerMask() == 0)
+        if (pDoc->GetCurrentPlayerMask() == OWNER_MASK_SPECTATOR)
         {
             CB::string strSpec = CB::string::LoadString(IDS_PHEAD_SPECTATOR_OWNED);
             str += strSpec;

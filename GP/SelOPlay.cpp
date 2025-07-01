@@ -649,7 +649,7 @@ BOOL CSelList::HasNonOwnedPieces() const
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(*pSel.m_pObj);
-            if (pPTbl.GetOwnerMask(pPObj.m_pid) == uint32_t(0))
+            if (pPTbl.GetOwnerMask(pPObj.m_pid) == OWNER_MASK_SPECTATOR)
                 return TRUE;
         }
     }
@@ -665,14 +665,14 @@ BOOL CSelList::HasOwnedPieces() const
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(*pSel.m_pObj);
-            if (pPTbl.GetOwnerMask(pPObj.m_pid) != uint32_t(0))
+            if (pPTbl.GetOwnerMask(pPObj.m_pid) != OWNER_MASK_SPECTATOR)
                 return TRUE;
         }
     }
     return FALSE;
 }
 
-BOOL CSelList::HasOwnedPiecesNotMatching(DWORD dwOwnerMask) const
+BOOL CSelList::HasOwnedPiecesNotMatching(PlayerMask dwOwnerMask) const
 {
     const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
@@ -793,8 +793,8 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj& pPObj = static_cast<CPieceObj&>(*pSel.m_pObj);
-            if (eWantOwned == LF_OWNED    && pPTbl.GetOwnerMask(pPObj.m_pid) != uint32_t(0) ||
-                eWantOwned == LF_NOTOWNED && pPTbl.GetOwnerMask(pPObj.m_pid) == uint32_t(0) ||
+            if (eWantOwned == LF_OWNED    && pPTbl.GetOwnerMask(pPObj.m_pid) != OWNER_MASK_SPECTATOR ||
+                eWantOwned == LF_NOTOWNED && pPTbl.GetOwnerMask(pPObj.m_pid) == OWNER_MASK_SPECTATOR ||
                 eWantOwned == LF_BOTH)
             {
                 pTbl.push_back(pPObj.m_pid);

@@ -354,11 +354,11 @@ void CGamDoc::RecordPieceSetFacing(PieceID pid, uint16_t nFacingDegCW)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordPieceSetOwnership(PieceID pid, DWORD dwOwnerMask)
+void CGamDoc::RecordPieceSetOwnership(PieceID pid, PlayerMask dwOwnerMask)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
-    ASSERT(m_pRcdMoves != NULL);
+    wxASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CPieceSetOwnership> pRcd = MakeOwner<CPieceSetOwnership>(pid, dwOwnerMask);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }

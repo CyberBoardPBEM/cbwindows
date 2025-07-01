@@ -373,27 +373,27 @@ void CGamDoc::SerializeGame(CArchive& ar)
         uint64_t dummy;
         SerializeScenarioOrGame(ar, dummy);
 
-        WORD wTmp;
-        BYTE cTmp;
+        uint16_t wTmp;
+        uint8_t cTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
         {
             if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10))
             {
                 ar >> wTmp;
-                m_dwCurrentPlayer = UPGRADE_OWNER_MASK(wTmp);
+                m_dwCurrentPlayer = PlayerMask(UPGRADE_OWNER_MASK(wTmp));
             }
             else
                 ar >> m_dwCurrentPlayer;
             ar >> m_dwPlayerHash;
             ar >> m_strPlayerFileDescr;
 
-            if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10) && m_dwCurrentPlayer != 0)
+            if (CGamDoc::GetLoadingVersion() < NumVersion(3, 10) && m_dwCurrentPlayer != OWNER_MASK_SPECTATOR)
                 m_dwPlayerHash = CalculateHashForCurrentPlayerMask(); // Recompute player hash
         }
         else
         {
-            m_dwCurrentPlayer = 0;
+            m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
             m_dwPlayerHash = 0;
             m_strPlayerFileDescr.clear();
         }
