@@ -34,7 +34,9 @@
 #include    "VwpBrd.h"
 #include    "GMisc.h"
 #include    "LibMfc.h"
+#if 0
 #include    "DlgRot.h"
+#endif
 #include    "DlgRotpc.h"
 #include    "DlgEdtel.h"
 #include    "DlgSelOwner.h"
@@ -1739,10 +1741,13 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
     TileID tid = pDoc->GetPieceTable().GetActiveTileID(tbl.front());
     CTile tile = pDoc->GetTileManager().GetTile(tid);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
+    wxASSERT(!"dead code");
+#if 0
     CRotateDialog dlg;
     dlg.m_pBMap = &*bmap;
     dlg.m_crTrans = pDoc->GetTileManager().GetTransparentColor();
     dlg.DoModal();
+#endif
 }
 
 void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
