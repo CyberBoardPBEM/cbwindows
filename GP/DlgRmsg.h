@@ -25,6 +25,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CReadMsgDialog dialog
 
+#error dead code
 class CReadMsgDialog : public CDialog
 {
     DECLARE_DYNAMIC(CReadMsgDialog)

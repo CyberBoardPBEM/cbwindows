@@ -15,7 +15,6 @@ set(SRCS
 	DlgNPly.cpp
 	DlgPass.cpp
 	DlgPbprp.cpp
-	DlgRot.cpp
 	DlgRotpc.cpp
 	DlgScnp.cpp
 	DlgSelOwner.cpp
