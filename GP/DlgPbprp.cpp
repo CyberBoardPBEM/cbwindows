@@ -37,10 +37,31 @@ static char THIS_FILE[] = __FILE__;
 // CPBrdPropDialog dialog
 
 
-CPBrdPropDialog::CPBrdPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CPBrdPropDialog::IDD, pParent)
+CPBrdPropDialog::CPBrdPropDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CPBrdPropDialog)
+        CB_XRC_CTRL(m_chkAllowAccess)
+        CB_XRC_CTRL(m_chkPrivate)
+        CB_XRC_CTRL(m_comboOwners)
+        CB_XRC_CTRL(m_staticOwnerLabel)
+        CB_XRC_CTRL(m_cpPlotColor)
+        CB_XRC_CTRL(m_comboPlotWd)
+        CB_XRC_CTRL_VAL(m_chkGridSnap, m_bGridSnap)
+        CB_XRC_CTRL_VAL(m_chkSmallCellBorders, m_bSmallCellBorders)
+        CB_XRC_CTRL_VAL(m_chkCellBorders, m_bCellBorders)
+        CB_XRC_CTRL_VAL(m_editXStackStagger, m_xStackStagger, -256, 256)
+        CB_XRC_CTRL_VAL(m_editYStackStagger, m_yStackStagger, -256, 256)
+        CB_XRC_CTRL_VAL(m_editBoardName, m_strBoardName)
+        CB_XRC_CTRL_VAL(m_chkGridRectCenters, m_bGridRectCenters)
+        CB_XRC_CTRL_VAL(m_chkSnapMovePlot, m_bSnapMovePlot)
+        CB_XRC_CTRL_VAL(m_editXGridSnapOff, m_fXGridSnapOff, 0.f, 255.999f)
+        CB_XRC_CTRL_VAL(m_editYGridSnapOff, m_fYGridSnapOff, 0.f, 255.999f)
+        CB_XRC_CTRL_VAL(m_editXGridSnap, m_fXGridSnap, 2.f, 256.f)
+        CB_XRC_CTRL_VAL(m_editYGridSnap, m_fYGridSnap, 2.f, 256.f)
+        CB_XRC_CTRL_VAL(m_chkOpenBoardOnLoad, m_bOpenBoardOnLoad)
+        CB_XRC_CTRL_VAL(m_chkShowSelListAndTinyMap, m_bShowSelListAndTinyMap)
+        CB_XRC_CTRL_VAL(m_chkDrawLockedBeneath, m_bDrawLockedBeneath)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CPBrdPropDialog)
     m_bGridSnap = FALSE;
     m_bSmallCellBorders = FALSE;
     m_bCellBorders = FALSE;
@@ -56,9 +77,8 @@ CPBrdPropDialog::CPBrdPropDialog(CWnd* pParent /*=NULL*/)
     m_bOpenBoardOnLoad = FALSE;
     m_bShowSelListAndTinyMap = FALSE;
     m_bDrawLockedBeneath = TRUE;
-    //}}AFX_DATA_INIT
-    m_crPlotColor = RGB(0,0,0);
-    m_nPlotWd = 1;
+    m_crPlotColor = wxColour(0,0,0);
+    m_nPlotWd = uint32_t(1);
     m_bNonOwnerAccess = FALSE;
     m_bPrivate = FALSE;
     m_nOwnerSel = INVALID_PLAYER;
@@ -66,47 +86,14 @@ CPBrdPropDialog::CPBrdPropDialog(CWnd* pParent /*=NULL*/)
     m_bOwnerInfoIsReadOnly = FALSE;
 }
 
-void CPBrdPropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CPBrdPropDialog)
-    DDX_Control(pDX, IDC_D_PBPRP_NONOWNER_ACCESS, m_chkAllowAccess);
-    DDX_Control(pDX, IDC_D_PBPRP_NONOWNER_HIDE, m_chkPrivate);
-    DDX_Control(pDX, IDC_D_PBPRP_OWNER_LIST, m_comboOwners);
-    DDX_Control(pDX, IDC_D_PBPRP_OWNER_LABEL, m_staticOwnerLabel);
-    DDX_Control(pDX, IDC_D_PBPRP_PLOTCOLOR, m_cpPlotColor);
-    DDX_Control(pDX, IDC_D_PBPRP_PLOTWIDTH, m_comboPlotWd);
-    DDX_Check(pDX, IDC_D_PBPRP_SNAPON, m_bGridSnap);
-    DDX_Check(pDX, IDC_D_PBPRP_S_CELLBORDER, m_bSmallCellBorders);
-    DDX_Check(pDX, IDC_D_PBPRP_L_CELLBORDER, m_bCellBorders);
-    DDX_Text(pDX, IDC_D_PBPRP_XPCE_STGGR, m_xStackStagger);
-    DDV_MinMaxInt(pDX, m_xStackStagger, -256, 256);
-    DDX_Text(pDX, IDC_D_PBPRP_YPCE_STGGR, m_yStackStagger);
-    DDV_MinMaxInt(pDX, m_yStackStagger, -256, 256);
-    DDX_Text(pDX, IDC_D_PBPRP_BOARDNAME, m_strBoardName);
-    DDX_Check(pDX, IDC_D_PBPRP_S_RECTCENTER, m_bGridRectCenters);
-    DDX_Check(pDX, IDC_D_PBPRP_S_SNAPPLOTS, m_bSnapMovePlot);
-    DDX_Text(pDX, IDC_D_PBPRP_XOFFSET, m_fXGridSnapOff);
-    DDV_MinMaxFloat(pDX, m_fXGridSnapOff, 0.f, 255.999f);
-    DDX_Text(pDX, IDC_D_PBPRP_YOFFSET, m_fYGridSnapOff);
-    DDV_MinMaxFloat(pDX, m_fYGridSnapOff, 0.f, 255.999f);
-    DDX_Text(pDX, IDC_D_PBPRP_XPIXELS, m_fXGridSnap);
-    DDV_MinMaxFloat(pDX, m_fXGridSnap, 2.f, 256.f);
-    DDX_Text(pDX, IDC_D_PBPRP_YPIXELS, m_fYGridSnap);
-    DDV_MinMaxFloat(pDX, m_fYGridSnap, 2.f, 256.f);
-    DDX_Check(pDX, IDC_D_PBPRP_AUTOOPEN, m_bOpenBoardOnLoad);
-    DDX_Check(pDX, IDC_D_PBPRP_SHOW_SEL_AND_TINY, m_bShowSelListAndTinyMap);
-    DDX_Check(pDX, IDC_D_PBPRP_DRAW_LOCKED_BENEATH, m_bDrawLockedBeneath);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CPBrdPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CPBrdPropDialog)
+wxBEGIN_EVENT_TABLE(CPBrdPropDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -143,19 +130,23 @@ void CPBrdPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPBrdPropDialog message handlers
 
-void CPBrdPropDialog::OnOK()
+bool CPBrdPropDialog::TransferDataFromWindow()
 {
-    m_crPlotColor = m_cpPlotColor.GetColor();
+    m_crPlotColor = m_cpPlotColor->GetColour();
 
-    int nIdx = m_comboPlotWd.GetCurSel();
-    if (nIdx >= 0)
-        m_nPlotWd = nIdx + 1;
+    int nIdx = m_comboPlotWd->GetSelection();
+    if (nIdx != wxNOT_FOUND)
+        m_nPlotWd = value_preserving_cast<uint32_t>(nIdx) + uint32_t(1);
 
-    CDialog::OnOK();
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
 
     // Make sure these are within grid size
 
@@ -164,7 +155,7 @@ void CPBrdPropDialog::OnOK()
     m_xGridSnap = value_preserving_cast<uint32_t>(std::round(m_fXGridSnap * 1000));
     m_yGridSnap = value_preserving_cast<uint32_t>(std::round(m_fYGridSnap * 1000));
 
-    ASSERT(m_xGridSnap > 0u && m_yGridSnap > 0u);
+    wxASSERT(m_xGridSnap > 0u && m_yGridSnap > 0u);
     if (m_xGridSnap > 0u)
         m_xGridSnapOff = m_xGridSnapOff % m_xGridSnap;
     if (m_yGridSnap > 0u)
@@ -172,61 +163,60 @@ void CPBrdPropDialog::OnOK()
 
     if (m_pPlayerMgr != NULL && !m_bOwnerInfoIsReadOnly)
     {
-        m_nOwnerSel = PlayerId(m_comboOwners.GetCurSel() - 1);
-        m_bNonOwnerAccess = m_chkAllowAccess.GetCheck() != 0;
-        m_bPrivate = m_chkPrivate.GetCheck() != 0;
+        m_nOwnerSel = PlayerId(m_comboOwners->GetSelection() - 1);
+        m_bNonOwnerAccess = m_chkAllowAccess->GetValue();
+        m_bPrivate = m_chkPrivate->GetValue();
     }
+
+    return true;
 }
 
-BOOL CPBrdPropDialog::OnInitDialog()
+bool CPBrdPropDialog::TransferDataToWindow()
 {
     m_fXGridSnapOff = value_preserving_cast<float>(m_xGridSnapOff) / 1000.f;
     m_fYGridSnapOff = value_preserving_cast<float>(m_yGridSnapOff) / 1000.f;
     m_fXGridSnap = value_preserving_cast<float>(m_xGridSnap) / 1000.f;
     m_fYGridSnap = value_preserving_cast<float>(m_yGridSnap) / 1000.f;
 
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    m_cpPlotColor.SetColor(m_crPlotColor);
+    m_cpPlotColor->SetColour(m_crPlotColor);
 
-    if (m_nPlotWd <= 0)
-        m_nPlotWd = 1;
-    ASSERT((int)m_nPlotWd <= m_comboPlotWd.GetCount());
-    m_comboPlotWd.SetCurSel(m_nPlotWd - 1);
+    if (m_nPlotWd == 0u)
+        m_nPlotWd = 1u;
+    wxASSERT(m_nPlotWd <= m_comboPlotWd->GetCount());
+    m_comboPlotWd->SetSelection(value_preserving_cast<int>(m_nPlotWd) - 1);
 
     if (m_pPlayerMgr == NULL)
     {
-        m_comboOwners.EnableWindow(FALSE);
-        m_staticOwnerLabel.EnableWindow(FALSE);
-        m_chkAllowAccess.SetCheck(0);
-        m_chkAllowAccess.EnableWindow(FALSE);
-        m_chkPrivate.SetCheck(0);
-        m_chkPrivate.EnableWindow(FALSE);
+        m_comboOwners->Enable(FALSE);
+        m_staticOwnerLabel->Enable(FALSE);
+        m_chkAllowAccess->SetValue(false);
+        m_chkAllowAccess->Enable(FALSE);
+        m_chkPrivate->SetValue(false);
+        m_chkPrivate->Enable(FALSE);
     }
     else
     {
         CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
-        m_comboOwners.AddString(str);
+        m_comboOwners->Append(str);
         for (const Player& player : *m_pPlayerMgr)
         {
-            m_comboOwners.AddString(player.m_strName);
+            m_comboOwners->Append(player.m_strName);
         }
-        m_comboOwners.SetCurSel(static_cast<int>(m_nOwnerSel) + 1);
-        m_chkAllowAccess.SetCheck(m_bNonOwnerAccess ? 1 : 0);
-        m_chkPrivate.SetCheck(m_bPrivate ? 1 : 0);
+        m_comboOwners->SetSelection(static_cast<int>(m_nOwnerSel) + 1);
+        m_chkAllowAccess->SetValue(m_bNonOwnerAccess);
+        m_chkPrivate->SetValue(m_bPrivate);
     }
     if (m_bOwnerInfoIsReadOnly)
     {
-        m_comboOwners.EnableWindow(FALSE);
-        m_chkAllowAccess.EnableWindow(FALSE);
-        m_chkPrivate.EnableWindow(FALSE);
+        m_comboOwners->Enable(FALSE);
+        m_chkAllowAccess->Enable(FALSE);
+        m_chkPrivate->Enable(FALSE);
     }
 
     return TRUE;  // return TRUE  unless you set the focus to a control
-}
-
-
-void CPBrdPropDialog::OnBnClickedDPbprpShowSelAndTiny2()
-{
-    // TODO: Add your control notification handler code here
 }
