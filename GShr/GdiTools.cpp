@@ -355,7 +355,7 @@ wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
     wxASSERT(!rct.IsEmpty());
 
     wxBitmap pbmDst = pbmSrc.GetSubBitmap(rct);
-    if (crVoided != noColor)
+    if (crVoided != noColorWx)
     {
         wxMemoryDC dc(pbmSrc);
         dc.SetPen(crVoided);
