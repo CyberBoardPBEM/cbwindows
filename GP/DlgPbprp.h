@@ -1,6 +1,6 @@
 // DlgPbprp.h - Playing board properties
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,39 +27,26 @@
 
 class CPlayerManager;
 
-class CPBrdPropDialog : public CDialog
+class CPBrdPropDialog : public wxDialog
 {
 // Construction
 public:
-    CPBrdPropDialog(CWnd* pParent = NULL);  // standard constructor
+    CPBrdPropDialog(wxWindow* pParent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CPBrdPropDialog)
-    enum { IDD = IDD_PBRDPROP };
-    CButton m_chkAllowAccess;
-    CButton m_chkPrivate;
-    CComboBox   m_comboOwners;
-    CStatic m_staticOwnerLabel;
-    CMFCColorButton  m_cpPlotColor;
-    CComboBox   m_comboPlotWd;
-    BOOL        m_bGridSnap;
-    BOOL        m_bSmallCellBorders;
-    BOOL        m_bCellBorders;
+    bool        m_bGridSnap;
+    bool        m_bSmallCellBorders;
+    bool        m_bCellBorders;
     int         m_xStackStagger;
     int         m_yStackStagger;
-    CB::string  m_strBoardName;
-    BOOL        m_bGridRectCenters;
-    BOOL        m_bSnapMovePlot;
-    float       m_fXGridSnapOff;
-    float       m_fYGridSnapOff;
-    float       m_fXGridSnap;
-    float       m_fYGridSnap;
-    BOOL        m_bOpenBoardOnLoad;
-    BOOL        m_bShowSelListAndTinyMap;
-    BOOL        m_bDrawLockedBeneath;
-    //}}AFX_DATA
+    wxString    m_strBoardName;
+    bool        m_bGridRectCenters;
+    bool        m_bSnapMovePlot;
+    bool        m_bOpenBoardOnLoad;
+    bool        m_bShowSelListAndTinyMap;
+    bool        m_bDrawLockedBeneath;
 
-    COLORREF    m_crPlotColor;
+    wxColour    m_crPlotColor;
     UINT        m_nPlotWd;
 
     uint32_t    m_xGridSnapOff;
@@ -72,21 +59,44 @@ public:
     BOOL            m_bPrivate;
     PlayerId        m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
     CPlayerManager* m_pPlayerMgr;
+private:
+    float       m_fXGridSnapOff;
+    float       m_fYGridSnapOff;
+    float       m_fXGridSnap;
+    float       m_fYGridSnap;
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkAllowAccess;
+        RefPtr<wxCheckBox> m_chkPrivate;
+        RefPtr<wxChoice> m_comboOwners;
+        RefPtr<wxStaticText> m_staticOwnerLabel;
+        RefPtr<wxColourPickerCtrl> m_cpPlotColor;
+        RefPtr<wxChoice> m_comboPlotWd;
+        RefPtr<wxCheckBox> m_chkGridSnap;
+        RefPtr<wxCheckBox> m_chkSmallCellBorders;
+        RefPtr<wxCheckBox> m_chkCellBorders;
+        RefPtr<wxTextCtrl> m_editXStackStagger;
+        RefPtr<wxTextCtrl> m_editYStackStagger;
+        RefPtr<wxTextCtrl> m_editBoardName;
+        RefPtr<wxCheckBox> m_chkGridRectCenters;
+        RefPtr<wxCheckBox> m_chkSnapMovePlot;
+        RefPtr<wxTextCtrl> m_editXGridSnapOff;
+        RefPtr<wxTextCtrl> m_editYGridSnapOff;
+        RefPtr<wxTextCtrl> m_editXGridSnap;
+        RefPtr<wxTextCtrl> m_editYGridSnap;
+        RefPtr<wxCheckBox> m_chkOpenBoardOnLoad;
+        RefPtr<wxCheckBox> m_chkShowSelListAndTinyMap;
+        RefPtr<wxCheckBox> m_chkDrawLockedBeneath;
+    CB_XRC_END_CTRLS_DECL()
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CPBrdPropDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
+    bool TransferDataFromWindow() override;
+    bool TransferDataToWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-public:
-    afx_msg void OnBnClickedDPbprpShowSelAndTiny2();
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
 
