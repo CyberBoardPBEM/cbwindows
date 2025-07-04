@@ -1020,7 +1020,7 @@ void CBrdEditView::SetCellColor(wxColour crCell, wxPoint pnt, BOOL bUpdate)
 
     if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
-    if (crCell != pBa.GetCellColor(row, col))
+    if (crCell != CB::Convert(pBa.GetCellColor(row, col)))
     {
         pBa.SetCellColor(row, col, CB::Convert(crCell));
         if (bUpdate)
@@ -1093,7 +1093,7 @@ void CBrdEditView::DoCreateTextDrawingObject(wxPoint point)
         if (!dlg.m_strText.empty())
         {
             CreateTextDrawingObject(point, dlg.m_fontID,
-                m_pBMgr->GetForeColor(), dlg.m_strText, TRUE);
+                CB::Convert(m_pBMgr->GetForeColor()), dlg.m_strText, TRUE);
             GetDocument().SetModifiedFlag();
         }
     }

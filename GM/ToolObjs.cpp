@@ -853,7 +853,7 @@ wxCursor CTileTool::OnSetCursor(const CBrdEditView& /*pView*/, wxPoint /*point*/
 void CCellEraserTool::OnLButtonDown(CBrdEditView& pView, int nMods,
     wxPoint point)
 {
-        pView.SetCellColor(noColor, point, TRUE);
+        pView.SetCellColor(noColorWx, point, TRUE);
 //      pView->SetCellTile(nullTid, point, TRUE);
 }
 
@@ -861,7 +861,7 @@ void CCellEraserTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxP
 {
     if (nButs & wxMOUSE_BTN_LEFT)
     {
-        pView.SetCellColor(noColor, point, TRUE);
+        pView.SetCellColor(noColorWx, point, TRUE);
 //      pView->SetCellTile(nullTid, point, TRUE);
     }
 }

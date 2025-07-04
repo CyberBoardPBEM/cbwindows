@@ -81,7 +81,7 @@ void CTileSelView::OnInitialUpdate()
 
     // Fetch small scale color and create bogus tile for color editing
     tile = m_pTileMgr->GetTile(m_tid, smallScale);
-    m_crSmall = tile.GetSmallColor();
+    m_crSmall = CB::Convert(tile.GetSmallColor());
     m_sizeSmall = wxSize(8, 8);
     m_bmSmall = CreateColorBitmap(m_sizeSmall, m_crSmall);
 
