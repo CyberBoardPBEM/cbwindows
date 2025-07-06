@@ -1591,14 +1591,14 @@ void CGamDoc::OnUpdateEditCreateTray(CCmdUI* pCmdUI)
 
 void CGamDoc::OnEditScenarioProperties()
 {
-    ASSERT(IsScenario());
+    wxASSERT(IsScenario());
     CScnPropDialog dlg;
 
-    dlg.m_strAuthor = m_strScnAuthor;
-    dlg.m_strTitle = m_strScnTitle;
-    dlg.m_strDescr = m_strScnDescr;
+    dlg.m_strAuthor = m_strScnAuthor.wx_str();
+    dlg.m_strTitle = m_strScnTitle.wx_str();
+    dlg.m_strDescr = m_strScnDescr.wx_str();
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         m_strScnAuthor = dlg.m_strAuthor;
         m_strScnTitle  = dlg.m_strTitle;

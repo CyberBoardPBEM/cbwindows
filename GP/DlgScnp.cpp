@@ -1,6 +1,6 @@
 // DlgScnp.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,37 +38,35 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CScnPropDialog dialog
 
-CScnPropDialog::CScnPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CScnPropDialog::IDD, pParent)
+CScnPropDialog::CScnPropDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CScnPropDialog)
+        CB_XRC_CTRL_VAL(m_editAuthor, m_strAuthor, wxFILTER_NONE, 60)
+        CB_XRC_CTRL_VAL(m_editTitle, m_strTitle, wxFILTER_NONE, 60)
+        CB_XRC_CTRL_VAL(m_editDescr, m_strDescr, wxFILTER_NONE, 2500)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CScnPropDialog)
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize size = m_editTitle->GetSizeFromText(m_editTitle->GetValue());
+    m_editTitle->CacheBestSize(size);
+
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
     m_strAuthor = "";
     m_strTitle = "";
     m_strDescr = "";
-    //}}AFX_DATA_INIT
 }
 
-void CScnPropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CScnPropDialog)
-    DDX_Text(pDX, IDC_D_SCNPRP_AUTHOR, m_strAuthor);
-    DDV_MaxChars(pDX, m_strAuthor, 60);
-    DDX_Text(pDX, IDC_D_SCNPRP_TITLE, m_strTitle);
-    DDV_MaxChars(pDX, m_strTitle, 60);
-    DDX_Text(pDX, IDC_D_SCNPRP_DESCR, m_strDescr);
-    DDV_MaxChars(pDX, m_strDescr, 2500);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CScnPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CScnPropDialog)
-        // NOTE: the ClassWizard will add message map macros here
+wxBEGIN_EVENT_TABLE(CScnPropDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -89,4 +87,5 @@ void CScnPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
