@@ -1,6 +1,6 @@
 // DlgScnp.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,29 +25,28 @@
 /////////////////////////////////////////////////////////////////////////////
 // CScnPropDialog dialog
 
-class CScnPropDialog : public CDialog
+class CScnPropDialog : public wxDialog
 {
 // Construction
 public:
-    CScnPropDialog(CWnd* pParent = NULL);   // standard constructor
+    CScnPropDialog(wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CScnPropDialog)
-    enum { IDD = IDD_SCNPROP };
-    CB::string m_strAuthor;
-    CB::string m_strTitle;
-    CB::string m_strDescr;
-    //}}AFX_DATA
+    wxString m_strAuthor;
+    wxString m_strTitle;
+    wxString m_strDescr;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editAuthor;
+        RefPtr<wxTextCtrl> m_editTitle;
+        RefPtr<wxTextCtrl> m_editDescr;
+    CB_XRC_END_CTRLS_DECL()
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CScnPropDialog)
-        // NOTE: the ClassWizard will add member functions here
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
