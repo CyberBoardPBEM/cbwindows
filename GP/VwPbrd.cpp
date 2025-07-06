@@ -1860,7 +1860,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 {
     m_bWheelRotation = bWheelRotation;
 
-    CRotatePieceDialog dlg(this);
+    CRotatePieceDialog dlg(*this);
     CGamDoc* pDoc = GetDocument();
     CPieceTable& pPTbl = pDoc->GetPieceTable();
 
@@ -1898,12 +1898,32 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         }
     }
     // If we're recording moves right now, suspend it for the moment.
-    BOOL bRecording = pDoc->IsRecording();
-    if (bRecording)
-        pDoc->SetGameState(CGamDoc::stateNotRecording);
+    int nDlgResult;
+    {
+    class SuspendRecording
+    {
+    public:
+        SuspendRecording(CGamDoc& d) : doc(d)
+        {
+            if (bRecording)
+            {
+                doc.SetGameState(CGamDoc::stateNotRecording);
+            }
+        }
+        ~SuspendRecording()
+        {
+            if (bRecording)
+            {
+                doc.SetGameState(CGamDoc::stateRecording);
+            }
+        }
+    private:
+        CGamDoc& doc;
+        BOOL bRecording = doc.IsRecording();
+    } suspendRecording(*pDoc);
 
     // Show the rotation dialog
-    INT_PTR nDlgResult = dlg.DoModal();
+    nDlgResult = dlg.ShowModal();
 
     // Restore angles before possibly recording the operation.
     for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
@@ -1929,9 +1949,8 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         }
     }
     // Restore recording mode if it was active.
-    if (bRecording)
-        pDoc->SetGameState(CGamDoc::stateRecording);
-    if (nDlgResult == IDOK)
+    }
+    if (nDlgResult == wxID_OK)
     {
         // Rotation was accepted. Make the final changes.
         pDoc->AssignNewMoveGroup();

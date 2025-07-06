@@ -1,6 +1,6 @@
 // DlgRotpc.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,44 +32,45 @@
 /////////////////////////////////////////////////////////////////////////////
 // CRotatePieceDialog dialog
 
-class CRotatePieceDialog : public CDialog
+class CRotatePieceDialog : public wxDialog
 {
 // Construction
 public:
-    CRotatePieceDialog(CWnd* pParent = NULL);   // standard constructor
+    /* TEMPORARY:  this needs to send msgs to the view, but that
+        hasn't been converted to wx yet, so can't be passed as
+        parent */
+    CRotatePieceDialog(CWnd& v, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CRotatePieceDialog)
-    enum { IDD = IDD_ROTATEPIECE };
-    CEdit   m_editCurVal;
-    //}}AFX_DATA
-
     int m_nRelativeRotation;
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxTextCtrl> m_editCurVal;
+    CB_XRC_END_CTRLS_DECL()
 
 // Overrides
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog();
 
 // Implementation
 protected:
     void ApplyOffset(int nOffset);
-    void UpdateRotationValue();
 
-    // Generated message map functions
-    //{{AFX_MSG(CRotatePieceDialog)
-    afx_msg void OnRotatePieceCCW1();
-    afx_msg void OnRotatePieceCCW5();
-    afx_msg void OnRotatePieceCCW10();
-    afx_msg void OnRotatePieceCCW50();
-    afx_msg void OnRotatePieceCW1();
-    afx_msg void OnRotatePieceCW5();
-    afx_msg void OnRotatePieceCW10();
-    afx_msg void OnRotatePieceCW50();
+    void OnRotatePieceCCW1(wxCommandEvent& event);
+    void OnRotatePieceCCW5(wxCommandEvent& event);
+    void OnRotatePieceCCW10(wxCommandEvent& event);
+    void OnRotatePieceCCW50(wxCommandEvent& event);
+    void OnRotatePieceCW1(wxCommandEvent& event);
+    void OnRotatePieceCW5(wxCommandEvent& event);
+    void OnRotatePieceCW10(wxCommandEvent& event);
+    void OnRotatePieceCW50(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    RefPtr<CWnd> view;
 };
 
 #endif
