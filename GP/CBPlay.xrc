@@ -1691,4 +1691,177 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CRotatePieceDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Rotate Object</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer48">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxGridSizer" name="gSizer1">
+          <rows>4</rows>
+          <cols>2</cols>
+          <vgap>0</vgap>
+          <hgap>0</hgap>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCCW1">
+              <style>wxBU_EXACTFIT</style>
+              <label>-1°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCW1">
+              <style>wxBU_EXACTFIT</style>
+              <label>+1°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCCW5">
+              <style>wxBU_EXACTFIT</style>
+              <label>-5°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCW5">
+              <style>wxBU_EXACTFIT</style>
+              <label>+5°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCCW10">
+              <style>wxBU_EXACTFIT</style>
+              <label>-10°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCW10">
+              <style>wxBU_EXACTFIT</style>
+              <label>+10°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCCW50">
+              <style>wxBU_EXACTFIT</style>
+              <label>-50°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxLEFT|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRotatePieceCW50">
+              <style>wxBU_EXACTFIT</style>
+              <label>+50°</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND|wxLEFT</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer49">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_OK">
+              <style>wxBU_EXACTFIT</style>
+              <label>OK</label>
+              <default>1</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_CANCEL">
+              <style>wxBU_EXACTFIT</style>
+              <label>Cancel</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxTextCtrl" name="m_editCurVal">
+              <style>wxTE_CENTER|wxTE_READONLY</style>
+              <value></value>
+              <maxlength>0</maxlength>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
 </resource>

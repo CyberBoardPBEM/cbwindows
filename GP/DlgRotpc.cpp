@@ -1,6 +1,6 @@
 // DlgRotpc.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,36 +35,41 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CRotatePieceDialog dialog
 
-CRotatePieceDialog::CRotatePieceDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CRotatePieceDialog::IDD, pParent)
+CRotatePieceDialog::CRotatePieceDialog(CWnd& v, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CRotatePieceDialog)
+        CB_XRC_CTRL_VAL(m_editCurVal, m_nRelativeRotation, -359, 359, wxNUM_VAL_SIGN_PLUS)
+    CB_XRC_END_CTRLS_DEFN(),
+    view(&v)
 {
+    // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
+    wxSize size = m_editCurVal->GetSizeFromText("+999"_cbstring);
+    m_editCurVal->CacheBestSize(size);
+
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
     m_nRelativeRotation = 0;
 }
 
 
-void CRotatePieceDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CRotatePieceDialog)
-    DDX_Control(pDX, IDC_D_ROTPCE_CURVAL, m_editCurVal);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CRotatePieceDialog, CDialog)
-    //{{AFX_MSG_MAP(CRotatePieceDialog)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CCW1, OnRotatePieceCCW1)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CCW5, OnRotatePieceCCW5)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CCW10, OnRotatePieceCCW10)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CCW50, OnRotatePieceCCW50)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CW1, OnRotatePieceCW1)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CW5, OnRotatePieceCW5)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CW10, OnRotatePieceCW10)
-    ON_BN_CLICKED(IDC_D_ROTPCE_CW50, OnRotatePieceCW50)
+wxBEGIN_EVENT_TABLE(CRotatePieceDialog, wxDialog)
+    EVT_BUTTON(XRCID("OnRotatePieceCCW1"), OnRotatePieceCCW1)
+    EVT_BUTTON(XRCID("OnRotatePieceCCW5"), OnRotatePieceCCW5)
+    EVT_BUTTON(XRCID("OnRotatePieceCCW10"), OnRotatePieceCCW10)
+    EVT_BUTTON(XRCID("OnRotatePieceCCW50"), OnRotatePieceCCW50)
+    EVT_BUTTON(XRCID("OnRotatePieceCW1"), OnRotatePieceCW1)
+    EVT_BUTTON(XRCID("OnRotatePieceCW5"), OnRotatePieceCW5)
+    EVT_BUTTON(XRCID("OnRotatePieceCW10"), OnRotatePieceCW10)
+    EVT_BUTTON(XRCID("OnRotatePieceCW50"), OnRotatePieceCW50)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -91,73 +96,54 @@ void CRotatePieceDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CRotatePieceDialog message handlers
 
-void CRotatePieceDialog::UpdateRotationValue()
-{
-    CB::string szBfr;
-    if (m_nRelativeRotation != 0)
-    {
-        szBfr = std::format(L"{}{}", m_nRelativeRotation < 0 ? L'-' : L'+',
-                abs(m_nRelativeRotation));
-    }
-    else
-        szBfr = "0";
-    m_editCurVal.SetWindowText(szBfr);
-}
-
 void CRotatePieceDialog::ApplyOffset(int nOffset)
 {
     m_nRelativeRotation = (m_nRelativeRotation + nOffset) % 360;
-    m_pParentWnd->SendMessage(WM_ROTATEPIECE_DELTA, (WPARAM)m_nRelativeRotation);
-    UpdateRotationValue();
+    view->SendMessage(WM_ROTATEPIECE_DELTA, (WPARAM)m_nRelativeRotation);
+    TransferDataToWindow();
 }
 
-void CRotatePieceDialog::OnRotatePieceCCW1()
+void CRotatePieceDialog::OnRotatePieceCCW1(wxCommandEvent& /*event*/)
 {
     ApplyOffset(-1);
 }
 
-void CRotatePieceDialog::OnRotatePieceCCW5()
+void CRotatePieceDialog::OnRotatePieceCCW5(wxCommandEvent& /*event*/)
 {
     ApplyOffset(-5);
 }
 
-void CRotatePieceDialog::OnRotatePieceCCW10()
+void CRotatePieceDialog::OnRotatePieceCCW10(wxCommandEvent& /*event*/)
 {
     ApplyOffset(-10);
 }
 
-void CRotatePieceDialog::OnRotatePieceCCW50()
+void CRotatePieceDialog::OnRotatePieceCCW50(wxCommandEvent& /*event*/)
 {
     ApplyOffset(-50);
 }
 
-void CRotatePieceDialog::OnRotatePieceCW1()
+void CRotatePieceDialog::OnRotatePieceCW1(wxCommandEvent& /*event*/)
 {
     ApplyOffset(1);
 }
 
-void CRotatePieceDialog::OnRotatePieceCW5()
+void CRotatePieceDialog::OnRotatePieceCW5(wxCommandEvent& /*event*/)
 {
     ApplyOffset(5);
 }
 
-void CRotatePieceDialog::OnRotatePieceCW10()
+void CRotatePieceDialog::OnRotatePieceCW10(wxCommandEvent& /*event*/)
 {
     ApplyOffset(10);
 }
 
-void CRotatePieceDialog::OnRotatePieceCW50()
+void CRotatePieceDialog::OnRotatePieceCW50(wxCommandEvent& /*event*/)
 {
     ApplyOffset(50);
-}
-
-BOOL CRotatePieceDialog::OnInitDialog()
-{
-    CDialog::OnInitDialog();
-    UpdateRotationValue();
-    return TRUE;
 }
