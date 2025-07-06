@@ -2366,12 +2366,11 @@ void CPlayBoardView::OnActSetOwner()
     if (rct.IsRectEmpty())
         return;
 
-    CSelectNewOwnerDialog dlg;
-    dlg.m_pPlayerMgr = pDoc->GetPlayerManager();
+    CSelectNewOwnerDialog dlg(CheckedDeref(pDoc->GetPlayerManager()));
     if (!pDoc->IsCurrentPlayerReferee())
         dlg.m_nPlayer = CPlayerManager::GetPlayerNumFromMask(pDoc->GetCurrentPlayerMask());
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     PlayerMask dwNewOwnerMask = CPlayerManager::GetMaskFromPlayerNum(dlg.m_nPlayer);

@@ -36,35 +36,26 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSelectNewOwnerDialog dialog
 
-CSelectNewOwnerDialog::CSelectNewOwnerDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSelectNewOwnerDialog::IDD, pParent)
+CSelectNewOwnerDialog::CSelectNewOwnerDialog(CPlayerManager& pm, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CSelectNewOwnerDialog)
+        , m_btnOK(XRCCTRL(*this, "wxID_OK", std::remove_reference_t<decltype(*m_btnOK)>))
+        CB_XRC_CTRL(m_listPlayers)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pPlayerMgr(&pm)
 {
-    //{{AFX_DATA_INIT(CSelectNewOwnerDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
-
     m_nPlayer = INVALID_PLAYER;
-    m_pPlayerMgr = NULL;
 }
 
-void CSelectNewOwnerDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSelectNewOwnerDialog)
-    DDX_Control(pDX, IDOK, m_btnOK);
-    DDX_Control(pDX, IDC_D_SELOWN_LIST, m_listPlayers);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSelectNewOwnerDialog, CDialog)
-    //{{AFX_MSG_MAP(CSelectNewOwnerDialog)
-    ON_LBN_SELCHANGE(IDC_D_SELOWN_LIST, OnSelChangePlayerList)
-    ON_LBN_DBLCLK(IDC_D_SELOWN_LIST, OnDblClkPlayerList)
+wxBEGIN_EVENT_TABLE(CSelectNewOwnerDialog, wxDialog)
+    EVT_LISTBOX(XRCID("m_listPlayers"), OnSelChangePlayerList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listPlayers"), OnDblClkPlayerList)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -83,39 +74,44 @@ void CSelectNewOwnerDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectNewOwnerDialog message handlers
 
-void CSelectNewOwnerDialog::OnOK()
+bool CSelectNewOwnerDialog::TransferDataFromWindow()
 {
-    m_nPlayer = PlayerId(m_listPlayers.GetCurSel());
-    CDialog::OnOK();
-}
-
-BOOL CSelectNewOwnerDialog::OnInitDialog()
-{
-    CDialog::OnInitDialog();
-
-    for (const Player& player : *m_pPlayerMgr)
+    if (!wxDialog::TransferDataFromWindow())
     {
-        m_listPlayers.AddString(player.m_strName);
+        return false;
     }
 
+    m_nPlayer = PlayerId(m_listPlayers->GetSelection());
+
+    return true;
+}
+
+bool CSelectNewOwnerDialog::TransferDataToWindow()
+{
+    m_listPlayers->Clear();
+    for (const Player& player : *m_pPlayerMgr)
+        m_listPlayers->AppendString(player.m_strName);
+
     if (m_nPlayer != INVALID_PLAYER)
-        m_listPlayers.SetCurSel(static_cast<int>(m_nPlayer));
-    m_btnOK.EnableWindow(m_listPlayers.GetCurSel() >= 0);
+        m_listPlayers->SetSelection(static_cast<int>(m_nPlayer));
+    m_btnOK->Enable(m_listPlayers->GetSelection() != wxNOT_FOUND);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    return wxDialog::TransferDataToWindow();
 }
 
-void CSelectNewOwnerDialog::OnSelChangePlayerList()
+void CSelectNewOwnerDialog::OnSelChangePlayerList(wxCommandEvent& /*event*/)
 {
-    m_btnOK.EnableWindow(m_listPlayers.GetCurSel() >= 0);
+    m_btnOK->Enable(m_listPlayers->GetSelection() != wxNOT_FOUND);
 }
 
-void CSelectNewOwnerDialog::OnDblClkPlayerList()
+void CSelectNewOwnerDialog::OnDblClkPlayerList(wxCommandEvent& /*event*/)
 {
-    OnOK();
+    wxCommandEvent event(wxEVT_BUTTON, m_btnOK->GetId());
+    event.SetEventObject(&*m_btnOK);
+    m_btnOK->HandleWindowEvent(event);
 }
