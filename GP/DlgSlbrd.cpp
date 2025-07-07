@@ -1,6 +1,6 @@
 // DlgSlbrd.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,32 +37,24 @@ static char THIS_FILE[] = __FILE__;
 // CSelectBoardsDialog dialog
 
 
-CSelectBoardsDialog::CSelectBoardsDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSelectBoardsDialog::IDD, pParent)
+CSelectBoardsDialog::CSelectBoardsDialog(const CBoardManager& bm, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CSelectBoardsDialog)
+        CB_XRC_CTRL(m_listBoards)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pBMgr(bm)
 {
-    //{{AFX_DATA_INIT(CSelectBoardsDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
 }
 
-void CSelectBoardsDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSelectBoardsDialog)
-    DDX_Control(pDX, IDOK, m_btnOK);
-    DDX_Control(pDX, IDC_D_SETBRD_LIST, m_listBoards);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSelectBoardsDialog, CDialog)
-    //{{AFX_MSG_MAP(CSelectBoardsDialog)
+wxBEGIN_EVENT_TABLE(CSelectBoardsDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-    ON_BN_CLICKED(IDC_D_SETBRD_SELECTALL, OnBtnClickedSelectAll)
-    ON_BN_CLICKED(IDC_D_SETBRD_CLEARALL, OnBtnClickedClearAll)
-END_MESSAGE_MAP()
+#endif
+    EVT_BUTTON(XRCID("OnBtnClickedSelectAll"), OnBtnClickedSelectAll)
+    EVT_BUTTON(XRCID("OnBtnClickedClearAll"), OnBtnClickedClearAll)
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -81,34 +73,39 @@ void CSelectBoardsDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 int CSelectBoardsDialog::FindSerialNumberListIndex(BoardID nSerial) const
 {
-    for (int i = 0; i < m_listBoards.GetCount(); i++)
+    for (unsigned int i = 0u ; i < m_listBoards->GetCount() ; ++i)
     {
-        if (static_cast<BoardID>(m_listBoards.GetItemData(i)) == nSerial)
-            return i;
+        if (static_cast<BoardID>(reinterpret_cast<uintptr_t>(m_listBoards->GetClientData(i))) == nSerial)
+        {
+            return value_preserving_cast<int>(i);
+        }
     }
-    return -1;
+    return wxNOT_FOUND;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectBoardsDialog message handlers
 
-BOOL CSelectBoardsDialog::OnInitDialog()
+bool CSelectBoardsDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-
-    ASSERT(m_pBMgr != NULL);
-
-    for (size_t i = 0; i < m_pBMgr->GetNumBoards(); i++)
+    if (!wxDialog::TransferDataToWindow())
     {
-        const CBoard& pBoard = m_pBMgr->GetBoard(i);
-        int nIdx = m_listBoards.AddString(pBoard.GetName());
-        m_listBoards.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(static_cast<BoardID::UNDERLYING_TYPE>(pBoard.GetSerialNumber())));
-        m_listBoards.SetCheck(nIdx, 0);
+        return false;
+    }
+
+    m_listBoards->Clear();
+    for (size_t i = size_t(0); i < m_pBMgr.GetNumBoards(); i++)
+    {
+        const CBoard& pBoard = m_pBMgr.GetBoard(i);
+        int nIdx = m_listBoards->Append(pBoard.GetName());
+        m_listBoards->SetClientData(value_preserving_cast<unsigned int>(nIdx), reinterpret_cast<void*>(value_preserving_cast<uintptr_t>(static_cast<BoardID::UNDERLYING_TYPE>(pBoard.GetSerialNumber()))));
+        m_listBoards->Check(value_preserving_cast<unsigned int>(nIdx), false);
     }
 
     // If there are actively selected boards. Reselect them.
@@ -116,38 +113,46 @@ BOOL CSelectBoardsDialog::OnInitDialog()
     for (size_t i = 0; i < m_tblBrds.size(); i++)
     {
         int nIdx = FindSerialNumberListIndex(m_tblBrds[i]);
-        if (nIdx == -1)
-            AfxMessageBox(IDS_ERR_BOARDNOTEXIST, MB_OK | MB_ICONEXCLAMATION);
-        m_listBoards.SetCheck(nIdx, 1);
+        if (nIdx == wxNOT_FOUND)
+        {
+            wxMessageBox(CB::string::LoadString(IDS_ERR_BOARDNOTEXIST),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
+        }
+        m_listBoards->Check(value_preserving_cast<unsigned int>(nIdx), true);
     }
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return true;
 }
 
-void CSelectBoardsDialog::OnOK()
+bool CSelectBoardsDialog::TransferDataFromWindow()
 {
     m_tblBrds.clear();          // Clear the board table
 
-    m_tblBrds.reserve(value_preserving_cast<size_t>(m_listBoards.GetCount()));
-    for (int i = 0; i < m_listBoards.GetCount(); i++)
+    m_tblBrds.reserve(value_preserving_cast<size_t>(m_listBoards->GetCount()));
+    for (unsigned int i = 0u ; i < m_listBoards->GetCount() ; ++i)
     {
-        if (m_listBoards.GetCheck(i) > 0)
+        if (m_listBoards->IsChecked(i))
         {
             // Add serial numbers for selected boards
-            m_tblBrds.push_back(static_cast<BoardID>(m_listBoards.GetItemData(i)));
+            m_tblBrds.push_back(static_cast<BoardID>(reinterpret_cast<uintptr_t>(m_listBoards->GetClientData(i))));
         }
     }
-    CDialog::OnOK();
+    return wxDialog::TransferDataFromWindow();
 }
 
-void CSelectBoardsDialog::OnBtnClickedSelectAll()
+void CSelectBoardsDialog::OnBtnClickedSelectAll(wxCommandEvent& /*event*/)
 {
-    for (int i = 0; i < m_listBoards.GetCount(); i++)
-        m_listBoards.SetCheck(i, 1);
+    for (unsigned int i = 0u ; i < m_listBoards->GetCount() ; ++i)
+    {
+        m_listBoards->Check(i, true);
+    }
 }
 
-void CSelectBoardsDialog::OnBtnClickedClearAll()
+void CSelectBoardsDialog::OnBtnClickedClearAll(wxCommandEvent& /*event*/)
 {
-    for (int i = 0; i < m_listBoards.GetCount(); i++)
-        m_listBoards.SetCheck(i, 0);
+    for (unsigned int i = 0u ; i < m_listBoards->GetCount() ; ++i)
+    {
+        m_listBoards->Check(i, false);
+    }
 }
