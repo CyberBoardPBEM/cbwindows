@@ -1,6 +1,6 @@
 // DlgSlbrd.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,37 +27,31 @@ class CBoardManager;
 /////////////////////////////////////////////////////////////////////////////
 // CSelectBoardsDialog dialog
 
-class CSelectBoardsDialog : public CDialog
+class CSelectBoardsDialog : public wxDialog
 {
 // Construction
 public:
-    CSelectBoardsDialog(CWnd* pParent = NULL);  // standard constructor
+    CSelectBoardsDialog(const CBoardManager& bm, wxWindow* pParent = &CB::GetMainWndWx());  // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CSelectBoardsDialog)
-    enum { IDD = IDD_SETBOARDS };
-    CButton m_btnOK;
-    CCheckListBox   m_listBoards;
-    //}}AFX_DATA
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckListBox> m_listBoards;
+    CB_XRC_END_CTRLS_DECL()
 
     std::vector<BoardID> m_tblBrds;      // Table of board serial numbers
-    const CBoardManager* m_pBMgr;     // Pointer to gamebox board manager.
+    const CBoardManager& m_pBMgr;     // Pointer to gamebox board manager.
 
 // Implementation
 protected:
     int FindSerialNumberListIndex(BoardID nSerial) const;
 
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CSelectBoardsDialog)
-    virtual BOOL OnInitDialog();
-    virtual void OnOK();
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-public:
-    afx_msg void OnBtnClickedSelectAll();
-    afx_msg void OnBtnClickedClearAll();
+#endif
+    wxDECLARE_EVENT_TABLE();
+    void OnBtnClickedSelectAll(wxCommandEvent& event);
+    void OnBtnClickedClearAll(wxCommandEvent& event);
 };

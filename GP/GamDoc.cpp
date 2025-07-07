@@ -1619,12 +1619,10 @@ void CGamDoc::OnEditSelectBoards()
 
     CPBoardManager& pPBMgr = GetPBoardManager();
 
-    CSelectBoardsDialog dlg;
-
-    dlg.m_pBMgr = pPBMgr.GetBoardManager();
+    CSelectBoardsDialog dlg(CheckedDeref(pPBMgr.GetBoardManager()));
     pPBMgr.GetPBoardList(dlg.m_tblBrds);
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         // First close all the views of boards that are going
         // to be removed from the play list.
