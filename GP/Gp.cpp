@@ -650,3 +650,8 @@ wxWindow* CB::pGetMainWndWx()
 {
     return *dynamic_cast<CMainFrame*>(AfxGetMainWnd());
 }
+
+CB::string CB::GetAppName()
+{
+    return AfxGetAppName();
+}
