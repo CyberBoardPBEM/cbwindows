@@ -2101,9 +2101,9 @@ namespace CB
     }
 
     template<typename VAR, typename = std::enable_if_t<std::is_arithmetic_v<VAR>>>
-    wxTextCtrl& SetValidator(wxTextCtrl& ctrl, VAR& var, VAR min, VAR max)
+    wxTextCtrl& SetValidator(wxTextCtrl& ctrl, VAR& var, VAR min, VAR max, int style = wxNUM_VAL_DEFAULT)
     {
-        ctrl.SetValidator(CB::MakeValidator(var, min, max));
+        ctrl.SetValidator(CB::MakeValidator(var, min, max, style));
         return ctrl;
     }
 
