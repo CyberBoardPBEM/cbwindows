@@ -1,6 +1,6 @@
 // Editnocv.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -138,3 +138,41 @@ LRESULT CEditNoChevron::OnPasteMessage(WPARAM, LPARAM)
     return (LRESULT)0;
 }
 
+wxBEGIN_EVENT_TABLE(CEditNoChevronWx, wxTextCtrl)
+    EVT_CHAR(OnChar)
+    EVT_TEXT_PASTE(wxID_ANY, OnPasteMessage)
+wxEND_EVENT_TABLE()
+
+wxIMPLEMENT_DYNAMIC_CLASS(CEditNoChevronWx, wxTextCtrl);
+
+void CEditNoChevronWx::OnChar(wxKeyEvent& event)
+{
+    // Filter chevrons ('>>') and paragraph marks ('reverse P')
+    if (event.GetUnicodeKey() != 0xBB && event.GetUnicodeKey() != 0xB6)
+    {
+        event.Skip();
+    }
+}
+
+void CEditNoChevronWx::OnPasteMessage(wxClipboardTextEvent& event)
+{
+    wxClipboardLocker clipLock;
+    wxTextDataObject data;
+    if (wxTheClipboard->GetData(data))
+    {
+        wxString s = data.GetText();
+        for (auto it = s.begin() ; it != s.end() ; ++it)
+        {
+            switch ((*it).GetValue())
+            {
+                case 0xBB:
+                case 0xB6:
+                    *it = ' ';
+                    break;
+            }
+        }
+        long from, to;
+        GetSelection(&from, &to);
+        Replace(from, to, s);
+    }
+}

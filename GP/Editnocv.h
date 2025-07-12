@@ -1,6 +1,6 @@
 // Editnocv.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -61,6 +61,33 @@ protected:
     //}}AFX_MSG
 
     DECLARE_MESSAGE_MAP()
+};
+
+class CEditNoChevronWx : public wxTextCtrl
+{
+// Construction
+public:
+    using wxTextCtrl::wxTextCtrl;
+
+// Attributes
+public:
+
+// Operations
+public:
+
+// Overrides
+
+// Implementation
+public:
+
+    // Generated message map functions
+protected:
+    void OnChar(wxKeyEvent& event);
+    void OnPasteMessage(wxClipboardTextEvent& event);
+
+    wxDECLARE_EVENT_TABLE();
+    wxDECLARE_NO_COPY_CLASS(CEditNoChevronWx);
+    wxDECLARE_DYNAMIC_CLASS(CEditNoChevronWx);
 };
 
 /////////////////////////////////////////////////////////////////////////////
