@@ -97,6 +97,19 @@ ASSERT(!"needs testing");
     return TRUE;
 }
 
+BOOL AppendStringToEditBox(wxTextCtrl& edit, const CB::string& strAppend,
+    BOOL bEnsureNewline /* = FALSE */)
+{
+    if (bEnsureNewline)
+    {
+        CB::string str = edit.GetValue();
+        if (!str.empty() && str[str.a_size() - size_t(1)] != '\n')
+            AppendStringToEditBox(edit, L"\n", FALSE);
+    }
+    edit.AppendText(strAppend);
+    return TRUE;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 CDisableMainWindow::CDisableMainWindow(BOOL bDisable /* = TRUE */)

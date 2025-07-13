@@ -45,6 +45,8 @@ BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 
 BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
     BOOL bEnsureNewline = FALSE);
+BOOL AppendStringToEditBox(wxTextCtrl& edit, const CB::string& strAppend,
+    BOOL bEnsureNewline = FALSE);
 
 BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar);
 UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
