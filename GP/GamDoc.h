@@ -94,7 +94,7 @@ class CSendMsgDialog;
 class CModelessDialogCleaner
 {
 public:
-    void operator()(CDialog* p) const;
+    void operator()(wxDialog* p) const;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -536,7 +536,6 @@ public:
     void MsgDialogSend(const CB::string& str);
     void MsgDialogCancel(BOOL bDiscardHistory = FALSE);
     void MsgDialogClose(const CB::string& str);
-    void MsgDialogForceDefer();
 
     static CB::string MsgEncodeFromPieces(const CB::string& strReadOnly, const CB::string& strEditable);
     static void MsgSeperateIntoPieces(const CB::string& strMsg, CB::string& strReadOnly,

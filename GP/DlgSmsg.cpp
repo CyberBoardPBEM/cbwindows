@@ -1,6 +1,6 @@
 // DlgSmsg.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,49 +35,50 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CSendMsgDialog, CDialog)
-
 /////////////////////////////////////////////////////////////////////////////
 // CSendMsgDialog dialog
 
-CSendMsgDialog::CSendMsgDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
-    : CDialog(CSendMsgDialog::IDD, pParent),
+CSendMsgDialog::CSendMsgDialog(CGamDoc& doc, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CSendMsgDialog)
+        CB_XRC_CTRL(m_editMsg2)
+        CB_XRC_CTRL(m_btnDefer)
+        , m_btnCancel(XRCCTRL(*this, "wxID_CANCEL", std::remove_reference_t<decltype(*m_btnCancel)>))
+        CB_XRC_CTRL(m_editMsg)
+    CB_XRC_END_CTRLS_DEFN(),
     m_pDoc(&doc)
 {
-    //{{AFX_DATA_INIT(CSendMsgDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
-    m_bReadOnlyView = FALSE;
+    // KLUDGE:  Send & Close isn't coming through correctly
+    wxButton* sendClose = XRCCTRL(*this, "wxID_OK", wxButton);
+    wxString label = sendClose->GetLabel();
+    label.Replace("_", "&&");
+    sendClose->SetLabel(label);
+
+    /* layout done with both editboxes visible
+        so sizers produce proper result */
+    m_bReadOnlyView = TRUE;
+    // now hide second editbox
+    TeardownReadOnlyView();
+
     m_bShowDieRoller = FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSendMsgDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSendMsgDialog)
-    DDX_Control(pDX, IDC_D_SMSG_MESSAGE2, m_editMsg2);
-    DDX_Control(pDX, IDC_D_SMSG_CLOSE, m_btnDefer);
-    DDX_Control(pDX, IDCANCEL, m_btnCancel);
-    DDX_Control(pDX, IDC_D_SMSG_MESSAGE, m_editMsg);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSendMsgDialog, CDialog)
-    //{{AFX_MSG_MAP(CSendMsgDialog)
-    ON_BN_CLICKED(IDOK, OnSendMsgSendAndClose)
-    ON_BN_CLICKED(IDC_D_SMSG_SEND, OnSendMsgSend)
-    ON_BN_CLICKED(IDC_D_SMSG_CLOSE, OnSendMsgClose)
-    ON_BN_CLICKED(IDCANCEL, OnSendMsgCancel)
-    ON_BN_CLICKED(IDC_D_SMSG_ROLLDICE, OnRollDice)
+wxBEGIN_EVENT_TABLE(CSendMsgDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, OnSendMsgSendAndClose)
+    EVT_BUTTON(XRCID("OnSendMsgSend"), OnSendMsgSend)
+    EVT_BUTTON(XRCID("m_btnDefer"), OnSendMsgClose)
+    EVT_BUTTON(wxID_CANCEL, OnSendMsgCancel)
+    EVT_BUTTON(XRCID("OnRollDice"), OnRollDice)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    ON_EN_CHANGE(IDC_D_SMSG_MESSAGE, OnChangeEditMessage)
-    ON_EN_CHANGE(IDC_D_SMSG_MESSAGE2, OnChangeEdit2Message)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_TEXT(XRCID("m_editMsg"), OnChangeEditMessage)
+    EVT_TEXT(XRCID("m_editMsg2"), OnChangeEdit2Message)
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -102,6 +103,7 @@ void CSendMsgDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -110,10 +112,10 @@ void CSendMsgDialog::TransferToReadOnlyView()
     if (!m_bReadOnlyView)
         SetupReadOnlyView();
 
-    CB::string str = CB::string::GetWindowText(m_editMsg2);
-    AppendStringToEditBox(m_editMsg, str, TRUE);
-    m_editMsg2.SetWindowText(""_cbstring);
-    m_btnCancel.EnableWindow(FALSE);
+    CB::string str = m_editMsg2->GetValue();
+    AppendStringToEditBox(*m_editMsg, str, TRUE);
+    m_editMsg2->SetValue(""_cbstring);
+    m_btnCancel->Enable(FALSE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,18 +127,9 @@ void CSendMsgDialog::SetupReadOnlyView()
         m_bReadOnlyView = TRUE;
         // Convert the current edit view to read-only and
         // layout the new edit window.
-        CRect rctTop;
-        m_editMsg.GetWindowRect(&rctTop);
-        ScreenToClient(&rctTop);
-        CRect rctBot = rctTop;
-
-        rctTop.bottom = rctTop.top + (2 * rctTop.Height()) / 3 - 1;
-        rctBot.top = rctTop.bottom;
-
-        m_editMsg.SetReadOnly(TRUE);
-        m_editMsg.MoveWindow(&rctTop);
-        m_editMsg2.MoveWindow(&rctBot);
-        m_editMsg2.ShowWindow(SW_SHOW);
+        m_editMsg->SetEditable(false);
+        m_editMsg2->Show();
+        Layout();
     }
 }
 
@@ -147,19 +140,12 @@ void CSendMsgDialog::TeardownReadOnlyView()
     if (m_bReadOnlyView)
     {
         m_bReadOnlyView = FALSE;
+        // Undo the above:
         // Convert the current edit view to read-only and
         // layout the new edit window.
-        CRect rctTop;
-        m_editMsg.GetWindowRect(&rctTop);
-        ScreenToClient(&rctTop);
-        CRect rctBot;
-        m_editMsg2.GetWindowRect(&rctBot);
-        ScreenToClient(&rctBot);
-        rctTop.bottom = rctBot.bottom;
-
-        m_editMsg.SetReadOnly(FALSE);
-        m_editMsg.MoveWindow(&rctTop);
-        m_editMsg2.ShowWindow(SW_HIDE);
+        m_editMsg->SetEditable(true);
+        m_editMsg2->Hide();
+        Layout();
     }
 }
 
@@ -167,8 +153,8 @@ void CSendMsgDialog::TeardownReadOnlyView()
 
 void CSendMsgDialog::FillEditBoxes(const CB::string& str)
 {
-    m_editMsg.SetWindowText(""_cbstring);
-    m_editMsg2.SetWindowText(""_cbstring);
+    m_editMsg->SetValue(""_cbstring);
+    m_editMsg2->SetValue(""_cbstring);
 
     CB::string strReadOnly;
     CB::string strEditable;
@@ -176,42 +162,39 @@ void CSendMsgDialog::FillEditBoxes(const CB::string& str)
     CGamDoc::MsgSeperateIntoPieces(str, strReadOnly, strEditable);
     if (strReadOnly.empty())
     {
-        m_editMsg.SetWindowText(strEditable);
-        m_editMsg.SetFocus();
-        m_editMsg.SetSel(m_editMsg.GetWindowTextLength(),
-            m_editMsg.GetWindowTextLength());
+        m_editMsg->SetValue(strEditable);
+        m_editMsg->SetFocus();
+        m_editMsg->SetInsertionPointEnd();
     }
     else
     {
         SetupReadOnlyView();
-        m_editMsg.SetWindowText(strReadOnly);
-        int nChars = m_editMsg.GetWindowTextLength();
-        int nLine = m_editMsg.LineFromChar(nChars);
-        m_editMsg.LineScroll(nLine);
+        m_editMsg->SetValue(strReadOnly);
+        wxTextPos nChars = m_editMsg->GetLastPosition();
+        m_editMsg->ShowPosition(nChars);
 
-        m_editMsg2.SetWindowText(strEditable);
-        m_editMsg2.SetFocus();
-        m_editMsg2.SetSel(m_editMsg2.GetWindowTextLength(),
-            m_editMsg2.GetWindowTextLength());
+        m_editMsg2->SetValue(strEditable);
+        m_editMsg2->SetFocus();
+        m_editMsg->SetInsertionPointEnd();
         if (!strReadOnly.empty())
         {
             // If there is a read-only part in the message, there
             // must have been a die roll. We need to disable cancel.
-            m_btnCancel.EnableWindow(FALSE);
+            m_btnCancel->Enable(FALSE);
         }
         else
-            m_btnCancel.EnableWindow(TRUE);
+            m_btnCancel->Enable(TRUE);
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSendMsgDialog::OnChangeEditMessage()
+void CSendMsgDialog::OnChangeEditMessage(wxCommandEvent& /*event*/)
 {
     m_pDoc->SetModifiedFlag();
 }
 
-void CSendMsgDialog::OnChangeEdit2Message()
+void CSendMsgDialog::OnChangeEdit2Message(wxCommandEvent& /*event*/)
 {
     m_pDoc->SetModifiedFlag();
 }
@@ -219,9 +202,12 @@ void CSendMsgDialog::OnChangeEdit2Message()
 /////////////////////////////////////////////////////////////////////////////
 // CSendMsgDialog message handlers
 
-BOOL CSendMsgDialog::OnInitDialog()
+bool CSendMsgDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
     if (m_pDoc->GetDieRollState() != NULL)
     {
         ASSERT(m_pRollState == NULL);
@@ -229,36 +215,37 @@ BOOL CSendMsgDialog::OnInitDialog()
         m_pRollState = MakeOwner<CRollState>(*m_pDoc->GetDieRollState());
     }
 
+#if 0   // why override default?
     m_editMsg.SetFont(CFont::FromHandle(g_res.h8ss));
     m_editMsg2.SetFont(CFont::FromHandle(g_res.h8ss));
+#endif
 
     FillEditBoxes(m_pDoc->MsgGetMessageText());
 
     if (m_bShowDieRoller)
     {
-        PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(IDC_D_SMSG_ROLLDICE), uint16_t(BN_CLICKED)),
-            (LPARAM)::GetDlgItem(m_hWnd, IDC_D_SMSG_ROLLDICE));
+        QueueEvent(new wxCommandEvent(wxEVT_BUTTON, XRCID("OnRollDice")));
     }
 
-    return FALSE;  // return TRUE  unless you set the focus to a control
+    return true;
 }
 
-void CSendMsgDialog::OnSendMsgSendAndClose()
+void CSendMsgDialog::OnSendMsgSendAndClose(wxCommandEvent& /*event*/)
 {
     if (m_bReadOnlyView)
         TransferToReadOnlyView();
 
-    CB::string str = CB::string::GetWindowText(m_editMsg);
+    CB::string str = m_editMsg->GetValue();
     m_pDoc->SetDieRollState(std::move(m_pRollState));
     m_pDoc->MsgDialogSend(str, TRUE);
 }
 
-void CSendMsgDialog::OnSendMsgSend()
+void CSendMsgDialog::OnSendMsgSend(wxCommandEvent& /*event*/)
 {
     if (m_bReadOnlyView)
         TransferToReadOnlyView();
 
-    CB::string str = CB::string::GetWindowText(m_editMsg);
+    CB::string str = m_editMsg->GetValue();
     m_pDoc->MsgDialogSend(str, FALSE);      // Don't close us
 
     TeardownReadOnlyView();                 // Back to original layout
@@ -266,30 +253,30 @@ void CSendMsgDialog::OnSendMsgSend()
     FillEditBoxes(m_pDoc->MsgGetMessageText());
 }
 
-void CSendMsgDialog::OnSendMsgClose()
+void CSendMsgDialog::OnSendMsgClose(wxCommandEvent& /*event*/)
 {
     CB::string str;
     if (m_bReadOnlyView)
     {
-        CB::string strReadOnly = CB::string::GetWindowText(m_editMsg);
-        CB::string strEditable = CB::string::GetWindowText(m_editMsg2);
+        CB::string strReadOnly = m_editMsg->GetValue();
+        CB::string strEditable = m_editMsg2->GetValue();
         str = CGamDoc::MsgEncodeFromPieces(strReadOnly, strEditable);
     }
     else
     {
         // No read-only part yet
-        CB::string strEditable = CB::string::GetWindowText(m_editMsg);
+        CB::string strEditable = m_editMsg->GetValue();
         str = CGamDoc::MsgEncodeFromPieces("", strEditable);
     }
     m_pDoc->MsgDialogClose(str);
 }
 
-void CSendMsgDialog::OnSendMsgCancel()
+void CSendMsgDialog::OnSendMsgCancel(wxCommandEvent& /*event*/)
 {
     m_pDoc->MsgDialogCancel();
 }
 
-void CSendMsgDialog::OnRollDice()
+void CSendMsgDialog::OnRollDice(wxCommandEvent& /*event*/)
 {
     CDieRollerDlg dlg;
     if (m_pRollState)
@@ -299,14 +286,12 @@ void CSendMsgDialog::OnRollDice()
     {
         m_pRollState = dlg.GetRollState();
 
-        CB::string str = CB::string::GetWindowText(m_editMsg2);
+        CB::string str = m_editMsg2->GetValue();
         if (str != "" && str[str.a_size() - size_t(1)] != '\n')
-            AppendStringToEditBox(m_editMsg2, "\r\n", FALSE);
+            AppendStringToEditBox(*m_editMsg2, "\n", FALSE);
 
-        int nLen = m_editMsg2.GetWindowTextLength();
-        m_editMsg2.SetSel(nLen, nLen);
-        m_editMsg2.ReplaceSel(dlg.GetFormattedRollResult());
-        m_btnCancel.EnableWindow(FALSE);
+        m_editMsg2->AppendText(dlg.GetFormattedRollResult());
+        m_btnCancel->Enable(FALSE);
 
         TransferToReadOnlyView();
     }
