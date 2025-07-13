@@ -39,10 +39,10 @@ public:
 // Dialog Data
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
-        RefPtr<CEditNoChevronWx> m_editMsg2;
+        RefPtr<CEditNoChevron> m_editMsg2;
         RefPtr<wxButton> m_btnDefer;
         RefPtr<wxButton> m_btnCancel;
-        RefPtr<CEditNoChevronWx> m_editMsg;
+        RefPtr<CEditNoChevron> m_editMsg;
     CB_XRC_END_CTRLS_DECL()
 
     RefPtr<CGamDoc> m_pDoc;
