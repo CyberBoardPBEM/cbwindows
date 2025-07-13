@@ -50,15 +50,18 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
-void CModelessDialogCleaner::operator()(CDialog* p) const
+void CModelessDialogCleaner::operator()(wxDialog* p) const
 {
     if (p)
     {
-        if (p->m_hWnd)
+        if (p->GetHandle())
         {
-            p->DestroyWindow();
+            p->Destroy();
         }
-        delete p;
+        else
+        {
+            delete p;
+        }
     }
 }
 
@@ -392,7 +395,7 @@ BOOL CGamDoc::MsgSendDialogOpen(BOOL bShowDieRoller /* = FALSE */)
     }
     CSendMsgDlgPtr pDlg(new CSendMsgDialog(*this));
     pDlg->m_bShowDieRoller = bShowDieRoller;
-    if (!pDlg->Create(IDD_SENDMESSAGE))
+    if (!pDlg->Show())
     {
         TRACE0("Failed to create Send Message Dialog\n");
         return FALSE;
@@ -437,14 +440,6 @@ void CGamDoc::MsgDialogCancel(BOOL bDiscardHistory /* = FALSE */)
     m_strCurMsg.clear();
     if (bDiscardHistory)
         m_astrMsgHist.clear();
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-void CGamDoc::MsgDialogForceDefer()
-{
-    if (m_pMsgDialog != NULL)
-        m_pMsgDialog->SendMessage(WM_COMMAND, MAKEWPARAM(uint16_t(IDC_D_SMSG_CLOSE), uint16_t(BN_CLICKED)));
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 // DlgSmsg.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -29,25 +29,24 @@
 
 class CRollState;
 
-class CSendMsgDialog : public CDialog
+class CSendMsgDialog : public wxDialog
 {
-    DECLARE_DYNAMIC(CSendMsgDialog)
 // Construction
 public:
-    CSendMsgDialog(CGamDoc& doc, CWnd* pParent = NULL);
+    CSendMsgDialog(CGamDoc& doc, wxWindow* pParent = &CB::GetMainWndWx());
     ~CSendMsgDialog() = default;
 
 // Dialog Data
-public:
-    //{{AFX_DATA(CSendMsgDialog)
-    enum { IDD = IDD_SENDMESSAGE };
-    CEditNoChevron  m_editMsg2;
-    CButton m_btnDefer;
-    CButton m_btnCancel;
-    CEditNoChevron  m_editMsg;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<CEditNoChevronWx> m_editMsg2;
+        RefPtr<wxButton> m_btnDefer;
+        RefPtr<wxButton> m_btnCancel;
+        RefPtr<CEditNoChevronWx> m_editMsg;
+    CB_XRC_END_CTRLS_DECL()
 
     RefPtr<CGamDoc> m_pDoc;
+public:
     bool        m_bShowDieRoller;
 
 // Implementation
@@ -63,20 +62,18 @@ protected:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog();
+    bool TransferDataToWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CSendMsgDialog)
-    afx_msg void OnSendMsgSendAndClose();
-    afx_msg void OnSendMsgSend();
-    afx_msg void OnSendMsgClose();
-    afx_msg void OnSendMsgCancel();
-    afx_msg void OnRollDice();
+    void OnSendMsgSendAndClose(wxCommandEvent& event);
+    void OnSendMsgSend(wxCommandEvent& event);
+    void OnSendMsgClose(wxCommandEvent& event);
+    void OnSendMsgCancel(wxCommandEvent& event);
+    void OnRollDice(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnChangeEditMessage();
-    afx_msg void OnChangeEdit2Message();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnChangeEditMessage(wxCommandEvent& event);
+    void OnChangeEdit2Message(wxCommandEvent& event);
+    wxDECLARE_EVENT_TABLE();
 };
