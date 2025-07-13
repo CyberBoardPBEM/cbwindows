@@ -81,21 +81,6 @@ BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
-    BOOL bEnsureNewline /* = FALSE */)
-{
-    if (bEnsureNewline)
-    {
-        CB::string str = CB::string::GetWindowText(edit);
-        if (!str.empty() && str[str.a_size() - size_t(1)] != '\n')
-            AppendStringToEditBox(edit, L"\r\n", FALSE);
-    }
-    int nLen = edit.GetWindowTextLength();
-    edit.SetSel(nLen, nLen);
-    edit.ReplaceSel(strAppend);
-    return TRUE;
-}
-
 BOOL AppendStringToEditBox(wxTextCtrl& edit, const CB::string& strAppend,
     BOOL bEnsureNewline /* = FALSE */)
 {

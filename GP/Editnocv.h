@@ -32,38 +32,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CEditNoChevron window
 
-class CEditNoChevron : public CEdit
-{
-// Construction
-public:
-    CEditNoChevron();
-
-// Attributes
-public:
-
-// Operations
-public:
-
-// Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CEditNoChevron)
-    //}}AFX_VIRTUAL
-
-// Implementation
-public:
-    virtual ~CEditNoChevron();
-
-    // Generated message map functions
-protected:
-    //{{AFX_MSG(CEditNoChevron)
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg LRESULT OnPasteMessage(WPARAM, LPARAM);
-    //}}AFX_MSG
-
-    DECLARE_MESSAGE_MAP()
-};
-
-class CEditNoChevronWx : public wxTextCtrl
+class CEditNoChevron : public wxTextCtrl
 {
 // Construction
 public:
@@ -86,8 +55,8 @@ protected:
     void OnPasteMessage(wxClipboardTextEvent& event);
 
     wxDECLARE_EVENT_TABLE();
-    wxDECLARE_NO_COPY_CLASS(CEditNoChevronWx);
-    wxDECLARE_DYNAMIC_CLASS(CEditNoChevronWx);
+    wxDECLARE_NO_COPY_CLASS(CEditNoChevron);
+    wxDECLARE_DYNAMIC_CLASS(CEditNoChevron);
 };
 
 /////////////////////////////////////////////////////////////////////////////

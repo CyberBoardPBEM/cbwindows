@@ -2173,7 +2173,7 @@
         <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
         <border>5</border>
         <option>2</option>
-        <object class="wxTextCtrl" name="m_editMsg" subclass="CEditNoChevronWx">
+        <object class="wxTextCtrl" name="m_editMsg" subclass="CEditNoChevron">
           <style>wxTE_MULTILINE|wxTE_PROCESS_ENTER</style>
           <value></value>
           <maxlength>0</maxlength>
@@ -2183,7 +2183,7 @@
         <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
         <border>5</border>
         <option>1</option>
-        <object class="wxTextCtrl" name="m_editMsg2" subclass="CEditNoChevronWx">
+        <object class="wxTextCtrl" name="m_editMsg2" subclass="CEditNoChevron">
           <style>wxTE_MULTILINE|wxTE_PROCESS_ENTER</style>
           <value>1\n2\n3\n4\n5</value>
           <maxlength>0</maxlength>

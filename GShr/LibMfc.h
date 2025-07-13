@@ -43,8 +43,6 @@ public:
 HWND FindWindowForProcessID(DWORD dwProcessID);
 BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 
-BOOL AppendStringToEditBox(CEdit& edit, const CB::string& strAppend,
-    BOOL bEnsureNewline = FALSE);
 BOOL AppendStringToEditBox(wxTextCtrl& edit, const CB::string& strAppend,
     BOOL bEnsureNewline = FALSE);
 
