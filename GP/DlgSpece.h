@@ -48,13 +48,13 @@ public:
     CTrayListBox    m_listTray;
     //}}AFX_DATA
 
-    CGamDoc* const  m_pDoc;         // Must be set by creator
+    RefPtr<CGamDoc> m_pDoc;         // Must be set by creator
     int             m_nYSel;        // Initial tray number
 
 // Implementation
 protected:
-    CPieceTable*    m_pPTbl;        // Loaded using doc pointer
-    CTrayManager*   m_pYMgr;        // Loaded using doc pointer
+    RefPtr<CPieceTable>  m_pPTbl;   // Loaded using doc pointer
+    RefPtr<CTrayManager> m_pYMgr;   // Loaded using doc pointer
 
     std::vector<PieceID> m_tblPiece;
     std::vector<PieceID> m_tblTray;
