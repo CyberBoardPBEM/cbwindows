@@ -1,6 +1,6 @@
 // DlgSpece.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -40,13 +40,13 @@ static char THIS_FILE[] = __FILE__;
 CSetPiecesDialog::CSetPiecesDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
     : CDialog(CSetPiecesDialog::IDD, pParent),
     m_listTray(doc),
-    m_pDoc(&doc)
+    m_pDoc(&doc),
+    m_pYMgr(&m_pDoc->GetTrayManager()),
+    m_pPTbl(&m_pDoc->GetPieceTable())
 {
     //{{AFX_DATA_INIT(CSetPiecesDialog)
         // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
-    m_pPTbl = NULL;
-    m_pYMgr = NULL;
     m_nYSel = -1;
 }
 
@@ -237,11 +237,6 @@ void CSetPiecesDialog::OnRemoveAll()
 BOOL CSetPiecesDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    ASSERT(m_pDoc != NULL);
-    m_pYMgr = &m_pDoc->GetTrayManager();
-    ASSERT(m_pYMgr != NULL);
-    m_pPTbl = &m_pDoc->GetPieceTable();
-    ASSERT(m_pPTbl != NULL);
 
     m_listPiece.SetDocument(*m_pDoc);
     m_listTray.SetTrayContentVisibility(trayVizAllSides);
