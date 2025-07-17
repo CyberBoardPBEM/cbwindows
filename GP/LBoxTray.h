@@ -1,6 +1,6 @@
 // LBoxTray.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -101,6 +101,67 @@ protected:
     //{{AFX_MSG(CTrayListBox)
     //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
+
+private:
+    bool IsShowAllSides(PieceID pid) const;
+};
+
+class CTrayListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
+{
+// Construction
+public:
+    CTrayListBoxWx();
+    CTrayListBoxWx(CGamDoc& pDoc);
+    void Init(const CGamDoc& pDoc) { wxASSERT(!m_pDoc); m_pDoc = &pDoc; }
+
+// Attributes
+public:
+    virtual const CTileManager& GetTileManager() const override;
+
+    TrayViz GetTrayContentVisibility() const { return m_eTrayViz; }
+
+    BOOL IsShowingTileImages() const;
+
+// Operations
+public:
+    void DeselectAll();
+    size_t SelectTrayPiece(PieceID pid);
+    void ShowListIndex(int nPos);
+
+    void SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString = CB::string());
+    void SetTipsAllowed(BOOL bTipsAllowed)
+    {
+        m_bAllowTips = bTipsAllowed;
+        SetTipMarkVisibility(m_bAllowTips);
+    }
+
+// Implementation
+protected:
+    // retval[0] is active face
+    std::vector<TileID> GetPieceTileIDs(size_t nIndex) const;
+
+// Implementation
+protected:
+    const CGamDoc* m_pDoc;
+
+    TrayViz     m_eTrayViz;
+    CB::string  m_strHiddenString;
+    BOOL        m_bAllowTips;
+
+    // Overrides
+    wxSize GetItemSize(size_t nIndex) const override;
+    void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
+    BOOL OnDragSetup(DragInfoWx& pDI) const override;
+
+    // Tool tip processing
+    BOOL OnIsToolTipsEnabled() const override;
+    GameElement OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const override;
+    void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
+    BOOL OnDoesItemHaveTipText(size_t nItem) const override;
+
+    // Misc
+
+    wxDECLARE_DYNAMIC_CLASS(CTrayListBoxWx);
 
 private:
     bool IsShowAllSides(PieceID pid) const;

@@ -482,7 +482,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
     wxNativePixelData::Iterator maskRowStart(pMaskBMapInfoData);
 
     for (int y = 0 ;
-        y < std::min(value_preserving_cast<int>(m_size.cy).get_value(), pMaskBMapInfo.GetHeight()) &&
+        y < std::min(value_preserving_cast<int>(m_size.cy), pMaskBMapInfo.GetHeight()) &&
                 yDst + y < hBMapDest.GetHeight() ;
         ++y)
     {
@@ -492,7 +492,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
             wxAlphaPixelData::Iterator dest = destRowStart;
             wxNativePixelData::Iterator mask = maskRowStart;
             for (int x = 0 ;
-                x < std::min(value_preserving_cast<int>(m_size.cx).get_value(), pMaskBMapInfo.GetWidth()) &&
+                x < std::min(value_preserving_cast<int>(m_size.cx), pMaskBMapInfo.GetWidth()) &&
                         xDst + x < hBMapDest.GetWidth() ;
                 ++x)
             {
@@ -512,7 +512,7 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
                 ++dest;
             }
         }
-        srcRowStart += srcStride.get_value();
+        srcRowStart += srcStride;
         destRowStart.OffsetY(hBMapDestData, 1);
         maskRowStart.OffsetY(pMaskBMapInfoData, 1);
     }
