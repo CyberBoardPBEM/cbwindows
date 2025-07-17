@@ -2265,4 +2265,191 @@
       </object>
     </object>
   </object>
+  <object class="wxDialog" name="CSetPiecesDialog">
+    <style>wxDEFAULT_DIALOG_STYLE</style>
+    <title>Setup Pieces</title>
+    <centered>1</centered>
+    <object class="wxBoxSizer" name="bSizer63">
+      <minsize>500,375</minsize>
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer64">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText44">
+              <label>Piece Group:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxChoice" name="m_comboPGrp">
+              <selection>0</selection>
+              <content/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText45">
+              <label>Pieces:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listPiece" subclass="CPieceListBoxWx">
+              <style>wxLB_MULTIPLE</style>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer65">
+          <orient>wxVERTICAL</orient>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="wxID_OK">
+              <label>Close</label>
+              <default>1</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>2</option>
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnCopySelections">
+              <label>Copy &gt;&gt;</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnCopyAll">
+              <label>Copy All &gt;&gt;</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <size>0,0</size>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRemoveSelections">
+              <label>Remove &lt;&lt;</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxButton" name="OnRemoveAll">
+              <label>Remove All &lt;&lt;</label>
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <markup>0</markup>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="spacer">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>3</option>
+            <size>0,0</size>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer66">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText46">
+              <label>Tray Name:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxChoice" name="m_comboYGrp">
+              <selection>0</selection>
+              <content/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxStaticText" name="m_staticText47">
+              <label>Tray Contents:</label>
+              <wrap>-1</wrap>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listTray" subclass="CTrayListBoxWx">
+              <style>wxLB_MULTIPLE</style>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
 </resource>

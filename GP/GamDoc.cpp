@@ -1673,14 +1673,14 @@ void CGamDoc::OnUpdateEditImportPieceGroups(CCmdUI* pCmdUI)
 
 void CGamDoc::OnEditSelectGamePieces()
 {
-    wxASSERT(IsScenario() && GetTrayManager().GetNumTraySets() > 0);
+    wxASSERT(IsScenario() && GetTrayManager().GetNumTraySets() > size_t(0));
 
     CSetPiecesDialog dlg(*this);
     dlg.m_nYSel = 0;                    // Default is first tray
 
     CloseTrayPalettes();                // ...Ditto that for tray palettes
 
-    dlg.DoModal();
+    dlg.ShowModal();
 
     // Notify all visible trays
     CGamDocHint hint;

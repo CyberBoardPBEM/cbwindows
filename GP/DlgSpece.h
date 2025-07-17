@@ -1,6 +1,6 @@
 // DlgSpece.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,22 +33,23 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSetPiecesDialog dialog
 
-class CSetPiecesDialog : public CDialog
+class CSetPiecesDialog : public wxDialog
 {
 // Construction
 public:
-    CSetPiecesDialog(CGamDoc& doc, CWnd* pParent = NULL); // standard constructor
+    CSetPiecesDialog(CGamDoc& doc, wxWindow* pParent = &CB::GetMainWndWx()); // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CSetPiecesDialog)
-    enum { IDD = IDD_SETPIECES };
-    CComboBox       m_comboPGrp;
-    CPieceListBox   m_listPiece;
-    CComboBox       m_comboYGrp;
-    CTrayListBox    m_listTray;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxChoice> m_comboPGrp;
+        RefPtr<CPieceListBoxWx> m_listPiece;
+        RefPtr<wxChoice> m_comboYGrp;
+        RefPtr<CTrayListBoxWx> m_listTray;
+    CB_XRC_END_CTRLS_DECL()
 
     RefPtr<CGamDoc> m_pDoc;         // Must be set by creator
+public:
     int             m_nYSel;        // Initial tray number
 
 // Implementation
@@ -67,19 +68,17 @@ protected:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog();
+    bool TransferDataToWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CSetPiecesDialog)
-    afx_msg void OnSelChangePieceGroup();
-    afx_msg void OnRemoveAll();
-    afx_msg void OnCopyAll();
-    afx_msg void OnCopySelections();
-    afx_msg void OnRemoveSelections();
-    afx_msg void OnSelChangeTrayName();
+    void OnSelChangePieceGroup(wxCommandEvent& event);
+    void OnRemoveAll(wxCommandEvent& event);
+    void OnCopyAll(wxCommandEvent& event);
+    void OnCopySelections(wxCommandEvent& event);
+    void OnRemoveSelections(wxCommandEvent& event);
+    void OnSelChangeTrayName(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };

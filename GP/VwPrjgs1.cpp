@@ -191,8 +191,8 @@ void CGsnProjView::DoTrayEdit()
 {
     CGamDoc* pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
+    wxASSERT(nSel >= 0);
+    wxASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
     CTrayManager& pYMgr = pDoc->GetTrayManager();
 
@@ -202,7 +202,7 @@ void CGsnProjView::DoTrayEdit()
     m_listTrays->SetItemMap(NULL);       // Clear this since repaint may fail...
     pDoc->CloseTrayPalettes();          // ...Ditto that for tray palettes
 
-    dlg.DoModal();
+    dlg.ShowModal();
 
     // Notify all visible trays
     CGamDocHint hint;

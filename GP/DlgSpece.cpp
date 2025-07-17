@@ -37,43 +37,35 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSetPiecesDialog dialog
 
-CSetPiecesDialog::CSetPiecesDialog(CGamDoc& doc, CWnd* pParent /*=NULL*/)
-    : CDialog(CSetPiecesDialog::IDD, pParent),
-    m_listTray(doc),
+CSetPiecesDialog::CSetPiecesDialog(CGamDoc& doc, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CSetPiecesDialog)
+        CB_XRC_CTRL(m_comboPGrp)
+        CB_XRC_CTRL(m_listPiece)
+        CB_XRC_CTRL(m_comboYGrp)
+        CB_XRC_CTRL(m_listTray)
+    CB_XRC_END_CTRLS_DEFN(),
     m_pDoc(&doc),
     m_pYMgr(&m_pDoc->GetTrayManager()),
     m_pPTbl(&m_pDoc->GetPieceTable())
 {
-    //{{AFX_DATA_INIT(CSetPiecesDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
+    m_listTray->Init(doc);
     m_nYSel = -1;
 }
 
-void CSetPiecesDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSetPiecesDialog)
-    DDX_Control(pDX, IDC_D_SETPCE_TRAYNAME, m_comboYGrp);
-    DDX_Control(pDX, IDC_D_SETPCE_TRAYLIST, m_listTray);
-    DDX_Control(pDX, IDC_D_SETPCE_PCELIST, m_listPiece);
-    DDX_Control(pDX, IDC_D_SETPCE_PCEGRP, m_comboPGrp);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSetPiecesDialog, CDialog)
-    //{{AFX_MSG_MAP(CSetPiecesDialog)
-    ON_CBN_SELCHANGE(IDC_D_SETPCE_PCEGRP, OnSelChangePieceGroup)
-    ON_BN_CLICKED(IDC_D_SETPCE_REMALL, OnRemoveAll)
-    ON_BN_CLICKED(IDC_D_SETPCE_COPYALL, OnCopyAll)
-    ON_BN_CLICKED(IDC_D_SETPCE_COPYSEL, OnCopySelections)
-    ON_BN_CLICKED(IDC_D_SETPCE_REMSEL, OnRemoveSelections)
-    ON_CBN_SELCHANGE(IDC_D_SETPCE_TRAYNAME, OnSelChangeTrayName)
+wxBEGIN_EVENT_TABLE(CSetPiecesDialog, wxDialog)
+    EVT_CHOICE(XRCID("m_comboPGrp"), OnSelChangePieceGroup)
+    EVT_BUTTON(XRCID("OnRemoveAll"), OnRemoveAll)
+    EVT_BUTTON(XRCID("OnCopyAll"), OnCopyAll)
+    EVT_BUTTON(XRCID("OnCopySelections"), OnCopySelections)
+    EVT_BUTTON(XRCID("OnRemoveSelections"), OnRemoveSelections)
+    EVT_CHOICE(XRCID("m_comboYGrp"), OnSelChangeTrayName)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -99,25 +91,30 @@ void CSetPiecesDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CSetPiecesDialog::LoadPieceNameList()
 {
-    m_comboPGrp.ResetContent();
+    m_comboPGrp->Clear();
     const CPieceManager& pPMgr = m_pPTbl->GetPieceManager();
     for (size_t i = size_t(0); i < pPMgr.GetNumPieceSets(); i++)
-        m_comboPGrp.AddString(pPMgr.GetPieceSet(i).GetName());
-    m_comboPGrp.SetCurSel(0);
+    {
+        m_comboPGrp->Append(pPMgr.GetPieceSet(i).GetName());
+    }
+    m_comboPGrp->SetSelection(0);
     UpdatePieceList();
 }
 
 void CSetPiecesDialog::LoadTrayNameList()
 {
-    m_comboYGrp.ResetContent();
-    for (size_t i = 0; i < m_pYMgr->GetNumTraySets(); i++)
-        m_comboYGrp.AddString(m_pYMgr->GetTraySet(i).GetName());
-    m_comboYGrp.SetCurSel(m_nYSel == -1 ? 0 : m_nYSel);
+    m_comboYGrp->Clear();
+    for (size_t i = size_t(0); i < m_pYMgr->GetNumTraySets(); i++)
+    {
+        m_comboYGrp->Append(m_pYMgr->GetTraySet(i).GetName());
+    }
+    m_comboYGrp->SetSelection(m_nYSel == -1 ? 0 : m_nYSel);
     UpdateTrayList();
 }
 
@@ -125,52 +122,52 @@ void CSetPiecesDialog::LoadTrayNameList()
 
 void CSetPiecesDialog::UpdatePieceList()
 {
-    int nSel = m_comboPGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboPGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
     {
-        m_listPiece.SetItemMap(NULL);
+        m_listPiece->SetItemMap(NULL);
         return;
     }
     m_tblPiece = m_pPTbl->LoadUnusedPieceList(value_preserving_cast<size_t>(nSel));
-    m_listPiece.SetItemMap(&m_tblPiece, FALSE);
+    m_listPiece->SetItemMap(&m_tblPiece, FALSE);
 }
 
 void CSetPiecesDialog::UpdateTrayList()
 {
-    int nSel = m_comboYGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboYGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
     {
-        m_listTray.SetItemMap(NULL);
+        m_listTray->SetItemMap(NULL);
         return;
     }
     const std::vector<PieceID>& pPieceTbl = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nSel)).GetPieceIDTable();
 
     m_tblTray = pPieceTbl;              // Clone the table
 
-    m_listTray.SetItemMap(&pPieceTbl, FALSE);
+    m_listTray->SetItemMap(&pPieceTbl, FALSE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CSetPiecesDialog message handlers
 
-void CSetPiecesDialog::OnSelChangePieceGroup()
+void CSetPiecesDialog::OnSelChangePieceGroup(wxCommandEvent& /*event*/)
 {
     UpdatePieceList();
 }
 
-void CSetPiecesDialog::OnSelChangeTrayName()
+void CSetPiecesDialog::OnSelChangeTrayName(wxCommandEvent& /*event*/)
 {
     UpdateTrayList();
 }
 
-void CSetPiecesDialog::OnCopyAll()
+void CSetPiecesDialog::OnCopyAll(wxCommandEvent& /*event*/)
 {
-    int nTraySet = m_comboYGrp.GetCurSel();
-    if (nTraySet < 0)
+    int nTraySet = m_comboYGrp->GetSelection();
+    if (nTraySet == wxNOT_FOUND)
         return;
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
-    const std::vector<PieceID>* pPList = m_listPiece.GetItemMap();
+    const std::vector<PieceID>* pPList = m_listPiece->GetItemMap();
     if (pPList == NULL)
         return;
 
@@ -181,14 +178,14 @@ void CSetPiecesDialog::OnCopyAll()
     UpdateTrayList();
 }
 
-void CSetPiecesDialog::OnCopySelections()
+void CSetPiecesDialog::OnCopySelections(wxCommandEvent& /*event*/)
 {
-    int nTraySet = m_comboYGrp.GetCurSel();
-    if (nTraySet < 0)
+    int nTraySet = m_comboYGrp->GetSelection();
+    if (nTraySet == wxNOT_FOUND)
         return;
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
-    std::vector<PieceID> selList = m_listPiece.GetCurMappedItemList();
+    std::vector<PieceID> selList = m_listPiece->GetCurMappedItemList();
     if (selList.empty())
         return;                     // Nothing to copy.
 
@@ -199,15 +196,15 @@ void CSetPiecesDialog::OnCopySelections()
     UpdateTrayList();
 }
 
-void CSetPiecesDialog::OnRemoveSelections()
+void CSetPiecesDialog::OnRemoveSelections(wxCommandEvent& /*event*/)
 {
-    int nTraySet = m_comboYGrp.GetCurSel();
-    if (nTraySet < 0)
+    int nTraySet = m_comboYGrp->GetSelection();
+    if (nTraySet == wxNOT_FOUND)
         return;
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
 
 
-    std::vector<PieceID> selList = m_listTray.GetCurMappedItemList();
+    std::vector<PieceID> selList = m_listTray->GetCurMappedItemList();
     if (selList.empty())
         return;                     // Nothing to remove
 
@@ -218,10 +215,10 @@ void CSetPiecesDialog::OnRemoveSelections()
     UpdateTrayList();
 }
 
-void CSetPiecesDialog::OnRemoveAll()
+void CSetPiecesDialog::OnRemoveAll(wxCommandEvent& /*event*/)
 {
-    int nTraySet = m_comboYGrp.GetCurSel();
-    if (nTraySet < 0)
+    int nTraySet = m_comboYGrp->GetSelection();
+    if (nTraySet == wxNOT_FOUND)
         return;
 
     CTraySet& pYSet = m_pYMgr->GetTraySet(value_preserving_cast<size_t>(nTraySet));
@@ -234,16 +231,19 @@ void CSetPiecesDialog::OnRemoveAll()
     UpdateTrayList();
 }
 
-BOOL CSetPiecesDialog::OnInitDialog()
+bool CSetPiecesDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
 
-    m_listPiece.SetDocument(*m_pDoc);
-    m_listTray.SetTrayContentVisibility(trayVizAllSides);
+    m_listPiece->SetDocument(*m_pDoc);
+    m_listTray->SetTrayContentVisibility(trayVizAllSides);
 
     LoadPieceNameList();
     LoadTrayNameList();
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return TRUE;
 }
 
