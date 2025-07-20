@@ -2061,7 +2061,7 @@ void CGamDoc::OnFileChangeGameOwner()
     }
 
     CChgGameOwnerDialog dlg2(CheckedDeref(GetPlayerManager()));
-    if (dlg2.DoModal() != IDOK)
+    if (dlg2.ShowModal() != wxID_OK)
         return;
 
     if (dlg2.m_nPlayer == -1)

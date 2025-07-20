@@ -36,62 +36,57 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CChgGameOwnerDialog dialog
 
-CChgGameOwnerDialog::CChgGameOwnerDialog(CPlayerManager& pm, CWnd* pParent /*=NULL*/)
-    : CDialog(CChgGameOwnerDialog::IDD, pParent),
-    m_pPlayerMgr(pm)
+CChgGameOwnerDialog::CChgGameOwnerDialog(CPlayerManager& pm, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CChgGameOwnerDialog)
+        , m_btnOK(XRCCTRL(*this, "wxID_OK", std::remove_reference_t<decltype(*m_btnOK)>))
+        CB_XRC_CTRL(m_listPlayers)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pPlayerMgr(&pm)
 {
-    //{{AFX_DATA_INIT(CChgGameOwnerDialog)
-        // NOTE: the ClassWizard will add member initialization here
-    //}}AFX_DATA_INIT
-
-    m_nPlayer = -1;
+    m_nPlayer = wxNOT_FOUND;
 }
 
-void CChgGameOwnerDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CChgGameOwnerDialog)
-    DDX_Control(pDX, IDOK, m_btnOK);
-    DDX_Control(pDX, IDC_D_CHGGAMEOWN_LIST, m_listPlayers);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CChgGameOwnerDialog, CDialog)
-    //{{AFX_MSG_MAP(CChgGameOwnerDialog)
-    ON_LBN_SELCHANGE(IDC_D_CHGGAMEOWN_LIST, OnSelChangePlayerList)
-    ON_LBN_DBLCLK(IDC_D_CHGGAMEOWN_LIST, OnDblClkPlayerList)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+wxBEGIN_EVENT_TABLE(CChgGameOwnerDialog, wxDialog)
+    EVT_LISTBOX(XRCID("m_listPlayers"), OnSelChangePlayerList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listPlayers"), OnDblClkPlayerList)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CChgGameOwnerDialog message handlers
 
-void CChgGameOwnerDialog::OnOK()
+bool CChgGameOwnerDialog::TransferDataFromWindow()
 {
-    m_nPlayer = m_listPlayers.GetCurSel();
-    CDialog::OnOK();
+    if (!wxDialog::TransferDataFromWindow())
+    {
+        return false;
+    }
+
+    m_nPlayer = m_listPlayers->GetSelection();
+
+    return true;
 }
 
-BOOL CChgGameOwnerDialog::OnInitDialog()
+bool CChgGameOwnerDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
+    m_listPlayers->Clear();
+    for (int i = 0 ; i < m_pPlayerMgr->GetSize() ; ++i)
+        m_listPlayers->AppendString(m_pPlayerMgr->ElementAt(i).m_strName);
 
-    for (int i = 0; i < m_pPlayerMgr.GetSize(); i++)
-        m_listPlayers.AddString(m_pPlayerMgr.ElementAt(i).m_strName);
+    if (m_nPlayer != wxNOT_FOUND)
+        m_listPlayers->SetSelection(m_nPlayer);
+    m_btnOK->Enable(m_listPlayers->GetSelection() != wxNOT_FOUND);
 
-    if (m_nPlayer >= 0)
-        m_listPlayers.SetCurSel(m_nPlayer);
-    m_btnOK.EnableWindow(m_listPlayers.GetCurSel() >= 0);
-
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return wxDialog::TransferDataToWindow();
 }
 
-void CChgGameOwnerDialog::OnSelChangePlayerList()
+void CChgGameOwnerDialog::OnSelChangePlayerList(wxCommandEvent& /*event*/)
 {
-    m_btnOK.EnableWindow(m_listPlayers.GetCurSel() >= 0);
+    m_btnOK->Enable(m_listPlayers->GetSelection() != wxNOT_FOUND);
 }
 
-void CChgGameOwnerDialog::OnDblClkPlayerList()
+void CChgGameOwnerDialog::OnDblClkPlayerList(wxCommandEvent& /*event*/)
 {
-    OnOK();
+    wxCommandEvent event(wxEVT_BUTTON, m_btnOK->GetId());
+    event.SetEventObject(&*m_btnOK);
+    m_btnOK->HandleWindowEvent(event);
 }
