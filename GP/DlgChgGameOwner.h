@@ -1,6 +1,6 @@
 // DlgSelOwner.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,42 +33,37 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSelectNewOwnerDialog dialog
 
-class CChgGameOwnerDialog : public CDialog
+class CChgGameOwnerDialog : public wxDialog
 {
 // Construction
 public:
-    CChgGameOwnerDialog(CPlayerManager& pm, CWnd* pParent = NULL);   // standard constructor
+    CChgGameOwnerDialog(CPlayerManager& pm, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CChgGameOwnerDialog )
-    enum { IDD = IDD_CHANGE_GAME_OWNER };
-    CButton m_btnOK;
-    CListBox    m_listPlayers;
-    //}}AFX_DATA
-
     int                 m_nPlayer;
-    CPlayerManager&     m_pPlayerMgr;
+    RefPtr<CPlayerManager>     m_pPlayerMgr;
+
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxButton> m_btnOK;
+        RefPtr<wxListBox> m_listPlayers;
+    CB_XRC_END_CTRLS_DECL()
+public:
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CChgGameOwnerDialog)
-    protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL
 
 // Implementation
 protected:
+    bool TransferDataToWindow() override;
+    bool TransferDataFromWindow() override;
 
-    // Generated message map functions
-    //{{AFX_MSG(CChgGameOwnerDialog )
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnSelChangePlayerList();
-    afx_msg void OnDblClkPlayerList();
+    void OnSelChangePlayerList(wxCommandEvent& event);
+    void OnDblClkPlayerList(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif
