@@ -129,7 +129,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33u.lib;wxmsw33u_core.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -186,7 +186,7 @@ echo off
       </DataExecutionPrevention>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\out\build\x64-Release\deps\wxWidgets\lib\vc_x64_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wxbase33u.lib;wxmsw33u_core.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugU|Win32'">
@@ -230,7 +230,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33ud.lib;wxmsw33ud_core.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -280,7 +280,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33ud.lib;wxmsw33ud_core.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -311,7 +311,6 @@ echo off
     <ClCompile Include="DlgNPly.cpp" />
     <ClCompile Include="DlgPass.cpp" />
     <ClCompile Include="DlgPbprp.cpp" />
-    <ClCompile Include="DlgRot.cpp" />
     <ClCompile Include="DlgRotpc.cpp" />
     <ClCompile Include="DlgScnp.cpp" />
     <ClCompile Include="DlgSelOwner.cpp" />
@@ -424,7 +423,6 @@ echo off
     <ClInclude Include="DlgPass.h" />
     <ClInclude Include="DlgPbprp.h" />
     <ClInclude Include="DlgRmsg.h" />
-    <ClInclude Include="DlgRot.h" />
     <ClInclude Include="DlgRotpc.h" />
     <ClInclude Include="DlgScnp.h" />
     <ClInclude Include="DlgSelOwner.h" />
