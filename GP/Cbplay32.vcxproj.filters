@@ -69,9 +69,6 @@
     <ClCompile Include="DlgPbprp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DlgRot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgRotpc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -383,9 +380,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DlgRmsg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgRot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DlgRotpc.h">
