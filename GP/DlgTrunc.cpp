@@ -1,6 +1,6 @@
 // DlgTrunc.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,30 +35,37 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTruncatePlaybackDlg dialog
 
-CTruncatePlaybackDlg::CTruncatePlaybackDlg(CWnd* pParent /*=NULL*/)
-    : CDialog(CTruncatePlaybackDlg::IDD, pParent)
+CTruncatePlaybackDlg::CTruncatePlaybackDlg(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CTruncatePlaybackDlg)
+        CB_XRC_CTRL_VAL(m_radioTruncateSel, m_nTruncateSel)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CTruncatePlaybackDlg)
+    // match the desc + OK button width to rest of sizer
+    wxStaticText& desc = CheckedDeref(XRCCTRL(*this, "m_staticDesc", wxStaticText));
+    desc.Hide();
+    // find size w/o desc
+    wxSizer& sizer = CheckedDeref(desc.GetContainingSizer());
+    wxSize minSize = sizer.GetMinSize();
+    desc.Show();
+    desc.InvalidateBestSize();
+    desc.Wrap(minSize.x);
+
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
     m_nTruncateSel = 0;
-    //}}AFX_DATA_INIT
 }
 
-void CTruncatePlaybackDlg::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CTruncatePlaybackDlg)
-    DDX_Radio(pDX, IDC_D_TRUNC_DONT, m_nTruncateSel);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CTruncatePlaybackDlg, CDialog)
-    //{{AFX_MSG_MAP(CTruncatePlaybackDlg)
-        // NOTE: the ClassWizard will add message map macros here
+wxBEGIN_EVENT_TABLE(CTruncatePlaybackDlg, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -78,6 +85,7 @@ void CTruncatePlaybackDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTruncatePlaybackDlg message handlers
