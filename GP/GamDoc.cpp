@@ -1571,11 +1571,10 @@ void CGamDoc::OnUpdateFileDiscardRecordedMoves(CCmdUI* pCmdUI)
 void CGamDoc::OnEditCreateTray()
 {
     ASSERT(IsScenario());
-    CTrayNewDialog dlg;
-    dlg.m_pYMgr = &GetTrayManager();
-    if (dlg.DoModal() == IDOK)
+    CTrayNewDialog dlg(GetTrayManager());
+    if (dlg.ShowModal() == wxID_OK)
     {
-        dlg.m_pYMgr->CreateTraySet(dlg.m_strName);
+        GetTrayManager().CreateTraySet(dlg.m_strName);
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
