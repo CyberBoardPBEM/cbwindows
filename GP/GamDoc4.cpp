@@ -128,7 +128,7 @@ void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
                 // File's positions don't match current games' positions.
                 CSelectStateDialog dlg;
                 dlg.m_nState = 0;           // Select first button (file state)
-                if (dlg.DoModal() != IDOK)
+                if (dlg.ShowModal() != wxID_OK)
                     AfxThrowUserException();
                 if (dlg.m_nState == 0)
                 {

@@ -1,6 +1,6 @@
 // DlgState.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,27 +25,27 @@
 /////////////////////////////////////////////////////////////////////////////
 // CSelectStateDialog dialog
 
-class CSelectStateDialog : public CDialog
+class CSelectStateDialog : public wxDialog
 {
 // Construction
 public:
-    CSelectStateDialog(CWnd* pParent = NULL);   // standard constructor
+    CSelectStateDialog(wxWindow* parent = &CB::GetMainWndWx());   // standard constructor
 
 // Dialog Data
-    //{{AFX_DATA(CSelectStateDialog)
-    enum { IDD = IDD_CHOOSESTATE };
     int     m_nState;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxRadioButton> m_radioMove;
+    CB_XRC_END_CTRLS_DECL()
+public:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
     // Generated message map functions
-    //{{AFX_MSG(CSelectStateDialog)
-        // NOTE: the ClassWizard will add member functions here
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };
