@@ -1,6 +1,6 @@
 // DlgYprop.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,18 +34,24 @@ class CTrayPropDialog : public CDialog
 {
 // Construction
 public:
-    CTrayPropDialog(CWnd* pParent = NULL);  // standard constructor
+    CTrayPropDialog(const CTrayManager& yMgr,
+                    const CPlayerManager* playerMgr,
+                    CWnd* pParent = NULL);  // standard constructor
 
 // Dialog Data
     //{{AFX_DATA(CTrayPropDialog)
+private:
     enum { IDD = IDD_TRAYPRP };
     CButton m_chkVizOwnerToo;
     CButton m_chkAllowAccess;
     CStatic m_staticOwnerLabel;
     CComboBox   m_comboOwners;
     CEdit   m_editName;
+public:
     CB::string m_strName;
+private:
     int     m_nVizOpts;
+public:
     BOOL    m_bRandomSel;
     BOOL    m_bRandomSide;
     //}}AFX_DATA
@@ -55,9 +61,11 @@ public:
     BOOL            m_bNonOwnerAccess;
     BOOL            m_bEnforceVizForOwnerToo;
 
-    CTrayManager*   m_pYMgr;
-    CPlayerManager* m_pPlayerMgr;
+private:
+    const CTrayManager&   m_pYMgr;
+    const CPlayerManager* const m_pPlayerMgr;
 
+public:
     void SetTrayViz(TrayViz eTrayViz) { m_nVizOpts = (int)eTrayViz; }
     TrayViz GetTrayViz() { return (TrayViz)m_nVizOpts; }
 

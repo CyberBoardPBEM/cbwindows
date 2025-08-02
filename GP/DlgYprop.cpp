@@ -36,8 +36,12 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPropDialog dialog
 
-CTrayPropDialog::CTrayPropDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CTrayPropDialog::IDD, pParent)
+CTrayPropDialog::CTrayPropDialog(const CTrayManager& yMgr,
+                                    const CPlayerManager* playerMgr,
+                                    CWnd* pParent /*=NULL*/)
+    : CDialog(CTrayPropDialog::IDD, pParent),
+    m_pYMgr(yMgr),
+    m_pPlayerMgr(playerMgr)
 {
     //{{AFX_DATA_INIT(CTrayPropDialog)
     m_strName = "";
@@ -48,8 +52,6 @@ CTrayPropDialog::CTrayPropDialog(CWnd* pParent /*=NULL*/)
     m_nYSel = Invalid_v<size_t>;
     m_nOwnerSel = INVALID_PLAYER;
     m_bNonOwnerAccess = FALSE;
-    m_pPlayerMgr = NULL;
-    m_pYMgr = NULL;
     m_bEnforceVizForOwnerToo = FALSE;
 }
 
@@ -136,7 +138,7 @@ void CTrayPropDialog::OnOK()
         m_editName.SetFocus();
         return;
     }
-    size_t nSel = m_pYMgr->FindTrayByName(m_strName);
+    size_t nSel = m_pYMgr.FindTrayByName(m_strName);
     if (nSel != Invalid_v<size_t> && nSel != m_nYSel)
     {
         AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
@@ -161,10 +163,9 @@ void CTrayPropDialog::OnOK()
 BOOL CTrayPropDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    ASSERT(m_pYMgr);
     ASSERT(m_nYSel != Invalid_v<size_t>);
 
-    m_editName.SetWindowText(m_pYMgr->GetTraySet(m_nYSel).GetName());
+    m_editName.SetWindowText(m_pYMgr.GetTraySet(m_nYSel).GetName());
     if (m_pPlayerMgr == NULL)
     {
         m_comboOwners.EnableWindow(FALSE);

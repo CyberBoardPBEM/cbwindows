@@ -152,10 +152,8 @@ void CGsnProjView::DoTrayProperty()
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
 
-    CTrayPropDialog dlg;
+    CTrayPropDialog dlg(pDoc->GetTrayManager(), pDoc->GetPlayerManager());
     dlg.m_nYSel = nGrp;
-    dlg.m_pYMgr = &pDoc->GetTrayManager();
-    dlg.m_pPlayerMgr = pDoc->GetPlayerManager();
 
     CTraySet& pYGrp = pDoc->GetTrayManager().GetTraySet(nGrp);
     dlg.m_bRandomSel = pYGrp.IsRandomPiecePull();
@@ -172,7 +170,7 @@ void CGsnProjView::DoTrayProperty()
         pYGrp.SetRandPiecePull(dlg.m_bRandomSel);
         pYGrp.SetRandSidePull(dlg.m_bRandomSide);
         pYGrp.SetTrayContentVisibility(dlg.GetTrayViz());
-        if (dlg.m_pPlayerMgr != NULL)
+        if (pDoc->GetPlayerManager() != NULL)
         {
             pYGrp.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
             pYGrp.PropagateOwnerMaskToAllPieces(pDoc);
