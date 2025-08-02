@@ -1,6 +1,6 @@
 // DlgState.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,30 +34,38 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSelectStateDialog dialog
 
-CSelectStateDialog::CSelectStateDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CSelectStateDialog::IDD, pParent)
+CSelectStateDialog::CSelectStateDialog(wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CSelectStateDialog)
+        CB_XRC_CTRL_VAL(m_radioMove, m_nState)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CSelectStateDialog)
+    // match the desc + OK button width to rest of dlg's width
+    wxStaticText& desc = CheckedDeref(XRCCTRL(*this, "m_staticDesc", wxStaticText));
+    desc.Hide();
+    // find size w/o desc
+    wxSize dlgMinSize = GetSizer()->GetMinSize();
+    wxButton& ok = CheckedDeref(XRCCTRL(*this, "wxID_OK", wxButton));
+    wxSizer& okSizer = CheckedDeref(ok.GetContainingSizer());
+    desc.Show();
+    desc.InvalidateBestSize();
+    desc.Wrap(dlgMinSize.x - okSizer.GetMinSize().x);
+
+    SetMinSize(wxDefaultSize);
+    Layout();
+    Fit();
+    Centre();
+
     m_nState = -1;
-    //}}AFX_DATA_INIT
 }
 
-void CSelectStateDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CSelectStateDialog)
-    DDX_Radio(pDX, IDC_D_STATE_MOVEFILE, m_nState);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSelectStateDialog, CDialog)
-    //{{AFX_MSG_MAP(CSelectStateDialog)
-        // NOTE: the ClassWizard will add message map macros here
+wxBEGIN_EVENT_TABLE(CSelectStateDialog, wxDialog)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -77,4 +85,5 @@ void CSelectStateDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
