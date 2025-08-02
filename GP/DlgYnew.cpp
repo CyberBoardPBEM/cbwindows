@@ -1,6 +1,6 @@
 // DlgYnew.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,48 +36,33 @@ static char THIS_FILE[] = __FILE__;
 // CTrayNewDialog dialog
 
 
-CTrayNewDialog::CTrayNewDialog(CWnd* pParent /*=NULL*/)
-    : CDialog(CTrayNewDialog::IDD, pParent)
+CTrayNewDialog::CTrayNewDialog(CTrayManager& yMgr, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CTrayNewDialog)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 32)
+    CB_XRC_END_CTRLS_DEFN(),
+    m_pYMgr(yMgr)
 {
-    //{{AFX_DATA_INIT(CTrayNewDialog)
     m_strName = "";
-    //}}AFX_DATA_INIT
 }
-
-void CTrayNewDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CTrayNewDialog)
-    DDX_Control(pDX, IDC_D_YNEW_NAME, m_editName);
-    DDX_Text(pDX, IDC_D_YNEW_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CTrayNewDialog, CDialog)
-    //{{AFX_MSG_MAP(CTrayNewDialog)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrayNewDialog message handlers
 
-void CTrayNewDialog::OnOK()
+bool CTrayNewDialog::TransferDataFromWindow()
 {
-    m_strName = CB::string::GetWindowText(m_editName);
-    if (m_strName.empty())
+    if (!wxDialog::TransferDataFromWindow())
     {
-        AfxMessageBox(IDS_ERR_TRAYNAME, MB_OK | MB_ICONINFORMATION);
-        m_editName.SetFocus();
-        return;
+        return false;
     }
-    size_t nSel = m_pYMgr->FindTrayByName(m_strName);
+
+    size_t nSel = m_pYMgr.FindTrayByName(m_strName);
     if (nSel != Invalid_v<size_t>)
     {
-        AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
-        m_editName.SetFocus();
-        return;
+        wxMessageBox(CB::string::LoadString(IDS_ERR_TRAYNAMEUSED),
+                    CB::GetAppName(),
+                    wxOK | wxICON_INFORMATION);
+        m_editName->SetFocus();
+        return false;
     }
-    CDialog::OnOK();
+    return true;
 }
