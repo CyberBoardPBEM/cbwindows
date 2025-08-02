@@ -539,7 +539,7 @@ void CGamDoc::DoAcceptPlayback()    // (exposed for project window access)
     if (m_nCurMove != Invalid_v<size_t>)
     {
         CTruncatePlaybackDlg dlg;
-        if (dlg.DoModal() != IDOK)
+        if (dlg.ShowModal() != wxID_OK)
             return;
         bTruncateRemainingMoves = dlg.m_nTruncateSel == 1;
     }
