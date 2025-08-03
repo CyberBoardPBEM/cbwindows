@@ -38,7 +38,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGsnProjView, CView)
+IMPLEMENT_DYNAMIC(CGsnProjView, CView)
+IMPLEMENT_DYNCREATE(CGsnProjViewContainer, CView)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,6 +107,11 @@ BEGIN_MESSAGE_MAP(CGsnProjView, CView)
     //}}AFX_MSG_MAP
     ON_MESSAGE(WM_SHOWPLAYINGBOARD, OnMessageShowPlayingBoard)
     ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CGsnProjViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -760,4 +766,42 @@ LRESULT CGsnProjView::OnMessageRestoreWinState(WPARAM, LPARAM)
 {
     GetDocument().RestoreWindowState();
     return (LRESULT)0;
+}
+
+void CGsnProjViewContainer::OnDraw(CDC* pDC)
+{
+    // do nothing because child covers entire client rect
+}
+
+CGsnProjViewContainer::CGsnProjViewContainer() :
+    child(new CGsnProjView)
+{
+}
+
+int CGsnProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CGsnProjViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
 }

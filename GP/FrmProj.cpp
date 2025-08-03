@@ -89,7 +89,8 @@ void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
         CView *pView = GetActiveView();
         if (pView)
         {
-            if (pView->IsKindOf(RUNTIME_CLASS(CGsnProjView)) ||
+            wxASSERT(!pView->IsKindOf(RUNTIME_CLASS(CGsnProjView)));
+            if (pView->IsKindOf(RUNTIME_CLASS(CGsnProjViewContainer)) ||
                 pView->IsKindOf(RUNTIME_CLASS(CGamProjView)))
             {
                 CB::ToCGamDoc(GetActiveDocument())->OnFileClose();

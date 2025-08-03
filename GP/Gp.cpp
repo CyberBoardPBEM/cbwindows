@@ -258,7 +258,7 @@ BOOL CGpApp::InitInstance()
         IDR_GSCNTYPE,
         RUNTIME_CLASS(CGamDoc),
         RUNTIME_CLASS(CProjFrame),
-        RUNTIME_CLASS(CGsnProjView));
+        RUNTIME_CLASS(CGsnProjViewContainer));
     AddDocTemplate(m_pScnDocTemplate);
 
     m_pBrdViewTmpl = new CMultiDocTemplate(

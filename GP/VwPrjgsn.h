@@ -61,9 +61,9 @@ namespace CB { namespace Impl
 
 class CGsnProjView : public CView, private CB::Impl::CGsnProjViewBase
 {
-    DECLARE_DYNCREATE(CGsnProjView)
-protected:
-    CGsnProjView();         // protected constructor used by dynamic creation
+    DECLARE_DYNAMIC(CGsnProjView)
+public:
+    CGsnProjView();
 
 // Attributes
 public:
@@ -156,6 +156,23 @@ protected:
     afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
 
     DECLARE_MESSAGE_MAP()
+};
+
+class CGsnProjViewContainer : public CView
+{
+public:
+    void OnDraw(CDC* pDC) override;
+
+private:
+    CGsnProjViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CGsnProjViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CGsnProjView> child;
 };
 
 /////////////////////////////////////////////////////////////////////////////
