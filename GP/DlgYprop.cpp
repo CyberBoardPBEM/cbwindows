@@ -38,48 +38,39 @@ static char THIS_FILE[] = __FILE__;
 
 CTrayPropDialog::CTrayPropDialog(const CTrayManager& yMgr,
                                     const CPlayerManager* playerMgr,
-                                    CWnd* pParent /*=NULL*/)
-    : CDialog(CTrayPropDialog::IDD, pParent),
+                                    wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CTrayPropDialog)
+        CB_XRC_CTRL(m_chkVizOwnerToo)
+        CB_XRC_CTRL(m_chkAllowAccess)
+        CB_XRC_CTRL(m_staticOwnerLabel)
+        CB_XRC_CTRL(m_comboOwners)
+        CB_XRC_CTRL_VAL(m_editName, m_strName, wxFILTER_EMPTY, 32)
+        CB_XRC_CTRL_VAL(m_radioVizOpts, m_nVizOpts)
+        CB_XRC_CTRL_VAL(m_checkRandomSel, m_bRandomSel)
+        CB_XRC_CTRL_VAL(m_checkRandomSide, m_bRandomSide)
+    CB_XRC_END_CTRLS_DEFN(),
     m_pYMgr(yMgr),
     m_pPlayerMgr(playerMgr)
 {
-    //{{AFX_DATA_INIT(CTrayPropDialog)
     m_strName = "";
     m_nVizOpts = -1;
     m_bRandomSel = FALSE;
     m_bRandomSide = false;
-    //}}AFX_DATA_INIT
     m_nYSel = Invalid_v<size_t>;
     m_nOwnerSel = INVALID_PLAYER;
     m_bNonOwnerAccess = FALSE;
     m_bEnforceVizForOwnerToo = FALSE;
 }
 
-void CTrayPropDialog::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CTrayPropDialog)
-    DDX_Control(pDX, IDC_D_YPRP_OWNER_TOO, m_chkVizOwnerToo);
-    DDX_Control(pDX, IDC_D_YPRP_NONOWNER_ACCESS, m_chkAllowAccess);
-    DDX_Control(pDX, IDC_D_YPRP_OWNER_LABEL, m_staticOwnerLabel);
-    DDX_Control(pDX, IDC_D_YPRP_OWNER_LIST, m_comboOwners);
-    DDX_Control(pDX, IDC_D_YPRP_NAME, m_editName);
-    DDX_Text(pDX, IDC_D_YPRP_NAME, m_strName);
-    DDV_MaxChars(pDX, m_strName, 32);
-    DDX_Radio(pDX, IDC_D_YPRP_VIZFULL, m_nVizOpts);
-    DDX_Check(pDX, IDC_D_YPRP_RANDSEL, m_bRandomSel);
-    DDX_Check(pDX, IDC_D_YPRP_RANDSIDE, m_bRandomSide);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CTrayPropDialog, CDialog)
-    //{{AFX_MSG_MAP(CTrayPropDialog)
-    ON_CBN_SELCHANGE(IDC_D_YPRP_OWNER_LIST, OnSelChangeOwnerList)
+wxBEGIN_EVENT_TABLE(CTrayPropDialog, wxDialog)
+    EVT_CHOICE(XRCID("m_comboOwners"), OnSelChangeOwnerList)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CONTEXTMENU()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Html Help control ID Map
 
@@ -108,48 +99,49 @@ void CTrayPropDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
     GetApp()->DoHelpWhatIsHelp(pWnd, adwHelpMap);
 }
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPropDialog message handlers
 
-void CTrayPropDialog::OnSelChangeOwnerList()
+void CTrayPropDialog::OnSelChangeOwnerList(wxCommandEvent& /*event*/)
 {
-    if (m_comboOwners.GetCurSel() <= 0)
+    if (m_comboOwners->GetSelection() <= 0)
     {
-        m_chkAllowAccess.SetCheck(0);
-        m_chkVizOwnerToo.SetCheck(0);
-        m_chkAllowAccess.EnableWindow(FALSE);
-        m_chkVizOwnerToo.EnableWindow(FALSE);
+        m_chkAllowAccess->SetValue(false);
+        m_chkVizOwnerToo->SetValue(false);
+        m_chkAllowAccess->Enable(FALSE);
+        m_chkVizOwnerToo->Enable(FALSE);
     }
     else
     {
-        m_chkAllowAccess.EnableWindow(TRUE);
-        m_chkVizOwnerToo.EnableWindow(TRUE);
+        m_chkAllowAccess->Enable(TRUE);
+        m_chkVizOwnerToo->Enable(TRUE);
     }
 }
 
-void CTrayPropDialog::OnOK()
+bool CTrayPropDialog::TransferDataFromWindow()
 {
-    m_strName = CB::string::GetWindowText(m_editName);
-    if (m_strName.empty())
+    if (!wxDialog::TransferDataFromWindow())
     {
-        AfxMessageBox(IDS_ERR_TRAYNAME, MB_OK | MB_ICONINFORMATION);
-        m_editName.SetFocus();
-        return;
+        return false;
     }
+
     size_t nSel = m_pYMgr.FindTrayByName(m_strName);
     if (nSel != Invalid_v<size_t> && nSel != m_nYSel)
     {
-        AfxMessageBox(IDS_ERR_TRAYNAMEUSED, MB_OK | MB_ICONINFORMATION);
-        m_editName.SetFocus();
-        return;
+        wxMessageBox(CB::string::LoadString(IDS_ERR_TRAYNAMEUSED),
+                    CB::GetAppName(),
+                    wxOK | wxICON_INFORMATION);
+        m_editName->SetFocus();
+        return false;
     }
     if (m_pPlayerMgr != NULL)
     {
-        m_nOwnerSel = PlayerId(m_comboOwners.GetCurSel() - 1);
-        m_bNonOwnerAccess = m_chkAllowAccess.GetCheck() != 0;
-        m_bEnforceVizForOwnerToo = m_chkVizOwnerToo.GetCheck() != 0;
+        m_nOwnerSel = PlayerId(m_comboOwners->GetSelection() - 1);
+        m_bNonOwnerAccess = m_chkAllowAccess->GetValue();
+        m_bEnforceVizForOwnerToo = m_chkVizOwnerToo->GetValue();
         if (m_nOwnerSel == INVALID_PLAYER)
         {
             m_bNonOwnerAccess = FALSE;
@@ -157,46 +149,49 @@ void CTrayPropDialog::OnOK()
         }
     }
 
-    CDialog::OnOK();
+    return true;
 }
 
-BOOL CTrayPropDialog::OnInitDialog()
+bool CTrayPropDialog::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-    ASSERT(m_nYSel != Invalid_v<size_t>);
+    if (!wxDialog::TransferDataToWindow())
+    {
+        return false;
+    }
+    wxASSERT(m_nYSel != Invalid_v<size_t>);
 
-    m_editName.SetWindowText(m_pYMgr.GetTraySet(m_nYSel).GetName());
+    m_editName->SetValue(m_pYMgr.GetTraySet(m_nYSel).GetName());
     if (m_pPlayerMgr == NULL)
     {
-        m_comboOwners.EnableWindow(FALSE);
-        m_staticOwnerLabel.EnableWindow(FALSE);
-        m_chkAllowAccess.SetCheck(0);
-        m_chkAllowAccess.EnableWindow(FALSE);
+        m_comboOwners->Enable(FALSE);
+        m_staticOwnerLabel->Enable(FALSE);
+        m_chkAllowAccess->SetValue(false);
+        m_chkAllowAccess->Enable(FALSE);
     }
     else
     {
         CB::string str = CB::string::LoadString(IDS_LBL_NO_OWNER);
-        m_comboOwners.AddString(str);
+        m_comboOwners->Append(str);
         for (const Player& player : *m_pPlayerMgr)
         {
-            m_comboOwners.AddString(player.m_strName);
+            m_comboOwners->Append(player.m_strName);
         }
-        m_comboOwners.SetCurSel(static_cast<int>(m_nOwnerSel) + 1);
-        if (m_comboOwners.GetCurSel() <= 0)
+        m_comboOwners->SetSelection(static_cast<int>(m_nOwnerSel) + 1);
+        if (m_comboOwners->GetSelection() <= 0)
         {
-            m_chkAllowAccess.SetCheck(0);
-            m_chkAllowAccess.EnableWindow(FALSE);
-            m_chkVizOwnerToo.SetCheck(0);
-            m_chkVizOwnerToo.EnableWindow(FALSE);
+            m_chkAllowAccess->SetValue(false);
+            m_chkAllowAccess->Enable(FALSE);
+            m_chkVizOwnerToo->SetValue(false);
+            m_chkVizOwnerToo->Enable(FALSE);
         }
         else
         {
-            m_chkAllowAccess.EnableWindow(TRUE);
-            m_chkVizOwnerToo.EnableWindow(TRUE);
-            m_chkAllowAccess.SetCheck(m_bNonOwnerAccess ? 1 : 0);
-            m_chkVizOwnerToo.SetCheck(m_bEnforceVizForOwnerToo ? 1 : 0);
+            m_chkAllowAccess->Enable(TRUE);
+            m_chkVizOwnerToo->Enable(TRUE);
+            m_chkAllowAccess->SetValue(m_bNonOwnerAccess);
+            m_chkVizOwnerToo->SetValue(m_bEnforceVizForOwnerToo);
         }
     }
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return TRUE;
 }
 
