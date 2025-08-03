@@ -156,7 +156,7 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     rctList.left = rctList.right + BTN_GROUP_XGAP;
     rctList.right = rctClient.right - XBORDER;
 
-    m_listTrays = MakeOwner<CTrayListBox>(CheckedDeref(GetDocument()));
+    m_listTrays = MakeOwner<CTrayListBox>(GetDocument());
     if (!CreateListbox(IDC_V_GSN_TRAYLIST, *m_listTrays, WS_HSCROLL | LBS_HASSTRINGS, rctList))
         return -1;
     m_listTrays->SetTrayContentVisibility(trayVizAllSides);
@@ -170,13 +170,13 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGsnProjView::OnInitialUpdate()
 {
-    GetDocument()->DoInitialUpdate();   // Since UpdateAllViews isn't virtual
+    GetDocument().DoInitialUpdate();   // Since UpdateAllViews isn't virtual
     CView::OnInitialUpdate();
-    CGamDoc* pDoc = GetDocument();
-    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
+    CGamDoc& pDoc = GetDocument();
+    CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     // Only honor the open-on-load flags if the save window state
     // is disabled.
-    if (!pDoc->m_bSaveWindowPositions)
+    if (!pDoc.m_bSaveWindowPositions)
     {
         for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
         {
@@ -205,7 +205,7 @@ void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CGsnProjView::OnDraw(CDC* pDC)
 {
-    CDocument* pDoc = GetDocument();
+    CDocument& pDoc = GetDocument();
     // TODO: add draw code here
 }
 
@@ -401,8 +401,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     {
         bDisplayIDs = GetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
     }
-    CGamDoc* pDoc = GetDocument();
-    ASSERT(pDoc);
+    CGamDoc& pDoc = GetDocument();
 
     m_listProj.SetRedraw(FALSE);
 
@@ -420,7 +419,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_GSN_BOARDS);
     m_listProj.AddItem(grpBrdHdr, str);
 
-    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
+    CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
     {
         CPlayBoard& pPBoard = pPBMgr.GetPBoard(i);
@@ -433,7 +432,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         }
         if (pPBoard.IsOwned())
         {
-            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc.GetPlayerManager()->GetPlayerUsingMask(
                 pPBoard.GetOwnerMask()).m_strName;
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -445,7 +444,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_GSN_TRAYS);
     m_listProj.AddItem(grpTrayHdr, str);
 
-    CTrayManager& pYMgr = pDoc->GetTrayManager();
+    CTrayManager& pYMgr = pDoc.GetTrayManager();
     for (size_t i = size_t(0); i < pYMgr.GetNumTraySets(); i++)
     {
         CTraySet& pYSet = pYMgr.GetTraySet(i);
@@ -457,7 +456,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         }
         if (pYSet.IsOwned())
         {
-            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc.GetPlayerManager()->GetPlayerUsingMask(
                 pYSet.GetOwnerMask()).m_strName;
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -744,10 +743,10 @@ void CGsnProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
 
 LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 {
-    CGamDoc* pDoc = GetDocument();
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
+    CGamDoc& pDoc = GetDocument();
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
     ASSERT(pPBoard.m_bOpenBoardOnLoad);
-    pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
+    pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl,
         pPBoard.GetBoard()->GetName(), &pPBoard);
     return (LRESULT)0;
 }
@@ -759,6 +758,6 @@ LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 
 LRESULT CGsnProjView::OnMessageRestoreWinState(WPARAM, LPARAM)
 {
-    GetDocument()->RestoreWindowState();
+    GetDocument().RestoreWindowState();
     return (LRESULT)0;
 }

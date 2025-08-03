@@ -53,19 +53,19 @@ static char THIS_FILE[] = __FILE__;
 
 void CGsnProjView::DoGsnProperty()
 {
-    GetDocument()->DoScenarioProperties();
+    GetDocument().DoScenarioProperties();
 }
 
 void CGsnProjView::DoUpdateGsnInfo()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     CB::string str;
-    if (!pDoc->m_strScnTitle.empty())
-        str += "TITLE: " + pDoc->m_strScnTitle + "\r\n\r\n";
-    if (!pDoc->m_strScnAuthor.empty())
-        str += "AUTHOR: " + pDoc->m_strScnAuthor + "\r\n\r\n";
-    if (!pDoc->m_strScnDescr.empty())
-        str += "DESCRIPTION:\r\n\r\n" + pDoc->m_strScnDescr;
+    if (!pDoc.m_strScnTitle.empty())
+        str += "TITLE: " + pDoc.m_strScnTitle + "\r\n\r\n";
+    if (!pDoc.m_strScnAuthor.empty())
+        str += "AUTHOR: " + pDoc.m_strScnAuthor + "\r\n\r\n";
+    if (!pDoc.m_strScnDescr.empty())
+        str += "DESCRIPTION:\r\n\r\n" + pDoc.m_strScnDescr;
     m_editInfo.SetWindowText(str);
 }
 
@@ -74,29 +74,29 @@ void CGsnProjView::DoUpdateGsnInfo()
 
 void CGsnProjView::DoBoardSelection()
 {
-    GetDocument()->DoSelectBoards();
+    GetDocument().DoSelectBoards();
 }
 
 void CGsnProjView::DoBoardProperty()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
-    pDoc->DoBoardProperties(nBrd);
+    pDoc.DoBoardProperties(nBrd);
 }
 
 void CGsnProjView::DoBoardView()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(nBrd);
-    CView* pView = pDoc->FindPBoardView(pPBoard);
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(nBrd);
+    CView* pView = pDoc.FindPBoardView(pPBoard);
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.
@@ -107,22 +107,22 @@ void CGsnProjView::DoBoardView()
     else
     {
         CB::string strTitle = m_listProj.GetItemText(nSel);
-        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
+        pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
 
 void CGsnProjView::DoBoardRemove()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
 
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    pDoc->GetPBoardManager().DeletePBoard(nBrd);
-    pDoc->SetModifiedFlag(TRUE);
-    pDoc->UpdateAllViews(NULL, HINT_BOARDCHANGE);
+    pDoc.GetPBoardManager().DeletePBoard(nBrd);
+    pDoc.SetModifiedFlag(TRUE);
+    pDoc.UpdateAllViews(NULL, HINT_BOARDCHANGE);
 }
 
 void CGsnProjView::DoUpdateBoardHelpInfo()
@@ -140,22 +140,22 @@ void CGsnProjView::DoUpdateBoardInfo()
 
 void CGsnProjView::DoTrayCreate()
 {
-    GetDocument()->DoCreateTray();
+    GetDocument().DoCreateTray();
 }
 
 void CGsnProjView::DoTrayProperty()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
 
-    CTrayPropDialog dlg(pDoc->GetTrayManager(), pDoc->GetPlayerManager());
+    CTrayPropDialog dlg(pDoc.GetTrayManager(), pDoc.GetPlayerManager());
     dlg.m_nYSel = nGrp;
 
-    CTraySet& pYGrp = pDoc->GetTrayManager().GetTraySet(nGrp);
+    CTraySet& pYGrp = pDoc.GetTrayManager().GetTraySet(nGrp);
     dlg.m_bRandomSel = pYGrp.IsRandomPiecePull();
     dlg.m_bRandomSide = pYGrp.IsRandomSidePull();
     dlg.SetTrayViz(pYGrp.GetTrayContentVisibility());
@@ -170,50 +170,50 @@ void CGsnProjView::DoTrayProperty()
         pYGrp.SetRandPiecePull(dlg.m_bRandomSel);
         pYGrp.SetRandSidePull(dlg.m_bRandomSide);
         pYGrp.SetTrayContentVisibility(dlg.GetTrayViz());
-        if (pDoc->GetPlayerManager() != NULL)
+        if (pDoc.GetPlayerManager() != NULL)
         {
             pYGrp.SetOwnerMask(CPlayerManager::GetMaskFromPlayerNum(dlg.m_nOwnerSel));
-            pYGrp.PropagateOwnerMaskToAllPieces(pDoc);
+            pYGrp.PropagateOwnerMaskToAllPieces(&pDoc);
             pYGrp.SetNonOwnerAccess(dlg.m_bNonOwnerAccess);
             pYGrp.SetEnforceVisibilityForOwnerToo(dlg.m_bEnforceVizForOwnerToo);
         }
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
-        pDoc->SetModifiedFlag();
+        pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+        pDoc.SetModifiedFlag();
     }
 }
 
 void CGsnProjView::DoTrayEdit()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     wxASSERT(nSel >= 0);
     wxASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
-    CTrayManager& pYMgr = pDoc->GetTrayManager();
+    CTrayManager& pYMgr = pDoc.GetTrayManager();
 
-    CSetPiecesDialog dlg(*pDoc);
+    CSetPiecesDialog dlg(pDoc);
     dlg.m_nYSel = value_preserving_cast<int>(nGrp);
 
     m_listTrays->SetItemMap(NULL);       // Clear this since repaint may fail...
-    pDoc->CloseTrayPalettes();          // ...Ditto that for tray palettes
+    pDoc.CloseTrayPalettes();          // ...Ditto that for tray palettes
 
     dlg.ShowModal();
 
     // Notify all visible trays
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
-    pDoc->SetModifiedFlag();
+    pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+    pDoc.SetModifiedFlag();
 }
 
 void CGsnProjView::DoTrayDelete()
 {
-    CGamDoc* pDoc = GetDocument();
-    CTrayManager& pYMgr = pDoc->GetTrayManager();
-    CPieceTable& pPTbl = pDoc->GetPieceTable();
+    CGamDoc& pDoc = GetDocument();
+    CTrayManager& pYMgr = pDoc.GetTrayManager();
+    CPieceTable& pPTbl = pDoc.GetPieceTable();
 
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
@@ -232,8 +232,8 @@ void CGsnProjView::DoTrayDelete()
     pYMgr.DeleteTraySet(nGrp);
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc->UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
-    pDoc->SetModifiedFlag();
+    pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+    pDoc.SetModifiedFlag();
 }
 
 void CGsnProjView::DoUpdateTrayHelpInfo()
@@ -243,14 +243,14 @@ void CGsnProjView::DoUpdateTrayHelpInfo()
 
 void CGsnProjView::DoUpdateTrayList()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
 
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
     size_t nGrp = m_listProj.GetItemSourceCode(nSel);
 
-    CTraySet& pYGrp = pDoc->GetTrayManager().GetTraySet(nGrp);
+    CTraySet& pYGrp = pDoc.GetTrayManager().GetTraySet(nGrp);
     const std::vector<PieceID>& pLstMap = pYGrp.GetPieceIDTable();
     m_listTrays->SetItemMap(&pLstMap);
 }
