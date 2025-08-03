@@ -1969,19 +1969,16 @@ namespace CB
     // emulate CWnd::SendMessageToDescendants()
     void SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep = true);
 
-#if 0
     const CWnd* ToCWnd(const wxWindow& w);
     inline CWnd* ToCWnd(wxWindow& w) { return const_cast<CWnd*>(ToCWnd(std::as_const(w))); }
 
     // MFC if possible, wx otherwise
     const std::type_info& GetPublicTypeid(const wxWindow& w);
-#endif
 }
 
 // helpers for providing wx/docview
 namespace CB
 {
-#if 0
     // satisfy wxDocChildFrameAny<> requirements
     template<typename BASE>
     class PseudoFrame : public BASE
@@ -2029,7 +2026,6 @@ namespace CB
     private:
         RefPtr<wxWindow> window;
     };
-#endif
 
     /* wxView must be separate from wxWindow
         (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
@@ -2333,7 +2329,6 @@ namespace CB
     void InflateAndNormalize(wxRect& rect, int dx, int dy);
 }
 
-#if 0
 // use these to translate and relay MFC messages to a wx target
 namespace CB
 {
@@ -2415,7 +2410,6 @@ namespace CB
         }
     };
 }
-#endif
 
 namespace CB
 {
