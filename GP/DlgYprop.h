@@ -30,38 +30,37 @@ class CPlayerManager;
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPropDialog dialog
 
-class CTrayPropDialog : public CDialog
+class CTrayPropDialog : public wxDialog
 {
 // Construction
 public:
     CTrayPropDialog(const CTrayManager& yMgr,
                     const CPlayerManager* playerMgr,
-                    CWnd* pParent = NULL);  // standard constructor
+                    wxWindow* parent = &CB::GetMainWndWx());  // standard constructor
 
-// Dialog Data
-    //{{AFX_DATA(CTrayPropDialog)
-private:
-    enum { IDD = IDD_TRAYPRP };
-    CButton m_chkVizOwnerToo;
-    CButton m_chkAllowAccess;
-    CStatic m_staticOwnerLabel;
-    CComboBox   m_comboOwners;
-    CEdit   m_editName;
-public:
-    CB::string m_strName;
+    wxString m_strName;
 private:
     int     m_nVizOpts;
 public:
-    BOOL    m_bRandomSel;
-    BOOL    m_bRandomSide;
-    //}}AFX_DATA
+    bool    m_bRandomSel;
+    bool    m_bRandomSide;
 
     size_t          m_nYSel;
     PlayerId        m_nOwnerSel;    // -1 = no owner, 0 = first player, ....
-    BOOL            m_bNonOwnerAccess;
-    BOOL            m_bEnforceVizForOwnerToo;
-
+    bool            m_bNonOwnerAccess;
+    bool            m_bEnforceVizForOwnerToo;
 private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxCheckBox> m_chkVizOwnerToo;
+        RefPtr<wxCheckBox> m_chkAllowAccess;
+        RefPtr<wxStaticText> m_staticOwnerLabel;
+        RefPtr<wxChoice> m_comboOwners;
+        RefPtr<wxTextCtrl> m_editName;
+        RefPtr<wxRadioButton> m_radioVizOpts;
+        RefPtr<wxCheckBox> m_checkRandomSel;
+        RefPtr<wxCheckBox> m_checkRandomSide;
+    CB_XRC_END_CTRLS_DECL()
+
     const CTrayManager&   m_pYMgr;
     const CPlayerManager* const m_pPlayerMgr;
 
@@ -71,15 +70,12 @@ public:
 
 // Implementation
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-    // Generated message map functions
-    //{{AFX_MSG(CTrayPropDialog)
-    virtual void OnOK();
-    virtual BOOL OnInitDialog();
-    afx_msg void OnSelChangeOwnerList();
+    bool TransferDataFromWindow() override;
+    bool TransferDataToWindow() override;
+    void OnSelChangeOwnerList(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
 };

@@ -163,7 +163,7 @@ void CGsnProjView::DoTrayProperty()
     dlg.m_bNonOwnerAccess = pYGrp.IsNonOwnerAccessAllowed();
     dlg.m_bEnforceVizForOwnerToo = pYGrp.IsEnforcingVisibilityForOwnerToo();
 
-    if (dlg.DoModal() == IDOK)
+    if (dlg.ShowModal() == wxID_OK)
     {
         pYGrp.SetName(dlg.m_strName);
 
