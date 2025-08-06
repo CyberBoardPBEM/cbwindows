@@ -48,8 +48,49 @@
 
 #define WM_ROTATEPIECE_DELTA    (WM_USER + 210) // WPARAM = (int)relative rotation delta
 #define WM_CENTERBOARDONPOINT   (WM_USER + 211) // WPARAM = POINT* in board coords
+
 #define WM_SHOWPLAYINGBOARD     (WM_USER + 212) // WPARAM = size_t Playing Board Index
+class ShowPlayingBoardEvent : public wxEvent
+{
+public:
+    ShowPlayingBoardEvent(size_t playBrdIndex);
+
+    size_t GetPlayingBoardIndex() const { return playBrdIndex; }
+
+    wxEvent* Clone() const override { return new ShowPlayingBoardEvent(*this); }
+
+private:
+    const size_t playBrdIndex;
+};
+wxDECLARE_EVENT(WM_SHOWPLAYINGBOARD_WX, ShowPlayingBoardEvent);
+inline ShowPlayingBoardEvent::ShowPlayingBoardEvent(size_t pbi) :
+    wxEvent(wxID_ANY, WM_SHOWPLAYINGBOARD_WX),
+    playBrdIndex(pbi)
+{
+}
+typedef void (wxEvtHandler::* ShowPlayingBoardEventFunction)(ShowPlayingBoardEvent&);
+#define ShowPlayingBoardEventHandler(func) wxEVENT_HANDLER_CAST(ShowPlayingBoardEventFunction, func)
+#define EVT_SHOWPLAYINGBOARD(func) \
+    wx__DECLARE_EVT0(WM_SHOWPLAYINGBOARD_WX, ShowPlayingBoardEventHandler(func))
+
 #define WM_WINSTATE_RESTORE     (WM_USER + 213) // No Args. Posted to project window
+class WinStateRestoreEvent : public wxEvent
+{
+public:
+    WinStateRestoreEvent();
+
+    wxEvent* Clone() const override { return new WinStateRestoreEvent(*this); }
+};
+wxDECLARE_EVENT(WM_WINSTATE_RESTORE_WX, WinStateRestoreEvent);
+inline WinStateRestoreEvent::WinStateRestoreEvent() :
+    wxEvent(wxID_ANY, WM_WINSTATE_RESTORE_WX)
+{
+}
+typedef void (wxEvtHandler::* WinStateRestoreEventFunction)(WinStateRestoreEvent&);
+#define WinStateRestoreEventHandler(func) wxEVENT_HANDLER_CAST(WinStateRestoreEventFunction, func)
+#define EVT_WINSTATE_RESTORE(func) \
+    wx__DECLARE_EVT0(WM_WINSTATE_RESTORE_WX, WinStateRestoreEventHandler(func))
+
 #define WM_SELECT_BOARD_OBJLIST (WM_USER + 214) // WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
 
 #define WM_MESSAGEBOX           (WM_USER + 215) // WPARAM = Opts. LPARAM = Msg ID or Ptr

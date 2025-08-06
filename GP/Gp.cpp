@@ -48,6 +48,9 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+wxDEFINE_EVENT(WM_SHOWPLAYINGBOARD_WX, ShowPlayingBoardEvent);
+wxDEFINE_EVENT(WM_WINSTATE_RESTORE_WX, WinStateRestoreEvent);
+
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
 
