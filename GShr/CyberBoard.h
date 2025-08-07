@@ -346,7 +346,7 @@ public:
     template<typename FormatContext>
     FormatContext::iterator format(const wxRect& r, FormatContext& ctx) const
     {
-        std::format_to(ctx.out(), "[(");
+        std::format_to(ctx.out(), "((");
         BASE::format(r.GetLeft(), ctx);
         std::format_to(ctx.out(), ",");
         BASE::format(r.GetTop(), ctx);
