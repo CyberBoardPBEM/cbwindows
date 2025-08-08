@@ -248,8 +248,28 @@ CMainFrame::CMainFrame() :
                         Right().Layer(0).Position(1).
                         Hide());
 
-    // default width doesn't leave enough space for color palette
-    SetClientSize(4*m_wndColorPal->GetBestSize().x, GetClientSize().y);
+    if (!wxPersistentRegisterAndRestore(this))
+    {
+        // default width doesn't leave enough space for color palette
+        wxSize clientSize = GetClientSize();
+        if (clientSize.x < 4*m_wndColorPal->GetBestSize().x)
+        {
+            wxSize oldSize = GetSize();
+            clientSize.x = 4*m_wndColorPal->GetBestSize().x;
+            wxSize newSize = ClientToWindowSize(clientSize);
+            // preserve aspect ratio of window
+            newSize.y = oldSize.y * newSize.x/oldSize.x;
+            // but don't exceed client area
+            wxRect clientArea = wxDisplay().GetClientArea();
+            newSize.x = std::min(newSize.x, clientArea.GetWidth());
+            newSize.y = std::min(newSize.y, clientArea.GetHeight());
+            wxPoint pos = GetPosition();
+            pos.x = std::min(pos.x, clientArea.GetRight() - newSize.x);
+            pos.y = std::min(pos.y, clientArea.GetBottom() - newSize.y);
+            SetSize(pos.x, pos.y, newSize.x, newSize.y);
+        }
+    }
+
     auiManager.Update();
 }
 
