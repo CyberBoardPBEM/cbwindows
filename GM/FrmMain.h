@@ -100,8 +100,8 @@ protected:
 
 #if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnClose();
 #endif
+    void OnClose(wxCloseEvent& event);
     void OnWindowToolPal(wxCommandEvent& event);
     void OnWindowIToolPal(wxCommandEvent& event);
     void OnWindowColorPal(wxCommandEvent& event);

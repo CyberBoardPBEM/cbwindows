@@ -1092,6 +1092,9 @@ namespace CB
     inline string operator+(string lhs, const char* rhs) { return lhs += static_cast<string>(rhs); }
     inline string operator+(const char* lhs, const string& rhs) { return static_cast<string>(lhs) + rhs; }
     inline string operator+(string lhs, const CString& rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(string lhs, const wxString& rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(string lhs, const ::std::string& rhs) { return lhs += static_cast<string>(rhs); }
+    inline string operator+(string lhs, const ::std::wstring& rhs) { return lhs += static_cast<string>(rhs); }
     inline string operator+(char lhs, const string& rhs) { return string(size_t(1), lhs) += rhs; }
     // not impl yet
     inline string operator+(wchar_t lhs, const string& rhs) = delete;
