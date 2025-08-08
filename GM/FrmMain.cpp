@@ -46,8 +46,8 @@ static char THIS_FILE[] = __FILE__;
 wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::wxAuiMDIParentFrame>)
 #if 0
     ON_WM_CREATE()
-    ON_WM_CLOSE()
 #endif
+    EVT_CLOSE(OnClose)
     EVT_MENU(XRCID("ID_WINDOW_TOOLPAL"), OnWindowToolPal)
     EVT_MENU(XRCID("ID_WINDOW_ITOOLPAL"), OnWindowIToolPal)
     EVT_MENU(XRCID("ID_WINDOW_COLORPAL"), OnWindowColorPal)
@@ -271,6 +271,8 @@ CMainFrame::CMainFrame() :
     }
 
     auiManager.Update();
+
+    RestoreProfileSettings();
 }
 
 CMainFrame::~CMainFrame()
@@ -382,13 +384,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
-void CMainFrame::OnClose()
+void CMainFrame::OnClose(wxCloseEvent& event)
 {
     SaveProfileSettings();
-    CMDIFrameWndEx::OnClose();
+    event.Skip();
 }
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 
 BOOL CMainFrame::OnHelpInfo(HELPINFO* pHelpInfo)
@@ -424,43 +428,50 @@ wxView* CMainFrame::GetActiveView() const
 
 ///////////////////////////////////////////////////////////////////////
 
-static const CB::string szSectSettings = "Settings";
-static const CB::string szSectControlBars = "ControlBars";
-static const CB::string szEntryToolPal = "ToolPal";
-static const CB::string szEntryIToolPal = "ImageToolPal";
+static const CB::string szFramePath = "Persistent_Options/Window/frame/";
+static const CB::string szConfigVer = "v1";
+static const CB::string szEntryPerspective = "Perspective";
 static const CB::string szEntryColorPal = "ColorPal";
 static const CB::string szEntryTilePal = "TilePal";
-static const CB::string szEntryToolBar = "ToolBar";
 static const CB::string szEntryStatusBar = "StatusBar";
 
 void CMainFrame::SaveProfileSettings()
 {
-#if 0
-    SaveBarState(szSectControlBars);
+    wxConfigBase& config = CheckedDeref(wxConfig::Get());
+    wxConfigPathChanger setPath(&config, szFramePath);
 
-    GetApp()->WriteProfileInt(szSectSettings, szEntryColorPal, m_bColorPalOn);
-    GetApp()->WriteProfileInt(szSectSettings, szEntryTilePal, m_bTilePalOn);
+    wxString perspective = szConfigVer + "\n" + auiManager.SavePerspective();
+    CB_VERIFY(config.Write(szEntryPerspective, perspective));
 
-    GetApp()->WriteProfileInt(szSectSettings, szEntryStatusBar,
-        (m_wndStatusBar.GetStyle() & WS_VISIBLE) ? 1 : 0);
-#else
-    AfxThrowNotSupportedException();
-#endif
+    CB_VERIFY(config.Write(szEntryColorPal, m_bColorPalOn));
+    CB_VERIFY(config.Write(szEntryTilePal, m_bTilePalOn));
+
+    CB_VERIFY(config.Write(szEntryStatusBar, bool(m_wndStatusBar)));
 }
 
 void CMainFrame::RestoreProfileSettings()
 {
-#if 0
-    // Note: I only send a message to turn off the tool and status bars
-    // since MFC sets them on by default.
-    if (!GetApp()->GetProfileInt(szSectSettings, szEntryStatusBar, 1))
-        SendMessage(WM_COMMAND, ID_VIEW_STATUS_BAR, 0L);
+    wxConfigBase& config = CheckedDeref(wxConfig::Get());
+    wxConfigPathChanger setPath(&config, szFramePath);
 
-    m_bColorPalOn = GetApp()->GetProfileInt(szSectSettings, szEntryColorPal, TRUE);
-    m_bTilePalOn = GetApp()->GetProfileInt(szSectSettings, szEntryTilePal, TRUE);
-#else
-    AfxThrowNotSupportedException();
-#endif
+    // status bar is initialized on, so only adjust to turn off
+    if (!config.Read(szEntryStatusBar, true))
+    {
+        wxCommandEvent dummy;
+        OnViewStatusBar(dummy);
+    }
+
+    m_bColorPalOn = config.Read(szEntryColorPal, true);
+    m_bTilePalOn = config.Read(szEntryTilePal, true);
+
+    wxString perspective = config.Read(szEntryPerspective, wxEmptyString);
+    wxStringTokenizer tokenizer(perspective, "\n");
+    if (tokenizer.HasMoreTokens() &&
+        tokenizer.GetNextToken() == szConfigVer.wx_str() &&
+        tokenizer.HasMoreTokens())
+    {
+        auiManager.LoadPerspective(tokenizer.GetNextToken());
+    }
 }
 
 void CMainFrame::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
