@@ -76,9 +76,10 @@
 #include <wx/dc.h>
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
-#include <wx/docview.h>
 #include "wx/dcprint.h"
 #include <wx/dialog.h>
+#include <wx/display.h>
+#include <wx/docview.h>
 #include <wx/filedlg.h>
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>
@@ -88,6 +89,7 @@
 #include <wx/msgdlg.h>
 #include <wx/nativewin.h>
 #include <wx/overlay.h>
+#include <wx/persist/toplevel.h>
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>
 #include <wx/renderer.h>
