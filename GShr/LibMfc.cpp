@@ -1305,9 +1305,23 @@ namespace CB
                 return wxID_UNDO;
             default:
 #if defined(GPLAY)
-                // TODO:
-                return wxID_NONE;
+                switch (id)
+                {
+                    case ID_EDIT_BRDPROP:
+                        return XRCID("ID_EDIT_BRDPROP");
+                    case ID_PPROJITEM_DELETE:
+                        return XRCID("ID_PPROJITEM_DELETE");
+                    case ID_PPROJITEM_EDIT:
+                        return XRCID("ID_PPROJITEM_EDIT");
+                    case ID_PPROJITEM_PROPERTIES:
+                        return XRCID("ID_PPROJITEM_PROPERTIES");
+                    case ID_PPROJITEM_VIEW:
+                        return XRCID("ID_PPROJITEM_VIEW");
+                    default:
+                        return wxID_NONE;
+                }
 #else
+                wxASSERT(!"dead code");
                 switch (id)
                 {
                     case ID_BUGFIX_DUMPBADTILES:
@@ -1523,6 +1537,14 @@ namespace CB
             { XRCID("ID_TOOLS_ROT180"), ID_TOOLS_ROT180 },
             { XRCID("ID_TOOLS_ROT270"), ID_TOOLS_ROT270 },
 #else
+            { XRCID("ID_EDIT_CREATE_GEOMORPHIC"), ID_EDIT_CREATE_GEOMORPHIC },
+            { XRCID("ID_EDIT_CREATETRAY"), ID_EDIT_CREATETRAY },
+            { XRCID("ID_EDIT_SELECTBOARDS"), ID_EDIT_SELECTBOARDS },
+            { XRCID("ID_EDIT_SELECTGAMEPIECES"), ID_EDIT_SELECTGAMEPIECES },
+            { XRCID("ID_PPROJITEM_DELETE"), ID_PPROJITEM_DELETE },
+            { XRCID("ID_PPROJITEM_EDIT"), ID_PPROJITEM_EDIT },
+            { XRCID("ID_PPROJITEM_PROPERTIES"), ID_PPROJITEM_PROPERTIES },
+            { XRCID("ID_PPROJITEM_VIEW"), ID_PPROJITEM_VIEW },
 #endif
         };
         auto it = ids.find(wxId);

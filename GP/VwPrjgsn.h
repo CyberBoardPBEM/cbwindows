@@ -1,6 +1,6 @@
 // VwPrjgsn.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -59,25 +59,33 @@ namespace CB { namespace Impl
     };
 }}
 
-class CGsnProjView : public CView, private CB::Impl::CGsnProjViewBase
+class CGsnProjViewContainer;
+
+class CProjListBoxGsn : public CProjListBoxWx<decltype(CB::Impl::CGsnProjViewBase::grpDoc)>
 {
-    DECLARE_DYNAMIC(CGsnProjView)
+    wxDECLARE_DYNAMIC_CLASS(CProjListBoxGsn);
+};
+
+class CGsnProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGsnProjViewBase
+{
 public:
-    CGsnProjView();
+    CGsnProjView(CGsnProjViewContainer& p);
 
 // Attributes
-public:
-    CGamDoc& GetDocument() { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
+private:
+    CGamDoc& GetDocument() { return *document; }
 
     // Various controls...
-    CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<CProjListBoxGsn> m_listProj;         // Main project box
 
-    CEdit           m_editInfo;         // Used for various project info/help
-    OwnerOrNullPtr<CTrayListBox> m_listTrays;        // For viewing tray contents
+        RefPtr<wxTextCtrl> m_editInfo;         // Used for various project info/help
+        RefPtr<CTrayListBoxWx> m_listTrays;        // For viewing tray contents
 
-    CButton         m_btnPrjA;          // Project button group
-    CButton         m_btnPrjB;
-    CButton         m_btnPrjC;
+        RefPtr<wxButton> m_btnPrjA;          // Project button group
+        RefPtr<wxButton> m_btnPrjB;
+        RefPtr<wxButton> m_btnPrjC;
+    CB_XRC_END_CTRLS_DECL()
 
 // Operations
 public:
@@ -89,11 +97,13 @@ protected:
 
 // Implementation
 protected:
+#if 0
     int CreateButton(UINT nCtrlID, CButton& btn, CPoint llpos, CSize relsize);
     BOOL CreateListbox(UINT nCtrlID, CListBox& lbox, DWORD dwStyle, CRect& rct);
     BOOL CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct);
+#endif
 
-    void SetButtonState(CButton& btn, UINT nStringID);
+    void SetButtonState(wxButton& btn, UINT nStringID);
     void UpdateButtons(int nGrp = -1);
     void UpdateItemControls(int nGrp = -1);
 
@@ -132,48 +142,81 @@ protected:
     // Generated message map functions
 protected:
     //{{AFX_MSG(CGsnProjView)
+#if 0
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSelChangeProjList();
-    afx_msg void OnDblClkProjList();
-    afx_msg void OnClickedProjBtnA();
-    afx_msg void OnClickedProjBtnB();
-    afx_msg void OnClickedProjBtnC();
+#endif
+    void OnSelChangeProjList(wxCommandEvent& event);
+    void OnSelChangeProjList()
+    {
+        wxCommandEvent dummy;
+        OnSelChangeProjList(dummy);
+    }
+    void OnDblClkProjList(wxCommandEvent& event);
+    void OnClickedProjBtnA(wxCommandEvent& event);
+    void OnClickedProjBtnB(wxCommandEvent& event);
+    void OnClickedProjBtnC(wxCommandEvent& event);
+#if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnEditBoardProperties();
-    afx_msg void OnUpdateEditBoardProperties(CCmdUI* pCmdUI);
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnProjItemEdit();
-    afx_msg void OnUpdateProjItemEdit(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemDelete();
-    afx_msg void OnUpdateProjItemDelete(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemProperties();
-    afx_msg void OnUpdateProjItemProperties(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemView();
-    afx_msg void OnUpdateProjItemView(CCmdUI* pCmdUI);
-    //}}AFX_MSG
-    afx_msg LRESULT OnMessageShowPlayingBoard(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
+#endif
+    void OnEditBoardProperties(wxCommandEvent& event);
+    void OnUpdateEditBoardProperties(wxUpdateUIEvent& pCmdUI);
+    void OnContextMenu(wxContextMenuEvent& event);
+    void OnProjItemEdit(wxCommandEvent& event);
+    void OnUpdateProjItemEdit(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemDelete(wxCommandEvent& event);
+    void OnUpdateProjItemDelete(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemProperties(wxCommandEvent& event);
+    void OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemView(wxCommandEvent& event);
+    void OnUpdateProjItemView(wxUpdateUIEvent& pCmdUI);
+    void OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event);
+    void OnMessageRestoreWinState(WinStateRestoreEvent& event);
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override;
+
+    RefPtr<CGsnProjViewContainer> parent;
+    RefPtr<CGamDoc> document;
+
+    friend class CGsnProjViewContainer;
 };
 
-class CGsnProjViewContainer : public CView
+class CGsnProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;
+
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
     CGsnProjViewContainer();         // used by dynamic creation
     DECLARE_DYNCREATE(CGsnProjViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CGsnProjView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CGsnProjView*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+inline CCmdTarget& CGsnProjView::Get()
+{
+    return *parent;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

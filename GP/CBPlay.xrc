@@ -815,6 +815,103 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CGsnProjView">
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer80">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer81">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listProj" subclass="CProjListBoxGsn"/>
+          </object>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer83">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnPrjA">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnPrjB">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                <border>5</border>
+                <option>0</option>
+                <object class="wxButton" name="m_btnPrjC">
+                  <label>MyButton</label>
+                  <default>0</default>
+                  <auth_needed>0</auth_needed>
+                  <markup>0</markup>
+                  <bitmap/>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticLine" name="m_staticline1">
+          <style>wxLI_VERTICAL</style>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxBoxSizer" name="bSizer82">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listTrays" subclass="CTrayListBoxWx"/>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALL|wxEXPAND</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxTextCtrl" name="m_editInfo">
+              <style>wxTE_MULTILINE|wxTE_READONLY</style>
+              <hidden>1</hidden>
+              <value></value>
+              <maxlength>0</maxlength>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CImportTraysDlg">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Import Piece Groups</title>
@@ -2858,6 +2955,79 @@
           </object>
         </object>
       </object>
+    </object>
+  </object>
+  <object class="wxMenuBar" name="IDR_MENU_PLAYER_POPUPS">
+    <object class="wxMenu" name="MENU_PV_MOVEMODE">
+      <label>0=PV__MOVEMODE</label>
+    </object>
+    <object class="wxMenu" name="MENU_PV_PLAYMODE">
+      <label>1=PV__PLAYMODE</label>
+    </object>
+    <object class="wxMenu" name="MENU_PV_SCNMODE">
+      <label>2=PV__SCNMODE</label>
+    </object>
+    <object class="wxMenu" name="MENU_PJ_GSN_DEFAULT">
+      <label>3=PJ__GSN__DEFAULT</label>
+      <object class="wxMenuItem" name="ID_EDIT_CREATETRAY">
+        <label>Create Playing Piece Tray...</label>
+        <accel></accel>
+        <help>Create a new tray which are used to hold playing pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATE_GEOMORPHIC">
+        <label>Create Geomorphic Board...</label>
+        <accel></accel>
+        <help>Create geomorphic board.\nCreate Geomorphic Board</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_SELECTBOARDS">
+        <label>Select Game Boards...</label>
+        <accel></accel>
+        <help>Select the game boards that are used in this scenario</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELECTGAMEPIECES">
+        <label>Select Game Pieces...</label>
+        <accel></accel>
+        <help>Select the game pieces that are used in this scenario</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PPROJITEM_VIEW">
+        <label>View</label>
+        <accel></accel>
+        <help>View selected item.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PPROJITEM_EDIT">
+        <label>Edit...</label>
+        <accel></accel>
+        <help>Edit selected item.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PPROJITEM_DELETE">
+        <label>Delete</label>
+        <accel></accel>
+        <help>Delete or Remove selected item.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PPROJITEM_PROPERTIES">
+        <label>Properties...</label>
+        <accel></accel>
+        <help>Examine item properties.</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="MENU_PJ_GAM_DEFAULT">
+      <label>4=PJ__GAM__DEFAULT</label>
+    </object>
+    <object class="wxMenu" name="MENU_PV_PIECE_TRAY">
+      <label>5=PV__PIECE__TRAY</label>
+    </object>
+    <object class="wxMenu" name="MENU_MV_RICHEDIT">
+      <label>6=MV__RICHEDIT</label>
+    </object>
+    <object class="wxMenu" name="MENU_ACT_TURNOVER">
+      <label>7=ACT__TURNOVER</label>
+    </object>
+    <object class="wxMenu" name="MENU_PV_SELCT_BOX">
+      <label>8=PV__SELCT__BOX</label>
     </object>
   </object>
 </resource>
