@@ -38,13 +38,14 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CGsnProjView, CView)
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGsn, CProjListBoxBaseWx)
 IMPLEMENT_DYNCREATE(CGsnProjViewContainer, CView)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 
 const int XBORDER = 5;
@@ -57,6 +58,7 @@ const int BTN_PROJ_WD = 14 * 4;
 const int BTN_PROJ_HT = 12;
 
 const int PROJ_LIST_WIDTH = 250;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Button content tables - selected based on current type of item selected
@@ -83,50 +85,65 @@ static UINT * btnGroupTbl[nNumGroups + 1] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CGsnProjView, CView)
-    //{{AFX_MSG_MAP(CGsnProjView)
+wxBEGIN_EVENT_TABLE(CGsnProjView, wxPanel)
+#if 0
     ON_WM_SIZE()
     ON_WM_CREATE()
-    ON_LBN_SELCHANGE(IDC_V_GSN_PROJLIST, OnSelChangeProjList)
-    ON_LBN_DBLCLK(IDC_V_GSN_PROJLIST, OnDblClkProjList)
-    ON_BN_CLICKED(IDC_V_GSN_BTN_PRJA, OnClickedProjBtnA)
-    ON_BN_CLICKED(IDC_V_GSN_BTN_PRJB, OnClickedProjBtnB)
-    ON_BN_CLICKED(IDC_V_GSN_BTN_PRJC, OnClickedProjBtnC)
+#endif
+    EVT_LISTBOX(XRCID("m_listProj"), OnSelChangeProjList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listProj"), OnDblClkProjList)
+    EVT_BUTTON(XRCID("m_btnPrjA"), OnClickedProjBtnA)
+    EVT_BUTTON(XRCID("m_btnPrjB"), OnClickedProjBtnB)
+    EVT_BUTTON(XRCID("m_btnPrjC"), OnClickedProjBtnC)
+#if 0
     ON_WM_ERASEBKGND()
-    ON_COMMAND(ID_EDIT_BRDPROP, OnEditBoardProperties)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_BRDPROP, OnUpdateEditBoardProperties)
-    ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_PPROJITEM_EDIT, OnProjItemEdit)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_EDIT, OnUpdateProjItemEdit)
-    ON_COMMAND(ID_PPROJITEM_DELETE, OnProjItemDelete)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_DELETE, OnUpdateProjItemDelete)
-    ON_COMMAND(ID_PPROJITEM_PROPERTIES, OnProjItemProperties)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_PROPERTIES, OnUpdateProjItemProperties)
-    ON_COMMAND(ID_PPROJITEM_VIEW, OnProjItemView)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_VIEW, OnUpdateProjItemView)
-    //}}AFX_MSG_MAP
-    ON_MESSAGE(WM_SHOWPLAYINGBOARD, OnMessageShowPlayingBoard)
-    ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
-END_MESSAGE_MAP()
+#endif
+    EVT_MENU(XRCID("ID_EDIT_BRDPROP"), OnEditBoardProperties)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_BRDPROP"), OnUpdateEditBoardProperties)
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU(XRCID("ID_PPROJITEM_EDIT"), OnProjItemEdit)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_EDIT"), OnUpdateProjItemEdit)
+    EVT_MENU(XRCID("ID_PPROJITEM_DELETE"), OnProjItemDelete)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_DELETE"), OnUpdateProjItemDelete)
+    EVT_MENU(XRCID("ID_PPROJITEM_PROPERTIES"), OnProjItemProperties)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_PROPERTIES"), OnUpdateProjItemProperties)
+    EVT_MENU(XRCID("ID_PPROJITEM_VIEW"), OnProjItemView)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_VIEW"), OnUpdateProjItemView)
+    EVT_SHOWPLAYINGBOARD(OnMessageShowPlayingBoard)
+    EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CGsnProjViewContainer, CView)
     ON_WM_CREATE()
-    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView
 
-CGsnProjView::CGsnProjView()
+CGsnProjView::CGsnProjView(CGsnProjViewContainer& p) :
+    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGsnProjView)
+        CB_XRC_CTRL(m_listProj)
+        CB_XRC_CTRL(m_editInfo)
+        CB_XRC_CTRL(m_listTrays)
+        CB_XRC_CTRL(m_btnPrjA)
+        CB_XRC_CTRL(m_btnPrjB)
+        CB_XRC_CTRL(m_btnPrjC)
+    CB_XRC_END_CTRLS_DEFN(),
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
+
+    m_listTrays->Init(GetDocument());
+    m_listTrays->SetTrayContentVisibility(trayVizAllSides);
 }
 
 CGsnProjView::~CGsnProjView()
 {
 }
 
+#if 0
 int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CView::OnCreate(lpCreateStruct) == -1)
@@ -171,13 +188,13 @@ int CGsnProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CGsnProjView::OnInitialUpdate()
 {
     GetDocument().DoInitialUpdate();   // Since UpdateAllViews isn't virtual
-    CView::OnInitialUpdate();
     CGamDoc& pDoc = GetDocument();
     CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     // Only honor the open-on-load flags if the save window state
@@ -191,12 +208,16 @@ void CGsnProjView::OnInitialUpdate()
             {
                 // Defer opening the view until our view init
                 // in done.
-                PostMessage(WM_SHOWPLAYINGBOARD, value_preserving_cast<WPARAM>(i));
+                ShowPlayingBoardEvent event(i);
+                AddPendingEvent(event);
             }
         }
     }
     else
-        PostMessage(WM_WINSTATE_RESTORE);
+    {
+        WinStateRestoreEvent event;
+        AddPendingEvent(event);
+    }
 }
 
 void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -215,6 +236,7 @@ void CGsnProjView::OnDraw(CDC* pDC)
     // TODO: add draw code here
 }
 
+#if 0
 BOOL CGsnProjView::OnEraseBkgnd(CDC* pDC)
 {
     CBrush brFill(GetSysColor(COLOR_BTNFACE));
@@ -350,6 +372,7 @@ BOOL CGsnProjView::CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct)
     ebox.SetFont(CFont::FromHandle(g_res.h8ss));
     return bOk;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Updates buttons for specified group
@@ -358,21 +381,21 @@ void CGsnProjView::UpdateButtons(int nGrp)
 {
     nGrp++;                     // -1 means no selection so bump to zero
     UINT* pTbl = btnGroupTbl[nGrp];
-    SetButtonState(m_btnPrjA, pTbl[0]);
-    SetButtonState(m_btnPrjB, pTbl[1]);
-    SetButtonState(m_btnPrjC, pTbl[2]);
+    SetButtonState(*m_btnPrjA, pTbl[0]);
+    SetButtonState(*m_btnPrjB, pTbl[1]);
+    SetButtonState(*m_btnPrjC, pTbl[2]);
 }
 
-void CGsnProjView::SetButtonState(CButton& btn, UINT nStringID)
+void CGsnProjView::SetButtonState(wxButton& btn, UINT nStringID)
 {
     if (nStringID == 0)
-        btn.SetWindowText(""_cbstring);
+        btn.SetLabel(""_cbstring);
     else
     {
         CB::string str = CB::string::LoadString(nStringID);
-        btn.SetWindowText(str);
+        btn.SetLabel(str);
     }
-    btn.EnableWindow(nStringID != 0);
+    btn.Enable(nStringID != 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -380,22 +403,20 @@ void CGsnProjView::SetButtonState(CButton& btn, UINT nStringID)
 
 void CGsnProjView::UpdateItemControls(int nGrp)
 {
-    HDWP hDwp = BeginDeferWindowPos(4);
-    #define EzDefer(h, c, flg) \
-        DeferWindowPos(h, (c).m_hWnd, NULL, 0, 0, 0, 0, \
-            SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | flg)
+    wxWindowUpdateLocker freezer(this);
+    ChildrenRepositioningGuard crg(this);
 
+    m_listTrays->Hide();
+    m_editInfo->Hide();
     if (nGrp == grpTray)        // Trays
     {
-        hDwp = EzDefer(hDwp, *m_listTrays, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_HIDEWINDOW);
+        m_listTrays->Show();
     }
     else    // Board, headings and no selection
     {
-        hDwp = EzDefer(hDwp, m_editInfo, SWP_SHOWWINDOW);
-        hDwp = EzDefer(hDwp, *m_listTrays, SWP_HIDEWINDOW);
+        m_editInfo->Show();
     }
-    EndDeferWindowPos(hDwp);
+    Layout();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -409,21 +430,22 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     }
     CGamDoc& pDoc = GetDocument();
 
-    m_listProj.SetRedraw(FALSE);
-
     // Preserve the current selection
-    int nTopIdx = m_listProj.GetTopIndex();
-    int nCurSel = m_listProj.GetCurSel();
+    size_t nTopIdx = m_listProj->GetVisibleRowsBegin();
+    int nCurSel = m_listProj->GetSelection();
 
-    m_listProj.ResetContent();
+    {
+    wxWindowUpdateLocker freezer(&*m_listProj);
+
+    m_listProj->Clear();
 
     // Document type....
     CB::string str = CB::string::LoadString(IDS_PHEAD_GSN_DOCTYPE);
-    m_listProj.AddItem(grpDoc, str);
+    m_listProj->AddItem(grpDoc, str);
 
     // Boards....
     str = CB::string::LoadString(IDS_PHEAD_GSN_BOARDS);
-    m_listProj.AddItem(grpBrdHdr, str);
+    m_listProj->AddItem(grpBrdHdr, str);
 
     CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
@@ -443,12 +465,12 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
-        m_listProj.AddItem(grpBrd, str, i);
+        m_listProj->AddItem(grpBrd, str, i);
     }
 
     // Trays....
     str = CB::string::LoadString(IDS_PHEAD_GSN_TRAYS);
-    m_listProj.AddItem(grpTrayHdr, str);
+    m_listProj->AddItem(grpTrayHdr, str);
 
     CTrayManager& pYMgr = pDoc.GetTrayManager();
     for (size_t i = size_t(0); i < pYMgr.GetNumTraySets(); i++)
@@ -467,22 +489,22 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
-        m_listProj.AddItem(grpTray, str, i);
+        m_listProj->AddItem(grpTray, str, i);
     }
 
     // OK...Show the updates
-    m_listProj.SetRedraw(TRUE);
-    m_listProj.Invalidate();
+    }
+    m_listProj->Refresh();
 
-    m_listProj.SetTopIndex(nTopIdx);
-    if (nCurSel >= 0)
+    m_listProj->ScrollToRow(nTopIdx);
+    if (nCurSel != wxNOT_FOUND)
     {
-        if (nCurSel >= m_listProj.GetCount())
-            nCurSel = m_listProj.GetCount() - 1;
-        m_listProj.SetCurSel(nCurSel);
+        if (nCurSel >= m_listProj->GetItemCount())
+            nCurSel = value_preserving_cast<int>(m_listProj->GetItemCount() - size_t(1));
+        m_listProj->SetSelection(nCurSel);
     }
     else
-        m_listProj.SetCurSel(0);
+        m_listProj->SetSelection(0);
 
     if (bUpdateItem)
     {
@@ -495,14 +517,14 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 /////////////////////////////////////////////////////////////////////////////
 // List box notifications
 
-void CGsnProjView::OnSelChangeProjList()
+void CGsnProjView::OnSelChangeProjList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (m_nLastSel == nSel)
         return;
 
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoUpdateGsnInfo(); break;
@@ -519,13 +541,13 @@ void CGsnProjView::OnSelChangeProjList()
     }
 }
 
-void CGsnProjView::OnDblClkProjList()
+void CGsnProjView::OnDblClkProjList(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGsnProperty(); break;
@@ -539,12 +561,12 @@ void CGsnProjView::OnDblClkProjList()
 /////////////////////////////////////////////////////////////////////////////
 // Button notifications
 
-void CGsnProjView::OnClickedProjBtnA()
+void CGsnProjView::OnClickedProjBtnA(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGsnProperty(); break;
@@ -555,12 +577,12 @@ void CGsnProjView::OnClickedProjBtnA()
     }
 }
 
-void CGsnProjView::OnClickedProjBtnB()
+void CGsnProjView::OnClickedProjBtnB(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardProperty(); break;
@@ -568,12 +590,12 @@ void CGsnProjView::OnClickedProjBtnB()
     }
 }
 
-void CGsnProjView::OnClickedProjBtnC()
+void CGsnProjView::OnClickedProjBtnC(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardRemove(); break;
@@ -581,80 +603,79 @@ void CGsnProjView::OnClickedProjBtnC()
     }
 }
 
-void CGsnProjView::OnEditBoardProperties()
+void CGsnProjView::OnEditBoardProperties(wxCommandEvent& event)
 {
     DoBoardProperty();
 }
 
-void CGsnProjView::OnUpdateEditBoardProperties(CCmdUI* pCmdUI)
+void CGsnProjView::OnUpdateEditBoardProperties(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 &&
-        m_listProj.GetItemGroupCode(nSel) == grpBrd);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel != wxNOT_FOUND &&
+        m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
 }
 
-void CGsnProjView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CGsnProjView::OnContextMenu(wxContextMenuEvent& event)
 {
-    // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
-    UINT nID = (UINT)-1;
+    const char* nID = nullptr;
 
-    if (pWnd->GetDlgCtrlID() == IDC_V_GSN_PROJLIST)
-        nID = MENU_PJ_GSN_DEFAULT;
+    if (event.GetEventObject() == &*m_listProj)
+        nID = "3=PJ_GSN_DEFAULT";
 
-    if ((int)nID < 0)
+    if (!nID)
         return;
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(nID);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu(nID);
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+            PopupMenu(&*popup);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
 
-void CGsnProjView::OnProjItemEdit()
+void CGsnProjView::OnProjItemEdit(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpTray) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     if (nGrp == grpTray)
         DoTrayEdit();
 }
 
-void CGsnProjView::OnUpdateProjItemEdit(CCmdUI* pCmdUI)
+void CGsnProjView::OnUpdateProjItemEdit(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpTray) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp >= 0);
         if (nGrp == grpTray)
             bEnable = TRUE;
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGsnProjView::OnProjItemDelete()
+void CGsnProjView::OnProjItemDelete(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpBrd) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpBrd:    DoBoardRemove(); break;
@@ -662,14 +683,14 @@ void CGsnProjView::OnProjItemDelete()
     }
 }
 
-void CGsnProjView::OnUpdateProjItemDelete(CCmdUI* pCmdUI)
+void CGsnProjView::OnUpdateProjItemDelete(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpBrd) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp >= 0);
         switch (nGrp)
         {
             case grpBrd:
@@ -679,16 +700,16 @@ void CGsnProjView::OnUpdateProjItemDelete(CCmdUI* pCmdUI)
             default: ;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGsnProjView::OnProjItemProperties()
+void CGsnProjView::OnProjItemProperties(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     switch (nGrp)
     {
         case grpDoc:    DoGsnProperty(); break;
@@ -697,14 +718,14 @@ void CGsnProjView::OnProjItemProperties()
     }
 }
 
-void CGsnProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
+void CGsnProjView::OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp >= 0);
         switch (nGrp)
         {
             case grpDoc:
@@ -715,31 +736,31 @@ void CGsnProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
             default: ;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGsnProjView::OnProjItemView()
+void CGsnProjView::OnProjItemView(wxCommandEvent& event)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpBrd) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp >= 0);
     if (nGrp == grpBrd)
         DoBoardView();
 }
 
-void CGsnProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
+void CGsnProjView::OnUpdateProjItemView(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpBrd) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp >= 0);
         if (nGrp == grpBrd)
             bEnable = TRUE;
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -747,14 +768,13 @@ void CGsnProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
 // message is posted during view initial update if the playing
 // board m_bOpenBoardOnLoad option is set. (wParam = the board index)
 
-LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
+void CGsnProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
 {
     CGamDoc& pDoc = GetDocument();
-    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
-    ASSERT(pPBoard.m_bOpenBoardOnLoad);
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(event.GetPlayingBoardIndex());
+    wxASSERT(pPBoard.m_bOpenBoardOnLoad);
     pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl,
         pPBoard.GetBoard()->GetName(), &pPBoard);
-    return (LRESULT)0;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -762,10 +782,9 @@ LRESULT CGsnProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 // message is posted during view initial update if the state of
 // the windows should be restored.
 
-LRESULT CGsnProjView::OnMessageRestoreWinState(WPARAM, LPARAM)
+void CGsnProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
 {
     GetDocument().RestoreWindowState();
-    return (LRESULT)0;
 }
 
 void CGsnProjViewContainer::OnDraw(CDC* pDC)
@@ -773,8 +792,22 @@ void CGsnProjViewContainer::OnDraw(CDC* pDC)
     // do nothing because child covers entire client rect
 }
 
+void CGsnProjViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+
+    BASE::OnInitialUpdate();
+}
+
+void CGsnProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+
+    BASE::OnUpdate(pSender, lHint, pHint);
+}
+
 CGsnProjViewContainer::CGsnProjViewContainer() :
-    child(new CGsnProjView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -785,23 +818,7 @@ int CGsnProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CGsnProjView(*this);
 
     return 0;
-}
-
-void CGsnProjViewContainer::OnSize(UINT nType, int cx, int cy)
-{
-    child->MoveWindow(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
 }

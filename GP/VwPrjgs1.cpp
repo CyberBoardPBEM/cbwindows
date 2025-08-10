@@ -66,7 +66,7 @@ void CGsnProjView::DoUpdateGsnInfo()
         str += "AUTHOR: " + pDoc.m_strScnAuthor + "\r\n\r\n";
     if (!pDoc.m_strScnDescr.empty())
         str += "DESCRIPTION:\r\n\r\n" + pDoc.m_strScnDescr;
-    m_editInfo.SetWindowText(str);
+    m_editInfo->SetValue(str);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -80,20 +80,20 @@ void CGsnProjView::DoBoardSelection()
 void CGsnProjView::DoBoardProperty()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
     pDoc.DoBoardProperties(nBrd);
 }
 
 void CGsnProjView::DoBoardView()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(nBrd);
     CView* pView = pDoc.FindPBoardView(pPBoard);
@@ -101,12 +101,12 @@ void CGsnProjView::DoBoardView()
     {
         // This board already has an editor. Activate that view.
         CFrameWnd* pFrm = pView->GetParentFrame();
-        ASSERT(pFrm);
+        wxASSERT(pFrm);
         pFrm->ActivateFrame();
     }
     else
     {
-        CB::string strTitle = m_listProj.GetItemText(nSel);
+        CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
         pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
@@ -115,10 +115,10 @@ void CGsnProjView::DoBoardRemove()
 {
     CGamDoc& pDoc = GetDocument();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     pDoc.GetPBoardManager().DeletePBoard(nBrd);
     pDoc.SetModifiedFlag(TRUE);
@@ -127,12 +127,12 @@ void CGsnProjView::DoBoardRemove()
 
 void CGsnProjView::DoUpdateBoardHelpInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->Clear();
 }
 
 void CGsnProjView::DoUpdateBoardInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->Clear();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -146,10 +146,10 @@ void CGsnProjView::DoTrayCreate()
 void CGsnProjView::DoTrayProperty()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTray);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
 
     CTrayPropDialog dlg(pDoc.GetTrayManager(), pDoc.GetPlayerManager());
@@ -188,10 +188,10 @@ void CGsnProjView::DoTrayProperty()
 void CGsnProjView::DoTrayEdit()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    wxASSERT(nSel >= 0);
-    wxASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTray);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
     CTrayManager& pYMgr = pDoc.GetTrayManager();
 
     CSetPiecesDialog dlg(pDoc);
@@ -215,10 +215,10 @@ void CGsnProjView::DoTrayDelete()
     CTrayManager& pYMgr = pDoc.GetTrayManager();
     CPieceTable& pPTbl = pDoc.GetPieceTable();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTray);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     if (!pYMgr.GetTraySet(nGrp).IsEmpty())
     {
@@ -238,17 +238,17 @@ void CGsnProjView::DoTrayDelete()
 
 void CGsnProjView::DoUpdateTrayHelpInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->Clear();
 }
 
 void CGsnProjView::DoUpdateTrayList()
 {
     CGamDoc& pDoc = GetDocument();
 
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpTray);
-    size_t nGrp = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpTray);
+    size_t nGrp = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CTraySet& pYGrp = pDoc.GetTrayManager().GetTraySet(nGrp);
     const std::vector<PieceID>& pLstMap = pYGrp.GetPieceIDTable();
