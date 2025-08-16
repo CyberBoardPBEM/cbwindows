@@ -1,6 +1,6 @@
 // WinState.h - classes used to manage window state.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,6 +35,30 @@
 // the frame's *contents* to it's current visual state.
 
 #define WM_WINSTATE   (WM_USER + 300)  // WPARAM = CArchive*, LPARAM = 0 if save, 1 if restore
+class WinStateEvent : public wxEvent
+{
+public:
+    WinStateEvent(CArchive& ar, bool restore);
+
+    CArchive& GetArchive() const { return ar; }
+
+    wxEvent* Clone() const override { return new WinStateEvent(*this); }
+
+private:
+    CArchive& ar;
+};
+wxDECLARE_EVENT(WM_WINSTATE_WX, WinStateEvent);
+inline WinStateEvent::WinStateEvent(CArchive& a, bool restore) :
+    wxEvent(wxID_ANY, WM_WINSTATE_WX),
+    ar(a)
+{
+    WXUNUSED_UNLESS_DEBUG(restore);
+    wxASSERT(bool(ar.IsLoading()) == restore);
+}
+typedef void (wxEvtHandler::* WinStateEventFunction)(WinStateEvent&);
+#define WinStateEventHandler(func) wxEVENT_HANDLER_CAST(WinStateEventFunction, func)
+#define EVT_WINSTATE(func) \
+    wx__DECLARE_EVT0(WM_WINSTATE_WX, WinStateEventHandler(func))
 
 ///////////////////////////////////////////////////////////////////////
 // Helper class for working with the Windows WINDOWPLACEMENT structure
