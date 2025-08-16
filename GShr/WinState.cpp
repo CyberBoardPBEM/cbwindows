@@ -31,6 +31,8 @@
     #include    "GamDoc.h"
 #endif
 
+wxDEFINE_EVENT(WM_WINSTATE_WX, WinStateEvent);
+
 ///////////////////////////////////////////////////////////////////////////
 // Returns FALSE if no frame restoration data is supplied by frames.
 
