@@ -220,7 +220,7 @@ BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
         return FALSE;
     }
     if (!m_wndSplitter2.CreateView(1, 0,
-        RUNTIME_CLASS(CTinyBoardView),
+        RUNTIME_CLASS(CTinyBoardViewContainer),
         CSize(rct.Width() - xSize, rct.Height() - ySize), pContext))
     {
         TRACE("Failed to create small scale map pane\n");
