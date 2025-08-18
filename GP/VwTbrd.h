@@ -27,9 +27,8 @@
 
 class CTinyBoardView : public CScrollView
 {
-    DECLARE_DYNCREATE(CTinyBoardView)
-protected:
-    CTinyBoardView();           // protected constructor used by dynamic creation
+public:
+    CTinyBoardView();
 
 // Attributes
 private:
@@ -79,5 +78,24 @@ protected:
 inline CGamDoc& CTinyBoardView::GetDocument()
    { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
 #endif
+
+class CTinyBoardViewContainer : public CView
+{
+public:
+    void OnDraw(CDC* pDC) override;
+
+private:
+    CTinyBoardViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CTinyBoardViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CTinyBoardView> child;
+};
 
 
