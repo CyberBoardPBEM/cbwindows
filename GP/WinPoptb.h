@@ -41,7 +41,7 @@ public:
 // Attributes
 public:
     CWnd*       m_pWnd;
-    CBitmap     m_bmap;
+    OwnerPtr<CBitmap> m_bmap = MakeOwner<CBitmap>();
     CSize       m_wsize;
     CSize       m_vsize;
     BOOL        m_bRotate180;       // Board is rotated by 180 degrees

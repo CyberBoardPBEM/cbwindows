@@ -1,6 +1,6 @@
 // VwTbrd.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,38 +32,38 @@ protected:
     CTinyBoardView();           // protected constructor used by dynamic creation
 
 // Attributes
-public:
-    CGamDoc* GetDocument();
+private:
+    CGamDoc& GetDocument();
 
 // Operations
 public:
 
 // Implementation
 protected:
-    CPlayBoard* m_pPBoard;          // The playing board we are viewing
+    CB::propagate_const<CPlayBoard*> m_pPBoard; // The playing board we are viewing
     OwnerOrNullPtr<CBitmap> m_pBMap;            // Cached predrawn board bitmap
 
     TileScale   m_nZoom;
 
-    void RegenCachedMap(CDC* pDC);
-    void DrawFullMap(CDC* pDC, CBitmap& bmap);
+    void RegenCachedMap(CDC& pDC);
+    OwnerPtr<CBitmap> DrawFullMap(CDC& pDC);
 
 // Implementation
 protected:
-    void SetupDrawListDC(CDC* pDC, CRect& rct);
-    void RestoreDrawListDC(CDC *pDC);
+    void SetupDrawListDC(CDC& pDC, CRect& rct) const;
+    void RestoreDrawListDC(CDC &pDC) const;
     // -------- //
-    void WorkspaceToClient(CRect& rect);
-    void ClientToWorkspace(CPoint& pnt);
-    void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
+    void WorkspaceToClient(CRect& rect) const;
+    void ClientToWorkspace(CPoint& pnt) const;
+    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
 
 // Implementation
 protected:
-    virtual ~CTinyBoardView() = default;
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-    virtual void OnInitialUpdate();     // first time after construct
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    ~CTinyBoardView() override = default;
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    void OnInitialUpdate() override;     // first time after construct
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
     // Generated message map functions
     //{{AFX_MSG(CTinyBoardView)
@@ -76,8 +76,8 @@ protected:
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
-inline CGamDoc* CTinyBoardView::GetDocument()
-   { return CB::ToCGamDoc(m_pDocument); }
+inline CGamDoc& CTinyBoardView::GetDocument()
+   { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
 #endif
 
 
