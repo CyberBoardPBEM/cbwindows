@@ -1,6 +1,6 @@
 // VwTbrd.cpp : Small scale playing board view.
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -80,7 +80,7 @@ void CTinyBoardView::OnInitialUpdate()
 {
     CScrollView::OnInitialUpdate();
 
-    m_pPBoard = (CPlayBoard*)GetDocument()->GetNewViewParameter();
+    m_pPBoard = static_cast<CPlayBoard*>(GetDocument().GetNewViewParameter());
     CBoard* pBoard = m_pPBoard->GetBoard();
     SetScrollSizes(MM_TEXT, pBoard->GetSize(smallScale));
 }
@@ -92,7 +92,7 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     {
         CRect rct;
         rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
-        InvalidateWorkspaceRect(&rct);
+        InvalidateWorkspaceRect(rct);
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
@@ -101,7 +101,7 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         {
             CDrawObj& pDObj = *pPtrList[i];
             CRect rct = pDObj.GetEnclosingRect();  // In board coords.
-            InvalidateWorkspaceRect(&rct);
+            InvalidateWorkspaceRect(rct);
         }
     }
     else if (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard)
@@ -144,7 +144,7 @@ LRESULT CTinyBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 void CTinyBoardView::OnDraw(CDC* pDC)
 {
     if (!m_pBMap)
-        RegenCachedMap(pDC);
+        RegenCachedMap(CheckedDeref(pDC));
     ASSERT(m_pBMap);
 
     CDC      dcMem;
@@ -177,11 +177,11 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
     CRect rct(&oRct);
-    SetupDrawListDC(&dcMem, rct);
+    SetupDrawListDC(dcMem, rct);
 
     m_pPBoard->Draw(dcMem, &rct, smallScale);
 
-    RestoreDrawListDC(&dcMem);
+    RestoreDrawListDC(dcMem);
 
     if (m_pPBoard->IsBoardRotated180())
     {
@@ -201,15 +201,16 @@ void CTinyBoardView::OnDraw(CDC* pDC)
     dcMem.SelectObject(pPrvBMap);
 }
 
-void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
+OwnerPtr<CBitmap> CTinyBoardView::DrawFullMap(CDC& pDC)
 {
+    OwnerPtr<CBitmap> bmap = MakeOwner<CBitmap>();
     CDC dcMem;
 
     CSize size = m_pPBoard->GetBoard()->GetSize(smallScale);
 
-    bmap.Attach(CreateRGBDIBSection(size.cx, size.cy)->Detach());
-    dcMem.CreateCompatibleDC(pDC);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&bmap);
+    bmap->Attach(CreateRGBDIBSection(size.cx, size.cy)->Detach());
+    dcMem.CreateCompatibleDC(&pDC);
+    CBitmap* pPrvBMap = dcMem.SelectObject(&*bmap);
 
     // Draw updated part of board image
     BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
@@ -217,24 +218,26 @@ void CTinyBoardView::DrawFullMap(CDC* pDC, CBitmap& bmap)
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
     CRect rct(CPoint(0,0), size);
-    SetupDrawListDC(&dcMem, rct);
+    SetupDrawListDC(dcMem, rct);
 
     m_pPBoard->Draw(dcMem, &rct, smallScale);
 
-    RestoreDrawListDC(&dcMem);
+    RestoreDrawListDC(dcMem);
     dcMem.SelectObject(pPrvBMap);
+
+    return bmap;
 }
 
-void CTinyBoardView::RegenCachedMap(CDC* pDC)
+void CTinyBoardView::RegenCachedMap(CDC& pDC)
 {
-    BeginWaitCursor();
+    CWaitCursor waitCursor;
 
     CBoard* pBoard = m_pPBoard->GetBoard();
     CSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
     m_pBMap = CreateRGBDIBSection(size.cx, size.cy);
 
     CDC dcMem;
-    dcMem.CreateCompatibleDC(pDC);
+    dcMem.CreateCompatibleDC(&pDC);
     CBitmap* pPrvBMap = dcMem.SelectObject(&*m_pBMap);
 
     CRect rct(CPoint(0, 0), size);
@@ -242,33 +245,32 @@ void CTinyBoardView::RegenCachedMap(CDC* pDC)
     pBoard->Draw(dcMem, rct, smallScale, m_pPBoard->m_bSmallCellBorders);
 
     dcMem.SelectObject(pPrvBMap);
-    EndWaitCursor();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTinyBoardView::SetupDrawListDC(CDC* pDC, CRect& rct)
+void CTinyBoardView::SetupDrawListDC(CDC& pDC, CRect& rct) const
 {
     CSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
 
-    pDC->SaveDC();
-    pDC->SetMapMode(MM_ANISOTROPIC);
-    pDC->SetWindowExt(wsize);
-    pDC->SetViewportExt(vsize);
+    pDC.SaveDC();
+    pDC.SetMapMode(MM_ANISOTROPIC);
+    pDC.SetWindowExt(wsize);
+    pDC.SetViewportExt(vsize);
 
     ScaleRect(rct, wsize, vsize);
 }
 
-void CTinyBoardView::RestoreDrawListDC(CDC *pDC)
+void CTinyBoardView::RestoreDrawListDC(CDC &pDC) const
 {
-    pDC->RestoreDC(-1);
+    pDC.RestoreDC(-1);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTinyBoardView::WorkspaceToClient(CRect& rect)
+void CTinyBoardView::WorkspaceToClient(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -284,14 +286,14 @@ void CTinyBoardView::WorkspaceToClient(CRect& rect)
     rect -= dpnt;
 }
 
-void CTinyBoardView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
+void CTinyBoardView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
 {
     CRect rct(pRect);
     WorkspaceToClient(rct);
     InvalidateRect(&rct, bErase);
 }
 
-void CTinyBoardView::ClientToWorkspace(CPoint& pnt)
+void CTinyBoardView::ClientToWorkspace(CPoint& pnt) const
 {
     pnt += GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -305,11 +307,9 @@ void CTinyBoardView::ClientToWorkspace(CPoint& pnt)
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEBUG
-CGamDoc* CTinyBoardView::GetDocument() // non-debug version is inline
+CGamDoc& CTinyBoardView::GetDocument() // non-debug version is inline
 {
-    CGamDoc* retval = CB::ToCGamDoc(m_pDocument);
-    wxASSERT(retval);
-    return retval;
+    return CheckedDeref(CB::ToCGamDoc(m_pDocument));
 }
 #endif //_DEBUG
 
@@ -328,11 +328,12 @@ void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
     if (!m_pBMap)
         return;
 
-    CTinyBoardPopup* pTBrd = new CTinyBoardPopup;
+    // owned by MFC
+    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup);
 
     {
         CWindowDC dcRef(NULL);
-        DrawFullMap(&dcRef, pTBrd->m_bmap);
+        pTBrd->m_bmap = DrawFullMap(dcRef);
     }
 
     pTBrd->m_pWnd = GetParentFrame();

@@ -124,7 +124,7 @@ void CTinyBoardPopup::OnPaint()
     CRect oRct;
 
     dcMem.CreateCompatibleDC(&dc);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&m_bmap);
+    CBitmap* pPrvBMap = dcMem.SelectObject(&*m_bmap);
 
     CRect rctClient;
     GetClientRect(rctClient);
