@@ -45,18 +45,20 @@ IMPLEMENT_DYNCREATE(CTinyBoardViewContainer, CView)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CTinyBoardView, CScrollView)
-    //{{AFX_MSG_MAP(CTinyBoardView)
-    ON_WM_LBUTTONDOWN()
-    ON_WM_RBUTTONDOWN()
+wxBEGIN_EVENT_TABLE(CTinyBoardView, CB::ProcessEventOverride<wxScrolledCanvas>)
+    EVT_LEFT_DOWN(OnLButtonDown)
+    EVT_RIGHT_DOWN(OnRButtonDown)
+#if 0
     ON_WM_MOUSEACTIVATE()
-    //}}AFX_MSG_MAP
-    ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
-END_MESSAGE_MAP()
+#endif
+    EVT_WINSTATE(OnMessageWindowState)
+wxEND_EVENT_TABLE()
 
-BEGIN_MESSAGE_MAP(CTinyBoardViewContainer, CView)
+BEGIN_MESSAGE_MAP(CTinyBoardViewContainer, CTinyBoardViewContainer::BASE)
     ON_WM_CREATE()
+#if 0
     ON_WM_SIZE()
+#endif
     ON_WM_MOUSEACTIVATE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
@@ -64,11 +66,20 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView
 
-CTinyBoardView::CTinyBoardView()
+CTinyBoardView::CTinyBoardView(CTinyBoardViewContainer& p) :
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
+    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter()))
 {
-    m_pPBoard = NULL;
+    // use sizers for scrolling
+    wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
+    sizer->Add(0, 0);
+    BASE::Create(*parent, 0);
+    OnInitialUpdate();
 }
 
+#if 0
 BOOL CTinyBoardView::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CScrollView::PreCreateWindow(cs))
@@ -80,16 +91,13 @@ BOOL CTinyBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
     return TRUE;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CTinyBoardView::OnInitialUpdate()
 {
-    CScrollView::OnInitialUpdate();
-
-    m_pPBoard = static_cast<CPlayBoard*>(GetDocument().GetNewViewParameter());
-    CBoard* pBoard = m_pPBoard->GetBoard();
-    SetScrollSizes(MM_TEXT, pBoard->GetSize(smallScale));
+    RecalcScrollLimits();
 }
 
 void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -97,268 +105,263 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     CGamDocHint* ph = (CGamDocHint*)pHint;
     if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
-        CRect rct;
-        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
+        wxRect rct;
+        rct = CB::Convert(ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect());   // In board coords.
         InvalidateWorkspaceRect(rct);
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
+        wxASSERT(!"untested code");
         const std::vector<CB::not_null<CDrawObj*>>& pPtrList = *ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList;
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
             CDrawObj& pDObj = *pPtrList[i];
-            CRect rct = pDObj.GetEnclosingRect();  // In board coords.
+            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());  // In board coords.
             InvalidateWorkspaceRect(rct);
         }
     }
     else if (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard)
     {
-        m_pBMap = nullptr;
-        Invalidate();
+        m_pBMap = wxBitmap();
+        Refresh();
     }
     else if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_GAMESTATEUSED)
-        CScrollView::OnUpdate(pSender, lHint, pHint);
+    {
+        parent->CTinyBoardViewContainer::BASE::OnUpdate(pSender, lHint, pHint);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
-// WPARAM = CArchive*, LPARAM = 0 if save, 1 if restore
 
-LRESULT CTinyBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+void CTinyBoardView::OnMessageWindowState(WinStateEvent& event)
 {
-    ASSERT(wParam != NULL);
-    CArchive& ar = *((CArchive*)wParam);
+    CArchive& ar = event.GetArchive();
     if (ar.IsStoring())
     {
-        CPoint pnt = GetScrollPosition();
-        ar << (DWORD)pnt.x;
-        ar << (DWORD)pnt.y;
+        wxPoint pnt = GetViewStart();
+        ar << value_preserving_cast<uint32_t>(pnt.x);
+        ar << value_preserving_cast<uint32_t>(pnt.y);
     }
     else
     {
-        CPoint pnt;
-        DWORD dwTmp;
-        ar >> dwTmp; pnt.x = (LONG)dwTmp;
-        ar >> dwTmp; pnt.y = (LONG)dwTmp;
-        ScrollToPosition(pnt);
+        wxPoint pnt;
+        uint32_t dwTmp;
+        ar >> dwTmp; pnt.x = value_preserving_cast<decltype(pnt.x)>(dwTmp);
+        ar >> dwTmp; pnt.y = value_preserving_cast<decltype(pnt.y)>(dwTmp);
+        Scroll(pnt);
     }
-    return (LRESULT)1;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView drawing
 
-void CTinyBoardView::OnDraw(CDC* pDC)
+void CTinyBoardView::OnDraw(wxDC& pDC)
 {
-    if (!m_pBMap)
-        RegenCachedMap(CheckedDeref(pDC));
-    ASSERT(m_pBMap);
+    if (!m_pBMap.IsOk())
+        RegenCachedMap(pDC);
+    wxASSERT(m_pBMap.IsOk());
 
-    CDC      dcMem;
-    CRect    oRct;
-    CRect    oRctSave;
-    CBitmap* pPrvBMap;
+    wxMemoryDC dcMem;
+    wxRect    oRct;
+    wxRect    oRctSave;
 
-    pDC->GetClipBox(&oRct);
-    if (oRct.IsRectEmpty())
+    pDC.GetClippingBox(oRct);
+    if (oRct.IsEmpty())
         return;                 // Nothing to do
 
-    OwnerPtr<CBitmap> bmMem = CreateRGBDIBSection(oRct.Width(), oRct.Height());
-    dcMem.CreateCompatibleDC(pDC);
-    pPrvBMap = dcMem.SelectObject(&*bmMem);
-    dcMem.PatBlt(0, 0, oRct.Width(), oRct.Height(), WHITENESS);
+    wxBitmap bmMem(oRct.GetWidth(), oRct.GetHeight(), pDC);
+    dcMem.SelectObject(bmMem);
+    {
+    wxDCBrushChanger setBrush(dcMem, *wxWHITE_BRUSH);
+    wxDCPenChanger setPen(dcMem, *wxTRANSPARENT_PEN);
+    dcMem.DrawRectangle(0, 0, oRct.GetWidth(), oRct.GetHeight());
+    }
 
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
-        CSize sizeBrd = m_pPBoard->GetBoard()->GetSize(smallScale);
-        oRct = CRect(CPoint(sizeBrd.cx - oRct.left - oRct.Width(),
-            sizeBrd.cy - oRct.top - oRct.Height()), oRct.Size());
+        wxSize sizeBrd = CB::Convert(m_pPBoard->GetBoard()->GetSize(smallScale));
+        oRct = wxRect(wxPoint(sizeBrd.x - oRct.GetLeft() - oRct.GetWidth(),
+            sizeBrd.y - oRct.GetTop() - oRct.GetHeight()), oRct.GetSize());
     }
 
-    dcMem.SetViewportOrg(-oRct.left, -oRct.top);
+    dcMem.SetDeviceOrigin(-oRct.GetLeft(), -oRct.GetTop());
 
     // Draw updated part of board image
-    BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
+    dcMem.DrawBitmap(m_pBMap, 0, 0);
 
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
-    CRect rct(&oRct);
-    SetupDrawListDC(dcMem, rct);
+    wxRect rct(oRct);
+    {
+    DCSetupDrawListDC setupDrawListDC(*this, dcMem, rct);
 
-    m_pPBoard->Draw(dcMem, &rct, smallScale);
+    m_pPBoard->Draw(dcMem, rct, smallScale);
 
-    RestoreDrawListDC(dcMem);
+    }
 
     if (m_pPBoard->IsBoardRotated180())
     {
         // Xfer to output
-        dcMem.SetViewportOrg(0, 0);
-        pDC->StretchBlt(oRctSave.left, oRctSave.top, oRctSave.Width(), oRctSave.Height(),
-            &dcMem, oRctSave.Width() - 1, oRctSave.Height() - 1,
-            -oRctSave.Width(), -oRctSave.Height(), SRCCOPY);
+        dcMem.SetDeviceOrigin(0, 0);
+        pDC.StretchBlit(oRctSave.GetLeft(), oRctSave.GetTop(), oRctSave.GetWidth(), oRctSave.GetHeight(),
+            &dcMem, oRctSave.GetWidth() - 1, oRctSave.GetHeight() - 1,
+            -oRctSave.GetWidth(), -oRctSave.GetHeight());
     }
     else
     {
         // Copy to output area
-        pDC->BitBlt(oRct.left, oRct.top, oRct.Width(), oRct.Height(),
-            &dcMem, oRct.left, oRct.top, SRCCOPY);
+        pDC.Blit(oRct.GetLeft(), oRct.GetTop(), oRct.GetWidth(), oRct.GetHeight(),
+            &dcMem, oRct.GetLeft(), oRct.GetTop(), wxCOPY);
     }
-
-    dcMem.SelectObject(pPrvBMap);
 }
 
-OwnerPtr<CBitmap> CTinyBoardView::DrawFullMap(CDC& pDC)
+wxBitmap CTinyBoardView::DrawFullMap()
 {
-    OwnerPtr<CBitmap> bmap = MakeOwner<CBitmap>();
-    CDC dcMem;
+    wxBitmap bmap;
+    wxMemoryDC dcMem;
 
-    CSize size = m_pPBoard->GetBoard()->GetSize(smallScale);
+    wxSize size = CB::Convert(m_pPBoard->GetBoard()->GetSize(smallScale));
 
-    bmap->Attach(CreateRGBDIBSection(size.cx, size.cy)->Detach());
-    dcMem.CreateCompatibleDC(&pDC);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&*bmap);
+    bmap = wxBitmap(size.x, size.y);
+    dcMem.SelectObject(bmap);
 
     // Draw updated part of board image
-    BitmapBlt(dcMem, CPoint(0, 0), *m_pBMap);
+    dcMem.DrawBitmap(m_pBMap, 0, 0);
 
     // Draw pieces etc. (Need to rescale the DC and the update rect)
 
-    CRect rct(CPoint(0,0), size);
-    SetupDrawListDC(dcMem, rct);
+    wxRect rct(wxPoint(0,0), size);
+    {
+    DCSetupDrawListDC setupDrawList(*this, dcMem, rct);
 
-    m_pPBoard->Draw(dcMem, &rct, smallScale);
+    m_pPBoard->Draw(dcMem, rct, smallScale);
 
-    RestoreDrawListDC(dcMem);
-    dcMem.SelectObject(pPrvBMap);
+    }
 
     return bmap;
 }
 
-void CTinyBoardView::RegenCachedMap(CDC& pDC)
+void CTinyBoardView::RegenCachedMap(wxDC& pDC)
 {
-    CWaitCursor waitCursor;
+    wxBusyCursor waitCursor;
 
     CBoard* pBoard = m_pPBoard->GetBoard();
-    CSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
-    m_pBMap = CreateRGBDIBSection(size.cx, size.cy);
+    wxSize size = CB::Convert(pBoard->GetSize(smallScale));   // Get pixel size of board
+    m_pBMap = wxBitmap(size.x, size.y, pDC);
 
-    CDC dcMem;
-    dcMem.CreateCompatibleDC(&pDC);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&*m_pBMap);
+    wxMemoryDC dcMem;
+    dcMem.SelectObject(m_pBMap);
 
-    CRect rct(CPoint(0, 0), size);
+    wxRect rct(wxPoint(0, 0), size);
     pBoard->SetMaxDrawLayer();                  // Make sure all layers are drawn
     pBoard->Draw(dcMem, rct, smallScale, m_pPBoard->m_bSmallCellBorders);
-
-    dcMem.SelectObject(pPrvBMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTinyBoardView::SetupDrawListDC(CDC& pDC, CRect& rct) const
+CTinyBoardView::DCSetupDrawListDC::DCSetupDrawListDC(const CTinyBoardView& rThis, wxDC& pDC, wxRect& rct)
 {
-    CSize wsize, vsize;
-    m_pPBoard->GetBoard()->GetBoardArray().
+    wxSize wsize, vsize;
+    rThis.m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
 
-    pDC.SaveDC();
-    pDC.SetMapMode(MM_ANISOTROPIC);
-    pDC.SetWindowExt(wsize);
-    pDC.SetViewportExt(vsize);
+    scaleChanger = CB::DCUserScaleChanger(pDC, double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
 
     ScaleRect(rct, wsize, vsize);
 }
 
-void CTinyBoardView::RestoreDrawListDC(CDC &pDC) const
-{
-    pDC.RestoreDC(-1);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
-void CTinyBoardView::WorkspaceToClient(CRect& rect) const
+void CTinyBoardView::WorkspaceToClient(wxRect& rect) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
     {
-        rect = CRect(wsize.cx - rect.left, wsize.cy - rect.top,
-            wsize.cx - rect.right, wsize.cy - rect.bottom);
-        rect.NormalizeRect();
+        rect = wxRect(wxPoint(wsize.x - rect.GetLeft(), wsize.y - rect.GetTop()),
+            wxPoint(wsize.x - rect.GetRight(), wsize.y - rect.GetBottom()));
+        CB::Normalize(rect);
     }
     ScaleRect(rect, vsize, wsize);
-    rect -= dpnt;
+    rect.SetLeftTop(CalcScrolledPosition(rect.GetTopLeft()));
 }
 
-void CTinyBoardView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
+void CTinyBoardView::InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase)
 {
-    CRect rct(pRect);
+    wxRect rct(pRect);
     WorkspaceToClient(rct);
-    InvalidateRect(&rct, bErase);
+    RefreshRect(rct, bErase);
 }
 
-void CTinyBoardView::ClientToWorkspace(CPoint& pnt) const
+void CTinyBoardView::ClientToWorkspace(wxPoint& pnt) const
 {
-    pnt += GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    pnt = CalcUnscrolledPosition(pnt);
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, wsize, vsize);
     ScalePoint(pnt, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
-        pnt = CPoint(wsize.cx - pnt.x, wsize.cy - pnt.y);
+        pnt = wxPoint(wsize.x - pnt.x, wsize.y - pnt.y);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-
-#ifdef _DEBUG
-CGamDoc& CTinyBoardView::GetDocument() // non-debug version is inline
-{
-    return CheckedDeref(CB::ToCGamDoc(m_pDocument));
-}
-#endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView message handlers
 
-void CTinyBoardView::OnLButtonDown(UINT nFlags, CPoint point)
+void CTinyBoardView::OnLButtonDown(wxMouseEvent& event)
 {
+    wxPoint point = event.GetPosition();
     ClientToWorkspace(point);
-    CFrameWnd* pFrame = GetParentFrame();
-    pFrame->SendMessage(WM_CENTERBOARDONPOINT, (WPARAM)&point);
+    // TODO:  convert to wx when frame handles wxEvent
+    CFrameWnd* pFrame = parent->GetParentFrame();
+    CPoint cpoint = CB::Convert(point);
+    pFrame->SendMessage(WM_CENTERBOARDONPOINT, reinterpret_cast<WPARAM>(&cpoint));
 }
 
-void CTinyBoardView::OnRButtonDown(UINT nFlags, CPoint point)
+void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
 {
-    if (!m_pBMap)
+    if (!m_pBMap.IsOk())
         return;
 
     // owned by MFC
     RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup);
 
-    {
-        CWindowDC dcRef(NULL);
-        pTBrd->m_bmap = DrawFullMap(dcRef);
-    }
+    pTBrd->m_bmap = DrawFullMap();
 
-    pTBrd->m_pWnd = GetParentFrame();
+    pTBrd->m_pWnd = parent->GetParentFrame();
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, pTBrd->m_wsize, pTBrd->m_vsize);
     pTBrd->m_bRotate180 = m_pPBoard->IsBoardRotated180();
-    CRect rct;
-    GetWindowRect(&rct);
-    pTBrd->Create(GetMainFrame(), rct.CenterPoint());
+    wxRect rct = GetScreenRect();
+    pTBrd->Create(GetMainFrame(), GetMidRect(rct));
 
-    CScrollView::OnRButtonDown(nFlags, point);
+    event.Skip();
 }
 
+#if 0
 int CTinyBoardView::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
 {
     // We don't want the frame to ever consider this view to be the
     // "active" view.
     return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+}
+#endif
+
+void CTinyBoardView::RecalcScrollLimits()
+{
+    wxSizer& sizer = CheckedDeref(GetSizer());
+    wxSizerItemList& items = sizer.GetChildren();
+    wxASSERT(items.size() == 1);
+    wxSizerItem& item = CheckedDeref(items[0]);
+    wxASSERT(item.IsSpacer());
+
+    CBoard* pBoard = m_pPBoard->GetBoard();
+    wxSize size = CB::Convert(pBoard->GetSize(smallScale));
+    item.AssignSpacer(size);
+    SetScrollRate(size.x/100, size.y/100);
+    sizer.FitInside(this);
 }
 
 void CTinyBoardViewContainer::OnDraw(CDC* pDC)
@@ -366,38 +369,37 @@ void CTinyBoardViewContainer::OnDraw(CDC* pDC)
     // do nothing because child covers entire client rect
 }
 
+void CTinyBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+
+    BASE::OnUpdate(pSender, lHint, pHint);
+}
+
 CTinyBoardViewContainer::CTinyBoardViewContainer() :
-    child(new CTinyBoardView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
 int CTinyBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CView::OnCreate(lpCreateStruct) == -1)
+    if (BASE::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CTinyBoardView(*this);
 
     return 0;
 }
 
+#if 0
 void CTinyBoardViewContainer::OnSize(UINT nType, int cx, int cy)
 {
     child->MoveWindow(0, 0, cx, cy);
     return CView::OnSize(nType, cx, cy);
 }
+#endif
 
 int CTinyBoardViewContainer::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
 {
@@ -408,6 +410,7 @@ int CTinyBoardViewContainer::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, U
 
 LRESULT CTinyBoardViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 {
-    child->SendMessage(WM_WINSTATE, wParam, lParam);
+    WinStateEvent event(*reinterpret_cast<CArchive*>(wParam), bool(lParam));
+    child->ProcessWindowEvent(event);
     return (LRESULT)1;
 }

@@ -25,77 +25,107 @@
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView view
 
-class CTinyBoardView : public CScrollView
+class CTinyBoardView : public CB::ProcessEventOverride<wxScrolledCanvas>
 {
-public:
-    CTinyBoardView();
+private:
+    friend class CTinyBoardViewContainer;
+    typedef CB::ProcessEventOverride<wxScrolledCanvas> BASE;
+    CTinyBoardView(CTinyBoardViewContainer& parent);
 
 // Attributes
-private:
-    CGamDoc& GetDocument();
 
 // Operations
 public:
 
 // Implementation
+private:
+    // member declaration order determines construction order
+    RefPtr<CTinyBoardViewContainer> parent;
+    RefPtr<CGamDoc> document;
 protected:
-    CB::propagate_const<CPlayBoard*> m_pPBoard; // The playing board we are viewing
-    OwnerOrNullPtr<CBitmap> m_pBMap;            // Cached predrawn board bitmap
+    RefPtr<CPlayBoard> m_pPBoard; // The playing board we are viewing
+    wxBitmap m_pBMap;            // Cached predrawn board bitmap
 
     TileScale   m_nZoom;
 
-    void RegenCachedMap(CDC& pDC);
-    OwnerPtr<CBitmap> DrawFullMap(CDC& pDC);
+    void RegenCachedMap(wxDC& pDC);
+    wxBitmap DrawFullMap();
 
 // Implementation
 protected:
-    void SetupDrawListDC(CDC& pDC, CRect& rct) const;
-    void RestoreDrawListDC(CDC &pDC) const;
+    class DCSetupDrawListDC
+    {
+    public:
+        DCSetupDrawListDC(const CTinyBoardView& rThis, wxDC& pDC, wxRect& rct);
+    private:
+        CB::DCUserScaleChanger scaleChanger;
+    };
     // -------- //
-    void WorkspaceToClient(CRect& rect) const;
-    void ClientToWorkspace(CPoint& pnt) const;
-    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
+    void WorkspaceToClient(wxRect& rect) const;
+    void ClientToWorkspace(wxPoint& pnt) const;
+    void InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase = FALSE);
 
 // Implementation
 protected:
     ~CTinyBoardView() override = default;
+#if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
-    void OnInitialUpdate() override;     // first time after construct
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-    void OnDraw(CDC* pDC) override;      // overridden to draw this view
+#endif
+    void OnInitialUpdate();     // first time after construct
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    void OnDraw(wxDC& pDC) override;      // overridden to draw this view
 
-    // Generated message map functions
-    //{{AFX_MSG(CTinyBoardView)
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+    void OnLButtonDown(wxMouseEvent& event);
+    void OnRButtonDown(wxMouseEvent& event);
+#if 0
     afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
-    //}}AFX_MSG
-    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnMessageWindowState(WinStateEvent& event);
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override;
+
+    void RecalcScrollLimits();
 };
 
-#ifndef _DEBUG  // debug version in vwmbrd.cpp
-inline CGamDoc& CTinyBoardView::GetDocument()
-   { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
-#endif
-
-class CTinyBoardViewContainer : public CView
+class CTinyBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;
+
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
     CTinyBoardViewContainer();         // used by dynamic creation
     DECLARE_DYNCREATE(CTinyBoardViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+#if 0
     afx_msg void OnSize(UINT nType, int cx, int cy);
+#endif
     afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CTinyBoardView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CTinyBoardView*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CView> BASE;
+    friend CTinyBoardView;
 };
+
+inline CCmdTarget& CTinyBoardView::Get()
+{
+    return *parent;
+}
 
 
