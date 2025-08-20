@@ -68,7 +68,8 @@ class CProjListBoxGsn : public CProjListBoxWx<decltype(CB::Impl::CGsnProjViewBas
 
 class CGsnProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGsnProjViewBase
 {
-public:
+    friend class CGsnProjViewContainer;
+private:
     CGsnProjView(CGsnProjViewContainer& p);
 
 // Attributes
@@ -181,8 +182,6 @@ private:
 
     RefPtr<CGsnProjViewContainer> parent;
     RefPtr<CGamDoc> document;
-
-    friend class CGsnProjViewContainer;
 };
 
 class CGsnProjViewContainer :  public CB::OnCmdMsgOverride<CView>,

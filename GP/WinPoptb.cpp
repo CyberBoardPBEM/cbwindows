@@ -28,6 +28,7 @@
 #include "Gmisc.h"
 #include "GdiTools.h"
 #include "WinPoptb.h"
+#include "CDib.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,7 +61,7 @@ CTinyBoardPopup::~CTinyBoardPopup()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTinyBoardPopup::Create(CWnd* pParent, CPoint ptCenter)
+BOOL CTinyBoardPopup::Create(CWnd* pParent, wxPoint ptCenter)
 {
     CRect rct(CPoint(0,0), m_vsize);
     DWORD dwStyle = WS_BORDER | WS_POPUP | WS_VISIBLE;
@@ -124,7 +125,8 @@ void CTinyBoardPopup::OnPaint()
     CRect oRct;
 
     dcMem.CreateCompatibleDC(&dc);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&*m_bmap);
+    OwnerPtr<CBitmap> cm_bmap = CB::Convert(m_bmap);
+    CBitmap* pPrvBMap = dcMem.SelectObject(&*cm_bmap);
 
     CRect rctClient;
     GetClientRect(rctClient);

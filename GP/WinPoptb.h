@@ -41,14 +41,14 @@ public:
 // Attributes
 public:
     CWnd*       m_pWnd;
-    OwnerPtr<CBitmap> m_bmap = MakeOwner<CBitmap>();
+    wxBitmap    m_bmap;
     CSize       m_wsize;
     CSize       m_vsize;
     BOOL        m_bRotate180;       // Board is rotated by 180 degrees
 
 // Operations
 public:
-    BOOL Create(CWnd* pParent, CPoint ptCenter);
+    BOOL Create(CWnd* pParent, wxPoint ptCenter);
 
 // Overrides
     // ClassWizard generated virtual function overrides
