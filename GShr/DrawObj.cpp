@@ -1645,7 +1645,6 @@ static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
 static void DrawObjTile(wxDC& pDC, wxPoint pnt, CTileManager& pTMgr, TileID tid,
     TileScale eScale)
 {
-    wxASSERT(!"needs testing");
     CTile tile = pTMgr.GetTile(tid, eScale);
 
     CB::DCUserScaleChanger setScale;
