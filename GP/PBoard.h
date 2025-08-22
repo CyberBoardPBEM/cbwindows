@@ -107,6 +107,7 @@ public:
 // Operations
 public:
     void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale);
+    void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale);
     // ------- //
     CPieceObj& AddPiece(CPoint pnt, PieceID pid);
     const CPieceObj* FindPieceID(PieceID pid) const;
