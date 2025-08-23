@@ -326,16 +326,15 @@ void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
         return;
 
     // owned by MFC
-    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup);
+    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup(CheckedDeref(parent->GetParentFrame())));
 
     pTBrd->m_bmap = DrawFullMap();
 
-    pTBrd->m_pWnd = parent->GetParentFrame();
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(smallScale, pTBrd->m_wsize, pTBrd->m_vsize);
     pTBrd->m_bRotate180 = m_pPBoard->IsBoardRotated180();
     wxRect rct = GetScreenRect();
-    pTBrd->Create(GetMainFrame(), GetMidRect(rct));
+    pTBrd->Create(CheckedDeref(GetMainFrame()), GetMidRect(rct));
 
     event.Skip();
 }

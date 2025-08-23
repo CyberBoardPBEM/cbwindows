@@ -1,6 +1,6 @@
 // WinPoptb.cpp : implementation file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -49,9 +49,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardPopup
 
-CTinyBoardPopup::CTinyBoardPopup()
+CTinyBoardPopup::CTinyBoardPopup(CWnd& pWnd) :
+    m_pWnd(&pWnd)
 {
-    m_pWnd = NULL;
     m_bRotate180 = FALSE;
 }
 
@@ -61,7 +61,7 @@ CTinyBoardPopup::~CTinyBoardPopup()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTinyBoardPopup::Create(CWnd* pParent, wxPoint ptCenter)
+BOOL CTinyBoardPopup::Create(CWnd& pParent, wxPoint ptCenter)
 {
     CRect rct(CPoint(0,0), m_vsize);
     DWORD dwStyle = WS_BORDER | WS_POPUP | WS_VISIBLE;
@@ -91,7 +91,7 @@ BOOL CTinyBoardPopup::Create(CWnd* pParent, wxPoint ptCenter)
 
     return CWnd::CreateEx(dwExStyle,
         AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW),
-        (HBRUSH)(COLOR_BTNFACE + 1)), ""_cbstring, dwStyle, rct, pParent, NULL, NULL);
+        (HBRUSH)(COLOR_BTNFACE + 1)), ""_cbstring, dwStyle, rct, &pParent, NULL, NULL);
 }
 
 int CTinyBoardPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
