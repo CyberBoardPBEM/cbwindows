@@ -1,6 +1,6 @@
 // WinPoptb.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,11 +36,12 @@ class CTinyBoardPopup : public CWnd
 {
 // Construction
 public:
-    CTinyBoardPopup();
+    CTinyBoardPopup(CWnd& pWnd);
 
 // Attributes
+private:
+    RefPtr<CWnd> m_pWnd;
 public:
-    CWnd*       m_pWnd;
     wxBitmap    m_bmap;
     CSize       m_wsize;
     CSize       m_vsize;
@@ -48,24 +49,24 @@ public:
 
 // Operations
 public:
-    BOOL Create(CWnd* pParent, wxPoint ptCenter);
+    BOOL Create(CWnd& pParent, wxPoint ptCenter);
 
 // Overrides
     // ClassWizard generated virtual function overrides
     //{{AFX_VIRTUAL(CTinyBoardPopup)
     public:
     protected:
-    virtual void PostNcDestroy();
+    void PostNcDestroy() override;
     //}}AFX_VIRTUAL
 
 // Implementation
 public:
-    virtual ~CTinyBoardPopup();
+    ~CTinyBoardPopup() override;
 
+private:
     void ProcessBoardHit(UINT nFlags, CPoint point);
 
     // Generated message map functions
-protected:
     //{{AFX_MSG(CTinyBoardPopup)
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
