@@ -36,15 +36,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-BEGIN_MESSAGE_MAP(CTinyBoardPopup, CWnd)
-    //{{AFX_MSG_MAP(CTinyBoardPopup)
-    ON_WM_RBUTTONDOWN()
-    ON_WM_LBUTTONDOWN()
+wxBEGIN_EVENT_TABLE(CTinyBoardPopup, wxPopupTransientWindow)
+    EVT_RIGHT_DOWN(OnRButtonDown)
+#if 1
+    EVT_LEFT_DOWN(OnLButtonDown)
+#endif
+#if 0
     ON_WM_CREATE()
-    ON_WM_PAINT()
-    ON_WM_CHAR()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_PAINT(OnPaint)
+    EVT_CHAR(OnChar)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardPopup
@@ -61,39 +63,23 @@ CTinyBoardPopup::~CTinyBoardPopup()
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTinyBoardPopup::Create(CWnd& pParent, wxPoint ptCenter)
+BOOL CTinyBoardPopup::Create(wxWindow& pParent, wxPoint ptCenter)
 {
-    CRect rct(CPoint(0,0), m_vsize);
-    DWORD dwStyle = WS_BORDER | WS_POPUP | WS_VISIBLE;
-    DWORD dwExStyle = WS_EX_CLIENTEDGE;
-
-    AdjustWindowRectEx(&rct, dwStyle, FALSE, dwExStyle);
-    rct.OffsetRect(ptCenter.x - rct.Width()/2, ptCenter.y - rct.Height()/2);
-
-    // Make sure on screen...
-    CRect rctWrk;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &rctWrk, 0);
-    if (rct.right > rctWrk.right)
-        rct.OffsetRect(rctWrk.right - rct.right, 0);
-    if (rct.bottom > rctWrk.bottom)
-        rct.OffsetRect(0, rctWrk.bottom - rct.bottom);
-
-    if (rct.Width() > rctWrk.Width())
+    // wxPU_CONTAINS_CONTROLS required to enable having focus
+    BOOL retval = wxPopupTransientWindow::Create(&pParent,
+                                                wxPU_CONTAINS_CONTROLS | wxBORDER_SUNKEN);
+    if (retval)
     {
-        rct.left = rctWrk.left;
-        rct.right = rctWrk.right;
+        SetClientSize(m_vsize);
+        wxRect rct(wxPoint(0, 0), GetSize());
+        rct.Offset(ptCenter.x - rct.GetWidth()/2, ptCenter.y - rct.GetHeight()/2);
+        Position(rct.GetLeftTop(), wxDefaultSize);
+        Popup();
     }
-    if (rct.Height() > rctWrk.Height())
-    {
-        rct.top = rctWrk.top;
-        rct.bottom = rctWrk.bottom;
-    }
-
-    return CWnd::CreateEx(dwExStyle,
-        AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW),
-        (HBRUSH)(COLOR_BTNFACE + 1)), ""_cbstring, dwStyle, rct, &pParent, NULL, NULL);
+    return retval;
 }
 
+#if 0
 int CTinyBoardPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CWnd::OnCreate(lpCreateStruct) == -1)
@@ -108,74 +94,136 @@ int CTinyBoardPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardPopup message handlers
 
-void CTinyBoardPopup::PostNcDestroy()
+void CTinyBoardPopup::OnPaint(wxPaintEvent& event)
 {
-    delete this;
-}
+    wxPaintDC dc(this);          // device context for painting
 
-void CTinyBoardPopup::OnPaint()
-{
-    CPaintDC dc(this);          // device context for painting
+    wxMemoryDC dcMem;
+    wxRect oRct;
 
-    CDC dcMem;
-    CRect oRct;
+    dcMem.SelectObject(m_bmap);
 
-    dcMem.CreateCompatibleDC(&dc);
-    OwnerPtr<CBitmap> cm_bmap = CB::Convert(m_bmap);
-    CBitmap* pPrvBMap = dcMem.SelectObject(&*cm_bmap);
-
-    CRect rctClient;
-    GetClientRect(rctClient);
+    wxRect rctClient = GetClientRect();
 
     if (m_bRotate180)
     {
-        dc.StretchBlt(0, 0, rctClient.right, rctClient.bottom, &dcMem,
-            m_vsize.cx - 1,m_vsize.cy - 1, -m_vsize.cx, -m_vsize.cy, SRCCOPY);
+        dc.StretchBlit(0, 0, rctClient.GetRight(), rctClient.GetBottom(), &dcMem,
+            m_vsize.x - 1,m_vsize.y - 1, -m_vsize.x, -m_vsize.y);
     }
     else
     {
-        dc.StretchBlt(0, 0, rctClient.right, rctClient.bottom, &dcMem, 0, 0,
-            m_vsize.cx, m_vsize.cy, SRCCOPY);
+        dc.StretchBlit(0, 0, rctClient.GetRight(), rctClient.GetBottom(), &dcMem, 0, 0,
+            m_vsize.x, m_vsize.y);
     }
-
-    dcMem.SelectObject(pPrvBMap);
 }
 
-void CTinyBoardPopup::ProcessBoardHit(UINT nFlags, CPoint point)
+void CTinyBoardPopup::ProcessBoardHit(wxMouseEvent& event)
 {
-    ReleaseCapture();
+    wxPoint point = event.GetPosition();
 
-    CRect rctClient;
-    GetClientRect(&rctClient);
-    if (rctClient.PtInRect(point))
+    wxRect rctClient = GetClientRect();
+    if (rctClient.Contains(point))
     {
-        ScalePoint(point, m_wsize, rctClient.Size());
+        ScalePoint(point, m_wsize, rctClient.GetSize());
         if (m_bRotate180)
-            point = CPoint(m_wsize.cx - point.x, m_wsize.cy - point.y);
-        m_pWnd->SendMessage(WM_CENTERBOARDONPOINT, (WPARAM)&point);
+            point = wxPoint(m_wsize.x - point.x, m_wsize.y - point.y);
+        CPoint cpoint = CB::Convert(point);
+        m_pWnd->SendMessage(WM_CENTERBOARDONPOINT, (WPARAM)&cpoint);
     }
-    DestroyWindow();
+    Dismiss();
 }
 
-void CTinyBoardPopup::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CTinyBoardPopup::OnChar(wxKeyEvent& event)
 {
-    if (nChar == VK_ESCAPE)
+    if (event.GetUnicodeKey() == WXK_ESCAPE)
     {
-        ReleaseCapture();
-        DestroyWindow();
+        Dismiss();
     }
 }
 
-void CTinyBoardPopup::OnRButtonDown(UINT nFlags, CPoint point)
+void CTinyBoardPopup::OnRButtonDown(wxMouseEvent& event)
 {
-    ProcessBoardHit(nFlags, point);
+    ProcessBoardHit(event);
 }
 
-void CTinyBoardPopup::OnLButtonDown(UINT nFlags, CPoint point)
+#if 1
+void CTinyBoardPopup::OnLButtonDown(wxMouseEvent& event)
+#else
+bool CTinyBoardPopup::ProcessLeftDown(wxMouseEvent& event)
+#endif
 {
-    ProcessBoardHit(nFlags, point);
+    ProcessBoardHit(event);
+#if 1
+#else
+    return false;
+#endif
+}
+
+/* default position policy wants no overlap between arg rect
+    and this, but we want as close to leftTop as screen
+    permits */
+void CTinyBoardPopup::Position(const wxPoint& ptOrigin,
+                                const wxSize& sizePopup)
+{
+    // based on wxPopupWindowBase::Position()
+    // determine the position and size of the screen we clamp the popup to
+    wxPoint posScreen;
+    wxSize sizeScreen;
+
+    const int displayNum = wxDisplay::GetFromPoint(ptOrigin);
+    if ( displayNum != wxNOT_FOUND )
+    {
+        const wxRect rectScreen = wxDisplay(displayNum).GetGeometry();
+        posScreen = rectScreen.GetPosition();
+        sizeScreen = rectScreen.GetSize();
+    }
+    else // outside of any display?
+    {
+        // just use the primary one then
+        posScreen = wxPoint(0, 0);
+        sizeScreen = wxGetDisplaySize();
+    }
+
+
+    const wxSize sizeSelf = GetSize();
+
+    wxCoord y = ptOrigin.y;
+    if ( y + sizeSelf.y > posScreen.y + sizeScreen.y )
+    {
+        y = posScreen.y + sizeScreen.y - sizeSelf.y;
+    }
+
+    // now check left/right too
+    wxCoord x = ptOrigin.x;
+
+    if ( wxTheApp->GetLayoutDirection() == wxLayout_RightToLeft )
+    {
+        wxASSERT(!"untested code");
+        // shift the window to the left instead of the right.
+        x -= sizeSelf.x;        // also shift it by window width.
+    }
+
+
+    if ( x + sizeSelf.x > posScreen.x + sizeScreen.x )
+    {
+        x = posScreen.x + sizeScreen.x - sizeSelf.x;
+    }
+
+    Move(x, y, wxSIZE_NO_ADJUSTMENTS);
+}
+
+void CTinyBoardPopup::Dismiss()
+{
+    /* KLUDGE:  sometimes getting multiple dismisses, but should
+                not destroy multiple times */
+    if (IsShown())
+    {
+        wxPopupTransientWindow::Dismiss();
+        Destroy();
+    }
 }

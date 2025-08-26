@@ -32,7 +32,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardPopup window
 
-class CTinyBoardPopup : public CWnd
+class CTinyBoardPopup : public wxPopupTransientWindow
 {
 // Construction
 public:
@@ -43,38 +43,47 @@ private:
     RefPtr<CWnd> m_pWnd;
 public:
     wxBitmap    m_bmap;
-    CSize       m_wsize;
-    CSize       m_vsize;
+    wxSize      m_wsize;
+    wxSize      m_vsize;
     BOOL        m_bRotate180;       // Board is rotated by 180 degrees
 
 // Operations
 public:
-    BOOL Create(CWnd& pParent, wxPoint ptCenter);
+    BOOL Create(wxWindow& pParent, wxPoint ptCenter);
 
 // Overrides
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CTinyBoardPopup)
     public:
     protected:
-    void PostNcDestroy() override;
-    //}}AFX_VIRTUAL
 
 // Implementation
 public:
     ~CTinyBoardPopup() override;
 
 private:
-    void ProcessBoardHit(UINT nFlags, CPoint point);
+    void ProcessBoardHit(wxMouseEvent& event);
 
-    // Generated message map functions
-    //{{AFX_MSG(CTinyBoardPopup)
-    afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+    void OnRButtonDown(wxMouseEvent& event);
+    /* N.B.:  OnLButtonDown() instead of ProcessLeftDown()
+    see https://groups.google.com/g/wx-dev/c/506M_PpcsZk/m/FODigxNUAQAJ
+    */
+#if 1
+    void OnLButtonDown(wxMouseEvent& event);
+#else
+    bool ProcessLeftDown(wxMouseEvent& event) override;
+#endif
+#if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnPaint();
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnPaint(wxPaintEvent& event);
+    void OnChar(wxKeyEvent& event);
+    wxDECLARE_EVENT_TABLE();
+
+    /* default position policy wants no overlap between arg rect
+        and this, but we want as close to leftTop as screen
+        permits */
+    void Position(const wxPoint& leftTop,
+        const wxSize&) override;
+    void Dismiss() override;
 };
 
 /////////////////////////////////////////////////////////////////////////////
