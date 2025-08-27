@@ -1,6 +1,6 @@
 // VwSelpce.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,15 +38,15 @@ protected:
     CSelectedPieceView();           // protected constructor used by dynamic creation
 
 // Attributes
-public:
-    CGamDoc* GetDocument();
+private:
+    CGamDoc& GetDocument();
 
 // Operations
 public:
 
 // Implementation
 protected:
-    CPlayBoard*     m_pPBoard;      // Board that contains selections
+    CB::propagate_const<CPlayBoard*> m_pPBoard;      // Board that contains selections
 
     CSelectListBox  m_listSel;
     std::vector<CB::not_null<CDrawObj*>> m_tblSel;
@@ -56,11 +56,11 @@ protected:
 protected:
     void ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedItems);
 
-    virtual ~CSelectedPieceView();
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-    virtual BOOL PreTranslateMessage(MSG* pMsg);
+    ~CSelectedPieceView() override;
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    BOOL PreTranslateMessage(MSG* pMsg) override;
 
 // Generated message map functions
 protected:
@@ -76,7 +76,7 @@ protected:
 };
 
 #ifndef _DEBUG  // debug version in vwselpce.cpp
-inline CGamDoc* CSelectedPieceView::GetDocument()
-   { return CB::ToCGamDoc(m_pDocument); }
+inline CGamDoc& CSelectedPieceView::GetDocument()
+   { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
 #endif
 
