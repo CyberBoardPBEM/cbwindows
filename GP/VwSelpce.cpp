@@ -1,6 +1,6 @@
 // VwSelpce.cpp : Selected Piece List View
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -121,9 +121,9 @@ BOOL CSelectedPieceView::PreTranslateMessage(MSG* pMsg)
 
 void CSelectedPieceView::OnInitialUpdate()
 {
-    m_pPBoard = (CPlayBoard*)GetDocument()->GetNewViewParameter();
+    m_pPBoard = static_cast<CPlayBoard*>(GetDocument().GetNewViewParameter());
     CView::OnInitialUpdate();
-    m_listSel.SetDocument(GetDocument());
+    m_listSel.SetDocument(&GetDocument());
 }
 
 void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -182,11 +182,10 @@ BOOL CSelectedPieceView::OnEraseBkgnd(CDC* pDC)
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEBUG
-CGamDoc* CSelectedPieceView::GetDocument() // non-debug version is inline
+CGamDoc& CSelectedPieceView::GetDocument() // non-debug version is inline
 {
     CGamDoc* retval = CB::ToCGamDoc(m_pDocument);
-    wxASSERT(retval);
-    return retval;
+    return CheckedDeref(retval);
 }
 #endif //_DEBUG
 
@@ -250,7 +249,7 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
         }
     }
     CPlayBoardFrame* pFrame = (CPlayBoardFrame*)GetParentFrame();
-    pFrame->SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)m_pPBoard,
+    pFrame->SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)&*m_pPBoard,
         (LPARAM)&listDObj);
 }
 
