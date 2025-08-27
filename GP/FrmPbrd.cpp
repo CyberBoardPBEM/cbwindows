@@ -213,7 +213,7 @@ BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
     }
 
     if (!m_wndSplitter2.CreateView(0, 0,
-        RUNTIME_CLASS(CSelectedPieceView),
+        RUNTIME_CLASS(CSelectedPieceViewContainer),
         CSize(rct.Width() - xSize, ySize), pContext))
     {
         TRACE("Failed to create second Selected Piece pane\n");
