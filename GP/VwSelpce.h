@@ -33,8 +33,8 @@ class CPlayBoard;
 
 class CSelectedPieceView : public CView
 {
-    DECLARE_DYNCREATE(CSelectedPieceView)
-protected:
+private:
+    friend class CSelectedPieceViewContainer;
     CSelectedPieceView();           // protected constructor used by dynamic creation
 
 // Attributes
@@ -80,3 +80,21 @@ inline CGamDoc& CSelectedPieceView::GetDocument()
    { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
 #endif
 
+class CSelectedPieceViewContainer : public CView
+{
+public:
+    void OnDraw(CDC* pDC) override;
+
+private:
+    CSelectedPieceViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CSelectedPieceViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
+    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CSelectedPieceView> child;
+};

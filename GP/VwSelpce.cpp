@@ -36,7 +36,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CSelectedPieceView, CView)
+IMPLEMENT_DYNCREATE(CSelectedPieceViewContainer, CView)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,6 +52,13 @@ BEGIN_MESSAGE_MAP(CSelectedPieceView, CView)
     ON_WM_MOUSEACTIVATE()
     ON_WM_VKEYTOITEM()
     //}}AFX_MSG_MAP
+    ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CSelectedPieceViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_WM_MOUSEACTIVATE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
 
@@ -251,5 +258,56 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
     CPlayBoardFrame* pFrame = (CPlayBoardFrame*)GetParentFrame();
     pFrame->SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)&*m_pPBoard,
         (LPARAM)&listDObj);
+}
+
+void CSelectedPieceViewContainer::OnDraw(CDC* pDC)
+{
+    // do nothing because child covers entire client rect
+}
+
+CSelectedPieceViewContainer::CSelectedPieceViewContainer() :
+    child(new CSelectedPieceView)
+{
+}
+
+int CSelectedPieceViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CSelectedPieceViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
+}
+
+int CSelectedPieceViewContainer::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+    // We don't want the frame to ever consider this view to be the
+    // "active" view.
+    return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+}
+
+LRESULT CSelectedPieceViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+{
+    child->SendMessage(WM_WINSTATE, wParam, lParam);
+    return (LRESULT)1;
 }
 
