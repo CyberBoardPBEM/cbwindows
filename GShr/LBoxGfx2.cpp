@@ -370,25 +370,6 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
 #if defined(GPLAY)
             m_pDoc->AssignNewMoveGroup();
 #endif
-            if (IsMultiSelect())
-            {
-                CWnd *pWnd = GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST2, (WPARAM)&m_multiSelList);
-            }
-            else
-            {
-                ASSERT(!"unreachable code");
-                ASSERT(!"what is m_dragType here?");
-#if 0
-                // The parent may want to override the value.
-                int nValueOverride = di.m_dwVal;
-                CWnd *pWnd = GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM2, (WPARAM)&nValueOverride);
-                di.m_dwVal = nValueOverride;
-#endif
-            }
 
             ReleaseCapture();
             SetCursor(LoadCursor(NULL, IDC_ARROW));

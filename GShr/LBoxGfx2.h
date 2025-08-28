@@ -39,13 +39,6 @@ class CDrawObj;
 #define MAX_LISTITEM_TIP_WIDTH          200     // Max pixel width of tips
 
 /////////////////////////////////////////////////////////////////////////////
-// These messages are sent by the CGrafixListBox2 to its parent window.
-// It allows the list's content to be overridden. It's primary use
-// is to deliver a random selection of pieces or markers.
-#define WM_OVERRIDE_SELECTED_ITEM2       (WM_USER + 502) // WPARAM = int*
-#define WM_OVERRIDE_SELECTED_ITEM_LIST2  (WM_USER + 503) // WPARAM = CDWordArray*
-
-/////////////////////////////////////////////////////////////////////////////
 // Custom Listbox - containing colors
 
 class CGrafixListBox2 : public CListBox
