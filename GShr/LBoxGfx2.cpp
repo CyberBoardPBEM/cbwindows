@@ -132,6 +132,7 @@ const CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex) const
 
 size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem) const
 {
+    wxASSERT(!"dead code?");
     ASSERT(m_pItemMap);
     for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
@@ -143,6 +144,7 @@ size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem) const
 
 const CDrawObj& CGrafixListBox2::GetCurMapItem() const
 {
+    wxASSERT(!"dead code?");
     ASSERT(!IsMultiSelect());
     ASSERT(m_pItemMap);
     int nItem = GetCurSel();
@@ -168,6 +170,7 @@ std::vector<CB::not_null<const CDrawObj*>> CGrafixListBox2::GetCurMappedItemList
 
 void CGrafixListBox2::SetCurSelMapped(const CDrawObj& nMapVal)
 {
+    wxASSERT(!"dead code?");
     ASSERT(m_pItemMap);
     for (size_t i = 0; i < m_pItemMap->size(); i++)
     {
@@ -181,6 +184,7 @@ void CGrafixListBox2::SetCurSelMapped(const CDrawObj& nMapVal)
 
 void CGrafixListBox2::SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items)
 {
+    wxASSERT(!"dead code?");
     ASSERT(m_pItemMap);
     ASSERT(IsMultiSelect());
 
@@ -199,6 +203,7 @@ void CGrafixListBox2::SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>
 
 void CGrafixListBox2::ShowFirstSelection()
 {
+    wxASSERT(!"dead code?");
     int nTopSel = GetTopSelectedItem();
     CRect rctLBoxClient;
     GetClientRect(&rctLBoxClient);
@@ -210,6 +215,7 @@ void CGrafixListBox2::ShowFirstSelection()
 
 int CGrafixListBox2::GetTopSelectedItem() const
 {
+    wxASSERT(!"dead code?");
     int nTopSel;
     if (IsMultiSelect())
     {
@@ -231,6 +237,7 @@ int CGrafixListBox2::GetTopSelectedItem() const
 
 void CGrafixListBox2::MakeItemVisible(int nItem)
 {
+    wxASSERT(!"dead code?");
     CRect rctLBoxClient;
     GetClientRect(&rctLBoxClient);
     CRect rct;
@@ -243,6 +250,7 @@ void CGrafixListBox2::MakeItemVisible(int nItem)
 
 void CGrafixListBox2::SetSelFromPoint(CPoint point)
 {
+    wxASSERT(!"dead code?");
     // Short circuit drag processing
     m_bAllowDrag = FALSE;
     SendMessage(WM_LBUTTONDOWN, (WPARAM)MK_LBUTTON,
@@ -475,6 +483,7 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
 
 CWnd* CGrafixListBox2::GetWindowFromPoint(CPoint point) const
 {
+    wxASSERT(!"dead code?");
     ClientToScreen(&point);
     CWnd* pWnd = WindowFromPoint(point);
 
@@ -507,6 +516,7 @@ void CGrafixListBox2::DoInsertLineProcessing(const DragInfo& pdi)
 {
     if (m_bAllowDropScroll)
     {
+        wxASSERT(!"dead code");
         // Handle drawing of insert line
         CPoint pnt = pdi.m_point;
         int nSel = SpecialItemFromPoint(pnt);
@@ -533,6 +543,7 @@ void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
 {
     if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
     {
+        wxASSERT(!"dead code");
         CRect rct;
         GetClientRect(&rct);
         rct.InflateRect(0, -scrollZonePixels);
@@ -550,6 +561,7 @@ void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
 
 LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
+    wxASSERT(!"dead code");
     if (wParam != GetProcessId(GetCurrentProcess()))
     {
         return -1;
@@ -571,6 +583,7 @@ void CGrafixListBox2::OnTimer(uintptr_t nIDEvent)
     if (nIDEvent != m_nTimerID)
         return;
 
+    wxASSERT(!"dead code");
     CPoint point;
     CRect  rctClient;
     CRect  rct;
@@ -634,6 +647,7 @@ void CGrafixListBox2::OnTimer(uintptr_t nIDEvent)
 
 int CGrafixListBox2::SpecialItemFromPoint(CPoint pnt) const
 {
+    wxASSERT(!"dead code");
     BOOL bBucket;
     int nSel = (int)ItemFromPoint(pnt, bBucket);
     CRect rct;
