@@ -58,11 +58,11 @@ public:
 
 // Operations
 public:
-    void SetDocument(CGamDoc* pDoc) { CTileBaseListBox2::SetDocument(CheckedDeref(pDoc)); m_pDoc = pDoc; }
+    void SetDocument(CGamDoc& pDoc) { CTileBaseListBox2::SetDocument(pDoc); m_pDoc = &pDoc; }
 
 // Implementation
 protected:
-    CGamDoc*    m_pDoc;
+    CB::propagate_const<CGamDoc*> m_pDoc;
 
     GameElement menuGameElement = Invalid_v<GameElement>;
 

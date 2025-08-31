@@ -965,7 +965,7 @@ const CTileManager& CGamDoc::GetTileManager() const
     return CheckedDeref(CheckedDeref(m_pGbx).GetTileManager());
 }
 
-CMarkManager& CGamDoc::GetMarkManager()
+const CMarkManager& CGamDoc::GetMarkManager() const
 {
     return CheckedDeref(CheckedDeref(m_pGbx).GetMarkManager());
 }

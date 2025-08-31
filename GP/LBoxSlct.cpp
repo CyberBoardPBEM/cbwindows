@@ -91,7 +91,7 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
     pDI.SetDragType(DRAG_SELECTVIEW);
     pDI.GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
     pDI.m_hcsrSuggest = g_res.hcrDragTile;
-    pDI.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = m_pDoc;
+    pDI.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = &*m_pDoc;
     return TRUE;
 }
 
@@ -326,13 +326,13 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_
             if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
                 const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
-                CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
+                const CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
                 uint8_t side = pieceTbl.GetSide(pieceObj.m_pid, i);
-                return (m_pDoc->*func)(pieceObj, side);
+                return ((*m_pDoc).*func)(pieceObj, side);
             }
             else
             {
-                return (m_pDoc->*func)(pObj, Invalid_v<size_t>);
+                return ((*m_pDoc).*func)(pObj, Invalid_v<size_t>);
             }
         }
     }
@@ -358,7 +358,7 @@ BOOL CSelectListBox::OnDoesItemHaveTipText(size_t nItem) const
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
         const CPieceObj& pObj = static_cast<const CPieceObj&>(pDObj);
-        CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
+        const CPieceTable& pieceTbl = m_pDoc->GetPieceTable();
         size_t sides = pieceTbl.GetSides(pObj.m_pid);
         for (size_t i = size_t(0); i < sides; ++i)
         {
@@ -426,7 +426,7 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
 
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
-        CPieceTable& pPTbl = m_pDoc->GetPieceTable();
+        const CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
         PieceID pid = static_cast<const CPieceObj&>(pDObj).m_pid;
 
@@ -460,7 +460,7 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
     else if (pDObj.GetType() == CDrawObj::drawMarkObj)
     {
         MarkID mid = static_cast<const CMarkObj&>(pDObj).m_mid;
-        CMarkManager& pMMgr = m_pDoc->GetMarkManager();
+        const CMarkManager& pMMgr = m_pDoc->GetMarkManager();
         std::vector<TileID> retval;
         retval.push_back(pMMgr.GetMark(mid).m_tid);
         return retval;
