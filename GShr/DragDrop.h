@@ -174,7 +174,7 @@ public:
     struct SubInfo<DRAG_SELECTVIEW>
     {
         const std::vector<CB::not_null<const CDrawObj*>>* m_ptrArray;
-        CGamDoc* m_gamDoc;
+        const CGamDoc* m_gamDoc;
     };
     // TODO:  when upgrade to c++ 17, use std::variant
 private:

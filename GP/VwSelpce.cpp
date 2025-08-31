@@ -130,7 +130,7 @@ void CSelectedPieceView::OnInitialUpdate()
 {
     m_pPBoard = static_cast<CPlayBoard*>(GetDocument().GetNewViewParameter());
     CView::OnInitialUpdate();
-    m_listSel.SetDocument(&GetDocument());
+    m_listSel.SetDocument(GetDocument());
 }
 
 void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)

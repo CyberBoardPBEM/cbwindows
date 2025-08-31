@@ -316,7 +316,11 @@ public:
     // Major game related objects...
     const CTileManager& GetTileManager() const;
     CTileManager& GetTileManager() { return const_cast<CTileManager&>(std::as_const(*this).GetTileManager()); }
-    CMarkManager& GetMarkManager();
+    const CMarkManager& GetMarkManager() const;
+    CMarkManager& GetMarkManager()
+    {
+        return const_cast<CMarkManager&>(std::as_const(*this).GetMarkManager());
+    }
     const CBoardManager& GetBoardManager() const;
     CBoardManager& GetBoardManager()
     {
