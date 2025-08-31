@@ -48,7 +48,7 @@ public:
 protected:
     CB::propagate_const<CPlayBoard*> m_pPBoard;      // Board that contains selections
 
-    CSelectListBox  m_listSel;
+    CSelectListBoxMfc  m_listSel;
     std::vector<RefPtr<CDrawObj>> m_tblSel;
     CToolTipCtrl    m_toolTip;
 
