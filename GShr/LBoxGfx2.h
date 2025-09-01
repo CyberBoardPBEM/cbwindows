@@ -98,7 +98,7 @@ public:
     // For tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
     virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const /* override */ { }
+    virtual CB::string OnGetTipTextForItemCode(GameElement nItemCode) const /* override */ { return CB::string(); }
 
 // Implementation
 protected:

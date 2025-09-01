@@ -287,7 +287,7 @@ void CGrafixListBox2::DoToolTipHitProcessing(CPoint point)
             CB::string strTip;
 
             // Call subclass for info
-            OnGetTipTextForItemCode(nItemCode, strTip);
+            strTip = OnGetTipTextForItemCode(nItemCode);
 
             if (!strTip.empty())
             {
