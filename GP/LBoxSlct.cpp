@@ -340,12 +340,14 @@ GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_
     return Invalid_v<GameElement>;
 }
 
-void CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode,
-    CB::string& strTip) const
+CB::string CSelectListBox::OnGetTipTextForItemCode(GameElement nItemCode) const
 {
     if (nItemCode == Invalid_v<GameElement>)
-        return;
-    strTip = m_pDoc->GetGameElementString(nItemCode);
+    {
+        wxASSERT(!"invalid gameelement");
+        return CB::string();
+    }
+    return m_pDoc->GetGameElementString(nItemCode);
 }
 
 /////////////////////////////////////////////////////////////////////////////
