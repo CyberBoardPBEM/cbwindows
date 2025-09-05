@@ -177,6 +177,42 @@ namespace {
 
             return true;
         }
+
+    protected:
+        /* for safety, and to approximate MFC,
+            disable MFC toolbar/menu commands that aren't
+            explicitly enabled */
+        bool TryAfter(wxEvent& event) override
+        {
+            if (wxAppWithMFC::TryAfter(event))
+            {
+                return true;
+            }
+
+            /* for safety, and to approximate MFC,
+                disable toolbar/menu commands that aren't
+                explicitly enabled */
+            if (event.GetEventType() == wxEVT_UPDATE_UI)
+            {
+                wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
+                wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
+                // !event.obj suggests MFC
+                /* if xrcid is empty, then id is something
+                    wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
+                    so don't interfere with it */
+                if (!event.GetEventObject() && !xrcid.empty())
+                {
+                    if (pCmdUI.IsCheckable())
+                    {
+                        pCmdUI.Check(false);
+                    }
+                    pCmdUI.Enable(false);
+                    return true;
+                }
+            }
+
+            return false;
+        }
     };
 }
 wxDECLARE_APP(wxCGpApp);
