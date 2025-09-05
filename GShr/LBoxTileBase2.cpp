@@ -38,14 +38,11 @@
 const int tileBorder = 3;
 const int tileGap = 6;
 
-#if 0
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CTileBaseListBox2, CGrafixListBox2)
-    //{{AFX_MSG_MAP(CTileBaseListBox2)
-    ON_WM_CREATE()
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+wxBEGIN_EVENT_TABLE(CTileBaseListBox2, CGrafixListBox2)
+    EVT_WINDOW_CREATE(OnCreate)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -54,14 +51,14 @@ CTileBaseListBox2::CTileBaseListBox2()
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
 
     m_bTipMarkItems = TRUE;
-    m_sizeTipMark = CSize(0,0);
+    m_sizeTipMark = wxSize(0,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-CSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
+wxSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
 {
-    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);        // At least one tile needs to exist
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);        // At least one tile needs to exist
 
     int nHt = 0;
     for (size_t i = size_t(0) ; i < tids.size() ; ++i)
@@ -79,12 +76,10 @@ CSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& t
     BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
     // only using DC for measurement, so const_cast safe
-    CClientDC pDC(const_cast<CTileBaseListBox2*>(this));
-    CRect rctItem(0, 0, 32000, 32000);
+    wxWindowDC pDC(const_cast<CTileBaseListBox2*>(this));
+    wxRect rctItem(0, 0, 32000, 32000);
 
-    pDC.SaveDC();
-
-    int x = rctItem.left + tileBorder;
+    int x = rctItem.GetLeft() + tileBorder;
 
     DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
     DrawItemDebugIDCode(pDC, nItem, rctItem, false, x);
@@ -93,51 +88,36 @@ CSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& t
         DrawTileImage(pDC, rctItem, false, x, tids[i]);
     }
 
-    pDC.RestoreDC(-1);
-
-    return CSize(x, nHt);
+    return wxSize(x, nHt);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState,
-    CRect rctItem, const std::vector<TileID>& tids) const
+void CTileBaseListBox2::DoOnDrawItem(wxDC& pDC, size_t nItem,
+    wxRect rctItem, const std::vector<TileID>& tids) const
 {
-    if (nAction & (ODA_DRAWENTIRE | ODA_SELECT))
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+
+    BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
+
+    pDC.SetClippingRegion(rctItem);
+
+    pDC.SetTextForeground(wxSystemSettings::GetColour(IsSelected(nItem) ?
+        wxSYS_COLOUR_HIGHLIGHTTEXT : wxSYS_COLOUR_WINDOWTEXT));
+
+    wxCoord x = rctItem.GetLeft() + tileBorder;
+
+    DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
+    DrawItemDebugIDCode(pDC, nItem, rctItem, TRUE, x);
+    for (size_t i = size_t(0); i < tids.size(); ++i)
     {
-        ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
-
-        BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
-
-        pDC.SaveDC();
-        pDC.IntersectClipRect(&rctItem);
-        pDC.SetBkMode(TRANSPARENT);
-
-        CBrush brBack(GetSysColor(nState & ODS_SELECTED ?
-            COLOR_HIGHLIGHT : COLOR_WINDOW));
-        pDC.FillRect(&rctItem, &brBack);       // Fill background color
-
-        pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
-            COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-
-        int x = rctItem.left + tileBorder;
-
-        DrawTipMarker(pDC, rctItem, bItemHasTipText, x);
-        DrawItemDebugIDCode(pDC, nItem, rctItem, TRUE, x);
-        for (size_t i = size_t(0); i < tids.size(); ++i)
-        {
-            DrawTileImage(pDC, rctItem, true, x, tids[i]);
-        }
-
-        pDC.RestoreDC(-1);
+        DrawTileImage(pDC, rctItem, true, x, tids[i]);
     }
-    if (nAction & ODA_FOCUS)
-        pDC.DrawFocusRect(&rctItem);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBox2::DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid) const
+void CTileBaseListBox2::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const
 {
     if (tid == nullTid)
         return;                             // Nothing to do
@@ -146,10 +126,7 @@ void CTileBaseListBox2::DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int
 
     if (bDrawIt)
     {
-        if (tile.GetHeight() >= 255)
-            tile.BitBlt(pDC, x, rctItem.top + tileBorder);// Too large. Don't draw vertically centered
-        else
-            tile.BitBlt(pDC, x, (rctItem.Height() - tile.GetHeight()) / 2 + rctItem.top);
+        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - tile.GetHeight()) / 2 + rctItem.GetTop());
     }
     x += tile.GetWidth() + tileGap;
 }
@@ -158,19 +135,20 @@ void CTileBaseListBox2::DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int
 // Optionally draw debug code string for item. If bDrawIt is false,
 // x is advanced the size of the string anyway but nothing is rendered
 
-void CTileBaseListBox2::DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x) const
+void CTileBaseListBox2::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const
 {
     if (m_bDisplayIDs)
     {
         CB::string str = OnGetItemDebugString(nItem);
 
-        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-        int y = rctItem.top + rctItem.Height() / 2 -
+        pDC.SetFont(g_res.h8ssWx);
+        wxCoord y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
             (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
         if (bDrawIt)
-            pDC.TextOut(x, y, str);
-        x += pDC.GetTextExtent(str).cx;
-        pDC.SelectObject(prvFont);
+        {
+            pDC.DrawText(str, CalcScrolledX(x), y);
+        }
+        x += pDC.GetTextExtent(str).x;
     }
 }
 
@@ -180,36 +158,32 @@ void CTileBaseListBox2::SetupTipMarkerIfRequired()
 {
     if (m_bTipMarkItems)
     {
-        ASSERT(m_hWnd != NULL);
-        if (m_sizeTipMark.cx == 0)
+        wxASSERT(GetHandle());
+        if (m_sizeTipMark.x == 0)
         {
             // Hasn't been initialized yet.
             m_strTipMark = CB::string::LoadString(IDS_TIP_LBOXITEM_MARKER);
 
-            CDC* pDC = GetDC();
+            wxWindowDC pDC(this);
 
-            CFont* prvFont = (CFont*)pDC->SelectObject(CFont::FromHandle(g_res.h8ss));
-            m_sizeTipMark.cx = pDC->GetTextExtent(m_strTipMark).cx;
-            m_sizeTipMark.cy = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
-            pDC->SelectObject(prvFont);
-
-            ReleaseDC(pDC);
+            pDC.SetFont(g_res.h8ssWx);
+            m_sizeTipMark.x = pDC.GetTextExtent(m_strTipMark).x;
+            m_sizeTipMark.y = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
         }
     }
 }
 
-void CTileBaseListBox2::DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const
+void CTileBaseListBox2::DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, int& x) const
 {
     if (m_bTipMarkItems)
     {
-        CFont* prvFont = (CFont*)pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
+        pDC.SetFont(g_res.h8ssWx);
         if (bVisible)   // Draw only if visible. Else just move 'x'
         {
-            int y = rctItem.top + (rctItem.Height() - m_sizeTipMark.cy) / 2;
-            pDC.TextOut(x, y, m_strTipMark);
+            wxCoord y = rctItem.GetTop() + (rctItem.GetHeight() - m_sizeTipMark.y) / 2;
+            pDC.DrawText(m_strTipMark, CalcScrolledX(x), y);
         }
-        x += m_sizeTipMark.cx;
-        pDC.SelectObject(prvFont);
+        x += m_sizeTipMark.x;
     }
 }
 
@@ -220,49 +194,41 @@ CB::string CTileBaseListBox2::OnGetItemDebugString(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::vector<CRect> CTileBaseListBox2::GetTileRectsForItem(size_t nItem,
+std::vector<wxRect> CTileBaseListBox2::GetTileRectsForItem(size_t nItem,
     const std::vector<TileID>& tids) const
 {
-    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
 
-    CRect rctItem;
-    GetItemRect(value_preserving_cast<int>(nItem), &rctItem);
+    wxRect rctItem = GetItemRect(nItem);
 
-    int x = rctItem.left + tileBorder;          // Set starting x position
+    wxCoord x = CalcScrolledX(rctItem.GetLeft()) + tileBorder;          // Set starting x position
 
     // Need to account for possible markers and debug strings
     // rendered to left of tile images
     // only using DC for measurement, so const_cast safe
-    CDC& pDC = CheckedDeref(const_cast<CTileBaseListBox2*>(this)->GetDC());
+    wxWindowDC pDC(const_cast<CTileBaseListBox2*>(this));
     DrawTipMarker(pDC, rctItem, FALSE, x);
     DrawItemDebugIDCode(pDC, nItem, rctItem, FALSE, x);
-    const_cast<CTileBaseListBox2*>(this)->ReleaseDC(&pDC);
 
-    std::vector<CRect> retval(tids.size());
+    std::vector<wxRect> retval(tids.size());
     for (size_t i = size_t(0) ; i < tids.size() ; ++i)
     {
-        retval[i].SetRectEmpty();
-        retval[i].top = rctItem.top;                  // Set the top & bottom values
-        retval[i].bottom = rctItem.bottom;
-        retval[i].left = x;
+        retval[i].SetTop(rctItem.GetTop());                  // Set the top & bottom values
+        retval[i].SetBottom(rctItem.GetBottom());
+        retval[i].SetLeft(x);
         DrawTileImage(pDC, rctItem, FALSE, x, tids[i]);
-        retval[i].right = x;
+        retval[i].SetRight(x);
     }
     return retval;
 }
 
-int CTileBaseListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
+void CTileBaseListBox2::OnCreate(wxWindowCreateEvent& event)
 {
-    int retval = CGrafixListBox2::OnCreate(lpCreateStruct);
-    if (retval == 0)
-    {
-        SetupTipMarkerIfRequired();
-    }
-    return retval;
+    event.Skip();
+    SetupTipMarkerIfRequired();
 }
 
 
-#endif
 /////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CTileBaseListBox2Mfc, CGrafixListBox2Mfc)
