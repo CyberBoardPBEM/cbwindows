@@ -2262,6 +2262,15 @@ namespace CB
         void SetReshow(long milliseconds);
         // set maximum width for the new tooltips: -1 disables wrapping
         void SetMaxWidth(int width);
+        /* WARNING:  balloon mode is ignored:
+                    wxTipWindow doesn't have a balloon shape,
+                    but wxRichToolTip doesn't support setting
+                    tip position, and demands title.  If we
+                    really want the balloon shape, we will have
+                    to implement the paint ourselves.  */
+        void SetBalloonMode(bool b) { balloon = b; }
+        void TrackActivate(bool b);
+        void TrackPosition(wxPoint p);
 
         void Add(wxWindow& wnd, const wxRect& rect,
                     wxString tip, Flags flags = NONE)
@@ -2295,6 +2304,7 @@ namespace CB
         int autopopMs = -1;
         int maxWidth = -1;
         bool enabled = false;
+        bool balloon = false;
 
         struct ToolInfo
         {

@@ -1076,6 +1076,7 @@ void CB::ToolTip::Add(wxWindow& wnd, std::optional<wxRect>&& rect,
     wxASSERT(!(flags & TRACK) || !"TRACK not implemented");
     // center shouldn't move, track should move
     wxASSERT((flags & (CENTER | TRACK)) != (CENTER | TRACK));
+    wxASSERT(!rect || !rect->IsEmpty());
 
     auto it = std::find_if(toolInfos.begin(), toolInfos.end(),
                             [&wnd](const ToolInfo& ti)
@@ -1090,6 +1091,9 @@ void CB::ToolTip::Add(wxWindow& wnd, std::optional<wxRect>&& rect,
     if (it == toolInfos.end())
     {
         wnd.Bind(wxEVT_MOTION, &ToolTip::OnMouseMove, this);
+        /* leaving the window may need to be handled
+            as a move to a location outside the tool */
+        wnd.Bind(wxEVT_LEAVE_WINDOW, &ToolTip::OnMouseMove, this);
     }
     toolInfos.emplace_back(wnd, std::move(rect), std::move(tip), flags);
     Enable(enabled);
@@ -1120,6 +1124,7 @@ void CB::ToolTip::Delete(wxWindow& wnd, std::optional<wxRect> rect)
     if (it == toolInfos.end())
     {
         wnd.Unbind(wxEVT_MOTION, &ToolTip::OnMouseMove, this);
+        wnd.Unbind(wxEVT_LEAVE_WINDOW, &ToolTip::OnMouseMove, this);
     }
 }
 
@@ -1186,6 +1191,12 @@ void CB::ToolTip::OnMouseMove(wxMouseEvent& event)
                                 return &ti.wnd.get() == &wnd &&
                                         (!ti.rect || ti.rect->Contains(pt));
                             });
+    if (it != toolInfos.end() &&
+        !it->rect &&
+        event.GetEventType() == wxEVT_LEAVE_WINDOW)
+    {
+        it = toolInfos.end();
+    }
 
     if (it != toolInfos.end())
     {
