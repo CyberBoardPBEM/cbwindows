@@ -47,26 +47,27 @@ const int timerScroll = 125;
 const uintptr_t timerScrollIDStart = 900;
 const int timerScrollID = 901;
 
-#if 0
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CGrafixListBox2, CListBox)
-    //{{AFX_MSG_MAP(CGrafixListBox2)
-    ON_WM_LBUTTONDOWN()
-    ON_WM_MOUSEMOVE()
-    ON_WM_LBUTTONUP()
+wxBEGIN_EVENT_TABLE(CGrafixListBox2, CB::VListBoxHScroll)
+    EVT_LEFT_DOWN(OnLButtonDown)
+    EVT_MOTION(OnMouseMove)
+    EVT_LEFT_UP(OnLButtonUp)
+#if 0
     ON_WM_TIMER()
-    ON_WM_CREATE()
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+#endif
+    EVT_WINDOW_CREATE(OnCreate)
+    EVT_DRAGDROP(OnDragItem)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
 CGrafixListBox2::CGrafixListBox2()
 {
     m_nLastInsert = -1;
+#if 0
     m_nTimerID = uintptr_t(0);
+#endif
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
@@ -87,50 +88,49 @@ void CGrafixListBox2::UpdateList(BOOL bKeepPosition /* = TRUE */)
 {
     if (m_pItemMap == NULL)
     {
-        ResetContent();
+        Clear();
         return;
     }
-    int nCurSel = GetCurSel();
-    int nTopIdx = GetTopIndex();
-    int nFcsIdx = GetCaretIndex();
-    int horzScroll = GetScrollPos(SB_HORZ);
-    SetRedraw(FALSE);
-    ResetContent();
+    int nCurSel = IsMultiSelect() ? wxNOT_FOUND : GetSelection();
+    size_t nTopIdx = GetVisibleRowsBegin();
+    int nFcsIdx = GetCurrent();
+    int horzScroll = GetScrollPos(wxHORIZONTAL);
+{
+    wxWindowUpdateLocker freezer(this);
+    Clear();
 
-    LONG width = 0;
-    int nItem;
-    for (nItem = 0; nItem < value_preserving_cast<int>(m_pItemMap->size()); nItem++)
-    {
-        AddString(" "_cbstring);             // Fill with dummy data
-        width = CB::max(width, OnItemSize(value_preserving_cast<size_t>(nItem)).cx);
-    }
-    SetHorizontalExtent(value_preserving_cast<int>(width));
+    size_t nItem = CB::max(size_t(1), m_pItemMap->size());
+    SetItemCount(m_pItemMap->size());
     if (bKeepPosition)
     {
-        if (nTopIdx >= 0)
-            SetTopIndex(std::min(nTopIdx, nItem - 1));
-        if (nFcsIdx >= 0)
-            SetCaretIndex(std::min(nFcsIdx, nItem - 1), FALSE);
-        if (nCurSel >= 0)
-            SetCurSel(std::min(nCurSel, nItem - 1));
+        ScrollToRow(CB::min(nTopIdx, nItem - size_t(1)));
+        if (nFcsIdx != wxNOT_FOUND)
+        {
+            SetCurrent(CB::min(nFcsIdx, value_preserving_cast<int>(nItem - size_t(1))));
+        }
+        if (nCurSel != wxNOT_FOUND)
+        {
+            SetSelection(CB::min(nCurSel, value_preserving_cast<int>(nItem - size_t(1))));
+        }
     }
-    SetRedraw(TRUE);
+}
     if (bKeepPosition)
     {
-        SendMessage(WM_HSCROLL, MAKELONG(int16_t(SB_THUMBPOSITION), value_preserving_cast<int16_t>(horzScroll)), NULL);
+        SetScrollPos(wxHORIZONTAL, horzScroll);
     }
-    Invalidate();
+    Refresh();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 const CDrawObj& CGrafixListBox2::MapIndexToItem(size_t nIndex) const
 {
-    ASSERT(m_pItemMap);
-    ASSERT(nIndex < m_pItemMap->size());
+    wxASSERT(m_pItemMap);
+    wxASSERT(nIndex < m_pItemMap->size());
     return *m_pItemMap->at(nIndex);
 }
 
+#if 0
 size_t CGrafixListBox2::MapItemToIndex(const CDrawObj& pItem) const
 {
     wxASSERT(!"dead code?");
@@ -260,27 +260,28 @@ void CGrafixListBox2::SetSelFromPoint(CPoint point)
         MAKELPARAM(static_cast<int16_t>(point.x), static_cast<int16_t>(point.y)));
     m_bAllowDrag = TRUE;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoToolTipHitProcessing(CPoint point)
+void CGrafixListBox2::DoToolTipHitProcessing(wxPoint point)
 {
     if (!OnIsToolTipsEnabled())
         return;
 
-    if (m_toolTip.m_hWnd == NULL)
-    {
-        m_toolTip.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
-        m_toolTip.SetMaxTipWidth(MAX_LISTITEM_TIP_WIDTH);
-    }
+    m_toolTip.SetMaxWidth(MAX_LISTITEM_TIP_WIDTH);
 
-    CRect rctTool;
+    wxRect rctTool;
     GameElement nItemCode = OnGetHitItemCodeAtPoint(point, rctTool);
 
     if (nItemCode != m_nCurItemCode)
     {
         // Object changed so delete previous tool definition
-        m_toolTip.DelTool(this, ID_TIP_LISTITEM_HIT);
+        if (!m_rectToolTip.IsEmpty())
+        {
+            m_toolTip.Delete(*this, m_rectToolTip);
+            m_rectToolTip = wxRect();
+        }
         m_nCurItemCode = nItemCode;
         if (nItemCode != Invalid_v<GameElement>)
         {
@@ -292,15 +293,17 @@ void CGrafixListBox2::DoToolTipHitProcessing(CPoint point)
 
             if (!strTip.empty())
             {
-                m_toolTip.AddTool(this, strTip, rctTool, ID_TIP_LISTITEM_HIT);
-                m_toolTip.Activate(TRUE);
+                m_toolTip.Add(*this, rctTool, strTip);
+                m_rectToolTip = rctTool;
+                m_toolTip.Enable(TRUE);
             }
         }
         else
-            m_toolTip.Activate(FALSE);
+            m_toolTip.Enable(FALSE);
     }
 }
 
+#if 0
 LRESULT CGrafixListBox2::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (m_toolTip.m_hWnd != NULL && message >= WM_MOUSEFIRST &&
@@ -338,35 +341,45 @@ void CGrafixListBox2::DrawItem(LPDRAWITEMSTRUCT lpDIS)
     CRect rct(lpDIS->rcItem);
     OnItemDraw(CheckedDeref(pDC), nIndex, lpDIS->itemAction, lpDIS->itemState, rct);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGrafixListBox2 Message Processing
 
-void CGrafixListBox2::OnLButtonDown(UINT nFlags, CPoint point)
+void CGrafixListBox2::OnLButtonDown(wxMouseEvent& event)
 {
-    CListBox::OnLButtonDown(nFlags, point); // Allow field selection
+    ExecutePostProcessEvents();
+    wxASSERT(!GetCapture());
+    event.Skip(); // Allow field selection
 
-    int nIdx;
-    if ((nIdx = GetCurSel()) == -1)
-        return;
-    if (m_bAllowDrag)
-    {
-        m_hLastWnd = NULL;
-        m_clickPoint = point;       // For hysteresis
-        m_triggeredCursor = FALSE;  // -Ditto-
-    }
+    PushPostProcessEvent([this, event]{
+        wxASSERT(GetCapture() == this);
+        if (GetSelectedCount() == 0)
+            return;
+        if (m_bAllowDrag)
+        {
+            wxASSERT(!"unreachable code");
+            m_hLastWnd = NULL;
+            m_clickPoint = event.GetPosition();       // For hysteresis
+            m_triggeredCursor = FALSE;  // -Ditto-
+        }
+    });
 }
 
-void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
+void CGrafixListBox2::OnLButtonUp(wxMouseEvent& event)
 {
+    ExecutePostProcessEvents();
+#if 0
     if (m_nTimerID)
     {
         KillTimer(m_nTimerID);
         m_nTimerID = uintptr_t(0);
     }
+#endif
     if (m_bAllowDrag)
     {
         ASSERT(!"unreachable code");
+#if 0
         BOOL bWasDragging = CWnd::GetCapture() == this;
         CListBox::OnLButtonUp(nFlags, point);
 
@@ -400,22 +413,27 @@ void CGrafixListBox2::OnLButtonUp(UINT nFlags, CPoint point)
             OnDragCleanup(di);             // Tell subclass we're all done.
             m_multiSelList.clear();
         }
+#endif
     }
     else
-        CListBox::OnLButtonUp(nFlags, point);
+    {
+        event.Skip();
+    }
 }
 
-void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
+void CGrafixListBox2::OnMouseMove(wxMouseEvent& event)
 {
-    if (CWnd::GetCapture() != this)
+    ExecutePostProcessEvents();
+    if (!HasCapture())
     {
         // Only process tool tips when we aren't draggin stuff around
-        DoToolTipHitProcessing(point);
+        DoToolTipHitProcessing(event.GetPosition());
     }
 
     if (m_bAllowDrag)
     {
-        ASSERT(!"unreachable code");
+        wxASSERT(!"unreachable code");
+#if 0
         if (CWnd::GetCapture() != this)
             return;
         // OK...We are dragging. Let's check if the cursor has been
@@ -475,13 +493,17 @@ void CGrafixListBox2::OnMouseMove(UINT nFlags, CPoint point)
             SetCursor(hCursor);
         else
             SetCursor(g_res.hcrNoDrop);
+#endif
     }
     else
-        CListBox::OnMouseMove(nFlags, point);
+    {
+        event.Skip();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 CWnd* CGrafixListBox2::GetWindowFromPoint(CPoint point) const
 {
     wxASSERT(!"dead code?");
@@ -499,25 +521,26 @@ CWnd* CGrafixListBox2::GetWindowFromPoint(CPoint point) const
 
     return pWnd->IsWindowVisible() ? pWnd : NULL;
 }
+#endif
 
-int CGrafixListBox2::OnCreate(LPCREATESTRUCT lpCreateStruct)
+void CGrafixListBox2::OnCreate(wxWindowCreateEvent& event)
 {
-    if (CListBox::OnCreate(lpCreateStruct) == -1)
-        return -1;
+    event.Skip();
 
     m_pItemMap = NULL;
+#if 0
     m_nTimerID = uintptr_t(0);
-
-    return 0;
+#endif
 }
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoInsertLineProcessing(const DragInfo& pdi)
+void CGrafixListBox2::DoInsertLineProcessing(const DragInfoWx& pdi)
 {
     if (m_bAllowDropScroll)
     {
         wxASSERT(!"dead code");
+#if 0
         // Handle drawing of insert line
         CPoint pnt = pdi.m_point;
         int nSel = SpecialItemFromPoint(pnt);
@@ -535,13 +558,16 @@ void CGrafixListBox2::DoInsertLineProcessing(const DragInfo& pdi)
         {
             DrawInsert(nSel);                   // Move insert line
         }
+#endif
     }
 }
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
+void CGrafixListBox2::DoAutoScrollProcessing(const DragInfoWx& pdi)
 {
+    wxASSERT(!m_bAllowDropScroll);
+#if 0
     if (m_bAllowDropScroll && m_nTimerID == uintptr_t(0))
     {
         wxASSERT(!"dead code");
@@ -555,14 +581,16 @@ void CGrafixListBox2::DoAutoScrollProcessing(const DragInfo& pdi)
             m_nTimerID = SetTimer(timerScrollIDStart, timerScrollStart, NULL);
         }
     }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////
 // Pass it up to the parent by default.
 
-LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CGrafixListBox2::OnDragItem(DragDropEvent& /*event*/)
 {
     wxASSERT(!"dead code");
+#if 0
     if (wParam != GetProcessId(GetCurrentProcess()))
     {
         return -1;
@@ -577,8 +605,10 @@ LRESULT CGrafixListBox2::OnDragItem(WPARAM wParam, LPARAM lParam)
     if (pdi.m_phase == PhaseDrag::Over && lResult != 0)
         DoAutoScrollProcessing(di);
     return lResult;
+#endif
 }
 
+#if 0
 void CGrafixListBox2::OnTimer(uintptr_t nIDEvent)
 {
     if (nIDEvent != m_nTimerID)
@@ -711,25 +741,31 @@ void CGrafixListBox2::DrawSingle(int nIndex)
     ReleaseDC(pDC);
 }
 
-CPoint CGrafixListBox2::ClientToItem(CPoint point) const
-{
-    // account for horz scroll
-    int xOffset = GetScrollPos(SB_HORZ);
-    ASSERT(xOffset >= 0);
-    point.x += xOffset;
-    return point;
-}
-
-CRect CGrafixListBox2::ItemToClient(CRect rect) const
-{
-    // account for horz scroll
-    int xOffset = GetScrollPos(SB_HORZ);
-    ASSERT(xOffset >= 0);
-    rect.OffsetRect(-xOffset, 0);
-    return rect;
-}
-
 #endif
+
+void CGrafixListBox2::PushPostProcessEvent(std::function<void ()>&& f)
+{
+    // I'm pretty sure we should have at most one partial event
+    /* TODO:  after confirming at most one,
+                convert to std::optional<> instead of queue<> */
+    wxASSERT(postProcessEvents.empty());
+    postProcessEvents.push(std::move(f));
+    CallAfter([this]{ ExecutePostProcessEvents(); });
+}
+
+void CGrafixListBox2::ExecutePostProcessEvents()
+{
+    // I'm pretty sure we should have at most one partial event
+    wxASSERT(postProcessEvents.size() <= 1);
+    while (!postProcessEvents.empty())
+    {
+        // need to pop before executing to avoid recursion
+        std::function<void ()> f = std::move(postProcessEvents.front());
+        postProcessEvents.pop();
+        f();
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CGrafixListBox2Mfc, CListBox)
