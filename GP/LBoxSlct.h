@@ -41,7 +41,7 @@
 
 class CGamDoc;
 
-#if 0
+#if 1
 /////////////////////////////////////////////////////////////////////////////
 
 class CSelectListBox : public CTileBaseListBox2
@@ -72,31 +72,28 @@ protected:
     std::vector<TileID> GetTileIDs(size_t nIndex) const;
 
     // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
+    wxSize GetItemSize(size_t nIndex) const override;
+    void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
+    virtual BOOL OnDragSetup(DragInfoWx& pDI) const override;
 
     virtual CB::string OnGetItemDebugString(size_t nItem) const override;
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
+    virtual GameElement OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const override;
 private:
     typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide) const;
-    GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const;
+    GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, wxPoint point, wxRect& rct) const;
 public:
     virtual CB::string OnGetTipTextForItemCode(GameElement nItemCode) const override;
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
-    //{{AFX_MSG(CSelectListBox)
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
-    afx_msg BOOL OnActTurnOver(UINT id);
-    afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    void OnDragItem(DragDropEvent& event);
+    void OnContextMenu(wxContextMenuEvent& event);
+    void OnInitMenuPopup(wxMenuEvent& event);
+    void OnActTurnOver(wxCommandEvent& event);
+    void OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI);
+    wxDECLARE_EVENT_TABLE();
 
 private:
     const CPlayBoardView& GetBoardView() const;
@@ -104,6 +101,8 @@ private:
     {
         return const_cast<CPlayBoardView&>(std::as_const(*this).GetBoardView());
     }
+
+    wxDECLARE_DYNAMIC_CLASS(CSelectListBox);
 };
 
 #endif

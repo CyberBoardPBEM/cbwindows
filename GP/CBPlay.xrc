@@ -3028,6 +3028,26 @@
     </object>
     <object class="wxMenu" name="MENU_PV_SELCT_BOX">
       <label>8=PV__SELCT__BOX</label>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+        <label>_Next</label>
+        <accel></accel>
+        <help>Turn the selected piece over to the next side</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER_PREV">
+        <label>_Prev</label>
+        <accel></accel>
+        <help>Turn the selected piece over to the prev side</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER_RANDOM">
+        <label>_Random</label>
+        <accel></accel>
+        <help>Turn the selected piece over to a random side</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER_SELECT">
+        <label>_Clicked Side</label>
+        <accel></accel>
+        <help>Turn the clicked piece over to the clicked side</help>
+      </object>
     </object>
   </object>
 </resource>
