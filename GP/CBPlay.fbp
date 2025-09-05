@@ -15789,6 +15789,58 @@
         <property name="label">8=PV_SELCT_BOX</property>
         <property name="name">MENU_PV_SELCT_BOX</property>
         <property name="permission">protected</property>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Turn the selected piece over to the next side</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">&amp;Next</property>
+          <property name="name">ID_ACT_TURNOVER</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Turn the selected piece over to the prev side</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">&amp;Prev</property>
+          <property name="name">ID_ACT_TURNOVER_PREV</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Turn the selected piece over to a random side</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">&amp;Random</property>
+          <property name="name">ID_ACT_TURNOVER_RANDOM</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
+        <object class="wxMenuItem" expanded="false">
+          <property name="bitmap"></property>
+          <property name="checked">0</property>
+          <property name="enabled">1</property>
+          <property name="help">Turn the clicked piece over to the clicked side</property>
+          <property name="id">wxID_ANY</property>
+          <property name="kind">wxITEM_NORMAL</property>
+          <property name="label">&amp;Clicked Side</property>
+          <property name="name">ID_ACT_TURNOVER_SELECT</property>
+          <property name="permission">none</property>
+          <property name="shortcut"></property>
+          <property name="unchecked_bitmap"></property>
+        </object>
       </object>
     </object>
   </object>

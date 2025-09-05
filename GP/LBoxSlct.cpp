@@ -42,38 +42,38 @@
 const int tileBorder = 3;
 const int tileGap = 6;
 
-#if 0
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CSelectListBox, CTileBaseListBox2)
-    //{{AFX_MSG_MAP(CSelectListBox)
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
-    ON_WM_CONTEXTMENU()
-    ON_WM_INITMENUPOPUP()
-    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_SELECT, OnActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_SELECT, OnUpdateActTurnOver)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+wxIMPLEMENT_DYNAMIC_CLASS(CSelectListBox, CTileBaseListBox2);
+
+wxBEGIN_EVENT_TABLE(CSelectListBox, CTileBaseListBox2)
+    EVT_DRAGDROP(OnDragItem)
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU_OPEN(OnInitMenuPopup)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_PREV"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_RANDOM"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_SELECT"), OnActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_PREV"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_RANDOM"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_SELECT"), OnUpdateActTurnOver)
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
 const CTileManager& CSelectListBox::GetTileManager() const
 {
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
     return m_pDoc->GetTileManager();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
+BOOL CSelectListBox::OnDragSetup(DragInfoWx& pDI) const
 {
-    ASSERT(!"untested code");
+    wxASSERT(!"untested code");
+#if 0
     if (GetCount() <= 1)
     {
         pDI.SetDragType(DRAG_INVALID);
@@ -82,7 +82,7 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
 
     if (!IsMultiSelect())
     {
-        ASSERT(!"unreachable code");
+        wxASSERT(!"unreachable code");
         /* if this ever happens, rewrite like LBoxGrfx w/
             list/single distinction
         m_multiSelList.clear();
@@ -93,23 +93,26 @@ BOOL CSelectListBox::OnDragSetup(DragInfo& pDI) const
     pDI.GetSubInfo<DRAG_SELECTVIEW>().m_ptrArray = &GetMappedMultiSelectList();
     pDI.m_hcsrSuggest = g_res.hcrDragTile;
     pDI.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc = &*m_pDoc;
+#endif
     return TRUE;
 }
 
-LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CSelectListBox::OnDragItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        wxASSERT(!"bad event process");
+        return;
     }
-    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
+    const DragInfoWx& pdi = event.GetDragInfo();
 
     DoInsertLineProcessing(pdi);
 
     if (pdi.GetDragType() != DRAG_SELECTVIEW)
-        return -1;               // Only our drops allowed
+        return;               // Only our drops allowed
 
     ASSERT(!"untested code");
+#if 0
     if (pdi.GetSubInfo<DRAG_SELECTVIEW>().m_gamDoc != m_pDoc)
         return -1;               // Only pieces from our document.
 
@@ -130,40 +133,44 @@ LRESULT CSelectListBox::OnDragItem(WPARAM wParam, LPARAM lParam)
         }
     }
     return 1;
+#endif
 }
 
-void CSelectListBox::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
+void CSelectListBox::OnContextMenu(wxContextMenuEvent& event)
 {
+    const wxPoint& point = event.GetPosition();
     // remember clicked side in case of ID_ACT_TURNOVER_SELECT
-    CPoint clientPoint(point);
-    ScreenToClient(&clientPoint);
-    CRect rect;
+    wxPoint clientPoint(point);
+    clientPoint = ScreenToClient(clientPoint);
+    wxRect rect;
     menuGameElement = OnGetHitItemCodeAtPoint(&CGamDoc::GetGameElementCodeForObject, clientPoint, rect);
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(MENU_PV_SELCT_BOX);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu("8=PV_SELCT_BOX");
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_LEFTBUTTON |
-                                    TPM_LEFTALIGN |
-                                    TPM_RIGHTBUTTON,
-                point.x, point.y, this); // Route commands through tray window
+            PopupMenu(&*popup, clientPoint);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
     else
     {
-        ASSERT(!"LoadMenu error");
+        wxASSERT(!"LoadMenuBar error");
     }
 }
 
-void CSelectListBox::OnInitMenuPopup(CMenu* pMenu, UINT /*nIndex*/, BOOL bSysMenu)
+void CSelectListBox::OnInitMenuPopup(wxMenuEvent& event)
 {
+#if 0
     // based on CFrameWnd::OnInitMenuPopup()
     ASSERT(!bSysMenu);
 
@@ -216,77 +223,82 @@ void CSelectListBox::OnInitMenuPopup(CMenu* pMenu, UINT /*nIndex*/, BOOL bSysMen
         }
         state.m_nIndexMax = nCount;
     }
+#else
+    event.Skip();
+#endif
 }
 
-BOOL CSelectListBox::OnActTurnOver(UINT id)
+void CSelectListBox::OnActTurnOver(wxCommandEvent& event)
 {
+    int id = event.GetId();
     CPlayBoardView& view = GetBoardView();
-    switch (id)
+    if (id == XRCID("ID_ACT_TURNOVER") ||
+        id == XRCID("ID_ACT_TURNOVER_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        case ID_ACT_TURNOVER:
-        case ID_ACT_TURNOVER_PREV:
-        case ID_ACT_TURNOVER_RANDOM:
-        {
-            bool b = view.OnCmdMsg(id, CN_COMMAND, nullptr, nullptr);
-            wxASSERT(b);
-            return b;
-        }
-        case ID_ACT_TURNOVER_SELECT:
-        {
-            const CPlayBoard& playBoard = CheckedDeref(view.GetPlayBoard());
+        CB_VERIFY(CB::RelayProcessEvent(view, event));
+        return;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
+    {
+        const CPlayBoard& playBoard = CheckedDeref(view.GetPlayBoard());
 
-            m_pDoc->AssignNewMoveGroup();
+        m_pDoc->AssignNewMoveGroup();
 
-            PieceID pid = static_cast<PieceID>(menuGameElement);
-            auto it = std::find_if(GetItemMap()->begin(),
-                                    GetItemMap()->end(),
-                                    [pid](const RefPtr<CDrawObj>& drawObj)
+        PieceID pid = static_cast<PieceID>(menuGameElement);
+        auto it = std::find_if(GetItemMap()->begin(),
+                                GetItemMap()->end(),
+                                [pid](const RefPtr<CDrawObj>& drawObj)
+                                {
+                                    if (drawObj->GetType() != CDrawObj::drawPieceObj)
                                     {
-                                        if (drawObj->GetType() != CDrawObj::drawPieceObj)
-                                        {
-                                            return false;
-                                        }
-                                        const CPieceObj& pieceObj = static_cast<const CPieceObj&>(*drawObj);
-                                        return pieceObj.m_pid == pid;
-                                    });
-            wxASSERT(it != GetItemMap()->end());
-            const CDrawObj& drawObj = **it;
-            wxASSERT(drawObj.GetType() == CDrawObj::drawPieceObj);
-            const CPieceObj& pieceObj = static_cast<const CPieceObj&>(drawObj);
-            size_t side = menuGameElement.GetSide();
-            m_pDoc->InvertPlayingPieceOnBoard(pieceObj, playBoard, CPieceTable::fSelect, side);
+                                        return false;
+                                    }
+                                    const CPieceObj& pieceObj = static_cast<const CPieceObj&>(*drawObj);
+                                    return pieceObj.m_pid == pid;
+                                });
+        wxASSERT(it != GetItemMap()->end());
+        const CDrawObj& drawObj = **it;
+        wxASSERT(drawObj.GetType() == CDrawObj::drawPieceObj);
+        const CPieceObj& pieceObj = static_cast<const CPieceObj&>(drawObj);
+        size_t side = menuGameElement.GetSide();
+        m_pDoc->InvertPlayingPieceOnBoard(pieceObj, playBoard, CPieceTable::fSelect, side);
 
-            return true;
-        }
-        default:
-            AfxThrowInvalidArgException();
+        return;
+    }
+    else
+    {
+        AfxThrowInvalidArgException();
     }
 }
 
-void CSelectListBox::OnUpdateActTurnOver(CCmdUI* pCmdUI)
+void CSelectListBox::OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI)
 {
-    switch (pCmdUI->m_nID)
+    int id = pCmdUI.GetId();
+    if (id == XRCID("ID_ACT_TURNOVER") ||
+        id == XRCID("ID_ACT_TURNOVER_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        case ID_ACT_TURNOVER:
-        case ID_ACT_TURNOVER_PREV:
-        case ID_ACT_TURNOVER_RANDOM:
-            pCmdUI->DoUpdate(&GetBoardView(), TRUE);
-            break;
-        case ID_ACT_TURNOVER_SELECT:
+        CB_VERIFY(CB::RelayProcessEvent(GetBoardView(), pCmdUI));
+        return;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
+    {
+        bool enable = menuGameElement != Invalid_v<GameElement> &&
+                    menuGameElement.IsAPiece();
+        pCmdUI.Enable(enable);
+#if 0
+        if (pCmdUI->m_pSubMenu != NULL)
         {
-            bool enable = menuGameElement != Invalid_v<GameElement> &&
-                        menuGameElement.IsAPiece();
-            pCmdUI->Enable(enable);
-            if (pCmdUI->m_pSubMenu != NULL)
-            {
-                // Need to handle menu that the submenu is connected to.
-                pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
-                    MF_BYPOSITION | (enable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
-            }
-            break;
+            // Need to handle menu that the submenu is connected to.
+            pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
+                MF_BYPOSITION | (enable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
         }
-        default:
-            AfxThrowInvalidArgException();
+#endif
+    }
+    else
+    {
+        AfxThrowInvalidArgException();
     }
 }
 
@@ -298,32 +310,33 @@ BOOL CSelectListBox::OnIsToolTipsEnabled() const
     return m_pDoc->IsShowingObjectTips();
 }
 
-GameElement CSelectListBox::OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const
+GameElement CSelectListBox::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
 {
     return OnGetHitItemCodeAtPoint(&CGamDoc::GetVerifiedGameElementCodeForObject, point, rct);
 }
 
-GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const
+GameElement CSelectListBox::OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, wxPoint point, wxRect& rct) const
 {
     point = ClientToItem(point);
 
-    BOOL bOutsideClient;
-    UINT nIndex = ItemFromPoint(point, bOutsideClient);
-    if (nIndex >= 65535 || GetCount() <= 0)
+    int nIndex = VirtualHitTest(point.y);
+    if (nIndex == wxNOT_FOUND)
+    {
         return Invalid_v<GameElement>;
+    }
 
-    std::vector<TileID> tids = GetTileIDs(nIndex);
-    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+    std::vector<TileID> tids = GetTileIDs(value_preserving_cast<size_t>(nIndex));
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
 
-    std::vector<CRect> rcts = GetTileRectsForItem(value_preserving_cast<size_t>(nIndex), tids);
+    std::vector<wxRect> rcts = GetTileRectsForItem(value_preserving_cast<size_t>(nIndex), tids);
 
     for (size_t i = size_t(0); i < rcts.size(); ++i)
     {
-        ASSERT(!rcts[i].IsRectEmpty());
-        if (rcts[i].PtInRect(point))
+        wxASSERT(!rcts[i].IsEmpty());
+        if (rcts[i].Contains(point))
         {
             rct = ItemToClient(rcts[i]);
-            const CDrawObj& pObj = MapIndexToItem(nIndex);
+            const CDrawObj& pObj = MapIndexToItem(value_preserving_cast<size_t>(nIndex));
             if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
                 const CPieceObj& pieceObj = static_cast<const CPieceObj&>(pObj);
@@ -398,26 +411,21 @@ CB::string CSelectListBox::OnGetItemDebugString(size_t nIndex) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-CSize CSelectListBox::OnItemSize(size_t nIndex) const
+wxSize CSelectListBox::GetItemSize(size_t nIndex) const
 {
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
 
     std::vector<TileID> tids = GetTileIDs(nIndex);
-    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
 
     return DoOnItemSize(nIndex, tids);
 }
 
-void CSelectListBox::OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-    CRect rctItem) const
+void CSelectListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
-    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-drawitemstruct
-    if (nIndex == size_t(UINT(-1)))
-        return;                 // Nothing to draw.
-
     std::vector<TileID> tids = GetTileIDs(nIndex);
-    ASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
-    DoOnDrawItem(pDC, nIndex, nAction, nState, rctItem, tids);
+    wxASSERT(!tids.empty() && tids[size_t(0)] != nullTid);
+    DoOnDrawItem(pDC, nIndex, rctItem, tids);
 }
 
 // retval[0] is active face, followed by inactives
@@ -468,19 +476,21 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
     }
     else
     {
-        ASSERT(FALSE);                              // Shouldn't happen
+        wxASSERT(FALSE);                              // Shouldn't happen
         return std::vector<TileID>();
     }
 }
 
 const CPlayBoardView& CSelectListBox::GetBoardView() const
 {
-    CFrameWnd& frame = CheckedDeref(AFXGetParentFrame(this));
+    wxWindow& view = CheckedDeref(GetParent());
+    wxWindow& container = CheckedDeref(view.GetParent());
+    CWnd& cwndContainer = CheckedDeref(CB::ToCWnd(container));
+    CFrameWnd& frame = CheckedDeref(AFXGetParentFrame(&cwndContainer));
     const CPlayBoardFrame& pbrdFrame = CheckedDeref(DYNAMIC_DOWNCAST(CPlayBoardFrame, &frame));
     return pbrdFrame.GetActiveBoardView();
 }
 
-#endif
 /////////////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(CSelectListBoxMfc, CTileBaseListBox2Mfc)

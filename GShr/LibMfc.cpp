@@ -1318,6 +1318,14 @@ namespace CB
 #if defined(GPLAY)
                 switch (id)
                 {
+                    case ID_ACT_TURNOVER:
+                        return XRCID("ID_ACT_TURNOVER");
+                    case ID_ACT_TURNOVER_PREV:
+                        return XRCID("ID_ACT_TURNOVER_PREV");
+                    case ID_ACT_TURNOVER_RANDOM:
+                        return XRCID("ID_ACT_TURNOVER_RANDOM");
+                    case ID_ACT_TURNOVER_SELECT:
+                        return XRCID("ID_ACT_TURNOVER_SELECT");
                     case ID_EDIT_BRDPROP:
                         return XRCID("ID_EDIT_BRDPROP");
                     case ID_PPROJITEM_DELETE:
@@ -1562,6 +1570,10 @@ namespace CB
             { XRCID("ID_TOOLS_ROT180"), ID_TOOLS_ROT180 },
             { XRCID("ID_TOOLS_ROT270"), ID_TOOLS_ROT270 },
 #else
+            { XRCID("ID_ACT_TURNOVER"), ID_ACT_TURNOVER },
+            { XRCID("ID_ACT_TURNOVER_PREV"), ID_ACT_TURNOVER_PREV },
+            { XRCID("ID_ACT_TURNOVER_RANDOM"), ID_ACT_TURNOVER_RANDOM },
+            { XRCID("ID_ACT_TURNOVER_SELECT"), ID_ACT_TURNOVER_SELECT },
             { XRCID("ID_EDIT_CREATE_GEOMORPHIC"), ID_EDIT_CREATE_GEOMORPHIC },
             { XRCID("ID_EDIT_CREATETRAY"), ID_EDIT_CREATETRAY },
             { XRCID("ID_EDIT_SELECTBOARDS"), ID_EDIT_SELECTBOARDS },
