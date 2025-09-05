@@ -34,7 +34,7 @@
 #include    "Tile.h"
 #endif
 
-#if 0
+#if 1
 ///////////////////////////////////////////////////////////////////////
 
 class CTileBaseListBox2 : public CGrafixListBox2
@@ -51,21 +51,21 @@ protected:
 
     BOOL        m_bTipMarkItems;
     CB::string  m_strTipMark;
-    CSize       m_sizeTipMark;
+    wxSize      m_sizeTipMark;
 
 // Helpers...
 protected:
-    void DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid) const;
-    void DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x) const;
+    void DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const;
+    void DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const;
 
     void SetupTipMarkerIfRequired();
-    void DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const;
+    void DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, int& x) const;
 
-    CSize DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const;
-    void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
+    wxSize DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const;
+    void DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
         const std::vector<TileID>& tids) const;
 
-    std::vector<CRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
+    std::vector<wxRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
 
 // Overrides...
 public:
@@ -79,10 +79,8 @@ protected:
     virtual const void* OnGetItemDebugIDCode(size_t nItem) const /* override */ { return &MapIndexToItem(nItem); }
     virtual CB::string OnGetItemDebugString(size_t nItem) const /* override */;
 
-    //{{AFX_MSG(CTileBaseListBox)
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    void OnCreate(wxWindowCreateEvent& event);
+    wxDECLARE_EVENT_TABLE();
 };
 
 
