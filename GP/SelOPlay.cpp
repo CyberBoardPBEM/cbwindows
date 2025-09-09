@@ -629,6 +629,14 @@ void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTb
         pDwg->ArrangeObjectPtrTableInDrawOrder(pTbl);
 }
 
+void CSelList::LoadTableWithObjectPtrs(std::vector<RefPtr<CDrawObj>>& pTbl, ObjTypes objTypes,
+    BOOL bVisualOrder)
+{
+    std::vector<CB::not_null<CDrawObj*>> temp;
+    LoadTableWithObjectPtrs(temp, objTypes, bVisualOrder);
+    pTbl = ToRefPtr(temp);
+}
+
 BOOL CSelList::HasPieces() const
 {
     for (const_iterator pos = begin() ; pos != end() ; ++pos)

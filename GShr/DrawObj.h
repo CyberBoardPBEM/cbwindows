@@ -1104,7 +1104,7 @@ public:
     iterator Find(const CDrawObj& drawObj);
     // NOTE:  See WARNING: above
     void RemoveObject(const CDrawObj& pDrawObj);
-    void RemoveObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst);
+    void RemoveObjectsInList(const std::vector<RefPtr<CDrawObj>>& pLst);
     void AddToBack(CDrawObj::OwnerPtr pDrawObj) { push_front(std::move(pDrawObj)); }
     void AddToFront(CDrawObj::OwnerPtr pDrawObj) { push_back(std::move(pDrawObj)); }
     CDrawObj& Front() { return *back(); }
@@ -1124,9 +1124,11 @@ public:
     void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const;
     void ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const;
 #endif
-    void ArrangeObjectListInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pLst);
-    void ArrangeObjectListInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pLst);
+    void ArrangeObjectListInDrawOrder(std::vector<RefPtr<CDrawObj>>& pLst);
+    void ArrangeObjectListInVisualOrder(std::vector<RefPtr<CDrawObj>>& pLst);
+    void ArrangeObjectPtrTableInDrawOrder(std::vector<RefPtr<CDrawObj>>& pTbl) const;
     void ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
+    void ArrangeObjectPtrTableInVisualOrder(std::vector<RefPtr<CDrawObj>>& pTbl) const;
     void ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const;
 #ifdef GPLAY
     void SetOwnerMasks(PlayerMask dwOwnerMask);

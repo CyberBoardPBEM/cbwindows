@@ -74,7 +74,7 @@ CGrafixListBox2::CGrafixListBox2()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBox2::SetItemMap(const std::vector<CB::not_null<CDrawObj*>>* pMap,
+void CGrafixListBox2::SetItemMap(const std::vector<RefPtr<CDrawObj>>* pMap,
     BOOL bKeepPosition /* = TRUE */)
 {
     m_pItemMap = pMap;

@@ -231,10 +231,10 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
-        const std::vector<CB::not_null<CDrawObj*>>& pPtrList = CheckedDeref(ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList);
+        const std::vector<RefPtr<CDrawObj>>& pPtrList = CheckedDeref(ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList);
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
-            CDrawObj& pDObj = *pPtrList[i];
+            const CDrawObj& pDObj = *pPtrList[i];
             CRect rct = pDObj.GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(&rct);
         }
@@ -359,7 +359,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         // Save the select list
         if (!m_selList.empty())
         {
-            std::vector<CB::not_null<CDrawObj*>> tblObjPtrs;
+            std::vector<RefPtr<CDrawObj>> tblObjPtrs;
             m_selList.LoadTableWithObjectPtrs(tblObjPtrs, CSelList::otPiecesMarks, TRUE);
             ar << value_preserving_cast<DWORD>(tblObjPtrs.size());
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
@@ -1228,7 +1228,7 @@ void CPlayBoardView::OnEditClear()
     if (AfxMessageBox(IDS_WARN_DELETEMARKERS, MB_YESNO | MB_ICONQUESTION) != IDYES)
         return;
 
-    std::vector<CB::not_null<CDrawObj*>> listPtr;
+    std::vector<RefPtr<CDrawObj>> listPtr;
     m_selList.LoadTableWithObjectPtrs(listPtr, CSelList::otAll, FALSE);
     m_selList.PurgeList(TRUE);                  // Purge selections
     GetDocument()->AssignNewMoveGroup();
@@ -1458,7 +1458,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    std::vector<CB::not_null<CDrawObj*>> tblObjs;
+    std::vector<RefPtr<CDrawObj>> tblObjs;
     m_selList.LoadTableWithObjectPtrs(tblObjs, CSelList::otPiecesMarks, TRUE);
 
     m_selList.PurgeList(TRUE);              // Purge former selections
@@ -1473,8 +1473,8 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     // Create a shuffled table of objects...
     std::vector<CB::not_null<CDrawObj*>> tblRandObjs;
     tblRandObjs.reserve(tblObjs.size());
-    for (int i = 0; i < value_preserving_cast<int>(tblObjs.size()); i++)
-        tblRandObjs.push_back(tblObjs[value_preserving_cast<size_t>(pnIndices[i])]);
+    for (size_t i = size_t(0); i < tblObjs.size(); i++)
+        tblRandObjs.emplace_back(&*tblObjs[value_preserving_cast<size_t>(pnIndices[i])]);
 
     pDoc->AssignNewMoveGroup();
 

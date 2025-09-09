@@ -60,7 +60,7 @@ public:
     void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
     void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
     void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-    const std::vector<CB::not_null<CDrawObj*>>* GetItemMap() const { return m_pItemMap; }
+    const std::vector<RefPtr<CDrawObj>>* GetItemMap() const { return m_pItemMap; }
     const CDrawObj& GetCurMapItem() const;
     std::vector<CB::not_null<const CDrawObj*>> GetCurMappedItemList() const;
     BOOL IsMultiSelect() const
@@ -76,7 +76,7 @@ public:
 
 // Operations
 public:
-    void SetItemMap(const std::vector<CB::not_null<CDrawObj*>>* pMap, BOOL bKeepPosition = TRUE);
+    void SetItemMap(const std::vector<RefPtr<CDrawObj>>* pMap, BOOL bKeepPosition = TRUE);
     void UpdateList(BOOL bKeepPosition = TRUE);
     void SetCurSelMapped(const CDrawObj& pMapVal);
     void SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items);
@@ -111,7 +111,7 @@ public:
 protected:
     /* N.B.:  this class could be templatized to hold any pointer,
                 but that generality isn't actually needed yet */
-    const std::vector<CB::not_null<CDrawObj*>>* m_pItemMap;          // Maps index to item
+    const std::vector<RefPtr<CDrawObj>>* m_pItemMap;          // Maps index to item
     std::vector<CB::not_null<const CDrawObj*>> m_multiSelList;      // Holds mapped multi select items on drop
 
     // Tool tip support

@@ -239,6 +239,8 @@ public:
     enum ObjTypes { otInvalid, otPieces, otPiecesMarks, otAll };
     void LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTbl, ObjTypes objTypes,
         BOOL bVisualOrder);
+    void LoadTableWithObjectPtrs(std::vector<RefPtr<CDrawObj>>& pTbl, ObjTypes objTypes,
+        BOOL bVisualOrder);
     void LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrder = TRUE);
     // -------- //
     enum LoadFilter { LF_NOTOWNED, LF_OWNED, LF_BOTH };

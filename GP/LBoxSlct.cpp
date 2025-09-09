@@ -227,7 +227,7 @@ BOOL CSelectListBox::OnActTurnOver(UINT id)
         case ID_ACT_TURNOVER_RANDOM:
         {
             bool b = view.OnCmdMsg(id, CN_COMMAND, nullptr, nullptr);
-            ASSERT(b);
+            wxASSERT(b);
             return b;
         }
         case ID_ACT_TURNOVER_SELECT:
@@ -239,19 +239,19 @@ BOOL CSelectListBox::OnActTurnOver(UINT id)
             PieceID pid = static_cast<PieceID>(menuGameElement);
             auto it = std::find_if(GetItemMap()->begin(),
                                     GetItemMap()->end(),
-                                    [pid](CB::not_null<CDrawObj*> drawObj)
+                                    [pid](const RefPtr<CDrawObj>& drawObj)
                                     {
                                         if (drawObj->GetType() != CDrawObj::drawPieceObj)
                                         {
                                             return false;
                                         }
-                                        CPieceObj& pieceObj = static_cast<CPieceObj&>(*drawObj);
+                                        const CPieceObj& pieceObj = static_cast<const CPieceObj&>(*drawObj);
                                         return pieceObj.m_pid == pid;
                                     });
-            ASSERT(it != GetItemMap()->end());
-            CDrawObj& drawObj = **it;
-            ASSERT(drawObj.GetType() == CDrawObj::drawPieceObj);
-            CPieceObj& pieceObj = static_cast<CPieceObj&>(drawObj);
+            wxASSERT(it != GetItemMap()->end());
+            const CDrawObj& drawObj = **it;
+            wxASSERT(drawObj.GetType() == CDrawObj::drawPieceObj);
+            const CPieceObj& pieceObj = static_cast<const CPieceObj&>(drawObj);
             size_t side = menuGameElement.GetSide();
             m_pDoc->InvertPlayingPieceOnBoard(pieceObj, playBoard, CPieceTable::fSelect, side);
 

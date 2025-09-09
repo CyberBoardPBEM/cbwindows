@@ -2649,4 +2649,18 @@ namespace CB
         dc.DrawEllipse(temp);
     }
 }
+
+template<typename T>
+std::vector<RefPtr<T>> ToRefPtr(const std::vector<CB::not_null<T*>>& v)
+{
+    static_assert(!std::is_const_v<T>);
+    std::vector<RefPtr<T>> retval;
+    retval.reserve(v.size());
+    for (size_t i = size_t(0) ; i < v.size() ; ++i)
+    {
+        // v[i] is not_null, so this is safe
+        retval.emplace_back(&*v[i]);
+    }
+    return retval;
+}
 #endif
