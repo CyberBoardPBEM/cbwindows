@@ -741,7 +741,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
         else        // DRAG_SELECTLIST
         {
             ASSERT(pdi->GetDragType() == DRAG_SELECTLIST);
-            std::vector<CB::not_null<CDrawObj*>> m_listPtr;
+            std::vector<RefPtr<CDrawObj>> m_listPtr;
             CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
             pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
             pSLst->PurgeList(FALSE);

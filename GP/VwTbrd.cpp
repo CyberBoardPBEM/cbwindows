@@ -112,10 +112,10 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
         wxASSERT(!"untested code");
-        const std::vector<CB::not_null<CDrawObj*>>& pPtrList = *ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList;
+        const std::vector<RefPtr<CDrawObj>>& pPtrList = *ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList;
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
-            CDrawObj& pDObj = *pPtrList[i];
+            const CDrawObj& pDObj = *pPtrList[i];
             wxRect rct = CB::Convert(pDObj.GetEnclosingRect());  // In board coords.
             InvalidateWorkspaceRect(rct);
         }

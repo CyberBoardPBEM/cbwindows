@@ -2141,12 +2141,12 @@ void CDrawList::DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj
     }
 }
 
-void CDrawList::ArrangeObjectListInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pLst)
+void CDrawList::ArrangeObjectListInDrawOrder(std::vector<RefPtr<CDrawObj>>& pLst)
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    std::vector<CB::not_null<CDrawObj*>> tmpLst;
+    std::vector<RefPtr<CDrawObj>> tmpLst;
 
     for (iterator pos = begin() ; pos != end() ; ++pos)
     {
@@ -2157,12 +2157,12 @@ void CDrawList::ArrangeObjectListInDrawOrder(std::vector<CB::not_null<CDrawObj*>
     pLst = std::move(tmpLst);
 }
 
-void CDrawList::ArrangeObjectListInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pLst)
+void CDrawList::ArrangeObjectListInVisualOrder(std::vector<RefPtr<CDrawObj>>& pLst)
 {
     // Loop backwards through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    std::vector<CB::not_null<CDrawObj*>> tmpLst;
+    std::vector<RefPtr<CDrawObj>> tmpLst;
 
     for (reverse_iterator pos = rbegin() ; pos != rend() ; ++pos)
     {
@@ -2229,12 +2229,12 @@ void CDrawList::ArrangePieceTableInVisualOrder(std::vector<PieceID>& pTbl) const
     pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const
+void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<RefPtr<CDrawObj>>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    std::vector<CB::not_null<CDrawObj*>> tmpTbl;
+    std::vector<RefPtr<CDrawObj>> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
     for (const_iterator pos = begin(); pos != end(); ++pos)
@@ -2244,7 +2244,7 @@ void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawO
         {
             if (pTbl.at(i) == &pDObj)
             {
-                tmpTbl.push_back(pTbl.at(i));
+                tmpTbl.push_back(&*pTbl.at(i));
                 break;
             }
         }
@@ -2254,12 +2254,23 @@ void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawO
     pTbl = std::move(tmpTbl);
 }
 
-void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const
+void CDrawList::ArrangeObjectPtrTableInDrawOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const
+{
+    std::vector<RefPtr<CDrawObj>> temp = ToRefPtr(pTbl);
+    ArrangeObjectPtrTableInDrawOrder(temp);
+    pTbl.clear();
+    for (size_t i = size_t(0) ; i < temp.size() ; ++i)
+    {
+        pTbl.emplace_back(&*temp[i]);
+    }
+}
+
+void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<RefPtr<CDrawObj>>& pTbl) const
 {
     // Loop through the drawing list looking for objects that are
     // selected. Add them to a local list. When done, purge the caller's
     // list and transfer temp list to the callers list.
-    std::vector<CB::not_null<CDrawObj*>> tmpTbl;
+    std::vector<RefPtr<CDrawObj>> tmpTbl;
     tmpTbl.reserve(pTbl.size());
 
     for (const_reverse_iterator pos = rbegin(); pos != rend(); ++pos)
@@ -2269,14 +2280,25 @@ void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDra
         {
             if (pTbl.at(i) == &pDObj)
             {
-                tmpTbl.push_back(pTbl.at(i));
+                tmpTbl.emplace_back(&*pTbl.at(i));
                 break;
             }
         }
     }
-    ASSERT(tmpTbl.size() == pTbl.size());
+    wxASSERT(tmpTbl.size() == pTbl.size());
     pTbl.clear();
     pTbl = std::move(tmpTbl);
+}
+
+void CDrawList::ArrangeObjectPtrTableInVisualOrder(std::vector<CB::not_null<CDrawObj*>>& pTbl) const
+{
+    std::vector<RefPtr<CDrawObj>> temp = ToRefPtr(pTbl);
+    ArrangeObjectPtrTableInVisualOrder(temp);
+    pTbl.clear();
+    for (size_t i = size_t(0) ; i < temp.size() ; ++i)
+    {
+        pTbl.emplace_back(&*temp[i]);
+    }
 }
 
 #endif // GPLAY
@@ -2292,11 +2314,11 @@ CDrawList::iterator CDrawList::Find(const CDrawObj& drawObj)
 }
 
 // NOTE:  RemoveObject* do not erase
-void CDrawList::RemoveObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst)
+void CDrawList::RemoveObjectsInList(const std::vector<RefPtr<CDrawObj>>& pLst)
 {
     for (size_t i = size_t(0) ; i < pLst.size() ; ++i)
     {
-        CDrawObj& pDObj = *pLst[i];
+        const CDrawObj& pDObj = *pLst[i];
         RemoveObject(pDObj);
     }
 }
