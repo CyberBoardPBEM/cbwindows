@@ -1389,11 +1389,7 @@ void CBrdEditView::OnUpdateToolPalette(wxUpdateUIEvent& pCmdUI)
 
     if (pCmdUI.GetId() == XRCID("ID_TOOL_TILE"))
     {
-#if 0
         tid = GetDocument().GetTilePalWnd().GetCurrentTileID();
-#else
-        tid = nullTid;
-#endif
         bEnable = tid != nullTid;
         if (tid == nullTid && m_nCurToolID == XRCID("ID_TOOL_TILE"))
         {
