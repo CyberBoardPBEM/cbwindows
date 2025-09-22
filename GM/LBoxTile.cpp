@@ -34,6 +34,7 @@ const int tileBorder = 3;
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 BEGIN_MESSAGE_MAP(CTileListBox, CGrafixListBox)
     //{{AFX_MSG_MAP(CTileListBox)
     //}}AFX_MSG_MAP
@@ -171,6 +172,7 @@ BOOL CTileListBox::OnDragSetup(DragInfo& pDI) const
     }
     return TRUE;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

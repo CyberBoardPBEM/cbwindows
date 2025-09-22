@@ -41,7 +41,6 @@
 
 class CGamDoc;
 
-#if 1
 /////////////////////////////////////////////////////////////////////////////
 
 class CSelectListBox : public CTileBaseListBox2
@@ -106,69 +105,3 @@ private:
 };
 
 #endif
-/////////////////////////////////////////////////////////////////////////////
-
-class CSelectListBoxMfc : public CTileBaseListBox2Mfc
-{
-// Construction
-public:
-    CSelectListBoxMfc()
-    {
-        m_pDoc = NULL;
-    }
-
-// Attributes
-public:
-    virtual const CTileManager& GetTileManager() const override;
-
-// Operations
-public:
-    void SetDocument(CGamDoc& pDoc) { CTileBaseListBox2Mfc::SetDocument(pDoc); m_pDoc = &pDoc; }
-
-// Implementation
-protected:
-    CB::propagate_const<CGamDoc*> m_pDoc;
-
-    GameElement menuGameElement = Invalid_v<GameElement>;
-
-    // Misc
-    // retval[0] is active face, followed by inactives
-    std::vector<TileID> GetTileIDs(size_t nIndex) const;
-
-    // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-
-    virtual CB::string OnGetItemDebugString(size_t nItem) const override;
-
-    // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() const override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
-private:
-    typedef GameElement (CGamDoc::*GetGameElementCodeForObject_t)(const CDrawObj& pDObj, size_t nSide) const;
-    GameElement OnGetHitItemCodeAtPoint(GetGameElementCodeForObject_t func, CPoint point, CRect& rct) const;
-public:
-    virtual CB::string OnGetTipTextForItemCode(GameElement nItemCode) const override;
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
-
-    //{{AFX_MSG(CSelectListBox)
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
-    afx_msg BOOL OnActTurnOver(UINT id);
-    afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-
-private:
-    const CPlayBoardView& GetBoardView() const;
-    CPlayBoardView& GetBoardView()
-    {
-        return const_cast<CPlayBoardView&>(std::as_const(*this).GetBoardView());
-    }
-};
-
-#endif
-
