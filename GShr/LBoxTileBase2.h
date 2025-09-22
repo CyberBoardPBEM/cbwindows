@@ -34,7 +34,6 @@
 #include    "Tile.h"
 #endif
 
-#if 1
 ///////////////////////////////////////////////////////////////////////
 
 class CTileBaseListBox2 : public CGrafixListBox2
@@ -81,58 +80,6 @@ protected:
 
     void OnCreate(wxWindowCreateEvent& event);
     wxDECLARE_EVENT_TABLE();
-};
-
-
-#endif
-///////////////////////////////////////////////////////////////////////
-
-class CTileBaseListBox2Mfc : public CGrafixListBox2Mfc
-{
-public:
-    CTileBaseListBox2Mfc();
-
-    void SetTipMarkVisibility(BOOL bShow = TRUE) { m_bTipMarkItems = bShow; }
-    BOOL GetTipMarkVisibility() const { return m_bTipMarkItems; }
-
-// Vars...
-protected:
-    int         m_bDisplayIDs;              // Set by property [Settings]:DisplayIDs
-
-    BOOL        m_bTipMarkItems;
-    CB::string  m_strTipMark;
-    CSize       m_sizeTipMark;
-
-// Helpers...
-protected:
-    void DrawTileImage(CDC& pDC, CRect rctItem, BOOL bDrawIt, int& x, TileID tid) const;
-    void DrawItemDebugIDCode(CDC& pDC, size_t nItem, CRect rctItem, BOOL bDrawIt, int& x) const;
-
-    void SetupTipMarkerIfRequired();
-    void DrawTipMarker(CDC& pDC, CRect rctItem, BOOL bVisible, int& x) const;
-
-    CSize DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const;
-    void DoOnDrawItem(CDC& pDC, size_t nItem, UINT nAction, UINT nState, CRect rctItem,
-        const std::vector<TileID>& tids) const;
-
-    std::vector<CRect> GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const;
-
-// Overrides...
-public:
-    virtual const CTileManager& GetTileManager() const /* override */ = 0;
-
-// Overrides...
-protected:
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const /* override */ { return FALSE; }
-
-    // Subclass should only override one of these if any...
-    virtual const void* OnGetItemDebugIDCode(size_t nItem) const /* override */ { return &MapIndexToItem(nItem); }
-    virtual CB::string OnGetItemDebugString(size_t nItem) const /* override */;
-
-    //{{AFX_MSG(CTileBaseListBox)
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
 };
 
 

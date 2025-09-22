@@ -44,7 +44,6 @@ class CDrawObj;
 /////////////////////////////////////////////////////////////////////////////
 // Custom Listbox - containing colors
 
-#if 1
 class CGrafixListBox2 : public CB::VListBoxHScroll
 {
 // Construction
@@ -179,121 +178,5 @@ private:
     void ExecutePostProcessEvents();
     std::queue<std::function<void()>> postProcessEvents;
 };
-#endif
-
-class CGrafixListBox2Mfc : public CListBox
-{
-// Construction
-public:
-    CGrafixListBox2Mfc();
-
-// Attributes
-public:
-    int  GetTopSelectedItem() const;
-    void EnableDrag(BOOL bEnable = TRUE) { m_bAllowDrag = bEnable; }
-    void EnableSelfDrop(BOOL bEnable = TRUE) { m_bAllowSelfDrop = bEnable; }
-    void EnableDropScroll(BOOL bEnable = TRUE) { m_bAllowDropScroll = bEnable; }
-    const std::vector<RefPtr<CDrawObj>>* GetItemMap() const { return m_pItemMap; }
-    const CDrawObj& GetCurMapItem() const;
-    std::vector<CB::not_null<const CDrawObj*>> GetCurMappedItemList() const;
-    BOOL IsMultiSelect() const
-        { return (GetStyle() & (LBS_EXTENDEDSEL | LBS_MULTIPLESEL)) != 0; }
-    // Note: the following pointer is only good during drag and drop.
-    // the data is only good during the drop. It is essentially a
-    // hack to have valid data when selecting items with Shift-Click.
-    // Ask Microsoft why I had to do this. The number of selections
-    // data in the case of a shift click isn't valid until the button
-    // is released. Makes it tough to use a pre setup list during the
-    // drag operation.
-    const std::vector<CB::not_null<const CDrawObj*>>& GetMappedMultiSelectList() const { return m_multiSelList; }
-
-// Operations
-public:
-    void SetItemMap(const std::vector<RefPtr<CDrawObj>>* pMap, BOOL bKeepPosition = TRUE);
-    void UpdateList(BOOL bKeepPosition = TRUE);
-    void SetCurSelMapped(const CDrawObj& pMapVal);
-    void SetCurSelsMapped(const std::vector<CB::not_null<CDrawObj*>>& items);
-    void SetSelFromPoint(CPoint point);
-    void ShowFirstSelection();
-    const CDrawObj& MapIndexToItem(size_t nIndex) const;
-    CDrawObj& MapIndexToItem(size_t nIndex)
-    {
-        return const_cast<CDrawObj&>(std::as_const(*this).MapIndexToItem(nIndex));
-    }
-    size_t MapItemToIndex(const CDrawObj& pItem) const;
-    void MakeItemVisible(int nItem);
-
-// Overrides - the subclass of this class must override these
-public:
-    virtual CSize OnItemSize(size_t nIndex) const /* override */ = 0;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const /* override */ = 0;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const /* override */
-    {
-        pDI.SetDragType(DRAG_INVALID);
-        return FALSE;
-    }
-    virtual void OnDragCleanup(const DragInfo& pDI) const /* override */ { }
-
-    // For tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() const /* override */ { return FALSE; }
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const /* override */ { return Invalid_v<GameElement>; }
-    virtual CB::string OnGetTipTextForItemCode(GameElement nItemCode) const /* override */ { return CB::string(); }
-
-// Implementation
-protected:
-    /* N.B.:  this class could be templatized to hold any pointer,
-                but that generality isn't actually needed yet */
-    const std::vector<RefPtr<CDrawObj>>* m_pItemMap;          // Maps index to item
-    std::vector<CB::not_null<const CDrawObj*>> m_multiSelList;      // Holds mapped multi select items on drop
-
-    // Tool tip support
-    CToolTipCtrl m_toolTip;
-    GameElement m_nCurItemCode;
-
-    // Drag and scroll support vars
-    BOOL    m_bAllowDrag;
-    BOOL    m_bAllowSelfDrop;       // Only if m_bAllowDrag == TRUE
-    BOOL    m_bAllowDropScroll;     // Scroll on OnDragItem
-
-    CPoint  m_clickPoint;
-    uintptr_t m_nTimerID;
-    BOOL    m_triggeredCursor;
-    HWND    m_hLastWnd;
-
-    int     m_nLastInsert;          // Last index with insert line
-
-    void  SetDocument(CGamDoc& doc) { m_pDoc = &doc; }
-    void  DoInsertLineProcessing(const DragInfo& pdi);
-    void  DoAutoScrollProcessing(const DragInfo& pdi);
-    void  DoToolTipHitProcessing(CPoint point);
-
-    CWnd* GetWindowFromPoint(CPoint point) const;
-    int   SpecialItemFromPoint(CPoint pnt) const;
-    void  DrawInsert(int nIndex);
-    void  DrawSingle(int nIndex);
-
-    CPoint ClientToItem(CPoint point) const;
-    CRect ItemToClient(CRect rect) const;
-
-    // Overrides
-    virtual void MeasureItem(LPMEASUREITEMSTRUCT lpMIS) override;
-    virtual void DrawItem(LPDRAWITEMSTRUCT lpDIS) override;
-    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
-
-    //{{AFX_MSG(CGrafixListBox2)
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnTimer(uintptr_t nIDEvent);
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-
-private:
-    CB::propagate_const<CGamDoc*> m_pDoc = nullptr;
-};
-
 #endif
 
