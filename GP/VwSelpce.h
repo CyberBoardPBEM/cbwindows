@@ -31,11 +31,12 @@ class CPlayBoard;
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView view
 
-class CSelectedPieceView : public CView
+class CSelectedPieceView : public CB::ProcessEventOverride<wxPanel>
 {
 private:
     friend class CSelectedPieceViewContainer;
-    CSelectedPieceView();           // protected constructor used by dynamic creation
+    typedef CB::ProcessEventOverride<wxPanel> BASE;
+    CSelectedPieceView(CSelectedPieceViewContainer& parent);
 
 // Attributes
 private:
@@ -45,45 +46,54 @@ private:
 public:
 
 // Implementation
+private:
+    RefPtr<CSelectedPieceViewContainer> parent;
+    RefPtr<CGamDoc> document;
 protected:
-    CB::propagate_const<CPlayBoard*> m_pPBoard;      // Board that contains selections
+    RefPtr<CPlayBoard> m_pPBoard;      // Board that contains selections
 
-    CSelectListBoxMfc  m_listSel;
+    // owned by wx
+    RefPtr<CSelectListBox> m_listSel;
     std::vector<RefPtr<CDrawObj>> m_tblSel;
-    CToolTipCtrl    m_toolTip;
+    CB::ToolTip    m_toolTip;
 
 // Implementation
 protected:
     void ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedItems);
 
     ~CSelectedPieceView() override;
-    void OnDraw(CDC* pDC) override;      // overridden to draw this view
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-    BOOL PreTranslateMessage(MSG* pMsg) override;
+    void OnInitialUpdate();     // first time after construct
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
-// Generated message map functions
 protected:
-    //{{AFX_MSG(CSelectedPieceView)
+#if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+#endif
+    void OnSize(wxSizeEvent& event);
+#if 0
     afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
-    afx_msg int OnVKeyToItem(UINT nKey, CListBox* pListBox, UINT nIndex);
-    //}}AFX_MSG
-    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnVKeyToItem(wxKeyEvent& event);
+    void OnMessageWindowState(WinStateEvent& event);
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override;
 };
 
 #ifndef _DEBUG  // debug version in vwselpce.cpp
 inline CGamDoc& CSelectedPieceView::GetDocument()
-   { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
+   { return *document; }
 #endif
 
-class CSelectedPieceViewContainer : public CView
+class CSelectedPieceViewContainer : public CB::OnCmdMsgOverride<CView>,
+                                    public CB::wxNativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;
+
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
     CSelectedPieceViewContainer();         // used by dynamic creation
@@ -95,6 +105,19 @@ private:
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CSelectedPieceView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CSelectedPieceView*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+inline CCmdTarget& CSelectedPieceView::Get()
+{
+    return *parent;
+}
