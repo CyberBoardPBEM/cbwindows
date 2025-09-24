@@ -301,7 +301,7 @@ BOOL CGpApp::InitInstance()
         IDR_GP_BOARDVIEW,
         RUNTIME_CLASS(CGamDoc),
         RUNTIME_CLASS(CPlayBoardFrame),
-        RUNTIME_CLASS(CPlayBoardView));
+        RUNTIME_CLASS(CPlayBoardViewContainer));
 
     EnableLoadWindowPlacement(FALSE);
 
