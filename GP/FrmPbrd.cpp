@@ -443,7 +443,16 @@ CCbSplitterWnd& CPlayBoardFrame::GetBoardSplitter()
 const CPlayBoardView& CPlayBoardFrame::GetActiveBoardView() const
 {
     CCbSplitterWnd& pSplitWnd = CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
-    return CheckedDeref((CPlayBoardView*)pSplitWnd.GetActivePane());
+    const CWnd* view = GetActiveView();
+    if (view &&
+        view->IsKindOf(RUNTIME_CLASS(CPlayBoardView)) &&
+        view->GetParent()->GetParent() == &pSplitWnd)
+    {
+        return static_cast<const CPlayBoardView&>(*view);
+    }
+    const CWnd& wnd = CheckedDeref(pSplitWnd.GetActivePane());
+    const CPlayBoardViewContainer& container = dynamic_cast<const CPlayBoardViewContainer&>(wnd);
+    return static_cast<const CPlayBoardView&>(container);
 }
 
 void CPlayBoardFrame::OnViewHalfScaleBrd()

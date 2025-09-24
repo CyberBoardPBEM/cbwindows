@@ -49,7 +49,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CPlayBoardView, CScrollView)
+IMPLEMENT_DYNAMIC(CPlayBoardView, CScrollView)
+IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -149,6 +150,12 @@ BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
     ON_MESSAGE(WM_SELECT_BOARD_OBJLIST, OnMessageSelectBoardObjectList)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CView)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2559,4 +2566,48 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
 
         return bResult;
     }
+}
+
+void CPlayBoardViewContainer::OnDraw(CDC* pDC)
+{
+    // do nothing because child covers entire client rect
+}
+
+CPlayBoardViewContainer::CPlayBoardViewContainer() :
+    child(new CPlayBoardView)
+{
+}
+
+int CPlayBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CView::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
+    // Create with the right size (wrong position)
+    CRect rect;
+    GetClientRect(rect);
+    CCreateContext context;
+    context.m_pCurrentDoc = GetDocument();
+    if (!child->Create(NULL, NULL, dwStyle,
+                        rect, this, 0, &context))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+void CPlayBoardViewContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CView::OnSize(nType, cx, cy);
+}
+
+LRESULT CPlayBoardViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+{
+    child->SendMessage(WM_WINSTATE, wParam, lParam);
+    return (LRESULT)1;
 }

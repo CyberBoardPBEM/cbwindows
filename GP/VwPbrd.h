@@ -45,9 +45,10 @@ class CPlayBoardView : public CScrollView
 {
     friend class CPlayBoardFrame;
 
-protected: // create from serialization only
+public:
     CPlayBoardView();
-    DECLARE_DYNCREATE(CPlayBoardView)
+protected:
+    DECLARE_DYNAMIC(CPlayBoardView)
 
 // Attributes
 public:
@@ -284,6 +285,29 @@ public:
 inline const CGamDoc& CPlayBoardView::GetDocument() const
    { return *CB::ToCGamDoc(m_pDocument); }
 #endif
+
+class CPlayBoardViewContainer : public CView
+{
+public:
+    void OnDraw(CDC* pDC) override;
+    operator const CPlayBoardView&() const { return *child; }
+    operator CPlayBoardView&()
+    {
+        return const_cast<CPlayBoardView&>(static_cast<const CPlayBoardView&>(std::as_const(*this)));
+    }
+
+private:
+    CPlayBoardViewContainer();         // used by dynamic creation
+    DECLARE_DYNCREATE(CPlayBoardViewContainer)
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
+
+    // owned by MFC
+    RefPtr<CPlayBoardView> child;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 
