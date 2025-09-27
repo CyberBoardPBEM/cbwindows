@@ -129,12 +129,12 @@ CRect CSelection::GetHandleRect(int nHandleID) const
     CPoint point = GetHandleLoc(nHandleID);
 
     // Convert point to client coords
-    m_pView->WorkspaceToClient(point);
+    point = m_pView->WorkspaceToClient(point);
 
     // Calc CRect of handle in device coords
     CRect rect(point.x-3, point.y-3, point.x+3, point.y+3);
 
-    m_pView->ClientToWorkspace(rect);
+    rect = m_pView->ClientToWorkspace(rect);
 
     return rect;
 }
@@ -249,9 +249,9 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
         CRect rctB;
         pObj.GetLine(rctB);
         rctB.NormalizeRect();
-        m_pView->WorkspaceToClient(rctB);
+        rctB = m_pView->WorkspaceToClient(rctB);
         rctB.InflateRect(handleHalfWidth, handleHalfWidth);
-        m_pView->ClientToWorkspace(rctB);
+        rctB = m_pView->ClientToWorkspace(rctB);
         rctA |= rctB;       // Make sure we erase the handles
         m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
     }
@@ -315,9 +315,9 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     if (bInvalidate)
     {
         CRect rct = m_pObj->GetRect();
-        m_pView->WorkspaceToClient(rct);
+        rct = m_pView->WorkspaceToClient(rct);
         rct.InflateRect(handleHalfWidth, handleHalfWidth);
-        m_pView->ClientToWorkspace(rct);
+        rct = m_pView->ClientToWorkspace(rct);
         m_pView->InvalidateWorkspaceRect(&rct);
     }
     if (bUpdateObjectExtent)
@@ -621,7 +621,7 @@ void CSelList::LoadTableWithObjectPtrs(std::vector<CB::not_null<CDrawObj*>>& pTb
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
+    CDrawList* pDwg = m_pView->GetPlayBoard().GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
         pDwg->ArrangeObjectPtrTableInVisualOrder(pTbl);
@@ -650,7 +650,7 @@ BOOL CSelList::HasPieces() const
 
 BOOL CSelList::HasNonOwnedPieces() const
 {
-    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument().GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
@@ -666,7 +666,7 @@ BOOL CSelList::HasNonOwnedPieces() const
 
 BOOL CSelList::HasOwnedPieces() const
 {
-    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument().GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
@@ -682,7 +682,7 @@ BOOL CSelList::HasOwnedPieces() const
 
 BOOL CSelList::HasOwnedPiecesNotMatching(PlayerMask dwOwnerMask) const
 {
-    const CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
+    const CPieceTable& pPTbl = m_pView->GetDocument().GetPieceTable();
     for (const_iterator pos = begin() ; pos != end() ; ++pos)
     {
         const CSelection& pSel = **pos;
@@ -717,7 +717,7 @@ BOOL CSelList::HasFlippablePieces() const
         const CSelection& pSel = **pos;
         if (pSel.m_pObj->GetType() == CDrawObj::drawPieceObj)
         {
-            if (m_pView->GetDocument()->GetPieceTable().GetSides(
+            if (m_pView->GetDocument().GetPieceTable().GetSides(
                     static_cast<const CPieceObj&>(*pSel.m_pObj).m_pid) >= size_t(2))
                 return TRUE;
         }
@@ -780,7 +780,7 @@ void CSelList::LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrd
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
+    CDrawList* pDwg = m_pView->GetPlayBoard().GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
         pDwg->ArrangePieceTableInVisualOrder(pTbl);
@@ -791,7 +791,7 @@ void CSelList::LoadTableWithPieceIDs(std::vector<PieceID>& pTbl, BOOL bVisualOrd
 void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadFilter eWantOwned,
     BOOL bVisualOrder /* = TRUE */)
 {
-    CPieceTable& pPTbl = m_pView->GetDocument()->GetPieceTable();
+    CPieceTable& pPTbl = m_pView->GetDocument().GetPieceTable();
 
     pTbl.clear();
     pTbl.reserve(size());
@@ -814,7 +814,7 @@ void CSelList::LoadTableWithOwnerStatePieceIDs(std::vector<PieceID>& pTbl, LoadF
     // This is a bit of a cheat....Since we know the originating view and
     // thus the board associated with it, we can call the draw list
     // method the arrange the pieces in the proper visual order.
-    CDrawList* pDwg = m_pView->GetPlayBoard()->GetPieceList();
+    CDrawList* pDwg = m_pView->GetPlayBoard().GetPieceList();
     ASSERT(pDwg != NULL);
     if (bVisualOrder)
         pDwg->ArrangePieceTableInVisualOrder(pTbl);

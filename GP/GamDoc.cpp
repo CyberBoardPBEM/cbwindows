@@ -551,7 +551,7 @@ CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
         CPlayBoardView* pView = (CPlayBoardView*)GetNextView(pos);
         if (pView->IsKindOf(RUNTIME_CLASS(CPlayBoardView)))
         {
-            if (pView->GetPlayBoard() == &pPBoard)
+            if (&pView->GetPlayBoard() == &pPBoard)
                 return pView;
         }
     }

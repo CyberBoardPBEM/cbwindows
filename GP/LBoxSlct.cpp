@@ -241,7 +241,7 @@ void CSelectListBox::OnActTurnOver(wxCommandEvent& event)
     }
     else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
     {
-        const CPlayBoard& playBoard = CheckedDeref(view.GetPlayBoard());
+        const CPlayBoard& playBoard = view.GetPlayBoard();
 
         m_pDoc->AssignNewMoveGroup();
 

@@ -1,6 +1,6 @@
 // VwPbrd.h : interface of the CPlayBoardView class
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -51,26 +51,26 @@ protected: // create from serialization only
 
 // Attributes
 public:
-    const CGamDoc* GetDocument() const;
-    CGamDoc* GetDocument() { return const_cast<CGamDoc*>(std::as_const(*this).GetDocument()); }
-    const CPlayBoard* GetPlayBoard() const { return m_pPBoard.get(); }
-    CPlayBoard* GetPlayBoard() { return const_cast<CPlayBoard*>(std::as_const(*this).GetPlayBoard()); }
+    const CGamDoc& GetDocument() const;
+    CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
+    const CPlayBoard& GetPlayBoard() const { return CheckedDeref(m_pPBoard); }
+    CPlayBoard& GetPlayBoard() { return const_cast<CPlayBoard&>(std::as_const(*this).GetPlayBoard()); }
 
 // Operations
 public:
 
 // Implementation
 public:
-    virtual ~CPlayBoardView();
-    virtual void OnDraw(CDC* pDC) override;      // Overridden to draw this view
+    ~CPlayBoardView() override;
+    void OnDraw(CDC* pDC) override;      // Overridden to draw this view
 
 // Tools and selection support
 public:
     CSelList    m_selList;              // List of selected objects.
 
     void NotifySelectListChange();
-    const CSelList* GetSelectList() const { return &m_selList; }
-    CSelList* GetSelectList() { return const_cast<CSelList*>(std::as_const(*this).GetSelectList()); }
+    const CSelList& GetSelectList() const { return m_selList; }
+    CSelList& GetSelectList() { return const_cast<CSelList&>(std::as_const(*this).GetSelectList()); }
     CPoint GetWorkspaceDim() const;
 
     void AddDrawObject(CDrawObj::OwnerPtr pObj);
@@ -79,8 +79,8 @@ public:
     void PrepareScaledDC(CDC& pDC, CRect* pRct = NULL, BOOL bHonor180Flip = FALSE) const;
     void OnPrepareScaledDC(CDC& pDC, BOOL bHonor180Flip = FALSE);
 
-    void AdjustPoint(CPoint& pnt) const;      // Limit and grid processing
-    void AdjustRect(CRect& rct) const;
+    [[nodiscard]] CPoint AdjustPoint(CPoint pnt) const;      // Limit and grid processing
+    [[nodiscard]] CRect AdjustRect(CRect rct) const;
 
     void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
     void SelectAllUnderPoint(CPoint point);
@@ -97,10 +97,10 @@ public:
 
 // Coordinate scaling...
 public:
-    void WorkspaceToClient(CPoint& point) const;
-    void WorkspaceToClient(CRect& rect) const;
-    void ClientToWorkspace(CPoint& point) const;
-    void ClientToWorkspace(CRect& rect) const;
+    [[nodiscard]] CPoint WorkspaceToClient(CPoint point) const;
+    [[nodiscard]] CRect WorkspaceToClient(CRect rect) const;
+    [[nodiscard]] CPoint ClientToWorkspace(CPoint point) const;
+    [[nodiscard]] CRect ClientToWorkspace(CRect rect) const;
     void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
 
 // View support
@@ -126,14 +126,14 @@ public:
 protected:
     BOOL IsGridizeActive() const;
 #ifdef WIN32
-    void GridizeX(long& xPos) const;
-    void GridizeY(long& yPos) const;
+    [[nodiscard]] long GridizeX(long xPos) const;
+    [[nodiscard]] long GridizeY(long yPos) const;
 #else
     void GridizeX(int& xPos) const;
     void GridizeY(int& yPos) const;
 #endif
-    void LimitPoint(POINT& pPnt) const;
-    void LimitRect(RECT& pRct) const;
+    [[nodiscard]] POINT LimitPoint(POINT pPnt) const;
+    [[nodiscard]] RECT LimitRect(RECT pRct) const;
     BOOL IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK = NULL, BOOL* pbYOK = NULL) const;
 
 // Implementation
@@ -156,8 +156,7 @@ protected:
     CPoint      m_pntWheelMid;      // The wheel rotation point
     std::vector<uint16_t> m_tblCurAngles;     // Original angles of pieces
     std::vector<RefPtr<CDrawObj>> m_tblCurPieces;     // Pieces being rotated
-    CUIntArray  m_tblXMidPnt;       // X coord of piece midpoint
-    CUIntArray  m_tblYMidPnt;       // Y coord of piece midpoint
+    std::vector<CPoint> m_tblMidPnt;       // X coord of piece midpoint
 
 // Implementation
 protected:
@@ -170,10 +169,10 @@ protected:
     void SetupDrawListDC(CDC& pDC, CRect& pRct) const;
     void RestoreDrawListDC(CDC& pDC) const;
 
-    LRESULT DoDragPiece(DragInfo& pdi);
-    LRESULT DoDragMarker(DragInfo& pdi);
-    LRESULT DoDragPieceList(DragInfo& pdi);
-    LRESULT DoDragSelectList(DragInfo& pdi);
+    LRESULT DoDragPiece(const DragInfo& pdi);
+    LRESULT DoDragMarker(const DragInfo& pdi);
+    LRESULT DoDragPieceList(const DragInfo& pdi);
+    LRESULT DoDragSelectList(const DragInfo& pdi);
 
     void DragDoAutoScroll();
     void DragCheckAutoScroll();
@@ -185,12 +184,12 @@ protected:
     BOOL DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point);
 
 protected:
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-    virtual BOOL PreTranslateMessage(MSG* pMsg);
-    virtual void OnActivateView(BOOL bActivate, CView* pActivateView,
-                    CView* pDeactiveView);
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    BOOL PreTranslateMessage(MSG* pMsg) override;
+    void OnActivateView(BOOL bActivate, CView* pActivateView,
+                    CView* pDeactiveView) override;
 
 // Generated message map functions
 protected:
@@ -282,8 +281,8 @@ public:
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
-inline const CGamDoc* CPlayBoardView::GetDocument() const
-   { return CB::ToCGamDoc(m_pDocument); }
+inline const CGamDoc& CPlayBoardView::GetDocument() const
+   { return *CB::ToCGamDoc(m_pDocument); }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
