@@ -669,7 +669,7 @@ void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     if (IsQuietPlayback()) return;
     CPlayBoardView* pView = (CPlayBoardView*)FindPBoardView(pPBoard);
     ASSERT(pView != NULL);
-    pView->WorkspaceToClient(pointWorkspace);
+    pointWorkspace = pView->WorkspaceToClient(pointWorkspace);
     pView->SetNotificationTip(pointWorkspace, &pszStr);
 }
 

@@ -191,14 +191,14 @@ void CPlayBoardView::OnInitialUpdate()
     m_toolHitTip.SetMaxTipWidth(MAX_PLAYBOARD_TIP_WIDTH);
     m_pCurTipObj = NULL;
 
-    m_pPBoard = (CPlayBoard*)GetDocument()->GetNewViewParameter();
+    m_pPBoard = (CPlayBoard*)GetDocument().GetNewViewParameter();
 
     if (m_pPBoard == NULL)
     {
         // See if we can get our playing board from the (0, 0) pane in the splitter.
         CSplitterWndEx* pParent = (CSplitterWndEx*)GetParent();
         CPlayBoardView* pPlay = (CPlayBoardView*)pParent->GetPane(0, 0);
-        m_pPBoard = pPlay->GetPlayBoard();
+        m_pPBoard = &pPlay->GetPlayBoard();
     }
 
     ASSERT(m_pPBoard != NULL);
@@ -216,7 +216,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_BOARDCHANGE)
     {
         // Make sure we still exist!
-        if (GetDocument()->GetPBoardManager().FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
+        if (GetDocument().GetPBoardManager().FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
         {
             CFrameWnd* pFrm = GetParentFrame();
             ASSERT(pFrm != NULL);
@@ -315,7 +315,7 @@ void CPlayBoardView::NotifySelectListChange()
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard.get();
     hint.GetArgs<HINT_UPDATESELECT>().m_pSelList = &m_selList;
-    GetDocument()->UpdateAllViews(this, HINT_UPDATESELECT, &hint);
+    GetDocument().UpdateAllViews(this, HINT_UPDATESELECT, &hint);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
             for (size_t i = 0; i < tblObjPtrs.size(); i++)
             {
                 CDrawObj& pObj = *tblObjPtrs.at(i);
-                ar << GetDocument()->GetGameElementCodeForObject(pObj);
+                ar << GetDocument().GetGameElementCodeForObject(pObj);
             }
         }
         else
@@ -476,7 +476,7 @@ void CPlayBoardView::OnDraw(CDC* pDC)
     m_pPBoard->Draw(dcMem, &rct, m_nZoom);
 
     wxASSERT(!pDC->IsPrinting());
-    if (!pDC->IsPrinting() && GetPlayBoard()->GetPiecesVisible())
+    if (!pDC->IsPrinting() && GetPlayBoard().GetPiecesVisible())
         m_selList.OnDraw(dcMem);       // Handle selections.
 
     RestoreDrawListDC(dcMem);
@@ -507,10 +507,10 @@ LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
     {
         return -1;
     }
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         return -1;                       // Drags not supported during play
 
-    DragInfo& pdi = CheckedDeref(reinterpret_cast<DragInfo*>(lParam));
+    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
 
     if (pdi.GetDragType() == DRAG_PIECE)
         return DoDragPiece(pdi);
@@ -527,10 +527,10 @@ LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-LRESULT CPlayBoardView::DoDragPiece(DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragPiece(const DragInfo& pdi)
 {
     ASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
-    if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != &GetDocument())
         return -1;               // Only pieces from our document.
 
     // if piece can't fit on board, reject drop
@@ -554,16 +554,16 @@ LRESULT CPlayBoardView::DoDragPiece(DragInfo& pdi)
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CPoint pnt = pdi.m_point;
-        ClientToWorkspace(pnt);
+        pnt = ClientToWorkspace(pnt);
         AddPiece(pnt, pdi.GetSubInfo<DRAG_PIECE>().m_pieceID);
         DragKillAutoScroll();
     }
     return 1;
 }
 
-LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragPieceList(const DragInfo& pdi)
 {
-    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &GetDocument())
         return -1;               // Only pieces from our document.
 
     // if piece can't fit on board, reject drop
@@ -586,27 +586,27 @@ LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
-        CGamDoc* pDoc = GetDocument();
+        CGamDoc& pDoc = GetDocument();
         CPoint pnt = pdi.m_point;
         const std::vector<PieceID>& pTbl = CheckedDeref(pdi.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
-        ClientToWorkspace(pnt);
+        pnt = ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
-        CSize sz = GetDocument()->GetPieceTable().GetStackedSize(pTbl,
+        CSize sz = GetDocument().GetPieceTable().GetStackedSize(pTbl,
             m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger);
         ASSERT(sz.cx != 0 && sz.cy != 0);
         CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
-        AdjustRect(rct);
+        rct = AdjustRect(rct);
         pnt = GetMidRect(rct);
 
         m_selList.PurgeList(TRUE);          // Purge former selections
-        GetDocument()->AssignNewMoveGroup();
-        GetDocument()->PlacePieceListOnBoard(pnt, pTbl,
+        GetDocument().AssignNewMoveGroup();
+        GetDocument().PlacePieceListOnBoard(pnt, pTbl,
             m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger, m_pPBoard.get());
 
-        if (!pDoc->HasPlayers() || !m_pPBoard->IsOwned() ||
+        if (!pDoc.HasPlayers() || !m_pPBoard->IsOwned() ||
             m_pPBoard->IsNonOwnerAccessAllowed() ||
-            m_pPBoard->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
+            m_pPBoard->IsOwnedBy(pDoc.GetCurrentPlayerMask()))
         {
             CDrawList* pDwg = m_pPBoard->GetPieceList();
             std::vector<CB::not_null<CPieceObj*>> pceList;
@@ -623,11 +623,11 @@ LRESULT CPlayBoardView::DoDragPieceList(DragInfo& pdi)
 
 #define MARKER_DROP_GAP_X     8
 
-LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragMarker(const DragInfo& pdi)
 {
     ASSERT(pdi.GetDragType() == DRAG_MARKER);
-    CGamDoc* pDoc = GetDocument();
-    if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != pDoc)
+    CGamDoc& pDoc = GetDocument();
+    if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != &pDoc)
         return -1;               // Only markers from our document.
 
     // if marker can't fit on board, reject drop
@@ -650,10 +650,10 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
-        CMarkManager& pMMgr = pDoc->GetMarkManager();
+        CMarkManager& pMMgr = pDoc.GetMarkManager();
         CPoint pnt = pdi.m_point;
         MarkID mid = pdi.GetSubInfo<DRAG_MARKER>().m_markID;
-        ClientToWorkspace(pnt);
+        pnt = ClientToWorkspace(pnt);
 
         // If Control is held and the marker tray is set to
         // deliver random markers, prompt for a count of markers
@@ -664,7 +664,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
             // I'm going to cheat. I happen to know that marker drops
             // can only originate at the marker palette. I can find out
             // the current marker set this way.
-            size_t nMrkGrp = pDoc->m_palMark.GetSelectedMarkerGroup();
+            size_t nMrkGrp = pDoc.m_palMark.GetSelectedMarkerGroup();
             ASSERT(nMrkGrp != Invalid_v<size_t>);
             if (nMrkGrp == Invalid_v<size_t>)
                 goto NASTY_GOTO_TARGET;
@@ -684,7 +684,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
                 // Pull markers randomly from the marker group.
                 tblMarks.reserve(1);
                 tblMarks.push_back(mid);              // Add the first one that was dropped
-                pMSet.GetRandomSelection(value_preserving_cast<size_t>(dlg.m_nMarkerCount - 1), tblMarks, pDoc);
+                pMSet.GetRandomSelection(value_preserving_cast<size_t>(dlg.m_nMarkerCount - 1), tblMarks, &pDoc);
             }
             else
             {
@@ -705,9 +705,9 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
                     sizeMin += CSize(MARKER_DROP_GAP_X, 0);
             }
             CRect rct(CPoint(pnt.x - sizeMin.cx/2, pnt.y - sizeMin.cy), sizeMin);
-            LimitRect(rct);                    // Make sure stays on board.
+            rct = LimitRect(rct);                    // Make sure stays on board.
 
-            pDoc->AssignNewMoveGroup();
+            pDoc.AssignNewMoveGroup();
             int x = rct.right;
             int y = (rct.top + rct.bottom) / 2;
             // Load the list from right ot left so the objects
@@ -716,7 +716,7 @@ LRESULT CPlayBoardView::DoDragMarker(DragInfo& pdi)
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
                 CSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
-                CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
+                CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
                     CPoint(x - size.cx / 2, y), ObjectID());
                 x -= size.cx + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
@@ -731,11 +731,11 @@ NASTY_GOTO_TARGET:
         CSize sz = pMMgr.GetMarkSize(mid);
         ASSERT(sz.cx != 0 && sz.cy != 0);
         CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
-        AdjustRect(rct);
+        rct = AdjustRect(rct);
         pnt = GetMidRect(rct);
 
-        pDoc->AssignNewMoveGroup();
-        CDrawObj& pObj = pDoc->CreateMarkerObject(m_pPBoard.get(), mid, pnt, ObjectID());
+        pDoc.AssignNewMoveGroup();
+        CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), mid, pnt, ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
@@ -743,12 +743,12 @@ NASTY_GOTO_TARGET:
         {
             CEditElementTextDialog dlg;
 
-            dlg.m_strText = pDoc->GetGameElementString(MakeMarkerElement(mid));
+            dlg.m_strText = pDoc.GetGameElementString(MakeMarkerElement(mid));
 
             if (dlg.ShowModal() == wxID_OK)
             {
-                GameElement elem = pDoc->GetGameElementCodeForObject(pObj);
-                pDoc->SetObjectText(elem, dlg.m_strText.empty() ? NULL :
+                GameElement elem = pDoc.GetGameElementCodeForObject(pObj);
+                pDoc.SetObjectText(elem, dlg.m_strText.empty() ? NULL :
                     &dlg.m_strText);
             }
         }
@@ -756,12 +756,12 @@ NASTY_GOTO_TARGET:
     return 1;
 }
 
-LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
+LRESULT CPlayBoardView::DoDragSelectList(const DragInfo& pdi)
 {
-    if (pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != GetDocument())
+    if (pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &GetDocument())
         return -1;               // Only pieces from our document.
 
-    ClientToWorkspace(pdi.m_point);
+    CPoint pdi_m_point = ClientToWorkspace(pdi.m_point);
 
     CSelList *pSLst = pdi.GetSubInfo<DRAG_SELECTLIST>().m_selectList;
     CDC& pDC = CheckedDeref(GetDC());
@@ -780,10 +780,10 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
     CPoint pntSnapRefTopLeft = rctSnapRef.TopLeft();
 
     CPoint pntMseOff = pntSnapRefTopLeft + pSLst->GetMouseOffset();
-    CSize sizeDelta = pdi.m_point - pntMseOff; // Trial delta
+    CSize sizeDelta = pdi_m_point - pntMseOff; // Trial delta
 
     rctSnapRef += (CPoint)sizeDelta;    // Calc trial new position
-    AdjustRect(rctSnapRef);         // Force onto grid.
+    rctSnapRef = AdjustRect(rctSnapRef);         // Force onto grid.
     sizeDelta = rctSnapRef.TopLeft() - pntSnapRefTopLeft;   // Calc actual offset
 
     if (sizeDelta.cx != 0 || sizeDelta.cy != 0)
@@ -796,7 +796,7 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
         if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
         {
             CRect temp = rctObjs;
-            LimitRect(temp);
+            temp = LimitRect(temp);
             // if enclosing rect can't fit on board, reject drop
             if (!IsRectFullyOnBoard(temp, &bXOK, &bYOK))
             {
@@ -829,7 +829,7 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
-        CGamDoc* pDoc = GetDocument();
+        CGamDoc& pDoc = GetDocument();
 
         // Whoooopppp...Whoooopppp!!! Drop occurred here....
         DragKillAutoScroll();
@@ -837,14 +837,14 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
         pSLst->LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         pSLst->PurgeList(FALSE);            // Purge source list
 
-        pDoc->AssignNewMoveGroup();
-        pDoc->PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard.get());
+        pDoc.AssignNewMoveGroup();
+        pDoc.PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard.get());
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
-        if (!pDoc->HasPlayers() || !m_pPBoard->IsOwned() ||
+        if (!pDoc.HasPlayers() || !m_pPBoard->IsOwned() ||
             m_pPBoard->IsNonOwnerAccessAllowed() ||
-            m_pPBoard->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
+            m_pPBoard->IsOwnedBy(pDoc.GetCurrentPlayerMask()))
         {
             SelectAllObjectsInTable(listObjs);  // Reselect on this board.
         }
@@ -852,7 +852,7 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
         CFrameWnd* pFrame = GetParentFrame();
         pFrame->SetActiveView(this);
 
-        pDoc->UpdateAllViews(this, HINT_UPDATESELECTLIST);
+        pDoc.UpdateAllViews(this, HINT_UPDATESELECTLIST);
 
         NotifySelectListChange();
     }
@@ -862,7 +862,7 @@ LRESULT CPlayBoardView::DoDragSelectList(DragInfo& pdi)
 void CPlayBoardView::DragDoAutoScroll()
 {
     CPoint ptBefore(0, 0);
-    ClientToWorkspace(ptBefore);
+    ptBefore = ClientToWorkspace(ptBefore);
     CDC *pDC = NULL;
 
     if (m_pDragSelList != NULL)
@@ -881,7 +881,7 @@ void CPlayBoardView::DragDoAutoScroll()
     if (m_pDragSelList != NULL && bScrolled)
     {
         CPoint ptAfter(0, 0);
-        ClientToWorkspace(ptAfter);
+        ptAfter = ClientToWorkspace(ptAfter);
         CSize sizeDelta = ptAfter - ptBefore;
         if (sizeDelta.cx != 0 || sizeDelta.cy != 0)
         {
@@ -943,7 +943,7 @@ void CPlayBoardView::DragKillAutoScroll()
 void CPlayBoardView::AddPiece(CPoint pnt, PieceID pid)
 {
     ASSERT(FALSE);      //!!!!NO LONGER USED?!!!!!
-    GetDocument()->PlacePieceOnBoard(pnt, pid, m_pPBoard.get());
+    GetDocument().PlacePieceOnBoard(pnt, pid, m_pPBoard.get());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -993,10 +993,9 @@ void CPlayBoardView::RestoreDrawListDC(CDC& pDC) const
 /////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEBUG
-const CGamDoc* CPlayBoardView::GetDocument() const // non-debug version is inline
+const CGamDoc& CPlayBoardView::GetDocument() const // non-debug version is inline
 {
-    const CGamDoc* retval = CB::ToCGamDoc(m_pDocument);
-    wxASSERT(retval);
+    const CGamDoc& retval = CheckedDeref(CB::ToCGamDoc(m_pDocument));
     return retval;
 }
 #endif //_DEBUG
@@ -1013,9 +1012,9 @@ void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
     if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
     {
         UINT nMenuNum;
-        if (GetDocument()->IsPlaying())
+        if (GetDocument().IsPlaying())
             nMenuNum = MENU_PV_PLAYMODE;
-        else if (GetDocument()->IsScenario())
+        else if (GetDocument().IsScenario())
             nMenuNum = MENU_PV_SCNMODE;
         else
             nMenuNum = MENU_PV_MOVEMODE;
@@ -1041,10 +1040,10 @@ void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
 BOOL CPlayBoardView::IsBoardContentsAvailableToCurrentPlayer() const
 {
     if (m_pPBoard->IsNonOwnerAccessAllowed() || !m_pPBoard->IsOwned() ||
-            GetDocument()->IsScenario())
+            GetDocument().IsScenario())
         return TRUE;
 
-    return m_pPBoard->IsOwnedBy(GetDocument()->GetCurrentPlayerMask());
+    return m_pPBoard->IsOwnedBy(GetDocument().GetCurrentPlayerMask());
 }
 
 void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
@@ -1058,7 +1057,7 @@ void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
     PToolType eToolType = MapToolType(m_nCurToolID);
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
-    ClientToWorkspace(point);
+    point = ClientToWorkspace(point);
     pTool.OnLButtonDown(this, nFlags, point);
 }
 
@@ -1072,11 +1071,11 @@ void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
 
     DoToolTipHitProcessing(point);
 
-    if (!GetDocument()->IsPlaying())
+    if (!GetDocument().IsPlaying())
     {
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-        ClientToWorkspace(point);
+        point = ClientToWorkspace(point);
         pTool.OnMouseMove(this, nFlags, point);
     }
     else
@@ -1094,7 +1093,7 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     PToolType eToolType = MapToolType(m_nCurToolID);
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
-    ClientToWorkspace(point);
+    point = ClientToWorkspace(point);
     bool rc = pTool.OnLButtonUp(this, nFlags, point);
     ASSERT(rc || pTool.m_eToolType == ptypeSelect);
     if (!rc && pTool.m_eToolType == ptypeSelect)
@@ -1115,11 +1114,11 @@ void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
         return;
     }
 
-    if (!GetDocument()->IsPlaying())
+    if (!GetDocument().IsPlaying())
     {
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-        ClientToWorkspace(point);
+        point = ClientToWorkspace(point);
         pTool.OnLButtonDblClk(this, nFlags, point);
     }
     else
@@ -1143,7 +1142,7 @@ void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
     }
     else
     {
-        if (!GetDocument()->IsPlaying())
+        if (!GetDocument().IsPlaying())
         {
             PToolType eToolType = MapToolType(m_nCurToolID);
             CPlayTool& pTool = CPlayTool::GetTool(eToolType);
@@ -1156,7 +1155,7 @@ void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
 
 BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         return CScrollView::OnSetCursor(pWnd, nHitTest, message);
 
     PToolType eToolType = MapToolType(m_nCurToolID);
@@ -1166,7 +1165,7 @@ BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
         if (pTool.OnSetCursor(this, nHitTest))
             return TRUE;
     }
-    if (GetDocument()->IsRecordingCompoundMove())
+    if (GetDocument().IsRecordingCompoundMove())
     {
         ::SetCursor(g_res.hcrCompMoveActive);
         return TRUE;
@@ -1179,13 +1178,13 @@ BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    CGamDoc* pDoc = GetDocument();
-    if (!pDoc->IsPlaying())
+    CGamDoc& pDoc = GetDocument();
+    if (!pDoc.IsPlaying())
     {
         if (nChar == VK_ESCAPE)
         {
-            if (pDoc->IsRecordingCompoundMove())
-                pDoc->RecordCompoundMoveDiscard();
+            if (pDoc.IsRecordingCompoundMove())
+                pDoc.RecordCompoundMoveDiscard();
             else if (m_pPBoard->GetPlotMoveMode())
                 OnActPlotDiscard();
             else
@@ -1193,8 +1192,8 @@ void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
         else if (nChar == VK_RETURN)
         {
-            if (pDoc->IsRecordingCompoundMove())
-                pDoc->RecordCompoundMoveEnd();
+            if (pDoc.IsRecordingCompoundMove())
+                pDoc.RecordCompoundMoveEnd();
             else if (m_pPBoard->GetPlotMoveMode())
                 OnActPlotDone();
         }
@@ -1207,7 +1206,7 @@ void CPlayBoardView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if (!IsBoardContentsAvailableToCurrentPlayer())
         return;
 
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         return;
 
     if (nChar == VK_DELETE)
@@ -1221,7 +1220,7 @@ void CPlayBoardView::OnEditClear()
     if (!m_selList.HasMarkers())
         return;                                  // Nothing to do
 
-    ASSERT(!GetDocument()->IsPlaying() && m_selList.HasMarkers());
+    ASSERT(!GetDocument().IsPlaying() && m_selList.HasMarkers());
     if (m_pPBoard->GetPlotMoveMode())
         OnActPlotDiscard();
 
@@ -1231,13 +1230,13 @@ void CPlayBoardView::OnEditClear()
     std::vector<RefPtr<CDrawObj>> listPtr;
     m_selList.LoadTableWithObjectPtrs(listPtr, CSelList::otAll, FALSE);
     m_selList.PurgeList(TRUE);                  // Purge selections
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->DeleteObjectsInTable(listPtr);
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().DeleteObjectsInTable(listPtr);
 }
 
 void CPlayBoardView::OnUpdateEditClear(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(!GetDocument()->IsPlaying() && m_selList.HasMarkers());
+    pCmdUI->Enable(!GetDocument().IsPlaying() && m_selList.HasMarkers());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1295,7 +1294,7 @@ void CPlayBoardView::DoViewScaleBrd(TileScale nZoom)
         CRect rctClient;
         GetClientRect(&rctClient);
         pntMid = rctClient.CenterPoint();
-        ClientToWorkspace(pntMid);
+        pntMid = ClientToWorkspace(pntMid);
     }
 
     m_nZoom = nZoom;
@@ -1373,7 +1372,7 @@ void CPlayBoardView::OnViewBoardRotate180()
    m_pPBoard->SetRotateBoard180(!m_pPBoard->IsBoardRotated180());
    CGamDocHint hint;
    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-   GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+   GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
 void CPlayBoardView::OnUpdateViewBoardRotate180(CCmdUI* pCmdUI)
@@ -1396,7 +1395,7 @@ void CPlayBoardView::OnUpdatePlayTool(CCmdUI* pCmdUI)
 {
     // NOTE!!: The control ID's are assumed to be consecutive and
     // in the same order as the tool codes defined in MAINFRM.C
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(pCmdUI->m_nID == m_nCurToolID);
@@ -1422,8 +1421,8 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 
     m_selList.PurgeList(TRUE);              // Purge former selections
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectTableOnBoard(pntCenter, tblObjs,
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().PlaceObjectTableOnBoard(pntCenter, tblObjs,
         xStagger, yStagger, m_pPBoard.get());
 
     // Reselect the pieces.
@@ -1432,7 +1431,7 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 
 void CPlayBoardView::OnUpdateActStack(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.IsMultipleSelects());
@@ -1454,7 +1453,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     if (rct.IsRectEmpty())
         return;
 
-    CGamDoc* pDoc = GetDocument();          // Shorthand pointer
+    CGamDoc& pDoc = GetDocument();          // Shorthand pointer
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
@@ -1464,11 +1463,11 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     m_selList.PurgeList(TRUE);              // Purge former selections
 
     // Generate a shuffled index vector for the number of selected items
-    uint32_t nRandSeed = pDoc->GetRandomNumberSeed();
+    uint32_t nRandSeed = pDoc.GetRandomNumberSeed();
     size_t nNumIndices = tblObjs.size();
     std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
-    pDoc->SetRandomNumberSeed(nRandSeed);
+    pDoc.SetRandomNumberSeed(nRandSeed);
 
     // Create a shuffled table of objects...
     std::vector<CB::not_null<CDrawObj*>> tblRandObjs;
@@ -1476,18 +1475,18 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     for (size_t i = size_t(0); i < tblObjs.size(); i++)
         tblRandObjs.emplace_back(&*tblObjs[value_preserving_cast<size_t>(pnIndices[i])]);
 
-    pDoc->AssignNewMoveGroup();
+    pDoc.AssignNewMoveGroup();
 
-    if (pDoc->IsRecording())
+    if (pDoc.IsRecording())
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
         CB::string strMsg = CB::string::Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.size());
-        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+        pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard.get());
+    pDoc.PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard.get());
 
     // Reselect the pieces.
     SelectAllObjectsInTable(tblRandObjs);  // Reselect objects
@@ -1495,7 +1494,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
 
 void CPlayBoardView::OnUpdateActShuffleSelectedObjects(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.IsMultipleSelects());
@@ -1512,8 +1511,8 @@ void CPlayBoardView::OnActToFront()
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard.get(), placeTop);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1521,7 +1520,7 @@ void CPlayBoardView::OnActToFront()
 
 void CPlayBoardView::OnUpdateActToFront(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.IsAnySelects());
@@ -1538,8 +1537,8 @@ void CPlayBoardView::OnActToBack()
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
         m_pPBoard.get(), placeBack);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1547,7 +1546,7 @@ void CPlayBoardView::OnActToBack()
 
 void CPlayBoardView::OnUpdateActToBack(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.IsAnySelects());
@@ -1583,19 +1582,19 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
-    CGamDoc* pDoc = GetDocument();
-    pDoc->AssignNewMoveGroup();
+    CGamDoc& pDoc = GetDocument();
+    pDoc.AssignNewMoveGroup();
 
-    if (pDoc->IsRecording() && flip == CPieceTable::fRandom)
+    if (pDoc.IsRecording() && flip == CPieceTable::fRandom)
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_FLIP_RANDOM);
-        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+        pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->InvertPlayingPieceTableOnBoard(listObjs, *m_pPBoard, flip);
+    pDoc.InvertPlayingPieceTableOnBoard(listObjs, *m_pPBoard, flip);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 
@@ -1605,9 +1604,9 @@ BOOL CPlayBoardView::OnActTurnOver(UINT id)
 void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
     bool bEnabled = false;
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying() || !pDoc->IsScenario() &&
-        m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
+        m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
         bEnabled = false;
     else
         bEnabled = m_selList.HasFlippablePieces();
@@ -1624,7 +1623,7 @@ void CPlayBoardView::OnActPlotMove()
 {
     // Do this call so we don't record the plot list in the
     // restoration record.
-    GetDocument()->CreateRecordListIfRequired();
+    GetDocument().CreateRecordListIfRequired();
     // Ok...finish plot setup
     m_pPBoard->SetPlotMoveMode(TRUE);
     m_pPBoard->InitPlotStartPoint();
@@ -1633,8 +1632,8 @@ void CPlayBoardView::OnActPlotMove()
 
 void CPlayBoardView::OnUpdateActPlotMove(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying() || (!m_selList.HasPieces() &&
-        !m_selList.HasMarkers()) || GetDocument()->IsScenario())
+    if (GetDocument().IsPlaying() || (!m_selList.HasPieces() &&
+        !m_selList.HasMarkers()) || GetDocument().IsScenario())
     {
         if (pCmdUI->m_pSubMenu != NULL)
         {
@@ -1662,29 +1661,29 @@ void CPlayBoardView::OnActPlotDone()
         CRect rct = m_selList.GetPiecesEnclosingRect();
         CPoint ptPrev = m_pPBoard->GetPrevPlotPoint();
         ptPrev -= CSize(rct.Width() / 2, rct.Height() / 2);
-        AdjustPoint(ptPrev);
+        ptPrev = AdjustPoint(ptPrev);
 
         std::vector<CB::not_null<CDrawObj*>> listObjs;
         m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         m_selList.PurgeList(TRUE);
 
-        GetDocument()->AssignNewMoveGroup();
+        GetDocument().AssignNewMoveGroup();
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument()->PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard.get());
+        GetDocument().PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard.get());
         m_selList.PurgeList(TRUE);          // Purge former selections
         SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
     m_pPBoard->SetPlotMoveMode(FALSE);
-    GetDocument()->UpdateAllBoardIndicators(*m_pPBoard);
+    GetDocument().UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
     m_nCurToolID = ID_PTOOL_SELECT;
 }
 
 void CPlayBoardView::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying() || GetDocument()->IsScenario())
+    if (GetDocument().IsPlaying() || GetDocument().IsScenario())
     {
         pCmdUI->Enable(FALSE);
         return;
@@ -1695,14 +1694,14 @@ void CPlayBoardView::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 void CPlayBoardView::OnActPlotDiscard()
 {
     m_pPBoard->SetPlotMoveMode(FALSE);
-    GetDocument()->UpdateAllBoardIndicators(*m_pPBoard);
+    GetDocument().UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
     m_nCurToolID = ID_PTOOL_SELECT;
 }
 
 void CPlayBoardView::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying() || GetDocument()->IsScenario())
+    if (GetDocument().IsPlaying() || GetDocument().IsScenario())
     {
         pCmdUI->Enable(FALSE);
         return;
@@ -1717,7 +1716,7 @@ void CPlayBoardView::OnViewSnapGrid()
 
 void CPlayBoardView::OnUpdateViewSnapGrid(CCmdUI* pCmdUI)
 {
-    pCmdUI->Enable(!GetDocument()->IsPlaying());
+    pCmdUI->Enable(!GetDocument().IsPlaying());
     pCmdUI->SetCheck(m_pPBoard->m_bGridSnap);
 }
 
@@ -1730,16 +1729,16 @@ void CPlayBoardView::OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI)
 {
     CDrawList* pDwg = m_pPBoard->GetPieceList();
     ASSERT(pDwg);
-    pCmdUI->Enable(!GetDocument()->IsPlaying() && pDwg->HasMarker());
+    pCmdUI->Enable(!GetDocument().IsPlaying() && pDwg->HasMarker());
 }
 
 void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
 {
     std::vector<PieceID> tbl;
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     m_selList.LoadTableWithPieceIDs(tbl);
-    TileID tid = pDoc->GetPieceTable().GetActiveTileID(tbl.front());
-    CTile tile = pDoc->GetTileManager().GetTile(tid);
+    TileID tid = pDoc.GetPieceTable().GetActiveTileID(tbl.front());
+    CTile tile = pDoc.GetTileManager().GetTile(tid);
     OwnerPtr<CBitmap> bmap = tile.CreateBitmapOfTile();
     wxASSERT(!"dead code");
 #if 0
@@ -1752,9 +1751,9 @@ void CPlayBoardView::OnActRotate()      // ** TEST CODE ** //
 
 void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying() || m_pPBoard->GetPlotMoveMode() || !pDoc->IsScenario() &&
-            m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying() || m_pPBoard->GetPlotMoveMode() || !pDoc.IsScenario() &&
+            m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.HasPieces());
@@ -1774,8 +1773,8 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
 
     m_selList.PurgeList(TRUE);          // Purge former selections
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard.get(),
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard.get(),
         uint16_t(5) * nFacing5DegCW);       // Convert to degrees
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1783,10 +1782,10 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
 
 void CPlayBoardView::OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID)
 {
-    CGamDoc* pDoc = GetDocument();
-    BOOL bEnabled = (m_selList.HasPieces() || m_selList.HasMarkers()) && !pDoc->IsPlaying();
-    if (bEnabled && !pDoc->IsScenario() &&
-        m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    BOOL bEnabled = (m_selList.HasPieces() || m_selList.HasMarkers()) && !pDoc.IsPlaying();
+    if (bEnabled && !pDoc.IsScenario() &&
+        m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
     {
         bEnabled = FALSE;
     }
@@ -1817,7 +1816,7 @@ LRESULT CPlayBoardView::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam
 
 LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nRelativeRotation = (int)wParam;
     ASSERT(!m_tblCurPieces.empty());
     ASSERT(m_tblCurAngles.size() == m_tblCurPieces.size());
@@ -1830,17 +1829,17 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
 
         CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
-            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
+            pDoc.ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
-            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
+            pDoc.ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Calculate new rotated mid-point for object.
             CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
-                CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), nRelativeRotation);
+                m_tblMidPnt[i], nRelativeRotation);
             CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
         }
     }
     return (LRESULT)0;
@@ -1861,15 +1860,14 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     m_bWheelRotation = bWheelRotation;
 
     CRotatePieceDialog dlg(*this);
-    CGamDoc* pDoc = GetDocument();
-    CPieceTable& pPTbl = pDoc->GetPieceTable();
+    CGamDoc& pDoc = GetDocument();
+    CPieceTable& pPTbl = pDoc.GetPieceTable();
 
     // Get a list of the selected pieces and save their current
     // rotations.
     m_tblCurAngles.clear();
     m_tblCurPieces.clear();
-    m_tblXMidPnt.RemoveAll();
-    m_tblYMidPnt.RemoveAll();
+    m_tblMidPnt.clear();
 
     m_selList.LoadTableWithObjectPtrs(m_tblCurPieces, CSelList::otAll, FALSE);
 
@@ -1893,8 +1891,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             CPoint midPoint = GetMidRect(pDObj.GetEnclosingRect());
-            m_tblXMidPnt.Add((UINT)midPoint.x);
-            m_tblYMidPnt.Add((UINT)midPoint.y);
+            m_tblMidPnt.push_back(midPoint);
         }
     }
     // If we're recording moves right now, suspend it for the moment.
@@ -1920,7 +1917,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     private:
         CGamDoc& doc;
         BOOL bRecording = doc.IsRecording();
-    } suspendRecording(*pDoc);
+    } suspendRecording(pDoc);
 
     // Show the rotation dialog
     nDlgResult = dlg.ShowModal();
@@ -1931,21 +1928,21 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         CDrawObj& pDObj = *m_tblCurPieces[i];
         if (pDObj.GetType() == CDrawObj::drawPieceObj)
         {
-            pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
+            pDoc.ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj),
                 m_pPBoard.get(), m_tblCurAngles[i]);
         }
         else if (pDObj.GetType() == CDrawObj::drawMarkObj)
         {
-            pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(),
+            pDoc.ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(),
                 m_tblCurAngles[i]);
         }
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Restore original position
-            CSize sizeDelta = CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]) -
+            CSize sizeDelta = m_tblMidPnt[i] -
                 GetMidRect(pDObj.GetEnclosingRect());
-            pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
         }
     }
     // Restore recording mode if it was active.
@@ -1953,7 +1950,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     if (nDlgResult == wxID_OK)
     {
         // Rotation was accepted. Make the final changes.
-        pDoc->AssignNewMoveGroup();
+        pDoc.AssignNewMoveGroup();
         for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
         {
             int nAngle = m_tblCurAngles[i] + dlg.m_nRelativeRotation;
@@ -1964,20 +1961,20 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
             if (pDObj.GetType() == CDrawObj::drawPieceObj)
             {
-                pDoc->ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
+                pDoc.ChangePlayingPieceFacingOnBoard(static_cast<CPieceObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
             }
             else if (pDObj.GetType() == CDrawObj::drawMarkObj)
             {
-                pDoc->ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
+                pDoc.ChangeMarkerFacingOnBoard(static_cast<CMarkObj&>(pDObj), m_pPBoard.get(), value_preserving_cast<uint16_t>(nAngle));
             }
             if (m_bWheelRotation &&
                 (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
             {
                 // Calculate new rotated mid-point for object.
                 CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
-                    CPoint(m_tblXMidPnt[value_preserving_cast<intptr_t>(i)], m_tblYMidPnt[value_preserving_cast<intptr_t>(i)]), dlg.m_nRelativeRotation);
+                    m_tblMidPnt[i], dlg.m_nRelativeRotation);
                 CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-                pDoc->PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+                pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
             }
         }
         m_selList.UpdateObjects(TRUE, FALSE);
@@ -1987,15 +1984,14 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
     }
     m_tblCurAngles.clear();
     m_tblCurPieces.clear();
-    m_tblXMidPnt.RemoveAll();
-    m_tblYMidPnt.RemoveAll();
+    m_tblMidPnt.clear();
 }
 
 void CPlayBoardView::OnUpdateActRotateRelative(CCmdUI* pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying() || !pDoc->IsScenario() &&
-            m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
+            m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
         pCmdUI->Enable(FALSE);
     else
         pCmdUI->Enable(m_selList.HasPieces() || m_selList.HasMarkers());
@@ -2003,9 +1999,9 @@ void CPlayBoardView::OnUpdateActRotateRelative(CCmdUI* pCmdUI)
 
 void CPlayBoardView::OnUpdateActRotateGroupRelative(CCmdUI *pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying() || !pDoc->IsScenario() &&
-            m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
+            m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
         pCmdUI->Enable(FALSE);
     else
     {
@@ -2018,15 +2014,15 @@ void CPlayBoardView::OnUpdateActRotateGroupRelative(CCmdUI *pCmdUI)
 
 void CPlayBoardView::OnViewPieces()
 {
-    GetPlayBoard()->SetPiecesVisible(!GetPlayBoard()->GetPiecesVisible());
+    GetPlayBoard().SetPiecesVisible(!GetPlayBoard().GetPiecesVisible());
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+    GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
 void CPlayBoardView::OnUpdateViewPieces(CCmdUI* pCmdUI)
 {
-    pCmdUI->SetCheck(!GetPlayBoard()->GetPiecesVisible());
+    pCmdUI->SetCheck(!GetPlayBoard().GetPiecesVisible());
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -2128,7 +2124,7 @@ void CPlayBoardView::OnEditBoardToFile()
 
 void CPlayBoardView::OnEditBoardProperties()
 {
-    GetDocument()->DoBoardProperties(CheckedDeref(GetPlayBoard()));
+    GetDocument().DoBoardProperties(GetPlayBoard());
 }
 
 void CPlayBoardView::OnSelectGroupMarkers(UINT nID)
@@ -2140,7 +2136,7 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 {
     if (pCmdUI->m_pSubMenu != NULL)
     {
-        CMarkManager& pMgr = GetDocument()->GetMarkManager();
+        CMarkManager& pMgr = GetDocument().GetMarkManager();
         if (pMgr.IsEmpty())
             return;
         std::vector<CB::string> tbl;
@@ -2166,15 +2162,15 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 
 void CPlayBoardView::OnViewDrawIndOnTop()
 {
-    GetPlayBoard()->SetIndicatorsOnTop(!GetPlayBoard()->GetIndicatorsOnTop());
+    GetPlayBoard().SetIndicatorsOnTop(!GetPlayBoard().GetIndicatorsOnTop());
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    GetDocument()->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+    GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
 void CPlayBoardView::OnUpdateViewDrawIndOnTop(CCmdUI* pCmdUI)
 {
-    pCmdUI->SetCheck(GetPlayBoard()->GetIndicatorsOnTop());
+    pCmdUI->SetCheck(GetPlayBoard().GetIndicatorsOnTop());
 }
 
 void CPlayBoardView::OnEditElementText()
@@ -2182,15 +2178,15 @@ void CPlayBoardView::OnEditElementText()
     ASSERT(m_selList.IsSingleSelect() && (m_selList.HasMarkers() || m_selList.HasPieces()));
 
     CDrawObj& pDObj = *m_selList.front()->m_pObj;
-    GetDocument()->DoEditObjectText(pDObj);
+    GetDocument().DoEditObjectText(pDObj);
     NotifySelectListChange();       // Make sure indicators are updated
 }
 
 void CPlayBoardView::OnUpdateEditElementText(CCmdUI* pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying() || !pDoc->IsScenario() &&
-            m_selList.HasOwnedPiecesNotMatching(pDoc->GetCurrentPlayerMask()))
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
+            m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
         pCmdUI->Enable(FALSE);
     else
     {
@@ -2212,8 +2208,8 @@ void CPlayBoardView::OnActLockObject()
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
-    GetDocument()->AssignNewMoveGroup();
-    GetDocument()->SetObjectLockdownTable(listObjs, bLockState);
+    GetDocument().AssignNewMoveGroup();
+    GetDocument().SetObjectLockdownTable(listObjs, bLockState);
 
     if (m_pPBoard->GetLocksEnforced() && bLockState)
         m_selList.PurgeList(TRUE);          // Purge former selections
@@ -2221,7 +2217,7 @@ void CPlayBoardView::OnActLockObject()
 
 void CPlayBoardView::OnUpdateActLockObject(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
     {
         pCmdUI->Enable(FALSE);
         return;
@@ -2251,7 +2247,7 @@ void CPlayBoardView::OnActLockSuspend()
 
 void CPlayBoardView::OnUpdateActLockSuspend(CCmdUI* pCmdUI)
 {
-    if (GetDocument()->IsPlaying())
+    if (GetDocument().IsPlaying())
         pCmdUI->Enable(FALSE);
     else
     {
@@ -2269,44 +2265,44 @@ void CPlayBoardView::OnActTakeOwnership()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
 
     std::vector<PieceID> tblPieces;
 
     m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_NOTOWNED);
 
-    pDoc->AssignNewMoveGroup();
+    pDoc.AssignNewMoveGroup();
 
-    if (pDoc->IsRecording())
+    if (pDoc.IsRecording())
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
-        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+        pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(tblPieces, pDoc->GetCurrentPlayerMask());
+    pDoc.SetPieceOwnershipTable(tblPieces, pDoc.GetCurrentPlayerMask());
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+    pDoc.UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
 }
 
 void CPlayBoardView::OnUpdateActTakeOwnership(CCmdUI* pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     // Can't take ownership while residing on an owned board.
-    if (pDoc->IsPlaying() || m_pPBoard->IsOwned())
+    if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
         pCmdUI->Enable(FALSE);
-    else if (pDoc->IsCurrentPlayerReferee())
+    else if (pDoc.IsCurrentPlayerReferee())
         pCmdUI->Enable(FALSE);      // No owner to acquire. He's the Referee!
     else
     {
-        pCmdUI->Enable(pDoc->HasPlayers() && m_selList.HasNonOwnedPieces() &&
-            pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
+        pCmdUI->Enable(pDoc.HasPlayers() && m_selList.HasNonOwnedPieces() &&
+            pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
@@ -2318,57 +2314,57 @@ void CPlayBoardView::OnActReleaseOwnership()
 
     CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
 
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
 
     std::vector<PieceID> tblPieces;
 
     m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_OWNED);
 
-    pDoc->AssignNewMoveGroup();
+    pDoc.AssignNewMoveGroup();
 
-    if (pDoc->IsRecording())
+    if (pDoc.IsRecording())
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_RELEASED);
-        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+        pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(tblPieces, OWNER_MASK_SPECTATOR);
+    pDoc.SetPieceOwnershipTable(tblPieces, OWNER_MASK_SPECTATOR);
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+    pDoc.UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
 }
 
 void CPlayBoardView::OnUpdateActReleaseOwnership(CCmdUI* pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     // Can't release ownership while residing on an owned board.
-    if (pDoc->IsPlaying() || m_pPBoard->IsOwned())
+    if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
         pCmdUI->Enable(FALSE);
-    else if (pDoc->IsCurrentPlayerReferee() && m_selList.HasPieces())
+    else if (pDoc.IsCurrentPlayerReferee() && m_selList.HasPieces())
         pCmdUI->Enable(TRUE);
     else
     {
-        pCmdUI->Enable(pDoc->HasPlayers() && m_selList.HasOwnedPieces() &&
-            pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
+        pCmdUI->Enable(pDoc.HasPlayers() && m_selList.HasOwnedPieces() &&
+            pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
 void CPlayBoardView::OnActSetOwner()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
     if (rct.IsRectEmpty())
         return;
 
-    CSelectNewOwnerDialog dlg(CheckedDeref(pDoc->GetPlayerManager()));
-    if (!pDoc->IsCurrentPlayerReferee())
-        dlg.m_nPlayer = CPlayerManager::GetPlayerNumFromMask(pDoc->GetCurrentPlayerMask());
+    CSelectNewOwnerDialog dlg(CheckedDeref(pDoc.GetPlayerManager()));
+    if (!pDoc.IsCurrentPlayerReferee())
+        dlg.m_nPlayer = CPlayerManager::GetPlayerNumFromMask(pDoc.GetCurrentPlayerMask());
 
     if (dlg.ShowModal() != wxID_OK)
         return;
@@ -2380,38 +2376,38 @@ void CPlayBoardView::OnActSetOwner()
     std::vector<PieceID> tblPieces;
     m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_BOTH);
 
-    pDoc->AssignNewMoveGroup();
+    pDoc.AssignNewMoveGroup();
 
-    if (pDoc->IsRecording())
+    if (pDoc.IsRecording())
     {
         // Insert a notification tip so there is some information
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
-        pDoc->RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
+        pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
             value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
     }
 
-    pDoc->SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
+    pDoc.SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc->UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
+    pDoc.UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 
     NotifySelectListChange();
 }
 
 void CPlayBoardView::OnUpdateActSetOwner(CCmdUI* pCmdUI)
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     // Can't take ownership while residing on an owned board.
-    if (pDoc->IsPlaying() || m_pPBoard->IsOwned())
+    if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
         pCmdUI->Enable(FALSE);
-    else if (pDoc->IsCurrentPlayerReferee() && m_selList.HasPieces())
+    else if (pDoc.IsCurrentPlayerReferee() && m_selList.HasPieces())
         pCmdUI->Enable(TRUE);
     else
     {
-        pCmdUI->Enable(pDoc->HasPlayers() &&
-            (m_selList.HasPieces() && pDoc->GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR));
+        pCmdUI->Enable(pDoc.HasPlayers() &&
+            (m_selList.HasPieces() && pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR));
     }
 }
 

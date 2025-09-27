@@ -1,6 +1,6 @@
 // VwPbrd1.cpp : implementation of the CPlayBoardView class
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -52,8 +52,8 @@ const int scrollZone = 16;
 
 void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
 {
-    CGamDoc* pDoc = GetDocument();
-    if (!pDoc->IsShowingObjectTips() && pDoc->IsOwnerTipsDisabled())
+    CGamDoc& pDoc = GetDocument();
+    if (!pDoc.IsShowingObjectTips() && pDoc.IsOwnerTipsDisabled())
     {
         // Delete previous tool definition
         m_toolHitTip.DelTool(this, ID_TIP_PLAYBOARD_HIT);
@@ -62,18 +62,18 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
     }
 
     CPoint pnt(pointClient);
-    ClientToWorkspace(pnt);
+    pnt = ClientToWorkspace(pnt);
     CDrawObj* pDObj = ObjectHitTest(pnt);
 
-    if (pDoc->IsOwnerTipsDisabled() && pDoc->HasPlayers())
+    if (pDoc.IsOwnerTipsDisabled() && pDoc.HasPlayers())
     {
         if (pDObj != NULL && pDObj->GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj* pPObj = (CPieceObj*)pDObj;
             if (pPObj->IsOwned() &&
-                !pDoc->GetPieceTable().IsPieceInvisible(pPObj->m_pid))
+                !pDoc.GetPieceTable().IsPieceInvisible(pPObj->m_pid))
             {
-                CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
+                CB::string strOwner = pDoc.GetPieceOwnerName(pPObj->m_pid);
                 CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
                 GetMainFrame()->GetStatusBar()->SetWindowText(strOwnedBy);
             }
@@ -93,33 +93,33 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
         {
             // New object found so create a new tip
             CRect rct = pDObj->GetRect();
-            WorkspaceToClient(rct);
+            rct = WorkspaceToClient(rct);
 
             CB::string strTip;
             CB::string strTitle;
-            if (pDoc->IsShowingObjectTips())
-                pDoc->GetTipTextForObject(*pDObj, strTip, &strTitle);
+            if (pDoc.IsShowingObjectTips())
+                pDoc.GetTipTextForObject(*pDObj, strTip, &strTitle);
 
             // All this stuff is used to annotate tips with owner names
             // when player accounts are active.
-            if (pDoc->HasPlayers() && pDObj->GetType() == CDrawObj::drawPieceObj)
+            if (pDoc.HasPlayers() && pDObj->GetType() == CDrawObj::drawPieceObj)
             {
                 CPieceObj* pPObj = (CPieceObj*)pDObj;
                 if (pPObj->IsOwned() &&
-                    !pDoc->GetPieceTable().IsPieceInvisible(pPObj->m_pid))
+                    !pDoc.GetPieceTable().IsPieceInvisible(pPObj->m_pid))
                 {
-                    CB::string strOwner = pDoc->GetPieceOwnerName(pPObj->m_pid);
+                    CB::string strOwner = pDoc.GetPieceOwnerName(pPObj->m_pid);
                     CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
 
-                    if (!pDoc->IsScenario() && !pPObj->IsOwnedBy(pDoc->GetCurrentPlayerMask()))
+                    if (!pDoc.IsScenario() && !pPObj->IsOwnedBy(pDoc.GetCurrentPlayerMask()))
                     {
                         strTip.clear();             // Current player isn't allowed to see text.
-                        if (!pDoc->IsOwnerTipsDisabled() && !strOwner.empty())// Replace tip with special "Owned by" tip
+                        if (!pDoc.IsOwnerTipsDisabled() && !strOwner.empty())// Replace tip with special "Owned by" tip
                             strTip = strOwnedBy;
                     }
                     else
                     {
-                        if (!pDoc->IsOwnerTipsDisabled())
+                        if (!pDoc.IsOwnerTipsDisabled())
                         {
                             // Append actual tip to owner string.
                             if (strTip.empty())
@@ -224,7 +224,7 @@ CDrawObj* CPlayBoardView::ObjectHitTest(CPoint point)
 
 void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
 
     BOOL bPieceSelected = FALSE;
@@ -242,7 +242,7 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
                 if (pObj.GetType() == CDrawObj::drawPieceObj)
                 {
                     CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-                    PlayerMask dwCurrentPlayer = pDoc->GetCurrentPlayerMask();
+                    PlayerMask dwCurrentPlayer = pDoc.GetCurrentPlayerMask();
                     bOwnedByCurrentPlayer =
                         !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer) ||
                         m_pPBoard->IsNonOwnerAccessAllowed();
@@ -261,7 +261,7 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
                 // - Owned by the current player OR
                 // - Owned but non-owner access is allowed.
                 // (the last three conditions were checked above.)
-                if (pDoc->IsScenario() || bOwnedByCurrentPlayer)
+                if (pDoc.IsScenario() || bOwnedByCurrentPlayer)
                 {
                     m_selList.AddObject(pObj, TRUE);
                     bPieceSelected |= pObj.GetType() == CDrawObj::drawPieceObj ||
@@ -293,7 +293,7 @@ void CPlayBoardView::SelectAllUnderPoint(CPoint point)
             if (pObj.GetType() == CDrawObj::drawPieceObj)
             {
                 CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-                PlayerMask dwCurrentPlayer = GetDocument()->GetCurrentPlayerMask();
+                PlayerMask dwCurrentPlayer = GetDocument().GetCurrentPlayerMask();
                 bOwnedByCurrentPlayer =
                     !pPObj.IsOwned() || pPObj.IsOwnedBy(dwCurrentPlayer);
             }
@@ -377,7 +377,7 @@ void CPlayBoardView::SelectAllMarkers()
 void CPlayBoardView::SelectMarkersInGroup(size_t nGroup)
 {
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
-    CMarkManager& pMgr = GetDocument()->GetMarkManager();
+    CMarkManager& pMgr = GetDocument().GetMarkManager();
 
     m_selList.PurgeList();
 
@@ -408,7 +408,7 @@ void CPlayBoardView::AddDrawObject(CDrawObj::OwnerPtr pObj)
     if (pDwg != NULL)
     {
         pDwg->AddToFront(std::move(pObj));
-        GetDocument()->SetModifiedFlag();
+        GetDocument().SetModifiedFlag();
     }
 }
 
@@ -445,7 +445,7 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
     }
     if (bInvalidate)
         m_selList.InvalidateList();
-    GetDocument()->SetModifiedFlag();
+    GetDocument().SetModifiedFlag();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -457,13 +457,13 @@ CPoint CPlayBoardView::GetWorkspaceDim() const
 
     // Translate to current scaling mode.
     pnt -= (CSize)GetDeviceScrollPosition();
-    ClientToWorkspace(pnt);
+    pnt = ClientToWorkspace(pnt);
     return pnt;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::WorkspaceToClient(CPoint& point) const
+CPoint CPlayBoardView::WorkspaceToClient(CPoint point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -473,9 +473,10 @@ void CPlayBoardView::WorkspaceToClient(CPoint& point) const
         point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
     ScalePoint(point, vsize, wsize);
     point -= (CSize)dpnt;
+    return point;
 }
 
-void CPlayBoardView::WorkspaceToClient(CRect& rect) const
+CRect CPlayBoardView::WorkspaceToClient(CRect rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
@@ -489,17 +490,18 @@ void CPlayBoardView::WorkspaceToClient(CRect& rect) const
     }
     ScaleRect(rect, vsize, wsize);
     rect -= dpnt;
+    return rect;
 }
 
 void CPlayBoardView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
 {
     CRect rct(pRect);
-    WorkspaceToClient(rct);
+    rct = WorkspaceToClient(rct);
     rct.InflateRect(1, 1);
     InvalidateRect(&rct, bErase);
 }
 
-void CPlayBoardView::ClientToWorkspace(CPoint& point) const
+CPoint CPlayBoardView::ClientToWorkspace(CPoint point) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     point += (CSize)dpnt;
@@ -509,9 +511,10 @@ void CPlayBoardView::ClientToWorkspace(CPoint& point) const
     ScalePoint(point, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
         point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
+    return point;
 }
 
-void CPlayBoardView::ClientToWorkspace(CRect& rect) const
+CRect CPlayBoardView::ClientToWorkspace(CRect rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;
@@ -525,6 +528,7 @@ void CPlayBoardView::ClientToWorkspace(CRect& rect) const
             wsize.cx - rect.right, wsize.cy - rect.bottom);
         rect.NormalizeRect();
     }
+    return rect;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -536,25 +540,27 @@ BOOL CPlayBoardView::IsGridizeActive() const
     return !(bControl && bGridSnap || !bControl && !bGridSnap);
 }
 
-void CPlayBoardView::GridizeX(long& xPos) const
+long CPlayBoardView::GridizeX(long xPos) const
 {
     if (IsGridizeActive())
     {
         xPos = GridizeClosest1000(value_preserving_cast<int32_t>(xPos),
             value_preserving_cast<int32_t>(m_pPBoard->m_xGridSnap), value_preserving_cast<int32_t>(m_pPBoard->m_xGridSnapOff));
     }
+    return xPos;
 }
 
-void CPlayBoardView::GridizeY(long& yPos) const
+long CPlayBoardView::GridizeY(long yPos) const
 {
     if (IsGridizeActive())
     {
         yPos = GridizeClosest1000(value_preserving_cast<int32_t>(yPos),
             value_preserving_cast<int32_t>(m_pPBoard->m_yGridSnap), value_preserving_cast<int32_t>(m_pPBoard->m_yGridSnapOff));
     }
+    return yPos;
 }
 
-void CPlayBoardView::LimitPoint(POINT& pPnt) const
+POINT CPlayBoardView::LimitPoint(POINT pPnt) const
 {
     const CBoard* pBoard = m_pPBoard->GetBoard();
     if (pPnt.x < 0) pPnt.x = 0;
@@ -563,9 +569,10 @@ void CPlayBoardView::LimitPoint(POINT& pPnt) const
     if (pPnt.y < 0) pPnt.y = 0;
     if (pPnt.y > pBoard->GetHeight(fullScale))
         pPnt.y = pBoard->GetHeight(fullScale);
+    return pPnt;
 }
 
-void CPlayBoardView::LimitRect(RECT& pRct) const
+RECT CPlayBoardView::LimitRect(RECT pRct) const
 {
     CRect rct(pRct);
     const CBoard* pBoard = m_pPBoard->GetBoard();
@@ -579,6 +586,7 @@ void CPlayBoardView::LimitRect(RECT& pRct) const
     if (rct.bottom > pBoard->GetHeight(fullScale))
         rct.OffsetRect(0, pBoard->GetHeight(fullScale) - rct.bottom);
     pRct = rct;
+    return pRct;
 }
 
 BOOL CPlayBoardView::IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK, BOOL* pbYOK) const
@@ -604,14 +612,15 @@ BOOL CPlayBoardView::IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK, BOOL* pbY
     return bOK;
 }
 
-void CPlayBoardView::AdjustPoint(CPoint& pnt) const
+CPoint CPlayBoardView::AdjustPoint(CPoint pnt) const
 {
-    GridizeX(pnt.x);
-    GridizeY(pnt.y);
-    LimitPoint(pnt);
+    pnt.x = GridizeX(pnt.x);
+    pnt.y = GridizeY(pnt.y);
+    pnt = LimitPoint(pnt);
+    return pnt;
 }
 
-void CPlayBoardView::AdjustRect(CRect& rct) const
+CRect CPlayBoardView::AdjustRect(CRect rct) const
 {
     CPoint pnt;
     if (m_pPBoard->m_bGridRectCenters)
@@ -619,9 +628,9 @@ void CPlayBoardView::AdjustRect(CRect& rct) const
     else
         pnt = rct.TopLeft();
 
-    GridizeX(pnt.x);
-    GridizeY(pnt.y);
-    LimitPoint(pnt);
+    pnt.x = GridizeX(pnt.x);
+    pnt.y = GridizeY(pnt.y);
+    pnt = LimitPoint(pnt);
 
     if (m_pPBoard->m_bGridRectCenters)
     {
@@ -633,7 +642,8 @@ void CPlayBoardView::AdjustRect(CRect& rct) const
         if (pnt != rct.TopLeft())
             rct.OffsetRect(pnt - rct.TopLeft());
     }
-    LimitRect(rct);
+    rct = LimitRect(rct);
+    return rct;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -649,7 +659,7 @@ void CPlayBoardView::ScrollWorkspacePointIntoView(CPoint point)
         return;
     }
     rct.InflateRect(-viewZone, -viewZone);
-    ClientToWorkspace(rct);
+    rct = ClientToWorkspace(rct);
     if (rct.PtInRect(point))
         return;                     // Everthing is ok
     CenterViewOnWorkspacePoint(point);
@@ -657,7 +667,7 @@ void CPlayBoardView::ScrollWorkspacePointIntoView(CPoint point)
 
 void CPlayBoardView::CenterViewOnWorkspacePoint(CPoint point)
 {
-    WorkspaceToClient(point);
+    point = WorkspaceToClient(point);
     CRect rct;
     GetClientRect(&rct);
     CPoint pt = GetMidRect(rct);
