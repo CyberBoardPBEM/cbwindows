@@ -1,6 +1,6 @@
 // Gp.h : main header file for the GP application
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,6 +33,9 @@
 #include    "versions.h"
 #include    "FrmMain.h"
 
+class CPlayBoard;
+class CDrawObj;
+
 /////////////////////////////////////////////////////////////////////////////
 
 #define IDW_TOOLBAR_MAIN        AFX_IDW_TOOLBAR
@@ -47,7 +50,52 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #define WM_ROTATEPIECE_DELTA    (WM_USER + 210) // WPARAM = (int)relative rotation delta
+class RotatePieceDeltaEvent : public wxEvent
+{
+public:
+    RotatePieceDeltaEvent(int delta);
+
+    int GetDelta() const { return delta; }
+
+    wxEvent* Clone() const override { return new RotatePieceDeltaEvent(*this); }
+
+private:
+    const int delta;
+};
+wxDECLARE_EVENT(WM_ROTATEPIECE_DELTA_WX, RotatePieceDeltaEvent);
+inline RotatePieceDeltaEvent::RotatePieceDeltaEvent(int d) :
+    wxEvent(wxID_ANY, WM_ROTATEPIECE_DELTA_WX),
+    delta(d)
+{
+}
+typedef void (wxEvtHandler::* RotatePieceDeltaEventFunction)(RotatePieceDeltaEvent&);
+#define RotatePieceDeltaEventHandler(func) wxEVENT_HANDLER_CAST(RotatePieceDeltaEventFunction, func)
+#define EVT_ROTATEPIECE_DELTA(func) \
+    wx__DECLARE_EVT0(WM_ROTATEPIECE_DELTA_WX, RotatePieceDeltaEventHandler(func))
+
 #define WM_CENTERBOARDONPOINT   (WM_USER + 211) // WPARAM = POINT* in board coords
+class CenterBoardOnPointEvent : public wxEvent
+{
+public:
+    CenterBoardOnPointEvent(const wxPoint& point);
+
+    const wxPoint& GetPoint() const { return point; }
+
+    wxEvent* Clone() const override { return new CenterBoardOnPointEvent(*this); }
+
+private:
+    const wxPoint point;
+};
+wxDECLARE_EVENT(WM_CENTERBOARDONPOINT_WX, CenterBoardOnPointEvent);
+inline CenterBoardOnPointEvent::CenterBoardOnPointEvent(const wxPoint& p) :
+    wxEvent(wxID_ANY, WM_CENTERBOARDONPOINT_WX),
+    point(p)
+{
+}
+typedef void (wxEvtHandler::* CenterBoardOnPointEventFunction)(CenterBoardOnPointEvent&);
+#define CenterBoardOnPointEventHandler(func) wxEVENT_HANDLER_CAST(CenterBoardOnPointEventFunction, func)
+#define EVT_CENTERBOARDONPOINT(func) \
+    wx__DECLARE_EVT0(WM_CENTERBOARDONPOINT_WX, CenterBoardOnPointEventHandler(func))
 
 #define WM_SHOWPLAYINGBOARD     (WM_USER + 212) // WPARAM = size_t Playing Board Index
 class ShowPlayingBoardEvent : public wxEvent
@@ -92,6 +140,36 @@ typedef void (wxEvtHandler::* WinStateRestoreEventFunction)(WinStateRestoreEvent
     wx__DECLARE_EVT0(WM_WINSTATE_RESTORE_WX, WinStateRestoreEventHandler(func))
 
 #define WM_SELECT_BOARD_OBJLIST (WM_USER + 214) // WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
+class SelectBoardObjListEvent : public wxEvent
+{
+public:
+    SelectBoardObjListEvent(const CPlayBoard& b,
+                            const std::vector<CB::not_null<CDrawObj*>>& l);
+
+    const CPlayBoard& GetBoard() const { return board; }
+    const std::vector<CB::not_null<CDrawObj*>>& GetObjList() const
+    {
+        return objList;
+    }
+
+    wxEvent* Clone() const override { return new SelectBoardObjListEvent(*this); }
+
+private:
+    const CPlayBoard& board;
+    const std::vector<CB::not_null<CDrawObj*>>& objList;
+};
+wxDECLARE_EVENT(WM_SELECT_BOARD_OBJLIST_WX, SelectBoardObjListEvent);
+inline SelectBoardObjListEvent::SelectBoardObjListEvent(const CPlayBoard& b,
+                            const std::vector<CB::not_null<CDrawObj*>>& l) :
+    wxEvent(wxID_ANY, WM_SELECT_BOARD_OBJLIST_WX),
+    board(b),
+    objList(l)
+{
+}
+typedef void (wxEvtHandler::* SelectBoardObjListEventFunction)(SelectBoardObjListEvent&);
+#define SelectBoardObjListEventHandler(func) wxEVENT_HANDLER_CAST(SelectBoardObjListEventFunction, func)
+#define EVT_SELECT_BOARD_OBJLIST(func) \
+    wx__DECLARE_EVT0(WM_SELECT_BOARD_OBJLIST_WX, SelectBoardObjListEventHandler(func))
 
 #define WM_MESSAGEBOX           (WM_USER + 215) // WPARAM = Opts. LPARAM = Msg ID or Ptr
 enum
