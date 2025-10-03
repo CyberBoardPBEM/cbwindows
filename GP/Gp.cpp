@@ -48,8 +48,11 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+wxDEFINE_EVENT(WM_ROTATEPIECE_DELTA_WX, RotatePieceDeltaEvent);
+wxDEFINE_EVENT(WM_CENTERBOARDONPOINT_WX, CenterBoardOnPointEvent);
 wxDEFINE_EVENT(WM_SHOWPLAYINGBOARD_WX, ShowPlayingBoardEvent);
 wxDEFINE_EVENT(WM_WINSTATE_RESTORE_WX, WinStateRestoreEvent);
+wxDEFINE_EVENT(WM_SELECT_BOARD_OBJLIST_WX, SelectBoardObjListEvent);
 
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
