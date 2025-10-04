@@ -198,8 +198,7 @@ GameElement CGamDoc::GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj,
     return elem;
 }
 
-void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip,
-    CB::string* pStrTitle /* = NULL */) const
+void CGamDoc::GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip) const
 {
     if (pDObj.GetType() == CDrawObj::drawPieceObj)
     {
@@ -273,7 +272,7 @@ void CGamDoc::DoEditObjectText(const CDrawObj& pDObj)
     CEditElementTextDialog dlg;
 
     CB::string strTip;
-    GetTipTextForObject(pDObj, strTip, NULL);
+    GetTipTextForObject(pDObj, strTip);
 
     dlg.m_strText = strTip;
 
