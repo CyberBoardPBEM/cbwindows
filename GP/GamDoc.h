@@ -378,7 +378,7 @@ public:
     CB::string  GetGameElementString(GameElement gelem) const;
     BOOL        HasGameElementString(GameElement gelem) const;
     void        SetGameElementString(GameElement gelem, const CB::string* pszString);
-    void        GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip, CB::string* pStrTitle = NULL) const;
+    void        GetTipTextForObject(const CDrawObj& pDObj, CB::string &strTip) const;
     // Invalid_v<size_t> = top
     GameElement GetGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>) const;
     GameElement GetVerifiedGameElementCodeForObject(const CDrawObj& pDObj, size_t nSide = Invalid_v<size_t>) const;

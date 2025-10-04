@@ -96,9 +96,8 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             rct = WorkspaceToClient(rct);
 
             CB::string strTip;
-            CB::string strTitle;
             if (pDoc.IsShowingObjectTips())
-                pDoc.GetTipTextForObject(*pDObj, strTip, &strTitle);
+                pDoc.GetTipTextForObject(*pDObj, strTip);
 
             // All this stuff is used to annotate tips with owner names
             // when player accounts are active.
@@ -136,9 +135,6 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             if (!strTip.empty())
             {
                 m_toolHitTip.AddTool(this, strTip, rct, ID_TIP_PLAYBOARD_HIT);
-
-                if (!strTitle.empty())
-                    m_toolHitTip.SendMessage(TTM_SETTITLE, 0, reinterpret_cast<LPARAM>(strTitle.v_str()));
 
                 m_toolHitTip.Activate(TRUE);
             }
