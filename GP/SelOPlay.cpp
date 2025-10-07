@@ -83,7 +83,7 @@ void CHandleList::AddHandle(POINT pntNew)
 
 /////////////////////////////////////////////////////////////////////
 
-void CSelection::DrawTracker(CDC& pDC, TrackMode eMode) const
+void CSelection::DrawTracker(wxDC& pDC, TrackMode eMode) const
 {
     if (eMode == trkSelected)
         DrawHandles(pDC);
@@ -91,13 +91,16 @@ void CSelection::DrawTracker(CDC& pDC, TrackMode eMode) const
         DrawTrackingImage(pDC, eMode);
 }
 
-void CSelection::DrawHandles(CDC& pDC) const
+void CSelection::DrawHandles(wxDC& pDC) const
 {
     int n = GetHandleCount();
+    CB::DCLogicalFunctionChanger setLogFunc(pDC, wxXOR);
+    wxDCPenChanger setPen(pDC, *wxWHITE_PEN);
+    wxDCBrushChanger setBrush(pDC, *wxWHITE_BRUSH);
     for (int i = 0; i < n; i++)
     {
-        CRect rect = GetHandleRect(i);
-        pDC.PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), DSTINVERT);
+        wxRect rect = CB::Convert(GetHandleRect(i));
+        pDC.DrawRectangle(rect);
     }
 }
 
@@ -118,7 +121,7 @@ void CSelection::InvalidateHandles()
     for (int i = 0; i < n; i++)
     {
         CRect rct = GetHandleRect(i);
-        m_pView->InvalidateWorkspaceRect(&rct, FALSE);
+        m_pView->InvalidateWorkspaceRect(CB::Convert(rct), FALSE);
     }
 }
 
@@ -126,24 +129,24 @@ void CSelection::InvalidateHandles()
 CRect CSelection::GetHandleRect(int nHandleID) const
 {
     // Get the center of the handle in logical coords
-    CPoint point = GetHandleLoc(nHandleID);
+    wxPoint point = CB::Convert(GetHandleLoc(nHandleID));
 
     // Convert point to client coords
     point = m_pView->WorkspaceToClient(point);
 
     // Calc CRect of handle in device coords
-    CRect rect(point.x-3, point.y-3, point.x+3, point.y+3);
+    wxRect rect(wxPoint(point.x-3, point.y-3), wxSize(6, 6));
 
     rect = m_pView->ClientToWorkspace(rect);
 
-    return rect;
+    return CB::Convert(rect);
 }
 
 void CSelection::Invalidate()
 {
     CRect rct = m_rect;
     rct = m_pObj->GetEnclosingRect();
-    m_pView->InvalidateWorkspaceRect(&rct, FALSE);
+    m_pView->InvalidateWorkspaceRect(CB::Convert(rct), FALSE);
 }
 
 void CSelection::Open()
@@ -151,26 +154,29 @@ void CSelection::Open()
     if (m_pObj->GetType() == CDrawObj::drawMarkObj ||
         m_pObj->GetType() == CDrawObj::drawPieceObj)
     {
-        m_pView->SendMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_EDIT_ELEMENT_TEXT), uint16_t(0)));
+        wxCommandEvent event(wxEVT_MENU, XRCID("ID_EDIT_ELEMENT_TEXT"));
+        m_pView->ProcessWindowEvent(event);
     }
 }
 
+#if 0
 //=---------------------------------------------------=//
 // Static methods...
 
-void CSelection::SetupTrackingDraw(CDC& pDC)
+void CSelection::SetupTrackingDraw(wxDC& pDC)
 {
     c_nPrvROP2 = pDC.SetROP2(R2_XORPEN);
     c_pPrvPen = pDC.SelectObject(&c_penDot);
     c_pPrvBrush = (CBrush*)pDC.SelectStockObject(NULL_BRUSH);
 }
 
-void CSelection::CleanUpTrackingDraw(CDC& pDC)
+void CSelection::CleanUpTrackingDraw(wxDC& pDC)
 {
     pDC.SetROP2(c_nPrvROP2);
     pDC.SelectObject(c_pPrvPen);
     pDC.SelectObject(c_pPrvBrush);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////
 // Line Selection Processing
@@ -181,12 +187,16 @@ void CSelLine::AddHandles(CHandleList& listHandles)
     listHandles.AddHandle(GetHandleLoc(hitPtB));
 }
 
-void CSelLine::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelLine::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
+#if 0
     SetupTrackingDraw(pDC);
     pDC.MoveTo(m_rect.left, m_rect.top);
     pDC.LineTo(m_rect.right, m_rect.bottom);
     CleanUpTrackingDraw(pDC);
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
 HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
@@ -245,15 +255,16 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     CLine& pObj = static_cast<CLine&>(*m_pObj);
     if (bInvalidate)
     {
-        CRect rctA = pObj.GetEnclosingRect();
-        CRect rctB;
-        pObj.GetLine(rctB);
-        rctB.NormalizeRect();
+        wxRect rctA = CB::Convert(pObj.GetEnclosingRect());
+        CRect rctBMfc;
+        pObj.GetLine(rctBMfc);
+        rctBMfc.NormalizeRect();
+        wxRect rctB = CB::Convert(rctBMfc);
         rctB = m_pView->WorkspaceToClient(rctB);
-        rctB.InflateRect(handleHalfWidth, handleHalfWidth);
+        rctB.Inflate(handleHalfWidth, handleHalfWidth);
         rctB = m_pView->ClientToWorkspace(rctB);
-        rctA |= rctB;       // Make sure we erase the handles
-        m_pView->InvalidateWorkspaceRect(&rctA, FALSE);
+        rctA.Union(rctB);       // Make sure we erase the handles
+        m_pView->InvalidateWorkspaceRect(rctA, FALSE);
     }
     pObj.SetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom);
     if (bUpdateObjectExtent)
@@ -270,7 +281,7 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     if (bInvalidate)
     {
         CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
+        m_pView->InvalidateWorkspaceRect(CB::Convert(rct));
     }
 }
 
@@ -285,11 +296,15 @@ void CSelGeneric::AddHandles(CHandleList& listHandles)
     listHandles.AddHandle(GetHandleLoc(hitBottomLeft));
 }
 
-void CSelGeneric::DrawTrackingImage(CDC& pDC, TrackMode eMode) const
+void CSelGeneric::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
+#if 0
     SetupTrackingDraw(pDC);
-    pDC.Rectangle(m_rect);
+    pDC.DrawRectangle(CB::Convert(m_rect));
     CleanUpTrackingDraw(pDC);
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
 // Returns handle location in logical coords.
@@ -314,11 +329,11 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
 {
     if (bInvalidate)
     {
-        CRect rct = m_pObj->GetRect();
+        wxRect rct = CB::Convert(m_pObj->GetRect());
         rct = m_pView->WorkspaceToClient(rct);
-        rct.InflateRect(handleHalfWidth, handleHalfWidth);
+        rct.Inflate(handleHalfWidth, handleHalfWidth);
         rct = m_pView->ClientToWorkspace(rct);
-        m_pView->InvalidateWorkspaceRect(&rct);
+        m_pView->InvalidateWorkspaceRect(rct);
     }
     if (bUpdateObjectExtent)
     {
@@ -335,7 +350,7 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     if (bInvalidate)
     {
         CRect rct = m_pObj->GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(&rct);
+        m_pView->InvalidateWorkspaceRect(CB::Convert(rct));
     }
 }
 
@@ -475,13 +490,13 @@ void CSelList::Offset(CPoint ptDelta)
 // Called by view OnDraw(). This entry makes it possible
 // to turn off handles during a drag operation.
 
-void CSelList::OnDraw(CDC& pDC)
+void CSelList::OnDraw(wxDC& pDC)
 {
     if (m_eTrkMode == trkSelected)
         DrawTracker(pDC);
 }
 
-void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
+void CSelList::DrawTracker(wxDC& pDC, TrackMode eTrkMode)
 {
     if (eTrkMode != trkCurrent)
         m_eTrkMode = eTrkMode;
@@ -491,11 +506,16 @@ void CSelList::DrawTracker(CDC& pDC, TrackMode eTrkMode)
         // Drawing selection handles. Draw them using the
         // handle list so when an even number of identical
         // points don't XOR themselves out of existance.
+        CB::DCLogicalFunctionChanger setLogFunc(pDC, wxXOR);
+        wxDCPenChanger setPen(pDC, *wxWHITE_PEN);
+        wxDCBrushChanger setBrush(pDC, *wxWHITE_BRUSH);
         POSITION pos = m_listHandles.GetHeadPosition();
         while (pos != NULL)
         {
             POINT pnt = m_listHandles.GetNext(pos);
-            pDC.PatBlt(pnt.x-3, pnt.y-3, 6, 6, DSTINVERT);
+            wxRect rect(wxPoint(pnt.x - 3, pnt.y - 3),
+                        wxSize(6, 6));
+            pDC.DrawRectangle(rect);
         }
     }
     else
@@ -520,7 +540,7 @@ void CSelList::InvalidateListHandles(BOOL bUpdate)
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
-        m_pView->UpdateWindow();
+        m_pView->Update();
 }
 
 void CSelList::InvalidateList(BOOL bUpdate)
@@ -534,7 +554,7 @@ void CSelList::InvalidateList(BOOL bUpdate)
         bFoundOne = TRUE;
     }
     if (bFoundOne && bUpdate)
-        m_pView->UpdateWindow();
+        m_pView->Update();
 }
 
 void CSelList::PurgeList(BOOL bInvalidate)

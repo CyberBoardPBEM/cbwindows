@@ -1,7 +1,7 @@
 // SelOPlay.h -- contains class definitions for selection proxies. Used
 //  in concert with the selection tool.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -95,7 +95,7 @@ public:
     virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
     virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
     // ------- //
-    virtual void DrawTracker(CDC& pDC, TrackMode eMode) const /* override */;
+    virtual void DrawTracker(wxDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
     virtual void Invalidate() /* override */;
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -109,15 +109,15 @@ protected:
     virtual CRect GetHandleRect(int nHandleID) const /* override */;
     virtual CPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
     virtual int GetHandleCount() const /* override */ = 0;
-    virtual void DrawHandles(CDC& pDC) const /* override */;
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const /* override */ = 0;
+    virtual void DrawHandles(wxDC& pDC) const /* override */;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const /* override */ = 0;
 
 // Implementation
 protected:
     RefPtr<CPlayBoardView> m_pView;            // Selection's view
     // -- Class level support methods -- //
-    static void SetupTrackingDraw(CDC& pDC);
-    static void CleanUpTrackingDraw(CDC& pDC);
+    static void SetupTrackingDraw(wxDC& pDC);
+    static void CleanUpTrackingDraw(wxDC& pDC);
     // -- Class variables -- //
     static CPen     NEAR c_penDot;
     static int      NEAR c_nPrvROP2;
@@ -146,7 +146,7 @@ public:
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual CPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -173,7 +173,7 @@ public:
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
-    virtual void DrawTrackingImage(CDC& pDC, TrackMode eMode) const override;
+    virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
     virtual CPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
@@ -258,8 +258,8 @@ public:
     void Offset(CPoint ptDelta);
     void MoveHandle(int m_nHandle, CPoint point);
     // -------- //
-    void OnDraw(CDC& pDC);  // Called by view OnDraw()
-    void DrawTracker(CDC& pDC, TrackMode eTrkMode = trkCurrent);
+    void OnDraw(wxDC& pDC);  // Called by view OnDraw()
+    void DrawTracker(wxDC& pDC, TrackMode eTrkMode = trkCurrent);
     // -------- //
     void UpdateObjects(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE );

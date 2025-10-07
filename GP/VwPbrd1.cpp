@@ -50,18 +50,22 @@ const int scrollZone = 16;
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
+void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
 {
     CGamDoc& pDoc = GetDocument();
     if (!pDoc.IsShowingObjectTips() && pDoc.IsOwnerTipsDisabled())
     {
         // Delete previous tool definition
-        m_toolHitTip.DelTool(this, ID_TIP_PLAYBOARD_HIT);
+        if (!m_toolHitTipRect.IsEmpty())
+        {
+            m_toolHitTip.Delete(*this, m_toolHitTipRect);
+            m_toolHitTipRect = wxRect();
+        }
         m_pCurTipObj = NULL;
         return;
     }
 
-    CPoint pnt(pointClient);
+    wxPoint pnt(pointClient);
     pnt = ClientToWorkspace(pnt);
     CDrawObj* pDObj = ObjectHitTest(pnt);
 
@@ -87,12 +91,16 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
     if (pDObj != m_pCurTipObj)
     {
         // Object changed so delete previous tool definition
-        m_toolHitTip.DelTool(this, ID_TIP_PLAYBOARD_HIT);
+        if (!m_toolHitTipRect.IsEmpty())
+        {
+            m_toolHitTip.Delete(*this, m_toolHitTipRect);
+            m_toolHitTipRect = wxRect();
+        }
         m_pCurTipObj = pDObj;
         if (pDObj != NULL)
         {
             // New object found so create a new tip
-            CRect rct = pDObj->GetRect();
+            wxRect rct = CB::Convert(pDObj->GetRect());
             rct = WorkspaceToClient(rct);
 
             CB::string strTip;
@@ -134,43 +142,53 @@ void CPlayBoardView::DoToolTipHitProcessing(CPoint pointClient)
             }
             if (!strTip.empty())
             {
-                m_toolHitTip.AddTool(this, strTip, rct, ID_TIP_PLAYBOARD_HIT);
+                m_toolHitTip.Add(*this, rct, strTip);
+                m_toolHitTipRect = rct;
 
-                m_toolHitTip.Activate(TRUE);
+                m_toolHitTip.Enable(TRUE);
             }
             else
             {
                 // Delete previous tool definition
-                m_toolHitTip.DelTool(this, ID_TIP_PLAYBOARD_HIT);
+                if (!m_toolHitTipRect.IsEmpty())
+                {
+                    m_toolHitTip.Delete(*this, m_toolHitTipRect);
+                    m_toolHitTipRect = wxRect();
+                }
                 m_pCurTipObj = NULL;
                 return;
             }
         }
         else
-            m_toolHitTip.Activate(FALSE);
+            m_toolHitTip.Enable(FALSE);
     }
 }
 
 void CPlayBoardView::ClearToolTip()
 {
     // Object changed so delete previous tool definition
-    m_toolHitTip.DelTool(this, ID_TIP_PLAYBOARD_HIT);
+    if (!m_toolHitTipRect.IsEmpty())
+    {
+        m_toolHitTip.Delete(*this, m_toolHitTipRect);
+        m_toolHitTipRect = wxRect();
+    }
     m_pCurTipObj = NULL;
-    m_toolHitTip.Activate(FALSE);
+    m_toolHitTip.Enable(FALSE);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::SetNotificationTip(CPoint pointClient, UINT nResID)
+void CPlayBoardView::SetNotificationTip(wxPoint pointClient, UINT nResID)
 {
     CB::string str = CB::string::LoadString(nResID);
     SetNotificationTip(pointClient, &str);
 }
 
-void CPlayBoardView::SetNotificationTip(CPoint pointClient, const CB::string* pszTip)
+void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string* pszTip)
 {
     ClearNotificationTip();
 
+#if 0
     TOOLINFO ti;
     m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_PLAYBOARD_MSG);
     ti.uFlags |= TTF_TRACK;
@@ -187,10 +205,14 @@ void CPlayBoardView::SetNotificationTip(CPoint pointClient, const CB::string* ps
         (LPARAM)MAKELONG(static_cast<int16_t>(pointScreen.x), static_cast<int16_t>(pointScreen.y)));
 
     SetTimer(ID_TIP_MSG_TIMER, MAX_TIP_MSG_TIME, NotificationTipTimeoutHandler);
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
 void CPlayBoardView::ClearNotificationTip()
 {
+#if 0
     KillTimer(ID_TIP_MSG_TIMER);            // Kill it in case it's still running
 
     CToolInfo ti;
@@ -198,8 +220,12 @@ void CPlayBoardView::ClearNotificationTip()
     m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
     m_toolMsgTip.DelTool(this, ID_TIP_PLAYBOARD_MSG);
     m_toolMsgTip.Activate(FALSE);
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
+#if 0
 void CALLBACK CPlayBoardView::NotificationTipTimeoutHandler(HWND hwnd,
     UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
@@ -207,18 +233,19 @@ void CALLBACK CPlayBoardView::NotificationTipTimeoutHandler(HWND hwnd,
     ASSERT(pView != NULL);
     pView->ClearNotificationTip();
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
-CDrawObj* CPlayBoardView::ObjectHitTest(CPoint point)
+CDrawObj* CPlayBoardView::ObjectHitTest(wxPoint point)
 {
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
-    return pDwg.HitTest(point);
+    return pDwg.HitTest(CB::Convert(point));
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
+void CPlayBoardView::SelectWithinRect(wxRect rctNet, BOOL bInclIntersects)
 {
     CGamDoc& pDoc = GetDocument();
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
@@ -230,9 +257,9 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
         if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
-                ((pObj.GetEnclosingRect() | rctNet) == rctNet)) ||
+                ((CB::Convert(pObj.GetEnclosingRect()).Union(rctNet)) == rctNet)) ||
                 (bInclIntersects &&
-                (!(pObj.GetEnclosingRect() & rctNet).IsRectEmpty())))
+                (!(CB::Convert(pObj.GetEnclosingRect()).Intersect(rctNet)).IsEmpty())))
             {
                 BOOL bOwnedByCurrentPlayer = TRUE;
                 if (pObj.GetType() == CDrawObj::drawPieceObj)
@@ -270,15 +297,15 @@ void CPlayBoardView::SelectWithinRect(CRect rctNet, BOOL bInclIntersects)
         NotifySelectListChange();
 }
 
-void CPlayBoardView::SelectAllUnderPoint(CPoint point)
+void CPlayBoardView::SelectAllUnderPoint(wxPoint point)
 {
     CDrawList* pDwg = m_pPBoard->GetPieceList();
-    ASSERT(pDwg);
+    wxASSERT(pDwg);
 
     BOOL bPieceSelected = FALSE;
 
     std::vector<CB::not_null<CDrawObj*>> selLst;
-    pDwg->DrillDownHitTest(point, selLst);
+    pDwg->DrillDownHitTest(CB::Convert(point), selLst);
 
     for (size_t i = size_t(0) ; i < selLst.size() ; ++i)
     {
@@ -446,83 +473,80 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CPoint CPlayBoardView::GetWorkspaceDim() const
+wxPoint CPlayBoardView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
-    CPoint pnt = (CPoint)m_pPBoard->GetBoard()->GetSize(m_nZoom);
+    wxSize size = CB::Convert(m_pPBoard->GetBoard()->GetSize(m_nZoom));
+    wxPoint pnt(size.x, size.y);
 
     // Translate to current scaling mode.
-    pnt -= (CSize)GetDeviceScrollPosition();
+    pnt = CalcScrolledPosition(pnt);
     pnt = ClientToWorkspace(pnt);
     return pnt;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-CPoint CPlayBoardView::WorkspaceToClient(CPoint point) const
+wxPoint CPlayBoardView::WorkspaceToClient(wxPoint point) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
-        point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
+        point = wxPoint(wsize.x - point.x, wsize.y - point.y);
     ScalePoint(point, vsize, wsize);
-    point -= (CSize)dpnt;
+    point = CalcScrolledPosition(point);
     return point;
 }
 
-CRect CPlayBoardView::WorkspaceToClient(CRect rect) const
+wxRect CPlayBoardView::WorkspaceToClient(wxRect rect) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
     {
-        rect = CRect(wsize.cx - rect.left, wsize.cy - rect.top,
-             wsize.cx - rect.right, wsize.cy - rect.bottom);
-        rect.NormalizeRect();
+        rect = wxRect(wxPoint(wsize.x - rect.GetLeft(), wsize.y - rect.GetTop()),
+             wxSize(-rect.GetWidth(), -rect.GetHeight()));
+        CB::Normalize(rect);
     }
     ScaleRect(rect, vsize, wsize);
-    rect -= dpnt;
+    rect.SetLeftTop(CalcScrolledPosition(rect.GetTopLeft()));
     return rect;
 }
 
-void CPlayBoardView::InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase)
+void CPlayBoardView::InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase)
 {
-    CRect rct(pRect);
+    wxRect rct(pRect);
     rct = WorkspaceToClient(rct);
-    rct.InflateRect(1, 1);
-    InvalidateRect(&rct, bErase);
+    rct.Inflate(1, 1);
+    RefreshRect(rct, bErase);
 }
 
-CPoint CPlayBoardView::ClientToWorkspace(CPoint point) const
+wxPoint CPlayBoardView::ClientToWorkspace(wxPoint point) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    point += (CSize)dpnt;
-    CSize wsize, vsize;
+    point = CalcUnscrolledPosition(point);
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
-        point = CPoint(wsize.cx - point.x, wsize.cy - point.y);
+        point = wxPoint(wsize.x - point.x, wsize.y - point.y);
     return point;
 }
 
-CRect CPlayBoardView::ClientToWorkspace(CRect rect) const
+wxRect CPlayBoardView::ClientToWorkspace(wxRect rect) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    rect += dpnt;
-    CSize wsize, vsize;
+    rect.SetLeftTop(CalcUnscrolledPosition(rect.GetLeftTop()));
+    wxSize wsize, vsize;
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
     if (m_pPBoard->IsBoardRotated180())
     {
-        rect = CRect(wsize.cx - rect.left, wsize.cy - rect.top,
-            wsize.cx - rect.right, wsize.cy - rect.bottom);
-        rect.NormalizeRect();
+        rect = wxRect(wxPoint(wsize.x - rect.GetLeft(), wsize.y - rect.GetTop()),
+            wxSize(-rect.GetWidth(), -rect.GetHeight()));
+        CB::Normalize(rect);
     }
     return rect;
 }
@@ -556,7 +580,7 @@ long CPlayBoardView::GridizeY(long yPos) const
     return yPos;
 }
 
-POINT CPlayBoardView::LimitPoint(POINT pPnt) const
+wxPoint CPlayBoardView::LimitPoint(wxPoint pPnt) const
 {
     const CBoard* pBoard = m_pPBoard->GetBoard();
     if (pPnt.x < 0) pPnt.x = 0;
@@ -568,37 +592,35 @@ POINT CPlayBoardView::LimitPoint(POINT pPnt) const
     return pPnt;
 }
 
-RECT CPlayBoardView::LimitRect(RECT pRct) const
+wxRect CPlayBoardView::LimitRect(wxRect rct) const
 {
-    CRect rct(pRct);
     const CBoard* pBoard = m_pPBoard->GetBoard();
 
-    if (rct.left < 0)
-        rct.OffsetRect(-rct.left, 0);
-    if (rct.top < 0)
-        rct.OffsetRect(0, -rct.top);
-    if (rct.right > pBoard->GetWidth(fullScale))
-        rct.OffsetRect(pBoard->GetWidth(fullScale) - rct.right, 0);
-    if (rct.bottom > pBoard->GetHeight(fullScale))
-        rct.OffsetRect(0, pBoard->GetHeight(fullScale) - rct.bottom);
-    pRct = rct;
-    return pRct;
+    if (rct.GetLeft() < 0)
+        rct.Offset(-rct.GetLeft(), 0);
+    if (rct.GetTop() < 0)
+        rct.Offset(0, -rct.GetTop());
+    if (rct.GetRight() > pBoard->GetWidth(fullScale))
+        rct.Offset(pBoard->GetWidth(fullScale) - rct.GetRight(), 0);
+    if (rct.GetBottom() > pBoard->GetHeight(fullScale))
+        rct.Offset(0, pBoard->GetHeight(fullScale) - rct.GetBottom());
+    return rct;
 }
 
-BOOL CPlayBoardView::IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK, BOOL* pbYOK) const
+BOOL CPlayBoardView::IsRectFullyOnBoard(const wxRect& pRct, BOOL* pbXOK, BOOL* pbYOK) const
 {
-    CRect rct(pRct);
+    wxRect rct(pRct);
     const CBoard* pBoard = m_pPBoard->GetBoard();
     BOOL bXOK = TRUE;
     BOOL bYOK = TRUE;
     BOOL bOK = TRUE;
 
-    if (rct.left < 0 || rct.right > pBoard->GetWidth(fullScale))
+    if (rct.GetLeft() < 0 || rct.GetRight() > pBoard->GetWidth(fullScale))
     {
         bXOK = FALSE;
         bOK = FALSE;
     }
-    if (rct.top < 0 || rct.bottom > pBoard->GetHeight(fullScale))
+    if (rct.GetTop() < 0 || rct.GetBottom() > pBoard->GetHeight(fullScale))
     {
         bYOK = FALSE;
         bOK = FALSE;
@@ -608,7 +630,7 @@ BOOL CPlayBoardView::IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK, BOOL* pbY
     return bOK;
 }
 
-CPoint CPlayBoardView::AdjustPoint(CPoint pnt) const
+wxPoint CPlayBoardView::AdjustPoint(wxPoint pnt) const
 {
     pnt.x = GridizeX(pnt.x);
     pnt.y = GridizeY(pnt.y);
@@ -616,13 +638,13 @@ CPoint CPlayBoardView::AdjustPoint(CPoint pnt) const
     return pnt;
 }
 
-CRect CPlayBoardView::AdjustRect(CRect rct) const
+wxRect CPlayBoardView::AdjustRect(wxRect rct) const
 {
-    CPoint pnt;
+    wxPoint pnt;
     if (m_pPBoard->m_bGridRectCenters)
         pnt = GetMidRect(rct);
     else
-        pnt = rct.TopLeft();
+        pnt = rct.GetLeftTop();
 
     pnt.x = GridizeX(pnt.x);
     pnt.y = GridizeY(pnt.y);
@@ -631,12 +653,12 @@ CRect CPlayBoardView::AdjustRect(CRect rct) const
     if (m_pPBoard->m_bGridRectCenters)
     {
         if (pnt != GetMidRect(rct))
-            rct.OffsetRect(pnt - GetMidRect(rct));
+            rct.Offset(pnt - GetMidRect(rct));
     }
     else
     {
-        if (pnt != rct.TopLeft())
-            rct.OffsetRect(pnt - rct.TopLeft());
+        if (pnt != rct.GetLeftTop())
+            rct.Offset(pnt - rct.GetLeftTop());
     }
     rct = LimitRect(rct);
     return rct;
@@ -644,44 +666,43 @@ CRect CPlayBoardView::AdjustRect(CRect rct) const
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::ScrollWorkspacePointIntoView(CPoint point)
+void CPlayBoardView::ScrollWorkspacePointIntoView(wxPoint point)
 {
-    CRect rct;
-    GetClientRect(&rct);
-    if ((rct.Height() < 2 * viewZone) || (rct.Width() < 2 * viewZone))
+    wxRect rct = GetClientRect();
+    if ((rct.GetHeight() < 2 * viewZone) || (rct.GetWidth() < 2 * viewZone))
     {
         // Attempt to center point.
         CenterViewOnWorkspacePoint(point);
         return;
     }
-    rct.InflateRect(-viewZone, -viewZone);
+    rct.Inflate(-viewZone, -viewZone);
     rct = ClientToWorkspace(rct);
-    if (rct.PtInRect(point))
+    if (rct.Contains(point))
         return;                     // Everthing is ok
     CenterViewOnWorkspacePoint(point);
 }
 
-void CPlayBoardView::CenterViewOnWorkspacePoint(CPoint point)
+void CPlayBoardView::CenterViewOnWorkspacePoint(wxPoint point)
 {
     point = WorkspaceToClient(point);
-    CRect rct;
-    GetClientRect(&rct);
-    CPoint pt = GetMidRect(rct);
-    CSize size = point - pt;
-    CPoint newUpLeft = GetDeviceScrollPosition() + size;
+    wxRect rct = GetClientRect();
+    wxPoint pt = GetMidRect(rct);
+    wxPoint size = point - pt;
+    wxPoint newUpLeft = CalcUnscrolledPosition(size);
     // If the axis being scrolled is entirely visible then set
     // that scroll position to zero.
 
-    CSize sizeTotal = GetTotalSize();   // Logical is in device units for us
-    if (rct.Width() >= sizeTotal.cx)
+    wxSize sizeTotal = GetVirtualSize();   // Logical is in device units for us
+    if (rct.GetWidth() >= sizeTotal.x)
         newUpLeft.x = 0;
-    if (rct.Height() >= sizeTotal.cy)
+    if (rct.GetHeight() >= sizeTotal.y)
         newUpLeft.y = 0;
 
-    ScrollToPosition(newUpLeft);
-    UpdateWindow();
+    Scroll(newUpLeft);
+    Update();
 }
 
+#if 0
 //////////////////////////////////////////////////////////////////////////
 // point is in client coords
 
@@ -734,5 +755,6 @@ BOOL CPlayBoardView::ProcessAutoScroll(CPoint point)
     }
     return FALSE;
 }
+#endif
 
 

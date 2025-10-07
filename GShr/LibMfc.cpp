@@ -1336,6 +1336,16 @@ namespace CB
                         return XRCID("ID_PPROJITEM_PROPERTIES");
                     case ID_PPROJITEM_VIEW:
                         return XRCID("ID_PPROJITEM_VIEW");
+                    case ID_VIEW_BOARD_ROTATE180:
+                        return XRCID("ID_VIEW_BOARD_ROTATE180");
+                    case ID_VIEW_FULLSCALEBRD:
+                        return XRCID("ID_VIEW_FULLSCALEBRD");
+                    case ID_VIEW_HALFSCALEBRD:
+                        return XRCID("ID_VIEW_HALFSCALEBRD");
+                    case ID_VIEW_SMALLSCALEBRD:
+                        return XRCID("ID_VIEW_SMALLSCALEBRD");
+                    case ID_VIEW_TOGGLESCALE:
+                        return XRCID("ID_VIEW_TOGGLESCALE");
                     default:
                         return wxID_NONE;
                 }

@@ -41,21 +41,21 @@
 class CPlayBoard;
 enum  TileScale;
 
-class CPlayBoardView : public CScrollView
+class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledCanvas>
 {
+private:
     friend class CPlayBoardFrame;
-
-public:
-    CPlayBoardView();
-protected:
-    DECLARE_DYNAMIC(CPlayBoardView)
+    friend class CPlayBoardViewContainer;
+    typedef CB::ProcessEventOverride<wxScrolledCanvas> BASE;
+    CPlayBoardView(CPlayBoardViewContainer& parent);
 
 // Attributes
 public:
     const CGamDoc& GetDocument() const;
     CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
-    const CPlayBoard& GetPlayBoard() const { return CheckedDeref(m_pPBoard); }
+    const CPlayBoard& GetPlayBoard() const { return *m_pPBoard; }
     CPlayBoard& GetPlayBoard() { return const_cast<CPlayBoard&>(std::as_const(*this).GetPlayBoard()); }
+    CFrameWnd* GetParentFrame();
 
 // Operations
 public:
@@ -63,7 +63,7 @@ public:
 // Implementation
 public:
     ~CPlayBoardView() override;
-    void OnDraw(CDC* pDC) override;      // Overridden to draw this view
+    void OnDraw(wxDC& pDC) override;      // Overridden to draw this view
 
 // Tools and selection support
 public:
@@ -72,56 +72,58 @@ public:
     void NotifySelectListChange();
     const CSelList& GetSelectList() const { return m_selList; }
     CSelList& GetSelectList() { return const_cast<CSelList&>(std::as_const(*this).GetSelectList()); }
-    CPoint GetWorkspaceDim() const;
+    wxPoint GetWorkspaceDim() const;
 
     void AddDrawObject(CDrawObj::OwnerPtr pObj);
     void MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate = TRUE);
 
-    void PrepareScaledDC(CDC& pDC, CRect* pRct = NULL, BOOL bHonor180Flip = FALSE) const;
-    void OnPrepareScaledDC(CDC& pDC, BOOL bHonor180Flip = FALSE);
+    void PrepareScaledDC(wxDC& pDC, wxRect* pRct = NULL, BOOL bHonor180Flip = FALSE) const;
+    void OnPrepareScaledDC(wxDC& pDC, BOOL bHonor180Flip = FALSE);
 
-    [[nodiscard]] CPoint AdjustPoint(CPoint pnt) const;      // Limit and grid processing
-    [[nodiscard]] CRect AdjustRect(CRect rct) const;
+    [[nodiscard]] wxPoint AdjustPoint(wxPoint pnt) const;      // Limit and grid processing
+    [[nodiscard]] wxRect AdjustRect(wxRect rct) const;
 
-    void SelectWithinRect(CRect rctNet, BOOL bInclIntersects = FALSE);
-    void SelectAllUnderPoint(CPoint point);
-    CDrawObj* ObjectHitTest(CPoint point);
+    void SelectWithinRect(wxRect rctNet, BOOL bInclIntersects = FALSE);
+    void SelectAllUnderPoint(wxPoint point);
+    CDrawObj* ObjectHitTest(wxPoint point);
     void SelectAllObjectsInList(const std::vector<CB::not_null<CDrawObj*>>& pLst);
     void SelectAllObjectsInTable(const std::vector<CB::not_null<CDrawObj*>>& pTbl);
     void SelectMarkersInGroup(size_t nGroup);
     void SelectAllMarkers();
 
     // TEMP FOR NOW!
-    COLORREF GetTextColor() const { return RGB(255, 0, 0); }
-    COLORREF GetLineColor() const { return RGB(0, 255, 0); }
+    wxColour GetTextColor() const { return wxColour(255, 0, 0); }
+    wxColour GetLineColor() const { return wxColour(0, 255, 0); }
     UINT GetLineWidth() const { return 3; }
 
 // Coordinate scaling...
 public:
-    [[nodiscard]] CPoint WorkspaceToClient(CPoint point) const;
-    [[nodiscard]] CRect WorkspaceToClient(CRect rect) const;
-    [[nodiscard]] CPoint ClientToWorkspace(CPoint point) const;
-    [[nodiscard]] CRect ClientToWorkspace(CRect rect) const;
-    void InvalidateWorkspaceRect(const CRect& pRect, BOOL bErase = FALSE);
+    [[nodiscard]] wxPoint WorkspaceToClient(wxPoint point) const;
+    [[nodiscard]] wxRect WorkspaceToClient(wxRect rect) const;
+    [[nodiscard]] wxPoint ClientToWorkspace(wxPoint point) const;
+    [[nodiscard]] wxRect ClientToWorkspace(wxRect rect) const;
+    void InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase = FALSE);
 
 // View support
 public:
-    void ScrollWorkspacePointIntoView(CPoint point);
-    void CenterViewOnWorkspacePoint(CPoint point);
-    BOOL CheckAutoScroll(CPoint point);
-    BOOL ProcessAutoScroll(CPoint point);
+    void ScrollWorkspacePointIntoView(wxPoint point);
+    void CenterViewOnWorkspacePoint(wxPoint point);
+    BOOL CheckAutoScroll(wxPoint point);
+    BOOL ProcessAutoScroll(wxPoint point);
     void SetOurScrollSizes(TileScale nZoom);
     void DoViewScaleBrd(TileScale nZoom);
 
 // Tooltip Support
 public:
-    void SetNotificationTip(CPoint pointClient, UINT nResID);
-    void SetNotificationTip(CPoint pointClient, const CB::string* pszTip);
+    void SetNotificationTip(wxPoint pointClient, UINT nResID);
+    void SetNotificationTip(wxPoint pointClient, const CB::string* pszTip);
     void ClearNotificationTip();
     void ClearToolTip();
+#if 0
     static void CALLBACK NotificationTipTimeoutHandler(HWND hwnd, UINT uMsg,
         UINT_PTR idEvent, DWORD dwTime);
-    void DoToolTipHitProcessing(CPoint pointClient);
+#endif
+    void DoToolTipHitProcessing(wxPoint pointClient);
 
 // Grid and limiting support
 protected:
@@ -133,42 +135,55 @@ protected:
     void GridizeX(int& xPos) const;
     void GridizeY(int& yPos) const;
 #endif
-    [[nodiscard]] POINT LimitPoint(POINT pPnt) const;
-    [[nodiscard]] RECT LimitRect(RECT pRct) const;
-    BOOL IsRectFullyOnBoard(const RECT& pRct, BOOL* pbXOK = NULL, BOOL* pbYOK = NULL) const;
+    [[nodiscard]] wxPoint LimitPoint(wxPoint pPnt) const;
+    [[nodiscard]] wxRect LimitRect(wxRect pRct) const;
+    BOOL IsRectFullyOnBoard(const wxRect& pRct, BOOL* pbXOK = NULL, BOOL* pbYOK = NULL) const;
 
 // Implementation
+private:
+    // member declaration order determines construction order
+    RefPtr<CPlayBoardViewContainer> parent;
+    RefPtr<CGamDoc> document;
 protected:
-    CB::propagate_const<CPlayBoard*> m_pPBoard;          // Board that contains selections etc...
+    RefPtr<CPlayBoard> m_pPBoard;          // Board that contains selections etc...
     TileScale   m_nZoom;            // Current zoom level of view
     // -------- //
     BOOL        m_bInDrag;          // Currently being dragged over
     CB::propagate_const<CSelList*> m_pDragSelList;     // Pointer the select list being dragged
+#if 0
     uintptr_t    m_nTimerID;         // Used to control autoscrolls
+#endif
     // -------- //
     UINT        m_nCurToolID;       // Current tool ID
     // -------- //
-    CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
-    CToolTipCtrl m_toolHitTip;      // Tooltip hit support for view
+    CB::ToolTip m_toolMsgTip;      // Tooltip for notifications
+    CB::ToolTip m_toolHitTip;      // Tooltip hit support for view
+    wxRect m_toolHitTipRect = wxRect();
     CB::propagate_const<CDrawObj*> m_pCurTipObj;      // Currently hit tip object
 
     // Tables used to process relative piece rotations. DON'T Serialize!
     BOOL        m_bWheelRotation;   // Indicates the type of rotation being done
-    CPoint      m_pntWheelMid;      // The wheel rotation point
+    wxPoint     m_pntWheelMid;      // The wheel rotation point
     std::vector<uint16_t> m_tblCurAngles;     // Original angles of pieces
     std::vector<RefPtr<CDrawObj>> m_tblCurPieces;     // Pieces being rotated
-    std::vector<CPoint> m_tblMidPnt;       // X coord of piece midpoint
+    std::vector<wxPoint> m_tblMidPnt;       // X coord of piece midpoint
 
 // Implementation
 protected:
     BOOL IsBoardContentsAvailableToCurrentPlayer() const;
 
-    void AddPiece(CPoint pnt, PieceID pid);
+    void AddPiece(wxPoint pnt, PieceID pid);
 
     PToolType MapToolType(UINT nToolResID) const;
 
-    void SetupDrawListDC(CDC& pDC, CRect& pRct) const;
-    void RestoreDrawListDC(CDC& pDC) const;
+    class DCSetupDrawListDC
+    {
+    public:
+        DCSetupDrawListDC(const CPlayBoardView& rThis, wxDC& dc, wxRect& pRct);
+    private:
+        CB::DCUserScaleChanger scaleChanger;
+        CB::DCLogicalOriginChanger logOrgChanger;
+    };
 
     LRESULT DoDragPiece(const DragInfo& pdi);
     LRESULT DoDragMarker(const DragInfo& pdi);
@@ -182,23 +197,26 @@ protected:
     void DoAutostackOfSelectedObjects(int xStagger, int yStagger);
     void DoRotateRelative(BOOL bWheelRotation);
 
+#if 0
     BOOL DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point);
+#endif
 
 protected:
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnInitialUpdate();
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+#if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
     BOOL PreTranslateMessage(MSG* pMsg) override;
+#endif
     void OnActivateView(BOOL bActivate, CView* pActivateView,
-                    CView* pDeactiveView) override;
+                    CView* pDeactiveView);
 
-// Generated message map functions
 protected:
-    //{{AFX_MSG(CPlayBoardView)
-    afx_msg void OnViewFullScaleBrd();
-    afx_msg void OnUpdateViewFullScaleBrd(CCmdUI* pCmdUI);
-    afx_msg void OnViewHalfScaleBrd();
-    afx_msg void OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI);
+    void OnViewFullScaleBrd(wxCommandEvent& event);
+    void OnUpdateViewFullScaleBrd(wxUpdateUIEvent& pCmdUI);
+    void OnViewHalfScaleBrd(wxCommandEvent& event);
+    void OnUpdateViewHalfScaleBrd(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageRotateRelative(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
@@ -233,8 +251,10 @@ protected:
     afx_msg void OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI);
     afx_msg void OnActRotate();
     afx_msg void OnUpdateActRotate(CCmdUI* pCmdUI);
-    afx_msg void OnViewToggleScale();
-    afx_msg void OnUpdateViewToggleScale(CCmdUI* pCmdUI);
+#endif
+    void OnViewToggleScale(wxCommandEvent& event);
+    void OnUpdateViewToggleScale(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnViewPieces();
     afx_msg void OnUpdateViewPieces(CCmdUI* pCmdUI);
     afx_msg void OnEditCopy();
@@ -263,30 +283,48 @@ protected:
     afx_msg void OnUpdateActReleaseOwnership(CCmdUI* pCmdUI);
     afx_msg void OnActSetOwner();
     afx_msg void OnUpdateActSetOwner(CCmdUI* pCmdUI);
-    afx_msg void OnViewSmallScaleBoard();
-    afx_msg void OnUpdateViewSmallScaleBoard(CCmdUI* pCmdUI);
-    afx_msg void OnViewBoardRotate180();
-    afx_msg void OnUpdateViewBoardRotate180(CCmdUI* pCmdUI);
+#endif
+    void OnViewSmallScaleBoard(wxCommandEvent& event);
+    void OnUpdateViewSmallScaleBoard(wxUpdateUIEvent& pCmdUI);
+    void OnViewBoardRotate180(wxCommandEvent& event);
+    void OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-    //}}AFX_MSG
     afx_msg void OnSelectGroupMarkers(UINT nID);
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
     afx_msg void OnRotatePiece(UINT nID);
     afx_msg void OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID);
-    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+#endif
+    void OnMessageWindowState(WinStateEvent& event);
+#if 0
     afx_msg LRESULT OnMessageSelectBoardObjectList(WPARAM wParam, LPARAM lParam);
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnScrollWinLine(wxScrollWinEvent& event);
+    wxDECLARE_EVENT_TABLE();
+#if 0
 public:
     afx_msg void OnActRotateGroupRelative();
     afx_msg void OnUpdateActRotateGroupRelative(CCmdUI *pCmdUI);
+#endif
+
+private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override;
+
+    /* This view should support scrolling by individual pixels,
+        but don't make the line-up and line-down scrolling that
+        slow.  */
+    int m_xScrollPixelsPerLine;
+    int m_yScrollPixelsPerLine;
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
 inline const CGamDoc& CPlayBoardView::GetDocument() const
-   { return *CB::ToCGamDoc(m_pDocument); }
+   { return *document; }
 #endif
 
-class CPlayBoardViewContainer : public CView
+class CPlayBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;
@@ -295,6 +333,10 @@ public:
     {
         return const_cast<CPlayBoardView&>(static_cast<const CPlayBoardView&>(std::as_const(*this)));
     }
+
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnActivateView(BOOL bActivate, CView* pActivateView,
+                    CView* pDeactiveView) override;
 
 private:
     CPlayBoardViewContainer();         // used by dynamic creation
@@ -305,9 +347,22 @@ private:
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CPlayBoardView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    // owned by wx
+    CB::propagate_const<CPlayBoardView*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+inline CCmdTarget& CPlayBoardView::Get()
+{
+    return *parent;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
