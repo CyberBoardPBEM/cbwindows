@@ -29,6 +29,7 @@
 #include    "FrmProj.h"
 #include    "Board.h"
 #include    "PBoard.h"
+#include    "VwPbrd.h"
 #include    "WStateGp.h"
 
 enum { gpFrmProject = 0, gpFrmPlayBoard = 1 };
@@ -48,7 +49,7 @@ CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
     {
         // The second user code is the board's serial number.
         CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager().GetPBoardBySerial(pWse.m_boardID));
-        CView* pView = pDoc->FindPBoardView(pPBoard);
+        CPlayBoardView* pView = pDoc->FindPBoardView(pPBoard);
         if (pView == NULL)
         {
             // No frame open for board. Create it.

@@ -1,6 +1,6 @@
 // FrmPbrd.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -48,11 +48,14 @@ IMPLEMENT_DYNCREATE(CPlayBoardFrame, CMDIChildWndEx)
 
 BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
     //{{AFX_MSG_MAP(CPlayBoardFrame)
+#if 0
     ON_COMMAND(ID_VIEW_HALFSCALEBRD, OnViewHalfScaleBrd)
     ON_UPDATE_COMMAND_UI(ID_VIEW_HALFSCALEBRD, OnUpdateViewHalfScaleBrd)
     ON_COMMAND(ID_VIEW_FULLSCALEBRD, OnViewFullScaleBrd)
     ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCALEBRD, OnUpdateViewFullScaleBrd)
+#endif
     ON_WM_CLOSE()
+#if 0
     ON_COMMAND(ID_VIEW_SNAPGRID, OnViewSnapGrid)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SNAPGRID, OnUpdateViewSnapGrid)
     ON_COMMAND(ID_EDIT_SELALLMARKERS, OnEditSelAllMarkers)
@@ -80,13 +83,16 @@ BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDONE, OnUpdateActPlotDone)
     ON_COMMAND(ID_ACT_PLOTDISCARD, OnActPlotDiscard)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDISCARD, OnUpdateActPlotDiscard)
+#endif
     ON_COMMAND(ID_VIEW_SPLITBOARDROWS, OnViewSplitBoardRows)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SPLITBOARDROWS, OnUpdateViewSplitBoardRows)
     ON_COMMAND(ID_VIEW_SPLITBOARDCOLS, OnViewSplitBoardCols)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SPLITBOARDCOLS, OnUpdateViewSplitBoardCols)
     //}}AFX_MSG_MAP
+#if 0
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
+#endif
     // Other messages
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
@@ -413,8 +419,13 @@ LRESULT CPlayBoardFrame::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 LRESULT CPlayBoardFrame::SendMessageToActiveBoardPane(UINT nMsg, WPARAM wParam,
     LPARAM lParam)
 {
-    CWnd& pWnd = GetActiveBoardView();
-    return pWnd.SendMessage(nMsg, wParam, lParam);
+    CPlayBoardView& pWnd = GetActiveBoardView();
+    wxASSERT(nMsg == WM_SELECT_BOARD_OBJLIST);
+    const CPlayBoard* board = reinterpret_cast<const CPlayBoard*>(wParam);
+    const std::vector<CB::not_null<CDrawObj*>>* objList = reinterpret_cast<const std::vector<CB::not_null<CDrawObj*>>*>(lParam);
+    SelectBoardObjListEvent event(CheckedDeref(board), CheckedDeref(objList));
+    pWnd.ProcessWindowEvent(event);
+    return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -424,7 +435,10 @@ LRESULT CPlayBoardFrame::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lPara
 {
     // Route the message to the active board view.
     CPlayBoardView& pView = GetActiveBoardView();
-    return pView.SendMessage(WM_CENTERBOARDONPOINT, wParam, lParam);
+    const POINT* point = reinterpret_cast<POINT*>(wParam);
+    CenterBoardOnPointEvent event(CB::Convert(CheckedDeref(point)));
+    pView.ProcessWindowEvent(event);
+    return 0;
 }
 
 // Send these on to the main view so they can be process no
@@ -445,16 +459,18 @@ const CPlayBoardView& CPlayBoardFrame::GetActiveBoardView() const
     CCbSplitterWnd& pSplitWnd = CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
     const CWnd* view = GetActiveView();
     if (view &&
-        view->IsKindOf(RUNTIME_CLASS(CPlayBoardView)) &&
-        view->GetParent()->GetParent() == &pSplitWnd)
+        view->IsKindOf(RUNTIME_CLASS(CPlayBoardViewContainer)) &&
+        view->GetParent() == &pSplitWnd)
     {
-        return static_cast<const CPlayBoardView&>(*view);
+        return static_cast<const CPlayBoardViewContainer&>(*view);
     }
+    wxASSERT(!"dead code?");
     const CWnd& wnd = CheckedDeref(pSplitWnd.GetActivePane());
     const CPlayBoardViewContainer& container = dynamic_cast<const CPlayBoardViewContainer&>(wnd);
     return static_cast<const CPlayBoardView&>(container);
 }
 
+#if 0
 void CPlayBoardFrame::OnViewHalfScaleBrd()
 {
     GetActiveBoardView().OnViewHalfScaleBrd();
@@ -599,6 +615,7 @@ void CPlayBoardFrame::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActPlotDiscard(pCmdUI);
 }
+#endif
 
 void CPlayBoardFrame::OnViewSplitBoardRows()
 {

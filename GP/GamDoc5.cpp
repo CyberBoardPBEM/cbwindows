@@ -321,18 +321,17 @@ void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, c
     if (pntTipLoc.x == -1 || pntTipLoc.y == -1)
     {
         EnsureBoardVisible(*pPBoard);
-        pView = (CPlayBoardView*)FindPBoardView(*pPBoard);
-        CRect rct;
-        pView->GetClientRect(rct);
+        pView = FindPBoardView(*pPBoard);
+        CRect rct = CB::Convert(pView->GetClientRect());
         pntTipLoc = rct.CenterPoint();
     }
     else
     {
         EnsureBoardLocationVisible(*pPBoard, pntTipLoc);
-        pView = (CPlayBoardView*)FindPBoardView(*pPBoard);
-        pntTipLoc = pView->WorkspaceToClient(pntTipLoc);
+        pView = FindPBoardView(*pPBoard);
+        pntTipLoc = CB::Convert(pView->WorkspaceToClient(CB::Convert(pntTipLoc)));
     }
-    pView->SetNotificationTip(pntTipLoc, &strMsg);
+    pView->SetNotificationTip(CB::Convert(pntTipLoc), &strMsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -535,7 +535,7 @@ CGamProjView& CGamDoc::FindProjectView() const
     AfxThrowNotSupportedException();
 }
 
-CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
+CPlayBoardView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
 {
     if (!IsScenario() &&
         pPBoard.IsPrivate() &&
@@ -548,11 +548,12 @@ CView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
     POSITION pos = GetFirstViewPosition();
     while (pos != NULL)
     {
-        CPlayBoardView* pView = (CPlayBoardView*)GetNextView(pos);
-        if (pView->IsKindOf(RUNTIME_CLASS(CPlayBoardView)))
+        CPlayBoardViewContainer* pCont = static_cast<CPlayBoardViewContainer*>(GetNextView(pos));
+        if (pCont->IsKindOf(RUNTIME_CLASS(CPlayBoardViewContainer)))
         {
-            if (&pView->GetPlayBoard() == &pPBoard)
-                return pView;
+            CPlayBoardView& pView = *pCont;
+            if (&pView.GetPlayBoard() == &pPBoard)
+                return &pView;
         }
     }
     return NULL;
@@ -1631,7 +1632,7 @@ void CGamDoc::OnEditSelectBoards()
         pPBMgr.FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
         for (size_t i = size_t(0); i < tblNotInList.size(); i++)
         {
-            CView* pView = FindPBoardView(*tblNotInList.at(i));
+            CPlayBoardView* pView = FindPBoardView(*tblNotInList.at(i));
             if (pView != NULL)
             {
                 CFrameWnd* pFrame = pView->GetParentFrame();

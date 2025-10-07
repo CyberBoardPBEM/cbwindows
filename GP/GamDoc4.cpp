@@ -468,7 +468,7 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
     // near the center of the view.
     CGamDocHint hint;
     hint.GetArgs<HINT_POINTINVIEW>().m_pPBoard = &pPBoard;
-    hint.GetArgs<HINT_POINTINVIEW>().m_point = point;
+    hint.GetArgs<HINT_POINTINVIEW>().m_point = CB::Convert(point);
     UpdateAllViews(NULL, HINT_POINTINVIEW, &hint);
 }
 
@@ -561,7 +561,7 @@ void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
+CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
 {
     if (IsQuietPlayback()) return NULL;
     if (pPBoard.IsPrivate() &&
@@ -577,7 +577,7 @@ CView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
         return nullptr;
     }
 
-    CView* pView = FindPBoardView(pPBoard);
+    CPlayBoardView* pView = FindPBoardView(pPBoard);
     if (pView != NULL)
     {
         // This board already has a view. Activate that view.
@@ -664,10 +664,11 @@ void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
 
 // Shows a balloon tip so person knows what happened.
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
-    CPoint pointWorkspace, const CB::string& pszStr)
+    CPoint pointWorkspaceMfc, const CB::string& pszStr)
 {
+    wxPoint pointWorkspace = CB::Convert(pointWorkspaceMfc);
     if (IsQuietPlayback()) return;
-    CPlayBoardView* pView = (CPlayBoardView*)FindPBoardView(pPBoard);
+    CPlayBoardView* pView = FindPBoardView(pPBoard);
     ASSERT(pView != NULL);
     pointWorkspace = pView->WorkspaceToClient(pointWorkspace);
     pView->SetNotificationTip(pointWorkspace, &pszStr);

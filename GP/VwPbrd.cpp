@@ -49,7 +49,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CPlayBoardView, CScrollView)
 IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
 
 #ifdef _DEBUG
@@ -58,12 +57,12 @@ IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
-    //{{AFX_MSG_MAP(CPlayBoardView)
-    ON_COMMAND(ID_VIEW_FULLSCALEBRD, OnViewFullScaleBrd)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCALEBRD, OnUpdateViewFullScaleBrd)
-    ON_COMMAND(ID_VIEW_HALFSCALEBRD, OnViewHalfScaleBrd)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_HALFSCALEBRD, OnUpdateViewHalfScaleBrd)
+wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
+    EVT_MENU(XRCID("ID_VIEW_FULLSCALEBRD"), OnViewFullScaleBrd)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALEBRD"), OnUpdateViewFullScaleBrd)
+    EVT_MENU(XRCID("ID_VIEW_HALFSCALEBRD"), OnViewHalfScaleBrd)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_HALFSCALEBRD"), OnUpdateViewHalfScaleBrd)
+#if 0
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_ROTATEPIECE_DELTA, OnMessageRotateRelative)
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
@@ -102,8 +101,10 @@ BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_EDIT_SELALLMARKERS, OnUpdateEditSelAllMarkers)
     ON_COMMAND(ID_ACT_ROTATE, OnActRotate)
     ON_UPDATE_COMMAND_UI(ID_ACT_ROTATE, OnUpdateActRotate)
-    ON_COMMAND(ID_VIEW_TOGGLESCALE, OnViewToggleScale)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_TOGGLESCALE, OnUpdateViewToggleScale)
+#endif
+    EVT_MENU(XRCID("ID_VIEW_TOGGLESCALE"), OnViewToggleScale)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_TOGGLESCALE"), OnUpdateViewToggleScale)
+#if 0
     ON_COMMAND(ID_VIEW_PIECES, OnViewPieces)
     ON_UPDATE_COMMAND_UI(ID_VIEW_PIECES, OnUpdateViewPieces)
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
@@ -132,27 +133,35 @@ BEGIN_MESSAGE_MAP(CPlayBoardView, CScrollView)
     ON_UPDATE_COMMAND_UI(ID_ACT_RELEASE_OWNERSHIP, OnUpdateActReleaseOwnership)
     ON_COMMAND(ID_ACT_SET_OWNER, OnActSetOwner)
     ON_UPDATE_COMMAND_UI(ID_ACT_SET_OWNER, OnUpdateActSetOwner)
-    ON_COMMAND(ID_VIEW_SMALLSCALEBRD, OnViewSmallScaleBoard)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SMALLSCALEBRD, OnUpdateViewSmallScaleBoard)
+#endif
+    EVT_MENU(XRCID("ID_VIEW_SMALLSCALEBRD"), OnViewSmallScaleBoard)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SMALLSCALEBRD"), OnUpdateViewSmallScaleBoard)
+#if 0
     ON_COMMAND_EX(ID_PTOOL_LINE, OnPlayTool)
     ON_COMMAND_EX(ID_PTOOL_TEXTBOX, OnPlayTool)
     ON_UPDATE_COMMAND_UI(ID_PTOOL_LINE, OnUpdatePlayTool)
     ON_UPDATE_COMMAND_UI(ID_PTOOL_TEXTBOX, OnUpdatePlayTool)
     ON_WM_MOUSEWHEEL()
-    ON_COMMAND(ID_VIEW_BOARD_ROTATE180, OnViewBoardRotate180)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_BOARD_ROTATE180, OnUpdateViewBoardRotate180)
+#endif
+    EVT_MENU(XRCID("ID_VIEW_BOARD_ROTATE180"), OnViewBoardRotate180)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_BOARD_ROTATE180"), OnUpdateViewBoardRotate180)
+#if 0
     ON_COMMAND(ID_ACT_ROTATEGROUP, OnActRotateGroupRelative)
     ON_UPDATE_COMMAND_UI(ID_ACT_ROTATEGROUP, OnUpdateActRotateGroupRelative)
-    //}}AFX_MSG_MAP
     ON_COMMAND_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnRotatePiece)
     ON_UPDATE_COMMAND_UI_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnUpdateRotatePiece)
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
-    ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
+#endif
+    EVT_WINSTATE(OnMessageWindowState)
+#if 0
     ON_MESSAGE(WM_SELECT_BOARD_OBJLIST, OnMessageSelectBoardObjectList)
-END_MESSAGE_MAP()
+#endif
+    EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
+    EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
+wxEND_EVENT_TABLE()
 
-BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CView)
+BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CPlayBoardViewContainer::BASE)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
@@ -161,21 +170,33 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView construction/destruction
 
-CPlayBoardView::CPlayBoardView() :
-    m_selList(*this)
+CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
+    m_selList(*this),
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
+    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter()))
 {
-    m_pPBoard = NULL;
     m_nZoom = fullScale;
     m_nCurToolID = ID_PTOOL_SELECT;
     m_bInDrag = FALSE;
     m_pDragSelList = NULL;
+#if 0
     m_nTimerID = uintptr_t(0);
+#endif
+
+    // use sizers for scrolling
+    wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
+    sizer->Add(0, 0);
+    BASE::Create(*parent, 0);
+    OnInitialUpdate();
 }
 
 CPlayBoardView::~CPlayBoardView()
 {
 }
 
+#if 0
 BOOL CPlayBoardView::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CScrollView::PreCreateWindow(cs))
@@ -187,17 +208,19 @@ BOOL CPlayBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
     return TRUE;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CPlayBoardView::OnInitialUpdate()
 {
-    m_toolMsgTip.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
-    m_toolMsgTip.SetMaxTipWidth(MAX_PLAYBOARD_TIP_WIDTH);
-    m_toolHitTip.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
-    m_toolHitTip.SetMaxTipWidth(MAX_PLAYBOARD_TIP_WIDTH);
+    m_toolMsgTip.SetBalloonMode(true);
+    m_toolMsgTip.SetMaxWidth(MAX_PLAYBOARD_TIP_WIDTH);
+    m_toolHitTip.SetBalloonMode(true);
+    m_toolHitTip.SetMaxWidth(MAX_PLAYBOARD_TIP_WIDTH);
     m_pCurTipObj = NULL;
 
+#if 0
     m_pPBoard = (CPlayBoard*)GetDocument().GetNewViewParameter();
 
     if (m_pPBoard == NULL)
@@ -209,8 +232,8 @@ void CPlayBoardView::OnInitialUpdate()
     }
 
     ASSERT(m_pPBoard != NULL);
+#endif
     SetOurScrollSizes(m_nZoom);
-    CScrollView::OnInitialUpdate();
 }
 
 void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -223,18 +246,18 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_BOARDCHANGE)
     {
         // Make sure we still exist!
-        if (GetDocument().GetPBoardManager().FindPBoardByRef(CheckedDeref(m_pPBoard)) == Invalid_v<size_t>)
+        if (GetDocument().GetPBoardManager().FindPBoardByRef(*m_pPBoard) == Invalid_v<size_t>)
         {
-            CFrameWnd* pFrm = GetParentFrame();
-            ASSERT(pFrm != NULL);
+            CFrameWnd* pFrm = parent->GetParentFrame();
+            wxASSERT(pFrm != NULL);
             pFrm->PostMessage(WM_CLOSE, 0, 0L);
         }
     }
     else if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
-        CRect rct;
-        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
-        InvalidateWorkspaceRect(&rct);
+        wxRect rct;
+        rct = CB::Convert(ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect());   // In board coords.
+        InvalidateWorkspaceRect(rct);
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
     {
@@ -242,8 +265,8 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
             const CDrawObj& pDObj = *pPtrList[i];
-            CRect rct = pDObj.GetEnclosingRect();  // In board coords.
-            InvalidateWorkspaceRect(&rct);
+            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());  // In board coords.
+            InvalidateWorkspaceRect(rct);
         }
     }
     else if (lHint == HINT_SELECTOBJ)
@@ -272,7 +295,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             NotifySelectListChange();
         }
     }
-    else if (lHint == HINT_UPDATESELECTLIST && pSender != this)
+    else if (lHint == HINT_UPDATESELECTLIST && pSender != &*parent)
     {
         // Resync the select list to ensure that all objects still exist
         // and that the handles track objct movements for those that still
@@ -291,23 +314,21 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     else if (lHint == HINT_INVALIDATERECT && ph->GetArgs<HINT_INVALIDATERECT>().m_pPBoard == m_pPBoard)
     {
         const CRect& rect = CheckedDeref(ph->GetArgs<HINT_INVALIDATERECT>().m_pRect);
-        InvalidateWorkspaceRect(rect, true);
+        InvalidateWorkspaceRect(CB::Convert(rect), true);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
         m_selList.PurgeList(TRUE);
-        Invalidate(FALSE);
-        BeginWaitCursor();
-        UpdateWindow();
-        EndWaitCursor();
+        Refresh(FALSE);
+        wxBusyCursor busyCursor;
+        Update();
     }
     else if (lHint == HINT_ALWAYSUPDATE ||
         (lHint == HINT_UPDATEBOARD && ph->GetArgs<HINT_UPDATEBOARD>().m_pPBoard == m_pPBoard))
     {
-        Invalidate(FALSE);
-        BeginWaitCursor();
-        UpdateWindow();
-        EndWaitCursor();
+        Refresh(FALSE);
+        wxBusyCursor busyCursor;
+        Update();
     }
     else if (lHint == HINT_CLEARINDTIP)
     {
@@ -322,18 +343,18 @@ void CPlayBoardView::NotifySelectListChange()
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard.get();
     hint.GetArgs<HINT_UPDATESELECT>().m_pSelList = &m_selList;
-    GetDocument().UpdateAllViews(this, HINT_UPDATESELECT, &hint);
+    GetDocument().UpdateAllViews(&*parent, HINT_UPDATESELECT, &hint);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void CPlayBoardView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
 {
-    CScrollView::OnActivateView(bActivate, pActivateView, pDeactiveView);
     if (bActivate && pActivateView != pDeactiveView)
         NotifySelectListChange();
 }
 
+#if 0
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
 // WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
@@ -347,53 +368,53 @@ LRESULT CPlayBoardView::OnMessageSelectBoardObjectList(WPARAM wParam, LPARAM lPa
     SelectAllObjectsInList(pList);          // Select the new set
     return (LRESULT)1;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
 // WPARAM = CArchive*, LPARAM = 0 if save, 1 if restore
 
-LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+void CPlayBoardView::OnMessageWindowState(WinStateEvent& event)
 {
-    ASSERT(wParam != NULL);
-    CArchive& ar = *((CArchive*)wParam);
+    CArchive& ar = event.GetArchive();
     if (ar.IsStoring())
     {
-        ar << (WORD)m_nZoom;
+        ar << static_cast<uint16_t>(m_nZoom);
 
-        CPoint pnt = GetScrollPosition();
-        ar << (DWORD)pnt.x;
-        ar << (DWORD)pnt.y;
+        wxPoint pnt = GetViewStart();
+        ar << value_preserving_cast<uint32_t>(pnt.x);
+        ar << value_preserving_cast<uint32_t>(pnt.y);
         // Save the select list
         if (!m_selList.empty())
         {
             std::vector<RefPtr<CDrawObj>> tblObjPtrs;
             m_selList.LoadTableWithObjectPtrs(tblObjPtrs, CSelList::otPiecesMarks, TRUE);
-            ar << value_preserving_cast<DWORD>(tblObjPtrs.size());
-            for (size_t i = 0; i < tblObjPtrs.size(); i++)
+            ar << value_preserving_cast<uint32_t>(tblObjPtrs.size());
+            for (size_t i = size_t(0); i < tblObjPtrs.size(); i++)
             {
                 CDrawObj& pObj = *tblObjPtrs.at(i);
                 ar << GetDocument().GetGameElementCodeForObject(pObj);
             }
         }
         else
-            ar << (DWORD)0;
+            ar << uint32_t(0);
     }
     else
     {
-        CPoint pnt;
-        WORD wTmp;
-        DWORD dwTmp;
+        wxPoint pnt;
+        uint16_t wTmp;
+        uint32_t dwTmp;
 
-        ar >> wTmp; DoViewScaleBrd((TileScale)wTmp);
+        ar >> wTmp; DoViewScaleBrd(static_cast<TileScale>(wTmp));
 
-        ar >> dwTmp; pnt.x = (LONG)dwTmp;
-        ar >> dwTmp; pnt.y = (LONG)dwTmp;
+        ar >> dwTmp; pnt.x = value_preserving_cast<decltype(pnt.x)>(dwTmp);
+        ar >> dwTmp; pnt.y = value_preserving_cast<decltype(pnt.y)>(dwTmp);
 
-        ScrollToPosition(pnt);
+        Scroll(pnt);
 
         // Restore the select list.
         m_selList.PurgeList();
-        DWORD dwSelCount;
+        uint32_t dwSelCount;
         ar >> dwSelCount;
         while (dwSelCount--)
         {
@@ -408,11 +429,45 @@ LRESULT CPlayBoardView::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
                 m_selList.AddObject(*pObj, TRUE);
         }
     }
-    return (LRESULT)1;
+}
+
+/* This view should support scrolling by individual pixels,
+    but don't make the line-up and line-down scrolling that
+    slow.  */
+void CPlayBoardView::OnScrollWinLine(wxScrollWinEvent& event)
+{
+    int type = event.GetEventType();
+    wxASSERT(type == static_cast<int>(wxEVT_SCROLLWIN_LINEDOWN) ||
+                type == static_cast<int>(wxEVT_SCROLLWIN_LINEUP));
+
+    int orient = event.GetOrientation();
+    wxASSERT(orient == static_cast<int>(wxHORIZONTAL) ||
+                orient == static_cast<int>(wxVERTICAL));
+
+    int oldPos;
+    int offset;
+    if (orient == static_cast<int>(wxHORIZONTAL))
+    {
+        oldPos = GetViewStart().x;
+        offset = m_xScrollPixelsPerLine;
+    }
+    else
+    {
+        oldPos = GetViewStart().y;
+        offset = m_yScrollPixelsPerLine;
+    }
+    if (type == static_cast<int>(wxEVT_SCROLLWIN_LINEUP))
+    {
+        offset = -offset;
+    }
+
+    wxScrollWinEvent thumbEvent(wxEVT_SCROLLWIN_THUMBTRACK, oldPos + offset, orient);
+    ProcessWindowEvent(thumbEvent);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 BOOL CPlayBoardView::PreTranslateMessage(MSG* pMsg)
 {
     // RelayEvent is required for CToolTipCtrl objects -
@@ -423,52 +478,68 @@ BOOL CPlayBoardView::PreTranslateMessage(MSG* pMsg)
 
     return CScrollView::PreTranslateMessage(pMsg);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CPlayBoardView::SetOurScrollSizes(TileScale nZoom)
 {
     CBoard* pBoard = m_pPBoard->GetBoard();
-    HDC hDC = ::GetDC(NULL);
-    int xWidth = GetDeviceCaps(hDC, HORZRES);
-    int yHeight = GetDeviceCaps(hDC, VERTRES);
 
-    CSize sizeCell = pBoard->GetCellSize(nZoom);
-    int nPageX = sizeCell.cx > xWidth / 8 ? xWidth / 32 : sizeCell.cx;
-    int nPageY = sizeCell.cy > yHeight / 8 ? yHeight / 32 : sizeCell.cy;
+    wxSizer& sizer = CheckedDeref(GetSizer());
+    wxSizerItemList& items = sizer.GetChildren();
+    wxASSERT(items.size() == 1);
+    wxSizerItem& item = CheckedDeref(items[0]);
+    wxASSERT(item.IsSpacer());
 
-    SetScrollSizes(MM_TEXT, pBoard->GetSize(m_nZoom), sizeDefault,
-        CSize(nPageX, nPageY));
+    item.AssignSpacer(CB::Convert(pBoard->GetSize(m_nZoom)));
+    SetScrollRate(1, 1);
+    sizer.FitInside(this);
+
+    // use size of cell as line increment
+    const CCellForm& cf = pBoard->GetBoardArray().GetCellForm(m_nZoom);
+    wxSize cellSize = CB::Convert(cf.GetCellSize());
+    switch (cf.GetCellType())
+    {
+        case cformHexFlat:
+            (cellSize.x *= 3) /= 4;
+            break;
+        case cformHexPnt:
+            (cellSize.y *= 3) /= 4;
+            break;
+        default:
+            ;   // do nothing
+    }
+    m_xScrollPixelsPerLine = cellSize.x;
+    m_yScrollPixelsPerLine = cellSize.y;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView drawing
 
-void CPlayBoardView::OnDraw(CDC* pDC)
+void CPlayBoardView::OnDraw(wxDC& pDC)
 {
     CBoard*     pBoard = m_pPBoard->GetBoard();
-    CDC         dcMem;
-    CRect       oRct;
-    CRect       oRctSave;
-    CBitmap*    pPrvBMap;
+    wxMemoryDC  dcMem;
+    wxRect      oRct;
+    wxRect      oRctSave;
 
-    pDC->GetClipBox(&oRct);
+    pDC.GetClippingBox(oRct);
 
-    if (oRct.IsRectEmpty())
+    if (oRct.IsEmpty())
         return;                 // Nothing to do
 
-    OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
-        oRct.Width(), oRct.Height());
-    dcMem.CreateCompatibleDC(pDC);
-    pPrvBMap = dcMem.SelectObject(&*bmMem);
+    wxBitmap bmMem(
+        oRct.GetWidth(), oRct.GetHeight(), pDC);
+    dcMem.SelectObject(bmMem);
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
-        CSize sizeBrd = pBoard->GetSize(m_nZoom);
-        oRct = CRect(CPoint(sizeBrd.cx - oRct.left - oRct.Width(),
-            sizeBrd.cy - oRct.top - oRct.Height()), oRct.Size());
+        wxSize sizeBrd = CB::Convert(pBoard->GetSize(m_nZoom));
+        oRct = wxRect(wxPoint(sizeBrd.x - oRct.GetLeft() - oRct.GetWidth(),
+            sizeBrd.y - oRct.GetTop() - oRct.GetHeight()), oRct.GetSize());
     }
-    dcMem.SetViewportOrg(-oRct.left, -oRct.top);
+    dcMem.SetDeviceOrigin(-oRct.GetLeft(), -oRct.GetTop());
 
     // Draw base board image...
     pBoard->SetMaxDrawLayer();          // Make sure all layers are drawn
@@ -477,37 +548,37 @@ void CPlayBoardView::OnDraw(CDC* pDC)
 
     // Draw pieces etc.....
 
-    CRect rct(&oRct);
-    SetupDrawListDC(dcMem, rct);
+    wxRect rct(oRct);
+    {
+    DCSetupDrawListDC setupDrawListDC(*this, dcMem, rct);
 
-    m_pPBoard->Draw(dcMem, &rct, m_nZoom);
+    m_pPBoard->Draw(dcMem, rct, m_nZoom);
 
-    wxASSERT(!pDC->IsPrinting());
-    if (!pDC->IsPrinting() && GetPlayBoard().GetPiecesVisible())
+    wxASSERT(!dynamic_cast<wxPrinterDC*>(&pDC));
+    if (!dynamic_cast<wxPrinterDC*>(&pDC) && GetPlayBoard().GetPiecesVisible())
         m_selList.OnDraw(dcMem);       // Handle selections.
 
-    RestoreDrawListDC(dcMem);
+    }
 
     if (m_pPBoard->IsBoardRotated180())
     {
         // Xfer to output
-        dcMem.SetViewportOrg(0, 0);
-        pDC->StretchBlt(oRctSave.left, oRctSave.top, oRctSave.Width(), oRctSave.Height(),
-            &dcMem, oRctSave.Width() - 1, oRctSave.Height() - 1,
-            -oRctSave.Width(), -oRctSave.Height(), SRCCOPY);
+        dcMem.SetDeviceOrigin(0, 0);
+        pDC.StretchBlit(oRctSave.GetLeft(), oRctSave.GetTop(), oRctSave.GetWidth(), oRctSave.GetHeight(),
+            &dcMem, oRctSave.GetWidth() - 1, oRctSave.GetHeight() - 1,
+            -oRctSave.GetWidth(), -oRctSave.GetHeight());
     }
     else
     {
         // Xfer to output
-        pDC->BitBlt(oRct.left, oRct.top, oRct.Width(), oRct.Height(),
-            &dcMem, oRct.left, oRct.top, SRCCOPY);
+        pDC.Blit(oRct.GetLeft(), oRct.GetTop(), oRct.GetWidth(), oRct.GetHeight(),
+            &dcMem, oRct.GetLeft(), oRct.GetTop());
     }
-
-    dcMem.SelectObject(pPrvBMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
     if (wParam != GetProcessId(GetCurrentProcess()))
@@ -944,57 +1015,53 @@ void CPlayBoardView::DragKillAutoScroll()
         KillTimer(m_nTimerID);
     m_nTimerID = uintptr_t(0);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::AddPiece(CPoint pnt, PieceID pid)
+void CPlayBoardView::AddPiece(wxPoint pnt, PieceID pid)
 {
-    ASSERT(FALSE);      //!!!!NO LONGER USED?!!!!!
-    GetDocument().PlacePieceOnBoard(pnt, pid, m_pPBoard.get());
+    wxASSERT(FALSE);      //!!!!NO LONGER USED?!!!!!
+    GetDocument().PlacePieceOnBoard(CB::Convert(pnt), pid, m_pPBoard.get());
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::OnPrepareScaledDC(CDC& pDC, BOOL bHonor180Flip)
+void CPlayBoardView::OnPrepareScaledDC(wxDC& pDC, BOOL bHonor180Flip)
 {
-    OnPrepareDC(&pDC, NULL);
+    PrepareDC(pDC);
     PrepareScaledDC(pDC, NULL, bHonor180Flip);
 }
 
-void CPlayBoardView::SetupDrawListDC(CDC& pDC, CRect& pRct) const
+CPlayBoardView::DCSetupDrawListDC::DCSetupDrawListDC(const CPlayBoardView& rThis, wxDC& pDC, wxRect& pRct)
 {
-    if (m_nZoom == fullScale)
+    if (rThis.m_nZoom == fullScale)
         return;
 
-    pDC.SaveDC();
-    PrepareScaledDC(pDC, &pRct);
+    double xScale, yScale;
+    pDC.GetUserScale(&xScale, &yScale);
+    scaleChanger = CB::DCUserScaleChanger(pDC, xScale, yScale);
+    logOrgChanger = CB::DCLogicalOriginChanger(pDC, pDC.GetLogicalOrigin());
+
+    rThis.PrepareScaledDC(pDC, &pRct);
 }
 
-void CPlayBoardView::PrepareScaledDC(CDC& pDC, CRect* pRct, BOOL bHonor180Flip) const
+void CPlayBoardView::PrepareScaledDC(wxDC& pDC, wxRect* pRct, BOOL bHonor180Flip) const
 {
-    CSize wsize, vsize;
+    wxSize wsize, vsize;
 
     m_pPBoard->GetBoard()->GetBoardArray().
         GetBoardScaling(m_nZoom, wsize, vsize);
 
-    pDC.SetMapMode(MM_ANISOTROPIC);
     if (bHonor180Flip && m_pPBoard->IsBoardRotated180())
     {
-        pDC.SetWindowExt(-wsize);
-        pDC.SetWindowOrg(wsize.cx, wsize.cy);
+        pDC.SetLogicalOrigin(wsize.x, wsize.y);
+        pDC.SetAxisOrientation(false, true);
     }
-    else
-        pDC.SetWindowExt(wsize);
-    pDC.SetViewportExt(vsize);
+    pDC.SetUserScale(double(vsize.x)/wsize.x, double(vsize.y)/wsize.y);
 
     if (pRct != NULL)
         ScaleRect(*pRct, wsize, vsize);
-}
-
-void CPlayBoardView::RestoreDrawListDC(CDC& pDC) const
-{
-    if (m_nZoom != fullScale)
-        pDC.RestoreDC(-1);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1002,11 +1069,17 @@ void CPlayBoardView::RestoreDrawListDC(CDC& pDC) const
 #ifdef _DEBUG
 const CGamDoc& CPlayBoardView::GetDocument() const // non-debug version is inline
 {
-    const CGamDoc& retval = CheckedDeref(CB::ToCGamDoc(m_pDocument));
+    const CGamDoc& retval = *document;
     return retval;
 }
 #endif //_DEBUG
 
+CFrameWnd* CPlayBoardView::GetParentFrame()
+{
+    return parent->GetParentFrame();
+}
+
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Right mouse button handler
 
@@ -1040,6 +1113,7 @@ void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
         END_TRY
     }
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Handlers associated with tools.
@@ -1053,6 +1127,7 @@ BOOL CPlayBoardView::IsBoardContentsAvailableToCurrentPlayer() const
     return m_pPBoard->IsOwnedBy(GetDocument().GetCurrentPlayerMask());
 }
 
+#if 0
 void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
 {
     if (!IsBoardContentsAvailableToCurrentPlayer())
@@ -1245,6 +1320,7 @@ void CPlayBoardView::OnUpdateEditClear(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!GetDocument().IsPlaying() && m_selList.HasMarkers());
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1264,6 +1340,7 @@ PToolType CPlayBoardView::MapToolType(UINT nToolResID) const
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView message handlers
 
+#if 0
 void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
 {
     CBoardArray& pba = m_pPBoard->GetBoard()->GetBoardArray();
@@ -1283,71 +1360,69 @@ void CPlayBoardView::OnUpdateIndicatorCellNum(CCmdUI* pCmdUI)
         }
     }
 }
+#endif
 
 void CPlayBoardView::DoViewScaleBrd(TileScale nZoom)
 {
-    ASSERT(m_pPBoard != NULL);
     CBoard* pBoard = m_pPBoard->GetBoard();
-    ASSERT(pBoard != NULL);
+    wxASSERT(pBoard != NULL);
 
-    CPoint pntMid;
+    wxPoint pntMid;
     if (m_selList.IsAnySelects())
     {
         CRect rctSelection = m_selList.GetEnclosingRect();
-        pntMid = rctSelection.CenterPoint();
+        pntMid = CB::Convert(rctSelection.CenterPoint());
     }
     else
     {
-        CRect rctClient;
-        GetClientRect(&rctClient);
-        pntMid = rctClient.CenterPoint();
+        wxRect rctClient = GetClientRect();
+        pntMid = GetMidRect(rctClient);
         pntMid = ClientToWorkspace(pntMid);
     }
 
     m_nZoom = nZoom;
     SetOurScrollSizes(m_nZoom);
-    BeginWaitCursor();
-    Invalidate(FALSE);
+    wxBusyCursor busyCursor;
+    Refresh(FALSE);
 
     CenterViewOnWorkspacePoint(pntMid);
 
-    UpdateWindow();
-    EndWaitCursor();
+    Update();
 }
 
-void CPlayBoardView::OnViewFullScaleBrd()
+void CPlayBoardView::OnViewFullScaleBrd(wxCommandEvent& /*event*/)
 {
     DoViewScaleBrd(fullScale);
 }
 
-void CPlayBoardView::OnUpdateViewFullScaleBrd(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewFullScaleBrd(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_nZoom == fullScale);
+    pCmdUI.Check(m_nZoom == fullScale);
 }
 
-void CPlayBoardView::OnViewHalfScaleBrd()
+void CPlayBoardView::OnViewHalfScaleBrd(wxCommandEvent& /*event*/)
 {
     DoViewScaleBrd(halfScale);
 }
 
-void CPlayBoardView::OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewHalfScaleBrd(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_nZoom == halfScale);
+    pCmdUI.Check(m_nZoom == halfScale);
 }
 
-void CPlayBoardView::OnViewSmallScaleBoard()
+void CPlayBoardView::OnViewSmallScaleBoard(wxCommandEvent& /*event*/)
 {
     DoViewScaleBrd(smallScale);
 }
 
-void CPlayBoardView::OnUpdateViewSmallScaleBoard(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewSmallScaleBoard(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_nZoom == smallScale);
+    pCmdUI.Check(m_nZoom == smallScale);
 }
 
-void CPlayBoardView::OnViewToggleScale()
+void CPlayBoardView::OnViewToggleScale(wxCommandEvent& /*event*/)
 {
-    if (GetKeyState(VK_CONTROL) < 0)
+    if (wxGetKeyState(WXK_CONTROL))
     {
         // Zoom out and around
         if (m_nZoom == fullScale)
@@ -1369,12 +1444,12 @@ void CPlayBoardView::OnViewToggleScale()
     }
 }
 
-void CPlayBoardView::OnUpdateViewToggleScale(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewToggleScale(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(TRUE);
+    pCmdUI.Enable(TRUE);
 }
 
-void CPlayBoardView::OnViewBoardRotate180()
+void CPlayBoardView::OnViewBoardRotate180(wxCommandEvent& /*event*/)
 {
    m_pPBoard->SetRotateBoard180(!m_pPBoard->IsBoardRotated180());
    CGamDocHint hint;
@@ -1382,11 +1457,12 @@ void CPlayBoardView::OnViewBoardRotate180()
    GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
-void CPlayBoardView::OnUpdateViewBoardRotate180(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_pPBoard->IsBoardRotated180());
+    pCmdUI.Check(m_pPBoard->IsBoardRotated180());
 }
 
+#if 0
 BOOL CPlayBoardView::OnPlayTool(UINT id)
 {
     if (id !=ID_PTOOL_SELECT)
@@ -2417,7 +2493,9 @@ void CPlayBoardView::OnUpdateActSetOwner(CCmdUI* pCmdUI)
             (m_selList.HasPieces() && pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR));
     }
 }
+#endif
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Fix MFC problems with mouse wheel handling in Win98 and WinME systems
 
@@ -2567,47 +2645,53 @@ BOOL CPlayBoardView::DoMouseWheelFix(UINT fFlags, short zDelta, CPoint point)
         return bResult;
     }
 }
+#endif
 
 void CPlayBoardViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
 }
 
+void CPlayBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    child->OnUpdate(pSender, lHint, pHint);
+
+    BASE::OnUpdate(pSender, lHint, pHint);
+}
+
+void CPlayBoardViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView,
+                CView* pDeactiveView)
+{
+    BASE::OnActivateView(bActivate, pActivateView, pDeactiveView);
+    child->OnActivateView(bActivate, pActivateView, pDeactiveView);
+}
+
 CPlayBoardViewContainer::CPlayBoardViewContainer() :
-    child(new CPlayBoardView)
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
 int CPlayBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CView::OnCreate(lpCreateStruct) == -1)
+    if (BASE::OnCreate(lpCreateStruct) == -1)
     {
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CPlayBoardView(*this);
 
     return 0;
 }
 
 void CPlayBoardViewContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
+    child->SetSize(0, 0, cx, cy);
+    return BASE::OnSize(nType, cx, cy);
 }
 
 LRESULT CPlayBoardViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 {
-    child->SendMessage(WM_WINSTATE, wParam, lParam);
+    WinStateEvent event(*reinterpret_cast<CArchive*>(wParam), bool(lParam));
+    child->ProcessWindowEvent(event);
     return (LRESULT)1;
 }

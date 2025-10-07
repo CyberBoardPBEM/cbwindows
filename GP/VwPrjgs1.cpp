@@ -32,6 +32,7 @@
 #include    "Trays.h"
 #include    "Player.h"
 
+#include    "VwPbrd.h"
 #include    "VwPrjgsn.h"
 
 #include    "DlgScnp.h"
@@ -96,7 +97,7 @@ void CGsnProjView::DoBoardView()
     size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(nBrd);
-    CView* pView = pDoc.FindPBoardView(pPBoard);
+    CPlayBoardView* pView = pDoc.FindPBoardView(pPBoard);
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.

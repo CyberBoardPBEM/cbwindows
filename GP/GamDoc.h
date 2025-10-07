@@ -127,6 +127,13 @@ class CGamDocHint : public CObject
     DECLARE_DYNCREATE(CGamDocHint);
 public:
     CGamDocHint() : hint(HINT_INVALID) {}
+    ~CGamDocHint()
+    {
+        if (hint == HINT_POINTINVIEW)
+        {
+            args.m_pointInView.~Args<HINT_POINTINVIEW>();
+        }
+    }
 
     template<EGamDocHint HINT>
     struct Args
@@ -177,7 +184,7 @@ public:
     struct Args<HINT_POINTINVIEW>
     {
         CPlayBoard* m_pPBoard;
-        POINT       m_point;
+        wxPoint     m_point;
     };
 
     template<>
@@ -200,6 +207,10 @@ public:
         if (hint == HINT_INVALID)
         {
             hint = HINT;
+            if (hint == HINT_POINTINVIEW)
+            {
+                new (&args.m_pointInView) Args<HINT_POINTINVIEW>;
+            }
         }
         else if (HINT != hint)
         {
@@ -210,7 +221,7 @@ public:
 
 private:
     EGamDocHint hint;
-    union {
+    union U {
         Args<HINT_TRAYCHANGE>       m_trayChange;
         Args<HINT_UPDATEOBJECT>     m_updateObject;
         Args<HINT_UPDATEOBJLIST>    m_updateObjList;
@@ -220,6 +231,7 @@ private:
         Args<HINT_POINTINVIEW>      m_pointInView;
         Args<HINT_SELECTOBJ>        m_selectObj;
         Args<HINT_SELECTOBJLIST>    m_selectObjList;
+        U() {}
     } args;
 };
 
@@ -351,8 +363,8 @@ public:
     BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
         LPVOID lpvCreateParam);
     CGamProjView& FindProjectView() const;
-    CView* FindPBoardView(const CPlayBoard& pPBoard) const;
-    CView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
+    CPlayBoardView* FindPBoardView(const CPlayBoard& pPBoard) const;
+    CPlayBoardView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
     void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames) const;
 
     BOOL IsWindowStateAvailable() const { return m_pWinState != NULL; }

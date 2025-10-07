@@ -31,6 +31,7 @@
 #include    "Trays.h"
 #include    "MoveHist.h"
 
+#include    "VwPbrd.h"
 #include    "VwPrjgam.h"
 
 #ifdef _DEBUG
@@ -105,7 +106,7 @@ void CGamProjView::DoBoardView()
         AfxMessageBox(IDS_ERR_PRIVATE_BOARD_PERM, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
-    CView* pView = pDoc->FindPBoardView(pPBoard);
+    CPlayBoardView* pView = pDoc->FindPBoardView(pPBoard);
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.
