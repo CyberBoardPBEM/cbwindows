@@ -2513,6 +2513,51 @@ namespace CB
         wxDC* dc = nullptr;
         wxRasterOperationMode oldRop;
     };
+
+    class DCLogicalOriginChanger
+    {
+    public:
+        DCLogicalOriginChanger() = default;
+        DCLogicalOriginChanger(wxDC& d, wxPoint org) :
+            dc(&d)
+        {
+            oldOrigin = dc->GetLogicalOrigin();
+            dc->SetLogicalOrigin(org.x, org.y);
+        }
+        DCLogicalOriginChanger(const DCLogicalOriginChanger&) = delete;
+        DCLogicalOriginChanger(DCLogicalOriginChanger&& other) noexcept
+        {
+            *this = std::move(other);
+        }
+        DCLogicalOriginChanger& operator=(const DCLogicalOriginChanger&) = delete;
+        DCLogicalOriginChanger& operator=(DCLogicalOriginChanger&& other) noexcept
+        {
+            if (this != &other)
+            {
+                Reset();
+                dc = other.dc;
+                other.dc = nullptr;
+                oldOrigin = other.oldOrigin;
+            }
+            return *this;
+        }
+        ~DCLogicalOriginChanger()
+        {
+            Reset();
+        }
+
+    private:
+        void Reset()
+        {
+            if (dc)
+            {
+                dc->SetLogicalOrigin(oldOrigin.x, oldOrigin.y);
+            }
+        }
+
+        wxDC* dc = nullptr;
+        wxPoint oldOrigin;
+    };
 }
 
 // provide wxMouseState equivalent of wxKeyboardState::GetModifiers()
