@@ -55,13 +55,13 @@ public:
 public:
     static CPlayTool& GetTool(PToolType eType);
     // ----------- //
-    virtual void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
-    virtual void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) /* override */ {}
-    virtual bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
-    virtual void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) /* override */ {}
+    virtual bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) /*override*/ {}
-    virtual BOOL OnSetCursor(const CPlayBoardView& /*pView*/, UINT /*nHitTest*/) const /*override*/
-        { return FALSE; }
+    virtual wxCursor OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const /*override*/
+        { return wxCursor(); }
 
 // Implementation
 private:
@@ -69,8 +69,26 @@ private:
     static std::vector<CPlayTool*> c_toolLib;
 protected:
     // Drag related vars....
-    static CPoint c_ptDown;         // Document coords.
-    static CPoint c_ptLast;
+    static wxPoint c_ptDown;         // Document coords.
+    static wxPoint c_ptLast;
+};
+
+template<std::derived_from<CPlayTool> T, typename CharT>
+struct std::formatter<T, CharT> : private std::formatter<const char*, CharT>
+{
+private:
+    using BASE = formatter<const char*, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const CPlayTool& o, FormatContext& ctx) const
+    {
+        return std::format_to(ctx.out(),
+                                "{}({})",
+                                typeid(o).name(),
+                                static_cast<const void*>(&o));
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -95,34 +113,34 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnLButtonDblClk(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) override;
     void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
-    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
+    wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
 public:
     uintptr_t m_nTimerID;
-    CRect   m_rectMultiBorder;
+    wxRect  m_rectMultiBorder;
     // ------- //
     BOOL ProcessAutoScroll(CPlayBoardView& pView);
     void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
     void DrawNetRect(wxDC& pDC, const CPlayBoardView& pView) const;
-    [[nodiscard]] CPoint AdjustPoint(const CPlayBoardView& pView, CPoint point) const;
-    void MoveSelections(CSelList &pSLst, const CPoint& point);
+    [[nodiscard]] wxPoint AdjustPoint(const CPlayBoardView& pView, wxPoint point) const;
+    void MoveSelections(CSelList &pSLst, const wxPoint& point);
     void StartDragTimer(CPlayBoardView& pView);
     void KillDragTimer(CPlayBoardView& pView);
     void StartScrollTimer(CPlayBoardView& pView);
     void KillScrollTimer(CPlayBoardView& pView);
     // ------- //
     void DoDragDropStart(CPlayBoardView& pView);
-    void DoDragDrop(CPlayBoardView& pView, const CPoint& pntClient);
-    bool DoDragDropEnd(CPlayBoardView& pView, const CPoint& pntClient);
+    void DoDragDrop(CPlayBoardView& pView, const wxPoint& pntClient);
+    bool DoDragDropEnd(CPlayBoardView& pView, const wxPoint& pntClient);
     // ------- //
-    void StartSizingOperation(CPlayBoardView& pView, UINT nFlags,
-        const CPoint& point, int nHandleID = -1);
+    void StartSizingOperation(CPlayBoardView& pView, int nMods,
+        const wxPoint& point, int nHandleID = -1);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -136,16 +154,16 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
-    bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) override;
     void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
-    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
+    wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
 public:
-    virtual OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const CPoint& point,
+    virtual OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const wxPoint& point,
         int& nHandle) const = 0;
     virtual BOOL IsEmptyObject() const = 0;
     // --------- //
@@ -163,7 +181,7 @@ public:
 
 // Implementation
 public:
-    OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const CPoint& point,
+    OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const wxPoint& point,
         int& nHandle) const override;
     BOOL IsEmptyObject() const override;
 };
@@ -179,12 +197,12 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
-    bool OnLButtonUp(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override { return true; }
-    void OnMouseMove(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    void OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override { return true; }
+    void OnMouseMove(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
     void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
-    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
+    wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
 public:
@@ -202,12 +220,12 @@ public:
 
 // Operations
 public:
-    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
-    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
-    bool OnLButtonUp(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override { return true; }
-    void OnMouseMove(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    void OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override { return true; }
+    void OnMouseMove(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
     void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
-    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
+    wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
 public:

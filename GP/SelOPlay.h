@@ -84,8 +84,8 @@ public:
     RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
     CRect     m_rect;           // Enclosing rect for selected object
 
-    virtual HCURSOR GetHandleCursor(int nHandle) const /* override */
-        { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
+    virtual wxCursor GetHandleCursor(int nHandle) const /* override */
+        { return wxCursor(wxCURSOR_ARROW); }
     virtual CRect GetRect() const /* override */ { return m_rect; }
 
 // Operations
@@ -141,7 +141,7 @@ public:
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override;
+    wxCursor GetHandleCursor(int nHandleID) const override;
     virtual void MoveHandle(int m_nHandle, CPoint point) override;
 
 protected:
@@ -167,8 +167,8 @@ public:
 
 // Overrides
 public:
-    virtual HCURSOR GetHandleCursor(int nHandleID) const override
-        { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }
+    wxCursor GetHandleCursor(int nHandleID) const override
+        { return wxCursor(wxCURSOR_ARROW); }
     virtual void MoveHandle(int m_nHandle, CPoint point) override {}
 
 protected:

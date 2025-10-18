@@ -51,8 +51,8 @@ const int scrollZone = 16;      // From INI?
 
 std::vector<CPlayTool*> CPlayTool::c_toolLib;          // Tool library
 
-CPoint CPlayTool::c_ptDown;             // Mouse down location
-CPoint CPlayTool::c_ptLast;             // Last mouse location
+wxPoint CPlayTool::c_ptDown;             // Mouse down location
+wxPoint CPlayTool::c_ptLast;             // Last mouse location
 
 // The playing board tool objects...
 
@@ -82,7 +82,7 @@ CPlayTool& CPlayTool::GetTool(PToolType eToolType)
     return retval;
 }
 
-void CPlayTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point)
+void CPlayTool::OnLButtonDown(CPlayBoardView& pView, int /*nMods*/, wxPoint point)
 {
     pView.CaptureMouse();
 
@@ -90,14 +90,14 @@ void CPlayTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point)
     c_ptLast = point;
 }
 
-void CPlayTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
+void CPlayTool::OnMouseMove(CPlayBoardView& pView, int /*nMods*/, wxPoint point)
 {
     if (pView.HasCapture())
         c_ptLast = point;
-    SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+    pView.SetCursor(wxCursor(wxCURSOR_ARROW));
 }
 
-bool CPlayTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
+bool CPlayTool::OnLButtonUp(CPlayBoardView& pView, int /*nMods*/, wxPoint /*point*/)
 {
     if (!pView.HasCapture())
         return false;
@@ -108,20 +108,20 @@ bool CPlayTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
 ////////////////////////////////////////////////////////////////////////
 // CPSelectTool - Object Selection/Manipulation tool
 
-void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
-    CPoint point)
+void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
+    wxPoint point)
 {
     CSelList& pSLst = pView.GetSelectList();
     CPlayBoard& pPBoard = pView.GetPlayBoard();
 
     // If a a handle is clicked on, immediately start tracking the
     // resize.
-    if ((m_nHandleID = pSLst.HitTestHandles(point)) >= 0)
+    if ((m_nHandleID = pSLst.HitTestHandles(CB::Convert(point))) >= 0)
     {
-        StartSizingOperation(pView, nFlags, point);
+        StartSizingOperation(pView, nMods, point);
         return;
     }
-    CDrawObj* pObj = pView.ObjectHitTest(CB::Convert(point));
+    CDrawObj* pObj = pView.ObjectHitTest(point);
 
     BOOL bOwnedButNotOkToSelect = FALSE;
     if (pObj != NULL && pObj->GetType() == CDrawObj::drawPieceObj)
@@ -140,11 +140,11 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
     if (pObj == NULL || bOwnedButNotOkToSelect ||
        (pPBoard.GetLocksEnforced() && (pObj->GetDObjFlags() & dobjFlgLockDown)))
     {
-        if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
+        if ((nMods & wxMOD_SHIFT) == 0)       // Shift click adds to list
             pSLst.PurgeList(TRUE);         // Clear current select list
         // No objects were under the mouse click.
         m_eSelMode = smodeNet;              // Net type selection
-        CPlayTool::OnLButtonDown(pView, nFlags, point);
+        CPlayTool::OnLButtonDown(pView, nMods, point);
         wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc, true);
         dc.Clear();
@@ -155,10 +155,10 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
     // add to list.
     if (!pSLst.IsObjectSelected(*pObj))
     {
-        if ((nFlags & MK_SHIFT) == 0)       // Shift click adds to list
+        if ((nMods & wxMOD_SHIFT) == 0)       // Shift click adds to list
             pSLst.PurgeList(TRUE);         // Clear current select list
-        if ((nFlags & MK_CONTROL) != 0)     // Control click drills down
-            pView.SelectAllUnderPoint(CB::Convert(point));
+        if ((nMods & wxMOD_CONTROL) != 0)     // Control click drills down
+            pView.SelectAllUnderPoint(point);
         else
         {
             pSLst.AddObject(*pObj, TRUE);
@@ -166,34 +166,34 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
                     pObj->GetType() == CDrawObj::drawMarkObj)
                 pView.NotifySelectListChange();
         }
-        CPlayTool::OnLButtonDown(pView, nFlags, point);
+        CPlayTool::OnLButtonDown(pView, nMods, point);
         StartDragTimer(pView);
 
-        CRect rct = pSLst.GetEnclosingRect();
-        CSize sizeOff = point - rct.TopLeft();
-        pSLst.SetMouseOffset(sizeOff);
+        wxRect rct = CB::Convert(pSLst.GetEnclosingRect());
+        wxPoint sizeOff = point - rct.GetTopLeft();
+        pSLst.SetMouseOffset(CSize(sizeOff.x, sizeOff.y));
         return;
     }
     // At this point we know s/he clicked on an object that was
     // already selected. If SHIFT is held we'll remove it from
     // the list. Otherwise, a timer is started and drag tracking
     // wont start until it expires.
-    if ((nFlags & MK_SHIFT) != 0)
+    if ((nMods & wxMOD_SHIFT) != 0)
     {
         pSLst.RemoveObject(*pObj, TRUE);
         return;
     }
-    CPlayTool::OnLButtonDown(pView, nFlags, point);
+    CPlayTool::OnLButtonDown(pView, nMods, point);
 
     pSLst.SetSnapReferenceObject(pObj);
-    CRect rct = pSLst.GetSnapReferenceRect();
-    CSize sizeOff = point - rct.TopLeft();
-    pSLst.SetMouseOffset(sizeOff);
+    wxRect rct = CB::Convert(pSLst.GetSnapReferenceRect());
+    wxPoint sizeOff = point - rct.GetTopLeft();
+    pSLst.SetMouseOffset(CSize(sizeOff.x, sizeOff.y));
 
     StartDragTimer(pView);
 }
 
-void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
+void CPSelectTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
 {
     CSelList& pSLst = pView.GetSelectList();
 
@@ -227,7 +227,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
         else
             KillScrollTimer(pView);
 #else
-        wxASSERT(!"TODO:  autoscroll");
+        CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
     }
 
@@ -238,7 +238,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
         wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc, true);
         dc.Clear();
-        CPlayTool::OnMouseMove(pView, nFlags, point); // Update position
+        CPlayTool::OnMouseMove(pView, nMods, point); // Update position
         DrawNetRect(dc, pView);            // Draw new position rect
         return;
     }
@@ -247,13 +247,13 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
     // tracking image.
     if (m_eSelMode == smodeMove)
     {
-        point = CB::Convert(pView.WorkspaceToClient(CB::Convert(point)));
+        point = pView.WorkspaceToClient(point);
         DoDragDrop(pView, point);
         return;
     }
     else if (m_eSelMode == smodeSizing)
     {
-        point = CB::Convert(pView.AdjustPoint(CB::Convert(point)));
+        point = pView.AdjustPoint(point);
         if (point == c_ptLast)
             return;
 
@@ -268,7 +268,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
     c_ptLast = point;               // Save new 'last' position
 }
 
-bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
+bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point)
 {
     bool retval = true;
     if (pView.HasCapture())
@@ -282,7 +282,7 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
             // will be selected.
             wxRect rect(wxPoint(std::min(c_ptDown.x, c_ptLast.x), std::min(c_ptDown.y, c_ptLast.y)),
                         wxSize(std::abs(c_ptLast.x - c_ptDown.x), std::abs(c_ptLast.y - c_ptDown.y)));
-            pView.SelectWithinRect(rect, (nFlags & MK_CONTROL) != 0);
+            pView.SelectWithinRect(rect, (nMods & wxMOD_CONTROL) != 0);
             CSelList& pSLst = pView.GetSelectList();
             pSLst.InvalidateListHandles();
         }
@@ -291,9 +291,9 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
             CSelList& pSLst = pView.GetSelectList();
             if (m_eSelMode == smodeMove)
             {
-                CPoint pnt = point;
+                wxPoint pnt = point;
                 pSLst.SetTrackingMode(trkSelected);
-                pnt = CB::Convert(pView.WorkspaceToClient(CB::Convert(pnt)));
+                pnt = pView.WorkspaceToClient(pnt);
                 retval = DoDragDropEnd(pView, pnt) && retval;
             }
             else
@@ -311,7 +311,7 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
     m_eSelMode = smodeNormal;
     KillDragTimer(pView);           // Make sure timers are released
     KillScrollTimer(pView);
-    return CPlayTool::OnLButtonUp(pView, nFlags, point) && retval;
+    return CPlayTool::OnLButtonUp(pView, nMods, point) && retval;
 }
 
 void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
@@ -337,9 +337,6 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
         CClientDC dc(&pView);
         pView.OnPrepareScaledDC(dc, TRUE);
         pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
-#else
-        wxASSERT(!"TODO:");
-#endif
 
         CPoint point;
         GetCursorPos(&point);
@@ -350,6 +347,9 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
         DoDragDropStart(pView);
         point = CB::Convert(pView.WorkspaceToClient(CB::Convert(point)));
         DoDragDrop(pView, point);
+#else
+        wxASSERT(!"TODO:");
+#endif
     }
     else if (m_eSelMode != smodeMove)
     {
@@ -358,27 +358,17 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
     }
 }
 
-void CPSelectTool::OnLButtonDblClk(CPlayBoardView& pView, UINT nFlags,
-    CPoint point)
+void CPSelectTool::OnLButtonDblClk(CPlayBoardView& pView, int nMods,
+    wxPoint point)
 {
     // Normal DblClk opens some property view of the selected
     // object. Only recognized if only one selection is active.
-    CPlayTool::OnLButtonDblClk(pView, nFlags, point);
+    CPlayTool::OnLButtonDblClk(pView, nMods, point);
     pView.GetSelectList().Open();
 }
 
-BOOL CPSelectTool::OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const
+wxCursor CPSelectTool::OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const
 {
-    // Process only within the client area
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-
-    // Convert cursor position to document coordinates
-    CPoint point;
-    GetCursorPos(&point);
-    point = CB::Convert(pView.ScreenToClient(CB::Convert(point)));
-    point = CB::Convert(pView.ClientToWorkspace(CB::Convert(point)));
-
     // Check for movement through handle areas. Set the
     // cursor to the appropriate shape.
     const CSelList& pSLst = pView.GetSelectList();
@@ -387,24 +377,23 @@ BOOL CPSelectTool::OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const
         // Check if cursor is over a handle. If it is,
         // get handle cursor.
         const CSelection& pSelObj = *pSLst.front();
-        int nHandle = pSelObj.HitTestHandles(point);
+        int nHandle = pSelObj.HitTestHandles(CB::Convert(point));
         if (nHandle >= 0)
         {
-            SetCursor(pSelObj.GetHandleCursor(nHandle));
-            return TRUE;
+            return pSelObj.GetHandleCursor(nHandle);
         }
     }
-    return FALSE;       // Show default cursor
+    return wxCursor();       // Show default cursor
 }
 
-void CPSelectTool::StartSizingOperation(CPlayBoardView& pView, UINT nFlags,
-    const CPoint& point, int nHandleID)
+void CPSelectTool::StartSizingOperation(CPlayBoardView& pView, int nMods,
+    const wxPoint& point, int nHandleID)
 {
     CSelList& pSLst = pView.GetSelectList();
     if (nHandleID != -1)
         m_nHandleID = nHandleID;
     m_eSelMode = smodeSizing;
-    CPlayTool::OnLButtonDown(pView, nFlags, point);
+    CPlayTool::OnLButtonDown(pView, nMods, point);
     wxOverlayDC dc(pView.GetOverlay(), &pView);
     pView.OnPrepareScaledDC(dc, true);
     dc.Clear();
@@ -509,34 +498,34 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView& pView)
     return FALSE;
 }
 
-void CPSelectTool::MoveSelections(CSelList &pSLst, const CPoint& point)
+void CPSelectTool::MoveSelections(CSelList &pSLst, const wxPoint& point)
 {
     if (m_eSelMode == smodeMove)
     {
-        CPoint ptDelta = (CPoint)(point - c_ptLast);
-        pSLst.Offset(ptDelta);
+        wxPoint ptDelta = point - c_ptLast;
+        pSLst.Offset(CB::Convert(ptDelta));
     }
     else
-        pSLst.MoveHandle(m_nHandleID, point);
+        pSLst.MoveHandle(m_nHandleID, CB::Convert(point));
 }
 
-CPoint CPSelectTool::AdjustPoint(const CPlayBoardView& pView, CPoint point) const
+wxPoint CPSelectTool::AdjustPoint(const CPlayBoardView& pView, wxPoint point) const
 {
-    point = CB::Convert(pView.AdjustPoint(CB::Convert(point)));
+    point = pView.AdjustPoint(point);
     if (point == c_ptLast)
         return point;
     if (m_eSelMode == smodeMove)
     {
-        CRect rct = pView.GetSelectList().GetEnclosingRect();
-        CPoint pnt = CB::Convert(pView.GetWorkspaceDim());
-        if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
-            point.x = c_ptLast.x - rct.left;
-        if (rct.top + point.y - c_ptLast.y < 0)         // Clamp
-            point.y = c_ptLast.y - rct.top;
-        if (rct.right + point.x - c_ptLast.x > pnt.x)   // Clamp
-            point.x = pnt.x - (rct.right - c_ptLast.x);
-        if (rct.bottom + point.y - c_ptLast.y > pnt.y)  // Clamp
-            point.y = pnt.y - (rct.bottom - c_ptLast.y);
+        wxRect rct = CB::Convert(pView.GetSelectList().GetEnclosingRect());
+        wxPoint pnt = pView.GetWorkspaceDim();
+        if (rct.GetLeft() + point.x - c_ptLast.x < 0)        // Clamp
+            point.x = c_ptLast.x - rct.GetLeft();
+        if (rct.GetTop() + point.y - c_ptLast.y < 0)         // Clamp
+            point.y = c_ptLast.y - rct.GetTop();
+        if (rct.GetRight() + point.x - c_ptLast.x > pnt.x)   // Clamp
+            point.x = pnt.x - (rct.GetRight() - c_ptLast.x);
+        if (rct.GetBottom() + point.y - c_ptLast.y > pnt.y)  // Clamp
+            point.y = pnt.y - (rct.GetBottom() - c_ptLast.y);
     }
     return point;
 }
@@ -547,7 +536,7 @@ void CPSelectTool::StartDragTimer(CPlayBoardView& pView)
     m_nTimerID = pView.SetTimer(timerIDSelectDelay,
         timerSelDelay, NULL);
 #else
-    wxASSERT(!"TODO:  autoscroll");
+    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
 
@@ -560,7 +549,7 @@ void CPSelectTool::KillDragTimer(CPlayBoardView& pView)
         m_nTimerID = uintptr_t(0);
     }
 #else
-wxASSERT(!"TODO:  autoscroll");
+    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
 
@@ -569,7 +558,7 @@ void CPSelectTool::StartScrollTimer(CPlayBoardView& pView)
 #if 0
     m_nTimerID = pView.SetTimer(timerIDAutoScroll, timerAutoScroll, NULL);
 #else
-    wxASSERT(!"TODO:  autoscroll");
+    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
 
@@ -582,7 +571,7 @@ void CPSelectTool::KillScrollTimer(CPlayBoardView& pView)
         m_nTimerID = uintptr_t(0);
     }
 #else
-    wxASSERT(!"TODO:  autoscroll");
+    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
 
@@ -591,6 +580,7 @@ void CPSelectTool::KillScrollTimer(CPlayBoardView& pView)
 //      this time.
 void CPSelectTool::DoDragDropStart(CPlayBoardView& pView)
 {
+    wxASSERT(!"TODO:");
     m_di.SetDragType(DRAG_SELECTLIST);
     m_di.GetSubInfo<DRAG_SELECTLIST>().m_selectList = &pView.GetSelectList();
     m_di.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc = &pView.GetDocument();
@@ -599,8 +589,10 @@ void CPSelectTool::DoDragDropStart(CPlayBoardView& pView)
     m_hLastWnd = NULL;
 }
 
-void CPSelectTool::DoDragDrop(CPlayBoardView& pView, const CPoint& pntClient)
+void CPSelectTool::DoDragDrop(CPlayBoardView& pView, const wxPoint& pntClient)
 {
+    wxASSERT(!"TODO:");
+#if 0
     CPoint pnt = pntClient;
     pnt = CB::Convert(pView.ClientToScreen(CB::Convert(pnt)));
     CWnd* pWnd = GetWindowFromPoint(pnt);
@@ -640,13 +632,18 @@ void CPSelectTool::DoDragDrop(CPlayBoardView& pView, const CPoint& pntClient)
         SetCursor(hCursor);
     else
         SetCursor(g_res.hcrNoDrop);
+#endif
 }
 
-bool CPSelectTool::DoDragDropEnd(CPlayBoardView& pView, const CPoint& pntClient)
+bool CPSelectTool::DoDragDropEnd(CPlayBoardView& pView, const wxPoint& pntClient)
 {
+#if 1
+    wxASSERT(!"TODO:");
+    return false;
+#else
     SetCursor(LoadCursor(NULL, IDC_ARROW));
 
-    wxPoint pnt = CB::Convert(pntClient);
+    wxPoint pnt = pntClient;
     pView.ClientToScreen(pnt);
     CWnd* pWnd = GetWindowFromPoint(CB::Convert(pnt));
     if (pWnd == NULL)
@@ -657,28 +654,31 @@ bool CPSelectTool::DoDragDropEnd(CPlayBoardView& pView, const CPoint& pntClient)
 
     m_di.m_phase = PhaseDrag::Drop;
     return pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()), (LPARAM)(LPVOID)&m_di) == 1;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CPShapeTool - tool used to create rectangles.
 
-void CPShapeTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point)
+void CPShapeTool::OnLButtonDown(CPlayBoardView& pView, int nMods, wxPoint point)
 {
+    wxASSERT(!"dead code");
     CSelList& pSLst = pView.GetSelectList();
     pSLst.PurgeList(TRUE);         // Clear current select list
     int nDragHandle;
-    point = CB::Convert(pView.AdjustPoint(CB::Convert(point)));
+    point = pView.AdjustPoint(point);
     m_pObj = CreateDrawObj(pView, point, nDragHandle);
     pSLst.AddObject(*m_pObj, TRUE);
-    s_plySelectTool.StartSizingOperation(pView, nFlags, point, nDragHandle);
+    s_plySelectTool.StartSizingOperation(pView, nMods, point, nDragHandle);
 }
 
-bool CPShapeTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
+bool CPShapeTool::OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point)
 {
+    wxASSERT(!"dead code");
     if (!pView.HasCapture())
         return false;
     bool retval = true;
-    retval = s_plySelectTool.OnLButtonUp(pView, nFlags, point) && retval;
+    retval = s_plySelectTool.OnLButtonUp(pView, nMods, point) && retval;
     pView.GetSelectList().PurgeList(TRUE); // Clear current select list
     if (!IsEmptyObject())
         pView.AddDrawObject(std::move(m_pObj));
@@ -689,31 +689,32 @@ bool CPShapeTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
     return true;
 }
 
-void CPShapeTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
+void CPShapeTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
 {
+    wxASSERT(!"dead code");
     if (pView.HasCapture())
-        s_plySelectTool.OnMouseMove(pView, nFlags, point);
+        s_plySelectTool.OnMouseMove(pView, nMods, point);
 }
 
 void CPShapeTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
 {
+    wxASSERT(!"dead code");
     s_plySelectTool.OnTimer(pView, nIDEvent);
 }
 
-BOOL CPShapeTool::OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const
+wxCursor CPShapeTool::OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    wxASSERT(!"dead code");
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CPLineTool - tool used to create lines
 
-OwnerPtr<CDrawObj> CPLineTool::CreateDrawObj(CPlayBoardView& pView, const CPoint& point,
+OwnerPtr<CDrawObj> CPLineTool::CreateDrawObj(CPlayBoardView& pView, const wxPoint& point,
     int& nHandle) const
 {
+    wxASSERT(!"dead code");
     OwnerPtr<CLine> pObj = MakeOwner<CLine>();
     pObj->SetLine(point.x, point.y, point.x, point.y);
     pObj->SetForeColor(CB::Convert(pView.GetLineColor()));
@@ -724,6 +725,7 @@ OwnerPtr<CDrawObj> CPLineTool::CreateDrawObj(CPlayBoardView& pView, const CPoint
 
 BOOL CPLineTool::IsEmptyObject() const
 {
+    wxASSERT(!"dead code");
     wxASSERT(dynamic_cast<const CLine*>(&*m_pObj));
     CRect rct = static_cast<const CLine&>(*m_pObj).GetRect();
     return rct.Width() < 3 && rct.Height() < 3;
@@ -732,36 +734,35 @@ BOOL CPLineTool::IsEmptyObject() const
 ////////////////////////////////////////////////////////////////////////
 // CPTextBoxTool - Text box drawing object tool
 
-void CPTextBoxTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
-    CPoint point)
+void CPTextBoxTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
+    wxPoint poin)
 {
+    wxASSERT(!"dead code");
 //  pView->DoCreateTextDrawingObject(point);
 }
 
-BOOL CPTextBoxTool::OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const
+wxCursor CPTextBoxTool::OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    wxASSERT(!"dead code");
+    return g_res.hcrCrossHairWx;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // CPPlotTool - move plot tool
 
-void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
-    CPoint point)
+void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
+    wxPoint point)
 {
     CGamDoc& pDoc = pView.GetDocument();
     CPlayBoard& pPBrd = pView.GetPlayBoard();
-    ASSERT(pPBrd.GetPlotMoveMode());
+    wxASSERT(pPBrd.GetPlotMoveMode());
 
     if (pPBrd.m_bSnapMovePlot)
-        point = CB::Convert(pView.AdjustPoint(CB::Convert(point)));      // Keep on the grid (if enabled)
+        point = pView.AdjustPoint(point);      // Keep on the grid (if enabled)
 
-    CPoint pntPrev = pPBrd.GetPrevPlotPoint();
+    wxPoint pntPrev = CB::Convert(pPBrd.GetPrevPlotPoint());
 
-    if (pntPrev == CPoint(-1, -1))
+    if (pntPrev == wxPoint(-1, -1))
     {
         // Draw a line for each piece to the opening location
         std::vector<RefPtr<CDrawObj>> listObjs;
@@ -769,23 +770,20 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
         for (auto pos = listObjs.begin() ; pos != listObjs.end() ; ++pos)
         {
             CDrawObj& pObj = **pos;
-            ASSERT(pObj.GetType() == CDrawObj::drawPieceObj ||
+            wxASSERT(pObj.GetType() == CDrawObj::drawPieceObj ||
                 pObj.GetType() == CDrawObj::drawMarkObj);
-            CRect rct = pObj.GetRect();
-            CPoint pnt = GetMidRect(rct);
-            pDoc.IndicateBoardPlotLine(pPBrd, pnt, point);
+            wxRect rct = CB::Convert(pObj.GetRect());
+            wxPoint pnt = GetMidRect(rct);
+            pDoc.IndicateBoardPlotLine(pPBrd, CB::Convert(pnt), CB::Convert(point));
         }
     }
     else
-        pDoc.IndicateBoardPlotLine(pPBrd, pntPrev, point);
-    pPBrd.SetPrevPlotPoint(point);
+        pDoc.IndicateBoardPlotLine(pPBrd, CB::Convert(pntPrev), CB::Convert(point));
+    pPBrd.SetPrevPlotPoint(CB::Convert(point));
 }
 
-BOOL CPPlotTool::OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const
+wxCursor CPPlotTool::OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const
 {
-    if (nHitTest != HTCLIENT)
-        return FALSE;
-    SetCursor(g_res.hcrCrossHair);
-    return TRUE;
+    return g_res.hcrCrossHairWx;
 }
 
