@@ -221,7 +221,7 @@ void CPlayBoardView::ClearNotificationTip()
     m_toolMsgTip.DelTool(this, ID_TIP_PLAYBOARD_MSG);
     m_toolMsgTip.Activate(FALSE);
 #else
-    wxASSERT(!"TODO:");
+    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
 

@@ -77,13 +77,13 @@ BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
+#endif
     ON_COMMAND(ID_PTOOL_PLOTMOVE, OnActPlotMove)
     ON_UPDATE_COMMAND_UI(ID_PTOOL_PLOTMOVE, OnUpdateActPlotMove)
     ON_COMMAND(ID_ACT_PLOTDONE, OnActPlotDone)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDONE, OnUpdateActPlotDone)
     ON_COMMAND(ID_ACT_PLOTDISCARD, OnActPlotDiscard)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDISCARD, OnUpdateActPlotDiscard)
-#endif
     ON_COMMAND(ID_VIEW_SPLITBOARDROWS, OnViewSplitBoardRows)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SPLITBOARDROWS, OnUpdateViewSplitBoardRows)
     ON_COMMAND(ID_VIEW_SPLITBOARDCOLS, OnViewSplitBoardCols)
@@ -585,37 +585,46 @@ void CPlayBoardFrame::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActTurnOver(pCmdUI);
 }
+#endif
 
 void CPlayBoardFrame::OnActPlotMove()
 {
-    GetActiveBoardView().OnActPlotMove();
+    wxASSERT(!"dead code?");
+    wxCommandEvent dummy;
+    GetActiveBoardView().OnActPlotMove(dummy);
 }
 
 void CPlayBoardFrame::OnUpdateActPlotMove(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView().OnUpdateActPlotMove(pCmdUI);
+    wxASSERT(!"dead code?");
+    CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_PTOOL_PLOTMOVE, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
 
 void CPlayBoardFrame::OnActPlotDone()
 {
-    GetActiveBoardView().OnActPlotDone();
+    wxASSERT(!"dead code?");
+    wxCommandEvent dummy;
+    GetActiveBoardView().OnActPlotDone(dummy);
 }
 
 void CPlayBoardFrame::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView().OnUpdateActPlotDone(pCmdUI);
+    wxASSERT(!"dead code?");
+    CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_ACT_PLOTDONE, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
 
 void CPlayBoardFrame::OnActPlotDiscard()
 {
-    GetActiveBoardView().OnActPlotDiscard();
+    wxASSERT(!"dead code?");
+    wxCommandEvent dummy;
+    GetActiveBoardView().OnActPlotDiscard(dummy);
 }
 
 void CPlayBoardFrame::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
 {
-    GetActiveBoardView().OnUpdateActPlotDiscard(pCmdUI);
+    wxASSERT(!"dead code?");
+    CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_ACT_PLOTDISCARD, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
-#endif
 
 void CPlayBoardFrame::OnViewSplitBoardRows()
 {

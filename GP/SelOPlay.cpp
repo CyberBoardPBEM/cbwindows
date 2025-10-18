@@ -199,20 +199,20 @@ void CSelLine::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 #endif
 }
 
-HCURSOR CSelLine::GetHandleCursor(int nHandleID) const
+wxCursor CSelLine::GetHandleCursor(int nHandleID) const
 {
-    const CB::string::value_type* id;
+    wxStockCursor id;
     switch (nHandleID)
     {
 
         case hitPtA:
         case hitPtB:
-            id = IDC_CROSS;
+            id = wxCURSOR_CROSS;
             break;
         default: ASSERT(FALSE);
-            id = nullptr;
+            id = wxCURSOR_NONE;
     }
-    return AfxGetApp()->LoadStandardCursor(id);
+    return wxCursor(id);
 }
 
 // Returns handle location in logical coords.

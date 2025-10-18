@@ -63,7 +63,7 @@ struct ResourceTable
     HCURSOR     hcrColorChange;
     wxCursor    hcrColorChangeWx;
 #else
-    HCURSOR     hcrCompMoveActive;
+    wxCursor    hcrCompMoveActive;
 #endif
 #ifndef GPLAY
     // ======== Brushes ========= //

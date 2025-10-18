@@ -221,14 +221,16 @@ protected:
     afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageRotateRelative(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 #endif
+    void OnLButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
+    void OnLButtonUp(wxMouseEvent& event);
 #if 0
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnTimer(uintptr_t nIDEvent);
-    afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-    afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+#endif
+    void OnLButtonDblClk(wxMouseEvent& event);
+    void OnSetCursor(wxSetCursorEvent& event);
+#if 0
     afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg BOOL OnPlayTool(UINT id);
@@ -241,12 +243,14 @@ protected:
     afx_msg void OnUpdateActToFront(CCmdUI* pCmdUI);
     afx_msg BOOL OnActTurnOver(UINT id);
     afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
-    afx_msg void OnActPlotMove();
-    afx_msg void OnUpdateActPlotMove(CCmdUI* pCmdUI);
-    afx_msg void OnActPlotDone();
-    afx_msg void OnUpdateActPlotDone(CCmdUI* pCmdUI);
-    afx_msg void OnActPlotDiscard();
-    afx_msg void OnUpdateActPlotDiscard(CCmdUI* pCmdUI);
+#endif
+    void OnActPlotMove(wxCommandEvent& event);
+    void OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI);
+    void OnActPlotDone(wxCommandEvent& event);
+    void OnUpdateActPlotDone(wxUpdateUIEvent& pCmdUI);
+    void OnActPlotDiscard(wxCommandEvent& event);
+    void OnUpdateActPlotDiscard(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
     afx_msg void OnViewSnapGrid();
     afx_msg void OnUpdateViewSnapGrid(CCmdUI* pCmdUI);

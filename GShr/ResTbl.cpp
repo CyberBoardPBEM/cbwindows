@@ -85,7 +85,7 @@ void ResourceTable::LoadCursors(HINSTANCE hInst)
     hcrColorChange = LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE));
     hcrColorChangeWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE))));
 #else
-    hcrCompMoveActive = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CMOVMODE));
+    hcrCompMoveActive.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_CMOVMODE))));
 #endif
 }
 
@@ -106,8 +106,6 @@ void ResourceTable::FreeCursors(void)
     DestroyCursor(hcrPencil);
     DestroyCursor(hcrBrush);
     DestroyCursor(hcrColorChange);
-#else
-    DestroyCursor(hcrCompMoveActive);
 #endif
 }
 

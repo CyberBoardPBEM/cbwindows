@@ -66,14 +66,16 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_ROTATEPIECE_DELTA, OnMessageRotateRelative)
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
-    ON_WM_LBUTTONDOWN()
 #endif
+    EVT_LEFT_DOWN(OnLButtonDown)
     EVT_MOTION(OnMouseMove)
+    EVT_LEFT_UP(OnLButtonUp)
 #if 0
-    ON_WM_LBUTTONUP()
     ON_WM_TIMER()
-    ON_WM_LBUTTONDBLCLK()
-    ON_WM_SETCURSOR()
+#endif
+    EVT_LEFT_DCLICK(OnLButtonDblClk)
+    EVT_SET_CURSOR(OnSetCursor)
+#if 0
     ON_WM_KEYDOWN()
     ON_WM_CHAR()
     ON_COMMAND_EX(ID_PTOOL_SELECT, OnPlayTool)
@@ -90,12 +92,14 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
-    ON_COMMAND(ID_PTOOL_PLOTMOVE, OnActPlotMove)
-    ON_UPDATE_COMMAND_UI(ID_PTOOL_PLOTMOVE, OnUpdateActPlotMove)
-    ON_COMMAND(ID_ACT_PLOTDONE, OnActPlotDone)
-    ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDONE, OnUpdateActPlotDone)
-    ON_COMMAND(ID_ACT_PLOTDISCARD, OnActPlotDiscard)
-    ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDISCARD, OnUpdateActPlotDiscard)
+#endif
+    EVT_MENU(XRCID("ID_PTOOL_PLOTMOVE"), OnActPlotMove)
+    EVT_UPDATE_UI(XRCID("ID_PTOOL_PLOTMOVE"), OnUpdateActPlotMove)
+    EVT_MENU(XRCID("ID_ACT_PLOTDONE"), OnActPlotDone)
+    EVT_UPDATE_UI(XRCID("ID_ACT_PLOTDONE"), OnUpdateActPlotDone)
+    EVT_MENU(XRCID("ID_ACT_PLOTDISCARD"), OnActPlotDiscard)
+    EVT_UPDATE_UI(XRCID("ID_ACT_PLOTDISCARD"), OnUpdateActPlotDiscard)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_CELLNUM, OnUpdateIndicatorCellNum)
     ON_COMMAND(ID_VIEW_SNAPGRID, OnViewSnapGrid)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SNAPGRID, OnUpdateViewSnapGrid)
@@ -1138,29 +1142,29 @@ BOOL CPlayBoardView::IsBoardContentsAvailableToCurrentPlayer() const
     return m_pPBoard->IsOwnedBy(GetDocument().GetCurrentPlayerMask());
 }
 
-#if 0
-void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
+void CPlayBoardView::OnLButtonDown(wxMouseEvent& event)
 {
     if (!IsBoardContentsAvailableToCurrentPlayer())
     {
-        CScrollView::OnLButtonDown(nFlags, point);
+        event.Skip();
         return;
     }
 
     PToolType eToolType = MapToolType(m_nCurToolID);
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
-    point = ClientToWorkspace(point);
-    pTool.OnLButtonDown(*this, nFlags, point);
+    wxPoint point = ClientToWorkspace(event.GetPosition());
+    pTool.OnLButtonDown(*this, event.GetModifiers(), point);
 }
-#endif
 
 void CPlayBoardView::OnMouseMove(wxMouseEvent& event)
 {
-#if 0
+#if 1
+    int nMods = event.GetModifiers();
+    wxPoint point = event.GetPosition();
     if (!IsBoardContentsAvailableToCurrentPlayer())
     {
-        CScrollView::OnMouseMove(nFlags, point);
+        event.Skip();
         return;
     }
 
@@ -1171,10 +1175,10 @@ void CPlayBoardView::OnMouseMove(wxMouseEvent& event)
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         point = ClientToWorkspace(point);
-        pTool.OnMouseMove(*this, nFlags, point);
+        pTool.OnMouseMove(*this, nMods, point);
     }
     else
-        CScrollView::OnMouseMove(nFlags, point);
+        event.Skip();
 #else
     wxPoint client = event.GetPosition();
     wxPoint workspace = ClientToWorkspace(client);
@@ -1190,12 +1194,13 @@ void CPlayBoardView::OnMouseMove(wxMouseEvent& event)
 #endif
 }
 
-#if 0
-void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
+void CPlayBoardView::OnLButtonUp(wxMouseEvent& event)
 {
+    int nMods = event.GetModifiers();
+    wxPoint point = event.GetPosition();
     if (!IsBoardContentsAvailableToCurrentPlayer())
     {
-        CScrollView::OnLButtonUp(nFlags, point);
+        event.Skip();
         return;
     }
 
@@ -1203,8 +1208,8 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
     point = ClientToWorkspace(point);
-    bool rc = pTool.OnLButtonUp(*this, nFlags, point);
-    ASSERT(rc || pTool.m_eToolType == ptypeSelect);
+    bool rc = pTool.OnLButtonUp(*this, nMods, point);
+    wxASSERT(rc || pTool.m_eToolType == ptypeSelect);
     if (!rc && pTool.m_eToolType == ptypeSelect)
     {
         // failed drop messed up selection list, so rebuild it
@@ -1215,11 +1220,13 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     }
 }
 
-void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
+void CPlayBoardView::OnLButtonDblClk(wxMouseEvent& event)
 {
+    int nMods = event.GetModifiers();
+    wxPoint point = event.GetPosition();
     if (!IsBoardContentsAvailableToCurrentPlayer())
     {
-        CScrollView::OnLButtonDblClk(nFlags, point);
+        event.Skip();
         return;
     }
 
@@ -1228,12 +1235,13 @@ void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         point = ClientToWorkspace(point);
-        pTool.OnLButtonDblClk(*this, nFlags, point);
+        pTool.OnLButtonDblClk(*this, nMods, point);
     }
     else
-        CScrollView::OnLButtonDblClk(nFlags, point);
+        event.Skip();
 }
 
+#if 0
 void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
 {
     if (m_nTimerID == nIDEvent)
@@ -1261,30 +1269,45 @@ void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
             CScrollView::OnTimer(nIDEvent);
     }
 }
+#endif
 
-BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+void CPlayBoardView::OnSetCursor(wxSetCursorEvent& event)
 {
     if (GetDocument().IsPlaying())
-        return CScrollView::OnSetCursor(pWnd, nHitTest, message);
+    {
+        event.Skip();
+        return;
+    }
 
     PToolType eToolType = MapToolType(m_nCurToolID);
-    if (pWnd == this && eToolType != ptypeUnknown)
+    if (event.GetEventObject() == this && eToolType != ptypeUnknown)
     {
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-        if (pTool.OnSetCursor(*this, nHitTest))
-            return TRUE;
+        wxPoint point(event.GetX(), event.GetY());
+        wxASSERT(GetClientRect().Contains(point));
+        point = ClientToWorkspace(point);
+        wxCursor rc = pTool.OnSetCursor(*this, point);
+        if (rc.IsOk())
+        {
+            event.SetCursor(rc);
+            return;
+        }
     }
     if (GetDocument().IsRecordingCompoundMove())
     {
-        ::SetCursor(g_res.hcrCompMoveActive);
-        return TRUE;
+        event.SetCursor(g_res.hcrCompMoveActive);
+        return;
     }
     else
-        return CScrollView::OnSetCursor(pWnd, nHitTest, message);
+    {
+        event.Skip();
+        return;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
 
+#if 0
 void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     CGamDoc& pDoc = GetDocument();
@@ -1734,8 +1757,9 @@ void CPlayBoardView::OnUpdateActTurnOver(CCmdUI* pCmdUI)
             MF_BYPOSITION | (bEnabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
     }
 }
+#endif
 
-void CPlayBoardView::OnActPlotMove()
+void CPlayBoardView::OnActPlotMove(wxCommandEvent& /*event*/)
 {
     // Do this call so we don't record the plot list in the
     // restoration record.
@@ -1746,11 +1770,12 @@ void CPlayBoardView::OnActPlotMove()
     m_nCurToolID = ID_PTOOL_PLOTMOVE;
 }
 
-void CPlayBoardView::OnUpdateActPlotMove(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying() || (!m_selList.HasPieces() &&
         !m_selList.HasMarkers()) || GetDocument().IsScenario())
     {
+#if 0
         if (pCmdUI->m_pSubMenu != NULL)
         {
             pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
@@ -1758,25 +1783,30 @@ void CPlayBoardView::OnUpdateActPlotMove(CCmdUI* pCmdUI)
         }
         else
             pCmdUI->Enable(FALSE);
+#else
+        pCmdUI.Enable(FALSE);
+#endif
         return;
     }
+#if 0
     else if (pCmdUI->m_pSubMenu != NULL)
     {
         pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
             MF_BYPOSITION | MF_ENABLED);
     }
+#endif
 
-    pCmdUI->Enable(!m_pPBoard->GetPlotMoveMode());
-    pCmdUI->SetCheck(m_pPBoard->GetPlotMoveMode());
+    pCmdUI.Enable(!m_pPBoard->GetPlotMoveMode());
+    pCmdUI.Check(m_pPBoard->GetPlotMoveMode());
 }
 
-void CPlayBoardView::OnActPlotDone()
+void CPlayBoardView::OnActPlotDone(wxCommandEvent& /*event*/)
 {
     if (m_pPBoard->GetPrevPlotPoint() != CPoint(-1, -1))
     {
-        CRect rct = m_selList.GetPiecesEnclosingRect();
-        CPoint ptPrev = m_pPBoard->GetPrevPlotPoint();
-        ptPrev -= CSize(rct.Width() / 2, rct.Height() / 2);
+        wxRect rct = CB::Convert(m_selList.GetPiecesEnclosingRect());
+        wxPoint ptPrev = CB::Convert(m_pPBoard->GetPrevPlotPoint());
+        ptPrev -= wxSize(rct.GetWidth() / 2, rct.GetHeight() / 2);
         ptPrev = AdjustPoint(ptPrev);
 
         std::vector<CB::not_null<CDrawObj*>> listObjs;
@@ -1787,7 +1817,7 @@ void CPlayBoardView::OnActPlotDone()
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument().PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard.get());
+        GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(ptPrev), m_pPBoard.get());
         m_selList.PurgeList(TRUE);          // Purge former selections
         SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
@@ -1797,17 +1827,17 @@ void CPlayBoardView::OnActPlotDone()
     m_nCurToolID = ID_PTOOL_SELECT;
 }
 
-void CPlayBoardView::OnUpdateActPlotDone(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActPlotDone(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying() || GetDocument().IsScenario())
     {
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
         return;
     }
-    pCmdUI->Enable(m_pPBoard->GetPlotMoveMode());
+    pCmdUI.Enable(m_pPBoard->GetPlotMoveMode());
 }
 
-void CPlayBoardView::OnActPlotDiscard()
+void CPlayBoardView::OnActPlotDiscard(wxCommandEvent& /*event*/)
 {
     m_pPBoard->SetPlotMoveMode(FALSE);
     GetDocument().UpdateAllBoardIndicators(*m_pPBoard);
@@ -1815,16 +1845,17 @@ void CPlayBoardView::OnActPlotDiscard()
     m_nCurToolID = ID_PTOOL_SELECT;
 }
 
-void CPlayBoardView::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActPlotDiscard(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying() || GetDocument().IsScenario())
     {
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
         return;
     }
-    pCmdUI->Enable(m_pPBoard->GetPlotMoveMode());
+    pCmdUI.Enable(m_pPBoard->GetPlotMoveMode());
 }
 
+#if 0
 void CPlayBoardView::OnViewSnapGrid()
 {
     m_pPBoard->m_bGridSnap = !m_pPBoard->m_bGridSnap;
