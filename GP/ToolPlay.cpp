@@ -145,13 +145,10 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, UINT nFlags,
         // No objects were under the mouse click.
         m_eSelMode = smodeNet;              // Net type selection
         CPlayTool::OnLButtonDown(pView, nFlags, point);
-#if 0
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc, TRUE);
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
+        pView.OnPrepareScaledDC(dc, true);
+        dc.Clear();
         DrawNetRect(dc, pView);
-#else
-        wxASSERT(!"TODO:  overlay");
-#endif
         return;
     }
     // Object is under mouse. See if also selected. If not,
@@ -238,15 +235,11 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
     // we are doing a "net select".
     if (m_eSelMode == smodeNet)
     {
-#if 0
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc, TRUE);
-        DrawNetRect(dc, pView);            // Erase previous position
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
+        pView.OnPrepareScaledDC(dc, true);
+        dc.Clear();
         CPlayTool::OnMouseMove(pView, nFlags, point); // Update position
         DrawNetRect(dc, pView);            // Draw new position rect
-#else
-        wxASSERT(!"TODO:  overlay");
-#endif
         return;
     }
     // If object(s) are being moved or sized, removed last tracking
@@ -264,18 +257,13 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point)
         if (point == c_ptLast)
             return;
 
-#if 0
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc, TRUE);
-
-        pSLst.DrawTracker(dc, trkSizing); // Erase previous tracker
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
+        pView.OnPrepareScaledDC(dc, true);
+        dc.Clear();
 
         MoveSelections(pSLst, point);
 
-        pSLst.DrawTracker(dc, trkSizing); // Erase previous tracker
-#else
-wxASSERT(!"TODO:  overlay");
-#endif
+        pSLst.DrawTracker(dc, trkSizing); // Draw tracker
     }
     c_ptLast = point;               // Save new 'last' position
 }
@@ -287,22 +275,16 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point)
     {
         if (m_eSelMode == smodeNet)
         {
-#if 0
-            CClientDC dc(&pView);
-            pView.OnPrepareScaledDC(dc, TRUE);
-            DrawNetRect(dc, pView);            // Erase previous position
+            pView.GetOverlay().Reset();
             // If the control key is down when button was released, fields
             // that intersect the select rect will selected. Otherwise only
             // those fields that are entirely within the select rect
             // will be selected.
-            CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-            rect.NormalizeRect();
+            wxRect rect(wxPoint(std::min(c_ptDown.x, c_ptLast.x), std::min(c_ptDown.y, c_ptLast.y)),
+                        wxSize(std::abs(c_ptLast.x - c_ptDown.x), std::abs(c_ptLast.y - c_ptDown.y)));
             pView.SelectWithinRect(rect, (nFlags & MK_CONTROL) != 0);
             CSelList& pSLst = pView.GetSelectList();
             pSLst.InvalidateListHandles();
-#else
-wxASSERT(!"TODO:  overlay");
-#endif
         }
         else if (m_eSelMode != smodeNormal)
         {
@@ -356,7 +338,7 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
         pView.OnPrepareScaledDC(dc, TRUE);
         pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
 #else
-        wxASSERT(!"TODO:  overlay");
+        wxASSERT(!"TODO:");
 #endif
 
         CPoint point;
@@ -423,37 +405,25 @@ void CPSelectTool::StartSizingOperation(CPlayBoardView& pView, UINT nFlags,
         m_nHandleID = nHandleID;
     m_eSelMode = smodeSizing;
     CPlayTool::OnLButtonDown(pView, nFlags, point);
-#if 0
-    CClientDC dc(&pView);
-    pView.OnPrepareScaledDC(dc, TRUE);
+    wxOverlayDC dc(pView.GetOverlay(), &pView);
+    pView.OnPrepareScaledDC(dc, true);
+    dc.Clear();
     pSLst.DrawTracker(dc, trkSizing);
-#else
-    wxASSERT(!"TODO:  overlay");
-#endif
 }
 
-void CPSelectTool::DrawSelectionRect(CDC& pDC, const CRect& pRct) const
+void CPSelectTool::DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const
 {
-    CPen pen;
-    pen.CreateStockObject(WHITE_PEN);
-    CPen* pPrvPen = pDC.SelectObject(&pen);
-    int nPrvROP2 = pDC.SetROP2(R2_XORPEN);
+    wxDCPenChanger setPen(pDC, *wxLIGHT_GREY);
+    wxDCBrushChanger setBrush(pDC, *wxTRANSPARENT_BRUSH);
 
-    pDC.MoveTo(pRct.TopLeft());
-    pDC.LineTo(pRct.right, pRct.top);
-    pDC.LineTo(pRct.BottomRight());
-    pDC.LineTo(pRct.left, pRct.bottom);
-    pDC.LineTo(pRct.TopLeft());
-
-    pDC.SetROP2(nPrvROP2);
-    pDC.SelectObject(pPrvPen);
+    pDC.DrawRectangle(pRct);
 }
 
-void CPSelectTool::DrawNetRect(CDC& pDC, const CPlayBoardView& /*pView*/) const
+void CPSelectTool::DrawNetRect(wxDC& pDC, const CPlayBoardView& /*pView*/) const
 {
-    CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-    rect.NormalizeRect();
-    DrawSelectionRect(pDC, &rect);
+    wxRect rect(wxPoint(std::min(c_ptDown.x, c_ptLast.x), std::min(c_ptDown.y, c_ptLast.y)),
+                wxSize(std::abs(c_ptLast.x - c_ptDown.x), std::abs(c_ptLast.y - c_ptDown.y)));
+    DrawSelectionRect(pDC, rect);
 }
 
 BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView& pView)
