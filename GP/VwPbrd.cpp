@@ -67,7 +67,9 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     ON_MESSAGE(WM_ROTATEPIECE_DELTA, OnMessageRotateRelative)
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
     ON_WM_LBUTTONDOWN()
-    ON_WM_MOUSEMOVE()
+#endif
+    EVT_MOTION(OnMouseMove)
+#if 0
     ON_WM_LBUTTONUP()
     ON_WM_TIMER()
     ON_WM_LBUTTONDBLCLK()
@@ -484,6 +486,14 @@ BOOL CPlayBoardView::PreTranslateMessage(MSG* pMsg)
 
 void CPlayBoardView::SetOurScrollSizes(TileScale nZoom)
 {
+    if (nZoom == fullScale)
+    {
+        /* KLUDGE:  without this, the optimization in
+                    wxDC::SetUserScale() that returns immediately if
+                    the new scale equals the old scale sometimes
+                    leaves the wxDC with wrong scale behavior */
+        overlay = MakeOwner<wxOverlay>();
+    }
     CBoard* pBoard = m_pPBoard->GetBoard();
 
     wxSizer& sizer = CheckedDeref(GetSizer());
@@ -519,6 +529,7 @@ void CPlayBoardView::SetOurScrollSizes(TileScale nZoom)
 
 void CPlayBoardView::OnDraw(wxDC& pDC)
 {
+    GetOverlay().Reset();
     CBoard*     pBoard = m_pPBoard->GetBoard();
     wxMemoryDC  dcMem;
     wxRect      oRct;
@@ -1142,9 +1153,11 @@ void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
     point = ClientToWorkspace(point);
     pTool.OnLButtonDown(*this, nFlags, point);
 }
+#endif
 
-void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
+void CPlayBoardView::OnMouseMove(wxMouseEvent& event)
 {
+#if 0
     if (!IsBoardContentsAvailableToCurrentPlayer())
     {
         CScrollView::OnMouseMove(nFlags, point);
@@ -1162,8 +1175,22 @@ void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
     }
     else
         CScrollView::OnMouseMove(nFlags, point);
+#else
+    wxPoint client = event.GetPosition();
+    wxPoint workspace = ClientToWorkspace(client);
+    CPP20_TRACE("client {}, wkspc {}\n", client, workspace);
+    wxOverlayDC dc(GetOverlay(), this);
+    OnPrepareScaledDC(dc, true);
+    dc.Clear();
+    wxDCPenChanger setPen(dc, *wxBLACK_PEN);
+    wxDCBrushChanger setBrush(dc, *wxBLACK_BRUSH);
+    CB::DrawEllipse(dc, wxRect(wxPoint(workspace.x - 20, workspace.y - 20),
+                                wxPoint(workspace.x + 20, workspace.y + 20)));
+    event.Skip();
+#endif
 }
 
+#if 0
 void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
 {
     if (!IsBoardContentsAvailableToCurrentPlayer())
@@ -1452,6 +1479,12 @@ void CPlayBoardView::OnUpdateViewToggleScale(wxUpdateUIEvent& pCmdUI)
 void CPlayBoardView::OnViewBoardRotate180(wxCommandEvent& /*event*/)
 {
    m_pPBoard->SetRotateBoard180(!m_pPBoard->IsBoardRotated180());
+   if (m_nZoom == fullScale)
+   {
+       /* KLUDGE:  without this, the wxDC soemtimes has the
+                    wrong axis behavior */
+       overlay = MakeOwner<wxOverlay>();
+   }
    CGamDocHint hint;
    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
    GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);

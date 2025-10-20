@@ -55,6 +55,7 @@ public:
     CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
     const CPlayBoard& GetPlayBoard() const { return *m_pPBoard; }
     CPlayBoard& GetPlayBoard() { return const_cast<CPlayBoard&>(std::as_const(*this).GetPlayBoard()); }
+    wxOverlay& GetOverlay() { return *overlay; }
     CFrameWnd* GetParentFrame();
 
 // Operations
@@ -221,7 +222,9 @@ protected:
     afx_msg LRESULT OnMessageRotateRelative(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+#endif
+    void OnMouseMove(wxMouseEvent& event);
+#if 0
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnTimer(uintptr_t nIDEvent);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -316,6 +319,8 @@ private:
         slow.  */
     int m_xScrollPixelsPerLine;
     int m_yScrollPixelsPerLine;
+
+    OwnerPtr<wxOverlay> overlay = MakeOwner<wxOverlay>();
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp

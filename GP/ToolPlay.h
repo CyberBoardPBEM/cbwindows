@@ -108,8 +108,8 @@ public:
     CRect   m_rectMultiBorder;
     // ------- //
     BOOL ProcessAutoScroll(CPlayBoardView& pView);
-    void DrawSelectionRect(CDC& pDC, const CRect& pRct) const;
-    void DrawNetRect(CDC& pDC, const CPlayBoardView& pView) const;
+    void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
+    void DrawNetRect(wxDC& pDC, const CPlayBoardView& pView) const;
     [[nodiscard]] CPoint AdjustPoint(const CPlayBoardView& pView, CPoint point) const;
     void MoveSelections(CSelList &pSLst, const CPoint& point);
     void StartDragTimer(CPlayBoardView& pView);
