@@ -1,6 +1,6 @@
 // ToolPlay.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -55,12 +55,12 @@ public:
 public:
     static CPlayTool& GetTool(PToolType eType);
     // ----------- //
-    virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) /* override */;
-    virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) /*override*/ {}
-    virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest)
+    virtual void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) /* override */ {}
+    virtual bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) /* override */;
+    virtual void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) /*override*/ {}
+    virtual BOOL OnSetCursor(const CPlayBoardView& /*pView*/, UINT /*nHitTest*/) const /*override*/
         { return FALSE; }
 
 // Implementation
@@ -95,34 +95,34 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override;
-    virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override;
-    virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
+    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
+    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
     uintptr_t m_nTimerID;
     CRect   m_rectMultiBorder;
     // ------- //
-    BOOL ProcessAutoScroll(CPlayBoardView* pView);
-    void DrawSelectionRect(CDC* pDC, CRect* pRct);
-    void DrawNetRect(CDC* pDC, CPlayBoardView* pView);
-    BOOL AdjustPoint(CPlayBoardView* pView, CPoint& point);
-    void MoveSelections(CSelList *pSLst, CPoint point);
-    void StartDragTimer(CPlayBoardView* pView);
-    void KillDragTimer(CPlayBoardView* pView);
-    void StartScrollTimer(CPlayBoardView* pView);
-    void KillScrollTimer(CPlayBoardView* pView);
+    BOOL ProcessAutoScroll(CPlayBoardView& pView);
+    void DrawSelectionRect(CDC& pDC, const CRect& pRct) const;
+    void DrawNetRect(CDC& pDC, const CPlayBoardView& pView) const;
+    [[nodiscard]] CPoint AdjustPoint(const CPlayBoardView& pView, CPoint point) const;
+    void MoveSelections(CSelList &pSLst, const CPoint& point);
+    void StartDragTimer(CPlayBoardView& pView);
+    void KillDragTimer(CPlayBoardView& pView);
+    void StartScrollTimer(CPlayBoardView& pView);
+    void KillScrollTimer(CPlayBoardView& pView);
     // ------- //
-    void DoDragDropStart(CPlayBoardView* pView);
-    void DoDragDrop(CPlayBoardView* pView, CPoint pntClient);
-    bool DoDragDropEnd(CPlayBoardView* pView, CPoint pntClient);
+    void DoDragDropStart(CPlayBoardView& pView);
+    void DoDragDrop(CPlayBoardView& pView, const CPoint& pntClient);
+    bool DoDragDropEnd(CPlayBoardView& pView, const CPoint& pntClient);
     // ------- //
-    void StartSizingOperation(CPlayBoardView* pView, UINT nFlags,
-        CPoint point, int nHandleID = -1);
+    void StartSizingOperation(CPlayBoardView& pView, UINT nFlags,
+        const CPoint& point, int nHandleID = -1);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -136,20 +136,20 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override;
-    virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override;
-    virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
+    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnMouseMove(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
+    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CPlayBoardView* pView, CPoint point,
-        int& nHandle) = 0;
-    virtual BOOL IsEmptyObject() = 0;
+    virtual OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const CPoint& point,
+        int& nHandle) const = 0;
+    virtual BOOL IsEmptyObject() const = 0;
     // --------- //
-    CDrawObj*   m_pObj;
+    OwnerOrNullPtr<CDrawObj> m_pObj;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -163,9 +163,9 @@ public:
 
 // Implementation
 public:
-    virtual CDrawObj* CreateDrawObj(CPlayBoardView* pView, CPoint point,
-        int& nHandle);
-    virtual BOOL IsEmptyObject();
+    OwnerPtr<CDrawObj> CreateDrawObj(CPlayBoardView& pView, const CPoint& point,
+        int& nHandle) const override;
+    BOOL IsEmptyObject() const override;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -179,12 +179,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override { return true; }
-    virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
+    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override { return true; }
+    void OnMouseMove(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
+    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
@@ -202,12 +202,12 @@ public:
 
 // Operations
 public:
-    virtual void OnLButtonDown(CPlayBoardView* pView, UINT nFlags, CPoint point);
-    virtual void OnLButtonDblClk(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual bool OnLButtonUp(CPlayBoardView* pView, UINT nFlags, CPoint point) override { return true; }
-    virtual void OnMouseMove(CPlayBoardView* pView, UINT nFlags, CPoint point) {}
-    virtual void OnTimer(CPlayBoardView* pView, uintptr_t nIDEvent) override {}
-    virtual BOOL OnSetCursor(CPlayBoardView* pView, UINT nHitTest);
+    void OnLButtonDown(CPlayBoardView& pView, UINT nFlags, CPoint point) override;
+    void OnLButtonDblClk(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    bool OnLButtonUp(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override { return true; }
+    void OnMouseMove(CPlayBoardView& /*pView*/, UINT /*nFlags*/, CPoint /*point*/) override {}
+    void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
+    BOOL OnSetCursor(const CPlayBoardView& pView, UINT nHitTest) const override;
 
 // Implementation
 public:
