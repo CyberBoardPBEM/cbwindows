@@ -1065,7 +1065,7 @@ void CPlayBoardView::OnLButtonDown(UINT nFlags, CPoint point)
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
     point = ClientToWorkspace(point);
-    pTool.OnLButtonDown(this, nFlags, point);
+    pTool.OnLButtonDown(*this, nFlags, point);
 }
 
 void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
@@ -1083,7 +1083,7 @@ void CPlayBoardView::OnMouseMove(UINT nFlags, CPoint point)
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         point = ClientToWorkspace(point);
-        pTool.OnMouseMove(this, nFlags, point);
+        pTool.OnMouseMove(*this, nFlags, point);
     }
     else
         CScrollView::OnMouseMove(nFlags, point);
@@ -1101,7 +1101,7 @@ void CPlayBoardView::OnLButtonUp(UINT nFlags, CPoint point)
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
     // Allow pieces to be selected even during playback
     point = ClientToWorkspace(point);
-    bool rc = pTool.OnLButtonUp(this, nFlags, point);
+    bool rc = pTool.OnLButtonUp(*this, nFlags, point);
     ASSERT(rc || pTool.m_eToolType == ptypeSelect);
     if (!rc && pTool.m_eToolType == ptypeSelect)
     {
@@ -1126,7 +1126,7 @@ void CPlayBoardView::OnLButtonDblClk(UINT nFlags, CPoint point)
         PToolType eToolType = MapToolType(m_nCurToolID);
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         point = ClientToWorkspace(point);
-        pTool.OnLButtonDblClk(this, nFlags, point);
+        pTool.OnLButtonDblClk(*this, nFlags, point);
     }
     else
         CScrollView::OnLButtonDblClk(nFlags, point);
@@ -1153,7 +1153,7 @@ void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
         {
             PToolType eToolType = MapToolType(m_nCurToolID);
             CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-            pTool.OnTimer(this, nIDEvent);
+            pTool.OnTimer(*this, nIDEvent);
         }
         else
             CScrollView::OnTimer(nIDEvent);
@@ -1169,7 +1169,7 @@ BOOL CPlayBoardView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     if (pWnd == this && eToolType != ptypeUnknown)
     {
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-        if (pTool.OnSetCursor(this, nHitTest))
+        if (pTool.OnSetCursor(*this, nHitTest))
             return TRUE;
     }
     if (GetDocument().IsRecordingCompoundMove())
