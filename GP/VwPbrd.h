@@ -111,6 +111,11 @@ public:
     void CenterViewOnWorkspacePoint(wxPoint point);
     BOOL CheckAutoScroll(wxPoint point);
     BOOL ProcessAutoScroll(wxPoint point);
+    // this method can be overridden in a derived class to forbid sending the
+    // auto scroll events - note that unlike StopAutoScrolling() it doesn't
+    // stop the timer, so it will be called repeatedly and will typically
+    // return different values depending on the current mouse position
+    bool SendAutoScrollEvents(wxScrollWinEvent& event) const override;
     void SetOurScrollSizes(TileScale nZoom);
     void DoViewScaleBrd(TileScale nZoom);
 
@@ -225,6 +230,7 @@ protected:
     void OnLButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
 #if 0
     afx_msg void OnTimer(uintptr_t nIDEvent);
 #endif
