@@ -43,10 +43,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////
-
-const int scrollZone = 16;      // From INI?
-
-/////////////////////////////////////////////////////////////////
 // Class variables
 
 std::vector<CPlayTool*> CPlayTool::c_toolLib;          // Tool library
@@ -103,6 +99,11 @@ bool CPlayTool::OnLButtonUp(CPlayBoardView& pView, int /*nMods*/, wxPoint /*poin
         return false;
     pView.ReleaseMouse();
     return true;
+}
+
+void CPlayTool::OnMouseCaptureLost(CPlayBoardView& pView)
+{
+    // mouse already released
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -200,6 +201,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
     if (!pView.HasCapture())
         return;
 
+#if 0
     if (m_eSelMode != smodeNormal && m_eSelMode != smodeMove)
     {
         // Autoscroll initiate possibility processing (sounds like a
@@ -230,6 +232,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
         CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
     }
+#endif
 
     // If we get here, the mouse has been captured. Check if
     // we are doing a "net select".
@@ -353,8 +356,10 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
     }
     else if (m_eSelMode != smodeMove)
     {
+#if 0
         if (!ProcessAutoScroll(pView))
             KillScrollTimer(pView);
+#endif
     }
 }
 
@@ -415,6 +420,7 @@ void CPSelectTool::DrawNetRect(wxDC& pDC, const CPlayBoardView& /*pView*/) const
     DrawSelectionRect(pDC, rect);
 }
 
+#if 0
 BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView& pView)
 {
     CPoint point;
@@ -497,6 +503,7 @@ BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView& pView)
     }
     return FALSE;
 }
+#endif
 
 void CPSelectTool::MoveSelections(CSelList &pSLst, const wxPoint& point)
 {

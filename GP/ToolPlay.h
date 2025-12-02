@@ -59,6 +59,7 @@ public:
     virtual void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) /* override */ {}
     virtual bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
+    virtual void OnMouseCaptureLost(CPlayBoardView& pView) /* override */;
     virtual void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) /*override*/ {}
     virtual wxCursor OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const /*override*/
         { return wxCursor(); }

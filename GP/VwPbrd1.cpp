@@ -757,4 +757,21 @@ BOOL CPlayBoardView::ProcessAutoScroll(CPoint point)
 }
 #endif
 
+// this method can be overridden in a derived class to forbid sending the
+// auto scroll events - note that unlike StopAutoScrolling() it doesn't
+// stop the timer, so it will be called repeatedly and will typically
+// return different values depending on the current mouse position
+bool CPlayBoardView::SendAutoScrollEvents(wxScrollWinEvent& event) const
+{
+    // scroll if this is the capturing window (net select)
+    wxASSERT(event.GetEventObject() == this);
+    if (HasCapture())
+    {
+        return true;
+    }
 
+    // scroll if drag-move
+    CPlayTool& tool = CPlayTool::GetTool(ptypeSelect);
+    CPSelectTool& select = dynamic_cast<CPSelectTool&>(tool);
+    return select.m_eSelMode == CPSelectTool::smodeMove;
+}

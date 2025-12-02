@@ -57,6 +57,8 @@ IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
 
 /////////////////////////////////////////////////////////////////////////////
 
+const int scrollZone = 16;      // From INI?
+
 wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_MENU(XRCID("ID_VIEW_FULLSCALEBRD"), OnViewFullScaleBrd)
     EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALEBRD"), OnUpdateViewFullScaleBrd)
@@ -70,6 +72,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_UP(OnLButtonUp)
+    EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
 #if 0
     ON_WM_TIMER()
 #endif
@@ -182,6 +185,9 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
     document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
     m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter()))
 {
+    EnableAutoScrollInside(scrollZone);
+    DisableAutoScrollOutside();
+
     m_nZoom = fullScale;
     m_nCurToolID = ID_PTOOL_SELECT;
     m_bInDrag = FALSE;
@@ -1220,6 +1226,13 @@ void CPlayBoardView::OnLButtonUp(wxMouseEvent& event)
     }
 }
 
+void CPlayBoardView::OnMouseCaptureLost(wxMouseCaptureLostEvent& event)
+{
+    PToolType eToolType = MapToolType(m_nCurToolID);
+    CPlayTool& pTool = CPlayTool::GetTool(eToolType);
+    pTool.OnMouseCaptureLost(*this);
+}
+
 void CPlayBoardView::OnLButtonDblClk(wxMouseEvent& event)
 {
     int nMods = event.GetModifiers();
@@ -1284,13 +1297,15 @@ void CPlayBoardView::OnSetCursor(wxSetCursorEvent& event)
     {
         CPlayTool& pTool = CPlayTool::GetTool(eToolType);
         wxPoint point(event.GetX(), event.GetY());
-        wxASSERT(GetClientRect().Contains(point));
-        point = ClientToWorkspace(point);
-        wxCursor rc = pTool.OnSetCursor(*this, point);
-        if (rc.IsOk())
+        if (GetClientRect().Contains(point))
         {
-            event.SetCursor(rc);
-            return;
+            point = ClientToWorkspace(point);
+            wxCursor rc = pTool.OnSetCursor(*this, point);
+            if (rc.IsOk())
+            {
+                event.SetCursor(rc);
+                return;
+            }
         }
     }
     if (GetDocument().IsRecordingCompoundMove())
