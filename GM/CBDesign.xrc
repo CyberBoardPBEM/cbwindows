@@ -3894,7 +3894,7 @@
         <accel>Ctrl+M</accel>
         <help>Move clipboard objects to new locations\nMove</help>
       </object>
-      <object class="wxMenuItem" name="wxID_DELETE">
+      <object class="wxMenuItem" name="wxID_CLEAR">
         <label>_Delete</label>
         <accel>Del</accel>
         <help>Erase the current selection\nDelete (Del)</help>

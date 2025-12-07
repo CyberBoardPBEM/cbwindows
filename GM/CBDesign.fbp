@@ -20509,7 +20509,7 @@
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">&amp;Delete</property>
-          <property name="name">wxID_DELETE</property>
+          <property name="name">wxID_CLEAR</property>
           <property name="permission">none</property>
           <property name="shortcut">Del</property>
           <property name="unchecked_bitmap"></property>
