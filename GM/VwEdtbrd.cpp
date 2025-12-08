@@ -263,7 +263,7 @@ void CBrdEditView::OnDraw(wxDC& pDC)
     wxRect oRct;
     wxDC* pDrawDC = &pDC;
 
-    CB_VERIFY(pDC.GetClippingBox(oRct));
+    pDC.GetClippingBox(oRct);
     if (oRct.IsEmpty())
     {
         return;                 // Nothing to do
