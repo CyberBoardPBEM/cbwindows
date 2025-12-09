@@ -250,14 +250,14 @@ CPoint GetMidRect(const CRect& rct)
 ///////////////////////////////////////////////////////////////////////
 // Rotate point around specified origin point.
 
-CPoint RotatePointAroundPoint(CPoint pntOrigin, CPoint pntXlate, int nAngleDeg)
+wxPoint RotatePointAroundPoint(wxPoint pntOrigin, wxPoint pntXlate, int nAngleDeg)
 {
-    CPoint pntRelative = pntXlate - pntOrigin;
+    wxPoint pntRelative = pntXlate - pntOrigin;
     int nCosA = Cos10K(nAngleDeg);
     int nSinA = Sin10K(nAngleDeg);
     int xRotated = (pntRelative.x * nCosA - pntRelative.y * nSinA) / 10000;
     int yRotated = (pntRelative.x * nSinA + pntRelative.y * nCosA) / 10000;
-    CPoint pntFinal = CPoint(xRotated, yRotated) + pntOrigin;
+    wxPoint pntFinal = wxPoint(xRotated, yRotated) + pntOrigin;
     return pntFinal;
 }
 

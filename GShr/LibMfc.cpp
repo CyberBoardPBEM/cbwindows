@@ -1322,6 +1322,10 @@ namespace CB
                         return XRCID("ID_ACT_PLOTDISCARD");
                     case ID_ACT_PLOTDONE:
                         return XRCID("ID_ACT_PLOTDONE");
+                    case ID_ACT_ROTATEGROUP:
+                        return XRCID("ID_ACT_ROTATEGROUP");
+                    case ID_ACT_ROTATEREL:
+                        return XRCID("ID_ACT_ROTATEREL");
                     case ID_ACT_TURNOVER:
                         return XRCID("ID_ACT_TURNOVER");
                     case ID_ACT_TURNOVER_PREV:
@@ -1340,8 +1344,14 @@ namespace CB
                         return XRCID("ID_PPROJITEM_PROPERTIES");
                     case ID_PPROJITEM_VIEW:
                         return XRCID("ID_PPROJITEM_VIEW");
+                    case ID_PTOOL_LINE:
+                        return XRCID("ID_PTOOL_LINE");
                     case ID_PTOOL_PLOTMOVE:
                         return XRCID("ID_PTOOL_PLOTMOVE");
+                    case ID_PTOOL_SELECT:
+                        return XRCID("ID_PTOOL_SELECT");
+                    case ID_PTOOL_TEXTBOX:
+                        return XRCID("ID_PTOOL_TEXTBOX");
                     case ID_VIEW_BOARD_ROTATE180:
                         return XRCID("ID_VIEW_BOARD_ROTATE180");
                     case ID_VIEW_FULLSCALEBRD:
