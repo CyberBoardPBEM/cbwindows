@@ -65,10 +65,8 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_MENU(XRCID("ID_VIEW_HALFSCALEBRD"), OnViewHalfScaleBrd)
     EVT_UPDATE_UI(XRCID("ID_VIEW_HALFSCALEBRD"), OnUpdateViewHalfScaleBrd)
     EVT_DRAGDROP(OnDragItem)
-#if 0
-    ON_MESSAGE(WM_ROTATEPIECE_DELTA, OnMessageRotateRelative)
-    ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
-#endif
+    EVT_ROTATEPIECE_DELTA(OnMessageRotateRelative)
+    EVT_CENTERBOARDONPOINT(OnMessageCenterBoardOnPoint)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_UP(OnLButtonUp)
@@ -76,11 +74,11 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_TIMER(wxID_ANY, OnTimer)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_SET_CURSOR(OnSetCursor)
+    EVT_KEY_DOWN(OnKeyDown)
+    EVT_CHAR(OnChar)
+    EVT_MENU(XRCID("ID_PTOOL_SELECT"), OnPlayTool)
+    EVT_UPDATE_UI(XRCID("ID_PTOOL_SELECT"), OnUpdatePlayTool)
 #if 0
-    ON_WM_KEYDOWN()
-    ON_WM_CHAR()
-    ON_COMMAND_EX(ID_PTOOL_SELECT, OnPlayTool)
-    ON_UPDATE_COMMAND_UI(ID_PTOOL_SELECT, OnUpdatePlayTool)
     ON_COMMAND(ID_ACT_STACK, OnActStack)
     ON_UPDATE_COMMAND_UI(ID_ACT_STACK, OnUpdateActStack)
     ON_COMMAND(ID_ACT_TOBACK, OnActToBack)
@@ -117,10 +115,12 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_COMMAND(ID_EDIT_BRD2FILE, OnEditBoardToFile)
     ON_COMMAND(ID_EDIT_BRDPROP, OnEditBoardProperties)
-    ON_COMMAND(ID_ACT_ROTATEREL, OnActRotateRelative)
-    ON_UPDATE_COMMAND_UI(ID_ACT_ROTATEREL, OnUpdateActRotateRelative)
-    ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateEditClear)
+#endif
+    EVT_MENU(XRCID("ID_ACT_ROTATEREL"), OnActRotateRelative)
+    EVT_UPDATE_UI(XRCID("ID_ACT_ROTATEREL"), OnUpdateActRotateRelative)
+    EVT_MENU(wxID_CLEAR, OnEditClear)
+    EVT_UPDATE_UI(wxID_CLEAR, OnUpdateEditClear)
+#if 0
     ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_VIEW_DRAW_IND_ON_TOP, OnViewDrawIndOnTop)
     ON_UPDATE_COMMAND_UI(ID_VIEW_DRAW_IND_ON_TOP, OnUpdateViewDrawIndOnTop)
@@ -143,18 +143,18 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
 #endif
     EVT_MENU(XRCID("ID_VIEW_SMALLSCALEBRD"), OnViewSmallScaleBoard)
     EVT_UPDATE_UI(XRCID("ID_VIEW_SMALLSCALEBRD"), OnUpdateViewSmallScaleBoard)
+    EVT_MENU(XRCID("ID_PTOOL_LINE"), OnPlayTool)
+    EVT_MENU(XRCID("ID_PTOOL_TEXTBOX"), OnPlayTool)
+    EVT_UPDATE_UI(XRCID("ID_PTOOL_LINE"), OnUpdatePlayTool)
+    EVT_UPDATE_UI(XRCID("ID_PTOOL_TEXTBOX"), OnUpdatePlayTool)
 #if 0
-    ON_COMMAND_EX(ID_PTOOL_LINE, OnPlayTool)
-    ON_COMMAND_EX(ID_PTOOL_TEXTBOX, OnPlayTool)
-    ON_UPDATE_COMMAND_UI(ID_PTOOL_LINE, OnUpdatePlayTool)
-    ON_UPDATE_COMMAND_UI(ID_PTOOL_TEXTBOX, OnUpdatePlayTool)
     ON_WM_MOUSEWHEEL()
 #endif
     EVT_MENU(XRCID("ID_VIEW_BOARD_ROTATE180"), OnViewBoardRotate180)
     EVT_UPDATE_UI(XRCID("ID_VIEW_BOARD_ROTATE180"), OnUpdateViewBoardRotate180)
+    EVT_MENU(XRCID("ID_ACT_ROTATEGROUP"), OnActRotateGroupRelative)
+    EVT_UPDATE_UI(XRCID("ID_ACT_ROTATEGROUP"), OnUpdateActRotateGroupRelative)
 #if 0
-    ON_COMMAND(ID_ACT_ROTATEGROUP, OnActRotateGroupRelative)
-    ON_UPDATE_COMMAND_UI(ID_ACT_ROTATEGROUP, OnUpdateActRotateGroupRelative)
     ON_COMMAND_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnRotatePiece)
     ON_UPDATE_COMMAND_UI_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnUpdateRotatePiece)
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
@@ -170,6 +170,7 @@ wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CPlayBoardViewContainer::BASE)
     ON_WM_CREATE()
+    ON_WM_SETFOCUS()
     ON_WM_SIZE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
@@ -187,7 +188,7 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
     DisableAutoScrollOutside();
 
     m_nZoom = fullScale;
-    m_nCurToolID = ID_PTOOL_SELECT;
+    m_nCurToolID = XRCID("ID_PTOOL_SELECT");
     m_bInDrag = FALSE;
     m_pDragSelList = NULL;
 #if 0
@@ -1370,13 +1371,13 @@ void CPlayBoardView::OnSetCursor(wxSetCursorEvent& event)
 
 //////////////////////////////////////////////////////////////////////
 
-#if 0
-void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CPlayBoardView::OnChar(wxKeyEvent& event)
 {
+    int nChar = event.GetKeyCode();
     CGamDoc& pDoc = GetDocument();
     if (!pDoc.IsPlaying())
     {
-        if (nChar == VK_ESCAPE)
+        if (nChar == static_cast<int>(WXK_ESCAPE))
         {
             if (pDoc.IsRecordingCompoundMove())
                 pDoc.RecordCompoundMoveDiscard();
@@ -1385,7 +1386,7 @@ void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
             else
                 m_selList.PurgeList(TRUE);
         }
-        else if (nChar == VK_RETURN)
+        else if (nChar == static_cast<int>(WXK_RETURN))
         {
             if (pDoc.IsRecordingCompoundMove())
                 pDoc.RecordCompoundMoveEnd();
@@ -1393,19 +1394,28 @@ void CPlayBoardView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
                 OnActPlotDone();
         }
     }
-    CScrollView::OnChar(nChar, nRepCnt, nFlags);
+    event.Skip();
 }
 
-void CPlayBoardView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CPlayBoardView::OnKeyDown(wxKeyEvent& event)
 {
+    int nChar = event.GetKeyCode();
     if (!IsBoardContentsAvailableToCurrentPlayer())
         return;
 
     if (GetDocument().IsPlaying())
         return;
 
-    if (nChar == VK_DELETE)
+    if (nChar == WXK_DELETE ||
+        nChar == WXK_NUMPAD_DELETE)
         OnEditClear();
+
+    /* so other keys get to EVT_CHAR
+        (see https://docs.wxwidgets.org/stable/classwx_key_event.html) */
+    else
+    {
+        event.Skip();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1415,7 +1425,7 @@ void CPlayBoardView::OnEditClear()
     if (!m_selList.HasMarkers())
         return;                                  // Nothing to do
 
-    ASSERT(!GetDocument().IsPlaying() && m_selList.HasMarkers());
+    wxASSERT(!GetDocument().IsPlaying() && m_selList.HasMarkers());
     if (m_pPBoard->GetPlotMoveMode())
         OnActPlotDiscard();
 
@@ -1429,25 +1439,23 @@ void CPlayBoardView::OnEditClear()
     GetDocument().DeleteObjectsInTable(listPtr);
 }
 
-void CPlayBoardView::OnUpdateEditClear(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateEditClear(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!GetDocument().IsPlaying() && m_selList.HasMarkers());
+    pCmdUI.Enable(!GetDocument().IsPlaying() && m_selList.HasMarkers());
 }
-#endif
 
 //////////////////////////////////////////////////////////////////////
 
-static PToolType tblTools[] =
+PToolType CPlayBoardView::MapToolType(int nToolResID) const
 {
-    ptypeSelect,        // ID_PTOOL_SELECT
-    ptypeLine,          // ID_PTOOL_LINE
-    ptypeTextBox,       // ID_PTOOL_TEXTBOX
-    ptypeMPlot,         // ID_PTOOL_PLOTMOVE
-};
-
-PToolType CPlayBoardView::MapToolType(UINT nToolResID) const
-{
-    return tblTools[nToolResID - ID_PTOOL_SELECT];
+    // wx doesn't guarantee XRCID() value order
+    static const std::unordered_map<int, PToolType > map {
+        { XRCID("ID_PTOOL_SELECT"), ptypeSelect },
+        { XRCID("ID_PTOOL_LINE"), ptypeLine },
+        { XRCID("ID_PTOOL_TEXTBOX"), ptypeTextBox },
+        { XRCID("ID_PTOOL_PLOTMOVE"), ptypeMPlot },
+    };
+    return map.at(nToolResID);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1581,29 +1589,27 @@ void CPlayBoardView::OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Check(m_pPBoard->IsBoardRotated180());
 }
 
-#if 0
-BOOL CPlayBoardView::OnPlayTool(UINT id)
+void CPlayBoardView::OnPlayTool(wxCommandEvent& event)
 {
-    if (id !=ID_PTOOL_SELECT)
+    int id = event.GetId();
+    if (id !=XRCID("ID_PTOOL_SELECT"))
         m_selList.PurgeList(TRUE);
     if (id != m_nCurToolID)
     {
         m_nCurToolID = id;
     }
-    return TRUE;
 }
 
-void CPlayBoardView::OnUpdatePlayTool(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdatePlayTool(wxUpdateUIEvent& pCmdUI)
 {
-    // NOTE!!: The control ID's are assumed to be consecutive and
-    // in the same order as the tool codes defined in MAINFRM.C
     if (GetDocument().IsPlaying())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(pCmdUI->m_nID == m_nCurToolID);
-    pCmdUI->SetCheck(pCmdUI->m_nID == m_nCurToolID);
+        pCmdUI.Enable(pCmdUI.GetId() == m_nCurToolID);
+    pCmdUI.Check(pCmdUI.GetId() == m_nCurToolID);
 }
 
+#if 0
 void CPlayBoardView::OnActStack()
 {
     DoAutostackOfSelectedObjects(m_pPBoard->m_xStackStagger,
@@ -1830,7 +1836,7 @@ void CPlayBoardView::OnActPlotMove(wxCommandEvent& /*event*/)
     // Ok...finish plot setup
     m_pPBoard->SetPlotMoveMode(TRUE);
     m_pPBoard->InitPlotStartPoint();
-    m_nCurToolID = ID_PTOOL_PLOTMOVE;
+    m_nCurToolID = XRCID("ID_PTOOL_PLOTMOVE");
 }
 
 void CPlayBoardView::OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI)
@@ -1863,7 +1869,7 @@ void CPlayBoardView::OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Check(m_pPBoard->GetPlotMoveMode());
 }
 
-void CPlayBoardView::OnActPlotDone(wxCommandEvent& /*event*/)
+void CPlayBoardView::OnActPlotDone()
 {
     if (m_pPBoard->GetPrevPlotPoint() != CPoint(-1, -1))
     {
@@ -1887,7 +1893,7 @@ void CPlayBoardView::OnActPlotDone(wxCommandEvent& /*event*/)
     m_pPBoard->SetPlotMoveMode(FALSE);
     GetDocument().UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
-    m_nCurToolID = ID_PTOOL_SELECT;
+    m_nCurToolID = XRCID("ID_PTOOL_SELECT");
 }
 
 void CPlayBoardView::OnUpdateActPlotDone(wxUpdateUIEvent& pCmdUI)
@@ -1900,12 +1906,12 @@ void CPlayBoardView::OnUpdateActPlotDone(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(m_pPBoard->GetPlotMoveMode());
 }
 
-void CPlayBoardView::OnActPlotDiscard(wxCommandEvent& /*event*/)
+void CPlayBoardView::OnActPlotDiscard()
 {
     m_pPBoard->SetPlotMoveMode(FALSE);
     GetDocument().UpdateAllBoardIndicators(*m_pPBoard);
     m_pPBoard->FlushAllIndicators();
-    m_nCurToolID = ID_PTOOL_SELECT;
+    m_nCurToolID = XRCID("ID_PTOOL_SELECT");
 }
 
 void CPlayBoardView::OnUpdateActPlotDiscard(wxUpdateUIEvent& pCmdUI)
@@ -2008,28 +2014,27 @@ void CPlayBoardView::OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID)
     }
     pCmdUI->Enable(bEnabled);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles messages typically sent by the tiny map view.
 // WPARAM = POINT*
 
-LRESULT CPlayBoardView::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam)
+void CPlayBoardView::OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event)
 {
-    CPoint pnt = *((POINT*)wParam);
-    CenterViewOnWorkspacePoint(pnt);
-    return (LRESULT)0;
+    CenterViewOnWorkspacePoint(event.GetPoint());
 }
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles notifications of changes of relative piece
 // rotation sent from the CRotatePieceDialog dialog.
 
-LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
+void CPlayBoardView::OnMessageRotateRelative(RotatePieceDeltaEvent& event)
 {
     CGamDoc& pDoc = GetDocument();
-    int nRelativeRotation = (int)wParam;
-    ASSERT(!m_tblCurPieces.empty());
-    ASSERT(m_tblCurAngles.size() == m_tblCurPieces.size());
+    int nRelativeRotation = event.GetDelta();
+    wxASSERT(!m_tblCurPieces.empty());
+    wxASSERT(m_tblCurAngles.size() == m_tblCurPieces.size());
 
     for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
     {
@@ -2046,21 +2051,20 @@ LRESULT CPlayBoardView::OnMessageRotateRelative(WPARAM wParam, LPARAM lParam)
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Calculate new rotated mid-point for object.
-            CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
+            wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                 m_tblMidPnt[i], nRelativeRotation);
-            CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+            wxPoint sizeDelta = pntRotate - GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
         }
     }
-    return (LRESULT)0;
 }
 
-void CPlayBoardView::OnActRotateRelative()
+void CPlayBoardView::OnActRotateRelative(wxCommandEvent& /*event*/)
 {
     DoRotateRelative(FALSE);
 }
 
-void CPlayBoardView::OnActRotateGroupRelative()
+void CPlayBoardView::OnActRotateGroupRelative(wxCommandEvent& /*event*/)
 {
     DoRotateRelative(TRUE);
 }
@@ -2081,7 +2085,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
     m_selList.LoadTableWithObjectPtrs(m_tblCurPieces, CSelList::otAll, FALSE);
 
-    CRect rctGroupRect = m_selList.GetPiecesEnclosingRect();
+    wxRect rctGroupRect = CB::Convert(m_selList.GetPiecesEnclosingRect());
     m_pntWheelMid = GetMidRect(rctGroupRect);
 
     for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
@@ -2100,7 +2104,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
-            CPoint midPoint = GetMidRect(pDObj.GetEnclosingRect());
+            wxPoint midPoint = GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
             m_tblMidPnt.push_back(midPoint);
         }
     }
@@ -2150,9 +2154,9 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
             // Restore original position
-            CSize sizeDelta = m_tblMidPnt[i] -
-                GetMidRect(pDObj.GetEnclosingRect());
-            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+            wxPoint sizeDelta = m_tblMidPnt[i] -
+                GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
         }
     }
     // Restore recording mode if it was active.
@@ -2181,47 +2185,48 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
                 (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
             {
                 // Calculate new rotated mid-point for object.
-                CPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
+                wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                     m_tblMidPnt[i], dlg.m_nRelativeRotation);
-                CSize sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-                pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, sizeDelta);
+                wxPoint sizeDelta = pntRotate - GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+                pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
             }
         }
         m_selList.UpdateObjects(TRUE, FALSE);
         // Make sure we erase old handles.
-        rctGroupRect.InflateRect(16, 16);
-        InvalidateRect(rctGroupRect, FALSE);
+        rctGroupRect.Inflate(16, 16);
+        RefreshRect(rctGroupRect, FALSE);
     }
     m_tblCurAngles.clear();
     m_tblCurPieces.clear();
     m_tblMidPnt.clear();
 }
 
-void CPlayBoardView::OnUpdateActRotateRelative(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActRotateRelative(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
             m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(m_selList.HasPieces() || m_selList.HasMarkers());
+        pCmdUI.Enable(m_selList.HasPieces() || m_selList.HasMarkers());
 }
 
-void CPlayBoardView::OnUpdateActRotateGroupRelative(CCmdUI *pCmdUI)
+void CPlayBoardView::OnUpdateActRotateGroupRelative(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
             m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable(m_selList.IsMultipleSelects() &&
+        pCmdUI.Enable(m_selList.IsMultipleSelects() &&
             (m_selList.HasPieces() || m_selList.HasMarkers()));
     }
 }
 
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 void CPlayBoardView::OnViewPieces()
 {
     GetPlayBoard().SetPiecesVisible(!GetPlayBoard().GetPiecesVisible());
@@ -2808,6 +2813,13 @@ int CPlayBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
     child = new CPlayBoardView(*this);
 
     return 0;
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CPlayBoardViewContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    BASE::OnSetFocus(pOldWnd);
+    child->SetFocus();
 }
 
 void CPlayBoardViewContainer::OnSize(UINT nType, int cx, int cy)

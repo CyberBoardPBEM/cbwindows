@@ -167,7 +167,7 @@ private:
 protected:
 #endif
     // -------- //
-    UINT        m_nCurToolID;       // Current tool ID
+    int         m_nCurToolID;       // Current tool ID
     // -------- //
     CB::ToolTip m_toolMsgTip;      // Tooltip for notifications
     CB::ToolTip m_toolHitTip;      // Tooltip hit support for view
@@ -187,7 +187,7 @@ protected:
 
     void AddPiece(wxPoint pnt, PieceID pid);
 
-    PToolType MapToolType(UINT nToolResID) const;
+    PToolType MapToolType(int nToolResID) const;
 
     class DCSetupDrawListDC
     {
@@ -232,10 +232,8 @@ protected:
     void OnViewHalfScaleBrd(wxCommandEvent& event);
     void OnUpdateViewHalfScaleBrd(wxUpdateUIEvent& pCmdUI);
     void OnDragItem(DragDropEvent& event);
-#if 0
-    afx_msg LRESULT OnMessageRotateRelative(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
-#endif
+    void OnMessageRotateRelative(RotatePieceDeltaEvent& event);
+    void OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event);
     void OnLButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
@@ -243,11 +241,11 @@ protected:
     void OnTimer(wxTimerEvent& event);
     void OnLButtonDblClk(wxMouseEvent& event);
     void OnSetCursor(wxSetCursorEvent& event);
+    void OnKeyDown(wxKeyEvent& event);
+    void OnChar(wxKeyEvent& event);
+    void OnPlayTool(wxCommandEvent& event);
+    void OnUpdatePlayTool(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
-    afx_msg BOOL OnPlayTool(UINT id);
-    afx_msg void OnUpdatePlayTool(CCmdUI* pCmdUI);
     afx_msg void OnActStack();
     afx_msg void OnUpdateActStack(CCmdUI* pCmdUI);
     afx_msg void OnActToBack();
@@ -259,9 +257,11 @@ protected:
 #endif
     void OnActPlotMove(wxCommandEvent& event);
     void OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI);
-    void OnActPlotDone(wxCommandEvent& event);
+    void OnActPlotDone();
+    void OnActPlotDone(wxCommandEvent& /*event*/) { OnActPlotDone(); }
     void OnUpdateActPlotDone(wxUpdateUIEvent& pCmdUI);
-    void OnActPlotDiscard(wxCommandEvent& event);
+    void OnActPlotDiscard();
+    void OnActPlotDiscard(wxCommandEvent& /*event*/) { OnActPlotDiscard(); }
     void OnUpdateActPlotDiscard(wxUpdateUIEvent& pCmdUI);
 #if 0
     afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
@@ -280,10 +280,13 @@ protected:
     afx_msg void OnEditCopy();
     afx_msg void OnEditBoardToFile();
     afx_msg void OnEditBoardProperties();
-    afx_msg void OnActRotateRelative();
-    afx_msg void OnUpdateActRotateRelative(CCmdUI* pCmdUI);
-    afx_msg void OnEditClear();
-    afx_msg void OnUpdateEditClear(CCmdUI* pCmdUI);
+#endif
+    void OnActRotateRelative(wxCommandEvent& event);
+    void OnUpdateActRotateRelative(wxUpdateUIEvent& pCmdUI);
+    void OnEditClear();
+    void OnEditClear(wxCommandEvent& /*event*/) { OnEditClear(); }
+    void OnUpdateEditClear(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnViewDrawIndOnTop();
     afx_msg void OnUpdateViewDrawIndOnTop(CCmdUI* pCmdUI);
@@ -321,11 +324,9 @@ protected:
 #endif
     void OnScrollWinLine(wxScrollWinEvent& event);
     wxDECLARE_EVENT_TABLE();
-#if 0
 public:
-    afx_msg void OnActRotateGroupRelative();
-    afx_msg void OnUpdateActRotateGroupRelative(CCmdUI *pCmdUI);
-#endif
+    void OnActRotateGroupRelative(wxCommandEvent& event);
+    void OnUpdateActRotateGroupRelative(wxUpdateUIEvent& pCmdUI);
 
 private:
     // IGetCmdTarget
@@ -365,6 +366,7 @@ private:
     DECLARE_DYNCREATE(CPlayBoardViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()

@@ -36,10 +36,7 @@ class CRotatePieceDialog : public wxDialog
 {
 // Construction
 public:
-    /* TEMPORARY:  this needs to send msgs to the view, but that
-        hasn't been converted to wx yet, so can't be passed as
-        parent */
-    CRotatePieceDialog(CWnd& v, wxWindow* pParent = &CB::GetMainWndWx());   // standard constructor
+    CRotatePieceDialog(wxWindow& pParent);   // standard constructor
 
 // Dialog Data
     int m_nRelativeRotation;
@@ -68,9 +65,6 @@ protected:
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 #endif
     wxDECLARE_EVENT_TABLE();
-
-private:
-    RefPtr<CWnd> view;
 };
 
 #endif

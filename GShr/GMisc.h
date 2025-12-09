@@ -67,7 +67,7 @@ inline wxPoint GetMidRect(const wxRect& rct)
 {
     return CB::Convert(GetMidRect(CB::Convert(rct)));
 }
-CPoint RotatePointAroundPoint(CPoint pntOrigin, CPoint pntXlate, int nAngleDeg);
+wxPoint RotatePointAroundPoint(wxPoint pntOrigin, wxPoint pntXlate, int nAngleDeg);
 
 int32_t GridizeClosest1000(int32_t nVal, int32_t nMultiple, int32_t nOffset);
 int32_t GridizeClosest(int32_t nVal, int32_t nMultiple, int32_t nOffset);

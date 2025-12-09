@@ -35,11 +35,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CRotatePieceDialog dialog
 
-CRotatePieceDialog::CRotatePieceDialog(CWnd& v, wxWindow* pParent /*= &CB::GetMainWndWx()*/) :
-    CB_XRC_BEGIN_CTRLS_DEFN(pParent, CRotatePieceDialog)
+CRotatePieceDialog::CRotatePieceDialog(wxWindow& pParent) :
+    CB_XRC_BEGIN_CTRLS_DEFN(&pParent, CRotatePieceDialog)
         CB_XRC_CTRL_VAL(m_editCurVal, m_nRelativeRotation, -359, 359, wxNUM_VAL_SIGN_PLUS)
-    CB_XRC_END_CTRLS_DEFN(),
-    view(&v)
+    CB_XRC_END_CTRLS_DEFN()
 {
     // KLUDGE:  don't see a way to use GetSizeFromText() in .xrc
     wxSize size = m_editCurVal->GetSizeFromText("+999"_cbstring);
@@ -104,7 +103,8 @@ void CRotatePieceDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 void CRotatePieceDialog::ApplyOffset(int nOffset)
 {
     m_nRelativeRotation = (m_nRelativeRotation + nOffset) % 360;
-    view->SendMessage(WM_ROTATEPIECE_DELTA, (WPARAM)m_nRelativeRotation);
+    RotatePieceDeltaEvent event(m_nRelativeRotation);
+    GetParent()->ProcessWindowEvent(event);
     TransferDataToWindow();
 }
 
