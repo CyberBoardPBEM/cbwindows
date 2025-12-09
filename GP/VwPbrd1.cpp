@@ -630,6 +630,19 @@ BOOL CPlayBoardView::IsRectFullyOnBoard(const wxRect& pRct, BOOL* pbXOK, BOOL* p
     return bOK;
 }
 
+void CPlayBoardView::SetTimer(int id, unsigned milliseconds)
+{
+    wxASSERT(!timer);
+    timer = MakeOwner<wxTimer>(this, id);
+    CB_VERIFY(timer->Start(value_preserving_cast<int>(milliseconds)));
+}
+
+void CPlayBoardView::KillTimer(int id)
+{
+    wxASSERT(timer && timer->GetId() == id);
+    timer = nullptr;
+}
+
 wxPoint CPlayBoardView::AdjustPoint(wxPoint pnt) const
 {
     pnt.x = GridizeX(pnt.x);
@@ -764,8 +777,9 @@ BOOL CPlayBoardView::ProcessAutoScroll(CPoint point)
 bool CPlayBoardView::SendAutoScrollEvents(wxScrollWinEvent& event) const
 {
     // scroll if this is the capturing window (net select)
+    // or this is drag destination
     wxASSERT(event.GetEventObject() == this);
-    if (HasCapture())
+    if (HasCapture() || GetAutoscrollWithoutCapture())
     {
         return true;
     }

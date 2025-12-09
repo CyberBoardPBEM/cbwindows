@@ -158,6 +158,13 @@ protected:
     CB::propagate_const<CSelList*> m_pDragSelList;     // Pointer the select list being dragged
 #if 0
     uintptr_t    m_nTimerID;         // Used to control autoscrolls
+#else
+public:
+    void SetTimer(int id, unsigned milliseconds);
+    void KillTimer(int id);
+private:
+    OwnerOrNullPtr<wxTimer> timer;
+protected:
 #endif
     // -------- //
     UINT        m_nCurToolID;       // Current tool ID
@@ -191,14 +198,16 @@ protected:
         CB::DCLogicalOriginChanger logOrgChanger;
     };
 
-    LRESULT DoDragPiece(const DragInfo& pdi);
-    LRESULT DoDragMarker(const DragInfo& pdi);
-    LRESULT DoDragPieceList(const DragInfo& pdi);
-    LRESULT DoDragSelectList(const DragInfo& pdi);
+    void DoDragPiece(const DragInfoWx& pdi);
+    void DoDragMarker(const DragInfoWx& pdi);
+    void DoDragPieceList(const DragInfoWx& pdi);
+    void DoDragSelectList(DragDropEvent& event);
 
+#if 0
     void DragDoAutoScroll();
     void DragCheckAutoScroll();
     void DragKillAutoScroll();
+#endif
 
     void DoAutostackOfSelectedObjects(int xStagger, int yStagger);
     void DoRotateRelative(BOOL bWheelRotation);
@@ -222,8 +231,8 @@ protected:
     void OnUpdateViewFullScaleBrd(wxUpdateUIEvent& pCmdUI);
     void OnViewHalfScaleBrd(wxCommandEvent& event);
     void OnUpdateViewHalfScaleBrd(wxUpdateUIEvent& pCmdUI);
+    void OnDragItem(DragDropEvent& event);
 #if 0
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageRotateRelative(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
 #endif
@@ -231,9 +240,7 @@ protected:
     void OnMouseMove(wxMouseEvent& event);
     void OnLButtonUp(wxMouseEvent& event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
-#if 0
-    afx_msg void OnTimer(uintptr_t nIDEvent);
-#endif
+    void OnTimer(wxTimerEvent& event);
     void OnLButtonDblClk(wxMouseEvent& event);
     void OnSetCursor(wxSetCursorEvent& event);
 #if 0

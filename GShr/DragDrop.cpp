@@ -103,12 +103,14 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_PIECELIST:
             subInfos.m_pieceList.~SubInfo<DRAG_PIECELIST>();
             break;
+#endif
         case DRAG_MARKER:
             subInfos.m_marker.~SubInfo<DRAG_MARKER>();
             break;
         case DRAG_SELECTLIST:
             subInfos.m_selectList.~SubInfo<DRAG_SELECTLIST>();
             break;
+#if 0
         case DRAG_SELECTVIEW:
             subInfos.m_selectView.~SubInfo<DRAG_SELECTVIEW>();
             break;
@@ -137,12 +139,14 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_PIECELIST:
             new (&subInfos.m_pieceList) SubInfo<DRAG_PIECELIST>;
             break;
+#endif
         case DRAG_MARKER:
             new (&subInfos.m_marker) SubInfo<DRAG_MARKER>;
             break;
         case DRAG_SELECTLIST:
             new (&subInfos.m_selectList) SubInfo<DRAG_SELECTLIST>;
             break;
+#if 0
         case DRAG_SELECTVIEW:
             new (&subInfos.m_selectView) SubInfo<DRAG_SELECTVIEW>;
             break;

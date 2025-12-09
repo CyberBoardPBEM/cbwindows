@@ -49,10 +49,12 @@ const int handleHalfWidth = 3;
 /////////////////////////////////////////////////////////////////////
 // Class level variables
 
-CPen    NEAR CSelection::c_penDot(PS_DOT, 1, RGB(0,0,0));
+const wxPen CSelection::c_penDot(*wxLIGHT_GREY, 1, wxPENSTYLE_SHORT_DASH);
+#if 0
 int     NEAR CSelection::c_nPrvROP2;
 CPen*   NEAR CSelection::c_pPrvPen = NULL;
 CBrush* NEAR CSelection::c_pPrvBrush = NULL;
+#endif
 
 /////////////////////////////////////////////////////////////////////
 
@@ -159,24 +161,14 @@ void CSelection::Open()
     }
 }
 
-#if 0
 //=---------------------------------------------------=//
 // Static methods...
 
-void CSelection::SetupTrackingDraw(wxDC& pDC)
+CSelection::DCSetupTrackingDraw::DCSetupTrackingDraw(wxDC& pDC) :
+    setPen(pDC, c_penDot),
+    setBrush(pDC, *wxTRANSPARENT_BRUSH)
 {
-    c_nPrvROP2 = pDC.SetROP2(R2_XORPEN);
-    c_pPrvPen = pDC.SelectObject(&c_penDot);
-    c_pPrvBrush = (CBrush*)pDC.SelectStockObject(NULL_BRUSH);
 }
-
-void CSelection::CleanUpTrackingDraw(wxDC& pDC)
-{
-    pDC.SetROP2(c_nPrvROP2);
-    pDC.SelectObject(c_pPrvPen);
-    pDC.SelectObject(c_pPrvBrush);
-}
-#endif
 
 /////////////////////////////////////////////////////////////////////
 // Line Selection Processing
@@ -298,13 +290,8 @@ void CSelGeneric::AddHandles(CHandleList& listHandles)
 
 void CSelGeneric::DrawTrackingImage(wxDC& pDC, TrackMode eMode) const
 {
-#if 0
-    SetupTrackingDraw(pDC);
+    DCSetupTrackingDraw setupTrackingDraw(pDC);
     pDC.DrawRectangle(CB::Convert(m_rect));
-    CleanUpTrackingDraw(pDC);
-#else
-    wxASSERT(!"TODO:");
-#endif
 }
 
 // Returns handle location in logical coords.

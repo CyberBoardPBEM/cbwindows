@@ -229,7 +229,7 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
         else
             KillScrollTimer(pView);
 #else
-        CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
+        CPP20_TRACE("{}->{}:  TODO:  wxProvides autoscroll?\n", *this, __func__);
 #endif
     }
 #endif
@@ -313,17 +313,35 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point)
     }
     m_eSelMode = smodeNormal;
     KillDragTimer(pView);           // Make sure timers are released
+#if 0
     KillScrollTimer(pView);
+#endif
     return CPlayTool::OnLButtonUp(pView, nMods, point) && retval;
 }
 
-void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
+void CPSelectTool::OnMouseCaptureLost(CPlayBoardView& pView)
 {
+    pView.GetOverlay().Reset();
+    pView.SetCursor(wxCursor(wxCURSOR_ARROW));
+    m_eSelMode = smodeNormal;
+    KillDragTimer(pView);           // Make sure timers are released
+#if 0
+    KillScrollTimer(pView);
+#endif
+    CPlayTool::OnMouseCaptureLost(pView);
+}
+
+void CPSelectTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
+{
+    wxASSERT(nIDEvent == XRCID("timerIDSelectDelay") &&
+                nIDEvent == m_nTimerID);
     if (!pView.HasCapture())
     {
         m_eSelMode = smodeNormal;
         KillDragTimer(pView);
+#if 0
         KillScrollTimer(pView);
+#endif
         return;
     }
     if (m_eSelMode == smodeNormal)
@@ -340,27 +358,28 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
         CClientDC dc(&pView);
         pView.OnPrepareScaledDC(dc, TRUE);
         pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
+#else
+        wxOverlayDC dc(pView.GetOverlay(), &pView);
+        pView.OnPrepareScaledDC(dc);
+        dc.Clear();
+#endif
 
-        CPoint point;
-        GetCursorPos(&point);
-        point = CB::Convert(pView.ScreenToClient(CB::Convert(point)));
-        point = CB::Convert(pView.ClientToWorkspace(CB::Convert(point)));
+        wxPoint point = wxGetMouseState().GetPosition();
+        point = pView.ScreenToClient(point);
+        point = pView.ClientToWorkspace(point);
 
         pSLst.SetTrackingMode(trkMoving);
         DoDragDropStart(pView);
-        point = CB::Convert(pView.WorkspaceToClient(CB::Convert(point)));
+        point = pView.WorkspaceToClient(point);
         DoDragDrop(pView, point);
-#else
-        wxASSERT(!"TODO:");
-#endif
     }
+#if 0
     else if (m_eSelMode != smodeMove)
     {
-#if 0
         if (!ProcessAutoScroll(pView))
             KillScrollTimer(pView);
-#endif
     }
+#endif
 }
 
 void CPSelectTool::OnLButtonDblClk(CPlayBoardView& pView, int nMods,
@@ -539,27 +558,21 @@ wxPoint CPSelectTool::AdjustPoint(const CPlayBoardView& pView, wxPoint point) co
 
 void CPSelectTool::StartDragTimer(CPlayBoardView& pView)
 {
-#if 0
-    m_nTimerID = pView.SetTimer(timerIDSelectDelay,
-        timerSelDelay, NULL);
-#else
-    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
-#endif
+    pView.SetTimer(XRCID("timerIDSelectDelay"),
+        timerSelDelay);
+    m_nTimerID = XRCID("timerIDSelectDelay");
 }
 
 void CPSelectTool::KillDragTimer(CPlayBoardView& pView)
 {
-#if 0
-    if (m_nTimerID != uintptr_t(0))
+    if (m_nTimerID != static_cast<int>(wxID_NONE))
     {
         pView.KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
+        m_nTimerID = static_cast<int>(wxID_NONE);
     }
-#else
-    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
-#endif
 }
 
+#if 0
 void CPSelectTool::StartScrollTimer(CPlayBoardView& pView)
 {
 #if 0
@@ -581,87 +594,93 @@ void CPSelectTool::KillScrollTimer(CPlayBoardView& pView)
     CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
 #endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 // Note: The CSelList should have had the mouse offset value set at
 //      this time.
 void CPSelectTool::DoDragDropStart(CPlayBoardView& pView)
 {
-    wxASSERT(!"TODO:");
     m_di.SetDragType(DRAG_SELECTLIST);
     m_di.GetSubInfo<DRAG_SELECTLIST>().m_selectList = &pView.GetSelectList();
     m_di.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc = &pView.GetDocument();
-    m_di.m_hcsrSuggest = g_res.hcrDragTile;
+    m_di.m_hcsrSuggest = g_res.hcrDragTileWx;
 
     m_hLastWnd = NULL;
 }
 
 void CPSelectTool::DoDragDrop(CPlayBoardView& pView, const wxPoint& pntClient)
 {
-    wxASSERT(!"TODO:");
-#if 0
-    CPoint pnt = pntClient;
-    pnt = CB::Convert(pView.ClientToScreen(CB::Convert(pnt)));
-    CWnd* pWnd = GetWindowFromPoint(pnt);
+    wxPoint pnt = pntClient;
+    pnt = pView.ClientToScreen(pnt);
+    wxWindow* pWnd = wxFindWindowAtPoint(pnt);
 
-    HWND hWnd = pWnd ? pWnd->m_hWnd : NULL; // Get actual window handle
-    if (hWnd != m_hLastWnd)
+    if (pWnd != m_hLastWnd)
     {
         if (m_hLastWnd != NULL)
         {
             // Signal previous window we are leaving them
-            CWnd& pLstWnd = CheckedDeref(CWnd::FromHandle(m_hLastWnd));
+            wxWindow& pLstWnd = CheckedDeref(m_hLastWnd);
             m_di.m_phase = PhaseDrag::Exit;
-            pLstWnd.SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-                (LPARAM)(LPVOID)&m_di);
+            DragDropEvent dragDropEvent(wxGetProcessId(), m_di);
+            pLstWnd.ProcessWindowEvent(dragDropEvent);
         }
         // Signal new window we have entered it.
         if (pWnd != NULL)
         {
             m_di.m_phase = PhaseDrag::Enter;
-            pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-                (LPARAM)(LPVOID)&m_di);
+            DragDropEvent dragDropEvent(wxGetProcessId(), m_di);
+            pWnd->ProcessWindowEvent(dragDropEvent);
         }
     }
-    HCURSOR hCursor = NULL;
-    if (hWnd != NULL)
+    wxCursor hCursor;
+    if (pWnd != NULL)
     {
         m_di.m_point = pntClient;
-        m_di.m_point = CB::Convert(pView.ClientToScreen(CB::Convert(m_di.m_point)));   // Move point into new coord system
-        pWnd->ScreenToClient(&m_di.m_point);
+        m_di.m_point = pView.ClientToScreen(m_di.m_point);   // Move point into new coord system
+        m_di.m_point = pWnd->ScreenToClient(m_di.m_point);
         m_di.m_phase = PhaseDrag::Over;
-        hCursor = (HCURSOR)pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()),
-                (LPARAM)(LPVOID)&m_di);
+        DragDropEvent dragDropEvent(wxGetProcessId(), m_di);
+        pWnd->ProcessWindowEvent(dragDropEvent);
+        hCursor = dragDropEvent.GetCursor();
     }
-    m_hLastWnd = hWnd;
+    m_hLastWnd = pWnd;
 
-    if (hCursor)
-        SetCursor(hCursor);
+    wxWindow& capture = CheckedDeref(wxWindow::GetCapture());
+    if (hCursor.IsOk())
+    {
+        wxASSERT(&capture == &pView);
+        capture.SetCursor(hCursor);
+    }
     else
-        SetCursor(g_res.hcrNoDrop);
-#endif
+    {
+        wxASSERT(&capture == &pView);
+        capture.SetCursor(g_res.hcrNoDropWx);
+    }
 }
 
 bool CPSelectTool::DoDragDropEnd(CPlayBoardView& pView, const wxPoint& pntClient)
 {
-#if 1
-    wxASSERT(!"TODO:");
-    return false;
-#else
-    SetCursor(LoadCursor(NULL, IDC_ARROW));
+    pView.SetCursor(wxCursor(wxCURSOR_ARROW));
 
     wxPoint pnt = pntClient;
-    pView.ClientToScreen(pnt);
-    CWnd* pWnd = GetWindowFromPoint(CB::Convert(pnt));
+    pnt = pView.ClientToScreen(pnt);
+    wxWindow* pWnd = wxFindWindowAtPoint(pnt);
     if (pWnd == NULL)
         return false;
+    if (pWnd != &pView)
+    {
+        pWnd->SetCursor(wxCursor(wxCURSOR_ARROW));
+    }
     m_di.m_point = pntClient;
-    m_di.m_point = CB::Convert(pView.ClientToScreen(CB::Convert(m_di.m_point)));
-    pWnd->ScreenToClient(&m_di.m_point);
+    m_di.m_point = pView.ClientToScreen(m_di.m_point);
+    m_di.m_point = pWnd->ScreenToClient(m_di.m_point);
 
     m_di.m_phase = PhaseDrag::Drop;
-    return pWnd->SendMessage(WM_DRAGDROP, GetProcessId(GetCurrentProcess()), (LPARAM)(LPVOID)&m_di) == 1;
-#endif
+    DragDropEvent dragDropEvent(wxGetProcessId(), m_di);
+    pWnd->ProcessWindowEvent(dragDropEvent);
+    return dragDropEvent.GetResult() &&
+            *dragDropEvent.GetResult();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -703,7 +722,7 @@ void CPShapeTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
         s_plySelectTool.OnMouseMove(pView, nMods, point);
 }
 
-void CPShapeTool::OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent)
+void CPShapeTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
 {
     wxASSERT(!"dead code");
     s_plySelectTool.OnTimer(pView, nIDEvent);
