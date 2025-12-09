@@ -31,9 +31,9 @@
 
 class CPlayBoardView;
 
-const UINT timerIDSelectDelay = 666;    // Select timer ID
+// XRCID("timerIDSelectDelay");    // Select timer ID
 const UINT timerIDAutoScroll  = 999;    // Autoscroll timer ID
-const int  timerSelDelay      = 250;    // Delay until select
+const unsigned timerSelDelay  = 250;    // Delay until select
 const int  timerAutoScroll    = 80;     // Interval of autoscrolls
 
 enum PToolType { ptypeUnknown, ptypeSelect, ptypeLine, ptypeTextBox,
@@ -60,7 +60,7 @@ public:
     virtual bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) /* override */;
     virtual void OnMouseCaptureLost(CPlayBoardView& pView) /* override */;
-    virtual void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) /*override*/ {}
+    virtual void OnTimer(CPlayBoardView& /*pView*/, int /*nIDEvent*/) /*override*/ {}
     virtual wxCursor OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const /*override*/
         { return wxCursor(); }
 
@@ -99,7 +99,7 @@ class CPSelectTool : public CPlayTool
 {
 // Constructors
 public:
-    CPSelectTool() : CPlayTool(ptypeSelect) { m_nTimerID = uintptr_t(0); }
+    CPSelectTool() : CPlayTool(ptypeSelect) { m_nTimerID = static_cast<int>(wxID_NONE); }
 
 // Attributes
 public:
@@ -109,8 +109,8 @@ public:
     SelectMode  m_eSelMode;
     int         m_nHandleID;
     // Inter-view Drag/Drop processing support
-    DragInfo    m_di;
-    HWND        m_hLastWnd;
+    DragInfoWx  m_di;
+    wxWindow*   m_hLastWnd;
 
 // Operations
 public:
@@ -118,23 +118,28 @@ public:
     void OnLButtonDblClk(CPlayBoardView& pView, int nMods, wxPoint point) override;
     bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) override;
-    void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
+    void OnMouseCaptureLost(CPlayBoardView& pView) override;
+    void OnTimer(CPlayBoardView& pView, int nIDEvent) override;
     wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
 public:
-    uintptr_t m_nTimerID;
+    int m_nTimerID;
     wxRect  m_rectMultiBorder;
     // ------- //
+#if 0
     BOOL ProcessAutoScroll(CPlayBoardView& pView);
+#endif
     void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
     void DrawNetRect(wxDC& pDC, const CPlayBoardView& pView) const;
     [[nodiscard]] wxPoint AdjustPoint(const CPlayBoardView& pView, wxPoint point) const;
     void MoveSelections(CSelList &pSLst, const wxPoint& point);
     void StartDragTimer(CPlayBoardView& pView);
     void KillDragTimer(CPlayBoardView& pView);
+#if 0
     void StartScrollTimer(CPlayBoardView& pView);
     void KillScrollTimer(CPlayBoardView& pView);
+#endif
     // ------- //
     void DoDragDropStart(CPlayBoardView& pView);
     void DoDragDrop(CPlayBoardView& pView, const wxPoint& pntClient);
@@ -159,7 +164,7 @@ public:
     void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
     bool OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point) override;
     void OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point) override;
-    void OnTimer(CPlayBoardView& pView, uintptr_t nIDEvent) override;
+    void OnTimer(CPlayBoardView& pView, int nIDEvent) override;
     wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
@@ -202,7 +207,7 @@ public:
     void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
     bool OnLButtonUp(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override { return true; }
     void OnMouseMove(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
-    void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
+    void OnTimer(CPlayBoardView& /*pView*/, int /*nIDEvent*/) override {}
     wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation
@@ -225,7 +230,7 @@ public:
     void OnLButtonDblClk(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
     bool OnLButtonUp(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override { return true; }
     void OnMouseMove(CPlayBoardView& /*pView*/, int /*nMods*/, wxPoint /*point*/) override {}
-    void OnTimer(CPlayBoardView& /*pView*/, uintptr_t /*nIDEvent*/) override {}
+    void OnTimer(CPlayBoardView& /*pView*/, int /*nIDEvent*/) override {}
     wxCursor OnSetCursor(const CPlayBoardView& pView, const wxPoint& point) const override;
 
 // Implementation

@@ -64,8 +64,8 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_UPDATE_UI(XRCID("ID_VIEW_FULLSCALEBRD"), OnUpdateViewFullScaleBrd)
     EVT_MENU(XRCID("ID_VIEW_HALFSCALEBRD"), OnViewHalfScaleBrd)
     EVT_UPDATE_UI(XRCID("ID_VIEW_HALFSCALEBRD"), OnUpdateViewHalfScaleBrd)
+    EVT_DRAGDROP(OnDragItem)
 #if 0
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
     ON_MESSAGE(WM_ROTATEPIECE_DELTA, OnMessageRotateRelative)
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
 #endif
@@ -73,9 +73,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_UP(OnLButtonUp)
     EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
-#if 0
-    ON_WM_TIMER()
-#endif
+    EVT_TIMER(wxID_ANY, OnTimer)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_SET_CURSOR(OnSetCursor)
 #if 0
@@ -599,36 +597,46 @@ void CPlayBoardView::OnDraw(wxDC& pDC)
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-LRESULT CPlayBoardView::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CPlayBoardView::OnDragItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        return;
     }
     if (GetDocument().IsPlaying())
-        return -1;                       // Drags not supported during play
+        return;                       // Drags not supported during play
 
-    const DragInfo& pdi = CheckedDeref(reinterpret_cast<const DragInfo*>(lParam));
+    const DragInfoWx& pdi = event.GetDragInfo();
 
     if (pdi.GetDragType() == DRAG_PIECE)
-        return DoDragPiece(pdi);
+    {
+        DoDragPiece(pdi);
+        return;
+    }
 
     if (pdi.GetDragType() == DRAG_PIECELIST)
-        return DoDragPieceList(pdi);
+    {
+        DoDragPieceList(pdi);
+        return;
+    }
 
     if (pdi.GetDragType() == DRAG_MARKER)
-        return DoDragMarker(pdi);
+    {
+        DoDragMarker(pdi);
+        return;
+    }
 
     if (pdi.GetDragType() == DRAG_SELECTLIST)
-        return DoDragSelectList(pdi);
-
-    return 0;
+    {
+        DoDragSelectList(event);
+        return;
+    }
 }
 
-LRESULT CPlayBoardView::DoDragPiece(const DragInfo& pdi)
+void CPlayBoardView::DoDragPiece(const DragInfoWx& pdi)
 {
-    ASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
+    wxASSERT(FALSE);      //!!!NOT USED???? //TODO: WHAT'S GOING ON HERE? 20200618
+#if 0
     if (pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != &GetDocument())
         return -1;               // Only pieces from our document.
 
@@ -658,13 +666,15 @@ LRESULT CPlayBoardView::DoDragPiece(const DragInfo& pdi)
         DragKillAutoScroll();
     }
     return 1;
+#endif
 }
 
-LRESULT CPlayBoardView::DoDragPieceList(const DragInfo& pdi)
+void CPlayBoardView::DoDragPieceList(const DragInfoWx& pdi)
 {
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &GetDocument())
-        return -1;               // Only pieces from our document.
+        return;               // Only pieces from our document.
 
+#if 0
     // if piece can't fit on board, reject drop
     CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_size.cx > limit.cx ||
@@ -718,17 +728,21 @@ LRESULT CPlayBoardView::DoDragPieceList(const DragInfo& pdi)
         DragKillAutoScroll();
     }
     return 1;
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
 #define MARKER_DROP_GAP_X     8
 
-LRESULT CPlayBoardView::DoDragMarker(const DragInfo& pdi)
+void CPlayBoardView::DoDragMarker(const DragInfoWx& pdi)
 {
-    ASSERT(pdi.GetDragType() == DRAG_MARKER);
+    wxASSERT(pdi.GetDragType() == DRAG_MARKER);
     CGamDoc& pDoc = GetDocument();
     if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != &pDoc)
-        return -1;               // Only markers from our document.
+        return;               // Only markers from our document.
 
+#if 0
     // if marker can't fit on board, reject drop
     CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
     if (pdi.GetSubInfo<DRAG_MARKER>().m_size.cx > limit.cx ||
@@ -853,65 +867,89 @@ NASTY_GOTO_TARGET:
         }
     }
     return 1;
+#else
+    wxASSERT(!"TODO:");
+#endif
 }
 
-LRESULT CPlayBoardView::DoDragSelectList(const DragInfo& pdi)
+void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
 {
+    const DragInfoWx& pdi = event.GetDragInfo();
     if (pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &GetDocument())
-        return -1;               // Only pieces from our document.
+        return;               // Only pieces from our document.
 
-    CPoint pdi_m_point = ClientToWorkspace(pdi.m_point);
+    // allow autoscroll while this is drag destination
+    switch (pdi.m_phase)
+    {
+        case PhaseDrag::Enter:
+            EnableAutoscrollWithoutCapture();
+            break;
+        case PhaseDrag::Exit:
+        case PhaseDrag::Drop:
+            DisableAutoscrollWithoutCapture();
+            break;
+    }
+
+    wxPoint pdi_m_point = ClientToWorkspace(pdi.m_point);
 
     CSelList *pSLst = pdi.GetSubInfo<DRAG_SELECTLIST>().m_selectList;
-    CDC& pDC = CheckedDeref(GetDC());
+    wxOverlayDC pDC(GetOverlay(), this);
     OnPrepareScaledDC(pDC, TRUE);
+    pDC.Clear();
 
     if (pdi.m_phase == PhaseDrag::Exit || pdi.m_phase == PhaseDrag::Drop ||
         pdi.m_phase == PhaseDrag::Over)
     {
         // Remove previous drag image.
+#if 0
         pSLst->DrawTracker(pDC, trkMoving);
+#elif 0
+        GetOverlay().Reset();
+#endif
     }
+#if 0
     if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
+#endif
 
-    CRect rctSnapRef = pSLst->GetSnapReferenceRect();
-    CPoint pntSnapRefTopLeft = rctSnapRef.TopLeft();
+    wxRect rctSnapRef = CB::Convert(pSLst->GetSnapReferenceRect());
+    wxPoint pntSnapRefTopLeft = rctSnapRef.GetTopLeft();
 
-    CPoint pntMseOff = pntSnapRefTopLeft + pSLst->GetMouseOffset();
-    CSize sizeDelta = pdi_m_point - pntMseOff; // Trial delta
+    wxPoint pntMseOff = pntSnapRefTopLeft + CB::Convert(pSLst->GetMouseOffset());
+    wxPoint sizeDelta = pdi_m_point - pntMseOff; // Trial delta
 
-    rctSnapRef += (CPoint)sizeDelta;    // Calc trial new position
+    rctSnapRef.Offset(sizeDelta);    // Calc trial new position
     rctSnapRef = AdjustRect(rctSnapRef);         // Force onto grid.
-    sizeDelta = rctSnapRef.TopLeft() - pntSnapRefTopLeft;   // Calc actual offset
+    sizeDelta = rctSnapRef.GetTopLeft() - pntSnapRefTopLeft;   // Calc actual offset
 
-    if (sizeDelta.cx != 0 || sizeDelta.cy != 0)
+    if (sizeDelta.x != 0 || sizeDelta.y != 0)
     {
         // We still have to make sure the larger rect hasn't left the
         // playing area.
-        CRect rctObjs = pSLst->GetEnclosingRect();
-        rctObjs += (CPoint)sizeDelta;               // Calc trial new position
+        wxRect rctObjs = CB::Convert(pSLst->GetEnclosingRect());
+        rctObjs.Offset(sizeDelta);               // Calc trial new position
         BOOL bXOK, bYOK;
         if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
         {
-            CRect temp = rctObjs;
+            wxRect temp = rctObjs;
             temp = LimitRect(temp);
             // if enclosing rect can't fit on board, reject drop
             if (!IsRectFullyOnBoard(temp, &bXOK, &bYOK))
             {
-                return pdi.m_phase == PhaseDrag::Over ?
-                            reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
-                        :
-                            -1;
+                if (pdi.m_phase == PhaseDrag::Over)
+                {
+                    event.SetCursor(g_res.hcrNoDropTooBigWx);
+                }
+                return;
             }
-            sizeDelta += temp.TopLeft() - rctObjs.TopLeft();
+            sizeDelta += temp.GetTopLeft() - rctObjs.GetTopLeft();
         }
-        if (sizeDelta.cx != 0 || sizeDelta.cy != 0) // Check 'em again (what a pain!)
-            pSLst->Offset((CPoint)sizeDelta);
+        if (sizeDelta.x != 0 || sizeDelta.y != 0) // Check 'em again (what a pain!)
+            pSLst->Offset(CB::Convert(sizeDelta));
     }
 
-    CRect rctObjs = pSLst->GetEnclosingRect();
-    CPoint pntTopLeft = rctObjs.TopLeft();
+    wxRect rctObjs = CB::Convert(pSLst->GetEnclosingRect());
+    wxPoint pntTopLeft = rctObjs.GetTopLeft();
 
     if (pdi.m_phase == PhaseDrag::Over || pdi.m_phase == PhaseDrag::Enter)
     {
@@ -919,25 +957,29 @@ LRESULT CPlayBoardView::DoDragSelectList(const DragInfo& pdi)
         // Draw new drag image.
         pSLst->DrawTracker(pDC, trkMoving);
     }
-    ReleaseDC(&pDC);
 
     if (pdi.m_phase == PhaseDrag::Over)
     {
+#if 0
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
+#endif
+        event.SetCursor(pdi.m_hcsrSuggest);
+        return;
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CGamDoc& pDoc = GetDocument();
 
         // Whoooopppp...Whoooopppp!!! Drop occurred here....
+#if 0
         DragKillAutoScroll();
+#endif
         std::vector<CB::not_null<CDrawObj*>> listObjs;
         pSLst->LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc.AssignNewMoveGroup();
-        pDoc.PlaceObjectTableOnBoard(listObjs, rctObjs.TopLeft(), m_pPBoard.get());
+        pDoc.PlaceObjectTableOnBoard(listObjs, CB::Convert(rctObjs.GetTopLeft()), m_pPBoard.get());
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -948,16 +990,18 @@ LRESULT CPlayBoardView::DoDragSelectList(const DragInfo& pdi)
             SelectAllObjectsInTable(listObjs);  // Reselect on this board.
         }
 
-        CFrameWnd* pFrame = GetParentFrame();
-        pFrame->SetActiveView(this);
+        CFrameWnd* pFrame = parent->GetParentFrame();
+        pFrame->SetActiveView(&*parent);
 
-        pDoc.UpdateAllViews(this, HINT_UPDATESELECTLIST);
+        pDoc.UpdateAllViews(&*parent, HINT_UPDATESELECTLIST);
 
         NotifySelectListChange();
     }
-    return 1;
+    event.SetResult(true);
+    return;
 }
 
+#if 0
 void CPlayBoardView::DragDoAutoScroll()
 {
     CPoint ptBefore(0, 0);
@@ -1254,9 +1298,9 @@ void CPlayBoardView::OnLButtonDblClk(wxMouseEvent& event)
         event.Skip();
 }
 
-#if 0
-void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
+void CPlayBoardView::OnTimer(wxTimerEvent& event)
 {
+#if 0
     if (m_nTimerID == nIDEvent)
     {
         CPoint point;
@@ -1272,17 +1316,21 @@ void CPlayBoardView::OnTimer(uintptr_t nIDEvent)
     }
     else
     {
+#endif
         if (!GetDocument().IsPlaying())
         {
             PToolType eToolType = MapToolType(m_nCurToolID);
             CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-            pTool.OnTimer(*this, nIDEvent);
+            pTool.OnTimer(*this, event.GetId());
         }
         else
-            CScrollView::OnTimer(nIDEvent);
+        {
+            event.Skip();
+        }
+#if 0
     }
-}
 #endif
+}
 
 void CPlayBoardView::OnSetCursor(wxSetCursorEvent& event)
 {

@@ -1,6 +1,6 @@
 // DragDrop.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -70,6 +70,9 @@ public:
     wxCursor GetCursor() const { return cursor; }
     void SetCursor(wxCursor c) { cursor = c; }
 
+    const std::optional<bool>& GetResult() const { return result; }
+    void SetResult(bool b) { wxASSERT(!result); result = b; }
+
     wxEvent* Clone() const override { return new DragDropEvent(*this); }
 
 private:
@@ -77,6 +80,7 @@ private:
     const DragInfoWx& dragInfo;
     bool allowScroll = true;
     wxCursor cursor;
+    std::optional<bool> result;
 };
 typedef void (wxEvtHandler::*DragDropEventFunction)(DragDropEvent&);
 #define DragDropEventHandler(func) wxEVENT_HANDLER_CAST(DragDropEventFunction, func)
@@ -263,7 +267,6 @@ public:
         wxSize m_size;
         const CGamDoc* m_gamDoc;
     };
-#if 0
     template<>
     struct SubInfo<DRAG_MARKER>
     {
@@ -277,6 +280,7 @@ public:
         CSelList* m_selectList;
         CGamDoc* m_gamDoc;
     };
+#if 0
     template<>
     struct SubInfo<DRAG_SELECTVIEW>
     {
@@ -292,9 +296,9 @@ private:
         SubInfo<DRAG_TILELIST> m_tileList;
         SubInfo<DRAG_PIECE> m_piece;
         SubInfo<DRAG_PIECELIST> m_pieceList;
-#if 0
         SubInfo<DRAG_MARKER> m_marker;
         SubInfo<DRAG_SELECTLIST> m_selectList;
+#if 0
         SubInfo<DRAG_SELECTVIEW> m_selectView;
 #endif
 
@@ -305,7 +309,7 @@ public:
     template<DragType DT>
     const SubInfo<DT>& GetSubInfo() const
     {
-        ASSERT(m_dragType == DT);
+        wxASSERT(m_dragType == DT);
         /* TODO:  This check could be removed to improve release
             build performance if we trust ourselves to always
             catch any m_dragType mistakes in testing.  Also,
