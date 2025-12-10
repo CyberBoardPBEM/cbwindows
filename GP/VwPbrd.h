@@ -245,16 +245,14 @@ protected:
     void OnChar(wxKeyEvent& event);
     void OnPlayTool(wxCommandEvent& event);
     void OnUpdatePlayTool(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnActStack();
-    afx_msg void OnUpdateActStack(CCmdUI* pCmdUI);
-    afx_msg void OnActToBack();
-    afx_msg void OnUpdateActToBack(CCmdUI* pCmdUI);
-    afx_msg void OnActToFront();
-    afx_msg void OnUpdateActToFront(CCmdUI* pCmdUI);
-    afx_msg BOOL OnActTurnOver(UINT id);
-    afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
-#endif
+    void OnActStack(wxCommandEvent& event);
+    void OnUpdateActStack(wxUpdateUIEvent& pCmdUI);
+    void OnActToBack(wxCommandEvent& event);
+    void OnUpdateActToBack(wxUpdateUIEvent& pCmdUI);
+    void OnActToFront(wxCommandEvent& event);
+    void OnUpdateActToFront(wxUpdateUIEvent& pCmdUI);
+    void OnActTurnOver(wxCommandEvent& event);
+    void OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI);
     void OnActPlotMove(wxCommandEvent& event);
     void OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI);
     void OnActPlotDone();
@@ -263,24 +261,22 @@ protected:
     void OnActPlotDiscard();
     void OnActPlotDiscard(wxCommandEvent& /*event*/) { OnActPlotDiscard(); }
     void OnUpdateActPlotDiscard(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI);
+    void OnViewSnapGrid(wxCommandEvent& event);
+    void OnUpdateViewSnapGrid(wxUpdateUIEvent& pCmdUI);
+    void OnEditSelAllMarkers(wxCommandEvent& event);
+    void OnUpdateEditSelAllMarkers(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnUpdateIndicatorCellNum(CCmdUI* pCmdUI);
-    afx_msg void OnViewSnapGrid();
-    afx_msg void OnUpdateViewSnapGrid(CCmdUI* pCmdUI);
-    afx_msg void OnEditSelAllMarkers();
-    afx_msg void OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI);
     afx_msg void OnActRotate();
     afx_msg void OnUpdateActRotate(CCmdUI* pCmdUI);
 #endif
     void OnViewToggleScale(wxCommandEvent& event);
     void OnUpdateViewToggleScale(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnViewPieces();
-    afx_msg void OnUpdateViewPieces(CCmdUI* pCmdUI);
-    afx_msg void OnEditCopy();
-    afx_msg void OnEditBoardToFile();
-    afx_msg void OnEditBoardProperties();
-#endif
+    void OnViewPieces(wxCommandEvent& event);
+    void OnUpdateViewPieces(wxUpdateUIEvent& pCmdUI);
+    void OnEditCopy(wxCommandEvent& event);
+    void OnEditBoardToFile(wxCommandEvent& event);
+    void OnEditBoardProperties(wxCommandEvent& event);
     void OnActRotateRelative(wxCommandEvent& event);
     void OnUpdateActRotateRelative(wxUpdateUIEvent& pCmdUI);
     void OnEditClear();
@@ -327,6 +323,8 @@ protected:
 public:
     void OnActRotateGroupRelative(wxCommandEvent& event);
     void OnUpdateActRotateGroupRelative(wxUpdateUIEvent& pCmdUI);
+private:
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
 
 private:
     // IGetCmdTarget
