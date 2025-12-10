@@ -1326,6 +1326,12 @@ namespace CB
                         return XRCID("ID_ACT_ROTATEGROUP");
                     case ID_ACT_ROTATEREL:
                         return XRCID("ID_ACT_ROTATEREL");
+                    case ID_ACT_STACK:
+                        return XRCID("ID_ACT_STACK");
+                    case ID_ACT_TOBACK:
+                        return XRCID("ID_ACT_TOBACK");
+                    case ID_ACT_TOFRONT:
+                        return XRCID("ID_ACT_TOFRONT");
                     case ID_ACT_TURNOVER:
                         return XRCID("ID_ACT_TURNOVER");
                     case ID_ACT_TURNOVER_PREV:
@@ -1334,8 +1340,14 @@ namespace CB
                         return XRCID("ID_ACT_TURNOVER_RANDOM");
                     case ID_ACT_TURNOVER_SELECT:
                         return XRCID("ID_ACT_TURNOVER_SELECT");
+                    case ID_EDIT_BRD2FILE:
+                        return XRCID("ID_EDIT_BRD2FILE");
                     case ID_EDIT_BRDPROP:
                         return XRCID("ID_EDIT_BRDPROP");
+                    case ID_EDIT_SELALLMARKERS:
+                        return XRCID("ID_EDIT_SELALLMARKERS");
+                    case ID_INDICATOR_CELLNUM:
+                        return XRCID("ID_INDICATOR_CELLNUM");
                     case ID_PPROJITEM_DELETE:
                         return XRCID("ID_PPROJITEM_DELETE");
                     case ID_PPROJITEM_EDIT:
@@ -1358,8 +1370,12 @@ namespace CB
                         return XRCID("ID_VIEW_FULLSCALEBRD");
                     case ID_VIEW_HALFSCALEBRD:
                         return XRCID("ID_VIEW_HALFSCALEBRD");
+                    case ID_VIEW_PIECES:
+                        return XRCID("ID_VIEW_PIECES");
                     case ID_VIEW_SMALLSCALEBRD:
                         return XRCID("ID_VIEW_SMALLSCALEBRD");
+                    case ID_VIEW_SNAPGRID:
+                        return XRCID("ID_VIEW_SNAPGRID");
                     case ID_VIEW_TOGGLESCALE:
                         return XRCID("ID_VIEW_TOGGLESCALE");
                     default:
