@@ -50,7 +50,10 @@ CBitEditFrame::CBitEditFrame(wxDocument& doc,
     BASE(&doc, &view, &parent, wxID_ANY,
         doc.GetUserReadableName() + " - Tile Editor"),
     m_wndSplitter([this, &view]{
-        wxSplitterWindow* retval = new wxSplitterWindow(this,
+        wxSplitterWindow* retval = new wxSplitterWindow;
+        // KLUDGE:  prevent events until m_wndSplitter set
+        retval->Hide();
+        retval->Create(this,
             wxID_ANY,
             wxDefaultPosition,
             wxDefaultSize,
@@ -76,6 +79,7 @@ CBitEditFrame::CBitEditFrame(wxDocument& doc,
         return retval;
     }())
 {
+    m_wndSplitter->Show();
     SetIcon(wxIcon(std::format("#{}", IDR_BITEDITOR),
                             wxBITMAP_TYPE_ICO_RESOURCE,
                             16, 16));
