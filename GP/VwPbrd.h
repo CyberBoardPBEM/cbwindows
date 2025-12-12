@@ -284,25 +284,25 @@ protected:
     void OnUpdateEditClear(wxUpdateUIEvent& pCmdUI);
 #if 0
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnViewDrawIndOnTop();
-    afx_msg void OnUpdateViewDrawIndOnTop(CCmdUI* pCmdUI);
-    afx_msg void OnEditElementText();
-    afx_msg void OnUpdateEditElementText(CCmdUI* pCmdUI);
-    afx_msg void OnActLockObject();
-    afx_msg void OnUpdateActLockObject(CCmdUI* pCmdUI);
-    afx_msg void OnActLockSuspend();
-    afx_msg void OnUpdateActLockSuspend(CCmdUI* pCmdUI);
-    afx_msg void OnActShuffleSelectedObjects();
-    afx_msg void OnUpdateActShuffleSelectedObjects(CCmdUI* pCmdUI);
-    afx_msg void OnActAutostackDeck();
-    afx_msg void OnUpdateActAutostackDeck(CCmdUI* pCmdUI);
-    afx_msg void OnActTakeOwnership();
-    afx_msg void OnUpdateActTakeOwnership(CCmdUI* pCmdUI);
-    afx_msg void OnActReleaseOwnership();
-    afx_msg void OnUpdateActReleaseOwnership(CCmdUI* pCmdUI);
-    afx_msg void OnActSetOwner();
-    afx_msg void OnUpdateActSetOwner(CCmdUI* pCmdUI);
 #endif
+    void OnViewDrawIndOnTop(wxCommandEvent& event);
+    void OnUpdateViewDrawIndOnTop(wxUpdateUIEvent& pCmdUI);
+    void OnEditElementText(wxCommandEvent& event);
+    void OnUpdateEditElementText(wxUpdateUIEvent& pCmdUI);
+    void OnActLockObject(wxCommandEvent& event);
+    void OnUpdateActLockObject(wxUpdateUIEvent& pCmdUI);
+    void OnActLockSuspend(wxCommandEvent& event);
+    void OnUpdateActLockSuspend(wxUpdateUIEvent& pCmdUI);
+    void OnActShuffleSelectedObjects(wxCommandEvent& event);
+    void OnUpdateActShuffleSelectedObjects(wxUpdateUIEvent& pCmdUI);
+    void OnActAutostackDeck(wxCommandEvent& event);
+    void OnUpdateActAutostackDeck(wxUpdateUIEvent& pCmdUI);
+    void OnActTakeOwnership(wxCommandEvent& event);
+    void OnUpdateActTakeOwnership(wxUpdateUIEvent& pCmdUI);
+    void OnActReleaseOwnership(wxCommandEvent& event);
+    void OnUpdateActReleaseOwnership(wxUpdateUIEvent& pCmdUI);
+    void OnActSetOwner(wxCommandEvent& event);
+    void OnUpdateActSetOwner(wxUpdateUIEvent& pCmdUI);
     void OnViewSmallScaleBoard(wxCommandEvent& event);
     void OnUpdateViewSmallScaleBoard(wxUpdateUIEvent& pCmdUI);
     void OnViewBoardRotate180(wxCommandEvent& event);
@@ -315,9 +315,7 @@ protected:
     afx_msg void OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID);
 #endif
     void OnMessageWindowState(WinStateEvent& event);
-#if 0
-    afx_msg LRESULT OnMessageSelectBoardObjectList(WPARAM wParam, LPARAM lParam);
-#endif
+    void OnMessageSelectBoardObjectList(SelectBoardObjListEvent& event);
     void OnScrollWinLine(wxScrollWinEvent& event);
     wxDECLARE_EVENT_TABLE();
 public:

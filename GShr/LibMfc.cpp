@@ -1318,16 +1318,30 @@ namespace CB
 #if defined(GPLAY)
                 switch (id)
                 {
+                    case ID_ACT_AUTOSTACK_DECK:
+                        return XRCID("ID_ACT_AUTOSTACK_DECK");
+                    case ID_ACT_LOCK_SUSPEND:
+                        return XRCID("ID_ACT_LOCK_SUSPEND");
+                    case ID_ACT_LOCKOBJECT:
+                        return XRCID("ID_ACT_LOCKOBJECT");
                     case ID_ACT_PLOTDISCARD:
                         return XRCID("ID_ACT_PLOTDISCARD");
                     case ID_ACT_PLOTDONE:
                         return XRCID("ID_ACT_PLOTDONE");
+                    case ID_ACT_RELEASE_OWNERSHIP:
+                        return XRCID("ID_ACT_RELEASE_OWNERSHIP");
                     case ID_ACT_ROTATEGROUP:
                         return XRCID("ID_ACT_ROTATEGROUP");
                     case ID_ACT_ROTATEREL:
                         return XRCID("ID_ACT_ROTATEREL");
+                    case ID_ACT_SET_OWNER:
+                        return XRCID("ID_ACT_SET_OWNER");
+                    case ID_ACT_SHUFFLE_SELECTED:
+                        return XRCID("ID_ACT_SHUFFLE_SELECTED");
                     case ID_ACT_STACK:
                         return XRCID("ID_ACT_STACK");
+                    case ID_ACT_TAKE_OWNERSHIP:
+                        return XRCID("ID_ACT_TAKE_OWNERSHIP");
                     case ID_ACT_TOBACK:
                         return XRCID("ID_ACT_TOBACK");
                     case ID_ACT_TOFRONT:
@@ -1344,6 +1358,8 @@ namespace CB
                         return XRCID("ID_EDIT_BRD2FILE");
                     case ID_EDIT_BRDPROP:
                         return XRCID("ID_EDIT_BRDPROP");
+                    case ID_EDIT_ELEMENT_TEXT:
+                        return XRCID("ID_EDIT_ELEMENT_TEXT");
                     case ID_EDIT_SELALLMARKERS:
                         return XRCID("ID_EDIT_SELALLMARKERS");
                     case ID_INDICATOR_CELLNUM:
@@ -1366,6 +1382,8 @@ namespace CB
                         return XRCID("ID_PTOOL_TEXTBOX");
                     case ID_VIEW_BOARD_ROTATE180:
                         return XRCID("ID_VIEW_BOARD_ROTATE180");
+                    case ID_VIEW_DRAW_IND_ON_TOP:
+                        return XRCID("ID_VIEW_DRAW_IND_ON_TOP");
                     case ID_VIEW_FULLSCALEBRD:
                         return XRCID("ID_VIEW_FULLSCALEBRD");
                     case ID_VIEW_HALFSCALEBRD:
