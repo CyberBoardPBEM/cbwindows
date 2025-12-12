@@ -121,25 +121,25 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_UPDATE_UI(wxID_CLEAR, OnUpdateEditClear)
 #if 0
     ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_VIEW_DRAW_IND_ON_TOP, OnViewDrawIndOnTop)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_DRAW_IND_ON_TOP, OnUpdateViewDrawIndOnTop)
-    ON_COMMAND(ID_EDIT_ELEMENT_TEXT, OnEditElementText)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_ELEMENT_TEXT, OnUpdateEditElementText)
-    ON_COMMAND(ID_ACT_LOCKOBJECT, OnActLockObject)
-    ON_UPDATE_COMMAND_UI(ID_ACT_LOCKOBJECT, OnUpdateActLockObject)
-    ON_COMMAND(ID_ACT_LOCK_SUSPEND, OnActLockSuspend)
-    ON_UPDATE_COMMAND_UI(ID_ACT_LOCK_SUSPEND, OnUpdateActLockSuspend)
-    ON_COMMAND(ID_ACT_SHUFFLE_SELECTED, OnActShuffleSelectedObjects)
-    ON_UPDATE_COMMAND_UI(ID_ACT_SHUFFLE_SELECTED, OnUpdateActShuffleSelectedObjects)
-    ON_COMMAND(ID_ACT_AUTOSTACK_DECK, OnActAutostackDeck)
-    ON_UPDATE_COMMAND_UI(ID_ACT_AUTOSTACK_DECK, OnUpdateActAutostackDeck)
-    ON_COMMAND(ID_ACT_TAKE_OWNERSHIP, OnActTakeOwnership)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TAKE_OWNERSHIP, OnUpdateActTakeOwnership)
-    ON_COMMAND(ID_ACT_RELEASE_OWNERSHIP, OnActReleaseOwnership)
-    ON_UPDATE_COMMAND_UI(ID_ACT_RELEASE_OWNERSHIP, OnUpdateActReleaseOwnership)
-    ON_COMMAND(ID_ACT_SET_OWNER, OnActSetOwner)
-    ON_UPDATE_COMMAND_UI(ID_ACT_SET_OWNER, OnUpdateActSetOwner)
 #endif
+    EVT_MENU(XRCID("ID_VIEW_DRAW_IND_ON_TOP"), OnViewDrawIndOnTop)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_DRAW_IND_ON_TOP"), OnUpdateViewDrawIndOnTop)
+    EVT_MENU(XRCID("ID_EDIT_ELEMENT_TEXT"), OnEditElementText)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_ELEMENT_TEXT"), OnUpdateEditElementText)
+    EVT_MENU(XRCID("ID_ACT_LOCKOBJECT"), OnActLockObject)
+    EVT_UPDATE_UI(XRCID("ID_ACT_LOCKOBJECT"), OnUpdateActLockObject)
+    EVT_MENU(XRCID("ID_ACT_LOCK_SUSPEND"), OnActLockSuspend)
+    EVT_UPDATE_UI(XRCID("ID_ACT_LOCK_SUSPEND"), OnUpdateActLockSuspend)
+    EVT_MENU(XRCID("ID_ACT_SHUFFLE_SELECTED"), OnActShuffleSelectedObjects)
+    EVT_UPDATE_UI(XRCID("ID_ACT_SHUFFLE_SELECTED"), OnUpdateActShuffleSelectedObjects)
+    EVT_MENU(XRCID("ID_ACT_AUTOSTACK_DECK"), OnActAutostackDeck)
+    EVT_UPDATE_UI(XRCID("ID_ACT_AUTOSTACK_DECK"), OnUpdateActAutostackDeck)
+    EVT_MENU(XRCID("ID_ACT_TAKE_OWNERSHIP"), OnActTakeOwnership)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TAKE_OWNERSHIP"), OnUpdateActTakeOwnership)
+    EVT_MENU(XRCID("ID_ACT_RELEASE_OWNERSHIP"), OnActReleaseOwnership)
+    EVT_UPDATE_UI(XRCID("ID_ACT_RELEASE_OWNERSHIP"), OnUpdateActReleaseOwnership)
+    EVT_MENU(XRCID("ID_ACT_SET_OWNER"), OnActSetOwner)
+    EVT_UPDATE_UI(XRCID("ID_ACT_SET_OWNER"), OnUpdateActSetOwner)
     EVT_MENU(XRCID("ID_VIEW_SMALLSCALEBRD"), OnViewSmallScaleBoard)
     EVT_UPDATE_UI(XRCID("ID_VIEW_SMALLSCALEBRD"), OnUpdateViewSmallScaleBoard)
     EVT_MENU(XRCID("ID_PTOOL_LINE"), OnPlayTool)
@@ -160,9 +160,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
 #endif
     EVT_WINSTATE(OnMessageWindowState)
-#if 0
-    ON_MESSAGE(WM_SELECT_BOARD_OBJLIST, OnMessageSelectBoardObjectList)
-#endif
+    EVT_SELECT_BOARD_OBJLIST(OnMessageSelectBoardObjectList)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
 wxEND_EVENT_TABLE()
@@ -364,21 +362,21 @@ void CPlayBoardView::OnActivateView(BOOL bActivate, CView* pActivateView, CView*
         NotifySelectListChange();
 }
 
-#if 0
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
 // WPARAM = CPlayBoard*, LPARAM = const std::vector<CB::not_null<CDrawObj*>>*
 
-LRESULT CPlayBoardView::OnMessageSelectBoardObjectList(WPARAM wParam, LPARAM lParam)
+void CPlayBoardView::OnMessageSelectBoardObjectList(SelectBoardObjListEvent& event)
 {
-    if ((CPlayBoard*)wParam != m_pPBoard)
-        return (LRESULT)0;
-    const std::vector<CB::not_null<CDrawObj*>>& pList = *(const std::vector<CB::not_null<CDrawObj*>>*)lParam;
+    if (&event.GetBoard() != m_pPBoard)
+    {
+        event.Skip();
+        return;
+    }
+    const std::vector<CB::not_null<CDrawObj*>>& pList = event.GetObjList();
     m_selList.PurgeList();                  // Deselect current set of selections
     SelectAllObjectsInList(pList);          // Select the new set
-    return (LRESULT)1;
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This message is sent when a document is being saved.
@@ -1639,18 +1637,17 @@ void CPlayBoardView::OnUpdateActStack(wxUpdateUIEvent& pCmdUI)
         pCmdUI.Enable(m_selList.IsMultipleSelects());
 }
 
-#if 0
-void CPlayBoardView::OnActAutostackDeck()
+void CPlayBoardView::OnActAutostackDeck(wxCommandEvent& /*event*/)
 {
     DoAutostackOfSelectedObjects(0, 0);
 }
 
-void CPlayBoardView::OnUpdateActAutostackDeck(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActAutostackDeck(wxUpdateUIEvent& pCmdUI)
 {
     OnUpdateActStack(pCmdUI);
 }
 
-void CPlayBoardView::OnActShuffleSelectedObjects()
+void CPlayBoardView::OnActShuffleSelectedObjects(wxCommandEvent& /*event*/)
 {
     CRect rct = m_selList.GetPiecesEnclosingRect();
     if (rct.IsRectEmpty())
@@ -1695,14 +1692,13 @@ void CPlayBoardView::OnActShuffleSelectedObjects()
     SelectAllObjectsInTable(tblRandObjs);  // Reselect objects
 }
 
-void CPlayBoardView::OnUpdateActShuffleSelectedObjects(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActShuffleSelectedObjects(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(m_selList.IsMultipleSelects());
+        pCmdUI.Enable(m_selList.IsMultipleSelects());
 }
-#endif
 
 void CPlayBoardView::OnActToFront(wxCommandEvent& /*event*/)
 {
@@ -2238,7 +2234,7 @@ void CPlayBoardView::OnUpdateViewPieces(wxUpdateUIEvent& pCmdUI)
 
 ///////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::OnEditCopy(wxCommandEvent& event)
+void CPlayBoardView::OnEditCopy(wxCommandEvent& /*event*/)
 {
     CBoard* pBoard = m_pPBoard->GetBoard();
 
@@ -2269,7 +2265,7 @@ void CPlayBoardView::OnEditCopy(wxCommandEvent& event)
     }
 }
 
-void CPlayBoardView::OnEditBoardToFile(wxCommandEvent& event)
+void CPlayBoardView::OnEditBoardToFile(wxCommandEvent& /*event*/)
 {
     CB::string strFilter = CB::string::LoadString(IDS_BMP_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_SEL_BITMAPFILE);
@@ -2323,7 +2319,7 @@ void CPlayBoardView::OnEditBoardToFile(wxCommandEvent& event)
     }
 }
 
-void CPlayBoardView::OnEditBoardProperties(wxCommandEvent& event)
+void CPlayBoardView::OnEditBoardProperties(wxCommandEvent& /*event*/)
 {
     GetDocument().DoBoardProperties(GetPlayBoard());
 }
@@ -2361,8 +2357,9 @@ void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
     else
         pCmdUI->Enable();
 }
+#endif
 
-void CPlayBoardView::OnViewDrawIndOnTop()
+void CPlayBoardView::OnViewDrawIndOnTop(wxCommandEvent& /*event*/)
 {
     GetPlayBoard().SetIndicatorsOnTop(!GetPlayBoard().GetIndicatorsOnTop());
     CGamDocHint hint;
@@ -2370,12 +2367,13 @@ void CPlayBoardView::OnViewDrawIndOnTop()
     GetDocument().UpdateAllViews(NULL, HINT_UPDATEBOARD, &hint);
 }
 
-void CPlayBoardView::OnUpdateViewDrawIndOnTop(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateViewDrawIndOnTop(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(GetPlayBoard().GetIndicatorsOnTop());
+    pCmdUI.Enable(true);
+    pCmdUI.Check(GetPlayBoard().GetIndicatorsOnTop());
 }
 
-void CPlayBoardView::OnEditElementText()
+void CPlayBoardView::OnEditElementText(wxCommandEvent& /*event*/)
 {
     ASSERT(m_selList.IsSingleSelect() && (m_selList.HasMarkers() || m_selList.HasPieces()));
 
@@ -2384,20 +2382,20 @@ void CPlayBoardView::OnEditElementText()
     NotifySelectListChange();       // Make sure indicators are updated
 }
 
-void CPlayBoardView::OnUpdateEditElementText(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateEditElementText(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlaying() || !pDoc.IsScenario() &&
             m_selList.HasOwnedPiecesNotMatching(pDoc.GetCurrentPlayerMask()))
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable(m_selList.IsSingleSelect() &&
+        pCmdUI.Enable(m_selList.IsSingleSelect() &&
             (m_selList.HasMarkers() || m_selList.HasPieces()));
     }
 }
 
-void CPlayBoardView::OnActLockObject()
+void CPlayBoardView::OnActLockObject(wxCommandEvent& /*event*/)
 {
     int nSet;
     int nClear;
@@ -2417,11 +2415,11 @@ void CPlayBoardView::OnActLockObject()
         m_selList.PurgeList(TRUE);          // Purge former selections
 }
 
-void CPlayBoardView::OnUpdateActLockObject(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActLockObject(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying())
     {
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
         return;
     }
 
@@ -2431,15 +2429,15 @@ void CPlayBoardView::OnUpdateActLockObject(CCmdUI* pCmdUI)
     m_selList.CountDObjFlags(dobjFlgLockDown, nSet, nClear);
 
     if (nSet != 0 && nClear != 0)
-        pCmdUI->SetCheck(2);
+        pCmdUI.Set3StateValue(wxCHK_UNDETERMINED);
     else if (nSet != 0 && nClear == 0)
-        pCmdUI->SetCheck(1);
+        pCmdUI.Set3StateValue(wxCHK_CHECKED);
     else
-        pCmdUI->SetCheck(0);
-    pCmdUI->Enable(!m_selList.empty());
+        pCmdUI.Set3StateValue(wxCHK_UNCHECKED);
+    pCmdUI.Enable(!m_selList.empty());
 }
 
-void CPlayBoardView::OnActLockSuspend()
+void CPlayBoardView::OnActLockSuspend(wxCommandEvent& /*event*/)
 {
     m_pPBoard->SetLocksEnforced(!m_pPBoard->GetLocksEnforced());
     // If enforcement is on and objects are locked, deselect them
@@ -2447,19 +2445,19 @@ void CPlayBoardView::OnActLockSuspend()
         m_selList.DeselectIfDObjFlagsSet(dobjFlgLockDown);
 }
 
-void CPlayBoardView::OnUpdateActLockSuspend(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActLockSuspend(wxUpdateUIEvent& pCmdUI)
 {
     if (GetDocument().IsPlaying())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable(TRUE);
-        pCmdUI->SetCheck(!m_pPBoard->GetLocksEnforced());
+        pCmdUI.Enable(TRUE);
+        pCmdUI.Check(!m_pPBoard->GetLocksEnforced());
     }
 }
 
 
-void CPlayBoardView::OnActTakeOwnership()
+void CPlayBoardView::OnActTakeOwnership(wxCommandEvent& /*event*/)
 {
     CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
     if (rct.IsRectEmpty())
@@ -2493,22 +2491,22 @@ void CPlayBoardView::OnActTakeOwnership()
     NotifySelectListChange();
 }
 
-void CPlayBoardView::OnUpdateActTakeOwnership(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActTakeOwnership(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     // Can't take ownership while residing on an owned board.
     if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else if (pDoc.IsCurrentPlayerReferee())
-        pCmdUI->Enable(FALSE);      // No owner to acquire. He's the Referee!
+        pCmdUI.Enable(FALSE);      // No owner to acquire. He's the Referee!
     else
     {
-        pCmdUI->Enable(pDoc.HasPlayers() && m_selList.HasNonOwnedPieces() &&
+        pCmdUI.Enable(pDoc.HasPlayers() && m_selList.HasNonOwnedPieces() &&
             pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
-void CPlayBoardView::OnActReleaseOwnership()
+void CPlayBoardView::OnActReleaseOwnership(wxCommandEvent& /*event*/)
 {
     CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
     if (rct.IsRectEmpty())
@@ -2542,22 +2540,22 @@ void CPlayBoardView::OnActReleaseOwnership()
     NotifySelectListChange();
 }
 
-void CPlayBoardView::OnUpdateActReleaseOwnership(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActReleaseOwnership(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     // Can't release ownership while residing on an owned board.
     if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else if (pDoc.IsCurrentPlayerReferee() && m_selList.HasPieces())
-        pCmdUI->Enable(TRUE);
+        pCmdUI.Enable(TRUE);
     else
     {
-        pCmdUI->Enable(pDoc.HasPlayers() && m_selList.HasOwnedPieces() &&
+        pCmdUI.Enable(pDoc.HasPlayers() && m_selList.HasOwnedPieces() &&
             pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR);
     }
 }
 
-void CPlayBoardView::OnActSetOwner()
+void CPlayBoardView::OnActSetOwner(wxCommandEvent& /*event*/)
 {
     CGamDoc& pDoc = GetDocument();
     CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
@@ -2598,21 +2596,20 @@ void CPlayBoardView::OnActSetOwner()
     NotifySelectListChange();
 }
 
-void CPlayBoardView::OnUpdateActSetOwner(CCmdUI* pCmdUI)
+void CPlayBoardView::OnUpdateActSetOwner(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     // Can't take ownership while residing on an owned board.
     if (pDoc.IsPlaying() || m_pPBoard->IsOwned())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else if (pDoc.IsCurrentPlayerReferee() && m_selList.HasPieces())
-        pCmdUI->Enable(TRUE);
+        pCmdUI.Enable(TRUE);
     else
     {
-        pCmdUI->Enable(pDoc.HasPlayers() &&
+        pCmdUI.Enable(pDoc.HasPlayers() &&
             (m_selList.HasPieces() && pDoc.GetCurrentPlayerMask() != OWNER_MASK_SPECTATOR));
     }
 }
-#endif
 
 #if 0
 /////////////////////////////////////////////////////////////////////////////
