@@ -1330,6 +1330,38 @@ namespace CB
                         return XRCID("ID_ACT_PLOTDONE");
                     case ID_ACT_RELEASE_OWNERSHIP:
                         return XRCID("ID_ACT_RELEASE_OWNERSHIP");
+                    case ID_ACT_ROTATE_0:
+                        return XRCID("ID_ACT_ROTATE_0");
+                    case ID_ACT_ROTATE_30:
+                        return XRCID("ID_ACT_ROTATE_30");
+                    case ID_ACT_ROTATE_45:
+                        return XRCID("ID_ACT_ROTATE_45");
+                    case ID_ACT_ROTATE_60:
+                        return XRCID("ID_ACT_ROTATE_60");
+                    case ID_ACT_ROTATE_90:
+                        return XRCID("ID_ACT_ROTATE_90");
+                    case ID_ACT_ROTATE_120:
+                        return XRCID("ID_ACT_ROTATE_120");
+                    case ID_ACT_ROTATE_135:
+                        return XRCID("ID_ACT_ROTATE_135");
+                    case ID_ACT_ROTATE_150:
+                        return XRCID("ID_ACT_ROTATE_150");
+                    case ID_ACT_ROTATE_180:
+                        return XRCID("ID_ACT_ROTATE_180");
+                    case ID_ACT_ROTATE_210:
+                        return XRCID("ID_ACT_ROTATE_210");
+                    case ID_ACT_ROTATE_225:
+                        return XRCID("ID_ACT_ROTATE_225");
+                    case ID_ACT_ROTATE_240:
+                        return XRCID("ID_ACT_ROTATE_240");
+                    case ID_ACT_ROTATE_270:
+                        return XRCID("ID_ACT_ROTATE_270");
+                    case ID_ACT_ROTATE_300:
+                        return XRCID("ID_ACT_ROTATE_300");
+                    case ID_ACT_ROTATE_315:
+                        return XRCID("ID_ACT_ROTATE_315");
+                    case ID_ACT_ROTATE_330:
+                        return XRCID("ID_ACT_ROTATE_330");
                     case ID_ACT_ROTATEGROUP:
                         return XRCID("ID_ACT_ROTATEGROUP");
                     case ID_ACT_ROTATEREL:

@@ -309,9 +309,9 @@ protected:
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
     afx_msg void OnSelectGroupMarkers(UINT nID);
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
-    afx_msg void OnRotatePiece(UINT nID);
-    afx_msg void OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID);
 #endif
+    void OnRotatePiece(wxCommandEvent& event);
+    void OnUpdateRotatePiece(wxUpdateUIEvent& pCmdUI);
     void OnMessageWindowState(WinStateEvent& event);
     void OnMessageSelectBoardObjectList(SelectBoardObjListEvent& event);
     void OnScrollWinLine(wxScrollWinEvent& event);

@@ -151,9 +151,12 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_UPDATE_UI(XRCID("ID_VIEW_BOARD_ROTATE180"), OnUpdateViewBoardRotate180)
     EVT_MENU(XRCID("ID_ACT_ROTATEGROUP"), OnActRotateGroupRelative)
     EVT_UPDATE_UI(XRCID("ID_ACT_ROTATEGROUP"), OnUpdateActRotateGroupRelative)
+    /* ID_ACT_ROTATE_0:  can't use wx event tables with range
+        because XRCID doesn't allow controlling values, so use
+        wxEvtHandler::Bind */
 #if 0
-    ON_COMMAND_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnRotatePiece)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_ACT_ROTATE_0, (ID_ACT_ROTATE_0 + 360 / 5), OnUpdateRotatePiece)
+    /* ID_MRKGROUP_FIRST involves modifying the menu item count,
+        but the menus aren't ported to wx yet */
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
 #endif
@@ -162,6 +165,42 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
 wxEND_EVENT_TABLE()
+
+// helper for wxEvtHandler::Bind for ID_ACT_ROTATE_0
+namespace {
+    // avoid trying to use XRC before wxApp initialized
+    const std::map<int /*id*/, int /*degrees*/>& GetRotateMap()
+    {
+        static const std::map<int /*id*/, int /*degrees*/> retval = []{
+            std::map<int /*id*/, int /*degrees*/> retval;
+            for (int degrees : {
+                                    0,
+                                    30,
+                                    45,
+                                    60,
+                                    90,
+                                    120,
+                                    135,
+                                    150,
+                                    180,
+                                    210,
+                                    225,
+                                    240,
+                                    270,
+                                    300,
+                                    315,
+                                    330,
+                                })
+            {
+                wxString name = wxString::Format("ID_ACT_ROTATE_%d", degrees);
+                retval[XRCID(name)] = degrees;
+            }
+            return retval;
+        }();
+        return retval;
+    }
+}
+
 
 BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CPlayBoardViewContainer::BASE)
     ON_WM_CREATE()
@@ -181,6 +220,13 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
 {
     EnableAutoScrollInside(scrollZone);
     DisableAutoScrollOutside();
+
+    // use wxEvtHandler::Bind for ID_ACT_ROTATE_0
+    for (auto pair : GetRotateMap())
+    {
+        Bind(wxEVT_MENU, &CPlayBoardView::OnRotatePiece, this, pair.first);
+        Bind(wxEVT_UPDATE_UI, &CPlayBoardView::OnUpdateRotatePiece, this, pair.first);
+    }
 
     m_nZoom = fullScale;
     m_nCurToolID = XRCID("ID_PTOOL_SELECT");
@@ -1964,6 +2010,7 @@ void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
     else
         pCmdUI->Enable(m_selList.HasPieces());
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // Handle rotation requests. The ID's for tile rotations
@@ -1971,9 +2018,9 @@ void CPlayBoardView::OnUpdateActRotate(CCmdUI* pCmdUI) // ** TEST CODE ** //
 // five degree increments. For example: if ID_ACT_ROTATE_0 is 42000, then
 // ID_ACT_ROTATE_90 must be 42009. This makes the angle easy to compute.
 
-void CPlayBoardView::OnRotatePiece(UINT nID)
+void CPlayBoardView::OnRotatePiece(wxCommandEvent& event)
 {
-    uint16_t nFacing5DegCW = value_preserving_cast<uint16_t>(nID - ID_ACT_ROTATE_0);
+    int nFacingDegCW = GetRotateMap().at(event.GetId());
     std::vector<CB::not_null<CDrawObj*>> listObjs;
     m_selList.LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
 
@@ -1981,12 +2028,12 @@ void CPlayBoardView::OnRotatePiece(UINT nID)
 
     GetDocument().AssignNewMoveGroup();
     GetDocument().ChangePlayingPieceFacingTableOnBoard(listObjs, m_pPBoard.get(),
-        uint16_t(5) * nFacing5DegCW);       // Convert to degrees
+        value_preserving_cast<uint16_t>(nFacingDegCW));
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
 }
 
-void CPlayBoardView::OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID)
+void CPlayBoardView::OnUpdateRotatePiece(wxUpdateUIEvent& pCmdUI)
 {
     CGamDoc& pDoc = GetDocument();
     BOOL bEnabled = (m_selList.HasPieces() || m_selList.HasMarkers()) && !pDoc.IsPlaying();
@@ -1996,15 +2043,16 @@ void CPlayBoardView::OnUpdateRotatePiece(CCmdUI* pCmdUI, UINT nID)
         bEnabled = FALSE;
     }
 
+#if 0
     if (pCmdUI->m_pSubMenu != NULL)
     {
         // Need to handle menu that the submenu is connected to.
         pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
             MF_BYPOSITION | (bEnabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
     }
-    pCmdUI->Enable(bEnabled);
-}
 #endif
+    pCmdUI.Enable(bEnabled);
+}
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles messages typically sent by the tiny map view.
