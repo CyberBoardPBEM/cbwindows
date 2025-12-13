@@ -1485,6 +1485,7 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
         {
             CCmdUI& pCmdUI = CheckedDeref(static_cast<CCmdUI*>(pExtra));
             wxUpdateUIEvent event(CB::ToWxID(nID));
+            event.Allow3rdState();
 #if !defined(GPLAY)
             CColorCmdUI* colorCmdUI = dynamic_cast<CColorCmdUI*>(&pCmdUI);
             if (colorCmdUI)
@@ -1509,7 +1510,20 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
                 }
                 if (event.GetSetChecked())
                 {
-                    pCmdUI.SetCheck(event.GetChecked());
+                    switch (event.Get3StateValue())
+                    {
+                        case wxCHK_UNCHECKED:
+                            pCmdUI.SetCheck(0);
+                            break;
+                        case wxCHK_CHECKED:
+                            pCmdUI.SetCheck(1);
+                            break;
+                        case wxCHK_UNDETERMINED:
+                            pCmdUI.SetCheck(2);
+                            break;
+                        default:
+                            wxASSERT(!"impossible value");
+                    }
                 }
                 if (event.GetSetText())
                 {
