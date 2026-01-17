@@ -1,6 +1,6 @@
 // VwPbrd1.cpp : implementation of the CPlayBoardView class
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -178,13 +178,15 @@ void CPlayBoardView::ClearToolTip()
 
 //////////////////////////////////////////////////////////////////////
 
+#if 0
 void CPlayBoardView::SetNotificationTip(wxPoint pointClient, UINT nResID)
 {
     CB::string str = CB::string::LoadString(nResID);
     SetNotificationTip(pointClient, &str);
 }
+#endif
 
-void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string* pszTip)
+void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string& pszTip)
 {
     ClearNotificationTip();
 
@@ -206,7 +208,15 @@ void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string* p
 
     SetTimer(ID_TIP_MSG_TIMER, MAX_TIP_MSG_TIME, NotificationTipTimeoutHandler);
 #else
-    wxASSERT(!"TODO:");
+    m_toolMsgTip.Add(*this, pszTip, CB::ToolTip::TRACK);
+
+    wxPoint pointScreen = ClientToScreen(pointClient);
+
+    m_toolMsgTip.Enable(true);
+    m_toolMsgTip.TrackActivate(*this, true);
+    m_toolMsgTip.TrackPosition(pointScreen);
+
+    m_toolMsgTipTimer.Start(MAX_TIP_MSG_TIME, wxTIMER_ONE_SHOT);
 #endif
 }
 
@@ -221,19 +231,18 @@ void CPlayBoardView::ClearNotificationTip()
     m_toolMsgTip.DelTool(this, ID_TIP_PLAYBOARD_MSG);
     m_toolMsgTip.Activate(FALSE);
 #else
-    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
+    m_toolMsgTipTimer.Stop();
+
+    m_toolMsgTip.TrackActivate(*this, false);
+    m_toolMsgTip.Delete(*this);
+    m_toolMsgTip.Enable(false);
 #endif
 }
 
-#if 0
-void CALLBACK CPlayBoardView::NotificationTipTimeoutHandler(HWND hwnd,
-    UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+void CPlayBoardView::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
 {
-    CPlayBoardView* pView = (CPlayBoardView*)CWnd::FromHandle(hwnd);
-    ASSERT(pView != NULL);
-    pView->ClearNotificationTip();
+    ClearNotificationTip();
 }
-#endif
 
 //////////////////////////////////////////////////////////////////////
 

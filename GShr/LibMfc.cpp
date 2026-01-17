@@ -1,6 +1,6 @@
 // LibMfc.cpp - Miscellaneous MFC Support Functions
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -1070,10 +1070,51 @@ void CB::ToolTip::SetMaxWidth(int width)
     maxWidth = width;
 }
 
+void CB::ToolTip::TrackActivate(wxWindow& wnd, bool b)
+{
+    wxASSERT(!b || (!IsRunning() && state == sNoTool));
+    auto it = std::find_if(toolInfos.begin(), toolInfos.end(),
+                            [&wnd](const ToolInfo& ti)
+                            {
+                                return &ti.wnd.get() == &wnd &&
+                                    !ti.rect;
+                            });
+    if (it == toolInfos.end() && !b)
+    {
+        return;
+    }
+    wxASSERT(it != toolInfos.end());
+
+    it->flags = Flags(it->flags & (~TRACK_ON) | (b ? TRACK_ON : 0));
+
+    // show/hide the tooltip immediately
+    if (b && !tipWindow)
+    {
+        wxASSERT(tipTool == toolInfos.end());
+        tipTool = it;
+        state = sDisplayWait;
+        Notify();
+    }
+    else if (!b && tipWindow)
+    {
+        CloseTipWindow();
+    }
+}
+
+void CB::ToolTip::TrackPosition(wxPoint screenPt)
+{
+    wxASSERT(tipTool != toolInfos.end() &&
+            (tipTool->flags & Flags(TRACK_ON)));
+
+    if (tipWindow)
+    {
+        tipWindow->SetPosition(screenPt);
+    }
+}
+
 void CB::ToolTip::Add(wxWindow& wnd, std::optional<wxRect>&& rect,
                             wxString&& tip, Flags flags)
 {
-    wxASSERT(!(flags & TRACK) || !"TRACK not implemented");
     // center shouldn't move, track should move
     wxASSERT((flags & (CENTER | TRACK)) != (CENTER | TRACK));
     wxASSERT(!rect || !rect->IsEmpty());
@@ -1107,11 +1148,16 @@ void CB::ToolTip::Delete(wxWindow& wnd, std::optional<wxRect> rect)
                                 return &ti.wnd.get() == &wnd &&
                                         ti.rect == rect;
                             });
-    wxASSERT(it != toolInfos.end());
+    if (it == toolInfos.end())
+    {
+        return;
+    }
 
     if (it == tipTool)
     {
         CloseTipWindow();
+        Stop();
+        state = sNoTool;
     }
     toolInfos.erase(it);
 
@@ -1155,7 +1201,7 @@ void CB::ToolTip::Notify()
                 wxCoord left = center - tipWindow->GetRect().GetWidth() / 2;
                 tipWindow->Move(left, screenRect.GetBottom() + 1);
             }
-            Start(autopopMs);
+            StartOnce(autopopMs);
             state = sDisplay;
             break;
         }
