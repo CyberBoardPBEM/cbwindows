@@ -1,6 +1,6 @@
 // VwPbrd.h : interface of the CPlayBoardView class
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -121,14 +121,13 @@ public:
 
 // Tooltip Support
 public:
+#if 0
     void SetNotificationTip(wxPoint pointClient, UINT nResID);
-    void SetNotificationTip(wxPoint pointClient, const CB::string* pszTip);
+#endif
+    void SetNotificationTip(wxPoint pointClient, const CB::string& pszTip);
     void ClearNotificationTip();
     void ClearToolTip();
-#if 0
-    static void CALLBACK NotificationTipTimeoutHandler(HWND hwnd, UINT uMsg,
-        UINT_PTR idEvent, DWORD dwTime);
-#endif
+    void NotificationTipTimeoutHandler(wxTimerEvent& event);
     void DoToolTipHitProcessing(wxPoint pointClient);
 
 // Grid and limiting support
@@ -170,6 +169,7 @@ protected:
     int         m_nCurToolID;       // Current tool ID
     // -------- //
     CB::ToolTip m_toolMsgTip;      // Tooltip for notifications
+    wxTimer m_toolMsgTipTimer;
     CB::ToolTip m_toolHitTip;      // Tooltip hit support for view
     wxRect m_toolHitTipRect = wxRect();
     CB::propagate_const<CDrawObj*> m_pCurTipObj;      // Currently hit tip object

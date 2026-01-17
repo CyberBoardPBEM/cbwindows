@@ -2242,7 +2242,7 @@ namespace CB
     {
     public:
         // flags may be or'ed together
-        enum Flags { NONE = 0, CENTER = 1, TRACK = 2 };
+        enum Flags { NONE = 0, CENTER = 1, TRACK = 2, /*TRACK_ON = 4*/ };
 
         ToolTip() = default;
         ~ToolTip();
@@ -2269,8 +2269,8 @@ namespace CB
                     really want the balloon shape, we will have
                     to implement the paint ourselves.  */
         void SetBalloonMode(bool b) { balloon = b; }
-        void TrackActivate(bool b);
-        void TrackPosition(wxPoint p);
+        void TrackActivate(wxWindow& wnd, bool b);
+        void TrackPosition(wxPoint screenPt);
 
         void Add(wxWindow& wnd, const wxRect& rect,
                     wxString tip, Flags flags = NONE)
@@ -2292,6 +2292,7 @@ namespace CB
         }
 
     private:
+        enum /*Flags*/ { TRACK_ON = 4 };
         void Add(wxWindow& wnd, std::optional<wxRect>&& rect,
                     wxString&& tip, Flags flags);
         void Delete(wxWindow& wnd, std::optional<wxRect> rect);
@@ -2328,7 +2329,6 @@ namespace CB
             sDisplay,
         };
         State state = sNoTool;
-
     };
 
     /* emulate CRect::Inflate() and CRect::Normalize() sequence

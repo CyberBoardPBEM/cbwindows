@@ -171,6 +171,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_SELECT_BOARD_OBJLIST(OnMessageSelectBoardObjectList)
     EVT_SCROLLWIN_LINEDOWN(OnScrollWinLine)
     EVT_SCROLLWIN_LINEUP(OnScrollWinLine)
+    EVT_TIMER(XRCID("ID_TIP_MSG_TIMER"), NotificationTipTimeoutHandler)
 wxEND_EVENT_TABLE()
 
 // helper for wxEvtHandler::Bind for ID_ACT_ROTATE_0
@@ -246,7 +247,8 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
     m_selList(*this),
     parent(&p),
     document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
-    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter()))
+    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter())),
+    m_toolMsgTipTimer(this, XRCID("ID_TIP_MSG_TIMER"))
 {
     EnableAutoScrollInside(scrollZone);
     DisableAutoScrollOutside();
