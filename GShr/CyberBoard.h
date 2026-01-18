@@ -2310,8 +2310,7 @@ namespace CB
 
         // tool shown by tipWindow
         decltype(toolInfos)::iterator tipTool = toolInfos.end();
-        // owned by wx
-        wxTipWindow* tipWindow = nullptr;
+        wxTipWindow::Ref tipWindow;
 
         enum State {
             sNoTool,

@@ -865,7 +865,7 @@ void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
             if (!strTip.empty())
             {
                 wxRect screenTool(ClientToScreen(rctTool.GetTopLeft()), rctTool.GetSize());
-                m_toolTip = new wxTipWindow(this, strTip, MAX_LISTITEM_TIP_WIDTH, &m_toolTip, &screenTool);
+                m_toolTip = wxTipWindow::New(this, strTip, MAX_LISTITEM_TIP_WIDTH, &screenTool);
             }
         }
     }
