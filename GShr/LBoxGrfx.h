@@ -525,7 +525,7 @@ protected:
 #if 0
     CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
 #endif
-    wxTipWindow* m_toolTip = nullptr;         // Tooltip of tile text popups
+    wxTipWindow::Ref m_toolTip;         // Tooltip of tile text popups
     GameElement m_nCurItemCode;         // current active tip item code
 
     // Drag and scroll support vars

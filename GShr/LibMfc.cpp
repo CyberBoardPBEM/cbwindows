@@ -1140,9 +1140,8 @@ void CB::ToolTip::Notify()
             {
                 screenRect = tipTool->wnd.get().GetScreenRect();
             }
-            tipWindow = new wxTipWindow(&tipTool->wnd.get(),
+            tipWindow = wxTipWindow::New(&tipTool->wnd.get(),
                 tipTool->tip, maxWidth,
-                &tipWindow,
                 &screenRect);
             if (tipTool->flags & CENTER)
             {
