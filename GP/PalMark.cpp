@@ -1,6 +1,6 @@
 // PalMark.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,7 +36,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CMarkerPalette, CMiniFrameWnd)
+IMPLEMENT_DYNAMIC(CMarkerPalette, CMiniFrameWnd)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,22 +63,22 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette
 
-CMarkerPalette::CMarkerPalette()
+CMarkerPalette::CMarkerPalette(CGamDoc& pDoc) :
+    m_pDoc(&pDoc)
 {
-    m_pDoc = NULL;
-
     m_listMark.EnableDrag(TRUE);
+    m_listMark.SetDocument(&*m_pDoc);
     m_dummyArray.push_back(MarkID(0));
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
     m_pDockingFrame = NULL;
 }
 
-BOOL CMarkerPalette::Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID)
+BOOL CMarkerPalette::Create(CWnd& pOwnerWnd, DWORD dwStyle, UINT nID)
 {
     dwStyle |= WS_CHILD | WS_VISIBLE;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), pOwnerWnd, nID))
+        CRect(0, 0, 200, 100), &pOwnerWnd, nID))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
@@ -163,7 +163,7 @@ LRESULT CMarkerPalette::OnPaletteHide(WPARAM, LPARAM)
 
 /////////////////////////////////////////////////////////////////////////////
 
-size_t CMarkerPalette::GetSelectedMarkerGroup()
+size_t CMarkerPalette::GetSelectedMarkerGroup() const
 {
     int nSel = m_comboMGrp.GetCurSel();
     if (nSel < 0)
@@ -171,7 +171,7 @@ size_t CMarkerPalette::GetSelectedMarkerGroup()
     return value_preserving_cast<size_t>(m_comboMGrp.GetItemData(nSel));
 }
 
-int CMarkerPalette::FindMarkerGroupIndex(size_t nGroupNum)
+int CMarkerPalette::FindMarkerGroupIndex(size_t nGroupNum) const
 {
     if (m_comboMGrp.GetCount() <= 0)
         return -1;
@@ -310,18 +310,8 @@ void CMarkerPalette::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CMarkerPalette::SetDocument(CGamDoc *pDoc)
-{
-    ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    m_pDoc = pDoc;
-    m_listMark.SetDocument(pDoc);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
 void CMarkerPalette::LoadMarkerNameList()
 {
-    ASSERT(m_pDoc);
     CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     m_comboMGrp.ResetContent();
@@ -351,7 +341,6 @@ void CMarkerPalette::UpdatePaletteContents()
 
 void CMarkerPalette::UpdateMarkerList()
 {
-    ASSERT(m_pDoc);
     CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
     size_t nSel = GetSelectedMarkerGroup();
