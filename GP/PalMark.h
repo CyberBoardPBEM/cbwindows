@@ -1,6 +1,6 @@
 // PalMark.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -42,20 +42,19 @@ class CGamDoc;
 
 class CMarkerPalette : public CWnd
 {
-    DECLARE_DYNCREATE(CMarkerPalette)
+    DECLARE_DYNAMIC(CMarkerPalette)
 
 // Construction
 public:
-    CMarkerPalette();
-    BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
+    CMarkerPalette(CGamDoc& pDoc);
+    BOOL Create(CWnd& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
 
 // Attributes
 public:
-    void SetDocument(CGamDoc *pDoc);
 
 // Operations
 public:
-    size_t GetSelectedMarkerGroup();
+    size_t GetSelectedMarkerGroup() const;
 
     void UpdatePaletteContents();
 
@@ -63,7 +62,7 @@ public:
 
     void Serialize(CArchive &ar);
 
-    CDockablePane* GetDockingFrame() { return m_pDockingFrame; }
+    const CDockablePane* GetDockingFrame() const { return &*m_pDockingFrame; }
     void SetDockingFrame(CDockablePane* pDockingFrame)
     {
         m_pDockingFrame = pDockingFrame;
@@ -72,9 +71,8 @@ public:
 
 // Implementation
 protected:
-    CGamDoc*    m_pDoc;
-    CRect       m_rctPos;
-    CDockablePane* m_pDockingFrame;
+    RefPtr<CGamDoc> m_pDoc;
+    CB::propagate_const<CDockablePane*> m_pDockingFrame;
 
     // This dummy area only contains a single entry. It is used
     // when only single entry should be shown in the Tray listbox.
@@ -89,7 +87,7 @@ protected:
     void LoadMarkerNameList();
     void UpdateMarkerList();
 
-    int  FindMarkerGroupIndex(size_t nGroupNum);
+    int  FindMarkerGroupIndex(size_t nGroupNum) const;
 
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.
@@ -99,11 +97,9 @@ protected:
     int  m_nListCurSel;
     int  m_nComboHeight;
 
-    CWinPlacement m_wndPlace;
-
 // Implementation
 public:
-    virtual void PostNcDestroy();
+    void PostNcDestroy() override;
 
     // Generated message map functions
 protected:

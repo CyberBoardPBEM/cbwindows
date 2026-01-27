@@ -1,6 +1,6 @@
 // GamDoc.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -197,7 +197,8 @@ END_MESSAGE_MAP()
 
 CGamDoc::CGamDoc() :
     m_palTrayA(*this),
-    m_palTrayB(*this)
+    m_palTrayB(*this),
+    m_palMark(*this)
 {
     m_nSeedCarryOver = (UINT)GetTickCount();
 
@@ -230,7 +231,6 @@ CGamDoc::CGamDoc() :
     m_bVrfySaveState = TRUE;
     m_palTrayA.SetPaletteID(0);
     m_palTrayB.SetPaletteID(1);
-    m_palMark.SetDocument(this);
     m_wDocRand = GetTimeBasedRandomNumber(FALSE);  // Non zero random number
     m_nMoveInterlock = 0;
     m_bQuietPlayback = FALSE;
@@ -451,9 +451,9 @@ void CGamDoc::OnIdle(BOOL bActive)
     {
         CMainFrame* pMFrame = GetMainFrame();
 
-        CDockMarkPalette* pDockMark = pMFrame->GetDockingMarkerWindow();
-        pDockMark->SetChild(&m_palMark);
-        pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
+        CDockMarkPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
+        pDockMark.SetChild(&m_palMark);
+        pMFrame->UpdatePaletteWindow(&pDockMark, m_bMarkPalVisible);
 
         CDockTrayPalette* pDockTrayA = pMFrame->GetDockingTrayAWindow();
         pDockTrayA->SetChild(&m_palTrayA);

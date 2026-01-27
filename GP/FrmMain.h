@@ -51,7 +51,7 @@ public:
 public:
     CDocument* GetCurrentDocument();
 
-    CDockMarkPalette* GetDockingMarkerWindow() { return &m_wndMarkPal; }
+    CDockMarkPalette& GetDockingMarkerWindow() { return m_wndMarkPal; }
     CDockTrayPalette* GetDockingTrayAWindow() { return &m_wndTrayPalA; }
     CDockTrayPalette* GetDockingTrayBWindow() { return &m_wndTrayPalB; }
 
