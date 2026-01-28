@@ -98,6 +98,7 @@ void CDockMarkPalette::OnSize(UINT nType, int cx, int cy)
 
 void CDockMarkPalette::OnDestroy()
 {
+    wxASSERT(!m_pChildWnd);
     m_pChildWnd = NULL;
     CDockablePane::OnDestroy();
 }

@@ -37,8 +37,8 @@ public:
     CDockMarkPalette();
 
 // Attributes
-public:
-    CMarkerPalette*   m_pChildWnd;
+private:
+    CB::propagate_const<CMarkerPalette*> m_pChildWnd;
 
 // Operations
 public:
@@ -46,7 +46,7 @@ public:
 
 // Implementation
 public:
-    virtual ~CDockMarkPalette();
+    ~CDockMarkPalette() override;
 
     // Generated message map functions
 protected:
