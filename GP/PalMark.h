@@ -63,6 +63,10 @@ public:
     void Serialize(CArchive &ar);
 
     const CDockablePane* GetDockingFrame() const { return &*m_pDockingFrame; }
+    CDockablePane* GetDockingFrame()
+    {
+        return const_cast<CDockablePane*>(std::as_const(*this).GetDockingFrame());
+    }
     void SetDockingFrame(CDockablePane* pDockingFrame)
     {
         m_pDockingFrame = pDockingFrame;

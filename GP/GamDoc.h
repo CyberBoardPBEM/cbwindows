@@ -1,6 +1,6 @@
 // GamDoc.h
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -694,13 +694,24 @@ public:
 
     CTileFacingMap* m_pTileFacingMap; // Map of temp tile rotations (NOT SERIALIZED)
 
+private:
+    class WindowDestroy
+    {
+    public:
+        void operator()(CWnd* p) const
+        {
+            p->DestroyWindow();
+            delete p;
+        }
+    };
+
 // Some document related windows...
 public:
     // Tray Palettes...
-    CTrayPalette    m_palTrayA;
-    CTrayPalette    m_palTrayB;
+    CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayA;
+    CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayB;
     // Marker Palette...
-    CMarkerPalette  m_palMark;
+    CB::propagate_const<std::unique_ptr<CMarkerPalette, WindowDestroy>> m_palMark;
 
 // Implementation
 protected:

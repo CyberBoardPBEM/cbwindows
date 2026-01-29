@@ -99,7 +99,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPalette
 
-CTrayPalette::CTrayPalette(CGamDoc& pDoc) :
+CTrayPalette::CTrayPalette(CGamDoc& pDoc, UINT palID) :
     m_pDoc(&pDoc),
     m_listTray(*m_pDoc)
 {
@@ -114,6 +114,7 @@ CTrayPalette::CTrayPalette(CGamDoc& pDoc) :
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
     m_pDockingFrame = NULL;
+    SetPaletteID(palID);
 }
 
 BOOL CTrayPalette::Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID)
@@ -265,7 +266,7 @@ LRESULT CTrayPalette::OnMessageRestoreWinState(WPARAM, LPARAM)
 LRESULT CTrayPalette::OnPaletteHide(WPARAM, LPARAM)
 {
     GetMainFrame()->SendMessage(WM_COMMAND,
-        (WPARAM)(m_nID == 0 ? ID_VIEW_TRAYA : ID_VIEW_TRAYB));
+        (WPARAM)(m_nID));
     return (LRESULT)0;
 }
 

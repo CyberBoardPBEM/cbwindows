@@ -1,6 +1,6 @@
 // GamDoc3.cpp -- serialization support for the document.
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -688,11 +688,11 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             ar << (BYTE)0;                      // 0 -> no win state serialize // V2.0
 
         ar << (WORD)m_bTrayAVisible;
-        m_palTrayA.Serialize(ar);               // Save tray position on screen
+        m_palTrayA->Serialize(ar);               // Save tray position on screen
         ar << (WORD)m_bTrayBVisible;
-        m_palTrayB.Serialize(ar);               // Save tray position on screen
+        m_palTrayB->Serialize(ar);               // Save tray position on screen
         ar << (WORD)m_bMarkPalVisible;
-        m_palMark.Serialize(ar);                // Save tray position on screen
+        m_palMark->Serialize(ar);                // Save tray position on screen
 
         // Main content serialization....
 
@@ -848,11 +848,17 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         }
 
         ar >> wTmp; m_bTrayAVisible = (BOOL)wTmp;
-        m_palTrayA.Serialize(ar);                   // Restore tray position on screen
+        wxASSERT(!m_palTrayA);
+        m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
+        m_palTrayA->Serialize(ar);                   // Restore tray position on screen
         ar >> wTmp; m_bTrayBVisible = (BOOL)wTmp;
-        m_palTrayB.Serialize(ar);                   // Restore tray position on screen
+        wxASSERT(!m_palTrayB);
+        m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
+        m_palTrayB->Serialize(ar);                   // Restore tray position on screen
         ar >> wTmp; m_bMarkPalVisible = (BOOL)wTmp;
-        m_palMark.Serialize(ar);                    // Restore tray position on screen
+        wxASSERT(!m_palMark);
+        m_palMark = new CMarkerPalette(*this);
+        m_palMark->Serialize(ar);                    // Restore tray position on screen
 
         // OK....retrieve the file offset of the game data...
         if (NumVersion(verMajor, verMinor) < NumVersion(2, 90))
@@ -877,9 +883,9 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pYMgr->SetTileManager(m_pGbx->GetTileManager());
 
         // Finally set up the tray palettes
-        m_palTrayA.Create(GetMainFrame()->GetDockingTrayAWindow());
-        m_palTrayB.Create(GetMainFrame()->GetDockingTrayBWindow());
-        m_palMark.Create(GetMainFrame()->GetDockingMarkerWindow());
+        m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
+        m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
+        m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 
         // Main content serialization....
         m_pPBMgr->Serialize(ar);    // Board contents
