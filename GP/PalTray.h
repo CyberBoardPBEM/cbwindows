@@ -48,13 +48,14 @@ class CTrayPalette : public CWnd
 
 // Construction
 public:
-    CTrayPalette(CGamDoc& pDoc);
+    CTrayPalette(CGamDoc& pDoc, UINT palID);
 
     BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
 
 // Attributes
-public:
+private:
     void SetPaletteID(UINT nID) { m_nID = nID; }
+public:
 
     CDockablePane* GetDockingFrame() { return m_pDockingFrame; }
     void SetDockingFrame(CDockablePane* pDockingFrame)

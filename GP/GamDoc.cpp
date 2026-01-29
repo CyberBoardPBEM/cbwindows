@@ -195,10 +195,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc construction/destruction
 
-CGamDoc::CGamDoc() :
-    m_palTrayA(*this),
-    m_palTrayB(*this),
-    m_palMark(*this)
+CGamDoc::CGamDoc()
 {
     m_nSeedCarryOver = (UINT)GetTickCount();
 
@@ -229,8 +226,6 @@ CGamDoc::CGamDoc() :
     m_bKeepMoveHist = TRUE;
     m_bVrfyGameState = TRUE;
     m_bVrfySaveState = TRUE;
-    m_palTrayA.SetPaletteID(0);
-    m_palTrayB.SetPaletteID(1);
     m_wDocRand = GetTimeBasedRandomNumber(FALSE);  // Non zero random number
     m_nMoveInterlock = 0;
     m_bQuietPlayback = FALSE;
@@ -357,35 +352,35 @@ void CGamDoc::DeleteContents()
 {
     /* close may trigger paint of other windows,
         so close before delete */
-    if (m_palTrayA.m_hWnd != NULL)
+    if (m_palTrayA)
     {
-        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayA.GetDockingFrame();
+        CDockTrayPalette* pFrame = static_cast<CDockTrayPalette*>(m_palTrayA->GetDockingFrame());
         if (pFrame)
         {
             ASSERT_KINDOF(CDockTrayPalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
-        m_palTrayA.DestroyWindow();
+        m_palTrayA = nullptr;
     }
-    if (m_palTrayB.m_hWnd != NULL)
+    if (m_palTrayB)
     {
-        CDockTrayPalette* pFrame = (CDockTrayPalette*)m_palTrayB.GetDockingFrame();
+        CDockTrayPalette* pFrame = static_cast<CDockTrayPalette*>(m_palTrayB->GetDockingFrame());
         if (pFrame)
         {
             ASSERT_KINDOF(CDockTrayPalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
-        m_palTrayB.DestroyWindow();
+        m_palTrayB = nullptr;
     }
-    if (m_palMark.m_hWnd != NULL)
+    if (m_palMark)
     {
-        CDockMarkPalette* pFrame = (CDockMarkPalette*)m_palMark.GetDockingFrame();
+        CDockMarkPalette* pFrame = static_cast<CDockMarkPalette*>(m_palMark->GetDockingFrame());
         if (pFrame)
         {
             ASSERT_KINDOF(CDockMarkPalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Marker's UI Frame.
         }
-        m_palMark.DestroyWindow();
+        m_palMark = nullptr;
     }
 
     // m_wReserved1 = 0;
@@ -452,15 +447,15 @@ void CGamDoc::OnIdle(BOOL bActive)
         CMainFrame* pMFrame = GetMainFrame();
 
         CDockMarkPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
-        pDockMark.SetChild(&m_palMark);
+        pDockMark.SetChild(&*m_palMark);
         pMFrame->UpdatePaletteWindow(&pDockMark, m_bMarkPalVisible);
 
         CDockTrayPalette* pDockTrayA = pMFrame->GetDockingTrayAWindow();
-        pDockTrayA->SetChild(&m_palTrayA);
+        pDockTrayA->SetChild(&*m_palTrayA);
         pMFrame->UpdatePaletteWindow(pDockTrayA, m_bTrayAVisible);
 
         CDockTrayPalette* pDockTrayB = pMFrame->GetDockingTrayBWindow();
-        pDockTrayB->SetChild(&m_palTrayB);
+        pDockTrayB->SetChild(&*m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
 
         CReadMsgWnd* pDocMsg = pMFrame->GetMessageWindow();
@@ -477,8 +472,8 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::DoInitialUpdate()
 {
-    m_palTrayA.UpdatePaletteContents(NULL);
-    m_palTrayB.UpdatePaletteContents(NULL);
+    m_palTrayA->UpdatePaletteContents(NULL);
+    m_palTrayB->UpdatePaletteContents(NULL);
 }
 
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -486,13 +481,13 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
     CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
     if (lHint == HINT_TRAYCHANGE)
     {
-        m_palTrayA.UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        m_palTrayB.UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        m_palTrayA->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        m_palTrayB->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
-        m_palTrayA.UpdatePaletteContents();
-        m_palTrayB.UpdatePaletteContents();
+        m_palTrayA->UpdatePaletteContents();
+        m_palTrayB->UpdatePaletteContents();
     }
     CDocument::UpdateAllViews(pSender, lHint, pHint);
 }
@@ -640,9 +635,15 @@ BOOL CGamDoc::OnNewScenario()
     m_pYMgr->SetTileManager(m_pGbx->GetTileManager());
 
     // Finally set up the tray palettes
-    m_palTrayA.Create(GetMainFrame()->GetDockingTrayAWindow());
-    m_palTrayB.Create(GetMainFrame()->GetDockingTrayBWindow());
-    m_palMark.Create(GetMainFrame()->GetDockingMarkerWindow());
+    wxASSERT(!m_palTrayA);
+    m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
+    m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
+    wxASSERT(!m_palTrayB);
+    m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
+    m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
+    wxASSERT(!m_palMark);
+    m_palMark = new CMarkerPalette(*this);
+    m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 
     return TRUE;
 }
