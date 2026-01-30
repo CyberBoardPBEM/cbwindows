@@ -181,6 +181,7 @@ enum
 };
 
 #define WM_PALETTE_HIDE         (WM_USER + 216)
+wxDECLARE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
 
 /////////////////////////////////////////////////////////////////////////////
 // Context menu offset definitions.
