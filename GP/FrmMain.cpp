@@ -399,18 +399,32 @@ void CMainFrame::OnIdle()
     }
 }
 
+namespace {
+    /* CB is currently a mix of MFC and wx,
+        so need to send both kinds of msg */
+    BOOL OnClosePalette(CWnd& pWnd)
+    {
+        pWnd.SendMessage(WM_PALETTE_HIDE);
+        pWnd.SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
+        wxWindow* wxWnd = CB::FindWxWindow(pWnd);
+        if (wxWnd)
+        {
+            wxCommandEvent event(WM_PALETTE_HIDE_WX);
+            wxWnd->GetEventHandler()->ProcessEventLocally(event);
+            CB::SendEventToDescendants(*wxWnd, event, true);
+        }
+        return true;
+    }
+}
+
 BOOL CMainFrame::OnCloseMiniFrame(CPaneFrameWnd* pWnd)
 {
-    pWnd->SendMessage(WM_PALETTE_HIDE);
-    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
-    return true;
+    return OnClosePalette(CheckedDeref(pWnd));
 }
 
 BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
 {
-    pWnd->SendMessage(WM_PALETTE_HIDE);
-    pWnd->SendMessageToDescendants(WM_PALETTE_HIDE, true, true);
-    return true;
+    return OnClosePalette(CheckedDeref(pWnd));
 }
 
 void CMainFrame::ShowPalettePanes(BOOL bShow)

@@ -53,6 +53,7 @@ wxDEFINE_EVENT(WM_CENTERBOARDONPOINT_WX, CenterBoardOnPointEvent);
 wxDEFINE_EVENT(WM_SHOWPLAYINGBOARD_WX, ShowPlayingBoardEvent);
 wxDEFINE_EVENT(WM_WINSTATE_RESTORE_WX, WinStateRestoreEvent);
 wxDEFINE_EVENT(WM_SELECT_BOARD_OBJLIST_WX, SelectBoardObjListEvent);
+wxDEFINE_EVENT(WM_PALETTE_HIDE_WX, wxCommandEvent);
 
 /////////////////////////////////////////////////////////////////////////////
 // Registry keys...
