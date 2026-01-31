@@ -1081,7 +1081,7 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
     CBoardManager& pBMgr = GetDocument().GetBoardManager();
 
     CBoardMaskDialog dlg(pBMgr);
-    if (dlg.ShowModal() != wxID_OK || dlg.m_nBrdNum == Invalid_v<size_t>)
+    if (dlg.ShowModal() != wxID_OK || dlg.m_nBrdNum == wxNOT_FOUND)
         return;
 
     CBoard& pBoard = pBMgr.GetBoard(value_preserving_cast<size_t>(dlg.m_nBrdNum));
