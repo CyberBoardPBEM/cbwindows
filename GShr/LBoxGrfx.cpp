@@ -34,6 +34,8 @@
 #define new DEBUG_NEW
 #endif
 
+wxDEFINE_EVENT(WM_OVERRIDE_SELECTED_ITEM_WX, OverrideSelectedItemEvent);
+wxDEFINE_EVENT(WM_OVERRIDE_SELECTED_ITEM_LIST_WX, OverrideSelectedItemListEvent);
 wxDEFINE_EVENT(WM_GET_DRAG_SIZE_WX, GetDragSizeEvent);
 
 DragInfo CGrafixListBox::di;
