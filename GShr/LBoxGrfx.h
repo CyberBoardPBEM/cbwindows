@@ -26,6 +26,7 @@
 #define _LBOXGRFX_H
 
 #include <queue>
+#include <variant>
 
 #ifndef     _DRAGDROP_H
 #include    "DragDrop.h"
@@ -48,55 +49,95 @@
 // These messages are sent by the CGrafixListBox to its parent window.
 // It allows the list's content to be overridden. It's primary use
 // is to deliver a random selection of pieces or markers.
-#define WM_OVERRIDE_SELECTED_ITEM       (WM_USER + 500) // WPARAM = COverrideInfoBase<>*
-struct COverrideInfoBase
+#define WM_OVERRIDE_SELECTED_ITEM       (WM_USER + 500) // WPARAM = OverrideSelectedItemEvent*
+class OverrideSelectedItemEvent : public wxEvent
 {
-protected:
-    COverrideInfoBase(DragType dt) : m_dragType(dt) {}
+public:
+    /* currently supports MarkID and TileID
+        (easy to add more to variant) */
+    template<typename T>
+    OverrideSelectedItemEvent(T& id);
 
-    template<DragType DT>
-    void CheckTypeBase() const
+    template<typename T>
+    const T& ID() const
     {
-        ASSERT(m_dragType == DT);
-        /* TODO:  This check could be removed to improve release
-            build performance if we trust ourselves to always
-            catch any m_dragType mistakes in testing.  */
-        if (m_dragType != DT)
-        {
-            AfxThrowInvalidArgException();
-        }
+        return std::get<std::reference_wrapper<T>>(id).get();
     }
 
+    template<typename T>
+    T& ID()
+    {
+        return const_cast<T&>(std::as_const(*this).ID<T>());
+    }
+
+    wxEvent* Clone() const override { return new OverrideSelectedItemEvent(*this); }
+
 private:
-    const DragType m_dragType;
+    std::variant<
+        std::reference_wrapper<MarkID>,
+        std::reference_wrapper<TileID>,
+        std::nullptr_t // dummy for allowing , on previous line
+    > id;
 };
+wxDECLARE_EVENT(WM_OVERRIDE_SELECTED_ITEM_WX, OverrideSelectedItemEvent);
 
-template<DragType DT>
-struct COverrideInfo
+template<typename T>
+OverrideSelectedItemEvent::OverrideSelectedItemEvent(T& id) :
+    wxEvent(wxID_ANY, WM_OVERRIDE_SELECTED_ITEM_WX),
+    id(std::ref(id))
 {
-};
+}
 
-template<>
-struct COverrideInfo<DRAG_MARKER> : private COverrideInfoBase
+typedef void (wxEvtHandler::* OverrideSelectedItemEventFunction)(OverrideSelectedItemEvent&);
+#define OverrideSelectedItemEventHandler(func) wxEVENT_HANDLER_CAST(OverrideSelectedItemEventFunction, func)
+#define EVT_OVERRIDE_SELECTED_ITEM(func) \
+    wx__DECLARE_EVT0(WM_OVERRIDE_SELECTED_ITEM_WX, OverrideSelectedItemEventHandler(func))
+
+#define WM_OVERRIDE_SELECTED_ITEM_LIST  (WM_USER + 501) // WPARAM = OverrideSelectedItemListEvent*
+class OverrideSelectedItemListEvent : public wxEvent
 {
-    COverrideInfo(MarkID& mid) : COverrideInfoBase(DRAG_MARKER), m_markID(mid) {}
+public:
+    /* currently supports MarkID, PieceID, and TileID
+        (easy to add more to variant) */
+    template<typename T>
+    OverrideSelectedItemListEvent(std::vector<T>& id);
 
-    void CheckType() const { CheckTypeBase<DRAG_MARKER>(); }
+    template<typename T>
+    const std::vector<T>& Vector() const
+    {
+        return std::get<std::reference_wrapper<std::vector<T>>>(vector).get();
+    }
 
-    MarkID& m_markID;
+    template<typename T>
+    std::vector<T>& Vector()
+    {
+        return const_cast<std::vector<T>&>(std::as_const(*this).Vector<T>());
+    }
+
+    wxEvent* Clone() const override { return new OverrideSelectedItemListEvent(*this); }
+
+private:
+    std::variant<
+        std::reference_wrapper<std::vector<MarkID>>,
+        std::reference_wrapper<std::vector<PieceID>>,
+        std::reference_wrapper<std::vector<TileID>>,
+        std::nullptr_t // dummy for allowing , on previous line
+    > vector;
 };
+wxDECLARE_EVENT(WM_OVERRIDE_SELECTED_ITEM_LIST_WX, OverrideSelectedItemListEvent);
 
-template<>
-struct COverrideInfo<DRAG_TILE> : private COverrideInfoBase
+template<typename T>
+OverrideSelectedItemListEvent::OverrideSelectedItemListEvent(std::vector<T>& v) :
+    wxEvent(wxID_ANY, WM_OVERRIDE_SELECTED_ITEM_LIST_WX),
+    vector(std::ref(v))
 {
-    COverrideInfo(TileID& tid) : COverrideInfoBase(DRAG_TILE), m_tileID(tid) {}
+}
 
-    void CheckType() const { CheckTypeBase<DRAG_TILE>(); }
+typedef void (wxEvtHandler::* OverrideSelectedItemListEventFunction)(OverrideSelectedItemListEvent&);
+#define OverrideSelectedItemListEventHandler(func) wxEVENT_HANDLER_CAST(OverrideSelectedItemListEventFunction, func)
+#define EVT_OVERRIDE_SELECTED_ITEM_LIST(func) \
+    wx__DECLARE_EVT0(WM_OVERRIDE_SELECTED_ITEM_LIST_WX, OverrideSelectedItemListEventHandler(func))
 
-    TileID& m_tileID;
-};
-
-#define WM_OVERRIDE_SELECTED_ITEM_LIST  (WM_USER + 501) // WPARAM = std::vector<XxxxID<LPARAM>>*, LPARAM = XxxxID::PREFIX
 /* We don't allow drop if the dropped objects are too big for
     the destination, but checking requires knowing the size of
     the dropped objects.  So, parallel to
@@ -398,21 +439,22 @@ protected:
 
             CWnd* pWnd = this->GetParent();
             ASSERT(pWnd != NULL);
-            pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&m_multiSelList), T::PREFIX);
+            OverrideSelectedItemListEvent oil(m_multiSelList);
+            pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&oil));
         }
         else
         {
             // The parent may want to override the value.
             if (BASE_WND::di.GetDragType() == DRAG_MARKER)
             {
-                COverrideInfo<DRAG_MARKER> oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
+                OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
             }
             else if (BASE_WND::di.GetDragType() == DRAG_TILE)
             {
-                COverrideInfo<DRAG_TILE> oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
+                OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
@@ -751,7 +793,8 @@ protected:
 #if 0
             CWnd* pWnd = this->GetParent();
             ASSERT(pWnd != NULL);
-            pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&m_multiSelList), T::PREFIX);
+            OverrideSelectedItemListEvent oil(m_multiSelList);
+            pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&oil));
 #endif
 #endif
         }
@@ -762,7 +805,7 @@ protected:
             {
                 wxASSERT(!"TODO:");
 #if 0
-                COverrideInfo<DRAG_MARKER> oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
+                OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
@@ -773,7 +816,7 @@ protected:
 #if defined(GPLAY)
                 wxASSERT(!"TODO:");
 #if 0
-                COverrideInfo<DRAG_TILE> oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
+                OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
                 CWnd* pWnd = this->GetParent();
                 ASSERT(pWnd != NULL);
                 pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));

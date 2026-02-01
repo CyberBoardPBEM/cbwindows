@@ -335,12 +335,12 @@ void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
 // of items. It gives the tray the chance to mess with the list's
 // contents prior to commiting it.
 
-LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
+LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM /*lParam*/)
 {
-    wchar_t prefix = value_preserving_cast<wchar_t>(lParam);
-    ASSERT(prefix == L'P' && wParam);
+    wxASSERT(dynamic_cast<OverrideSelectedItemListEvent*>(reinterpret_cast<wxObject*>(wParam)));
+    OverrideSelectedItemListEvent& oil = *reinterpret_cast<OverrideSelectedItemListEvent*>(wParam);
     size_t nSel = GetSelectedTray();
-    if (nSel == Invalid_v<size_t> || !wParam || prefix != L'P')
+    if (nSel == Invalid_v<size_t>)
         return (LRESULT)0;
 
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
@@ -349,7 +349,7 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam)
     if (pYSet.IsRandomPiecePull() ||
         pYSet.IsRandomSidePull())
     {
-        std::vector<PieceID>& pPceArray = *reinterpret_cast<std::vector<PieceID>*>(wParam);
+        std::vector<PieceID>& pPceArray = oil.Vector<PieceID>();
 
         uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
 
