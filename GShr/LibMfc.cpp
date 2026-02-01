@@ -1630,6 +1630,7 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
                 so approximate this way */
                 class CDummyCmdUI : public CCmdUI
                 {
+                    void Enable(BOOL) override {}
                     void SetCheck(int nCheck = 1) override {}   // 0, 1 or 2 (indeterminate)
                 };
                 CDummyCmdUI dummy;
