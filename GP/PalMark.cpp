@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #if 0
-IMPLEMENT_DYNAMIC(CMarkerPalette, CMiniFrameWnd)
+wxIMPLEMENT_CLASS(CMarkerPalette, wxPanel)
 #endif
 
 #ifdef _DEBUG
@@ -46,21 +46,23 @@ IMPLEMENT_DYNAMIC(CMarkerPalette, CMiniFrameWnd)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CMarkerPalette, CWnd)
-    //{{AFX_MSG_MAP(CMarkerPalette)
+wxBEGIN_EVENT_TABLE(CMarkerPalette, wxPanel)
+#if 0
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
     ON_WM_CREATE()
     ON_WM_WINDOWPOSCHANGING()
-    ON_CBN_SELCHANGE(IDC_W_MARKLIST, OnMarkerNameCbnSelchange)
-    ON_MESSAGE(WM_OVERRIDE_SELECTED_ITEM, OnOverrideSelectedItem)
-    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
+#endif
+    EVT_CHOICE(XRCID("m_comboMGrp"), OnMarkerNameCbnSelchange)
+    EVT_OVERRIDE_SELECTED_ITEM(OnOverrideSelectedItem)
+    EVT_GET_DRAG_SIZE(OnGetDragSize)
+#if 0
     ON_WM_HELPINFO()
     ON_WM_CREATE()
-    //}}AFX_MSG_MAP
-    ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
-    ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
-END_MESSAGE_MAP()
+#endif
+    EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
+    EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CMarkerPaletteContainer, CWnd)
     ON_WM_CREATE()
@@ -73,10 +75,10 @@ END_MESSAGE_MAP()
 
 CMarkerPalette::CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc) :
     m_pContainer(&container),
-    m_pDoc(&pDoc)
+    m_pDoc(&pDoc),
+    m_comboMGrp(nullptr),
+    m_listMark(nullptr)
 {
-    m_listMark.EnableDrag(TRUE);
-    m_listMark.SetDocument(&*m_pDoc);
     m_dummyArray.push_back(MarkID(0));
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
@@ -84,21 +86,25 @@ CMarkerPalette::CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc
 
 BOOL CMarkerPalette::Create(/*CWnd& pOwnerWnd, DWORD dwStyle, UINT nID*/)
 {
-    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
-    if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &*m_pContainer, 0))
+    if (!CB::XrcLoad(*this, *m_pContainer, "CMarkerPalette"))
     {
-        TRACE("Failed to create Tray palette window.\n");
-        return FALSE;
+        return false;
     }
+    m_comboMGrp = XRCCTRL(*this, "m_comboMGrp", wxChoice);
+    m_listMark = XRCCTRL(*this, "m_listMark", CMarkListBoxWx);
+    (*m_pContainer)->Layout();
+
+    m_listMark->EnableDrag(TRUE);
+    m_listMark->SetDocument(&*m_pDoc);
 
     UpdatePaletteContents();
 
     // Queue up a message to finish up state restore.
-    PostMessage(WM_WINSTATE_RESTORE);
+    QueueEvent(WinStateRestoreEvent().Clone());
     return TRUE;
 }
 
+#if 0
 int CMarkerPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     CRect rctCombo;
@@ -136,74 +142,81 @@ int CMarkerPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles the custom message WM_WINSTATE_RESTORE. The
 // message is posted during view initial update if the state of
 // the windows should be restored.
 
-LRESULT CMarkerPalette::OnMessageRestoreWinState(WPARAM, LPARAM)
+void CMarkerPalette::OnMessageRestoreWinState(WinStateRestoreEvent& /*event*/)
 {
     UpdatePaletteContents();
 
     if (!m_bStateVarsArmed)
-        return (LRESULT)0;
+        return;
 
-    m_comboMGrp.SetCurSel(m_nComboIndex);
+    m_comboMGrp->SetSelection(m_nComboIndex == uint32_t(wxNOT_FOUND) ?
+                                    wxNOT_FOUND
+                                :
+                                    value_preserving_cast<int>(m_nComboIndex));
 
     UpdateMarkerList();
 
-    m_listMark.SetCurSel(m_nListCurSel);
-    m_listMark.SetTopIndex(m_nListTopindex);
+    m_listMark->SetSelection(m_nListCurSel == uint32_t(wxNOT_FOUND) ?
+                                    wxNOT_FOUND
+                                :
+                                    value_preserving_cast<int>(m_nListCurSel));
+    m_listMark->ScrollToRow(value_preserving_cast<size_t>(m_nListTopindex));
 
     m_bStateVarsArmed = FALSE;
-
-    return (LRESULT)0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CMarkerPalette::OnPaletteHide(WPARAM, LPARAM)
+void CMarkerPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
     GetMainFrame()->SendMessage(WM_COMMAND, ID_VIEW_MARKERPAL);
-    return (LRESULT)0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 size_t CMarkerPalette::GetSelectedMarkerGroup() const
 {
-    int nSel = m_comboMGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboMGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return Invalid_v<size_t>;
-    return value_preserving_cast<size_t>(m_comboMGrp.GetItemData(nSel));
+    return value_preserving_cast<size_t>(reinterpret_cast<uintptr_t>(m_comboMGrp->GetClientData(value_preserving_cast<unsigned>(nSel))));
 }
 
 int CMarkerPalette::FindMarkerGroupIndex(size_t nGroupNum) const
 {
-    if (m_comboMGrp.GetCount() <= 0)
-        return -1;
-    for (int nIdx = 0; nIdx < m_comboMGrp.GetCount(); nIdx++)
+    if (m_comboMGrp->IsEmpty())
+        return wxNOT_FOUND;
+    for (size_t nIdx = size_t(0) ; nIdx < m_comboMGrp->GetCount() ; ++nIdx)
     {
-        if (value_preserving_cast<size_t>(m_comboMGrp.GetItemData(nIdx)) == nGroupNum)
-            return nIdx;
+        if (reinterpret_cast<uintptr_t>(m_comboMGrp->GetClientData(value_preserving_cast<unsigned>(nIdx))) == nGroupNum)
+            return value_preserving_cast<int>(nIdx);
     }
-    return -1;
+    return wxNOT_FOUND;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
+void CMarkerPalette::OnOverrideSelectedItem(OverrideSelectedItemEvent& event)
 {
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel == Invalid_v<size_t>)
-        return (LRESULT)0;
+    {
+        event.Skip();
+        return;
+    }
 
     CMarkManager& pMMgr = m_pDoc->GetMarkManager();
     CMarkSet& pMSet = pMMgr.GetMarkSet(nSel);
     if (pMSet.IsRandomMarkerPull())
     {
-        OverrideSelectedItemEvent& oi = *reinterpret_cast<OverrideSelectedItemEvent*>(wParam);
+        OverrideSelectedItemEvent& oi = event;
 
         uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
 
@@ -214,17 +227,16 @@ LRESULT CMarkerPalette::OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam)
 
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
-
-    return (LRESULT)1;
 }
 
-LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
+void CMarkerPalette::OnGetDragSize(GetDragSizeEvent& event)
 {
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel == Invalid_v<size_t>)
     {
-        ASSERT(!"bad tray");
-        return 0;
+        wxASSERT(!"bad tray");
+        event.Skip();
+        return;
     }
     CMarkManager& pMMgr = m_pDoc->GetMarkManager();
     CMarkSet& pMSet = pMMgr.GetMarkSet(nSel);
@@ -232,31 +244,30 @@ LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
     std::vector<int> items;
     if (pMSet.IsRandomMarkerPull())
     {
-        items.reserve(value_preserving_cast<size_t>(m_listMark.GetCount()));
-        for (int i = 0; i < m_listMark.GetCount(); ++i)
+        items.reserve(m_listMark->GetItemCount());
+        for (size_t i = size_t(0) ; i < m_listMark->GetItemCount() ; ++i)
         {
-            items.push_back(i);
+            items.push_back(value_preserving_cast<int>(i));
         }
     }
     else
     {
-        items.push_back(m_listMark.GetCurSel());
+        items.push_back(m_listMark->GetSelection());
     }
 
     CTileManager& tileMgr = m_pDoc->GetTileManager();
-    CSize retval(0, 0);
+    wxSize retval(0, 0);
     for (int item : items)
     {
-        MarkID mid = m_listMark.MapIndexToItem(value_preserving_cast<size_t>(item));
+        MarkID mid = m_listMark->MapIndexToItem(value_preserving_cast<size_t>(item));
         MarkDef& pMark = pMMgr.GetMark(mid);
-        ASSERT(pMark.m_tid != nullTid);
-        CSize size = tileMgr.GetTile(pMark.m_tid).GetSize();
-        retval.cx = std::max(retval.cx, size.cx);
-        retval.cy = std::max(retval.cy, size.cy);
+        wxASSERT(pMark.m_tid != nullTid);
+        wxSize size = CB::Convert(tileMgr.GetTile(pMark.m_tid).GetSize());
+        retval.x = std::max(retval.x, size.x);
+        retval.y = std::max(retval.y, size.y);
     }
 
-    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
-    return 1;
+    event.SetSize(retval);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -264,14 +275,14 @@ LRESULT CMarkerPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
 void CMarkerPalette::SelectMarker(MarkID mid)
 {
     size_t nGrp = m_pDoc->GetMarkManager().FindMarkInMarkSet(mid);
-    ASSERT(nGrp != Invalid_v<size_t>);
+    wxASSERT(nGrp != Invalid_v<size_t>);
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel != nGrp)
     {
-        m_comboMGrp.SetCurSel(FindMarkerGroupIndex(nGrp));
+        m_comboMGrp->SetSelection(FindMarkerGroupIndex(nGrp));
         UpdateMarkerList();
     }
-    m_listMark.SelectMarker(mid);
+    m_listMark->SelectMarker(mid);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -280,26 +291,26 @@ void CMarkerPalette::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_comboMGrp.GetCurSel();
-        ar << (DWORD)m_listMark.GetTopIndex();
-        ar << (DWORD)m_listMark.GetCurSel();
+        ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(m_comboMGrp->GetSelection()));
+        ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(m_listMark->GetVisibleRowsBegin()));
+        ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(m_listMark->GetSelection()));
     }
     else
     {
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))          // V2.90
         {
-            DWORD dwTmp;
-            ar >> dwTmp; m_nComboIndex = (int)dwTmp;
-            ar >> dwTmp; m_nListTopindex = (int)dwTmp;
-            ar >> dwTmp; m_nListCurSel = (int)dwTmp;
+            uint32_t dwTmp;
+            ar >> dwTmp; m_nComboIndex = dwTmp;
+            ar >> dwTmp; m_nListTopindex = dwTmp;
+            ar >> dwTmp; m_nListCurSel = dwTmp;
             m_bStateVarsArmed = TRUE;           // Inform Create() data is good
         }
         else if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))       // V2.0
         {
-            DWORD dwTmp;
-            ar >> dwTmp; m_nComboIndex = (int)dwTmp;
-            ar >> dwTmp; m_nListTopindex = (int)dwTmp;
-            ar >> dwTmp; m_nListCurSel = (int)dwTmp;
+            uint32_t dwTmp;
+            ar >> dwTmp; m_nComboIndex = dwTmp;
+            ar >> dwTmp; m_nListTopindex = dwTmp;
+            ar >> dwTmp; m_nListCurSel = dwTmp;
             CWinPlacement wndSink;
             ar >> wndSink;                      // Eat this puppy
             m_bStateVarsArmed = TRUE;           // Inform Create() data is good
@@ -307,7 +318,7 @@ void CMarkerPalette::Serialize(CArchive& ar)
         else                                    // Pre V2.0 data
         {
             // Just eat the old data and go with the defaults
-            short sTmp;
+            uint16_t sTmp;
             ar >> sTmp;
             ar >> sTmp;
             ar >> sTmp;
@@ -322,13 +333,13 @@ void CMarkerPalette::LoadMarkerNameList()
 {
     CMarkManager& pMMgr = m_pDoc->GetMarkManager();
 
-    m_comboMGrp.ResetContent();
+    m_comboMGrp->Clear();
     for (size_t i = size_t(0); i < pMMgr.GetNumMarkSets(); i++)
     {
-        int nIdx = m_comboMGrp.AddString(pMMgr.GetMarkSet(i).GetName());
-        m_comboMGrp.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(i));    // Store the marker index in the data item
+        int nIdx = m_comboMGrp->Append(pMMgr.GetMarkSet(i).GetName());
+        m_comboMGrp->SetClientData(value_preserving_cast<unsigned>(nIdx), reinterpret_cast<void*>(value_preserving_cast<uintptr_t>(i)));    // Store the marker index in the data item
     }
-    m_comboMGrp.SetCurSel(0);
+    m_comboMGrp->SetSelection(0);
     UpdateMarkerList();
 }
 
@@ -340,8 +351,8 @@ void CMarkerPalette::UpdatePaletteContents()
     if (nSel == Invalid_v<size_t>)
         nSel = 0;               // Force first entry (if any)
     LoadMarkerNameList();
-    if (value_preserving_cast<int>(nSel) < m_comboMGrp.GetCount())
-        m_comboMGrp.SetCurSel(FindMarkerGroupIndex(nSel));
+    if (nSel < m_comboMGrp->GetCount())
+        m_comboMGrp->SetSelection(FindMarkerGroupIndex(nSel));
     UpdateMarkerList();
 }
 
@@ -354,7 +365,7 @@ void CMarkerPalette::UpdateMarkerList()
     size_t nSel = GetSelectedMarkerGroup();
     if (nSel == Invalid_v<size_t>)
     {
-        m_listMark.SetItemMap(NULL);
+        m_listMark->SetItemMap(NULL);
         return;
     }
 
@@ -374,13 +385,14 @@ void CMarkerPalette::UpdateMarkerList()
             m_dummyArray.push_back(pMarkTbl->front());
         pMarkTbl = &m_dummyArray;
     }
-    m_listMark.SetTrayContentVisibility(pMSet.GetMarkerTrayContentVisibility(), str);
-    m_listMark.SetItemMap(pMarkTbl);
+    m_listMark->SetTrayContentVisibility(pMSet.GetMarkerTrayContentVisibility(), str);
+    m_listMark->SetItemMap(pMarkTbl);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette message handlers
 
+#if 0
 BOOL CMarkerPalette::OnEraseBkgnd(CDC* pDC)
 {
     return TRUE;        // controls take care of erase
@@ -415,21 +427,31 @@ void CMarkerPalette::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
     if (m_comboMGrp.m_hWnd != NULL)
         m_comboMGrp.ShowDropDown(FALSE);
 }
+#endif
 
-void CMarkerPalette::OnMarkerNameCbnSelchange()
+void CMarkerPalette::OnMarkerNameCbnSelchange(wxCommandEvent& /*event*/)
 {
     UpdateMarkerList();
 }
 
+#if 0
 BOOL CMarkerPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     GetApp()->DoHelpTopic("gp-ref-pal-markers.htm");
     return TRUE;
 }
+#endif
 
 CMarkerPaletteContainer::CMarkerPaletteContainer(CGamDoc& pDoc) :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CMarkerPalette(*this, pDoc))
 {
+}
+
+void CMarkerPaletteContainer::SetDockingFrame(CDockMarkPalette* pDockingFrame)
+{
+    m_pDockingFrame = pDockingFrame;
+    SetParent(pDockingFrame);
 }
 
 BOOL CMarkerPaletteContainer::Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/)
@@ -470,6 +492,6 @@ void CMarkerPaletteContainer::OnSetFocus(CWnd* pOldWnd)
 
 void CMarkerPaletteContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
+    child->SetSize(0, 0, cx, cy);
     return CWnd::OnSize(nType, cx, cy);
 }

@@ -127,10 +127,8 @@ public:
         m_pDoc = pDoc;
     }
 
-#if 0
     void SelectMarker(MarkID mid);
-    void ShowListIndex(int nPos);
-#endif
+    void ShowListIndex(size_t nPos);
 
 // Implementation
 protected:
@@ -141,9 +139,7 @@ protected:
     // Overrides
     wxSize GetItemSize(size_t nIndex) const override;
     void OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const override;
-#if 0
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-#endif
+    BOOL OnDragSetup(DragInfoWx& pDI) const override;
 
     // Tool tip processing
     virtual BOOL OnIsToolTipsEnabled() const override;

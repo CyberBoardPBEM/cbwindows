@@ -1074,6 +1074,30 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CMarkerPalette">
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer84">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxChoice" name="m_comboMGrp">
+          <style>wxCB_SORT</style>
+          <selection>0</selection>
+          <content/>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxVListBox" name="m_listMark" subclass="CMarkListBoxWx">
+          <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CMovDescDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Enter Move Description</title>

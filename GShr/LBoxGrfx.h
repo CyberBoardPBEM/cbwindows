@@ -803,25 +803,17 @@ protected:
             // The parent may want to override the value.
             if (BASE_WND::di.GetDragType() == DRAG_MARKER)
             {
-                wxASSERT(!"TODO:");
-#if 0
                 OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_MARKER>().m_markID);
-                CWnd* pWnd = this->GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
-#endif
+                wxWindow* pWnd = this->GetParent();
+                wxASSERT(pWnd != NULL);
+                pWnd->ProcessWindowEvent(oi);
             }
             else if (BASE_WND::di.GetDragType() == DRAG_TILE)
             {
-#if defined(GPLAY)
-                wxASSERT(!"TODO:");
-#if 0
                 OverrideSelectedItemEvent oi(BASE_WND::di.GetSubInfo<DRAG_TILE>().m_tileID);
-                CWnd* pWnd = this->GetParent();
-                ASSERT(pWnd != NULL);
-                pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM, reinterpret_cast<WPARAM>(&oi));
-#endif
-#endif
+                wxWindow* pWnd = this->GetParent();
+                wxASSERT(pWnd != NULL);
+                pWnd->ProcessWindowEvent(oi);
             }
             else
             {
