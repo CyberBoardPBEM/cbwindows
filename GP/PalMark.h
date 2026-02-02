@@ -37,11 +37,13 @@
 
 class CGamDoc;
 class CMarkerPaletteContainer;
+class CDockMarkPalette;
+class WinStateRestoreEvent;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette window - Marker palette's are part of the document object.
 
-class CMarkerPalette : public CWnd
+class CMarkerPalette : public wxPanel
 {
 // Construction
 public:
@@ -59,7 +61,7 @@ public:
 
     void SelectMarker(MarkID mid);
 
-    void Serialize(CArchive &ar) override;
+    void Serialize(CArchive &ar);
 
 // Implementation
 protected:
@@ -73,8 +75,8 @@ protected:
     std::vector<MarkID> m_dummyArray;
 
     // Enclosed controls....
-    CComboBox   m_comboMGrp;
-    CMarkListBox m_listMark;
+    CB::propagate_const<wxChoice*> m_comboMGrp;
+    CB::propagate_const<CMarkListBoxWx*> m_listMark;
 
     void LoadMarkerNameList();
     void UpdateMarkerList();
@@ -84,40 +86,44 @@ protected:
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.
     BOOL m_bStateVarsArmed;                         // Set so state restore is one-shot process
-    int  m_nComboIndex;
-    int  m_nListTopindex;
-    int  m_nListCurSel;
+    uint32_t  m_nComboIndex;
+    uint32_t  m_nListTopindex;
+    uint32_t  m_nListCurSel;
     int  m_nComboHeight;
 
 // Implementation
 public:
 
-    // Generated message map functions
 protected:
-    //{{AFX_MSG(CMarkerPalette)
+#if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnDestroy();
     afx_msg void OnWindowPosChanging(WINDOWPOS FAR* lpwndpos);
-    afx_msg void OnMarkerNameCbnSelchange();
-    afx_msg LRESULT OnOverrideSelectedItem(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
+#endif
+    void OnMarkerNameCbnSelchange(wxCommandEvent& /*event*/);
+    void OnOverrideSelectedItem(OverrideSelectedItemEvent& event);
+    void OnGetDragSize(GetDragSizeEvent& event);
+#if 0
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
-    afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
+#endif
+    void OnPaletteHide(wxCommandEvent& event);
+    void OnMessageRestoreWinState(WinStateRestoreEvent& event);
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 };
 
-class CMarkerPaletteContainer : public CWnd
+class CMarkerPaletteContainer : public CWnd,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
     CMarkerPaletteContainer(CGamDoc& pDoc);
     BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
 
+#if 0
     void PostNcDestroy() override;
+#endif
 
     operator const CMarkerPalette&() const { return *child; }
     operator CMarkerPalette&()
@@ -130,16 +136,12 @@ public:
         return const_cast<CMarkerPalette*>(std::as_const(*this).operator->());
     }
 
-    const CDockablePane* GetDockingFrame() const { return m_pDockingFrame.get(); }
-    CDockablePane* GetDockingFrame()
+    const CDockMarkPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockMarkPalette* GetDockingFrame()
     {
-        return const_cast<CDockablePane*>(std::as_const(*this).GetDockingFrame());
+        return const_cast<CDockMarkPalette*>(std::as_const(*this).GetDockingFrame());
     }
-    void SetDockingFrame(CDockablePane* pDockingFrame)
-    {
-        m_pDockingFrame = pDockingFrame;
-        SetParent(pDockingFrame);
-    }
+    void SetDockingFrame(CDockMarkPalette* pDockingFrame);
 
     void Serialize(CArchive& ar) override { wxASSERT(false); AfxThrowNotSupportedException(); }
 
@@ -149,8 +151,9 @@ private:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    CB::propagate_const<CDockablePane*> m_pDockingFrame = nullptr;
-    OwnerPtr<CMarkerPalette> child;
+    CB::propagate_const<CDockMarkPalette*> m_pDockingFrame = nullptr;
+    // owned by wx
+    CB::propagate_const<CMarkerPalette*> child = nullptr;
 };
 
 /////////////////////////////////////////////////////////////////////////////

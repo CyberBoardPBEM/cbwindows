@@ -1,6 +1,6 @@
 // LBoxMark.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -333,42 +333,44 @@ BOOL CMarkListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-void CMarkListBox::SelectMarker(MarkID mid)
+void CMarkListBoxWx::SelectMarker(MarkID mid)
 {
     size_t nIndex = MapItemToIndex(mid);
     // NO LONGER IMPOSSIBLE SINCE HIDE ALL MARKERS. ASSERT(nIndex != -1);
     if (nIndex == Invalid_v<size_t>)
     {
-        if (GetCount() >= 1)
-            SetCurSel(0);           // Just select the first one.
+        if (GetItemCount() >= 1)
+            SetSelection(0);           // Just select the first one.
     }
     else
     {
-        ShowListIndex(value_preserving_cast<int>(nIndex));
-        SetCurSel(value_preserving_cast<int>(nIndex));
+        ShowListIndex(nIndex);
+        SetSelection(value_preserving_cast<int>(nIndex));
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CMarkListBox::ShowListIndex(int nPos)
+void CMarkListBoxWx::ShowListIndex(size_t nPos)
 {
-    if (nPos < GetTopIndex())
+    if (nPos < GetVisibleRowsBegin())
     {
-        SetTopIndex(nPos);
+        ScrollToRow(nPos);
         return;
     }
+#if 0
     CRect rct;
     GetItemRect(nPos, &rct);
     CRect rctClient;
     GetClientRect(&rctClient);
     if (rct.IntersectRect(&rct, &rctClient))
+#else
+    if (IsRowVisible(nPos))
+#endif
         return;
 
-    SetTopIndex(nPos);
+    ScrollToRow(nPos);
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -424,8 +426,7 @@ void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     }
 }
 
-#if 0
-BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
+BOOL CMarkListBoxWx::OnDragSetup(DragInfoWx& pDI) const
 {
 #ifdef GPLAY
     if (m_pDoc->IsPlaying())
@@ -438,8 +439,7 @@ BOOL CMarkListBox::OnDragSetup(DragInfo& pDI) const
     pDI.GetSubInfo<DRAG_MARKER>().m_markID = GetCurMapItem();
     pDI.GetSubInfo<DRAG_MARKER>().m_size = GetDragSize();
     pDI.GetSubInfo<DRAG_MARKER>().m_gamDoc = m_pDoc;
-    pDI.m_hcsrSuggest = g_res.hcrDragTile;
+    pDI.m_hcsrSuggest = g_res.hcrDragTileWx;
     return TRUE;
 }
-#endif
 

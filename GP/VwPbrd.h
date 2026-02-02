@@ -199,7 +199,7 @@ protected:
     };
 
     void DoDragPiece(const DragInfoWx& pdi);
-    void DoDragMarker(const DragInfoWx& pdi);
+    void DoDragMarker(DragDropEvent& event);
     void DoDragPieceList(const DragInfoWx& pdi);
     void DoDragSelectList(DragDropEvent& event);
 

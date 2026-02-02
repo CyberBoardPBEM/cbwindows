@@ -1,6 +1,6 @@
 // VwPbrd.cpp : implementation of the CPlayBoardView class
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -696,7 +696,7 @@ void CPlayBoardView::OnDragItem(DragDropEvent& event)
 
     if (pdi.GetDragType() == DRAG_MARKER)
     {
-        DoDragMarker(pdi);
+        DoDragMarker(event);
         return;
     }
 
@@ -809,36 +809,56 @@ void CPlayBoardView::DoDragPieceList(const DragInfoWx& pdi)
 
 #define MARKER_DROP_GAP_X     8
 
-void CPlayBoardView::DoDragMarker(const DragInfoWx& pdi)
+void CPlayBoardView::DoDragMarker(DragDropEvent& event)
 {
+    const DragInfoWx& pdi = event.GetDragInfo();
     wxASSERT(pdi.GetDragType() == DRAG_MARKER);
     CGamDoc& pDoc = GetDocument();
     if (pdi.GetSubInfo<DRAG_MARKER>().m_gamDoc != &pDoc)
         return;               // Only markers from our document.
 
-#if 0
-    // if marker can't fit on board, reject drop
-    CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
-    if (pdi.GetSubInfo<DRAG_MARKER>().m_size.cx > limit.cx ||
-        pdi.GetSubInfo<DRAG_MARKER>().m_size.cy > limit.cy)
+    // allow autoscroll while this is drag destination
+    switch (pdi.m_phase)
     {
-        return pdi.m_phase == PhaseDrag::Over ?
-                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
-                :
-                    -1;
+        case PhaseDrag::Enter:
+            EnableAutoscrollWithoutCapture();
+            break;
+        case PhaseDrag::Exit:
+        case PhaseDrag::Drop:
+            DisableAutoscrollWithoutCapture();
+            break;
     }
 
+    // if marker can't fit on board, reject drop
+    wxSize limit = CB::Convert(m_pPBoard->GetBoard()->GetSize(fullScale));
+    if (pdi.GetSubInfo<DRAG_MARKER>().m_size.x > limit.x ||
+        pdi.GetSubInfo<DRAG_MARKER>().m_size.y > limit.y)
+    {
+        if (pdi.m_phase == PhaseDrag::Over)
+        {
+            event.SetCursor(g_res.hcrNoDropTooBigWx);
+        }
+        return;
+    }
+
+#if 0
     if (pdi.m_phase == PhaseDrag::Exit)
         DragKillAutoScroll();
     else if (pdi.m_phase == PhaseDrag::Over)
+#else
+    if (pdi.m_phase == PhaseDrag::Over)
+#endif
     {
+#if 0
         DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
+#endif
+        event.SetCursor(pdi.m_hcsrSuggest);
+        return;
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CMarkManager& pMMgr = pDoc.GetMarkManager();
-        CPoint pnt = pdi.m_point;
+        wxPoint pnt = pdi.m_point;
         MarkID mid = pdi.GetSubInfo<DRAG_MARKER>().m_markID;
         pnt = ClientToWorkspace(pnt);
 
@@ -846,13 +866,13 @@ void CPlayBoardView::DoDragMarker(const DragInfoWx& pdi)
         // deliver random markers, prompt for a count of markers
         // and randomly select that many of them. The snap grid is
         // ignored for this sort of placement.
-        if (GetKeyState(VK_CONTROL) < 0)
+        if (wxGetKeyState(WXK_CONTROL))
         {
             // I'm going to cheat. I happen to know that marker drops
             // can only originate at the marker palette. I can find out
             // the current marker set this way.
-            size_t nMrkGrp = pDoc.m_palMark.GetSelectedMarkerGroup();
-            ASSERT(nMrkGrp != Invalid_v<size_t>);
+            size_t nMrkGrp = (*pDoc.m_palMark)->GetSelectedMarkerGroup();
+            wxASSERT(nMrkGrp != Invalid_v<size_t>);
             if (nMrkGrp == Invalid_v<size_t>)
                 goto NASTY_GOTO_TARGET;
             CMarkSet& pMSet = pMMgr.GetMarkSet(nMrkGrp);
@@ -881,48 +901,48 @@ void CPlayBoardView::DoDragMarker(const DragInfoWx& pdi)
                     tblMarks.push_back(mid);          // Add the first one that was dropped
             }
             // First figure out the minimum size required.
-            CSize sizeMin(0, 0);
+            wxSize sizeMin(0, 0);
             int i;
             for (i = 0; i < dlg.m_nMarkerCount; i++)
             {
-                CSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
-                sizeMin.cx += size.cx;
-                sizeMin.cy = CB::max(sizeMin.cy, size.cy);
+                wxSize size = CB::Convert(pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]));
+                sizeMin.x += size.x;
+                sizeMin.y = CB::max(sizeMin.y, size.y);
                 if (i < dlg.m_nMarkerCount - 1)
-                    sizeMin += CSize(MARKER_DROP_GAP_X, 0);
+                    sizeMin += wxSize(MARKER_DROP_GAP_X, 0);
             }
-            CRect rct(CPoint(pnt.x - sizeMin.cx/2, pnt.y - sizeMin.cy), sizeMin);
+            wxRect rct(wxPoint(pnt.x - sizeMin.x/2, pnt.y - sizeMin.y), sizeMin);
             rct = LimitRect(rct);                    // Make sure stays on board.
 
             pDoc.AssignNewMoveGroup();
-            int x = rct.right;
-            int y = (rct.top + rct.bottom) / 2;
+            int x = rct.GetRight();
+            int y = (rct.GetTop() + rct.GetBottom()) / 2;
             // Load the list from right ot left so the objects
             // show up in the select list in top to bottom
             // corresponding to left to right.
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
-                CSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
+                wxSize size = CB::Convert(pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]));
                 CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
-                    CPoint(x - size.cx / 2, y), ObjectID());
-                x -= size.cx + MARKER_DROP_GAP_X;
+                    CB::Convert(wxPoint(x - size.x / 2, y)), ObjectID());
+                x -= size.x + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
             }
             NotifySelectListChange();
-            return 1;
+            return;
         }
 
 NASTY_GOTO_TARGET:
         m_selList.PurgeList();
         // If the snap grid is on, adjust the point.
-        CSize sz = pMMgr.GetMarkSize(mid);
-        ASSERT(sz.cx != 0 && sz.cy != 0);
-        CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
+        wxSize sz = CB::Convert(pMMgr.GetMarkSize(mid));
+        wxASSERT(sz.x != 0 && sz.y != 0);
+        wxRect rct(wxPoint(pnt.x - sz.x/2, pnt.y - sz.y/2), sz);
         rct = AdjustRect(rct);
         pnt = GetMidRect(rct);
 
         pDoc.AssignNewMoveGroup();
-        CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), mid, pnt, ObjectID());
+        CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), mid, CB::Convert(pnt), ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
@@ -940,10 +960,7 @@ NASTY_GOTO_TARGET:
             }
         }
     }
-    return 1;
-#else
-    wxASSERT(!"TODO:");
-#endif
+    return;
 }
 
 void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
