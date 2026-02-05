@@ -1,6 +1,6 @@
 // FrmMain.h : interface of the CMainFrame class
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -52,16 +52,16 @@ public:
     CDocument* GetCurrentDocument();
 
     CDockMarkPalette& GetDockingMarkerWindow() { return m_wndMarkPal; }
-    CDockTrayPalette* GetDockingTrayAWindow() { return &m_wndTrayPalA; }
-    CDockTrayPalette* GetDockingTrayBWindow() { return &m_wndTrayPalB; }
+    CDockTrayPalette& GetDockingTrayAWindow() { return m_wndTrayPalA; }
+    CDockTrayPalette& GetDockingTrayBWindow() { return m_wndTrayPalB; }
 
-    CReadMsgWnd*      GetMessageWindow() { return &m_wndMessage; }
+    CReadMsgWnd&      GetMessageWindow() { return m_wndMessage; }
 
     CMFCStatusBar* GetStatusBar() { return &m_wndStatusBar; }
 
 // Operations
 public:
-    void UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn);
+    void UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn);
     void ShowPalettePanes(BOOL bShow);
     void OnIdle();
     BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;

@@ -354,20 +354,18 @@ void CGamDoc::DeleteContents()
         so close before delete */
     if (m_palTrayA)
     {
-        CDockTrayPalette* pFrame = static_cast<CDockTrayPalette*>(m_palTrayA->GetDockingFrame());
+        CDockTrayPalette* pFrame = m_palTrayA->GetDockingFrame();
         if (pFrame)
         {
-            ASSERT_KINDOF(CDockTrayPalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
         m_palTrayA = nullptr;
     }
     if (m_palTrayB)
     {
-        CDockTrayPalette* pFrame = static_cast<CDockTrayPalette*>(m_palTrayB->GetDockingFrame());
+        CDockTrayPalette* pFrame = m_palTrayB->GetDockingFrame();
         if (pFrame)
         {
-            ASSERT_KINDOF(CDockTrayPalette, pFrame);
             pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
         }
         m_palTrayB = nullptr;
@@ -448,19 +446,19 @@ void CGamDoc::OnIdle(BOOL bActive)
 
         CDockMarkPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
         pDockMark.SetChild(&*m_palMark);
-        pMFrame->UpdatePaletteWindow(&pDockMark, m_bMarkPalVisible);
+        pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
 
-        CDockTrayPalette* pDockTrayA = pMFrame->GetDockingTrayAWindow();
-        pDockTrayA->SetChild(&*m_palTrayA);
+        CDockTrayPalette& pDockTrayA = pMFrame->GetDockingTrayAWindow();
+        pDockTrayA.SetChild(&*m_palTrayA);
         pMFrame->UpdatePaletteWindow(pDockTrayA, m_bTrayAVisible);
 
-        CDockTrayPalette* pDockTrayB = pMFrame->GetDockingTrayBWindow();
-        pDockTrayB->SetChild(&*m_palTrayB);
+        CDockTrayPalette& pDockTrayB = pMFrame->GetDockingTrayBWindow();
+        pDockTrayB.SetChild(&*m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
 
-        CReadMsgWnd* pDocMsg = pMFrame->GetMessageWindow();
+        CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());
-        pDocMsg->SetText(this);
+        pDocMsg.SetText(this);
     }
 }
 

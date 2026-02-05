@@ -1,6 +1,6 @@
 // PalTray.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,6 +35,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+class CDockTrayPalette;
 class CGamDoc;
 class CTraySet;
 
@@ -50,34 +51,34 @@ class CTrayPalette : public CWnd
 public:
     CTrayPalette(CGamDoc& pDoc, UINT palID);
 
-    BOOL Create(CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
+    BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
 
 // Attributes
 private:
     void SetPaletteID(UINT nID) { m_nID = nID; }
 public:
 
-    CDockablePane* GetDockingFrame() { return m_pDockingFrame; }
-    void SetDockingFrame(CDockablePane* pDockingFrame)
+    const CDockTrayPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockTrayPalette* GetDockingFrame()
     {
-        m_pDockingFrame = pDockingFrame;
-        SetParent(pDockingFrame);
+        return const_cast<CDockTrayPalette*>(std::as_const(*this).GetDockingFrame());
     }
+    void SetDockingFrame(CDockTrayPalette* pDockingFrame);
 
 // Operations
 public:
     void DeselectAll();
-    void SelectTrayPiece(size_t nGroup, PieceID pid, const CB::string* pszNotificationTip = NULL);
+    void SelectTrayPiece(size_t nGroup, PieceID pid, const CB::string* pszNotificationTip);
     void ShowTrayIndex(size_t nGroup, int nPos);
 
     void UpdatePaletteContents(const CTraySet* pTray = NULL);
-    void Serialize(CArchive &ar);
+    void Serialize(CArchive &ar) override;
 
 // Implementation - vars
 protected:
     RefPtr<CGamDoc> m_pDoc;
     UINT        m_nID;
-    CDockablePane* m_pDockingFrame;
+    CB::propagate_const<CDockTrayPalette*> m_pDockingFrame;
 
     CBitmap     m_bmpMenuBtn;
     CSize       m_sizeMenuBtn;
@@ -98,8 +99,8 @@ protected:
 
     void LoadTrayNameList();
     void UpdateTrayList();
-    size_t GetSelectedTray();
-    int  FindTrayIndex(size_t nTrayNum);
+    size_t GetSelectedTray() const;
+    int  FindTrayIndex(size_t nTrayNum) const;
 
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.
@@ -107,13 +108,12 @@ protected:
     int  m_nComboIndex;
     int  m_nListTopindex;
 
-    CWinPlacement     m_wndPlace;
-    CArray<int, int>  m_tblListBoxSel;
+    std::vector<int>  m_tblListBoxSel;
 
 // Overrides
 public:
-    virtual void PostNcDestroy();
-    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    void PostNcDestroy() override;
+    LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
 // Implementation - methods
 protected:

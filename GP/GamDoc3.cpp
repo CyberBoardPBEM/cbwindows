@@ -526,7 +526,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         }
         GetTrayManager().PropagateOwnerMaskToAllPieces(this);
         GetPBoardManager().PropagateOwnerMaskToAllPieces();
-        GetMainFrame()->GetMessageWindow()->SetText(this);
+        GetMainFrame()->GetMessageWindow().SetText(this);
     }
 }
 
