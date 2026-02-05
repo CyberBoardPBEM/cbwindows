@@ -1,6 +1,6 @@
 // PalTray.cpp : implementation file
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -117,13 +117,13 @@ CTrayPalette::CTrayPalette(CGamDoc& pDoc, UINT palID) :
     SetPaletteID(palID);
 }
 
-BOOL CTrayPalette::Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID)
+BOOL CTrayPalette::Create(CWnd& pOwnerWnd/*, DWORD dwStyle, UINT nID*/)
 {
     LoadMenuButtonBitmap();
 
-    dwStyle |= WS_CHILD | WS_VISIBLE;
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), pOwnerWnd, nID))
+        CRect(0, 0, 200, 100), &pOwnerWnd, 0))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
@@ -133,6 +133,12 @@ BOOL CTrayPalette::Create(CWnd* pOwnerWnd, DWORD dwStyle, UINT nID)
     // Queue up a message to finish up state restore.
     PostMessage(WM_WINSTATE_RESTORE);
     return TRUE;
+}
+
+void CTrayPalette::SetDockingFrame(CDockTrayPalette* pDockingFrame)
+{
+    m_pDockingFrame = pDockingFrame;
+    SetParent(pDockingFrame);
 }
 
 int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -215,7 +221,7 @@ void CTrayPalette::DoEditSelectedPieceText()
 
 /////////////////////////////////////////////////////////////////////////////
 
-size_t CTrayPalette::GetSelectedTray()
+size_t CTrayPalette::GetSelectedTray() const
 {
     int nSel = m_comboYGrp.GetCurSel();
     if (nSel < 0)
@@ -223,7 +229,7 @@ size_t CTrayPalette::GetSelectedTray()
     return value_preserving_cast<size_t>(m_comboYGrp.GetItemData(nSel));
 }
 
-int CTrayPalette::FindTrayIndex(size_t nTrayNum)
+int CTrayPalette::FindTrayIndex(size_t nTrayNum) const
 {
     if (m_comboYGrp.GetCount() <= 0)
         return -1;
@@ -253,7 +259,7 @@ LRESULT CTrayPalette::OnMessageRestoreWinState(WPARAM, LPARAM)
 
     UpdateTrayList();
 
-    for (int i = 0; i < m_tblListBoxSel.GetSize(); i++)
+    for (size_t i = size_t(0) ; i < m_tblListBoxSel.size() ; ++i)
         m_listTray.SetSel(m_tblListBoxSel[i]);
     m_listTray.SetTopIndex(m_nListTopindex);
 
@@ -455,11 +461,11 @@ void CTrayPalette::Serialize(CArchive& ar)
         ar << (DWORD)m_listTray.GetTopIndex();
 
         // Save the indexes of all the selected items.
-        m_tblListBoxSel.RemoveAll();
+        m_tblListBoxSel.clear();
 
         int nNumSelected = m_listTray.GetSelCount();
-        m_tblListBoxSel.SetSize(nNumSelected);
-        m_listTray.GetSelItems(nNumSelected, m_tblListBoxSel.GetData());
+        m_tblListBoxSel.resize(value_preserving_cast<size_t>(nNumSelected));
+        m_listTray.GetSelItems(nNumSelected, m_tblListBoxSel.data());
         ar << m_tblListBoxSel;
     }
     else
@@ -563,7 +569,7 @@ void CTrayPalette::DeselectAll()
 }
 
 void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
-    const CB::string* pszNotificationTip /* = NULL */)
+    const CB::string* pszNotificationTip)
 {
     size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
@@ -1020,13 +1026,16 @@ void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
 
 BOOL CTrayPalette::OnActTurnOver(UINT id)
 {
-    CArray<int, int> tblListSel;
+    std::vector<int> tblListSel;
     int nNumSelected = m_listTray.GetSelCount();
-    tblListSel.SetSize(nNumSelected);
-    m_listTray.GetSelItems(nNumSelected, tblListSel.GetData());
+    if (nNumSelected)
+    {
+        tblListSel.resize(value_preserving_cast<size_t>(nNumSelected));
+        m_listTray.GetSelItems(nNumSelected, &tblListSel.front());
+    }
 
-    CArray<int, int> tblListSubjects;
-    CArray<int, int>* chosen;
+    std::vector<int> tblListSubjects;
+    std::vector<int>* chosen;
 
     switch (id)
     {
@@ -1040,16 +1049,16 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
         case ID_ACT_TURNOVER_ALL_PREV:
         case ID_ACT_TURNOVER_ALL_RANDOM:
             // operate on all pieces
-            tblListSubjects.SetSize(m_listTray.GetCount());
+            tblListSubjects.resize(value_preserving_cast<size_t>(m_listTray.GetCount()));
             for (int i = 0; i < m_listTray.GetCount(); i++)
             {
-                tblListSubjects[i] = i;
+                tblListSubjects[value_preserving_cast<size_t>(i)] = i;
             }
             chosen = &tblListSubjects;
             break;
         case ID_ACT_TURNOVER_SELECT:
             // operate on clicked side
-            tblListSubjects.Add(value_preserving_cast<int>(m_listTray.MapItemToIndex(static_cast<PieceID>(menuGameElement))));
+            tblListSubjects.push_back(value_preserving_cast<int>(m_listTray.MapItemToIndex(static_cast<PieceID>(menuGameElement))));
             chosen = &tblListSubjects;
             break;
         default:
@@ -1083,11 +1092,11 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     size_t nSel = GetSelectedTray();
     if (m_pDoc->IsRecording() && flip == CPieceTable::fRandom)
     {
-        CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_FLIPPED_RANDOM, chosen->GetCount());
-        m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[0])));
+        CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_FLIPPED_RANDOM, chosen->size());
+        m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray.MapIndexToItem(value_preserving_cast<size_t>(chosen->front())));
     }
 
-    for (int i = 0; i < chosen->GetSize(); i++)
+    for (size_t i = size_t(0) ; i < chosen->size() ; ++i)
     {
         PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[i]));
         size_t side;
@@ -1108,7 +1117,7 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
 
     /* flipping pieces shouldn't change tray content,
         so restore selections */
-    for (int i = 0; i < tblListSel.GetSize(); i++)
+    for (size_t i = size_t(0) ; i < tblListSel.size() ; ++i)
     {
         m_listTray.SetSel(tblListSel[i], true);
     }

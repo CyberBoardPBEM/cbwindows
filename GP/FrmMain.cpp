@@ -1,6 +1,6 @@
 // FrmMain.cpp : implementation of the CMainFrame class
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -437,36 +437,36 @@ void CMainFrame::ShowPalettePanes(BOOL bShow)
 
 ///////////////////////////////////////////////////////////////////////
 
-void CMainFrame::UpdatePaletteWindow(CWnd* pWnd, BOOL bIsOn)
+void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn)
 {
-    if (pWnd->m_hWnd != NULL)       // Handle exists if palette allowed
+    if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
-        BOOL bIsControlBar = pWnd->IsKindOf(RUNTIME_CLASS(CBasePane));
-        BOOL bVisible = ((pWnd->GetStyle() & WS_VISIBLE) != 0);
+        BOOL bIsControlBar = pWnd.IsKindOf(RUNTIME_CLASS(CBasePane));
+        BOOL bVisible = ((pWnd.GetStyle() & WS_VISIBLE) != 0);
 
         CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
         if (pMDIChild == NULL || pMDIChild->IsIconic())
         {
             if (!bIsControlBar && bVisible)
-                pWnd->ShowWindow(SW_HIDE);
+                pWnd.ShowWindow(SW_HIDE);
             else if (bIsControlBar && bVisible)
-                ShowPane((CBasePane*)pWnd, FALSE, FALSE, FALSE);
+                ShowPane(&dynamic_cast<CBasePane&>(pWnd), FALSE, FALSE, FALSE);
         }
         else
         {
             if (bIsOn && !bVisible)
             {
                 if (!bIsControlBar)
-                    pWnd->ShowWindow(SW_SHOW);
+                    pWnd.ShowWindow(SW_SHOW);
                 else
-                    ShowPane((CBasePane*)pWnd, TRUE, FALSE, FALSE);
+                    ShowPane(&dynamic_cast<CBasePane&>(pWnd), TRUE, FALSE, FALSE);
             }
             else if (!bIsOn && bVisible)
             {
                 if (!bIsControlBar)
-                    pWnd->ShowWindow(SW_HIDE);
+                    pWnd.ShowWindow(SW_HIDE);
                 else
-                    ShowPane((CBasePane*)pWnd, FALSE, FALSE, FALSE);
+                    ShowPane(&dynamic_cast<CBasePane&>(pWnd), FALSE, FALSE, FALSE);
             }
         }
     }

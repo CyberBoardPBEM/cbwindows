@@ -184,7 +184,7 @@ void CGamDoc::SaveRecordedMoves()
     m_strCurMsg.clear();
     m_astrMsgHist.clear();
 
-    GetMainFrame()->GetMessageWindow()->SetText(NULL);
+    GetMainFrame()->GetMessageWindow().SetText(NULL);
 
     // Save was ok..add to game history
     AddMovesToGameHistoryTable(pHist);

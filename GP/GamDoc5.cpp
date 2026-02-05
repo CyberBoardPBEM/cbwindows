@@ -364,7 +364,7 @@ void CGamDoc::MsgSetMessageText(const CB::string& str)
     else
         m_strCurMsg = str;
 
-    GetMainFrame()->GetMessageWindow()->SetText(this);
+    GetMainFrame()->GetMessageWindow().SetText(this);
     if (!IsQuietPlayback() && !m_bMsgWinVisible)
         m_bMsgWinVisible = TRUE;
 }
