@@ -865,7 +865,8 @@ inline CArchive& operator>>(CArchive& ar, T& v)
     return ar;
 }
 
-inline CArchive& operator<<(CArchive& ar, const std::vector<CB::string>& v)
+template<typename T>
+CArchive& operator<<(CArchive& ar, const std::vector<T>& v)
 {
     CB::WriteCount(ar, v.size());
     for (size_t i = size_t(0) ; i < v.size() ; ++i)
@@ -875,7 +876,8 @@ inline CArchive& operator<<(CArchive& ar, const std::vector<CB::string>& v)
     return ar;
 }
 
-inline CArchive& operator>>(CArchive& ar, std::vector<CB::string>& v)
+template<typename T>
+CArchive& operator>>(CArchive& ar, std::vector<T>& v)
 {
     size_t size = CB::ReadCount(ar);
     v.resize(size);
