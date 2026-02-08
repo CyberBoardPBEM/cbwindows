@@ -44,17 +44,15 @@ class CTraySet;
 // CTrayPalette window - Tray palette's are owned and reside in
 // the document object.
 
-class CTrayPalette : public CWnd
+class CTrayPalette : public wxPanel
 {
-#if 0
-    DECLARE_DYNAMIC(CTrayPalette)
-#endif
+    wxDECLARE_CLASS(CTrayPalette);
 
 // Construction
 public:
     CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID);
 
-    BOOL Create(/*CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0*/);
+    BOOL Create(/*wxWindow& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0*/);
 
 // Attributes
 private:
@@ -65,10 +63,10 @@ public:
 public:
     void DeselectAll();
     void SelectTrayPiece(size_t nGroup, PieceID pid, const CB::string* pszNotificationTip);
-    void ShowTrayIndex(size_t nGroup, int nPos);
+    void ShowTrayIndex(size_t nGroup, size_t nPos);
 
     void UpdatePaletteContents(const CTraySet* pTray = NULL);
-    void Serialize(CArchive &ar) override;
+    void Serialize(CArchive &ar);
 
 // Implementation - vars
 protected:
@@ -77,10 +75,10 @@ protected:
     UINT        m_nID;
     CB::propagate_const<CDockTrayPalette*> m_pDockingFrame;
 
-    CBitmap     m_bmpMenuBtn;
-    CSize       m_sizeMenuBtn;
-    CToolTipCtrl m_toolTipMenu;
-    CToolTipCtrl m_toolTipCombo;                    // For combobox overlay
+    wxBitmap     m_bmpMenuBtn;
+    wxSize       m_sizeMenuBtn;
+    CB::ToolTip  m_toolTipMenu;
+    CB::ToolTip  m_toolTipCombo;                    // For combobox overlay
 
     // This dummy area only contains a single entry. It is used
     // when only single entry should be shown in the Tray listbox.
@@ -89,9 +87,12 @@ protected:
     std::vector<PieceID> m_dummyArray;
 
     // Enclosed controls....
-    CComboBox    m_comboYGrp;
-    CTrayListBox m_listTray;
+    CB::propagate_const<wxBitmapButton*> m_bpMenuBtn;
+    CB::propagate_const<wxChoice*> m_comboYGrp;
+    CB::propagate_const<CTrayListBoxWx*> m_listTray;
+#if 0
     CRect        m_rctMenuBtn;                      // phony menu button dims
+#endif
     int          m_nComboHeight;
 
     void LoadTrayNameList();
@@ -102,14 +103,16 @@ protected:
     // Some temporary vars used during windows position restoration.
     // They are loaded during the de-serialization process.
     BOOL m_bStateVarsArmed;                         // Set so state restore is one-shot process
-    int  m_nComboIndex;
-    int  m_nListTopindex;
+    uint32_t  m_nComboIndex;
+    uint32_t  m_nListTopindex;
 
     std::vector<int>  m_tblListBoxSel;
 
 // Overrides
 public:
+#if 0
     LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
+#endif
 
 // Implementation - methods
 protected:
@@ -117,14 +120,13 @@ protected:
     void DoEditSelectedPieceText();
     BOOL EnsureTooltipExistance();
 
-    void DoMenu(CPoint point, bool rightButton);
+    void DoMenu(wxPoint point, bool rightButton);
 private:
     GameElement menuGameElement = Invalid_v<GameElement>;
 
-// Generated message map functions
 protected:
 
-    //{{AFX_MSG(CTrayPalette)
+#if 0
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnWindowPosChanging(WINDOWPOS FAR* lpwndpos);
@@ -148,22 +150,25 @@ protected:
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    //}}AFX_MSG
     afx_msg BOOL OnToolTipShow(UINT id, NMHDR *pNMH, LRESULT *pResult);
     afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
     afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
     afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
+#endif
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 };
 
-class CTrayPaletteContainer : public CWnd
+class CTrayPaletteContainer : public CWnd,
+                                public CB::wxNativeContainerWindowMixin
 {
 public:
     CTrayPaletteContainer(CGamDoc& pDoc, UINT palID);
     BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
 
+#if 0
     void PostNcDestroy() override;
+#endif
 
     operator const CTrayPalette& () const { return *child; }
     operator CTrayPalette& ()
@@ -192,7 +197,8 @@ private:
     DECLARE_MESSAGE_MAP()
 
     CB::propagate_const<CDockTrayPalette*> m_pDockingFrame = nullptr;
-    OwnerPtr<CTrayPalette> child;
+    // owned by wx
+    CB::propagate_const<CTrayPalette*> child = nullptr;
 };
 
 /////////////////////////////////////////////////////////////////////////////

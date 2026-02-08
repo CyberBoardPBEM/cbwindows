@@ -517,7 +517,7 @@ public:
     // Support for playback...
     void EnsureBoardVisible(CPlayBoard& pPBoard);
     void EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point);
-    void EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos);
+    void EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos);
     void SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj);
     void SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID);
