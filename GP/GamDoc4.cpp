@@ -484,7 +484,7 @@ void CGamDoc::EnsureBoardVisible(CPlayBoard& pPBoard)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos)
+void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos)
 {
     if (IsQuietPlayback()) return;
     if (!m_bTrayAVisible)
@@ -492,7 +492,7 @@ void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos)
 
     // Make sure item nPos is visible.
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
-    ASSERT(nGroup != Invalid_v<size_t>);
+    wxASSERT(nGroup != Invalid_v<size_t>);
     (*m_palTrayA)->ShowTrayIndex(nGroup, nPos);
 }
 

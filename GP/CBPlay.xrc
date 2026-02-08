@@ -2732,6 +2732,48 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CTrayPalette">
+    <size>500,300</size>
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer85">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer86">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND</flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBitmapButton" name="m_bpMenuBtn">
+              <default>0</default>
+              <auth_needed>0</auth_needed>
+              <bitmap/>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <flag>wxALIGN_CENTER_VERTICAL</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxChoice" name="m_comboYGrp">
+              <selection>0</selection>
+              <content/>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxVListBox" name="m_listTray" subclass="CTrayListBoxWx">
+          <style>wxLB_MULTIPLE</style>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CTrayPropDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Tray Properties</title>
@@ -3701,6 +3743,70 @@
     </object>
     <object class="wxMenu" name="MENU_PV_PIECE_TRAY">
       <label>5=PV__PIECE__TRAY</label>
+      <object class="wxMenu" name="m_menu1">
+        <label>Turn Selected Pieces Over</label>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+          <label>_Next</label>
+          <accel></accel>
+          <help></help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_PREV">
+          <label>_Prev</label>
+          <accel></accel>
+          <help></help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_RANDOM">
+          <label>_Random</label>
+          <accel></accel>
+          <help></help>
+        </object>
+      </object>
+      <object class="wxMenu" name="m_menu2">
+        <label>Turn All Pieces Over</label>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL">
+          <label>_Next</label>
+          <accel></accel>
+          <help></help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL_PREV">
+          <label>_Prev</label>
+          <accel></accel>
+          <help></help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL_RANDOM">
+          <label>_Random</label>
+          <accel></accel>
+          <help></help>
+        </object>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER_SELECT">
+        <label>Turn Over to Clicked Side</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PTRAY_SHUFFLE_SELECTED">
+        <label>Shuffle Selected Items</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="wxMenuItem" name="ID_PTRAY_SHUFFLE">
+        <label>Shuffle All Pieces</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
+        <label>Edit Object Text...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PTRAY_ABOUT">
+        <label>About the Selected Tray...</label>
+        <accel></accel>
+        <help></help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_MV_RICHEDIT">
       <label>6=MV__RICHEDIT</label>

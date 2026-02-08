@@ -41,9 +41,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#if 0
-IMPLEMENT_DYNAMIC(CTrayPalette, CWnd)
-#endif
+wxIMPLEMENT_CLASS(CTrayPalette, wxPanel)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,8 +53,8 @@ IMPLEMENT_DYNAMIC(CTrayPalette, CWnd)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
-    //{{AFX_MSG_MAP(CTrayPalette)
+wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
+#if 0
     ON_WM_ERASEBKGND()
     ON_WM_SIZE()
     ON_WM_CREATE()
@@ -92,11 +90,11 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_ABOUT, OnUpdatePieceTrayAbout)
     ON_WM_HELPINFO()
     ON_WM_MOUSEMOVE()
-    //}}AFX_MSG_MAP
     ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
     ON_WM_INITMENUPOPUP()
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CTrayPaletteContainer, CWnd)
     ON_WM_CREATE()
@@ -110,14 +108,10 @@ END_MESSAGE_MAP()
 CTrayPalette::CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID) :
     m_pContainer(&container),
     m_pDoc(&pDoc),
-    m_listTray(*m_pDoc)
+    m_bpMenuBtn(nullptr),
+    m_comboYGrp(nullptr),
+    m_listTray(nullptr)
 {
-    ASSERT(m_pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-    m_listTray.EnableDrag();
-    m_listTray.EnableSelfDrop();
-    m_listTray.EnableDropScroll();
-    m_listTray.SetTrayContentVisibility(trayVizAllSides);
-
     m_dummyArray.push_back(PieceID(0));
 
     m_bStateVarsArmed = FALSE;
@@ -126,21 +120,31 @@ CTrayPalette::CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT
     SetPaletteID(palID);
 }
 
-BOOL CTrayPalette::Create(/*CWnd* pOwnerWnd, DWORD dwStyle, UINT nID*/)
+BOOL CTrayPalette::Create(/*wxWindow & pOwnerWnd, DWORD dwStyle, UINT nID*/)
 {
     LoadMenuButtonBitmap();
 
-    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
-    if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &*m_pContainer, 0))
+    if (!CB::XrcLoad(*this, *m_pContainer, "CTrayPalette"))
     {
-        TRACE("Failed to create Tray palette window.\n");
-        return FALSE;
+        return false;
     }
+    m_bpMenuBtn = XRCCTRL(*this, "m_bpMenuBtn", wxBitmapButton);
+    m_bpMenuBtn->SetBitmap(m_bmpMenuBtn);
+    m_comboYGrp = XRCCTRL(*this, "m_comboYGrp", wxChoice);
+    m_listTray = XRCCTRL(*this, "m_listTray", CTrayListBoxWx);
+    (*m_pContainer)->Layout();
+
+    m_listTray->Init(*m_pDoc);
+    m_listTray->EnableDrag();
+    m_listTray->EnableSelfDrop();
+    m_listTray->EnableDropScroll();
+    m_listTray->SetTrayContentVisibility(trayVizAllSides);
+
+    EnsureTooltipExistance();
 
     UpdatePaletteContents();
     // Queue up a message to finish up state restore.
-    PostMessage(WM_WINSTATE_RESTORE);
+    QueueEvent(WinStateRestoreEvent().Clone());
     return TRUE;
 }
 
@@ -150,6 +154,7 @@ void CTrayPaletteContainer::SetDockingFrame(CDockTrayPalette* pDockingFrame)
     SetParent(pDockingFrame);
 }
 
+#if 0
 int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     m_rctMenuBtn.left = 0;
@@ -194,6 +199,7 @@ int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Because of the way MFC and Windows re-parents the tooltip control they
@@ -203,15 +209,12 @@ int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CTrayPalette::EnsureTooltipExistance()
 {
-    if (m_toolTipMenu.m_hWnd == NULL)
-    {
-        // Add a tip to the menu icon click area.
-        m_toolTipMenu.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
-        m_toolTipMenu.AddTool(this, IDS_TIP_CLICK_MENU, m_rctMenuBtn, ID_TIP_MENU);
+    // Add a tip to the menu button.
+    m_toolTipMenu.SetBalloonMode(true);
+    m_toolTipMenu.Enable(true);
+    m_toolTipMenu.Add(*m_bpMenuBtn, CB::string::LoadString(IDS_TIP_CLICK_MENU));
 
-        m_toolTipCombo.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
-        return TRUE;
-    }
+    m_toolTipCombo.Enable(true);
     return FALSE;
 }
 
@@ -219,11 +222,10 @@ BOOL CTrayPalette::EnsureTooltipExistance()
 
 void CTrayPalette::DoEditSelectedPieceText()
 {
-    ASSERT(m_listTray.GetSelCount() == 1);
-    int nSelItem;
-    m_listTray.GetSelItems(1, &nSelItem);
+    std::vector<size_t> nSelItem = m_listTray->GetSelections();
+    wxASSERT(nSelItem.size() == size_t(1));
 
-    PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nSelItem));
+    PieceID pid = m_listTray->MapIndexToItem(nSelItem.front());
 
     m_pDoc->DoEditPieceText(pid);
 }
@@ -232,26 +234,27 @@ void CTrayPalette::DoEditSelectedPieceText()
 
 size_t CTrayPalette::GetSelectedTray() const
 {
-    int nSel = m_comboYGrp.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_comboYGrp->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return Invalid_v<size_t>;
-    return value_preserving_cast<size_t>(m_comboYGrp.GetItemData(nSel));
+    return value_preserving_cast<size_t>(reinterpret_cast<uintptr_t>(m_comboYGrp->GetClientData(value_preserving_cast<unsigned>(nSel))));
 }
 
 int CTrayPalette::FindTrayIndex(size_t nTrayNum) const
 {
-    if (m_comboYGrp.GetCount() <= 0)
-        return -1;
+    if (m_comboYGrp->GetCount() <= 0)
+        return wxNOT_FOUND;
     // @@@@@ TRACE1("m_comboYGrp.GetCount() = %d\n",  m_comboYGrp.GetCount());
-    for (int nIdx = 0; nIdx < m_comboYGrp.GetCount(); nIdx++)
+    for (unsigned nIdx = unsigned(0) ; nIdx < m_comboYGrp->GetCount() ; ++nIdx)
     {
-        if (value_preserving_cast<size_t>(m_comboYGrp.GetItemData(nIdx)) == nTrayNum)
-            return nIdx;
+        if (value_preserving_cast<size_t>(reinterpret_cast<uintptr_t>(m_comboYGrp->GetClientData(nIdx))) == nTrayNum)
+            return value_preserving_cast<int>(nIdx);
     }
     // CAN HAPPEN! ASSERT(nIdx < m_comboYGrp.GetCount());
-    return -1;
+    return wxNOT_FOUND;
 }
 
+#if 0
 ///////////////////////////////////////////////////////////////////////
 // This method handles the custom message WM_WINSTATE_RESTORE. The
 // message is posted during view initial update if the state of
@@ -459,6 +462,7 @@ LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
     CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
     return 1;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -466,32 +470,35 @@ void CTrayPalette::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_comboYGrp.GetCurSel();
-        ar << (DWORD)m_listTray.GetTopIndex();
+        ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(m_comboYGrp->GetSelection()));
+        ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(m_listTray->GetVisibleRowsBegin()));
 
         // Save the indexes of all the selected items.
         m_tblListBoxSel.clear();
 
-        int nNumSelected = m_listTray.GetSelCount();
-        m_tblListBoxSel.resize(value_preserving_cast<size_t>(nNumSelected));
-        m_listTray.GetSelItems(nNumSelected, m_tblListBoxSel.data());
+        std::vector<size_t> selections = m_listTray->GetSelections();
+        m_tblListBoxSel.reserve(selections.size());
+        for (size_t i = size_t(0); i < selections.size(); ++i)
+        {
+            m_tblListBoxSel.push_back(value_preserving_cast<int>(selections[i]));
+        }
         ar << m_tblListBoxSel;
     }
     else
     {
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))       // V2.90
         {
-            DWORD dwTmp;
-            ar >> dwTmp; m_nComboIndex = (int)dwTmp;
-            ar >> dwTmp; m_nListTopindex = (int)dwTmp;
+            uint32_t dwTmp;
+            ar >> dwTmp; m_nComboIndex = dwTmp;
+            ar >> dwTmp; m_nListTopindex = dwTmp;
             ar >> m_tblListBoxSel;
             m_bStateVarsArmed = TRUE;           // Inform Create() data is good
         }
         else if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))  // V2.0
         {
-            DWORD dwTmp;
-            ar >> dwTmp; m_nComboIndex = (int)dwTmp;
-            ar >> dwTmp; m_nListTopindex = (int)dwTmp;
+            uint32_t dwTmp;
+            ar >> dwTmp; m_nComboIndex = dwTmp;
+            ar >> dwTmp; m_nListTopindex = dwTmp;
             ar >> m_tblListBoxSel;
             CWinPlacement wndSink;
             ar >> wndSink;                      // Eat this puppy
@@ -499,7 +506,7 @@ void CTrayPalette::Serialize(CArchive& ar)
         }
         else                                                        // Pre 2.0
         {
-            short sTmp;     // Eat the old data and go with the default values
+            uint16_t sTmp;     // Eat the old data and go with the default values
             ar >> sTmp;
             ar >> sTmp;
             ar >> sTmp;
@@ -514,7 +521,7 @@ void CTrayPalette::LoadTrayNameList()
 {
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
-    m_comboYGrp.ResetContent();
+    m_comboYGrp->Clear();
     for (size_t i = size_t(0); i < pYMgr.GetNumTraySets(); i++)
     {
         CTraySet& pYSet = pYMgr.GetTraySet(i);
@@ -525,10 +532,10 @@ void CTrayPalette::LoadTrayNameList()
                 pYSet.GetOwnerMask()).m_strName;
             strTrayName += " - " + strOwner;
         }
-        int nIdx = m_comboYGrp.AddString(strTrayName);
-        m_comboYGrp.SetItemData(nIdx, value_preserving_cast<DWORD_PTR>(i));    // Store the tray index in the data item
+        int nIdx = m_comboYGrp->Append(strTrayName);
+        m_comboYGrp->SetClientData(value_preserving_cast<unsigned>(nIdx), reinterpret_cast<void*>(value_preserving_cast<uintptr_t>(i)));    // Store the tray index in the data item
     }
-    m_comboYGrp.SetCurSel(0);
+    m_comboYGrp->SetSelection(0);
     UpdateTrayList();
 }
 
@@ -549,32 +556,33 @@ void CTrayPalette::UpdatePaletteContents(const CTraySet* pTray)
     {
         LoadTrayNameList();
         int nComboIndex = FindTrayIndex(nSel);
-        if (nComboIndex < 0)
+        if (nComboIndex == wxNOT_FOUND)
             nComboIndex = 0;
-        m_comboYGrp.SetCurSel(nComboIndex);
+        m_comboYGrp->SetSelection(nComboIndex);
     }
     UpdateTrayList();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::ShowTrayIndex(size_t nGroup, int nPos)
+void CTrayPalette::ShowTrayIndex(size_t nGroup, size_t nPos)
 {
     size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
     {
-        m_comboYGrp.SetCurSel(FindTrayIndex(nGroup));
+        m_comboYGrp->SetSelection(FindTrayIndex(nGroup));
         UpdateTrayList();
     }
-    m_listTray.ShowListIndex(nPos);
+    m_listTray->ShowListIndex(nPos);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CTrayPalette::DeselectAll()
 {
-    if (m_hWnd != NULL)
-        m_listTray.DeselectAll();
+    wxASSERT(m_listTray);
+    if (m_listTray)
+        m_listTray->DeselectAll();
 }
 
 void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
@@ -583,13 +591,13 @@ void CTrayPalette::SelectTrayPiece(size_t nGroup, PieceID pid,
     size_t nSel = GetSelectedTray();
     if (nSel != nGroup)
     {
-        m_comboYGrp.SetCurSel(FindTrayIndex(nGroup));
+        m_comboYGrp->SetSelection(FindTrayIndex(nGroup));
         UpdateTrayList();
     }
-    size_t nItem = m_listTray.SelectTrayPiece(pid);
+    size_t nItem = m_listTray->SelectTrayPiece(pid);
     if (pszNotificationTip != NULL)
     {
-        m_listTray.SetNotificationTip(value_preserving_cast<int>(nItem), *pszNotificationTip);
+        m_listTray->SetNotificationTip(nItem, *pszNotificationTip);
     }
 }
 
@@ -599,7 +607,7 @@ void CTrayPalette::UpdateTrayList()
 {
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
 
-    m_toolTipCombo.DelTool(&m_comboYGrp);   // Always delete current tool
+    m_toolTipCombo.Delete(*m_comboYGrp);   // Always delete current tool
 
     size_t nSel = GetSelectedTray();
     if (nSel == Invalid_v<size_t>)
@@ -607,21 +615,17 @@ void CTrayPalette::UpdateTrayList()
 
     // Get the name from the combo box since it has all the ownership
     // information added.
-    CB::string strTrayName = CB::string::GetLBText(m_comboYGrp, m_comboYGrp.GetCurSel());
+    CB::string strTrayName = m_comboYGrp->GetString(m_comboYGrp->GetSelection());
 
-    TOOLINFO ti;
-    m_toolTipCombo.FillInToolInfo(ti, &m_comboYGrp, 0);
-    ti.uFlags |= TTF_SUBCLASS | TTF_CENTERTIP;
-    ti.lpszText = const_cast<CB::string::value_type*>(strTrayName.v_str());
-    m_toolTipCombo.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+    m_toolTipCombo.Add(*m_comboYGrp, strTrayName, CB::ToolTip::CENTER);
 
     CTraySet& pYSet = pYMgr.GetTraySet(nSel);
     const std::vector<PieceID>* pPieceTbl = &pYSet.GetPieceIDTable();
 
     CB::string str = "";
-    m_listTray.EnableDrag(TRUE);
-    m_listTray.EnableSelfDrop(TRUE);
-    m_listTray.SetTipsAllowed(TRUE);
+    m_listTray->EnableDrag(TRUE);
+    m_listTray->EnableSelfDrop(TRUE);
+    m_listTray->SetTipsAllowed(TRUE);
 
     TrayViz eViz = pYSet.GetTrayContentVisibility();
 
@@ -641,7 +645,7 @@ void CTrayPalette::UpdateTrayList()
         if (pYSet.IsRandomPiecePull())
         {
             str = CB::string::LoadString(IDS_TRAY_RANDHIDDEN);
-            m_listTray.EnableSelfDrop(FALSE);
+            m_listTray->EnableSelfDrop(FALSE);
         }
         else
             str = CB::string::LoadString(IDS_TRAY_HIDDEN);
@@ -651,7 +655,7 @@ void CTrayPalette::UpdateTrayList()
         if (pYSet.IsRandomPiecePull())
         {
             str = CB::string::LoadString(IDS_TRAY_ALLRANDHIDDEN);
-            m_listTray.EnableSelfDrop(FALSE);
+            m_listTray->EnableSelfDrop(FALSE);
         }
         else
             str = CB::string::LoadString(IDS_TRAY_ALLHIDDEN);
@@ -663,22 +667,23 @@ void CTrayPalette::UpdateTrayList()
         pPieceTbl = &m_dummyArray;
     }
     if (!m_pDoc->IsScenario() && pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc))
-        m_listTray.SetTipsAllowed(FALSE);
+        m_listTray->SetTipsAllowed(FALSE);
 
     if (!m_pDoc->IsScenario() && pYSet.IsOwned() &&
         !pYSet.IsOwnedBy(m_pDoc->GetCurrentPlayerMask()) &&
         !pYSet.IsNonOwnerAccessAllowed())
     {
-        m_listTray.EnableDrag(FALSE);
-        m_listTray.EnableSelfDrop(FALSE);
+        m_listTray->EnableDrag(FALSE);
+        m_listTray->EnableSelfDrop(FALSE);
     }
-    m_listTray.SetTrayContentVisibility(eViz, str);
+    m_listTray->SetTrayContentVisibility(eViz, str);
 
-    m_listTray.SetItemMap(pPieceTbl);
+    m_listTray->SetItemMap(pPieceTbl);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
 {
     if (wParam != GetProcessId(GetCurrentProcess()))
@@ -788,6 +793,7 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
     }
     return 1;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Load the menu icon image and fill upper-right transparent area with
@@ -795,30 +801,25 @@ LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
 
 void CTrayPalette::LoadMenuButtonBitmap()
 {
-    HBITMAP hBMap = (HBITMAP)LoadImage(AfxGetResourceHandle(),
-        MAKEINTRESOURCE(IDB_MENU_ICON), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-    ASSERT(hBMap != NULL);
-    m_bmpMenuBtn.Attach(hBMap);
+    wxBitmap hBMap(std::format("#{}", IDB_MENU_ICON),
+        wxBITMAP_TYPE_BMP_RESOURCE);
+    wxASSERT(hBMap.IsOk());
+    m_bmpMenuBtn = hBMap;
 
-    BITMAP bmap;
-    m_bmpMenuBtn.GetBitmap(&bmap);
-    m_sizeMenuBtn.cx = bmap.bmWidth;
-    m_sizeMenuBtn.cy = bmap.bmHeight;
+    m_sizeMenuBtn.x = m_bmpMenuBtn.GetWidth();
+    m_sizeMenuBtn.y = m_bmpMenuBtn.GetHeight();
 
-    CDC dc;
-    dc.CreateCompatibleDC(NULL);
-    CBitmap* prvBMap = dc.SelectObject(&m_bmpMenuBtn);
-    CBrush brush;
-    brush.CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-    CBrush* prvBrush = dc.SelectObject(&brush);
-    dc.ExtFloodFill(m_sizeMenuBtn.cx - 1, 0, RGB(0, 255, 255), FLOODFILLSURFACE);
-    dc.SelectObject(prvBrush);
-    dc.SelectObject(prvBMap);
+    wxMemoryDC dc;
+    dc.SelectObject(m_bmpMenuBtn);
+    wxBrush brush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE), wxBRUSHSTYLE_SOLID);
+    wxDCBrushChanger setBrush(dc, brush);
+    dc.FloodFill(m_sizeMenuBtn.x - 1, 0, wxColour(0, 255, 255), wxFLOOD_SURFACE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPalette message handlers
 
+#if 0
 BOOL CTrayPalette::OnEraseBkgnd(CDC* pDC)
 {
     // Erase behind menu button only...
@@ -839,6 +840,7 @@ BOOL CTrayPalette::OnEraseBkgnd(CDC* pDC)
     return TRUE;        // controls take care of erase
 }
 
+#if 0
 LRESULT CTrayPalette::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
@@ -856,6 +858,7 @@ LRESULT CTrayPalette::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
     }
     return CWnd::WindowProc(message, wParam, lParam);
 }
+#endif
 
 void CTrayPalette::OnSize(UINT nType, int cx, int cy)
 {
@@ -1321,8 +1324,10 @@ void CTrayPalette::OnInitMenuPopup(CMenu* pMenu, UINT nIndex, BOOL bSysMenu)
         state.m_nIndexMax = nCount;
     }
 }
+#endif
 
 CTrayPaletteContainer::CTrayPaletteContainer(CGamDoc& pDoc, UINT palID) :
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CTrayPalette(*this, pDoc, palID))
 {
 }
@@ -1365,6 +1370,6 @@ void CTrayPaletteContainer::OnSetFocus(CWnd* pOldWnd)
 
 void CTrayPaletteContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
+    child->SetSize(0, 0, cx, cy);
     return CWnd::OnSize(nType, cx, cy);
 }
