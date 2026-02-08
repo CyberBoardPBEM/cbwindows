@@ -1,6 +1,6 @@
 // LBoxTray.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -459,7 +459,6 @@ BOOL CTrayListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
     PieceID pid = MapIndexToItem(nItem);
     if (m_eTrayViz != trayVizAllSides)
     {
-        wxASSERT(!"untested code");
         uint8_t side = m_pDoc->GetPieceTable().GetSide(pid);
         return m_pDoc->HasGameElementString(MakePieceElement(pid, side));
     }
@@ -480,50 +479,46 @@ BOOL CTrayListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-void CTrayListBox::DeselectAll()
+void CTrayListBoxWx::DeselectAll()
 {
-    ASSERT(IsMultiSelect());
-    if (GetCount() < 1)
+    wxASSERT(IsMultiSelect());
+    if (GetItemCount() < 1)
         return;
-    SelItemRange(FALSE, 0, GetCount()-1);
+    BASE::DeselectAll();
 }
 
-size_t CTrayListBox::SelectTrayPiece(PieceID pid)
+size_t CTrayListBoxWx::SelectTrayPiece(PieceID pid)
 {
     size_t nIndex = MapItemToIndex(pid);
     if (nIndex != Invalid_v<size_t>)
     {
-        ShowListIndex(value_preserving_cast<int>(nIndex));
-        SetSel(value_preserving_cast<int>(nIndex), TRUE);
+        ShowListIndex(nIndex);
+        Select(nIndex, TRUE);
     }
     else
     {
-        if (GetCount() > 0)
-            SetSel(0, TRUE);
+        if (GetItemCount() > 0)
+            Select(0, TRUE);
     }
     return nIndex;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayListBox::ShowListIndex(int nPos)
+void CTrayListBoxWx::ShowListIndex(size_t nPos)
 {
-    if (nPos < GetTopIndex())
+    if (nPos < this->GetVisibleRowsBegin())
     {
-        SetTopIndex(nPos);
+        ScrollToRow(nPos);
         return;
     }
-    CRect rct;
-    GetItemRect(nPos, &rct);
-    CRect rctClient;
-    GetClientRect(&rctClient);
-    if (rct.IntersectRect(&rct, &rctClient))
+    wxRect rct = GetItemRect(nPos);
+    wxRect rctClient = GetClientRect();
+    if (rct.Intersects(rctClient))
         return;
 
-    SetTopIndex(nPos);
+    ScrollToRow(nPos);
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -126,7 +126,7 @@ public:
 public:
     void DeselectAll();
     size_t SelectTrayPiece(PieceID pid);
-    void ShowListIndex(int nPos);
+    void ShowListIndex(size_t nPos);
 
     void SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString = CB::string());
     void SetTipsAllowed(BOOL bTipsAllowed)
@@ -164,6 +164,8 @@ protected:
     wxDECLARE_DYNAMIC_CLASS(CTrayListBoxWx);
 
 private:
+    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID> BASE;
+
     bool IsShowAllSides(PieceID pid) const;
 };
 
