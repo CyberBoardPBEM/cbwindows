@@ -1142,7 +1142,7 @@ void CB::ToolTip::Notify()
                 screenRect = tipTool->wnd.get().GetScreenRect();
             }
             tipWindow = wxTipWindow::New(&tipTool->wnd.get(),
-                tipTool->tip, maxWidth,
+                tipTool->tip, maxWidth != -1 ? maxWidth : std::numeric_limits<wxCoord>::max(),
                 &screenRect);
             if (tipTool->flags & CENTER)
             {
