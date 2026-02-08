@@ -1,6 +1,6 @@
 // LBoxGrfx.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -525,16 +525,15 @@ public:
 public:
     void SetSelFromPoint(wxPoint point);
     void ShowFirstSelection();
-#if 0
-    void MakeItemVisible(int nItem);
+    void MakeItemVisible(size_t nItem);
 
     // Notification Tooltip Support
+#if 0
     void SetNotificationTip(int nItem, UINT nResID);
-    void SetNotificationTip(int nItem, const CB::string& pszTip);
-    void ClearNotificationTip();
-    static void CALLBACK NotificationTipTimeoutHandler(HWND hwnd, UINT uMsg,
-        UINT_PTR idEvent, DWORD dwTime);
 #endif
+    void SetNotificationTip(size_t nItem, const CB::string& pszTip);
+    void ClearNotificationTip();
+    void NotificationTipTimeoutHandler(wxTimerEvent& event);
 
     // Overrides - the subclass of this class must override these
 public:
@@ -564,9 +563,8 @@ public:
     // Implementation
 protected:
     // Tool tip support
-#if 0
-    CToolTipCtrl m_toolMsgTip;      // Tooltip for notifications
-#endif
+    CB::ToolTip m_toolMsgTip;      // Tooltip for notifications
+    wxTimer m_toolMsgTipTimer;
     wxTipWindow::Ref m_toolTip;         // Tooltip of tile text popups
     GameElement m_nCurItemCode;         // current active tip item code
 
