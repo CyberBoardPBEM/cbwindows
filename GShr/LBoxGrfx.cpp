@@ -1,6 +1,6 @@
 // LBoxGrfx.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -675,11 +675,13 @@ wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
     ON_WM_CREATE()
 #endif
     EVT_DRAGDROP(OnDragItem)
+    EVT_TIMER(XRCID("ID_TIP_LISTITEM_MSG_TIMER"), NotificationTipTimeoutHandler)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
 CGrafixListBoxWx::CGrafixListBoxWx() :
+    m_toolMsgTipTimer(this, XRCID("ID_TIP_LISTITEM_MSG_TIMER")),
     m_nCurItemCode(Invalid_v<GameElement>),
     m_nTimerID(this)
 {
@@ -687,6 +689,9 @@ CGrafixListBoxWx::CGrafixListBoxWx() :
     m_bAllowDrag = FALSE;
     m_bAllowSelfDrop = FALSE;
     m_bAllowDropScroll = FALSE;
+
+    m_toolMsgTip.SetBalloonMode(true);
+    m_toolMsgTip.SetMaxWidth(MAX_LISTITEM_TIP_WIDTH);
 }
 
 CGrafixListBoxWx::~CGrafixListBoxWx()
@@ -706,65 +711,46 @@ void CGrafixListBoxWx::SetNotificationTip(int nItem, UINT nResID)
     CB::string str = CB::string::LoadString(nResID);
     SetNotificationTip(nItem, str);
 }
+#endif
 
 // Shows a notification tip over a specified item. If the item
 // doesn't exist, the center of the listbox receives the tip.
-void CGrafixListBoxWx::SetNotificationTip(int nItem, const CB::string& pszTip)
+void CGrafixListBoxWx::SetNotificationTip(size_t nItem, const CB::string& pszTip)
 {
-    if (m_toolMsgTip.m_hWnd == NULL)
-    {
-        m_toolMsgTip.Create(this, TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX);
-        m_toolMsgTip.SetMaxTipWidth(MAX_LISTITEM_TIP_WIDTH);
-    }
-
     ClearNotificationTip();
 
-    TOOLINFO ti;
-    m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_LISTITEM_MSG);
-    ti.uFlags |= TTF_TRACK;
-    ti.lpszText = const_cast<CB::string::value_type*>(pszTip.v_str());
-
-    m_toolMsgTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
+    m_toolMsgTip.Add(*this, pszTip, CB::ToolTip::TRACK);
 
     MakeItemVisible(nItem);
 
-    CRect rctItem;
-    if (!GetItemRect(nItem, rctItem))
-        GetClientRect(rctItem);
+    wxRect rctItem = GetItemRect(nItem);
+    if (rctItem.IsEmpty())
+        rctItem = GetClientRect();
 
-    CPoint pntClient = rctItem.CenterPoint();
+    wxPoint pntClient = GetMidRect(rctItem);
 
-    CPoint pntScreen(pntClient);
-    ClientToScreen(&pntScreen);
+    wxPoint pntScreen = ClientToScreen(pntClient);
 
-    m_toolMsgTip.Activate(TRUE);
-    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
-    m_toolMsgTip.SendMessage(TTM_TRACKPOSITION, 0,
-        (LPARAM)MAKELONG(static_cast<int16_t>(pntScreen.x), static_cast<int16_t>(pntScreen.y)));
+    m_toolMsgTip.Enable(TRUE);
+    m_toolMsgTip.TrackActivate(*this, true);
+    m_toolMsgTip.TrackPosition(pntScreen);
 
-    SetTimer(ID_TIP_LISTITEM_MSG_TIMER, MAX_TIP_LISTITEM_MSG_TIME,
-        NotificationTipTimeoutHandler);
+    m_toolMsgTipTimer.Start(MAX_TIP_LISTITEM_MSG_TIME, wxTIMER_ONE_SHOT);
 }
 
 void CGrafixListBoxWx::ClearNotificationTip()
 {
-    KillTimer(ID_TIP_LISTITEM_MSG_TIMER);  // Kill it in case it's still running
+    m_toolMsgTipTimer.Stop();
 
-    CToolInfo ti;
-    m_toolMsgTip.GetToolInfo(ti, this, ID_TIP_LISTITEM_MSG);
-    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
-    m_toolMsgTip.DelTool(this, ID_TIP_LISTITEM_MSG);
-    m_toolMsgTip.Activate(FALSE);
+    m_toolMsgTip.TrackActivate(*this, false);
+    m_toolMsgTip.Delete(*this);
+    m_toolMsgTip.Enable(FALSE);
 }
 
-void CALLBACK CGrafixListBoxWx::NotificationTipTimeoutHandler(HWND hwnd,
-    UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+void CGrafixListBoxWx::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
 {
-    CGrafixListBox* pWnd = (CGrafixListBox*)CWnd::FromHandle(hwnd);
-    ASSERT(pWnd != NULL);
-    pWnd->ClearNotificationTip();
+    ClearNotificationTip();
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -808,33 +794,28 @@ int CGrafixListBoxWx::GetTopSelectedItem() const
 /////////////////////////////////////////////////////////////////////////////
 // If the selection is out of view, force it into view.
 
-#if 0
-void CGrafixListBoxWx::MakeItemVisible(int nItem)
+void CGrafixListBoxWx::MakeItemVisible(size_t nItem)
 {
-    CRect rctLBoxClient;
-    GetClientRect(&rctLBoxClient);
-    CRect rct;
-    GetItemRect(nItem, &rct);
-    if (!rct.IntersectRect(rct, rctLBoxClient))
-        SetTopIndex(nItem);
+    wxRect rctLBoxClient = GetClientRect();
+    wxRect rct = GetItemRect(nItem);
+    if (!rct.Intersects(rctLBoxClient))
+        ScrollToRow(nItem);
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CGrafixListBoxWx::SetSelFromPoint(wxPoint point)
 {
     wxASSERT(postProcessEvents.empty());
-    // Short circuit drag processing
-    m_bAllowDrag = FALSE;
-    wxMouseEvent down(wxEVT_LEFT_DOWN);
-    down.SetPosition(point);
-    ProcessWindowEvent(down);
-    wxMouseEvent up(wxEVT_LEFT_UP);
-    up.SetPosition(point);
-    ProcessWindowEvent(up);
-    m_bAllowDrag = TRUE;
-    wxASSERT(postProcessEvents.empty());
+    if (GetItemCount() == size_t(0))
+    {
+        return;
+    }
+    int itemFromPoint = VirtualHitTest(point.y);
+    if (itemFromPoint != wxNOT_FOUND)
+    {
+        SetSelection(itemFromPoint);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
