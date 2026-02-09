@@ -22,6 +22,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if !defined(GP_H_)
+#define GP_H_
+
 #ifndef __AFXWIN_H__
     #error include 'stdafx.h' before including this file for PCH
 #endif
@@ -259,3 +262,4 @@ inline CMainFrame* GetMainFrame() { return (CMainFrame*)(GetApp()->m_pMainWnd); 
 
 /////////////////////////////////////////////////////////////////////////////
 
+#endif
