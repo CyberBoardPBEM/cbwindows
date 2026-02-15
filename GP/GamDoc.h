@@ -711,7 +711,7 @@ public:
     CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayA;
     CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayB;
     // Marker Palette...
-    CB::propagate_const<std::unique_ptr<CMarkerPalette, WindowDestroy>> m_palMark;
+    CB::propagate_const<std::unique_ptr<CMarkerPaletteContainer, WindowDestroy>> m_palMark;
 
 // Implementation
 protected:

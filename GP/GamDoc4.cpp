@@ -556,7 +556,7 @@ void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
     if (!m_bMarkPalVisible)
         OnViewMarkPalette();
     // Select the marker in the appropriate group.
-    m_palMark->SelectMarker(mid);
+    (*m_palMark)->SelectMarker(mid);
 }
 
 /////////////////////////////////////////////////////////////////////////////

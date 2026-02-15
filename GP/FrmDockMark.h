@@ -1,6 +1,6 @@
 // FrmDockMark.h - container window for the marker palette.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CDockMarkPalette window
-class CMarkerPalette;
+class CMarkerPaletteContainer;
 
 class CDockMarkPalette : public CDockablePane
 {
@@ -38,11 +38,11 @@ public:
 
 // Attributes
 private:
-    CB::propagate_const<CMarkerPalette*> m_pChildWnd;
+    CB::propagate_const<CMarkerPaletteContainer*> m_pChildWnd;
 
 // Operations
 public:
-    void SetChild(CMarkerPalette* pChildWnd);
+    void SetChild(CMarkerPaletteContainer* pChildWnd);
 
 // Implementation
 public:

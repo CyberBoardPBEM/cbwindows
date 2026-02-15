@@ -642,7 +642,7 @@ BOOL CGamDoc::OnNewScenario()
     m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
     m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
     wxASSERT(!m_palMark);
-    m_palMark = new CMarkerPalette(*this);
+    m_palMark = new CMarkerPaletteContainer(*this);
     m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 
     return TRUE;
