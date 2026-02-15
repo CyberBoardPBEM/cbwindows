@@ -36,7 +36,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#if 0
 IMPLEMENT_DYNAMIC(CMarkerPalette, CMiniFrameWnd)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,10 +62,17 @@ BEGIN_MESSAGE_MAP(CMarkerPalette, CWnd)
     ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
 END_MESSAGE_MAP()
 
+BEGIN_MESSAGE_MAP(CMarkerPaletteContainer, CWnd)
+    ON_WM_CREATE()
+    ON_WM_SETFOCUS()
+    ON_WM_SIZE()
+END_MESSAGE_MAP()
+
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette
 
-CMarkerPalette::CMarkerPalette(CGamDoc& pDoc) :
+CMarkerPalette::CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc) :
+    m_pContainer(&container),
     m_pDoc(&pDoc)
 {
     m_listMark.EnableDrag(TRUE);
@@ -71,14 +80,13 @@ CMarkerPalette::CMarkerPalette(CGamDoc& pDoc) :
     m_dummyArray.push_back(MarkID(0));
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
-    m_pDockingFrame = NULL;
 }
 
-BOOL CMarkerPalette::Create(CWnd& pOwnerWnd, DWORD dwStyle, UINT nID)
+BOOL CMarkerPalette::Create(/*CWnd& pOwnerWnd, DWORD dwStyle, UINT nID*/)
 {
-    dwStyle |= WS_CHILD | WS_VISIBLE;
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &pOwnerWnd, nID))
+        CRect(0, 0, 200, 100), &*m_pContainer, 0))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
@@ -394,7 +402,7 @@ void CMarkerPalette::OnSize(UINT nType, int cx, int cy)
     }
 }
 
-void CMarkerPalette::PostNcDestroy()
+void CMarkerPaletteContainer::PostNcDestroy()
 {
     /* DO NOTHING - FRAME CLASS WOULD DELETE SELF! */
 }
@@ -417,4 +425,51 @@ BOOL CMarkerPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     GetApp()->DoHelpTopic("gp-ref-pal-markers.htm");
     return TRUE;
+}
+
+CMarkerPaletteContainer::CMarkerPaletteContainer(CGamDoc& pDoc) :
+    child(new CMarkerPalette(*this, pDoc))
+{
+}
+
+BOOL CMarkerPaletteContainer::Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/)
+{
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
+    if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
+        CRect(0, 0, 200, 100), &pOwnerWnd, 0))
+    {
+        TRACE("Failed to create Tray palette container window.\n");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int CMarkerPaletteContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CWnd::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    if (!child->Create())
+    {
+        TRACE("Failed to create Tray palette window.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CMarkerPaletteContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    CWnd::OnSetFocus(pOldWnd);
+    child->SetFocus();
+}
+
+void CMarkerPaletteContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CWnd::OnSize(nType, cx, cy);
 }

@@ -56,7 +56,7 @@ CDockMarkPalette::~CDockMarkPalette()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CDockMarkPalette::SetChild(CMarkerPalette* pChildWnd)
+void CDockMarkPalette::SetChild(CMarkerPaletteContainer* pChildWnd)
 {
     if (m_pChildWnd == pChildWnd)
         return;

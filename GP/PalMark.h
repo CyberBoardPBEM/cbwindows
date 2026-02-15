@@ -36,18 +36,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 class CGamDoc;
+class CMarkerPaletteContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette window - Marker palette's are part of the document object.
 
 class CMarkerPalette : public CWnd
 {
-    DECLARE_DYNAMIC(CMarkerPalette)
-
 // Construction
 public:
-    CMarkerPalette(CGamDoc& pDoc);
-    BOOL Create(CWnd& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0);
+    CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc);
+    BOOL Create();
 
 // Attributes
 public:
@@ -60,23 +59,12 @@ public:
 
     void SelectMarker(MarkID mid);
 
-    void Serialize(CArchive &ar);
-
-    const CDockablePane* GetDockingFrame() const { return &*m_pDockingFrame; }
-    CDockablePane* GetDockingFrame()
-    {
-        return const_cast<CDockablePane*>(std::as_const(*this).GetDockingFrame());
-    }
-    void SetDockingFrame(CDockablePane* pDockingFrame)
-    {
-        m_pDockingFrame = pDockingFrame;
-        SetParent(pDockingFrame);
-    }
+    void Serialize(CArchive &ar) override;
 
 // Implementation
 protected:
+    RefPtr<CMarkerPaletteContainer> m_pContainer;
     RefPtr<CGamDoc> m_pDoc;
-    CB::propagate_const<CDockablePane*> m_pDockingFrame;
 
     // This dummy area only contains a single entry. It is used
     // when only single entry should be shown in the Tray listbox.
@@ -103,7 +91,6 @@ protected:
 
 // Implementation
 public:
-    void PostNcDestroy() override;
 
     // Generated message map functions
 protected:
@@ -122,6 +109,48 @@ protected:
     afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
 
     DECLARE_MESSAGE_MAP()
+};
+
+class CMarkerPaletteContainer : public CWnd
+{
+public:
+    CMarkerPaletteContainer(CGamDoc& pDoc);
+    BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
+
+    void PostNcDestroy() override;
+
+    operator const CMarkerPalette&() const { return *child; }
+    operator CMarkerPalette&()
+    {
+        return const_cast<CMarkerPalette&>(static_cast<const CMarkerPalette&>(std::as_const(*this)));
+    }
+    const CMarkerPalette* operator->() const { return &static_cast<const CMarkerPalette&>(*this); }
+    CMarkerPalette* operator->()
+    {
+        return const_cast<CMarkerPalette*>(std::as_const(*this).operator->());
+    }
+
+    const CDockablePane* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockablePane* GetDockingFrame()
+    {
+        return const_cast<CDockablePane*>(std::as_const(*this).GetDockingFrame());
+    }
+    void SetDockingFrame(CDockablePane* pDockingFrame)
+    {
+        m_pDockingFrame = pDockingFrame;
+        SetParent(pDockingFrame);
+    }
+
+    void Serialize(CArchive& ar) override { wxASSERT(false); AfxThrowNotSupportedException(); }
+
+private:
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    CB::propagate_const<CDockablePane*> m_pDockingFrame = nullptr;
+    OwnerPtr<CMarkerPalette> child;
 };
 
 /////////////////////////////////////////////////////////////////////////////
