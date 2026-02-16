@@ -41,7 +41,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#if 0
 IMPLEMENT_DYNAMIC(CTrayPalette, CWnd)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,10 +98,17 @@ BEGIN_MESSAGE_MAP(CTrayPalette, CWnd)
     ON_WM_INITMENUPOPUP()
 END_MESSAGE_MAP()
 
+BEGIN_MESSAGE_MAP(CTrayPaletteContainer, CWnd)
+    ON_WM_CREATE()
+    ON_WM_SETFOCUS()
+    ON_WM_SIZE()
+END_MESSAGE_MAP()
+
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPalette
 
-CTrayPalette::CTrayPalette(CGamDoc& pDoc, UINT palID) :
+CTrayPalette::CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID) :
+    m_pContainer(&container),
     m_pDoc(&pDoc),
     m_listTray(*m_pDoc)
 {
@@ -117,13 +126,13 @@ CTrayPalette::CTrayPalette(CGamDoc& pDoc, UINT palID) :
     SetPaletteID(palID);
 }
 
-BOOL CTrayPalette::Create(CWnd& pOwnerWnd/*, DWORD dwStyle, UINT nID*/)
+BOOL CTrayPalette::Create(/*CWnd* pOwnerWnd, DWORD dwStyle, UINT nID*/)
 {
     LoadMenuButtonBitmap();
 
     DWORD dwStyle = WS_CHILD | WS_VISIBLE;
     if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &pOwnerWnd, 0))
+        CRect(0, 0, 200, 100), &*m_pContainer, 0))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
@@ -135,7 +144,7 @@ BOOL CTrayPalette::Create(CWnd& pOwnerWnd/*, DWORD dwStyle, UINT nID*/)
     return TRUE;
 }
 
-void CTrayPalette::SetDockingFrame(CDockTrayPalette* pDockingFrame)
+void CTrayPaletteContainer::SetDockingFrame(CDockTrayPalette* pDockingFrame)
 {
     m_pDockingFrame = pDockingFrame;
     SetParent(pDockingFrame);
@@ -866,7 +875,7 @@ void CTrayPalette::OnSize(UINT nType, int cx, int cy)
     }
 }
 
-void CTrayPalette::PostNcDestroy()
+void CTrayPaletteContainer::PostNcDestroy()
 {
     /* DO NOTHING - FRAME CLASS WOULD DELETE SELF! */
 }
@@ -1311,4 +1320,51 @@ void CTrayPalette::OnInitMenuPopup(CMenu* pMenu, UINT nIndex, BOOL bSysMenu)
         }
         state.m_nIndexMax = nCount;
     }
+}
+
+CTrayPaletteContainer::CTrayPaletteContainer(CGamDoc& pDoc, UINT palID) :
+    child(new CTrayPalette(*this, pDoc, palID))
+{
+}
+
+BOOL CTrayPaletteContainer::Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/)
+{
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
+    if (!CWnd::Create(AfxRegisterWndClass(0), NULL, dwStyle,
+        CRect(0, 0, 200, 100), &pOwnerWnd, 0))
+    {
+        TRACE("Failed to create Tray palette container window.\n");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int CTrayPaletteContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CWnd::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    if (!child->Create())
+    {
+        TRACE("Failed to create Tray palette window.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+// MFC puts the focus here, so move it to the useful window
+void CTrayPaletteContainer::OnSetFocus(CWnd* pOldWnd)
+{
+    CWnd::OnSetFocus(pOldWnd);
+    child->SetFocus();
+}
+
+void CTrayPaletteContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return CWnd::OnSize(nType, cx, cy);
 }

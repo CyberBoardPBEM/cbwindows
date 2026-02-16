@@ -27,7 +27,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CDockTrayPalette window
-class CTrayPalette;
+class CTrayPaletteContainer;
 
 class CDockTrayPalette : public CDockablePane
 {
@@ -38,11 +38,11 @@ public:
 
 // Attributes
 public:
-    CTrayPalette*   m_pChildWnd;
+    CTrayPaletteContainer*   m_pChildWnd;
 
 // Operations
 public:
-    void SetChild(CTrayPalette* pChildWnd);
+    void SetChild(CTrayPaletteContainer* pChildWnd);
 
 // Overrides
     // ClassWizard generated virtual function overrides

@@ -37,6 +37,7 @@
 
 class CDockTrayPalette;
 class CGamDoc;
+class CTrayPaletteContainer;
 class CTraySet;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -45,25 +46,20 @@ class CTraySet;
 
 class CTrayPalette : public CWnd
 {
+#if 0
     DECLARE_DYNAMIC(CTrayPalette)
+#endif
 
 // Construction
 public:
-    CTrayPalette(CGamDoc& pDoc, UINT palID);
+    CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID);
 
-    BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
+    BOOL Create(/*CWnd* pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0*/);
 
 // Attributes
 private:
     void SetPaletteID(UINT nID) { m_nID = nID; }
 public:
-
-    const CDockTrayPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
-    CDockTrayPalette* GetDockingFrame()
-    {
-        return const_cast<CDockTrayPalette*>(std::as_const(*this).GetDockingFrame());
-    }
-    void SetDockingFrame(CDockTrayPalette* pDockingFrame);
 
 // Operations
 public:
@@ -76,6 +72,7 @@ public:
 
 // Implementation - vars
 protected:
+    RefPtr<CTrayPaletteContainer> m_pContainer;
     RefPtr<CGamDoc> m_pDoc;
     UINT        m_nID;
     CB::propagate_const<CDockTrayPalette*> m_pDockingFrame;
@@ -112,7 +109,6 @@ protected:
 
 // Overrides
 public:
-    void PostNcDestroy() override;
     LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
 // Implementation - methods
@@ -159,6 +155,44 @@ protected:
     afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 
     DECLARE_MESSAGE_MAP()
+};
+
+class CTrayPaletteContainer : public CWnd
+{
+public:
+    CTrayPaletteContainer(CGamDoc& pDoc, UINT palID);
+    BOOL Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/);
+
+    void PostNcDestroy() override;
+
+    operator const CTrayPalette& () const { return *child; }
+    operator CTrayPalette& ()
+    {
+        return const_cast<CTrayPalette&>(static_cast<const CTrayPalette&>(std::as_const(*this)));
+    }
+    const CTrayPalette* operator->() const { return &static_cast<const CTrayPalette&>(*this); }
+    CTrayPalette* operator->()
+    {
+        return const_cast<CTrayPalette*>(std::as_const(*this).operator->());
+    }
+
+    const CDockTrayPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockTrayPalette* GetDockingFrame()
+    {
+        return const_cast<CDockTrayPalette*>(std::as_const(*this).GetDockingFrame());
+    }
+    void SetDockingFrame(CDockTrayPalette* pDockingFrame);
+
+    void Serialize(CArchive& ar) override { wxASSERT(false); AfxThrowNotSupportedException(); }
+
+private:
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    DECLARE_MESSAGE_MAP()
+
+    CB::propagate_const<CDockTrayPalette*> m_pDockingFrame = nullptr;
+    OwnerPtr<CTrayPalette> child;
 };
 
 /////////////////////////////////////////////////////////////////////////////

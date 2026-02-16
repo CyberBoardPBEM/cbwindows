@@ -493,7 +493,7 @@ void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, int nPos)
     // Make sure item nPos is visible.
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
-    m_palTrayA->ShowTrayIndex(nGroup, nPos);
+    (*m_palTrayA)->ShowTrayIndex(nGroup, nPos);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -546,7 +546,7 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     // Select the piece in the appropriate trayset.
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
-    m_palTrayA->SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
+    (*m_palTrayA)->SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
 }
 
 void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
@@ -676,8 +676,8 @@ void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
 
 void CGamDoc::FlushAllSelections()
 {
-    m_palTrayA->DeselectAll();
-    m_palTrayB->DeselectAll();
+    (*m_palTrayA)->DeselectAll();
+    (*m_palTrayB)->DeselectAll();
 
     // Use hint to flush select lists.
     CGamDocHint hint;
@@ -688,8 +688,8 @@ void CGamDoc::FlushAllSelections()
 
 void CGamDoc::FlushAllIndicators()
 {
-    m_palTrayA->DeselectAll();
-    m_palTrayB->DeselectAll();
+    (*m_palTrayA)->DeselectAll();
+    (*m_palTrayB)->DeselectAll();
 
     for (size_t i = 0; i < m_pPBMgr->GetNumPBoards(); i++)
     {
