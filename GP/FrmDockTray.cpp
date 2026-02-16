@@ -56,7 +56,7 @@ CDockTrayPalette::~CDockTrayPalette()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CDockTrayPalette::SetChild(CTrayPalette* pChildWnd)
+void CDockTrayPalette::SetChild(CTrayPaletteContainer* pChildWnd)
 {
     if (m_pChildWnd == pChildWnd)
         return;

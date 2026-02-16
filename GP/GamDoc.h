@@ -708,8 +708,8 @@ private:
 // Some document related windows...
 public:
     // Tray Palettes...
-    CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayA;
-    CB::propagate_const<std::unique_ptr<CTrayPalette, WindowDestroy>>   m_palTrayB;
+    CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayA;
+    CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayB;
     // Marker Palette...
     CB::propagate_const<std::unique_ptr<CMarkerPaletteContainer, WindowDestroy>> m_palMark;
 

@@ -688,9 +688,9 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             ar << (BYTE)0;                      // 0 -> no win state serialize // V2.0
 
         ar << (WORD)m_bTrayAVisible;
-        m_palTrayA->Serialize(ar);               // Save tray position on screen
+        (*m_palTrayA)->Serialize(ar);               // Save tray position on screen
         ar << (WORD)m_bTrayBVisible;
-        m_palTrayB->Serialize(ar);               // Save tray position on screen
+        (*m_palTrayB)->Serialize(ar);               // Save tray position on screen
         ar << (WORD)m_bMarkPalVisible;
         (*m_palMark)->Serialize(ar);                // Save tray position on screen
 
@@ -849,12 +849,12 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
 
         ar >> wTmp; m_bTrayAVisible = (BOOL)wTmp;
         wxASSERT(!m_palTrayA);
-        m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
-        m_palTrayA->Serialize(ar);                   // Restore tray position on screen
+        m_palTrayA = new CTrayPaletteContainer(*this, ID_VIEW_TRAYA);
+        (*m_palTrayA)->Serialize(ar);                   // Restore tray position on screen
         ar >> wTmp; m_bTrayBVisible = (BOOL)wTmp;
         wxASSERT(!m_palTrayB);
-        m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
-        m_palTrayB->Serialize(ar);                   // Restore tray position on screen
+        m_palTrayB = new CTrayPaletteContainer(*this, ID_VIEW_TRAYB);
+        (*m_palTrayB)->Serialize(ar);                   // Restore tray position on screen
         ar >> wTmp; m_bMarkPalVisible = (BOOL)wTmp;
         wxASSERT(!m_palMark);
         m_palMark = new CMarkerPaletteContainer(*this);

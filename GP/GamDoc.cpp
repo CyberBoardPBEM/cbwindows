@@ -470,8 +470,8 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::DoInitialUpdate()
 {
-    m_palTrayA->UpdatePaletteContents(NULL);
-    m_palTrayB->UpdatePaletteContents(NULL);
+    (*m_palTrayA)->UpdatePaletteContents(NULL);
+    (*m_palTrayB)->UpdatePaletteContents(NULL);
 }
 
 void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -479,13 +479,13 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
     CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
     if (lHint == HINT_TRAYCHANGE)
     {
-        m_palTrayA->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        m_palTrayB->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*m_palTrayA)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*m_palTrayB)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
-        m_palTrayA->UpdatePaletteContents();
-        m_palTrayB->UpdatePaletteContents();
+        (*m_palTrayA)->UpdatePaletteContents();
+        (*m_palTrayB)->UpdatePaletteContents();
     }
     CDocument::UpdateAllViews(pSender, lHint, pHint);
 }
@@ -634,10 +634,10 @@ BOOL CGamDoc::OnNewScenario()
 
     // Finally set up the tray palettes
     wxASSERT(!m_palTrayA);
-    m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
+    m_palTrayA = new CTrayPaletteContainer(*this, ID_VIEW_TRAYA);
     m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
     wxASSERT(!m_palTrayB);
-    m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
+    m_palTrayB = new CTrayPaletteContainer(*this, ID_VIEW_TRAYB);
     m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
     wxASSERT(!m_palMark);
     m_palMark = new CMarkerPaletteContainer(*this);
