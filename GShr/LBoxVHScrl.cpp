@@ -1,6 +1,6 @@
 // LBoxVHScrl.cpp
 //
-// Copyright (c) 2024-2025 By William Su, All Rights Reserved.
+// Copyright (c) 2024-2026 By William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -61,13 +61,24 @@ namespace CB
     std::vector<size_t> VListBoxHScroll::GetSelections() const
     {
         std::vector<size_t> retval;
-        retval.reserve(GetSelectedCount());
-        unsigned long cookie;
-        for (int sel = GetFirstSelected(cookie) ;
-            sel != wxNOT_FOUND ;
-            sel = GetNextSelected(cookie))
+        if (HasMultipleSelection())
         {
-            retval.push_back(value_preserving_cast<size_t>(sel));
+            retval.reserve(GetSelectedCount());
+            unsigned long cookie;
+            for (int sel = GetFirstSelected(cookie) ;
+                sel != wxNOT_FOUND ;
+                sel = GetNextSelected(cookie))
+            {
+                retval.push_back(value_preserving_cast<size_t>(sel));
+            }
+        }
+        else
+        {
+            int sel = GetSelection();
+            if (sel != wxNOT_FOUND)
+            {
+                retval.push_back(value_preserving_cast<size_t>(sel));
+            }
         }
         return retval;
     }
