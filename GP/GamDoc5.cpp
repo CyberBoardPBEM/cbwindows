@@ -234,7 +234,7 @@ void CGamDoc::DoEditPieceText(PieceID pid)
     {
         GameElement elemDown = MakePieceElement(pid, value_preserving_cast<unsigned>(i));
         CB::string strDown = GetGameElementString(elemDown);
-        if (strDown != dlg.m_strText)
+        if (strDown.empty() || strDown != dlg.m_strText)
         {
             dlg.m_bSetAllSides = FALSE;
             break;
