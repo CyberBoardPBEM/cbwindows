@@ -714,9 +714,11 @@ public:
         if (bKeepPosition)
         {
             this->ScrollToRow(CB::min(nTopIdx, nItem - size_t(1)));
-            if (nFcsIdx != wxNOT_FOUND)
+            if (nFcsIdx != wxNOT_FOUND &&
+                this->GetItemCount() >= size_t(1))
                 this->SetCurrent(CB::min(nFcsIdx, value_preserving_cast<int>(nItem - size_t(1))));
-            if (nCurSel != wxNOT_FOUND)
+            if (nCurSel != wxNOT_FOUND &&
+                this->GetItemCount() >= size_t(1))
                 this->SetSelection(CB::min(nCurSel, value_preserving_cast<int>(nItem - size_t(1))));
         }
     }
