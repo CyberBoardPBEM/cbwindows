@@ -785,7 +785,8 @@ CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() cons
 
         // N.B.:  this is a dirty hack
         wxNativeContainerWindowMixin* ncThis = const_cast<wxNativeContainerWindowMixin*>(this);
-        wxWindow& rThis = const_cast<wxNativeContainerWindowMixin&>(*ncThis);
+        wxWindow& rThis = *ncThis;
+        CPP20_TRACE("{}({}:{}) === {}:{}\n", typeid(*mfcWnd).name(),  (const void*)&*mfcWnd, (void*)mfcWnd->m_hWnd, rThis, WXHANDLE(rThis.GetHWND()));
 
         // fill in wx children list
         for (CWnd* mfcChild = mfcWnd->GetWindow(GW_CHILD) ;
