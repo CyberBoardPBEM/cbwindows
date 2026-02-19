@@ -374,12 +374,10 @@ const CTileManager& CTrayListBoxWx::GetTileManager() const
     return m_pDoc->GetTileManager();
 }
 
-#if 0
-BOOL CTrayListBox::IsShowingTileImages() const
+BOOL CTrayListBoxWx::IsShowingTileImages() const
 {
     return m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide;
 }
-#endif
 
 void CTrayListBoxWx::SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString)
 {
@@ -469,7 +467,6 @@ BOOL CTrayListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
         {
             if (m_pDoc->HasGameElementString(MakePieceElement(pid, i)))
             {
-                wxASSERT(!"untested code");
                 return true;
             }
         }
@@ -552,26 +549,11 @@ void CTrayListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     else
     {
         // Hidden pieces. Draw the supplied text.
-#if 0
-        pDC.SetTextAlign(TA_TOP | TA_LEFT);
-        CBrush brBack(GetSysColor(nState & ODS_SELECTED ?
-            COLOR_HIGHLIGHT : COLOR_WINDOW));
-        pDC.FillRect(&rctItem, &brBack);       // Fill background color
-        pDC.SetBkMode(TRANSPARENT);
-        CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(g_res.h8ss));
-        pDC.SetTextColor(GetSysColor(nState & ODS_SELECTED ?
-            COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
-        pDC.TextOut(rctItem.left, rctItem.top, m_strHiddenString);
-        pDC.SelectObject(pPrvFont);
-#else
-        wxASSERT(!"needs testing");
-        // TODO:  is bkg automatic?
         pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
         pDC.SetFont(g_res.h8ssWx);
         pDC.SetTextForeground(wxSystemSettings::GetColour(IsSelected(nIndex) ?
             wxSYS_COLOUR_HIGHLIGHTTEXT : wxSYS_COLOUR_WINDOWTEXT));
         pDC.DrawLabel(m_strHiddenString, rctItem, wxALIGN_TOP | wxALIGN_LEFT);
-#endif
 #if 0
         if (nAction & ODA_FOCUS)
             pDC.DrawFocusRect(&rctItem);

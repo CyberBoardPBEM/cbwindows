@@ -59,9 +59,11 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
     ON_WM_SIZE()
     ON_WM_CREATE()
     ON_WM_WINDOWPOSCHANGING()
-    ON_CBN_SELCHANGE(IDC_W_TRAYNAMECOMBO, OnTrayNameCbnSelchange)
-    ON_LBN_DBLCLK(IDC_W_TRAYLIST, OnTrayListDoubleClick)
-    ON_REGISTERED_MESSAGE(WM_DRAGDROP, OnDragItem)
+#endif
+    EVT_CHOICE(XRCID("m_comboYGrp"), OnTrayNameCbnSelchange)
+    EVT_LISTBOX_DCLICK(XRCID("m_listTray"), OnTrayListDoubleClick)
+    EVT_DRAGDROP(OnDragItem)
+#if 0
     ON_MESSAGE(WM_OVERRIDE_SELECTED_ITEM_LIST, OnOverrideSelectedItemList)
     ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_CONTEXTMENU()
@@ -90,8 +92,10 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_ABOUT, OnUpdatePieceTrayAbout)
     ON_WM_HELPINFO()
     ON_WM_MOUSEMOVE()
-    ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
-    ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
+#endif
+    EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+    EVT_COMMAND(wxID_ANY, WM_PALETTE_HIDE_WX, OnPaletteHide)
+#if 0
     ON_WM_INITMENUPOPUP()
 #endif
 wxEND_EVENT_TABLE()
@@ -254,42 +258,40 @@ int CTrayPalette::FindTrayIndex(size_t nTrayNum) const
     return wxNOT_FOUND;
 }
 
-#if 0
 ///////////////////////////////////////////////////////////////////////
 // This method handles the custom message WM_WINSTATE_RESTORE. The
 // message is posted during view initial update if the state of
 // the windows should be restored.
 
-LRESULT CTrayPalette::OnMessageRestoreWinState(WPARAM, LPARAM)
+void CTrayPalette::OnMessageRestoreWinState(WinStateRestoreEvent& /*event*/)
 {
     UpdatePaletteContents();
 
     if (!m_bStateVarsArmed)
-        return (LRESULT)0;
+        return;
 
-    m_comboYGrp.SetCurSel(m_nComboIndex);
+    m_comboYGrp->SetSelection(value_preserving_cast<int>(m_nComboIndex));
 
     UpdateTrayList();
 
     for (size_t i = size_t(0) ; i < m_tblListBoxSel.size() ; ++i)
-        m_listTray.SetSel(m_tblListBoxSel[i]);
-    m_listTray.SetTopIndex(m_nListTopindex);
+        m_listTray->SetSelection(m_tblListBoxSel[i]);
+    m_listTray->ScrollToRow(m_nListTopindex);
 
     m_bStateVarsArmed = FALSE;
-    return (LRESULT)0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-LRESULT CTrayPalette::OnPaletteHide(WPARAM, LPARAM)
+void CTrayPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
     GetMainFrame()->SendMessage(WM_COMMAND,
         (WPARAM)(m_nID));
-    return (LRESULT)0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 void CTrayPalette::DoMenu(CPoint point, bool rightButton)
 {
     // remember clicked side in case of ID_ACT_TURNOVER_SELECT
@@ -683,117 +685,117 @@ void CTrayPalette::UpdateTrayList()
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-LRESULT CTrayPalette::OnDragItem(WPARAM wParam, LPARAM lParam)
+void CTrayPalette::OnDragItem(DragDropEvent& event)
 {
-    if (wParam != GetProcessId(GetCurrentProcess()))
+    if (event.GetProcessId() != wxGetProcessId())
     {
-        return -1;
+        return;
     }
     if (m_pDoc->IsPlaying())
-        return -1;                       // Drags not supported during play
+        return;                       // Drags not supported during play
 
-    DragInfo* pdi = (DragInfo*)lParam;
+    const DragInfoWx& pdi = event.GetDragInfo();
 
-    if (pdi->GetDragType() != DRAG_PIECE && pdi->GetDragType() != DRAG_SELECTLIST &&
-        pdi->GetDragType() != DRAG_PIECELIST)
-        return -1;                       // Only piece drops allowed
+    if (pdi.GetDragType() != DRAG_PIECE && pdi.GetDragType() != DRAG_SELECTLIST &&
+        pdi.GetDragType() != DRAG_PIECELIST)
+        return;                       // Only piece drops allowed
 
-    if (pdi->GetDragType() == DRAG_PIECE && pdi->GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
-        pdi->GetDragType() == DRAG_SELECTLIST && pdi->GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
-        pdi->GetDragType() == DRAG_PIECELIST && pdi->GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
-        return -1;                       // Only pieces from our document.
+    if (pdi.GetDragType() == DRAG_PIECE && pdi.GetSubInfo<DRAG_PIECE>().m_gamDoc != &*m_pDoc ||
+        pdi.GetDragType() == DRAG_SELECTLIST && pdi.GetSubInfo<DRAG_SELECTLIST>().m_gamDoc != &*m_pDoc ||
+        pdi.GetDragType() == DRAG_PIECELIST && pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &*m_pDoc)
+        return;                       // Only pieces from our document.
 
-    if (pdi->GetDragType() == DRAG_SELECTLIST)
+    if (pdi.GetDragType() == DRAG_SELECTLIST)
     {
-        if (!pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
-            return -1;                   // Only piece drops allowed
+        if (!pdi.GetSubInfo<DRAG_SELECTLIST>().m_selectList->HasPieces())
+            return;                   // Only piece drops allowed
     }
 
     // no size restriction
 
     size_t nGrpSel = GetSelectedTray();
     if (nGrpSel == Invalid_v<size_t>)
-        return -1;                       // No tray to drop on
+        return;                       // No tray to drop on
 
-    if (pdi->m_phase == PhaseDrag::Over)
-        return (LRESULT)(LPVOID)pdi->m_hcsrSuggest;
-    else if (pdi->m_phase == PhaseDrag::Drop)
+    if (pdi.m_phase == PhaseDrag::Over)
+    {
+        event.SetCursor(pdi.m_hcsrSuggest);
+        return;
+    }
+    else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CTrayManager& pYMgr = m_pDoc->GetTrayManager();
         CTraySet& pYGrp = pYMgr.GetTraySet(nGrpSel);
 
         // Force selection of item under the mouse
-        m_listTray.SetSelFromPoint(pdi->m_point);
-        int nSel = m_listTray.GetCount() <= 0 ? -1 : m_listTray.GetCurSel();
+        m_listTray->SetSelFromPoint(pdi.m_point);
+        int nSel = m_listTray->GetSelectedCount() == size_t(0) ? wxNOT_FOUND : value_preserving_cast<int>(m_listTray->GetSelections().front());
 
         if (!m_pDoc->IsScenario() && pYGrp.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
                 pYGrp.GetTrayContentVisibility() == trayVizNone)
-            nSel = -1;  // Always append pieces when dropping on single line view
+            nSel = wxNOT_FOUND;  // Always append pieces when dropping on single line view
 
-        if (nSel >= 0)
+        if (nSel != wxNOT_FOUND)
         {
             // Check if the mouse is above or below the half point.
             // If above, insert before. If below, insert after.
-            CRect rct;
-            m_listTray.GetItemRect(nSel, &rct);
-            if (pdi->m_point.y > (rct.top + rct.bottom) / 2)
+            wxRect rct = m_listTray->GetItemRect(value_preserving_cast<size_t>(nSel));
+            if (pdi.m_point.y > GetMidRect(rct).y)
                 nSel++;
         }
         size_t dropCount;
-        if (pdi->GetDragType() == DRAG_PIECE)
+        if (pdi.GetDragType() == DRAG_PIECE)
         {
-            ASSERT(!"untested code");
+            wxASSERT(!"untested code");
             dropCount = size_t(1);
             m_pDoc->AssignNewMoveGroup();
-            m_pDoc->PlacePieceInTray(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
+            m_pDoc->PlacePieceInTray(pdi.GetSubInfo<DRAG_PIECE>().m_pieceID, pYGrp, nSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             // Select the last piece that was inserted
-            nSel = value_preserving_cast<int>(pYGrp.GetPieceIDIndex(pdi->GetSubInfo<DRAG_PIECE>().m_pieceID));
+            nSel = value_preserving_cast<int>(pYGrp.GetPieceIDIndex(pdi.GetSubInfo<DRAG_PIECE>().m_pieceID));
         }
-        else if (pdi->GetDragType() == DRAG_PIECELIST)
+        else if (pdi.GetDragType() == DRAG_PIECELIST)
         {
             m_pDoc->AssignNewMoveGroup();
-            const std::vector<PieceID>& pieceIDList = CheckedDeref(pdi->GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
+            const std::vector<PieceID>& pieceIDList = CheckedDeref(pdi.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
             dropCount = pieceIDList.size();
             size_t temp = m_pDoc->PlacePieceListInTray(pieceIDList,
-                pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
-            nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
+                pYGrp, nSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
+            nSel = temp == Invalid_v<size_t> ? wxNOT_FOUND : value_preserving_cast<int>(temp);
         }
         else        // DRAG_SELECTLIST
         {
-            ASSERT(pdi->GetDragType() == DRAG_SELECTLIST);
+            wxASSERT(pdi.GetDragType() == DRAG_SELECTLIST);
             std::vector<RefPtr<CDrawObj>> m_listPtr;
-            CSelList* pSLst = pdi->GetSubInfo<DRAG_SELECTLIST>().m_selectList;
+            CSelList* pSLst = pdi.GetSubInfo<DRAG_SELECTLIST>().m_selectList;
             pSLst->LoadTableWithObjectPtrs(m_listPtr, CSelList::otAll, FALSE);
             pSLst->PurgeList(FALSE);
             dropCount = m_listPtr.size();
             m_pDoc->AssignNewMoveGroup();
             size_t temp = m_pDoc->PlaceObjectTableInTray(m_listPtr,
-                pYGrp, nSel < 0 ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
-            nSel = temp == Invalid_v<size_t> ? -1 : value_preserving_cast<int>(temp);
+                pYGrp, nSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
+            nSel = temp == Invalid_v<size_t> ? wxNOT_FOUND : value_preserving_cast<int>(temp);
             m_pDoc->UpdateAllViews(NULL, HINT_UPDATESELECTLIST);
         }
-        if (nSel >= 0)
+        if (nSel != wxNOT_FOUND)
         {
             for (size_t i = size_t(0) ; i < dropCount ; ++i)
             {
-                m_listTray.SetSel(nSel - value_preserving_cast<int>(i));
+                m_listTray->SetSelection(nSel - value_preserving_cast<int>(i));
             }
         }
 
-        m_listTray.SetCurSel(nSel);
+        m_listTray->SetSelection(nSel);
 
-        // If the selection is out of view, force it into view.
-        CRect rctLBoxClient;
-        m_listTray.GetClientRect(&rctLBoxClient);
-        CRect rct;
-        m_listTray.GetItemRect(nSel, &rct);
-        if (!rct.IntersectRect(rct, rctLBoxClient))
-            m_listTray.SetTopIndex(nSel);
+        if (nSel != wxNOT_FOUND)
+        {
+            // If the selection is out of view, force it into view.
+            wxRect rctLBoxClient = m_listTray->GetClientRect();
+            wxRect rct = m_listTray->GetItemRect(value_preserving_cast<size_t>(nSel));
+            if (!rct.Intersects(rctLBoxClient))
+                m_listTray->ScrollToRow(value_preserving_cast<size_t>(nSel));
+        }
     }
-    return 1;
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Load the menu icon image and fill upper-right transparent area with
@@ -891,21 +893,22 @@ void CTrayPalette::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
     if (m_comboYGrp.m_hWnd != NULL)
         m_comboYGrp.ShowDropDown(FALSE);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayPalette::OnTrayNameCbnSelchange()
+void CTrayPalette::OnTrayNameCbnSelchange(wxCommandEvent& /*event*/)
 {
     UpdateTrayList();
 }
 
-void CTrayPalette::OnTrayListDoubleClick()
+void CTrayPalette::OnTrayListDoubleClick(wxCommandEvent& /*event*/)
 {
-    if (!m_listTray.IsShowingTileImages())
+    if (!m_listTray->IsShowingTileImages())
         return;
 
-    int nIndex = m_listTray.GetCaretIndex();
-    if (nIndex < 0 || nIndex > 65535)
+    int nIndex = m_listTray->GetCurrent();
+    if (nIndex == wxNOT_FOUND)
         return;
 
     size_t nSel = GetSelectedTray();
@@ -918,10 +921,11 @@ void CTrayPalette::OnTrayListDoubleClick()
             return;
     }
 
-    PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(nIndex));
+    PieceID pid = m_listTray->MapIndexToItem(value_preserving_cast<size_t>(nIndex));
     m_pDoc->DoEditPieceText(pid);
 }
 
+#if 0
 void CTrayPalette::OnPieceTrayShuffle()
 {
     // Generate a shuffled index vector

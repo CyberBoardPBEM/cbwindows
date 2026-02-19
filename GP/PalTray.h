@@ -25,6 +25,7 @@
 #ifndef _PALTRAY_H
 #define _PALTRAY_H
 
+#include    "Gp.h"
 #ifndef     _LBOXTRAY_H
 #include    "LBoxTray.h"
 #endif
@@ -130,9 +131,11 @@ protected:
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnWindowPosChanging(WINDOWPOS FAR* lpwndpos);
-    afx_msg void OnTrayNameCbnSelchange();
-    afx_msg void OnTrayListDoubleClick();
-    afx_msg LRESULT OnDragItem(WPARAM wParam, LPARAM lParam);
+#endif
+    void OnTrayNameCbnSelchange(wxCommandEvent& event);
+    void OnTrayListDoubleClick(wxCommandEvent& event);
+    void OnDragItem(DragDropEvent& event);
+#if 0
     afx_msg LRESULT OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
@@ -151,8 +154,10 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg BOOL OnToolTipShow(UINT id, NMHDR *pNMH, LRESULT *pResult);
-    afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
-    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
+#endif
+    void OnMessageRestoreWinState(WinStateRestoreEvent& event);
+    void OnPaletteHide(wxCommandEvent& event);
+#if 0
     afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 #endif
 
