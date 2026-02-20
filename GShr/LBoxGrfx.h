@@ -788,15 +788,9 @@ protected:
             m_multiSelList = GetCurMappedItemList();
 
             // this is only needed for PalTray, so don't implement now
-#if defined(GPLAY)
-            wxASSERT(!"TODO:");
-#if 0
-            CWnd* pWnd = this->GetParent();
-            ASSERT(pWnd != NULL);
+            wxWindow& pWnd = CheckedDeref(this->GetParent());
             OverrideSelectedItemListEvent oil(m_multiSelList);
-            pWnd->SendMessage(WM_OVERRIDE_SELECTED_ITEM_LIST, reinterpret_cast<WPARAM>(&oil));
-#endif
-#endif
+            pWnd.ProcessWindowEvent(oil);
         }
         else
         {

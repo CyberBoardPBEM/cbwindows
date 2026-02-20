@@ -135,9 +135,9 @@ protected:
     void OnTrayNameCbnSelchange(wxCommandEvent& event);
     void OnTrayListDoubleClick(wxCommandEvent& event);
     void OnDragItem(DragDropEvent& event);
+    void OnOverrideSelectedItemList(OverrideSelectedItemListEvent& event);
+    void OnGetDragSize(GetDragSizeEvent& event);
 #if 0
-    afx_msg LRESULT OnOverrideSelectedItemList(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnGetDragSize(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnPieceTrayShuffle();

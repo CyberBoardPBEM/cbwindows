@@ -63,9 +63,9 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
     EVT_CHOICE(XRCID("m_comboYGrp"), OnTrayNameCbnSelchange)
     EVT_LISTBOX_DCLICK(XRCID("m_listTray"), OnTrayListDoubleClick)
     EVT_DRAGDROP(OnDragItem)
+    EVT_OVERRIDE_SELECTED_ITEM_LIST(OnOverrideSelectedItemList)
+    EVT_GET_DRAG_SIZE(OnGetDragSize)
 #if 0
-    ON_MESSAGE(WM_OVERRIDE_SELECTED_ITEM_LIST, OnOverrideSelectedItemList)
-    ON_MESSAGE(WM_GET_DRAG_SIZE, OnGetDragSize)
     ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_PTRAY_SHUFFLE, OnPieceTrayShuffle)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE, OnUpdatePieceTrayShuffle)
@@ -350,19 +350,19 @@ void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
     m_listTray.GetWindowRect(rct);
     DoMenu(rct.TopLeft(), false);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // This is called when this tray is dragging and dropping a list
 // of items. It gives the tray the chance to mess with the list's
 // contents prior to commiting it.
 
-LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM /*lParam*/)
+void CTrayPalette::OnOverrideSelectedItemList(OverrideSelectedItemListEvent& event)
 {
-    wxASSERT(dynamic_cast<OverrideSelectedItemListEvent*>(reinterpret_cast<wxObject*>(wParam)));
-    OverrideSelectedItemListEvent& oil = *reinterpret_cast<OverrideSelectedItemListEvent*>(wParam);
+    OverrideSelectedItemListEvent& oil = event;
     size_t nSel = GetSelectedTray();
     if (nSel == Invalid_v<size_t>)
-        return (LRESULT)0;
+        return;
 
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
     CTraySet& pYSet = pYMgr.GetTraySet(nSel);
@@ -412,59 +412,58 @@ LRESULT CTrayPalette::OnOverrideSelectedItemList(WPARAM wParam, LPARAM /*lParam*
         m_pDoc->SetRandomNumberSeed(nRandSeed);
     }
 
-    return (LRESULT)1;
+    return;
 }
 
-LRESULT CTrayPalette::OnGetDragSize(WPARAM wParam, LPARAM /*lParam*/)
+void CTrayPalette::OnGetDragSize(GetDragSizeEvent& event)
 {
     size_t nSel = GetSelectedTray();
     if (nSel == Invalid_v<size_t>)
     {
-        ASSERT(!"bad tray");
-        return 0;
+        wxASSERT(!"bad tray");
+        event.Skip();
+        return;
     }
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
     CTraySet& pYSet = pYMgr.GetTraySet(nSel);
 
-    std::vector<int> items;
+    std::vector<size_t> items;
     if (pYSet.IsRandomPiecePull() ||
         pYSet.IsRandomSidePull())
     {
-        items.reserve(value_preserving_cast<size_t>(m_listTray.GetCount()));
-        for (int i = 0 ; i < m_listTray.GetCount() ; ++i)
+        items.reserve(m_listTray->GetItemCount());
+        for (size_t i = size_t(0) ; i < m_listTray->GetItemCount() ; ++i)
         {
             items.push_back(i);
         }
     }
     else
     {
-        items.resize(value_preserving_cast<size_t>(m_listTray.GetSelCount()));
-        m_listTray.GetSelItems(value_preserving_cast<int>(items.size()), items.data());
+        items = m_listTray->GetSelections();
     }
 
     // check all sides of all items
     CPieceTable& pieceTable = m_pDoc->GetPieceTable();
     CTileManager& tileMgr = m_pDoc->GetTileManager();
     PlayerMask player = m_pDoc->GetCurrentPlayerMask();
-    CSize retval(0, 0);
-    for (int item : items)
+    wxSize retval(0, 0);
+    for (size_t item : items)
     {
-        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>(item));
+        PieceID pid = m_listTray->MapIndexToItem(item);
         std::vector<TileID> tids = pieceTable.GetInactiveTileIDs(pid, TRUE);
         tids.push_back(pieceTable.GetActiveTileID(pid, TRUE));
         for (TileID tid : tids)
         {
-            ASSERT(tid != nullTid);
-            CSize size = tileMgr.GetTile(tid).GetSize();
-            retval.cx = std::max(retval.cx, size.cx);
-            retval.cy = std::max(retval.cy, size.cy);
+            wxASSERT(tid != nullTid);
+            wxSize size = CB::Convert(tileMgr.GetTile(tid).GetSize());
+            retval.x = CB::max(retval.x, size.x);
+            retval.y = CB::max(retval.y, size.y);
         }
     }
 
-    CheckedDeref(reinterpret_cast<CSize*>(wParam)) = retval;
-    return 1;
+    event.SetSize(retval);
+    return;
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

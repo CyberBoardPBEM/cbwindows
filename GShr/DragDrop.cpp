@@ -100,10 +100,10 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_PIECE:
             subInfos.m_piece.~SubInfo<DRAG_PIECE>();
             break;
+#endif
         case DRAG_PIECELIST:
             subInfos.m_pieceList.~SubInfo<DRAG_PIECELIST>();
             break;
-#endif
         case DRAG_MARKER:
             subInfos.m_marker.~SubInfo<DRAG_MARKER>();
             break;
@@ -136,10 +136,10 @@ void DragInfoWx::SetDragType(DragType dt)
         case DRAG_PIECE:
             new (&subInfos.m_piece) SubInfo<DRAG_PIECE>;
             break;
+#endif
         case DRAG_PIECELIST:
             new (&subInfos.m_pieceList) SubInfo<DRAG_PIECELIST>;
             break;
-#endif
         case DRAG_MARKER:
             new (&subInfos.m_marker) SubInfo<DRAG_MARKER>;
             break;
