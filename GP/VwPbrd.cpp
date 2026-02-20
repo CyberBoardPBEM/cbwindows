@@ -690,7 +690,7 @@ void CPlayBoardView::OnDragItem(DragDropEvent& event)
 
     if (pdi.GetDragType() == DRAG_PIECELIST)
     {
-        DoDragPieceList(pdi);
+        DoDragPieceList(event);
         return;
     }
 
@@ -743,48 +743,52 @@ void CPlayBoardView::DoDragPiece(const DragInfoWx& pdi)
 #endif
 }
 
-void CPlayBoardView::DoDragPieceList(const DragInfoWx& pdi)
+void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
 {
+    const DragInfoWx& pdi = event.GetDragInfo();
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_gamDoc != &GetDocument())
         return;               // Only pieces from our document.
 
-#if 0
     // if piece can't fit on board, reject drop
-    CSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
-    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_size.cx > limit.cx ||
-        pdi.GetSubInfo<DRAG_PIECELIST>().m_size.cy > limit.cy)
+    wxSize limit = CB::Convert(m_pPBoard->GetBoard()->GetSize(fullScale));
+    if (pdi.GetSubInfo<DRAG_PIECELIST>().m_size.x > limit.x ||
+        pdi.GetSubInfo<DRAG_PIECELIST>().m_size.y > limit.y)
     {
-        return pdi.m_phase == PhaseDrag::Over ?
-                    reinterpret_cast<LRESULT>(g_res.hcrNoDropTooBig)
-                :
-                    -1;
+        if (pdi.m_phase == PhaseDrag::Over)
+        {
+            event.SetCursor(g_res.hcrNoDropTooBigWx);
+        }
+        return;
     }
 
     if (pdi.m_phase == PhaseDrag::Exit)
-        DragKillAutoScroll();
+        DisableAutoscrollWithoutCapture();
+    else if (pdi.m_phase == PhaseDrag::Enter)
+    {
+        EnableAutoscrollWithoutCapture();
+    }
     else if (pdi.m_phase == PhaseDrag::Over)
     {
-        DragCheckAutoScroll();
-        return (LRESULT)(LPVOID)pdi.m_hcsrSuggest;
+        event.SetCursor(pdi.m_hcsrSuggest);
     }
     else if (pdi.m_phase == PhaseDrag::Drop)
     {
         CGamDoc& pDoc = GetDocument();
-        CPoint pnt = pdi.m_point;
+        wxPoint pnt = pdi.m_point;
         const std::vector<PieceID>& pTbl = CheckedDeref(pdi.GetSubInfo<DRAG_PIECELIST>().m_pieceIDList);
         pnt = ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
-        CSize sz = GetDocument().GetPieceTable().GetStackedSize(pTbl,
-            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger);
-        ASSERT(sz.cx != 0 && sz.cy != 0);
-        CRect rct(CPoint(pnt.x - sz.cx/2, pnt.y - sz.cy/2), sz);
+        wxSize sz = CB::Convert(GetDocument().GetPieceTable().GetStackedSize(pTbl,
+            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger));
+        wxASSERT(sz.x != 0 && sz.y != 0);
+        wxRect rct(wxPoint(pnt.x - sz.x/2, pnt.y - sz.y/2), sz);
         rct = AdjustRect(rct);
         pnt = GetMidRect(rct);
 
         m_selList.PurgeList(TRUE);          // Purge former selections
         GetDocument().AssignNewMoveGroup();
-        GetDocument().PlacePieceListOnBoard(pnt, pTbl,
+        GetDocument().PlacePieceListOnBoard(CB::Convert(pnt), pTbl,
             m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger, m_pPBoard.get());
 
         if (!pDoc.HasPlayers() || !m_pPBoard->IsOwned() ||
@@ -799,12 +803,9 @@ void CPlayBoardView::DoDragPieceList(const DragInfoWx& pdi)
             SelectAllObjectsInList(temp);   // Reselect pieces dropped on board
         }
 
-        DragKillAutoScroll();
+        DisableAutoscrollWithoutCapture();
     }
-    return 1;
-#else
-    wxASSERT(!"TODO:");
-#endif
+    return;
 }
 
 #define MARKER_DROP_GAP_X     8

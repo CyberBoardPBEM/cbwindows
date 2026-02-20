@@ -1,6 +1,6 @@
 // LBoxTray.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -112,7 +112,12 @@ class CTrayListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
 public:
     CTrayListBoxWx();
     CTrayListBoxWx(CGamDoc& pDoc);
-    void Init(const CGamDoc& pDoc) { wxASSERT(!m_pDoc); m_pDoc = &pDoc; }
+    void Init(CGamDoc& pDoc)
+    {
+        wxASSERT(!m_pDoc);
+        BASE::SetDocument(pDoc);
+        m_pDoc = &pDoc;
+    }
 
 // Attributes
 public:

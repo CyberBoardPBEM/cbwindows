@@ -364,7 +364,6 @@ CTrayListBoxWx::CTrayListBoxWx(CGamDoc& pDoc) :
     CTrayListBoxWx()
 {
     Init(pDoc);
-    CGrafixListBoxDataWx::SetDocument(pDoc);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -596,7 +595,6 @@ std::vector<TileID> CTrayListBoxWx::GetPieceTileIDs(size_t nIndex) const
 
 BOOL CTrayListBoxWx::OnDragSetup(DragInfoWx& pDI) const
 {
-    wxASSERT(!"needs testing");
     if (m_pDoc->IsPlaying())
     {
         pDI.SetDragType(DRAG_INVALID);
@@ -613,7 +611,7 @@ BOOL CTrayListBoxWx::OnDragSetup(DragInfoWx& pDI) const
     }
     else
     {
-        ASSERT(!"untested code");
+        wxASSERT(!"untested code");
         pDI.SetDragType(DRAG_PIECE);
         pDI.GetSubInfo<DRAG_PIECE>().m_pieceID = GetCurMapItem();
         pDI.GetSubInfo<DRAG_PIECE>().m_size = GetDragSize();
