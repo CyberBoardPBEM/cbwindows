@@ -3748,17 +3748,17 @@
         <object class="wxMenuItem" name="ID_ACT_TURNOVER">
           <label>_Next</label>
           <accel></accel>
-          <help></help>
+          <help>Turn the selected piece over to the next side</help>
         </object>
         <object class="wxMenuItem" name="ID_ACT_TURNOVER_PREV">
           <label>_Prev</label>
           <accel></accel>
-          <help></help>
+          <help>Turn the selected piece over to the prev side</help>
         </object>
         <object class="wxMenuItem" name="ID_ACT_TURNOVER_RANDOM">
           <label>_Random</label>
           <accel></accel>
-          <help></help>
+          <help>Turn the selected piece over to a random side</help>
         </object>
       </object>
       <object class="wxMenu" name="m_menu2">
@@ -3766,46 +3766,46 @@
         <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL">
           <label>_Next</label>
           <accel></accel>
-          <help></help>
+          <help>Turn over all pieces in the Tray to the next side.</help>
         </object>
         <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL_PREV">
           <label>_Prev</label>
           <accel></accel>
-          <help></help>
+          <help>Turn over all pieces in the Tray to the previous side.</help>
         </object>
         <object class="wxMenuItem" name="ID_ACT_TURNOVER_ALL_RANDOM">
           <label>_Random</label>
           <accel></accel>
-          <help></help>
+          <help>Turn over all pieces in the Tray to a random side.</help>
         </object>
       </object>
       <object class="wxMenuItem" name="ID_ACT_TURNOVER_SELECT">
         <label>Turn Over to Clicked Side</label>
         <accel></accel>
-        <help></help>
+        <help>Turn the clicked piece over to the clicked side</help>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_PTRAY_SHUFFLE_SELECTED">
         <label>Shuffle Selected Items</label>
         <accel></accel>
-        <help></help>
+        <help>Shuffle (randomize) only the tray&apos;s selected items.</help>
       </object>
       <object class="wxMenuItem" name="ID_PTRAY_SHUFFLE">
         <label>Shuffle All Pieces</label>
         <accel></accel>
-        <help></help>
+        <help>Shuffle (randomize) the tray&apos;s contents</help>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
         <label>Edit Object Text...</label>
         <accel></accel>
-        <help></help>
+        <help>Edit text associated with a piece or marker</help>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_PTRAY_ABOUT">
         <label>About the Selected Tray...</label>
         <accel></accel>
-        <help></help>
+        <help>Show information about the currently selected tray.</help>
       </object>
     </object>
     <object class="wxMenu" name="MENU_MV_RICHEDIT">
