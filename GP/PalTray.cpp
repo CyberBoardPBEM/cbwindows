@@ -65,11 +65,11 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
     EVT_DRAGDROP(OnDragItem)
     EVT_OVERRIDE_SELECTED_ITEM_LIST(OnOverrideSelectedItemList)
     EVT_GET_DRAG_SIZE(OnGetDragSize)
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU(XRCID("ID_PTRAY_SHUFFLE"), OnPieceTrayShuffle)
+    EVT_UPDATE_UI(XRCID("ID_PTRAY_SHUFFLE"), OnUpdatePieceTrayShuffle)
+    EVT_BUTTON(XRCID("m_bpMenuBtn"), OnMenuButton)
 #if 0
-    ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_PTRAY_SHUFFLE, OnPieceTrayShuffle)
-    ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE, OnUpdatePieceTrayShuffle)
-    ON_WM_LBUTTONUP()
     ON_COMMAND(ID_PTRAY_SHUFFLE_SELECTED, OnPieceTrayShuffleSelected)
     ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE_SELECTED, OnUpdatePieceTrayShuffleSelected)
     ON_COMMAND(ID_EDIT_ELEMENT_TEXT, OnEditElementText)
@@ -291,24 +291,21 @@ void CTrayPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if 0
-void CTrayPalette::DoMenu(CPoint point, bool rightButton)
+void CTrayPalette::DoMenu(wxPoint point)
 {
     // remember clicked side in case of ID_ACT_TURNOVER_SELECT
-    CPoint clientPoint(point);
-    ScreenToClient(&clientPoint);
-    CWnd* child = ChildWindowFromPoint(clientPoint);
-    ASSERT(child == this || child == &m_listTray);
-    if (child == &m_listTray)
+    wxWindow* child = wxFindWindowAtPoint(point);
+    wxASSERT(child == &*m_bpMenuBtn || child == &*m_listTray);
+    if (child == &*m_listTray)
     {
-        CRect rect;
-        MapWindowPoints(&m_listTray, &clientPoint, 1);
+        wxRect rect;
+        wxPoint clientPoint = m_listTray->ScreenToClient(point);
         /* KLUDGE:  OnGetHitItemCodeAtPoint is public in base
             CGrafixListBox, but protected in derived
             CTrayListBox.  Why? */
-        menuGameElement = static_cast<CGrafixListBox&>(m_listTray).OnGetHitItemCodeAtPoint(clientPoint, rect);
+        menuGameElement = static_cast<CGrafixListBoxWx&>(*m_listTray).OnGetHitItemCodeAtPoint(clientPoint, rect);
         // ASSERT(menuGameElement != Invalid_v<GameElement> --> menuGameElement.IsAPiece()
-        ASSERT(menuGameElement == Invalid_v<GameElement> ||
+        wxASSERT(menuGameElement == Invalid_v<GameElement> ||
                 menuGameElement.IsAPiece());
     }
     else
@@ -316,41 +313,36 @@ void CTrayPalette::DoMenu(CPoint point, bool rightButton)
         menuGameElement = Invalid_v<GameElement>;
     }
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(MENU_PV_PIECE_TRAY);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu("5=PV_PIECE_TRAY");
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_LEFTBUTTON |
-                                    TPM_LEFTALIGN |
-                                    (rightButton ? TPM_RIGHTBUTTON : 0),
-                point.x, point.y, this); // Route commands through tray window
+            PopupMenu(&*popup, ScreenToClient(point));
         }
-        END_TRY
-    }
-    else
-    {
-        ASSERT(!"LoadMenu error");
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
 
-void CTrayPalette::OnContextMenu(CWnd* pWnd, CPoint point)
+void CTrayPalette::OnContextMenu(wxContextMenuEvent& event)
 {
-    DoMenu(point, true);
+    DoMenu(event.GetPosition());
 }
 
-void CTrayPalette::OnLButtonUp(UINT nFlags, CPoint point)
+void CTrayPalette::OnMenuButton(wxCommandEvent& /*event*/)
 {
-    CRect rct;
     // Use the list box as a guide of where to place the menu
-    m_listTray.GetWindowRect(rct);
-    DoMenu(rct.TopLeft(), false);
+    wxRect rct = m_listTray->GetScreenRect();
+    DoMenu(rct.GetTopLeft());
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // This is called when this tray is dragging and dropping a list
@@ -924,12 +916,11 @@ void CTrayPalette::OnTrayListDoubleClick(wxCommandEvent& /*event*/)
     m_pDoc->DoEditPieceText(pid);
 }
 
-#if 0
-void CTrayPalette::OnPieceTrayShuffle()
+void CTrayPalette::OnPieceTrayShuffle(wxCommandEvent& /*event*/)
 {
     // Generate a shuffled index vector
     uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
-    size_t nNumIndices = value_preserving_cast<size_t>(m_listTray.GetCount());
+    size_t nNumIndices = m_listTray->GetItemCount();
     std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumIndices,
         nNumIndices, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
@@ -938,7 +929,7 @@ void CTrayPalette::OnPieceTrayShuffle()
     std::vector<PieceID> tblPids;
     tblPids.reserve(value_preserving_cast<size_t>(nNumIndices));
     for (size_t i = size_t(0) ; i < nNumIndices ; ++i)
-        tblPids.push_back(m_listTray.MapIndexToItem(pnIndices[i]));
+        tblPids.push_back(m_listTray->MapIndexToItem(pnIndices[i]));
 
     m_pDoc->AssignNewMoveGroup();
 
@@ -954,7 +945,7 @@ void CTrayPalette::OnPieceTrayShuffle()
     m_pDoc->PlacePieceListInTray(tblPids, pYMgr.GetTraySet(nSel), 0);
 }
 
-void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
+void CTrayPalette::OnUpdatePieceTrayShuffle(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
     size_t nSel = GetSelectedTray();
@@ -965,10 +956,11 @@ void CTrayPalette::OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI)
         bNoOwnerRestrictions = !(pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc) &&
             !pYSet.IsNonOwnerAccessAllowed());
     }
-    pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
-        m_listTray.GetCount() > 1);
+    pCmdUI.Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
+        m_listTray->GetItemCount() > 1);
 }
 
+#if 0
 void CTrayPalette::OnPieceTrayShuffleSelected()
 {
     size_t nNumSelected = value_preserving_cast<size_t>(m_listTray.GetSelCount());

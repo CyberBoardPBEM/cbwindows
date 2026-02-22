@@ -17863,7 +17863,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn the selected piece over to the next side</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Next</property>
@@ -17876,7 +17876,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn the selected piece over to the prev side</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Prev</property>
@@ -17889,7 +17889,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn the selected piece over to a random side</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Random</property>
@@ -17908,7 +17908,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn over all pieces in the Tray to the next side.</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Next</property>
@@ -17921,7 +17921,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn over all pieces in the Tray to the previous side.</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Prev</property>
@@ -17934,7 +17934,7 @@
             <property name="bitmap"></property>
             <property name="checked">0</property>
             <property name="enabled">1</property>
-            <property name="help"></property>
+            <property name="help">Turn over all pieces in the Tray to a random side.</property>
             <property name="id">wxID_ANY</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">&amp;Random</property>
@@ -17948,7 +17948,7 @@
           <property name="bitmap"></property>
           <property name="checked">0</property>
           <property name="enabled">1</property>
-          <property name="help"></property>
+          <property name="help">Turn the clicked piece over to the clicked side</property>
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">Turn Over to Clicked Side</property>
@@ -17965,7 +17965,7 @@
           <property name="bitmap"></property>
           <property name="checked">0</property>
           <property name="enabled">1</property>
-          <property name="help"></property>
+          <property name="help">Shuffle (randomize) only the tray&apos;s selected items.</property>
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">Shuffle Selected Items</property>
@@ -17978,7 +17978,7 @@
           <property name="bitmap"></property>
           <property name="checked">0</property>
           <property name="enabled">1</property>
-          <property name="help"></property>
+          <property name="help">Shuffle (randomize) the tray&apos;s contents</property>
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">Shuffle All Pieces</property>
@@ -17995,7 +17995,7 @@
           <property name="bitmap"></property>
           <property name="checked">0</property>
           <property name="enabled">1</property>
-          <property name="help"></property>
+          <property name="help">Edit text associated with a piece or marker</property>
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">Edit Object Text...</property>
@@ -18012,7 +18012,7 @@
           <property name="bitmap"></property>
           <property name="checked">0</property>
           <property name="enabled">1</property>
-          <property name="help"></property>
+          <property name="help">Show information about the currently selected tray.</property>
           <property name="id">wxID_ANY</property>
           <property name="kind">wxITEM_NORMAL</property>
           <property name="label">About the Selected Tray...</property>

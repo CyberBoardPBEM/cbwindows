@@ -121,7 +121,7 @@ protected:
     void DoEditSelectedPieceText();
     BOOL EnsureTooltipExistance();
 
-    void DoMenu(wxPoint point, bool rightButton);
+    void DoMenu(wxPoint point);
 private:
     GameElement menuGameElement = Invalid_v<GameElement>;
 
@@ -137,11 +137,11 @@ protected:
     void OnDragItem(DragDropEvent& event);
     void OnOverrideSelectedItemList(OverrideSelectedItemListEvent& event);
     void OnGetDragSize(GetDragSizeEvent& event);
+    void OnContextMenu(wxContextMenuEvent& event);
+    void OnMenuButton(wxCommandEvent& event);
+    void OnPieceTrayShuffle(wxCommandEvent& event);
+    void OnUpdatePieceTrayShuffle(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-    afx_msg void OnPieceTrayShuffle();
-    afx_msg void OnUpdatePieceTrayShuffle(CCmdUI* pCmdUI);
     afx_msg void OnPieceTrayShuffleSelected();
     afx_msg void OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI);
     afx_msg void OnEditElementText();
