@@ -282,9 +282,7 @@ protected:
     void OnEditClear();
     void OnEditClear(wxCommandEvent& /*event*/) { OnEditClear(); }
     void OnUpdateEditClear(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-#endif
+    void OnContextMenu(wxContextMenuEvent& event);
     void OnViewDrawIndOnTop(wxCommandEvent& event);
     void OnUpdateViewDrawIndOnTop(wxUpdateUIEvent& pCmdUI);
     void OnEditElementText(wxCommandEvent& event);

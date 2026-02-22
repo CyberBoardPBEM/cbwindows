@@ -119,9 +119,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
     EVT_UPDATE_UI(XRCID("ID_ACT_ROTATEREL"), OnUpdateActRotateRelative)
     EVT_MENU(wxID_CLEAR, OnEditClear)
     EVT_UPDATE_UI(wxID_CLEAR, OnUpdateEditClear)
-#if 0
-    ON_WM_CONTEXTMENU()
-#endif
+    EVT_CONTEXT_MENU(OnContextMenu)
     EVT_MENU(XRCID("ID_VIEW_DRAW_IND_ON_TOP"), OnViewDrawIndOnTop)
     EVT_UPDATE_UI(XRCID("ID_VIEW_DRAW_IND_ON_TOP"), OnUpdateViewDrawIndOnTop)
     EVT_MENU(XRCID("ID_EDIT_ELEMENT_TEXT"), OnEditElementText)
@@ -1142,41 +1140,40 @@ CFrameWnd* CPlayBoardView::GetParentFrame()
     return parent->GetParentFrame();
 }
 
-#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Right mouse button handler
 
-void CPlayBoardView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CPlayBoardView::OnContextMenu(wxContextMenuEvent& event)
 {
     // Make sure window is active.
     GetParentFrame()->ActivateFrame();
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    if (bar)
     {
-        UINT nMenuNum;
+        CB::string nMenuNum;
         if (GetDocument().IsPlaying())
-            nMenuNum = MENU_PV_PLAYMODE;
+            nMenuNum = "1=PV_PLAYMODE";
         else if (GetDocument().IsScenario())
-            nMenuNum = MENU_PV_SCNMODE;
+            nMenuNum = "2=PV_SCNMODE";
         else
-            nMenuNum = MENU_PV_MOVEMODE;
+            nMenuNum = "0=PV_MOVEMODE";
 
-        CMenu& popup = *bar.GetSubMenu(nMenuNum);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu(nMenuNum);
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+            PopupMenu(&*popup, ScreenToClient(event.GetPosition()));
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Handlers associated with tools.

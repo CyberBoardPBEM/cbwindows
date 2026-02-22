@@ -2960,12 +2960,670 @@
   <object class="wxMenuBar" name="IDR_MENU_PLAYER_POPUPS">
     <object class="wxMenu" name="MENU_PV_MOVEMODE">
       <label>0=PV__MOVEMODE</label>
+      <object class="wxMenuItem" name="wxID_CLEAR">
+        <label>Delete Marker</label>
+        <accel></accel>
+        <help>Erase the selection</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELALLMARKERS">
+        <label>Select All Markers</label>
+        <accel></accel>
+        <help>Select all markers in the current board view</help>
+      </object>
+      <object class="wxMenu" name="m_menu3">
+        <label>Select All Markers From</label>
+        <object class="wxMenuItem" name="ID_MRKGROUP_FIRST">
+          <label>No Markers</label>
+          <accel></accel>
+          <help></help>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_STACK">
+        <label>Auto Stack</label>
+        <accel></accel>
+        <help>Automatically stack selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_AUTOSTACK_DECK">
+        <label>Auto Stack Deck</label>
+        <accel></accel>
+        <help>Autostack selected objects using a offset of zero.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SHUFFLE_SELECTED">
+        <label>Shuffle Objects</label>
+        <accel></accel>
+        <help>Randomize the stacking order of the selected objects</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TOFRONT">
+        <label>Move To Front</label>
+        <accel></accel>
+        <help>Move selected piece(s) in front of other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TOBACK">
+        <label>Move To Back</label>
+        <accel></accel>
+        <help>Move selected pieces(s) behind other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+        <label>Turn Piece Over</label>
+        <accel></accel>
+        <help>Turn the selected piece over to the next side</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEGROUP">
+        <label>_Rotate Group - Incremental...</label>
+        <accel></accel>
+        <help>Rotate (or wheel) group of pieces or markers by incremental amounts</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEREL">
+        <label>Rotate Object - Incremental...</label>
+        <accel></accel>
+        <help>Rotate piece or marker using incremental amounts</help>
+      </object>
+      <object class="wxMenu" name="m_menu4">
+        <label>Rotate Object - Absolute</label>
+        <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+          <label>Reset Rotation</label>
+          <accel></accel>
+          <help>Set all selection piece rotations to zero.</help>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenu" name="m_menu5">
+          <label>Square Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>0°</label>
+            <accel></accel>
+            <help>Set all selection piece rotations to zero.</help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu6">
+          <label>Hex Faces (Flat Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>0°</label>
+            <accel></accel>
+            <help>Set all selection piece rotations to zero.</help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_60">
+            <label>60°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_120">
+            <label>120°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_240">
+            <label>240°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_300">
+            <label>300°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu7">
+          <label>Hex Faces (Point Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_30">
+            <label>30°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_150">
+            <label>150°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_210">
+            <label>210°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_330">
+            <label>330°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu8">
+          <label>Diamond Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_45">
+            <label>45°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_135">
+            <label>135°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_225">
+            <label>225°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_315">
+            <label>315°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TAKE_OWNERSHIP">
+        <label>Take Ownership</label>
+        <accel></accel>
+        <help>Take ownership of selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_RELEASE_OWNERSHIP">
+        <label>Release Ownership</label>
+        <accel></accel>
+        <help>Release ownership of selected pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SET_OWNER">
+        <label>Set Ownership...</label>
+        <accel></accel>
+        <help>Explicitly set piece ownership.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_LOCKOBJECT">
+        <label>Lock Objects</label>
+        <accel></accel>
+        <help>Lock or unlock pieces and markers from selection.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_LOCK_SUSPEND">
+        <label>Suspend Object Locks</label>
+        <accel></accel>
+        <help>Temporarily suspend piece and marker locks</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACTIONS_ROLLDICE">
+        <label>Roll Dice...</label>
+        <accel></accel>
+        <help>Roll Dice</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_DOMESSAGE">
+        <label>Enter Message...</label>
+        <accel></accel>
+        <help>Enter message for opponent</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
+        <label>Edit Object Text...</label>
+        <accel></accel>
+        <help>Edit text associated with a piece or marker</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenu" name="m_menu9">
+        <label>Compound Move</label>
+        <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_BEGIN">
+          <label>Begin a Compound Move</label>
+          <accel></accel>
+          <help>Begin compound move</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_END">
+          <label>Accept Compound Move</label>
+          <accel></accel>
+          <help>End active compound move</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_DISCARD">
+          <label>Discard Compound Move</label>
+          <accel></accel>
+          <help>Discard current compound move</help>
+        </object>
+      </object>
+      <object class="wxMenu" name="m_menu11">
+        <label>Plotted Move</label>
+        <object class="wxMenuItem" name="ID_PTOOL_PLOTMOVE">
+          <label>Begin a Plotted Move</label>
+          <accel></accel>
+          <help>Begin a plotted move.</help>
+          <checkable>1</checkable>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_PLOTDONE">
+          <label>Accept Plotted Move</label>
+          <accel></accel>
+          <help>Record the plotted move</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_PLOTDISCARD">
+          <label>Discard Plotted Move</label>
+          <accel></accel>
+          <help>Discard the plotted move</help>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALEBRD">
+        <label>Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALEBRD">
+        <label>Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALEBRD">
+        <label>Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDROWS">
+        <label>Horizontal Split</label>
+        <accel></accel>
+        <help>Split board view horizontally into two rows.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
+        <label>Vertical Split</label>
+        <accel></accel>
+        <help>Split board view vertically into two columns.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_PIECES">
+        <label>Hide Pieces</label>
+        <accel></accel>
+        <help>Hide or show pieces on board</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SIMULATE_SPECTATOR">
+        <label>Simulate Spectator Player</label>
+        <accel></accel>
+        <help>View the board and trays as if the current player was a spectator.</help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_PV_PLAYMODE">
       <label>1=PV__PLAYMODE</label>
+      <object class="wxMenuItem" name="ID_PBCK_START">
+        <label>Start of Moves</label>
+        <accel></accel>
+        <help>Jump to start of moves</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_NEXT">
+        <label>Next Move</label>
+        <accel></accel>
+        <help>Do the next move</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_PREVIOUS">
+        <label>Previous Move</label>
+        <accel></accel>
+        <help>Step back to previous move</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_END">
+        <label>End of Moves</label>
+        <accel></accel>
+        <help>Jump to end of move</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_AUTO_STEP">
+        <label>Automatic Playback</label>
+        <accel></accel>
+        <help>Toggles automatic playback feature.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_STEP_CMOVES">
+        <label>Single Step Compound Moves</label>
+        <accel></accel>
+        <help>If checked, compound moves are single stepped.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_STEP_TO_NEXT_HIST">
+        <label>Automatically Step to Next History</label>
+        <accel></accel>
+        <help>Next move automatically steps to next history entry on last move.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_SKIP_KEEP_IND">
+        <label>Keep Skipped Move Indications</label>
+        <accel></accel>
+        <help>Keep graphical move indications when skipping moves.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_READMESSAGE">
+        <label>Show Current Message...</label>
+        <accel></accel>
+        <help>Display current message text</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_NEXTHIST">
+        <label>Next History Entry</label>
+        <accel></accel>
+        <help>Close current history playback and open the next</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_CLOSEHIST">
+        <label>Close History Playback</label>
+        <accel></accel>
+        <help>Close history playback mode.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALEBRD">
+        <label>Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALEBRD">
+        <label>Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALEBRD">
+        <label>Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDROWS">
+        <label>Horizontal Split</label>
+        <accel></accel>
+        <help>Split board view horizontally into two rows.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
+        <label>Vertical Split</label>
+        <accel></accel>
+        <help>Split board view vertically into two columns.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_PIECES">
+        <label>Hide Pieces</label>
+        <accel></accel>
+        <help>Hide or show pieces on board</help>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_DRAW_IND_ON_TOP">
+        <label>Indicators On Top</label>
+        <accel></accel>
+        <help>Draw movement playback indicators on top of pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SIMULATE_SPECTATOR">
+        <label>Simulate Spectator Player</label>
+        <accel></accel>
+        <help>View the board and trays as if the current player was a spectator.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_FINISH">
+        <label>Accept Move File Playback...</label>
+        <accel></accel>
+        <help>Finishes and accepts the  move file being played back. Adds to game history.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_DISCARD">
+        <label>Discard Move File Playback...</label>
+        <accel></accel>
+        <help>Discard the current move recording.</help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_PV_SCNMODE">
       <label>2=PV__SCNMODE</label>
+      <object class="wxMenuItem" name="wxID_CLEAR">
+        <label>Delete Marker</label>
+        <accel></accel>
+        <help>Erase the selection</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELALLMARKERS">
+        <label>Select All Markers</label>
+        <accel></accel>
+        <help>Select all markers in the current board view</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_STACK">
+        <label>Auto Stack</label>
+        <accel></accel>
+        <help>Automatically stack selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_AUTOSTACK_DECK">
+        <label>Auto Stack Deck</label>
+        <accel></accel>
+        <help>Autostack selected objects using a offset of zero.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SHUFFLE_SELECTED">
+        <label>Shuffle Objects</label>
+        <accel></accel>
+        <help>Randomize the stacking order of the selected objects</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TOFRONT">
+        <label>Move To Front</label>
+        <accel></accel>
+        <help>Move selected piece(s) in front of other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TOBACK">
+        <label>Move To Back</label>
+        <accel></accel>
+        <help>Move selected piece(s) in front of other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+        <label>Turn Piece Over</label>
+        <accel></accel>
+        <help>Turn the selected piece over to the next side</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEGROUP">
+        <label>_Rotate Group - Incremental...</label>
+        <accel></accel>
+        <help>Rotate (or wheel) group of pieces or markers by incremental amounts</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEREL">
+        <label>Rotate Object - Incremental...</label>
+        <accel></accel>
+        <help>Rotate piece or marker using incremental amounts</help>
+      </object>
+      <object class="wxMenu" name="m_menu41">
+        <label>Rotate Object - Absolute</label>
+        <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+          <label>Reset Rotation</label>
+          <accel></accel>
+          <help>Set all selection piece rotations to zero.</help>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenu" name="m_menu51">
+          <label>Square Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu61">
+          <label>Hex Faces (Flat Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>0°</label>
+            <accel></accel>
+            <help>Set all selection piece rotations to zero.</help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_60">
+            <label>60°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_120">
+            <label>120°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_240">
+            <label>240°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_300">
+            <label>300°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu71">
+          <label>Hex Faces (Point Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_30">
+            <label>30°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_150">
+            <label>150°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_210">
+            <label>210°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_330">
+            <label>330°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu81">
+          <label>Diamond Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_45">
+            <label>45°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_135">
+            <label>135°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_225">
+            <label>225°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_315">
+            <label>315°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_LOCKOBJECT">
+        <label>Lock Objects</label>
+        <accel></accel>
+        <help>Lock or unlock pieces and markers from selection.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_LOCK_SUSPEND">
+        <label>Suspend Object Locks</label>
+        <accel></accel>
+        <help>Temporarily suspend piece and marker locks</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
+        <label>Edit Object Text...</label>
+        <accel></accel>
+        <help>Edit text associated with a piece or marker</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALEBRD">
+        <label>Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALEBRD">
+        <label>Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALEBRD">
+        <label>Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDROWS">
+        <label>Horizontal Split</label>
+        <accel></accel>
+        <help>Split board view horizontally into two rows.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
+        <label>Vertical Split</label>
+        <accel></accel>
+        <help>Split board view vertically into two columns.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_PIECES">
+        <label>Hide Pieces</label>
+        <accel></accel>
+        <help>Hide or show pieces on board</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SNAPGRID">
+        <label>Snap Grid</label>
+        <accel></accel>
+        <help>Enable or disable current board&apos;s snap grid</help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_PJ_GSN_DEFAULT">
       <label>3=PJ__GSN__DEFAULT</label>
