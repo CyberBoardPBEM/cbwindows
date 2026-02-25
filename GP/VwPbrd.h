@@ -307,9 +307,10 @@ protected:
     void OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI);
 #if 0
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-    afx_msg void OnSelectGroupMarkers(UINT nID);
-    afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
 #endif
+    void OnSelectGroupMarkers(wxCommandEvent& event);
+    void OnMenuOpen(wxMenuEvent& event);
+    void OnUpdateSelectGroupMarkers(wxMenu& menu);
     void OnRotatePiece(wxCommandEvent& event);
     void OnUpdateRotatePiece(wxUpdateUIEvent& pCmdUI);
     void OnMessageWindowState(WinStateEvent& event);
@@ -333,6 +334,7 @@ private:
     int m_yScrollPixelsPerLine;
 
     OwnerPtr<wxOverlay> overlay = MakeOwner<wxOverlay>();
+    int m_bindEnd = 0;
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp

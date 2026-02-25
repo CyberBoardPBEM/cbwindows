@@ -2972,7 +2972,7 @@
       </object>
       <object class="wxMenu" name="m_menu3">
         <label>Select All Markers From</label>
-        <object class="wxMenuItem" name="ID_MRKGROUP_FIRST">
+        <object class="wxMenuItem" name="ID_MRKGROUP_FIRST_0">
           <label>No Markers</label>
           <accel></accel>
           <help></help>
