@@ -159,6 +159,13 @@ wxBEGIN_EVENT_TABLE(CPlayBoardView, CPlayBoardView::BASE)
         but the menus aren't ported to wx yet */
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
+#else
+    /* ID_MRKGROUP_FIRST_0:  can't use wx event tables with range
+        because XRCID doesn't allow controlling values, so use
+        wxEvtHandler::Bind */
+    /* wxUpdateEventUI doesn't support modifying menu,
+        so use EVT_MENU_OPEN */
+    EVT_MENU_OPEN(OnMenuOpen)
 #endif
     EVT_WINSTATE(OnMessageWindowState)
     EVT_SELECT_BOARD_OBJLIST(OnMessageSelectBoardObjectList)
@@ -198,6 +205,29 @@ namespace {
             return retval;
         }();
         return retval;
+    }
+}
+
+// helpers for wxEvtHandler::Bind for ID_MRKGROUP_FIRST_0
+namespace {
+    std::map<int /*index*/, int /*id*/> ids;
+    std::map<int /*id*/, int /*index*/> indices;
+    int MarkerIndexToXrcid(int index)
+    {
+        auto it = ids.lower_bound(index);
+        if (it != ids.end() && it->first == index)
+        {
+            return it->second;
+        }
+        wxString name = wxString::Format("ID_MRKGROUP_FIRST_%d", index);
+        int id = XRCID(name);
+        ids.insert(it, std::make_pair(index, id));
+        indices.insert(std::make_pair(id, index));
+        return id;
+    }
+    int MarkerXrcidToIndex(int id)
+    {
+        return indices.at(id);
     }
 }
 
@@ -2369,40 +2399,53 @@ void CPlayBoardView::OnEditBoardProperties(wxCommandEvent& /*event*/)
     GetDocument().DoBoardProperties(GetPlayBoard());
 }
 
-#if 0
-void CPlayBoardView::OnSelectGroupMarkers(UINT nID)
+void CPlayBoardView::OnSelectGroupMarkers(wxCommandEvent& event)
 {
-    SelectMarkersInGroup(nID - ID_MRKGROUP_FIRST);
+    SelectMarkersInGroup(value_preserving_cast<size_t>(MarkerXrcidToIndex(event.GetId())));
 }
 
-void CPlayBoardView::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
+void CPlayBoardView::OnMenuOpen(wxMenuEvent& event)
 {
-    if (pCmdUI->m_pSubMenu != NULL)
+    if (event.GetMenu())
     {
-        CMarkManager& pMgr = GetDocument().GetMarkManager();
-        if (pMgr.IsEmpty())
-            return;
-        std::vector<CB::string> tbl;
-        tbl.reserve(pMgr.GetNumMarkSets());
-        for (size_t i = size_t(0) ; i < pMgr.GetNumMarkSets() ; ++i)
+        wxMenu* menu;
+        wxMenuItem* markers = event.GetMenu()->FindItem(XRCID("ID_MRKGROUP_FIRST_0"), &menu);
+        if (markers)
         {
-            tbl.push_back(pMgr.GetMarkSet(i).GetName());
+            OnUpdateSelectGroupMarkers(CheckedDeref(menu));
+            return;
         }
-        CMenu menu;
-        VERIFY(menu.CreatePopupMenu());
-
-        CreateSequentialSubMenuIDs(menu, ID_MRKGROUP_FIRST, tbl);
-
-        CB::string str = CB::string::GetMenuString(*pCmdUI->m_pMenu, pCmdUI->m_nIndex,
-            MF_BYPOSITION);
-        VERIFY(pCmdUI->m_pMenu->ModifyMenu(pCmdUI->m_nIndex,
-            MF_BYPOSITION | MF_ENABLED | MF_POPUP | MF_STRING,
-            reinterpret_cast<UINT_PTR>(menu.Detach()), str));
     }
-    else
-        pCmdUI->Enable();
+    event.Skip();
 }
-#endif
+
+void CPlayBoardView::OnUpdateSelectGroupMarkers(wxMenu& menu)
+{
+    CMarkManager& pMgr = GetDocument().GetMarkManager();
+    if (pMgr.IsEmpty())
+        return;
+    std::vector<CB::string> tbl;
+    tbl.reserve(pMgr.GetNumMarkSets());
+    for (size_t i = size_t(0) ; i < pMgr.GetNumMarkSets() ; ++i)
+    {
+        tbl.push_back(pMgr.GetMarkSet(i).GetName());
+    }
+    wxASSERT(menu.GetMenuItemCount() == 1);
+    menu.Delete(XRCID("ID_MRKGROUP_FIRST_0"));
+    wxASSERT(menu.GetMenuItemCount() == 0);
+
+    for (size_t i = size_t(0) ; i < tbl.size() ; ++i)
+    {
+        int intI = value_preserving_cast<int>(i);
+        int xrcid = MarkerIndexToXrcid(intI);
+        menu.Append(xrcid, tbl[i]);
+        if (intI >= m_bindEnd)
+        {
+            Bind(wxEVT_MENU, &CPlayBoardView::OnSelectGroupMarkers, this, xrcid);
+            ++m_bindEnd;
+        }
+    }
+}
 
 void CPlayBoardView::OnViewDrawIndOnTop(wxCommandEvent& /*event*/)
 {
