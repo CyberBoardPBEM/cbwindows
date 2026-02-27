@@ -141,15 +141,15 @@ protected:
     void OnMenuButton(wxCommandEvent& event);
     void OnPieceTrayShuffle(wxCommandEvent& event);
     void OnUpdatePieceTrayShuffle(wxUpdateUIEvent& pCmdUI);
+    void OnPieceTrayShuffleSelected(wxCommandEvent& event);
+    void OnUpdatePieceTrayShuffleSelected(wxUpdateUIEvent& pCmdUI);
+    void OnEditElementText(wxCommandEvent& event);
+    void OnUpdateEditElementText(wxUpdateUIEvent& pCmdUI);
+    void OnActTurnOver(wxCommandEvent& event);
+    void OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI);
+    void OnPieceTrayAbout(wxCommandEvent& event);
+    void OnUpdatePieceTrayAbout(wxUpdateUIEvent& pCmdUI);
 #if 0
-    afx_msg void OnPieceTrayShuffleSelected();
-    afx_msg void OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI);
-    afx_msg void OnEditElementText();
-    afx_msg void OnUpdateEditElementText(CCmdUI* pCmdUI);
-    afx_msg BOOL OnActTurnOver(UINT id);
-    afx_msg void OnUpdateActTurnOver(CCmdUI* pCmdUI);
-    afx_msg void OnPieceTrayAbout();
-    afx_msg void OnUpdatePieceTrayAbout(CCmdUI* pCmdUI);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
