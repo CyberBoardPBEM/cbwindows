@@ -69,27 +69,27 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
     EVT_MENU(XRCID("ID_PTRAY_SHUFFLE"), OnPieceTrayShuffle)
     EVT_UPDATE_UI(XRCID("ID_PTRAY_SHUFFLE"), OnUpdatePieceTrayShuffle)
     EVT_BUTTON(XRCID("m_bpMenuBtn"), OnMenuButton)
+    EVT_MENU(XRCID("ID_PTRAY_SHUFFLE_SELECTED"), OnPieceTrayShuffleSelected)
+    EVT_UPDATE_UI(XRCID("ID_PTRAY_SHUFFLE_SELECTED"), OnUpdatePieceTrayShuffleSelected)
+    EVT_MENU(XRCID("ID_EDIT_ELEMENT_TEXT"), OnEditElementText)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_ELEMENT_TEXT"), OnUpdateEditElementText)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_PREV"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_RANDOM"), OnActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_PREV"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_RANDOM"), OnUpdateActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_ALL"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_ALL_PREV"), OnActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_ALL_RANDOM"), OnActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_ALL"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_ALL_PREV"), OnUpdateActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_ALL_RANDOM"), OnUpdateActTurnOver)
+    EVT_MENU(XRCID("ID_ACT_TURNOVER_SELECT"), OnActTurnOver)
+    EVT_UPDATE_UI(XRCID("ID_ACT_TURNOVER_SELECT"), OnUpdateActTurnOver)
+    EVT_MENU(XRCID("ID_PTRAY_ABOUT"), OnPieceTrayAbout)
+    EVT_UPDATE_UI(XRCID("ID_PTRAY_ABOUT"), OnUpdatePieceTrayAbout)
 #if 0
-    ON_COMMAND(ID_PTRAY_SHUFFLE_SELECTED, OnPieceTrayShuffleSelected)
-    ON_UPDATE_COMMAND_UI(ID_PTRAY_SHUFFLE_SELECTED, OnUpdatePieceTrayShuffleSelected)
-    ON_COMMAND(ID_EDIT_ELEMENT_TEXT, OnEditElementText)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_ELEMENT_TEXT, OnUpdateEditElementText)
-    ON_COMMAND_EX(ID_ACT_TURNOVER, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_PREV, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_RANDOM, OnActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_PREV, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_RANDOM, OnUpdateActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL_PREV, OnActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_ALL_RANDOM, OnActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_PREV, OnUpdateActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_ALL_RANDOM, OnUpdateActTurnOver)
-    ON_COMMAND_EX(ID_ACT_TURNOVER_SELECT, OnActTurnOver)
-    ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER_SELECT, OnUpdateActTurnOver)
-    ON_COMMAND(ID_PTRAY_ABOUT, OnPieceTrayAbout)
-    ON_UPDATE_COMMAND_UI(ID_PTRAY_ABOUT, OnUpdatePieceTrayAbout)
     ON_WM_HELPINFO()
     ON_WM_MOUSEMOVE()
 #endif
@@ -960,27 +960,24 @@ void CTrayPalette::OnUpdatePieceTrayShuffle(wxUpdateUIEvent& pCmdUI)
         m_listTray->GetItemCount() > 1);
 }
 
-#if 0
-void CTrayPalette::OnPieceTrayShuffleSelected()
+void CTrayPalette::OnPieceTrayShuffleSelected(wxCommandEvent& /*event*/)
 {
-    size_t nNumSelected = value_preserving_cast<size_t>(m_listTray.GetSelCount());
-    std::vector<INT> tblListSel(nNumSelected);
-    m_listTray.GetSelItems(value_preserving_cast<int>(nNumSelected), tblListSel.data());
+    std::vector<size_t> tblListSel = m_listTray->GetSelections();
+    size_t nNumSelected = tblListSel.size();
 
-    INT nTopSel = tblListSel[size_t(0)];        // This is where the shuffle is inserted
+    size_t nTopSel = tblListSel[size_t(0)];        // This is where the shuffle is inserted
 
     // Generate a shuffled index vector for the number of selected items
     uint32_t nRandSeed = m_pDoc->GetRandomNumberSeed();
-    ASSERT(nNumSelected == tblListSel.size());
     std::vector<size_t> pnIndices = AllocateAndCalcRandomIndexVector(nNumSelected,
         nNumSelected, nRandSeed, &nRandSeed);
     m_pDoc->SetRandomNumberSeed(nRandSeed);
 
     // Build table of shuffled pieces
     std::vector<PieceID> tblPids;
-    tblPids.reserve(value_preserving_cast<size_t>(nNumSelected));
+    tblPids.reserve(nNumSelected);
     for (size_t i = size_t(0) ; i < nNumSelected ; ++i)
-        tblPids.push_back(m_listTray.MapIndexToItem(value_preserving_cast<size_t>(tblListSel[pnIndices[i]])));
+        tblPids.push_back(m_listTray->MapIndexToItem(tblListSel[pnIndices[i]]));
 
     m_pDoc->AssignNewMoveGroup();
 
@@ -996,7 +993,7 @@ void CTrayPalette::OnPieceTrayShuffleSelected()
     m_pDoc->PlacePieceListInTray(tblPids, pYMgr.GetTraySet(nSel), value_preserving_cast<size_t>(nTopSel));
 }
 
-void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
+void CTrayPalette::OnUpdatePieceTrayShuffleSelected(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
     size_t nSel = GetSelectedTray();
@@ -1008,16 +1005,16 @@ void CTrayPalette::OnUpdatePieceTrayShuffleSelected(CCmdUI* pCmdUI)
             !pYSet.IsNonOwnerAccessAllowed());
     }
 
-    pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
-        m_listTray.GetSelCount() > 1 && m_listTray.IsShowingTileImages());
+    pCmdUI.Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
+        m_listTray->GetSelectedCount() > size_t(1) && m_listTray->IsShowingTileImages());
 }
 
-void CTrayPalette::OnEditElementText()
+void CTrayPalette::OnEditElementText(wxCommandEvent& event)
 {
     DoEditSelectedPieceText();
 }
 
-void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
+void CTrayPalette::OnUpdateEditElementText(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bNoOwnerRestrictions = TRUE;
     size_t nSel = GetSelectedTray();
@@ -1027,71 +1024,71 @@ void CTrayPalette::OnUpdateEditElementText(CCmdUI* pCmdUI)
         CTraySet& pYSet = pYMgr.GetTraySet(nSel);
         bNoOwnerRestrictions = !pYSet.IsOwnedButNotByCurrentPlayer(*m_pDoc);
     }
-    pCmdUI->Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
-        m_listTray.GetSelCount() == 1 && m_listTray.IsShowingTileImages());
+    pCmdUI.Enable((m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
+        m_listTray->GetSelectedCount() == size_t(1) && m_listTray->IsShowingTileImages());
 }
 
-BOOL CTrayPalette::OnActTurnOver(UINT id)
+void CTrayPalette::OnActTurnOver(wxCommandEvent& event)
 {
-    std::vector<int> tblListSel;
-    int nNumSelected = m_listTray.GetSelCount();
-    if (nNumSelected)
+    int id = event.GetId();
+    std::vector<size_t> tblListSel = m_listTray->GetSelections();
+
+    std::vector<size_t> tblListSubjects;
+    std::vector<size_t>* chosen;
+
+    if (id == XRCID("ID_ACT_TURNOVER") ||
+        id == XRCID("ID_ACT_TURNOVER_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        tblListSel.resize(value_preserving_cast<size_t>(nNumSelected));
-        m_listTray.GetSelItems(nNumSelected, &tblListSel.front());
+        // operate on selected pieces
+        chosen = &tblListSel;
     }
-
-    std::vector<int> tblListSubjects;
-    std::vector<int>* chosen;
-
-    switch (id)
+    else if (id == XRCID("ID_ACT_TURNOVER_ALL") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_RANDOM"))
     {
-        case ID_ACT_TURNOVER:
-        case ID_ACT_TURNOVER_PREV:
-        case ID_ACT_TURNOVER_RANDOM:
-            // operate on selected pieces
-            chosen = &tblListSel;
-            break;
-        case ID_ACT_TURNOVER_ALL:
-        case ID_ACT_TURNOVER_ALL_PREV:
-        case ID_ACT_TURNOVER_ALL_RANDOM:
-            // operate on all pieces
-            tblListSubjects.resize(value_preserving_cast<size_t>(m_listTray.GetCount()));
-            for (int i = 0; i < m_listTray.GetCount(); i++)
-            {
-                tblListSubjects[value_preserving_cast<size_t>(i)] = i;
-            }
-            chosen = &tblListSubjects;
-            break;
-        case ID_ACT_TURNOVER_SELECT:
-            // operate on clicked side
-            tblListSubjects.push_back(value_preserving_cast<int>(m_listTray.MapItemToIndex(static_cast<PieceID>(menuGameElement))));
-            chosen = &tblListSubjects;
-            break;
-        default:
-            AfxThrowInvalidArgException();
+        // operate on all pieces
+        tblListSubjects.resize(m_listTray->GetItemCount());
+        for (size_t i = size_t(0) ; i < m_listTray->GetItemCount() ; ++i)
+        {
+            tblListSubjects[i] = i;
+        }
+        chosen = &tblListSubjects;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
+    {
+        // operate on clicked side
+        tblListSubjects.push_back(m_listTray->MapItemToIndex(static_cast<PieceID>(menuGameElement)));
+        chosen = &tblListSubjects;
+    }
+    else
+    {
+        AfxThrowInvalidArgException();
     }
 
     CPieceTable::Flip flip;
-    switch (id)
+    if (id == XRCID("ID_ACT_TURNOVER") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL"))
     {
-        case ID_ACT_TURNOVER:
-        case ID_ACT_TURNOVER_ALL:
-            flip = CPieceTable::fNext;
-            break;
-        case ID_ACT_TURNOVER_PREV:
-        case ID_ACT_TURNOVER_ALL_PREV:
-            flip = CPieceTable::fPrev;
-            break;
-        case ID_ACT_TURNOVER_RANDOM:
-        case ID_ACT_TURNOVER_ALL_RANDOM:
-            flip = CPieceTable::fRandom;
-            break;
-        case ID_ACT_TURNOVER_SELECT:
-            flip = CPieceTable::fSelect;
-            break;
-        default:
-            AfxThrowInvalidArgException();
+        flip = CPieceTable::fNext;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_PREV"))
+    {
+        flip = CPieceTable::fPrev;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_RANDOM") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_RANDOM"))
+    {
+        flip = CPieceTable::fRandom;
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
+    {
+        flip = CPieceTable::fSelect;
+    }
+    else
+    {
+        AfxThrowInvalidArgException();
     }
 
     m_pDoc->AssignNewMoveGroup();
@@ -1100,12 +1097,12 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
     if (m_pDoc->IsRecording() && flip == CPieceTable::fRandom)
     {
         CB::string strMsg = CB::string::Format(IDS_TIP_TRAY_FLIPPED_RANDOM, chosen->size());
-        m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray.MapIndexToItem(value_preserving_cast<size_t>(chosen->front())));
+        m_pDoc->RecordEventMessage(strMsg, nSel, m_listTray->MapIndexToItem(chosen->front()));
     }
 
     for (size_t i = size_t(0) ; i < chosen->size() ; ++i)
     {
-        PieceID pid = m_listTray.MapIndexToItem(value_preserving_cast<size_t>((*chosen)[i]));
+        PieceID pid = m_listTray->MapIndexToItem((*chosen)[i]);
         size_t side;
         if (flip == CPieceTable::fSelect)
         {
@@ -1124,34 +1121,36 @@ BOOL CTrayPalette::OnActTurnOver(UINT id)
 
     /* flipping pieces shouldn't change tray content,
         so restore selections */
+    wxASSERT(m_listTray->GetSelectedCount() == size_t(0));
     for (size_t i = size_t(0) ; i < tblListSel.size() ; ++i)
     {
-        m_listTray.SetSel(tblListSel[i], true);
+        m_listTray->Select(tblListSel[i], true);
     }
-
-    return true;
 }
 
-void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
+void CTrayPalette::OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI)
 {
+    int id = pCmdUI.GetId();
     bool eligible;
-    switch (pCmdUI->m_nID)
+    if (id == XRCID("ID_ACT_TURNOVER") ||
+        id == XRCID("ID_ACT_TURNOVER_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        case ID_ACT_TURNOVER:
-        case ID_ACT_TURNOVER_PREV:
-        case ID_ACT_TURNOVER_RANDOM:
-            eligible = m_listTray.GetSelCount() > 0;
-            break;
-        case ID_ACT_TURNOVER_ALL:
-        case ID_ACT_TURNOVER_ALL_PREV:
-        case ID_ACT_TURNOVER_ALL_RANDOM:
-            eligible = m_listTray.GetCount() > 0;
-            break;
-        case ID_ACT_TURNOVER_SELECT:
-            eligible = menuGameElement != Invalid_v<GameElement>;
-            break;
-        default:
-            AfxThrowInvalidArgException();
+        eligible = m_listTray->GetSelectedCount() > size_t(0);
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_ALL") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_PREV") ||
+        id == XRCID("ID_ACT_TURNOVER_ALL_RANDOM"))
+    {
+        eligible = m_listTray->GetItemCount() > size_t(0);
+    }
+    else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
+    {
+        eligible = menuGameElement != Invalid_v<GameElement>;
+    }
+    else
+    {
+        AfxThrowInvalidArgException();
     }
 
     BOOL bNoOwnerRestrictions = TRUE;
@@ -1165,17 +1164,19 @@ void CTrayPalette::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 
     bool enable = (m_pDoc->IsScenario() || bNoOwnerRestrictions) &&
                     eligible &&
-                    m_listTray.IsShowingTileImages();
-    pCmdUI->Enable(enable);
+                    m_listTray->IsShowingTileImages();
+    pCmdUI.Enable(enable);
+#if 0
     if (pCmdUI->m_pSubMenu != NULL)
     {
         // Need to handle menu that the submenu is connected to.
         pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
             MF_BYPOSITION | (enable ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
     }
+#endif
 }
 
-void CTrayPalette::OnPieceTrayAbout()
+void CTrayPalette::OnPieceTrayAbout(wxCommandEvent& event)
 {
     size_t nSel = GetSelectedTray();
     if (nSel == Invalid_v<size_t>)
@@ -1200,7 +1201,7 @@ void CTrayPalette::OnPieceTrayAbout()
             strTmp = CB::string::LoadString(IDS_MSG_TVIZ_ALL_HIDDEN);
             break;
         default:
-            ASSERT(FALSE);
+            wxASSERT(FALSE);
             strTmp = CB::string::LoadString(IDS_ERR_TRAY_VIZ);
     }
 
@@ -1241,15 +1242,16 @@ void CTrayPalette::OnPieceTrayAbout()
             strTmp = CB::string::LoadString(IDS_MSG_TVIZ_OWNER_FULL);
         strMsg += '\n' + strTmp;
     }
-    AfxMessageBox(strMsg, MB_ICONINFORMATION);
+    wxMessageBox(strMsg, CB::GetAppName(), wxICON_INFORMATION);
 }
 
-void CTrayPalette::OnUpdatePieceTrayAbout(CCmdUI* pCmdUI)
+void CTrayPalette::OnUpdatePieceTrayAbout(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_comboYGrp.GetCurSel();
-    pCmdUI->Enable(nSel >= 0);
+    int nSel = m_comboYGrp->GetSelection();
+    pCmdUI.Enable(nSel != wxNOT_FOUND);
 }
 
+#if 0
 BOOL CTrayPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     GetApp()->DoHelpTopic("gp-ref-pal-tray.htm");
