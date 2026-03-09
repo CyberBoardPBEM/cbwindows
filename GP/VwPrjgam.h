@@ -1,6 +1,6 @@
 // VwPrjgam.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -67,15 +67,17 @@ protected:
     CGamProjView();         // protected constructor used by dynamic creation
 
 // Attributes
-public:
-    const CGamDoc* GetDocument() const { return CB::ToCGamDoc(m_pDocument); }
-    CGamDoc* GetDocument()
+private:
+    const CGamDoc& GetDocument() const { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
+    CGamDoc& GetDocument()
     {
-        return const_cast<CGamDoc*>(std::as_const(*this).GetDocument());
+        return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
     }
 
     // Various controls...
+public:
     CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
+private:
 
     CEdit           m_editInfo;         // Used for various project info/help
 
@@ -97,16 +99,16 @@ protected:
     BOOL CreateListbox(UINT nCtrlID, CListBox& lbox, DWORD dwStyle, CRect& rct);
     BOOL CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct);
 
-    void SetButtonState(CButton& btn, UINT nStringID);
+    void SetButtonState(CButton& btn, UINT nStringID) const;
     void UpdateButtons(int nGrp = -1);
-    void UpdateItemControls(int nGrp = -1);
+    void UpdateItemControls(int nGrp = -1) const;
 
     void LayoutView();
 
     // Main document based support routines...
     void DoUpdateProjectList(BOOL bUpdateItem = TRUE);
 
-    void DoGamProperty();
+    void DoGamProperty() const;
     void DoUpdateGamInfo();
 
     void DoBoardProperty();
@@ -129,11 +131,11 @@ protected:
 
 // Implementation
 protected:
-    virtual ~CGamProjView();
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    ~CGamProjView() override;
+    void OnInitialUpdate() override;
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    void OnDraw(CDC* pDC) override;      // overridden to draw this view
 
     // Generated message map functions
 protected:

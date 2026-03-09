@@ -342,7 +342,8 @@ public:
     const CPlayerManager* GetPlayerManager() const { return m_pPlayerMgr; }
     CPlayerManager* GetPlayerManager() { return const_cast<CPlayerManager*>(std::as_const(*this).GetPlayerManager()); }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
-    CHistoryTable* GetHistoryTable() { return m_pHistTbl; }
+    const CHistoryTable* GetHistoryTable() const { return m_pHistTbl; }
+    CHistoryTable* GetHistoryTable() { return const_cast<CHistoryTable*>(std::as_const(*this).GetHistoryTable()); }
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
 

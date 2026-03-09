@@ -1,6 +1,6 @@
 // VwPrjga1.cpp : Game Project View Support Routines
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // Scenario Info routine
 
-void CGamProjView::DoGamProperty()
+void CGamProjView::DoGamProperty() const
 {
 }
 
@@ -57,24 +57,24 @@ void CGamProjView::DoUpdateGamInfo()
     CB::string strDescr = CB::string::LoadString(IDS_PRJINFO_DESCRIPTION);
     CB::string strMultiInfo = CB::string::LoadString(IDS_PRJINFO_MPLAYER);
 
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     CB::string str;
-    if (!pDoc->m_strScnTitle.empty())
-        str += strTitle + pDoc->m_strScnTitle + "\r\n\r\n";
-    if (!pDoc->m_strScnAuthor.empty())
-        str += strAuthor + pDoc->m_strScnAuthor + "\r\n\r\n";
-    if (pDoc->HasPlayers() && !pDoc->IsScenario())
+    if (!pDoc.m_strScnTitle.empty())
+        str += strTitle + pDoc.m_strScnTitle + "\r\n\r\n";
+    if (!pDoc.m_strScnAuthor.empty())
+        str += strAuthor + pDoc.m_strScnAuthor + "\r\n\r\n";
+    if (pDoc.HasPlayers() && !pDoc.IsScenario())
     {
         CB::string strInfo;
-        size_t nPos = pDoc->m_strPlayerFileDescr.rfind('@');
+        size_t nPos = pDoc.m_strPlayerFileDescr.rfind('@');
         if (nPos != CB::string::npos)
-            strInfo = pDoc->m_strPlayerFileDescr.substr(size_t(0), nPos);
+            strInfo = pDoc.m_strPlayerFileDescr.substr(size_t(0), nPos);
         else
-            strInfo = pDoc->m_strPlayerFileDescr;
+            strInfo = pDoc.m_strPlayerFileDescr;
         str += strMultiInfo + strInfo;
     }
-    if (!pDoc->m_strScnDescr.empty())
-        str += strDescr + pDoc->m_strScnDescr;
+    if (!pDoc.m_strScnDescr.empty())
+        str += strDescr + pDoc.m_strScnDescr;
     m_editInfo.SetWindowText(str);
 }
 
@@ -83,30 +83,30 @@ void CGamProjView::DoUpdateGamInfo()
 
 void CGamProjView::DoBoardProperty()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
-    pDoc->DoBoardProperties(nBrd);
+    pDoc.DoBoardProperties(nBrd);
 }
 
 void CGamProjView::DoBoardView()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
     size_t nBrd = m_listProj.GetItemSourceCode(nSel);
 
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(nBrd);
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(nBrd);
     if (pPBoard.IsPrivate() &&
-        pPBoard.IsOwnedButNotByCurrentPlayer(*pDoc))
+        pPBoard.IsOwnedButNotByCurrentPlayer(pDoc))
     {
         AfxMessageBox(IDS_ERR_PRIVATE_BOARD_PERM, MB_OK | MB_ICONEXCLAMATION);
         return;
     }
-    CPlayBoardView* pView = pDoc->FindPBoardView(pPBoard);
+    CPlayBoardView* pView = pDoc.FindPBoardView(pPBoard);
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.
@@ -117,7 +117,7 @@ void CGamProjView::DoBoardView()
     else
     {
         CB::string strTitle = m_listProj.GetItemText(nSel);
-        pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
+        pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
 
@@ -137,52 +137,52 @@ void CGamProjView::DoUpdateBoardInfo()
 // Save current moves
 void CGamProjView::DoHistorySave()
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying())
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying())
     {
         AfxMessageBox(IDS_ERR_NOSAVEWHENPLAY, MB_OK | MB_ICONINFORMATION);
         return;
     }
-    pDoc->SaveRecordedMoves();
+    pDoc.SaveRecordedMoves();
 }
 
 // Load a move file and setup playback
 void CGamProjView::DoHistoryLoad()
 {
-    GetDocument()->DoLoadMoveFile();
+    GetDocument().DoLoadMoveFile();
 }
 
 // Finished with the move file play back
 void CGamProjView::DoHistoryDone()
 {
-    CGamDoc* pDoc = GetDocument();
-    pDoc->DoAcceptPlayback();
+    CGamDoc& pDoc = GetDocument();
+    pDoc.DoAcceptPlayback();
  }
 
 // Discard the current recording
 void CGamProjView::DoHistoryDiscard()
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->GetGameState() == CGamDoc::stateHistPlay)
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
     {
         AfxMessageBox(IDS_ERR_NODISCARDWHENPLAY, MB_OK | MB_ICONINFORMATION);
         return;
     }
-    GetDocument()->DiscardCurrentRecording(TRUE);
+    GetDocument().DiscardCurrentRecording(TRUE);
 }
 
 // Load and replay a history entry. The current move recording
 // is not affected.
 void CGamProjView::DoHistoryReplay()
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlayingMoves())
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlayingMoves())
     {
         AfxMessageBox(IDS_ERR_NOHISTWHENMOVE, MB_OK | MB_ICONINFORMATION);
         return;
     }
     int nSel = m_listProj.GetCurSel();
-    if (pDoc->IsPlaying())
+    if (pDoc.IsPlaying())
     {
         DoHistoryReplayDone();
         nSel--;                     // Compensate for lost line "<hist...>"
@@ -191,7 +191,7 @@ void CGamProjView::DoHistoryReplay()
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
     size_t nHist = m_listProj.GetItemSourceCode(nSel);
     m_listProj.MarkGroupItem(grpHist, nHist);   // Pre mark line
-    if (!pDoc->LoadAndActivateHistory(nHist))
+    if (!pDoc.LoadAndActivateHistory(nHist))
     {
         m_listProj.MarkGroupItem();
         m_listProj.Invalidate();
@@ -207,15 +207,14 @@ void CGamProjView::DoHistoryReplay()
 // Finished with the move file play back
 void CGamProjView::DoHistoryReplayDone()
 {
-    CGamDoc* pDoc = GetDocument();
     m_listProj.MarkGroupItem();
-    GetDocument()->FinishHistoryPlayback();
+    GetDocument().FinishHistoryPlayback();
 }
 
 void CGamProjView::DoHistoryExport()
 {
-    CGamDoc* pDoc = GetDocument();
-    if (pDoc->IsPlaying())
+    CGamDoc& pDoc = GetDocument();
+    if (pDoc.IsPlaying())
     {
         AfxMessageBox(IDS_ERR_NOSAVEWHENPLAY, MB_OK | MB_ICONINFORMATION);
         return;
@@ -224,7 +223,7 @@ void CGamProjView::DoHistoryExport()
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
     size_t nHist = m_listProj.GetItemSourceCode(nSel);
-    pDoc->SaveHistoryMovesInFile(nHist);
+    pDoc.SaveHistoryMovesInFile(nHist);
 }
 
 void CGamProjView::DoUpdateHistoryHelpInfo()
@@ -234,24 +233,24 @@ void CGamProjView::DoUpdateHistoryHelpInfo()
 
 void CGamProjView::DoUpdateCurPlayInfo()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     CB::string str = "";
-    if (pDoc->GetGameState() == CGamDoc::stateMovePlay)
+    if (pDoc.GetGameState() == CGamDoc::stateMovePlay)
     {
-        if (!pDoc->m_pPlayHist->m_strDescr.empty())
-            str = pDoc->m_pPlayHist->m_strDescr;
+        if (!pDoc.m_pPlayHist->m_strDescr.empty())
+            str = pDoc.m_pPlayHist->m_strDescr;
     }
     m_editInfo.SetWindowText(str);
 }
 
 void CGamProjView::DoUpdateHistoryInfo()
 {
-    CGamDoc* pDoc = GetDocument();
+    CGamDoc& pDoc = GetDocument();
     int nSel = m_listProj.GetCurSel();
     ASSERT(nSel >= 0);
     ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
     size_t nHist = m_listProj.GetItemSourceCode(nSel);
-    CHistoryTable* pHistTbl = pDoc->GetHistoryTable();
+    CHistoryTable* pHistTbl = pDoc.GetHistoryTable();
     ASSERT(pHistTbl);
     CHistRecord& pHRec = pHistTbl->GetHistRecord(nHist);
 

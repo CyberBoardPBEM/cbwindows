@@ -1,6 +1,6 @@
 // VwPrjgam.cpp : Game Project View
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -130,7 +130,7 @@ CGamProjView::~CGamProjView()
 
 int CGamProjView::Find(BoardID bid) const
 {
-    const CGamDoc& doc = CheckedDeref(GetDocument());
+    const CGamDoc& doc = GetDocument();
     for (int i = 0 ; i < m_listProj.GetCount() ; ++i)
     {
         if (m_listProj.GetItemGroupCode(i) == grpBrd)
@@ -191,13 +191,13 @@ int CGamProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGamProjView::OnInitialUpdate()
 {
-    GetDocument()->DoInitialUpdate();   // Since UpdateAllViews isn't virtual
+    GetDocument().DoInitialUpdate();   // Since UpdateAllViews isn't virtual
     CView::OnInitialUpdate();
-    CGamDoc* pDoc = GetDocument();
-    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
+    CGamDoc& pDoc = GetDocument();
+    CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     // Only honor the open-on-load flags if the save window state
     // is disabled.
-    if (!pDoc->m_bSaveWindowPositions)
+    if (!pDoc.m_bSaveWindowPositions)
     {
         for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
         {
@@ -226,7 +226,7 @@ void CGamProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CGamProjView::OnDraw(CDC* pDC)
 {
-    CDocument* pDoc = GetDocument();
+    CDocument& pDoc = GetDocument();
     // TODO: add draw code here
 }
 
@@ -369,7 +369,7 @@ void CGamProjView::UpdateButtons(int nGrp)
     SetButtonState(m_btnPrjB, pTbl[1]);
 }
 
-void CGamProjView::SetButtonState(CButton& btn, UINT nStringID)
+void CGamProjView::SetButtonState(CButton& btn, UINT nStringID) const
 {
     if (nStringID == 0)
         btn.SetWindowText(""_cbstring);
@@ -384,7 +384,7 @@ void CGamProjView::SetButtonState(CButton& btn, UINT nStringID)
 /////////////////////////////////////////////////////////////////////////////
 // Updates item controls for specified group
 
-void CGamProjView::UpdateItemControls(int nGrp)
+void CGamProjView::UpdateItemControls(int nGrp) const
 {
     HDWP hDwp = BeginDeferWindowPos(4);
     #define EzDefer(h, c, flg) \
@@ -399,8 +399,7 @@ void CGamProjView::UpdateItemControls(int nGrp)
 
 void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 {
-    CGamDoc* pDoc = GetDocument();
-    ASSERT(pDoc);
+    CGamDoc& pDoc = GetDocument();
 
     m_listProj.SetRedraw(FALSE);
 
@@ -412,22 +411,22 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     // Document type....
     CB::string str = CB::string::LoadString(IDS_PHEAD_GAM_DOCTYPE);
-    if (pDoc->HasPlayers())
+    if (pDoc.HasPlayers())
     {
-        if (pDoc->GetCurrentPlayerMask() == OWNER_MASK_SPECTATOR)
+        if (pDoc.GetCurrentPlayerMask() == OWNER_MASK_SPECTATOR)
         {
             CB::string strSpec = CB::string::LoadString(IDS_PHEAD_SPECTATOR_OWNED);
             str += strSpec;
         }
-        else if (pDoc->IsCurrentPlayerReferee())
+        else if (pDoc.IsCurrentPlayerReferee())
         {
             CB::string strSpec = CB::string::LoadString(IDS_PHEAD_REFEREE_OWNED);
             str += strSpec;
         }
         else
         {
-            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
-                pDoc->GetCurrentPlayerMask()).m_strName;
+            CB::string strOwner = pDoc.GetPlayerManager()->GetPlayerUsingMask(
+                pDoc.GetCurrentPlayerMask()).m_strName;
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
@@ -438,7 +437,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     str = CB::string::LoadString(IDS_PHEAD_GAM_BOARDS);
     m_listProj.AddItem(grpBrdHdr, str);
 
-    CPBoardManager& pPBMgr = pDoc->GetPBoardManager();
+    CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
     {
         static int bDisplayIDs = -1;
@@ -456,7 +455,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         }
         if (pPBoard.IsOwned())
         {
-            CB::string strOwner = pDoc->GetPlayerManager()->GetPlayerUsingMask(
+            CB::string strOwner = pDoc.GetPlayerManager()->GetPlayerUsingMask(
                 pPBoard.GetOwnerMask()).m_strName;
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
@@ -469,29 +468,29 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     m_listProj.AddItem(grpHistHdr, str);
 
     // Current History....!!!!!ACCOUNT FOR PLAYBACK!!!!!
-    if (pDoc->GetRecordMoveList() != NULL)
+    if (pDoc.GetRecordMoveList() != NULL)
     {
         //if (pDoc->IsRecording())
-        if (pDoc->GetGameState() == CGamDoc::stateRecording)
+        if (pDoc.GetGameState() == CGamDoc::stateRecording)
         {
             str = CB::string::LoadString(IDS_PHEAD_GAM_CURRENT);
             m_listProj.AddItem(grpCurHist, str, size_t(0));
         }
-        else if (pDoc->GetGameState() == CGamDoc::stateHistPlay)
+        else if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
         {
             str = CB::string::LoadString(IDS_PHEAD_GAM_SUSPEND);
             m_listProj.AddItem(grpCurHist, str, size_t(0));
         }
         else
         {
-            ASSERT(pDoc->GetGameState() == CGamDoc::stateMovePlay);
+            ASSERT(pDoc.GetGameState() == CGamDoc::stateMovePlay);
             str = CB::string::LoadString(IDS_PHEAD_GAM_MOVEFILE);
-            if (!pDoc->m_pPlayHist->m_strTitle.empty())
-                str += " - " + pDoc->m_pPlayHist->m_strTitle;
-            m_listProj.AddItem(grpCurPlay, str, 0);
+            if (!pDoc.m_pPlayHist->m_strTitle.empty())
+                str += " - " + pDoc.m_pPlayHist->m_strTitle;
+            m_listProj.AddItem(grpCurPlay, str, size_t(0));
         }
     }
-    if (pDoc->GetGameState() == CGamDoc::stateHistPlay)
+    if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
     {
         str = CB::string::LoadString(IDS_PHEAD_GAM_HISTPLAY);
         m_listProj.AddItem(grpHistPlay, str, size_t(0));
@@ -499,7 +498,7 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 
     // Load rest of game history
     m_listProj.MarkGroupItem();
-    CHistoryTable* pHTbl = pDoc->GetHistoryTable();
+    CHistoryTable* pHTbl = pDoc.GetHistoryTable();
 
     if (pHTbl != NULL)
     {
@@ -512,8 +511,8 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             str += " - ";
             str += pRcd.m_strTitle;
             m_listProj.AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);
-            if (pDoc->IsPlayingHistory() &&
-                pDoc->GetCurrentHistoryRecNum() == i)
+            if (pDoc.IsPlayingHistory() &&
+                pDoc.GetCurrentHistoryRecNum() == i)
             {
                 m_listProj.MarkGroupItem(grpHist, i);
             }
@@ -777,10 +776,10 @@ void CGamProjView::OnUpdateProjItemExport(CCmdUI* pCmdUI)
 
 LRESULT CGamProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 {
-    CGamDoc* pDoc = GetDocument();
-    CPlayBoard& pPBoard = pDoc->GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
+    CGamDoc& pDoc = GetDocument();
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
     ASSERT(pPBoard.m_bOpenBoardOnLoad);
-    pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
+    pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl,
         pPBoard.GetBoard()->GetName(), &pPBoard);
     return (LRESULT)0;
 }
@@ -792,7 +791,7 @@ LRESULT CGamProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 
 LRESULT CGamProjView::OnMessageRestoreWinState(WPARAM, LPARAM)
 {
-    GetDocument()->RestoreWindowState();
+    GetDocument().RestoreWindowState();
     return (LRESULT)0;
 }
 
