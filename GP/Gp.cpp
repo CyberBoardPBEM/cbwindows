@@ -291,7 +291,7 @@ BOOL CGpApp::InitInstance()
         IDR_GAMETYPE,
         RUNTIME_CLASS(CGamDoc),
         RUNTIME_CLASS(CProjFrame),
-        RUNTIME_CLASS(CGamProjView));
+        RUNTIME_CLASS(CGamProjViewContainer));
     AddDocTemplate(pDocTemplate);
 
     m_pScnDocTemplate = new CMultiDocTemplate(
