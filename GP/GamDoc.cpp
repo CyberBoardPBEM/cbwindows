@@ -524,12 +524,12 @@ CGamProjView& CGamDoc::FindProjectView() const
     while (pos != NULL)
     {
         CView& pView = CheckedDeref(GetNextView(pos));
-        if (pView.IsKindOf(RUNTIME_CLASS(CGamProjView)))
+        if (pView.IsKindOf(RUNTIME_CLASS(CGamProjViewContainer)))
         {
-            return static_cast<CGamProjView&>(pView);
+            return static_cast<CGamProjViewContainer&>(pView);
         }
     }
-    ASSERT(!"no project view");
+    wxASSERT(!"no project view");
     AfxThrowNotSupportedException();
 }
 

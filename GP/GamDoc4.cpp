@@ -574,9 +574,9 @@ CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
         CFrameWnd& frm = CheckedDeref(projView.GetParentFrame());
         frm.ActivateFrame();
         BoardID bid = pPBoard.GetBoard()->GetSerialNumber();
-        int i = projView.Find(bid);
-        projView.m_listProj.MakeItemVisible(i);
-        projView.m_listProj.SetNotificationTip(i, IDS_BOARD_HIDDEN_MOVE);
+        size_t i = value_preserving_cast<size_t>(projView.Find(bid));
+        projView.m_listProj->MakeItemVisible(i);
+        projView.m_listProj->SetNotificationTip(i, CB::string::LoadString(IDS_BOARD_HIDDEN_MOVE));
         return nullptr;
     }
 

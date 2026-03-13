@@ -60,63 +60,83 @@ namespace CB { namespace Impl
     };
 }}
 
-class CGamProjView : public CView, private CB::Impl::CGamProjViewBase
+class CProjListBoxGam : public CProjListBoxWx<decltype(CB::Impl::CGamProjViewBase::grpDoc)>
 {
+    wxDECLARE_DYNAMIC_CLASS(CProjListBoxGam);
+};
+
+class CGamProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGamProjViewBase
+{
+#if 0
     DECLARE_DYNAMIC(CGamProjView)
+#endif
+    friend class CGamProjViewContainer;
 public:
-    CGamProjView();
+    CGamProjView(CGamProjViewContainer& p);
 
 // Attributes
+    CFrameWnd* GetParentFrame();
 private:
-    const CGamDoc& GetDocument() const { return CheckedDeref(CB::ToCGamDoc(m_pDocument)); }
+    const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
     {
         return const_cast<CGamDoc&>(std::as_const(*this).GetDocument());
     }
 
     // Various controls...
+    CB_XRC_BEGIN_CTRLS_DECL()
 public:
-    CProjListBox<decltype(grpDoc)>    m_listProj;         // Main project box
+        RefPtr<CProjListBoxGam> m_listProj;         // Main project box
 private:
 
-    CEdit           m_editInfo;         // Used for various project info/help
+        RefPtr<wxTextCtrl> m_editInfo;         // Used for various project info/help
 
-    CButton         m_btnPrjA;          // Project button group
-    CButton         m_btnPrjB;
+        RefPtr<wxButton> m_btnPrjA;          // Project button group
+        RefPtr<wxButton> m_btnPrjB;
+    CB_XRC_END_CTRLS_DECL()
 
 // Operations
 public:
-    int Find(BoardID bid) const;
+    size_t Find(BoardID bid) const;
 
 // Implementation
 protected:
     int             m_nLastSel;         // Previous listbox selection
-    int             m_nLastGrp;         // Previous listbox group selection
+    decltype(grpDoc) m_nLastGrp;         // Previous listbox group selection
 
 // Implementation
 protected:
+#if 0
     int CreateButton(UINT nCtrlID, CButton& btn, CPoint llpos, CSize relsize);
     BOOL CreateListbox(UINT nCtrlID, CListBox& lbox, DWORD dwStyle, CRect& rct);
     BOOL CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct);
+#endif
 
-    void SetButtonState(CButton& btn, UINT nStringID) const;
-    void UpdateButtons(int nGrp = -1);
-    void UpdateItemControls(int nGrp = -1) const;
+    void SetButtonState(wxButton& btn, UINT nStringID) const;
+    void UpdateButtons(decltype(grpDoc) nGrp = Invalid_v<decltype(grpDoc)>);
+    void UpdateItemControls(decltype(grpDoc) nGrp = Invalid_v<decltype(grpDoc)>);
 
+#if 0
     void LayoutView();
+#endif
 
     // Main document based support routines...
     void DoUpdateProjectList(BOOL bUpdateItem = TRUE);
 
+#if 0
     void DoGamProperty() const;
+#endif
     void DoUpdateGamInfo();
 
+#if 0
     void DoBoardProperty();
     void DoBoardView();
+#endif
 
     void DoUpdateBoardHelpInfo();
     void DoUpdateBoardInfo();
 
+#if 0
     void DoHistorySave();
     void DoHistoryLoad();
     void DoHistoryDone();
@@ -124,6 +144,7 @@ protected:
     void DoHistoryReplay();
     void DoHistoryReplayDone();
     void DoHistoryExport();
+#endif
 
     void DoUpdateHistoryHelpInfo();
     void DoUpdateCurPlayInfo();
@@ -132,17 +153,25 @@ protected:
 // Implementation
 protected:
     ~CGamProjView() override;
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+    void OnInitialUpdate();
+    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
+#if 0
     void OnDraw(CDC* pDC) override;      // overridden to draw this view
+#endif
 
-    // Generated message map functions
 protected:
-    //{{AFX_MSG(CGamProjView)
+#if 0
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSelChangeProjList();
+#endif
+    void OnSelChangeProjList(wxCommandEvent& event);
+    void OnSelChangeProjList()
+    {
+        wxCommandEvent dummy;
+        OnSelChangeProjList(dummy);
+    }
+#if 0
     afx_msg void OnDblClkProjList();
     afx_msg void OnClickedProjBtnA();
     afx_msg void OnClickedProjBtnB();
@@ -158,18 +187,30 @@ protected:
     afx_msg void OnUpdateProjItemExport(CCmdUI* pCmdUI);
     afx_msg void OnProjItemProperties();
     afx_msg void OnUpdateProjItemProperties(CCmdUI* pCmdUI);
-    //}}AFX_MSG
-    afx_msg LRESULT OnMessageShowPlayingBoard(WPARAM wParam, LPARAM);
-    afx_msg LRESULT OnMessageRestoreWinState(WPARAM, LPARAM);
+#endif
+    void OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event);
+    void OnMessageRestoreWinState(WinStateRestoreEvent& event);
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 
-    friend class CGamProjViewContainer;
+private:
+    // IGetCmdTarget
+    CCmdTarget& Get() override;
+
+    RefPtr<CGamProjViewContainer> parent;
+    RefPtr<CGamDoc> document;
 };
 
-class CGamProjViewContainer :  public CView
+class CGamProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
+                                public CB::NativeContainerWindowMixin
 {
 public:
+    operator const CGamProjView&() const { return *child; }
+    operator CGamProjView&()
+    {
+        return const_cast<CGamProjView&>(static_cast<const CGamProjView&>(std::as_const(*this)));
+    }
+
     void OnDraw(CDC* pDC) override;
 
     void OnInitialUpdate() override;
@@ -180,14 +221,27 @@ private:
     DECLARE_DYNCREATE(CGamProjViewContainer)
 
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+#if 0
     afx_msg void OnSize(UINT nType, int cx, int cy);
+#endif
     DECLARE_MESSAGE_MAP()
 
-    // owned by MFC
-    RefPtr<CGamProjView> child;
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
 
-    typedef CView BASE;
+    // owned by wx
+    CB::propagate_const<CGamProjView*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+inline CCmdTarget& CGamProjView::Get()
+{
+    return *parent;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////

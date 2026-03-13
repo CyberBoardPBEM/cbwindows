@@ -815,6 +815,90 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CGamProjView">
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer87">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxBoxSizer" name="bSizer88">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
+            <border>5</border>
+            <option>1</option>
+            <object class="wxVListBox" name="m_listProj" subclass="CProjListBoxGam"/>
+          </object>
+          <object class="sizeritem">
+            <flag></flag>
+            <border>5</border>
+            <option>0</option>
+            <object class="wxBoxSizer" name="bSizer90">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxBoxSizer" name="bSizer901">
+                  <orient>wxHORIZONTAL</orient>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxLEFT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxButton" name="m_btnPrjA">
+                      <label>MyButton</label>
+                      <default>0</default>
+                      <auth_needed>0</auth_needed>
+                      <markup>0</markup>
+                      <bitmap/>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                    <border>5</border>
+                    <option>0</option>
+                    <object class="wxButton" name="m_btnPrjB">
+                      <label>MyButton</label>
+                      <default>0</default>
+                      <auth_needed>0</auth_needed>
+                      <markup>0</markup>
+                      <bitmap/>
+                    </object>
+                  </object>
+                </object>
+              </object>
+              <object class="spacer">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <size>0,0</size>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticLine" name="m_staticline3">
+          <style>wxLI_VERTICAL</style>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxTextCtrl" name="m_editInfo">
+          <style>wxTE_MULTILINE|wxTE_READONLY</style>
+          <value></value>
+          <maxlength>0</maxlength>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxPanel" name="CGsnProjView">
     <style>wxTAB_TRAVERSAL</style>
     <object class="wxBoxSizer" name="bSizer80">
@@ -3740,6 +3824,66 @@
     </object>
     <object class="wxMenu" name="MENU_PJ_GAM_DEFAULT">
       <label>4=PJ__GAM__DEFAULT</label>
+      <object class="wxMenuItem" name="ID_PPROJITEM_VIEW">
+        <label>View</label>
+        <accel></accel>
+        <help>View selected item.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PPROJITEM_REPLAY">
+        <label>Replay</label>
+        <accel></accel>
+        <help>Replay selected move record.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PPROJITEM_EXPORT">
+        <label>Export...</label>
+        <accel></accel>
+        <help>Export more record to a disk file.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_NEXTHIST">
+        <label>Next History Entry</label>
+        <accel></accel>
+        <help>Close current history playback and open the next</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_CLOSEHIST">
+        <label>Close History Playback</label>
+        <accel></accel>
+        <help>Close history playback mode.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_FILE_DISCARDRECORDING">
+        <label>Discard Current Move Recording...</label>
+        <accel></accel>
+        <help>Discard the current move recording.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_FILE_LOADMOVES">
+        <label>Load Recorded Move File...</label>
+        <accel></accel>
+        <help>Load file of recorded moves.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_FILE_SENDMOVES2FILE">
+        <label>Send Recorded Moves to File...</label>
+        <accel></accel>
+        <help>Send current move recording to file</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_FINISH">
+        <label>Accept Move File Playback...</label>
+        <accel></accel>
+        <help>Finishes and accepts the  move file being played back. Adds to game history.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_DISCARD">
+        <label>_Discard Move File Playback</label>
+        <accel></accel>
+        <help>Discard the current move recording.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PPROJITEM_PROPERTIES">
+        <label>Properties...</label>
+        <accel></accel>
+        <help>Examine item properties.</help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_PV_PIECE_TRAY">
       <label>5=PV__PIECE__TRAY</label>

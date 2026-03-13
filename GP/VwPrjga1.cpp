@@ -46,9 +46,11 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // Scenario Info routine
 
+#if 0
 void CGamProjView::DoGamProperty() const
 {
 }
+#endif
 
 void CGamProjView::DoUpdateGamInfo()
 {
@@ -75,12 +77,13 @@ void CGamProjView::DoUpdateGamInfo()
     }
     if (!pDoc.m_strScnDescr.empty())
         str += strDescr + pDoc.m_strScnDescr;
-    m_editInfo.SetWindowText(str);
+    m_editInfo->SetValue(str);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Playing Board support routines
 
+#if 0
 void CGamProjView::DoBoardProperty()
 {
     CGamDoc& pDoc = GetDocument();
@@ -120,20 +123,22 @@ void CGamProjView::DoBoardView()
         pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
+#endif
 
 void CGamProjView::DoUpdateBoardHelpInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGamProjView::DoUpdateBoardInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Game History support routines
 
+#if 0
 // Save current moves
 void CGamProjView::DoHistorySave()
 {
@@ -225,10 +230,11 @@ void CGamProjView::DoHistoryExport()
     size_t nHist = m_listProj.GetItemSourceCode(nSel);
     pDoc.SaveHistoryMovesInFile(nHist);
 }
+#endif
 
 void CGamProjView::DoUpdateHistoryHelpInfo()
 {
-    m_editInfo.SetWindowText(""_cbstring);
+    m_editInfo->SetValue(""_cbstring);
 }
 
 void CGamProjView::DoUpdateCurPlayInfo()
@@ -240,21 +246,19 @@ void CGamProjView::DoUpdateCurPlayInfo()
         if (!pDoc.m_pPlayHist->m_strDescr.empty())
             str = pDoc.m_pPlayHist->m_strDescr;
     }
-    m_editInfo.SetWindowText(str);
+    m_editInfo->SetValue(str);
 }
 
 void CGamProjView::DoUpdateHistoryInfo()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    size_t nHist = m_listProj.GetItemSourceCode(nSel);
-    CHistoryTable* pHistTbl = pDoc.GetHistoryTable();
-    ASSERT(pHistTbl);
-    CHistRecord& pHRec = pHistTbl->GetHistRecord(nHist);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpHist);
+    size_t nHist = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
+    CHistoryTable& pHistTbl = CheckedDeref(pDoc.GetHistoryTable());
+    CHistRecord& pHRec = pHistTbl.GetHistRecord(nHist);
 
-    m_editInfo.SetWindowText(pHRec.m_strDescr);
+    m_editInfo->SetValue(pHRec.m_strDescr);
 }
 
 

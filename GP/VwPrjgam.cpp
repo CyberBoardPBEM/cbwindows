@@ -39,7 +39,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#if 0
 IMPLEMENT_DYNAMIC(CGamProjView, CView)
+#endif
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGam, CProjListBoxBaseWx)
 IMPLEMENT_DYNCREATE(CGamProjViewContainer, CView)
 
 #ifdef _DEBUG
@@ -91,11 +94,13 @@ static UINT * btnGroupTbl[nNumGroups + 1] =
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CGamProjView, CView)
-    //{{AFX_MSG_MAP(CGamProjView)
+wxBEGIN_EVENT_TABLE(CGamProjView, wxPanel)
+#if 0
     ON_WM_SIZE()
     ON_WM_CREATE()
-    ON_LBN_SELCHANGE(IDC_V_GAM_PROJLIST, OnSelChangeProjList)
+#endif
+    EVT_LISTBOX(XRCID("m_listProj"), OnSelChangeProjList)
+#if 0
     ON_LBN_DBLCLK(IDC_V_GAM_PROJLIST, OnDblClkProjList)
     ON_BN_CLICKED(IDC_V_GAM_BTN_PRJA, OnClickedProjBtnA)
     ON_BN_CLICKED(IDC_V_GAM_BTN_PRJB, OnClickedProjBtnB)
@@ -111,10 +116,10 @@ BEGIN_MESSAGE_MAP(CGamProjView, CView)
     ON_UPDATE_COMMAND_UI(ID_PPROJITEM_EXPORT, OnUpdateProjItemExport)
     ON_COMMAND(ID_PPROJITEM_PROPERTIES, OnProjItemProperties)
     ON_UPDATE_COMMAND_UI(ID_PPROJITEM_PROPERTIES, OnUpdateProjItemProperties)
-    //}}AFX_MSG_MAP
-    ON_MESSAGE(WM_SHOWPLAYINGBOARD, OnMessageShowPlayingBoard)
-    ON_MESSAGE(WM_WINSTATE_RESTORE, OnMessageRestoreWinState)
-END_MESSAGE_MAP()
+#endif
+    EVT_SHOWPLAYINGBOARD(OnMessageShowPlayingBoard)
+    EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CGamProjViewContainer, CView)
     ON_WM_CREATE()
@@ -124,24 +129,43 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGamProjView
 
-CGamProjView::CGamProjView()
+CGamProjView::CGamProjView(CGamProjViewContainer& p) :
+    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGamProjView)
+        CB_XRC_CTRL(m_listProj)
+        CB_XRC_CTRL(m_editInfo)
+        CB_XRC_CTRL(m_btnPrjA)
+        CB_XRC_CTRL(m_btnPrjB)
+    CB_XRC_END_CTRLS_DEFN(),
+    parent(&p),
+    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
 {
-    m_nLastSel = -1;
-    m_nLastGrp = -1;
+    m_nLastSel = wxNOT_FOUND;
+    m_nLastGrp = Invalid_v<decltype(grpDoc)>;
+    /* m_listProj's best width is tied to its text content,
+        so it will change when DoUpdateProjectList() runs.
+        However, I want the layout to be determined by the size
+        of the buttons, so set max width to the initial width to
+        prevent long text from growing the window. */
+    m_listProj->SetMaxSize(wxSize(m_listProj->GetSize().x, m_listProj->GetMaxSize().y));
 }
 
 CGamProjView::~CGamProjView()
 {
 }
 
-int CGamProjView::Find(BoardID bid) const
+CFrameWnd* CGamProjView::GetParentFrame()
+{
+    return parent->GetParentFrame();
+}
+
+size_t CGamProjView::Find(BoardID bid) const
 {
     const CGamDoc& doc = GetDocument();
-    for (int i = 0 ; i < m_listProj.GetCount() ; ++i)
+    for (size_t i = size_t(0) ; i < m_listProj->GetItemCount() ; ++i)
     {
-        if (m_listProj.GetItemGroupCode(i) == grpBrd)
+        if (m_listProj->GetItemGroupCode(i) == grpBrd)
         {
-            size_t nBrd = m_listProj.GetItemSourceCode(i);
+            size_t nBrd = m_listProj->GetItemSourceCode(i);
             const CPlayBoard& pPBoard = doc.GetPBoardManager().GetPBoard(nBrd);
             if (pPBoard.GetBoard()->GetSerialNumber() == bid)
             {
@@ -149,10 +173,11 @@ int CGamProjView::Find(BoardID bid) const
             }
         }
     }
-    ASSERT(!"unknown BoardID");
-    return -1;
+    wxASSERT(!"unknown BoardID");
+    return Invalid_v<size_t>;
 }
 
+#if 0
 int CGamProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CView::OnCreate(lpCreateStruct) == -1)
@@ -192,13 +217,13 @@ int CGamProjView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 void CGamProjView::OnInitialUpdate()
 {
     GetDocument().DoInitialUpdate();   // Since UpdateAllViews isn't virtual
-    CView::OnInitialUpdate();
     CGamDoc& pDoc = GetDocument();
     CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     // Only honor the open-on-load flags if the save window state
@@ -212,12 +237,16 @@ void CGamProjView::OnInitialUpdate()
             {
                 // Defer opening the view until our view init
                 // in done.
-                PostMessage(WM_SHOWPLAYINGBOARD, value_preserving_cast<WPARAM>(i));
+                ShowPlayingBoardEvent event(i);
+                AddPendingEvent(event);
             }
         }
     }
     else
-        PostMessage(WM_WINSTATE_RESTORE);
+    {
+        WinStateRestoreEvent event;
+        AddPendingEvent(event);
+    }
 }
 
 void CGamProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -230,6 +259,7 @@ void CGamProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 /////////////////////////////////////////////////////////////////////////////
 // CGamProjView drawing
 
+#if 0
 void CGamProjView::OnDraw(CDC* pDC)
 {
     CDocument& pDoc = GetDocument();
@@ -363,42 +393,42 @@ BOOL CGamProjView::CreateEditbox(UINT nCtrlID, CEdit& ebox, CRect& rct)
     ebox.SetFont(CFont::FromHandle(g_res.h8ss));
     return bOk;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Updates buttons for specified group
 
-void CGamProjView::UpdateButtons(int nGrp)
+void CGamProjView::UpdateButtons(decltype(grpDoc) nGrpIn /*= Invalid_v<decltype(grpDoc)>*/)
 {
+    typedef std::underlying_type_t<decltype(nGrpIn)> UT;
+    UT& nGrp = reinterpret_cast<UT&>(nGrpIn);
     nGrp++;                     // -1 means no selection so bump to zero
     UINT* pTbl = btnGroupTbl[nGrp];
-    SetButtonState(m_btnPrjA, pTbl[0]);
-    SetButtonState(m_btnPrjB, pTbl[1]);
+    SetButtonState(*m_btnPrjA, pTbl[0]);
+    SetButtonState(*m_btnPrjB, pTbl[1]);
 }
 
-void CGamProjView::SetButtonState(CButton& btn, UINT nStringID) const
+void CGamProjView::SetButtonState(wxButton& btn, UINT nStringID) const
 {
-    if (nStringID == 0)
-        btn.SetWindowText(""_cbstring);
+    if (nStringID == UINT(0))
+        btn.SetLabel(""_cbstring);
     else
     {
         CB::string str = CB::string::LoadString(nStringID);
-        btn.SetWindowText(str);
+        btn.SetLabel(str);
     }
-    btn.EnableWindow(nStringID != 0);
+    btn.Enable(nStringID != UINT(0));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Updates item controls for specified group
 
-void CGamProjView::UpdateItemControls(int nGrp) const
+void CGamProjView::UpdateItemControls(decltype(grpDoc) /*nGrp*/ /*= Invalid_v<decltype(grpDoc)>*/)
 {
-    HDWP hDwp = BeginDeferWindowPos(4);
-    #define EzDefer(h, c, flg) \
-        DeferWindowPos(h, c.m_hWnd, NULL, 0, 0, 0, 0, \
-            SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | flg)
-    //!!!! Really don't need this stuff yet
-    hDwp = EzDefer(hDwp, m_editInfo, SWP_SHOWWINDOW);
-    EndDeferWindowPos(hDwp);
+    wxWindowUpdateLocker freezer(this);
+    ChildrenRepositioningGuard crg(this);
+
+    m_editInfo->Show();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -407,13 +437,14 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 {
     CGamDoc& pDoc = GetDocument();
 
-    m_listProj.SetRedraw(FALSE);
-
     // Preserve the current selection
-    int nTopIdx = m_listProj.GetTopIndex();
-    int nCurSel = m_listProj.GetCurSel();
+    size_t nTopIdx = m_listProj->GetVisibleRowsBegin();
+    int nCurSel = m_listProj->GetSelection();
 
-    m_listProj.ResetContent();
+    {
+    wxWindowUpdateLocker freezer(&*m_listProj);
+
+    m_listProj->Clear();
 
     // Document type....
     CB::string str = CB::string::LoadString(IDS_PHEAD_GAM_DOCTYPE);
@@ -437,11 +468,11 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             str += strOwnedBy;
         }
     }
-    m_listProj.AddItem(grpDoc, str);
+    m_listProj->AddItem(grpDoc, str);
 
     // Boards....
     str = CB::string::LoadString(IDS_PHEAD_GAM_BOARDS);
-    m_listProj.AddItem(grpBrdHdr, str);
+    m_listProj->AddItem(grpBrdHdr, str);
 
     CPBoardManager& pPBMgr = pDoc.GetPBoardManager();
     for (size_t i = size_t(0); i < pPBMgr.GetNumPBoards(); i++)
@@ -466,12 +497,12 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_PROJ, strOwner);
             str += strOwnedBy;
         }
-        m_listProj.AddItem(grpBrd, str, i);
+        m_listProj->AddItem(grpBrd, str, i);
     }
 
     // History Heading....
     str = CB::string::LoadString(IDS_PHEAD_GAM_HISTORY);
-    m_listProj.AddItem(grpHistHdr, str);
+    m_listProj->AddItem(grpHistHdr, str);
 
     // Current History....!!!!!ACCOUNT FOR PLAYBACK!!!!!
     if (pDoc.GetRecordMoveList() != NULL)
@@ -480,12 +511,12 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
         if (pDoc.GetGameState() == CGamDoc::stateRecording)
         {
             str = CB::string::LoadString(IDS_PHEAD_GAM_CURRENT);
-            m_listProj.AddItem(grpCurHist, str, size_t(0));
+            m_listProj->AddItem(grpCurHist, str, size_t(0));
         }
         else if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
         {
             str = CB::string::LoadString(IDS_PHEAD_GAM_SUSPEND);
-            m_listProj.AddItem(grpCurHist, str, size_t(0));
+            m_listProj->AddItem(grpCurHist, str, size_t(0));
         }
         else
         {
@@ -493,17 +524,17 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             str = CB::string::LoadString(IDS_PHEAD_GAM_MOVEFILE);
             if (!pDoc.m_pPlayHist->m_strTitle.empty())
                 str += " - " + pDoc.m_pPlayHist->m_strTitle;
-            m_listProj.AddItem(grpCurPlay, str, size_t(0));
+            m_listProj->AddItem(grpCurPlay, str, size_t(0));
         }
     }
     if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
     {
         str = CB::string::LoadString(IDS_PHEAD_GAM_HISTPLAY);
-        m_listProj.AddItem(grpHistPlay, str, size_t(0));
+        m_listProj->AddItem(grpHistPlay, str, size_t(0));
     }
 
     // Load rest of game history
-    m_listProj.MarkGroupItem();
+    m_listProj->MarkGroupItem();
     CHistoryTable* pHTbl = pDoc.GetHistoryTable();
 
     if (pHTbl != NULL)
@@ -516,33 +547,33 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
             CB::string str = pRcd.m_timeAbsorbed.Format(strTimeFmt.v_str());
             str += " - ";
             str += pRcd.m_strTitle;
-            m_listProj.AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);
+            m_listProj->AddSeqItem(grpHist, str, value_preserving_cast<int>(i), i);
             if (pDoc.IsPlayingHistory() &&
                 pDoc.GetCurrentHistoryRecNum() == i)
             {
-                m_listProj.MarkGroupItem(grpHist, i);
+                m_listProj->MarkGroupItem(grpHist, i);
             }
         }
     }
 
     // OK...Show the updates
-    m_listProj.SetRedraw(TRUE);
-    m_listProj.Invalidate();
+    }
+    m_listProj->Refresh();
 
-    m_listProj.SetTopIndex(nTopIdx);
+    m_listProj->ScrollToRow(nTopIdx);
     if (nCurSel >= 0)
     {
-        if (nCurSel >= m_listProj.GetCount())
-            nCurSel = m_listProj.GetCount() - 1;
-        m_listProj.SetCurSel(nCurSel);
+        if (nCurSel >= value_preserving_cast<int>(m_listProj->GetItemCount()))
+            nCurSel = value_preserving_cast<int>(m_listProj->GetItemCount()) - 1;
+        m_listProj->SetSelection(nCurSel);
     }
     else
-        m_listProj.SetCurSel(0);
+        m_listProj->SetSelection(0);
 
     if (bUpdateItem)
     {
-        m_nLastSel = -1;
-        m_nLastGrp = -1;
+        m_nLastSel = wxNOT_FOUND;
+        m_nLastGrp = Invalid_v<decltype(grpDoc)>;
         OnSelChangeProjList();
     }
 }
@@ -550,14 +581,14 @@ void CGamProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
 /////////////////////////////////////////////////////////////////////////////
 // List box notifications
 
-void CGamProjView::OnSelChangeProjList()
+void CGamProjView::OnSelChangeProjList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (m_nLastSel == nSel)
         return;
 
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     switch (nGrp)
     {
         case grpDoc:    DoUpdateGamInfo(); break;
@@ -567,7 +598,11 @@ void CGamProjView::OnSelChangeProjList()
         case grpCurPlay:DoUpdateCurPlayInfo(); break;
         case grpHist:   DoUpdateHistoryInfo(); break;
         default:
-            m_editInfo.SetWindowText(""_cbstring);
+            wxASSERT(!"invalid item group");
+            [[fallthrough]];
+        case grpCurHist:
+        case grpHistPlay:
+            m_editInfo->SetValue(""_cbstring);
     }
     if (nGrp != m_nLastGrp)
     {
@@ -577,6 +612,7 @@ void CGamProjView::OnSelChangeProjList()
     }
 }
 
+#if 0
 void CGamProjView::OnDblClkProjList()
 {
     int nSel = m_listProj.GetCurSel();
@@ -774,20 +810,20 @@ void CGamProjView::OnUpdateProjItemExport(CCmdUI* pCmdUI)
     }
     pCmdUI->Enable(bEnable);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles the cutom message WM_SHOWPLAYINGBOARD. The
 // message is posted during view initial update if the playing
 // board m_bOpenBoardOnLoad option is set. (wParam = the board index)
 
-LRESULT CGamProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
+void CGamProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
 {
     CGamDoc& pDoc = GetDocument();
-    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(value_preserving_cast<size_t>(wParam));
-    ASSERT(pPBoard.m_bOpenBoardOnLoad);
+    CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(event.GetPlayingBoardIndex());
+    wxASSERT(pPBoard.m_bOpenBoardOnLoad);
     pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl,
         pPBoard.GetBoard()->GetName(), &pPBoard);
-    return (LRESULT)0;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -795,10 +831,9 @@ LRESULT CGamProjView::OnMessageShowPlayingBoard(WPARAM wParam, LPARAM)
 // message is posted during view initial update if the state of
 // the windows should be restored.
 
-LRESULT CGamProjView::OnMessageRestoreWinState(WPARAM, LPARAM)
+void CGamProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
 {
     GetDocument().RestoreWindowState();
-    return (LRESULT)0;
 }
 
 void CGamProjViewContainer::OnDraw(CDC* pDC)
@@ -821,7 +856,7 @@ void CGamProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHin
 }
 
 CGamProjViewContainer::CGamProjViewContainer() :
-    child(new CGamProjView)
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -832,25 +867,17 @@ int CGamProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    DWORD dwStyle = AFX_WS_DEFAULT_VIEW & ~WS_BORDER;
-    // Create with the right size (wrong position)
-    CRect rect;
-    GetClientRect(rect);
-    CCreateContext context;
-    context.m_pCurrentDoc = GetDocument();
-    if (!child->Create(NULL, NULL, dwStyle,
-                        rect, this, 0, &context))
-    {
-        return -1;
-    }
+    child = new CGamProjView(*this);
 
     return 0;
 }
 
+#if 0
 void CGamProjViewContainer::OnSize(UINT nType, int cx, int cy)
 {
     child->MoveWindow(0, 0, cx, cy);
     return CView::OnSize(nType, cx, cy);
 }
+#endif
 
 

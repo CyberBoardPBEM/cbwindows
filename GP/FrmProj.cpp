@@ -89,7 +89,6 @@ void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
         CView *pView = GetActiveView();
         if (pView)
         {
-            wxASSERT(!pView->IsKindOf(RUNTIME_CLASS(CGamProjView)));
             if (pView->IsKindOf(RUNTIME_CLASS(CGsnProjViewContainer)) ||
                 pView->IsKindOf(RUNTIME_CLASS(CGamProjViewContainer)))
             {
