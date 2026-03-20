@@ -127,19 +127,12 @@ public:
     int m_nTimerID;
     wxRect  m_rectMultiBorder;
     // ------- //
-#if 0
-    BOOL ProcessAutoScroll(CPlayBoardView& pView);
-#endif
     void DrawSelectionRect(wxDC& pDC, const wxRect& pRct) const;
     void DrawNetRect(wxDC& pDC, const CPlayBoardView& pView) const;
     [[nodiscard]] wxPoint AdjustPoint(const CPlayBoardView& pView, wxPoint point) const;
     void MoveSelections(CSelList &pSLst, const wxPoint& point);
     void StartDragTimer(CPlayBoardView& pView);
     void KillDragTimer(CPlayBoardView& pView);
-#if 0
-    void StartScrollTimer(CPlayBoardView& pView);
-    void KillScrollTimer(CPlayBoardView& pView);
-#endif
     // ------- //
     void DoDragDropStart(CPlayBoardView& pView);
     void DoDragDrop(CPlayBoardView& pView, const wxPoint& pntClient);

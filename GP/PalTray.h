@@ -91,9 +91,6 @@ protected:
     CB::propagate_const<wxBitmapButton*> m_bpMenuBtn;
     CB::propagate_const<wxChoice*> m_comboYGrp;
     CB::propagate_const<CTrayListBoxWx*> m_listTray;
-#if 0
-    CRect        m_rctMenuBtn;                      // phony menu button dims
-#endif
     int          m_nComboHeight;
 
     void LoadTrayNameList();

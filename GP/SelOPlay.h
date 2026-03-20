@@ -116,10 +116,6 @@ protected:
 protected:
     RefPtr<CPlayBoardView> m_pView;            // Selection's view
     // -- Class level support methods -- //
-#if 0
-    static void SetupTrackingDraw(wxDC& pDC);
-    static void CleanUpTrackingDraw(wxDC& pDC);
-#else
     class DCSetupTrackingDraw
     {
     public:
@@ -128,7 +124,6 @@ protected:
         wxDCPenChanger setPen;
         wxDCBrushChanger setBrush;
     };
-#endif
     // -- Class variables -- //
     static const wxPen c_penDot;
 #if 0

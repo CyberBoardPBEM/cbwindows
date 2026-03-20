@@ -178,36 +178,10 @@ void CPlayBoardView::ClearToolTip()
 
 //////////////////////////////////////////////////////////////////////
 
-#if 0
-void CPlayBoardView::SetNotificationTip(wxPoint pointClient, UINT nResID)
-{
-    CB::string str = CB::string::LoadString(nResID);
-    SetNotificationTip(pointClient, &str);
-}
-#endif
-
 void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string& pszTip)
 {
     ClearNotificationTip();
 
-#if 0
-    TOOLINFO ti;
-    m_toolMsgTip.FillInToolInfo(ti, this, ID_TIP_PLAYBOARD_MSG);
-    ti.uFlags |= TTF_TRACK;
-    ti.lpszText = pszTip ? const_cast<CB::string::value_type*>(pszTip->v_str()) : nullptr;
-
-    m_toolMsgTip.SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti);
-
-    CPoint pointScreen(pointClient);
-    ClientToScreen(&pointScreen);
-
-    m_toolMsgTip.Activate(TRUE);
-    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
-    m_toolMsgTip.SendMessage(TTM_TRACKPOSITION, 0,
-        (LPARAM)MAKELONG(static_cast<int16_t>(pointScreen.x), static_cast<int16_t>(pointScreen.y)));
-
-    SetTimer(ID_TIP_MSG_TIMER, MAX_TIP_MSG_TIME, NotificationTipTimeoutHandler);
-#else
     m_toolMsgTip.Add(*this, pszTip, CB::ToolTip::TRACK);
 
     wxPoint pointScreen = ClientToScreen(pointClient);
@@ -217,26 +191,15 @@ void CPlayBoardView::SetNotificationTip(wxPoint pointClient, const CB::string& p
     m_toolMsgTip.TrackPosition(pointScreen);
 
     m_toolMsgTipTimer.Start(MAX_TIP_MSG_TIME, wxTIMER_ONE_SHOT);
-#endif
 }
 
 void CPlayBoardView::ClearNotificationTip()
 {
-#if 0
-    KillTimer(ID_TIP_MSG_TIMER);            // Kill it in case it's still running
-
-    CToolInfo ti;
-    m_toolMsgTip.GetToolInfo(ti, this, ID_TIP_PLAYBOARD_MSG);
-    m_toolMsgTip.SendMessage(TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
-    m_toolMsgTip.DelTool(this, ID_TIP_PLAYBOARD_MSG);
-    m_toolMsgTip.Activate(FALSE);
-#else
     m_toolMsgTipTimer.Stop();
 
     m_toolMsgTip.TrackActivate(*this, false);
     m_toolMsgTip.Delete(*this);
     m_toolMsgTip.Enable(false);
-#endif
 }
 
 void CPlayBoardView::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
@@ -723,61 +686,6 @@ void CPlayBoardView::CenterViewOnWorkspacePoint(wxPoint point)
     Scroll(newUpLeft);
     Update();
 }
-
-#if 0
-//////////////////////////////////////////////////////////////////////////
-// point is in client coords
-
-BOOL CPlayBoardView::CheckAutoScroll(CPoint point)
-{
-    CRect  rctClient;
-    CRect  rct;
-
-    GetClientRect(&rctClient);
-    rct = rctClient;
-    rct.InflateRect(-scrollZone, -scrollZone);
-    rct.NormalizeRect();
-
-    return rctClient.PtInRect(point) && !rct.PtInRect(point);
-}
-
-// Returns TRUE if scroll happened
-BOOL CPlayBoardView::ProcessAutoScroll(CPoint point)
-{
-    CRect  rectClient;
-    CRect  rect;
-
-    GetClientRect(&rectClient);
-    rect = rectClient;
-    rect.InflateRect(-scrollZone, -scrollZone);
-    rect.NormalizeRect();
-
-    UINT nScrollID = MAKEWORD(-1, -1);
-    if (rectClient.PtInRect(point) && !rect.PtInRect(point))
-    {
-        // Mouse is in the scroll zone....
-        // Determine which way to scroll along both X & Y axis
-        if (point.x < rect.left)
-            nScrollID = MAKEWORD(SB_LINEUP, HIBYTE(nScrollID));
-        else if (point.x >= rect.right)
-            nScrollID = MAKEWORD(SB_LINEDOWN, HIBYTE(nScrollID));
-        if (point.y < rect.top)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEUP);
-        else if (point.y >= rect.bottom)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEDOWN);
-        ASSERT(nScrollID != MAKEWORD(-1, -1));
-        // First check if scroll can happen.
-        BOOL bValidScroll = OnScroll(nScrollID, 0, FALSE);
-        if (bValidScroll)
-        {
-            OnScroll(nScrollID, 0, TRUE);
-            UpdateWindow();         // Redraw image content.
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-#endif
 
 // this method can be overridden in a derived class to forbid sending the
 // auto scroll events - note that unlike StopAutoScrolling() it doesn't
