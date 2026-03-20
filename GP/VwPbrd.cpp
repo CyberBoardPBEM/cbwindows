@@ -264,9 +264,6 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
     m_nCurToolID = XRCID("ID_PTOOL_SELECT");
     m_bInDrag = FALSE;
     m_pDragSelList = NULL;
-#if 0
-    m_nTimerID = uintptr_t(0);
-#endif
 
     // use sizers for scrolling
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -842,17 +839,8 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
         return;
     }
 
-#if 0
-    if (pdi.m_phase == PhaseDrag::Exit)
-        DragKillAutoScroll();
-    else if (pdi.m_phase == PhaseDrag::Over)
-#else
     if (pdi.m_phase == PhaseDrag::Over)
-#endif
     {
-#if 0
-        DragCheckAutoScroll();
-#endif
         event.SetCursor(pdi.m_hcsrSuggest);
         return;
     }
@@ -999,10 +987,6 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
         GetOverlay().Reset();
 #endif
     }
-#if 0
-    if (pdi.m_phase == PhaseDrag::Exit)
-        DragKillAutoScroll();
-#endif
 
     wxRect rctSnapRef = CB::Convert(pSLst->GetSnapReferenceRect());
     wxPoint pntSnapRefTopLeft = rctSnapRef.GetTopLeft();
@@ -1052,9 +1036,6 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
 
     if (pdi.m_phase == PhaseDrag::Over)
     {
-#if 0
-        DragCheckAutoScroll();
-#endif
         event.SetCursor(pdi.m_hcsrSuggest);
         return;
     }
@@ -1063,9 +1044,6 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
         CGamDoc& pDoc = GetDocument();
 
         // Whoooopppp...Whoooopppp!!! Drop occurred here....
-#if 0
-        DragKillAutoScroll();
-#endif
         std::vector<CB::not_null<CDrawObj*>> listObjs;
         pSLst->LoadTableWithObjectPtrs(listObjs, CSelList::otAll, FALSE);
         pSLst->PurgeList(FALSE);            // Purge source list
@@ -1092,87 +1070,6 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
     event.SetResult(true);
     return;
 }
-
-#if 0
-void CPlayBoardView::DragDoAutoScroll()
-{
-    CPoint ptBefore(0, 0);
-    ptBefore = ClientToWorkspace(ptBefore);
-    CDC *pDC = NULL;
-
-    if (m_pDragSelList != NULL)
-    {
-        // Remove previous drag image.
-        pDC = GetDC();
-        pDC->SaveDC();
-        OnPrepareScaledDC(*pDC, TRUE);
-        m_pDragSelList->DrawTracker(*pDC, trkMoving);
-        pDC->RestoreDC(-1);
-    }
-    CPoint point;
-    GetCursorPos(&point);
-    ScreenToClient(&point);
-    BOOL bScrolled = ProcessAutoScroll(point);
-    if (m_pDragSelList != NULL && bScrolled)
-    {
-        CPoint ptAfter(0, 0);
-        ptAfter = ClientToWorkspace(ptAfter);
-        CSize sizeDelta = ptAfter - ptBefore;
-        if (sizeDelta.cx != 0 || sizeDelta.cy != 0)
-        {
-            // We still have to make sure the larger rect hasn't left the
-            // playing area.
-            CRect rctObjs = m_pDragSelList->GetEnclosingRect();
-            rctObjs += (CPoint)sizeDelta;               // Calc trial new position
-            BOOL bXOK, bYOK;
-            if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
-            {
-                sizeDelta.cx = bXOK ? sizeDelta.cx : 0;
-                sizeDelta.cy = bYOK ? sizeDelta.cy : 0;
-            }
-        }
-        m_pDragSelList->Offset((CPoint)sizeDelta);
-    }
-    if (m_pDragSelList != NULL)
-    {
-        pDC->SaveDC();
-        OnPrepareScaledDC(*pDC, TRUE);
-        // Restore drag image.
-        m_pDragSelList->DrawTracker(*pDC, trkMoving);
-        pDC->RestoreDC(-1);
-    }
-    if (pDC != NULL)
-        ReleaseDC(pDC);
-}
-
-void CPlayBoardView::DragCheckAutoScroll()
-{
-    m_bInDrag = TRUE;
-    CPoint point;
-    GetCursorPos(&point);
-    ScreenToClient(&point);
-    if (CheckAutoScroll(point))
-    {
-        if (m_nTimerID == uintptr_t(0))
-            m_nTimerID = SetTimer(timerIDAutoScroll, timerAutoScroll, NULL);
-    }
-    else if (m_nTimerID != uintptr_t(0))
-    {
-        if (m_nTimerID != uintptr_t(0))
-            KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
-    }
-}
-
-void CPlayBoardView::DragKillAutoScroll()
-{
-    m_bInDrag = FALSE;
-    m_pDragSelList = NULL;
-    if (m_nTimerID != uintptr_t(0))
-        KillTimer(m_nTimerID);
-    m_nTimerID = uintptr_t(0);
-}
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -1391,36 +1288,16 @@ void CPlayBoardView::OnLButtonDblClk(wxMouseEvent& event)
 
 void CPlayBoardView::OnTimer(wxTimerEvent& event)
 {
-#if 0
-    if (m_nTimerID == nIDEvent)
+    if (!GetDocument().IsPlaying())
     {
-        CPoint point;
-        GetCursorPos(&point);
-        ScreenToClient(&point);
-        if (!m_bInDrag || !CheckAutoScroll(point))
-        {
-            KillTimer(m_nTimerID);
-            return;
-        }
-        DragDoAutoScroll();
-        return;
+        PToolType eToolType = MapToolType(m_nCurToolID);
+        CPlayTool& pTool = CPlayTool::GetTool(eToolType);
+        pTool.OnTimer(*this, event.GetId());
     }
     else
     {
-#endif
-        if (!GetDocument().IsPlaying())
-        {
-            PToolType eToolType = MapToolType(m_nCurToolID);
-            CPlayTool& pTool = CPlayTool::GetTool(eToolType);
-            pTool.OnTimer(*this, event.GetId());
-        }
-        else
-        {
-            event.Skip();
-        }
-#if 0
+        event.Skip();
     }
-#endif
 }
 
 void CPlayBoardView::OnSetCursor(wxSetCursorEvent& event)

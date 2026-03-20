@@ -1,6 +1,6 @@
 // ToolPlay.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -201,39 +201,6 @@ void CPSelectTool::OnMouseMove(CPlayBoardView& pView, int nMods, wxPoint point)
     if (!pView.HasCapture())
         return;
 
-#if 0
-    if (m_eSelMode != smodeNormal && m_eSelMode != smodeMove)
-    {
-        // Autoscroll initiate possibility processing (sounds like a
-        // scifi flic). Autoscroll is enabled when the mouse is captured
-        // and the mouse is outside of the client area.
-        CRect rct;
-        CPoint pt;
-        GetCursorPos(&pt);
-        pt = CB::Convert(pView.ScreenToClient(CB::Convert(pt)));
-        rct = CB::Convert(pView.GetClientRect());
-#if 0
-        if (rct.PtInRect(pt))           // In client area
-        {
-            rct.InflateRect(-scrollZone, -scrollZone);
-            rct.NormalizeRect();        // Just in case client is too small
-            if (!rct.PtInRect(pt))
-            {
-                // It's in the scroll zone
-                if (m_nTimerID == uintptr_t(0))        // Only start if not scrolling
-                    StartScrollTimer(pView);
-            }
-            else
-                KillScrollTimer(pView);
-        }
-        else
-            KillScrollTimer(pView);
-#else
-        CPP20_TRACE("{}->{}:  TODO:  wxProvides autoscroll?\n", *this, __func__);
-#endif
-    }
-#endif
-
     // If we get here, the mouse has been captured. Check if
     // we are doing a "net select".
     if (m_eSelMode == smodeNet)
@@ -313,9 +280,6 @@ bool CPSelectTool::OnLButtonUp(CPlayBoardView& pView, int nMods, wxPoint point)
     }
     m_eSelMode = smodeNormal;
     KillDragTimer(pView);           // Make sure timers are released
-#if 0
-    KillScrollTimer(pView);
-#endif
     return CPlayTool::OnLButtonUp(pView, nMods, point) && retval;
 }
 
@@ -325,9 +289,6 @@ void CPSelectTool::OnMouseCaptureLost(CPlayBoardView& pView)
     pView.SetCursor(wxCursor(wxCURSOR_ARROW));
     m_eSelMode = smodeNormal;
     KillDragTimer(pView);           // Make sure timers are released
-#if 0
-    KillScrollTimer(pView);
-#endif
     CPlayTool::OnMouseCaptureLost(pView);
 }
 
@@ -339,9 +300,6 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
     {
         m_eSelMode = smodeNormal;
         KillDragTimer(pView);
-#if 0
-        KillScrollTimer(pView);
-#endif
         return;
     }
     if (m_eSelMode == smodeNormal)
@@ -354,15 +312,9 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
         m_eSelMode = smodeMove;
         KillDragTimer(pView);
 
-#if 0
-        CClientDC dc(&pView);
-        pView.OnPrepareScaledDC(dc, TRUE);
-        pSLst.DrawTracker(dc, trkSelected);   // Turn off handles
-#else
         wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
         dc.Clear();
-#endif
 
         wxPoint point = wxGetMouseState().GetPosition();
         point = pView.ScreenToClient(point);
@@ -373,13 +325,6 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
         point = pView.WorkspaceToClient(point);
         DoDragDrop(pView, point);
     }
-#if 0
-    else if (m_eSelMode != smodeMove)
-    {
-        if (!ProcessAutoScroll(pView))
-            KillScrollTimer(pView);
-    }
-#endif
 }
 
 void CPSelectTool::OnLButtonDblClk(CPlayBoardView& pView, int nMods,
@@ -439,91 +384,6 @@ void CPSelectTool::DrawNetRect(wxDC& pDC, const CPlayBoardView& /*pView*/) const
     DrawSelectionRect(pDC, rect);
 }
 
-#if 0
-BOOL CPSelectTool::ProcessAutoScroll(CPlayBoardView& pView)
-{
-    CPoint point;
-    CRect  rectClient;
-    CRect  rect;
-
-    GetCursorPos(&point);
-    point = CB::Convert(pView.ScreenToClient(CB::Convert(point)));
-    rectClient = CB::Convert(pView.GetClientRect());
-    rect = rectClient;
-    rect.InflateRect(-scrollZone, -scrollZone);
-    rect.NormalizeRect();
-
-    UINT nScrollID = MAKEWORD(-1, -1);
-    if (rectClient.PtInRect(point) && !rect.PtInRect(point))
-    {
-#if 0
-        // Mouse is in the scroll zone....
-        // Determine which way to scroll along both X & Y axis
-        if (point.x < rect.left)
-            nScrollID = MAKEWORD(SB_LINEUP, HIBYTE(nScrollID));
-        else if (point.x >= rect.right)
-            nScrollID = MAKEWORD(SB_LINEDOWN, HIBYTE(nScrollID));
-        if (point.y < rect.top)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEUP);
-        else if (point.y >= rect.bottom)
-            nScrollID = MAKEWORD(LOBYTE(nScrollID), SB_LINEDOWN);
-        ASSERT(nScrollID != MAKEWORD(-1, -1));
-        // First check if scroll can happen.
-        BOOL bValidScroll = pView.OnScroll(nScrollID, 0, FALSE);
-        if (bValidScroll)
-        {
-            CSelList& pSLst = pView.GetSelectList();
-            point = pView.ClientToWorkspace(point);
-
-            CClientDC dc(&pView);
-            pView.OnPrepareScaledDC(dc, TRUE);
-
-            if (m_eSelMode == smodeNet)
-            {
-                // Erase previous position
-                CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-                rect.NormalizeRect();
-                DrawSelectionRect(dc, rect);
-            }
-            else
-                pSLst.DrawTracker(dc);    // Turn off tracker
-
-            pView.OnScroll(nScrollID, 0, TRUE);
-            pView.UpdateWindow();          // Redraw image content.
-
-            point = AdjustPoint(pView, point);
-
-            MoveSelections(pSLst, point);   // Offset the tracking data
-            c_ptLast = point;               // Save new 'last' position
-
-            pView.OnPrepareScaledDC(dc, TRUE);
-            if (m_eSelMode == smodeNet)
-            {
-                GetCursorPos(&point);
-                pView.ScreenToClient(&point);
-                point = pView.ClientToWorkspace(point);
-                c_ptLast = point;            // Set new 'last' position
-                // Draw updated net rect
-                CRect rect(c_ptDown.x, c_ptDown.y, c_ptLast.x, c_ptLast.y);
-                rect.NormalizeRect();
-                DrawSelectionRect(dc, rect);
-            }
-            else
-            {
-                MoveSelections(pSLst, point);// Offset the tracking data
-                c_ptLast = point;            // Save new 'last' position
-                pSLst.DrawTracker(dc);    // Turn off tracker
-            }
-            return TRUE;
-        }
-#else
-        wxASSERT(!"TODO:  autoscroll, overlay");
-#endif
-    }
-    return FALSE;
-}
-#endif
-
 void CPSelectTool::MoveSelections(CSelList &pSLst, const wxPoint& point)
 {
     if (m_eSelMode == smodeMove)
@@ -571,30 +431,6 @@ void CPSelectTool::KillDragTimer(CPlayBoardView& pView)
         m_nTimerID = static_cast<int>(wxID_NONE);
     }
 }
-
-#if 0
-void CPSelectTool::StartScrollTimer(CPlayBoardView& pView)
-{
-#if 0
-    m_nTimerID = pView.SetTimer(timerIDAutoScroll, timerAutoScroll, NULL);
-#else
-    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
-#endif
-}
-
-void CPSelectTool::KillScrollTimer(CPlayBoardView& pView)
-{
-#if 0
-    if (m_nTimerID != uintptr_t(0))
-    {
-        pView.KillTimer(m_nTimerID);
-        m_nTimerID = uintptr_t(0);
-    }
-#else
-    CPP20_TRACE("{}->{}:  TODO:\n", *this, __func__);
-#endif
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////
 // Note: The CSelList should have had the mouse offset value set at
