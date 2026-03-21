@@ -172,6 +172,7 @@ BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse)
     {
         CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
         CArchive ar(&file, CArchive::load);
+        SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
         bOK = (BOOL)pWnd->SendMessage(WM_WINSTATE, (WPARAM)&ar, 1);
         ar.Close();
         file.Detach();
@@ -260,6 +261,7 @@ void CWinStateManager::Serialize(CArchive& ar)
         if (dwCount == size_t(0))
             return;
         fileVersion = CB::GetVersion(ar);
+        fileFeatures = CB::GetFeatures(ar);
         m_pList = MakeOwner<CWinStateList>();
         while (dwCount--)
         {
