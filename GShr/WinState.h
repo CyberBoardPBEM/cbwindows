@@ -26,6 +26,7 @@
 #define _WINSTATE_H
 
 #include "Board.h"
+#include "Versions.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -141,6 +142,7 @@ protected:
 protected:
     CDocument*  m_pDoc;
     int fileVersion = INT_MAX;
+    Features fileFeatures;
     typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;
     OwnerOrNullPtr<CWinStateList> m_pList;            // Win state element list
 };
