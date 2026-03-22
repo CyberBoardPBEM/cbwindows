@@ -39,9 +39,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#if 0
-IMPLEMENT_DYNAMIC(CGamProjView, CView)
-#endif
 wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGam, CProjListBoxBaseWx)
 IMPLEMENT_DYNCREATE(CGamProjViewContainer, CView)
 

@@ -67,9 +67,6 @@ class CProjListBoxGam : public CProjListBoxWx<decltype(CB::Impl::CGamProjViewBas
 
 class CGamProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGamProjViewBase
 {
-#if 0
-    DECLARE_DYNAMIC(CGamProjView)
-#endif
     friend class CGamProjViewContainer;
 public:
     CGamProjView(CGamProjViewContainer& p);
