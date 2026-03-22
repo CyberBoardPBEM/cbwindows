@@ -1,6 +1,6 @@
 // LBoxProj.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -290,29 +290,17 @@ void CProjListBoxBaseWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIn
     if (str[size_t(0)] - 'A' == m_nMarkGrp &&
         GetItemSourceCode(nIndex) == m_nMarkSourceCode)
     {
-#if 0
-        CRect rct = rctItem;
-        // Mark the line with a chevron
-        pDC.ExtTextOut(rct.left, rct.top, ETO_OPAQUE, rct,
-            "\xBB"_cbstring, 1, NULL);
-        rct.left += 3 * g_res.tm8ssb.tmAveCharWidth;
-        pDC.ExtTextOut(rctItem.left + 3 * g_res.tm8ssb.tmAveCharWidth,
-            rctItem.top, ETO_OPAQUE, rct,
-            str.substr(prefixLen),
-            NULL);
-#else
         wxRect rct = rctItem;
-        pDC.DrawText("\xBB"_cbstring, rct.GetLeftTop());
+        pDC.DrawText("\xBB"_cbstring, CalcScrolledX(rct.GetLeft()), rct.GetTop());
         rct.Offset(3*g_res.tm8ssb.tmAveCharWidth, 0);
         rct.SetWidth(rct.GetWidth() - 3*g_res.tm8ssb.tmAveCharWidth);
-        pDC.DrawText(str.substr(prefixLen), rct.GetLeftTop());
-#endif
+        pDC.DrawText(str.substr(prefixLen), CalcScrolledX(rct.GetLeft()), rct.GetTop());
     }
     else
     {
         pDC.DrawText(str.substr(prefixLen),
-                    rctItem.GetLeft() +
-                        bHead ? 0 : 3 * g_res.tm8ssb.tmAveCharWidth,
+                    CalcScrolledX(rctItem.GetLeft() +
+                        bHead ? 0 : 3 * g_res.tm8ssb.tmAveCharWidth),
                     rctItem.GetTop());
     }
 
