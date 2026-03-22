@@ -123,20 +123,15 @@ protected:
     // Main document based support routines...
     void DoUpdateProjectList(BOOL bUpdateItem = TRUE);
 
-#if 0
     void DoGamProperty() const;
-#endif
     void DoUpdateGamInfo();
 
-#if 0
     void DoBoardProperty();
     void DoBoardView();
-#endif
 
     void DoUpdateBoardHelpInfo();
     void DoUpdateBoardInfo();
 
-#if 0
     void DoHistorySave();
     void DoHistoryLoad();
     void DoHistoryDone();
@@ -144,7 +139,6 @@ protected:
     void DoHistoryReplay();
     void DoHistoryReplayDone();
     void DoHistoryExport();
-#endif
 
     void DoUpdateHistoryHelpInfo();
     void DoUpdateCurPlayInfo();
@@ -171,23 +165,23 @@ protected:
         wxCommandEvent dummy;
         OnSelChangeProjList(dummy);
     }
+    void OnDblClkProjList(wxCommandEvent& event);
+    void OnClickedProjBtnA(wxCommandEvent& event);
+    void OnClickedProjBtnB(wxCommandEvent& event);
 #if 0
-    afx_msg void OnDblClkProjList();
-    afx_msg void OnClickedProjBtnA();
-    afx_msg void OnClickedProjBtnB();
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnEditBoardProperties();
-    afx_msg void OnUpdateEditBoardProperties(CCmdUI* pCmdUI);
-    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-    afx_msg void OnProjItemView();
-    afx_msg void OnUpdateProjItemView(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemReplay();
-    afx_msg void OnUpdateProjItemReplay(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemExport();
-    afx_msg void OnUpdateProjItemExport(CCmdUI* pCmdUI);
-    afx_msg void OnProjItemProperties();
-    afx_msg void OnUpdateProjItemProperties(CCmdUI* pCmdUI);
 #endif
+    void OnEditBoardProperties(wxCommandEvent& event);
+    void OnUpdateEditBoardProperties(wxUpdateUIEvent& pCmdUI);
+    void OnContextMenu(wxContextMenuEvent& event);
+    void OnProjItemView(wxCommandEvent& event);
+    void OnUpdateProjItemView(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemReplay(wxCommandEvent& event);
+    void OnUpdateProjItemReplay(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemExport(wxCommandEvent& event);
+    void OnUpdateProjItemExport(wxUpdateUIEvent& pCmdUI);
+    void OnProjItemProperties(wxCommandEvent& event);
+    void OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI);
     void OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event);
     void OnMessageRestoreWinState(WinStateRestoreEvent& event);
 

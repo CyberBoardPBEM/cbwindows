@@ -46,11 +46,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // Scenario Info routine
 
-#if 0
 void CGamProjView::DoGamProperty() const
 {
 }
-#endif
 
 void CGamProjView::DoUpdateGamInfo()
 {
@@ -83,30 +81,31 @@ void CGamProjView::DoUpdateGamInfo()
 /////////////////////////////////////////////////////////////////////////////
 // Playing Board support routines
 
-#if 0
 void CGamProjView::DoBoardProperty()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
     pDoc.DoBoardProperties(nBrd);
 }
 
 void CGamProjView::DoBoardView()
 {
     CGamDoc& pDoc = GetDocument();
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpBrd);
-    size_t nBrd = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
+    size_t nBrd = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
 
     CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(nBrd);
     if (pPBoard.IsPrivate() &&
         pPBoard.IsOwnedButNotByCurrentPlayer(pDoc))
     {
-        AfxMessageBox(IDS_ERR_PRIVATE_BOARD_PERM, MB_OK | MB_ICONEXCLAMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_PRIVATE_BOARD_PERM),
+                        CB::GetAppName(),
+                        wxOK | wxICON_EXCLAMATION);
         return;
     }
     CPlayBoardView* pView = pDoc.FindPBoardView(pPBoard);
@@ -114,16 +113,15 @@ void CGamProjView::DoBoardView()
     {
         // This board already has an editor. Activate that view.
         CFrameWnd* pFrm = pView->GetParentFrame();
-        ASSERT(pFrm);
+        wxASSERT(pFrm);
         pFrm->ActivateFrame();
     }
     else
     {
-        CB::string strTitle = m_listProj.GetItemText(nSel);
+        CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
         pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
     }
 }
-#endif
 
 void CGamProjView::DoUpdateBoardHelpInfo()
 {
@@ -138,14 +136,15 @@ void CGamProjView::DoUpdateBoardInfo()
 /////////////////////////////////////////////////////////////////////////////
 // Game History support routines
 
-#if 0
 // Save current moves
 void CGamProjView::DoHistorySave()
 {
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlaying())
     {
-        AfxMessageBox(IDS_ERR_NOSAVEWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NOSAVEWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
     pDoc.SaveRecordedMoves();
@@ -170,7 +169,9 @@ void CGamProjView::DoHistoryDiscard()
     CGamDoc& pDoc = GetDocument();
     if (pDoc.GetGameState() == CGamDoc::stateHistPlay)
     {
-        AfxMessageBox(IDS_ERR_NODISCARDWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NODISCARDWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
     GetDocument().DiscardCurrentRecording(TRUE);
@@ -183,27 +184,30 @@ void CGamProjView::DoHistoryReplay()
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlayingMoves())
     {
-        AfxMessageBox(IDS_ERR_NOHISTWHENMOVE, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NOHISTWHENMOVE),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
-    int nSel = m_listProj.GetCurSel();
+    int nSel = m_listProj->GetSelection();
     if (pDoc.IsPlaying())
     {
         DoHistoryReplayDone();
+        wxASSERT(nSel != wxNOT_FOUND);
         nSel--;                     // Compensate for lost line "<hist...>"
     }
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    size_t nHist = m_listProj.GetItemSourceCode(nSel);
-    m_listProj.MarkGroupItem(grpHist, nHist);   // Pre mark line
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpHist);
+    size_t nHist = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
+    m_listProj->MarkGroupItem(grpHist, nHist);   // Pre mark line
     if (!pDoc.LoadAndActivateHistory(nHist))
     {
-        m_listProj.MarkGroupItem();
-        m_listProj.Invalidate();
+        m_listProj->MarkGroupItem();
+        m_listProj->Refresh();
     }
     // Move the current selection down one to track the
     // history record that was selected.
-    m_listProj.SetCurSel(nSel+1);
+    m_listProj->SetSelection(nSel+1);
     /* Windows doesn't do this automatically for SetCurSel()
         (see https://learn.microsoft.com/en-us/windows/win32/controls/lbn-selchange) */
     OnSelChangeProjList();
@@ -212,7 +216,7 @@ void CGamProjView::DoHistoryReplay()
 // Finished with the move file play back
 void CGamProjView::DoHistoryReplayDone()
 {
-    m_listProj.MarkGroupItem();
+    m_listProj->MarkGroupItem();
     GetDocument().FinishHistoryPlayback();
 }
 
@@ -221,16 +225,17 @@ void CGamProjView::DoHistoryExport()
     CGamDoc& pDoc = GetDocument();
     if (pDoc.IsPlaying())
     {
-        AfxMessageBox(IDS_ERR_NOSAVEWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NOSAVEWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
-    int nSel = m_listProj.GetCurSel();
-    ASSERT(nSel >= 0);
-    ASSERT(m_listProj.GetItemGroupCode(nSel) == grpHist);
-    size_t nHist = m_listProj.GetItemSourceCode(nSel);
+    int nSel = m_listProj->GetSelection();
+    wxASSERT(nSel != wxNOT_FOUND);
+    wxASSERT(m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpHist);
+    size_t nHist = m_listProj->GetItemSourceCode(value_preserving_cast<size_t>(nSel));
     pDoc.SaveHistoryMovesInFile(nHist);
 }
-#endif
 
 void CGamProjView::DoUpdateHistoryHelpInfo()
 {

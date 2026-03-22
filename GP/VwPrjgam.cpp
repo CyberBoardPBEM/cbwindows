@@ -100,23 +100,23 @@ wxBEGIN_EVENT_TABLE(CGamProjView, wxPanel)
     ON_WM_CREATE()
 #endif
     EVT_LISTBOX(XRCID("m_listProj"), OnSelChangeProjList)
+    EVT_LISTBOX_DCLICK(XRCID("m_listProj"), OnDblClkProjList)
+    EVT_BUTTON(XRCID("m_btnPrjA"), OnClickedProjBtnA)
+    EVT_BUTTON(XRCID("m_btnPrjB"), OnClickedProjBtnB)
 #if 0
-    ON_LBN_DBLCLK(IDC_V_GAM_PROJLIST, OnDblClkProjList)
-    ON_BN_CLICKED(IDC_V_GAM_BTN_PRJA, OnClickedProjBtnA)
-    ON_BN_CLICKED(IDC_V_GAM_BTN_PRJB, OnClickedProjBtnB)
     ON_WM_ERASEBKGND()
-    ON_COMMAND(ID_EDIT_BRDPROP, OnEditBoardProperties)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_BRDPROP, OnUpdateEditBoardProperties)
-    ON_WM_CONTEXTMENU()
-    ON_COMMAND(ID_PPROJITEM_VIEW, OnProjItemView)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_VIEW, OnUpdateProjItemView)
-    ON_COMMAND(ID_PPROJITEM_REPLAY, OnProjItemReplay)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_REPLAY, OnUpdateProjItemReplay)
-    ON_COMMAND(ID_PPROJITEM_EXPORT, OnProjItemExport)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_EXPORT, OnUpdateProjItemExport)
-    ON_COMMAND(ID_PPROJITEM_PROPERTIES, OnProjItemProperties)
-    ON_UPDATE_COMMAND_UI(ID_PPROJITEM_PROPERTIES, OnUpdateProjItemProperties)
 #endif
+    EVT_MENU(XRCID("ID_EDIT_BRDPROP"), OnEditBoardProperties)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_BRDPROP"), OnUpdateEditBoardProperties)
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU(XRCID("ID_PPROJITEM_VIEW"), OnProjItemView)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_VIEW"), OnUpdateProjItemView)
+    EVT_MENU(XRCID("ID_PPROJITEM_REPLAY"), OnProjItemReplay)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_REPLAY"), OnUpdateProjItemReplay)
+    EVT_MENU(XRCID("ID_PPROJITEM_EXPORT"), OnProjItemExport)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_EXPORT"), OnUpdateProjItemExport)
+    EVT_MENU(XRCID("ID_PPROJITEM_PROPERTIES"), OnProjItemProperties)
+    EVT_UPDATE_UI(XRCID("ID_PPROJITEM_PROPERTIES"), OnUpdateProjItemProperties)
     EVT_SHOWPLAYINGBOARD(OnMessageShowPlayingBoard)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
 wxEND_EVENT_TABLE()
@@ -612,14 +612,13 @@ void CGamProjView::OnSelChangeProjList(wxCommandEvent& /*event*/)
     }
 }
 
-#if 0
-void CGamProjView::OnDblClkProjList()
+void CGamProjView::OnDblClkProjList(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     switch (nGrp)
     {
         case grpBrd:    DoBoardView(); break;
@@ -632,12 +631,12 @@ void CGamProjView::OnDblClkProjList()
 /////////////////////////////////////////////////////////////////////////////
 // Button notifications
 
-void CGamProjView::OnClickedProjBtnA()
+void CGamProjView::OnClickedProjBtnA(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     switch (nGrp)
     {
         case grpBrd:    DoBoardView(); break;
@@ -649,12 +648,12 @@ void CGamProjView::OnClickedProjBtnA()
     }
 }
 
-void CGamProjView::OnClickedProjBtnB()
+void CGamProjView::OnClickedProjBtnB(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     switch (nGrp)
     {
         case grpBrd:    DoBoardProperty(); break;
@@ -664,55 +663,56 @@ void CGamProjView::OnClickedProjBtnB()
     }
 }
 
-void CGamProjView::OnEditBoardProperties()
+void CGamProjView::OnEditBoardProperties(wxCommandEvent& /*event*/)
 {
     DoBoardProperty();
 }
 
-void CGamProjView::OnUpdateEditBoardProperties(CCmdUI* pCmdUI)
+void CGamProjView::OnUpdateEditBoardProperties(wxUpdateUIEvent& pCmdUI)
 {
-    int nSel = m_listProj.GetCurSel();
-    pCmdUI->Enable(nSel >= 0 &&
-        m_listProj.GetItemGroupCode(nSel) == grpBrd);
+    int nSel = m_listProj->GetSelection();
+    pCmdUI.Enable(nSel != wxNOT_FOUND &&
+        m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel)) == grpBrd);
 }
 
-void CGamProjView::OnContextMenu(CWnd* pWnd, CPoint point)
+void CGamProjView::OnContextMenu(wxContextMenuEvent& event)
 {
     // Make sure window is active.
     GetParentFrame()->ActivateFrame();
-    UINT nID = (UINT)-1;
+    const char* nID = nullptr;
 
-    if (pWnd->GetDlgCtrlID() == IDC_V_GAM_PROJLIST)
-        nID = MENU_PJ_GAM_DEFAULT;
+    if (event.GetEventObject() == &*m_listProj)
+        nID = "4=PJ_GAM_DEFAULT";
 
-    if ((int)nID < 0)
+    if (!nID)
         return;
 
-    CMenu bar;
-    if (bar.LoadMenuW(IDR_MENU_PLAYER_POPUPS))
+    std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    if (bar)
     {
-        CMenu& popup = *bar.GetSubMenu(nID);
-        ASSERT(popup.m_hMenu != NULL);
+        int index = bar->FindMenu(nID);
+        wxASSERT(index != wxNOT_FOUND);
+        std::unique_ptr<wxMenu> popup(bar->Remove(value_preserving_cast<size_t>(index)));
 
         // Make sure we clean up even if exception is tossed.
-        TRY
+        try
         {
-            popup.TrackPopupMenu(TPM_RIGHTBUTTON, point.x, point.y,
-                AfxGetMainWnd()); // Route commands through main window
-            // Make sure command is dispatched BEFORE we clear m_bInRightMouse.
-            GetApp()->DispatchMessages();
+           PopupMenu(&*popup);
         }
-        END_TRY
+        catch (...)
+        {
+            wxASSERT(!"exception");
+        }
     }
 }
 
-void CGamProjView::OnProjItemProperties()
+void CGamProjView::OnProjItemProperties(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND)
         return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     switch (nGrp)
     {
         case grpDoc:    DoGamProperty(); break;
@@ -720,14 +720,14 @@ void CGamProjView::OnProjItemProperties()
     }
 }
 
-void CGamProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
+void CGamProjView::OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
         switch (nGrp)
         {
             case grpDoc:
@@ -737,80 +737,79 @@ void CGamProjView::OnUpdateProjItemProperties(CCmdUI* pCmdUI)
             default: ;
         }
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
-void CGamProjView::OnProjItemView()
+void CGamProjView::OnProjItemView(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     if (nGrp == grpBrd)
         DoBoardView();
 }
 
-void CGamProjView::OnUpdateProjItemView(CCmdUI* pCmdUI)
+void CGamProjView::OnUpdateProjItemView(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
         if (nGrp == grpBrd)
             bEnable = TRUE;
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGamProjView::OnProjItemReplay()
+void CGamProjView::OnProjItemReplay(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     if (nGrp == grpHist)
         DoHistoryReplay();
 }
 
-void CGamProjView::OnUpdateProjItemReplay(CCmdUI* pCmdUI)
+void CGamProjView::OnUpdateProjItemReplay(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
         if (nGrp == grpHist)
             bEnable = TRUE;
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
-void CGamProjView::OnProjItemExport()
+void CGamProjView::OnProjItemExport(wxCommandEvent& /*event*/)
 {
-    int nSel = m_listProj.GetCurSel();
-    if (nSel < 0) return;
-    int nGrp = m_listProj.GetItemGroupCode(nSel);
-    ASSERT(nGrp >= 0);
+    int nSel = m_listProj->GetSelection();
+    if (nSel == wxNOT_FOUND) return;
+    decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+    wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
     if (nGrp == grpHist)
         DoHistoryExport();
 }
 
-void CGamProjView::OnUpdateProjItemExport(CCmdUI* pCmdUI)
+void CGamProjView::OnUpdateProjItemExport(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = FALSE;
-    int nSel = m_listProj.GetCurSel();
-    if (nSel >= 0)
+    int nSel = m_listProj->GetSelection();
+    if (nSel != wxNOT_FOUND)
     {
-        int nGrp = m_listProj.GetItemGroupCode(nSel);
-        ASSERT(nGrp >= 0);
+        decltype(grpDoc) nGrp = m_listProj->GetItemGroupCode(value_preserving_cast<size_t>(nSel));
+        wxASSERT(nGrp != Invalid_v<decltype(grpDoc)>);
         if (nGrp == grpHist)
             bEnable = TRUE;
     }
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 // This method handles the cutom message WM_SHOWPLAYINGBOARD. The
