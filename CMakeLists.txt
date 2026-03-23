@@ -1,6 +1,6 @@
 # Copyright (c) 2023 By William Su, All Rights Reserved.
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.10...4.1)
 # set VERSION variables
 cmake_policy(SET CMP0048 NEW)
 # provide CMAKE_MSVC_RUNTIME_LIBRARY
