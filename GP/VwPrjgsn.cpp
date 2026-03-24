@@ -499,7 +499,7 @@ void CGsnProjView::DoUpdateProjectList(BOOL bUpdateItem /* = TRUE */)
     m_listProj->ScrollToRow(nTopIdx);
     if (nCurSel != wxNOT_FOUND)
     {
-        if (nCurSel >= m_listProj->GetItemCount())
+        if (nCurSel >= value_preserving_cast<int>(m_listProj->GetItemCount()))
             nCurSel = value_preserving_cast<int>(m_listProj->GetItemCount() - size_t(1));
         m_listProj->SetSelection(nCurSel);
     }
