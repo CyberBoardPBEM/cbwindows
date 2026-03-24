@@ -7,7 +7,11 @@ rem execute in bat's directory
 pushd %~dp0
 
 call %VSROOTDIR%"\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-if errorlevel 1 goto fail_vc_x64
+if errorlevel 1 (
+    rem MSVS 2026
+    call %VSROOTDIR%"\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+    if errorlevel 1 goto fail_vc_x64
+)
 echo on
 
 cmake -G Ninja -B out/build/x64-Debug -DCMAKE_BUILD_TYPE=Debug
@@ -25,7 +29,11 @@ if errorlevel 1 cmake --build out/build/x64-Release
 if errorlevel 1 goto fail_build
 
 call %VSROOTDIR%"\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
-if errorlevel 1 goto fail_vc_x86
+if errorlevel 1 (
+    rem MSVS 2026
+    call %VSROOTDIR%"\18\Community\VC\Auxiliary\Build\vcvars32.bat"
+    if errorlevel 1 goto fail_vc_x86
+)
 echo on
 
 cmake -G Ninja -B out/build/x86-Debug -DCMAKE_BUILD_TYPE=Debug
