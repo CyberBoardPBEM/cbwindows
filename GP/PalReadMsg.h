@@ -1,6 +1,6 @@
 // PalReadMsg.h - Dockable message output window
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,14 +34,13 @@
 
 class CGamDoc;
 
-class CReadMsgWnd : public CDockablePane
+class CReadMsgWnd : public CWnd
 {
-    DECLARE_DYNAMIC(CReadMsgWnd)
-
 // Construction / destruction
 public:
     CReadMsgWnd();
-    virtual ~CReadMsgWnd();
+    ~CReadMsgWnd() override;
+    BOOL Create(CWnd& container);
 
 // Methods
 public:
@@ -78,13 +77,37 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     //}}AFX_MSG
-    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
     DECLARE_MESSAGE_MAP()
 public:
     afx_msg void OnEditCopy();
     afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
 //    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 //    afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+
+private:
+    typedef CWnd BASE;
+};
+
+class CReadMsgWndContainer : public CDockablePane
+{
+public:
+    CReadMsgWndContainer();
+
+    operator const CReadMsgWnd&() const { return *child; }
+    operator CReadMsgWnd&()
+    {
+        return const_cast<CReadMsgWnd&>(static_cast<const CReadMsgWnd&>(std::as_const(*this)));
+    }
+
+private:
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg LRESULT OnPaletteHide(WPARAM, LPARAM);
+    DECLARE_MESSAGE_MAP()
+
+    typedef CDockablePane BASE;
+
+    OwnerPtr<CReadMsgWnd> child = MakeOwner<CReadMsgWnd>();
 };
 
 /////////////////////////////////////////////////////////////////////////////

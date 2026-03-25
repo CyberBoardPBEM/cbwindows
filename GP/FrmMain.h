@@ -30,6 +30,7 @@
 class CDockTrayPalette;
 class CDockMarkPalette;
 class CReadMsgWnd;
+class CReadMsgWndContainer;
 
 class CMainFrame : public CMDIFrameWndExCb,
                     public CB::NativeContainerWindowMixin
@@ -69,7 +70,7 @@ protected:
 
     CMFCStatusBar m_wndStatusBar;
 
-    OwnerPtr<CReadMsgWnd> m_wndMessage;
+    OwnerPtr<CReadMsgWndContainer> m_wndMessage;
 
     OwnerPtr<CDockMarkPalette> m_wndMarkPal;
     OwnerPtr<CDockTrayPalette> m_wndTrayPalA;

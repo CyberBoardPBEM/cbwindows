@@ -78,16 +78,19 @@ struct CharFormat : public CHARFORMAT
 
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC(CReadMsgWnd, CDockablePane)
-
-BEGIN_MESSAGE_MAP(CReadMsgWnd, CDockablePane)
+BEGIN_MESSAGE_MAP(CReadMsgWnd, CReadMsgWnd::BASE)
     ON_WM_CREATE()
     ON_WM_SIZE()
-    ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 //    ON_WM_CHAR()
 //    ON_WM_KEYUP()
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CReadMsgWndContainer, CDockablePane)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,11 +106,24 @@ CReadMsgWnd::~CReadMsgWnd()
 {
 }
 
+BOOL CReadMsgWnd::Create(CWnd& container)
+{
+    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
+    if (!BASE::Create(AfxRegisterWndClass(0), NULL, dwStyle,
+        CRect(0, 0, 200, 100), &container, 0))
+    {
+        TRACE("Failed to create Tray palette window.\n");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 int CReadMsgWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
+    if (BASE::OnCreate(lpCreateStruct) == -1)
         return -1;
 
     // Create the edit control
@@ -131,7 +147,7 @@ int CReadMsgWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CReadMsgWnd::OnSize(UINT nType, int cx, int cy)
 {
-    CDockablePane::OnSize(nType, cx, cy);
+    BASE::OnSize(nType, cx, cy);
     CRect rct;
     GetClientRect(rct);
     if (m_editCtrl.m_hWnd != NULL)
@@ -159,7 +175,7 @@ BOOL CReadMsgWnd::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 
         pPopupMenu->DestroyMenu();
     }
-    return CDockablePane::OnNotify(wParam, lParam, pResult);
+    return BASE::OnNotify(wParam, lParam, pResult);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -293,7 +309,7 @@ void CReadMsgWnd::SetCharFormat(CHARFORMAT& cf)
 // CReadMsgWnd message handlers
 
 // Called when window is undocked. Message sent by CCBMiniFrameWnd class.
-LRESULT CReadMsgWnd::OnPaletteHide(WPARAM, LPARAM)
+LRESULT CReadMsgWndContainer::OnPaletteHide(WPARAM, LPARAM)
 {
     GetMainFrame()->SendMessage(WM_COMMAND, ID_PBCK_READMESSAGE);
     return (LRESULT)0;
@@ -309,4 +325,30 @@ void CReadMsgWnd::OnUpdateEditCopy(CCmdUI *pCmdUI)
     CHARRANGE cr;
     m_editCtrl.GetSel(cr);
     pCmdUI->Enable(cr.cpMin != cr.cpMax);
+}
+
+CReadMsgWndContainer::CReadMsgWndContainer()
+{
+}
+
+int CReadMsgWndContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (BASE::OnCreate(lpCreateStruct) == -1)
+    {
+        return -1;
+    }
+
+    if (!child->Create(*this))
+    {
+        TRACE("Failed to create ReadMessage palette window.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+void CReadMsgWndContainer::OnSize(UINT nType, int cx, int cy)
+{
+    child->MoveWindow(0, 0, cx, cy);
+    return BASE::OnSize(nType, cx, cy);
 }

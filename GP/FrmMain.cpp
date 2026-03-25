@@ -96,7 +96,7 @@ static const CB::string szSectControlBars = "ControlBars";
 
 CMainFrame::CMainFrame() :
     CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
-    m_wndMessage(MakeOwner<CReadMsgWnd>()),
+    m_wndMessage(MakeOwner<CReadMsgWndContainer>()),
     m_wndMarkPal(MakeOwner<CDockMarkPalette>()),
     m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
     m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
