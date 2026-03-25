@@ -42,6 +42,11 @@
 #include    "MoveHist.h"
 #include    "WStateGp.h"
 #include    "Player.h"
+#include    "FrmDockMark.h"
+#include    "PalMark.h"
+#include    "FrmDockTray.h"
+#include    "PalTray.h"
+#include    "PalReadMsg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

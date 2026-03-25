@@ -31,6 +31,7 @@
 #include    "VwTbrd.h"
 #include    "WinPoptb.h"
 #include    "GMisc.h"
+#include    "WinState.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

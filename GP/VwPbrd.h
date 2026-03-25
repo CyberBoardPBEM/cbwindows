@@ -40,6 +40,7 @@
 
 class CPlayBoard;
 enum  TileScale;
+class WinStateEvent;
 
 class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledCanvas>
 {

@@ -25,6 +25,7 @@
 #include    "stdafx.h"
 #include    "Gp.h"
 #include    "GamDoc.h"
+#include    "LBoxTray.h"
 #include    "ResTbl.h"
 #include    "Board.h"
 #include    "PBoard.h"

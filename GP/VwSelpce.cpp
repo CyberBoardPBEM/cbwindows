@@ -30,6 +30,7 @@
 #include    "SelOPlay.h"
 #include    "VwSelpce.h"
 #include    "FrmPbrd.h"
+#include    "WinState.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

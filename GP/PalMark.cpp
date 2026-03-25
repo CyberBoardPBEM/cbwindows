@@ -28,6 +28,7 @@
 #include    "FrmMain.h"
 #include    "ResTbl.h"
 #include    "Marks.h"
+#include    "FrmDockMark.h"
 #include    "PalMark.h"
 #include    "GamDoc.h"
 

@@ -29,6 +29,8 @@
 #include    "SelOPlay.h"
 #endif
 
+#include    "DragDrop.h"
+
 class CPlayBoardView;
 
 // XRCID("timerIDSelectDelay");    // Select timer ID

@@ -34,6 +34,7 @@
 #include    "WinState.h"
 #include    "DlgEdtEl.h"
 
+#include    "FrmDockTray.h"
 #include    "Paltray.h"
 
 #ifdef _DEBUG

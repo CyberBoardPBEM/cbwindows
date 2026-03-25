@@ -41,6 +41,7 @@
 
 #include    "DlgMdesc.h"
 #include    "DlgTrunc.h"
+#include    "PalReadMsg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

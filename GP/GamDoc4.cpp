@@ -40,6 +40,9 @@
 #include    "MoveHist.h"
 #include    "DlgState.h"
 #include    "VwPbrd.h"
+#include    "PalMark.h"
+#include    "PalTray.h"
+#include    "PalReadMsg.h"
 #include    "VwPrjgam.h"
 
 #ifdef _DEBUG

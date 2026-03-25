@@ -43,6 +43,8 @@
 #include    "DlgMarkCount.h"
 #include    "Player.h"
 #include    "CDib.h"
+#include    "PalMark.h"
+#include    "WinState.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

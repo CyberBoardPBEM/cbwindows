@@ -27,17 +27,9 @@
 
 #include "LibMfc.h"
 
-#ifndef _FRMDOCKTRAY_H
-#include "FrmDockTray.h"
-#endif
-
-#ifndef _FRMDOCKMARK_H
-#include "FrmDockMark.h"
-#endif
-
-#ifndef _PALREADMSG_H
-#include "PalReadMsg.h"
-#endif
+class CDockTrayPalette;
+class CDockMarkPalette;
+class CReadMsgWnd;
 
 class CMainFrame : public CMDIFrameWndExCb,
                     public CB::wxNativeContainerWindowMixin
@@ -51,11 +43,11 @@ public:
 public:
     CDocument* GetCurrentDocument();
 
-    CDockMarkPalette& GetDockingMarkerWindow() { return m_wndMarkPal; }
-    CDockTrayPalette& GetDockingTrayAWindow() { return m_wndTrayPalA; }
-    CDockTrayPalette& GetDockingTrayBWindow() { return m_wndTrayPalB; }
+    CDockMarkPalette& GetDockingMarkerWindow() { return *m_wndMarkPal; }
+    CDockTrayPalette& GetDockingTrayAWindow() { return *m_wndTrayPalA; }
+    CDockTrayPalette& GetDockingTrayBWindow() { return *m_wndTrayPalB; }
 
-    CReadMsgWnd&      GetMessageWindow() { return m_wndMessage; }
+    CReadMsgWnd&      GetMessageWindow();
 
     CMFCStatusBar* GetStatusBar() { return &m_wndStatusBar; }
 
@@ -77,11 +69,11 @@ protected:
 
     CMFCStatusBar m_wndStatusBar;
 
-    CReadMsgWnd   m_wndMessage;
+    OwnerPtr<CReadMsgWnd> m_wndMessage;
 
-    CDockMarkPalette m_wndMarkPal;
-    CDockTrayPalette m_wndTrayPalA;
-    CDockTrayPalette m_wndTrayPalB;
+    OwnerPtr<CDockMarkPalette> m_wndMarkPal;
+    OwnerPtr<CDockTrayPalette> m_wndTrayPalA;
+    OwnerPtr<CDockTrayPalette> m_wndTrayPalB;
 
     CWindowPos    m_wndPosition;
      //@@@@@@ CMDIWndTab    m_wndMDITabWindow;

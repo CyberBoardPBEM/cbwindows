@@ -29,14 +29,6 @@
 #include    "Marks.h"
 #endif
 
-#ifndef     _PALTRAY_H
-#include    "PalTray.h"
-#endif
-
-#ifndef     _PALMARK_H
-#include    "PalMark.h"
-#endif
-
 #ifndef     _PIECES_H
 #include    "Pieces.h"
 #endif
@@ -90,6 +82,8 @@ class CGpWinStateMgr;
 class CPlayerManager;
 class CGamProjView;
 class CSendMsgDialog;
+class CMarkerPaletteContainer;
+class CTrayPaletteContainer;
 
 class CModelessDialogCleaner
 {

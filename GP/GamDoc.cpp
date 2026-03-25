@@ -60,6 +60,11 @@
 #include    "DlgNewGeoBoard.h"
 #include    "DlgSmsg.h"
 
+#include    "FrmDockMark.h"
+#include    "PalMark.h"
+#include    "FrmDockTray.h"
+#include    "PalTray.h"
+#include    "PalReadMsg.h"
 #include    "VwPrjgam.h"
 
 #ifdef _DEBUG

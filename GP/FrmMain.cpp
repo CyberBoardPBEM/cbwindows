@@ -27,6 +27,9 @@
 #include    "GdiTools.h"
 #include    "FrmMain.h"
 #include    "LibMfc.h"
+#include    "FrmDockMark.h"
+#include    "FrmDockTray.h"
+#include    "PalReadMsg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -92,7 +95,11 @@ static const CB::string szSectControlBars = "ControlBars";
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
+    m_wndMessage(MakeOwner<CReadMsgWnd>()),
+    m_wndMarkPal(MakeOwner<CDockMarkPalette>()),
+    m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
+    m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
 {
     // TODO: add member initialization code here
 }
@@ -277,7 +284,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndStatusBar.SetPaneStyle(0, SBPS_STRETCH);
 
     CB::string str = CB::string::LoadString(IDS_TRAYA_TITLE);
-    if (!m_wndTrayPalA.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEA,
+    if (!m_wndTrayPalA->Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEA,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray A palette dock window\n");
@@ -285,7 +292,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     str = CB::string::LoadString(IDS_TRAYB_TITLE);
-    if (!m_wndTrayPalB.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEB,
+    if (!m_wndTrayPalB->Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_TRAY_PALETTEB,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create tray B palette dock window\n");
@@ -293,7 +300,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     str = CB::string::LoadString(IDS_PAL_MARKERS);
-    if (!m_wndMarkPal.Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_MARK_PALETTE,
+    if (!m_wndMarkPal->Create(str, this, CRect(0, 0, 200, 1000), TRUE, IDW_MARK_PALETTE,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create marker palette dock window\n");
@@ -301,7 +308,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     str = CB::string::LoadString(IDS_MESSAGE_WND);
-    if (!m_wndMessage.Create(str, this, CRect(0, 0, 300, 80), TRUE, IDW_MESSAGE_WINDOW,
+    if (!m_wndMessage->Create(str, this, CRect(0, 0, 300, 80), TRUE, IDW_MESSAGE_WINDOW,
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI))
     {
         TRACE0("Failed to create message window\n");
@@ -325,10 +332,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndTBarView.EnableDocking(CBRS_ALIGN_ANY);
     m_wndTBarMove.EnableDocking(CBRS_ALIGN_ANY);
     m_wndTBarPlay.EnableDocking(CBRS_ALIGN_ANY);
-    m_wndTrayPalA.EnableDocking(CBRS_ALIGN_ANY);
-    m_wndTrayPalB.EnableDocking(CBRS_ALIGN_ANY);
-    m_wndMarkPal.EnableDocking(CBRS_ALIGN_ANY);
-    m_wndMessage.EnableDocking(CBRS_ALIGN_ANY);
+    m_wndTrayPalA->EnableDocking(CBRS_ALIGN_ANY);
+    m_wndTrayPalB->EnableDocking(CBRS_ALIGN_ANY);
+    m_wndMarkPal->EnableDocking(CBRS_ALIGN_ANY);
+    m_wndMessage->EnableDocking(CBRS_ALIGN_ANY);
     EnableDocking(CBRS_ALIGN_ANY);
 
     DockPane(&m_wndMenuBar);
@@ -339,11 +346,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     DockPaneLeftOf(&m_wndTBarView, &m_wndTBarMove);
     DockPaneLeftOf(&m_wndToolBar, &m_wndTBarView);
 
-    DockPane(&m_wndTrayPalA, AFX_IDW_DOCKBAR_RIGHT);
-    m_wndTrayPalB.DockToWindow(&m_wndTrayPalA, CBRS_ALIGN_BOTTOM);
-    m_wndMarkPal.DockToWindow(&m_wndTrayPalB, CBRS_ALIGN_BOTTOM);
+    DockPane(&*m_wndTrayPalA, AFX_IDW_DOCKBAR_RIGHT);
+    m_wndTrayPalB->DockToWindow(&*m_wndTrayPalA, CBRS_ALIGN_BOTTOM);
+    m_wndMarkPal->DockToWindow(&*m_wndTrayPalB, CBRS_ALIGN_BOTTOM);
 
-    DockPane(&m_wndMessage, AFX_IDW_DOCKBAR_BOTTOM);
+    DockPane(&*m_wndMessage, AFX_IDW_DOCKBAR_BOTTOM);
 
     //@@@@@ LoadBarState(szSectControlBars);
     //@@@@@ m_wndMDITabWindow.Install(this);
@@ -429,10 +436,10 @@ BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
 
 void CMainFrame::ShowPalettePanes(BOOL bShow)
 {
-    ShowPane(&m_wndTrayPalA, bShow, FALSE, TRUE);
-    ShowPane(&m_wndTrayPalB, bShow, FALSE, TRUE);
-    ShowPane(&m_wndMarkPal, bShow, FALSE, TRUE);
-    ShowPane(&m_wndMessage, bShow, FALSE, TRUE);
+    ShowPane(&*m_wndTrayPalA, bShow, FALSE, TRUE);
+    ShowPane(&*m_wndTrayPalB, bShow, FALSE, TRUE);
+    ShowPane(&*m_wndMarkPal, bShow, FALSE, TRUE);
+    ShowPane(&*m_wndMessage, bShow, FALSE, TRUE);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -485,6 +492,11 @@ CDocument* CMainFrame::GetCurrentDocument()
         return pView->GetDocument();
     }
     return NULL;
+}
+
+CReadMsgWnd& CMainFrame::GetMessageWindow()
+{
+    return *m_wndMessage;
 }
 
 /////////////////////////////////////////////////////////////////////////////

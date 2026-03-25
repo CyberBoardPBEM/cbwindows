@@ -40,6 +40,7 @@
 #include    "DlgSmsg.h"
 #include    "DlgDice.h"
 #include    "DlgEdtel.h"
+#include    "PalReadMsg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
