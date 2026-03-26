@@ -759,10 +759,14 @@ void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
     }
 
     if (pdi.m_phase == PhaseDrag::Exit)
+    {
+        m_autoscrollWithoutCapture = false;
         DisableAutoscrollWithoutCapture();
+    }
     else if (pdi.m_phase == PhaseDrag::Enter)
     {
         EnableAutoscrollWithoutCapture();
+        m_autoscrollWithoutCapture = true;
     }
     else if (pdi.m_phase == PhaseDrag::Over)
     {
@@ -800,6 +804,7 @@ void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
             SelectAllObjectsInList(temp);   // Reselect pieces dropped on board
         }
 
+        m_autoscrollWithoutCapture = false;
         DisableAutoscrollWithoutCapture();
     }
     return;
@@ -820,9 +825,11 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
     {
         case PhaseDrag::Enter:
             EnableAutoscrollWithoutCapture();
+            m_autoscrollWithoutCapture = true;
             break;
         case PhaseDrag::Exit:
         case PhaseDrag::Drop:
+            m_autoscrollWithoutCapture = false;
             DisableAutoscrollWithoutCapture();
             break;
     }
@@ -963,9 +970,11 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
     {
         case PhaseDrag::Enter:
             EnableAutoscrollWithoutCapture();
+            m_autoscrollWithoutCapture = true;
             break;
         case PhaseDrag::Exit:
         case PhaseDrag::Drop:
+            m_autoscrollWithoutCapture = false;
             DisableAutoscrollWithoutCapture();
             break;
     }

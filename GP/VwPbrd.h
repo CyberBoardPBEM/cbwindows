@@ -325,6 +325,8 @@ private:
 
     OwnerPtr<wxOverlay> overlay = MakeOwner<wxOverlay>();
     int m_bindEnd = 0;
+    // GetAutoscrollWithoutCapture() isn't accessible
+    bool m_autoscrollWithoutCapture = false;
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp

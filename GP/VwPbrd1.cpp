@@ -696,10 +696,11 @@ bool CPlayBoardView::SendAutoScrollEvents(wxScrollWinEvent& event) const
     // scroll if this is the capturing window (net select)
     // or this is drag destination
     wxASSERT(event.GetEventObject() == this);
-    if (HasCapture() || GetAutoscrollWithoutCapture())
+    if (HasCapture() || m_autoscrollWithoutCapture)
     {
         return true;
     }
+    wxASSERT(!"unreachable code?");
 
     // scroll if drag-move
     CPlayTool& tool = CPlayTool::GetTool(ptypeSelect);
