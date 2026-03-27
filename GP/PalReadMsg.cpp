@@ -1,6 +1,6 @@
 // PalReadMsg.cpp - Dockable message output window
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -44,9 +44,6 @@ const DWORD    MSG_DICE_ROLL_EFFECT = 0;
 
 const COLORREF MSG_TEXT_COLOR = RGB(0, 0, 0);
 const DWORD    MSG_TEXT_EFFECT = 0;
-
-const COLORREF MSG_SENDER_NAME_COLOR = RGB(0, 128, 128);
-const DWORD    MSG_SENDER_EFFECT = CFE_BOLD;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -249,16 +246,12 @@ bool CReadMsgWnd::GetLine(CB::string& strBfr, CB::string& strLine)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CReadMsgWnd::InsertText(const CB::string& pszText, BOOL bAtEnd /* = TRUE */)
+void CReadMsgWnd::InsertText(const CB::string& pszText)
 {
-    if (bAtEnd)
-    {
-        int nLen = m_editCtrl.GetTextLength();
-        m_editCtrl.SetSel(nLen, nLen);
-    }
+    int nLen = m_editCtrl.GetTextLength();
+    m_editCtrl.SetSel(nLen, nLen);
     m_editCtrl.ReplaceSel(pszText);
-    if (bAtEnd)
-        m_editCtrl.SendMessage(WM_VSCROLL, SB_BOTTOM);
+    m_editCtrl.SendMessage(WM_VSCROLL, SB_BOTTOM);
 }
 
 void CReadMsgWnd::SetDefaults()
@@ -274,7 +267,7 @@ void CReadMsgWnd::SetDefaults()
     m_editCtrl.SetDefaultCharFormat(cf);
 }
 
-void CReadMsgWnd::SetTextStyle(COLORREF cr, DWORD dwEffect /* = 0 */)
+void CReadMsgWnd::SetTextStyle(COLORREF cr, DWORD dwEffect)
 {
     CharFormat cf;
     GetCurCharFormat(cf);
@@ -284,33 +277,6 @@ void CReadMsgWnd::SetTextStyle(COLORREF cr, DWORD dwEffect /* = 0 */)
     cf.dwEffects = dwEffect;
 
     SetCharFormat(cf);
-}
-
-void CReadMsgWnd::SetTextColor(COLORREF cr)
-{
-    CharFormat cf;
-    GetCurCharFormat(cf);
-
-    cf.dwMask = CFM_COLOR;
-    cf.crTextColor = cr;
-
-    SetCharFormat(cf);
-}
-
-void CReadMsgWnd::SetTextEffect(DWORD dwEffect)
-{
-    CharFormat cf;
-    GetCurCharFormat(cf);
-
-    cf.dwMask = CFM_EFFECTS;
-    cf.dwEffects = dwEffect;
-
-    SetCharFormat(cf);
-}
-
-void CReadMsgWnd::SetInsertAtEnd()
-{
-    m_editCtrl.SetSel(-1, -1);
 }
 
 void CReadMsgWnd::GetCurCharFormat(CHARFORMAT& cf)

@@ -61,12 +61,9 @@ protected:
 
     void SetDefaults();
 
-    void InsertText(const CB::string& pszText, BOOL bAtEnd = TRUE);
+    void InsertText(const CB::string& pszText);
 
-    void SetTextStyle(COLORREF cr, DWORD dwEffect = 0);
-    void SetTextColor(COLORREF cr);
-    void SetTextEffect(DWORD dwEffect);
-    void SetInsertAtEnd();
+    void SetTextStyle(COLORREF cr, DWORD dwEffect);
 
     void GetCurCharFormat(CHARFORMAT& cf);
     void SetCharFormat(CHARFORMAT& cf);
@@ -74,7 +71,7 @@ protected:
 // Implementation - overrides
 protected:
     //{{AFX_VIRTUAL(CReadMsgWnd)
-    virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+    BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
     //}}AFX_VIRTUAL
 
     //{{AFX_MSG(CReadMsgWnd)
