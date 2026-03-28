@@ -3954,6 +3954,11 @@
     </object>
     <object class="wxMenu" name="MENU_MV_RICHEDIT">
       <label>6=MV__RICHEDIT</label>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>Copy</label>
+        <accel></accel>
+        <help>Copy the selection and put it on the Clipboard</help>
+      </object>
     </object>
     <object class="wxMenu" name="MENU_ACT_TURNOVER">
       <label>7=ACT__TURNOVER</label>

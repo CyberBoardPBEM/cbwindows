@@ -462,7 +462,7 @@ void CGamDoc::OnIdle(BOOL bActive)
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
 
         CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
-        pMFrame->UpdatePaletteWindow(*pDocMsg.GetParent(), m_bMsgWinVisible && !IsScenario());
+        pMFrame->UpdatePaletteWindow(pDocMsg.GetParent(), m_bMsgWinVisible && !IsScenario());
         pDocMsg.SetText(this);
     }
 }

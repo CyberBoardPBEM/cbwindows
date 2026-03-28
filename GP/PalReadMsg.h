@@ -33,25 +33,38 @@
 // CReadMsgWnd class
 
 class CGamDoc;
+class CReadMsgWndContainer;
 
-class CReadMsgWnd : public CWnd
+class CReadMsgWnd : public wxPanel
 {
 // Construction / destruction
 public:
-    CReadMsgWnd();
+    /* N.B. : despite ctor requiring parent,
+        this always uses two-phase construction */
+    CReadMsgWnd(CReadMsgWndContainer& container);
     ~CReadMsgWnd() override;
-    BOOL Create(CWnd& container);
+    BOOL Create();
 
 // Methods
 public:
+    const CReadMsgWndContainer& GetParent() const
+    {
+        return *m_pContainer;
+    }
+    CReadMsgWndContainer& GetParent()
+    {
+        return const_cast<CReadMsgWndContainer&>(std::as_const(*this).GetParent());
+    }
     void SetText(CGamDoc* pDoc);
 
 // Implementation - variables
 protected:
-    CGamDoc*        m_pDoc;                 // Doc of current messages
+    RefPtr<CReadMsgWndContainer> m_pContainer;
+    CB::propagate_const<CGamDoc*> m_pDoc;                 // Doc of current messages
     size_t          m_nMsgCount;            // Number of messages already processed
 
-    CRichEditCtrl   m_editCtrl;
+    // owned by wx
+    RefPtr<wxTextCtrl> m_editCtrl;
 
 // Implementation - methods
 protected:
@@ -62,33 +75,28 @@ protected:
 
     void InsertText(const CB::string& pszText);
 
-    void SetTextStyle(COLORREF cr, DWORD dwEffect);
-
-    void GetCurCharFormat(CHARFORMAT& cf);
-    void SetCharFormat(CHARFORMAT& cf);
+    void SetTextStyle(wxColour cr, wxFontWeight dwEffect);
 
 // Implementation - overrides
 protected:
-    //{{AFX_VIRTUAL(CReadMsgWnd)
-    BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
-    //}}AFX_VIRTUAL
+    void OnContextMenu(wxContextMenuEvent& event);
 
-    //{{AFX_MSG(CReadMsgWnd)
+#if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-public:
-    afx_msg void OnEditCopy();
-    afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
+#endif
+    void OnSize(wxSizeEvent& event);
+    wxDECLARE_EVENT_TABLE();
+    void OnEditCopy(wxCommandEvent& event);
+    void OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI);
 //    afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 //    afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 
 private:
-    typedef CWnd BASE;
+    typedef wxPanel BASE;
 };
 
-class CReadMsgWndContainer : public CDockablePane
+class CReadMsgWndContainer : public CDockablePane,
+                                public CB::NativeContainerWindowMixin
 {
 public:
     CReadMsgWndContainer();
@@ -107,7 +115,8 @@ private:
 
     typedef CDockablePane BASE;
 
-    OwnerPtr<CReadMsgWnd> child = MakeOwner<CReadMsgWnd>();
+    // owned by wx
+    CB::propagate_const<CReadMsgWnd*> child = new CReadMsgWnd(*this);
 };
 
 /////////////////////////////////////////////////////////////////////////////

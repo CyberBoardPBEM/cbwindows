@@ -36,14 +36,14 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
-const COLORREF MSG_DIVIDER_COLOR = RGB(255, 0, 0);
-const DWORD    MSG_DIVIDER_EFFECT = CFE_BOLD;
+const wxColour     MSG_DIVIDER_COLOR = *wxRED;
+const wxFontWeight MSG_DIVIDER_EFFECT = wxFONTWEIGHT_BOLD;
 
-const COLORREF MSG_DICE_ROLL_COLOR = RGB(128, 0, 128);
-const DWORD    MSG_DICE_ROLL_EFFECT = 0;
+const wxColour     MSG_DICE_ROLL_COLOR = wxColour(128, 0, 128);
+const wxFontWeight MSG_DICE_ROLL_EFFECT = wxFONTWEIGHT_NORMAL;
 
-const COLORREF MSG_TEXT_COLOR = RGB(0, 0, 0);
-const DWORD    MSG_TEXT_EFFECT = 0;
+const wxColour     MSG_TEXT_COLOR = *wxBLACK;
+const wxFontWeight MSG_TEXT_EFFECT = wxFONTWEIGHT_NORMAL;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -59,33 +59,17 @@ const UINT IDC_MSG_RICHEDIT = 1;                // Control ID of rich edit contr
 
 /////////////////////////////////////////////////////////////////////////////
 
-struct CharFormat : public CHARFORMAT
-{
-    CharFormat()
-    {
-        memset(this, 0, sizeof(CHARFORMAT));
-        this->cbSize = sizeof(CHARFORMAT);
-    }
-    CharFormat(const CHARFORMAT &newf)
-    {
-        *(CHARFORMAT *)this = newf;
-    }
-    inline operator CHARFORMAT &()
-    {
-        return *(CHARFORMAT *)this;
-    }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(CReadMsgWnd, CReadMsgWnd::BASE)
+wxBEGIN_EVENT_TABLE(CReadMsgWnd, CReadMsgWnd::BASE)
+#if 0
     ON_WM_CREATE()
-    ON_WM_SIZE()
-    ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
+#endif
+    EVT_SIZE(OnSize)
+    EVT_CONTEXT_MENU(OnContextMenu)
+    EVT_MENU(wxID_COPY, OnEditCopy)
+    EVT_UPDATE_UI(wxID_COPY, OnUpdateEditCopy)
 //    ON_WM_CHAR()
 //    ON_WM_KEYUP()
-END_MESSAGE_MAP()
+wxEND_EVENT_TABLE()
 
 BEGIN_MESSAGE_MAP(CReadMsgWndContainer, CDockablePane)
     ON_WM_CREATE()
@@ -96,7 +80,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CReadMsgWnd
 
-CReadMsgWnd::CReadMsgWnd()
+CReadMsgWnd::CReadMsgWnd(CReadMsgWndContainer& container) :
+    m_pContainer(&container),
+    m_editCtrl(new wxTextCtrl)
 {
     m_pDoc = NULL;
     m_nMsgCount = size_t(0);
@@ -106,19 +92,25 @@ CReadMsgWnd::~CReadMsgWnd()
 {
 }
 
-BOOL CReadMsgWnd::Create(CWnd& container)
+BOOL CReadMsgWnd::Create()
 {
-    DWORD dwStyle = WS_CHILD | WS_VISIBLE;
-    if (!BASE::Create(AfxRegisterWndClass(0), NULL, dwStyle,
-        CRect(0, 0, 200, 100), &container, 0))
+    if (!wxPanel::Create(*m_pContainer))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
     }
 
+    m_editCtrl->Create(this, XRCID("m_editCtrl"),
+                                wxEmptyString,
+                                wxDefaultPosition, wxDefaultSize,
+                                wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH);
+
+    SetDefaults();
+
     return TRUE;
 }
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 
 int CReadMsgWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -142,40 +134,30 @@ int CReadMsgWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CReadMsgWnd::OnSize(UINT nType, int cx, int cy)
+void CReadMsgWnd::OnSize(wxSizeEvent& event)
 {
-    BASE::OnSize(nType, cx, cy);
-    CRect rct;
-    GetClientRect(rct);
-    if (m_editCtrl.m_hWnd != NULL)
-        m_editCtrl.MoveWindow(&rct);
+    wxRect rct = GetClientRect();
+    m_editCtrl->SetSize(rct);
+    event.Skip();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CReadMsgWnd::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+void CReadMsgWnd::OnContextMenu(wxContextMenuEvent& /*event*/)
 {
-    MSGFILTER * pMsgFilter = (MSGFILTER *)lParam;
-    if ((wParam == IDC_MSG_RICHEDIT) && (pMsgFilter->nmhdr.code == EN_MSGFILTER) &&
-        (pMsgFilter->msg == WM_RBUTTONDOWN))
-    {
-        CPoint point;
-        ::GetCursorPos(&point); // Get current mouse position
+    std::unique_ptr<wxMenuBar> menu(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
+    wxASSERT(menu);
 
-        CMenu menu;
-        VERIFY(menu.LoadMenuW(IDR_MENU_PLAYER_POPUPS));
-
-        CMenu *pPopupMenu = menu.GetSubMenu(MENU_MV_RICHEDIT);
-        ASSERT(pPopupMenu != NULL);
-        pPopupMenu->TrackPopupMenu((TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_RIGHTBUTTON),
-            point.x, point.y, this);
-
-        pPopupMenu->DestroyMenu();
-    }
-    return BASE::OnNotify(wParam, lParam, pResult);
+    int index = menu->FindMenu("6=MV_RICHEDIT");
+    wxASSERT(index != wxNOT_FOUND);
+    // wx doesn't allow popup menu to be part of menubar
+    std::unique_ptr<wxMenu> pPopupMenu(menu->Remove(value_preserving_cast<size_t>(index)));
+    wxASSERT(pPopupMenu);
+    PopupMenu(&*pPopupMenu);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -184,7 +166,7 @@ void CReadMsgWnd::SetText(CGamDoc* pDoc)
 {
     if (pDoc != m_pDoc)
     {
-        m_editCtrl.SetWindowText(""_cbstring);
+        m_editCtrl->Clear();
         m_pDoc = pDoc;
         m_nMsgCount = size_t(0);
     }
@@ -200,7 +182,7 @@ void CReadMsgWnd::ProcessMessages()
     if (astrHist.empty() || astrHist.size() < m_nMsgCount)
     {
         m_nMsgCount = size_t(0);
-        m_editCtrl.SetWindowText(""_cbstring);
+        m_editCtrl->Clear();
     }
 
     size_t nOldCount = m_nMsgCount;            // Save previous length for a moment
@@ -264,45 +246,23 @@ bool CReadMsgWnd::GetLine(CB::string& strBfr, CB::string& strLine)
 
 void CReadMsgWnd::InsertText(const CB::string& pszText)
 {
-    int nLen = m_editCtrl.GetTextLength();
-    m_editCtrl.SetSel(nLen, nLen);
-    m_editCtrl.ReplaceSel(pszText);
-    m_editCtrl.SendMessage(WM_VSCROLL, SB_BOTTOM);
+    m_editCtrl->AppendText(pszText);
 }
 
 void CReadMsgWnd::SetDefaults()
 {
-    // Set the font for the edit control.
-    CharFormat cf;
-
-    m_editCtrl.GetDefaultCharFormat(cf);
-    cf.dwMask = CFM_COLOR | CFM_EFFECTS;
-    cf.dwEffects = 0;
-    cf.crTextColor = RGB(0, 0, 0);
-
-    m_editCtrl.SetDefaultCharFormat(cf);
+    wxTextAttr attr = m_editCtrl->GetDefaultStyle();
+    attr.SetFontWeight(wxFONTWEIGHT_NORMAL);
+    attr.SetTextColour(*wxBLACK);
+    m_editCtrl->SetDefaultStyle(attr);
 }
 
-void CReadMsgWnd::SetTextStyle(COLORREF cr, DWORD dwEffect)
+void CReadMsgWnd::SetTextStyle(wxColour cr, wxFontWeight dwEffect)
 {
-    CharFormat cf;
-    GetCurCharFormat(cf);
-
-    cf.dwMask = CFM_COLOR | CFM_EFFECTS;
-    cf.crTextColor = cr;
-    cf.dwEffects = dwEffect;
-
-    SetCharFormat(cf);
-}
-
-void CReadMsgWnd::GetCurCharFormat(CHARFORMAT& cf)
-{
-    m_editCtrl.GetSelectionCharFormat(cf);
-}
-
-void CReadMsgWnd::SetCharFormat(CHARFORMAT& cf)
-{
-    m_editCtrl.SetSelectionCharFormat(cf);
+    wxTextAttr attr = m_editCtrl->GetDefaultStyle();
+    attr.SetTextColour(cr);
+    attr.SetFontWeight(dwEffect);
+    m_editCtrl->SetDefaultStyle(attr);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -315,19 +275,18 @@ LRESULT CReadMsgWndContainer::OnPaletteHide(WPARAM, LPARAM)
     return (LRESULT)0;
 }
 
-void CReadMsgWnd::OnEditCopy()
+void CReadMsgWnd::OnEditCopy(wxCommandEvent& /*event*/)
 {
-    m_editCtrl.Copy();
+    m_editCtrl->Copy();
 }
 
-void CReadMsgWnd::OnUpdateEditCopy(CCmdUI *pCmdUI)
+void CReadMsgWnd::OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI)
 {
-    CHARRANGE cr;
-    m_editCtrl.GetSel(cr);
-    pCmdUI->Enable(cr.cpMin != cr.cpMax);
+    pCmdUI.Enable(m_editCtrl->CanCopy());
 }
 
-CReadMsgWndContainer::CReadMsgWndContainer()
+CReadMsgWndContainer::CReadMsgWndContainer() :
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 
@@ -338,7 +297,7 @@ int CReadMsgWndContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    if (!child->Create(*this))
+    if (!child->Create())
     {
         TRACE("Failed to create ReadMessage palette window.\n");
         return -1;
@@ -349,6 +308,6 @@ int CReadMsgWndContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CReadMsgWndContainer::OnSize(UINT nType, int cx, int cy)
 {
-    child->MoveWindow(0, 0, cx, cy);
+    child->SetSize(0, 0, cx, cy);
     return BASE::OnSize(nType, cx, cy);
 }
