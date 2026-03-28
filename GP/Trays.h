@@ -1,6 +1,6 @@
 // Trays.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -95,8 +95,8 @@ public:
 
     void PropagateOwnerMaskToAllPieces(CGamDoc* pDoc);
 
-    CTraySet Clone(CGamDoc *pDoc) const;
-    void Restore(CGamDoc *pDoc, const CTraySet& pTbl);
+    CTraySet Clone(CGamDoc& pDoc) const;
+    void Restore(CGamDoc& pDoc, const CTraySet& pTbl);
     BOOL Compare(const CTraySet& pYGrp) const;
 
     void Serialize(CArchive& ar);
@@ -136,14 +136,14 @@ public:
         return const_cast<CTraySet&>(std::as_const(*this).GetTraySet(nYSet));
     }
     void SetTileManager(CTileManager* pTMgr) { m_pTMgr = pTMgr; }
-    CTileManager* GetTileManager() { return m_pTMgr; }
+    CTileManager* GetTileManager() { return m_pTMgr.get(); }
 
 // Operations
 public:
     size_t CreateTraySet(CB::string pszName);
     void DeleteTraySet(size_t nYSet);
     void RemovePieceIDFromTraySets(PieceID pid);
-    CTraySet* FindPieceIDInTraySet(PieceID pid);
+    const CTraySet* FindPieceIDInTraySet(PieceID pid) const;
     size_t FindTrayByName(const CB::string& strName) const;
     size_t FindTrayByRef(const CTraySet& pYSet) const;
 
@@ -152,8 +152,8 @@ public:
     void ClearAllOwnership();
     void PropagateOwnerMaskToAllPieces(CGamDoc* pDoc);
 
-    CTrayManager Clone(CGamDoc *pDoc) const;
-    void Restore(CGamDoc *pDoc, const CTrayManager& pMgr);
+    CTrayManager Clone(CGamDoc& pDoc) const;
+    void Restore(CGamDoc& pDoc, const CTrayManager& pMgr);
     BOOL Compare(const CTrayManager& pYMgr) const;
 
     void Serialize(CArchive& ar);
@@ -167,7 +167,7 @@ protected:
     WORD        m_wReserved3;   // For future need (set to 0)
     WORD        m_wReserved4;   // For future need (set to 0)
     // ------- //
-    CTileManager* m_pTMgr;      // Supporting tile manager
+    CB::propagate_const<CTileManager*> m_pTMgr;      // Supporting tile manager
 };
 
 #endif

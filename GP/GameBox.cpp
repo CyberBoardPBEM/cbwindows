@@ -1,6 +1,6 @@
 // GameBox.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -61,26 +61,14 @@ int             CGameBox::c_gbxFileVersion = 0;
 
 CGameBox::CGameBox()
 {
-    m_pBMgr = NULL;
-    m_pTMgr = NULL;
-    m_pPMgr = NULL;
-    m_pMMgr = NULL;
     m_dwMajorRevs = 0;
     m_dwMinorRevs = 0;
     m_nBitsPerPixel = 0;
 }
 
-CGameBox::~CGameBox()
-{
-    if (m_pTMgr != NULL) delete &*m_pTMgr;
-    if (m_pBMgr != NULL) delete m_pBMgr;
-    if (m_pPMgr != NULL) delete m_pPMgr;
-    if (m_pMMgr != NULL) delete m_pMMgr;
-}
-
 //////////////////////////////////////////////////////////////////
 
-BOOL CGameBox::Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& strErr,
+BOOL CGameBox::Load(CGamDoc& pDoc, const CB::string& pszPathName, CB::string& strErr,
     DWORD dwGbxID)
 {
     CFile file;
@@ -93,7 +81,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& st
     }
 
     CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = pDoc;
+    ar.m_pDocument = &pDoc;
     ar.m_bForceFlat = FALSE;
 
     TRY
@@ -164,7 +152,7 @@ BOOL CGameBox::Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& st
         ar >> cEatThis;
 
         m_pTMgr = new CTileManager;
-        m_pBMgr = new CBoardManager(*pDoc);
+        m_pBMgr = new CBoardManager(pDoc);
 
         m_pPMgr = new CPieceManager(*m_pTMgr);
         m_pMMgr = new CMarkManager;

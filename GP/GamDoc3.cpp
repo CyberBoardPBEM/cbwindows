@@ -823,8 +823,6 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
 
             if (bTmp)
             {
-                if (m_pPlayerMgr != NULL)
-                    delete m_pPlayerMgr;
                 m_pPlayerMgr = new CPlayerManager;
                 m_pPlayerMgr->Serialize(ar);        // V2.0
             }
@@ -833,8 +831,6 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             ar >> wTmp;
             m_bSaveWindowPositions = (BOOL)wTmp;    // V2.0
 
-            if (m_pWinState != NULL)
-                delete m_pWinState;                 // Delete old version
             m_pWinState = NULL;
 
             ar >> bTmp;                             // State data follows flag // V2.0
@@ -847,7 +843,6 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   // Ver 2.90
             {
                 // Discard old save data because we can't use it.
-                delete m_pWinState;
                 m_pWinState = NULL;
             }
         }
@@ -881,11 +876,11 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pPBMgr = new CPBoardManager(*this);
 
         // Create the playing piece table...
-        m_pPTbl = new CPieceTable(*m_pGbx->GetPieceManager(), *this);
+        m_pPTbl = new CPieceTable(m_pGbx->GetPieceManager(), *this);
 
         // Create the tray manager.
         m_pYMgr = new CTrayManager;
-        m_pYMgr->SetTileManager(m_pGbx->GetTileManager());
+        m_pYMgr->SetTileManager(&m_pGbx->GetTileManager());
 
         // Finally set up the tray palettes
         m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
@@ -993,7 +988,7 @@ void CGamDoc::LoadGameBoxFileForSerialize()
     else
         szFPath = m_strGBoxFile;
     CB::string strErr;
-    if (!m_pGbx->Load(this, szFPath, strErr, m_dwGBoxID))
+    if (!m_pGbx->Load(*this, szFPath, strErr, m_dwGBoxID))
     {
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         AfxThrowArchiveException(CArchiveException::genericException);

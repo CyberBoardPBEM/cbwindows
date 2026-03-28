@@ -119,7 +119,7 @@ void CGamProjView::DoBoardView()
     else
     {
         CB::string strTitle = m_listProj->GetItemText(value_preserving_cast<size_t>(nSel));
-        pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl, strTitle, &pPBoard);
+        pDoc.CreateNewFrame(strTitle, pPBoard);
     }
 }
 

@@ -455,8 +455,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
 
     m_pPlayHist->m_pMList = std::move(m_pRcdMoves);        // Take ownership of move list
 
-    AddMovesToGameHistoryTable(m_pPlayHist);
-    m_pPlayHist = NULL;
+    AddMovesToGameHistoryTable(std::move(m_pPlayHist));
     SetModifiedFlag();
 }
 
@@ -590,8 +589,8 @@ CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
     }
     else
     {
-        CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-            pPBoard.GetBoard()->GetName(), &pPBoard);
+        CreateNewFrame(
+            pPBoard.GetBoard()->GetName(), pPBoard);
         pView = FindPBoardView(pPBoard);
     }
     return pView;

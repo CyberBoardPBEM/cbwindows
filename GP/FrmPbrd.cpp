@@ -154,8 +154,7 @@ CPlayBoardFrame::CPlayBoardFrame(CPlayBoardFrameContainer& parent,
         AfxThrowMemoryException();
     }
     CGamDoc* pDoc = CB::ToCGamDoc(pContext.m_pCurrentDoc);
-    m_pPBoard = (CPlayBoard*)pDoc->GetNewViewParameter();
-    wxASSERT(m_pPBoard != NULL);
+    m_pPBoard = &pDoc->GetNewViewBoard();
 
     // Create a splitter with 1 row, 2 columns
     if (!m_wndSplitter1.CreateStatic(this, 1, 2))

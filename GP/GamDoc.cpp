@@ -338,8 +338,7 @@ BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
     // the state of the windows saved. If they do, get the state information.
     // The state data will be saved during the serialization
     // process.
-    if (m_pWinState != NULL)
-        delete m_pWinState;         // Delete old data
+    // Delete old data
     m_pWinState = NULL;
     if (m_bSaveWindowPositions)
     {
@@ -394,28 +393,19 @@ void CGamDoc::DeleteContents()
     if (m_file.m_hFile != CFile::hFileNull)
         m_file.Close();
 
-    if (m_pTileFacingMap != NULL)
-        delete m_pTileFacingMap;
     m_pTileFacingMap = NULL;
 
-    if (m_pPBMgr != NULL) delete m_pPBMgr;
     m_pPBMgr = NULL;
-    if (m_pGbx != NULL) delete m_pGbx;
     m_pGbx = NULL;
-    if (m_pYMgr != NULL) delete m_pYMgr;
     m_pYMgr = NULL;
-    if (m_pPTbl != NULL) delete m_pPTbl;
     m_pPTbl = NULL;
 
     m_pRcdMoves = nullptr;
     m_pHistMoves = nullptr;
 
-    if (m_pPlayHist != NULL) delete m_pPlayHist;
     m_pPlayHist = NULL;
 
-    if (m_pBookMark != NULL) delete m_pBookMark;
     m_pBookMark = NULL;
-    if (m_pHistTbl != NULL) delete m_pHistTbl;
     m_pHistTbl = NULL;
     m_pMsgDialog = NULL;
 
@@ -432,7 +422,6 @@ void CGamDoc::DeleteContents()
 
     DiscardWindowState();
 
-    if (m_pPlayerMgr != NULL) delete m_pPlayerMgr;
     m_pPlayerMgr = NULL;
     m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
     m_dwPlayerHash = 0;
@@ -498,22 +487,36 @@ void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
 ///////////////////////////////////////////////////////////////////////
 // Support for new unique views on this document
 
-BOOL CGamDoc::CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
-    LPVOID lpvCreateParam)
+void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
+    CPlayBoard& board)
 {
-    m_pvParam = lpvCreateParam;
+    CDocTemplate* pTemplate = GetApp()->m_pBrdViewTmpl;
+    class CreateParamManager
+    {
+    public:
+        CreateParamManager(CGamDoc& d, CPlayBoard& board) :
+            doc(d)
+        {
+            wxASSERT(!doc.m_pBoardParam);
+            doc.m_pBoardParam = &board;
+        }
+        ~CreateParamManager()
+        {
+            doc.m_pBoardParam = nullptr;
+        }
+    private:
+        CGamDoc& doc;
+    } createParamMgr(*this, board);
     CMDIChildWndEx* pNewFrame
         = (CMDIChildWndEx*)(pTemplate->CreateNewFrame(this, NULL));
     if (pNewFrame == NULL)
-        return FALSE;               // Not created
-    ASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
+        AfxThrowMemoryException();               // Not created
+    wxASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
     CB::string str = GetTitle();
     str += " - ";
     str += pszTitle;
     pNewFrame->SetWindowText(str);
     pTemplate->InitialUpdateFrame(pNewFrame, this);
-    m_pvParam = NULL;
-    return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -601,7 +604,7 @@ BOOL CGamDoc::OnNewScenario()
 
     m_pGbx = new CGameBox;      // Create game box object
     CB::string strErr;
-    if (!m_pGbx->Load(this, strGBoxPath, strErr))
+    if (!m_pGbx->Load(*this, strGBoxPath, strErr))
     {
         AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
@@ -609,7 +612,7 @@ BOOL CGamDoc::OnNewScenario()
 
     // There must be at least one board in the Game Box file
 
-    if (m_pGbx->GetBoardManager()->IsEmpty())
+    if (m_pGbx->GetBoardManager().IsEmpty())
     {
         AfxMessageBox(IDS_ERR_NEEDABOARD, MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
@@ -629,13 +632,13 @@ BOOL CGamDoc::OnNewScenario()
     m_pPBMgr = new CPBoardManager(*this);
 
     // Create the playing piece table...
-    m_pPTbl = new CPieceTable(*m_pGbx->GetPieceManager(), *this);
+    m_pPTbl = new CPieceTable(m_pGbx->GetPieceManager(), *this);
     m_pPTbl->CreatePlayingPieceTable();
 
     // Create the tray manager.
 
     m_pYMgr = new CTrayManager;
-    m_pYMgr->SetTileManager(m_pGbx->GetTileManager());
+    m_pYMgr->SetTileManager(&m_pGbx->GetTileManager());
 
     // Finally set up the tray palettes
     wxASSERT(!m_palTrayA);
@@ -938,8 +941,6 @@ void CGamDoc::RestoreWindowState()
 
 void CGamDoc::DiscardWindowState()
 {
-    if (m_pWinState != NULL)
-        delete m_pWinState;
     m_pWinState = NULL;
 }
 
@@ -967,30 +968,29 @@ DWORD CGamDoc::IssueScenarioID()
 
 const CTileManager& CGamDoc::GetTileManager() const
 {
-    return CheckedDeref(CheckedDeref(m_pGbx).GetTileManager());
+    return CheckedDeref(m_pGbx).GetTileManager();
 }
 
 const CMarkManager& CGamDoc::GetMarkManager() const
 {
-    return CheckedDeref(CheckedDeref(m_pGbx).GetMarkManager());
+    return CheckedDeref(m_pGbx).GetMarkManager();
 }
 
 const CBoardManager& CGamDoc::GetBoardManager() const
 {
-    return CheckedDeref(CheckedDeref(m_pGbx).GetBoardManager());
+    return CheckedDeref(m_pGbx).GetBoardManager();
 }
 
 const CPieceManager& CGamDoc::GetPieceManager() const
 {
-    return CheckedDeref(CheckedDeref(m_pGbx).GetPieceManager());
+    return CheckedDeref(m_pGbx).GetPieceManager();
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 CTileFacingMap& CGamDoc::GetFacingMap()
 {
-    ASSERT(m_pGbx != NULL);
-    ASSERT(m_pGbx->GetTileManager());
+    wxASSERT(m_pGbx != NULL);
     if (m_pTileFacingMap != NULL)
         return *m_pTileFacingMap;
     else
@@ -1164,16 +1164,11 @@ void CGamDoc::OnDebugPieceTable()
 
 void CGamDoc::OnEditSetBookMark()
 {
-    if (m_pBookMark != NULL)
-    {
-        // Need WARNING MESSAGE regarding deleting mark
-        delete m_pBookMark;
-    }
+    // Need WARNING MESSAGE regarding deleting mark
     m_pBookMark = new CGameState();
     if (!m_pBookMark->SaveState(*this))
     {
         // Memory low warning....
-        delete m_pBookMark;
         m_pBookMark = NULL;
         return;
     }
@@ -1215,11 +1210,7 @@ void CGamDoc::OnUpdateEditRestoreBookMark(CCmdUI* pCmdUI)
 
 void CGamDoc::OnEditClearBookMark()
 {
-    if (m_pBookMark != NULL)
-    {
-        delete m_pBookMark;
-        m_pBookMark = NULL;
-    }
+    m_pBookMark = NULL;
 }
 
 void CGamDoc::OnUpdateEditClearBookMark(CCmdUI* pCmdUI)
@@ -1885,11 +1876,7 @@ void CGamDoc::OnEditCreatePlayers()
     if (dlg.ShowModal() != wxID_OK)
         return;
 
-    if (m_pPlayerMgr != NULL)
-    {
-        delete m_pPlayerMgr;
-        m_pPlayerMgr = NULL;
-    }
+    m_pPlayerMgr = NULL;
     ClearAllOwnership();            // Start with clean slate
     if (dlg.m_nPlayerCount > size_t(0))
     {

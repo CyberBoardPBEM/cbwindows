@@ -880,7 +880,7 @@ const CPlayBoard* CGamDoc::FindPieceOnBoard(PieceID pid, const CPieceObj*& ppObj
 
 const CTraySet* CGamDoc::FindPieceInTray(PieceID pid) const
 {
-    ASSERT(m_pYMgr != NULL);
+    wxASSERT(m_pYMgr != NULL);
     return m_pYMgr->FindPieceIDInTraySet(pid);
 }
 

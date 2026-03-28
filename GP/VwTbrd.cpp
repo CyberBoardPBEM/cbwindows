@@ -97,7 +97,7 @@ void CTinyBoardView::OnInitialUpdate()
     wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
     parent = &dynamic_cast<CTinyBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
     document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
-    m_pPBoard = &CheckedDeref(static_cast<CPlayBoard*>(document->GetNewViewParameter()));
+    m_pPBoard = &document->GetNewViewBoard();
 
     parent->CTinyBoardViewContainer::BASE::OnInitialUpdate();
 

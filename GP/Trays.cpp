@@ -1,6 +1,6 @@
 // Trays.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -109,7 +109,7 @@ void CTraySet::RemovePieceList(const std::vector<PieceID>& pTbl)
         RemovePieceID(pTbl.at(i));
 }
 
-CTraySet CTraySet::Clone(CGamDoc *pDoc) const
+CTraySet CTraySet::Clone(CGamDoc& /*pDoc*/) const
 {
     CTraySet pSet;
     pSet.m_pidTbl = m_pidTbl;
@@ -117,7 +117,7 @@ CTraySet CTraySet::Clone(CGamDoc *pDoc) const
     return pSet;
 }
 
-void CTraySet::Restore(CGamDoc *pDoc, const CTraySet& pSet)
+void CTraySet::Restore(CGamDoc& /*pDoc*/, const CTraySet& pSet)
 {
     m_pidTbl = pSet.m_pidTbl;
 }
@@ -222,7 +222,6 @@ CTrayManager::CTrayManager()
     m_wReserved2 = 0;
     m_wReserved3 = 0;
     m_wReserved4 = 0;
-    m_pTMgr = NULL;
 }
 
 void CTrayManager::Clear()
@@ -242,11 +241,11 @@ void CTrayManager::DeleteTraySet(size_t nYSet)
     m_YSetTbl.erase(m_YSetTbl.begin() + value_preserving_cast<ptrdiff_t>(nYSet));
 }
 
-CTraySet* CTrayManager::FindPieceIDInTraySet(PieceID pid)
+const CTraySet* CTrayManager::FindPieceIDInTraySet(PieceID pid) const
 {
     for (size_t i = 0; i < GetNumTraySets(); i++)
     {
-        CTraySet& pYSet = GetTraySet(i);
+        const CTraySet& pYSet = GetTraySet(i);
         if (pYSet.HasPieceID(pid))
             return &pYSet;
     }
@@ -305,7 +304,7 @@ void CTrayManager::RemovePieceIDFromTraySets(PieceID pid)
     }
 }
 
-CTrayManager CTrayManager::Clone(CGamDoc *pDoc) const
+CTrayManager CTrayManager::Clone(CGamDoc& pDoc) const
 {
     CTrayManager pMgr;
 
@@ -318,7 +317,7 @@ CTrayManager CTrayManager::Clone(CGamDoc *pDoc) const
     return pMgr;
 }
 
-void CTrayManager::Restore(CGamDoc *pDoc, const CTrayManager& pMgr)
+void CTrayManager::Restore(CGamDoc& pDoc, const CTrayManager& pMgr)
 {
     size_t nTrayLimit = CB::min(GetNumTraySets(), pMgr.GetNumTraySets());
     for (size_t i = 0; i < nTrayLimit; i++)

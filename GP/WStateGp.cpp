@@ -53,8 +53,8 @@ CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
         if (pView == NULL)
         {
             // No frame open for board. Create it.
-            pDoc->CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-                pPBoard.GetBoard()->GetName(), &pPBoard);
+            pDoc->CreateNewFrame(
+                pPBoard.GetBoard()->GetName(), pPBoard);
             // Try to locate it again
             pView = pDoc->FindPBoardView(pPBoard);
         }

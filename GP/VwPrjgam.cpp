@@ -818,8 +818,8 @@ void CGamProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
     CGamDoc& pDoc = GetDocument();
     CPlayBoard& pPBoard = pDoc.GetPBoardManager().GetPBoard(event.GetPlayingBoardIndex());
     wxASSERT(pPBoard.m_bOpenBoardOnLoad);
-    pDoc.CreateNewFrame(GetApp()->m_pBrdViewTmpl,
-        pPBoard.GetBoard()->GetName(), &pPBoard);
+    pDoc.CreateNewFrame(
+        pPBoard.GetBoard()->GetName(), pPBoard);
 }
 
 ///////////////////////////////////////////////////////////////////////

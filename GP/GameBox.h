@@ -1,6 +1,6 @@
 // GameBox.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -60,20 +60,24 @@ public:
 
 public:
     CGameBox();
-    ~CGameBox();
+    ~CGameBox() = default;
 // Attributes
 public:
-    CBoardManager* GetBoardManager() { return m_pBMgr; }
-    const CTileManager* GetTileManager() const { return &*m_pTMgr; }
-    CTileManager* GetTileManager() { return const_cast<CTileManager*>(std::as_const(*this).GetTileManager()); }
-    CPieceManager* GetPieceManager() { return m_pPMgr; }
-    CMarkManager* GetMarkManager() { return m_pMMgr; }
+    const CBoardManager& GetBoardManager() const { return CheckedDeref(m_pBMgr); }
+    CBoardManager& GetBoardManager() { return const_cast<CBoardManager&>(std::as_const(*this).GetBoardManager()); }
+    const CTileManager& GetTileManager() const { return CheckedDeref(m_pTMgr); }
+    CTileManager& GetTileManager() { return const_cast<CTileManager&>(std::as_const(*this).GetTileManager()); }
+    const CPieceManager& GetPieceManager() const { return CheckedDeref(m_pPMgr); }
+    CPieceManager& GetPieceManager() { return const_cast<CPieceManager&>(std::as_const(*this).GetPieceManager()); }
+    const CMarkManager& GetMarkManager() const { return CheckedDeref(m_pMMgr); }
+    CMarkManager& GetMarkManager() { return const_cast<CMarkManager&>(std::as_const(*this).GetMarkManager()); }
 
-    CGameElementStringMap& GetGameBoxStringMap() { return m_mapStrings; }
+    const CGameElementStringMap& GetGameBoxStringMap() const { return m_mapStrings; }
+    CGameElementStringMap& GetGameBoxStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameBoxStringMap()); }
 
 // Operations
 public:
-    BOOL Load(CGamDoc* pDoc, const CB::string& pszPathName, CB::string& strErr,
+    BOOL Load(CGamDoc& pDoc, const CB::string& pszPathName, CB::string& strErr,
         DWORD dwGbxID = 0);
 
 // Vars...
@@ -88,10 +92,11 @@ public:
 
     // Note...later we'll need to discard things not needed by
     // game play such as tile sets...
-    CB::propagate_const<CTileManager*>   m_pTMgr;        // Tiles
-    CBoardManager*  m_pBMgr;        // Playing boards
-    CPieceManager*  m_pPMgr;        // Playing pieces
-    CMarkManager*   m_pMMgr;        // Annotation markers
+    // Note2:  reordered members to preserve deletion order
+    OwnerOrNullPtr<CMarkManager>   m_pMMgr;        // Annotation markers
+    OwnerOrNullPtr<CPieceManager>  m_pPMgr;        // Playing pieces
+    OwnerOrNullPtr<CBoardManager>  m_pBMgr;        // Playing boards
+    OwnerOrNullPtr<CTileManager>   m_pTMgr;        // Tiles
 };
 
 #endif

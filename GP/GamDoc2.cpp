@@ -221,9 +221,6 @@ void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
     m_eState = stateRecording;
     m_pMoves = NULL;            // Clear shadow pointer
 
-    if (m_pBookMark)
-        delete m_pBookMark;
-
     m_pBookMark = NULL;
 
     SetModifiedFlag();
@@ -266,11 +263,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     m_eState = stateRecording;
     m_pMoves = NULL;        // Clear shadow pointer
 
-    if (m_pBookMark != NULL)
-        delete m_pBookMark;
     m_pBookMark = NULL;
-    if (m_pPlayHist != NULL)
-        delete m_pPlayHist;
     m_pPlayHist = NULL;
 
     SetModifiedFlag();

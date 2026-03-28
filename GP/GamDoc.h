@@ -317,7 +317,7 @@ public:
     size_t GetCurrentHistoryRecNum() const { return m_nCurHist; }
 
     // Called by view being constructed...
-    void* GetNewViewParameter() { return m_pvParam; }
+    CPlayBoard& GetNewViewBoard() { return CheckedDeref(m_pBoardParam); }
 
     // Major game related objects...
     const CTileManager& GetTileManager() const;
@@ -339,10 +339,10 @@ public:
     CTrayManager& GetTrayManager() { return const_cast<CTrayManager&>(std::as_const(*this).GetTrayManager()); }
     const CPBoardManager& GetPBoardManager() const { return CheckedDeref(m_pPBMgr); }
     CPBoardManager& GetPBoardManager() { return const_cast<CPBoardManager&>(std::as_const(*this).GetPBoardManager()); }
-    const CPlayerManager* GetPlayerManager() const { return m_pPlayerMgr; }
+    const CPlayerManager* GetPlayerManager() const { return m_pPlayerMgr.get(); }
     CPlayerManager* GetPlayerManager() { return const_cast<CPlayerManager*>(std::as_const(*this).GetPlayerManager()); }
     CMoveList* GetRecordMoveList() { return m_pRcdMoves.get(); }
-    const CHistoryTable* GetHistoryTable() const { return m_pHistTbl; }
+    const CHistoryTable* GetHistoryTable() const { return m_pHistTbl.get(); }
     CHistoryTable* GetHistoryTable() { return const_cast<CHistoryTable*>(std::as_const(*this).GetHistoryTable()); }
     const CGameElementStringMap& GetGameStringMap() const { return m_mapStrings; }
     CGameElementStringMap& GetGameStringMap() { return const_cast<CGameElementStringMap&>(std::as_const(*this).GetGameStringMap()); }
@@ -355,8 +355,8 @@ public:
 
 // Operations
 public:
-    BOOL CreateNewFrame(CDocTemplate* pTemplate, const CB::string& pszTitle,
-        LPVOID lpvCreateParam);
+    void CreateNewFrame(const CB::string& pszTitle,
+        CPlayBoard& board);
     CGamProjView& FindProjectView() const;
     CPlayBoardView* FindPBoardView(const CPlayBoard& pPBoard) const;
     CPlayBoardView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
@@ -621,7 +621,7 @@ public:
     CB::string  m_strScnAuthor; // Scenario author
     CB::string  m_strScnTitle;  // Scenario title
     CB::string  m_strScnDescr;  // Scenario description
-    CPlayerManager* m_pPlayerMgr;// Pointer to player manager (if has player accounts)
+    OwnerOrNullPtr<CPlayerManager> m_pPlayerMgr;// Pointer to player manager (if has player accounts)
     PlayerMask  m_dwCurrentPlayer;// Mask for game file's player
     DWORD       m_dwPlayerHash; // MS 32 bits of MD5 hash of m_wCurrentPlayer ..
                                 // .. and player file description text. Used as ..
@@ -660,7 +660,7 @@ public:
 
     // Move file playback history record. This record is only non-NULL
     // when a move file has been loaded for playback.
-    CHistRecord* m_pPlayHist;
+    OwnerOrNullPtr<CHistRecord> m_pPlayHist;
 
     OwnerOrNullPtr<CMoveList> m_pRcdMoves;    // Moves being recorded or move file playback
     OwnerOrNullPtr<CMoveList> m_pHistMoves;   // Currently loaded history from hist table
@@ -673,21 +673,21 @@ public:
     CGameElementStringMap m_mapStrings; // Mapping of pieces and markers to strings.
 
     size_t          m_nMoveIdxAtBookMark;// Move list index at bookmark
-    CGameState*     m_pBookMark;// The state of things at the bookmark
+    OwnerOrNullPtr<CGameState>     m_pBookMark;// The state of things at the bookmark
 
-    CHistoryTable*  m_pHistTbl; // Table containing history of game
+    OwnerOrNullPtr<CHistoryTable>  m_pHistTbl; // Table containing history of game
 
-    CPBoardManager* m_pPBMgr;   // List of play boards in use.
-    CTrayManager*   m_pYMgr;    // Tray manager
-    CPieceTable*    m_pPTbl;    // The playing piece table.
+    OwnerOrNullPtr<CPBoardManager> m_pPBMgr;   // List of play boards in use.
+    OwnerOrNullPtr<CTrayManager>   m_pYMgr;    // Tray manager
+    OwnerOrNullPtr<CPieceTable>    m_pPTbl;    // The playing piece table.
 
     using CSendMsgDlgPtr = CB::propagate_const<std::unique_ptr<CSendMsgDialog, CModelessDialogCleaner>>;
     CSendMsgDlgPtr  m_pMsgDialog; // Pointer to message modeless dialog
     CPoint          m_pntMsgReadPos; // Position of read message dialog
 
-    CGameBox*       m_pGbx;     // Holds the contents of gamebox
+    OwnerOrNullPtr<CGameBox>       m_pGbx;     // Holds the contents of gamebox
 
-    CTileFacingMap* m_pTileFacingMap; // Map of temp tile rotations (NOT SERIALIZED)
+    OwnerOrNullPtr<CTileFacingMap> m_pTileFacingMap; // Map of temp tile rotations (NOT SERIALIZED)
 
 private:
     class WindowDestroy
@@ -710,10 +710,10 @@ public:
 
 // Implementation
 protected:
-    void*   m_pvParam;          // View init backdoor parameter pointer
+    CPlayBoard* m_pBoardParam = nullptr;    // View init backdoor parameter pointer
 
     // This is only valid during saving and loading of files.
-    CGpWinStateMgr* m_pWinState;
+    OwnerOrNullPtr<CGpWinStateMgr> m_pWinState;
 
     // Misc internal...
     BOOL    m_bIsRecording;     // Moves are being recorded
@@ -727,17 +727,17 @@ protected:
 
 // Implementation - overrides
 public:
-    virtual ~CGamDoc();
+    ~CGamDoc() override;
 
-    virtual void OnCloseDocument();
+    void OnCloseDocument() override;
     // Serialization support...
-    virtual void Serialize(CArchive& ar);   // Overridden for document I/O
+    void Serialize(CArchive& ar) override;   // Overridden for document I/O
 
 protected:
-    virtual BOOL OnNewDocument();
-    virtual BOOL OnSaveDocument(LPCTSTR pszPathName) override;
-    virtual BOOL OnOpenDocument(LPCTSTR pszPathName) override;
-    virtual void DeleteContents();
+    BOOL OnNewDocument() override;
+    BOOL OnSaveDocument(LPCTSTR pszPathName) override;
+    BOOL OnOpenDocument(LPCTSTR pszPathName) override;
+    void DeleteContents() override;
 
     BOOL DoSaveGameFile(const CB::string& pszFileName);
     BOOL CheckIfPlayerFilesExist(const CB::string& pszBaseName, const CB::string& pszExt,
