@@ -1,6 +1,6 @@
 // VwPrjgsn.cpp : Scenario Project View
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,6 +28,7 @@
 #include    "LBoxTray.h"
 #include    "ResTbl.h"
 #include    "Board.h"
+#include    "PalTray.h"
 #include    "PBoard.h"
 #include    "Trays.h"
 #include    "Player.h"
@@ -223,6 +224,20 @@ void CGsnProjView::OnInitialUpdate()
 
 void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+    CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
+    if (lHint == HINT_TRAYCHANGE)
+    {
+        CGamDoc& pDoc = GetDocument();
+        (*pDoc.m_palTrayA)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*pDoc.m_palTrayB)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+    }
+    else if (lHint == HINT_GAMESTATEUSED)
+    {
+        CGamDoc& pDoc = GetDocument();
+        (*pDoc.m_palTrayA)->UpdatePaletteContents();
+        (*pDoc.m_palTrayB)->UpdatePaletteContents();
+    }
+
     if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_BOARDCHANGE ||
             lHint == HINT_TRAYCHANGE || lHint == HINT_GSNPROPCHANGE)
         DoUpdateProjectList();

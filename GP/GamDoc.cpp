@@ -468,22 +468,6 @@ void CGamDoc::DoInitialUpdate()
     (*m_palTrayB)->UpdatePaletteContents(NULL);
 }
 
-void CGamDoc::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
-    if (lHint == HINT_TRAYCHANGE)
-    {
-        (*m_palTrayA)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        (*m_palTrayB)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-    }
-    else if (lHint == HINT_GAMESTATEUSED)
-    {
-        (*m_palTrayA)->UpdatePaletteContents();
-        (*m_palTrayB)->UpdatePaletteContents();
-    }
-    CDocument::UpdateAllViews(pSender, lHint, pHint);
-}
-
 ///////////////////////////////////////////////////////////////////////
 // Support for new unique views on this document
 

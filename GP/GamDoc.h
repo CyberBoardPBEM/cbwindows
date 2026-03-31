@@ -393,9 +393,6 @@ public:
     void        DoEditObjectText(const CDrawObj& pDObj);
 
     void DoInitialUpdate();
-    // Forced override of this (NOTE not virtual)
-    void UpdateAllViews(CView* pSender, LPARAM lHint = 0L,
-        CObject* pHint = NULL);
     void CloseTrayPalettes();
 
     // Generate unique Object Identifier number.
