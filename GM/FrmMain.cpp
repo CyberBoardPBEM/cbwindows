@@ -122,7 +122,8 @@ static const wxClassInfo *tblBrd[] = {
 CMainFrame::CMainFrame() :
     wxDocParentFrameAny<wxAuiMDIParentFrame>(wxDocManager::GetDocumentManager(),
                                             nullptr, wxID_ANY,
-                                            wxTheApp->GetAppDisplayName())
+                                            wxTheApp->GetAppDisplayName()),
+    CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this))
 {
     auiManager.SetManagedWindow(this);
     SetIcon(wxIcon(std::format("#{}", IDR_MAINFRAME)));
@@ -653,6 +654,8 @@ void CMainFrame::OnIdle()
         auiMgrScheduleUpdate = false;
         auiManager.Update();
     }
+
+    CB::FreezeUntilIdleMixin::OnIdle();
 }
 
 namespace {

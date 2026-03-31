@@ -903,6 +903,22 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
 
+void CB::wxView::OnActivateView(bool activate,
+                        ::wxView *activeView,
+                        ::wxView *deactiveView)
+{
+    if (activate)
+    {
+        wxWindow& mainWnd = GetMainWndWx();
+        CB::FreezeUntilIdleMixin* freezer = dynamic_cast<CB::FreezeUntilIdleMixin*>(&mainWnd);
+        if (freezer)
+        {
+            freezer->FreezeUntilIdle();
+        }
+    }
+    ::wxView::OnActivateView(activate, activeView, deactiveView);
+}
+
 void CB::wxView::OnDraw(wxDC * dc)
 {
     CPP20_TRACE("{}({})\n", __func__, *this);
@@ -1010,6 +1026,29 @@ void CB::wxView::FileHistoryRemoveMenu()
     wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
     wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
     docMgr.FileHistoryRemoveMenu(&menuFile);
+}
+
+CB::FreezeUntilIdleMixin::FreezeUntilIdleMixin(wxWindow& inw) :
+    w(inw)
+{
+}
+
+void CB::FreezeUntilIdleMixin::FreezeUntilIdle()
+{
+    if (!scheduleThaw)
+    {
+        w.Freeze();
+        scheduleThaw = true;
+    }
+}
+
+void CB::FreezeUntilIdleMixin::OnIdle()
+{
+    if (scheduleThaw)
+    {
+        w.Thaw();
+        scheduleThaw = false;
+    }
 }
 
 CB::ToolTip::~ToolTip()

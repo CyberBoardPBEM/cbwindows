@@ -42,7 +42,8 @@
 #include    "frmdocktile.h"
 #endif
 
-class CMainFrame : public wxDocParentFrameAny<CB::wxAuiMDIParentFrame>
+class CMainFrame : public wxDocParentFrameAny<CB::wxAuiMDIParentFrame>,
+                    public CB::FreezeUntilIdleMixin
 {
 public:
     CMainFrame();
