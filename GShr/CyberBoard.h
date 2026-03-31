@@ -2037,6 +2037,9 @@ namespace CB
     public:
         virtual wxWindow& GetWindow() = 0;
 
+        void OnActivateView(bool activate,
+                                ::wxView *activeView,
+                                ::wxView *deactiveView) override;
         void OnDraw(wxDC* dc) override;
 
     protected:
@@ -2070,6 +2073,23 @@ namespace CB
 {
     wxWindow* pGetMainWndWx();
     inline wxWindow& GetMainWndWx() { return CheckedDeref(pGetMainWndWx()); }
+
+    /* call wxWindow::Freeze() to block repaint until after idle
+        processing shows/hides palettes */
+    class FreezeUntilIdleMixin
+    {
+    public:
+        FreezeUntilIdleMixin(wxWindow& inw);
+        // avoid compiler preferring copy ctor to above ctor
+        FreezeUntilIdleMixin(const FreezeUntilIdleMixin&) = delete;
+        void FreezeUntilIdle();
+    protected:
+        void OnIdle();
+    private:
+        wxWindow& w;
+        bool scheduleThaw = false;
+    };
+
     string GetAppName();
 }
 
