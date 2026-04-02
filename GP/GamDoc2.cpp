@@ -224,7 +224,7 @@ void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
     m_pBookMark = NULL;
 
     SetModifiedFlag();
-    UpdateAllViews(NULL, HINT_GAMPROPCHANGE);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
 
     MsgDialogCancel(TRUE);
 }
@@ -269,7 +269,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     SetModifiedFlag();
 
     MsgDialogCancel(TRUE);
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
     return TRUE;
 }
 
@@ -519,7 +519,7 @@ void CGamDoc::CreateRecordListIfRequired()
 
     RecordGameState();
 
-    UpdateAllViews(NULL, HINT_GAMPROPCHANGE);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
 }
 
 ////////////////////////////////////////////////////////////////////

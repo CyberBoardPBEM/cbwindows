@@ -73,7 +73,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 IMPLEMENT_DYNCREATE(CGamDoc, CDocument)
-IMPLEMENT_DYNCREATE(CGamDocHint, CObject);
 
 #ifdef  _DEBUG
 #define new DEBUG_NEW
@@ -1056,8 +1055,8 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
             pPBoard.SetPrivate(dlg.m_bPrivate);
         }
 
-        UpdateAllViews(NULL, HINT_BOARDCHANGE);
-        UpdateAllViews(NULL, HINT_ALWAYSUPDATE);    // Repaint boards
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_ALWAYSUPDATE));    // Repaint boards
         SetModifiedFlag();
     }
 }
@@ -1180,7 +1179,7 @@ void CGamDoc::OnEditRestoreBookMark()
         // TODO: I'll fix this when UNDO is added.
         if (m_pRcdMoves != NULL)
             m_pRcdMoves->PurgeAfter(m_nMoveIdxAtBookMark);
-        UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
     }
 }
 
@@ -1234,7 +1233,7 @@ void CGamDoc::OnPbckEnd()
     }
     m_nMoveInterlock--;
     m_bQuietPlayback = FALSE;
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 void CGamDoc::OnUpdatePbckEnd(CCmdUI* pCmdUI)
@@ -1368,7 +1367,7 @@ void CGamDoc::OnPbckPrevious()
         if (m_nCurMove == nPrvPrvMove)
         {
             m_bQuietPlayback = FALSE;
-            UpdateAllViews(NULL, HINT_GAMESTATEUSED); // Sync up the images
+            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
         }
 
         // Clear out any strings we may have accumulated during the
@@ -1383,12 +1382,12 @@ void CGamDoc::OnPbckPrevious()
             if (m_nCurMove == nPrvPrvMove)
             {
                 m_bQuietPlayback = FALSE;   // Show last move
-                UpdateAllViews(NULL, HINT_GAMESTATEUSED); // Sync up the images
+                UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
             }
         }
     }
     else
-        UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 
     ASSERT(m_nCurMove == nPrvMove);
     m_nMoveInterlock--;
@@ -1481,8 +1480,8 @@ void CGamDoc::OnPbckNextHistory()
 
     size_t nCurHist = m_nCurHist;
     FinishHistoryPlayback();
-    LoadAndActivateHistory(nCurHist + 1);
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    LoadAndActivateHistory(nCurHist + size_t(1));
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 void CGamDoc::OnUpdatePbckNextHistory(CCmdUI* pCmdUI)
@@ -1503,7 +1502,7 @@ void CGamDoc::OnPbckCloseHistory()
         return;                         // Must ignore since moves are still being played back
 
     FinishHistoryPlayback();
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 void CGamDoc::OnUpdatePbckCloseHistory(CCmdUI* pCmdUI)
@@ -1560,7 +1559,7 @@ void CGamDoc::OnEditCreateTray()
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+        UpdateAllViews(NULL, 0, hint);
         SetModifiedFlag();
     }
 }
@@ -1584,7 +1583,7 @@ void CGamDoc::OnEditScenarioProperties()
         m_strScnAuthor = dlg.m_strAuthor;
         m_strScnTitle  = dlg.m_strTitle;
         m_strScnDescr  = dlg.m_strDescr;
-        UpdateAllViews(NULL, HINT_GSNPROPCHANGE);
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GSNPROPCHANGE));
         SetModifiedFlag();
     }
 }
@@ -1622,7 +1621,7 @@ void CGamDoc::OnEditSelectBoards()
 
         // Then change the play list.
         pPBMgr.SetPBoardList(dlg.m_tblBrds);
-        UpdateAllViews(NULL, HINT_BOARDCHANGE);
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
         SetModifiedFlag();
     }
 }
@@ -1642,7 +1641,7 @@ void CGamDoc::OnEditImportPieceGroups()
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+        UpdateAllViews(NULL, 0, hint);
         SetModifiedFlag();
     }
 }
@@ -1666,7 +1665,7 @@ void CGamDoc::OnEditSelectGamePieces()
     // Notify all visible trays
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+    UpdateAllViews(NULL, 0, hint);
     SetModifiedFlag();
 }
 
@@ -1901,7 +1900,7 @@ void CGamDoc::OnUpdateEditEditPlayers(CCmdUI* pCmdUI)
 void CGamDoc::OnActSimulateSpectator()
 {
     m_bSimulateSpectator = !m_bSimulateSpectator;
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);       // So trays sync up
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));       // So trays sync up
 }
 
 void CGamDoc::OnUpdateActSimulateSpectator(CCmdUI* pCmdUI)
@@ -1927,7 +1926,7 @@ void CGamDoc::OnEditCreateGeomorphic()
 
     GetPBoardManager().AddBoard(std::move(pGeoBoard));     // Add to list of active boards
 
-    UpdateAllViews(NULL, HINT_BOARDCHANGE);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
     SetModifiedFlag();
 }
 

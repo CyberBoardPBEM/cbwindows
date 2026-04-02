@@ -191,9 +191,9 @@ void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
         MsgDialogCancel(TRUE);
 
         if (bUpdatedGameState)
-            UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
         else
-            UpdateAllViews(NULL, HINT_GAMPROPCHANGE);
+            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
     }
     CATCH_ALL(e)
     {
@@ -276,7 +276,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         MsgDialogCancel(TRUE);
 
-        UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
     }
     CATCH_ALL(e)
     {
@@ -408,7 +408,7 @@ void CGamDoc::FinishHistoryPlayback()
     m_pMoves = m_pRcdMoves.get();         // Restore recording pointer
 
     MsgDialogCancel(TRUE);
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -449,7 +449,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
         m_bQuietPlayback = FALSE;
     }
     m_nMoveInterlock--;
-    UpdateAllViews(NULL, HINT_GAMESTATEUSED);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
 
     m_pPlayHist->m_timeAbsorbed = CTime::GetCurrentTime();
 
@@ -471,7 +471,7 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
     CGamDocHint hint;
     hint.GetArgs<HINT_POINTINVIEW>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_POINTINVIEW>().m_point = CB::Convert(point);
-    UpdateAllViews(NULL, HINT_POINTINVIEW, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -510,7 +510,7 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -526,7 +526,7 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB:
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJLIST>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_SELECTOBJLIST>().m_pPtrList = &pList;
-    UpdateAllViews(NULL, HINT_SELECTOBJLIST, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -624,7 +624,7 @@ void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
@@ -645,7 +645,7 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
@@ -653,7 +653,7 @@ void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
     CGamDocHint hint;
     hint.GetArgs<HINT_INVALIDATERECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_INVALIDATERECT>().m_pRect = &rect;
-    UpdateAllViews(NULL, HINT_INVALIDATERECT, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 // Shows a balloon tip so person knows what happened. Uses a resource ID.
@@ -685,7 +685,7 @@ void CGamDoc::FlushAllSelections()
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
-    UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
+    UpdateAllViews(NULL, 0, hint);
 }
 
 void CGamDoc::FlushAllIndicators()
@@ -709,9 +709,9 @@ void CGamDoc::FlushAllIndicators()
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
-    UpdateAllViews(NULL, HINT_SELECTOBJ, &hint);
+    UpdateAllViews(NULL, 0, hint);
     // Use hint to flush tool tip indicators
-    UpdateAllViews(NULL, HINT_CLEARINDTIP);
+    UpdateAllViews(NULL, 0, CGamDocHint(HINT_CLEARINDTIP));
 }
 
 void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
@@ -725,6 +725,6 @@ void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, HINT_UPDATEOBJECT, &hint);
+        UpdateAllViews(NULL, 0, hint);
     }
 }

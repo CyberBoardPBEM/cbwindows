@@ -224,7 +224,9 @@ void CGsnProjView::OnInitialUpdate()
 
 void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    CGamDocHint* ph = static_cast<CGamDocHint*>(pHint);
+    wxASSERT(lHint == HINT_ALWAYSUPDATE);
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_TRAYCHANGE)
     {
         CGamDoc& pDoc = GetDocument();

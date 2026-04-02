@@ -123,7 +123,7 @@ void CGsnProjView::DoBoardRemove()
 
     pDoc.GetPBoardManager().DeletePBoard(nBrd);
     pDoc.SetModifiedFlag(TRUE);
-    pDoc.UpdateAllViews(NULL, HINT_BOARDCHANGE);
+    pDoc.UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
 }
 
 void CGsnProjView::DoUpdateBoardHelpInfo()
@@ -181,7 +181,7 @@ void CGsnProjView::DoTrayProperty()
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+        pDoc.UpdateAllViews(NULL, 0, hint);
         pDoc.SetModifiedFlag();
     }
 }
@@ -206,7 +206,7 @@ void CGsnProjView::DoTrayEdit()
     // Notify all visible trays
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+    pDoc.UpdateAllViews(NULL, 0, hint);
     pDoc.SetModifiedFlag();
 }
 
@@ -233,7 +233,7 @@ void CGsnProjView::DoTrayDelete()
     pYMgr.DeleteTraySet(nGrp);
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc.UpdateAllViews(NULL, HINT_TRAYCHANGE, &hint);
+    pDoc.UpdateAllViews(NULL, 0, hint);
     pDoc.SetModifiedFlag();
 }
 

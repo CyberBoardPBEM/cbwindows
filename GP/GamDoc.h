@@ -116,11 +116,27 @@ enum EGamDocHint
     HINT_INVALID =                  -1,     // uninitialized Args
 };
 
-class CGamDocHint : public CObject
+/*  KLUDGE:  CDocument::UpdateAllViews expects a CObject*, but
+    temporary objects are effectively const.  There are places
+    where it's natural to use a temporary CGamDocHint, so
+    CGamDocHint uses this adapter to make itself effectively
+    const while still exposing a non-const CObject*. */
+class CGamDocHint;
+class CGamDocHintRef : public CObject
 {
-    DECLARE_DYNCREATE(CGamDocHint);
 public:
-    CGamDocHint() : hint(HINT_INVALID) {}
+    CGamDocHintRef(const CGamDocHint& h) : hint(h) {}
+    operator const CGamDocHint&() { return hint; }
+private:
+    const CGamDocHint& hint;
+};
+
+class CGamDocHint
+{
+public:
+    CGamDocHint(EGamDocHint h = HINT_INVALID) : hint(h) {}
+    CGamDocHint(const CGamDocHint&) = delete;
+    CGamDocHint& operator=(const CGamDocHint&) = delete;
     ~CGamDocHint()
     {
         if (hint == HINT_POINTINVIEW)
@@ -128,6 +144,12 @@ public:
             args.m_pointInView.~Args<HINT_POINTINVIEW>();
         }
     }
+
+    /* KLUDGE:  Allow passing temporary instances.  This should
+        be safe since CGamDocHintRef::hint is a const reference,
+        so this function actually doesn't provide a way to modify
+        this object. */
+    operator CObject*() const { return const_cast<CGamDocHintRef*>(&ref); }
 
     template<EGamDocHint HINT>
     struct Args
@@ -195,6 +217,8 @@ public:
         const std::vector<CB::not_null<CDrawObj*>>* m_pPtrList;
     };
 
+    EGamDocHint GetHint() const { return hint; }
+
     template<EGamDocHint HINT>
     Args<HINT>& GetArgs()
     {
@@ -213,6 +237,16 @@ public:
         return reinterpret_cast<Args<HINT>&>(args);
     }
 
+    template<EGamDocHint HINT>
+    const Args<HINT>& GetArgs() const
+    {
+        if (HINT != hint)
+        {
+            CbThrowBadCastException();
+        }
+        return reinterpret_cast<const Args<HINT>&>(args);
+    }
+
 private:
     EGamDocHint hint;
     union U {
@@ -227,6 +261,7 @@ private:
         Args<HINT_SELECTOBJLIST>    m_selectObjList;
         U() {}
     } args;
+    CGamDocHintRef ref = *this;
 };
 
 ////////////////////////////////////////////////////////////////

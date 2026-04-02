@@ -108,7 +108,9 @@ void CTinyBoardView::OnInitialUpdate()
 
 void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    CGamDocHint* ph = (CGamDocHint*)pHint;
+    wxASSERT(lHint == HINT_ALWAYSUPDATE);
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         wxRect rct;
