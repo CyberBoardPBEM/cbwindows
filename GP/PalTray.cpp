@@ -271,7 +271,10 @@ void CTrayPalette::OnMessageRestoreWinState(WinStateRestoreEvent& /*event*/)
     if (!m_bStateVarsArmed)
         return;
 
-    m_comboYGrp->SetSelection(value_preserving_cast<int>(m_nComboIndex));
+    m_comboYGrp->SetSelection(m_nComboIndex == uint32_t(wxNOT_FOUND) ?
+                                    wxNOT_FOUND
+                                :
+                                    value_preserving_cast<int>(m_nComboIndex));
 
     UpdateTrayList();
 
