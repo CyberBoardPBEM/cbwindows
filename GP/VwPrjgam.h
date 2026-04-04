@@ -35,6 +35,9 @@
 #include    "LBoxMark.h"
 #endif
 
+class CGamProjView;
+class wxGamProjView;
+
 /////////////////////////////////////////////////////////////////////////////
 // CGamProjView view
 
@@ -72,6 +75,11 @@ public:
     CGamProjView(CGamProjViewContainer& p);
 
 // Attributes
+    operator const wxView&() const;
+    operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
+    operator const wxView*() const;
+    operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+
     CFrameWnd* GetParentFrame();
 private:
     const CGamDoc& GetDocument() const { return *document; }
@@ -190,6 +198,8 @@ private:
 
     RefPtr<CGamProjViewContainer> parent;
     RefPtr<CGamDoc> document;
+
+    OwnerPtr<wxGamProjView> wxview;
 };
 
 class CGamProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
@@ -228,6 +238,34 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+class wxGamProjView : public CB::View
+{
+public:
+    wxWindow& GetWindow() override;
+
+private:
+    wxGamProjView(CGamProjView& v) : window(&v) {}
+
+    RefPtr<CGamProjView> window;
+
+    friend CGamProjView;
+};
+
+inline CGamProjView::operator const wxView&() const
+{
+    return *wxview;
+}
+
+inline CGamProjView::operator const wxView*() const
+{
+    return &*wxview;
+}
+
+inline wxWindow& wxGamProjView::GetWindow()
+{
+    return *window;
+}
 
 inline CCmdTarget& CGamProjView::Get()
 {

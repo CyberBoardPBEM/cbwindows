@@ -70,7 +70,7 @@ void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
         return;
     }
     CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
 
     CHistRecord* pHist = NULL;
@@ -191,9 +191,9 @@ void CGamDoc::LoadAndActivateMoveFile(const CB::string& pszPathName)
         MsgDialogCancel(TRUE);
 
         if (bUpdatedGameState)
-            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+            UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
         else
-            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
+            UpdateAllViews(NULL, CGamDocHint(HINT_GAMPROPCHANGE));
     }
     CATCH_ALL(e)
     {
@@ -276,7 +276,7 @@ BOOL CGamDoc::LoadAndActivateHistory(size_t nHistRec)
 
         MsgDialogCancel(TRUE);
 
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+        UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
     }
     CATCH_ALL(e)
     {
@@ -314,7 +314,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         ASSERT(pHist.m_dwFilePos > 0);
         file.Seek(pHist.m_dwFilePos, CFile::begin);
         CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-        ar.m_pDocument = this;
+        ar.m_pDocument = *this;
         ar.m_bForceFlat = FALSE;
 
         OwnerPtr<CMoveList> pMoves = MakeOwner<CMoveList>();
@@ -339,7 +339,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         {
             file.Seek(pHist.m_dwFilePos, CFile::begin);
             CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-            ar.m_pDocument = this;
+            ar.m_pDocument = *this;
             ar.m_bForceFlat = FALSE;
             SetLoadingVersion(NumVersion(0, 57));
             pMoves->Serialize(ar);
@@ -408,7 +408,7 @@ void CGamDoc::FinishHistoryPlayback()
     m_pMoves = m_pRcdMoves.get();         // Restore recording pointer
 
     MsgDialogCancel(TRUE);
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -449,7 +449,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
         m_bQuietPlayback = FALSE;
     }
     m_nMoveInterlock--;
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 
     m_pPlayHist->m_timeAbsorbed = CTime::GetCurrentTime();
 
@@ -471,7 +471,7 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
     CGamDocHint hint;
     hint.GetArgs<HINT_POINTINVIEW>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_POINTINVIEW>().m_point = CB::Convert(point);
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -489,6 +489,8 @@ void CGamDoc::EnsureBoardVisible(CPlayBoard& pPBoard)
 void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos)
 {
     if (IsQuietPlayback()) return;
+    wxASSERT(!"TODO:");
+#if 0
     if (!m_bTrayAVisible)
         OnViewTrayA();
 
@@ -496,6 +498,7 @@ void CGamDoc::EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos)
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     wxASSERT(nGroup != Invalid_v<size_t>);
     (*m_palTrayA)->ShowTrayIndex(nGroup, nPos);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -510,7 +513,7 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -526,7 +529,7 @@ void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB:
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJLIST>().m_pPBoard = &pPBoard;
     hint.GetArgs<HINT_SELECTOBJLIST>().m_pPtrList = &pList;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -541,6 +544,8 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     const CB::string* pszNotificationTip /* = NULL */)
 {
     if (IsQuietPlayback()) return;
+    wxASSERT(!"TODO:");
+#if 0
     // Make sure tray palette A is visible
     if (!m_bTrayAVisible)
         OnViewTrayA();
@@ -549,16 +554,20 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
     ASSERT(nGroup != Invalid_v<size_t>);
     (*m_palTrayA)->SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
+#endif
 }
 
 void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
 {
     if (IsQuietPlayback()) return;
+    wxASSERT(!"TODO:");
+#if 0
     // Make sure marker palette s visible
     if (!m_bMarkPalVisible)
         OnViewMarkPalette();
     // Select the marker in the appropriate group.
     (*m_palMark)->SelectMarker(mid);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -624,7 +633,7 @@ void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
@@ -645,7 +654,7 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
@@ -653,7 +662,7 @@ void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
     CGamDocHint hint;
     hint.GetArgs<HINT_INVALIDATERECT>().m_pPBoard = &pPBrd;
     hint.GetArgs<HINT_INVALIDATERECT>().m_pRect = &rect;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 // Shows a balloon tip so person knows what happened. Uses a resource ID.
@@ -685,7 +694,7 @@ void CGamDoc::FlushAllSelections()
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
 }
 
 void CGamDoc::FlushAllIndicators()
@@ -709,9 +718,9 @@ void CGamDoc::FlushAllIndicators()
     CGamDocHint hint;
     hint.GetArgs<HINT_SELECTOBJ>().m_pPBoard = NULL;
     hint.GetArgs<HINT_SELECTOBJ>().m_pDrawObj = NULL;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
     // Use hint to flush tool tip indicators
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_CLEARINDTIP));
+    UpdateAllViews(NULL, CGamDocHint(HINT_CLEARINDTIP));
 }
 
 void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
@@ -725,6 +734,6 @@ void CGamDoc::UpdateAllBoardIndicators(CPlayBoard& pPBrd)
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
 }

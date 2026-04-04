@@ -68,6 +68,11 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView
 
+CTinyBoardView::CTinyBoardView() :
+    wxview(new wxTinyBoardView(*this))
+{
+}
+
 void CTinyBoardView::Initialize()
 {
     // use sizers for scrolling
@@ -96,7 +101,7 @@ void CTinyBoardView::OnInitialUpdate()
 {
     wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
     parent = &dynamic_cast<CTinyBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
     m_pPBoard = &document->GetNewViewBoard();
 
     parent->CTinyBoardViewContainer::BASE::OnInitialUpdate();
@@ -109,7 +114,7 @@ void CTinyBoardView::OnInitialUpdate()
 void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
     lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {

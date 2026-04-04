@@ -179,6 +179,8 @@ namespace {
             wxXmlResource::Get()->InitAllHandlers();
             wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBPlay.xrc"), false);
 
+            static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+
             return true;
         }
 
@@ -289,21 +291,21 @@ BOOL CGpApp::InitInstance()
 
     pDocTemplate = new CMultiDocTemplate(
         IDR_GAMETYPE,
-        RUNTIME_CLASS(CGamDoc),
+        RUNTIME_CLASS(CGamDocMfc),
         RUNTIME_CLASS(CProjFrame),
         RUNTIME_CLASS(CGamProjViewContainer));
     AddDocTemplate(pDocTemplate);
 
     m_pScnDocTemplate = new CMultiDocTemplate(
         IDR_GSCNTYPE,
-        RUNTIME_CLASS(CGamDoc),
+        RUNTIME_CLASS(CGamDocMfc),
         RUNTIME_CLASS(CProjFrame),
         RUNTIME_CLASS(CGsnProjViewContainer));
     AddDocTemplate(m_pScnDocTemplate);
 
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,
-        RUNTIME_CLASS(CGamDoc),
+        RUNTIME_CLASS(CGamDocMfc),
         RUNTIME_CLASS(CPlayBoardFrameContainer),
         RUNTIME_CLASS(CPlayBoardViewContainer));
 
@@ -529,9 +531,8 @@ BOOL CGpApp::OnIdle(LONG lCount)
         while (pos2)
         {
             CGamDoc* pDoc = CB::ToCGamDoc(pTemplate->GetNextDoc(pos2));
-            ASSERT(pDoc != NULL);
-            ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CGamDoc)));
-            pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);
+            CGamDocMfc& pDocMfc = CheckedDeref(pDoc);
+            pDoc->OnIdle(bAppVisible && &pDocMfc == pCurDoc);
         }
     }
     // Main idle processing...

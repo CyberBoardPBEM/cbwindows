@@ -27,7 +27,9 @@
 #endif
 
 class CPlayBoard;
+class CSelectedPieceView;
 class WinStateEvent;
+class wxSelectedPieceView;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView view
@@ -38,10 +40,16 @@ class CSelectedPieceView : public CB::ProcessEventOverride<wxPanel>
 private:
     friend class CSelectedPieceViewContainer;
     typedef CB::ProcessEventOverride<wxPanel> BASE;
-    CSelectedPieceView() = default;
+    CSelectedPieceView();
     void Initialize();
 
 // Attributes
+public:
+    operator const wxView&() const;
+    operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
+    operator const wxView*() const;
+    operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+
 private:
     CGamDoc& GetDocument();
 
@@ -83,6 +91,8 @@ protected:
 private:
     // IGetCmdTarget
     CCmdTarget& Get() override;
+
+    OwnerPtr<wxSelectedPieceView> wxview;
 };
 
 #ifndef _DEBUG  // debug version in vwselpce.cpp
@@ -120,6 +130,34 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+class wxSelectedPieceView : public CB::View
+{
+public:
+    wxWindow& GetWindow() override;
+
+private:
+    wxSelectedPieceView(CSelectedPieceView& v) : window(&v) {}
+
+    RefPtr<CSelectedPieceView> window;
+
+    friend CSelectedPieceView;
+};
+
+inline CSelectedPieceView::operator const wxView&() const
+{
+    return *wxview;
+}
+
+inline CSelectedPieceView::operator const wxView*() const
+{
+    return &*wxview;
+}
+
+inline wxWindow& wxSelectedPieceView::GetWindow()
+{
+    return *window;
+}
 
 inline CCmdTarget& CSelectedPieceView::Get()
 {

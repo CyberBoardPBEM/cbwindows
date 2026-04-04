@@ -84,6 +84,7 @@ class CGamProjView;
 class CSendMsgDialog;
 class CMarkerPaletteContainer;
 class CTrayPaletteContainer;
+class CGamDocMfc;
 
 class CModelessDialogCleaner
 {
@@ -122,11 +123,21 @@ enum EGamDocHint
     CGamDocHint uses this adapter to make itself effectively
     const while still exposing a non-const CObject*. */
 class CGamDocHint;
-class CGamDocHintRef : public CObject
+class CGamDocHintRef : public wxObject
 {
 public:
     CGamDocHintRef(const CGamDocHint& h) : hint(h) {}
     operator const CGamDocHint&() { return hint; }
+private:
+    const CGamDocHint& hint;
+};
+
+// TEMP:  for forward to CDoc because we don't use wxView yet
+class CGamDocHintRefMfc : public CObject
+{
+public:
+    CGamDocHintRefMfc(const CGamDocHint& h) : hint(h) {}
+    operator const CGamDocHint& () { return hint; }
 private:
     const CGamDocHint& hint;
 };
@@ -149,7 +160,7 @@ public:
         be safe since CGamDocHintRef::hint is a const reference,
         so this function actually doesn't provide a way to modify
         this object. */
-    operator CObject*() const { return const_cast<CGamDocHintRef*>(&ref); }
+    operator wxObject*() const { return const_cast<CGamDocHintRef*>(&ref); }
 
     template<EGamDocHint HINT>
     struct Args
@@ -296,11 +307,18 @@ public:
 
 ////////////////////////////////////////////////////////////////
 
-class CGamDoc : public CDocument
+class CGamDoc : public wxDocument
 {
+// impersonate CDocument
+public:
+    operator const CGamDocMfc&() const { return *mfcDoc; }
+    operator CGamDocMfc&() { return *mfcDoc; }
+    operator const CGamDocMfc*() const { return &*mfcDoc; }
+    operator CGamDocMfc*() { return &*mfcDoc; }
+    void SetModifiedFlag(BOOL b = TRUE) { Modify(b); }
+
 protected: // create from serialization only
-    CGamDoc();
-    DECLARE_DYNCREATE(CGamDoc)
+    CGamDoc(CGamDocMfc& d);
 
 // Class vars and methods (used during deserialize)...
     // Version of file being loaded
@@ -592,8 +610,10 @@ public:
     void SetDieRollState(OwnerOrNullPtr<CRollState> pRState);
     const CRollState* GetDieRollState() const;
 
+#if 0
     // Doc I/O Support
     void OnFileClose() { CDocument::OnFileClose(); }    // Expose protected
+#endif
 
     void SerializeScenario(CArchive& ar);
     void SerializeGame(CArchive& ar);
@@ -609,10 +629,12 @@ public:
     BOOL LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist);
 
     // Other doc level doc changes...
+#if 0
     void DoScenarioProperties() { OnEditScenarioProperties(); }
     void DoSelectBoards() { OnEditSelectBoards(); }
     void DoCreateTray() { OnEditCreateTray(); }
     void DoLoadMoveFile() { OnFileLoadMoveFile(); }
+#endif
     void DoBoardProperties(size_t nBrd);
     void DoBoardProperties(CPlayBoard& pPBoard);
     void DoAcceptPlayback();              // (exposed for project window access)
@@ -761,23 +783,48 @@ protected:
 public:
     ~CGamDoc() override;
 
+#if 0
     void OnCloseDocument() override;
+#else
+    bool OnCloseDocument() override;
+#endif
     // Serialization support...
-    void Serialize(CArchive& ar) override;   // Overridden for document I/O
+    void Serialize(CArchive& ar);   // Overridden for document I/O
+#ifdef _DEBUG
+    void AssertValid() const;
+    void Dump(CDumpContext& dc) const;
+#endif
+
+    /* TEMP:  override to forward to CDoc because we don't use
+        wxView yet */
+    void UpdateAllViews(wxView* sender, wxObject* hint) override;
 
 protected:
+#if 0
     BOOL OnNewDocument() override;
     BOOL OnSaveDocument(LPCTSTR pszPathName) override;
     BOOL OnOpenDocument(LPCTSTR pszPathName) override;
     void DeleteContents() override;
+#else
+    bool OnNewDocument() override;
+    bool OnSaveDocument(const wxString& pszPathName) override;
+    bool OnOpenDocument(const wxString& pszPathName) override;
+    bool DeleteContents() override;
+
+    // wxDocument
+    // Called by OnSaveDocument and OnOpenDocument to implement standard
+    // Save/Load behaviour. Re-implement in derived class for custom
+    // behaviour.
+    bool DoSaveDocument(const wxString& file) override;
+    bool DoOpenDocument(const wxString& file) override;
+#endif
 
     BOOL DoSaveGameFile(const CB::string& pszFileName);
     BOOL CheckIfPlayerFilesExist(const CB::string& pszBaseName, const CB::string& pszExt,
         BOOL bCheckReferee, CB::string& strExist);
 
-// Generated message map functions
 protected:
-    //{{AFX_MSG(CGamDoc)
+#if 0
     afx_msg void OnUpdateViewTrayA(CCmdUI* pCmdUI);
     afx_msg void OnUpdateViewTrayB(CCmdUI* pCmdUI);
     afx_msg void OnUpdateViewMarkPalette(CCmdUI* pCmdUI);
@@ -868,7 +915,59 @@ protected:
     afx_msg void OnDebugMoveList();
     afx_msg void OnDebugPieceTable();
 #endif
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+private:
+    RefPtr<CGamDocMfc> mfcDoc;
+
+    friend CGamDocMfc;
+};
+
+class CGamDocMfc : public CDocument
+{
+    DECLARE_DYNCREATE(CGamDocMfc)
+public:
+    operator const CGamDoc&() const { return *wxDoc; }
+    operator CGamDoc&() { return *wxDoc; }
+    operator const CGamDoc*() const { return &*wxDoc; }
+    operator CGamDoc*() { return &*wxDoc; }
+    operator RefPtr<CGamDoc>() { return &*wxDoc; }
+
+private:
+    CGamDocMfc() = default;
+public:
+    ~CGamDocMfc() override = default;
+
+public:
+    // Forced override of this (note not virtual)
+    void UpdateAllViews(CView* pSender, LPARAM lHint = 0L,
+        CObject* pHint = NULL) { wxASSERT(!"Do not use!  (use CGamDoc)"); }
+
+    virtual void Serialize(CArchive& ar) override   // overridden for document i/o
+        { wxDoc->Serialize(ar); }
+#ifdef _DEBUG
+    virtual void AssertValid() const override
+        { wxDoc->AssertValid(); }
+    virtual void Dump(CDumpContext& dc) const override
+        { wxDoc->Dump(dc); }
+#endif
+
+    BOOL IsModified() override
+        { return wxDoc->IsModified(); }
+    void SetModifiedFlag(BOOL bModified = TRUE) override
+        { wxDoc->SetModifiedFlag(bModified); }
+
+protected:
+    BOOL OnNewDocument() override { return wxDoc->OnNewDocument(); }
+    BOOL OnOpenDocument(LPCTSTR lpszPathName) override { return wxDoc->OnOpenDocument(lpszPathName); }
+    BOOL OnSaveDocument(LPCTSTR pszPathName) override { return wxDoc->OnSaveDocument(pszPathName); }
+    void DeleteContents() override { CB_VERIFY(wxDoc->DeleteContents()); }
+
+private:
+    OwnerPtr<CGamDoc> wxDoc = new CGamDoc(*this);
+
+    friend CGamDoc;
 };
 
 inline const CGamDoc* CB::ToCGamDoc(const CDocument* p)
@@ -877,7 +976,7 @@ inline const CGamDoc* CB::ToCGamDoc(const CDocument* p)
     {
         return nullptr;
     }
-    return dynamic_cast<const CGamDoc*>(p);
+    return dynamic_cast<const CGamDocMfc&>(*p);
 }
 
 /////////////////////////////////////////////////////////////////////////////

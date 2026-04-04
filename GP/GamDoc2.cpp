@@ -1,6 +1,6 @@
 // GamDoc2.cpp - Support code for recording user actions
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -64,6 +64,8 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
     CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
+    wxASSERT(!"TODO:");
+#if 0
     CB::string szFName = GetPathName();
     if (!szFName.empty())
     {
@@ -106,6 +108,7 @@ void CGamDoc::SaveHistoryMovesInFile(size_t nHistRec)
         file.Abort();       // Will not throw an exception
     }
     END_CATCH_ALL
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,6 +125,8 @@ void CGamDoc::SaveRecordedMoves()
     CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
+    wxASSERT(!"TODO:");
+#if 0
     CB::string szFName = GetPathName();
     if (!szFName.empty())
     {
@@ -194,6 +199,7 @@ void CGamDoc::SaveRecordedMoves()
     // is new in case the first recorded move record is a random number
     // operation.
     m_nSeedCarryOver = (UINT)GetTickCount();
+#endif
 }
 
 void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
@@ -224,7 +230,7 @@ void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)
     m_pBookMark = NULL;
 
     SetModifiedFlag();
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMPROPCHANGE));
 
     MsgDialogCancel(TRUE);
 }
@@ -269,7 +275,7 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     SetModifiedFlag();
 
     MsgDialogCancel(TRUE);
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
     return TRUE;
 }
 
@@ -519,7 +525,7 @@ void CGamDoc::CreateRecordListIfRequired()
 
     RecordGameState();
 
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMPROPCHANGE));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMPROPCHANGE));
 }
 
 ////////////////////////////////////////////////////////////////////

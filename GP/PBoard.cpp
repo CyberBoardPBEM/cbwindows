@@ -389,7 +389,7 @@ void CPlayBoard::Serialize(CArchive& ar)
     else
     {
         Clear();
-        ASSERT(m_pDoc == (CGamDoc*)ar.m_pDocument);
+        wxASSERT(m_pDoc == CheckedDeref(dynamic_cast<CGamDocMfc*>(ar.m_pDocument)));
         uint8_t cTmp;
         uint16_t wTmp;
         uint32_t dwTmp;
@@ -850,7 +850,7 @@ void CPBoardManager::Serialize(CArchive& ar)
     {
         size_t wTmp;
         DestroyAllElements();
-        ASSERT(m_pDoc == ar.m_pDocument);
+        wxASSERT(*m_pDoc == ar.m_pDocument);
 
         // ar >> m_wReserved1;                                  // Ver2.01
         ar >> m_nNextGeoSerialNum;            // Ver2.01 (was m_wReserved1)

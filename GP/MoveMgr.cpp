@@ -1394,7 +1394,7 @@ void CGameStateRcd::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     if (!m_pState->RestoreState(pDoc))
         AfxMessageBox(IDS_ERR_FAILEDSTATECHG, MB_OK | MB_ICONEXCLAMATION);
     if (!pDoc.IsQuietPlayback())
-        pDoc.UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+        pDoc.UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 void CGameStateRcd::Serialize(CArchive& ar)
@@ -1716,14 +1716,14 @@ OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc& pDoc, const CMoveList& pMo
 {
     CMemFile memFile;
     CArchive arStore(&memFile, CArchive::store);
-    arStore.m_pDocument = &pDoc;
+    arStore.m_pDocument = pDoc;
     // store shouldn't modify src, so const_cast safe
     const_cast<CMoveList&>(pMoveList).Serialize(arStore, FALSE);
     arStore.Close();
 
     memFile.SeekToBegin();
     CArchive arLoad(&memFile, CArchive::load);
-    arLoad.m_pDocument = &pDoc;
+    arLoad.m_pDocument = pDoc;
     OwnerPtr<CMoveList> pNewMoveList = MakeOwner<CMoveList>();
     pNewMoveList->Serialize(arLoad, FALSE);
     return pNewMoveList;
@@ -2273,7 +2273,7 @@ void CMoveList::CancelRecordingCompoundMove(CGamDoc& pDoc)
     m_bCompoundMove = FALSE;
     PurgeAfter(m_nCompoundBaseIndex);
     m_nCompoundBaseIndex = Invalid_v<size_t>;
-    pDoc.UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    pDoc.UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
 void CMoveList::EndRecordingCompoundMove()

@@ -769,7 +769,7 @@ void CTrayPalette::OnDragItem(DragDropEvent& event)
             size_t temp = m_pDoc->PlaceObjectTableInTray(m_listPtr,
                 pYGrp, nSel == wxNOT_FOUND ? Invalid_v<size_t> : value_preserving_cast<size_t>(nSel));
             nSel = temp == Invalid_v<size_t> ? wxNOT_FOUND : value_preserving_cast<int>(temp);
-            m_pDoc->UpdateAllViews(NULL, 0, CGamDocHint(HINT_UPDATESELECTLIST));
+            m_pDoc->UpdateAllViews(NULL, CGamDocHint(HINT_UPDATESELECTLIST));
         }
         if (nSel != wxNOT_FOUND)
         {
@@ -1121,7 +1121,7 @@ void CTrayPalette::OnActTurnOver(wxCommandEvent& event)
     CTrayManager& pYMgr = m_pDoc->GetTrayManager();
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYMgr.GetTraySet(nSel);
-    m_pDoc->UpdateAllViews(NULL, 0, hint);
+    m_pDoc->UpdateAllViews(NULL, hint);
 
     /* flipping pieces shouldn't change tray content,
         so restore selections */

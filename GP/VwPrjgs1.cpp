@@ -1,6 +1,6 @@
 // VwPrjgs1.cpp : Scenario View Support Routines
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -54,7 +54,10 @@ static char THIS_FILE[] = __FILE__;
 
 void CGsnProjView::DoGsnProperty()
 {
+    wxASSERT(!"TODO:");
+#if 0
     GetDocument().DoScenarioProperties();
+#endif
 }
 
 void CGsnProjView::DoUpdateGsnInfo()
@@ -75,7 +78,10 @@ void CGsnProjView::DoUpdateGsnInfo()
 
 void CGsnProjView::DoBoardSelection()
 {
+    wxASSERT(!"TODO:");
+#if 0
     GetDocument().DoSelectBoards();
+#endif
 }
 
 void CGsnProjView::DoBoardProperty()
@@ -123,7 +129,7 @@ void CGsnProjView::DoBoardRemove()
 
     pDoc.GetPBoardManager().DeletePBoard(nBrd);
     pDoc.SetModifiedFlag(TRUE);
-    pDoc.UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
+    pDoc.UpdateAllViews(NULL, CGamDocHint(HINT_BOARDCHANGE));
 }
 
 void CGsnProjView::DoUpdateBoardHelpInfo()
@@ -141,7 +147,10 @@ void CGsnProjView::DoUpdateBoardInfo()
 
 void CGsnProjView::DoTrayCreate()
 {
+    wxASSERT(!"TODO:");
+#if 0
     GetDocument().DoCreateTray();
+#endif
 }
 
 void CGsnProjView::DoTrayProperty()
@@ -181,7 +190,7 @@ void CGsnProjView::DoTrayProperty()
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        pDoc.UpdateAllViews(NULL, 0, hint);
+        pDoc.UpdateAllViews(NULL, hint);
         pDoc.SetModifiedFlag();
     }
 }
@@ -206,7 +215,7 @@ void CGsnProjView::DoTrayEdit()
     // Notify all visible trays
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc.UpdateAllViews(NULL, 0, hint);
+    pDoc.UpdateAllViews(NULL, hint);
     pDoc.SetModifiedFlag();
 }
 
@@ -233,7 +242,7 @@ void CGsnProjView::DoTrayDelete()
     pYMgr.DeleteTraySet(nGrp);
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    pDoc.UpdateAllViews(NULL, 0, hint);
+    pDoc.UpdateAllViews(NULL, hint);
     pDoc.SetModifiedFlag();
 }
 

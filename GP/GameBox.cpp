@@ -81,7 +81,7 @@ BOOL CGameBox::Load(CGamDoc& pDoc, const CB::string& pszPathName, CB::string& st
     }
 
     CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = &pDoc;
+    ar.m_pDocument = pDoc;
     ar.m_bForceFlat = FALSE;
 
     TRY

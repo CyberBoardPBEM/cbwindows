@@ -248,7 +248,8 @@ END_MESSAGE_MAP()
 
 CPlayBoardView::CPlayBoardView() :
     m_selList(*this),
-    m_toolMsgTipTimer(this, XRCID("ID_TIP_MSG_TIMER"))
+    m_toolMsgTipTimer(this, XRCID("ID_TIP_MSG_TIMER")),
+    wxview(new wxPlayBoardView(*this))
 {
 }
 
@@ -299,7 +300,7 @@ void CPlayBoardView::OnInitialUpdate()
 {
     wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
     parent = &dynamic_cast<CPlayBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
     m_pPBoard = &document->GetNewViewBoard();
 
     parent->CPlayBoardViewContainer::BASE::OnInitialUpdate();
@@ -331,7 +332,7 @@ void CPlayBoardView::OnInitialUpdate()
 void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
     lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_POINTINVIEW && ph->GetArgs<HINT_POINTINVIEW>().m_pPBoard == m_pPBoard)
     {
@@ -437,7 +438,7 @@ void CPlayBoardView::NotifySelectListChange()
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATESELECT>().m_pPBoard = m_pPBoard.get();
     hint.GetArgs<HINT_UPDATESELECT>().m_pSelList = &m_selList;
-    GetDocument().UpdateAllViews(&*parent, 0, hint);
+    GetDocument().UpdateAllViews(*this, hint);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1085,7 +1086,7 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
         CFrameWnd* pFrame = parent->GetParentFrame();
         pFrame->SetActiveView(&*parent);
 
-        pDoc.UpdateAllViews(&*parent, 0, CGamDocHint(HINT_UPDATESELECTLIST));
+        pDoc.UpdateAllViews(*this, CGamDocHint(HINT_UPDATESELECTLIST));
 
         NotifySelectListChange();
     }
@@ -1566,7 +1567,7 @@ void CPlayBoardView::OnViewBoardRotate180(wxCommandEvent& /*event*/)
    }
    CGamDocHint hint;
    hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-   GetDocument().UpdateAllViews(NULL, 0, hint);
+   GetDocument().UpdateAllViews(NULL, hint);
 }
 
 void CPlayBoardView::OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI)
@@ -2218,7 +2219,7 @@ void CPlayBoardView::OnViewPieces(wxCommandEvent& /*event*/)
     GetPlayBoard().SetPiecesVisible(!GetPlayBoard().GetPiecesVisible());
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    GetDocument().UpdateAllViews(NULL, 0, hint);
+    GetDocument().UpdateAllViews(NULL, hint);
 }
 
 void CPlayBoardView::OnUpdateViewPieces(wxUpdateUIEvent& pCmdUI)
@@ -2371,7 +2372,7 @@ void CPlayBoardView::OnViewDrawIndOnTop(wxCommandEvent& /*event*/)
     GetPlayBoard().SetIndicatorsOnTop(!GetPlayBoard().GetIndicatorsOnTop());
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    GetDocument().UpdateAllViews(NULL, 0, hint);
+    GetDocument().UpdateAllViews(NULL, hint);
 }
 
 void CPlayBoardView::OnUpdateViewDrawIndOnTop(wxUpdateUIEvent& pCmdUI)
@@ -2493,7 +2494,7 @@ void CPlayBoardView::OnActTakeOwnership(wxCommandEvent& /*event*/)
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc.UpdateAllViews(NULL, 0, hint);
+    pDoc.UpdateAllViews(NULL, hint);
 
     NotifySelectListChange();
 }
@@ -2542,7 +2543,7 @@ void CPlayBoardView::OnActReleaseOwnership(wxCommandEvent& /*event*/)
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc.UpdateAllViews(NULL, 0, hint);
+    pDoc.UpdateAllViews(NULL, hint);
 
     NotifySelectListChange();
 }
@@ -2598,7 +2599,7 @@ void CPlayBoardView::OnActSetOwner(wxCommandEvent& /*event*/)
 
     CGamDocHint hint;
     hint.GetArgs<HINT_UPDATEBOARD>().m_pPBoard = m_pPBoard.get();
-    pDoc.UpdateAllViews(NULL, 0, hint);
+    pDoc.UpdateAllViews(NULL, hint);
 
     NotifySelectListChange();
 }

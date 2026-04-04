@@ -65,7 +65,7 @@ void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -101,7 +101,7 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = &pYGrp;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -140,7 +140,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
             CGamDocHint hint;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-            UpdateAllViews(NULL, 0, hint);
+            UpdateAllViews(NULL, hint);
         }
     }
     else
@@ -173,7 +173,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -313,7 +313,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
                 CGamDocHint hint;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-                UpdateAllViews(NULL, 0, hint);
+                UpdateAllViews(NULL, hint);
             }
         }
         else
@@ -338,7 +338,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
             CGamDocHint hint;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-            UpdateAllViews(NULL, 0, hint);
+            UpdateAllViews(NULL, hint);
         }
         SetModifiedFlag();
     }
@@ -475,7 +475,7 @@ void CGamDoc::InvertPlayingPieceOnBoard(const CPieceObj& pObj, const CPlayBoard&
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
 
     m_pPTbl->FlipPieceOver(pObj.m_pid, flip, side);
@@ -488,7 +488,7 @@ void CGamDoc::InvertPlayingPieceOnBoard(const CPieceObj& pObj, const CPlayBoard&
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -520,7 +520,7 @@ void CGamDoc::InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -535,7 +535,7 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     m_pPTbl->SetPieceFacing(pObj.m_pid, nFacingDegCW);
 
@@ -547,7 +547,7 @@ void CGamDoc::ChangePlayingPieceFacingOnBoard(CPieceObj& pObj, CPlayBoard* pPBrd
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -581,7 +581,7 @@ void CGamDoc::ChangePlayingPieceFacingInTray(PieceID pid, uint16_t nFacingDegCW)
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -597,7 +597,7 @@ void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     pObj.SetFacing(nFacingDegCW);
     pObj.ResyncExtentRect();
@@ -610,7 +610,7 @@ void CGamDoc::ChangeMarkerFacingOnBoard(CMarkObj& pObj, CPlayBoard* pPBrd,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -641,14 +641,14 @@ void CGamDoc::DeleteObjectsInTable(const std::vector<RefPtr<CDrawObj>>& pLst)
                 CGamDocHint hint;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
                 hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-                UpdateAllViews(NULL, 0, hint);
+                UpdateAllViews(NULL, hint);
             }
             SetModifiedFlag();
 
             delete &pObj;
         }
     }
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_UPDATESELECTLIST));
+    UpdateAllViews(NULL, CGamDocHint(HINT_UPDATESELECTLIST));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -749,7 +749,7 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 
@@ -783,7 +783,7 @@ CDrawObj& CGamDoc::CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 
@@ -803,7 +803,7 @@ void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
 
     // Set new values
@@ -817,7 +817,7 @@ void CGamDoc::ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -853,7 +853,7 @@ void CGamDoc::ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<RefPtr<CDrawObj
         CGamDocHint hint;
         hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard = pPBrd;
         hint.GetArgs<HINT_UPDATEOBJLIST>().m_pPtrList = &pList;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
     }
     SetModifiedFlag();
 }
@@ -902,7 +902,7 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
             CGamDocHint hint;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBoard;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = pObj;
-            UpdateAllViews(NULL, 0, hint);
+            UpdateAllViews(NULL, hint);
         }
         if (bDeleteIfBoard)
             delete pObj;
@@ -917,7 +917,7 @@ BOOL CGamDoc::RemovePieceFromCurrentLocation(PieceID pid, BOOL bDeleteIfBoard,
         {
             CGamDocHint hint;
             hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = pYGrp;
-            UpdateAllViews(NULL, 0, hint);
+            UpdateAllViews(NULL, hint);
             return FALSE;
         }
         return TRUE;            // Tell caller they need to do tray updates
@@ -956,7 +956,7 @@ void CGamDoc::RemoveObjectFromCurrentLocation(const CDrawObj& pObj)
             CGamDocHint hint;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = pPBoard;
             hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-            UpdateAllViews(NULL, 0, hint);
+            UpdateAllViews(NULL, hint);
         }
     }
 }
@@ -1002,7 +1002,7 @@ void CGamDoc::ExpungeUnusedPiecesFromBoards()
                     CGamDocHint hint;
                     hint.GetArgs<HINT_UPDATEOBJECT>().m_pPBoard = &pPBrd;
                     hint.GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj = &pObj;
-                    UpdateAllViews(NULL, 0, hint);
+                    UpdateAllViews(NULL, hint);
                 }
 
                 // Destroy to object

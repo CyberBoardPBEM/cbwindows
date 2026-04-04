@@ -70,7 +70,7 @@ BOOL CProjFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CProjFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = CB::ToCGamDoc(GetActiveDocument());
-    CB::string str = pDoc->GetTitle();
+    CB::string str = pDoc->GetUserReadableName();
     str += " - ";
     CB::string strType;
     if (pDoc->IsScenario())
@@ -84,6 +84,8 @@ void CProjFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
 {
+    wxASSERT(!"dead code?");
+#if 0
     if ((nID & 0xFFF0) == SC_CLOSE)
     {
         CView *pView = GetActiveView();
@@ -98,10 +100,11 @@ void CProjFrame::OnSysCommand(UINT nID, LPARAM lParam)
         }
     }
     CMDIChildWndEx::OnSysCommand(nID, lParam);
+#endif
 }
 
 void CProjFrame::OnClose()
 {
     // Close the document when the main document window is closed.
-    CB::ToCGamDoc(GetActiveDocument())->OnFileClose();
+    CB::ToCGamDoc(GetActiveDocument())->Close();
 }

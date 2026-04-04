@@ -22,7 +22,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+class CTinyBoardView;
 class WinStateEvent;
+class wxTinyBoardView;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView view
@@ -33,10 +35,15 @@ class CTinyBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
 private:
     friend class CTinyBoardViewContainer;
     typedef CB::ProcessEventOverride<wxScrolledWindow> BASE;
-    CTinyBoardView() = default;
+    CTinyBoardView();
     void Initialize();
 
 // Attributes
+public:
+    operator const wxView&() const;
+    operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
+    operator const wxView*() const;
+    operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
 
 // Operations
 public:
@@ -92,6 +99,8 @@ private:
     CCmdTarget& Get() override;
 
     void RecalcScrollLimits();
+
+    OwnerPtr<wxTinyBoardView> wxview;
 };
 
 class CTinyBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
@@ -127,6 +136,34 @@ private:
     typedef CB::OnCmdMsgOverride<CView> BASE;
     friend CTinyBoardView;
 };
+
+class wxTinyBoardView : public CB::View
+{
+public:
+    wxWindow& GetWindow() override;
+
+private:
+    wxTinyBoardView(CTinyBoardView& v) : window(&v) {}
+
+    RefPtr<CTinyBoardView> window;
+
+    friend CTinyBoardView;
+};
+
+inline CTinyBoardView::operator const wxView&() const
+{
+    return *wxview;
+}
+
+inline CTinyBoardView::operator const wxView*() const
+{
+    return &*wxview;
+}
+
+inline wxWindow& wxTinyBoardView::GetWindow()
+{
+    return *window;
+}
 
 inline CCmdTarget& CTinyBoardView::Get()
 {

@@ -124,7 +124,7 @@ BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CPlayBoardFrameContainer::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = CB::ToCGamDoc(GetActiveDocument());
-    CB::string str = pDoc->GetTitle();
+    CB::string str = pDoc->GetUserReadableName();
 
     CB::string strBoardName = child->m_pPBoard->GetBoard()->GetName();
     str += " - " + strBoardName;

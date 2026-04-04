@@ -1,6 +1,6 @@
 // VwPrjgsn.h : header file
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,7 +35,9 @@
 #include    "LBoxMark.h"
 #endif
 
+class CGsnProjView;
 class CTrayListBoxWx;
+class wxGsnProjView;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView view
@@ -75,6 +77,12 @@ private:
     CGsnProjView(CGsnProjViewContainer& p);
 
 // Attributes
+public:
+    operator const wxView&() const;
+    operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
+    operator const wxView*() const;
+    operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+
 private:
     CGamDoc& GetDocument() { return *document; }
 
@@ -184,6 +192,7 @@ private:
 
     RefPtr<CGsnProjViewContainer> parent;
     RefPtr<CGamDoc> document;
+    OwnerPtr<wxGsnProjView> wxview;
 };
 
 class CGsnProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
@@ -213,6 +222,34 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+class wxGsnProjView : public CB::View
+{
+public:
+    wxWindow& GetWindow() override;
+
+private:
+    wxGsnProjView(CGsnProjView& v) : window(&v) {}
+
+    RefPtr<CGsnProjView> window;
+
+    friend CGsnProjView;
+};
+
+inline CGsnProjView::operator const wxView&() const
+{
+    return *wxview;
+}
+
+inline CGsnProjView::operator const wxView*() const
+{
+    return &*wxview;
+}
+
+inline wxWindow& wxGsnProjView::GetWindow()
+{
+    return *window;
+}
 
 inline CCmdTarget& CGsnProjView::Get()
 {

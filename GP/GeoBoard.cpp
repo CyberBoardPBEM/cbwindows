@@ -829,7 +829,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
 
     CMemFile file;
     CArchive arSave(&file, CArchive::store);
-    arSave.m_pDocument = &doc;
+    arSave.m_pDocument = doc;
     SetFileFeaturesGuard setFileFeaturesGuard(arSave, GetCBFeatures());
     // save should not modify src, so should be safe
     const_cast<CBoard&>(*this).Serialize(arSave);      // Make a copy of the board
@@ -837,7 +837,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
 
     file.SeekToBegin();
     CArchive arRestore(&file, CArchive::load);
-    arRestore.m_pDocument = &doc;
+    arRestore.m_pDocument = doc;
     OwnerPtr<CBoard> pNewBoard = MakeOwner<CBoard>();
     pNewBoard->Serialize(arRestore);
     pNewBoard->m_nSerialNum = Invalid_v<BoardID>;

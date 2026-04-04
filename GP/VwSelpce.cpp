@@ -71,6 +71,11 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView
 
+CSelectedPieceView::CSelectedPieceView() :
+    wxview(new wxSelectedPieceView(*this))
+{
+}
+
 void CSelectedPieceView::Initialize()
 {
     m_listSel->Create(this, wxID_ANY,
@@ -136,7 +141,7 @@ void CSelectedPieceView::OnInitialUpdate()
 {
     wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
     parent = &dynamic_cast<CSelectedPieceViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
     m_pPBoard = &document->GetNewViewBoard();
 
     parent->CSelectedPieceViewContainer::BASE::OnInitialUpdate();
@@ -149,7 +154,7 @@ void CSelectedPieceView::OnInitialUpdate()
 void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
     lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_UPDATESELECT && ph->GetArgs<HINT_UPDATESELECT>().m_pPBoard == m_pPBoard)
     {

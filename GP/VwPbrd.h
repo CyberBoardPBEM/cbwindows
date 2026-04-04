@@ -39,8 +39,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 class CPlayBoard;
+class CPlayBoardView;
 enum  TileScale;
 class WinStateEvent;
+class wxPlayBoardView;
 
 class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
 {
@@ -54,6 +56,11 @@ private:
 
 // Attributes
 public:
+    operator const wxView&() const;
+    operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
+    operator const wxView*() const;
+    operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+
     const CGamDoc& GetDocument() const;
     CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
     const CPlayBoard& GetPlayBoard() const { return *m_pPBoard; }
@@ -329,6 +336,8 @@ private:
     int m_bindEnd = 0;
     // GetAutoscrollWithoutCapture() isn't accessible
     bool m_autoscrollWithoutCapture = false;
+
+    OwnerPtr<wxPlayBoardView> wxview;
 };
 
 #ifndef _DEBUG  // debug version in vwmbrd.cpp
@@ -373,6 +382,34 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+
+class wxPlayBoardView : public CB::View
+{
+public:
+    wxWindow& GetWindow() override;
+
+private:
+    wxPlayBoardView(CPlayBoardView& v) : window(&v) {}
+
+    RefPtr<CPlayBoardView> window;
+
+    friend CPlayBoardView;
+};
+
+inline CPlayBoardView::operator const wxView&() const
+{
+    return *wxview;
+}
+
+inline CPlayBoardView::operator const wxView*() const
+{
+    return &*wxview;
+}
+
+inline wxWindow& wxPlayBoardView::GetWindow()
+{
+    return *window;
+}
 
 inline CCmdTarget& CPlayBoardView::Get()
 {

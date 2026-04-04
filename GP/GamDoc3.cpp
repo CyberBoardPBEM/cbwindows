@@ -100,13 +100,41 @@ Game file format for versions 2.90 and greater:
 
 void CGamDoc::Serialize(CArchive& ar)
 {
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     if (IsScenario())
         SerializeScenario(ar);
     else
         SerializeGame(ar);
     SetLoadingVersion(NumVersion(fileGsnVerMajor, fileGsnVerMinor));
     SetFileFeatures(GetCBFeatures());
+}
+
+#ifdef _DEBUG
+void CGamDoc::AssertValid() const
+{
+    mfcDoc->CDocument::AssertValid();
+}
+
+void CGamDoc::Dump(CDumpContext& dc) const
+{
+    mfcDoc->CDocument::Dump(dc);
+}
+
+#endif //_DEBUG
+
+void CGamDoc::UpdateAllViews(wxView* sender, wxObject* hint)
+{
+    wxDocument::UpdateAllViews(sender, hint);
+    CGamDocHintRef* ref = dynamic_cast<CGamDocHintRef*>(hint);
+    if (ref)
+    {
+        CGamDocHintRefMfc mfcHint(*ref);
+        mfcDoc->CDocument::UpdateAllViews(nullptr, 0, &mfcHint);
+    }
+    else
+    {
+        mfcDoc->CDocument::UpdateAllViews(nullptr);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -837,7 +865,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             if (bTmp)
             {
                 m_pWinState = new CGpWinStateMgr;
-                m_pWinState->SetDocument(this);
+                m_pWinState->SetDocument(*this);
                 m_pWinState->Serialize(ar);
             }
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   // Ver 2.90
@@ -909,7 +937,7 @@ void CGamDoc::SerializeCurrentGameData(CFile* pFile, long lOffset, BOOL bSaving)
         pFile->Seek(lOffset, CFile::begin);
     CArchive ar(pFile, (bSaving ? CArchive::store : CArchive::load) |
         CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
     m_pHistTbl->Serialize(ar);
 
@@ -923,7 +951,7 @@ CMoveList* CGamDoc::DeserializeMovesFromFile(CFile* pFile, long lOffset)
     if (lOffset != -1)          // If false use current position
         pFile->Seek(lOffset, CFile::begin);
     CArchive ar(pFile, CArchive::load | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
     pLst->Serialize(ar);
     ar.Close();                 // Flushes and Detaches CFile.
@@ -937,7 +965,7 @@ long CGamDoc::SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst)
     if (lOffset != -1)              // If false use current position
         pFile->Seek(lOffset, CFile::begin);
     CArchive ar(pFile, CArchive::store | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
     pLst->Serialize(ar);
     ar.Close();                 // Flushes and Detaches CFile.

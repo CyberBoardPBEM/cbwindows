@@ -132,7 +132,8 @@ CGsnProjView::CGsnProjView(CGsnProjViewContainer& p) :
         CB_XRC_CTRL(m_btnPrjC)
     CB_XRC_END_CTRLS_DEFN(),
     parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument()))
+    document(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument()))),
+    wxview(new wxGsnProjView(*this))
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
@@ -225,7 +226,7 @@ void CGsnProjView::OnInitialUpdate()
 void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRef*>(pHint))) : nullptr;
+    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
     lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
     if (lHint == HINT_TRAYCHANGE)
     {

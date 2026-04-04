@@ -72,7 +72,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGamDoc, CDocument)
+IMPLEMENT_DYNCREATE(CGamDocMfc, CDocument)
 
 #ifdef  _DEBUG
 #define new DEBUG_NEW
@@ -102,8 +102,8 @@ Features CGamDoc::c_fileFeatures;
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc
 
-BEGIN_MESSAGE_MAP(CGamDoc, CDocument)
-    //{{AFX_MSG_MAP(CGamDoc)
+wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_VIEW_TRAYA, OnUpdateViewTrayA)
     ON_UPDATE_COMMAND_UI(ID_VIEW_TRAYB, OnUpdateViewTrayB)
     ON_UPDATE_COMMAND_UI(ID_VIEW_MARKERPAL, OnUpdateViewMarkPalette)
@@ -189,17 +189,18 @@ BEGIN_MESSAGE_MAP(CGamDoc, CDocument)
     ON_UPDATE_COMMAND_UI(ID_PBCK_AUTO_STEP, OnUpdatePbckAutoStep)
     ON_COMMAND(ID_VIEW_SHOW_TIP_OWNER, OnViewShowTipOwner)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SHOW_TIP_OWNER, OnUpdateViewShowTipOwner)
-    //}}AFX_MSG_MAP
 #ifdef _DEBUG
     ON_COMMAND(ID_DEBUG_MOVELIST, OnDebugMoveList)
     ON_COMMAND(ID_DEBUG_PIECETABLE, OnDebugPieceTable)
 #endif
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc construction/destruction
 
-CGamDoc::CGamDoc()
+CGamDoc::CGamDoc(CGamDocMfc& d) :
+    mfcDoc(&d)
 {
     m_nSeedCarryOver = (UINT)GetTickCount();
 
@@ -257,10 +258,14 @@ CGamDoc::~CGamDoc()
     DeleteContents();
 }
 
-BOOL CGamDoc::OnNewDocument()
+bool CGamDoc::OnNewDocument()
 {
-    if (!CDocument::OnNewDocument())
+    if (!mfcDoc->CDocument::OnNewDocument())
         return FALSE;
+    if (!wxDocument::OnNewDocument())
+    {
+        return false;
+    }
 
     SetThisDocumentType();
 
@@ -270,7 +275,7 @@ BOOL CGamDoc::OnNewDocument()
         return OnNewGame();
 }
 
-void CGamDoc::OnCloseDocument()
+bool CGamDoc::OnCloseDocument()
 {
     if (!IsScenario())
     {
@@ -282,12 +287,24 @@ void CGamDoc::OnCloseDocument()
         }
         END_TRY
     }
-    CDocument::OnCloseDocument();
+/* TODO:  can't do this yet:  if mfc is closed first, then it
+    deletes doc, and wxDocument::OnCloseDocument() can't be
+    called.  If wx is called first, it calls DeleteContents()
+    before the views are gone.  Since MFC views control the
+    doc lifetime currently, MFC must take precendence */
+#if 0
+    if (!wxDocument::OnCloseDocument())
+    {
+        return false;
+    }
+#endif
+    mfcDoc->CDocument::OnCloseDocument();
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
+bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
 {
     BOOL bRet = FALSE;
     SetThisDocumentType();
@@ -299,7 +316,7 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
     // This cheat is to have the filename being loaded available
     // to the Serialize routine
     m_strTmpPathName = pszPathName;
-    bRet = CDocument::OnOpenDocument(pszPathName);
+    bRet = wxDocument::OnOpenDocument(pszPathName);
     m_strTmpPathName.clear();
 
     if (bRet && !IsScenario())
@@ -308,7 +325,9 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
         // tampered with.
         if (m_pPlayerMgr != NULL && !VerifyCurrentPlayerMask())
         {
-            AfxMessageBox(IDS_ERR_PLAYER_TAMPER, MB_OK | MB_ICONSTOP);
+            wxMessageBox(CB::string(IDS_ERR_PLAYER_TAMPER),
+                            CB::GetAppName(),
+                            wxOK | wxICON_STOP);
             return FALSE;
         }
     }
@@ -317,9 +336,9 @@ BOOL CGamDoc::OnOpenDocument(LPCTSTR pszPathName)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
+bool CGamDoc::OnSaveDocument(const wxString& pszPathName)
 {
-    if (std::filesystem::exists(pszPathName))
+    if (std::filesystem::exists(CB::string(pszPathName)))
     {
         if (m_bKeepGamBackup && IsScenario())
         {
@@ -342,16 +361,16 @@ BOOL CGamDoc::OnSaveDocument(LPCTSTR pszPathName)
     if (m_bSaveWindowPositions)
     {
         m_pWinState = new CGpWinStateMgr;
-        m_pWinState->SetDocument(this);
+        m_pWinState->SetDocument(*this);
         m_pWinState->GetStateOfOpenDocumentFrames();
     }
 
-    return CDocument::OnSaveDocument(pszPathName);
+    return wxDocument::OnSaveDocument(pszPathName);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::DeleteContents()
+bool CGamDoc::DeleteContents()
 {
     /* close may trigger paint of other windows,
         so close before delete */
@@ -427,6 +446,23 @@ void CGamDoc::DeleteContents()
     m_strPlayerFileDescr.clear();
 
     m_bSimulateSpectator = FALSE;
+
+    return true;
+}
+
+
+// wxDocument
+// Called by OnSaveDocument and OnOpenDocument to implement standard
+// Save/Load behaviour. Re-implement in derived class for custom
+// behaviour.
+bool CGamDoc::DoSaveDocument(const wxString& file)
+{
+    return mfcDoc->CDocument::OnSaveDocument(file);
+}
+
+bool CGamDoc::DoOpenDocument(const wxString& file)
+{
+    return mfcDoc->CDocument::OnOpenDocument(file);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -491,25 +527,25 @@ void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
         CGamDoc& doc;
     } createParamMgr(*this, board);
     CMDIChildWndEx* pNewFrame
-        = (CMDIChildWndEx*)(pTemplate->CreateNewFrame(this, NULL));
+        = static_cast<CMDIChildWndEx*>(pTemplate->CreateNewFrame(*this, NULL));
     if (pNewFrame == NULL)
         AfxThrowMemoryException();               // Not created
     wxASSERT(pNewFrame->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)));
-    CB::string str = GetTitle();
+    CB::string str = GetUserReadableName();
     str += " - ";
     str += pszTitle;
     pNewFrame->SetWindowText(str);
-    pTemplate->InitialUpdateFrame(pNewFrame, this);
+    pTemplate->InitialUpdateFrame(pNewFrame, *this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 CGamProjView& CGamDoc::FindProjectView() const
 {
-    POSITION pos = GetFirstViewPosition();
+    POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CView& pView = CheckedDeref(GetNextView(pos));
+        CView& pView = CheckedDeref(mfcDoc->GetNextView(pos));
         if (pView.IsKindOf(RUNTIME_CLASS(CGamProjViewContainer)))
         {
             return static_cast<CGamProjViewContainer&>(pView);
@@ -525,17 +561,17 @@ CPlayBoardView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
         pPBoard.IsPrivate() &&
         pPBoard.IsOwnedButNotByCurrentPlayer(*this))
     {
-        ASSERT(!"private board");
+        wxASSERT(!"private board");
         return nullptr;
     }
 
-    POSITION pos = GetFirstViewPosition();
+    POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CPlayBoardViewContainer* pCont = static_cast<CPlayBoardViewContainer*>(GetNextView(pos));
-        if (pCont->IsKindOf(RUNTIME_CLASS(CPlayBoardViewContainer)))
+        CView& pCont = CheckedDeref(mfcDoc->GetNextView(pos));
+        if (pCont.IsKindOf(RUNTIME_CLASS(CPlayBoardViewContainer)))
         {
-            CPlayBoardView& pView = *pCont;
+            CPlayBoardView& pView = static_cast<CPlayBoardViewContainer&>(pCont);
             if (&pView.GetPlayBoard() == &pPBoard)
                 return &pView;
         }
@@ -549,14 +585,14 @@ void CGamDoc::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFra
 {
     tblFrames.clear();
 
-    POSITION pos = GetFirstViewPosition();
+    POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CView* pView = GetNextView(pos);
+        CView* pView = mfcDoc->GetNextView(pos);
         CFrameWnd* pFrame = pView->GetParentFrame();
-        ASSERT(pFrame != NULL);
+        wxASSERT(pFrame != NULL);
         size_t i;
-        for (i = 0; i < tblFrames.size(); i++)
+        for (i = size_t(0); i < tblFrames.size(); i++)
         {
             if (pFrame == tblFrames.at(i))
                 break;
@@ -658,12 +694,14 @@ BOOL CGamDoc::OnNewGame()
         &fe))
     {
         CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
+        wxMessageBox(strErr,
+                        CB::GetAppName(),
+                        wxOK | wxICON_EXCLAMATION);
         return FALSE;
     }
 
     CArchive ar(&file, CArchive::load | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
 
     TRY
@@ -719,8 +757,9 @@ BOOL CGamDoc::OnNewGame()
                 dlgMultiplay.m_bCreateReferee, strExists))
             {
                 CB::string strWarn = CB::string::Format(IDS_WARN_PLAYER_FILES_EXIST, strExists);
-                if (AfxMessageBox(strWarn,
-                    MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONEXCLAMATION) != IDOK)
+                if (wxMessageBox(strWarn,
+                                    CB::GetAppName(),
+                                    wxOK | wxCANCEL | wxCANCEL_DEFAULT | wxICON_EXCLAMATION) != wxOK)
                 {
                     return FALSE;
                 }
@@ -879,13 +918,13 @@ BOOL CGamDoc::DoSaveGameFile(const CB::string& pszFileName)
     if (!file.Open(pszFileName, CFile::modeCreate |
         CFile::modeReadWrite | CFile::shareExclusive, &fe))
     {
-        ReportSaveLoadException(pszFileName, &fe,
+        mfcDoc->ReportSaveLoadException(pszFileName, &fe,
             FALSE, AFX_IDP_FAILED_TO_OPEN_DOC);
         return FALSE;
     }
 
     CArchive saveArchive(&file, CArchive::store | CArchive::bNoFlushOnDelete);
-    saveArchive.m_pDocument = this;
+    saveArchive.m_pDocument = *this;
     saveArchive.m_bForceFlat = FALSE;
     TRY
     {
@@ -898,7 +937,7 @@ BOOL CGamDoc::DoSaveGameFile(const CB::string& pszFileName)
     CATCH_ALL(e)
     {
         TRY
-            ReportSaveLoadException(pszFileName, e,
+            mfcDoc->ReportSaveLoadException(pszFileName, e,
                 TRUE, AFX_IDP_FAILED_TO_SAVE_DOC);
         END_TRY
         return FALSE;
@@ -917,7 +956,7 @@ void CGamDoc::RestoreWindowState()
     // If a window state payload was delivered to us during deserialize,
     // attempt to restore all the windows to their former glory.
 
-    m_pWinState->SetDocument(this);
+    m_pWinState->SetDocument(*this);
     m_pWinState->RestoreStateOfDocumentFrames();
     DiscardWindowState();                           // Discard used data
 }
@@ -931,7 +970,7 @@ void CGamDoc::DiscardWindowState()
 
 void CGamDoc::SetThisDocumentType()
 {
-    CDocTemplate *pDocTmpl = GetDocTemplate();
+    CDocTemplate *pDocTmpl = mfcDoc->GetDocTemplate();
     CB::string str = CB::string::GetDocString(*pDocTmpl, CDocTemplate::filterExt);
     m_bScenario = str.CompareNoCase(".gsn") == 0;
 }
@@ -987,10 +1026,13 @@ CTileFacingMap& CGamDoc::GetFacingMap()
 
 void CGamDoc::CloseTrayPalettes()
 {
+    wxASSERT(!"TODO:");
+#if 0
     if (m_bTrayAVisible)
         OnViewTrayA();          // Toggle it off
     if (m_bTrayBVisible)
         OnViewTrayB();          // Toggle it off
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1055,8 +1097,8 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
             pPBoard.SetPrivate(dlg.m_bPrivate);
         }
 
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_ALWAYSUPDATE));    // Repaint boards
+        UpdateAllViews(NULL, CGamDocHint(HINT_BOARDCHANGE));
+        UpdateAllViews(NULL, CGamDocHint(HINT_ALWAYSUPDATE));    // Repaint boards
         SetModifiedFlag();
     }
 }
@@ -1064,6 +1106,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
 ////////////////////////////////////////////////////////////////////////
 // CGamDoc commands
 
+#if 0
 void CGamDoc::OnUpdateViewTrayA(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(m_bTrayAVisible);
@@ -1700,6 +1743,7 @@ void CGamDoc::OnUpdateFileLoadMoveFile(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!IsScenario() && !IsPlaying());
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1709,6 +1753,7 @@ BOOL CGamDoc::IsRecordingCompoundMove() const
         m_pRcdMoves->IsRecordingCompoundMove();
 }
 
+#if 0
 void CGamDoc::OnActCompoundMoveBegin()
 {
     RecordCompoundMoveBegin();
@@ -2098,4 +2143,5 @@ void CGamDoc::OnUpdateFileChangeGameOwner(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(HasPlayers() && !IsCurrentPlayerReferee());
 }
+#endif
 
