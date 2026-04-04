@@ -125,19 +125,20 @@ void CGamDoc::SaveRecordedMoves()
     CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
-    wxASSERT(!"TODO:");
-#if 0
-    CB::string szFName = GetPathName();
+    CB::string szFName = GetFilename();
     if (!szFName.empty())
     {
         szFName = SetFileExt(szFName, "gmv");
     }
 
-    CFileDialog dlg(FALSE, "gmv"_cbstring, !szFName.empty() ? szFName : NULL,
-        OFN_OVERWRITEPROMPT, strFilter, NULL, 0);
-    dlg.m_ofn.lpstrTitle = strTitle;
+    wxFileDialog dlg(&CB::GetMainWndWx(),
+                    strTitle,
+                    wxEmptyString,
+                    !szFName.empty() ? szFName : NULL,
+                    strFilter,
+                    wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     // Get a description from user.
@@ -155,16 +156,18 @@ void CGamDoc::SaveRecordedMoves()
     CFile file;
     CFileException fe;
 
-    if (!file.Open(dlg.GetPathName(),
+    if (!file.Open(dlg.GetFilename(),
         CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive,
         &fe))
     {
-        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetPathName());
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
+        CB::string strErr = AfxFormatString1(AFX_IDP_FAILED_TO_OPEN_DOC, dlg.GetFilename());
+        wxMessageBox(strErr,
+                        CB::GetAppName(),
+                        wxOK | wxICON_EXCLAMATION);
         return;
     }
     CArchive ar(&file, CArchive::store | CArchive::bNoFlushOnDelete);
-    ar.m_pDocument = this;
+    ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
 
     // Force pending compound move to complete...
@@ -199,7 +202,6 @@ void CGamDoc::SaveRecordedMoves()
     // is new in case the first recorded move record is a random number
     // operation.
     m_nSeedCarryOver = (UINT)GetTickCount();
-#endif
 }
 
 void CGamDoc::AddMovesToGameHistoryTable(OwnerPtr<CHistRecord> pHist)

@@ -824,38 +824,57 @@ protected:
         BOOL bCheckReferee, CB::string& strExist);
 
 protected:
+    void OnUpdateViewTrayA(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateViewTrayB(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateViewMarkPalette(wxUpdateUIEvent& pCmdUI);
+    void OnViewTrayA(wxCommandEvent& event);
+    void OnViewTrayA()
+    {
+        wxCommandEvent dummy;
+        OnViewTrayA(dummy);
+    }
+    void OnViewTrayB(wxCommandEvent& event);
+    void OnUpdateIndicatorCompoundMove(wxUpdateUIEvent& pCmdUI);
+    void OnViewMarkPalette(wxCommandEvent& event);
+    void OnViewMarkPalette()
+    {
+        wxCommandEvent dummy;
+        OnViewMarkPalette(dummy);
+    }
 #if 0
-    afx_msg void OnUpdateViewTrayA(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateViewTrayB(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateViewMarkPalette(CCmdUI* pCmdUI);
-    afx_msg void OnViewTrayA();
-    afx_msg void OnViewTrayB();
-    afx_msg void OnUpdateIndicatorCompoundMove(CCmdUI* pCmdUI);
-    afx_msg void OnViewMarkPalette();
     afx_msg void OnEditSetBookMark();
     afx_msg void OnUpdateEditSetBookMark(CCmdUI* pCmdUI);
     afx_msg void OnEditRestoreBookMark();
     afx_msg void OnUpdateEditRestoreBookMark(CCmdUI* pCmdUI);
     afx_msg void OnEditClearBookMark();
-    afx_msg void OnPbckDiscard();
-    afx_msg void OnUpdatePbckDiscard(CCmdUI* pCmdUI);
-    afx_msg void OnPbckEnd();
-    afx_msg void OnUpdatePbckEnd(CCmdUI* pCmdUI);
-    afx_msg void OnPbckFinish();
-    afx_msg void OnUpdatePbckFinish(CCmdUI* pCmdUI);
-    afx_msg void OnPbckNext();
-    afx_msg void OnUpdatePbckNext(CCmdUI* pCmdUI);
-    afx_msg void OnPbckStart();
-    afx_msg void OnUpdatePbckStart(CCmdUI* pCmdUI);
-    afx_msg void OnActDoMessage();
+#endif
+    void OnPbckDiscard(wxCommandEvent& event);
+    void OnUpdatePbckDiscard(wxUpdateUIEvent& pCmdUI);
+    void OnPbckEnd(wxCommandEvent& event);
+    void OnUpdatePbckEnd(wxUpdateUIEvent& pCmdUI);
+    void OnPbckFinish(wxCommandEvent& event);
+    void OnUpdatePbckFinish(wxUpdateUIEvent& pCmdUI);
+    void OnPbckNext(wxCommandEvent& event);
+    void OnUpdatePbckNext(wxUpdateUIEvent& pCmdUI);
+    void OnPbckStart(wxCommandEvent& event);
+    void OnUpdatePbckStart(wxUpdateUIEvent& pCmdUI);
+    void OnActDoMessage(wxCommandEvent& event);
+#if 0
     afx_msg void OnUpdateEditClearBookMark(CCmdUI* pCmdUI);
-    afx_msg void OnUpdateActDoMessage(CCmdUI* pCmdUI);
-    afx_msg void OnPbckReadMessage();
-    afx_msg void OnUpdatePbckReadMessage(CCmdUI* pCmdUI);
-    afx_msg void OnPbckNextHistory();
-    afx_msg void OnUpdatePbckNextHistory(CCmdUI* pCmdUI);
-    afx_msg void OnPbckCloseHistory();
-    afx_msg void OnUpdatePbckCloseHistory(CCmdUI* pCmdUI);
+#endif
+    void OnUpdateActDoMessage(wxUpdateUIEvent& pCmdUI);
+    void OnPbckReadMessage(wxCommandEvent& event);
+    void OnUpdatePbckReadMessage(wxUpdateUIEvent& pCmdUI);
+    void OnPbckNextHistory(wxCommandEvent& event);
+    void OnPbckNextHistory()
+    {
+        wxCommandEvent dummy;
+        OnPbckNextHistory(dummy);
+    }
+    void OnUpdatePbckNextHistory(wxUpdateUIEvent& pCmdUI);
+    void OnPbckCloseHistory(wxCommandEvent& event);
+    void OnUpdatePbckCloseHistory(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnFileSendRecording2File();
     afx_msg void OnUpdateFileSendRecording2File(CCmdUI* pCmdUI);
     afx_msg void OnFileDiscardRecordedMoves();
@@ -868,22 +887,28 @@ protected:
     afx_msg void OnUpdateEditSelectBoards(CCmdUI* pCmdUI);
     afx_msg void OnEditSelectGamePieces();
     afx_msg void OnUpdateEditSelectGamePieces(CCmdUI* pCmdUI);
-    afx_msg void OnFileLoadMoveFile();
-    afx_msg void OnUpdateFileLoadMoveFile(CCmdUI* pCmdUI);
+#endif
+    void OnFileLoadMoveFile(wxCommandEvent& event);
+    void OnUpdateFileLoadMoveFile(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnActCompoundMoveBegin();
     afx_msg void OnUpdateActCompoundMoveBegin(CCmdUI* pCmdUI);
     afx_msg void OnActCompoundMoveEnd();
     afx_msg void OnUpdateActCompoundMoveEnd(CCmdUI* pCmdUI);
     afx_msg void OnActCompoundMoveDiscard();
     afx_msg void OnUpdateActCompoundMoveDiscard(CCmdUI* pCmdUI);
-    afx_msg void OnPbckPrevious();
-    afx_msg void OnUpdatePbckPrevious(CCmdUI* pCmdUI);
+#endif
+    void OnPbckPrevious(wxCommandEvent& event);
+    void OnUpdatePbckPrevious(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnFileSaveGameAsScenario();
     afx_msg void OnUpdateFileSaveGameAsScenario(CCmdUI* pCmdUI);
     afx_msg void OnActRollDice();
     afx_msg void OnUpdateActRollDice(CCmdUI* pCmdUI);
-    afx_msg void OnPbckStepCompoundMoves();
-    afx_msg void OnUpdateStepCompoundMoves(CCmdUI* pCmdUI);
+#endif
+    void OnPbckStepCompoundMoves(wxCommandEvent& event);
+    void OnUpdateStepCompoundMoves(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnEditImportPieceGroups();
     afx_msg void OnUpdateEditImportPieceGroups(CCmdUI* pCmdUI);
     afx_msg void OnViewShowTipText();
@@ -902,12 +927,14 @@ protected:
     afx_msg void OnUpdateFileCreateReferee(CCmdUI* pCmdUI);
     afx_msg void OnFileChangeGameOwner();
     afx_msg void OnUpdateFileChangeGameOwner(CCmdUI* pCmdUI);
-    afx_msg void OnPbckStepToNextHist();
-    afx_msg void OnUpdatePbckStepToNextHist(CCmdUI* pCmdUI);
-    afx_msg void OnPbckSkipKeepIndicators();
-    afx_msg void OnUpdatePbckSkipKeepIndicators(CCmdUI* pCmdUI);
-    afx_msg void OnPbckAutoStep();
-    afx_msg void OnUpdatePbckAutoStep(CCmdUI* pCmdUI);
+#endif
+    void OnPbckStepToNextHist(wxCommandEvent& event);
+    void OnUpdatePbckStepToNextHist(wxUpdateUIEvent& pCmdUI);
+    void OnPbckSkipKeepIndicators(wxCommandEvent& event);
+    void OnUpdatePbckSkipKeepIndicators(wxUpdateUIEvent& pCmdUI);
+    void OnPbckAutoStep(wxCommandEvent& event);
+    void OnUpdatePbckAutoStep(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnViewShowTipOwner();
     afx_msg void OnUpdateViewShowTipOwner(CCmdUI* pCmdUI);
     //}}AFX_MSG
@@ -924,7 +951,7 @@ private:
     friend CGamDocMfc;
 };
 
-class CGamDocMfc : public CDocument
+class CGamDocMfc : public CB::OnCmdMsgOverride<CDocument, true>
 {
     DECLARE_DYNCREATE(CGamDocMfc)
 public:
@@ -965,8 +992,15 @@ protected:
     void DeleteContents() override { CB_VERIFY(wxDoc->DeleteContents()); }
 
 private:
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return *wxDoc;
+    }
+
     OwnerPtr<CGamDoc> wxDoc = new CGamDoc(*this);
 
+    typedef CB::OnCmdMsgOverride<CDocument, true> BASE;
     friend CGamDoc;
 };
 

@@ -520,16 +520,19 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 void CMainFrame::OnToggleMarkPalette()
 {
+    wxASSERT(!"dead code?");
     SendMessage(WM_COMMAND, ID_VIEW_MARKERPAL);
 }
 
 void CMainFrame::OnToggleTrayPaletteA()
 {
+    wxASSERT(!"dead code?");
     SendMessage(WM_COMMAND, ID_VIEW_TRAYA);
 }
 
 void CMainFrame::OnToggleTrayPaletteB()
 {
+    wxASSERT(!"dead code?");
     SendMessage(WM_COMMAND, ID_VIEW_TRAYB);
 }
 

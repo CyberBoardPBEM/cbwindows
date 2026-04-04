@@ -520,7 +520,7 @@ void CGamDoc::SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj)
 
 void CGamDoc::SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList)
 {
-    ASSERT(!"this appears to be dead code");
+    wxASSERT(!"this appears to be dead code");
     if (IsQuietPlayback()) return;
     // If board isn't visible, open it.
     MakeSurePBoardVisible(pPBoard);
@@ -544,30 +544,24 @@ void CGamDoc::SelectTrayItem(const CTraySet& pYSet, PieceID pid,
     const CB::string* pszNotificationTip /* = NULL */)
 {
     if (IsQuietPlayback()) return;
-    wxASSERT(!"TODO:");
-#if 0
     // Make sure tray palette A is visible
     if (!m_bTrayAVisible)
         OnViewTrayA();
 
     // Select the piece in the appropriate trayset.
     size_t nGroup = GetTrayManager().FindTrayByRef(pYSet);
-    ASSERT(nGroup != Invalid_v<size_t>);
+    wxASSERT(nGroup != Invalid_v<size_t>);
     (*m_palTrayA)->SelectTrayPiece(nGroup, pid, pszNotificationTip ? pszNotificationTip : nullptr);
-#endif
 }
 
 void CGamDoc::SelectMarkerPaletteItem(MarkID mid)
 {
     if (IsQuietPlayback()) return;
-    wxASSERT(!"TODO:");
-#if 0
     // Make sure marker palette s visible
     if (!m_bMarkPalVisible)
         OnViewMarkPalette();
     // Select the marker in the appropriate group.
     (*m_palMark)->SelectMarker(mid);
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

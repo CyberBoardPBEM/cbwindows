@@ -103,38 +103,42 @@ Features CGamDoc::c_fileFeatures;
 // CGamDoc
 
 wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_TRAYA"), OnUpdateViewTrayA)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_TRAYB"), OnUpdateViewTrayB)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_MARKERPAL"), OnUpdateViewMarkPalette)
+    EVT_MENU(XRCID("ID_VIEW_TRAYA"), OnViewTrayA)
+    EVT_MENU(XRCID("ID_VIEW_TRAYB"), OnViewTrayB)
+    EVT_UPDATE_UI(XRCID("ID_INDICATOR_COMPMOVE"), OnUpdateIndicatorCompoundMove)
+    EVT_MENU(XRCID("ID_VIEW_MARKERPAL"), OnViewMarkPalette)
 #if 0
-    ON_UPDATE_COMMAND_UI(ID_VIEW_TRAYA, OnUpdateViewTrayA)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_TRAYB, OnUpdateViewTrayB)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_MARKERPAL, OnUpdateViewMarkPalette)
-    ON_COMMAND(ID_VIEW_TRAYA, OnViewTrayA)
-    ON_COMMAND(ID_VIEW_TRAYB, OnViewTrayB)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_COMPMOVE, OnUpdateIndicatorCompoundMove)
-    ON_COMMAND(ID_VIEW_MARKERPAL, OnViewMarkPalette)
     ON_COMMAND(ID_EDIT_SETBOOKMARK, OnEditSetBookMark)
     ON_UPDATE_COMMAND_UI(ID_EDIT_SETBOOKMARK, OnUpdateEditSetBookMark)
     ON_COMMAND(ID_EDIT_RESTOREBOOKMARK, OnEditRestoreBookMark)
     ON_UPDATE_COMMAND_UI(ID_EDIT_RESTOREBOOKMARK, OnUpdateEditRestoreBookMark)
     ON_COMMAND(ID_EDIT_CLRBOOKMARK, OnEditClearBookMark)
-    ON_COMMAND(ID_PBCK_DISCARD, OnPbckDiscard)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_DISCARD, OnUpdatePbckDiscard)
-    ON_COMMAND(ID_PBCK_END, OnPbckEnd)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_END, OnUpdatePbckEnd)
-    ON_COMMAND(ID_PBCK_FINISH, OnPbckFinish)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_FINISH, OnUpdatePbckFinish)
-    ON_COMMAND(ID_PBCK_NEXT, OnPbckNext)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_NEXT, OnUpdatePbckNext)
-    ON_COMMAND(ID_PBCK_START, OnPbckStart)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_START, OnUpdatePbckStart)
-    ON_COMMAND(ID_ACT_DOMESSAGE, OnActDoMessage)
+#endif
+    EVT_MENU(XRCID("ID_PBCK_DISCARD"), OnPbckDiscard)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_DISCARD"), OnUpdatePbckDiscard)
+    EVT_MENU(XRCID("ID_PBCK_END"), OnPbckEnd)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_END"), OnUpdatePbckEnd)
+    EVT_MENU(XRCID("ID_PBCK_FINISH"), OnPbckFinish)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_FINISH"), OnUpdatePbckFinish)
+    EVT_MENU(XRCID("ID_PBCK_NEXT"), OnPbckNext)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_NEXT"), OnUpdatePbckNext)
+    EVT_MENU(XRCID("ID_PBCK_START"), OnPbckStart)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_START"), OnUpdatePbckStart)
+    EVT_MENU(XRCID("ID_ACT_DOMESSAGE"), OnActDoMessage)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_EDIT_CLRBOOKMARK, OnUpdateEditClearBookMark)
-    ON_UPDATE_COMMAND_UI(ID_ACT_DOMESSAGE, OnUpdateActDoMessage)
-    ON_COMMAND(ID_PBCK_READMESSAGE, OnPbckReadMessage)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_READMESSAGE, OnUpdatePbckReadMessage)
-    ON_COMMAND(ID_PBCK_NEXTHIST, OnPbckNextHistory)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_NEXTHIST, OnUpdatePbckNextHistory)
-    ON_COMMAND(ID_PBCK_CLOSEHIST, OnPbckCloseHistory)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_CLOSEHIST, OnUpdatePbckCloseHistory)
+#endif
+    EVT_UPDATE_UI(XRCID("ID_ACT_DOMESSAGE"), OnUpdateActDoMessage)
+    EVT_MENU(XRCID("ID_PBCK_READMESSAGE"), OnPbckReadMessage)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_READMESSAGE"), OnUpdatePbckReadMessage)
+    EVT_MENU(XRCID("ID_PBCK_NEXTHIST"), OnPbckNextHistory)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_NEXTHIST"), OnUpdatePbckNextHistory)
+    EVT_MENU(XRCID("ID_PBCK_CLOSEHIST"), OnPbckCloseHistory)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_CLOSEHIST"), OnUpdatePbckCloseHistory)
+#if 0
     ON_COMMAND(ID_FILE_SENDMOVES2FILE, OnFileSendRecording2File)
     ON_UPDATE_COMMAND_UI(ID_FILE_SENDMOVES2FILE, OnUpdateFileSendRecording2File)
     ON_COMMAND(ID_FILE_DISCARDRECORDING, OnFileDiscardRecordedMoves)
@@ -147,22 +151,28 @@ wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
     ON_UPDATE_COMMAND_UI(ID_EDIT_SELECTBOARDS, OnUpdateEditSelectBoards)
     ON_COMMAND(ID_EDIT_SELECTGAMEPIECES, OnEditSelectGamePieces)
     ON_UPDATE_COMMAND_UI(ID_EDIT_SELECTGAMEPIECES, OnUpdateEditSelectGamePieces)
-    ON_COMMAND(ID_FILE_LOADMOVES, OnFileLoadMoveFile)
-    ON_UPDATE_COMMAND_UI(ID_FILE_LOADMOVES, OnUpdateFileLoadMoveFile)
+#endif
+    EVT_MENU(XRCID("ID_FILE_LOADMOVES"), OnFileLoadMoveFile)
+    EVT_UPDATE_UI(XRCID("ID_FILE_LOADMOVES"), OnUpdateFileLoadMoveFile)
+#if 0
     ON_COMMAND(ID_ACT_COMPOUNDMOVE_BEGIN, OnActCompoundMoveBegin)
     ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_BEGIN, OnUpdateActCompoundMoveBegin)
     ON_COMMAND(ID_ACT_COMPOUNDMOVE_END, OnActCompoundMoveEnd)
     ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_END, OnUpdateActCompoundMoveEnd)
     ON_COMMAND(ID_ACT_COMPOUNDMOVE_DISCARD, OnActCompoundMoveDiscard)
     ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_DISCARD, OnUpdateActCompoundMoveDiscard)
-    ON_COMMAND(ID_PBCK_PREVIOUS, OnPbckPrevious)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_PREVIOUS, OnUpdatePbckPrevious)
+#endif
+    EVT_MENU(XRCID("ID_PBCK_PREVIOUS"), OnPbckPrevious)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_PREVIOUS"), OnUpdatePbckPrevious)
+#if 0
     ON_COMMAND(ID_FILE_SAVE_GAME_AS_SCENARIO, OnFileSaveGameAsScenario)
     ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_GAME_AS_SCENARIO, OnUpdateFileSaveGameAsScenario)
     ON_COMMAND(ID_ACTIONS_ROLLDICE, OnActRollDice)
     ON_UPDATE_COMMAND_UI(ID_ACTIONS_ROLLDICE, OnUpdateActRollDice)
-    ON_COMMAND(ID_PBCK_STEP_CMOVES, OnPbckStepCompoundMoves)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_STEP_CMOVES, OnUpdateStepCompoundMoves)
+#endif
+    EVT_MENU(XRCID("ID_PBCK_STEP_CMOVES"), OnPbckStepCompoundMoves)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_STEP_CMOVES"), OnUpdateStepCompoundMoves)
+#if 0
     ON_COMMAND(ID_EDIT_IMPORTPCEGROUPS, OnEditImportPieceGroups)
     ON_UPDATE_COMMAND_UI(ID_EDIT_IMPORTPCEGROUPS, OnUpdateEditImportPieceGroups)
     ON_COMMAND(ID_VIEW_SHOW_TIP_TEXT, OnViewShowTipText)
@@ -181,12 +191,14 @@ wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
     ON_UPDATE_COMMAND_UI(ID_FILE_CREATE_REFEREE, OnUpdateFileCreateReferee)
     ON_COMMAND(ID_FILE_CHANGE_GAME_OWNER, OnFileChangeGameOwner)
     ON_UPDATE_COMMAND_UI(ID_FILE_CHANGE_GAME_OWNER, OnUpdateFileChangeGameOwner)
-    ON_COMMAND(ID_PBCK_STEP_TO_NEXT_HIST, OnPbckStepToNextHist)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_STEP_TO_NEXT_HIST, OnUpdatePbckStepToNextHist)
-    ON_COMMAND(ID_PBCK_SKIP_KEEP_IND, OnPbckSkipKeepIndicators)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_SKIP_KEEP_IND, OnUpdatePbckSkipKeepIndicators)
-    ON_COMMAND(ID_PBCK_AUTO_STEP, OnPbckAutoStep)
-    ON_UPDATE_COMMAND_UI(ID_PBCK_AUTO_STEP, OnUpdatePbckAutoStep)
+#endif
+    EVT_MENU(XRCID("ID_PBCK_STEP_TO_NEXT_HIST"), OnPbckStepToNextHist)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_STEP_TO_NEXT_HIST"), OnUpdatePbckStepToNextHist)
+    EVT_MENU(XRCID("ID_PBCK_SKIP_KEEP_IND"), OnPbckSkipKeepIndicators)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_SKIP_KEEP_IND"), OnUpdatePbckSkipKeepIndicators)
+    EVT_MENU(XRCID("ID_PBCK_AUTO_STEP"), OnPbckAutoStep)
+    EVT_UPDATE_UI(XRCID("ID_PBCK_AUTO_STEP"), OnUpdatePbckAutoStep)
+#if 0
     ON_COMMAND(ID_VIEW_SHOW_TIP_OWNER, OnViewShowTipOwner)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SHOW_TIP_OWNER, OnUpdateViewShowTipOwner)
 #ifdef _DEBUG
@@ -1106,39 +1118,42 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
 ////////////////////////////////////////////////////////////////////////
 // CGamDoc commands
 
-#if 0
-void CGamDoc::OnUpdateViewTrayA(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewTrayA(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bTrayAVisible);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_bTrayAVisible);
 }
 
-void CGamDoc::OnUpdateViewTrayB(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewTrayB(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bTrayBVisible);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_bTrayBVisible);
 }
 
-void CGamDoc::OnUpdateViewMarkPalette(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewMarkPalette(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bMarkPalVisible);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_bMarkPalVisible);
 }
 
-void CGamDoc::OnViewTrayA()
+void CGamDoc::OnViewTrayA(wxCommandEvent& /*event*/)
 {
     m_bTrayAVisible = !m_bTrayAVisible;
 }
 
-void CGamDoc::OnViewTrayB()
+void CGamDoc::OnViewTrayB(wxCommandEvent& /*event*/)
 {
     m_bTrayBVisible = !m_bTrayBVisible;
 }
 
-void CGamDoc::OnViewMarkPalette()
+void CGamDoc::OnViewMarkPalette(wxCommandEvent& /*event*/)
 {
     m_bMarkPalVisible = !m_bMarkPalVisible;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 #ifdef _DEBUG
 void CGamDoc::OnDebugMoveList()
 {
@@ -1246,8 +1261,9 @@ void CGamDoc::OnUpdateEditClearBookMark(CCmdUI* pCmdUI)
     else
         pCmdUI->Enable(m_pBookMark != NULL);
 }
+#endif
 
-void CGamDoc::OnPbckDiscard()
+void CGamDoc::OnPbckDiscard(wxCommandEvent& /*event*/)
 {
     if (!IsPlayingMoves()) return;
     if (m_nMoveInterlock) return;       // Not reentrant!
@@ -1255,15 +1271,15 @@ void CGamDoc::OnPbckDiscard()
     DiscardCurrentRecording(TRUE);
 }
 
-void CGamDoc::OnUpdatePbckDiscard(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckDiscard(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlayingMoves());
+        pCmdUI.Enable(IsPlayingMoves());
 }
 
-void CGamDoc::OnPbckEnd()
+void CGamDoc::OnPbckEnd(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying()) return;
     if (m_nMoveInterlock) return;       // No reentrant calls allowed
@@ -1276,31 +1292,31 @@ void CGamDoc::OnPbckEnd()
     }
     m_nMoveInterlock--;
     m_bQuietPlayback = FALSE;
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
-void CGamDoc::OnUpdatePbckEnd(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckEnd(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlaying() && m_nCurMove != Invalid_v<size_t>);
+        pCmdUI.Enable(IsPlaying() && m_nCurMove != Invalid_v<size_t>);
 }
 
-void CGamDoc::OnPbckFinish()
+void CGamDoc::OnPbckFinish(wxCommandEvent& /*event*/)
 {
     DoAcceptPlayback();
 }
 
-void CGamDoc::OnUpdatePbckFinish(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckFinish(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlayingMoves());
+        pCmdUI.Enable(IsPlayingMoves());
 }
 
-void CGamDoc::OnPbckNext()
+void CGamDoc::OnPbckNext(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying()) return;
     if (!m_nMoveInterlock)                   // No reentrant calls allowed
@@ -1319,7 +1335,12 @@ void CGamDoc::OnPbckNext()
                 if (m_nCurMove != Invalid_v<size_t> ||
                     (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()))
                 {
+#if 1
                     GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
+#else
+                    wxCommandEvent event(wxEVT_MENU, XRCID("ID_PBCK_NEXT"));
+                    CB::GetMainWndWx().GetEventHandler()->AddPendingEvent(event);
+#endif
                 }
                 else
                     m_bAutoPlayback = FALSE;    // Make sure FALSE in case auto step turned off
@@ -1332,7 +1353,12 @@ void CGamDoc::OnPbckNext()
             // Force switch to next history record.
             OnPbckNextHistory();
             // Queue up the next move command
+#if 1
             GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
+#else
+            wxCommandEvent event(wxEVT_MENU, XRCID("ID_PBCK_NEXT"));
+            CB::GetMainWndWx().GetEventHandler()->AddPendingEvent(event);
+#endif
         }
 
         m_nMoveInterlock--;
@@ -1346,19 +1372,19 @@ void CGamDoc::OnPbckNext()
     }
 }
 
-void CGamDoc::OnUpdatePbckNext(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckNext(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable((IsPlaying() && m_nCurMove != Invalid_v<size_t>) ||
+        pCmdUI.Enable((IsPlaying() && m_nCurMove != Invalid_v<size_t>) ||
             (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()));
-        pCmdUI->SetCheck(m_bAutoPlayback);
+        pCmdUI.Check(m_bAutoPlayback);
     }
 }
 
-void CGamDoc::OnPbckStart()
+void CGamDoc::OnPbckStart(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying()) return;
     if (m_nMoveInterlock) return;       // Not reentrant!
@@ -1370,19 +1396,19 @@ void CGamDoc::OnPbckStart()
     RestartMoves();
 }
 
-void CGamDoc::OnUpdatePbckStart(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckStart(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
+        pCmdUI.Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
             (m_nCurMove == Invalid_v<size_t> &&
              m_pMoves->IsThisMovePossible(m_nFirstMove + size_t(1)))));
     }
 }
 
-void CGamDoc::OnPbckPrevious()
+void CGamDoc::OnPbckPrevious(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying()) return;
     if (m_nMoveInterlock) return;       // Not reentrant!
@@ -1410,7 +1436,7 @@ void CGamDoc::OnPbckPrevious()
         if (m_nCurMove == nPrvPrvMove)
         {
             m_bQuietPlayback = FALSE;
-            UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
+            UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
         }
 
         // Clear out any strings we may have accumulated during the
@@ -1425,74 +1451,75 @@ void CGamDoc::OnPbckPrevious()
             if (m_nCurMove == nPrvPrvMove)
             {
                 m_bQuietPlayback = FALSE;   // Show last move
-                UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
+                UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED)); // Sync up the images
             }
         }
     }
     else
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+        UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 
-    ASSERT(m_nCurMove == nPrvMove);
+    wxASSERT(m_nCurMove == nPrvMove);
     m_nMoveInterlock--;
     m_bQuietPlayback = FALSE;
 }
 
-void CGamDoc::OnUpdatePbckPrevious(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckPrevious(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() ||  m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
     {
-        pCmdUI->Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
+        pCmdUI.Enable(IsPlaying() && ((m_nCurMove - size_t(1)) > m_nFirstMove ||
             (m_nCurMove == Invalid_v<size_t> &&
              m_pMoves->IsThisMovePossible(m_nFirstMove + size_t(1)))));
     }
 }
 
-void CGamDoc::OnPbckStepToNextHist()
+void CGamDoc::OnPbckStepToNextHist(wxCommandEvent& /*event*/)
 {
     m_bStepToNextHist = !m_bStepToNextHist;
 }
 
-void CGamDoc::OnUpdatePbckStepToNextHist(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckStepToNextHist(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario() && IsPlaying());
-    pCmdUI->SetCheck(m_bStepToNextHist);
+    pCmdUI.Enable(!IsScenario() && IsPlaying());
+    pCmdUI.Check(m_bStepToNextHist);
 }
 
-void CGamDoc::OnPbckSkipKeepIndicators()
+void CGamDoc::OnPbckSkipKeepIndicators(wxCommandEvent& /*event*/)
 {
     m_bKeepSkipInd = !m_bKeepSkipInd;
 }
 
-void CGamDoc::OnUpdatePbckSkipKeepIndicators(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckSkipKeepIndicators(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario() && IsPlaying());
-    pCmdUI->SetCheck(m_bKeepSkipInd);
+    pCmdUI.Enable(!IsScenario() && IsPlaying());
+    pCmdUI.Check(m_bKeepSkipInd);
 }
 
-void CGamDoc::OnPbckAutoStep()
+void CGamDoc::OnPbckAutoStep(wxCommandEvent& /*event*/)
 {
     m_bAutoStep = !m_bAutoStep;
 }
 
-void CGamDoc::OnUpdatePbckAutoStep(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckAutoStep(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario() && IsPlaying());
-    pCmdUI->SetCheck(m_bAutoStep);
+    pCmdUI.Enable(!IsScenario() && IsPlaying());
+    pCmdUI.Check(m_bAutoStep);
 }
 
-void CGamDoc::OnActDoMessage()
+void CGamDoc::OnActDoMessage(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying())
         MsgSendDialogOpen();
 }
 
-void CGamDoc::OnUpdateActDoMessage(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActDoMessage(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsPlaying() && !IsScenario());
+    pCmdUI.Enable(!IsPlaying() && !IsScenario());
 }
 
+#if 0
 void CGamDoc::OnActRollDice()
 {
     if (!IsPlaying())
@@ -1503,59 +1530,61 @@ void CGamDoc::OnUpdateActRollDice(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(!IsPlaying() && !IsScenario());
 }
+#endif
 
-void CGamDoc::OnPbckReadMessage()
+void CGamDoc::OnPbckReadMessage(wxCommandEvent& /*event*/)
 {
     m_bMsgWinVisible = !m_bMsgWinVisible;
 }
 
-void CGamDoc::OnUpdatePbckReadMessage(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckReadMessage(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario());
-    pCmdUI->SetCheck(m_bMsgWinVisible);
+    pCmdUI.Enable(!IsScenario());
+    pCmdUI.Check(m_bMsgWinVisible);
 }
 
-void CGamDoc::OnPbckNextHistory()
+void CGamDoc::OnPbckNextHistory(wxCommandEvent& /*event*/)
 {
-    ASSERT(IsPlayingHistory());
+    wxASSERT(IsPlayingHistory());
     if (m_pMoves->IsDoMoveActive())
         return;                         // Must ignore since moves are still being played back
 
     size_t nCurHist = m_nCurHist;
     FinishHistoryPlayback();
     LoadAndActivateHistory(nCurHist + size_t(1));
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
-void CGamDoc::OnUpdatePbckNextHistory(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckNextHistory(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlayingHistory() &&
+        pCmdUI.Enable(IsPlayingHistory() &&
             !IsPlayingLastHistory());
 }
 
-void CGamDoc::OnPbckCloseHistory()
+void CGamDoc::OnPbckCloseHistory(wxCommandEvent& /*event*/)
 {
-    ASSERT(IsPlayingHistory());
+    wxASSERT(IsPlayingHistory());
     if (!IsPlayingHistory()) return;
     if (m_nMoveInterlock) return;       // We have to let it finish up.
     if (m_pMoves->IsDoMoveActive())
         return;                         // Must ignore since moves are still being played back
 
     FinishHistoryPlayback();
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));
 }
 
-void CGamDoc::OnUpdatePbckCloseHistory(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdatePbckCloseHistory(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario() || m_bAutoPlayback)
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsPlayingHistory());
+        pCmdUI.Enable(IsPlayingHistory());
 }
 
+#if 0
 void CGamDoc::OnFileSendRecording2File()
 {
     if (IsPlayingHistory())
@@ -1716,34 +1745,40 @@ void CGamDoc::OnUpdateEditSelectGamePieces(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(IsScenario() && GetTrayManager().GetNumTraySets() > 0);
 }
+#endif
 
-void CGamDoc::OnFileLoadMoveFile()
+void CGamDoc::OnFileLoadMoveFile(wxCommandEvent& /*event*/)
 {
     if (IsPlaying())
     {
-        AfxMessageBox(IDS_ERR_NOLOADWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NOLOADWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
 
     CB::string strFilter = CB::string::LoadString(IDS_GMOV_FILTER);
     CB::string strTitle = CB::string::LoadString(IDS_GMOV_ENTERNAME);
 
-    CFileDialog dlg(TRUE, "gmv"_cbstring, NULL, OFN_HIDEREADONLY, strFilter, NULL, 0);
-    dlg.m_ofn.lpstrTitle = strTitle;
+    wxFileDialog dlg(&CB::GetMainWndWx(),
+                    strTitle,
+                    wxEmptyString,
+                    wxEmptyString,
+                    strFilter,
+                    wxFD_OPEN);
 
-    if (dlg.DoModal() != IDOK)
+    if (dlg.ShowModal() != wxID_OK)
         return;
 
     if (!DiscardCurrentRecording(TRUE))
         return;
-    LoadAndActivateMoveFile(dlg.GetPathName());
+    LoadAndActivateMoveFile(dlg.GetFilename());
 }
 
-void CGamDoc::OnUpdateFileLoadMoveFile(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileLoadMoveFile(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario() && !IsPlaying());
+    pCmdUI.Enable(!IsScenario() && !IsPlaying());
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1793,12 +1828,14 @@ void CGamDoc::OnUpdateActCompoundMoveDiscard(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(IsRecordingCompoundMove());
 }
+#endif
 
-void CGamDoc::OnUpdateIndicatorCompoundMove(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateIndicatorCompoundMove(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsRecordingCompoundMove());
+    pCmdUI.Enable(IsRecordingCompoundMove());
 }
 
+#if 0
 void CGamDoc::OnFileSaveGameAsScenario()
 {
     ASSERT(!IsScenario());
@@ -1844,27 +1881,29 @@ void CGamDoc::OnUpdateFileSaveGameAsScenario(CCmdUI* pCmdUI)
     pCmdUI->Enable(!IsScenario() && (!HasPlayers() ||
         HasPlayers() && IsCurrentPlayerReferee()));
 }
+#endif
 
-void CGamDoc::OnPbckStepCompoundMoves()
+void CGamDoc::OnPbckStepCompoundMoves(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying()) return;
     m_pMoves->SetCompoundSingleStep(!m_pMoves->IsSingleSteppingCompoundMoves());
 }
 
-void CGamDoc::OnUpdateStepCompoundMoves(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateStepCompoundMoves(wxUpdateUIEvent& pCmdUI)
 {
     BOOL bEnable = !IsScenario() && IsPlaying();
     if (bEnable && IsPlaying())
     {
-        ASSERT(m_pMoves != NULL);
-        pCmdUI->SetCheck(m_pMoves->IsSingleSteppingCompoundMoves());
+        wxASSERT(m_pMoves != NULL);
+        pCmdUI.Check(m_pMoves->IsSingleSteppingCompoundMoves());
     }
     else
-        pCmdUI->SetCheck(FALSE);
+        pCmdUI.Check(FALSE);
 
-    pCmdUI->Enable(bEnable);
+    pCmdUI.Enable(bEnable);
 }
 
+#if 0
 void CGamDoc::OnViewShowTipText()
 {
     m_bShowObjTipText = !m_bShowObjTipText;

@@ -1421,6 +1421,8 @@ namespace CB
                 {
                     case ID_ACT_AUTOSTACK_DECK:
                         return XRCID("ID_ACT_AUTOSTACK_DECK");
+                    case ID_ACT_DOMESSAGE:
+                        return XRCID("ID_ACT_DOMESSAGE");
                     case ID_ACT_LOCK_SUSPEND:
                         return XRCID("ID_ACT_LOCK_SUSPEND");
                     case ID_ACT_LOCKOBJECT:
@@ -1495,8 +1497,38 @@ namespace CB
                         return XRCID("ID_EDIT_ELEMENT_TEXT");
                     case ID_EDIT_SELALLMARKERS:
                         return XRCID("ID_EDIT_SELALLMARKERS");
+                    case ID_FILE_LOADMOVES:
+                        return XRCID("ID_FILE_LOADMOVES");
                     case ID_INDICATOR_CELLNUM:
                         return XRCID("ID_INDICATOR_CELLNUM");
+                    case ID_INDICATOR_COMPMOVE:
+                        return XRCID("ID_INDICATOR_COMPMOVE");
+                    case ID_PBCK_AUTO_STEP:
+                        return XRCID("ID_PBCK_AUTO_STEP");
+                    case ID_PBCK_CLOSEHIST:
+                        return XRCID("ID_PBCK_CLOSEHIST");
+                    case ID_PBCK_DISCARD:
+                        return XRCID("ID_PBCK_DISCARD");
+                    case ID_PBCK_END:
+                        return XRCID("ID_PBCK_END");
+                    case ID_PBCK_FINISH:
+                        return XRCID("ID_PBCK_FINISH");
+                    case ID_PBCK_NEXT:
+                        return XRCID("ID_PBCK_NEXT");
+                    case ID_PBCK_NEXTHIST:
+                        return XRCID("ID_PBCK_NEXTHIST");
+                    case ID_PBCK_PREVIOUS:
+                        return XRCID("ID_PBCK_PREVIOUS");
+                    case ID_PBCK_READMESSAGE:
+                        return XRCID("ID_PBCK_READMESSAGE");
+                    case ID_PBCK_SKIP_KEEP_IND:
+                        return XRCID("ID_PBCK_SKIP_KEEP_IND");
+                    case ID_PBCK_START:
+                        return XRCID("ID_PBCK_START");
+                    case ID_PBCK_STEP_CMOVES:
+                        return XRCID("ID_PBCK_STEP_CMOVES");
+                    case ID_PBCK_STEP_TO_NEXT_HIST:
+                        return XRCID("ID_PBCK_STEP_TO_NEXT_HIST");
                     case ID_PPROJITEM_DELETE:
                         return XRCID("ID_PPROJITEM_DELETE");
                     case ID_PPROJITEM_EDIT:
@@ -1521,6 +1553,8 @@ namespace CB
                         return XRCID("ID_VIEW_FULLSCALEBRD");
                     case ID_VIEW_HALFSCALEBRD:
                         return XRCID("ID_VIEW_HALFSCALEBRD");
+                    case ID_VIEW_MARKERPAL:
+                        return XRCID("ID_VIEW_MARKERPAL");
                     case ID_VIEW_PIECES:
                         return XRCID("ID_VIEW_PIECES");
                     case ID_VIEW_SMALLSCALEBRD:
@@ -1529,6 +1563,10 @@ namespace CB
                         return XRCID("ID_VIEW_SNAPGRID");
                     case ID_VIEW_TOGGLESCALE:
                         return XRCID("ID_VIEW_TOGGLESCALE");
+                    case ID_VIEW_TRAYA:
+                        return XRCID("ID_VIEW_TRAYA");
+                    case ID_VIEW_TRAYB:
+                        return XRCID("ID_VIEW_TRAYB");
                     default:
                         return wxID_NONE;
                 }

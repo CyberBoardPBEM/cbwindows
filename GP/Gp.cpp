@@ -372,7 +372,10 @@ int CGpApp::ExitInstance()
 BOOL CGpApp::PreTranslateMessage(MSG *pMsg)
 {
     if (pMsg->message == WM_CHAR && pMsg->wParam == ' ')
-        m_pMainWnd->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
+    {
+        wxCommandEvent event(wxEVT_MENU, XRCID("ID_PBCK_NEXT"));
+        CB::GetMainWndWx().GetEventHandler()->AddPendingEvent(event);
+    }
     return CWinAppEx::PreTranslateMessage(pMsg);
 }
 
