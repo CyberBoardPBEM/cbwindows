@@ -265,8 +265,6 @@ void CSelectedPieceViewContainer::OnDraw(CDC* pDC)
 void CSelectedPieceViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
-
-    BASE::OnUpdate(pSender, lHint, pHint);
 }
 
 CSelectedPieceViewContainer::CSelectedPieceViewContainer() :

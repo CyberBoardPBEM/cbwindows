@@ -803,8 +803,6 @@ void CGsnProjViewContainer::OnInitialUpdate()
 void CGsnProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
-
-    BASE::OnUpdate(pSender, lHint, pHint);
 }
 
 CGsnProjViewContainer::CGsnProjViewContainer() :

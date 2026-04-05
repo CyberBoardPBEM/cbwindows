@@ -847,8 +847,6 @@ void CGamProjViewContainer::OnInitialUpdate()
 void CGamProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
-
-    BASE::OnUpdate(pSender, lHint, pHint);
 }
 
 CGamProjViewContainer::CGamProjViewContainer() :

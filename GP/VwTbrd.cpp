@@ -372,8 +372,6 @@ void CTinyBoardViewContainer::OnDraw(CDC* pDC)
 void CTinyBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
-
-    BASE::OnUpdate(pSender, lHint, pHint);
 }
 
 CTinyBoardViewContainer::CTinyBoardViewContainer() :

@@ -2772,8 +2772,6 @@ void CPlayBoardViewContainer::OnDraw(CDC* pDC)
 void CPlayBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
-
-    BASE::OnUpdate(pSender, lHint, pHint);
 }
 
 void CPlayBoardViewContainer::OnActivateView(BOOL bActivate, CView* pActivateView,
