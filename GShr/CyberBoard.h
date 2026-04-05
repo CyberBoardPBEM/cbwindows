@@ -2420,11 +2420,15 @@ namespace CB
         operator wxEvtHandler*() { return &Get(); }
     };
 
+    /* wxCGpApp::TryAfter disables unhandled commands, so if
+        there are more handlers to be checked, set
+       MORE_HANDLERS to allow checking them */
     BOOL RelayOnCmdMsg(wxEvtHandler& dest,
                         UINT nID, int nCode, void* pExtra,
-                        AFX_CMDHANDLERINFO* pHandlerInfo);
+                        AFX_CMDHANDLERINFO* pHandlerInfo,
+                        bool moreHandlers = false);
 
-    template<typename CCMDTARGET>
+    template<typename CCMDTARGET, bool MORE_HANDLERS = false>
     class OnCmdMsgOverride : public CCMDTARGET,
                                 public IGetEventHandler
     {
@@ -2442,7 +2446,8 @@ namespace CB
                                         nID,
                                         nCode,
                                         pExtra,
-                                        pHandlerInfo);
+                                        pHandlerInfo,
+                                        MORE_HANDLERS);
             }
         }
     };

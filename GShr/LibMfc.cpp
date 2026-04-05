@@ -1670,7 +1670,8 @@ namespace CB
 
 BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
                         UINT nID, int nCode, void* pExtra,
-                        AFX_CMDHANDLERINFO* pHandlerInfo)
+                        AFX_CMDHANDLERINFO* pHandlerInfo,
+                        bool moreHandlers/* = false */)
 {
     switch (nCode)
     {
@@ -1707,6 +1708,11 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
             }
 #endif
             bool retval = dest.ProcessEvent(event);
+            if (retval && moreHandlers &&
+                !(event.GetSetEnabled() && event.GetEnabled()))
+            {
+                retval = false;
+            }
             if (retval)
             {
                 /* enable the menu, even if the item isn't
@@ -1720,6 +1726,10 @@ BOOL CB::RelayOnCmdMsg(wxEvtHandler& dest,
                 if (event.GetSetEnabled())
                 {
                     pCmdUI.Enable(event.GetEnabled());
+                    if (moreHandlers && !event.GetEnabled())
+                    {
+                        return false;
+                    }
                 }
                 if (event.GetSetChecked())
                 {
