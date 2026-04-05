@@ -243,7 +243,6 @@ public:
     void AddBoard(CBoard& pBoard, BOOL bInheritSettings = TRUE);
     void AddBoard(OwnerPtr<CGeomorphicBoard> pGeoBoard, BOOL bInheritSettings = TRUE);
     void DeletePBoard(size_t nBrd);
-    void FindPBoardsNotInList(const std::vector<BoardID>& tblBrdSerNum, std::vector<CB::not_null<CPlayBoard*>>& tblNotInList);
 
     void ClearAllOwnership();
     void PropagateOwnerMaskToAllPieces();

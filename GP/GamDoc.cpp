@@ -138,73 +138,65 @@ wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
     EVT_UPDATE_UI(XRCID("ID_PBCK_NEXTHIST"), OnUpdatePbckNextHistory)
     EVT_MENU(XRCID("ID_PBCK_CLOSEHIST"), OnPbckCloseHistory)
     EVT_UPDATE_UI(XRCID("ID_PBCK_CLOSEHIST"), OnUpdatePbckCloseHistory)
-#if 0
-    ON_COMMAND(ID_FILE_SENDMOVES2FILE, OnFileSendRecording2File)
-    ON_UPDATE_COMMAND_UI(ID_FILE_SENDMOVES2FILE, OnUpdateFileSendRecording2File)
-    ON_COMMAND(ID_FILE_DISCARDRECORDING, OnFileDiscardRecordedMoves)
-    ON_UPDATE_COMMAND_UI(ID_FILE_DISCARDRECORDING, OnUpdateFileDiscardRecordedMoves)
-    ON_COMMAND(ID_EDIT_CREATETRAY, OnEditCreateTray)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CREATETRAY, OnUpdateEditCreateTray)
-    ON_COMMAND(ID_EDIT_SCNPROPERTIES, OnEditScenarioProperties)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_SCNPROPERTIES, OnUpdateEditScenarioProperties)
-    ON_COMMAND(ID_EDIT_SELECTBOARDS, OnEditSelectBoards)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_SELECTBOARDS, OnUpdateEditSelectBoards)
-    ON_COMMAND(ID_EDIT_SELECTGAMEPIECES, OnEditSelectGamePieces)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_SELECTGAMEPIECES, OnUpdateEditSelectGamePieces)
-#endif
+    EVT_MENU(XRCID("ID_FILE_SENDMOVES2FILE"), OnFileSendRecording2File)
+    EVT_UPDATE_UI(XRCID("ID_FILE_SENDMOVES2FILE"), OnUpdateFileSendRecording2File)
+    EVT_MENU(XRCID("ID_FILE_DISCARDRECORDING"), OnFileDiscardRecordedMoves)
+    EVT_UPDATE_UI(XRCID("ID_FILE_DISCARDRECORDING"), OnUpdateFileDiscardRecordedMoves)
+    EVT_MENU(XRCID("ID_EDIT_CREATETRAY"), OnEditCreateTray)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATETRAY"), OnUpdateEditCreateTray)
+    EVT_MENU(XRCID("ID_EDIT_SCNPROPERTIES"), OnEditScenarioProperties)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_SCNPROPERTIES"), OnUpdateEditScenarioProperties)
+    EVT_MENU(XRCID("ID_EDIT_SELECTBOARDS"), OnEditSelectBoards)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_SELECTBOARDS"), OnUpdateEditSelectBoards)
+    EVT_MENU(XRCID("ID_EDIT_SELECTGAMEPIECES"), OnEditSelectGamePieces)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_SELECTGAMEPIECES"), OnUpdateEditSelectGamePieces)
     EVT_MENU(XRCID("ID_FILE_LOADMOVES"), OnFileLoadMoveFile)
     EVT_UPDATE_UI(XRCID("ID_FILE_LOADMOVES"), OnUpdateFileLoadMoveFile)
-#if 0
-    ON_COMMAND(ID_ACT_COMPOUNDMOVE_BEGIN, OnActCompoundMoveBegin)
-    ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_BEGIN, OnUpdateActCompoundMoveBegin)
-    ON_COMMAND(ID_ACT_COMPOUNDMOVE_END, OnActCompoundMoveEnd)
-    ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_END, OnUpdateActCompoundMoveEnd)
-    ON_COMMAND(ID_ACT_COMPOUNDMOVE_DISCARD, OnActCompoundMoveDiscard)
-    ON_UPDATE_COMMAND_UI(ID_ACT_COMPOUNDMOVE_DISCARD, OnUpdateActCompoundMoveDiscard)
-#endif
+    EVT_MENU(XRCID("ID_ACT_COMPOUNDMOVE_BEGIN"), OnActCompoundMoveBegin)
+    EVT_UPDATE_UI(XRCID("ID_ACT_COMPOUNDMOVE_BEGIN"), OnUpdateActCompoundMoveBegin)
+    EVT_MENU(XRCID("ID_ACT_COMPOUNDMOVE_END"), OnActCompoundMoveEnd)
+    EVT_UPDATE_UI(XRCID("ID_ACT_COMPOUNDMOVE_END"), OnUpdateActCompoundMoveEnd)
+    EVT_MENU(XRCID("ID_ACT_COMPOUNDMOVE_DISCARD"), OnActCompoundMoveDiscard)
+    EVT_UPDATE_UI(XRCID("ID_ACT_COMPOUNDMOVE_DISCARD"), OnUpdateActCompoundMoveDiscard)
     EVT_MENU(XRCID("ID_PBCK_PREVIOUS"), OnPbckPrevious)
     EVT_UPDATE_UI(XRCID("ID_PBCK_PREVIOUS"), OnUpdatePbckPrevious)
-#if 0
-    ON_COMMAND(ID_FILE_SAVE_GAME_AS_SCENARIO, OnFileSaveGameAsScenario)
-    ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_GAME_AS_SCENARIO, OnUpdateFileSaveGameAsScenario)
-    ON_COMMAND(ID_ACTIONS_ROLLDICE, OnActRollDice)
-    ON_UPDATE_COMMAND_UI(ID_ACTIONS_ROLLDICE, OnUpdateActRollDice)
-#endif
+    EVT_MENU(XRCID("ID_FILE_SAVE_GAME_AS_SCENARIO"), OnFileSaveGameAsScenario)
+    EVT_UPDATE_UI(XRCID("ID_FILE_SAVE_GAME_AS_SCENARIO"), OnUpdateFileSaveGameAsScenario)
+    EVT_MENU(XRCID("ID_ACTIONS_ROLLDICE"), OnActRollDice)
+    EVT_UPDATE_UI(XRCID("ID_ACTIONS_ROLLDICE"), OnUpdateActRollDice)
     EVT_MENU(XRCID("ID_PBCK_STEP_CMOVES"), OnPbckStepCompoundMoves)
     EVT_UPDATE_UI(XRCID("ID_PBCK_STEP_CMOVES"), OnUpdateStepCompoundMoves)
-#if 0
-    ON_COMMAND(ID_EDIT_IMPORTPCEGROUPS, OnEditImportPieceGroups)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_IMPORTPCEGROUPS, OnUpdateEditImportPieceGroups)
-    ON_COMMAND(ID_VIEW_SHOW_TIP_TEXT, OnViewShowTipText)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SHOW_TIP_TEXT, OnUpdateViewShowTipText)
-    ON_COMMAND(ID_VIEW_SAVE_WIN_STATE, OnViewSaveWinState)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SAVE_WIN_STATE, OnUpdateViewSaveWinState)
-    ON_COMMAND(ID_EDIT_CREATE_PLAYERS, OnEditCreatePlayers)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CREATE_PLAYERS, OnUpdateEditCreatePlayers)
-    ON_COMMAND(ID_EDIT_EDIT_PLAYERS, OnEditEditPlayers)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_EDIT_PLAYERS, OnUpdateEditEditPlayers)
-    ON_COMMAND(ID_ACT_SIMULATE_SPECTATOR, OnActSimulateSpectator)
-    ON_UPDATE_COMMAND_UI(ID_ACT_SIMULATE_SPECTATOR, OnUpdateActSimulateSpectator)
-    ON_COMMAND(ID_EDIT_CREATE_GEOMORPHIC, OnEditCreateGeomorphic)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CREATE_GEOMORPHIC, OnUpdateEditCreateGeomorphic)
-    ON_COMMAND(ID_FILE_CREATE_REFEREE, OnFileCreateReferee)
-    ON_UPDATE_COMMAND_UI(ID_FILE_CREATE_REFEREE, OnUpdateFileCreateReferee)
-    ON_COMMAND(ID_FILE_CHANGE_GAME_OWNER, OnFileChangeGameOwner)
-    ON_UPDATE_COMMAND_UI(ID_FILE_CHANGE_GAME_OWNER, OnUpdateFileChangeGameOwner)
-#endif
+    EVT_MENU(XRCID("ID_EDIT_IMPORTPCEGROUPS"), OnEditImportPieceGroups)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_IMPORTPCEGROUPS"), OnUpdateEditImportPieceGroups)
+    EVT_MENU(XRCID("ID_VIEW_SHOW_TIP_TEXT"), OnViewShowTipText)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SHOW_TIP_TEXT"), OnUpdateViewShowTipText)
+    EVT_MENU(XRCID("ID_VIEW_SAVE_WIN_STATE"), OnViewSaveWinState)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SAVE_WIN_STATE"), OnUpdateViewSaveWinState)
+    EVT_MENU(XRCID("ID_EDIT_CREATE_PLAYERS"), OnEditCreatePlayers)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATE_PLAYERS"), OnUpdateEditCreatePlayers)
+    EVT_MENU(XRCID("ID_EDIT_EDIT_PLAYERS"), OnEditEditPlayers)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_EDIT_PLAYERS"), OnUpdateEditEditPlayers)
+    EVT_MENU(XRCID("ID_ACT_SIMULATE_SPECTATOR"), OnActSimulateSpectator)
+    EVT_UPDATE_UI(XRCID("ID_ACT_SIMULATE_SPECTATOR"), OnUpdateActSimulateSpectator)
+    EVT_MENU(XRCID("ID_EDIT_CREATE_GEOMORPHIC"), OnEditCreateGeomorphic)
+    EVT_UPDATE_UI(XRCID("ID_EDIT_CREATE_GEOMORPHIC"), OnUpdateEditCreateGeomorphic)
+    EVT_MENU(XRCID("ID_FILE_CREATE_REFEREE"), OnFileCreateReferee)
+    EVT_UPDATE_UI(XRCID("ID_FILE_CREATE_REFEREE"), OnUpdateFileCreateReferee)
+    EVT_MENU(XRCID("ID_FILE_CHANGE_GAME_OWNER"), OnFileChangeGameOwner)
+    EVT_UPDATE_UI(XRCID("ID_FILE_CHANGE_GAME_OWNER"), OnUpdateFileChangeGameOwner)
     EVT_MENU(XRCID("ID_PBCK_STEP_TO_NEXT_HIST"), OnPbckStepToNextHist)
     EVT_UPDATE_UI(XRCID("ID_PBCK_STEP_TO_NEXT_HIST"), OnUpdatePbckStepToNextHist)
     EVT_MENU(XRCID("ID_PBCK_SKIP_KEEP_IND"), OnPbckSkipKeepIndicators)
     EVT_UPDATE_UI(XRCID("ID_PBCK_SKIP_KEEP_IND"), OnUpdatePbckSkipKeepIndicators)
     EVT_MENU(XRCID("ID_PBCK_AUTO_STEP"), OnPbckAutoStep)
     EVT_UPDATE_UI(XRCID("ID_PBCK_AUTO_STEP"), OnUpdatePbckAutoStep)
-#if 0
-    ON_COMMAND(ID_VIEW_SHOW_TIP_OWNER, OnViewShowTipOwner)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SHOW_TIP_OWNER, OnUpdateViewShowTipOwner)
+    EVT_MENU(XRCID("ID_VIEW_SHOW_TIP_OWNER"), OnViewShowTipOwner)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SHOW_TIP_OWNER"), OnUpdateViewShowTipOwner)
 #ifdef _DEBUG
-    ON_COMMAND(ID_DEBUG_MOVELIST, OnDebugMoveList)
-    ON_COMMAND(ID_DEBUG_PIECETABLE, OnDebugPieceTable)
-#endif
+    EVT_MENU(XRCID("ID_DEBUG_MOVELIST"), OnDebugMoveList)
+    EVT_UPDATE_UI(XRCID("ID_DEBUG_MOVELIST"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_DEBUG_PIECETABLE"), OnDebugPieceTable)
+    EVT_UPDATE_UI(XRCID("ID_DEBUG_PIECETABLE"), OnUpdateEnable)
 #endif
 wxEND_EVENT_TABLE()
 
@@ -1038,13 +1030,10 @@ CTileFacingMap& CGamDoc::GetFacingMap()
 
 void CGamDoc::CloseTrayPalettes()
 {
-    wxASSERT(!"TODO:");
-#if 0
     if (m_bTrayAVisible)
         OnViewTrayA();          // Toggle it off
     if (m_bTrayBVisible)
         OnViewTrayB();          // Toggle it off
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1153,9 +1142,8 @@ void CGamDoc::OnViewMarkPalette(wxCommandEvent& /*event*/)
 
 ///////////////////////////////////////////////////////////////////////
 
-#if 0
 #ifdef _DEBUG
-void CGamDoc::OnDebugMoveList()
+void CGamDoc::OnDebugMoveList(wxCommandEvent& /*event*/)
 {
     CMoveList* pMoveList = NULL;
     if (m_pHistMoves != NULL)
@@ -1164,16 +1152,18 @@ void CGamDoc::OnDebugMoveList()
         pMoveList = m_pRcdMoves.get();
     else
     {
-        AfxMessageBox("No move list exists!"_cbstring);
+        wxMessageBox("No move list exists!"_cbstring, CB::GetAppName());
         return;
     }
-    CFileDialog dlg(FALSE, "txt"_cbstring, "movedump.txt"_cbstring,
-        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
-    if (dlg.DoModal() == IDOK)
+    wxFileDialog dlg(&CB::GetMainWndWx(),
+                        wxFileSelectorPromptStr,
+                        wxEmptyString, "movedump.txt"_cbstring,
+                        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring,
+                        wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dlg.ShowModal() == wxID_OK)
     {
         CFile file;
-        if (file.Open(dlg.GetPathName(), CFile::modeWrite | CFile::modeCreate))
+        if (file.Open(dlg.GetFilename(), CFile::modeWrite | CFile::modeCreate))
         {
             pMoveList->DumpToTextFile(*this, file);
             file.Close();
@@ -1181,18 +1171,20 @@ void CGamDoc::OnDebugMoveList()
     }
 }
 
-void CGamDoc::OnDebugPieceTable()
+void CGamDoc::OnDebugPieceTable(wxCommandEvent& /*event*/)
 {
-    ASSERT(m_pPTbl != NULL);
+    wxASSERT(m_pPTbl != NULL);
     if (m_pPTbl == NULL)
         return;
-    CFileDialog dlg(FALSE, "txt"_cbstring, "piecedump.txt"_cbstring,
-        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring, NULL, 0);
-    if (dlg.DoModal() == IDOK)
+    wxFileDialog dlg(&CB::GetMainWndWx(),
+                        wxFileSelectorPromptStr,
+                        wxEmptyString, "piecedump.txt"_cbstring,
+                        "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"_cbstring,
+                        wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dlg.ShowModal() == wxID_OK)
     {
         CFile file;
-        if (file.Open(dlg.GetPathName(), CFile::modeWrite | CFile::modeCreate))
+        if (file.Open(dlg.GetFilename(), CFile::modeWrite | CFile::modeCreate))
         {
             m_pPTbl->DumpToTextFile(file);
             file.Close();
@@ -1201,8 +1193,14 @@ void CGamDoc::OnDebugPieceTable()
 }
 #endif
 
+void CGamDoc::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
 ///////////////////////////////////////////////////////////////////////
 
+#if 0
 void CGamDoc::OnEditSetBookMark()
 {
     // Need WARNING MESSAGE regarding deleting mark
@@ -1519,18 +1517,16 @@ void CGamDoc::OnUpdateActDoMessage(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(!IsPlaying() && !IsScenario());
 }
 
-#if 0
-void CGamDoc::OnActRollDice()
+void CGamDoc::OnActRollDice(wxCommandEvent& /*event*/)
 {
     if (!IsPlaying())
         MsgSendDialogOpen(TRUE);
 }
 
-void CGamDoc::OnUpdateActRollDice(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActRollDice(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsPlaying() && !IsScenario());
+    pCmdUI.Enable(!IsPlaying() && !IsScenario());
 }
-#endif
 
 void CGamDoc::OnPbckReadMessage(wxCommandEvent& /*event*/)
 {
@@ -1584,46 +1580,49 @@ void CGamDoc::OnUpdatePbckCloseHistory(wxUpdateUIEvent& pCmdUI)
         pCmdUI.Enable(IsPlayingHistory());
 }
 
-#if 0
-void CGamDoc::OnFileSendRecording2File()
+void CGamDoc::OnFileSendRecording2File(wxCommandEvent& /*event*/)
 {
     if (IsPlayingHistory())
     {
-        AfxMessageBox(IDS_ERR_NOSAVEWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NOSAVEWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
     SaveRecordedMoves();
 }
 
-void CGamDoc::OnUpdateFileSendRecording2File(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileSendRecording2File(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsAnyRecorded());
+        pCmdUI.Enable(IsAnyRecorded());
 }
 
-void CGamDoc::OnFileDiscardRecordedMoves()
+void CGamDoc::OnFileDiscardRecordedMoves(wxCommandEvent& /*event*/)
 {
     if (IsPlayingHistory())
     {
-        AfxMessageBox(IDS_ERR_NODISCARDWHENPLAY, MB_OK | MB_ICONINFORMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_NODISCARDWHENPLAY),
+                        CB::GetAppName(),
+                        wxOK | wxICON_INFORMATION);
         return;
     }
     DiscardCurrentRecording(TRUE);
 }
 
-void CGamDoc::OnUpdateFileDiscardRecordedMoves(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileDiscardRecordedMoves(wxUpdateUIEvent& pCmdUI)
 {
     if (IsScenario())
-        pCmdUI->Enable(FALSE);
+        pCmdUI.Enable(FALSE);
     else
-        pCmdUI->Enable(IsAnyRecorded());
+        pCmdUI.Enable(IsAnyRecorded());
 }
 
 void CGamDoc::OnEditCreateTray()
 {
-    ASSERT(IsScenario());
+    wxASSERT(IsScenario());
     CTrayNewDialog dlg(GetTrayManager());
     if (dlg.ShowModal() == wxID_OK)
     {
@@ -1631,14 +1630,14 @@ void CGamDoc::OnEditCreateTray()
 
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
         SetModifiedFlag();
     }
 }
 
-void CGamDoc::OnUpdateEditCreateTray(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditCreateTray(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
 void CGamDoc::OnEditScenarioProperties()
@@ -1655,19 +1654,19 @@ void CGamDoc::OnEditScenarioProperties()
         m_strScnAuthor = dlg.m_strAuthor;
         m_strScnTitle  = dlg.m_strTitle;
         m_strScnDescr  = dlg.m_strDescr;
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_GSNPROPCHANGE));
+        UpdateAllViews(NULL, CGamDocHint(HINT_GSNPROPCHANGE));
         SetModifiedFlag();
     }
 }
 
-void CGamDoc::OnUpdateEditScenarioProperties(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditScenarioProperties(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
 void CGamDoc::OnEditSelectBoards()
 {
-    ASSERT(IsScenario());
+    wxASSERT(IsScenario());
 
     CPBoardManager& pPBMgr = GetPBoardManager();
 
@@ -1676,36 +1675,23 @@ void CGamDoc::OnEditSelectBoards()
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        // First close all the views of boards that are going
-        // to be removed from the play list.
-        std::vector<CB::not_null<CPlayBoard*>> tblNotInList;
-        pPBMgr.FindPBoardsNotInList(dlg.m_tblBrds, tblNotInList);
-        for (size_t i = size_t(0); i < tblNotInList.size(); i++)
-        {
-            CPlayBoardView* pView = FindPBoardView(*tblNotInList.at(i));
-            if (pView != NULL)
-            {
-                CFrameWnd* pFrame = pView->GetParentFrame();
-                ASSERT(pFrame != NULL);
-                pFrame->SendMessage(WM_CLOSE);
-            }
-        }
+        // HINT_BOARDCHANGE closes removed board views
 
         // Then change the play list.
         pPBMgr.SetPBoardList(dlg.m_tblBrds);
-        UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
+        UpdateAllViews(NULL, CGamDocHint(HINT_BOARDCHANGE));
         SetModifiedFlag();
     }
 }
 
-void CGamDoc::OnUpdateEditSelectBoards(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditSelectBoards(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
-void CGamDoc::OnEditImportPieceGroups()
+void CGamDoc::OnEditImportPieceGroups(wxCommandEvent& /*event*/)
 {
-    ASSERT(IsScenario());
+    wxASSERT(IsScenario());
 
     CImportTraysDlg dlg(*this);
 
@@ -1713,17 +1699,17 @@ void CGamDoc::OnEditImportPieceGroups()
     {
         CGamDocHint hint;
         hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-        UpdateAllViews(NULL, 0, hint);
+        UpdateAllViews(NULL, hint);
         SetModifiedFlag();
     }
 }
 
-void CGamDoc::OnUpdateEditImportPieceGroups(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditImportPieceGroups(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
-void CGamDoc::OnEditSelectGamePieces()
+void CGamDoc::OnEditSelectGamePieces(wxCommandEvent& /*event*/)
 {
     wxASSERT(IsScenario() && GetTrayManager().GetNumTraySets() > size_t(0));
 
@@ -1737,17 +1723,16 @@ void CGamDoc::OnEditSelectGamePieces()
     // Notify all visible trays
     CGamDocHint hint;
     hint.GetArgs<HINT_TRAYCHANGE>().m_pTray = NULL;
-    UpdateAllViews(NULL, 0, hint);
+    UpdateAllViews(NULL, hint);
     SetModifiedFlag();
 }
 
-void CGamDoc::OnUpdateEditSelectGamePieces(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditSelectGamePieces(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario() && GetTrayManager().GetNumTraySets() > 0);
+    pCmdUI.Enable(IsScenario() && GetTrayManager().GetNumTraySets() > size_t(0));
 }
-#endif
 
-void CGamDoc::OnFileLoadMoveFile(wxCommandEvent& /*event*/)
+void CGamDoc::OnFileLoadMoveFile()
 {
     if (IsPlaying())
     {
@@ -1788,14 +1773,14 @@ BOOL CGamDoc::IsRecordingCompoundMove() const
         m_pRcdMoves->IsRecordingCompoundMove();
 }
 
-#if 0
-void CGamDoc::OnActCompoundMoveBegin()
+void CGamDoc::OnActCompoundMoveBegin(wxCommandEvent& /*event*/)
 {
     RecordCompoundMoveBegin();
 }
 
-void CGamDoc::OnUpdateActCompoundMoveBegin(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActCompoundMoveBegin(wxUpdateUIEvent& pCmdUI)
 {
+#if 0
     if (pCmdUI->m_pSubMenu != NULL)
     {
         pCmdUI->m_pMenu->EnableMenuItem(pCmdUI->m_nIndex,
@@ -1803,42 +1788,42 @@ void CGamDoc::OnUpdateActCompoundMoveBegin(CCmdUI* pCmdUI)
             (IsRecording() ?  MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
     }
     else
-        pCmdUI->Enable(IsRecording());
-    pCmdUI->SetCheck(IsRecordingCompoundMove());
+#endif
+        pCmdUI.Enable(IsRecording());
+    pCmdUI.Check(IsRecordingCompoundMove());
 }
 
-void CGamDoc::OnActCompoundMoveEnd()
+void CGamDoc::OnActCompoundMoveEnd(wxCommandEvent& /*event*/)
 {
     RecordCompoundMoveEnd();
 }
 
-void CGamDoc::OnUpdateActCompoundMoveEnd(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActCompoundMoveEnd(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsRecordingCompoundMove());
+    pCmdUI.Enable(IsRecordingCompoundMove());
 }
 
-void CGamDoc::OnActCompoundMoveDiscard()
+void CGamDoc::OnActCompoundMoveDiscard(wxCommandEvent& /*event*/)
 {
-    if (AfxMessageBox(IDS_WARN_DISCARD_COMP_MOVE,
-            MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+    if (wxMessageBox(CB::string::LoadString(IDS_WARN_DISCARD_COMP_MOVE),
+                        CB::GetAppName(),
+                        wxYES_NO | wxICON_QUESTION | wxNO_DEFAULT) == wxYES)
         RecordCompoundMoveDiscard();
 }
 
-void CGamDoc::OnUpdateActCompoundMoveDiscard(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActCompoundMoveDiscard(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsRecordingCompoundMove());
+    pCmdUI.Enable(IsRecordingCompoundMove());
 }
-#endif
 
 void CGamDoc::OnUpdateIndicatorCompoundMove(wxUpdateUIEvent& pCmdUI)
 {
     pCmdUI.Enable(IsRecordingCompoundMove());
 }
 
-#if 0
-void CGamDoc::OnFileSaveGameAsScenario()
+void CGamDoc::OnFileSaveGameAsScenario(wxCommandEvent& /*event*/)
 {
-    ASSERT(!IsScenario());
+    wxASSERT(!IsScenario());
     BOOL bModified = IsModified();          // Cache the modified flag
 
     // Save various variables...
@@ -1876,12 +1861,11 @@ void CGamDoc::OnFileSaveGameAsScenario()
     SetModifiedFlag(bModified);
 }
 
-void CGamDoc::OnUpdateFileSaveGameAsScenario(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileSaveGameAsScenario(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(!IsScenario() && (!HasPlayers() ||
+    pCmdUI.Enable(!IsScenario() && (!HasPlayers() ||
         HasPlayers() && IsCurrentPlayerReferee()));
 }
-#endif
 
 void CGamDoc::OnPbckStepCompoundMoves(wxCommandEvent& /*event*/)
 {
@@ -1903,40 +1887,40 @@ void CGamDoc::OnUpdateStepCompoundMoves(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(bEnable);
 }
 
-#if 0
-void CGamDoc::OnViewShowTipText()
+void CGamDoc::OnViewShowTipText(wxCommandEvent& /*event*/)
 {
     m_bShowObjTipText = !m_bShowObjTipText;
 }
 
-void CGamDoc::OnUpdateViewShowTipText(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewShowTipText(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bShowObjTipText);
-    pCmdUI->Enable(TRUE);
+    pCmdUI.Check(m_bShowObjTipText);
+    pCmdUI.Enable(TRUE);
 }
 
-void CGamDoc::OnViewShowTipOwner()
+void CGamDoc::OnViewShowTipOwner(wxCommandEvent& /*event*/)
 {
     m_bDisableOwnerTips = !m_bDisableOwnerTips;
 }
 
-void CGamDoc::OnUpdateViewShowTipOwner(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewShowTipOwner(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(!m_bDisableOwnerTips);
-    pCmdUI->Enable(TRUE);
+    pCmdUI.Check(!m_bDisableOwnerTips);
+    pCmdUI.Enable(TRUE);
 }
 
-void CGamDoc::OnViewSaveWinState()
+void CGamDoc::OnViewSaveWinState(wxCommandEvent& /*event*/)
 {
     m_bSaveWindowPositions = !m_bSaveWindowPositions;
 }
 
-void CGamDoc::OnUpdateViewSaveWinState(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateViewSaveWinState(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->SetCheck(m_bSaveWindowPositions ? 1 : 0);
+    pCmdUI.Enable(true);
+    pCmdUI.Check(m_bSaveWindowPositions);
 }
 
-void CGamDoc::OnEditCreatePlayers()
+void CGamDoc::OnEditCreatePlayers(wxCommandEvent& /*event*/)
 {
     CCreatePlayersDialog dlg;
     dlg.m_nPlayerCount = m_pPlayerMgr != NULL ? m_pPlayerMgr->size() : size_t(0);
@@ -1956,15 +1940,15 @@ void CGamDoc::OnEditCreatePlayers()
         }
     }
     SetModifiedFlag();
-    UpdateAllViews(NULL);
+    UpdateAllViews(NULL, nullptr);
 }
 
-void CGamDoc::OnUpdateEditCreatePlayers(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditCreatePlayers(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
-void CGamDoc::OnEditEditPlayers()
+void CGamDoc::OnEditEditPlayers(wxCommandEvent& /*event*/)
 {
     CEditPlayersDialog dlg;
     dlg.SetDialogsPlayerNames(*m_pPlayerMgr);
@@ -1972,36 +1956,36 @@ void CGamDoc::OnEditEditPlayers()
         return;
     dlg.GetPlayerNamesFromDialog(*m_pPlayerMgr);
     SetModifiedFlag();
-    UpdateAllViews(NULL);
+    UpdateAllViews(NULL, nullptr);
 }
 
-void CGamDoc::OnUpdateEditEditPlayers(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditEditPlayers(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario() && m_pPlayerMgr != NULL &&
+    pCmdUI.Enable(IsScenario() && m_pPlayerMgr != NULL &&
         !m_pPlayerMgr->empty());
 }
 
-void CGamDoc::OnActSimulateSpectator()
+void CGamDoc::OnActSimulateSpectator(wxCommandEvent& /*event*/)
 {
     m_bSimulateSpectator = !m_bSimulateSpectator;
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_GAMESTATEUSED));       // So trays sync up
+    UpdateAllViews(NULL, CGamDocHint(HINT_GAMESTATEUSED));       // So trays sync up
 }
 
-void CGamDoc::OnUpdateActSimulateSpectator(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateActSimulateSpectator(wxUpdateUIEvent& pCmdUI)
 {
     if (!IsScenario() && bool(m_dwCurrentPlayer))
     {
-        pCmdUI->Enable(TRUE);
-        pCmdUI->SetCheck(m_bSimulateSpectator ? 1 : 0);
+        pCmdUI.Enable(TRUE);
+        pCmdUI.Check(m_bSimulateSpectator);
     }
     else
     {
-        pCmdUI->Enable(FALSE);
-        pCmdUI->SetCheck(0);
+        pCmdUI.Enable(FALSE);
+        pCmdUI.Check(false);
     }
 }
 
-void CGamDoc::OnEditCreateGeomorphic()
+void CGamDoc::OnEditCreateGeomorphic(wxCommandEvent& /*event*/)
 {
     CCreateGeomorphicBoardDialog dlg(*this);
     if (dlg.ShowModal() != wxID_OK)
@@ -2010,13 +1994,13 @@ void CGamDoc::OnEditCreateGeomorphic()
 
     GetPBoardManager().AddBoard(std::move(pGeoBoard));     // Add to list of active boards
 
-    UpdateAllViews(NULL, 0, CGamDocHint(HINT_BOARDCHANGE));
+    UpdateAllViews(NULL, CGamDocHint(HINT_BOARDCHANGE));
     SetModifiedFlag();
 }
 
-void CGamDoc::OnUpdateEditCreateGeomorphic(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateEditCreateGeomorphic(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(IsScenario());
+    pCmdUI.Enable(IsScenario());
 }
 
 static BYTE szPassWord[16] =
@@ -2027,7 +2011,7 @@ static BYTE szPassWord[16] =
     0xe4, 0x7d, 0xf6, 0x6d
 };
 
-void CGamDoc::OnFileCreateReferee()
+void CGamDoc::OnFileCreateReferee(wxCommandEvent& /*event*/)
 {
     CPasswordDialog dlg;
     if (dlg.ShowModal() != wxID_OK)
@@ -2039,7 +2023,8 @@ void CGamDoc::OnFileCreateReferee()
         dlg.m_strPassword.a_size());
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
-        AfxMessageBox(IDS_ERR_INVALID_PASSWORD);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_INVALID_PASSWORD),
+                        CB::GetAppName());
         return;
     }
 
@@ -2052,7 +2037,7 @@ void CGamDoc::OnFileCreateReferee()
 
     // Rip apart current player string to get the raw stuff
     // we need to create a referee file.
-    CB::string strBaseName = m_strPathName;
+    CB::string strBaseName = GetFilename();
     size_t nPos = strBaseName.rfind('-');
     if (nPos != CB::string::npos)
         strBaseName = strBaseName.substr(size_t(0), nPos);
@@ -2074,7 +2059,9 @@ void CGamDoc::OnFileCreateReferee()
     {
         // File already exists. Prompt for overwrite.
         CB::string str = CB::string::Format(IDS_WARN_REF_EXISTS, strFName);
-        if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2) != IDOK)
+        if (wxMessageBox(str,
+                            CB::GetAppName(),
+                            wxOK | wxCANCEL | wxICON_EXCLAMATION | wxCANCEL_DEFAULT) != IDOK)
             return;
     }
 
@@ -2092,16 +2079,16 @@ void CGamDoc::OnFileCreateReferee()
     if (bOK)
     {
         CB::string str = CB::string::Format(IDS_INFO_REF_CREATED, strFName);
-        AfxMessageBox(str);
+        wxMessageBox(str, CB::GetAppName());
     }
 }
 
-void CGamDoc::OnUpdateFileCreateReferee(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileCreateReferee(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(HasPlayers() && !IsCurrentPlayerReferee());
+    pCmdUI.Enable(HasPlayers() && !IsCurrentPlayerReferee());
 }
 
-void CGamDoc::OnFileChangeGameOwner()
+void CGamDoc::OnFileChangeGameOwner(wxCommandEvent& /*event*/)
 {
     CPasswordDialog dlg;
     if (dlg.ShowModal() != wxID_OK)
@@ -2113,7 +2100,8 @@ void CGamDoc::OnFileChangeGameOwner()
         dlg.m_strPassword.a_size());
     if (memcmp(md5Context.digest, szPassWord, 16) != 0)
     {
-        AfxMessageBox(IDS_ERR_INVALID_PASSWORD);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_INVALID_PASSWORD),
+            CB::GetAppName());
         return;
     }
 
@@ -2134,7 +2122,7 @@ void CGamDoc::OnFileChangeGameOwner()
 
     // Rip apart current player string to get the raw stuff
     // we need to create a referee file.
-    CB::string strBaseName = m_strPathName;
+    CB::string strBaseName = GetFilename();
     size_t nPos = strBaseName.rfind('-');
     if (nPos != CB::string::npos)
         strBaseName = strBaseName.substr(size_t(0), nPos);
@@ -2174,13 +2162,12 @@ void CGamDoc::OnFileChangeGameOwner()
     if (bOK)
     {
         CB::string str = CB::string::Format(IDS_INFO_GAME_CREATED, strFName);
-        AfxMessageBox(str);
+        wxMessageBox(str, CB::GetAppName());
     }
 }
 
-void CGamDoc::OnUpdateFileChangeGameOwner(CCmdUI* pCmdUI)
+void CGamDoc::OnUpdateFileChangeGameOwner(wxUpdateUIEvent& pCmdUI)
 {
-    pCmdUI->Enable(HasPlayers() && !IsCurrentPlayerReferee());
+    pCmdUI.Enable(HasPlayers() && !IsCurrentPlayerReferee());
 }
-#endif
 

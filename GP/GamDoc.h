@@ -629,12 +629,10 @@ public:
     BOOL LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist);
 
     // Other doc level doc changes...
-#if 0
     void DoScenarioProperties() { OnEditScenarioProperties(); }
     void DoSelectBoards() { OnEditSelectBoards(); }
     void DoCreateTray() { OnEditCreateTray(); }
     void DoLoadMoveFile() { OnFileLoadMoveFile(); }
-#endif
     void DoBoardProperties(size_t nBrd);
     void DoBoardProperties(CPlayBoard& pPBoard);
     void DoAcceptPlayback();              // (exposed for project window access)
@@ -834,6 +832,11 @@ protected:
         OnViewTrayA(dummy);
     }
     void OnViewTrayB(wxCommandEvent& event);
+    void OnViewTrayB()
+    {
+        wxCommandEvent dummy;
+        OnViewTrayB(dummy);
+    }
     void OnUpdateIndicatorCompoundMove(wxUpdateUIEvent& pCmdUI);
     void OnViewMarkPalette(wxCommandEvent& event);
     void OnViewMarkPalette()
@@ -874,75 +877,69 @@ protected:
     void OnUpdatePbckNextHistory(wxUpdateUIEvent& pCmdUI);
     void OnPbckCloseHistory(wxCommandEvent& event);
     void OnUpdatePbckCloseHistory(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnFileSendRecording2File();
-    afx_msg void OnUpdateFileSendRecording2File(CCmdUI* pCmdUI);
-    afx_msg void OnFileDiscardRecordedMoves();
-    afx_msg void OnUpdateFileDiscardRecordedMoves(CCmdUI* pCmdUI);
-    afx_msg void OnEditCreateTray();
-    afx_msg void OnUpdateEditCreateTray(CCmdUI* pCmdUI);
-    afx_msg void OnEditScenarioProperties();
-    afx_msg void OnUpdateEditScenarioProperties(CCmdUI* pCmdUI);
-    afx_msg void OnEditSelectBoards();
-    afx_msg void OnUpdateEditSelectBoards(CCmdUI* pCmdUI);
-    afx_msg void OnEditSelectGamePieces();
-    afx_msg void OnUpdateEditSelectGamePieces(CCmdUI* pCmdUI);
-#endif
-    void OnFileLoadMoveFile(wxCommandEvent& event);
+    void OnFileSendRecording2File(wxCommandEvent& event);
+    void OnUpdateFileSendRecording2File(wxUpdateUIEvent& pCmdUI);
+    void OnFileDiscardRecordedMoves(wxCommandEvent& event);
+    void OnUpdateFileDiscardRecordedMoves(wxUpdateUIEvent& pCmdUI);
+    void OnEditCreateTray();
+    void OnEditCreateTray(wxCommandEvent& /*event*/) { OnEditCreateTray(); }
+    void OnUpdateEditCreateTray(wxUpdateUIEvent& pCmdUI);
+    void OnEditScenarioProperties();
+    void OnEditScenarioProperties(wxCommandEvent& /*event*/) { OnEditScenarioProperties(); }
+    void OnUpdateEditScenarioProperties(wxUpdateUIEvent& pCmdUI);
+    void OnEditSelectBoards();
+    void OnEditSelectBoards(wxCommandEvent& /*event*/) { OnEditSelectBoards(); }
+    void OnUpdateEditSelectBoards(wxUpdateUIEvent& pCmdUI);
+    void OnEditSelectGamePieces(wxCommandEvent& event);
+    void OnUpdateEditSelectGamePieces(wxUpdateUIEvent& pCmdUI);
+    void OnFileLoadMoveFile();
+    void OnFileLoadMoveFile(wxCommandEvent& /*event*/) { OnFileLoadMoveFile(); }
     void OnUpdateFileLoadMoveFile(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnActCompoundMoveBegin();
-    afx_msg void OnUpdateActCompoundMoveBegin(CCmdUI* pCmdUI);
-    afx_msg void OnActCompoundMoveEnd();
-    afx_msg void OnUpdateActCompoundMoveEnd(CCmdUI* pCmdUI);
-    afx_msg void OnActCompoundMoveDiscard();
-    afx_msg void OnUpdateActCompoundMoveDiscard(CCmdUI* pCmdUI);
-#endif
+    void OnActCompoundMoveBegin(wxCommandEvent& event);
+    void OnUpdateActCompoundMoveBegin(wxUpdateUIEvent& pCmdUI);
+    void OnActCompoundMoveEnd(wxCommandEvent& event);
+    void OnUpdateActCompoundMoveEnd(wxUpdateUIEvent& pCmdUI);
+    void OnActCompoundMoveDiscard(wxCommandEvent& event);
+    void OnUpdateActCompoundMoveDiscard(wxUpdateUIEvent& pCmdUI);
     void OnPbckPrevious(wxCommandEvent& event);
     void OnUpdatePbckPrevious(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnFileSaveGameAsScenario();
-    afx_msg void OnUpdateFileSaveGameAsScenario(CCmdUI* pCmdUI);
-    afx_msg void OnActRollDice();
-    afx_msg void OnUpdateActRollDice(CCmdUI* pCmdUI);
-#endif
+    void OnFileSaveGameAsScenario(wxCommandEvent& event);
+    void OnUpdateFileSaveGameAsScenario(wxUpdateUIEvent& pCmdUI);
+    void OnActRollDice(wxCommandEvent& event);
+    void OnUpdateActRollDice(wxUpdateUIEvent& pCmdUI);
     void OnPbckStepCompoundMoves(wxCommandEvent& event);
     void OnUpdateStepCompoundMoves(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnEditImportPieceGroups();
-    afx_msg void OnUpdateEditImportPieceGroups(CCmdUI* pCmdUI);
-    afx_msg void OnViewShowTipText();
-    afx_msg void OnUpdateViewShowTipText(CCmdUI* pCmdUI);
-    afx_msg void OnViewSaveWinState();
-    afx_msg void OnUpdateViewSaveWinState(CCmdUI* pCmdUI);
-    afx_msg void OnEditCreatePlayers();
-    afx_msg void OnUpdateEditCreatePlayers(CCmdUI* pCmdUI);
-    afx_msg void OnEditEditPlayers();
-    afx_msg void OnUpdateEditEditPlayers(CCmdUI* pCmdUI);
-    afx_msg void OnActSimulateSpectator();
-    afx_msg void OnUpdateActSimulateSpectator(CCmdUI* pCmdUI);
-    afx_msg void OnEditCreateGeomorphic();
-    afx_msg void OnUpdateEditCreateGeomorphic(CCmdUI* pCmdUI);
-    afx_msg void OnFileCreateReferee();
-    afx_msg void OnUpdateFileCreateReferee(CCmdUI* pCmdUI);
-    afx_msg void OnFileChangeGameOwner();
-    afx_msg void OnUpdateFileChangeGameOwner(CCmdUI* pCmdUI);
-#endif
+    void OnEditImportPieceGroups(wxCommandEvent& event);
+    void OnUpdateEditImportPieceGroups(wxUpdateUIEvent& pCmdUI);
+    void OnViewShowTipText(wxCommandEvent& event);
+    void OnUpdateViewShowTipText(wxUpdateUIEvent& pCmdUI);
+    void OnViewSaveWinState(wxCommandEvent& event);
+    void OnUpdateViewSaveWinState(wxUpdateUIEvent& pCmdUI);
+    void OnEditCreatePlayers(wxCommandEvent& event);
+    void OnUpdateEditCreatePlayers(wxUpdateUIEvent& pCmdUI);
+    void OnEditEditPlayers(wxCommandEvent& event);
+    void OnUpdateEditEditPlayers(wxUpdateUIEvent& pCmdUI);
+    void OnActSimulateSpectator(wxCommandEvent& event);
+    void OnUpdateActSimulateSpectator(wxUpdateUIEvent& pCmdUI);
+    void OnEditCreateGeomorphic(wxCommandEvent& event);
+    void OnUpdateEditCreateGeomorphic(wxUpdateUIEvent& pCmdUI);
+    void OnFileCreateReferee(wxCommandEvent& event);
+    void OnUpdateFileCreateReferee(wxUpdateUIEvent& pCmdUI);
+    void OnFileChangeGameOwner(wxCommandEvent& event);
+    void OnUpdateFileChangeGameOwner(wxUpdateUIEvent& pCmdUI);
     void OnPbckStepToNextHist(wxCommandEvent& event);
     void OnUpdatePbckStepToNextHist(wxUpdateUIEvent& pCmdUI);
     void OnPbckSkipKeepIndicators(wxCommandEvent& event);
     void OnUpdatePbckSkipKeepIndicators(wxUpdateUIEvent& pCmdUI);
     void OnPbckAutoStep(wxCommandEvent& event);
     void OnUpdatePbckAutoStep(wxUpdateUIEvent& pCmdUI);
-#if 0
-    afx_msg void OnViewShowTipOwner();
-    afx_msg void OnUpdateViewShowTipOwner(CCmdUI* pCmdUI);
-    //}}AFX_MSG
+    void OnViewShowTipOwner(wxCommandEvent& /*event*/);
+    void OnUpdateViewShowTipOwner(wxUpdateUIEvent& pCmdUI);
 #ifdef _DEBUG
-    afx_msg void OnDebugMoveList();
-    afx_msg void OnDebugPieceTable();
+    void OnDebugMoveList(wxCommandEvent& /*event*/);
+    void OnDebugPieceTable(wxCommandEvent& /*event*/);
 #endif
-#endif
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     wxDECLARE_EVENT_TABLE();
 
 private:

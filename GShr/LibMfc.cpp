@@ -1421,6 +1421,12 @@ namespace CB
                 {
                     case ID_ACT_AUTOSTACK_DECK:
                         return XRCID("ID_ACT_AUTOSTACK_DECK");
+                    case ID_ACT_COMPOUNDMOVE_BEGIN:
+                        return XRCID("ID_ACT_COMPOUNDMOVE_BEGIN");
+                    case ID_ACT_COMPOUNDMOVE_DISCARD:
+                        return XRCID("ID_ACT_COMPOUNDMOVE_DISCARD");
+                    case ID_ACT_COMPOUNDMOVE_END:
+                        return XRCID("ID_ACT_COMPOUNDMOVE_END");
                     case ID_ACT_DOMESSAGE:
                         return XRCID("ID_ACT_DOMESSAGE");
                     case ID_ACT_LOCK_SUSPEND:
@@ -1473,6 +1479,8 @@ namespace CB
                         return XRCID("ID_ACT_SET_OWNER");
                     case ID_ACT_SHUFFLE_SELECTED:
                         return XRCID("ID_ACT_SHUFFLE_SELECTED");
+                    case ID_ACT_SIMULATE_SPECTATOR:
+                        return XRCID("ID_ACT_SIMULATE_SPECTATOR");
                     case ID_ACT_STACK:
                         return XRCID("ID_ACT_STACK");
                     case ID_ACT_TAKE_OWNERSHIP:
@@ -1489,16 +1497,48 @@ namespace CB
                         return XRCID("ID_ACT_TURNOVER_RANDOM");
                     case ID_ACT_TURNOVER_SELECT:
                         return XRCID("ID_ACT_TURNOVER_SELECT");
+                    case ID_ACTIONS_ROLLDICE:
+                        return XRCID("ID_ACTIONS_ROLLDICE");
+                    case ID_DEBUG_MOVELIST:
+                        return XRCID("ID_DEBUG_MOVELIST");
+                    case ID_DEBUG_PIECETABLE:
+                        return XRCID("ID_DEBUG_PIECETABLE");
                     case ID_EDIT_BRD2FILE:
                         return XRCID("ID_EDIT_BRD2FILE");
                     case ID_EDIT_BRDPROP:
                         return XRCID("ID_EDIT_BRDPROP");
+                    case ID_EDIT_CREATE_GEOMORPHIC:
+                        return XRCID("ID_EDIT_CREATE_GEOMORPHIC");
+                    case ID_EDIT_CREATE_PLAYERS:
+                        return XRCID("ID_EDIT_CREATE_PLAYERS");
+                    case ID_EDIT_CREATETRAY:
+                        return XRCID("ID_EDIT_CREATETRAY");
+                    case ID_EDIT_EDIT_PLAYERS:
+                        return XRCID("ID_EDIT_EDIT_PLAYERS");
                     case ID_EDIT_ELEMENT_TEXT:
                         return XRCID("ID_EDIT_ELEMENT_TEXT");
+                    case ID_EDIT_IMPORTPCEGROUPS:
+                        return XRCID("ID_EDIT_IMPORTPCEGROUPS");
+                    case ID_EDIT_SCNPROPERTIES:
+                        return XRCID("ID_EDIT_SCNPROPERTIES");
                     case ID_EDIT_SELALLMARKERS:
                         return XRCID("ID_EDIT_SELALLMARKERS");
+                    case ID_EDIT_SELECTBOARDS:
+                        return XRCID("ID_EDIT_SELECTBOARDS");
+                    case ID_EDIT_SELECTGAMEPIECES:
+                        return XRCID("ID_EDIT_SELECTGAMEPIECES");
+                    case ID_FILE_CHANGE_GAME_OWNER:
+                        return XRCID("ID_FILE_CHANGE_GAME_OWNER");
+                    case ID_FILE_CREATE_REFEREE:
+                        return XRCID("ID_FILE_CREATE_REFEREE");
+                    case ID_FILE_DISCARDRECORDING:
+                        return XRCID("ID_FILE_DISCARDRECORDING");
                     case ID_FILE_LOADMOVES:
                         return XRCID("ID_FILE_LOADMOVES");
+                    case ID_FILE_SAVE_GAME_AS_SCENARIO:
+                        return XRCID("ID_FILE_SAVE_GAME_AS_SCENARIO");
+                    case ID_FILE_SENDMOVES2FILE:
+                        return XRCID("ID_FILE_SENDMOVES2FILE");
                     case ID_INDICATOR_CELLNUM:
                         return XRCID("ID_INDICATOR_CELLNUM");
                     case ID_INDICATOR_COMPMOVE:
@@ -1557,6 +1597,12 @@ namespace CB
                         return XRCID("ID_VIEW_MARKERPAL");
                     case ID_VIEW_PIECES:
                         return XRCID("ID_VIEW_PIECES");
+                    case ID_VIEW_SAVE_WIN_STATE:
+                        return XRCID("ID_VIEW_SAVE_WIN_STATE");
+                    case ID_VIEW_SHOW_TIP_OWNER:
+                        return XRCID("ID_VIEW_SHOW_TIP_OWNER");
+                    case ID_VIEW_SHOW_TIP_TEXT:
+                        return XRCID("ID_VIEW_SHOW_TIP_TEXT");
                     case ID_VIEW_SMALLSCALEBRD:
                         return XRCID("ID_VIEW_SMALLSCALEBRD");
                     case ID_VIEW_SNAPGRID:

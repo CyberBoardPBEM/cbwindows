@@ -245,8 +245,9 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
         return TRUE;
     if (bPrompt)
     {
-        if (AfxMessageBox(IDS_PMT_RCD_DISCARD, MB_YESNO |
-                MB_ICONQUESTION) != IDYES)
+        if (wxMessageBox(CB::string::LoadString(IDS_PMT_RCD_DISCARD),
+                            CB::GetAppName(),
+                            wxYES_NO | wxICON_QUESTION) != wxYES)
             return FALSE;
     }
 
@@ -257,12 +258,14 @@ BOOL CGamDoc::DiscardCurrentRecording(BOOL bPrompt /* = TRUE */)
     // of the recording. Restore it.
 
     CMoveRecord& temp = *m_pRcdMoves->front();
-    ASSERT(temp.GetType() == CMoveRecord::mrecState);
+    wxASSERT(temp.GetType() == CMoveRecord::mrecState);
     CGameStateRcd& pMove = static_cast<CGameStateRcd&>(temp);
 
     if (!pMove.GetGameState().RestoreState(*this))
     {
-        AfxMessageBox(IDS_ERR_FAILEDRESTORE, MB_OK | MB_ICONEXCLAMATION);
+        wxMessageBox(CB::string::LoadString(IDS_ERR_FAILEDRESTORE),
+                        CB::GetAppName(),
+                        wxOK | wxICON_EXCLAMATION);
         return FALSE;
     }
 
