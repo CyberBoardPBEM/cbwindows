@@ -3107,6 +3107,1008 @@
       </object>
     </object>
   </object>
+  <object class="wxMenuBar" name="IDR_GP_MAINFRAME">
+    <object class="wxMenu" name="m_menu10">
+      <label>_File</label>
+      <object class="wxMenuItem" name="wxID_NEW">
+        <label>_New...</label>
+        <accel>Ctrl+N</accel>
+        <help>Create a new Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_OPEN">
+        <label>_Open...</label>
+        <accel>Ctrl+O</accel>
+        <help>Open an existing Game or Scenario</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_EXIT">
+        <label>E_xit</label>
+        <accel></accel>
+        <help>Quit the application; prompts to save documents</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu11">
+      <label>_View</label>
+      <object class="wxMenuItem" name="ID_VIEW_STATUS_BAR">
+        <label>_Status Bar</label>
+        <accel></accel>
+        <help>Show or hide the status bar</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu12">
+      <label>_Help</label>
+      <object class="wxMenuItem" name="wxID_HELP_INDEX">
+        <label>_Contents</label>
+        <accel></accel>
+        <help>List Help topics</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_HELP_WEBSITE">
+        <label>Visit the CyberBoard Web Site...</label>
+        <accel></accel>
+        <help>Opens a web browser and takes you to the CyberBoard web site.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_HELP_RELEASES">
+        <label>Latest CyberBoard Releases...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ABOUT">
+        <label>_About CyberBoard...</label>
+        <accel></accel>
+        <help>Display program information, version number and copyright</help>
+      </object>
+    </object>
+  </object>
+  <object class="wxMenuBar" name="IDR_GAMETYPE">
+    <object class="wxMenu" name="m_menu20">
+      <label>_File</label>
+      <object class="wxMenuItem" name="wxID_NEW">
+        <label>_New...</label>
+        <accel>Ctrl+N</accel>
+        <help>Create a new Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_OPEN">
+        <label>_Open...</label>
+        <accel>Ctrl+O</accel>
+        <help>Open an existing Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_CLOSE">
+        <label>_Close</label>
+        <accel></accel>
+        <help>Close the active document</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVE">
+        <label>_Save</label>
+        <accel>Ctrl+S</accel>
+        <help>Save the active Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVEAS">
+        <label>Save _As...</label>
+        <accel></accel>
+        <help>Save the active document with a new name</help>
+      </object>
+      <object class="wxMenuItem" name="ID_FILE_SAVE_GAME_AS_SCENARIO">
+        <label>Save Game As Sc_enario...</label>
+        <accel></accel>
+        <help>Save current state of game as a scenario file.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_FILE_LOADMOVES">
+        <label>_Load Recorded Move File...</label>
+        <accel></accel>
+        <help>Load file of recorded moves.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_FILE_SENDMOVES2FILE">
+        <label>Send Recorded _Moves to File...</label>
+        <accel></accel>
+        <help>Send current move recording to file</help>
+      </object>
+      <object class="wxMenuItem" name="ID_FILE_DISCARDRECORDING">
+        <label>_Discard Current Move Recording...</label>
+        <accel></accel>
+        <help>Discard the current move recording.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_EXIT">
+        <label>E_xit</label>
+        <accel></accel>
+        <help>Quit the application; prompts to save documents</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu21">
+      <label>_Edit</label>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>C_opy Board Image to Clipboard</label>
+        <accel>Ctrl+C</accel>
+        <help>Copy the selection and put it on the Clipboard</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_BRD2FILE">
+        <label>_Save Board Image in File...</label>
+        <accel></accel>
+        <help>Save the current board image as a bitmap file.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_CLEAR">
+        <label>_Delete Markers</label>
+        <accel>Del</accel>
+        <help>Erase the selection</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELALLMARKERS">
+        <label>Select All _Markers</label>
+        <accel></accel>
+        <help>Select all markers in the current board view</help>
+      </object>
+      <object class="wxMenu" name="m_menu22">
+        <label>Select All Markers _From</label>
+        <object class="wxMenuItem" name="ID_MRKGROUP_FIRST">
+          <label>No Markers</label>
+          <accel></accel>
+          <help></help>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
+        <label>Edit Object Te_xt...</label>
+        <accel></accel>
+        <help>Edit text associated with a piece or marker</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_BRDPROP">
+        <label>Board _Properties...</label>
+        <accel></accel>
+        <help>Edit properties of current playing board.</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu15">
+      <label>_View</label>
+      <object class="wxMenuItem" name="ID_VIEW_STATUS_BAR">
+        <label>_Status Bar</label>
+        <accel></accel>
+        <help>Show or hide the status bar</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SAVE_WIN_STATE">
+        <label>Save Window _Positions</label>
+        <accel></accel>
+        <help>Save window positions when saving the file.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SNAPGRID">
+        <label>S_nap Grid</label>
+        <accel></accel>
+        <help>Enable or disable current board&apos;s snap grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_TRAYA">
+        <label>Tray Palette _A</label>
+        <accel></accel>
+        <help>Shows or hides piece tray A</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_TRAYB">
+        <label>Tray Palette _B</label>
+        <accel></accel>
+        <help>Shows or hides piece tray B</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_MARKERPAL">
+        <label>_Marker Palette</label>
+        <accel></accel>
+        <help>Shows or hides the marker palette</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALEBRD">
+        <label>_Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALEBRD">
+        <label>_Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALEBRD">
+        <label>_Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_BOARD_ROTATE180">
+        <label>_Rotate Board</label>
+        <accel></accel>
+        <help>Rotate board by 180 degrees</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SHOW_TIP_TEXT">
+        <label>Show _Object Text Tips</label>
+        <accel>F7</accel>
+        <help>Show text associated with objects as pop-up data tips.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SHOW_TIP_OWNER">
+        <label>Show Object O_wner Tips</label>
+        <accel></accel>
+        <help>Show object owner name in tool tip. Otherwise show owner name in status bar.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SIMULATE_SPECTATOR">
+        <label>Sim_ulate Spectator Player</label>
+        <accel>F8</accel>
+        <help>View the board and trays as if the current player was a spectator.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_PIECES">
+        <label>Hide _Pieces</label>
+        <accel>F9</accel>
+        <help>Hide or show pieces on board</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_DRAW_IND_ON_TOP">
+        <label>I_ndicators On Top</label>
+        <accel>F10</accel>
+        <help>Draw movement playback indicators on top of pieces.</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu17">
+      <label>_Actions</label>
+      <object class="wxMenuItem" name="ID_ACT_STACK">
+        <label>Auto _Stack</label>
+        <accel>Ctrl+A</accel>
+        <help>Automatically stack selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_AUTOSTACK_DECK">
+        <label>Auto _Deck Stack</label>
+        <accel></accel>
+        <help>Autostack selected objects using a offset of zero.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SHUFFLE_SELECTED">
+        <label>S_huffle Objects</label>
+        <accel></accel>
+        <help>Randomize the stacking order of the selected objects</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TOFRONT">
+        <label>Move To _Front</label>
+        <accel>Ctrl+F</accel>
+        <help>Move selected piece(s) in front of other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TOBACK">
+        <label>Move To _Back</label>
+        <accel>Ctrl+B</accel>
+        <help>Move selected pieces(s) behind other pieces</help>
+      </object>
+      <object class="wxMenu" name="m_menu161">
+        <label>Turn Piece _Over</label>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+          <label>_Next</label>
+          <accel>Ctrl+I</accel>
+          <help>Turn the selected piece over to the next side</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_PREV">
+          <label>_Prev</label>
+          <accel>Ctrl-Shift+I</accel>
+          <help>Turn the selected piece over to the prev side</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_RANDOM">
+          <label>_Random</label>
+          <accel>Ctrl-Shift-Alt+I</accel>
+          <help>Turn the selected piece over to a random side</help>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEGROUP">
+        <label>_Rotate Group - Incremental...</label>
+        <accel></accel>
+        <help>Rotate (or wheel) group of pieces or markers by incremental amounts</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEREL">
+        <label>_Rotate Object - _Incremental...</label>
+        <accel></accel>
+        <help>Rotate piece or marker using incremental amounts</help>
+      </object>
+      <object class="wxMenu" name="m_menu171">
+        <label>Rotate Object - _Absolute</label>
+        <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+          <label>_Reset Rotation</label>
+          <accel></accel>
+          <help>Set all selection piece rotations to zero.</help>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenu" name="m_menu18">
+          <label>_Square Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>_90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>_180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>_270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu19">
+          <label>Hex Faces (_Flat Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_60">
+            <label>_60°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_120">
+            <label>_120°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_240">
+            <label>_240°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_300">
+            <label>_300°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu201">
+          <label>Hex Faces (_Point Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_30">
+            <label>_30°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_150">
+            <label>_150°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_210">
+            <label>_210°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_330">
+            <label>33_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu211">
+          <label>_Diamond Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_45">
+            <label>_45°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_135">
+            <label>_135°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_225">
+            <label>_225°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_315">
+            <label>_315°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TAKE_OWNERSHIP">
+        <label>Ta_ke Ownership</label>
+        <accel></accel>
+        <help>Take ownership of selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_RELEASE_OWNERSHIP">
+        <label>Release O_wnership</label>
+        <accel></accel>
+        <help>Release ownership of selected pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SET_OWNER">
+        <label>Set Ow_nership...</label>
+        <accel></accel>
+        <help>Explicitly set piece ownership.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_LOCKOBJECT">
+        <label>_Lock Objects</label>
+        <accel></accel>
+        <help>Lock or unlock pieces and markers from selection.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_LOCK_SUSPEND">
+        <label>S_uspend Object Locks</label>
+        <accel></accel>
+        <help>Temporarily suspend piece and marker locks</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_BEGIN">
+        <label>Begin a Compound Move</label>
+        <accel>Ctrl+Enter</accel>
+        <help></help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_END">
+        <label>Accept Compound Move</label>
+        <accel>Enter</accel>
+        <help>End active compound move</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_DISCARD">
+        <label>Discard Compound Move</label>
+        <accel>Esc</accel>
+        <help>Discard current compound move</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PTOOL_PLOTMOVE">
+        <label>Begin a _Plotted Move</label>
+        <accel></accel>
+        <help>Begin a plotted move.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_PLOTDONE">
+        <label>A_ccept Plotted Move</label>
+        <accel></accel>
+        <help>Record the plotted move</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_PLOTDISCARD">
+        <label>_Discard Plotted Move</label>
+        <accel></accel>
+        <help>Discard the plotted move</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACTIONS_ROLLDICE">
+        <label>_Roll Dice...</label>
+        <accel>Ctrl+R</accel>
+        <help>Roll Dice</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_DOMESSAGE">
+        <label>Enter _Message...</label>
+        <accel>Ctrl+M</accel>
+        <help>Enter message for opponent</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu31">
+      <label>_Playback</label>
+      <object class="wxMenuItem" name="ID_PBCK_START">
+        <label>_Start of Moves</label>
+        <accel></accel>
+        <help>Jump to start of moves</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_PREVIOUS">
+        <label>_Previous Move</label>
+        <accel>F2</accel>
+        <help>Step back to previous move</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_NEXT">
+        <label>_Next Move</label>
+        <accel>F3</accel>
+        <help>Do the next move</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_END">
+        <label>_End of Moves</label>
+        <accel></accel>
+        <help>Jump to end of move</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_AUTO_STEP">
+        <label>Aut_omatic Playback</label>
+        <accel>F6</accel>
+        <help>Toggles automatic playback feature.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_STEP_CMOVES">
+        <label>Single S_tep Compound Moves</label>
+        <accel></accel>
+        <help>If checked, compound moves are single stepped.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_STEP_TO_NEXT_HIST">
+        <label>Automatically Step to Ne_xt History</label>
+        <accel></accel>
+        <help>Next move automatically steps to next history entry on last move.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_SKIP_KEEP_IND">
+        <label>Keep S_kipped Move Indications</label>
+        <accel></accel>
+        <help>Keep graphical move indications when skipping moves.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_NEXTHIST">
+        <label>Ne_xt History Entry</label>
+        <accel>F4</accel>
+        <help>Close current history playback and open the next</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_CLOSEHIST">
+        <label>_Close History Playback</label>
+        <accel>F5</accel>
+        <help>Close history playback mode.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_FINISH">
+        <label>_Accept Move File Playback...</label>
+        <accel></accel>
+        <help>Finishes and accepts the  move file being played back. Adds to game history.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_PBCK_DISCARD">
+        <label>_Discard Move File Playback</label>
+        <accel></accel>
+        <help>Discard the current move recording.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_PBCK_READMESSAGE">
+        <label>Show Current _Message...</label>
+        <accel></accel>
+        <help>Display current message text</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu191">
+      <label>_Help</label>
+      <object class="wxMenuItem" name="wxID_HELP_INDEX">
+        <label>_Contents</label>
+        <accel></accel>
+        <help>List Help topics</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_HELP_WEBSITE">
+        <label>Visit the CyberBoard Web Site...</label>
+        <accel></accel>
+        <help>Opens a web browser and takes you to the CyberBoard web site.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_HELP_RELEASES">
+        <label>Latest CyberBoard Releases...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ABOUT">
+        <label>_About CyberBoard...</label>
+        <accel></accel>
+        <help>Display program information, version number and copyright</help>
+      </object>
+    </object>
+  </object>
+  <object class="wxMenuBar" name="IDR_GSCNTYPE">
+    <object class="wxMenu" name="m_menu13">
+      <label>_File</label>
+      <object class="wxMenuItem" name="wxID_NEW">
+        <label>_New...</label>
+        <accel>Ctrl+N</accel>
+        <help>Create a new Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_OPEN">
+        <label>_Open...</label>
+        <accel>Ctrl+O</accel>
+        <help>Open an existing Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_CLOSE">
+        <label>_Close</label>
+        <accel></accel>
+        <help>Close the active document</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVE">
+        <label>_Save</label>
+        <accel>Ctrl+S</accel>
+        <help>Save the active Game or Scenario</help>
+      </object>
+      <object class="wxMenuItem" name="wxID_SAVEAS">
+        <label>Save _As...</label>
+        <accel></accel>
+        <help>Save the active document with a new name</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_EXIT">
+        <label>E_xit</label>
+        <accel></accel>
+        <help>Quit the application; prompts to save documents</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu14">
+      <label>_Edit</label>
+      <object class="wxMenuItem" name="wxID_COPY">
+        <label>C_opy Board Image to Clipboard</label>
+        <accel>Ctrl+C</accel>
+        <help>Copy the selection and put it on the Clipboard</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_BRD2FILE">
+        <label>_Save Board Image in File...</label>
+        <accel></accel>
+        <help>Save the current board image as a bitmap file.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_CLEAR">
+        <label>_Delete Markers</label>
+        <accel>Del</accel>
+        <help>Erase the selection</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELALLMARKERS">
+        <label>Select All _Markers</label>
+        <accel></accel>
+        <help>Select all markers in the current board view</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_ELEMENT_TEXT">
+        <label>Edit Object Te_xt...</label>
+        <accel></accel>
+        <help>Edit text associated with a piece or marker</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_BRDPROP">
+        <label>Board _Properties...</label>
+        <accel></accel>
+        <help>Edit properties of current playing board.</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu15">
+      <label>_View</label>
+      <object class="wxMenuItem" name="ID_VIEW_STATUS_BAR">
+        <label>_Status Bar</label>
+        <accel></accel>
+        <help>Show or hide the status bar</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SAVE_WIN_STATE">
+        <label>Save Window _Positions</label>
+        <accel></accel>
+        <help>Save window positions when saving the file.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SNAPGRID">
+        <label>S_nap Grid</label>
+        <accel></accel>
+        <help>Enable or disable current board&apos;s snap grid</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_TRAYA">
+        <label>Tray Palette _A</label>
+        <accel></accel>
+        <help>Shows or hides piece tray A</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_TRAYB">
+        <label>Tray Palette _B</label>
+        <accel></accel>
+        <help>Shows or hides piece tray B</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_MARKERPAL">
+        <label>_Marker Palette</label>
+        <accel></accel>
+        <help>Shows or hides the marker palette</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_FULLSCALEBRD">
+        <label>_Full Scale Board</label>
+        <accel></accel>
+        <help>Show full scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_HALFSCALEBRD">
+        <label>_Half Scale Board</label>
+        <accel></accel>
+        <help>Show half scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SMALLSCALEBRD">
+        <label>_Small Scale Board</label>
+        <accel></accel>
+        <help>Show small scale board</help>
+        <radio>1</radio>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_BOARD_ROTATE180">
+        <label>_Rotate Board</label>
+        <accel></accel>
+        <help>Rotate board by 180 degrees</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_VIEW_SHOW_TIP_TEXT">
+        <label>Show _Object Text Tips</label>
+        <accel>F7</accel>
+        <help>Show text associated with objects as pop-up data tips.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_SHOW_TIP_OWNER">
+        <label>Show Object O_wner Tips</label>
+        <accel></accel>
+        <help>Show object owner name in tool tip. Otherwise show owner name in status bar.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_VIEW_PIECES">
+        <label>Hide _Pieces</label>
+        <accel>F9</accel>
+        <help>Hide or show pieces on board</help>
+        <checkable>1</checkable>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu16">
+      <label>_Project</label>
+      <object class="wxMenuItem" name="ID_EDIT_CREATETRAY">
+        <label>_Create Playing Piece Tray...</label>
+        <accel></accel>
+        <help>Create a new tray which are used to hold playing pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_IMPORTPCEGROUPS">
+        <label>Create Trays from Piece _Groups...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_CREATE_GEOMORPHIC">
+        <label>Create Geomorphic Board...</label>
+        <accel></accel>
+        <help>Create geomorphic board.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_CREATE_PLAYERS">
+        <label>Create P_layers...</label>
+        <accel></accel>
+        <help>Create players. Enables hidden piece support.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_EDIT_PLAYERS">
+        <label>Edit Pl_ayers...</label>
+        <accel></accel>
+        <help>Edit the names of created players.</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_SELECTBOARDS">
+        <label>Select Game _Boards...</label>
+        <accel></accel>
+        <help>Select the game boards that are used in this scenario</help>
+      </object>
+      <object class="wxMenuItem" name="ID_EDIT_SELECTGAMEPIECES">
+        <label>Select Game Pi_eces...</label>
+        <accel></accel>
+        <help>Select the game pieces that are used in this scenario</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_EDIT_SCNPROPERTIES">
+        <label>Scenario _Properties...</label>
+        <accel></accel>
+        <help>Edit scenario properties</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu17">
+      <label>_Actions</label>
+      <object class="wxMenuItem" name="ID_ACT_STACK">
+        <label>Auto _Stack</label>
+        <accel>Ctrl+A</accel>
+        <help>Automatically stack selected pieces.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_AUTOSTACK_DECK">
+        <label>Auto _Deck Stack</label>
+        <accel></accel>
+        <help>Autostack selected objects using a offset of zero.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_SHUFFLE_SELECTED">
+        <label>S_huffle Objects</label>
+        <accel></accel>
+        <help>Randomize the stacking order of the selected objects</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_TOFRONT">
+        <label>Move To _Front</label>
+        <accel>Ctrl+F</accel>
+        <help>Move selected piece(s) in front of other pieces</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_TOBACK">
+        <label>Move To _Back</label>
+        <accel>Ctrl+B</accel>
+        <help>Move selected pieces(s) behind other pieces</help>
+      </object>
+      <object class="wxMenu" name="m_menu161">
+        <label>Turn Piece _Over</label>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER">
+          <label>_Next</label>
+          <accel>Ctrl+I</accel>
+          <help>Turn the selected piece over to the next side</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_PREV">
+          <label>_Prev</label>
+          <accel>Ctrl-Shift+I</accel>
+          <help>Turn the selected piece over to the prev side</help>
+        </object>
+        <object class="wxMenuItem" name="ID_ACT_TURNOVER_RANDOM">
+          <label>_Random</label>
+          <accel>Ctrl-Shift-Alt+I</accel>
+          <help>Turn the selected piece over to a random side</help>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEGROUP">
+        <label>_Rotate Group - Incremental...</label>
+        <accel></accel>
+        <help>Rotate (or wheel) group of pieces or markers by incremental amounts</help>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_ROTATEREL">
+        <label>_Rotate Object - _Incremental...</label>
+        <accel></accel>
+        <help>Rotate piece or marker using incremental amounts</help>
+      </object>
+      <object class="wxMenu" name="m_menu171">
+        <label>Rotate Object - _Absolute</label>
+        <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+          <label>_Reset Rotation</label>
+          <accel></accel>
+          <help>Set all selection piece rotations to zero.</help>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenu" name="m_menu18">
+          <label>_Square Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_90">
+            <label>_90°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_180">
+            <label>_180°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_270">
+            <label>_270°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu19">
+          <label>Hex Faces (_Flat Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_0">
+            <label>_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_60">
+            <label>_60°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_120">
+            <label>_120°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_240">
+            <label>_240°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_300">
+            <label>_300°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu20">
+          <label>Hex Faces (_Point Up)</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_30">
+            <label>_30°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_150">
+            <label>_150°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_210">
+            <label>_210°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_330">
+            <label>33_0°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+        <object class="wxMenu" name="m_menu21">
+          <label>_Diamond Faces</label>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_45">
+            <label>_45°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_135">
+            <label>_135°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_225">
+            <label>_225°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+          <object class="wxMenuItem" name="ID_ACT_ROTATE_315">
+            <label>_315°</label>
+            <accel></accel>
+            <help></help>
+          </object>
+        </object>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_ACT_LOCKOBJECT">
+        <label>_Lock Objects</label>
+        <accel></accel>
+        <help>Lock or unlock pieces and markers from selection.</help>
+        <checkable>1</checkable>
+      </object>
+      <object class="wxMenuItem" name="ID_ACT_LOCK_SUSPEND">
+        <label>S_uspend Object Locks</label>
+        <accel></accel>
+        <help>Temporarily suspend piece and marker locks</help>
+      </object>
+    </object>
+    <object class="wxMenu" name="m_menu191">
+      <label>_Help</label>
+      <object class="wxMenuItem" name="wxID_HELP_INDEX">
+        <label>_Contents</label>
+        <accel></accel>
+        <help>List Help topics</help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="ID_HELP_WEBSITE">
+        <label>Visit the CyberBoard Web Site...</label>
+        <accel></accel>
+        <help>Opens a web browser and takes you to the CyberBoard web site.</help>
+      </object>
+      <object class="wxMenuItem" name="ID_HELP_RELEASES">
+        <label>Latest CyberBoard Releases...</label>
+        <accel></accel>
+        <help></help>
+      </object>
+      <object class="separator"/>
+      <object class="wxMenuItem" name="wxID_ABOUT">
+        <label>_About CyberBoard...</label>
+        <accel></accel>
+        <help>Display program information, version number and copyright</help>
+      </object>
+    </object>
+  </object>
   <object class="wxMenuBar" name="IDR_MENU_PLAYER_POPUPS">
     <object class="wxMenu" name="MENU_PV_MOVEMODE">
       <label>0=PV__MOVEMODE</label>
@@ -3344,6 +4346,7 @@
           <label>Begin a Compound Move</label>
           <accel></accel>
           <help>Begin compound move</help>
+          <checkable>1</checkable>
         </object>
         <object class="wxMenuItem" name="ID_ACT_COMPOUNDMOVE_END">
           <label>Accept Compound Move</label>
@@ -3399,11 +4402,13 @@
         <label>Horizontal Split</label>
         <accel></accel>
         <help>Split board view horizontally into two rows.</help>
+        <checkable>1</checkable>
       </object>
       <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
         <label>Vertical Split</label>
         <accel></accel>
         <help>Split board view vertically into two columns.</help>
+        <checkable>1</checkable>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_VIEW_PIECES">
@@ -3416,6 +4421,7 @@
         <label>Simulate Spectator Player</label>
         <accel></accel>
         <help>View the board and trays as if the current player was a spectator.</help>
+        <checkable>1</checkable>
       </object>
     </object>
     <object class="wxMenu" name="MENU_PV_PLAYMODE">
@@ -3503,11 +4509,13 @@
         <label>Horizontal Split</label>
         <accel></accel>
         <help>Split board view horizontally into two rows.</help>
+        <checkable>1</checkable>
       </object>
       <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
         <label>Vertical Split</label>
         <accel></accel>
         <help>Split board view vertically into two columns.</help>
+        <checkable>1</checkable>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_VIEW_PIECES">
@@ -3524,6 +4532,7 @@
         <label>Simulate Spectator Player</label>
         <accel></accel>
         <help>View the board and trays as if the current player was a spectator.</help>
+        <checkable>1</checkable>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_PBCK_FINISH">
@@ -3756,11 +4765,13 @@
         <label>Horizontal Split</label>
         <accel></accel>
         <help>Split board view horizontally into two rows.</help>
+        <checkable>1</checkable>
       </object>
       <object class="wxMenuItem" name="ID_VIEW_SPLITBOARDCOLS">
         <label>Vertical Split</label>
         <accel></accel>
         <help>Split board view vertically into two columns.</help>
+        <checkable>1</checkable>
       </object>
       <object class="separator"/>
       <object class="wxMenuItem" name="ID_VIEW_PIECES">
@@ -3773,6 +4784,7 @@
         <label>Snap Grid</label>
         <accel></accel>
         <help>Enable or disable current board&apos;s snap grid</help>
+        <checkable>1</checkable>
       </object>
     </object>
     <object class="wxMenu" name="MENU_PJ_GSN_DEFAULT">
