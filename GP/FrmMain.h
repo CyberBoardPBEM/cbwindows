@@ -38,7 +38,7 @@ class CMainFrame : public CMDIFrameWndExCb,
     DECLARE_DYNAMIC(CMainFrame)
 public:
     CMainFrame();
-    virtual ~CMainFrame();
+    ~CMainFrame() override;
 
 // Attributes
 public:
@@ -50,7 +50,7 @@ public:
 
     CReadMsgWnd&      GetMessageWindow();
 
-    CMFCStatusBar* GetStatusBar() { return &m_wndStatusBar; }
+    CMFCStatusBar& GetStatusBar() { return m_wndStatusBar; }
 
 // Operations
 public:
@@ -81,13 +81,13 @@ protected:
 
 // Implementation
 public:
-    virtual BOOL LoadFrame(UINT nIDResource,
+    BOOL LoadFrame(UINT nIDResource,
         DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-        CWnd *pParentWnd = NULL, CCreateContext *pContext = NULL);
+        CWnd *pParentWnd = NULL, CCreateContext *pContext = NULL) override;
 
 #ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
+    void AssertValid() const override;
+    void Dump(CDumpContext& dc) const override;
 #endif
 
 // Generated message map functions

@@ -79,13 +79,13 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
             {
                 CB::string strOwner = pDoc.GetPieceOwnerName(pPObj->m_pid);
                 CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
-                GetMainFrame()->GetStatusBar()->SetWindowText(strOwnedBy);
+                GetMainFrame()->GetStatusBar().SetWindowText(strOwnedBy);
             }
             else
-                GetMainFrame()->GetStatusBar()->SetWindowText(""_cbstring);
+                GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
         }
         else
-            GetMainFrame()->GetStatusBar()->SetWindowText(""_cbstring);
+            GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
     }
 
     if (pDObj != m_pCurTipObj)
