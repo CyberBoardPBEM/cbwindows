@@ -168,59 +168,67 @@ CWinApp& CbGetApp()
     return CGpApp::Get();
 }
 
-namespace {
-    class wxCGpApp : public wxAppWithMFC
+bool wxCGpApp::OnInit()
+{
+    // handling cmd line w/ MFC, so skip wxCmdLineParser
+
+    wxXmlResource::Get()->InitAllHandlers();
+    wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBPlay.xrc"), false);
+
+    // Fill in the application information fields before creating wxConfig.
+    SetVendorName("CyberBoardPBEM");
+    SetAppName("CBPlay");
+    SetAppDisplayName(CB::GetAppName());
+    static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryLoad(*wxConfig::Get());
+
+    return true;
+}
+
+int wxCGpApp::OnExit()
+{
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistorySave(*wxConfig::Get());
+
+    return wxAppWithMFC::OnExit();
+}
+
+/* for safety, and to approximate MFC,
+    disable MFC toolbar/menu commands that aren't
+    explicitly enabled */
+bool wxCGpApp::TryAfter(wxEvent& event)
+{
+    if (wxAppWithMFC::TryAfter(event))
     {
-    public:
-        virtual bool OnInit() override
+        return true;
+    }
+
+    /* for safety, and to approximate MFC,
+        disable toolbar/menu commands that aren't
+        explicitly enabled */
+    if (event.GetEventType() == wxEVT_UPDATE_UI)
+    {
+        wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
+        wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
+        // !event.obj suggests MFC
+        /* if xrcid is empty, then id is something
+            wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
+            so don't interfere with it */
+        if (!event.GetEventObject() && !xrcid.empty())
         {
-            // handling cmd line w/ MFC, so skip wxCmdLineParser
-
-            wxXmlResource::Get()->InitAllHandlers();
-            wxCHECK(wxXmlResource::Get()->LoadFile(wxStandardPaths::Get().GetDataDir() + "/CBPlay.xrc"), false);
-
-            static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
-
+            if (pCmdUI.IsCheckable())
+            {
+                pCmdUI.Check(false);
+            }
+            pCmdUI.Enable(false);
             return true;
         }
+    }
 
-    protected:
-        /* for safety, and to approximate MFC,
-            disable MFC toolbar/menu commands that aren't
-            explicitly enabled */
-        bool TryAfter(wxEvent& event) override
-        {
-            if (wxAppWithMFC::TryAfter(event))
-            {
-                return true;
-            }
-
-            /* for safety, and to approximate MFC,
-                disable toolbar/menu commands that aren't
-                explicitly enabled */
-            if (event.GetEventType() == wxEVT_UPDATE_UI)
-            {
-                wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
-                wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
-                // !event.obj suggests MFC
-                /* if xrcid is empty, then id is something
-                    wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
-                    so don't interfere with it */
-                if (!event.GetEventObject() && !xrcid.empty())
-                {
-                    if (pCmdUI.IsCheckable())
-                    {
-                        pCmdUI.Check(false);
-                    }
-                    pCmdUI.Enable(false);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    };
+    return false;
 }
+
 wxDECLARE_APP(wxCGpApp);
 // Notice use of wxIMPLEMENT_APP_NO_MAIN() instead of the usual wxIMPLEMENT_APP!
 wxIMPLEMENT_APP_NO_MAIN(wxCGpApp);

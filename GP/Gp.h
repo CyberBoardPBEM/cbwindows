@@ -254,6 +254,19 @@ public:
     DECLARE_MESSAGE_MAP()
 };
 
+class wxCGpApp : public wxAppWithMFC
+{
+public:
+    bool OnInit() override;
+    int OnExit() override;
+
+protected:
+    /* for safety, and to approximate MFC,
+        disable MFC toolbar/menu commands that aren't
+        explicitly enabled */
+    bool TryAfter(wxEvent& event) override;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 
