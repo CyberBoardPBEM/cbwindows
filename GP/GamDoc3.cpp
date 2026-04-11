@@ -559,7 +559,11 @@ void CGamDoc::SerializeGame(CArchive& ar)
         }
         GetTrayManager().PropagateOwnerMaskToAllPieces(this);
         GetPBoardManager().PropagateOwnerMaskToAllPieces();
+#if 0
         GetMainFrame()->GetMessageWindow().SetText(this);
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
 }
 
@@ -921,10 +925,14 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pYMgr = new CTrayManager;
         m_pYMgr->SetTileManager(&m_pGbx->GetTileManager());
 
+#if 0
         // Finally set up the tray palettes
         m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
         m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
         m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
+#else
+        AfxThrowNotSupportedException();
+#endif
 
         // Main content serialization....
         m_pPBMgr->Serialize(ar);    // Board contents

@@ -271,7 +271,11 @@ void CReadMsgWnd::SetTextStyle(wxColour cr, wxFontWeight dwEffect)
 // Called when window is undocked. Message sent by CCBMiniFrameWnd class.
 LRESULT CReadMsgWndContainer::OnPaletteHide(WPARAM, LPARAM)
 {
+#if 0
     GetMainFrame()->SendMessage(WM_COMMAND, ID_PBCK_READMESSAGE);
+#else
+    AfxThrowNotSupportedException();
+#endif
     return (LRESULT)0;
 }
 

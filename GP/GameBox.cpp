@@ -84,9 +84,9 @@ BOOL CGameBox::Load(CGamDoc& pDoc, const CB::string& pszPathName, CB::string& st
     ar.m_pDocument = pDoc;
     ar.m_bForceFlat = FALSE;
 
+    wxBusyCursor busyCursor;
     TRY
     {
-        GetMainFrame()->BeginWaitCursor();
         // File Header
         char str[5];
         ar.Read(&str, 4);
@@ -215,19 +215,16 @@ BOOL CGameBox::Load(CGamDoc& pDoc, const CB::string& pszPathName, CB::string& st
 
         ar.Close();
         file.Close();
-        GetMainFrame()->EndWaitCursor();
     }
     CATCH(CMemoryException, e)
     {
         file.Abort();       // Will not throw an exception
-        GetMainFrame()->EndWaitCursor();
         strErr = CB::string::LoadString(IDS_ERR_GBXNOMEM);
         return FALSE;
     }
     AND_CATCH_ALL(e)
     {
         file.Abort();       // Will not throw an exception
-        GetMainFrame()->EndWaitCursor();
         strErr = CB::string::LoadString(IDS_ERR_GBXREAD);
         return FALSE;
     }

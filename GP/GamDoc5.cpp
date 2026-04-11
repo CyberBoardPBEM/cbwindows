@@ -365,7 +365,11 @@ void CGamDoc::MsgSetMessageText(const CB::string& str)
     else
         m_strCurMsg = str;
 
+#if 0
     GetMainFrame()->GetMessageWindow().SetText(this);
+#else
+    AfxThrowNotSupportedException();
+#endif
     if (!IsQuietPlayback() && !m_bMsgWinVisible)
         m_bMsgWinVisible = TRUE;
 }

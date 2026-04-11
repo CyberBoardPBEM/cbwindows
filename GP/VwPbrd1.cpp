@@ -71,6 +71,7 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
 
     if (pDoc.IsOwnerTipsDisabled() && pDoc.HasPlayers())
     {
+#if 0
         if (pDObj != NULL && pDObj->GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj* pPObj = (CPieceObj*)pDObj;
@@ -86,6 +87,9 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
         }
         else
             GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
 
     if (pDObj != m_pCurTipObj)

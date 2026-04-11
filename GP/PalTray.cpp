@@ -289,8 +289,12 @@ void CTrayPalette::OnMessageRestoreWinState(WinStateRestoreEvent& /*event*/)
 
 void CTrayPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
+#if 0
     GetMainFrame()->SendMessage(WM_COMMAND,
         (WPARAM)(m_nID));
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -58,6 +58,7 @@ CDockTrayPalette::~CDockTrayPalette()
 
 void CDockTrayPalette::SetChild(CTrayPaletteContainer* pChildWnd)
 {
+#if 0
     if (m_pChildWnd == pChildWnd)
         return;
 
@@ -82,6 +83,9 @@ void CDockTrayPalette::SetChild(CTrayPaletteContainer* pChildWnd)
     }
     else
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

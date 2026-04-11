@@ -315,7 +315,11 @@ bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
     // We make this call to ensure the sizes of the palette windows layout
     // don't "bloat" during document load. I can't really tell you why this
     // works but, unless you have a proper solution... Don't mess with it!
+#if 0
     GetMainFrame()->ShowPalettePanes(TRUE);
+#else
+    AfxThrowNotSupportedException();
+#endif
 
     // This cheat is to have the filename being loaded available
     // to the Serialize routine
@@ -470,6 +474,7 @@ void CGamDoc::OnIdle(BOOL bActive)
     {
         CMainFrame* pMFrame = GetMainFrame();
 
+#if 0
         CDockMarkPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
         pDockMark.SetChild(&*m_palMark);
         pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
@@ -485,6 +490,9 @@ void CGamDoc::OnIdle(BOOL bActive)
         CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg.GetParent(), m_bMsgWinVisible && !IsScenario());
         pDocMsg.SetText(this);
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
 }
 
@@ -658,6 +666,7 @@ BOOL CGamDoc::OnNewScenario()
 
     // Finally set up the tray palettes
     wxASSERT(!m_palTrayA);
+#if 0
     m_palTrayA = new CTrayPaletteContainer(*this, ID_VIEW_TRAYA);
     m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
     wxASSERT(!m_palTrayB);
@@ -666,6 +675,9 @@ BOOL CGamDoc::OnNewScenario()
     wxASSERT(!m_palMark);
     m_palMark = new CMarkerPaletteContainer(*this);
     m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
+#else
+    AfxThrowNotSupportedException();
+#endif
 
     return TRUE;
 }
@@ -701,23 +713,23 @@ BOOL CGamDoc::OnNewGame()
     ar.m_pDocument = *this;
     ar.m_bForceFlat = FALSE;
 
+    {
+    wxBusyCursor busyCursor;
     TRY
     {
-        GetMainFrame()->BeginWaitCursor();
         m_strTmpPathName = dlg.GetPathName();
         m_bScenario = TRUE;             // Fake out shared code
         SerializeScenario(ar);
         m_bScenario = FALSE;
         m_strTmpPathName.clear();
-        GetMainFrame()->EndWaitCursor();
     }
     CATCH_ALL(e)
     {
         file.Abort();       // Will not throw an exception
-        GetMainFrame()->EndWaitCursor();
         return FALSE;
     }
     END_CATCH_ALL
+    }
 
     SetGameState(stateRecording);
 
@@ -1325,12 +1337,8 @@ void CGamDoc::OnPbckNext(wxCommandEvent& /*event*/)
                 if (m_nCurMove != Invalid_v<size_t> ||
                     (m_bStepToNextHist && IsPlayingHistory() && !IsPlayingLastHistory()))
                 {
-#if 1
-                    GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
-#else
                     wxCommandEvent event(wxEVT_MENU, XRCID("ID_PBCK_NEXT"));
                     CB::GetMainWndWx().GetEventHandler()->AddPendingEvent(event);
-#endif
                 }
                 else
                     m_bAutoPlayback = FALSE;    // Make sure FALSE in case auto step turned off
@@ -1343,12 +1351,8 @@ void CGamDoc::OnPbckNext(wxCommandEvent& /*event*/)
             // Force switch to next history record.
             OnPbckNextHistory();
             // Queue up the next move command
-#if 1
-            GetMainFrame()->PostMessage(WM_COMMAND, MAKEWPARAM(uint16_t(ID_PBCK_NEXT), uint16_t(0)));
-#else
             wxCommandEvent event(wxEVT_MENU, XRCID("ID_PBCK_NEXT"));
             CB::GetMainWndWx().GetEventHandler()->AddPendingEvent(event);
-#endif
         }
 
         m_nMoveInterlock--;

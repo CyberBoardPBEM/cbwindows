@@ -58,6 +58,7 @@ CDockMarkPalette::~CDockMarkPalette()
 
 void CDockMarkPalette::SetChild(CMarkerPaletteContainer* pChildWnd)
 {
+#if 0
     if (m_pChildWnd == pChildWnd)
         return;
 
@@ -82,6 +83,9 @@ void CDockMarkPalette::SetChild(CMarkerPaletteContainer* pChildWnd)
     }
     else
         GetMainFrame()->ShowPane(this, FALSE, TRUE, FALSE);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

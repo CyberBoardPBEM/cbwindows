@@ -32,10 +32,11 @@ class CDockMarkPalette;
 class CReadMsgWnd;
 class CReadMsgWndContainer;
 
-class CMainFrame : public CMDIFrameWndExCb,
-                    public CB::NativeContainerWindowMixin
+using CDocFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, CB::AuiMDIParentFrame>;
+
+class CMainFrame : public wxDocParentFrameAny<CB::AuiMDIParentFrame>,
+                    public CB::FreezeUntilIdleMixin
 {
-    DECLARE_DYNAMIC(CMainFrame)
 public:
     CMainFrame();
     ~CMainFrame() override;
@@ -44,6 +45,7 @@ public:
 public:
     CDocument* GetCurrentDocument();
 
+#if 0
     CDockMarkPalette& GetDockingMarkerWindow() { return *m_wndMarkPal; }
     CDockTrayPalette& GetDockingTrayAWindow() { return *m_wndTrayPalA; }
     CDockTrayPalette& GetDockingTrayBWindow() { return *m_wndTrayPalB; }
@@ -51,17 +53,23 @@ public:
     CReadMsgWnd&      GetMessageWindow();
 
     CMFCStatusBar& GetStatusBar() { return m_wndStatusBar; }
+#endif
 
 // Operations
 public:
+#if 0
     void UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn);
     void ShowPalettePanes(BOOL bShow);
+#endif
     void OnIdle();
+#if 0
     BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
     BOOL OnCloseDockingPane(CDockablePane* pWnd) override;
+#endif
 
 // Implementation
 protected:
+#if 0
     CMFCMenuBar   m_wndMenuBar;
     CMFCToolBar   m_wndToolBar;
     CMFCToolBar   m_wndTBarView;
@@ -77,23 +85,31 @@ protected:
     OwnerPtr<CDockTrayPalette> m_wndTrayPalB;
 
     CWindowPos    m_wndPosition;
+#endif
      //@@@@@@ CMDIWndTab    m_wndMDITabWindow;
 
 // Implementation
 public:
+#if 0
     BOOL LoadFrame(UINT nIDResource,
         DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
         CWnd *pParentWnd = NULL, CCreateContext *pContext = NULL) override;
+#endif
 
+#if 0
 #ifdef _DEBUG
     void AssertValid() const override;
     void Dump(CDumpContext& dc) const override;
 #endif
+#endif
 
 // Generated message map functions
 protected:
+#if 0
     void WinHelp(DWORD_PTR dwData, UINT nCmd) override;
+#endif
 
+#if 0
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
@@ -105,12 +121,25 @@ protected:
     afx_msg void OnToggleMessagePalette();
     afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageBox(WPARAM wParam, LPARAM lParam);
+#endif
 
-    DECLARE_MESSAGE_MAP()
+    wxDECLARE_EVENT_TABLE();
 
 private:
+    typedef wxDocParentFrameAny<CB::AuiMDIParentFrame> BASE;
+
+    wxAuiManager auiManager;
+#if 0
     CMFCDropDownToolBar m_flipToolbar;
+#endif
 };
+
+inline CMainFrame* GetMainFrame()
+{
+    // KLUDGE:  wx may return non-mainframe during shutdown
+    wxWindow* w = CB::pGetMainWndWx();
+    return w ? dynamic_cast<CMainFrame*>(w) : nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 #endif // _FRMMAIN_H_

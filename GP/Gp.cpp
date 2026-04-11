@@ -126,6 +126,7 @@ CGpApp::CGpApp()
 class CGpApp::CwxGpApp : public wxMFCApp<CGpApp>
 {
 protected:
+#if 0
     BOOL InitMainWnd() override
     {
         // Create main MDI Frame window
@@ -154,6 +155,7 @@ protected:
 
         return TRUE;
     }
+#endif
 };
 
 CGpApp& CGpApp::Get()
@@ -182,6 +184,10 @@ bool wxCGpApp::OnInit()
     static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
     wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
     docMgr.FileHistoryLoad(*wxConfig::Get());
+
+    CMainFrame& pMainFrame = *new CMainFrame;
+    wxTheApp->SetTopWindow(&pMainFrame);
+    pMainFrame.Show();
 
     return true;
 }
@@ -521,33 +527,30 @@ BOOL CGpApp::OnIdle(LONG lCount)
     // as when a context menu is visible. Therefore we also
     // cause the quit message to be reposted so the message
     // pump will exit.
-    if (GetMainFrame() == NULL)
+    CMainFrame* mainWnd = GetMainFrame();
+    if (mainWnd == NULL)
     {
         PostQuitMessage(0);
         return TRUE;
     }
 
     // Inform all open documents of idle condition.
-    CDocument* pCurDoc = GetCurrentDocument();
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocument* pCurDoc = docMgr.GetCurrentDocument();
 
-    POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
+    BOOL bAppVisible = mainWnd->IsShown() &&
+        !mainWnd->IsIconized();
 
-    BOOL bAppVisible = m_pMainWnd->IsWindowVisible() &&
-        !m_pMainWnd->IsIconic();
-    while (pos != NULL)
+    wxList& docs = docMgr.GetDocuments();
+    for (auto it = docs.begin() ; it != docs.end() ; ++it)
     {
-        CDocTemplate* pTemplate =
-            (CDocTemplate*)m_pDocManager->GetNextDocTemplate(pos);
-        POSITION pos2 = pTemplate->GetFirstDocPosition();
-        while (pos2)
-        {
-            CGamDoc* pDoc = CB::ToCGamDoc(pTemplate->GetNextDoc(pos2));
-            CGamDocMfc& pDocMfc = CheckedDeref(pDoc);
-            pDoc->OnIdle(bAppVisible && &pDocMfc == pCurDoc);
-        }
+        CGamDoc* pDoc = dynamic_cast<CGamDoc*>(*it);
+        wxASSERT(pDoc != NULL);
+        pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);
+
     }
     // Main idle processing...
-    ((CMainFrame*)m_pMainWnd)->OnIdle();
+    mainWnd->OnIdle();
     // Finally MFC idle processing...
     return CWinAppEx::OnIdle(lCount);
 }
@@ -562,9 +565,13 @@ BOOL CGpApp::DispatchMessages()
   {
     if (msg.message == WM_QUIT)
     {
+#if 0
         if (GetMainFrame() != NULL && ::IsWindow(GetMainFrame()->GetSafeHwnd()))
             GetMainFrame()->PostMessage(WM_QUIT, 0, 0);
         return TRUE;                // Inform caller the WM_QUIT was queued
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
     if (!PreTranslateMessage(&msg))
     {
@@ -703,7 +710,7 @@ void CGpApp::OnHelpReleases()
 
 wxWindow* CB::pGetMainWndWx()
 {
-    return *dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+    return wxTheApp->GetTopWindow();
 }
 
 CB::string CB::GetAppName()

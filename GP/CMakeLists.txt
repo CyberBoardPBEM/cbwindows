@@ -134,7 +134,7 @@ if (MSVC)
 	target_include_directories(CBPlay PRIVATE $ENV{VCToolsInstallDir}atlmfc/src/mfc)
 endif()
 target_precompile_headers(CBPlay PRIVATE StdAfx.h)
-target_link_libraries(CBPlay wx::core wx::xrc)
+target_link_libraries(CBPlay wx::aui wx::core wx::xrc)
 
 add_custom_command(
 	OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CBPlay.xrc"

@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    "GamDoc.h"
 #include    "Gp.h"
 #include    "GdiTools.h"
 #include    "FrmMain.h"
@@ -36,8 +37,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -45,7 +44,8 @@ IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndExCb)
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
+wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
+#if 0
     ON_WM_CREATE()
     ON_UPDATE_COMMAND_UI(ID_VIEW_SNAPGRID, OnUpdateDisable)
     ON_WM_HELPINFO()
@@ -65,7 +65,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndExCb)
     ON_COMMAND(ID_CONTEXT_HELP, CMDIFrameWndEx::OnContextHelp)
     ON_MESSAGE(WM_MESSAGEBOX, OnMessageBox)
     ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
-END_MESSAGE_MAP()
+    EVT_MENU(XRCID("ID_WINDOW_TILE_HORZ"), OnTile)
+    EVT_MENU(XRCID("ID_WINDOW_TILE_VERT"), OnTile)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_HORZ"), OnUpdateTile)
+    EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
+#endif
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // IDs used to initialize control bars
@@ -95,19 +100,70 @@ static const CB::string szSectControlBars = "ControlBars";
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() :
-    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
+    BASE(wxDocManager::GetDocumentManager(),
+                                            nullptr, wxID_ANY,
+                                            wxTheApp->GetAppDisplayName()),
+    CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this))
+#if 0
     m_wndMessage(MakeOwner<CReadMsgWndContainer>()),
     m_wndMarkPal(MakeOwner<CDockMarkPalette>()),
     m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
     m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
+#endif
 {
-    // TODO: add member initialization code here
+    auiManager.SetManagedWindow(this);
+    SetIcon(wxIcon(std::format("#{}", IDR_GP_MAINFRAME)));
+    GetClientWindow()->SetWindowStyleFlag(
+                            GetClientWindow()->GetWindowStyleFlag() |
+                            wxAUI_NB_WINDOWLIST_BUTTON);
+
+    wxMenuBar& menubar = CheckedDeref(wxXmlResource::Get()->LoadMenuBar(this, "IDR_GP_MAINFRAME"_cbstring));
+    // mru File menu
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryUseMenu(&menuFile);
+    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+
+    /* KLUDGE:  wx wants to construct Window menu itself, so we
+                can't put Split commands in .xrc */
+    wxMenu& wndMenu = CheckedDeref(GetWindowMenu());
+    static const struct
+    {
+        int xrcId;
+        CB::string menuString;
+        int helpId;
+        wxItemKind kind;
+    } windowMenuArgs[] = {
+        { wxID_SEPARATOR },
+        { XRCID("ID_WINDOW_TILE_HORZ"), "Split Tabs &Horizontally"_cbstring, ID_WINDOW_TILE_HORZ, wxITEM_NORMAL },
+        { XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, ID_WINDOW_TILE_VERT, wxITEM_NORMAL },
+    };
+    for (const auto& arg : windowMenuArgs)
+    {
+        if (arg.xrcId != wxID_SEPARATOR)
+        {
+            CB::string str = CB::string::LoadString(arg.helpId);
+            std::vector<wxString> tokens;
+            wxStringTokenizer tokenizer(str, "\n");
+            while (tokenizer.HasMoreTokens())
+            {
+                tokens.push_back(tokenizer.GetNextToken());
+            }
+            wxASSERT(!tokens.empty());
+            wndMenu.Append(arg.xrcId, arg.menuString, tokens.front(), arg.kind);
+        }
+        else
+        {
+            wndMenu.AppendSeparator();
+        }
+    }
 }
 
 CMainFrame::~CMainFrame()
 {
 }
 
+#if 0
 // BUGFIX: Fix problem in MFC7.1 (VS2003)
 LRESULT CMainFrame::OnDDEExecute(WPARAM wParam, LPARAM lParam)  //TODO: DLL20200618 REMOVE THIS!!
 {
@@ -395,6 +451,7 @@ void CMainFrame::OnHelpIndex()
 {
     GetApp()->DoHelpContents();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -402,10 +459,17 @@ void CMainFrame::OnIdle()
 {
     if (GetCurrentDocument() == NULL)
     {
-    	ShowPalettePanes(FALSE);
+#if 0
+       ShowPalettePanes(FALSE);
+#else
+        CPP20_TRACE("TODO:  {}\n", __func__);
+#endif
     }
+
+    CB::FreezeUntilIdleMixin::OnIdle();
 }
 
+#if 0
 namespace {
     /* CB is currently a mix of MFC and wx,
         so need to send both kinds of msg */
@@ -478,22 +542,22 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn)
         }
     }
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
 CDocument* CMainFrame::GetCurrentDocument()
 {
-    CMDIChildWndEx* pMDIChild = (CMDIChildWndEx*)MDIGetActive();
-    if (pMDIChild != NULL)
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    wxDocument* doc = docMgr.GetCurrentDocument();
+    if (!doc)
     {
-        CView *pView = pMDIChild->GetActiveView();
-        ASSERT(pView != NULL);
-        ASSERT(pView->IsKindOf(RUNTIME_CLASS(CView)));
-        return pView->GetDocument();
+        return nullptr;
     }
-    return NULL;
+    return dynamic_cast<CGamDoc&>(*doc);
 }
 
+#if 0
 CReadMsgWnd& CMainFrame::GetMessageWindow()
 {
     return *m_wndMessage;
@@ -596,4 +660,5 @@ LRESULT CMainFrame::OnMessageBox(WPARAM wParam, LPARAM lParam)
     }
     return (LRESULT)0;
 }
+#endif
 

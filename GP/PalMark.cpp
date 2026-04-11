@@ -177,7 +177,11 @@ void CMarkerPalette::OnMessageRestoreWinState(WinStateRestoreEvent& /*event*/)
 
 void CMarkerPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
+#if 0
     GetMainFrame()->SendMessage(WM_COMMAND, ID_VIEW_MARKERPAL);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
