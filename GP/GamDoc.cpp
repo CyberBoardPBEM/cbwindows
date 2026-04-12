@@ -72,7 +72,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CGamDocMfc, CDocument)
+wxIMPLEMENT_DYNAMIC_CLASS(CGamDoc, wxDocument);
+IMPLEMENT_DYNAMIC(CGamDocMfc, CDocument)
 
 #ifdef  _DEBUG
 #define new DEBUG_NEW
@@ -203,8 +204,8 @@ wxEND_EVENT_TABLE()
 /////////////////////////////////////////////////////////////////////////////
 // CGamDoc construction/destruction
 
-CGamDoc::CGamDoc(CGamDocMfc& d) :
-    mfcDoc(&d)
+CGamDoc::CGamDoc() :
+    mfcDoc(new CGamDocMfc(*this))
 {
     m_nSeedCarryOver = (UINT)GetTickCount();
 
@@ -273,10 +274,16 @@ bool CGamDoc::OnNewDocument()
 
     SetThisDocumentType();
 
+    bool retval;
     if (IsScenario())
-        return OnNewScenario();
+        retval = OnNewScenario();
     else
-        return OnNewGame();
+        retval = OnNewGame();
+    if (retval)
+    {
+        UpdateAllViews(nullptr, CGamDocHint(HINT_DOCREADY));
+    }
+    return retval;
 }
 
 bool CGamDoc::OnCloseDocument()
@@ -291,18 +298,10 @@ bool CGamDoc::OnCloseDocument()
         }
         END_TRY
     }
-/* TODO:  can't do this yet:  if mfc is closed first, then it
-    deletes doc, and wxDocument::OnCloseDocument() can't be
-    called.  If wx is called first, it calls DeleteContents()
-    before the views are gone.  Since MFC views control the
-    doc lifetime currently, MFC must take precendence */
-#if 0
     if (!wxDocument::OnCloseDocument())
     {
         return false;
     }
-#endif
-    mfcDoc->CDocument::OnCloseDocument();
     return true;
 }
 
@@ -318,7 +317,7 @@ bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
 #if 0
     GetMainFrame()->ShowPalettePanes(TRUE);
 #else
-    AfxThrowNotSupportedException();
+    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
 
     // This cheat is to have the filename being loaded available
@@ -339,7 +338,11 @@ bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
             bRet = FALSE;
         }
     }
-    if (!bRet)
+    if (bRet)
+    {
+        UpdateAllViews(nullptr, CGamDocHint(HINT_DOCREADY));
+    }
+    else
     {
         // don't suggest saving doc
         SetModifiedFlag(false);
@@ -491,7 +494,7 @@ void CGamDoc::OnIdle(BOOL bActive)
         pMFrame->UpdatePaletteWindow(pDocMsg.GetParent(), m_bMsgWinVisible && !IsScenario());
         pDocMsg.SetText(this);
 #else
-        AfxThrowNotSupportedException();
+        CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
     }
 }
@@ -504,8 +507,12 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::DoInitialUpdate()
 {
+#if 0
     (*m_palTrayA)->UpdatePaletteContents(NULL);
     (*m_palTrayB)->UpdatePaletteContents(NULL);
+#else
+    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -676,7 +683,7 @@ BOOL CGamDoc::OnNewScenario()
     m_palMark = new CMarkerPaletteContainer(*this);
     m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 #else
-    AfxThrowNotSupportedException();
+    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
 
     return TRUE;
@@ -978,9 +985,9 @@ void CGamDoc::DiscardWindowState()
 
 void CGamDoc::SetThisDocumentType()
 {
-    CDocTemplate *pDocTmpl = mfcDoc->GetDocTemplate();
-    CB::string str = CB::string::GetDocString(*pDocTmpl, CDocTemplate::filterExt);
-    m_bScenario = str.CompareNoCase(".gsn") == 0;
+    wxDocTemplate& pDocTmpl = CheckedDeref(GetDocumentTemplate());
+    CB::string str = pDocTmpl.GetDefaultExtension();
+    m_bScenario = str.CompareNoCase("gsn") == 0;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1834,6 +1841,7 @@ void CGamDoc::OnFileSaveGameAsScenario(wxCommandEvent& /*event*/)
     m_dwCurrentPlayer = OWNER_MASK_SPECTATOR;
     m_dwScenarioID = IssueScenarioID();     // Create new scenario ID
 
+#if 0
     std::unique_ptr<CB::string> fileName = CB::string::DoPromptFileName(*GetApp(), IDS_SAVEGAMEASSCENARIO,
         OFN_HIDEREADONLY | OFN_PATHMUSTEXIST, FALSE,
         GetApp()->GetScnenarioDocTemplate());
@@ -1855,6 +1863,9 @@ void CGamDoc::OnFileSaveGameAsScenario(wxCommandEvent& /*event*/)
     m_dwScenarioID = dwScenarioID;
 
     SetModifiedFlag(bModified);
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 void CGamDoc::OnUpdateFileSaveGameAsScenario(wxUpdateUIEvent& pCmdUI)

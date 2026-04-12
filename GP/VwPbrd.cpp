@@ -343,9 +343,18 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         // Make sure we still exist!
         if (GetDocument().GetPBoardManager().FindPBoardByRef(*m_pPBoard) == Invalid_v<size_t>)
         {
-            CFrameWnd* pFrm = parent->GetParentFrame();
-            wxASSERT(pFrm != NULL);
-            pFrm->PostMessage(WM_CLOSE, 0, 0L);
+            /* KLUDGE:  need to close frame because
+                closing non-proj views is disabled
+                in order to override standard doc
+                lifetime */
+#if 1
+            CB_VERIFY(wxview->GetFrame().Close(true));
+#else
+            /* KLUDGE:  use CallAfter() to avoid invalidating
+                wxDocument::UpdateAllViews() iterator */
+            wxWindow* frame = &wxview->GetFrame();
+            frame->CallAfter([frame] { frame->Close(true); });
+#endif
         }
     }
     else if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)

@@ -70,6 +70,7 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 void CWinStateManager::RestoreStateOfDocumentFrames()
 {
     CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
+#if 0
     // Processes only the main frame and the MDI child frames.
     // All other records are ignored.
     for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
@@ -121,6 +122,9 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
         }
     }
     (DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd()))->RecalcLayout();
+#else
+    CPP20_TRACE("TODO:  {}\n", __func__);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////

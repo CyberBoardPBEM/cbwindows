@@ -54,10 +54,7 @@ static char THIS_FILE[] = __FILE__;
 
 void CGsnProjView::DoGsnProperty()
 {
-    wxASSERT(!"TODO:");
-#if 0
     GetDocument().DoScenarioProperties();
-#endif
 }
 
 void CGsnProjView::DoUpdateGsnInfo()
@@ -78,10 +75,7 @@ void CGsnProjView::DoUpdateGsnInfo()
 
 void CGsnProjView::DoBoardSelection()
 {
-    wxASSERT(!"TODO:");
-#if 0
     GetDocument().DoSelectBoards();
-#endif
 }
 
 void CGsnProjView::DoBoardProperty()
@@ -147,10 +141,7 @@ void CGsnProjView::DoUpdateBoardInfo()
 
 void CGsnProjView::DoTrayCreate()
 {
-    wxASSERT(!"TODO:");
-#if 0
     GetDocument().DoCreateTray();
-#endif
 }
 
 void CGsnProjView::DoTrayProperty()

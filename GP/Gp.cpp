@@ -116,7 +116,6 @@ CGpApp::CGpApp()
     m_dwHtmlHelpCookie = 0;
     m_bDisableHtmlHelp = FALSE;
     m_pBrdViewTmpl = NULL;
-    m_pScnDocTemplate = NULL;
     m_hHtmlProcessHandle = NULL;
 }
 
@@ -182,6 +181,9 @@ bool wxCGpApp::OnInit()
     SetAppName("CBPlay");
     SetAppDisplayName(CB::GetAppName());
     static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+    new wxDocTemplate(&*docManager, "Scenario Files", "*.gsn", "", "gsn",
+                        "CGamDoc", "wxGsnProjView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(wxGsnProjView));
     wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
     docMgr.FileHistoryLoad(*wxConfig::Get());
 
@@ -309,13 +311,6 @@ BOOL CGpApp::InitInstance()
         RUNTIME_CLASS(CProjFrame),
         RUNTIME_CLASS(CGamProjViewContainer));
     AddDocTemplate(pDocTemplate);
-
-    m_pScnDocTemplate = new CMultiDocTemplate(
-        IDR_GSCNTYPE,
-        RUNTIME_CLASS(CGamDocMfc),
-        RUNTIME_CLASS(CProjFrame),
-        RUNTIME_CLASS(CGsnProjViewContainer));
-    AddDocTemplate(m_pScnDocTemplate);
 
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,

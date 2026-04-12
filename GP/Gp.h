@@ -218,9 +218,6 @@ public:
 
     CMultiDocTemplate* m_pBrdViewTmpl;
 
-    CMultiDocTemplate* GetScnenarioDocTemplate()
-        { return m_pScnDocTemplate; }
-
     DWORD   m_dwHtmlHelpCookie;
     BOOL    m_bDisableHtmlHelp;
     HANDLE  m_hHtmlProcessHandle;
@@ -245,8 +242,6 @@ public:
     virtual BOOL PreTranslateMessage(MSG *pMsg);
 
 // Implementation
-    CMultiDocTemplate* m_pScnDocTemplate;
-
     afx_msg void OnAppAbout();
     afx_msg void OnHelpWebsite();
     afx_msg void OnHelpReleases();

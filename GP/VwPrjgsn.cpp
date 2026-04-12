@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGsn, CProjListBoxBaseWx)
-IMPLEMENT_DYNCREATE(CGsnProjViewContainer, CView)
+wxIMPLEMENT_DYNAMIC_CLASS(wxGsnProjView, CB::View)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,15 +115,11 @@ wxBEGIN_EVENT_TABLE(CGsnProjView, wxPanel)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
 wxEND_EVENT_TABLE()
 
-BEGIN_MESSAGE_MAP(CGsnProjViewContainer, CView)
-    ON_WM_CREATE()
-END_MESSAGE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView
 
-CGsnProjView::CGsnProjView(CGsnProjViewContainer& p) :
-    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGsnProjView)
+CGsnProjView::CGsnProjView(wxGsnProjView& v) :
+    CB_XRC_BEGIN_CTRLS_DEFN(&v.GetFrame(), CGsnProjView)
         CB_XRC_CTRL(m_listProj)
         CB_XRC_CTRL(m_editInfo)
         CB_XRC_CTRL(m_listTrays)
@@ -131,9 +127,8 @@ CGsnProjView::CGsnProjView(CGsnProjViewContainer& p) :
         CB_XRC_CTRL(m_btnPrjB)
         CB_XRC_CTRL(m_btnPrjC)
     CB_XRC_END_CTRLS_DEFN(),
-    parent(&p),
-    document(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument()))),
-    wxview(new wxGsnProjView(*this))
+    wxview(&v),
+    document(&wxview->GetDocument())
 {
     m_nLastSel = -1;
     m_nLastGrp = -1;
@@ -223,26 +218,24 @@ void CGsnProjView::OnInitialUpdate()
     }
 }
 
-void CGsnProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CGsnProjView::OnUpdate(wxView* pSender, const CGamDocHint& pHint)
 {
-    wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
-    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
-    if (lHint == HINT_TRAYCHANGE)
+    if (pHint.GetHint() == HINT_TRAYCHANGE)
     {
         CGamDoc& pDoc = GetDocument();
-        (*pDoc.m_palTrayA)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        (*pDoc.m_palTrayB)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*pDoc.m_palTrayA)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*pDoc.m_palTrayB)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
-    else if (lHint == HINT_GAMESTATEUSED)
+    else if (pHint.GetHint() == HINT_GAMESTATEUSED)
     {
         CGamDoc& pDoc = GetDocument();
         (*pDoc.m_palTrayA)->UpdatePaletteContents();
         (*pDoc.m_palTrayB)->UpdatePaletteContents();
     }
 
-    if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_BOARDCHANGE ||
-            lHint == HINT_TRAYCHANGE || lHint == HINT_GSNPROPCHANGE)
+    if (pHint.GetHint() == HINT_ALWAYSUPDATE || pHint.GetHint() == HINT_BOARDCHANGE ||
+        pHint.GetHint() == HINT_TRAYCHANGE || pHint.GetHint() == HINT_GSNPROPCHANGE ||
+        pHint.GetHint() == HINT_DOCREADY)
         DoUpdateProjectList();
 }
 
@@ -815,36 +808,91 @@ const CGsnProjView& wxGsnProjView::DoGetWindow() const
     return static_cast<const CGsnProjView&>(child);
 }
 
-void CGsnProjViewContainer::OnDraw(CDC* pDC)
+bool wxGsnProjView::OnClose(bool deleteWindow)
 {
-    // do nothing because child covers entire client rect
-}
-
-void CGsnProjViewContainer::OnInitialUpdate()
-{
-    child->OnInitialUpdate();
-
-    BASE::OnInitialUpdate();
-}
-
-void CGsnProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    child->OnUpdate(pSender, lHint, pHint);
-}
-
-CGsnProjViewContainer::CGsnProjViewContainer() :
-    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
-{
-}
-
-int CGsnProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    if (CView::OnCreate(lpCreateStruct) == -1)
+    if (wxView::OnClose(deleteWindow))
     {
-        return -1;
+        /* can't draw w/ doc gone,
+            but load failure doesn't create wnd */
+        if (HasWindow())
+        {
+            GetWindow().Hide();
+        }
+
+        /* CB defines doc's life only by proj view,
+            so close rest */
+        wxViewVector views = GetDocument().GetViewsVector();
+        for (auto it = views.begin() ; it != views.end() ; ++it)
+        {
+            CB::View& view = dynamic_cast<CB::View&>(CheckedDeref(*it));
+            if (&view != this)
+            {
+                /* KLUDGE:  need to close frame because
+                    closing non-proj views is disabled
+                    in order to override standard doc
+                    lifetime */
+                CB_VERIFY(view.GetFrame().Close(true));
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool wxGsnProjView::OnCreate(wxDocument* doc, long flags)
+{
+    wxASSERT(doc == &GetDocument());
+    if (!wxView::OnCreate(doc, flags))
+    {
+        return false;
     }
 
-    child = new CGsnProjView(*this);
+    CB::string str = doc->GetUserReadableName();
+    str += " - ";
+    str += CB::string::LoadString(IDS_PROJTYPE_SCENARIO);
 
-    return 0;
+    CB::DocChildFrame* frame = new CB::DocChildFrame(GetDocument(),
+                    *this,
+                    CheckedDeref(GetMainFrame()),
+                    str,
+                    wxIcon(std::format("#{}", IDR_GSCNTYPE),
+                                        wxBITMAP_TYPE_ICO_RESOURCE,
+                                        16, 16),
+                    "IDR_GSCNTYPE"_cbstring);
+    /* postpone because this gets called before OnOpenDocument()
+    new CGbxProjView(*this);
+    frame->Show();
+    */
+
+    return true;
+}
+
+void wxGsnProjView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
+{
+    CGamDocHintRef* ref = dynamic_cast<CGamDocHintRef*>(hint);
+    wxASSERT(!hint || ref);
+    const CGamDocHint& gamHint = ref ? *ref : CGamDocHintRef(HINT_ALWAYSUPDATE);
+    if (gamHint.GetHint() == HINT_DOCREADY)
+    {
+        new CGsnProjView(*this);
+        GetFrame().Show();
+        GetWindow().OnInitialUpdate();
+        isDocReady = true;
+    }
+
+    CB::View::OnUpdate(sender, hint);
+
+    if (isDocReady)
+    {
+        GetWindow().OnUpdate(sender, gamHint);
+    }
+}
+
+bool wxGsnProjView::HasWindow() const
+{
+    return !GetFrame().GetChildren().empty();
 }

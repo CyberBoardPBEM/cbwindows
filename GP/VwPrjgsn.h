@@ -70,14 +70,16 @@ class CProjListBoxGsn : public CProjListBoxWx<decltype(CB::Impl::CGsnProjViewBas
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGsn);
 };
 
-class CGsnProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGsnProjViewBase
+class CGsnProjView : public wxPanel, private CB::Impl::CGsnProjViewBase
 {
     friend class CGsnProjViewContainer;
 private:
-    CGsnProjView(CGsnProjViewContainer& p);
+    CGsnProjView(wxGsnProjView& v);
 
 // Attributes
 public:
+    operator const wxGsnProjView& () const { return *wxview; }
+    operator wxGsnProjView& () { return const_cast<wxGsnProjView&>(static_cast<const wxGsnProjView&>(std::as_const(*this))); }
     operator const wxView&() const;
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
     operator const wxView*() const;
@@ -144,11 +146,11 @@ protected:
 
 // Implementation
 protected:
-    virtual ~CGsnProjView();
-    virtual void OnInitialUpdate();
-    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    ~CGsnProjView() override;
+    void OnInitialUpdate();
+    void OnUpdate(wxView* pSender, const CGamDocHint& pHint);
 
-    virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    void OnDraw(CDC* pDC);      // overridden to draw this view
 
     // Generated message map functions
 protected:
@@ -187,40 +189,10 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override;
-
-    RefPtr<CGsnProjViewContainer> parent;
+    RefPtr<wxGsnProjView> wxview;
     RefPtr<CGamDoc> document;
-    OwnerPtr<wxGsnProjView> wxview;
-};
 
-class CGsnProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
-                                public CB::NativeContainerWindowMixin
-{
-public:
-    void OnDraw(CDC* pDC) override;
-
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-
-private:
-    CGsnProjViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CGsnProjViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    DECLARE_MESSAGE_MAP()
-
-    // IGetEvtHandler
-    wxEvtHandler& Get() override
-    {
-        return CheckedDeref(CheckedDeref(child).GetEventHandler());
-    }
-
-    // owned by wx
-    CB::propagate_const<CGsnProjView*> child = nullptr;
-
-    typedef CB::OnCmdMsgOverride<CView> BASE;
+    friend wxGsnProjView;
 };
 
 class wxGsnProjView : public CB::View
@@ -231,14 +203,25 @@ public:
     {
         return const_cast<CGsnProjView&>(std::as_const(*this).GetWindow());
     }
+    operator const CGsnProjView& () const { return GetWindow(); }
+    operator CGsnProjView& ()
+    {
+        return const_cast<CGsnProjView&>(static_cast<const CGsnProjView&>(std::as_const(*this)));
+    }
+
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 protected:
     const CGsnProjView& DoGetWindow() const override;
 
 private:
-    wxGsnProjView(CGsnProjView& v) : window(&v) {}
+    wxGsnProjView() = default;
+    wxDECLARE_DYNAMIC_CLASS(wxGsnProjView);
+    bool HasWindow() const;
 
-    RefPtr<CGsnProjView> window;
+    bool isDocReady = false;
 
     friend CGsnProjView;
 };
@@ -251,11 +234,6 @@ inline CGsnProjView::operator const wxView&() const
 inline CGsnProjView::operator const wxView*() const
 {
     return &*wxview;
-}
-
-inline CCmdTarget& CGsnProjView::Get()
-{
-    return *parent;
 }
 
 /////////////////////////////////////////////////////////////////////////////

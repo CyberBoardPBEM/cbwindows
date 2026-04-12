@@ -109,6 +109,7 @@ enum EGamDocHint
     HINT_UPDATESELECT =             0x0400,
     HINT_UPDATESELECTLIST =         0x0500, // resync select list. sender ignores.
     HINT_INVALIDATERECT =           0x0600,
+    HINT_DOCREADY =                 0x0700,
     HINT_GAMESTATEUSED =            0x1000,
     HINT_POINTINVIEW =              0x2000,
     HINT_SELECTOBJ =                0x4000,
@@ -309,6 +310,7 @@ public:
 
 class CGamDoc : public wxDocument
 {
+    wxDECLARE_DYNAMIC_CLASS(CGamDoc);
 // impersonate CDocument
 public:
     operator const CGamDocMfc&() const { return *mfcDoc; }
@@ -318,7 +320,7 @@ public:
     void SetModifiedFlag(BOOL b = TRUE) { Modify(b); }
 
 protected: // create from serialization only
-    CGamDoc(CGamDocMfc& d);
+    CGamDoc();
 
 // Class vars and methods (used during deserialize)...
     // Version of file being loaded
@@ -943,14 +945,14 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    RefPtr<CGamDocMfc> mfcDoc;
+    OwnerPtr<CGamDocMfc> mfcDoc;
 
     friend CGamDocMfc;
 };
 
 class CGamDocMfc : public CB::OnCmdMsgOverride<CDocument, true>
 {
-    DECLARE_DYNCREATE(CGamDocMfc)
+    DECLARE_DYNAMIC(CGamDocMfc)
 public:
     operator const CGamDoc&() const { return *wxDoc; }
     operator CGamDoc&() { return *wxDoc; }
@@ -959,7 +961,7 @@ public:
     operator RefPtr<CGamDoc>() { return &*wxDoc; }
 
 private:
-    CGamDocMfc() = default;
+    CGamDocMfc(CGamDoc& wd) : wxDoc(&wd) {}
 public:
     ~CGamDocMfc() override = default;
 
@@ -995,7 +997,7 @@ private:
         return *wxDoc;
     }
 
-    OwnerPtr<CGamDoc> wxDoc = new CGamDoc(*this);
+    RefPtr<CGamDoc> wxDoc;
 
     typedef CB::OnCmdMsgOverride<CDocument, true> BASE;
     friend CGamDoc;

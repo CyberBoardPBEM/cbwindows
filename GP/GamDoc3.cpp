@@ -931,7 +931,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
         m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 #else
-        AfxThrowNotSupportedException();
+        CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
 
         // Main content serialization....
