@@ -304,7 +304,7 @@ BOOL CGpApp::InitInstance()
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,
         RUNTIME_CLASS(CGamDoc),
-        RUNTIME_CLASS(CPlayBoardFrame),
+        RUNTIME_CLASS(CPlayBoardFrameContainer),
         RUNTIME_CLASS(CPlayBoardViewContainer));
 
     EnableLoadWindowPlacement(FALSE);

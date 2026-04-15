@@ -68,11 +68,12 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd *pWn
 {
     if (pWnd->IsKindOf(RUNTIME_CLASS(CProjFrame)))
         pWse.m_wUserCode1 = gpFrmProject;
-    else if (pWnd->IsKindOf(RUNTIME_CLASS(CPlayBoardFrame)))
+    else if (pWnd->IsKindOf(RUNTIME_CLASS(CPlayBoardFrameContainer)))
     {
-        CPlayBoardFrame* pFrame = (CPlayBoardFrame*)pWnd;
+        CPlayBoardFrameContainer& pFrameContainer = *static_cast<CPlayBoardFrameContainer*>(pWnd);
+        const CPlayBoardFrame& pFrame = pFrameContainer.GetChild();
         pWse.m_wUserCode1 = gpFrmPlayBoard;
-        pWse.m_boardID = pFrame->m_pPBoard->GetSerialNumber();
+        pWse.m_boardID = pFrame.m_pPBoard->GetSerialNumber();
     }
 }
 

@@ -1,6 +1,6 @@
 // FrmPbrd.h : header file
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,17 +35,17 @@
 
 class CPlayBoardView;
 
-class CPlayBoardFrame : public CMDIChildWndEx
+class CPlayBoardFrame : public CWnd
 {
-    DECLARE_DYNCREATE(CPlayBoardFrame)
+    friend class CPlayBoardFrameContainer;
 protected:
-    CPlayBoardFrame();  // Protected constructor used by dynamic creation
 
 // Attributes
-public:
+private:
     CMySplitWnd    m_wndSplitter1;  // The overall view container
     CMySplitWnd    m_wndSplitter2;  // Embedded in the first
     CCbSplitterWnd m_wndSplitBoards;// Holds playing board views
+public:
 
     CB::propagate_const<CPlayBoard*> m_pPBoard;       // The playing board associated with this frame
 
@@ -55,11 +55,12 @@ public:
 
 // Implementation
 protected:
-    virtual ~CPlayBoardFrame();
-    virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
-    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-
-    virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+public:     // for parent's OwnerPtr
+    ~CPlayBoardFrame() override;
+protected:
+    CPlayBoardFrame(CPlayBoardFrameContainer& parent,
+                        CCreateContext& pContext);
+    BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 
 public:
     const CPlayBoardView& GetActiveBoardView() const;
@@ -106,7 +107,42 @@ protected:
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
+};
+
+class CPlayBoardFrameContainer : public CMDIChildWndEx
+{
+    DECLARE_DYNCREATE(CPlayBoardFrameContainer)
+protected:
+    CPlayBoardFrameContainer() = default;  // Protected constructor used by dynamic creation
+
+// Attributes
+public:
+    const CPlayBoardFrame& GetChild() const { return CheckedDeref(child); }
+    CPlayBoardFrame& GetChild()
+    {
+        return const_cast<CPlayBoardFrame&>(std::as_const(*this).GetChild());
+    }
+
+// Operations
+public:
+    // forward to child
+    BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra,
+                    AFX_CMDHANDLERINFO* pHandlerInfo) override;
+
+// Implementation
+protected:
+    ~CPlayBoardFrameContainer() override = default;
+    // forward to child
+    BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
+    BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) override;
+
+    void OnUpdateFrameTitle(BOOL bAddToTitle) override;
+
+    OwnerOrNullPtr<CPlayBoardFrame> child;
+
+    typedef CMDIChildWndEx BASE;
 };
 
 /////////////////////////////////////////////////////////////////////////////

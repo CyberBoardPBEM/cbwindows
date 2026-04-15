@@ -487,7 +487,7 @@ const CPlayBoardView& CSelectListBox::GetBoardView() const
     wxWindow& container = CheckedDeref(view.GetParent());
     CWnd& cwndContainer = CheckedDeref(CB::ToCWnd(container));
     CFrameWnd& frame = CheckedDeref(AFXGetParentFrame(&cwndContainer));
-    const CPlayBoardFrame& pbrdFrame = CheckedDeref(DYNAMIC_DOWNCAST(CPlayBoardFrame, &frame));
-    return pbrdFrame.GetActiveBoardView();
+    const CPlayBoardFrameContainer& pbrdFrameContainer = dynamic_cast<CPlayBoardFrameContainer&>(frame);
+    return pbrdFrameContainer.GetChild().GetActiveBoardView();
 }
 

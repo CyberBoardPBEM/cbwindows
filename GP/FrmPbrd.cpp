@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNCREATE(CPlayBoardFrame, CMDIChildWndEx)
+IMPLEMENT_DYNCREATE(CPlayBoardFrameContainer, CMDIChildWndEx)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,7 +46,7 @@ IMPLEMENT_DYNCREATE(CPlayBoardFrame, CMDIChildWndEx)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
+BEGIN_MESSAGE_MAP(CPlayBoardFrame, CWnd)
     //{{AFX_MSG_MAP(CPlayBoardFrame)
 #if 0
     ON_COMMAND(ID_VIEW_HALFSCALEBRD, OnViewHalfScaleBrd)
@@ -96,15 +96,11 @@ BEGIN_MESSAGE_MAP(CPlayBoardFrame, CMDIChildWndEx)
     // Other messages
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
+    ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardFrame
-
-CPlayBoardFrame::CPlayBoardFrame()
-{
-    m_pPBoard = NULL;
-}
 
 CPlayBoardFrame::~CPlayBoardFrame()
 {
@@ -112,7 +108,7 @@ CPlayBoardFrame::~CPlayBoardFrame()
 
 BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-    if (!CMDIChildWndEx::PreCreateWindow(cs))
+    if (!CWnd::PreCreateWindow(cs))
         return FALSE;
 
     cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS,
@@ -125,19 +121,19 @@ BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
     return TRUE;
 }
 
-void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
+void CPlayBoardFrameContainer::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc* pDoc = CB::ToCGamDoc(GetActiveDocument());
     CB::string str = pDoc->GetTitle();
 
-    CB::string strBoardName = m_pPBoard->GetBoard()->GetName();
+    CB::string strBoardName = child->m_pPBoard->GetBoard()->GetName();
     str += " - " + strBoardName;
 
-    if (m_pPBoard->IsOwned())
+    if (child->m_pPBoard->IsOwned())
     {
         str += " - ";
         CB::string strOwnerName = pDoc->GetPlayerManager()->
-            GetPlayerUsingMask(m_pPBoard->GetOwnerMask()).m_strName;
+            GetPlayerUsingMask(child->m_pPBoard->GetOwnerMask()).m_strName;
         CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwnerName);
         str += strOwnedBy;
     }
@@ -147,18 +143,25 @@ void CPlayBoardFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
-     CCreateContext* pContext)
+CPlayBoardFrame::CPlayBoardFrame(CPlayBoardFrameContainer& parent,
+                                        CCreateContext& pContext)
 {
-    CGamDoc* pDoc = CB::ToCGamDoc(pContext->m_pCurrentDoc);
+    m_pPBoard = NULL;
+    CRect rect;
+    parent.GetClientRect(rect);
+    if (!Create(nullptr, nullptr, 0, rect, &parent, AFX_IDW_PANE_FIRST, &pContext))
+    {
+        AfxThrowMemoryException();
+    }
+    CGamDoc* pDoc = CB::ToCGamDoc(pContext.m_pCurrentDoc);
     m_pPBoard = (CPlayBoard*)pDoc->GetNewViewParameter();
-    ASSERT(m_pPBoard != NULL);
+    wxASSERT(m_pPBoard != NULL);
 
     // Create a splitter with 1 row, 2 columns
     if (!m_wndSplitter1.CreateStatic(this, 1, 2))
     {
         TRACE("Failed to create static splitter\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     CRect rct;
@@ -173,33 +176,33 @@ BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
         m_wndSplitter1.IdFromRowCol(0, 0)))
     {
         TRACE("Failed to create board view splitter\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     if (!m_wndSplitBoards.CreateView(0, 0,
-        pContext->m_pNewViewClass, CSize(xSize / 2, ySize / 2), pContext))
+        pContext.m_pNewViewClass, CSize(xSize / 2, ySize / 2), &pContext))
     {
         TRACE("Failed to create first board pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     if (!m_wndSplitBoards.CreateView(0, 1,
-        pContext->m_pNewViewClass, CSize(xSize / 2, ySize / 2), pContext))
+        pContext.m_pNewViewClass, CSize(xSize / 2, ySize / 2), &pContext))
     {
         TRACE("Failed to create second board pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
     if (!m_wndSplitBoards.CreateView(1, 0,
-        pContext->m_pNewViewClass, CSize(xSize / 2, ySize / 2), pContext))
+        pContext.m_pNewViewClass, CSize(xSize / 2, ySize / 2), &pContext))
     {
         TRACE("Failed to create third board pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
     if (!m_wndSplitBoards.CreateView(1, 1,
-        pContext->m_pNewViewClass, CSize(xSize / 2, ySize / 2), pContext))
+        pContext.m_pNewViewClass, CSize(xSize / 2, ySize / 2), &pContext))
     {
         TRACE("Failed to create fourth board pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     m_wndSplitBoards.HideColumn(1);
@@ -215,28 +218,28 @@ BOOL CPlayBoardFrame::OnCreateClient(LPCREATESTRUCT lpcs,
        ))
     {
         TRACE("Failed to create nested splitter\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     if (!m_wndSplitter2.CreateView(0, 0,
         RUNTIME_CLASS(CSelectedPieceViewContainer),
-        CSize(rct.Width() - xSize, ySize), pContext))
+        CSize(rct.Width() - xSize, ySize), &pContext))
     {
         TRACE("Failed to create second Selected Piece pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
     if (!m_wndSplitter2.CreateView(1, 0,
         RUNTIME_CLASS(CTinyBoardViewContainer),
-        CSize(rct.Width() - xSize, rct.Height() - ySize), pContext))
+        CSize(rct.Width() - xSize, rct.Height() - ySize), &pContext))
     {
         TRACE("Failed to create small scale map pane\n");
-        return FALSE;
+        AfxThrowMemoryException();
     }
 
     if (!m_pPBoard->m_bShowSelListAndTinyMap)
         m_wndSplitter1.HideColumn(1);
 
-    return TRUE;
+    ShowWindow(SW_SHOW);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -457,7 +460,7 @@ CCbSplitterWnd& CPlayBoardFrame::GetBoardSplitter()
 const CPlayBoardView& CPlayBoardFrame::GetActiveBoardView() const
 {
     CCbSplitterWnd& pSplitWnd = CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
-    const CWnd* view = GetActiveView();
+    const CWnd* view = GetParentFrame()->GetActiveView();
     if (view &&
         view->IsKindOf(RUNTIME_CLASS(CPlayBoardViewContainer)) &&
         view->GetParent() == &pSplitWnd)
@@ -666,4 +669,54 @@ void CPlayBoardFrame::OnUpdateViewSplitBoardCols(CCmdUI* pCmdUI)
     CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
     pCmdUI->Enable();
     pCmdUI->SetCheck(!pSplitWnd.IsColHidden());
+}
+
+void CPlayBoardFrame::OnSize(UINT nType, int cx, int cy)
+{
+    CWnd::OnSize(nType, cx, cy);
+    if (m_wndSplitter1.m_hWnd)
+    {
+        wxASSERT(m_wndSplitter1.GetParent() == this);
+        CRect rect;
+        GetClientRect(rect);
+        wxASSERT(rect.Width() == cx && rect.Height() == cy);
+        m_wndSplitter1.SetWindowPos(&wndBottom, 0, 0, cx, cy, SWP_NOACTIVATE);
+    }
+}
+
+// forward to child
+BOOL CPlayBoardFrameContainer::OnCmdMsg(UINT nID, int nCode, void* pExtra,
+                                        AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+    if (BASE::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+    {
+        return true;
+    }
+    else
+    {
+        return child->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+    }
+}
+
+// forward to child
+BOOL CPlayBoardFrameContainer::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+    if (BASE::OnWndMsg(message, wParam, lParam, pResult))
+    {
+        return true;
+    }
+    else if (child)
+    {
+        return child->OnWndMsg(message, wParam, lParam, pResult);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+BOOL CPlayBoardFrameContainer::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+{
+    child = new CPlayBoardFrame(*this, CheckedDeref(pContext));
+    return true;
 }

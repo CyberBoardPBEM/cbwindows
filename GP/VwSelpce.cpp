@@ -252,8 +252,9 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
             listDObj.push_back(&m_listSel->MapIndexToItem(nItem));
         }
     }
-    CPlayBoardFrame* pFrame = static_cast<CPlayBoardFrame*>(parent->GetParentFrame());
-    pFrame->SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)&*m_pPBoard,
+    CPlayBoardFrameContainer& pFrameContainer = dynamic_cast<CPlayBoardFrameContainer&>(*parent->GetParentFrame());
+    CPlayBoardFrame& pFrame = pFrameContainer.GetChild();
+    pFrame.SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)&*m_pPBoard,
         (LPARAM)&listDObj);
 }
 
