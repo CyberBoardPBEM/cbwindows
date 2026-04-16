@@ -37,6 +37,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxIMPLEMENT_DYNAMIC_CLASS(CSelectedPieceView, CSelectedPieceView::BASE);
 // KLUDGE:  compile fails for base CSelectedPieceViewContainer::BASE
 IMPLEMENT_DYNCREATE(CSelectedPieceViewContainer, CView)
 
@@ -70,13 +71,8 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView
 
-CSelectedPieceView::CSelectedPieceView(CSelectedPieceViewContainer& p) :
-    parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
-    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter())),
-    m_listSel(new CSelectListBox)
+void CSelectedPieceView::Initialize()
 {
-    BASE::Create(*parent, 0);
     m_listSel->Create(this, wxID_ANY,
                         wxDefaultPosition, wxDefaultSize,
                         wxLB_MULTIPLE);
@@ -88,8 +84,6 @@ CSelectedPieceView::CSelectedPieceView(CSelectedPieceViewContainer& p) :
     m_toolTip.Add(*m_listSel, str, CB::ToolTip::CENTER);
 
     m_toolTip.Enable(TRUE);
-
-    OnInitialUpdate();
 }
 
 CSelectedPieceView::~CSelectedPieceView()
@@ -140,7 +134,15 @@ void CSelectedPieceView::OnSize(wxSizeEvent& event)
 
 void CSelectedPieceView::OnInitialUpdate()
 {
-    parent->OnInitialUpdate();
+    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
+    parent = &dynamic_cast<CSelectedPieceViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
+    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    m_pPBoard = &CheckedDeref(static_cast<CPlayBoard*>(document->GetNewViewParameter()));
+
+    parent->CSelectedPieceViewContainer::BASE::OnInitialUpdate();
+
+    Initialize();
+
     m_listSel->SetDocument(GetDocument());
 }
 
@@ -263,6 +265,11 @@ void CSelectedPieceViewContainer::OnDraw(CDC* pDC)
     // do nothing because child covers entire client rect
 }
 
+void CSelectedPieceViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+}
+
 void CSelectedPieceViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
@@ -280,7 +287,8 @@ int CSelectedPieceViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    child = new CSelectedPieceView(*this);
+    child = new CSelectedPieceView;
+    child->Create(*this, 0);
 
     return 0;
 }

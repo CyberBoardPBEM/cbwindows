@@ -34,10 +34,12 @@ class WinStateEvent;
 
 class CSelectedPieceView : public CB::ProcessEventOverride<wxPanel>
 {
+    wxDECLARE_DYNAMIC_CLASS(CSelectedPieceView);
 private:
     friend class CSelectedPieceViewContainer;
     typedef CB::ProcessEventOverride<wxPanel> BASE;
-    CSelectedPieceView(CSelectedPieceViewContainer& parent);
+    CSelectedPieceView() = default;
+    void Initialize();
 
 // Attributes
 private:
@@ -48,13 +50,13 @@ public:
 
 // Implementation
 private:
-    RefPtr<CSelectedPieceViewContainer> parent;
-    RefPtr<CGamDoc> document;
+    CB::propagate_const<CSelectedPieceViewContainer*> parent = nullptr;
+    CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
-    RefPtr<CPlayBoard> m_pPBoard;      // Board that contains selections
+    CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr;      // Board that contains selections
 
     // owned by wx
-    RefPtr<CSelectListBox> m_listSel;
+    CB::propagate_const<CSelectListBox*> m_listSel = new CSelectListBox;
     std::vector<RefPtr<CDrawObj>> m_tblSel;
     CB::ToolTip    m_toolTip;
 
@@ -94,6 +96,7 @@ class CSelectedPieceViewContainer : public CB::OnCmdMsgOverride<CView>,
 public:
     void OnDraw(CDC* pDC) override;
 
+    void OnInitialUpdate() override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
