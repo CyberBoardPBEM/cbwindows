@@ -38,6 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxIMPLEMENT_DYNAMIC_CLASS(CTinyBoardView, CTinyBoardView::BASE);
 IMPLEMENT_DYNCREATE(CTinyBoardViewContainer, CView)
 
 #ifdef _DEBUG
@@ -67,17 +68,12 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView
 
-CTinyBoardView::CTinyBoardView(CTinyBoardViewContainer& p) :
-    parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
-    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter()))
+void CTinyBoardView::Initialize()
 {
     // use sizers for scrolling
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->Add(0, 0);
-    BASE::Create(*parent, 0);
-    OnInitialUpdate();
 }
 
 #if 0
@@ -98,6 +94,15 @@ BOOL CTinyBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CTinyBoardView::OnInitialUpdate()
 {
+    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
+    parent = &dynamic_cast<CTinyBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
+    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    m_pPBoard = &CheckedDeref(static_cast<CPlayBoard*>(document->GetNewViewParameter()));
+
+    parent->CTinyBoardViewContainer::BASE::OnInitialUpdate();
+
+    Initialize();
+
     RecalcScrollLimits();
 }
 
@@ -369,6 +374,11 @@ void CTinyBoardViewContainer::OnDraw(CDC* pDC)
     // do nothing because child covers entire client rect
 }
 
+void CTinyBoardViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+}
+
 void CTinyBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
@@ -386,7 +396,8 @@ int CTinyBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    child = new CTinyBoardView(*this);
+    child = new CTinyBoardView;
+    child->Create(*this, 0);
 
     return 0;
 }

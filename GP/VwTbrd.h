@@ -27,12 +27,14 @@ class WinStateEvent;
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView view
 
-class CTinyBoardView : public CB::ProcessEventOverride<wxScrolledCanvas>
+class CTinyBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
 {
+    wxDECLARE_DYNAMIC_CLASS(CTinyBoardView);
 private:
     friend class CTinyBoardViewContainer;
-    typedef CB::ProcessEventOverride<wxScrolledCanvas> BASE;
-    CTinyBoardView(CTinyBoardViewContainer& parent);
+    typedef CB::ProcessEventOverride<wxScrolledWindow> BASE;
+    CTinyBoardView() = default;
+    void Initialize();
 
 // Attributes
 
@@ -42,10 +44,10 @@ public:
 // Implementation
 private:
     // member declaration order determines construction order
-    RefPtr<CTinyBoardViewContainer> parent;
-    RefPtr<CGamDoc> document;
+    CB::propagate_const<CTinyBoardViewContainer*> parent = nullptr;
+    CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
-    RefPtr<CPlayBoard> m_pPBoard; // The playing board we are viewing
+    CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr; // The playing board we are viewing
     wxBitmap m_pBMap;            // Cached predrawn board bitmap
 
     TileScale   m_nZoom;
@@ -98,6 +100,7 @@ class CTinyBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
 public:
     void OnDraw(CDC* pDC) override;
 
+    void OnInitialUpdate() override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 private:
