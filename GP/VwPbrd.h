@@ -42,13 +42,15 @@ class CPlayBoard;
 enum  TileScale;
 class WinStateEvent;
 
-class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledCanvas>
+class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
 {
+    wxDECLARE_DYNAMIC_CLASS(CPlayBoardView);
 private:
     friend class CPlayBoardFrame;
     friend class CPlayBoardViewContainer;
-    typedef CB::ProcessEventOverride<wxScrolledCanvas> BASE;
-    CPlayBoardView(CPlayBoardViewContainer& parent);
+    typedef CB::ProcessEventOverride<wxScrolledWindow> BASE;
+    CPlayBoardView();
+    void Initialize();
 
 // Attributes
 public:
@@ -147,11 +149,10 @@ protected:
 
 // Implementation
 private:
-    // member declaration order determines construction order
-    RefPtr<CPlayBoardViewContainer> parent;
-    RefPtr<CGamDoc> document;
+    CB::propagate_const<CPlayBoardViewContainer*> parent = nullptr;
+    CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
-    RefPtr<CPlayBoard> m_pPBoard;          // Board that contains selections etc...
+    CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr;          // Board that contains selections etc...
     TileScale   m_nZoom;            // Current zoom level of view
     // -------- //
     BOOL        m_bInDrag;          // Currently being dragged over
@@ -346,6 +347,7 @@ public:
         return const_cast<CPlayBoardView&>(static_cast<const CPlayBoardView&>(std::as_const(*this)));
     }
 
+    void OnInitialUpdate() override;
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
     void OnActivateView(BOOL bActivate, CView* pActivateView,
                     CView* pDeactiveView) override;

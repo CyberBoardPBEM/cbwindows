@@ -51,6 +51,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+wxIMPLEMENT_DYNAMIC_CLASS(CPlayBoardView, CPlayBoardView::BASE);
 IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
 
 #ifdef _DEBUG
@@ -245,12 +246,13 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView construction/destruction
 
-CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
+CPlayBoardView::CPlayBoardView() :
     m_selList(*this),
-    parent(&p),
-    document(dynamic_cast<CGamDoc*>(parent->GetDocument())),
-    m_pPBoard(static_cast<CPlayBoard*>(document->GetNewViewParameter())),
     m_toolMsgTipTimer(this, XRCID("ID_TIP_MSG_TIMER"))
+{
+}
+
+void CPlayBoardView::Initialize()
 {
     EnableAutoScrollInside(scrollZone);
     DisableAutoScrollOutside();
@@ -271,8 +273,6 @@ CPlayBoardView::CPlayBoardView(CPlayBoardViewContainer& p) :
     wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->Add(0, 0);
-    BASE::Create(*parent, 0);
-    OnInitialUpdate();
 }
 
 CPlayBoardView::~CPlayBoardView()
@@ -297,6 +297,15 @@ BOOL CPlayBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
 void CPlayBoardView::OnInitialUpdate()
 {
+    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
+    parent = &dynamic_cast<CPlayBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
+    document = &CheckedDeref(dynamic_cast<CGamDoc*>(parent->GetDocument()));
+    m_pPBoard = &CheckedDeref(static_cast<CPlayBoard*>(document->GetNewViewParameter()));
+
+    parent->CPlayBoardViewContainer::BASE::OnInitialUpdate();
+
+    Initialize();
+
     m_toolMsgTip.SetBalloonMode(true);
     m_toolMsgTip.SetMaxWidth(MAX_PLAYBOARD_TIP_WIDTH);
     m_toolHitTip.SetBalloonMode(true);
@@ -2769,6 +2778,11 @@ void CPlayBoardViewContainer::OnDraw(CDC* pDC)
     // do nothing because child covers entire client rect
 }
 
+void CPlayBoardViewContainer::OnInitialUpdate()
+{
+    child->OnInitialUpdate();
+}
+
 void CPlayBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
     child->OnUpdate(pSender, lHint, pHint);
@@ -2784,6 +2798,7 @@ void CPlayBoardViewContainer::OnActivateView(BOOL bActivate, CView* pActivateVie
 CPlayBoardViewContainer::CPlayBoardViewContainer() :
     CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
+    child = static_cast<CPlayBoardView*>(wxCreateDynamicObject("CPlayBoardView"));
 }
 
 int CPlayBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -2793,7 +2808,7 @@ int CPlayBoardViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
     }
 
-    child = new CPlayBoardView(*this);
+    child->Create(*this, 0);
 
     return 0;
 }
