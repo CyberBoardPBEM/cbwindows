@@ -806,6 +806,15 @@ void CGsnProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
     GetDocument().RestoreWindowState();
 }
 
+const CGsnProjView& wxGsnProjView::DoGetWindow() const
+{
+    const wxWindowList& children = GetFrame().GetChildren();
+    wxASSERT(children.size() == size_t(1));
+    const wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<const CGsnProjView*>(&child));
+    return static_cast<const CGsnProjView&>(child);
+}
+
 void CGsnProjViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect

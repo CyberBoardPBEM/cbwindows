@@ -22,6 +22,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if !defined(VWPBRD_H)
+#define VWPBRD_H
+
+#include    "FrmMain.h"
+#include    "FrmPbrd.h"
+
 #ifndef     _TOOLPLAY_H
 #include    "ToolPlay.h"
 #endif
@@ -38,8 +44,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+class CenterBoardOnPointEvent;
 class CPlayBoard;
 class CPlayBoardView;
+class RotatePieceDeltaEvent;
+class SelectBoardObjListEvent;
 enum  TileScale;
 class WinStateEvent;
 class wxPlayBoardView;
@@ -386,7 +395,20 @@ private:
 class wxPlayBoardView : public CB::View
 {
 public:
-    wxWindow& GetWindow() override;
+    const CPlayBoardView& GetWindow() const { return DoGetWindow(); }
+    CPlayBoardView& GetWindow()
+    {
+        return const_cast<CPlayBoardView&>(std::as_const(*this).GetWindow());
+    }
+    operator const CPlayBoardView&() const { return GetWindow(); }
+    operator CPlayBoardView&()
+    {
+        return const_cast<CPlayBoardView&>(static_cast<const CPlayBoardView&>(std::as_const(*this)));
+    }
+    operator CPlayBoardView*() { return &static_cast<CPlayBoardView&>(*this); }
+
+protected:
+    const CPlayBoardView& DoGetWindow() const override { return *window; }
 
 private:
     wxPlayBoardView(CPlayBoardView& v) : window(&v) {}
@@ -406,11 +428,6 @@ inline CPlayBoardView::operator const wxView*() const
     return &*wxview;
 }
 
-inline wxWindow& wxPlayBoardView::GetWindow()
-{
-    return *window;
-}
-
 inline CCmdTarget& CPlayBoardView::Get()
 {
     return *parent;
@@ -418,3 +435,4 @@ inline CCmdTarget& CPlayBoardView::Get()
 
 /////////////////////////////////////////////////////////////////////////////
 
+#endif

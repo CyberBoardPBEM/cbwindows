@@ -134,7 +134,9 @@ private:
 class wxSelectedPieceView : public CB::View
 {
 public:
-    wxWindow& GetWindow() override;
+
+protected:
+    const CSelectedPieceView& DoGetWindow() const override { return *window; }
 
 private:
     wxSelectedPieceView(CSelectedPieceView& v) : window(&v) {}
@@ -152,11 +154,6 @@ inline CSelectedPieceView::operator const wxView&() const
 inline CSelectedPieceView::operator const wxView*() const
 {
     return &*wxview;
-}
-
-inline wxWindow& wxSelectedPieceView::GetWindow()
-{
-    return *window;
 }
 
 inline CCmdTarget& CSelectedPieceView::Get()

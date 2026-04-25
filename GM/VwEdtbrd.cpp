@@ -2373,32 +2373,25 @@ wxBrdEditView* wxBrdEditView::New(CGamDoc& doc, CBoard& board)
     return static_cast<wxBrdEditView*>(retval);
 }
 
-CViewFrame& wxBrdEditView::GetFrame()
+const CBrdEditView& wxBrdEditView::DoGetWindow() const
 {
-    wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
-    wxASSERT(dynamic_cast<CViewFrame*>(&frame));
-    return static_cast<CViewFrame&>(frame);
-}
-
-CBrdEditView& wxBrdEditView::GetWindow()
-{
-    wxWindowList& children = GetFrame().GetChildren();
+    const wxWindowList& children = GetFrame().GetChildren();
     wxASSERT(children.size() == size_t(1));
-    wxWindow& child = CheckedDeref(children.front());
-    wxASSERT(dynamic_cast<CBrdEditView*>(&child));
-    return static_cast<CBrdEditView&>(child);
+    const wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<const CBrdEditView*>(&child));
+    return static_cast<const CBrdEditView&>(child);
 }
 
 bool wxBrdEditView::OnClose(bool /*deleteWindow*/)
 {
     /* doc's life determined by wxGbxProjView, not this,
         so bypass wxView::OnClose() */
-    FileHistoryRemoveMenu();
     return true;
 }
 
 bool wxBrdEditView::OnCreate(wxDocument* doc, long flags)
 {
+    wxASSERT(doc == &GetDocument());
     if (!wxView::OnCreate(doc, flags))
     {
         return false;
@@ -2408,18 +2401,14 @@ bool wxBrdEditView::OnCreate(wxDocument* doc, long flags)
     str += " - ";
     str += CheckedDeref(createParam).GetName();
 
-    CViewFrame* frame = new CViewFrame(doc,
-                            this,
-                            GetMainFrame(),
-                            wxID_ANY,
-                            str);
-    frame->SetIcon(wxIcon(std::format("#{}", IDR_BOARDVIEW),
-                            wxBITMAP_TYPE_ICO_RESOURCE,
-                            16, 16));
-    /* KLUDGE:  giving each frame its own menu
-        seems to avoid crashes on process close */
-    wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring);
-    FileHistoryAddMenu();
+    CB::DocChildFrame* frame = new CB::DocChildFrame(GetDocument(),
+                            *this,
+                            CheckedDeref(GetMainFrame()),
+                            str,
+                            wxIcon(std::format("#{}", IDR_BOARDVIEW),
+                                    wxBITMAP_TYPE_ICO_RESOURCE,
+                                    16, 16),
+                            "IDR_GAMEBOX"_cbstring);
     new CBrdEditView(*this, *createParam);
     frame->Show();
 

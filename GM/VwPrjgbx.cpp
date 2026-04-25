@@ -1441,19 +1441,13 @@ void CGbxProjView::OnUpdateMarkerDelete(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(m_listMarks->GetSelectedCount() >= 0);
 }
 
-const CDocFrame& wxGbxProjView::GetFrame() const
+const CGbxProjView& wxGbxProjView::DoGetWindow() const
 {
-    const wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
-    return dynamic_cast<const CDocFrame&>(frame);
-}
-
-CGbxProjView& wxGbxProjView::GetWindow()
-{
-    wxWindowList& children = GetFrame().GetChildren();
+    const wxWindowList& children = GetFrame().GetChildren();
     wxASSERT(children.size() == size_t(1));
-    wxWindow& child = CheckedDeref(children.front());
-    wxASSERT(dynamic_cast<CGbxProjView*>(&child));
-    return static_cast<CGbxProjView&>(child);
+    const wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<const CGbxProjView*>(&child));
+    return static_cast<const CGbxProjView&>(child);
 }
 
 bool wxGbxProjView::OnClose(bool deleteWindow)
@@ -1466,11 +1460,10 @@ bool wxGbxProjView::OnClose(bool deleteWindow)
         {
             GetWindow().Hide();
         }
-        FileHistoryRemoveMenu();
 
         /* CB defines doc's life only by proj view,
             so close rest */
-        wxViewVector views = GetDocument()->GetViewsVector();
+        wxViewVector views = GetDocument().GetViewsVector();
         for (auto it = views.begin() ; it != views.end() ; ++it)
         {
             wxView* view = *it;
@@ -1494,6 +1487,7 @@ bool wxGbxProjView::OnClose(bool deleteWindow)
 
 bool wxGbxProjView::OnCreate(wxDocument* doc, long flags)
 {
+    wxASSERT(doc == &GetDocument());
     if (!wxView::OnCreate(doc, flags))
     {
         return false;
@@ -1503,18 +1497,14 @@ bool wxGbxProjView::OnCreate(wxDocument* doc, long flags)
     str += " - ";
     str += CB::string::LoadString(IDS_PROJTYPE_GAMEBOX);
 
-    CDocFrame* frame = new CDocFrame(doc,
-                    this,
-                    GetMainFrame(),
-                    wxID_ANY,
-                    str);
-    frame->SetIcon(wxIcon(std::format("#{}", IDR_GAMEBOX),
+    CB::DocChildFrame* frame = new CB::DocChildFrame(GetDocument(),
+                    *this,
+                    CheckedDeref(GetMainFrame()),
+                    str,
+                    wxIcon(std::format("#{}", IDR_GAMEBOX),
                             wxBITMAP_TYPE_ICO_RESOURCE,
-                            16, 16));
-    /* KLUDGE:  giving each frame its own menu
-        seems to avoid crashes on process close */
-    wxMenuBar& menubar = CheckedDeref(wxXmlResource::Get()->LoadMenuBar(frame, "IDR_GAMEBOX"_cbstring));
-    FileHistoryAddMenu();
+                            16, 16),
+                    "IDR_GAMEBOX"_cbstring);
     /* postpone because this gets called before OnOpenDocument()
     new CGbxProjView(*this);
     frame->Show();

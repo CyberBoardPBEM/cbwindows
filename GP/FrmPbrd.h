@@ -22,6 +22,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#if !defined(_FRMPBRD_H)
+#define _FRMPBRD_H
+
 #ifndef     _WINMYSPL_H
 #include    "WinMyspl.h"
 #endif
@@ -147,3 +150,4 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
+#endif

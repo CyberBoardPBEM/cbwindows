@@ -101,8 +101,8 @@ static const CB::string szSectControlBars = "ControlBars";
 
 CMainFrame::CMainFrame() :
     BASE(wxDocManager::GetDocumentManager(),
-                                            nullptr, wxID_ANY,
-                                            wxTheApp->GetAppDisplayName()),
+            nullptr, wxID_ANY,
+            wxTheApp->GetAppDisplayName()),
     CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this))
 #if 0
     m_wndMessage(MakeOwner<CReadMsgWndContainer>()),

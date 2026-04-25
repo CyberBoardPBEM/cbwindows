@@ -850,6 +850,15 @@ void CGamProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
     GetDocument().RestoreWindowState();
 }
 
+const CGamProjView& wxGamProjView::DoGetWindow() const
+{
+    const wxWindowList& children = GetFrame().GetChildren();
+    wxASSERT(children.size() == size_t(1));
+    const wxWindow& child = CheckedDeref(children.front());
+    wxASSERT(dynamic_cast<const CGamProjView*>(&child));
+    return static_cast<const CGamProjView&>(child);
+}
+
 void CGamProjViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect

@@ -34,8 +34,6 @@
 
 class CColorCmdUI;
 
-using CViewFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
-
 class CBrdEditView : public wxScrolledCanvas
 {
 private:
@@ -323,12 +321,18 @@ class wxBrdEditView : public CB::View
 public:
     static wxBrdEditView* New(CGamDoc& doc, CBoard& board);
 
-    CViewFrame& GetFrame();
-    CBrdEditView& GetWindow() override;
+    const CBrdEditView& GetWindow() const { return DoGetWindow(); }
+    CBrdEditView& GetWindow()
+    {
+        return const_cast<CBrdEditView&>(std::as_const(*this).GetWindow());
+    }
 
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
     void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
+
+protected:
+    const CBrdEditView& DoGetWindow() const override;
 
 private:
     wxBrdEditView() = default;

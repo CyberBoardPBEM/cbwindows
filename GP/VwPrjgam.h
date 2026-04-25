@@ -247,7 +247,19 @@ private:
 class wxGamProjView : public CB::View
 {
 public:
-    wxWindow& GetWindow() override;
+    const CGamProjView& GetWindow() const { return DoGetWindow(); }
+    CGamProjView& GetWindow()
+    {
+        return const_cast<CGamProjView&>(std::as_const(*this).GetWindow());
+    }
+    operator const CGamProjView&() const { return GetWindow(); }
+    operator CGamProjView&()
+    {
+        return const_cast<CGamProjView&>(static_cast<const CGamProjView&>(std::as_const(*this)));
+    }
+
+protected:
+    const CGamProjView& DoGetWindow() const override;
 
 private:
     wxGamProjView(CGamProjView& v) : window(&v) {}
@@ -265,11 +277,6 @@ inline CGamProjView::operator const wxView&() const
 inline CGamProjView::operator const wxView*() const
 {
     return &*wxview;
-}
-
-inline wxWindow& wxGamProjView::GetWindow()
-{
-    return *window;
 }
 
 inline CCmdTarget& CGamProjView::Get()

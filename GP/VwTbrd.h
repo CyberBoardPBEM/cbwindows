@@ -140,7 +140,9 @@ private:
 class wxTinyBoardView : public CB::View
 {
 public:
-    wxWindow& GetWindow() override;
+
+protected:
+    const CTinyBoardView& DoGetWindow() const override { return *window; }
 
 private:
     wxTinyBoardView(CTinyBoardView& v) : window(&v) {}
@@ -158,11 +160,6 @@ inline CTinyBoardView::operator const wxView&() const
 inline CTinyBoardView::operator const wxView*() const
 {
     return &*wxview;
-}
-
-inline wxWindow& wxTinyBoardView::GetWindow()
-{
-    return *window;
 }
 
 inline CCmdTarget& CTinyBoardView::Get()

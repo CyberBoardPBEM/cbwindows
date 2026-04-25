@@ -30,8 +30,10 @@
 #include    "LibMfc.h"
 
 #if defined(GPLAY)
+    #include "../GP/GamDoc.h"
     #include "../GP/Resource.h"
 #else
+    #include "../GM/GmDoc.h"
     #include "../GM/Resource.h"
     #include "../GM/PalColor.h"
 #endif
@@ -903,6 +905,20 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
 
+CGamDoc& CB::View::GetDocument()
+{
+    wxDocument& doc = CheckedDeref(wxView::GetDocument());
+    wxASSERT(dynamic_cast<CGamDoc*>(&doc));
+    return static_cast<CGamDoc&>(doc);
+}
+
+const CB::DocChildFrame& CB::View::DoGetFrame() const
+{
+    const wxWindow& frame = CheckedDeref(wxView::GetFrame());
+    wxASSERT(dynamic_cast<const CB::DocChildFrame*>(&frame));
+    return static_cast<const CB::DocChildFrame&>(frame);
+}
+
 void CB::View::OnActivateView(bool activate,
                         wxView *activeView,
                         wxView *deactiveView)
@@ -942,7 +958,7 @@ bool CB::View::TryBefore(wxEvent& event)
                 wxGbxProjView exists, but can't create
                 corresponding window because the doc
                 isn't ready yet */
-    wxWindowList& children = GetFrame()->GetChildren();
+    wxWindowList& children = GetFrame().GetChildren();
     if (children.empty())
     {
         return false;
@@ -962,7 +978,7 @@ bool CB::View::TryBefore(wxEvent& event)
             wxASSERT(fe->GetEventType() == wxEVT_SET_FOCUS &&
                 fe->GetEventObject() &&
                 dynamic_cast<wxWindow*>(fe->GetEventObject()));
-            if (!GetFrame()->IsDescendant(static_cast<wxWindow*>(fe->GetEventObject())))
+            if (!GetFrame().IsDescendant(static_cast<wxWindow*>(fe->GetEventObject())))
             {
                 return false;
             }
@@ -973,8 +989,8 @@ bool CB::View::TryBefore(wxEvent& event)
     wxChildFocusEvent* cfe = dynamic_cast<wxChildFocusEvent*>(&event);
     if (cfe)
     {
-        if (GetFrame() == cfe->GetWindow() ||
-            !GetFrame()->IsDescendant(cfe->GetWindow()))
+        if (&GetFrame() == cfe->GetWindow() ||
+            !GetFrame().IsDescendant(cfe->GetWindow()))
         {
             return false;
         }
@@ -1013,35 +1029,6 @@ CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __fu
     }
 
     return GetWindow().ProcessWindowEventLocally(event);
-}
-
-void CB::View::FileHistoryAddMenu()
-{
-    wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
-    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
-    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
-    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-    docMgr.FileHistoryUseMenu(&menuFile);
-    docMgr.FileHistoryAddFilesToMenu(&menuFile);
-    /*KLUDGE:  MRU menu items don't always respect
-                wxFileHistoryMenuPathStyle without this */
-    wxFileHistory& fileHist = CheckedDeref(docMgr.GetFileHistory());
-    wxFileHistoryMenuPathStyle style = fileHist.GetMenuPathStyle();
-    wxFileHistoryMenuPathStyle tempStyle = style == wxFH_PATH_SHOW_IF_DIFFERENT ?
-                                                wxFH_PATH_SHOW_NEVER
-                                            :
-                                                wxFH_PATH_SHOW_IF_DIFFERENT;
-    fileHist.SetMenuPathStyle(tempStyle);
-    fileHist.SetMenuPathStyle(style);
-}
-
-void CB::View::FileHistoryRemoveMenu()
-{
-    wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
-    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
-    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
-    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
-    docMgr.FileHistoryRemoveMenu(&menuFile);
 }
 
 CB::FreezeUntilIdleMixin::FreezeUntilIdleMixin(wxWindow& inw) :
@@ -2131,3 +2118,112 @@ CB::StatusBar* CB::AuiMDIParentFrame::OnCreateStatusBar(int number,
 
     return statusBar;
 }
+
+CB::DocChildFrame::DocChildFrame(wxDocument& doc,
+                                    wxView& view,
+                                    AuiMDIParentFrame& parent,
+                                    const wxString& title,
+                                    wxIcon icon,
+                                    const wxString& menuName)
+{
+    if (!Create(doc, view, parent, title, icon, menuName))
+    {
+        AfxThrowMemoryException();
+    }
+}
+
+bool CB::DocChildFrame::Create(wxDocument& doc,
+                                    wxView& view,
+                                    AuiMDIParentFrame& parent,
+                                    const wxString& title,
+                                    wxIcon icon,
+                                    const wxString& menuName)
+{
+    if (!BASE::Create(&doc, &view, &parent, wxID_ANY, title))
+    {
+        return false;
+    }
+    SetIcon(icon);
+    /* KLUDGE:  giving each frame its own menu
+        seems to avoid crashes on process close */
+    if (!wxXmlResource::Get()->LoadMenuBar(this, menuName))
+    {
+        return false;
+    }
+    fileHistoryRAII.emplace(*this);
+    return true;
+}
+
+CB::DocChildFrame::FileHistoryRAII::FileHistoryRAII(DocChildFrame& f) :
+    frame(f)
+{
+    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryUseMenu(&menuFile);
+    docMgr.FileHistoryAddFilesToMenu(&menuFile);
+    /*KLUDGE:  MRU menu items don't always respect
+                wxFileHistoryMenuPathStyle without this */
+    wxFileHistory& fileHist = CheckedDeref(docMgr.GetFileHistory());
+    wxFileHistoryMenuPathStyle style = fileHist.GetMenuPathStyle();
+    wxFileHistoryMenuPathStyle tempStyle = style == wxFH_PATH_SHOW_IF_DIFFERENT ?
+                                                wxFH_PATH_SHOW_NEVER
+                                            :
+                                                wxFH_PATH_SHOW_IF_DIFFERENT;
+    fileHist.SetMenuPathStyle(tempStyle);
+    fileHist.SetMenuPathStyle(style);
+}
+
+CB::DocChildFrame::FileHistoryRAII::~FileHistoryRAII()
+{
+    wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
+    wxMenu& menuFile = CheckedDeref(menubar.GetMenu(size_t(0)));
+    wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
+    docMgr.FileHistoryRemoveMenu(&menuFile);
+}
+
+#if defined(GPLAY)
+    #include "VwPbrd.h"
+#endif
+CB::string CB::ToString(const wxWindow& o)
+{
+#if defined(GPLAY)
+    if (dynamic_cast<const CPlayBoardView*>(&o))
+    {
+        return std::format("{}", static_cast<const CPlayBoardView&>(o));
+    }
+    else
+#endif
+    {
+        return std::format("{}", static_cast<const wxObject&>(o));
+    }
+}
+
+#if 0
+extern "C" __declspec(dllimport) wxString (*CB_GetTypeName)(HWND hwnd);
+namespace {
+    class GetTypeName
+    {
+    public:
+        static wxString F(HWND hwnd)
+        {
+            CWnd* cw = CWnd::FromHandle(hwnd);
+            if (cw && typeid(*cw) != typeid(CWnd))
+            {
+                return typeid(*cw).name();
+            }
+            extern WXDLLIMPEXP_CORE wxWindow* wxFindWinFromHandle(HWND hwnd);
+            wxWindow* wxw = wxFindWinFromHandle(hwnd);
+            if (wxw)
+            {
+                return typeid(*wxw).name();
+            }
+            return "(unknown)";
+        }
+        GetTypeName()
+        {
+            CB_GetTypeName = &F;
+        }
+    } setGetTypeName;
+}
+#endif

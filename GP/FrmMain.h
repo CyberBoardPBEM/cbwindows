@@ -32,8 +32,6 @@ class CDockMarkPalette;
 class CReadMsgWnd;
 class CReadMsgWndContainer;
 
-using CDocFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, CB::AuiMDIParentFrame>;
-
 class CMainFrame : public wxDocParentFrameAny<CB::AuiMDIParentFrame>,
                     public CB::FreezeUntilIdleMixin
 {

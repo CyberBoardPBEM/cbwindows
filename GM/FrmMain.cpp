@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 ///////////////////////////////////////////////////////////////////////
 // CMainFrame
 
-wxBEGIN_EVENT_TABLE(CMainFrame, wxDocParentFrameAny<CB::AuiMDIParentFrame>)
+wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
 #if 0
     ON_WM_CREATE()
 #endif
@@ -120,9 +120,9 @@ static const wxClassInfo *tblBrd[] = {
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() :
-    wxDocParentFrameAny<CB::AuiMDIParentFrame>(wxDocManager::GetDocumentManager(),
-                                            nullptr, wxID_ANY,
-                                            wxTheApp->GetAppDisplayName()),
+    BASE(wxDocManager::GetDocumentManager(),
+            nullptr, wxID_ANY,
+            wxTheApp->GetAppDisplayName()),
     CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this))
 {
     auiManager.SetManagedWindow(this);

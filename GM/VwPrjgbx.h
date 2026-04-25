@@ -43,8 +43,6 @@
 #include    "LBoxMark.h"
 #endif
 
-using CDocFrame = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
-
 /////////////////////////////////////////////////////////////////////////////
 // CGbxProjView view
 
@@ -259,16 +257,18 @@ private:
 class wxGbxProjView : public CB::View
 {
 public:
-    const CDocFrame& GetFrame() const;
-    CDocFrame& GetFrame()
+    const CGbxProjView& GetWindow() const { return DoGetWindow(); }
+    CGbxProjView& GetWindow()
     {
-        return const_cast<CDocFrame&>(std::as_const(*this).GetFrame());
+        return const_cast<CGbxProjView&>(std::as_const(*this).GetWindow());
     }
-    CGbxProjView& GetWindow() override;
 
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
     void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
+
+protected:
+    const CGbxProjView& DoGetWindow() const override;
 
 private:
     wxGbxProjView() = default;

@@ -44,11 +44,10 @@ namespace {
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame
 
-CBitEditFrame::CBitEditFrame(wxDocument& doc,
+CBitEditFrame::CBitEditFrame(CGamDoc& doc,
                 wxBitEditView& view,
-                wxAuiMDIParentFrame& parent) :
-    BASE(&doc, &view, &parent, wxID_ANY,
-        doc.GetUserReadableName() + " - Tile Editor"),
+                CB::AuiMDIParentFrame& parent) :
+    create(*this, doc, view, parent),
     m_wndSplitter([this, &view]{
         wxSplitterWindow* retval = new wxSplitterWindow;
         // KLUDGE:  prevent events until m_wndSplitter set
@@ -80,13 +79,23 @@ CBitEditFrame::CBitEditFrame(wxDocument& doc,
     }())
 {
     m_wndSplitter->Show();
-    SetIcon(wxIcon(std::format("#{}", IDR_BITEDITOR),
-                            wxBITMAP_TYPE_ICO_RESOURCE,
-                            16, 16));
-    /* KLUDGE:  giving each frame its own menu
-        seems to avoid crashes on process close */
-    wxXmlResource::Get()->LoadMenuBar(this, "IDR_GAMEBOX"_cbstring);
     Layout();
+}
+
+CBitEditFrame::Create::Create(CBitEditFrame& frame,
+                                CGamDoc& doc,
+                                wxBitEditView& view,
+                                CB::AuiMDIParentFrame& parent)
+{
+    if (!frame.BASE::Create(doc, view, parent,
+                            doc.GetUserReadableName() + " - Tile Editor",
+                            wxIcon(std::format("#{}", IDR_BITEDITOR),
+                                                wxBITMAP_TYPE_ICO_RESOURCE,
+                                                16, 16),
+                            "IDR_GAMEBOX"_cbstring))
+    {
+        AfxThrowMemoryException();
+    }
 }
 
 #if 0
@@ -266,24 +275,17 @@ wxBitEditView* wxBitEditView::New(CGamDoc& doc, TileID tid)
     return static_cast<wxBitEditView*>(retval);
 }
 
-CGamDoc& wxBitEditView::GetDocument()
+const CBitEditFrame& wxBitEditView::DoGetFrame() const
 {
-    wxDocument& doc = CheckedDeref(wxView::GetDocument());
-    wxASSERT(dynamic_cast<CGamDoc*>(&doc));
-    return static_cast<CGamDoc&>(doc);
+    const CB::DocChildFrame& frame = CB::View::DoGetFrame();
+    wxASSERT(dynamic_cast<const CBitEditFrame*>(&frame));
+    return static_cast<const CBitEditFrame&>(frame);
 }
 
-CBitEditFrame& wxBitEditView::GetFrame()
+const CBitEditView& CBitEditFrame::GetBitEditView() const
 {
-    wxWindow& frame = CheckedDeref(GetDocChildFrame()->GetWindow());
-    wxASSERT(dynamic_cast<CBitEditFrame*>(&frame));
-    return static_cast<CBitEditFrame&>(frame);
-}
-
-CBitEditView& CBitEditFrame::GetBitEditView()
-{
-    wxWindow& wnd = CheckedDeref(m_wndSplitter->GetWindow2());
-    CBitEditView& bev = dynamic_cast<CBitEditView&>(wnd);
+    const wxWindow& wnd = CheckedDeref(m_wndSplitter->GetWindow2());
+    const CBitEditView& bev = dynamic_cast<const CBitEditView&>(wnd);
     return bev;
 }
 
@@ -312,21 +314,20 @@ bool wxBitEditView::OnClose(bool /*deleteWindow*/)
 {
     /* doc's life determined by wxGbxProjView, not this,
         so bypass wxView::OnClose() */
-    FileHistoryRemoveMenu();
     return true;
 }
 
 bool wxBitEditView::OnCreate(wxDocument* doc, long flags)
 {
+    wxASSERT(doc == &GetDocument());
     if (!wxView::OnCreate(doc, flags))
     {
         return false;
     }
 
-    new CBitEditFrame(CheckedDeref(doc),
+    new CBitEditFrame(GetDocument(),
                     *this,
                     CheckedDeref(GetMainFrame()));
-    FileHistoryAddMenu();
     /* wx tried to activate this before it was ready,
         so do it now */
     ready = true;

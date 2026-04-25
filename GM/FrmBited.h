@@ -30,14 +30,24 @@ class wxBitEditView;
 /////////////////////////////////////////////////////////////////////////////
 // CBitEditFrame frame
 
-class CBitEditFrame : public wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>
+class CBitEditFrame : public CB::DocChildFrame
 {
 protected:
-    CBitEditFrame(wxDocument& doc,
+    CBitEditFrame(CGamDoc& doc,
                     wxBitEditView& view,
-                    wxAuiMDIParentFrame& parent);
+                    CB::AuiMDIParentFrame& parent);
 
 // Attributes
+private:
+    // execute BASE::Create() w/ fully derived CBitEditFrame
+    class Create
+    {
+    public:
+        Create(CBitEditFrame& frame,
+                CGamDoc& doc,
+                wxBitEditView& view,
+                CB::AuiMDIParentFrame& parent);
+    } create;
 protected:
     RefPtr<wxSplitterWindow> m_wndSplitter;
 
@@ -69,9 +79,13 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    using BASE = wxDocChildFrameAny<wxAuiMDIChildFrame, wxAuiMDIParentFrame>;
+    using BASE = CB::DocChildFrame;
 
-    CBitEditView& GetBitEditView();
+    const CBitEditView& GetBitEditView() const;
+    CBitEditView& GetBitEditView()
+    {
+        return const_cast<CBitEditView&>(std::as_const(*this).GetBitEditView());
+    }
     CTileSelView& GetTileSelView();
 
     friend class wxBitEditView;
@@ -82,16 +96,26 @@ class wxBitEditView : public CB::View
 public:
     static wxBitEditView* New(CGamDoc& doc, TileID tid);
 
-    CGamDoc& GetDocument();
-    CBitEditFrame& GetFrame();
-    CBitEditView& GetWindow() override { return GetBitEditView(); }
-    CBitEditView& GetBitEditView() { return GetFrame().GetBitEditView(); }
+    const CBitEditFrame& GetFrame() const { return DoGetFrame(); }
+    CBitEditFrame& GetFrame()
+    {
+        return const_cast<CBitEditFrame&>(std::as_const(*this).GetFrame());
+    }
+    const CBitEditView& GetBitEditView() const { return GetFrame().GetBitEditView(); }
+    CBitEditView& GetBitEditView()
+    {
+        return const_cast<CBitEditView&>(std::as_const(*this).GetBitEditView());
+    }
     CTileSelView& GetTileSelView() { return GetFrame().GetTileSelView(); }
 
     void OnActivateView(bool activate, wxView* activeView, wxView* deactiveView) override;
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
     void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
+
+protected:
+    const CBitEditFrame& DoGetFrame() const override;
+    const CBitEditView& DoGetWindow() const override { return GetBitEditView(); }
 
 private:
     wxBitEditView() = default;

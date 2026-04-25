@@ -131,6 +131,8 @@ private:
     /* performing all idle updates as a single transaction
         improves AUI's sizing choices */
     bool auiMgrScheduleUpdate = false;
+
+    typedef wxDocParentFrameAny<CB::AuiMDIParentFrame> BASE;
 };
 
 inline CMainFrame* GetMainFrame()

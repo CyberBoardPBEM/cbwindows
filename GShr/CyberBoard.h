@@ -213,6 +213,12 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
     #undef min
 #endif
 
+class CGamDoc;
+namespace CB
+{
+    class DocChildFrame;
+}
+
 namespace CB
 {
     // unfortunately, some, but not all, systems declare ssize_t
@@ -2025,6 +2031,7 @@ namespace CB
 // helpers for providing wx/docview
 namespace CB
 {
+#if 0
     // satisfy wxDocChildFrameAny<> requirements
     template<typename BASE>
     class PseudoFrame : public BASE
@@ -2072,6 +2079,7 @@ namespace CB
     private:
         RefPtr<wxWindow> window;
     };
+#endif
 
     /* wxView must be separate from wxWindow
         (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
@@ -2081,7 +2089,23 @@ namespace CB
     class View : public wxView
     {
     public:
-        virtual wxWindow& GetWindow() = 0;
+        CGamDoc& GetDocument();
+        const DocChildFrame& GetFrame() const
+        {
+            return DoGetFrame();
+        }
+        DocChildFrame& GetFrame()
+        {
+            return const_cast<CB::DocChildFrame&>(std::as_const(*this).GetFrame());
+        }
+        const wxWindow& GetWindow() const
+        {
+            return DoGetWindow();
+        }
+        wxWindow& GetWindow()
+        {
+            return const_cast<wxWindow&>(std::as_const(*this).GetWindow());
+        }
 
         void OnActivateView(bool activate,
                                 wxView *activeView,
@@ -2095,8 +2119,9 @@ namespace CB
         // for CB, forward events to window here
         bool TryBefore(wxEvent& event) override;
 
-        void FileHistoryAddMenu();
-        void FileHistoryRemoveMenu();
+        // see https://wxwidgets.org/develop/coding-guidelines/#no_overloaded_virtuals
+        virtual const DocChildFrame& DoGetFrame() const;
+        virtual const wxWindow& DoGetWindow() const = 0;
     };
 }
 
@@ -2707,6 +2732,60 @@ namespace CB
                                                wxWindowID winid,
                                                const wxString& name) override;
     };
+
+    class DocChildFrame : public wxDocChildFrameAny<wxAuiMDIChildFrame, AuiMDIParentFrame>
+    {
+    public:
+        DocChildFrame() = default;
+        DocChildFrame(wxDocument& doc,
+                    wxView& view,
+                    AuiMDIParentFrame& parent,
+                    const wxString& title,
+                    wxIcon icon,
+                    const wxString& menuName);
+        bool Create(wxDocument& doc,
+                    wxView& view,
+                    AuiMDIParentFrame& parent,
+                    const wxString& title,
+                    wxIcon icon,
+                    const wxString& menuName);
+
+        /* KLUDGE:  wxDocChildFrame implementation doesn't
+                    support multiple views, and it doesn't
+                    declare GetView() virtual, so we can't
+                    change the implementation.  However, CBPlay's
+                    board frames should allow multiple views, so
+                    we need an additional interface. */
+        const View& GetCurrentView() const
+        {
+            return DoGetCurrentView();
+        }
+        View& GetCurrentView()
+        {
+            return const_cast<View&>(std::as_const(*this).GetCurrentView());
+        }
+
+    private:
+        class FileHistoryRAII
+        {
+        public:
+            FileHistoryRAII(DocChildFrame& frame);
+            ~FileHistoryRAII();
+        private:
+            DocChildFrame& frame;
+        };
+        std::optional<FileHistoryRAII> fileHistoryRAII;
+
+        // GetCurrentView() impl
+        virtual const View& DoGetCurrentView() const
+        {
+            return dynamic_cast<View&>(CheckedDeref(GetView()));
+        }
+
+        typedef wxDocChildFrameAny<wxAuiMDIChildFrame, AuiMDIParentFrame> BASE;
+    };
+
+    string ToString(const wxWindow& o);
 }
 
 // replacement for wxDC::DrawEllipse()
