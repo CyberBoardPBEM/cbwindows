@@ -996,6 +996,22 @@ bool CB::View::TryBefore(wxEvent& event)
         return false;
     }
 
+    // view shouldn't process a different window's paint events
+    if (dynamic_cast<wxPaintEvent*>(&event) &&
+        event.GetEventObject() != &GetWindow())
+    {
+//CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __func__, event);
+        return false;
+    }
+
+    // view shouldn't process a different window's context menu events
+    if (dynamic_cast<wxContextMenuEvent*>(&event) &&
+        event.GetEventObject() != &GetWindow())
+    {
+CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __func__, event);
+        return false;
+    }
+
     return GetWindow().ProcessWindowEventLocally(event);
 }
 
