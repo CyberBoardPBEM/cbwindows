@@ -53,29 +53,37 @@ enum  TileScale;
 class WinStateEvent;
 class wxPlayBoardView;
 
-class CPlayBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
+class CPlayBoardView : public wxScrolledWindow
 {
     wxDECLARE_DYNAMIC_CLASS(CPlayBoardView);
 private:
     friend class CPlayBoardFrame;
+#if 0
     friend class CPlayBoardViewContainer;
-    typedef CB::ProcessEventOverride<wxScrolledWindow> BASE;
+#endif
+    friend wxPlayBoardView;
+    typedef wxScrolledWindow BASE;
     CPlayBoardView();
     void Initialize();
 
 // Attributes
 public:
+    operator const wxPlayBoardView&() const { return *wxview; }
+    operator wxPlayBoardView&() { return const_cast<wxPlayBoardView&>(static_cast<const wxPlayBoardView&>(std::as_const(*this))); }
     operator const wxView&() const;
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
-    operator const wxView*() const;
+    operator const wxView*() const { return &static_cast<const wxView&>(*this); }
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+    CPlayBoardFrame& GetPanel();
 
     const CGamDoc& GetDocument() const;
     CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }
-    const CPlayBoard& GetPlayBoard() const { return *m_pPBoard; }
+    const CPlayBoard& GetPlayBoard() const { return CheckedDeref(m_pPBoard); }
     CPlayBoard& GetPlayBoard() { return const_cast<CPlayBoard&>(std::as_const(*this).GetPlayBoard()); }
     wxOverlay& GetOverlay() { return *overlay; }
+#if 0
     CFrameWnd* GetParentFrame();
+#endif
 
 // Operations
 public:
@@ -165,7 +173,7 @@ protected:
 
 // Implementation
 private:
-    CB::propagate_const<CPlayBoardViewContainer*> parent = nullptr;
+    CB::propagate_const<wxSplitterWindow*> parent = nullptr;
     CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
     CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr;          // Board that contains selections etc...
@@ -225,8 +233,8 @@ protected:
 #endif
 
 protected:
-    void OnInitialUpdate();
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    void OnInitialUpdate(CGamDoc& doc);
+    void OnUpdate(wxView* sender, const CGamDocHint& hint);
 #if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
     BOOL PreTranslateMessage(MSG* pMsg) override;
@@ -332,9 +340,6 @@ private:
     void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override;
-
     /* This view should support scrolling by individual pixels,
         but don't make the line-up and line-down scrolling that
         slow.  */
@@ -354,6 +359,7 @@ inline const CGamDoc& CPlayBoardView::GetDocument() const
    { return *document; }
 #endif
 
+#if 0
 class CPlayBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
                                 public CB::NativeContainerWindowMixin
 {
@@ -391,9 +397,11 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+#endif
 
 class wxPlayBoardView : public CB::View
 {
+    wxDECLARE_DYNAMIC_CLASS(wxPlayBoardView);
 public:
     const CPlayBoardView& GetWindow() const { return DoGetWindow(); }
     CPlayBoardView& GetWindow()
@@ -407,30 +415,25 @@ public:
     }
     operator CPlayBoardView*() { return &static_cast<CPlayBoardView&>(*this); }
 
+    void OnActivateView(bool activate,
+                        wxView *activeView,
+                        wxView *deactiveView) override;
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
+
 protected:
     const CPlayBoardView& DoGetWindow() const override { return *window; }
 
 private:
-    wxPlayBoardView(CPlayBoardView& v) : window(&v) {}
+    wxPlayBoardView();
 
     RefPtr<CPlayBoardView> window;
-
-    friend CPlayBoardView;
 };
 
 inline CPlayBoardView::operator const wxView&() const
 {
-    return *wxview;
-}
-
-inline CPlayBoardView::operator const wxView*() const
-{
-    return &*wxview;
-}
-
-inline CCmdTarget& CPlayBoardView::Get()
-{
-    return *parent;
+    return static_cast<const wxPlayBoardView&>(*this);
 }
 
 /////////////////////////////////////////////////////////////////////////////

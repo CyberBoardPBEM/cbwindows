@@ -373,6 +373,7 @@ public:
 
     // Called by view being constructed...
     CPlayBoard& GetNewViewBoard() { return CheckedDeref(m_pBoardParam); }
+    const CB::string& GetMenuName() const;
 
     // Major game related objects...
     const CTileManager& GetTileManager() const;

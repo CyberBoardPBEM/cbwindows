@@ -585,9 +585,7 @@ CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
     if (pView != NULL)
     {
         // This board already has a view. Activate that view.
-        CFrameWnd* pFrm = pView->GetParentFrame();
-        ASSERT(pFrm);
-        pFrm->ActivateFrame();
+        static_cast<wxPlayBoardView&>(*pView).Activate(true);
     }
     else
     {
@@ -673,7 +671,7 @@ void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
     wxPoint pointWorkspace = CB::Convert(pointWorkspaceMfc);
     if (IsQuietPlayback()) return;
     CPlayBoardView* pView = FindPBoardView(pPBoard);
-    ASSERT(pView != NULL);
+    wxASSERT(pView != NULL);
     pointWorkspace = pView->WorkspaceToClient(pointWorkspace);
     pView->SetNotificationTip(pointWorkspace, pszStr);
 }

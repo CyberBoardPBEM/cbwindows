@@ -29,20 +29,23 @@ class wxTinyBoardView;
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView view
 
-class CTinyBoardView : public CB::ProcessEventOverride<wxScrolledWindow>
+class CTinyBoardView : public wxScrolledWindow
 {
     wxDECLARE_DYNAMIC_CLASS(CTinyBoardView);
 private:
     friend class CTinyBoardViewContainer;
-    typedef CB::ProcessEventOverride<wxScrolledWindow> BASE;
+    friend wxTinyBoardView;
+    typedef wxScrolledWindow BASE;
     CTinyBoardView();
     void Initialize();
 
 // Attributes
 public:
+    operator const wxTinyBoardView&() const { return *wxview; }
+    operator wxTinyBoardView&() { return const_cast<wxTinyBoardView&>(static_cast<const wxTinyBoardView&>(std::as_const(*this))); }
     operator const wxView&() const;
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
-    operator const wxView*() const;
+    operator const wxView*() const { return &static_cast<const wxView&>(*this); }
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
 
 // Operations
@@ -51,7 +54,7 @@ public:
 // Implementation
 private:
     // member declaration order determines construction order
-    CB::propagate_const<CTinyBoardViewContainer*> parent = nullptr;
+    CB::propagate_const<wxSplitterWindow*> parent = nullptr;
     CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
     CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr; // The playing board we are viewing
@@ -82,8 +85,10 @@ protected:
 #if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 #endif
-    void OnInitialUpdate();     // first time after construct
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+public:
+    void OnInitialUpdate(CGamDoc& doc);     // first time after construct
+protected:
+    void OnUpdate(wxView* sender, const CGamDocHint& hint);
     void OnDraw(wxDC& pDC) override;      // overridden to draw this view
 
     void OnLButtonDown(wxMouseEvent& event);
@@ -95,14 +100,12 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override;
-
     void RecalcScrollLimits();
 
     OwnerPtr<wxTinyBoardView> wxview;
 };
 
+#if 0
 class CTinyBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
                                 public CB::NativeContainerWindowMixin
 {
@@ -136,16 +139,24 @@ private:
     typedef CB::OnCmdMsgOverride<CView> BASE;
     friend CTinyBoardView;
 };
+#endif
 
 class wxTinyBoardView : public CB::View
 {
+    wxDECLARE_DYNAMIC_CLASS(wxTinyBoardView);
 public:
+    void OnActivateView(bool activate,
+                        wxView *activeView,
+                        wxView *deactiveView) override;
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 protected:
     const CTinyBoardView& DoGetWindow() const override { return *window; }
 
 private:
-    wxTinyBoardView(CTinyBoardView& v) : window(&v) {}
+    wxTinyBoardView();
 
     RefPtr<CTinyBoardView> window;
 
@@ -154,17 +165,6 @@ private:
 
 inline CTinyBoardView::operator const wxView&() const
 {
-    return *wxview;
+    return static_cast<const wxTinyBoardView&>(*this);
 }
-
-inline CTinyBoardView::operator const wxView*() const
-{
-    return &*wxview;
-}
-
-inline CCmdTarget& CTinyBoardView::Get()
-{
-    return *parent;
-}
-
 

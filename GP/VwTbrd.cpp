@@ -26,6 +26,7 @@
 #include    "Gp.h"
 #include    "GamDoc.h"
 #include    "FrmMain.h"
+#include    "FrmPbrd.h"
 #include    "Board.h"
 #include    "PBoard.h"
 #include    "VwTbrd.h"
@@ -39,11 +40,19 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CTinyBoardView, CTinyBoardView::BASE);
+wxIMPLEMENT_DYNAMIC_CLASS(wxTinyBoardView, CB::View);
+#if 0
 IMPLEMENT_DYNCREATE(CTinyBoardViewContainer, CView)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// helper for wxTinyBoardView ctor
+namespace {
+    CTinyBoardView* newWnd = nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -56,6 +65,7 @@ wxBEGIN_EVENT_TABLE(CTinyBoardView, CB::ProcessEventOverride<wxScrolledCanvas>)
     EVT_WINSTATE(OnMessageWindowState)
 wxEND_EVENT_TABLE()
 
+#if 0
 BEGIN_MESSAGE_MAP(CTinyBoardViewContainer, CTinyBoardViewContainer::BASE)
     ON_WM_CREATE()
 #if 0
@@ -64,12 +74,36 @@ BEGIN_MESSAGE_MAP(CTinyBoardViewContainer, CTinyBoardViewContainer::BASE)
     ON_WM_MOUSEACTIVATE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardView
 
 CTinyBoardView::CTinyBoardView() :
-    wxview(new wxTinyBoardView(*this))
+    wxview([this]
+    {
+        class CreateParamManager
+        {
+        public:
+            CreateParamManager(CTinyBoardView& wnd)
+            {
+                wxASSERT(!newWnd);
+                newWnd = &wnd;
+            }
+            ~CreateParamManager()
+            {
+                newWnd = nullptr;
+            }
+        } createParamMgr(*this);
+        wxDocTemplate& templ = CB::FindDocTemplateByView(*wxCLASSINFO(wxTinyBoardView));
+        wxDocManager& docMgr = CheckedDeref(templ.GetDocumentManager());
+        wxDocument& doc = CheckedDeref(docMgr.GetCurrentDocument());
+        OwnerPtr<wxTinyBoardView> retval = static_cast<wxTinyBoardView*>(templ.CreateView(&doc));
+        wxView& frameView = CheckedDeref(docMgr.GetCurrentView());
+        CB::DocChildFrame* frame = dynamic_cast<CB::DocChildFrame*>(frameView.GetFrame());
+        retval->SetDocChildFrame(frame);
+        return retval;
+    }())
 {
 }
 
@@ -97,25 +131,21 @@ BOOL CTinyBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTinyBoardView::OnInitialUpdate()
+void CTinyBoardView::OnInitialUpdate(CGamDoc& doc)
 {
-    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
-    parent = &dynamic_cast<CTinyBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
+    parent = &dynamic_cast<wxSplitterWindow&>(CheckedDeref(GetParent()));
+    document = &doc;
     m_pPBoard = &document->GetNewViewBoard();
-
-    parent->CTinyBoardViewContainer::BASE::OnInitialUpdate();
 
     Initialize();
 
     RecalcScrollLimits();
 }
 
-void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CTinyBoardView::OnUpdate(wxView* sender, const CGamDocHint& hint)
 {
-    wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
-    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
+    EGamDocHint lHint = hint.GetHint();
+    const CGamDocHint* ph = &hint;
     if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         wxRect rct;
@@ -140,7 +170,7 @@ void CTinyBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     }
     else if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_GAMESTATEUSED)
     {
-        parent->CTinyBoardViewContainer::BASE::OnUpdate(pSender, lHint, pHint);
+        Refresh();
     }
 }
 
@@ -327,10 +357,12 @@ void CTinyBoardView::OnLButtonDown(wxMouseEvent& event)
 {
     wxPoint point = event.GetPosition();
     ClientToWorkspace(point);
-    // TODO:  convert to wx when frame handles wxEvent
-    CFrameWnd* pFrame = parent->GetParentFrame();
-    CPoint cpoint = CB::Convert(point);
-    pFrame->SendMessage(WM_CENTERBOARDONPOINT, reinterpret_cast<WPARAM>(&cpoint));
+    CB::DocChildFrame& pFrameContainer = wxview->GetFrame();
+    wxView& frameContainerView = CheckedDeref(pFrameContainer.GetView());
+    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(frameContainerView);
+    CPlayBoardFrame& pFrame = boardFrameView.GetFramePanel();
+    CenterBoardOnPointEvent event2(point);
+    pFrame.ProcessWindowEvent(event2);
 }
 
 void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
@@ -338,8 +370,10 @@ void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
     if (!m_pBMap.IsOk())
         return;
 
-    // owned by MFC
-    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup(CheckedDeref(parent->GetParentFrame())));
+    // owned by wx
+    CB::DocChildFrame& pFrameContainer = wxview->GetFrame();
+    CPlayBoardFrame& pFrame = dynamic_cast<CPlayBoardFrame&>(CheckedDeref(pFrameContainer.GetChildren().front()));
+    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup(pFrame));
 
     pTBrd->m_bmap = DrawFullMap();
 
@@ -376,6 +410,7 @@ void CTinyBoardView::RecalcScrollLimits()
     sizer.FitInside(this);
 }
 
+#if 0
 void CTinyBoardViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
@@ -429,4 +464,42 @@ LRESULT CTinyBoardViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lPar
     WinStateEvent event(*reinterpret_cast<CArchive*>(wParam), bool(lParam));
     child->ProcessWindowEvent(event);
     return (LRESULT)1;
+}
+#endif
+
+void wxTinyBoardView::OnActivateView(bool activate,
+                                            wxView* activeView,
+                                            wxView* deactiveView)
+{
+    wxASSERT(!"should never be activated");
+    wxASSERT(!activate && activeView != this);
+    CB::View::OnActivateView(activate, activeView, deactiveView);
+}
+
+bool wxTinyBoardView::OnClose(bool deleteWindow)
+{
+    WXUNUSED_UNLESS_DEBUG(deleteWindow);
+    wxASSERT(!deleteWindow);
+    /* doc's life determined by wxGsnProjView, not this,
+        so bypass wxView::OnClose() */
+    return true;
+}
+
+bool wxTinyBoardView::OnCreate(wxDocument* doc, long flags)
+{
+    WXUNUSED_UNLESS_DEBUG(doc);
+    WXUNUSED_UNLESS_DEBUG(flags);
+    wxASSERT(doc == &GetDocument() && !flags);
+    return CB::View::OnCreate(doc, flags);
+}
+
+void wxTinyBoardView::OnUpdate(wxView* sender, wxObject* hint/* = nullptr*/)
+{
+    CB::View::OnUpdate(sender, hint);
+    window->OnUpdate(sender, dynamic_cast<CGamDocHintRef&>(CheckedDeref(hint)));
+}
+
+wxTinyBoardView::wxTinyBoardView() :
+    window(newWnd)
+{
 }

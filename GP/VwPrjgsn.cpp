@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    "FrmPbrd.h"
 #include    "Gp.h"
 #include    "GamDoc.h"
 #include    "LBoxTray.h"
@@ -113,10 +114,16 @@ wxBEGIN_EVENT_TABLE(CGsnProjView, wxPanel)
     EVT_UPDATE_UI(XRCID("ID_PPROJITEM_VIEW"), OnUpdateProjItemView)
     EVT_SHOWPLAYINGBOARD(OnMessageShowPlayingBoard)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+    EVT_MOUSE_CAPTURE_LOST(OnMouseCaptureLost)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView
+
+void CGsnProjView::OnMouseCaptureLost(wxMouseCaptureLostEvent& /*event*/)
+{
+    wxASSERT(!"how did this happen?");
+}
 
 CGsnProjView::CGsnProjView(wxGsnProjView& v) :
     CB_XRC_BEGIN_CTRLS_DEFN(&v.GetFrame(), CGsnProjView)
@@ -818,23 +825,6 @@ bool wxGsnProjView::OnClose(bool deleteWindow)
         {
             GetWindow().Hide();
         }
-
-        /* CB defines doc's life only by proj view,
-            so close rest */
-        wxViewVector views = GetDocument().GetViewsVector();
-        for (auto it = views.begin() ; it != views.end() ; ++it)
-        {
-            CB::View& view = dynamic_cast<CB::View&>(CheckedDeref(*it));
-            if (&view != this)
-            {
-                /* KLUDGE:  need to close frame because
-                    closing non-proj views is disabled
-                    in order to override standard doc
-                    lifetime */
-                CB_VERIFY(view.GetFrame().Close(true));
-            }
-        }
-
         return true;
     }
     else
@@ -878,6 +868,7 @@ void wxGsnProjView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
     const CGamDocHint& gamHint = ref ? *ref : CGamDocHintRef(HINT_ALWAYSUPDATE);
     if (gamHint.GetHint() == HINT_DOCREADY)
     {
+        // wx owns the wxWindow
         new CGsnProjView(*this);
         GetFrame().Show();
         GetWindow().OnInitialUpdate();

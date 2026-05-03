@@ -51,7 +51,7 @@ wxEND_EVENT_TABLE()
 /////////////////////////////////////////////////////////////////////////////
 // CTinyBoardPopup
 
-CTinyBoardPopup::CTinyBoardPopup(CWnd& pWnd) :
+CTinyBoardPopup::CTinyBoardPopup(wxWindow& pWnd) :
     m_pWnd(&pWnd)
 {
     m_bRotate180 = FALSE;
@@ -132,8 +132,8 @@ void CTinyBoardPopup::ProcessBoardHit(wxMouseEvent& event)
         ScalePoint(point, m_wsize, rctClient.GetSize());
         if (m_bRotate180)
             point = wxPoint(m_wsize.x - point.x, m_wsize.y - point.y);
-        CPoint cpoint = CB::Convert(point);
-        m_pWnd->SendMessage(WM_CENTERBOARDONPOINT, (WPARAM)&cpoint);
+        CenterBoardOnPointEvent event2(point);
+        m_pWnd->ProcessWindowEvent(event2);
     }
     Dismiss();
 }

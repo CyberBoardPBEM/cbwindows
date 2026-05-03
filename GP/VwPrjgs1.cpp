@@ -101,9 +101,7 @@ void CGsnProjView::DoBoardView()
     if (pView != NULL)
     {
         // This board already has an editor. Activate that view.
-        CFrameWnd* pFrm = pView->GetParentFrame();
-        wxASSERT(pFrm);
-        pFrm->ActivateFrame();
+        static_cast<wxPlayBoardView&>(*pView).Activate(true);
     }
     else
     {

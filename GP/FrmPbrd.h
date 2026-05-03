@@ -29,50 +29,55 @@
 #include    "WinMyspl.h"
 #endif
 
-#ifndef     _PBOARD_H
-#include    "PBoard.h"
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardFrame frame
 
+class CPlayBoard;
 class CPlayBoardView;
 
-class CPlayBoardFrame : public CWnd
+class CPlayBoardFrame : public wxPanel
 {
-    friend class CPlayBoardFrameContainer;
+    friend class CBPlayBoardFrameView;
 protected:
 
 // Attributes
 private:
-    CMySplitWnd    m_wndSplitter1;  // The overall view container
-    CMySplitWnd    m_wndSplitter2;  // Embedded in the first
-    CCbSplitterWnd m_wndSplitBoards;// Holds playing board views
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxSplitterWindow> m_wndSplitter1;  // The overall view container
+        RefPtr<wxSplitterWindow> m_wndSplitter2;  // Embedded in the first
+        RefPtr<wxSplitterWindow> m_wndSplitBoards;// Holds playing board views
+        RefPtr<CPlayBoardView> m_vwBoard1;
+        RefPtr<CPlayBoardView> m_vwBoard2;
+    CB_XRC_END_CTRLS_DECL()
 public:
 
     CB::propagate_const<CPlayBoard*> m_pPBoard;       // The playing board associated with this frame
 
 // Operations
 public:
-    LRESULT SendMessageToActiveBoardPane(UINT nMsg, WPARAM wParam, LPARAM lParam);
+    bool SendMessageToActiveBoardPane(wxEvent& event);
 
 // Implementation
 protected:
 public:     // for parent's OwnerPtr
     ~CPlayBoardFrame() override;
 protected:
-    CPlayBoardFrame(CPlayBoardFrameContainer& parent,
-                        CCreateContext& pContext);
+    CPlayBoardFrame(wxWindow& parent,
+                        CGamDoc& doc);
+#if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+#endif
 
 public:
-    const CPlayBoardView& GetActiveBoardView() const;
-protected:
+    void SetActiveBoardView(CPlayBoardView& view) { activeView = &view; }
+    const CPlayBoardView& GetActiveBoardView() const { return *activeView; }
     CPlayBoardView& GetActiveBoardView() { return const_cast<CPlayBoardView&>(std::as_const(*this).GetActiveBoardView()); }
+protected:
+#if 0
     CCbSplitterWnd& GetBoardSplitter();
+#endif
 
-    // Generated message map functions
-    //{{AFX_MSG(CPlayBoardFrame)
+#if 0
     afx_msg void OnViewHalfScaleBrd();
     afx_msg void OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI);
     afx_msg void OnViewFullScaleBrd();
@@ -105,16 +110,19 @@ protected:
     afx_msg void OnUpdateViewSplitBoardRows(CCmdUI* pCmdUI);
     afx_msg void OnViewSplitBoardCols();
     afx_msg void OnUpdateViewSplitBoardCols(CCmdUI* pCmdUI);
-    //}}AFX_MSG
     afx_msg void OnSelectGroupMarkers(UINT nID);
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
     afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     afx_msg void OnSize(UINT nType, int cx, int cy);
-    DECLARE_MESSAGE_MAP()
+#endif
+    wxDECLARE_EVENT_TABLE();
+
+    CB::not_null<CB::propagate_const<CPlayBoardView*>> activeView = &*m_vwBoard1;
 };
 
-class CPlayBoardFrameContainer : public CMDIChildWndEx
+#if 0
+class CPlayBoardFrameContainer : public CB::OnCmdMsgOverride<CMDIChildWndEx>
 {
     DECLARE_DYNCREATE(CPlayBoardFrameContainer)
 protected:
@@ -127,27 +135,67 @@ public:
     {
         return const_cast<CPlayBoardFrame&>(std::as_const(*this).GetChild());
     }
+    CDocument* GetActiveDocument() override;
 
 // Operations
 public:
-    // forward to child
-    BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra,
-                    AFX_CMDHANDLERINFO* pHandlerInfo) override;
 
 // Implementation
 protected:
     ~CPlayBoardFrameContainer() override = default;
-    // forward to child
-    BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult) override;
     BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) override;
 
     void OnUpdateFrameTitle(BOOL bAddToTitle) override;
 
-    OwnerOrNullPtr<CPlayBoardFrame> child;
+    afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
 
-    typedef CMDIChildWndEx BASE;
+private:
+    // IGetEvtHandler
+    wxEvtHandler& Get() override
+    {
+        return CheckedDeref(CheckedDeref(child).GetEventHandler());
+    }
+
+    OwnerOrNullPtr<CB::NativeContainerWindowMixin> wxWindow;
+    // owned by wx
+    CB::propagate_const<CPlayBoardFrame*> child = nullptr;
+
+    typedef CB::OnCmdMsgOverride<CMDIChildWndEx> BASE;
+};
+#endif
+
+class CBPlayBoardFrameView : public CB::View
+{
+public:
+    static void New(CGamDoc& doc);
+
+    const CB::DocChildFrame& GetFrameFrame() const;
+    CB::DocChildFrame& GetFrameFrame()
+    {
+        return const_cast<CB::DocChildFrame&>(std::as_const(*this).GetFrameFrame());
+    }
+    const CPlayBoardFrame& GetFramePanel() const;
+    CPlayBoardFrame& GetFramePanel()
+    {
+        return const_cast<CPlayBoardFrame&>(std::as_const(*this).GetFramePanel());
+    }
+
+    void Activate(bool activate) override;
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+
+protected:
+    const wxWindow& DoGetWindow() const override { return GetFramePanel(); }
+
+private:
+    wxDECLARE_DYNAMIC_CLASS(CBPlayBoardFrameView);
+
+    typedef CB::View BASE;
 };
 
 /////////////////////////////////////////////////////////////////////////////
 
 #endif
+

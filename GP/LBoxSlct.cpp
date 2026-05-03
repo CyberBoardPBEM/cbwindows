@@ -31,6 +31,7 @@
 #include    "PPieces.h"
 #include    "FrmPbrd.h"
 #include    "GMisc.h"
+#include    "VwSelpce.h"
 #include    "VwPbrd.h"
 
 #ifdef _DEBUG
@@ -236,7 +237,7 @@ void CSelectListBox::OnActTurnOver(wxCommandEvent& event)
         id == XRCID("ID_ACT_TURNOVER_PREV") ||
         id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        CB_VERIFY(CB::RelayProcessEvent(view, event));
+        CB_VERIFY(view.ProcessWindowEvent(event));
         return;
     }
     else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
@@ -279,7 +280,7 @@ void CSelectListBox::OnUpdateActTurnOver(wxUpdateUIEvent& pCmdUI)
         id == XRCID("ID_ACT_TURNOVER_PREV") ||
         id == XRCID("ID_ACT_TURNOVER_RANDOM"))
     {
-        CB_VERIFY(CB::RelayProcessEvent(GetBoardView(), pCmdUI));
+        CB_VERIFY(GetBoardView().ProcessWindowEvent(pCmdUI));
         return;
     }
     else if (id == XRCID("ID_ACT_TURNOVER_SELECT"))
@@ -483,11 +484,12 @@ std::vector<TileID> CSelectListBox::GetTileIDs(size_t nIndex) const
 
 const CPlayBoardView& CSelectListBox::GetBoardView() const
 {
-    wxWindow& view = CheckedDeref(GetParent());
-    wxWindow& container = CheckedDeref(view.GetParent());
-    CWnd& cwndContainer = CheckedDeref(CB::ToCWnd(container));
-    CFrameWnd& frame = CheckedDeref(AFXGetParentFrame(&cwndContainer));
-    const CPlayBoardFrameContainer& pbrdFrameContainer = dynamic_cast<CPlayBoardFrameContainer&>(frame);
-    return pbrdFrameContainer.GetChild().GetActiveBoardView();
+    const wxWindow& parent = CheckedDeref(GetParent());
+    const CSelectedPieceView& selView = dynamic_cast<const CSelectedPieceView&>(parent);
+    const wxSelectedPieceView& wxSelView = selView;
+    const CB::DocChildFrame& frame = wxSelView.GetFrame();
+    const wxView& frameView = CheckedDeref(frame.GetView());
+    const CBPlayBoardFrameView& boardFrameView = dynamic_cast<const CBPlayBoardFrameView&>(frameView);
+    return boardFrameView.GetFramePanel().GetActiveBoardView();
 }
 

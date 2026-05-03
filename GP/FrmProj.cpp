@@ -41,6 +41,8 @@ IMPLEMENT_DYNCREATE(CProjFrame, CMDIChildWndEx)
 
 CProjFrame::CProjFrame()
 {
+    wxASSERT(!"dead code");
+    AfxThrowNotSupportedException();
 }
 
 CProjFrame::~CProjFrame()

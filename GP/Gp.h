@@ -216,7 +216,9 @@ public:
 public:
     CDocument* GetCurrentDocument();
 
+#if 0
     CMultiDocTemplate* m_pBrdViewTmpl;
+#endif
 
     DWORD   m_dwHtmlHelpCookie;
     BOOL    m_bDisableHtmlHelp;

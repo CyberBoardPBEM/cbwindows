@@ -38,6 +38,8 @@
 #include    "VwPbrd.h"
 #include    "VwPrjgsn.h"
 #include    "VwPrjgam.h"
+#include    "VwSelpce.h"
+#include    "VwTbrd.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -115,7 +117,9 @@ CGpApp::CGpApp()
 {
     m_dwHtmlHelpCookie = 0;
     m_bDisableHtmlHelp = FALSE;
+#if 0
     m_pBrdViewTmpl = NULL;
+#endif
     m_hHtmlProcessHandle = NULL;
 }
 
@@ -187,6 +191,22 @@ bool wxCGpApp::OnInit()
     new wxDocTemplate(&*docManager, "Scenario Files", "*.gsn", "", "gsn",
                         "CGamDoc", "wxGsnProjView",
                         wxCLASSINFO(CGamDoc), wxCLASSINFO(wxGsnProjView));
+    new wxDocTemplate(&*docManager, "", "", "", "",
+                        "CGamDoc", "CBPlayBoardFrameView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(CBPlayBoardFrameView),
+                        wxTEMPLATE_INVISIBLE);
+    new wxDocTemplate(&*docManager, "", "", "", "",
+                        "CGamDoc", "wxPlayBoardView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(wxPlayBoardView),
+                        wxTEMPLATE_INVISIBLE);
+    new wxDocTemplate(&*docManager, "", "", "", "",
+                        "CGamDoc", "wxSelectedPieceView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(wxSelectedPieceView),
+                        wxTEMPLATE_INVISIBLE);
+    new wxDocTemplate(&*docManager, "", "", "", "",
+                        "CGamDoc", "wxTinyBoardView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(wxTinyBoardView),
+                        wxTEMPLATE_INVISIBLE);
     wxDocManager& docMgr = CheckedDeref(wxDocManager::GetDocumentManager());
     docMgr.FileHistoryLoad(*wxConfig::Get());
 
@@ -306,11 +326,13 @@ BOOL CGpApp::InitInstance()
     // Register the application's document templates.  Document templates
     // serve as the connection between documents, frame windows and views.
 
+#if 0
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,
         RUNTIME_CLASS(CGamDocMfc),
         RUNTIME_CLASS(CPlayBoardFrameContainer),
         RUNTIME_CLASS(CPlayBoardViewContainer));
+#endif
 
     EnableLoadWindowPlacement(FALSE);
 
@@ -367,7 +389,9 @@ int CGpApp::ExitInstance()
 
     CWinAppEx::ExitInstance();
 
+#if 0
     if (m_pBrdViewTmpl != NULL) delete m_pBrdViewTmpl;
+#endif
     return 0;
 }
 

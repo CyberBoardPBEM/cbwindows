@@ -36,11 +36,11 @@ class CTinyBoardPopup : public wxPopupTransientWindow
 {
 // Construction
 public:
-    CTinyBoardPopup(CWnd& pWnd);
+    CTinyBoardPopup(wxWindow& pWnd);
 
 // Attributes
 private:
-    RefPtr<CWnd> m_pWnd;
+    RefPtr<wxWindow> m_pWnd;
 public:
     wxBitmap    m_bmap;
     wxSize      m_wsize;

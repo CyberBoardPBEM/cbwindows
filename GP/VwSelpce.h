@@ -34,20 +34,24 @@ class wxSelectedPieceView;
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView view
 
-class CSelectedPieceView : public CB::ProcessEventOverride<wxPanel>
+class CSelectedPieceView : public wxPanel
 {
     wxDECLARE_DYNAMIC_CLASS(CSelectedPieceView);
 private:
+#if 0
     friend class CSelectedPieceViewContainer;
+#endif
     typedef CB::ProcessEventOverride<wxPanel> BASE;
     CSelectedPieceView();
     void Initialize();
 
 // Attributes
 public:
+    operator const wxSelectedPieceView&() const { return *wxview; }
+    operator wxSelectedPieceView&() { return const_cast<wxSelectedPieceView&>(static_cast<const wxSelectedPieceView&>(std::as_const(*this))); }
     operator const wxView&() const;
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
-    operator const wxView*() const;
+    operator const wxView*() const { return &static_cast<const wxView&>(*this); }
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
 
 private:
@@ -58,13 +62,13 @@ public:
 
 // Implementation
 private:
-    CB::propagate_const<CSelectedPieceViewContainer*> parent = nullptr;
+    CB::propagate_const<wxSplitterWindow*> parent = nullptr;
     CB::propagate_const<CGamDoc*> document = nullptr;
 protected:
     CB::propagate_const<CPlayBoard*> m_pPBoard = nullptr;      // Board that contains selections
 
     // owned by wx
-    CB::propagate_const<CSelectListBox*> m_listSel = new CSelectListBox;
+    RefPtr<CSelectListBox> m_listSel = new CSelectListBox;
     std::vector<RefPtr<CDrawObj>> m_tblSel;
     CB::ToolTip    m_toolTip;
 
@@ -73,7 +77,9 @@ protected:
     void ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedItems);
 
     ~CSelectedPieceView() override;
-    void OnInitialUpdate();     // first time after construct
+public:
+    void OnInitialUpdate(CGamDoc& doc);     // first time after construct
+protected:
     void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
 protected:
@@ -89,9 +95,6 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override;
-
     OwnerPtr<wxSelectedPieceView> wxview;
 };
 
@@ -100,6 +103,7 @@ inline CGamDoc& CSelectedPieceView::GetDocument()
    { return *document; }
 #endif
 
+#if 0
 class CSelectedPieceViewContainer : public CB::OnCmdMsgOverride<CView>,
                                     public CB::NativeContainerWindowMixin
 {
@@ -130,16 +134,23 @@ private:
 
     typedef CB::OnCmdMsgOverride<CView> BASE;
 };
+#endif
 
 class wxSelectedPieceView : public CB::View
 {
+    wxDECLARE_DYNAMIC_CLASS(wxSelectedPieceView);
 public:
+    void OnActivateView(bool activate,
+                        wxView *activeView,
+                        wxView *deactiveView) override;
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
 
 protected:
     const CSelectedPieceView& DoGetWindow() const override { return *window; }
 
 private:
-    wxSelectedPieceView(CSelectedPieceView& v) : window(&v) {}
+    wxSelectedPieceView();
 
     RefPtr<CSelectedPieceView> window;
 
@@ -149,14 +160,4 @@ private:
 inline CSelectedPieceView::operator const wxView&() const
 {
     return *wxview;
-}
-
-inline CSelectedPieceView::operator const wxView*() const
-{
-    return &*wxview;
-}
-
-inline CCmdTarget& CSelectedPieceView::Get()
-{
-    return *parent;
 }

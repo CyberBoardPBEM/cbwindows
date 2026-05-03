@@ -406,6 +406,27 @@ bool CGamDoc::DeleteContents()
         }
         m_palMark = nullptr;
     }
+    /* close board views
+        (being careful about iterator invalidation) */
+    for (bool more = true ; more ; )
+    {
+        more = false;
+        wxList& views = GetViews();
+        for (auto it = views.begin(); it != views.end(); ++it)
+        {
+            CBPlayBoardFrameView* view = dynamic_cast<CBPlayBoardFrameView*>(*it);
+            if (view)
+            {
+                more = true;
+                /* KLUDGE:  need to close frame because
+                    closing non-proj views is disabled
+                    in order to override standard doc
+                    lifetime */
+                CB_VERIFY(view->GetFrameFrame().Close(true));
+                break;
+            }
+        }
+    }
 
     // m_wReserved1 = 0;
     m_wReserved2 = 0;
@@ -521,6 +542,7 @@ void CGamDoc::DoInitialUpdate()
 void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
     CPlayBoard& board)
 {
+#if 0
     CDocTemplate* pTemplate = GetApp()->m_pBrdViewTmpl;
     class CreateParamManager
     {
@@ -548,6 +570,25 @@ void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
     str += pszTitle;
     pNewFrame->SetWindowText(str);
     pTemplate->InitialUpdateFrame(pNewFrame, *this);
+#else
+    class CreateParamManager
+    {
+    public:
+        CreateParamManager(CGamDoc& d, CPlayBoard& board) :
+            doc(d)
+        {
+            wxASSERT(!doc.m_pBoardParam);
+            doc.m_pBoardParam = &board;
+        }
+        ~CreateParamManager()
+        {
+            doc.m_pBoardParam = nullptr;
+        }
+    private:
+        CGamDoc& doc;
+    } createParamMgr(*this, board);
+    CBPlayBoardFrameView::New(*this);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -577,6 +618,7 @@ CPlayBoardView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
         return nullptr;
     }
 
+#if 0
     POSITION pos = mfcDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
@@ -588,6 +630,20 @@ CPlayBoardView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const
                 return &pView;
         }
     }
+#else
+    const wxList& views = GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
+    {
+        wxPlayBoardView* pView = dynamic_cast<wxPlayBoardView*>(*it);
+        if (pView)
+        {
+            if (&pView->GetWindow().GetPlayBoard() == &pPBoard)
+            {
+                return *pView;
+            }
+        }
+    }
+#endif
     return NULL;
 }
 
@@ -1002,6 +1058,15 @@ DWORD CGamDoc::IssueScenarioID()
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
+const CB::string& CGamDoc::GetMenuName() const
+{
+    static CB::string menus[] = {
+        "IDR_GAMETYPE"_cbstring,
+        "IDR_GSCNTYPE"_cbstring,
+    };
+    return menus[IsScenario()];
+}
 
 const CTileManager& CGamDoc::GetTileManager() const
 {

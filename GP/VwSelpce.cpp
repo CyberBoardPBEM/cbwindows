@@ -38,12 +38,20 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CSelectedPieceView, CSelectedPieceView::BASE);
+wxIMPLEMENT_DYNAMIC_CLASS(wxSelectedPieceView, CB::View);
+#if 0
 // KLUDGE:  compile fails for base CSelectedPieceViewContainer::BASE
 IMPLEMENT_DYNCREATE(CSelectedPieceViewContainer, CView)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// helper for wxSelectedPieceView ctor
+namespace {
+    CSelectedPieceView* newWnd = nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -61,25 +69,50 @@ wxBEGIN_EVENT_TABLE(CSelectedPieceView, CSelectedPieceView::BASE)
     EVT_WINSTATE(OnMessageWindowState)
 wxEND_EVENT_TABLE()
 
+#if 0
 BEGIN_MESSAGE_MAP(CSelectedPieceViewContainer, CSelectedPieceViewContainer::BASE)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_WM_MOUSEACTIVATE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectedPieceView
 
 CSelectedPieceView::CSelectedPieceView() :
-    wxview(new wxSelectedPieceView(*this))
+    wxview([this]
+    {
+        class CreateParamManager
+        {
+        public:
+            CreateParamManager(CSelectedPieceView& wnd)
+            {
+                wxASSERT(!newWnd);
+                newWnd = &wnd;
+            }
+            ~CreateParamManager()
+            {
+                newWnd = nullptr;
+            }
+        } createParamMgr(*this);
+        wxDocTemplate& templ = CB::FindDocTemplateByView(*wxCLASSINFO(wxSelectedPieceView));
+        wxDocManager& docMgr = CheckedDeref(templ.GetDocumentManager());
+        wxDocument& doc = CheckedDeref(docMgr.GetCurrentDocument());
+        OwnerPtr<wxSelectedPieceView> retval = static_cast<wxSelectedPieceView*>(templ.CreateView(&doc));
+        wxView& frameView = CheckedDeref(docMgr.GetCurrentView());
+        CB::DocChildFrame* frame = dynamic_cast<CB::DocChildFrame*>(frameView.GetFrame());
+        retval->SetDocChildFrame(frame);
+        return retval;
+    }())
 {
 }
 
 void CSelectedPieceView::Initialize()
 {
     m_listSel->Create(this, wxID_ANY,
-                        wxDefaultPosition, wxDefaultSize,
+                        wxPoint(0, 0), GetClientSize(),
                         wxLB_MULTIPLE);
     /* wx doesn't support WM_VKEYTOITEM,
         and wxEVT_CHAR doesn't propagate to parent */
@@ -137,14 +170,11 @@ void CSelectedPieceView::OnSize(wxSizeEvent& event)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CSelectedPieceView::OnInitialUpdate()
+void CSelectedPieceView::OnInitialUpdate(CGamDoc& doc)
 {
-    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
-    parent = &dynamic_cast<CSelectedPieceViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
+    parent = &dynamic_cast<wxSplitterWindow&>(CheckedDeref(GetParent()));
+    document = &doc;
     m_pPBoard = &document->GetNewViewBoard();
-
-    parent->CSelectedPieceViewContainer::BASE::OnInitialUpdate();
 
     Initialize();
 
@@ -261,12 +291,13 @@ void CSelectedPieceView::ModifySelectionsBasedOnListItems(BOOL bRemoveSelectedIt
             listDObj.push_back(&m_listSel->MapIndexToItem(nItem));
         }
     }
-    CPlayBoardFrameContainer& pFrameContainer = dynamic_cast<CPlayBoardFrameContainer&>(*parent->GetParentFrame());
-    CPlayBoardFrame& pFrame = pFrameContainer.GetChild();
-    pFrame.SendMessageToActiveBoardPane(WM_SELECT_BOARD_OBJLIST, (WPARAM)&*m_pPBoard,
-        (LPARAM)&listDObj);
+    CB::DocChildFrame& pFrameContainer = wxview->GetFrame();
+    CPlayBoardFrame& pFrame = dynamic_cast<CPlayBoardFrame&>(CheckedDeref(pFrameContainer.GetChildren().front()));
+    SelectBoardObjListEvent event(*m_pPBoard, listDObj);
+    pFrame.SendMessageToActiveBoardPane(event);
 }
 
+#if 0
 void CSelectedPieceViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
@@ -319,4 +350,35 @@ LRESULT CSelectedPieceViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM 
     child->ProcessWindowEvent(event);
     return (LRESULT)1;
 }
+#endif
 
+void wxSelectedPieceView::OnActivateView(bool activate,
+                                            wxView* activeView,
+                                            wxView* deactiveView)
+{
+    wxASSERT(!"should never be activated");
+    wxASSERT(!activate && activeView != this);
+    CB::View::OnActivateView(activate, activeView, deactiveView);
+}
+
+bool wxSelectedPieceView::OnClose(bool deleteWindow)
+{
+    WXUNUSED_UNLESS_DEBUG(deleteWindow);
+    wxASSERT(!deleteWindow);
+    /* doc's life determined by wxGsnProjView, not this,
+        so bypass wxView::OnClose() */
+    return true;
+}
+
+bool wxSelectedPieceView::OnCreate(wxDocument* doc, long flags)
+{
+    WXUNUSED_UNLESS_DEBUG(doc);
+    WXUNUSED_UNLESS_DEBUG(flags);
+    wxASSERT(doc == &GetDocument() && !flags);
+    return CB::View::OnCreate(doc, flags);
+}
+
+wxSelectedPieceView::wxSelectedPieceView() :
+    window(newWnd)
+{
+}

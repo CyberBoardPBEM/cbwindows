@@ -71,6 +71,7 @@ CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
 
 void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd)
 {
+#if 0
     if (pWnd.IsKindOf(RUNTIME_CLASS(CProjFrame)))
         pWse.m_wUserCode1 = gpFrmProject;
     else if (pWnd.IsKindOf(RUNTIME_CLASS(CPlayBoardFrameContainer)))
@@ -80,5 +81,8 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWn
         pWse.m_wUserCode1 = gpFrmPlayBoard;
         pWse.m_boardID = pFrame.m_pPBoard->GetSerialNumber();
     }
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 

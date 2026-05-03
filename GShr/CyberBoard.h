@@ -2089,6 +2089,8 @@ namespace CB
     class View : public wxView
     {
     public:
+        View();
+        ~View() override;
         CGamDoc& GetDocument();
         const DocChildFrame& GetFrame() const
         {

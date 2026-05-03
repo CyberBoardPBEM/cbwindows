@@ -52,11 +52,19 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CPlayBoardView, CPlayBoardView::BASE);
+wxIMPLEMENT_DYNAMIC_CLASS(wxPlayBoardView, CB::View);
+#if 0
 IMPLEMENT_DYNCREATE(CPlayBoardViewContainer, CView)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// helper for wxPlayBoardView ctor
+namespace {
+    CPlayBoardView* newWnd = nullptr;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -235,13 +243,14 @@ namespace {
     }
 }
 
-
+#if 0
 BEGIN_MESSAGE_MAP(CPlayBoardViewContainer, CPlayBoardViewContainer::BASE)
     ON_WM_CREATE()
     ON_WM_SETFOCUS()
     ON_WM_SIZE()
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardView construction/destruction
@@ -249,7 +258,30 @@ END_MESSAGE_MAP()
 CPlayBoardView::CPlayBoardView() :
     m_selList(*this),
     m_toolMsgTipTimer(this, XRCID("ID_TIP_MSG_TIMER")),
-    wxview(new wxPlayBoardView(*this))
+    wxview([this]
+    {
+        class CreateParamManager
+        {
+        public:
+            CreateParamManager(CPlayBoardView& wnd)
+            {
+                wxASSERT(!newWnd);
+                newWnd = &wnd;
+            }
+            ~CreateParamManager()
+            {
+                newWnd = nullptr;
+            }
+        } createParamMgr(*this);
+        wxDocTemplate& templ = CB::FindDocTemplateByView(*wxCLASSINFO(wxPlayBoardView));
+        wxDocManager& docMgr = CheckedDeref(templ.GetDocumentManager());
+        wxDocument& doc = CheckedDeref(docMgr.GetCurrentDocument());
+        OwnerPtr<wxPlayBoardView> retval = static_cast<wxPlayBoardView*>(templ.CreateView(&doc));
+        wxView& frameView = CheckedDeref(docMgr.GetCurrentView());
+        CB::DocChildFrame* frame = dynamic_cast<CB::DocChildFrame*>(frameView.GetFrame());
+        retval->SetDocChildFrame(frame);
+        return retval;
+    }())
 {
 }
 
@@ -276,6 +308,14 @@ void CPlayBoardView::Initialize()
     sizer->Add(0, 0);
 }
 
+CPlayBoardFrame& CPlayBoardView::GetPanel()
+{
+    CB::DocChildFrame& frame = wxview->GetFrame();
+    wxView& frameView = CheckedDeref(frame.GetView());
+    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(frameView);
+    return boardFrameView.GetFramePanel();
+}
+
 CPlayBoardView::~CPlayBoardView()
 {
 }
@@ -296,14 +336,11 @@ BOOL CPlayBoardView::PreCreateWindow(CREATESTRUCT& cs)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::OnInitialUpdate()
+void CPlayBoardView::OnInitialUpdate(CGamDoc& doc)
 {
-    wxNativeContainerWindow& wxParent = dynamic_cast<wxNativeContainerWindow&>(CheckedDeref(GetParent()));
-    parent = &dynamic_cast<CPlayBoardViewContainer&>(CheckedDeref(CB::ToCWnd(wxParent)));
-    document = static_cast<CGamDoc*>(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument())));
+    parent = &dynamic_cast<wxSplitterWindow&>(CheckedDeref(GetParent()));
+    document = &doc;
     m_pPBoard = &document->GetNewViewBoard();
-
-    parent->CPlayBoardViewContainer::BASE::OnInitialUpdate();
 
     Initialize();
 
@@ -329,11 +366,10 @@ void CPlayBoardView::OnInitialUpdate()
     SetOurScrollSizes(m_nZoom);
 }
 
-void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CPlayBoardView::OnUpdate(wxView* pSender, const CGamDocHint& hint)
 {
-    wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
-    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
+    EGamDocHint lHint = hint.GetHint();
+    const CGamDocHint* ph = &hint;
     if (lHint == HINT_POINTINVIEW && ph->GetArgs<HINT_POINTINVIEW>().m_pPBoard == m_pPBoard)
     {
         ScrollWorkspacePointIntoView(ph->GetArgs<HINT_POINTINVIEW>().m_point);
@@ -399,7 +435,7 @@ void CPlayBoardView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             NotifySelectListChange();
         }
     }
-    else if (lHint == HINT_UPDATESELECTLIST && pSender != &*parent)
+    else if (lHint == HINT_UPDATESELECTLIST && pSender != &*wxview)
     {
         // Resync the select list to ensure that all objects still exist
         // and that the handles track objct movements for those that still
@@ -452,10 +488,18 @@ void CPlayBoardView::NotifySelectListChange()
 
 ///////////////////////////////////////////////////////////////////////
 
-void CPlayBoardView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+void wxPlayBoardView::OnActivateView(bool bActivate, wxView* pActivateView, wxView* pDeactiveView)
 {
-    if (bActivate && pActivateView != pDeactiveView)
-        NotifySelectListChange();
+    CB::View::OnActivateView(bActivate, pActivateView, pDeactiveView);
+    if (bActivate)
+    {
+        GetFrame().Activate();
+        CPlayBoardView& cview = *this;
+        CPlayBoardFrame& panel = cview.GetPanel();
+        cview.SetFocus();
+        panel.SetActiveBoardView(cview);
+        cview.NotifySelectListChange();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -480,6 +524,7 @@ void CPlayBoardView::OnMessageSelectBoardObjectList(SelectBoardObjListEvent& eve
 
 void CPlayBoardView::OnMessageWindowState(WinStateEvent& event)
 {
+    wxASSERT(!"TODO:");
     CArchive& ar = event.GetArchive();
     if (ar.IsStoring())
     {
@@ -1092,8 +1137,12 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
             SelectAllObjectsInTable(listObjs);  // Reselect on this board.
         }
 
+#if 0
         CFrameWnd* pFrame = parent->GetParentFrame();
         pFrame->SetActiveView(&*parent);
+#else
+        wxview->Activate(true);
+#endif
 
         pDoc.UpdateAllViews(*this, CGamDocHint(HINT_UPDATESELECTLIST));
 
@@ -1160,10 +1209,12 @@ const CGamDoc& CPlayBoardView::GetDocument() const // non-debug version is inlin
 }
 #endif //_DEBUG
 
+#if 0
 CFrameWnd* CPlayBoardView::GetParentFrame()
 {
     return parent->GetParentFrame();
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Right mouse button handler
@@ -1171,7 +1222,7 @@ CFrameWnd* CPlayBoardView::GetParentFrame()
 void CPlayBoardView::OnContextMenu(wxContextMenuEvent& event)
 {
     // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
+    static_cast<wxPlayBoardView&>(*this).Activate(true);
 
     std::unique_ptr<wxMenuBar> bar(wxXmlResource::Get()->LoadMenuBar("IDR_MENU_PLAYER_POPUPS"));
     if (bar)
@@ -1219,6 +1270,8 @@ void CPlayBoardView::OnLButtonDown(wxMouseEvent& event)
         event.Skip();
         return;
     }
+
+    static_cast<wxPlayBoardView&>(*this).Activate(true);
 
     PToolType eToolType = MapToolType(m_nCurToolID);
     CPlayTool& pTool = CPlayTool::GetTool(eToolType);
@@ -2785,6 +2838,7 @@ void CPlayBoardView::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(true);
 }
 
+#if 0
 void CPlayBoardViewContainer::OnDraw(CDC* pDC)
 {
     // do nothing because child covers entire client rect
@@ -2792,7 +2846,7 @@ void CPlayBoardViewContainer::OnDraw(CDC* pDC)
 
 void CPlayBoardViewContainer::OnInitialUpdate()
 {
-    child->OnInitialUpdate();
+    child->OnInitialUpdate(dynamic_cast<CGamDoc&>(CheckedDeref(GetDocument())));
 }
 
 void CPlayBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -2843,4 +2897,33 @@ LRESULT CPlayBoardViewContainer::OnMessageWindowState(WPARAM wParam, LPARAM lPar
     WinStateEvent event(*reinterpret_cast<CArchive*>(wParam), bool(lParam));
     child->ProcessWindowEvent(event);
     return (LRESULT)1;
+}
+#endif
+
+bool wxPlayBoardView::OnClose(bool deleteWindow)
+{
+    WXUNUSED_UNLESS_DEBUG(deleteWindow);
+    wxASSERT(!deleteWindow);
+    /* doc's life determined by wxGsnProjView, not this,
+        so bypass wxView::OnClose() */
+    return true;
+}
+
+bool wxPlayBoardView::OnCreate(wxDocument* doc, long flags)
+{
+    WXUNUSED_UNLESS_DEBUG(doc);
+    WXUNUSED_UNLESS_DEBUG(flags);
+    wxASSERT(doc == &GetDocument() && !flags);
+    return CB::View::OnCreate(doc, flags);
+}
+
+void wxPlayBoardView::OnUpdate(wxView* sender, wxObject* hint/* = nullptr*/)
+{
+    CB::View::OnUpdate(sender, hint);
+    window->OnUpdate(sender, dynamic_cast<CGamDocHintRef&>(CheckedDeref(hint)));
+}
+
+wxPlayBoardView::wxPlayBoardView() :
+    window(newWnd)
+{
 }

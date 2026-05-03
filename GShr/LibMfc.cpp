@@ -905,6 +905,9 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
 
+CB::View::View() = default;
+CB::View::~View() = default;
+
 CGamDoc& CB::View::GetDocument()
 {
     wxDocument& doc = CheckedDeref(wxView::GetDocument());
@@ -990,7 +993,7 @@ bool CB::View::TryBefore(wxEvent& event)
     if (cfe)
     {
         if (&GetFrame() == cfe->GetWindow() ||
-            !GetFrame().IsDescendant(cfe->GetWindow()))
+            !GetWindow().IsDescendant(cfe->GetWindow()))
         {
             return false;
         }

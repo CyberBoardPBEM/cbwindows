@@ -1896,6 +1896,73 @@
       </object>
     </object>
   </object>
+  <object class="wxPanel" name="CPlayBoardFrame">
+    <size>500,300</size>
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="bSizer91">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <object class="wxSplitterWindow" name="m_wndSplitter1">
+          <style>wxSP_3D|wxSP_NO_XP_THEME</style>
+          <sashpos>0</sashpos>
+          <gravity>1</gravity>
+          <minsize>20</minsize>
+          <orientation>vertical</orientation>
+          <object class="wxPanel" name="m_panel1">
+            <style>wxTAB_TRAVERSAL</style>
+            <object class="wxBoxSizer" name="bSizer92">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxSplitterWindow" name="m_wndSplitBoards">
+                  <style>wxSP_3D|wxSP_NO_XP_THEME|wxSP_PERMIT_UNSPLIT</style>
+                  <sashpos>0</sashpos>
+                  <gravity>0</gravity>
+                  <minsize>0</minsize>
+                  <orientation>vertical</orientation>
+                  <object class="wxPanel" name="m_vwBoard1" subclass="CPlayBoardView">
+                    <style>wxTAB_TRAVERSAL</style>
+                  </object>
+                  <object class="wxPanel" name="m_vwBoard2" subclass="CPlayBoardView">
+                    <style>wxTAB_TRAVERSAL</style>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+          <object class="wxPanel" name="m_panel2">
+            <style>wxTAB_TRAVERSAL</style>
+            <object class="wxBoxSizer" name="bSizer93">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <flag>wxEXPAND</flag>
+                <border>5</border>
+                <option>1</option>
+                <object class="wxSplitterWindow" name="m_wndSplitter2">
+                  <style>wxSP_3D|wxSP_NO_XP_THEME</style>
+                  <sashpos>0</sashpos>
+                  <gravity>1</gravity>
+                  <minsize>20</minsize>
+                  <orientation>horizontal</orientation>
+                  <object class="wxPanel" name="m_vwSelect" subclass="CSelectedPieceView">
+                    <style>wxTAB_TRAVERSAL</style>
+                  </object>
+                  <object class="wxPanel" name="m_vwTiny" subclass="CTinyBoardView">
+                    <style>wxTAB_TRAVERSAL</style>
+                  </object>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
   <object class="wxDialog" name="CRotatePieceDialog">
     <style>wxDEFAULT_DIALOG_STYLE</style>
     <title>Rotate Object</title>
