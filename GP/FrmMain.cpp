@@ -139,8 +139,8 @@ CMainFrame::CMainFrame() :
         { XRCID("ID_WINDOW_TILE_VERT"), "Split Tabs &Vertically"_cbstring, ID_WINDOW_TILE_VERT, wxITEM_NORMAL },
         // TODO:  only show these when a board frame is active
         { wxID_SEPARATOR },
-        { XRCID("ID_VIEW_SPLITBOARDROWS"), "Horizontal Split"_cbstring, ID_VIEW_SPLITBOARDROWS, wxITEM_NORMAL },
-        { XRCID("ID_VIEW_SPLITBOARDCOLS"), "Vertical Split"_cbstring, ID_VIEW_SPLITBOARDCOLS, wxITEM_NORMAL },
+        { XRCID("ID_VIEW_SPLITBOARDROWS"), "Horizontal Split"_cbstring, ID_VIEW_SPLITBOARDROWS, wxITEM_CHECK },
+        { XRCID("ID_VIEW_SPLITBOARDCOLS"), "Vertical Split"_cbstring, ID_VIEW_SPLITBOARDCOLS, wxITEM_CHECK },
     };
     for (const auto& arg : windowMenuArgs)
     {

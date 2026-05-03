@@ -32,8 +32,21 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardFrame frame
 
+class CenterBoardOnPointEvent;
 class CPlayBoard;
 class CPlayBoardView;
+
+/* KLUDGE:  wxDocManager passes events to
+            wxView::ProcessEventLocally(), which means
+            TryAfter() doesn't get checked, so use this
+            class to also give CPlayBoardFrame a chance at
+            event */
+class DocChildBoardFrame : public CB::DocChildFrame
+{
+public:
+    using CB::DocChildFrame::DocChildFrame;
+    bool ProcessEvent(wxEvent& event) override;
+};
 
 class CPlayBoardFrame : public wxPanel
 {
@@ -73,9 +86,7 @@ public:
     const CPlayBoardView& GetActiveBoardView() const { return *activeView; }
     CPlayBoardView& GetActiveBoardView() { return const_cast<CPlayBoardView&>(std::as_const(*this).GetActiveBoardView()); }
 protected:
-#if 0
-    CCbSplitterWnd& GetBoardSplitter();
-#endif
+    wxSplitterWindow& GetBoardSplitter() { return *m_wndSplitBoards; }
 
 #if 0
     afx_msg void OnViewHalfScaleBrd();
@@ -106,13 +117,17 @@ protected:
     afx_msg void OnUpdateActPlotDone(CCmdUI* pCmdUI);
     afx_msg void OnActPlotDiscard();
     afx_msg void OnUpdateActPlotDiscard(CCmdUI* pCmdUI);
-    afx_msg void OnViewSplitBoardRows();
-    afx_msg void OnUpdateViewSplitBoardRows(CCmdUI* pCmdUI);
-    afx_msg void OnViewSplitBoardCols();
-    afx_msg void OnUpdateViewSplitBoardCols(CCmdUI* pCmdUI);
+#endif
+    void OnViewSplitBoardRows(wxCommandEvent& event);
+    void OnUpdateViewSplitBoardRows(wxUpdateUIEvent& pCmdUI);
+    void OnViewSplitBoardCols(wxCommandEvent& event);
+    void OnUpdateViewSplitBoardCols(wxUpdateUIEvent& pCmdUI);
+#if 0
     afx_msg void OnSelectGroupMarkers(UINT nID);
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
-    afx_msg LRESULT OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam);
+#endif
+    void OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event);
+#if 0
     afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     afx_msg void OnSize(UINT nType, int cx, int cy);
 #endif

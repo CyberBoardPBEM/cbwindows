@@ -52,7 +52,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(CBPlayBoardFrameView, CB::View);
 
 wxBEGIN_EVENT_TABLE(CPlayBoardFrame, wxPanel)
 #if 0
-    //{{AFX_MSG_MAP(CPlayBoardFrame)
 #if 0
     ON_COMMAND(ID_VIEW_HALFSCALEBRD, OnViewHalfScaleBrd)
     ON_UPDATE_COMMAND_UI(ID_VIEW_HALFSCALEBRD, OnUpdateViewHalfScaleBrd)
@@ -89,17 +88,17 @@ wxBEGIN_EVENT_TABLE(CPlayBoardFrame, wxPanel)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDONE, OnUpdateActPlotDone)
     ON_COMMAND(ID_ACT_PLOTDISCARD, OnActPlotDiscard)
     ON_UPDATE_COMMAND_UI(ID_ACT_PLOTDISCARD, OnUpdateActPlotDiscard)
-    ON_COMMAND(ID_VIEW_SPLITBOARDROWS, OnViewSplitBoardRows)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SPLITBOARDROWS, OnUpdateViewSplitBoardRows)
-    ON_COMMAND(ID_VIEW_SPLITBOARDCOLS, OnViewSplitBoardCols)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_SPLITBOARDCOLS, OnUpdateViewSplitBoardCols)
-    //}}AFX_MSG_MAP
+#endif
+    EVT_MENU(XRCID("ID_VIEW_SPLITBOARDROWS"), OnViewSplitBoardRows)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SPLITBOARDROWS"), OnUpdateViewSplitBoardRows)
+    EVT_MENU(XRCID("ID_VIEW_SPLITBOARDCOLS"), OnViewSplitBoardCols)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_SPLITBOARDCOLS"), OnUpdateViewSplitBoardCols)
 #if 0
     ON_COMMAND_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnSelectGroupMarkers)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
 #endif
-    // Other messages
-    ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
+    EVT_CENTERBOARDONPOINT(OnMessageCenterBoardOnPoint)
+#if 0
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
     ON_WM_SIZE()
 #endif
@@ -111,6 +110,38 @@ BEGIN_MESSAGE_MAP(CPlayBoardFrameContainer, CPlayBoardFrameContainer::BASE)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
 #endif
+
+/* KLUDGE:  wxDocManager passes events to
+            (non-virtual) wxView::ProcessEventLocally(), which
+            means TryAfter() doesn't get checked, so use this
+            class to also give CPlayBoardFrame a chance at
+            event */
+bool DocChildBoardFrame::ProcessEvent(wxEvent& event)
+{
+    if (CB::DocChildFrame::ProcessEvent(event))
+    {
+        return true;
+    }
+
+    // only process wxChildFocusEvent for (strict) descendants
+    wxChildFocusEvent* cfe = dynamic_cast<wxChildFocusEvent*>(&event);
+    if (cfe)
+    {
+        if (this == cfe->GetWindow() ||
+            !IsDescendant(cfe->GetWindow()))
+        {
+            return false;
+        }
+    }
+
+    wxView* view = GetView();
+    if (!view)
+    {
+        return false;
+    }
+    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(*view);
+    return boardFrameView.GetFramePanel().ProcessWindowEventLocally(event);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardFrame
@@ -276,7 +307,10 @@ CPlayBoardFrame::CPlayBoardFrame(wxWindow& parent,
     int ySize = rct.GetHeight() / 2;
     m_wndSplitter1->SetSashPosition(xSize);
     m_wndSplitter2->SetSashPosition(ySize);
+    /* KLUDGE:  want to start with the board unsplit, but I
+                don't know how to do that w/ wxFormBuilder */
     m_wndSplitBoards->Unsplit();
+    m_wndSplitBoards->SetLastSplitPosition(wxPoint(0, 0));
 
     m_vwBoard1->OnInitialUpdate(doc);
     m_vwBoard2->OnInitialUpdate(doc);
@@ -479,28 +513,20 @@ bool CPlayBoardFrame::SendMessageToActiveBoardPane(wxEvent& event)
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardFrame message handlers
 
-#if 0
-LRESULT CPlayBoardFrame::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam)
+void CPlayBoardFrame::OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event)
 {
     // Route the message to the active board view.
     CPlayBoardView& pView = GetActiveBoardView();
-    const POINT* point = reinterpret_cast<POINT*>(wParam);
-    CenterBoardOnPointEvent event(CB::Convert(CheckedDeref(point)));
     pView.ProcessWindowEvent(event);
-    return 0;
 }
 
+#if 0
 // Send these on to the main view so they can be process no
 // matter what frame view is active.
 
 void CPlayBoardFrame::OnClose()
 {
     CWnd::OnClose();            // Short circuit frame's doc close code
-}
-
-CCbSplitterWnd& CPlayBoardFrame::GetBoardSplitter()
-{
-    return CheckedDeref((CCbSplitterWnd*)m_wndSplitter1.GetPane(0, 0));
 }
 #endif
 
@@ -658,49 +684,57 @@ void CPlayBoardFrame::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
     wxASSERT(!"dead code?");
     CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_ACT_PLOTDISCARD, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
+#endif
 
-void CPlayBoardFrame::OnViewSplitBoardRows()
+void CPlayBoardFrame::OnViewSplitBoardRows(wxCommandEvent& /*event*/)
 {
-    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
-    if (pSplitWnd.IsRowHidden())
+    wxSplitterWindow& pSplitWnd = GetBoardSplitter();
+    if (!pSplitWnd.IsSplit() ||
+        pSplitWnd.GetSplitMode() == wxSPLIT_VERTICAL)
     {
-        CRect rct;
-        pSplitWnd.GetWindowRect(&rct);
-        pSplitWnd.SetRowInfo(0, rct.Height() / 2, 0);
-        pSplitWnd.ShowRow();
+        if (pSplitWnd.IsSplit())
+        {
+            pSplitWnd.Unsplit();
+        }
+        pSplitWnd.SplitHorizontally(&*m_vwBoard1, &*m_vwBoard2);
     }
     else
-        pSplitWnd.HideRow(1);
+        pSplitWnd.Unsplit();
 }
 
-void CPlayBoardFrame::OnUpdateViewSplitBoardRows(CCmdUI* pCmdUI)
+void CPlayBoardFrame::OnUpdateViewSplitBoardRows(wxUpdateUIEvent& pCmdUI)
 {
-    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
-    pCmdUI->Enable();
-    pCmdUI->SetCheck(!pSplitWnd.IsRowHidden());
+    wxSplitterWindow& pSplitWnd = GetBoardSplitter();
+    pCmdUI.Enable(true);
+    pCmdUI.Check(pSplitWnd.IsSplit() &&
+                    pSplitWnd.GetSplitMode() == wxSPLIT_HORIZONTAL);
 }
 
-void CPlayBoardFrame::OnViewSplitBoardCols()
+void CPlayBoardFrame::OnViewSplitBoardCols(wxCommandEvent& /*event*/)
 {
-    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
-    if (pSplitWnd.IsColHidden())
+    wxSplitterWindow& pSplitWnd = GetBoardSplitter();
+    if (!pSplitWnd.IsSplit() ||
+        pSplitWnd.GetSplitMode() == wxSPLIT_HORIZONTAL)
     {
-        CRect rct;
-        pSplitWnd.GetWindowRect(&rct);
-        pSplitWnd.SetColumnInfo(0, rct.Width() / 2, 0);
-        pSplitWnd.ShowColumn();
+        if (pSplitWnd.IsSplit())
+        {
+            pSplitWnd.Unsplit();
+        }
+        pSplitWnd.SplitVertically(&*m_vwBoard1, &*m_vwBoard2);
     }
     else
-        pSplitWnd.HideColumn(1);
+        pSplitWnd.Unsplit();
 }
 
-void CPlayBoardFrame::OnUpdateViewSplitBoardCols(CCmdUI* pCmdUI)
+void CPlayBoardFrame::OnUpdateViewSplitBoardCols(wxUpdateUIEvent& pCmdUI)
 {
-    CCbSplitterWnd& pSplitWnd = GetBoardSplitter();
-    pCmdUI->Enable();
-    pCmdUI->SetCheck(!pSplitWnd.IsColHidden());
+    wxSplitterWindow& pSplitWnd = GetBoardSplitter();
+    pCmdUI.Enable(true);
+    pCmdUI.Check(pSplitWnd.IsSplit() &&
+                    pSplitWnd.GetSplitMode() == wxSPLIT_VERTICAL);
 }
 
+#if 0
 void CPlayBoardFrame::OnSize(UINT nType, int cx, int cy)
 {
     CWnd::OnSize(nType, cx, cy);
@@ -810,7 +844,7 @@ bool CBPlayBoardFrameView::OnCreate(wxDocument* doc, long flags)
         str += strOwnedBy;
     }
 
-    CB::DocChildFrame* frame = new CB::DocChildFrame(pDoc,
+    CB::DocChildFrame* frame = new DocChildBoardFrame(pDoc,
                     *this,
                     CheckedDeref(GetMainFrame()),
                     str,

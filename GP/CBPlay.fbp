@@ -18167,7 +18167,7 @@
           <property name="enabled">1</property>
           <property name="help">Begin a plotted move.</property>
           <property name="id">wxID_ANY</property>
-          <property name="kind">wxITEM_NORMAL</property>
+          <property name="kind">wxITEM_CHECK</property>
           <property name="label">Begin a &amp;Plotted Move</property>
           <property name="name">ID_PTOOL_PLOTMOVE</property>
           <property name="permission">none</property>

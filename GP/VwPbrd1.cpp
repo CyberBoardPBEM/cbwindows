@@ -88,7 +88,7 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
         else
             GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
 #else
-        AfxThrowNotSupportedException();
+        CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
     }
 

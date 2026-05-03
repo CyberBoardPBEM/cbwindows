@@ -3642,6 +3642,7 @@
         <label>Begin a _Plotted Move</label>
         <accel></accel>
         <help>Begin a plotted move.</help>
+        <checkable>1</checkable>
       </object>
       <object class="wxMenuItem" name="ID_ACT_PLOTDONE">
         <label>A_ccept Plotted Move</label>
