@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGam, CProjListBoxBaseWx)
-IMPLEMENT_DYNCREATE(CGamProjViewContainer, CView)
+wxIMPLEMENT_DYNAMIC_CLASS(wxGamProjView, CB::View)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -119,24 +119,18 @@ wxBEGIN_EVENT_TABLE(CGamProjView, wxPanel)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
 wxEND_EVENT_TABLE()
 
-BEGIN_MESSAGE_MAP(CGamProjViewContainer, CView)
-    ON_WM_CREATE()
-    ON_WM_SIZE()
-END_MESSAGE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CGamProjView
 
-CGamProjView::CGamProjView(CGamProjViewContainer& p) :
-    CB_XRC_BEGIN_CTRLS_DEFN(static_cast<wxWindow*>(p), CGamProjView)
+CGamProjView::CGamProjView(wxGamProjView& v) :
+    CB_XRC_BEGIN_CTRLS_DEFN(&v.GetFrame(), CGamProjView)
         CB_XRC_CTRL(m_listProj)
         CB_XRC_CTRL(m_editInfo)
         CB_XRC_CTRL(m_btnPrjA)
         CB_XRC_CTRL(m_btnPrjB)
     CB_XRC_END_CTRLS_DEFN(),
-    parent(&p),
-    document(CheckedDeref(dynamic_cast<CGamDocMfc*>(parent->GetDocument()))),
-    wxview(new wxGamProjView(*this))
+    wxview(&v),
+    document(&wxview->GetDocument())
 {
     m_nLastSel = wxNOT_FOUND;
     m_nLastGrp = Invalid_v<decltype(grpDoc)>;
@@ -150,11 +144,6 @@ CGamProjView::CGamProjView(CGamProjViewContainer& p) :
 
 CGamProjView::~CGamProjView()
 {
-}
-
-CFrameWnd* CGamProjView::GetParentFrame()
-{
-    return parent->GetParentFrame();
 }
 
 size_t CGamProjView::Find(BoardID bid) const
@@ -248,26 +237,24 @@ void CGamProjView::OnInitialUpdate()
     }
 }
 
-void CGamProjView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CGamProjView::OnUpdate(wxView* pSender, const CGamDocHint& pHint)
 {
-    wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
-    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
-    if (lHint == HINT_TRAYCHANGE)
+    if (pHint.GetHint() == HINT_TRAYCHANGE)
     {
         CGamDoc& pDoc = GetDocument();
-        (*pDoc.m_palTrayA)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        (*pDoc.m_palTrayB)->UpdatePaletteContents(ph->GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*pDoc.m_palTrayA)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        (*pDoc.m_palTrayB)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
-    else if (lHint == HINT_GAMESTATEUSED)
+    else if (pHint.GetHint() == HINT_GAMESTATEUSED)
     {
         CGamDoc& pDoc = GetDocument();
         (*pDoc.m_palTrayA)->UpdatePaletteContents();
         (*pDoc.m_palTrayB)->UpdatePaletteContents();
     }
 
-    if (lHint == HINT_ALWAYSUPDATE || lHint == HINT_GAMPROPCHANGE ||
-        lHint == HINT_GAMESTATEUSED)
+    if (pHint.GetHint() == HINT_ALWAYSUPDATE || pHint.GetHint() == HINT_GAMPROPCHANGE ||
+        pHint.GetHint() == HINT_GAMESTATEUSED ||
+        pHint.GetHint() == HINT_DOCREADY)
         DoUpdateProjectList();
 }
 
@@ -692,8 +679,6 @@ void CGamProjView::OnUpdateEditBoardProperties(wxUpdateUIEvent& pCmdUI)
 
 void CGamProjView::OnContextMenu(wxContextMenuEvent& event)
 {
-    // Make sure window is active.
-    GetParentFrame()->ActivateFrame();
     const char* nID = nullptr;
 
     if (event.GetEventObject() == &*m_listProj)
@@ -859,46 +844,93 @@ const CGamProjView& wxGamProjView::DoGetWindow() const
     return static_cast<const CGamProjView&>(child);
 }
 
-void CGamProjViewContainer::OnDraw(CDC* pDC)
+bool wxGamProjView::OnClose(bool deleteWindow)
 {
-    // do nothing because child covers entire client rect
-}
-
-void CGamProjViewContainer::OnInitialUpdate()
-{
-    child->OnInitialUpdate();
-
-    BASE::OnInitialUpdate();
-}
-
-void CGamProjViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
-{
-    child->OnUpdate(pSender, lHint, pHint);
-}
-
-CGamProjViewContainer::CGamProjViewContainer() :
-    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
-{
-}
-
-int CGamProjViewContainer::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-    if (BASE::OnCreate(lpCreateStruct) == -1)
+    if (wxView::OnClose(deleteWindow))
     {
-        return -1;
+        /* can't draw w/ doc gone,
+            but load failure doesn't create wnd */
+        if (HasWindow())
+        {
+            GetWindow().Hide();
+        }
+
+        /* CB defines doc's life only by proj view,
+            so close rest */
+        wxViewVector views = GetDocument().GetViewsVector();
+        for (auto it = views.begin() ; it != views.end() ; ++it)
+        {
+            CB::View& view = dynamic_cast<CB::View&>(CheckedDeref(*it));
+            if (&view != this)
+            {
+                /* KLUDGE:  need to close frame because
+                    closing non-proj views is disabled
+                    in order to override standard doc
+                    lifetime */
+                CB_VERIFY(view.GetFrame().Close(true));
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool wxGamProjView::OnCreate(wxDocument* doc, long flags)
+{
+    wxASSERT(doc == &GetDocument());
+    if (!wxView::OnCreate(doc, flags))
+    {
+        return false;
     }
 
-    child = new CGamProjView(*this);
+    CB::string str = doc->GetUserReadableName();
+    str += " - ";
+    str += CB::string::LoadString(IDS_PROJTYPE_GAME);
 
-    return 0;
+    CB::DocChildFrame* frame = new CB::DocChildFrame(GetDocument(),
+                    *this,
+                    CheckedDeref(GetMainFrame()),
+                    str,
+                    wxIcon(std::format("#{}", IDR_GAMETYPE),
+                                        wxBITMAP_TYPE_ICO_RESOURCE,
+                                        16, 16),
+                    "IDR_GAMETYPE"_cbstring);
+    /* postpone because this gets called before OnOpenDocument()
+    new CGamProjView(*this);
+    frame->Show();
+    */
+
+    return true;
 }
 
-#if 0
-void CGamProjViewContainer::OnSize(UINT nType, int cx, int cy)
+void wxGamProjView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
 {
-    child->MoveWindow(0, 0, cx, cy);
-    return CView::OnSize(nType, cx, cy);
+    CGamDocHintRef* ref = dynamic_cast<CGamDocHintRef*>(hint);
+    wxASSERT(!hint || ref);
+    const CGamDocHint& gamHint = ref ? *ref : CGamDocHintRef(HINT_ALWAYSUPDATE);
+    if (gamHint.GetHint() == HINT_DOCREADY)
+    {
+        new CGamProjView(*this);
+        GetFrame().Show();
+        GetWindow().OnInitialUpdate();
+        isDocReady = true;
+    }
+
+    CB::View::OnUpdate(sender, hint);
+
+    if (isDocReady)
+    {
+        GetWindow().OnUpdate(sender, gamHint);
+    }
 }
-#endif
+
+bool wxGamProjView::HasWindow() const
+{
+    return !GetFrame().GetChildren().empty();
+}
 
 

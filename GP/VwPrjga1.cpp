@@ -153,10 +153,7 @@ void CGamProjView::DoHistorySave()
 // Load a move file and setup playback
 void CGamProjView::DoHistoryLoad()
 {
-    wxASSERT(!"TODO:");
-#if 0
     GetDocument().DoLoadMoveFile();
-#endif
 }
 
 // Finished with the move file play back

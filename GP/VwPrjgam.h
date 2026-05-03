@@ -31,10 +31,6 @@
 #include    "LBoxProj.h"
 #endif
 
-#ifndef     _LBOXMARK_H
-#include    "LBoxMark.h"
-#endif
-
 class CGamProjView;
 class wxGamProjView;
 
@@ -68,24 +64,19 @@ class CProjListBoxGam : public CProjListBoxWx<decltype(CB::Impl::CGamProjViewBas
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGam);
 };
 
-class CGamProjView : public CB::ProcessEventOverride<wxPanel>, private CB::Impl::CGamProjViewBase
+class CGamProjView : public wxPanel, private CB::Impl::CGamProjViewBase
 {
-    friend class CGamProjViewContainer;
 public:
-    CGamProjView(CGamProjViewContainer& p);
+    CGamProjView(wxGamProjView& v);
 
 // Attributes
+    operator const wxGamProjView&() const { return *wxview; }
+    operator wxGamProjView& () { return const_cast<wxGamProjView&>(static_cast<const wxGamProjView&>(std::as_const(*this))); }
     operator const wxView&() const;
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
-    operator const wxView*() const;
+    operator const wxView*() const { return &static_cast<const wxView&>(*this); }
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
-    operator const CGamProjViewContainer&() const { return *parent; }
-    operator CGamProjViewContainer&()
-    {
-        return const_cast<CGamProjViewContainer&>(static_cast<const CGamProjViewContainer&>(std::as_const(*this)));
-    }
 
-    CFrameWnd* GetParentFrame();
 private:
     const CGamDoc& GetDocument() const { return *document; }
     CGamDoc& GetDocument()
@@ -158,7 +149,7 @@ protected:
 protected:
     ~CGamProjView() override;
     void OnInitialUpdate();
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    void OnUpdate(wxView* pSender, const CGamDocHint& pHint);
 
 #if 0
     void OnDraw(CDC* pDC) override;      // overridden to draw this view
@@ -198,50 +189,10 @@ protected:
     wxDECLARE_EVENT_TABLE();
 
 private:
-    // IGetCmdTarget
-    CCmdTarget& Get() override;
-
-    RefPtr<CGamProjViewContainer> parent;
+    RefPtr<wxGamProjView> wxview;
     RefPtr<CGamDoc> document;
 
-    OwnerPtr<wxGamProjView> wxview;
-};
-
-class CGamProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
-                                public CB::NativeContainerWindowMixin
-{
-public:
-    operator const CGamProjView&() const { return *child; }
-    operator CGamProjView&()
-    {
-        return const_cast<CGamProjView&>(static_cast<const CGamProjView&>(std::as_const(*this)));
-    }
-
-    void OnDraw(CDC* pDC) override;
-
-    void OnInitialUpdate() override;
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
-
-private:
-    CGamProjViewContainer();         // used by dynamic creation
-    DECLARE_DYNCREATE(CGamProjViewContainer)
-
-    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-#if 0
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-#endif
-    DECLARE_MESSAGE_MAP()
-
-    // IGetEvtHandler
-    wxEvtHandler& Get() override
-    {
-        return CheckedDeref(CheckedDeref(child).GetEventHandler());
-    }
-
-    // owned by wx
-    CB::propagate_const<CGamProjView*> child = nullptr;
-
-    typedef CB::OnCmdMsgOverride<CView> BASE;
+    friend wxGamProjView;
 };
 
 class wxGamProjView : public CB::View
@@ -258,30 +209,26 @@ public:
         return const_cast<CGamProjView&>(static_cast<const CGamProjView&>(std::as_const(*this)));
     }
 
+    bool OnClose(bool deleteWindow) override;
+    bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
+
 protected:
     const CGamProjView& DoGetWindow() const override;
 
 private:
-    wxGamProjView(CGamProjView& v) : window(&v) {}
+    wxGamProjView() = default;
+    wxDECLARE_DYNAMIC_CLASS(wxGamProjView);
+    bool HasWindow() const;
 
-    RefPtr<CGamProjView> window;
+    bool isDocReady = false;
 
     friend CGamProjView;
 };
 
 inline CGamProjView::operator const wxView&() const
 {
-    return *wxview;
-}
-
-inline CGamProjView::operator const wxView*() const
-{
-    return &*wxview;
-}
-
-inline CCmdTarget& CGamProjView::Get()
-{
-    return *parent;
+    return static_cast<const wxGamProjView&>(*this);
 }
 
 

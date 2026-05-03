@@ -573,8 +573,7 @@ CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
         pPBoard.IsOwnedButNotByCurrentPlayer(*this))
     {
         CGamProjView& projView = FindProjectView();
-        CFrameWnd& frm = CheckedDeref(projView.GetParentFrame());
-        frm.ActivateFrame();
+        static_cast<CB::View&>(projView).Activate(true);
         BoardID bid = pPBoard.GetBoard()->GetSerialNumber();
         size_t i = value_preserving_cast<size_t>(projView.Find(bid));
         projView.m_listProj->MakeItemVisible(i);

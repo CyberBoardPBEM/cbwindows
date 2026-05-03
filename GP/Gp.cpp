@@ -181,6 +181,9 @@ bool wxCGpApp::OnInit()
     SetAppName("CBPlay");
     SetAppDisplayName(CB::GetAppName());
     static OwnerPtr<wxDocManager> docManager = MakeOwner<wxDocManager>();
+    new wxDocTemplate(&*docManager, "Game Files", "*.gam", "", "gam",
+                        "CGamDoc", "wxGamProjView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(wxGamProjView));
     new wxDocTemplate(&*docManager, "Scenario Files", "*.gsn", "", "gsn",
                         "CGamDoc", "wxGsnProjView",
                         wxCLASSINFO(CGamDoc), wxCLASSINFO(wxGsnProjView));
@@ -303,15 +306,6 @@ BOOL CGpApp::InitInstance()
     // Register the application's document templates.  Document templates
     // serve as the connection between documents, frame windows and views.
 
-    CMultiDocTemplate* pDocTemplate;
-
-    pDocTemplate = new CMultiDocTemplate(
-        IDR_GAMETYPE,
-        RUNTIME_CLASS(CGamDocMfc),
-        RUNTIME_CLASS(CProjFrame),
-        RUNTIME_CLASS(CGamProjViewContainer));
-    AddDocTemplate(pDocTemplate);
-
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,
         RUNTIME_CLASS(CGamDocMfc),
@@ -320,9 +314,11 @@ BOOL CGpApp::InitInstance()
 
     EnableLoadWindowPlacement(FALSE);
 
+#if 0
     // Enable DDE Execute open
     EnableShellOpen();
     RegisterShellFileTypes(TRUE);
+#endif
 
     // Add an icon association for move files.
     CB::string szFName = CB::string::GetModuleFileName(NULL);

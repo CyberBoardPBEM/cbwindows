@@ -554,13 +554,13 @@ void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
 
 CGamProjView& CGamDoc::FindProjectView() const
 {
-    POSITION pos = mfcDoc->GetFirstViewPosition();
-    while (pos != NULL)
+    const wxList& views = GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
     {
-        CView& pView = CheckedDeref(mfcDoc->GetNextView(pos));
-        if (pView.IsKindOf(RUNTIME_CLASS(CGamProjViewContainer)))
+        wxGamProjView* pView = dynamic_cast<wxGamProjView*>(*it);
+        if (pView)
         {
-            return static_cast<CGamProjViewContainer&>(pView);
+            return *pView;
         }
     }
     wxASSERT(!"no project view");

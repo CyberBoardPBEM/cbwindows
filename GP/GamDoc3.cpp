@@ -562,7 +562,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
 #if 0
         GetMainFrame()->GetMessageWindow().SetText(this);
 #else
-        AfxThrowNotSupportedException();
+        CPP20_TRACE("TODO:  {}->{}", this, __func__);
 #endif
     }
 }

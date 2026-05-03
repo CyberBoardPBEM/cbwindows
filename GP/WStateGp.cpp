@@ -40,6 +40,7 @@ CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
     wxASSERT(pWse.m_wWinCode == wincodeViewFrame);
     CGamDoc& pDoc = GetDocument();
 
+#if 0
     if (pWse.m_wUserCode1 == gpFrmProject)
     {
         CWnd& pWnd = pDoc.FindProjectView();
@@ -63,6 +64,9 @@ CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
     }
     else
         AfxThrowInvalidArgException();
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd)
