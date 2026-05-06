@@ -122,21 +122,6 @@ void CGamDoc::Dump(CDumpContext& dc) const
 
 #endif //_DEBUG
 
-void CGamDoc::UpdateAllViews(wxView* sender, wxObject* hint)
-{
-    wxDocument::UpdateAllViews(sender, hint);
-    CGamDocHintRef* ref = dynamic_cast<CGamDocHintRef*>(hint);
-    if (ref)
-    {
-        CGamDocHintRefMfc mfcHint(*ref);
-        mfcDoc->CDocument::UpdateAllViews(nullptr, 0, &mfcHint);
-    }
-    else
-    {
-        mfcDoc->CDocument::UpdateAllViews(nullptr);
-    }
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)

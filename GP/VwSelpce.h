@@ -41,6 +41,7 @@ private:
 #if 0
     friend class CSelectedPieceViewContainer;
 #endif
+    friend wxSelectedPieceView;
     typedef CB::ProcessEventOverride<wxPanel> BASE;
     CSelectedPieceView();
     void Initialize();
@@ -80,7 +81,7 @@ protected:
 public:
     void OnInitialUpdate(CGamDoc& doc);     // first time after construct
 protected:
-    void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+    void OnUpdate(wxView* sender, const CGamDocHint& hint);
 
 protected:
 #if 0
@@ -145,6 +146,7 @@ public:
                         wxView *deactiveView) override;
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 protected:
     const CSelectedPieceView& DoGetWindow() const override { return *window; }

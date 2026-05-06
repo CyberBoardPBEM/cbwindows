@@ -796,10 +796,6 @@ public:
     void Dump(CDumpContext& dc) const;
 #endif
 
-    /* TEMP:  override to forward to CDoc because we don't use
-        wxView yet */
-    void UpdateAllViews(wxView* sender, wxObject* hint) override;
-
 protected:
 #if 0
     BOOL OnNewDocument() override;

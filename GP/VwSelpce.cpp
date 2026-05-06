@@ -181,11 +181,10 @@ void CSelectedPieceView::OnInitialUpdate(CGamDoc& doc)
     m_listSel->SetDocument(GetDocument());
 }
 
-void CSelectedPieceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CSelectedPieceView::OnUpdate(wxView* sender, const CGamDocHint& hint)
 {
-    wxASSERT(lHint == HINT_ALWAYSUPDATE);
-    const CGamDocHint* ph = pHint ? &static_cast<const CGamDocHint&>(CheckedDeref(dynamic_cast<CGamDocHintRefMfc*>(pHint))) : nullptr;
-    lHint = ph ? ph->GetHint() : HINT_ALWAYSUPDATE;
+    EGamDocHint lHint = hint.GetHint();
+    const CGamDocHint* ph = &hint;
     if (lHint == HINT_UPDATESELECT && ph->GetArgs<HINT_UPDATESELECT>().m_pPBoard == m_pPBoard)
     {
         wxASSERT(ph->GetArgs<HINT_UPDATESELECT>().m_pSelList != NULL);
@@ -378,6 +377,12 @@ bool wxSelectedPieceView::OnCreate(wxDocument* doc, long flags)
     WXUNUSED_UNLESS_DEBUG(flags);
     wxASSERT(doc == &GetDocument() && !flags);
     return CB::View::OnCreate(doc, flags);
+}
+
+void wxSelectedPieceView::OnUpdate(wxView* sender, wxObject* hint/* = nullptr*/)
+{
+    CB::View::OnUpdate(sender, hint);
+    window->OnUpdate(sender, dynamic_cast<CGamDocHintRef&>(CheckedDeref(hint)));
 }
 
 wxSelectedPieceView::wxSelectedPieceView() :
