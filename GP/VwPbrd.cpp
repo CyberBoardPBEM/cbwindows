@@ -1407,7 +1407,7 @@ void CPlayBoardView::OnEditClear()
     if (m_pPBoard->GetPlotMoveMode())
         OnActPlotDiscard();
 
-    if (AfxMessageBox(IDS_WARN_DELETEMARKERS, MB_YESNO | MB_ICONQUESTION) != IDYES)
+    if (wxMessageBox(CB::string::LoadString(IDS_WARN_DELETEMARKERS), CB::GetAppName(), wxYES_NO | wxICON_QUESTION) != wxYES)
         return;
 
     std::vector<RefPtr<CDrawObj>> listPtr;
