@@ -926,7 +926,10 @@ void CB::View::OnActivateView(bool activate,
                         wxView *activeView,
                         wxView *deactiveView)
 {
-    if (activate)
+    /* if this frame was already active,
+        don't freeze because thaw forces redraw */
+    if (activate &&
+        (deactiveView ? deactiveView->GetFrame() : nullptr) != &GetFrame())
     {
         wxWindow& mainWnd = GetMainWndWx();
         CB::FreezeUntilIdleMixin* freezer = dynamic_cast<CB::FreezeUntilIdleMixin*>(&mainWnd);
