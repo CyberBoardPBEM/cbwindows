@@ -241,19 +241,48 @@ bool wxCGpApp::TryAfter(wxEvent& event)
     if (event.GetEventType() == wxEVT_UPDATE_UI)
     {
         wxUpdateUIEvent& pCmdUI = static_cast<wxUpdateUIEvent&>(event);
-        wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
-        // !event.obj suggests MFC
-        /* if xrcid is empty, then id is something
-            wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
-            so don't interfere with it */
-        if (!event.GetEventObject() && !xrcid.empty())
+        wxAuiToolBar* toolbar = dynamic_cast<wxAuiToolBar*>(pCmdUI.GetEventObject());
+        wxMenu* menu = dynamic_cast<wxMenu*>(pCmdUI.GetEventObject());
+        wxMenuItem* item = menu ? menu->FindItem(pCmdUI.GetId()) : nullptr;
+        wxMenu* submenu = item ? item->GetSubMenu() : nullptr;
+        if ((toolbar && pCmdUI.GetId() != toolbar->GetId()) ||
+            // a submenu isn't a command, so don't disable it
+            (menu && !submenu))
         {
-            if (pCmdUI.IsCheckable())
+            /* if xrcid is empty, then id is something
+                wx-internal (e.g., wxAUI_BUTTON_WINDOWLIST),
+                so don't interfere with it */
+            wxString xrcid = wxXmlResource::FindXRCIDById(pCmdUI.GetId());
+            if (!xrcid.empty())
             {
-                pCmdUI.Check(false);
+                if (pCmdUI.IsCheckable())
+                {
+                    pCmdUI.Check(false);
+                }
+                pCmdUI.Enable(false);
+#if 0
+wxObject* o = pCmdUI.GetEventObject() ? pCmdUI.GetEventObject() : &pCmdUI;
+wxString caption = item ? item->GetItemLabelText().c_str() : "<none>";
+CPP20_TRACE("disable obj {}, id {}({}), caption {}\n", *o, pCmdUI.GetId(), xrcid, caption);
+#endif
+                return true;
             }
-            pCmdUI.Enable(false);
-            return true;
+        }
+        // but a submenu with all items disabled should be disabled
+        else if (menu && submenu)
+        {
+            CallAfter([item, submenu]()
+            {
+                for (size_t i = size_t(0) ; i < submenu->GetMenuItemCount() ; ++i)
+                {
+                    wxMenuItem* curr = submenu->FindItemByPosition(i);
+                    if (curr->IsEnabled())
+                    {
+                        return;
+                    }
+                }
+                item->Enable(false);
+            });
         }
     }
 
