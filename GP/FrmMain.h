@@ -120,6 +120,9 @@ protected:
     afx_msg LRESULT OnDDEExecute(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMessageBox(WPARAM wParam, LPARAM lParam);
 #endif
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
+    void OnTile(wxCommandEvent& event);
+    void OnUpdateTile(wxUpdateUIEvent& pCmdUI);
 
     wxDECLARE_EVENT_TABLE();
 

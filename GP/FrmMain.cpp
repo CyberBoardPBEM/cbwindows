@@ -65,11 +65,13 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     ON_COMMAND(ID_CONTEXT_HELP, CMDIFrameWndEx::OnContextHelp)
     ON_MESSAGE(WM_MESSAGEBOX, OnMessageBox)
     ON_MESSAGE(WM_DDE_EXECUTE, OnDDEExecute)
+#endif
     EVT_MENU(XRCID("ID_WINDOW_TILE_HORZ"), OnTile)
     EVT_MENU(XRCID("ID_WINDOW_TILE_VERT"), OnTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_HORZ"), OnUpdateTile)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
-#endif
+    EVT_UPDATE_UI(wxID_EXIT, OnUpdateEnable)
+    EVT_UPDATE_UI_RANGE(wxID_FILE1, wxID_FILE9, OnUpdateEnable)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -665,4 +667,19 @@ LRESULT CMainFrame::OnMessageBox(WPARAM wParam, LPARAM lParam)
     return (LRESULT)0;
 }
 #endif
+
+void CMainFrame::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+}
+
+void CMainFrame::OnTile(wxCommandEvent& event)
+{
+    Tile(event.GetId() == XRCID("ID_WINDOW_TILE_HORZ") ? wxHORIZONTAL : wxVERTICAL);
+}
+
+void CMainFrame::OnUpdateTile(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(GetClientWindow()->GetPageCount() >= 2);
+}
 
