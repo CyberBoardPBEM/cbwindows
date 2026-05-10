@@ -100,15 +100,20 @@ static const CB::string szGmvIconKey = "CyberBoardRecording\\DefaultIcon";
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp
 
-BEGIN_MESSAGE_MAP(CGpApp, CWinAppEx)
-    ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-    ON_COMMAND(ID_HELP_WEBSITE, OnHelpWebsite)
-    ON_COMMAND(ID_HELP_RELEASES, OnHelpReleases)
+wxBEGIN_EVENT_TABLE(wxCGpApp, wxAppWithMFC)
+    EVT_MENU(wxID_ABOUT, OnAppAbout)
+    EVT_UPDATE_UI(wxID_ABOUT, OnUpdateEnable)
+    EVT_MENU(XRCID("ID_HELP_WEBSITE"), OnHelpWebsite)
+    EVT_UPDATE_UI(XRCID("ID_HELP_WEBSITE"), OnUpdateEnable)
+    EVT_MENU(XRCID("ID_HELP_RELEASES"), OnHelpReleases)
+    EVT_UPDATE_UI(XRCID("ID_HELP_RELEASES"), OnUpdateEnable)
+#if 0
     ON_COMMAND_EX_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE16, OnOpenRecentFile)
     // Standard file based document commands
     ON_COMMAND(ID_FILE_NEW, CWinAppEx::OnFileNew)
     ON_COMMAND(ID_FILE_OPEN, CWinAppEx::OnFileOpen)
-END_MESSAGE_MAP()
+#endif
+wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp construction
@@ -437,6 +442,7 @@ BOOL CGpApp::PreTranslateMessage(MSG *pMsg)
     return CWinAppEx::PreTranslateMessage(pMsg);
 }
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 // Intercept this call so we can force the current directory to the
 // one contained in the LRU.
@@ -459,6 +465,7 @@ BOOL CGpApp::OnOpenRecentFile(UINT nID)
     }
     return CWinAppEx::OnOpenRecentFile(nID);
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // lParam is ptr to ProcID number. Set to window handle if found.
@@ -649,107 +656,110 @@ CDocument* CGpApp::GetCurrentDocument()
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialog
+class CAboutDlg : public wxDialog
 {
 public:
-    CAboutDlg();
+    CAboutDlg(wxWindow* parent = &CB::GetMainWndWx());
 
 // Dialog Data
-    //{{AFX_DATA(CAboutDlg)
-    enum { IDD = IDD_ABOUTBOX };
-    CStatic m_staticGenDate;
-    CStatic m_staticGSNVer;
-    CStatic m_staticProgVer;
-    CStatic m_staticGMVVer;
-    CStatic m_staticGBXVer;
-    CStatic m_staticGAMVer;
-    //}}AFX_DATA
+private:
+    CB_XRC_BEGIN_CTRLS_DECL()
+        RefPtr<wxStaticText> m_staticGenDate;
+        RefPtr<wxStaticText> m_staticGSNVer;
+        RefPtr<wxStaticText> m_staticProgVer;
+        RefPtr<wxStaticText> m_staticGMVVer;
+        RefPtr<wxStaticText> m_staticGBXVer;
+        RefPtr<wxStaticText> m_staticGAMVer;
+        RefPtr<wxStaticBitmap> m_bitmap1;
+        RefPtr<wxStaticBitmap> m_bitmap2;
+    CB_XRC_END_CTRLS_DECL()
 
 // Implementation
 protected:
-    void SetupVersion(CStatic& s, int major, int minor, UINT nRes);
+    void SetupVersion(wxStaticText& s, int major, int minor, UINT nRes);
 
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //{{AFX_MSG(CAboutDlg)
-    virtual BOOL OnInitDialog();
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
+    bool TransferDataToWindow() override;
 };
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg(wxWindow* parent /*= &CB::GetMainWndWx()*/) :
+    CB_XRC_BEGIN_CTRLS_DEFN(parent, CAboutDlg)
+        CB_XRC_CTRL(m_staticGenDate)
+        CB_XRC_CTRL(m_staticGSNVer)
+        CB_XRC_CTRL(m_staticProgVer)
+        CB_XRC_CTRL(m_staticGMVVer)
+        CB_XRC_CTRL(m_staticGBXVer)
+        CB_XRC_CTRL(m_staticGAMVer)
+        CB_XRC_CTRL(m_bitmap1)
+        CB_XRC_CTRL(m_bitmap2)
+    CB_XRC_END_CTRLS_DEFN()
 {
-    //{{AFX_DATA_INIT(CAboutDlg)
-    //}}AFX_DATA_INIT
+    m_bitmap1->SetIcon(wxIcon(std::format("#{}", IDR_GP_MAINFRAME)));
+    m_bitmap2->SetIcon(wxIcon(std::format("#{}", IDR_GP_MAINFRAME)));
+#if 0
+    m_staticGenDate->Show();
+    m_staticGSNVer->Show();
+    m_staticProgVer->Show();
+    m_staticGMVVer->Show();
+    m_staticGBXVer->Show();
+    m_staticGAMVer->Show();
+    Layout();
+    Fit();
+#endif
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CAboutDlg)
-    DDX_Control(pDX, IDC_D_ABOUT_GENDATE, m_staticGenDate);
-    DDX_Control(pDX, IDC_D_ABOUT_GSNVER, m_staticGSNVer);
-    DDX_Control(pDX, IDC_D_ABOUT_PROGVER, m_staticProgVer);
-    DDX_Control(pDX, IDC_D_ABOUT_GMVVER, m_staticGMVVer);
-    DDX_Control(pDX, IDC_D_ABOUT_GBXVER, m_staticGBXVer);
-    DDX_Control(pDX, IDC_D_ABOUT_GAMVER, m_staticGAMVer);
-    //}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-    //{{AFX_MSG_MAP(CAboutDlg)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CAboutDlg::SetupVersion(CStatic& s, int major, int minor, UINT nRes)
+void CAboutDlg::SetupVersion(wxStaticText& s, int major, int minor, UINT nRes)
 {
     CB::string str = CB::string::Format(nRes, major, minor);
-    s.SetWindowText(str);
+    s.SetLabel(str);
 }
 
 #ifdef _DEBUG
 static const CB::string szGenDate = __DATE__;
 #endif
 
-BOOL CAboutDlg::OnInitDialog()
+bool CAboutDlg::TransferDataToWindow()
 {
-    CDialog::OnInitDialog();
-
-    SetupVersion(m_staticProgVer, progVerMajor, progVerMinor, IDP_PROGVER);
-    SetupVersion(m_staticGBXVer, fileGbxVerMajor, fileGbxVerMinor, IDP_GBXVER);
-    SetupVersion(m_staticGSNVer, fileGsnVerMajor, fileGsnVerMinor, IDP_GSNVER);
-    SetupVersion(m_staticGAMVer, fileGamVerMajor, fileGamVerMinor, IDP_GAMVER);
-    SetupVersion(m_staticGMVVer, fileGmvVerMajor, fileGmvVerMinor, IDP_GMVVER);
+    SetupVersion(*m_staticProgVer, progVerMajor, progVerMinor, IDP_PROGVER);
+    SetupVersion(*m_staticGBXVer, fileGbxVerMajor, fileGbxVerMinor, IDP_GBXVER);
+    SetupVersion(*m_staticGSNVer, fileGsnVerMajor, fileGsnVerMinor, IDP_GSNVER);
+    SetupVersion(*m_staticGAMVer, fileGamVerMajor, fileGamVerMinor, IDP_GAMVER);
+    SetupVersion(*m_staticGMVVer, fileGmvVerMajor, fileGmvVerMinor, IDP_GMVVER);
 #ifdef _DEBUG
-    m_staticGenDate.SetWindowText(szGenDate);
+    m_staticGenDate->SetLabel(szGenDate);
 #else
-    m_staticGenDate.ShowWindow(SW_HIDE);
+    m_staticGenDate->Hide();
 #endif
 
-    CenterWindow();
+    Centre();
 
-    return TRUE;  // return TRUE  unless you set the focus to a control
+    return wxDialog::TransferDataToWindow();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CGpApp commands
 
 // App command to run the about dialog
-void CGpApp::OnAppAbout()
+void wxCGpApp::OnAppAbout(wxCommandEvent& /*event*/)
 {
     CAboutDlg aboutDlg;
-    aboutDlg.DoModal();
+    aboutDlg.ShowModal();
 }
 
-void CGpApp::OnHelpWebsite()
+void wxCGpApp::OnHelpWebsite(wxCommandEvent& /*event*/)
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_WEBSITE);
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
 }
 
-void CGpApp::OnHelpReleases()
+void wxCGpApp::OnHelpReleases(wxCommandEvent& /*event*/)
 {
     CB::string strUrl = CB::string::LoadString(IDS_URL_CB_RELEASES);
     ShellExecute(NULL, "open"_cbstring, strUrl, NULL, NULL, SW_SHOWNORMAL);
+}
+
+void wxCGpApp::OnUpdateEnable(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
 }
 
 wxWindow* CB::pGetMainWndWx()

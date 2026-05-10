@@ -244,11 +244,6 @@ public:
     virtual BOOL PreTranslateMessage(MSG *pMsg);
 
 // Implementation
-    afx_msg void OnAppAbout();
-    afx_msg void OnHelpWebsite();
-    afx_msg void OnHelpReleases();
-    afx_msg BOOL OnOpenRecentFile(UINT nID);
-    DECLARE_MESSAGE_MAP()
 };
 
 class wxCGpApp : public wxAppWithMFC
@@ -262,6 +257,13 @@ protected:
         disable MFC toolbar/menu commands that aren't
         explicitly enabled */
     bool TryAfter(wxEvent& event) override;
+
+private:
+    void OnAppAbout(wxCommandEvent& event);
+    void OnHelpWebsite(wxCommandEvent& event);
+    void OnHelpReleases(wxCommandEvent& event);
+    void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
+    wxDECLARE_EVENT_TABLE();
 };
 
 
