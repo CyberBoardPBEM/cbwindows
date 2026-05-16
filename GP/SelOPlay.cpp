@@ -406,11 +406,11 @@ void CSelList::RemoveObject(const CDrawObj& pObj, BOOL bInvalidate)
         {
             if (bInvalidate)
                 pSel.InvalidateHandles();  // So view updates
+            erase(pos);
             RegenerateHandleList();
             if (pObj.GetType() == CDrawObj::drawPieceObj ||
                     pObj.GetType() == CDrawObj::drawMarkObj)
                 m_pView->NotifySelectListChange();
-            erase(pos);
             CalcEnclosingRect();
             return;                     // Success
         }
