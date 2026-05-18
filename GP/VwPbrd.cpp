@@ -1474,6 +1474,16 @@ void CPlayBoardView::OnKeyDown(wxKeyEvent& event)
 
 void CPlayBoardView::OnEditClear()
 {
+    /* KLUDGE:  Del key accelerator comes here even when focus is
+                on select view */
+    wxWindow& focus = CheckedDeref(wxWindow::FindFocus());
+    if (&focus != this)
+    {
+        wxKeyEvent event2(wxEVT_CHAR);
+        event2.m_keyCode = WXK_DELETE;
+        focus.ProcessWindowEvent(event2);
+        return;
+    }
     if (!m_selList.HasMarkers())
         return;                                  // Nothing to do
 
