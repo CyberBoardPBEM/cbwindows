@@ -274,6 +274,8 @@ public:
     // -------- //
     void ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc);
 
+    void TurnOffHandles();
+
     void Open();
 
 // Implementation - methods

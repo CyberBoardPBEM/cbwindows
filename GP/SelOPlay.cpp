@@ -582,6 +582,12 @@ void CSelList::ForAllSelections(std::function<void (CDrawObj& pObj)> pFunc)
     }
 }
 
+void CSelList::TurnOffHandles()
+{
+    InvalidateListHandles();
+    m_listHandles.RemoveAll();
+}
+
 CRect CSelList::GetPiecesEnclosingRect(BOOL bIncludeMarkers /* = TRUE */) const
 {
     CRect rct;

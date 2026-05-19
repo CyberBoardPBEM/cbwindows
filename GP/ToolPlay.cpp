@@ -312,6 +312,7 @@ void CPSelectTool::OnTimer(CPlayBoardView& pView, int nIDEvent)
         m_eSelMode = smodeMove;
         KillDragTimer(pView);
 
+        pSLst.TurnOffHandles();
         wxOverlayDC dc(pView.GetOverlay(), &pView);
         pView.OnPrepareScaledDC(dc);
         dc.Clear();
