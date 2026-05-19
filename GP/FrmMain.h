@@ -49,9 +49,10 @@ public:
     CDockTrayPalette& GetDockingTrayBWindow() { return *m_wndTrayPalB; }
 
     CReadMsgWnd&      GetMessageWindow();
-
-    CMFCStatusBar& GetStatusBar() { return m_wndStatusBar; }
 #endif
+
+    // unfortunately, wx isn't const correct here
+    CB::StatusBar* GetStatusBar() const override { return const_cast<CB::StatusBar*>(&*m_wndStatusBar); }
 
 // Operations
 public:
@@ -73,9 +74,11 @@ protected:
     CMFCToolBar   m_wndTBarView;
     CMFCToolBar   m_wndTBarPlay;
     CMFCToolBar   m_wndTBarMove;
+#endif
 
-    CMFCStatusBar m_wndStatusBar;
+    CB::propagate_const<CB::StatusBar*> m_wndStatusBar = nullptr;
 
+#if 0
     OwnerPtr<CReadMsgWndContainer> m_wndMessage;
 
     OwnerPtr<CDockMarkPalette> m_wndMarkPal;
@@ -123,6 +126,9 @@ protected:
     void OnUpdateEnable(wxUpdateUIEvent& pCmdUI);
     void OnTile(wxCommandEvent& event);
     void OnUpdateTile(wxUpdateUIEvent& pCmdUI);
+    void OnViewStatusBar(wxCommandEvent& event);
+    void OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI);
+    void OnUpdateDisable(wxUpdateUIEvent& pCmdUI);
 
     wxDECLARE_EVENT_TABLE();
 

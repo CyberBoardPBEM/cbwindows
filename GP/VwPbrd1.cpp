@@ -69,9 +69,9 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
     pnt = ClientToWorkspace(pnt);
     CDrawObj* pDObj = ObjectHitTest(pnt);
 
-    if (pDoc.IsOwnerTipsDisabled() && pDoc.HasPlayers())
+    if (pDoc.IsOwnerTipsDisabled() && pDoc.HasPlayers() &&
+        GetMainFrame()->GetStatusBar())
     {
-#if 0
         if (pDObj != NULL && pDObj->GetType() == CDrawObj::drawPieceObj)
         {
             CPieceObj* pPObj = (CPieceObj*)pDObj;
@@ -80,16 +80,13 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
             {
                 CB::string strOwner = pDoc.GetPieceOwnerName(pPObj->m_pid);
                 CB::string strOwnedBy = CB::string::Format(IDS_TIP_OWNED_BY_UC, strOwner);
-                GetMainFrame()->GetStatusBar().SetWindowText(strOwnedBy);
+                GetMainFrame()->GetStatusBar()->SetStatusText(strOwnedBy);
             }
             else
-                GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
+                GetMainFrame()->GetStatusBar()->SetStatusText(""_cbstring);
         }
         else
-            GetMainFrame()->GetStatusBar().SetWindowText(""_cbstring);
-#else
-        CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
-#endif
+            GetMainFrame()->GetStatusBar()->SetStatusText(""_cbstring);
     }
 
     if (pDObj != m_pCurTipObj)

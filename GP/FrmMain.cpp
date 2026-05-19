@@ -51,8 +51,10 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     ON_WM_HELPINFO()
     ON_COMMAND(ID_HELP_INDEX, OnHelpIndex)
     ON_WM_CLOSE()
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_CELLNUM, OnUpdateDisable)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_COMPMOVE, OnUpdateDisable)
+#endif
+    EVT_UPDATE_UI(ID_INDICATOR_CELLNUM, OnUpdateDisable)
+    EVT_UPDATE_UI(ID_INDICATOR_COMPMOVE, OnUpdateDisable)
+#if 0
     ON_UPDATE_COMMAND_UI(ID_ACT_ROTATE_0, OnUpdateDisable)
     ON_UPDATE_COMMAND_UI(ID_MRKGROUP_FIRST, OnUpdateDisable)
     ON_UPDATE_COMMAND_UI(ID_ACT_TURNOVER, OnUpdateDisable)
@@ -72,14 +74,18 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     EVT_UPDATE_UI(XRCID("ID_WINDOW_TILE_VERT"), OnUpdateTile)
     EVT_UPDATE_UI(wxID_EXIT, OnUpdateEnable)
     EVT_UPDATE_UI_RANGE(wxID_FILE1, wxID_FILE9, OnUpdateEnable)
+    EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
+    EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 // IDs used to initialize control bars
 
-static UINT indicators[] =
+static const int indicators[] =
 {
-    ID_SEPARATOR,               // status line indicator
+    value_preserving_cast<int>(wxID_SEPARATOR),               // status line indicator
+    /* N.B.:  do not use XRCID with these because they are
+        also string identifiers in .rc */
     ID_INDICATOR_CAPS,
     ID_INDICATOR_NUM,
     ID_INDICATOR_COMPMOVE,
@@ -163,6 +169,9 @@ CMainFrame::CMainFrame() :
             wndMenu.AppendSeparator();
         }
     }
+
+    wxCommandEvent dummy;
+    OnViewStatusBar(dummy);
 }
 
 CMainFrame::~CMainFrame()
@@ -681,5 +690,34 @@ void CMainFrame::OnTile(wxCommandEvent& event)
 void CMainFrame::OnUpdateTile(wxUpdateUIEvent& pCmdUI)
 {
     pCmdUI.Enable(GetClientWindow()->GetPageCount() >= 2);
+}
+
+void CMainFrame::OnViewStatusBar(wxCommandEvent& event)
+{
+    if (!m_wndStatusBar)
+    {
+        m_wndStatusBar = &CreateStatusBar(indicators);
+    }
+    else
+    {
+        SetStatusBar(nullptr);
+        delete &*m_wndStatusBar;
+        m_wndStatusBar = nullptr;
+    }
+}
+
+void CMainFrame::OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI)
+{
+    pCmdUI.Enable(true);
+    pCmdUI.Check(bool(m_wndStatusBar));
+}
+
+void CMainFrame::OnUpdateDisable(wxUpdateUIEvent& pCmdUI)
+{
+    if (pCmdUI.IsCheckable())
+    {
+        pCmdUI.Check(false);
+    }
+    pCmdUI.Enable(false);
 }
 

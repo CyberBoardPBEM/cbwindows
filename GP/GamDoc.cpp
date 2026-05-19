@@ -109,7 +109,7 @@ wxBEGIN_EVENT_TABLE(CGamDoc, wxDocument)
     EVT_UPDATE_UI(XRCID("ID_VIEW_MARKERPAL"), OnUpdateViewMarkPalette)
     EVT_MENU(XRCID("ID_VIEW_TRAYA"), OnViewTrayA)
     EVT_MENU(XRCID("ID_VIEW_TRAYB"), OnViewTrayB)
-    EVT_UPDATE_UI(XRCID("ID_INDICATOR_COMPMOVE"), OnUpdateIndicatorCompoundMove)
+    EVT_UPDATE_UI(ID_INDICATOR_COMPMOVE, OnUpdateIndicatorCompoundMove)
     EVT_MENU(XRCID("ID_VIEW_MARKERPAL"), OnViewMarkPalette)
 #if 0
     ON_COMMAND(ID_EDIT_SETBOOKMARK, OnEditSetBookMark)
