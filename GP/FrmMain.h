@@ -70,11 +70,11 @@ public:
 protected:
 #if 0
     CMFCMenuBar   m_wndMenuBar;
-    CMFCToolBar   m_wndToolBar;
-    CMFCToolBar   m_wndTBarView;
-    CMFCToolBar   m_wndTBarPlay;
-    CMFCToolBar   m_wndTBarMove;
 #endif
+    CB::propagate_const<wxAuiToolBar*> m_wndToolBar;       // Main toolbar
+    CB::propagate_const<wxAuiToolBar*> m_wndTBarView;
+    CB::propagate_const<wxAuiToolBar*> m_wndTBarPlay;
+    CB::propagate_const<CB::AuiToolBar*> m_wndTBarMove;
 
     CB::propagate_const<CB::StatusBar*> m_wndStatusBar = nullptr;
 

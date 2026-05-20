@@ -170,8 +170,146 @@ CMainFrame::CMainFrame() :
         }
     }
 
+    // Build the main window tool bar.
+    static const CB::AuiToolBar::ToolArgs standardArgs[] = {
+        { wxID_NEW, ID_FILE_NEW },
+        { wxID_OPEN, ID_FILE_OPEN },
+        { wxID_SAVE, ID_FILE_SAVE },
+        { XRCID("ID_FILE_SENDMOVES2FILE"), ID_FILE_SENDMOVES2FILE },
+        { XRCID("ID_FILE_LOADMOVES"), ID_FILE_LOADMOVES },
+        { wxID_SEPARATOR },
+        { wxID_HELP_CONTEXT, ID_CONTEXT_HELP },
+    };
+    m_wndToolBar = new CB::AuiToolBar(*this,
+                                        standardArgs,
+                                        IDR_GP_MAINFRAME);
+    auiManager.AddPane(&*m_wndToolBar, wxAuiPaneInfo().
+                        Name("IDR_GP_MAINFRAME"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_STANDARD)).
+                        ToolbarPane().Top().Layer(0));
+
+    static const CB::AuiToolBar::ToolArgs viewArgs[] = {
+        { XRCID("ID_VIEW_TOGGLESCALE"), ID_VIEW_TOGGLESCALE },
+        { XRCID("ID_VIEW_PIECES"), ID_VIEW_PIECES, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_VIEW_BOARD_ROTATE180"), ID_VIEW_BOARD_ROTATE180, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_VIEW_SHOW_TIP_TEXT"), ID_VIEW_SHOW_TIP_TEXT, wxITEM_CHECK },
+        { XRCID("ID_VIEW_SHOW_TIP_OWNER"), ID_VIEW_SHOW_TIP_OWNER, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_VIEW_TRAYA"), ID_VIEW_TRAYA, wxITEM_CHECK },
+        { XRCID("ID_VIEW_TRAYB"), ID_VIEW_TRAYB, wxITEM_CHECK },
+        { XRCID("ID_VIEW_MARKERPAL"), ID_VIEW_MARKERPAL, wxITEM_CHECK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_PBCK_READMESSAGE"), ID_PBCK_READMESSAGE, wxITEM_CHECK },
+    };
+    m_wndTBarView = new CB::AuiToolBar(*this,
+                                        viewArgs,
+                                        IDR_TBAR_VIEW);
+    auiManager.AddPane(&*m_wndTBarView, wxAuiPaneInfo().
+                        Name("IDR_TBAR_VIEW"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_VIEW)).
+                        ToolbarPane().Top().Layer(0));
+
+    static const CB::AuiToolBar::ToolArgs moveArgs[] = {
+        { XRCID("ID_FILE_SENDMOVES2FILE"), ID_FILE_SENDMOVES2FILE },
+        { XRCID("ID_FILE_DISCARDRECORDING"), ID_FILE_DISCARDRECORDING },
+        { wxID_SEPARATOR },
+        { XRCID("ID_ACT_COMPOUNDMOVE_BEGIN"), ID_ACT_COMPOUNDMOVE_BEGIN, wxITEM_CHECK },
+        { XRCID("ID_ACT_COMPOUNDMOVE_END"), ID_ACT_COMPOUNDMOVE_END },
+        { XRCID("ID_ACT_COMPOUNDMOVE_DISCARD"), ID_ACT_COMPOUNDMOVE_DISCARD },
+        { wxID_SEPARATOR },
+        { XRCID("ID_PTOOL_PLOTMOVE"), ID_PTOOL_PLOTMOVE, wxITEM_CHECK },
+        { XRCID("ID_ACT_PLOTDONE"), ID_ACT_PLOTDONE },
+        { XRCID("ID_ACT_PLOTDISCARD"), ID_ACT_PLOTDISCARD },
+        { wxID_SEPARATOR },
+        { XRCID("ID_ACT_DOMESSAGE"), ID_ACT_DOMESSAGE },
+        { wxID_SEPARATOR },
+        { XRCID("ID_ACTIONS_ROLLDICE"), ID_ACTIONS_ROLLDICE },
+        { wxID_SEPARATOR },
+        { XRCID("ID_ACT_TOFRONT"), ID_ACT_TOFRONT },
+        { XRCID("ID_ACT_TOBACK"), ID_ACT_TOBACK },
+        { wxID_SEPARATOR },
+        { XRCID("ID_ACT_STACK"), ID_ACT_STACK },
+        { XRCID("ID_ACT_TURNOVER"), ID_ACT_TURNOVER },
+    };
+    m_wndTBarMove = new CB::AuiToolBar(*this,
+                                        moveArgs,
+                                        IDR_TBAR_MOVE);
+    // create the turnover popup menu
+    OwnerPtr<wxMenu> menuTurnover = MakeOwner<wxMenu>();
+    {
+        static const CB::AuiToolBar::ToolArgs turnoverArgs[] = {
+            { XRCID("ID_ACT_TURNOVER"), ID_ACT_TURNOVER },
+            { XRCID("ID_ACT_TURNOVER_PREV"), ID_ACT_TURNOVER_PREV },
+            { XRCID("ID_ACT_TURNOVER_RANDOM"), ID_ACT_TURNOVER_RANDOM },
+        };
+        std::unique_ptr<wxAuiToolBar, std::function<void(wxAuiToolBar*)>> toolbar(new CB::AuiToolBar(*this,
+                                                                                                        turnoverArgs,
+                                                                                                        IDR_TBMENU),
+                                                                                    [](wxAuiToolBar* p)
+                                                                                    {
+                                                                                        p->Destroy();
+                                                                                    }
+        );
+        for (const auto& arg : turnoverArgs)
+        {
+            CB::string str = CB::string::LoadString(arg.stringId);
+            std::vector<wxString> tokens;
+            wxStringTokenizer tokenizer(str, "\n");
+            while (tokenizer.HasMoreTokens())
+            {
+                tokens.push_back(tokenizer.GetNextToken());
+            }
+            wxASSERT(!tokens.empty());
+            wxASSERT(tokens.size() == size_t(2));
+            wxMenuItem& menuItem = CheckedDeref(menuTurnover->Append(arg.xrcId, tokens.back(), tokens.front(), wxITEM_NORMAL));
+            wxAuiToolBarItem& barItem = CheckedDeref(toolbar->FindTool(arg.xrcId));
+            class SetWindow
+            {
+            public:
+                SetWindow(wxAuiToolBarItem& i, wxWindow& w) :
+                    item(i)
+                {
+                    item.SetWindow(&w);
+                }
+                ~SetWindow()
+                {
+                    item.SetWindow(nullptr);
+                }
+            private:
+                wxAuiToolBarItem& item;
+            } setWindow(barItem, *this);
+            menuItem.SetBitmap(barItem.GetBitmap());
+        }
+    }
+    m_wndTBarMove->SetDropdownMenu(XRCID("ID_ACT_TURNOVER"), std::move(menuTurnover));
+    auiManager.AddPane(&*m_wndTBarMove, wxAuiPaneInfo().
+                        Name("IDR_TBAR_MOVE"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_MOVE)).
+                        ToolbarPane().Top().Layer(0));
+
+    static const CB::AuiToolBar::ToolArgs playArgs[] = {
+        { XRCID("ID_FILE_LOADMOVES"), ID_FILE_LOADMOVES },
+        { XRCID("ID_PBCK_FINISH"), ID_PBCK_FINISH },
+        { XRCID("ID_PBCK_DISCARD"), ID_PBCK_DISCARD },
+        { wxID_SEPARATOR },
+        { XRCID("ID_PBCK_START"), ID_PBCK_START },
+        { XRCID("ID_PBCK_PREVIOUS"), ID_PBCK_PREVIOUS },
+        { XRCID("ID_PBCK_NEXT"), ID_PBCK_NEXT, wxITEM_CHECK },
+        { XRCID("ID_PBCK_END"), ID_PBCK_END },
+        { wxID_SEPARATOR },
+        { XRCID("ID_PBCK_NEXTHIST"), ID_PBCK_NEXTHIST },
+        { XRCID("ID_PBCK_CLOSEHIST"), ID_PBCK_CLOSEHIST },
+    };
+    m_wndTBarPlay = new CB::AuiToolBar(*this,
+                                        playArgs,
+                                        IDR_TBAR_PLAYBACK);
+    auiManager.AddPane(&*m_wndTBarPlay, wxAuiPaneInfo().
+                        Name("IDR_TBAR_PLAYBACK"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_PLAYBACK)).
+                        ToolbarPane().Top().Layer(0));
+
     wxCommandEvent dummy;
     OnViewStatusBar(dummy);
+
+    auiManager.Update();
 }
 
 CMainFrame::~CMainFrame()

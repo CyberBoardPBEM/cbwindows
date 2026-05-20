@@ -1644,6 +1644,7 @@ void CPlayBoardView::OnViewBoardRotate180(wxCommandEvent& /*event*/)
 
 void CPlayBoardView::OnUpdateViewBoardRotate180(wxUpdateUIEvent& pCmdUI)
 {
+    pCmdUI.Enable(true);
     pCmdUI.Check(m_pPBoard->IsBoardRotated180());
 }
 
@@ -2296,6 +2297,7 @@ void CPlayBoardView::OnViewPieces(wxCommandEvent& /*event*/)
 
 void CPlayBoardView::OnUpdateViewPieces(wxUpdateUIEvent& pCmdUI)
 {
+    pCmdUI.Enable(true);
     pCmdUI.Check(!GetPlayBoard().GetPiecesVisible());
 }
 
