@@ -52,6 +52,7 @@
     }
 #endif
 #include <limits>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <regex>
@@ -2671,20 +2672,34 @@ namespace CB
 
 namespace CB
 {
-    struct ToolArgs
+    class AuiToolBar : public wxAuiToolBar
     {
-        const int xrcId;
-        const unsigned stringId = 0;
-        const wxItemKind kind = wxITEM_NORMAL;
-    };
-    wxAuiToolBar& CreateToolbar(wxWindow& parent, const ToolArgs (&toolArgs)[], size_t count, unsigned bmapID);
+    public:
+        struct ToolArgs
+        {
+            const int xrcId;
+            const unsigned stringId = 0;
+            const wxItemKind kind = wxITEM_NORMAL;
+        };
 
-    // tell compiler to count array elements
-    template<size_t COUNT>
-    wxAuiToolBar& CreateToolbar(wxWindow& parent, const ToolArgs (&toolArgs)[COUNT], unsigned bmapID)
-    {
-        return CreateToolbar(parent, toolArgs, COUNT, bmapID);
-    }
+        AuiToolBar(wxWindow& parent, const ToolArgs(&toolArgs)[], size_t count, unsigned bmapID);
+
+        // tell compiler to count array elements
+        template<size_t COUNT>
+        AuiToolBar(wxWindow& parent, const ToolArgs(&toolArgs)[COUNT], unsigned bmapID) :
+            AuiToolBar(parent, toolArgs, COUNT, bmapID)
+        {
+        }
+
+        // see wxToolBar::SetDropdownMenu()
+        bool SetDropdownMenu(int id, OwnerPtr<wxMenu> menu);
+
+    private:
+        wxDECLARE_EVENT_TABLE();
+        void OnDropdown(wxAuiToolBarEvent& event);
+
+        std::map<int /*id*/, OwnerPtr<wxMenu>> dropdownMenus;
+    };
 }
 
 namespace CB

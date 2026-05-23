@@ -180,7 +180,7 @@ CMainFrame::CMainFrame() :
     }
 
     // Build the main window tool bar.
-    static const CB::ToolArgs standardArgs[] = {
+    static const CB::AuiToolBar::ToolArgs standardArgs[] = {
         { wxID_NEW, ID_FILE_NEW },
         { wxID_OPEN, ID_FILE_OPEN },
         { wxID_SAVE, ID_FILE_SAVE },
@@ -208,7 +208,7 @@ CMainFrame::CMainFrame() :
         { wxID_SEPARATOR },
         { wxID_HELP_CONTEXT, ID_CONTEXT_HELP },
     };
-    m_wndToolBar = &CB::CreateToolbar(*this,
+    m_wndToolBar = new CB::AuiToolBar(*this,
                                         standardArgs,
                                         IDR_MAINFRAME);
     auiManager.AddPane(m_wndToolBar, wxAuiPaneInfo().

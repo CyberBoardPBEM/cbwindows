@@ -137,7 +137,7 @@ CBitEditView::CBitEditView(wxSplitterWindow& p, wxBitEditView& v) :
 
 wxAuiToolBar& CBitEditView::CreateToolbar(wxWindow& parent)
 {
-    static const CB::ToolArgs toolArgs[] = {
+    static const CB::AuiToolBar::ToolArgs toolArgs[] = {
         { XRCID("ID_ITOOL_PENCIL"), ID_ITOOL_PENCIL, wxITEM_CHECK },
         { XRCID("ID_ITOOL_SELECT"), ID_ITOOL_SELECT, wxITEM_CHECK },
         { XRCID("ID_ITOOL_BRUSH"), ID_ITOOL_BRUSH, wxITEM_CHECK },
@@ -151,7 +151,7 @@ wxAuiToolBar& CBitEditView::CreateToolbar(wxWindow& parent)
         { XRCID("ID_ITOOL_FILLOVAL"), ID_ITOOL_FILLOVAL, wxITEM_CHECK },
         { XRCID("ID_ITOOL_DROPPER"), ID_ITOOL_DROPPER, wxITEM_CHECK },
     };
-    return CB::CreateToolbar(parent,
+    return *new CB::AuiToolBar(parent,
                                 toolArgs,
                                 IDB_IMAGETOOLS);
 }

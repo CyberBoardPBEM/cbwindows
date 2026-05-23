@@ -1968,12 +1968,15 @@ wxDocTemplate& CB::FindDocTemplateByView(const wxClassInfo& classInfo)
     AfxThrowInvalidArgException();
 }
 
-#if !defined(GPLAY)
-wxAuiToolBar& CB::CreateToolbar(wxWindow& parent, const ToolArgs(&toolArgs)[], size_t count, unsigned bmapID)
+wxBEGIN_EVENT_TABLE(CB::AuiToolBar, wxAuiToolBar)
+    EVT_AUITOOLBAR_TOOL_DROPDOWN(wxID_ANY, OnDropdown)
+wxEND_EVENT_TABLE()
+
+CB::AuiToolBar::AuiToolBar(wxWindow& parent, const ToolArgs(&toolArgs)[], size_t count, unsigned bmapID) :
+        wxAuiToolBar(&parent)
 {
     wxBitmap tools(std::format("#{}", bmapID),
                     wxBITMAP_TYPE_BMP_RESOURCE);
-    wxAuiToolBar& toolbar = *new wxAuiToolBar(&parent);
     int separators = 0;
     for (int i = 0 ; i < value_preserving_cast<int>(count) ; ++i)
     {
@@ -1994,27 +1997,72 @@ wxAuiToolBar& CB::CreateToolbar(wxWindow& parent, const ToolArgs(&toolArgs)[], s
             wxASSERT(tokens.size() == size_t(2));
             wxBitmap tool = tools.GetSubBitmap(wxRect(wxPoint(16*(i - separators), 0),
                                                 wxSize(16, 16)));
-            toolbar.AddTool(id,
-                            wxEmptyString,
-                            tool,
-                            wxNullBitmap,
-                            toolArgs[i].kind,
-                            tokens.back(),
-                            tokens.front(),
-                            nullptr);
+            AddTool(id,
+                    wxEmptyString,
+                    tool,
+                    wxNullBitmap,
+                    toolArgs[i].kind,
+                    tokens.back(),
+                    tokens.front(),
+                    nullptr);
         }
         else
         {
             ++separators;
-            toolbar.AddSeparator();
+            AddSeparator();
         }
     }
     wxASSERT(tools.GetSize() == wxSize(
         value_preserving_cast<int>(size_t(16) * (count - value_preserving_cast<size_t>(separators))), 16));
-    toolbar.Realize();
-    return toolbar;
+    Realize();
 }
-#endif
+
+// see wxToolBar::SetDropdownMenu()
+bool CB::AuiToolBar::SetDropdownMenu(int id, OwnerPtr<wxMenu> menu)
+{
+    wxAuiToolBarItem* barItem = FindTool(id);
+    if (!barItem)
+    {
+        return false;
+    }
+    dropdownMenus.emplace(id, std::move(menu));
+    barItem->SetHasDropDown(true);
+    return true;
+}
+
+void CB::AuiToolBar::OnDropdown(wxAuiToolBarEvent& event)
+{
+    if (event.IsDropDownClicked())
+    {
+        wxAuiToolBarItem& barItem = CheckedDeref(FindTool(event.GetId()));
+        class SetSticky
+        {
+        public:
+            SetSticky(wxAuiToolBarItem& i) :
+                item(i)
+            {
+                item.SetSticky(true);
+            }
+            ~SetSticky()
+            {
+                item.SetSticky(false);
+            }
+        private:
+            wxAuiToolBarItem& item;
+        } setSticky(barItem);
+        // line up our menu with the button
+        wxRect rect = barItem.GetSizerItem()->GetRect();
+        wxPoint pt = ClientToScreen(rect.GetBottomLeft());
+        pt = ScreenToClient(pt);
+        auto it = dropdownMenus.find(event.GetId());
+        wxASSERT(it != dropdownMenus.end());
+        PopupMenu(&*it->second, pt);
+    }
+    else
+    {
+        event.Skip();
+    }
+}
 
 wxBEGIN_EVENT_TABLE(CB::StatusBar, wxStatusBar)
     EVT_IDLE(OnIdle)
