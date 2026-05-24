@@ -193,11 +193,7 @@ void CGamDoc::SaveRecordedMoves()
     m_strCurMsg.clear();
     m_astrMsgHist.clear();
 
-#if 0
     GetMainFrame()->GetMessageWindow().SetText(NULL);
-#else
-    AfxThrowNotSupportedException();
-#endif
 
     // Save was ok..add to game history
     AddMovesToGameHistoryTable(pHist);

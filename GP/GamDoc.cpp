@@ -314,11 +314,7 @@ bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
     // We make this call to ensure the sizes of the palette windows layout
     // don't "bloat" during document load. I can't really tell you why this
     // works but, unless you have a proper solution... Don't mess with it!
-#if 0
     GetMainFrame()->ShowPalettePanes(TRUE);
-#else
-    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
-#endif
 
     // This cheat is to have the filename being loaded available
     // to the Serialize routine
@@ -510,13 +506,13 @@ void CGamDoc::OnIdle(BOOL bActive)
         CDockTrayPalette& pDockTrayB = pMFrame->GetDockingTrayBWindow();
         pDockTrayB.SetChild(&*m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
-
-        CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
-        pMFrame->UpdatePaletteWindow(pDocMsg.GetParent(), m_bMsgWinVisible && !IsScenario());
-        pDocMsg.SetText(this);
 #else
         CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
+
+        CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
+        pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());
+        pDocMsg.SetText(this);
     }
 }
 

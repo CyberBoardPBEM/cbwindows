@@ -76,6 +76,7 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     EVT_UPDATE_UI_RANGE(wxID_FILE1, wxID_FILE9, OnUpdateEnable)
     EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
     EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
+    EVT_AUI_PANE_CLOSE(OnPaneClose)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -111,9 +112,9 @@ CMainFrame::CMainFrame() :
     BASE(wxDocManager::GetDocumentManager(),
             nullptr, wxID_ANY,
             wxTheApp->GetAppDisplayName()),
-    CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this))
+    CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this)),
+    m_wndMessage(new CReadMsgWnd)
 #if 0
-    m_wndMessage(MakeOwner<CReadMsgWndContainer>()),
     m_wndMarkPal(MakeOwner<CDockMarkPalette>()),
     m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
     m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
@@ -308,6 +309,11 @@ CMainFrame::CMainFrame() :
 
     wxCommandEvent dummy;
     OnViewStatusBar(dummy);
+
+    CB_VERIFY(m_wndMessage->Create(*this));
+    auiManager.AddPane(&*m_wndMessage, wxAuiPaneInfo().
+                        Name("CReadMsgWnd"_cbstring).Caption(CB::string::LoadString(IDS_MESSAGE_WND)).
+                        Bottom());
 
     auiManager.Update();
 }
@@ -612,11 +618,13 @@ void CMainFrame::OnIdle()
 {
     if (GetCurrentDocument() == NULL)
     {
-#if 0
        ShowPalettePanes(FALSE);
-#else
-        CPP20_TRACE("TODO:  {}\n", __func__);
-#endif
+    }
+
+    if (auiMgrScheduleUpdate)
+    {
+        auiMgrScheduleUpdate = false;
+        auiManager.Update();
     }
 
     CB::FreezeUntilIdleMixin::OnIdle();
@@ -650,19 +658,34 @@ BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
 {
     return OnClosePalette(CheckedDeref(pWnd));
 }
+#endif
 
-void CMainFrame::ShowPalettePanes(BOOL bShow)
+void CMainFrame::ShowPalettePanes(bool bShow)
 {
+#if 0
     ShowPane(&*m_wndTrayPalA, bShow, FALSE, TRUE);
     ShowPane(&*m_wndTrayPalB, bShow, FALSE, TRUE);
     ShowPane(&*m_wndMarkPal, bShow, FALSE, TRUE);
-    ShowPane(&*m_wndMessage, bShow, FALSE, TRUE);
+#endif
+    ShowPane(*m_wndMessage, bShow);
+}
+
+void CMainFrame::ShowPane(wxWindow& wnd, bool show)
+{
+    wxAuiPaneInfo& pane = auiManager.GetPane(&wnd);
+    wxASSERT(pane.IsOk());
+    if (pane.IsShown() != show)
+    {
+        pane.Show(show);
+        auiMgrScheduleUpdate = true;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn)
+void CMainFrame::UpdatePaletteWindow(wxWindow& pWnd, BOOL bIsOn)
 {
+#if 0
     if (pWnd.m_hWnd != NULL)       // Handle exists if palette allowed
     {
         BOOL bIsControlBar = pWnd.IsKindOf(RUNTIME_CLASS(CBasePane));
@@ -694,8 +717,27 @@ void CMainFrame::UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn)
             }
         }
     }
-}
+#else
+    wxASSERT(pWnd.GetHandle());
+    wxAuiPaneInfo& pane = auiManager.GetPane(&pWnd);
+    wxASSERT(pane.IsOk());
+    BOOL bVisible = pane.IsShown();
+    wxAuiMDIChildFrame* pMDIChild = GetActiveChild();
+    if (!pMDIChild)
+    {
+        if (bVisible)
+        {
+            pane.Show(false);
+            auiMgrScheduleUpdate = true;
+        }
+    }
+    else if (bIsOn != bVisible)
+    {
+        pane.Show(bIsOn);
+        auiMgrScheduleUpdate = true;
+    }
 #endif
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -710,7 +752,6 @@ CDocument* CMainFrame::GetCurrentDocument()
     return dynamic_cast<CGamDoc&>(*doc);
 }
 
-#if 0
 CReadMsgWnd& CMainFrame::GetMessageWindow()
 {
     return *m_wndMessage;
@@ -719,6 +760,7 @@ CReadMsgWnd& CMainFrame::GetMessageWindow()
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
+#if 0
 #ifdef _DEBUG
 void CMainFrame::AssertValid() const
 {
@@ -859,3 +901,17 @@ void CMainFrame::OnUpdateDisable(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(false);
 }
 
+void CMainFrame::OnPaneClose(wxAuiManagerEvent& event)
+{
+    wxAuiPaneInfo& pane = CheckedDeref(event.GetPane());
+    if (pane.window == &*m_wndMessage)
+    {
+        wxCommandEvent event2(wxEVT_MENU, XRCID("ID_PBCK_READMESSAGE"));
+        ProcessWindowEvent(event2);
+    }
+    else
+    {
+        wxASSERT(!"unexpected wnd");
+    }
+    event.Skip();
+}

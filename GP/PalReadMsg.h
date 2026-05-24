@@ -33,20 +33,27 @@
 // CReadMsgWnd class
 
 class CGamDoc;
+#if 0
 class CReadMsgWndContainer;
+#endif
 
 class CReadMsgWnd : public wxPanel
 {
 // Construction / destruction
 public:
+#if 0
     /* N.B. : despite ctor requiring parent,
         this always uses two-phase construction */
     CReadMsgWnd(CReadMsgWndContainer& container);
+#else
+    CReadMsgWnd();
+#endif
     ~CReadMsgWnd() override;
-    BOOL Create();
+    BOOL Create(wxWindow& parent);
 
 // Methods
 public:
+#if 0
     const CReadMsgWndContainer& GetParent() const
     {
         return *m_pContainer;
@@ -55,11 +62,14 @@ public:
     {
         return const_cast<CReadMsgWndContainer&>(std::as_const(*this).GetParent());
     }
+#endif
     void SetText(CGamDoc* pDoc);
 
 // Implementation - variables
 protected:
+#if 0
     RefPtr<CReadMsgWndContainer> m_pContainer;
+#endif
     CB::propagate_const<CGamDoc*> m_pDoc;                 // Doc of current messages
     size_t          m_nMsgCount;            // Number of messages already processed
 
@@ -95,6 +105,7 @@ private:
     typedef wxPanel BASE;
 };
 
+#if 0
 class CReadMsgWndContainer : public CDockablePane,
                                 public CB::NativeContainerWindowMixin
 {
@@ -118,6 +129,7 @@ private:
     // owned by wx
     CB::propagate_const<CReadMsgWnd*> child = new CReadMsgWnd(*this);
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

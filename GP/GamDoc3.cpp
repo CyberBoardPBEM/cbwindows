@@ -544,11 +544,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         }
         GetTrayManager().PropagateOwnerMaskToAllPieces(this);
         GetPBoardManager().PropagateOwnerMaskToAllPieces();
-#if 0
         GetMainFrame()->GetMessageWindow().SetText(this);
-#else
-        CPP20_TRACE("TODO:  {}->{}", this, __func__);
-#endif
     }
 }
 

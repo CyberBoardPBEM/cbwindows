@@ -71,17 +71,23 @@ wxBEGIN_EVENT_TABLE(CReadMsgWnd, CReadMsgWnd::BASE)
 //    ON_WM_KEYUP()
 wxEND_EVENT_TABLE()
 
+#if 0
 BEGIN_MESSAGE_MAP(CReadMsgWndContainer, CDockablePane)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CReadMsgWnd
 
+#if 0
 CReadMsgWnd::CReadMsgWnd(CReadMsgWndContainer& container) :
     m_pContainer(&container),
+#else
+CReadMsgWnd::CReadMsgWnd() :
+#endif
     m_editCtrl(new wxTextCtrl)
 {
     m_pDoc = NULL;
@@ -92,9 +98,9 @@ CReadMsgWnd::~CReadMsgWnd()
 {
 }
 
-BOOL CReadMsgWnd::Create()
+BOOL CReadMsgWnd::Create(wxWindow& parent)
 {
-    if (!wxPanel::Create(*m_pContainer))
+    if (!wxPanel::Create(&parent))
     {
         TRACE("Failed to create Tray palette window.\n");
         return FALSE;
@@ -268,6 +274,7 @@ void CReadMsgWnd::SetTextStyle(wxColour cr, wxFontWeight dwEffect)
 /////////////////////////////////////////////////////////////////////////////
 // CReadMsgWnd message handlers
 
+#if 0
 // Called when window is undocked. Message sent by CCBMiniFrameWnd class.
 LRESULT CReadMsgWndContainer::OnPaletteHide(WPARAM, LPARAM)
 {
@@ -278,6 +285,7 @@ LRESULT CReadMsgWndContainer::OnPaletteHide(WPARAM, LPARAM)
 #endif
     return (LRESULT)0;
 }
+#endif
 
 void CReadMsgWnd::OnEditCopy(wxCommandEvent& /*event*/)
 {
@@ -289,6 +297,7 @@ void CReadMsgWnd::OnUpdateEditCopy(wxUpdateUIEvent& pCmdUI)
     pCmdUI.Enable(m_editCtrl->CanCopy());
 }
 
+#if 0
 CReadMsgWndContainer::CReadMsgWndContainer() :
     CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
@@ -315,3 +324,4 @@ void CReadMsgWndContainer::OnSize(UINT nType, int cx, int cy)
     child->SetSize(0, 0, cx, cy);
     return BASE::OnSize(nType, cx, cy);
 }
+#endif

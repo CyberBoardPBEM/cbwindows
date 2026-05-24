@@ -47,19 +47,18 @@ public:
     CDockMarkPalette& GetDockingMarkerWindow() { return *m_wndMarkPal; }
     CDockTrayPalette& GetDockingTrayAWindow() { return *m_wndTrayPalA; }
     CDockTrayPalette& GetDockingTrayBWindow() { return *m_wndTrayPalB; }
+#endif
 
     CReadMsgWnd&      GetMessageWindow();
-#endif
 
     // unfortunately, wx isn't const correct here
     CB::StatusBar* GetStatusBar() const override { return const_cast<CB::StatusBar*>(&*m_wndStatusBar); }
 
 // Operations
 public:
-#if 0
-    void UpdatePaletteWindow(CWnd& pWnd, BOOL bIsOn);
-    void ShowPalettePanes(BOOL bShow);
-#endif
+    void UpdatePaletteWindow(wxWindow& pWnd, BOOL bIsOn);
+    void ShowPalettePanes(bool bShow);
+    void ShowPane(wxWindow& wnd, bool show);
     void OnIdle();
 #if 0
     BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
@@ -68,6 +67,7 @@ public:
 
 // Implementation
 protected:
+    // these windows are all owned by wx
 #if 0
     CMFCMenuBar   m_wndMenuBar;
 #endif
@@ -78,9 +78,9 @@ protected:
 
     CB::propagate_const<CB::StatusBar*> m_wndStatusBar = nullptr;
 
-#if 0
-    OwnerPtr<CReadMsgWndContainer> m_wndMessage;
+    RefPtr<CReadMsgWnd> m_wndMessage;
 
+#if 0
     OwnerPtr<CDockMarkPalette> m_wndMarkPal;
     OwnerPtr<CDockTrayPalette> m_wndTrayPalA;
     OwnerPtr<CDockTrayPalette> m_wndTrayPalB;
@@ -129,6 +129,7 @@ protected:
     void OnViewStatusBar(wxCommandEvent& event);
     void OnUpdateViewStatusBar(wxUpdateUIEvent& pCmdUI);
     void OnUpdateDisable(wxUpdateUIEvent& pCmdUI);
+    void OnPaneClose(wxAuiManagerEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 
@@ -136,6 +137,9 @@ private:
     typedef wxDocParentFrameAny<CB::AuiMDIParentFrame> BASE;
 
     wxAuiManager auiManager;
+    /* performing all idle updates as a single transaction
+        improves AUI's sizing choices */
+    bool auiMgrScheduleUpdate = false;
 #if 0
     CMFCDropDownToolBar m_flipToolbar;
 #endif
