@@ -392,17 +392,12 @@ bool CGamDoc::DeleteContents()
         }
         m_palTrayB = nullptr;
     }
+#endif
     if (m_palMark)
     {
-        CDockMarkPalette* pFrame = static_cast<CDockMarkPalette*>(m_palMark->GetDockingFrame());
-        if (pFrame)
-        {
-            ASSERT_KINDOF(CDockMarkPalette, pFrame);
-            pFrame->SetChild(NULL);         // Need to remove pointer from Marker's UI Frame.
-        }
+        CB_VERIFY(m_palMark->Destroy());
         m_palMark = nullptr;
     }
-#endif
     /* close board views
         (being careful about iterator invalidation) */
     for (bool more = true ; more ; )
@@ -495,11 +490,11 @@ void CGamDoc::OnIdle(BOOL bActive)
     {
         CMainFrame* pMFrame = GetMainFrame();
 
-#if 0
-        CDockMarkPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
+        CDockPalette& pDockMark = pMFrame->GetDockingMarkerWindow();
         pDockMark.SetChild(&*m_palMark);
         pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
 
+#if 0
         CDockTrayPalette& pDockTrayA = pMFrame->GetDockingTrayAWindow();
         pDockTrayA.SetChild(&*m_palTrayA);
         pMFrame->UpdatePaletteWindow(pDockTrayA, m_bTrayAVisible);
@@ -732,12 +727,12 @@ BOOL CGamDoc::OnNewScenario()
     wxASSERT(!m_palTrayB);
     m_palTrayB = new CTrayPaletteContainer(*this, ID_VIEW_TRAYB);
     m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
-    wxASSERT(!m_palMark);
-    m_palMark = new CMarkerPaletteContainer(*this);
-    m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 #else
     CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
+    wxASSERT(!m_palMark);
+    m_palMark = new CMarkerPalette(*this);
+    m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 
     return TRUE;
 }

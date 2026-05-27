@@ -65,17 +65,18 @@ wxBEGIN_EVENT_TABLE(CMarkerPalette, wxPanel)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
 wxEND_EVENT_TABLE()
 
+#if 0
 BEGIN_MESSAGE_MAP(CMarkerPaletteContainer, CWnd)
     ON_WM_CREATE()
     ON_WM_SETFOCUS()
     ON_WM_SIZE()
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMarkerPalette
 
-CMarkerPalette::CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc) :
-    m_pContainer(&container),
+CMarkerPalette::CMarkerPalette(CGamDoc& pDoc) :
     m_pDoc(&pDoc),
     m_comboMGrp(nullptr),
     m_listMark(nullptr)
@@ -85,15 +86,19 @@ CMarkerPalette::CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc
     m_nComboHeight = 0;
 }
 
-BOOL CMarkerPalette::Create(/*CWnd& pOwnerWnd, DWORD dwStyle, UINT nID*/)
+BOOL CMarkerPalette::Create(CDockPalette& parent/*, DWORD dwStyle, UINT nID*/)
 {
-    if (!CB::XrcLoad(*this, *m_pContainer, "CMarkerPalette"))
+    // KLUDGE:  parent isn't designed for multiple children
+    parent.SetChild(nullptr);
+    if (!CB::XrcLoad(*this, &parent, "CMarkerPalette"))
     {
         return false;
     }
+    /* KLUDGE:  xrc doesn't call SetChild(), so setup isn't
+                complete, so mark it undone */
+    parent.SetChild(nullptr);
     m_comboMGrp = XRCCTRL(*this, "m_comboMGrp", wxChoice);
     m_listMark = XRCCTRL(*this, "m_listMark", CMarkListBoxWx);
-    (*m_pContainer)->Layout();
 
     m_listMark->EnableDrag(TRUE);
     m_listMark->SetDocument(&*m_pDoc);
@@ -447,6 +452,7 @@ BOOL CMarkerPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 }
 #endif
 
+#if 0
 CMarkerPaletteContainer::CMarkerPaletteContainer(CGamDoc& pDoc) :
     CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CMarkerPalette(*this, pDoc))
@@ -502,3 +508,4 @@ void CMarkerPaletteContainer::OnSize(UINT nType, int cx, int cy)
     child->SetSize(0, 0, cx, cy);
     return CWnd::OnSize(nType, cx, cy);
 }
+#endif

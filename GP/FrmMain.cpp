@@ -112,9 +112,9 @@ CMainFrame::CMainFrame() :
             nullptr, wxID_ANY,
             wxTheApp->GetAppDisplayName()),
     CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this)),
-    m_wndMessage(new CReadMsgWnd)
+    m_wndMessage(new CReadMsgWnd),
+    m_wndMarkPal(new CDockPalette)
 #if 0
-    m_wndMarkPal(MakeOwner<CDockMarkPalette>()),
     m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
     m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
 #endif
@@ -185,7 +185,7 @@ CMainFrame::CMainFrame() :
                                         IDR_GP_MAINFRAME);
     auiManager.AddPane(&*m_wndToolBar, wxAuiPaneInfo().
                         Name("IDR_GP_MAINFRAME"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_STANDARD)).
-                        ToolbarPane().Top().Layer(0));
+                        ToolbarPane().Top().Layer(2));
 
     static const CB::AuiToolBar::ToolArgs viewArgs[] = {
         { XRCID("ID_VIEW_TOGGLESCALE"), ID_VIEW_TOGGLESCALE },
@@ -207,7 +207,7 @@ CMainFrame::CMainFrame() :
                                         IDR_TBAR_VIEW);
     auiManager.AddPane(&*m_wndTBarView, wxAuiPaneInfo().
                         Name("IDR_TBAR_VIEW"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_VIEW)).
-                        ToolbarPane().Top().Layer(0));
+                        ToolbarPane().Top().Layer(2));
 
     static const CB::AuiToolBar::ToolArgs moveArgs[] = {
         { XRCID("ID_FILE_SENDMOVES2FILE"), ID_FILE_SENDMOVES2FILE },
@@ -284,7 +284,7 @@ CMainFrame::CMainFrame() :
     m_wndTBarMove->SetDropdownMenu(XRCID("ID_ACT_TURNOVER"), std::move(menuTurnover));
     auiManager.AddPane(&*m_wndTBarMove, wxAuiPaneInfo().
                         Name("IDR_TBAR_MOVE"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_MOVE)).
-                        ToolbarPane().Top().Layer(0));
+                        ToolbarPane().Top().Layer(2));
 
     static const CB::AuiToolBar::ToolArgs playArgs[] = {
         { XRCID("ID_FILE_LOADMOVES"), ID_FILE_LOADMOVES },
@@ -304,15 +304,22 @@ CMainFrame::CMainFrame() :
                                         IDR_TBAR_PLAYBACK);
     auiManager.AddPane(&*m_wndTBarPlay, wxAuiPaneInfo().
                         Name("IDR_TBAR_PLAYBACK"_cbstring).Caption(CB::string::LoadString(IDS_BARNAME_PLAYBACK)).
-                        ToolbarPane().Top().Layer(0));
+                        ToolbarPane().Top().Layer(2));
 
     wxCommandEvent dummy;
     OnViewStatusBar(dummy);
 
+    CB_VERIFY(m_wndMarkPal->Create(this, wxID_ANY));
+    auiManager.AddPane(&*m_wndMarkPal, wxAuiPaneInfo().
+                        Name("CDockMarkPalette"_cbstring).Caption(CB::string::LoadString(IDS_PAL_MARKERS)).
+                        BestSize(200, 80).
+                        Right().Position(3).Layer(1));
+
     CB_VERIFY(m_wndMessage->Create(*this));
     auiManager.AddPane(&*m_wndMessage, wxAuiPaneInfo().
                         Name("CReadMsgWnd"_cbstring).Caption(CB::string::LoadString(IDS_MESSAGE_WND)).
-                        Bottom());
+                        BestSize(200, 80).
+                        Bottom().Layer(0));
 
     auiManager.Update();
 }
@@ -664,8 +671,8 @@ void CMainFrame::ShowPalettePanes(bool bShow)
 #if 0
     ShowPane(&*m_wndTrayPalA, bShow, FALSE, TRUE);
     ShowPane(&*m_wndTrayPalB, bShow, FALSE, TRUE);
-    ShowPane(&*m_wndMarkPal, bShow, FALSE, TRUE);
 #endif
+    ShowPane(*m_wndMarkPal, bShow);
     ShowPane(*m_wndMessage, bShow);
 }
 
@@ -903,14 +910,23 @@ void CMainFrame::OnUpdateDisable(wxUpdateUIEvent& pCmdUI)
 void CMainFrame::OnPaneClose(wxAuiManagerEvent& event)
 {
     wxAuiPaneInfo& pane = CheckedDeref(event.GetPane());
+    int id = wxID_NONE;
     if (pane.window == &*m_wndMessage)
     {
-        wxCommandEvent event2(wxEVT_MENU, XRCID("ID_PBCK_READMESSAGE"));
-        ProcessWindowEvent(event2);
+        id = XRCID("ID_PBCK_READMESSAGE");
+    }
+    else if (pane.window == &*m_wndMarkPal)
+    {
+        id = XRCID("ID_VIEW_MARKERPAL");
     }
     else
     {
         wxASSERT(!"unexpected wnd");
+    }
+    if (id != wxID_NONE)
+    {
+        wxCommandEvent event2(wxEVT_MENU, id);
+        ProcessWindowEvent(event2);
     }
     event.Skip();
 }

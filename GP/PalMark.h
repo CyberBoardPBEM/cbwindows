@@ -36,7 +36,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 class CGamDoc;
+#if 0
 class CMarkerPaletteContainer;
+#endif
 class CDockPalette;
 class WinStateRestoreEvent;
 
@@ -47,8 +49,8 @@ class CMarkerPalette : public wxPanel
 {
 // Construction
 public:
-    CMarkerPalette(CMarkerPaletteContainer& container, CGamDoc& pDoc);
-    BOOL Create();
+    CMarkerPalette(CGamDoc& pDoc);
+    BOOL Create(CDockPalette& parent);
 
 // Attributes
 public:
@@ -65,7 +67,9 @@ public:
 
 // Implementation
 protected:
+#if 0
     RefPtr<CMarkerPaletteContainer> m_pContainer;
+#endif
     RefPtr<CGamDoc> m_pDoc;
 
     // This dummy area only contains a single entry. It is used
@@ -114,6 +118,7 @@ protected:
     wxDECLARE_EVENT_TABLE();
 };
 
+#if 0
 class CMarkerPaletteContainer : public CWnd,
                                 public CB::NativeContainerWindowMixin
 {
@@ -155,6 +160,7 @@ private:
     // owned by wx
     CB::propagate_const<CMarkerPalette*> child = nullptr;
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

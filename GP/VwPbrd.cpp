@@ -935,7 +935,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
             // I'm going to cheat. I happen to know that marker drops
             // can only originate at the marker palette. I can find out
             // the current marker set this way.
-            size_t nMrkGrp = (*pDoc.m_palMark)->GetSelectedMarkerGroup();
+            size_t nMrkGrp = pDoc.m_palMark->GetSelectedMarkerGroup();
             wxASSERT(nMrkGrp != Invalid_v<size_t>);
             if (nMrkGrp == Invalid_v<size_t>)
                 goto NASTY_GOTO_TARGET;

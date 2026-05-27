@@ -82,7 +82,7 @@ class CGpWinStateMgr;
 class CPlayerManager;
 class CGamProjView;
 class CSendMsgDialog;
-class CMarkerPaletteContainer;
+class CMarkerPalette;
 class CTrayPaletteContainer;
 class CGamDocMfc;
 
@@ -760,8 +760,9 @@ public:
     // Tray Palettes...
     CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayA;
     CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayB;
+    // owned by wx
     // Marker Palette...
-    CB::propagate_const<std::unique_ptr<CMarkerPaletteContainer, WindowDestroy>> m_palMark;
+    CB::propagate_const<CMarkerPalette*> m_palMark;
 
 // Implementation
 protected:

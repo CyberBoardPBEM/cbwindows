@@ -721,7 +721,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar << (WORD)m_bTrayBVisible;
         (*m_palTrayB)->Serialize(ar);               // Save tray position on screen
         ar << (WORD)m_bMarkPalVisible;
-        (*m_palMark)->Serialize(ar);                // Save tray position on screen
+        m_palMark->Serialize(ar);                // Save tray position on screen
 
         // Main content serialization....
 
@@ -880,8 +880,8 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         (*m_palTrayB)->Serialize(ar);                   // Restore tray position on screen
         ar >> wTmp; m_bMarkPalVisible = (BOOL)wTmp;
         wxASSERT(!m_palMark);
-        m_palMark = new CMarkerPaletteContainer(*this);
-        (*m_palMark)->Serialize(ar);                    // Restore tray position on screen
+        m_palMark = new CMarkerPalette(*this);
+        m_palMark->Serialize(ar);                    // Restore tray position on screen
 
         // OK....retrieve the file offset of the game data...
         if (NumVersion(verMajor, verMinor) < NumVersion(2, 90))
@@ -909,10 +909,10 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         // Finally set up the tray palettes
         m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
         m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
-        m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 #else
         CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
 #endif
+        m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());
 
         // Main content serialization....
         m_pPBMgr->Serialize(ar);    // Board contents

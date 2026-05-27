@@ -42,8 +42,8 @@ public:
 public:
     CDocument* GetCurrentDocument();
 
+    CDockPalette& GetDockingMarkerWindow() { return *m_wndMarkPal; }
 #if 0
-    CDockMarkPalette& GetDockingMarkerWindow() { return *m_wndMarkPal; }
     CDockTrayPalette& GetDockingTrayAWindow() { return *m_wndTrayPalA; }
     CDockTrayPalette& GetDockingTrayBWindow() { return *m_wndTrayPalB; }
 #endif
@@ -79,8 +79,8 @@ protected:
 
     RefPtr<CReadMsgWnd> m_wndMessage;
 
+    RefPtr<CDockPalette> m_wndMarkPal;
 #if 0
-    OwnerPtr<CDockMarkPalette> m_wndMarkPal;
     OwnerPtr<CDockTrayPalette> m_wndTrayPalA;
     OwnerPtr<CDockTrayPalette> m_wndTrayPalB;
 
