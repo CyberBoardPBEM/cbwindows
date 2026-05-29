@@ -373,26 +373,16 @@ bool CGamDoc::DeleteContents()
 {
     /* close may trigger paint of other windows,
         so close before delete */
-#if 0
     if (m_palTrayA)
     {
-        CDockTrayPalette* pFrame = m_palTrayA->GetDockingFrame();
-        if (pFrame)
-        {
-            pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
-        }
+        CB_VERIFY(m_palTrayA->Destroy());
         m_palTrayA = nullptr;
     }
     if (m_palTrayB)
     {
-        CDockTrayPalette* pFrame = m_palTrayB->GetDockingFrame();
-        if (pFrame)
-        {
-            pFrame->SetChild(NULL);         // Need to remove pointer from Tray's UI Frame.
-        }
+        CB_VERIFY(m_palTrayB->Destroy());
         m_palTrayB = nullptr;
     }
-#endif
     if (m_palMark)
     {
         CB_VERIFY(m_palMark->Destroy());
@@ -494,17 +484,13 @@ void CGamDoc::OnIdle(BOOL bActive)
         pDockMark.SetChild(&*m_palMark);
         pMFrame->UpdatePaletteWindow(pDockMark, m_bMarkPalVisible);
 
-#if 0
-        CDockTrayPalette& pDockTrayA = pMFrame->GetDockingTrayAWindow();
+        CDockPalette& pDockTrayA = pMFrame->GetDockingTrayAWindow();
         pDockTrayA.SetChild(&*m_palTrayA);
         pMFrame->UpdatePaletteWindow(pDockTrayA, m_bTrayAVisible);
 
-        CDockTrayPalette& pDockTrayB = pMFrame->GetDockingTrayBWindow();
+        CDockPalette& pDockTrayB = pMFrame->GetDockingTrayBWindow();
         pDockTrayB.SetChild(&*m_palTrayB);
         pMFrame->UpdatePaletteWindow(pDockTrayB, m_bTrayBVisible);
-#else
-        CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
-#endif
 
         CReadMsgWnd& pDocMsg = pMFrame->GetMessageWindow();
         pMFrame->UpdatePaletteWindow(pDocMsg, m_bMsgWinVisible && !IsScenario());
@@ -520,12 +506,8 @@ void CGamDoc::OnIdle(BOOL bActive)
 
 void CGamDoc::DoInitialUpdate()
 {
-#if 0
-    (*m_palTrayA)->UpdatePaletteContents(NULL);
-    (*m_palTrayB)->UpdatePaletteContents(NULL);
-#else
-    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
-#endif
+    m_palTrayA->UpdatePaletteContents(NULL);
+    m_palTrayB->UpdatePaletteContents(NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -721,15 +703,11 @@ BOOL CGamDoc::OnNewScenario()
 
     // Finally set up the tray palettes
     wxASSERT(!m_palTrayA);
-#if 0
-    m_palTrayA = new CTrayPaletteContainer(*this, ID_VIEW_TRAYA);
+    m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
     m_palTrayA->Create(GetMainFrame()->GetDockingTrayAWindow());
     wxASSERT(!m_palTrayB);
-    m_palTrayB = new CTrayPaletteContainer(*this, ID_VIEW_TRAYB);
+    m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
     m_palTrayB->Create(GetMainFrame()->GetDockingTrayBWindow());
-#else
-    CPP20_TRACE("TODO:  {}->{}\n", this, __func__);
-#endif
     wxASSERT(!m_palMark);
     m_palMark = new CMarkerPalette(*this);
     m_palMark->Create(GetMainFrame()->GetDockingMarkerWindow());

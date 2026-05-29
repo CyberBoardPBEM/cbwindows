@@ -113,11 +113,9 @@ CMainFrame::CMainFrame() :
             wxTheApp->GetAppDisplayName()),
     CB::FreezeUntilIdleMixin(static_cast<wxWindow&>(*this)),
     m_wndMessage(new CReadMsgWnd),
-    m_wndMarkPal(new CDockPalette)
-#if 0
-    m_wndTrayPalA(MakeOwner<CDockTrayPalette>()),
-    m_wndTrayPalB(MakeOwner<CDockTrayPalette>())
-#endif
+    m_wndMarkPal(new CDockPalette),
+    m_wndTrayPalA(new CDockPalette),
+    m_wndTrayPalB(new CDockPalette)
 {
     auiManager.SetManagedWindow(this);
     SetIcon(wxIcon(std::format("#{}", IDR_GP_MAINFRAME)));
@@ -309,13 +307,41 @@ CMainFrame::CMainFrame() :
     wxCommandEvent dummy;
     OnViewStatusBar(dummy);
 
-    CB_VERIFY(m_wndMarkPal->Create(this, wxID_ANY));
+    if (!m_wndTrayPalA->Create(this, wxID_ANY))
+    {
+        CPP20_TRACE("Failed to create tray A palette dock window\n");
+        AfxThrowMemoryException();      // fail to create
+    }
+    auiManager.AddPane(&*m_wndTrayPalA, wxAuiPaneInfo().
+                        Name("CDockPaletteTrayA"_cbstring).Caption(CB::string::LoadString(IDS_TRAYA_TITLE)).
+                        BestSize(200, 80).
+                        Right().Position(1).Layer(1));
+
+    if (!m_wndTrayPalB->Create(this, wxID_ANY))
+    {
+        CPP20_TRACE("Failed to create tray B palette dock window\n");
+        AfxThrowMemoryException();      // fail to create
+    }
+    auiManager.AddPane(&*m_wndTrayPalB, wxAuiPaneInfo().
+                        Name("CDockPaletteTrayB"_cbstring).Caption(CB::string::LoadString(IDS_TRAYB_TITLE)).
+                        BestSize(200, 80).
+                        Right().Position(2).Layer(1));
+
+    if (!m_wndMarkPal->Create(this, wxID_ANY))
+    {
+        TRACE0("Failed to create marker palette dock window\n");
+        AfxThrowMemoryException();      // fail to create
+    }
     auiManager.AddPane(&*m_wndMarkPal, wxAuiPaneInfo().
-                        Name("CDockMarkPalette"_cbstring).Caption(CB::string::LoadString(IDS_PAL_MARKERS)).
+                        Name("CDockPaletteMark"_cbstring).Caption(CB::string::LoadString(IDS_PAL_MARKERS)).
                         BestSize(200, 80).
                         Right().Position(3).Layer(1));
 
-    CB_VERIFY(m_wndMessage->Create(*this));
+    if (!m_wndMessage->Create(*this))
+    {
+        TRACE0("Failed to create message window\n");
+        AfxThrowMemoryException();      // fail to create
+    }
     auiManager.AddPane(&*m_wndMessage, wxAuiPaneInfo().
                         Name("CReadMsgWnd"_cbstring).Caption(CB::string::LoadString(IDS_MESSAGE_WND)).
                         BestSize(200, 80).
@@ -668,10 +694,8 @@ BOOL CMainFrame::OnCloseDockingPane(CDockablePane* pWnd)
 
 void CMainFrame::ShowPalettePanes(bool bShow)
 {
-#if 0
-    ShowPane(&*m_wndTrayPalA, bShow, FALSE, TRUE);
-    ShowPane(&*m_wndTrayPalB, bShow, FALSE, TRUE);
-#endif
+    ShowPane(*m_wndTrayPalA, bShow);
+    ShowPane(*m_wndTrayPalB, bShow);
     ShowPane(*m_wndMarkPal, bShow);
     ShowPane(*m_wndMessage, bShow);
 }
@@ -918,6 +942,14 @@ void CMainFrame::OnPaneClose(wxAuiManagerEvent& event)
     else if (pane.window == &*m_wndMarkPal)
     {
         id = XRCID("ID_VIEW_MARKERPAL");
+    }
+    else if (pane.window == &*m_wndTrayPalA)
+    {
+        id = XRCID("ID_VIEW_TRAYA");
+    }
+    else if (pane.window == &*m_wndTrayPalB)
+    {
+        id = XRCID("ID_VIEW_TRAYB");
     }
     else
     {

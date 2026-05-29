@@ -230,14 +230,14 @@ void CGsnProjView::OnUpdate(wxView* pSender, const CGamDocHint& pHint)
     if (pHint.GetHint() == HINT_TRAYCHANGE)
     {
         CGamDoc& pDoc = GetDocument();
-        (*pDoc.m_palTrayA)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
-        (*pDoc.m_palTrayB)->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        pDoc.m_palTrayA->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
+        pDoc.m_palTrayB->UpdatePaletteContents(pHint.GetArgs<HINT_TRAYCHANGE>().m_pTray);
     }
     else if (pHint.GetHint() == HINT_GAMESTATEUSED)
     {
         CGamDoc& pDoc = GetDocument();
-        (*pDoc.m_palTrayA)->UpdatePaletteContents();
-        (*pDoc.m_palTrayB)->UpdatePaletteContents();
+        pDoc.m_palTrayA->UpdatePaletteContents();
+        pDoc.m_palTrayB->UpdatePaletteContents();
     }
 
     if (pHint.GetHint() == HINT_ALWAYSUPDATE || pHint.GetHint() == HINT_BOARDCHANGE ||

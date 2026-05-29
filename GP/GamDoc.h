@@ -83,7 +83,7 @@ class CPlayerManager;
 class CGamProjView;
 class CSendMsgDialog;
 class CMarkerPalette;
-class CTrayPaletteContainer;
+class CTrayPalette;
 class CGamDocMfc;
 
 class CModelessDialogCleaner
@@ -565,7 +565,9 @@ public:
     // Support for playback...
     void EnsureBoardVisible(CPlayBoard& pPBoard);
     void EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point);
+#if 0
     void EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos);
+#endif
     void SelectObjectOnBoard(CPlayBoard& pPBoard, CDrawObj* pObj);
     void SelectObjectListOnBoard(CPlayBoard& pPBoard, const std::vector<CB::not_null<CDrawObj*>>& pList);
     void SelectTrayItem(const CTraySet& pYSet, PieceID pid, UINT nResourceID);
@@ -744,22 +746,11 @@ public:
 
     OwnerOrNullPtr<CTileFacingMap> m_pTileFacingMap; // Map of temp tile rotations (NOT SERIALIZED)
 
-private:
-    class WindowDestroy
-    {
-    public:
-        void operator()(CWnd* p) const
-        {
-            p->DestroyWindow();
-            delete p;
-        }
-    };
-
 // Some document related windows...
 public:
     // Tray Palettes...
-    CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayA;
-    CB::propagate_const<std::unique_ptr<CTrayPaletteContainer, WindowDestroy>>   m_palTrayB;
+    CB::propagate_const<CTrayPalette*>   m_palTrayA;
+    CB::propagate_const<CTrayPalette*>   m_palTrayB;
     // owned by wx
     // Marker Palette...
     CB::propagate_const<CMarkerPalette*> m_palMark;

@@ -38,7 +38,6 @@
 
 class CDockPalette;
 class CGamDoc;
-class CTrayPaletteContainer;
 class CTraySet;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -51,9 +50,9 @@ class CTrayPalette : public wxPanel
 
 // Construction
 public:
-    CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID);
+    CTrayPalette(CGamDoc& pDoc, UINT palID);
 
-    BOOL Create(/*wxWindow& pOwnerWnd, DWORD dwStyle = 0, UINT nID = 0*/);
+    BOOL Create(CDockPalette& parent/*, DWORD dwStyle = 0, UINT nID = 0*/);
 
 // Attributes
 private:
@@ -71,10 +70,14 @@ public:
 
 // Implementation - vars
 protected:
+#if 0
     RefPtr<CTrayPaletteContainer> m_pContainer;
+#endif
     RefPtr<CGamDoc> m_pDoc;
     UINT        m_nID;
+#if 0
     CB::propagate_const<CDockPalette*> m_pDockingFrame;
+#endif
 
     wxBitmap     m_bmpMenuBtn;
     wxSize       m_sizeMenuBtn;
@@ -161,6 +164,7 @@ protected:
     wxDECLARE_EVENT_TABLE();
 };
 
+#if 0
 class CTrayPaletteContainer : public CWnd,
                                 public CB::NativeContainerWindowMixin
 {
@@ -202,6 +206,7 @@ private:
     // owned by wx
     CB::propagate_const<CTrayPalette*> child = nullptr;
 };
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -101,17 +101,18 @@ wxBEGIN_EVENT_TABLE(CTrayPalette, wxPanel)
 #endif
 wxEND_EVENT_TABLE()
 
+#if 0
 BEGIN_MESSAGE_MAP(CTrayPaletteContainer, CWnd)
     ON_WM_CREATE()
     ON_WM_SETFOCUS()
     ON_WM_SIZE()
 END_MESSAGE_MAP()
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrayPalette
 
-CTrayPalette::CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT palID) :
-    m_pContainer(&container),
+CTrayPalette::CTrayPalette(CGamDoc& pDoc, UINT palID) :
     m_pDoc(&pDoc),
     m_bpMenuBtn(nullptr),
     m_comboYGrp(nullptr),
@@ -121,23 +122,26 @@ CTrayPalette::CTrayPalette(CTrayPaletteContainer& container, CGamDoc& pDoc, UINT
 
     m_bStateVarsArmed = FALSE;
     m_nComboHeight = 0;
-    m_pDockingFrame = NULL;
     SetPaletteID(palID);
 }
 
-BOOL CTrayPalette::Create(/*wxWindow & pOwnerWnd, DWORD dwStyle, UINT nID*/)
+BOOL CTrayPalette::Create(CDockPalette& parent/*, DWORD dwStyle, UINT nID*/)
 {
     LoadMenuButtonBitmap();
 
-    if (!CB::XrcLoad(*this, *m_pContainer, "CTrayPalette"))
+    // KLUDGE:  parent isn't designed for multiple children
+    parent.SetChild(nullptr);
+    if (!CB::XrcLoad(*this, &parent, "CTrayPalette"))
     {
         return false;
     }
+    /* KLUDGE:  xrc doesn't call SetChild(), so setup isn't
+                complete, so mark it undone */
+    parent.SetChild(nullptr);
     m_bpMenuBtn = XRCCTRL(*this, "m_bpMenuBtn", wxBitmapButton);
     m_bpMenuBtn->SetBitmap(m_bmpMenuBtn);
     m_comboYGrp = XRCCTRL(*this, "m_comboYGrp", wxChoice);
     m_listTray = XRCCTRL(*this, "m_listTray", CTrayListBoxWx);
-    (*m_pContainer)->Layout();
 
     m_listTray->Init(*m_pDoc);
     m_listTray->EnableDrag();
@@ -1333,6 +1337,7 @@ void CTrayPalette::OnInitMenuPopup(CMenu* pMenu, UINT nIndex, BOOL bSysMenu)
 }
 #endif
 
+#if 0
 CTrayPaletteContainer::CTrayPaletteContainer(CGamDoc& pDoc, UINT palID) :
     CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CTrayPalette(*this, pDoc, palID))
@@ -1380,3 +1385,4 @@ void CTrayPaletteContainer::OnSize(UINT nType, int cx, int cy)
     child->SetSize(0, 0, cx, cy);
     return CWnd::OnSize(nType, cx, cy);
 }
+#endif
