@@ -60,9 +60,8 @@
 #include    "DlgNewGeoBoard.h"
 #include    "DlgSmsg.h"
 
-#include    "FrmDockMark.h"
+#include    "FrmDock.h"
 #include    "PalMark.h"
-#include    "FrmDockTray.h"
 #include    "PalTray.h"
 #include    "PalReadMsg.h"
 #include    "VwPrjgam.h"
@@ -374,6 +373,7 @@ bool CGamDoc::DeleteContents()
 {
     /* close may trigger paint of other windows,
         so close before delete */
+#if 0
     if (m_palTrayA)
     {
         CDockTrayPalette* pFrame = m_palTrayA->GetDockingFrame();
@@ -402,6 +402,7 @@ bool CGamDoc::DeleteContents()
         }
         m_palMark = nullptr;
     }
+#endif
     /* close board views
         (being careful about iterator invalidation) */
     for (bool more = true ; more ; )

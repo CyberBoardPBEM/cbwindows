@@ -28,8 +28,7 @@
 #include    "GdiTools.h"
 #include    "FrmMain.h"
 #include    "LibMfc.h"
-#include    "FrmDockMark.h"
-#include    "FrmDockTray.h"
+#include    "FrmDock.h"
 #include    "PalReadMsg.h"
 
 #ifdef _DEBUG

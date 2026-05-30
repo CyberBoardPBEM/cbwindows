@@ -1,4 +1,4 @@
-// FrmDockMark.h - container window for the marker palette.
+// FrmDock.h - container window for the marker/tray palettes.
 //
 // Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
@@ -22,37 +22,41 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#ifndef _FRMDOCKMARK_H
-#define _FRMDOCKMARK_H
+#ifndef _FRMDOCK_H
+#define _FRMDOCK_H
 
 /////////////////////////////////////////////////////////////////////////////
-// CDockMarkPalette window
-class CMarkerPaletteContainer;
+// CDockPalette window
 
-class CDockMarkPalette : public CDockablePane
+class CDockPalette : public wxWindow
 {
-    DECLARE_DYNAMIC(CDockMarkPalette);
+#if 0
+    DECLARE_DYNAMIC(CDockPalette);
+#endif
 // Construction
 public:
-    CDockMarkPalette();
+    CDockPalette();
 
 // Attributes
 private:
-    CB::propagate_const<CMarkerPaletteContainer*> m_pChildWnd;
+    wxWindow* GetChild();
 
 // Operations
 public:
-    void SetChild(CMarkerPaletteContainer* pChildWnd);
+    void SetChild(wxWindow* pChildWnd);
 
 // Implementation
 public:
-    ~CDockMarkPalette() override;
+    ~CDockPalette() override;
 
     // Generated message map functions
 protected:
+    // see https ://docs.wxwidgets.org/latest/classwx_window_destroy_event.html
+#if 0
     afx_msg void OnDestroy();
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-    DECLARE_MESSAGE_MAP()
+#endif
+    void OnSize(wxSizeEvent& event);
+    wxDECLARE_EVENT_TABLE();
 };
 
 /////////////////////////////////////////////////////////////////////////////

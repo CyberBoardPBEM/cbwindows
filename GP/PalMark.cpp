@@ -28,7 +28,7 @@
 #include    "FrmMain.h"
 #include    "ResTbl.h"
 #include    "Marks.h"
-#include    "FrmDockMark.h"
+#include    "FrmDock.h"
 #include    "PalMark.h"
 #include    "GamDoc.h"
 
@@ -453,11 +453,13 @@ CMarkerPaletteContainer::CMarkerPaletteContainer(CGamDoc& pDoc) :
 {
 }
 
-void CMarkerPaletteContainer::SetDockingFrame(CDockMarkPalette* pDockingFrame)
+#if 0
+void CMarkerPaletteContainer::SetDockingFrame(CDockPalette* pDockingFrame)
 {
     m_pDockingFrame = pDockingFrame;
     SetParent(pDockingFrame);
 }
+#endif
 
 BOOL CMarkerPaletteContainer::Create(CWnd& pOwnerWnd/*, DWORD dwStyle = 0, UINT nID = 0*/)
 {

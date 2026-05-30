@@ -36,7 +36,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CDockTrayPalette;
+class CDockPalette;
 class CGamDoc;
 class CTrayPaletteContainer;
 class CTraySet;
@@ -74,7 +74,7 @@ protected:
     RefPtr<CTrayPaletteContainer> m_pContainer;
     RefPtr<CGamDoc> m_pDoc;
     UINT        m_nID;
-    CB::propagate_const<CDockTrayPalette*> m_pDockingFrame;
+    CB::propagate_const<CDockPalette*> m_pDockingFrame;
 
     wxBitmap     m_bmpMenuBtn;
     wxSize       m_sizeMenuBtn;
@@ -183,12 +183,12 @@ public:
         return const_cast<CTrayPalette*>(std::as_const(*this).operator->());
     }
 
-    const CDockTrayPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
-    CDockTrayPalette* GetDockingFrame()
+    const CDockPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockPalette* GetDockingFrame()
     {
-        return const_cast<CDockTrayPalette*>(std::as_const(*this).GetDockingFrame());
+        return const_cast<CDockPalette*>(std::as_const(*this).GetDockingFrame());
     }
-    void SetDockingFrame(CDockTrayPalette* pDockingFrame);
+    void SetDockingFrame(CDockPalette* pDockingFrame);
 
     void Serialize(CArchive& ar) override { wxASSERT(false); AfxThrowNotSupportedException(); }
 
@@ -198,7 +198,7 @@ private:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    CB::propagate_const<CDockTrayPalette*> m_pDockingFrame = nullptr;
+    CB::propagate_const<CDockPalette*> m_pDockingFrame = nullptr;
     // owned by wx
     CB::propagate_const<CTrayPalette*> child = nullptr;
 };

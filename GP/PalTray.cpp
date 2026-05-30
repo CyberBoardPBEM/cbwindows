@@ -34,7 +34,7 @@
 #include    "WinState.h"
 #include    "DlgEdtEl.h"
 
-#include    "FrmDockTray.h"
+#include    "FrmDock.h"
 #include    "Paltray.h"
 
 #ifdef _DEBUG
@@ -153,11 +153,13 @@ BOOL CTrayPalette::Create(/*wxWindow & pOwnerWnd, DWORD dwStyle, UINT nID*/)
     return TRUE;
 }
 
-void CTrayPaletteContainer::SetDockingFrame(CDockTrayPalette* pDockingFrame)
+#if 0
+void CTrayPaletteContainer::SetDockingFrame(CDockPalette* pDockingFrame)
 {
     m_pDockingFrame = pDockingFrame;
     SetParent(pDockingFrame);
 }
+#endif
 
 #if 0
 int CTrayPalette::OnCreate(LPCREATESTRUCT lpCreateStruct)

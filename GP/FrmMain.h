@@ -27,8 +27,7 @@
 
 #include "LibMfc.h"
 
-class CDockTrayPalette;
-class CDockMarkPalette;
+class CDockPalette;
 class CReadMsgWnd;
 class CReadMsgWndContainer;
 

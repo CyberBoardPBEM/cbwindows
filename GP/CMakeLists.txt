@@ -27,8 +27,7 @@ set(SRCS
 	DlgYprop.cpp
 	Editnocv.cpp
 	FileLib.cpp
-	FrmDockMark.cpp
-	FrmDockTray.cpp
+	FrmDock.cpp
 	FrmMain.cpp
 	FrmPbrd.cpp
 	FrmProj.cpp

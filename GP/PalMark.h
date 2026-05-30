@@ -37,7 +37,7 @@
 
 class CGamDoc;
 class CMarkerPaletteContainer;
-class CDockMarkPalette;
+class CDockPalette;
 class WinStateRestoreEvent;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -136,12 +136,12 @@ public:
         return const_cast<CMarkerPalette*>(std::as_const(*this).operator->());
     }
 
-    const CDockMarkPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
-    CDockMarkPalette* GetDockingFrame()
+    const CDockPalette* GetDockingFrame() const { return m_pDockingFrame.get(); }
+    CDockPalette* GetDockingFrame()
     {
-        return const_cast<CDockMarkPalette*>(std::as_const(*this).GetDockingFrame());
+        return const_cast<CDockPalette*>(std::as_const(*this).GetDockingFrame());
     }
-    void SetDockingFrame(CDockMarkPalette* pDockingFrame);
+    void SetDockingFrame(CDockPalette* pDockingFrame);
 
     void Serialize(CArchive& ar) override { wxASSERT(false); AfxThrowNotSupportedException(); }
 
@@ -151,7 +151,7 @@ private:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     DECLARE_MESSAGE_MAP()
 
-    CB::propagate_const<CDockMarkPalette*> m_pDockingFrame = nullptr;
+    CB::propagate_const<CDockPalette*> m_pDockingFrame = nullptr;
     // owned by wx
     CB::propagate_const<CMarkerPalette*> child = nullptr;
 };
