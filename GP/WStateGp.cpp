@@ -26,7 +26,6 @@
 #include    "Gp.h"
 #include    "GamDoc.h"
 #include    "FrmPbrd.h"
-#include    "FrmProj.h"
 #include    "Board.h"
 #include    "PBoard.h"
 #include    "VwPbrd.h"

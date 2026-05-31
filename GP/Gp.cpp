@@ -33,7 +33,6 @@
 
 #include    "FrmMain.h"
 #include    "FrmPbrd.h"
-#include    "FrmProj.h"
 #include    "GamDoc.h"
 #include    "VwPbrd.h"
 #include    "VwPrjgsn.h"

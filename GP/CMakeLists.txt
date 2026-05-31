@@ -30,7 +30,6 @@ set(SRCS
 	FrmDock.cpp
 	FrmMain.cpp
 	FrmPbrd.cpp
-	FrmProj.cpp
 	GamDoc.cpp
 	GamDoc1.cpp
 	GamDoc2.cpp
