@@ -332,8 +332,13 @@ bool CGamDoc::OnOpenDocument(const wxString& pszPathName)
             wxMessageBox(CB::string(IDS_ERR_PLAYER_TAMPER),
                             CB::GetAppName(),
                             wxOK | wxICON_STOP);
-            return FALSE;
+            bRet = FALSE;
         }
+    }
+    if (!bRet)
+    {
+        // don't suggest saving doc
+        SetModifiedFlag(false);
     }
     return bRet;
 }
