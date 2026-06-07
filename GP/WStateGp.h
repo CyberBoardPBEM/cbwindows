@@ -35,10 +35,10 @@ public:
     using CWinStateManager::CWinStateManager;
 
 protected:
-    CGamDoc& GetDocument() { return *CB::ToCGamDoc(&*m_pDoc); }
+    CGamDoc& GetDocument() { return *m_pDoc; }
 
-    virtual CWnd& OnGetFrameForWinStateElement(const CWinStateElement& pWse) override;
-    virtual void OnAnnotateWinStateElement(CWinStateElement& pState, const CWnd& pWnd) override;
+    virtual wxFrame& OnGetFrameForWinStateElement(const CWinStateElement& pWse) override;
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pState, const wxFrame& pWnd) override;
 };
 
 #endif

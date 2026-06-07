@@ -40,7 +40,7 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 {
     // First entry in the frame list is the main frame...
 
-    OwnerPtr<CWinStateElement> pWse(GetWindowState(CheckedDeref(AfxGetMainWnd())));
+    OwnerPtr<CWinStateElement> pWse(GetWindowState(dynamic_cast<wxFrame&>(CB::GetMainWndWx())));
 
     pWse->m_wWinCode = wincodeMainFrame;
     m_pList.push_back(std::move(pWse));
@@ -48,7 +48,7 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
     // Then we need to build a list of MDI frames that are in Z
     // order so we can restore the proper visual order later.
 
-    std::vector<RefPtr<CFrameWnd>> tblFrame = GetDocumentFrameList();         // Get's unordered list
+    std::vector<RefPtr<wxFrame>> tblFrame = GetDocumentFrameList();         // Get's unordered list
     ArrangeFrameListInZOrder(tblFrame);     // Order 'em
 
     // Scan the list in reverse Z order and obtain serialized
@@ -56,7 +56,7 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 
     for (size_t i = tblFrame.size(); i > 0; i--)
     {
-        CWnd& pWnd = *tblFrame.at(i - size_t(1));
+        wxFrame& pWnd = *tblFrame.at(i - size_t(1));
         OwnerPtr<CWinStateElement> pWse(GetWindowState(pWnd));
         pWse->m_wWinCode = wincodeViewFrame;
         OnAnnotateWinStateElement(*pWse, pWnd);
@@ -129,9 +129,10 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
 
 ///////////////////////////////////////////////////////////////////////////
 
-OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(CWnd& pWnd)
+OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(const wxFrame& pWnd)
 {
     OwnerPtr<CWinStateElement> pWse = OnCreateWinStateElement();
+#if 0
     pWnd.GetWindowPlacement(&pWse->m_wndState);
 
     TRY
@@ -149,11 +150,14 @@ OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(CW
     END_TRY
 
     return pWse;
+#else
+    AfxThrowNotSupportedException();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-BOOL CWinStateManager::RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse)
+BOOL CWinStateManager::RestoreWindowState(wxFrame& pWnd, CWinStateElement& pWse)
 {
     if (pWse.m_pWinStateBfr == NULL)
         return TRUE;
@@ -165,7 +169,8 @@ BOOL CWinStateManager::RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse)
         CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
         CArchive ar(&file, CArchive::load);
         SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
-        bOK = (BOOL)pWnd.SendMessage(WM_WINSTATE, (WPARAM)&ar, 1);
+        WinStateEvent event(ar, true);
+        bOK = (BOOL)pWnd.ProcessWindowEvent(event);
         ar.Close();
         file.Detach();
     }
@@ -175,10 +180,11 @@ BOOL CWinStateManager::RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse)
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::vector<RefPtr<CFrameWnd>> CWinStateManager::GetDocumentFrameList()
+std::vector<RefPtr<wxFrame>> CWinStateManager::GetDocumentFrameList()
 {
-    std::vector<RefPtr<CFrameWnd>> tblFrames;
+    std::vector<RefPtr<wxFrame>> tblFrames;
 
+#if 0
     POSITION pos = m_pDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
@@ -195,6 +201,25 @@ std::vector<RefPtr<CFrameWnd>> CWinStateManager::GetDocumentFrameList()
     }
 
     return tblFrames;
+#else
+    wxASSERT(!"needs testing");
+    wxList& views = m_pDoc->GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
+    {
+        CB::View& pView = dynamic_cast<CB::View&>(CheckedDeref(*it));
+        CB::DocChildFrame& pFrame = pView.GetFrame();
+        size_t i;
+        for (i = size_t(0); i < tblFrames.size(); i++)
+        {
+            if (&pFrame == &*tblFrames.at(i))
+                break;
+        }
+        if (i == tblFrames.size())
+            tblFrames.push_back(&pFrame);          // Add new frame
+    }
+
+    return tblFrames;
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -252,14 +277,36 @@ void CWinStateManager::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CWinStateManager::ArrangeFrameListInZOrder(std::vector<RefPtr<CFrameWnd>>& tblFrames)
+void CWinStateManager::ArrangeFrameListInZOrder(std::vector<RefPtr<wxFrame>>& tblFrames)
 {
+#if 0
     std::vector<CFrameWnd*> tblZFrames;
 
     CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetMainWnd();
     ASSERT(pFrame->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)));
 
     EnumChildWindows(pFrame->m_hWndMDIClient, EnumFrames, (LPARAM)&tblZFrames);
+#else
+    wxASSERT(!"needs testing");
+    std::vector<wxFrame*> tblZFrames;
+
+    CB::AuiMDIParentFrame& pFrame = dynamic_cast<CB::AuiMDIParentFrame&>(CB::GetMainWndWx());
+
+    {
+        wxAuiMDIClientWindow& client = CheckedDeref(pFrame.GetClientWindow());
+        std::vector<wxAuiTabCtrl*> groups = client.GetAllTabCtrls();
+        for (wxAuiTabCtrl* group : groups)
+        {
+            std::vector<size_t> indices = client.GetPagesInDisplayOrder(group);
+            for (size_t index : indices)
+            {
+                wxWindow* wnd = client.GetPage(index);
+                wxASSERT(dynamic_cast<wxFrame*>(wnd));
+                tblZFrames.push_back(static_cast<wxFrame*>(wnd));
+            }
+        }
+    }
+#endif
 
     // Null out any entries that aren't in the caller's table
     for (size_t i = 0; i < tblZFrames.size(); i++)
@@ -284,6 +331,7 @@ void CWinStateManager::ArrangeFrameListInZOrder(std::vector<RefPtr<CFrameWnd>>& 
     }
 }
 
+#if 0
 BOOL CALLBACK CWinStateManager::EnumFrames(HWND hWnd, LPARAM dwTblFramePtr)
 {
     std::vector<CFrameWnd*>& pTbl = CheckedDeref(reinterpret_cast<std::vector<CFrameWnd*>*>(dwTblFramePtr));
@@ -293,6 +341,7 @@ BOOL CALLBACK CWinStateManager::EnumFrames(HWND hWnd, LPARAM dwTblFramePtr)
         pTbl.push_back(static_cast<CMDIChildWndEx*>(pWnd));
     return TRUE;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 

@@ -76,7 +76,7 @@ struct CWinPlacement : public WINDOWPLACEMENT
 class CWinStateManager
 {
 public:
-    CWinStateManager(CDocument& pDoc) : m_pDoc(&pDoc) {}
+    CWinStateManager(CGamDoc& pDoc) : m_pDoc(&pDoc) {}
 
     virtual ~CWinStateManager() = default;
 
@@ -140,25 +140,27 @@ protected:
     };
 
 protected:
-    OwnerPtr<CWinStateElement> GetWindowState(CWnd& pWnd);
-    BOOL RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse);
-    std::vector<RefPtr<CFrameWnd>> GetDocumentFrameList();
+    OwnerPtr<CWinStateElement> GetWindowState(const wxFrame& pWnd);
+    BOOL RestoreWindowState(wxFrame& pWnd, CWinStateElement& pWse);
+    std::vector<RefPtr<wxFrame>> GetDocumentFrameList();
 
-    void ArrangeFrameListInZOrder(std::vector<RefPtr<CFrameWnd>>& tblFrames);
+    void ArrangeFrameListInZOrder(std::vector<RefPtr<wxFrame>>& tblFrames);
+#if 0
     static BOOL CALLBACK EnumFrames(HWND hWnd, LPARAM dwTblFramePtr);
+#endif
 
     // Required override used to locate or, if necessary, recreate frames.
     // This is called when window states are being restored.
-    virtual CWnd& OnGetFrameForWinStateElement(const CWinStateElement& pWse) /* override */ = 0;
+    virtual wxFrame& OnGetFrameForWinStateElement(const CWinStateElement& pWse) /* override */ = 0;
 
     // Allow subclass to create specialized version of CWinStateElement
     virtual OwnerPtr<CWinStateElement> OnCreateWinStateElement() /* override */ { return MakeOwner<CWinStateElement>(); }
 
     // Allow subclass to add more information.
-    virtual void OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd) /* override */ {}
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pWse, const wxFrame& pWnd) /* override */ {}
 
 protected:
-    RefPtr<CDocument> m_pDoc;
+    RefPtr<CGamDoc> m_pDoc;
     int fileVersion = INT_MAX;
     Features fileFeatures;
     typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;

@@ -34,7 +34,7 @@
 
 enum { gpFrmProject = 0, gpFrmPlayBoard = 1 };
 
-CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
+wxFrame& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
 {
     wxASSERT(pWse.m_wWinCode == wincodeViewFrame);
     CGamDoc& pDoc = GetDocument();
@@ -68,7 +68,7 @@ CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
 #endif
 }
 
-void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd)
+void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const wxFrame& pWnd)
 {
 #if 0
     if (pWnd.IsKindOf(RUNTIME_CLASS(CProjFrame)))

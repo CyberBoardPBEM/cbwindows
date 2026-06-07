@@ -667,8 +667,12 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pWinState = NULL;
         if (m_bSaveWindowPositions)
         {
+#if 0
             m_pWinState = new CGpWinStateMgr(*this);
             m_pWinState->GetStateOfOpenDocumentFrames();
+#else
+            wxASSERT(!"TODO:");
+#endif
         }
 
         ar << (BYTE)progVerMajor;
