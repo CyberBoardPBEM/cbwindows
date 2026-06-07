@@ -369,8 +369,7 @@ bool CGamDoc::OnSaveDocument(const wxString& pszPathName)
     m_pWinState = NULL;
     if (m_bSaveWindowPositions)
     {
-        m_pWinState = new CGpWinStateMgr;
-        m_pWinState->SetDocument(*this);
+        m_pWinState = new CGpWinStateMgr(*this);
         m_pWinState->GetStateOfOpenDocumentFrames();
     }
 
@@ -965,7 +964,6 @@ void CGamDoc::RestoreWindowState()
     // If a window state payload was delivered to us during deserialize,
     // attempt to restore all the windows to their former glory.
 
-    m_pWinState->SetDocument(*this);
     m_pWinState->RestoreStateOfDocumentFrames();
     DiscardWindowState();                           // Discard used data
 }

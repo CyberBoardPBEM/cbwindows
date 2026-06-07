@@ -32,12 +32,13 @@
 class CGpWinStateMgr : public CWinStateManager
 {
 public:
+    using CWinStateManager::CWinStateManager;
 
 protected:
-    CGamDoc* GetDocument() { return CB::ToCGamDoc(m_pDoc); }
+    CGamDoc& GetDocument() { return *CB::ToCGamDoc(&*m_pDoc); }
 
-    virtual CWnd* OnGetFrameForWinStateElement(const CWinStateElement& pWse) override;
-    virtual void OnAnnotateWinStateElement(CWinStateElement& pState, CWnd *pWnd) override;
+    virtual CWnd& OnGetFrameForWinStateElement(const CWinStateElement& pWse) override;
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pState, const CWnd& pWnd) override;
 };
 
 #endif

@@ -76,14 +76,11 @@ struct CWinPlacement : public WINDOWPLACEMENT
 class CWinStateManager
 {
 public:
-    CWinStateManager() { m_pDoc = NULL; }
-    CWinStateManager(CDocument* pDoc) { m_pDoc = pDoc; }
+    CWinStateManager(CDocument& pDoc) : m_pDoc(&pDoc) {}
 
     virtual ~CWinStateManager() = default;
 
 public:
-    void SetDocument(CDocument* pDoc) { m_pDoc = pDoc; }
-
     BOOL GetStateOfOpenDocumentFrames();
     void RestoreStateOfDocumentFrames();
 
@@ -143,32 +140,29 @@ protected:
     };
 
 protected:
-    OwnerPtr<CWinStateElement> GetWindowState(CWnd* pWnd);
-    BOOL RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse);
-    void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
-    CWnd* GetDocumentFrameHavingRuntimeClass(CRuntimeClass* pClass);
+    OwnerPtr<CWinStateElement> GetWindowState(CWnd& pWnd);
+    BOOL RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse);
+    std::vector<RefPtr<CFrameWnd>> GetDocumentFrameList();
 
-    void ArrangeFrameListInZOrder(std::vector<CB::not_null<CFrameWnd*>>& tblFrames);
+    void ArrangeFrameListInZOrder(std::vector<RefPtr<CFrameWnd>>& tblFrames);
     static BOOL CALLBACK EnumFrames(HWND hWnd, LPARAM dwTblFramePtr);
-
-    void SetUpListIfNeedTo();
 
     // Required override used to locate or, if necessary, recreate frames.
     // This is called when window states are being restored.
-    virtual CWnd* OnGetFrameForWinStateElement(const CWinStateElement& pWse) /* override */ = 0;
+    virtual CWnd& OnGetFrameForWinStateElement(const CWinStateElement& pWse) /* override */ = 0;
 
     // Allow subclass to create specialized version of CWinStateElement
     virtual OwnerPtr<CWinStateElement> OnCreateWinStateElement() /* override */ { return MakeOwner<CWinStateElement>(); }
 
     // Allow subclass to add more information.
-    virtual void OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd* pWnd) /* override */ {}
+    virtual void OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd) /* override */ {}
 
 protected:
-    CDocument*  m_pDoc;
+    RefPtr<CDocument> m_pDoc;
     int fileVersion = INT_MAX;
     Features fileFeatures;
     typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;
-    OwnerOrNullPtr<CWinStateList> m_pList;            // Win state element list
+    CWinStateList m_pList;            // Win state element list
 };
 
 #endif

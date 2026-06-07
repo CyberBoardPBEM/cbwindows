@@ -79,6 +79,11 @@ public:
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
     operator const wxView*() const;
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
+    operator const CGamProjViewContainer&() const { return *parent; }
+    operator CGamProjViewContainer&()
+    {
+        return const_cast<CGamProjViewContainer&>(static_cast<const CGamProjViewContainer&>(std::as_const(*this)));
+    }
 
     CFrameWnd* GetParentFrame();
 private:

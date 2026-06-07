@@ -1,6 +1,6 @@
 // winstate.cpp - classes used to manage window state.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,21 +38,17 @@ wxDEFINE_EVENT(WM_WINSTATE_WX, WinStateEvent);
 
 BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 {
-    ASSERT(m_pDoc != NULL);
-    SetUpListIfNeedTo();
-
     // First entry in the frame list is the main frame...
 
-    OwnerPtr<CWinStateElement> pWse(GetWindowState(AfxGetMainWnd()));
+    OwnerPtr<CWinStateElement> pWse(GetWindowState(CheckedDeref(AfxGetMainWnd())));
 
     pWse->m_wWinCode = wincodeMainFrame;
-    m_pList->push_back(std::move(pWse));
+    m_pList.push_back(std::move(pWse));
 
     // Then we need to build a list of MDI frames that are in Z
     // order so we can restore the proper visual order later.
 
-    std::vector<CB::not_null<CFrameWnd*>> tblFrame;
-    GetDocumentFrameList(tblFrame);         // Get's unordered list
+    std::vector<RefPtr<CFrameWnd>> tblFrame = GetDocumentFrameList();         // Get's unordered list
     ArrangeFrameListInZOrder(tblFrame);     // Order 'em
 
     // Scan the list in reverse Z order and obtain serialized
@@ -61,10 +57,10 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
     for (size_t i = tblFrame.size(); i > 0; i--)
     {
         CWnd& pWnd = *tblFrame.at(i - size_t(1));
-        OwnerPtr<CWinStateElement> pWse(GetWindowState(&pWnd));
+        OwnerPtr<CWinStateElement> pWse(GetWindowState(pWnd));
         pWse->m_wWinCode = wincodeViewFrame;
-        OnAnnotateWinStateElement(*pWse, &pWnd);
-        m_pList->push_back(std::move(pWse));
+        OnAnnotateWinStateElement(*pWse, pWnd);
+        m_pList.push_back(std::move(pWse));
     }
     return TRUE;
 }
@@ -73,14 +69,10 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 
 void CWinStateManager::RestoreStateOfDocumentFrames()
 {
-    ASSERT(m_pDoc != NULL);
-    ASSERT(m_pList != NULL);
-    if (m_pList == NULL)
-        return;
     CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
     // Processes only the main frame and the MDI child frames.
     // All other records are ignored.
-    for (CWinStateList::iterator pos = m_pList->begin() ; pos != m_pList->end() ; ++pos)
+    for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
     {
         CWinStateElement& pWse = **pos;
         if (pWse.m_wWinCode == wincodeMainFrame)
@@ -117,19 +109,15 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
                 pWse.m_wndState.rcNormalPosition = rctDesktop;
             }
             pWnd->SetWindowPlacement(&pWse.m_wndState);
-            RestoreWindowState(pWnd, pWse);
+            RestoreWindowState(*pWnd, pWse);
         }
         else if (pWse.m_wWinCode == wincodeViewFrame)
         {
-            CWnd* pWnd = OnGetFrameForWinStateElement(pWse);
-            ASSERT(pWnd != NULL);
-            if (pWnd != NULL)
-            {
-                pWnd->SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0,
-                    SWP_NOMOVE | SWP_NOSIZE);
-                pWnd->SetWindowPlacement(&pWse.m_wndState);
-                RestoreWindowState(pWnd, pWse);
-            }
+            CWnd& pWnd = OnGetFrameForWinStateElement(pWse);
+            pWnd.SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE);
+            pWnd.SetWindowPlacement(&pWse.m_wndState);
+            RestoreWindowState(pWnd, pWse);
         }
     }
     (DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd()))->RecalcLayout();
@@ -137,17 +125,16 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
 
 ///////////////////////////////////////////////////////////////////////////
 
-OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(CWnd* pWnd)
+OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(CWnd& pWnd)
 {
-    ASSERT(m_pDoc != NULL);
     OwnerPtr<CWinStateElement> pWse = OnCreateWinStateElement();
-    pWnd->GetWindowPlacement(&pWse->m_wndState);
+    pWnd.GetWindowPlacement(&pWse->m_wndState);
 
     TRY
     {
         CMemFile file;
         CArchive ar(&file, CArchive::store);
-        BOOL bOK = (BOOL)pWnd->SendMessage(WM_WINSTATE, (WPARAM)&ar, 0);
+        BOOL bOK = (BOOL)pWnd.SendMessage(WM_WINSTATE, (WPARAM)&ar, 0);
         ar.Close();
         if (bOK)
         {
@@ -162,9 +149,8 @@ OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(CW
 
 ///////////////////////////////////////////////////////////////////////////
 
-BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse)
+BOOL CWinStateManager::RestoreWindowState(CWnd& pWnd, CWinStateElement& pWse)
 {
-    ASSERT(m_pDoc != NULL);
     if (pWse.m_pWinStateBfr == NULL)
         return TRUE;
 
@@ -175,7 +161,7 @@ BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse)
         CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
         CArchive ar(&file, CArchive::load);
         SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
-        bOK = (BOOL)pWnd->SendMessage(WM_WINSTATE, (WPARAM)&ar, 1);
+        bOK = (BOOL)pWnd.SendMessage(WM_WINSTATE, (WPARAM)&ar, 1);
         ar.Close();
         file.Detach();
     }
@@ -185,40 +171,26 @@ BOOL CWinStateManager::RestoreWindowState(CWnd* pWnd, CWinStateElement& pWse)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CWinStateManager::GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames)
+std::vector<RefPtr<CFrameWnd>> CWinStateManager::GetDocumentFrameList()
 {
-    tblFrames.clear();
+    std::vector<RefPtr<CFrameWnd>> tblFrames;
 
     POSITION pos = m_pDoc->GetFirstViewPosition();
     while (pos != NULL)
     {
-        CView* pView = m_pDoc->GetNextView(pos);
-        CFrameWnd* pFrame = pView->GetParentFrame();
-        ASSERT(pFrame != NULL);
+        CView& pView = CheckedDeref(m_pDoc->GetNextView(pos));
+        CFrameWnd& pFrame = CheckedDeref(pView.GetParentFrame());
         size_t i;
-        for (i = 0; i < tblFrames.size(); i++)
+        for (i = size_t(0); i < tblFrames.size(); i++)
         {
-            if (pFrame == tblFrames.at(i))
+            if (&pFrame == &*tblFrames.at(i))
                 break;
         }
         if (i == tblFrames.size())
-            tblFrames.push_back(pFrame);          // Add new frame
+            tblFrames.push_back(&pFrame);          // Add new frame
     }
-}
 
-/////////////////////////////////////////////////////////////////////////////
-
-CWnd* CWinStateManager::GetDocumentFrameHavingRuntimeClass(CRuntimeClass* pClass)
-{
-    POSITION pos = m_pDoc->GetFirstViewPosition();
-    while (pos != NULL)
-    {
-        CView* pView = m_pDoc->GetNextView(pos);
-        CFrameWnd* pFrame = pView->GetParentFrame();
-        if (pFrame->IsKindOf(pClass))
-            return pFrame;
-    }
-    return NULL;
+    return tblFrames;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -227,20 +199,20 @@ void CWinStateManager::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (m_pList == NULL || m_pList->empty())
+        if (m_pList.empty())
         {
             ar << (DWORD)0;
             return;
         }
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ar << value_preserving_cast<DWORD>(m_pList->size());
+            ar << value_preserving_cast<DWORD>(m_pList.size());
         }
         else
         {
-            CB::WriteCount(ar, m_pList->size());
+            CB::WriteCount(ar, m_pList.size());
         }
-        for (CWinStateList::iterator pos = m_pList->begin() ; pos != m_pList->end() ; ++pos)
+        for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
         {
             CWinStateElement& pWse = **pos;
             pWse.Serialize(ar);
@@ -248,7 +220,7 @@ void CWinStateManager::Serialize(CArchive& ar)
     }
     else
     {
-        m_pList = nullptr;
+        wxASSERT(m_pList.empty());
         size_t dwCount;
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
@@ -264,19 +236,19 @@ void CWinStateManager::Serialize(CArchive& ar)
             return;
         fileVersion = CB::GetVersion(ar);
         fileFeatures = CB::GetFeatures(ar);
-        m_pList = MakeOwner<CWinStateList>();
+        m_pList.clear();
         while (dwCount--)
         {
             OwnerPtr<CWinStateElement> pWse(OnCreateWinStateElement());
             pWse->Serialize(ar);
-            m_pList->push_back(std::move(pWse));
+            m_pList.push_back(std::move(pWse));
         }
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CWinStateManager::ArrangeFrameListInZOrder(std::vector<CB::not_null<CFrameWnd*>>& tblFrames)
+void CWinStateManager::ArrangeFrameListInZOrder(std::vector<RefPtr<CFrameWnd>>& tblFrames)
 {
     std::vector<CFrameWnd*> tblZFrames;
 
@@ -291,7 +263,7 @@ void CWinStateManager::ArrangeFrameListInZOrder(std::vector<CB::not_null<CFrameW
         size_t j;
         for (j = 0; j < tblFrames.size(); j++)
         {
-            if (tblFrames.at(j) == tblZFrames.at(i))
+            if (&*tblFrames.at(j) == tblZFrames.at(i))
                 break;
         }
         if (j == tblFrames.size())
@@ -316,15 +288,6 @@ BOOL CALLBACK CWinStateManager::EnumFrames(HWND hWnd, LPARAM dwTblFramePtr)
     if (pWnd != NULL && pWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)))
         pTbl.push_back(static_cast<CMDIChildWndEx*>(pWnd));
     return TRUE;
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-void CWinStateManager::SetUpListIfNeedTo()
-{
-    ASSERT(m_pDoc != NULL);
-    if (m_pList == NULL)
-        m_pList = MakeOwner<CWinStateList>();
 }
 
 ///////////////////////////////////////////////////////////////////////////

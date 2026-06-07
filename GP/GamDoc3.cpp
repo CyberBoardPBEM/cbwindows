@@ -864,8 +864,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             ar >> bTmp;                             // State data follows flag // V2.0
             if (bTmp)
             {
-                m_pWinState = new CGpWinStateMgr;
-                m_pWinState->SetDocument(*this);
+                m_pWinState = new CGpWinStateMgr(*this);
                 m_pWinState->Serialize(ar);
             }
             if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))   // Ver 2.90

@@ -1,6 +1,6 @@
 // WStateGp.cpp - classes used to manage player program window state.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -30,47 +30,48 @@
 #include    "Board.h"
 #include    "PBoard.h"
 #include    "VwPbrd.h"
+#include    "VwPrjgam.h"
 #include    "WStateGp.h"
 
 enum { gpFrmProject = 0, gpFrmPlayBoard = 1 };
 
-CWnd* CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
+CWnd& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pWse)
 {
-    ASSERT(pWse.m_wWinCode == wincodeViewFrame);
-    CGamDoc* pDoc = GetDocument();
+    wxASSERT(pWse.m_wWinCode == wincodeViewFrame);
+    CGamDoc& pDoc = GetDocument();
 
     if (pWse.m_wUserCode1 == gpFrmProject)
     {
-        CWnd* pWnd = GetDocumentFrameHavingRuntimeClass(RUNTIME_CLASS(CProjFrame));
-        ASSERT(pWnd != NULL);           // Must be open.
+        CWnd& pWnd = pDoc.FindProjectView();
         return pWnd;
     }
     else if (pWse.m_wUserCode1 == gpFrmPlayBoard)
     {
         // The second user code is the board's serial number.
-        CPlayBoard& pPBoard = CheckedDeref(pDoc->GetPBoardManager().GetPBoardBySerial(pWse.m_boardID));
-        CPlayBoardView* pView = pDoc->FindPBoardView(pPBoard);
+        CPlayBoard& pPBoard = CheckedDeref(pDoc.GetPBoardManager().GetPBoardBySerial(pWse.m_boardID));
+        CPlayBoardView* pView = pDoc.FindPBoardView(pPBoard);
         if (pView == NULL)
         {
             // No frame open for board. Create it.
-            pDoc->CreateNewFrame(
+            pDoc.CreateNewFrame(
                 pPBoard.GetBoard()->GetName(), pPBoard);
             // Try to locate it again
-            pView = pDoc->FindPBoardView(pPBoard);
+            pView = pDoc.FindPBoardView(pPBoard);
+            wxASSERT(pView);
         }
-        return pView->GetParentFrame();
+        return CheckedDeref(pView->GetParentFrame());
     }
     else
-        return NULL;
+        AfxThrowInvalidArgException();
 }
 
-void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, CWnd *pWnd)
+void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWnd& pWnd)
 {
-    if (pWnd->IsKindOf(RUNTIME_CLASS(CProjFrame)))
+    if (pWnd.IsKindOf(RUNTIME_CLASS(CProjFrame)))
         pWse.m_wUserCode1 = gpFrmProject;
-    else if (pWnd->IsKindOf(RUNTIME_CLASS(CPlayBoardFrameContainer)))
+    else if (pWnd.IsKindOf(RUNTIME_CLASS(CPlayBoardFrameContainer)))
     {
-        CPlayBoardFrameContainer& pFrameContainer = *static_cast<CPlayBoardFrameContainer*>(pWnd);
+        const CPlayBoardFrameContainer& pFrameContainer = static_cast<const CPlayBoardFrameContainer&>(pWnd);
         const CPlayBoardFrame& pFrame = pFrameContainer.GetChild();
         pWse.m_wUserCode1 = gpFrmPlayBoard;
         pWse.m_boardID = pFrame.m_pPBoard->GetSerialNumber();
