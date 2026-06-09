@@ -524,7 +524,6 @@ void CPlayBoardView::OnMessageSelectBoardObjectList(SelectBoardObjListEvent& eve
 
 void CPlayBoardView::OnMessageWindowState(WinStateEvent& event)
 {
-    wxASSERT(!"TODO:");
     CArchive& ar = event.GetArchive();
     if (ar.IsStoring())
     {
@@ -559,23 +558,32 @@ void CPlayBoardView::OnMessageWindowState(WinStateEvent& event)
         ar >> dwTmp; pnt.x = value_preserving_cast<decltype(pnt.x)>(dwTmp);
         ar >> dwTmp; pnt.y = value_preserving_cast<decltype(pnt.y)>(dwTmp);
 
-        Scroll(pnt);
+        if (!event.GetIgnore())
+        {
+            Scroll(pnt);
+        }
 
         // Restore the select list.
-        m_selList.PurgeList();
+        if (!event.GetIgnore())
+        {
+            m_selList.PurgeList();
+        }
         uint32_t dwSelCount;
         ar >> dwSelCount;
         while (dwSelCount--)
         {
             GameElement elem;
             ar >> elem;
-            CDrawObj* pObj = NULL;
-            if (IsGameElementAPiece(elem))
-                pObj = m_pPBoard->FindPieceID(GetPieceIDFromElement(elem));
-            else
-                pObj = m_pPBoard->FindObjectID(GetObjectIDFromElement(elem));
-            if (pObj != NULL)
-                m_selList.AddObject(*pObj, TRUE);
+            if (!event.GetIgnore())
+            {
+                CDrawObj* pObj = NULL;
+                if (IsGameElementAPiece(elem))
+                    pObj = m_pPBoard->FindPieceID(GetPieceIDFromElement(elem));
+                else
+                    pObj = m_pPBoard->FindObjectID(GetObjectIDFromElement(elem));
+                if (pObj != NULL)
+                    m_selList.AddObject(*pObj, TRUE);
+            }
         }
     }
 }

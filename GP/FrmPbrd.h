@@ -35,6 +35,7 @@
 class CenterBoardOnPointEvent;
 class CPlayBoard;
 class CPlayBoardView;
+class WinStateEvent;
 
 /* wxDocChildFrame implementation doesn't support multiple views,
     but CBPlay's board frames should.  We will use this class as
@@ -135,8 +136,10 @@ protected:
     afx_msg void OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID);
 #endif
     void OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event);
+    void OnMessageWindowStateMfc(WinStateEvent& event);
+    void OnMessageWindowStateWx(WinStateEvent& event);
+    void OnMessageWindowState(WinStateEvent& event);
 #if 0
-    afx_msg LRESULT OnMessageWindowState(WPARAM wParam, LPARAM lParam);
     afx_msg void OnSize(UINT nType, int cx, int cy);
 #endif
     wxDECLARE_EVENT_TABLE();

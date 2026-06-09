@@ -39,10 +39,10 @@ wxFrame& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pW
     wxASSERT(pWse.m_wWinCode == wincodeViewFrame);
     CGamDoc& pDoc = GetDocument();
 
-#if 0
     if (pWse.m_wUserCode1 == gpFrmProject)
     {
-        CWnd& pWnd = pDoc.FindProjectView();
+        wxGamProjView& projView = pDoc.FindProjectView();
+        wxFrame& pWnd = projView.GetFrame();
         return pWnd;
     }
     else if (pWse.m_wUserCode1 == gpFrmPlayBoard)
@@ -59,13 +59,10 @@ wxFrame& CGpWinStateMgr::OnGetFrameForWinStateElement(const CWinStateElement& pW
             pView = pDoc.FindPBoardView(pPBoard);
             wxASSERT(pView);
         }
-        return CheckedDeref(pView->GetParentFrame());
+        return static_cast<wxPlayBoardView&>(*pView).GetFrame();
     }
     else
         AfxThrowInvalidArgException();
-#else
-    AfxThrowNotSupportedException();
-#endif
 }
 
 void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const wxFrame& pWnd)

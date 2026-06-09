@@ -98,8 +98,8 @@ wxBEGIN_EVENT_TABLE(CPlayBoardPanel, wxPanel)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MRKGROUP_FIRST, ID_MRKGROUP_FIRST + 64, OnUpdateSelectGroupMarkers)
 #endif
     EVT_CENTERBOARDONPOINT(OnMessageCenterBoardOnPoint)
+    EVT_WINSTATE(OnMessageWindowState)
 #if 0
-    ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
     ON_WM_SIZE()
 #endif
 wxEND_EVENT_TABLE()
@@ -116,8 +116,19 @@ END_MESSAGE_MAP()
             means TryAfter() doesn't get checked, so use this
             class to also give CPlayBoardPanel a chance at
             event */
+/* KLUDGE:  don't let wxDocManager forward
+            WinStateEvent to view before frame */
 bool DocChildBoardFrame::ProcessEvent(wxEvent& event)
 {
+    /* KLUDGE:  don't let wxDocManager forward
+                WinStateEvent to view before frame */
+    if (dynamic_cast<WinStateEvent*>(&event))
+    {
+        wxView& view = CheckedDeref(GetView());
+        CPlayBoardPanelView& panelView = dynamic_cast<CPlayBoardPanelView&>(view);
+        return panelView.GetPanel().ProcessWindowEventLocally(event);
+    }
+
     if (CB::DocChildFrame::ProcessEvent(event))
     {
         return true;
@@ -331,22 +342,19 @@ CPlayBoardPanel::CPlayBoardPanel(wxWindow& parent,
 
 #define SCHEMA_BRDVIEW_SAVE     1
 
-#if 0
-LRESULT CPlayBoardPanel::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+void CPlayBoardPanel::OnMessageWindowStateMfc(WinStateEvent& event)
 {
-    ASSERT(wParam != NULL);
-    CArchive& ar = *((CArchive*)wParam);
+    CArchive& ar = event.GetArchive();
 
     int nRowCount;
     int nColCount;
     int nRow;
     int nCol;
-    int nCur;
-    int nMin;
 
     // Process splitter windows...
     if (ar.IsStoring())
     {
+#if 0
         ar << (WORD)SCHEMA_BRDVIEW_SAVE;        // Object versioning
 
         // The outermost splitter info.
@@ -391,116 +399,191 @@ LRESULT CPlayBoardPanel::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
         m_wndSplitBoards.GetColumnInfo(0, nCur, nMin);
         ar << (DWORD)nCur;
         ar << (DWORD)nMin;
+#else
+        AfxThrowNotSupportedException();
+#endif
     }
     else
     {
-        WORD  wSchema;
-        WORD  wTmp;
-        DWORD dwTmp;
+        uint16_t wSchema;
+        uint16_t wTmp;
+        uint32_t dwTmp;
 
         ar >> wSchema;                      // Get object schema
         if (wSchema > SCHEMA_BRDVIEW_SAVE)
         {
-            ASSERT(wSchema <= SCHEMA_BRDVIEW_SAVE);
-            return (LRESULT)0;              // Don't understand object. Ignore
+            wxASSERT(wSchema <= SCHEMA_BRDVIEW_SAVE);
+            event.SetResult(false);
+            return;              // Don't understand object. Ignore
         }
 
         // The outermost splitter info.
-        ar >> dwTmp; nCur = (int)dwTmp;
-        ar >> dwTmp; nMin = (int)dwTmp;
-        m_wndSplitter1.SetColumnInfo(0, nCur, nMin);
-        m_wndSplitter1.RecalcLayout();
+        int nCurLeft;
+        int nMinLeft;
+        ar >> dwTmp; nCurLeft = value_preserving_cast<int>(dwTmp);
+        ar >> dwTmp; nMinLeft = value_preserving_cast<int>(dwTmp);
 
-        ar >> wTmp; nColCount = (int)wTmp;
+        ar >> wTmp; nColCount = value_preserving_cast<int>(wTmp);
 
         // The right splitter area info
+        int nCurRight;
+        int nMinRight;
+        int nCurTop;
+        int nMinTop;
         if (nColCount > 1)
         {
-            ar >> dwTmp; nCur = (int)dwTmp;
-            ar >> dwTmp; nMin = (int)dwTmp;
-            m_wndSplitter1.SetColumnInfo(1, nCur, nMin);
-            m_wndSplitter1.RecalcLayout();
-            ar >> dwTmp; nCur = (int)dwTmp;
-            ar >> dwTmp; nMin = (int)dwTmp;
-            m_wndSplitter2.SetRowInfo(0, nCur, nMin);
-            m_wndSplitter2.RecalcLayout();
+            ar >> dwTmp; nCurRight = value_preserving_cast<int>(dwTmp);
+            ar >> dwTmp; nMinRight = value_preserving_cast<int>(dwTmp);
+            m_wndSplitter1->SetMinimumPaneSize(std::min(nMinLeft, nMinRight));
+            int sashPosition = m_wndSplitter1->GetSize().GetWidth() - nCurRight;
+            m_wndSplitter1->SetSashPosition(sashPosition);
+            ar >> dwTmp; nCurTop = value_preserving_cast<int>(dwTmp);
+            ar >> dwTmp; nMinTop = value_preserving_cast<int>(dwTmp);
+            m_wndSplitter2->SetMinimumPaneSize(nMinTop);
+            m_wndSplitter2->SetSashPosition(nCurTop);
+        }
+        else
+        {
+            m_wndSplitter1->Unsplit();
         }
 
         // Dimensions of board splits
-        ar >> wTmp; nRowCount = (int)wTmp;
-        ar >> wTmp; nColCount = (int)wTmp;
+        ar >> wTmp; nRowCount = value_preserving_cast<int>(wTmp);
+        wxASSERT(nRowCount == 1 || nRowCount == 2);
+        ar >> wTmp; nColCount = value_preserving_cast<int>(wTmp);
+        wxASSERT(nColCount == 1 || nColCount == 2);
 
-        if (nRowCount > 1)
-            m_wndSplitBoards.ShowRow();
-        if (nColCount > 1)
-            m_wndSplitBoards.ShowColumn();
+        /* N.B.:  unlike MFC, wxSplitterWindow doesn't
+            support 2x2.  If 2x2 selected, use 1 row,
+            2 columns. */
+        wxASSERT(!m_wndSplitBoards->IsSplit() &&
+                    m_wndSplitBoards->GetSplitMode() == wxSPLIT_VERTICAL);
+        if (nRowCount <= 1 && nColCount <= 1)
+        {
+            // do nothing
+        }
+        else
+        {
+            wxWindow& w1 = CheckedDeref(m_wndSplitBoards->GetWindow1());
+            wxWindowList& children = m_wndSplitBoards->GetChildren();
+            wxASSERT(children.size() == 2 &&
+                        children.front() == &w1);
+            wxWindow& w2 = CheckedDeref(children.back());
+            if (nRowCount > 1 && nColCount <= 1)
+            {
+                m_wndSplitBoards->SplitHorizontally(&w1, &w2);
+            }
+            else
+            {
+                /* N.B.:  don't do this; we need serialized value later
+                nRowCount = 1;
+                */
+                m_wndSplitBoards->SplitVertically(&w1, &w2);
+            }
+        }
 
         // The active pane restoration is the last thing done.
-        ar >> wTmp; nRow = (int)wTmp;
-        ar >> wTmp; nCol = (int)wTmp;
+        ar >> wTmp; nRow = value_preserving_cast<int>(wTmp);
+        wxASSERT(nRow == 0 || nRow == 1);
+        ar >> wTmp; nCol = value_preserving_cast<int>(wTmp);
+        wxASSERT(nCol == 0 || nCol == 1);
 
         // Row info for top row
-        ar >> dwTmp; nCur = (int)dwTmp;
-        ar >> dwTmp; nMin = (int)dwTmp;
-        m_wndSplitBoards.SetRowInfo(0, nCur, nMin);
+        ar >> dwTmp; int nCurRow = value_preserving_cast<int>(dwTmp);
+        ar >> dwTmp; int nMinRow = value_preserving_cast<int>(dwTmp);
+        if (nRowCount == 1)
+        {
+            m_wndSplitBoards->SetMinimumPaneSize(nMinRow);
+            m_wndSplitBoards->SetSashPosition(nCurRow);
+        }
 
         // Column info for left column
-        ar >> dwTmp; nCur = (int)dwTmp;
-        ar >> dwTmp; nMin = (int)dwTmp;
-        m_wndSplitBoards.SetColumnInfo(0, nCur, nMin);
-
-        m_wndSplitBoards.RecalcLayout();
+        ar >> dwTmp; int nCurCol = value_preserving_cast<int>(dwTmp);
+        ar >> dwTmp; int nMinCol = value_preserving_cast<int>(dwTmp);
+        if (nRowCount > 1 && nColCount <= 1)
+        {
+            m_wndSplitBoards->SetMinimumPaneSize(nMinCol);
+            m_wndSplitBoards->SetSashPosition(nCurCol);
+        }
     }
 
     // ... ROW 0 PROCESSING ...
     // Upper-left board view..
-    CWnd* pWnd = m_wndSplitBoards.GetPane(0, 0);
-    ASSERT(pWnd != NULL);
-    pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
+    wxWindow* pWnd = m_wndSplitBoards->GetWindow1();
+    wxASSERT(pWnd != NULL);
+    pWnd->ProcessWindowEvent(event);
 
     if (nColCount > 1)
     {
         // Upper-right board view...
-        pWnd = m_wndSplitBoards.GetPane(0, 1);
-        ASSERT(pWnd != NULL);
-        pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
+        pWnd = m_wndSplitBoards->GetWindow2();
+        wxASSERT(pWnd != NULL &&
+                    pWnd != m_wndSplitBoards->GetWindow1());
+        pWnd->ProcessWindowEvent(event);
     }
 
     // ... ROW 1 PROCESSING ...
     if (nRowCount > 1)
     {
-        // Lower-left board view...
-        pWnd = m_wndSplitBoards.GetPane(1, 0);
-        ASSERT(pWnd != NULL);
-        pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
-
-        if (nColCount > 1)
+        // N.B.:  unlike MFC, wxSplitterWindow doesn't support 2x2
+        if (nColCount <= 1)
         {
-            // Lower-right board view...
-            pWnd = m_wndSplitBoards.GetPane(1, 1);
-            ASSERT(pWnd != NULL);
-            pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
+            // Lower-left board view...
+            pWnd = m_wndSplitBoards->GetWindow2();
+            wxASSERT(pWnd != NULL);
+            pWnd->ProcessWindowEvent(event);
+        }
+        else
+        {
+            // no second row, so ignore its data
+            WinStateEvent::SetIgnore setIgnore(event);
+            pWnd = m_wndSplitBoards->GetWindow1();
+            pWnd->ProcessWindowEvent(event);
+            pWnd = m_wndSplitBoards->GetWindow2();
+            pWnd->ProcessWindowEvent(event);
         }
     }
 
     // Select list view...
-    pWnd = m_wndSplitter2.GetPane(0, 0);
-    pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
+    pWnd = m_wndSplitter2->GetWindow1();
+    pWnd->ProcessWindowEvent(event);
 
     // Tiny map view...
-    pWnd = m_wndSplitter2.GetPane(1, 0);
-    pWnd->SendMessage(WM_WINSTATE, wParam, lParam);
+    pWnd = m_wndSplitter2->GetWindow2();
+    pWnd->ProcessWindowEvent(event);
 
     // Finally sync up the select list
     if (ar.IsLoading())
     {
-        m_wndSplitBoards.SetActivePane(nRow, nCol);
+        wxWindow& activeWnd = (nRow == 0 && nCol == 0) ?
+                                *m_wndSplitBoards->GetWindow1()
+                            :
+                                *m_wndSplitBoards->GetWindow2();
+        CPlayBoardView& activeVw = dynamic_cast<CPlayBoardView&>(activeWnd);
+        SetActiveBoardView(activeVw);
         GetActiveBoardView().NotifySelectListChange();
     }
 
-    return (LRESULT)1;
+    event.SetResult(true);
 }
-#endif
+
+void CPlayBoardPanel::OnMessageWindowStateWx(WinStateEvent& event)
+{
+    AfxThrowNotSupportedException();
+}
+
+void CPlayBoardPanel::OnMessageWindowState(WinStateEvent& event)
+{
+    CArchive& ar = event.GetArchive();
+    if (!CB::GetFeatures(ar).Check(ftrAuiLayout))
+    {
+        OnMessageWindowStateMfc(event);
+    }
+    else
+    {
+        OnMessageWindowStateWx(event);
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

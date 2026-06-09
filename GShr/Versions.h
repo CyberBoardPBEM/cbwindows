@@ -119,9 +119,13 @@ private:
 //              no longer compatible with another player's CB.
 //              (If the additional work seems warranted, nothing
 //              prevents editing actions from checking the
-//              GetCBFeatures() list.) fFor convenience of
+//              GetCBFeatures() list.) For convenience of
 //              typing these command line switches, Feature
 //              names are case-insensitive.
+//
+// wsu20260614
+//              wxAuiManager::SaveLayout
+inline const Feature ftrAuiLayout("aui-layout");
 //
 // wsu20231119
 //              serialize CDib using (24bpp) wxBMPHandler + Zlib

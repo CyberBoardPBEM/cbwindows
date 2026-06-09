@@ -70,7 +70,6 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 void CWinStateManager::RestoreStateOfDocumentFrames()
 {
     CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
-#if 0
     // Processes only the main frame and the MDI child frames.
     // All other records are ignored.
     for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
@@ -78,8 +77,8 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
         CWinStateElement& pWse = **pos;
         if (pWse.m_wWinCode == wincodeMainFrame)
         {
-            CWnd* pWnd = AfxGetMainWnd();
-            ASSERT(pWnd != NULL);
+            wxFrame& pWnd = dynamic_cast<wxFrame&>(CB::GetMainWndWx());
+            // TODO:  wxWidgets doesn't wrap all of this
             CRect rctVScreen;
             SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
             int cxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -109,22 +108,27 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
                 // Force the window onto the primary desktop area.
                 pWse.m_wndState.rcNormalPosition = rctDesktop;
             }
-            pWnd->SetWindowPlacement(&pWse.m_wndState);
-            RestoreWindowState(*pWnd, pWse);
+            if (pWse.m_wndState.showCmd == SW_SHOWMAXIMIZED)
+            {
+                wxASSERT(dynamic_cast<wxTopLevelWindow*>(&pWnd));
+                static_cast<wxTopLevelWindow&>(pWnd).Maximize();
+            }
+            else
+            {
+                wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
+                pWnd.SetSize(rect.GetSize());
+            }
+            RestoreWindowState(pWnd, pWse);
         }
         else if (pWse.m_wWinCode == wincodeViewFrame)
         {
-            CWnd& pWnd = OnGetFrameForWinStateElement(pWse);
-            pWnd.SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOSIZE);
-            pWnd.SetWindowPlacement(&pWse.m_wndState);
+            wxFrame& pWnd = OnGetFrameForWinStateElement(pWse);
+            pWnd.Raise();
+            wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
+            pWnd.SetSize(rect.GetSize());
             RestoreWindowState(pWnd, pWse);
         }
     }
-    (DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd()))->RecalcLayout();
-#else
-    CPP20_TRACE("TODO:  {}\n", __func__);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -164,17 +168,21 @@ BOOL CWinStateManager::RestoreWindowState(wxFrame& pWnd, CWinStateElement& pWse)
 
     BOOL bOK = FALSE;
 
-    TRY
+    try
     {
         CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
         CArchive ar(&file, CArchive::load);
         SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
         WinStateEvent event(ar, true);
-        bOK = (BOOL)pWnd.ProcessWindowEvent(event);
+        bOK = pWnd.ProcessWindowEvent(event) &&
+                event.GetResult() &&
+                *event.GetResult();
         ar.Close();
         file.Detach();
     }
-    END_TRY
+    catch (...)
+    {
+    }
     return bOK;
 }
 

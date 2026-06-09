@@ -40,12 +40,37 @@ class WinStateEvent : public wxEvent
 public:
     WinStateEvent(CArchive& ar, bool restore);
 
+    /* KLUDGE:  unlike MFC, wxSplitterWindow doesn't support 2x2,
+                so sometimes need to consume excess window state
+                w/o applying it */
+    bool GetIgnore() const { return ignore; }
+    class SetIgnore
+    {
+    public:
+        SetIgnore(WinStateEvent& event) :
+            ignore(event.ignore)
+        {
+            ignore = true;
+        }
+        ~SetIgnore()
+        {
+            ignore = false;
+        }
+    private:
+        bool& ignore;
+    };
+
     CArchive& GetArchive() const { return ar; }
+
+    const std::optional<bool>& GetResult() const { return result; }
+    void SetResult(bool b) { result = b; }
 
     wxEvent* Clone() const override { return new WinStateEvent(*this); }
 
 private:
     CArchive& ar;
+    bool ignore = false;
+    std::optional<bool> result = std::nullopt;
 };
 wxDECLARE_EVENT(WM_WINSTATE_WX, WinStateEvent);
 inline WinStateEvent::WinStateEvent(CArchive& a, bool restore) :
@@ -125,6 +150,7 @@ protected:
         size_t size = size_t(0);
     };
 
+    // non-ftrAuilayout
     struct CWinStateElement
     {
         WORD  m_wWinCode;           // Generic type of window
