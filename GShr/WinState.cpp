@@ -163,14 +163,14 @@ OwnerPtr<CWinStateManager::CWinStateElement> CWinStateManager::GetWindowState(co
 
 BOOL CWinStateManager::RestoreWindowState(wxFrame& pWnd, CWinStateElement& pWse)
 {
-    if (pWse.m_pWinStateBfr == NULL)
+    if (pWse.m_pWinStateBfr.empty())
         return TRUE;
 
     BOOL bOK = FALSE;
 
     try
     {
-        CMemFile file(pWse.m_pWinStateBfr, value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.GetSize()));
+        CMemFile file(reinterpret_cast<BYTE*>(pWse.m_pWinStateBfr.data()), value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.size()));
         CArchive ar(&file, CArchive::load);
         SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
         WinStateEvent event(ar, true);
@@ -238,12 +238,12 @@ void CWinStateManager::Serialize(CArchive& ar)
     {
         if (m_pList.empty())
         {
-            ar << (DWORD)0;
+            ar << (uint32_t)0;
             return;
         }
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ar << value_preserving_cast<DWORD>(m_pList.size());
+            ar << value_preserving_cast<uint32_t>(m_pList.size());
         }
         else
         {
@@ -261,7 +261,7 @@ void CWinStateManager::Serialize(CArchive& ar)
         size_t dwCount;
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            DWORD temp;
+            uint32_t temp;
             ar >> temp;
             dwCount = temp;
         }
@@ -370,18 +370,18 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         ar << m_wndState;
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ar << value_preserving_cast<DWORD>(m_pWinStateBfr.GetSize());
+            ar << value_preserving_cast<uint32_t>(m_pWinStateBfr.size());
         }
         else
         {
-            CB::WriteCount(ar, m_pWinStateBfr.GetSize());
+            CB::WriteCount(ar, m_pWinStateBfr.size());
         }
-        if (m_pWinStateBfr.GetSize() > size_t(0))
-            ar.Write(m_pWinStateBfr, value_preserving_cast<unsigned>(m_pWinStateBfr.GetSize()));
+        if (!m_pWinStateBfr.empty())
+            ar.Write(m_pWinStateBfr.data(), value_preserving_cast<unsigned>(m_pWinStateBfr.size()));
     }
     else
     {
-        m_pWinStateBfr.Reset();
+        m_pWinStateBfr.clear();
 
         ar >> m_wWinCode;
         ar >> m_wUserCode1;
@@ -390,7 +390,7 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         size_t size;
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            DWORD dwSize;
+            uint32_t dwSize;
             ar >> dwSize;
             size = dwSize;
         }
@@ -400,13 +400,8 @@ void CWinStateManager::CWinStateElement::Serialize(CArchive& ar)
         }
         if (size > size_t(0))
         {
-            m_pWinStateBfr.Reset(static_cast<BYTE*>(malloc(size)), size);
-            ASSERT(m_pWinStateBfr != NULL);
-            if (m_pWinStateBfr == NULL)
-            {
-                AfxThrowMemoryException();
-            }
-            ar.Read(m_pWinStateBfr, value_preserving_cast<unsigned>(m_pWinStateBfr.GetSize()));
+            m_pWinStateBfr.resize(size);
+            ar.Read(m_pWinStateBfr.data(), value_preserving_cast<unsigned>(m_pWinStateBfr.size()));
         }
     }
 }
@@ -422,34 +417,34 @@ CWinPlacement::CWinPlacement()
 CArchive& AFXAPI operator<<(CArchive& ar, const CWinPlacement& wndPlace)
 {
 //    ar << (DWORD)wndPlace.length;
-    ar << (DWORD)wndPlace.flags;
-    ar << (DWORD)wndPlace.showCmd;
-    ar << (DWORD)wndPlace.ptMinPosition.x;
-    ar << (DWORD)wndPlace.ptMinPosition.y;
-    ar << (DWORD)wndPlace.ptMaxPosition.x;
-    ar << (DWORD)wndPlace.ptMaxPosition.y;
-    ar << (DWORD)wndPlace.rcNormalPosition.top;
-    ar << (DWORD)wndPlace.rcNormalPosition.bottom;
-    ar << (DWORD)wndPlace.rcNormalPosition.left;
-    ar << (DWORD)wndPlace.rcNormalPosition.right;
+    ar << value_preserving_cast<uint32_t>(wndPlace.flags);
+    ar << value_preserving_cast<uint32_t>(wndPlace.showCmd);
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.ptMinPosition.x));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.ptMinPosition.y));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.ptMaxPosition.x));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.ptMaxPosition.y));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.rcNormalPosition.top));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.rcNormalPosition.bottom));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.rcNormalPosition.left));
+    ar << static_cast<uint32_t>(value_preserving_cast<int32_t>(wndPlace.rcNormalPosition.right));
 
     return ar;
 }
 
 CArchive& AFXAPI operator>>(CArchive& ar, CWinPlacement& wndPlace)
 {
-    DWORD dwTmp;
+    uint32_t dwTmp;
 //    ar >> dwTmp; wndPlace.length = (UINT)dwTmp;
-    ar >> dwTmp; wndPlace.flags = (UINT)dwTmp;
-    ar >> dwTmp; wndPlace.showCmd = (UINT)dwTmp;
-    ar >> dwTmp; wndPlace.ptMinPosition.x = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.ptMinPosition.y = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.ptMaxPosition.x = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.ptMaxPosition.y = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.rcNormalPosition.top = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.rcNormalPosition.bottom = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.rcNormalPosition.left = (LONG)dwTmp;
-    ar >> dwTmp; wndPlace.rcNormalPosition.right = (LONG)dwTmp;
+    ar >> dwTmp; wndPlace.flags = value_preserving_cast<UINT>(dwTmp);
+    ar >> dwTmp; wndPlace.showCmd = value_preserving_cast<UINT>(dwTmp);
+    ar >> dwTmp; wndPlace.ptMinPosition.x = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.ptMinPosition.y = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.ptMaxPosition.x = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.ptMaxPosition.y = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.rcNormalPosition.top = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.rcNormalPosition.bottom = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.rcNormalPosition.left = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
+    ar >> dwTmp; wndPlace.rcNormalPosition.right = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
 
     return ar;
 }

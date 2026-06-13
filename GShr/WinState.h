@@ -114,51 +114,15 @@ public:
     enum { wincodeUnknown = 0, wincodeMainFrame = 1, wincodeViewFrame = 2, wincodeToolPal = 3 };
 
 protected:
-    class Buffer
-    {
-    public:
-        Buffer() = default;
-        Buffer(const Buffer&) = delete;
-        Buffer& operator=(const Buffer&) = delete;
-        ~Buffer() = default;
-
-        size_t GetSize() const { return size; }
-        operator const BYTE*() const
-        {
-            static_assert(sizeof(ptr) == sizeof(BYTE*), "wasted space");
-            return ptr.get();
-        }
-        operator BYTE*() { return const_cast<BYTE*>(static_cast<const BYTE*>(std::as_const(*this))); }
-
-        void Reset()
-        {
-            Reset(nullptr, size_t(0));
-        }
-        void Reset(BYTE* p, size_t s)
-        {
-            ptr.reset(p);
-            size = ptr ? s : size_t(0);
-        }
-
-    private:
-        class Free
-        {
-        public:
-            void operator()(BYTE* p) const { free(p); }
-        };
-        std::unique_ptr<BYTE[], Free> ptr;
-        size_t size = size_t(0);
-    };
-
     // non-ftrAuilayout
     struct CWinStateElement
     {
-        WORD  m_wWinCode;           // Generic type of window
-        WORD  m_wUserCode1;         // Used by subclass to refine WinCode
+        uint16_t m_wWinCode;           // Generic type of window
+        uint16_t m_wUserCode1;         // Used by subclass to refine WinCode
         BoardID m_boardID;          // Used by subclass to refine WinCode
         CWinPlacement m_wndState;   // Window placement information
 
-        Buffer m_pWinStateBfr;       // Serialized window data
+        std::vector<std::byte> m_pWinStateBfr;       // Serialized window data
 
         CWinStateElement();
         virtual ~CWinStateElement() = default;
