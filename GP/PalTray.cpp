@@ -474,7 +474,7 @@ void CTrayPalette::Serialize(CArchive& ar)
         m_tblListBoxSel.reserve(selections.size());
         for (size_t i = size_t(0); i < selections.size(); ++i)
         {
-            m_tblListBoxSel.push_back(value_preserving_cast<int>(selections[i]));
+            m_tblListBoxSel.push_back(value_preserving_cast<int32_t>(selections[i]));
         }
         ar << m_tblListBoxSel;
     }

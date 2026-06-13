@@ -104,7 +104,7 @@ protected:
     uint32_t  m_nComboIndex;
     uint32_t  m_nListTopindex;
 
-    std::vector<int>  m_tblListBoxSel;
+    std::vector<int32_t>  m_tblListBoxSel;
 
 // Overrides
 public:
