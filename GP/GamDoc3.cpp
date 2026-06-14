@@ -675,6 +675,18 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             c_fileFeatures = Features();
         }
 
+        // Before we do the actual save see if the user desires to have
+        // the state of the windows saved. If they do, get the state information.
+        // The state data will be saved during the serialization
+        // process.
+        // Delete old data
+        m_pWinState = NULL;
+        if (m_bSaveWindowPositions)
+        {
+            m_pWinState = new CGpWinStateMgr(*this);
+            m_pWinState->GetStateOfOpenDocumentFrames();
+        }
+
         ar << (BYTE)progVerMajor;
         ar << (BYTE)progVerMinor;
 

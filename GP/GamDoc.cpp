@@ -361,17 +361,6 @@ bool CGamDoc::OnSaveDocument(const wxString& pszPathName)
             CFile::Rename(pszPathName, szTmp);
         }
     }
-    // Before we do the actual save see if the user desires to have
-    // the state of the windows saved. If they do, get the state information.
-    // The state data will be saved during the serialization
-    // process.
-    // Delete old data
-    m_pWinState = NULL;
-    if (m_bSaveWindowPositions)
-    {
-        m_pWinState = new CGpWinStateMgr(*this);
-        m_pWinState->GetStateOfOpenDocumentFrames();
-    }
 
     return wxDocument::OnSaveDocument(pszPathName);
 }
