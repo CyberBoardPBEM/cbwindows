@@ -1403,7 +1403,17 @@ const OwnerPtr<CWordArray> ToCWordArray(const std::vector<XxxxIDExt<PREFIX, UNDE
     retval->SetSize(value_preserving_cast<INT_PTR>(v.size()));
     for (INT_PTR i = 0 ; i < retval->GetSize() ; ++i)
     {
-        (*retval)[i] = value_preserving_cast<uint16_t>(static_cast<UNDERLYING_TYPE>(v[value_preserving_cast<size_t>(i)]));
+        XxxxIDExt<PREFIX, UNDERLYING_TYPE> id = v[value_preserving_cast<size_t>(i)];
+        /* the invalid values are 0xffffffff,
+            which doesn't fit in uint16_t */
+        if (id != Invalid_v<XxxxIDExt<PREFIX, UNDERLYING_TYPE>>)
+        {
+            (*retval)[i] = value_preserving_cast<uint16_t>(static_cast<UNDERLYING_TYPE>(id));
+        }
+        else
+        {
+            (*retval)[i] = 0xFFFF;
+        }
     }
     return retval;
 }
@@ -1416,7 +1426,16 @@ std::vector<T> ToVector(const CWordArray& a)
     retval.reserve(value_preserving_cast<size_t>(a.GetSize()));
     for (INT_PTR i = 0 ; i < a.GetSize() ; ++i)
     {
-        retval.push_back(static_cast<T>(a[i]));
+        uint16_t id = a[i];
+        // see ToCWordArray()
+        if (id != 0xFFFF)
+        {
+            retval.push_back(static_cast<T>(a[i]));
+        }
+        else
+        {
+            retval.push_back(Invalid_v<T>);
+        }
     }
     return retval;
 }
