@@ -518,6 +518,7 @@ inline const Features& GetCBFeatures()
             if (GetSaveFileVersion() >= NumVersion(5, 0))
             {
                 ffp.features.Add(ftrImgBMPZlib);
+                ffp.features.Add(ftrAuiLayout);
             }
             CbGetApp().ParseCommandLine(ffp);
         }
@@ -841,6 +842,49 @@ namespace CB
     }
 }
 
+inline CArchive& operator<<(CArchive& ar, const std::byte& b)
+{
+    return ar << static_cast<unsigned char>(b);
+}
+
+inline CArchive& operator>>(CArchive& ar, std::byte& b)
+{
+    unsigned char temp;
+    ar >> temp;
+    b = static_cast<std::byte>(temp);
+    return ar;
+}
+
+inline CArchive& operator<<(CArchive& ar, const wxPoint& p)
+{
+    return ar   << value_preserving_cast<int32_t>(p.x)
+                << value_preserving_cast<int32_t>(p.y);
+}
+
+inline CArchive& operator>>(CArchive& ar, wxPoint& p)
+{
+    int32_t x, y;
+    ar >> x >> y;
+    p.x = value_preserving_cast<decltype(p.x)>(x);
+    p.y = value_preserving_cast<decltype(p.y)>(y);
+    return ar;
+}
+
+inline CArchive& operator<<(CArchive& ar, const wxSize& s)
+{
+    return ar   << value_preserving_cast<int32_t>(s.x)
+                << value_preserving_cast<int32_t>(s.y);
+}
+
+inline CArchive& operator>>(CArchive& ar, wxSize& s)
+{
+    int32_t x, y;
+    ar >> x >> y;
+    s.x = value_preserving_cast<decltype(s.x)>(x);
+    s.y = value_preserving_cast<decltype(s.y)>(y);
+    return ar;
+}
+
 template<typename T, std::enable_if_t<std::is_same_v<T, CWordArray> ||
                                         std::is_same_v<T, CDWordArray> ||
                                         std::is_same_v<T, CArray<int, int>>, bool> /*= true*/>
@@ -888,6 +932,63 @@ CArchive& operator>>(CArchive& ar, std::vector<T>& v)
     for (size_t i = size_t(0) ; i < v.size() ; ++i)
     {
         ar >> v[i];
+    }
+    return ar;
+}
+
+template<typename KEY, typename VALUE, typename PRED>
+CArchive& operator<<(CArchive& ar, const std::map<KEY, VALUE, PRED>& map)
+{
+    CB::WriteCount(ar, map.size());
+    for (const std::pair<KEY, VALUE>& pair : map)
+    {
+        ar << pair.first << pair.second;
+    }
+    return ar;
+}
+
+template<typename KEY, typename VALUE, typename PRED>
+CArchive& operator>>(CArchive& ar, std::map<KEY, VALUE, PRED>& map)
+{
+    size_t size = CB::ReadCount(ar);
+    for (size_t i = size_t(0) ; i < size ; ++i)
+    {
+        KEY key;
+        VALUE value;
+        ar >> key >> value;
+        map.emplace(std::move(key), std::move(value));
+    }
+    return ar;
+}
+
+template<typename T>
+CArchive& operator<<(CArchive& ar, const std::optional<T>& o)
+{
+    bool b = bool(o);
+    ar << b;
+    if (b)
+    {
+        ar << *o;
+    }
+    return ar;
+}
+
+template<typename T>
+CArchive& operator>>(CArchive& ar, std::optional<T>& o)
+{
+    bool b;
+    ar >> b;
+    if (b)
+    {
+        if (!o)
+        {
+            o.emplace();
+        }
+        ar >> *o;
+    }
+    else
+    {
+        o = std::nullopt;
     }
     return ar;
 }

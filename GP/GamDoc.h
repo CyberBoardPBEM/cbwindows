@@ -81,6 +81,7 @@ class CRollState;
 class CGpWinStateMgr;
 class CPlayerManager;
 class CGamProjView;
+class CGsnProjView;
 class CSendMsgDialog;
 class CMarkerPalette;
 class CTrayPalette;
@@ -414,6 +415,8 @@ public:
     void CreateNewFrame(const CB::string& pszTitle,
         CPlayBoard& board);
     CGamProjView& FindProjectView() const;
+    CGsnProjView& FindScenarioView() const;
+    CB::View& FindProjectOrScenarioView() const;
     CPlayBoardView* FindPBoardView(const CPlayBoard& pPBoard) const;
     CPlayBoardView* MakeSurePBoardVisible(CPlayBoard& pPBoard);
     void GetDocumentFrameList(std::vector<CB::not_null<CFrameWnd*>>& tblFrames) const;

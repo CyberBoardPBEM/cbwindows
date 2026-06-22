@@ -36,31 +36,43 @@ wxDEFINE_EVENT(WM_WINSTATE_WX, WinStateEvent);
 ///////////////////////////////////////////////////////////////////////////
 // Returns FALSE if no frame restoration data is supplied by frames.
 
-BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
+BOOL CWinStateManager::GetStateOfOpenDocumentFrames(const Features& ff)
 {
-    // First entry in the frame list is the main frame...
-
-    OwnerPtr<CWinStateElement> pWse(GetWindowState(dynamic_cast<wxFrame&>(CB::GetMainWndWx())));
-
-    pWse->m_wWinCode = wincodeMainFrame;
-    m_pList.push_back(std::move(pWse));
-
-    // Then we need to build a list of MDI frames that are in Z
-    // order so we can restore the proper visual order later.
-
-    std::vector<RefPtr<wxFrame>> tblFrame = GetDocumentFrameList();         // Get's unordered list
-    ArrangeFrameListInZOrder(tblFrame);     // Order 'em
-
-    // Scan the list in reverse Z order and obtain serialized
-    // data needed to later restore the window state.
-
-    for (size_t i = tblFrame.size(); i > 0; i--)
+    if (!ff.Check(ftrAuiLayout))
     {
-        wxFrame& pWnd = *tblFrame.at(i - size_t(1));
-        OwnerPtr<CWinStateElement> pWse(GetWindowState(pWnd));
-        pWse->m_wWinCode = wincodeViewFrame;
-        OnAnnotateWinStateElement(*pWse, pWnd);
+        // First entry in the frame list is the main frame...
+
+        OwnerPtr<CWinStateElement> pWse(GetWindowState(dynamic_cast<wxFrame&>(CB::GetMainWndWx())));
+
+        pWse->m_wWinCode = wincodeMainFrame;
         m_pList.push_back(std::move(pWse));
+
+        // Then we need to build a list of MDI frames that are in Z
+        // order so we can restore the proper visual order later.
+
+        std::vector<RefPtr<wxFrame>> tblFrame = GetDocumentFrameList();         // Get's unordered list
+        ArrangeFrameListInZOrder(tblFrame);     // Order 'em
+
+        // Scan the list in reverse Z order and obtain serialized
+        // data needed to later restore the window state.
+
+        for (size_t i = tblFrame.size(); i > size_t(0); i--)
+        {
+            wxFrame& pWnd = *tblFrame.at(i - size_t(1));
+            OwnerPtr<CWinStateElement> pWse(GetWindowState(pWnd));
+            pWse->m_wWinCode = wincodeViewFrame;
+            OnAnnotateWinStateElement(*pWse, pWnd);
+            m_pList.push_back(std::move(pWse));
+        }
+    }
+    else
+    {
+        wxASSERT(!serializer);
+        wxTopLevelWindow& mainfrm = dynamic_cast<wxTopLevelWindow&>(CB::GetMainWndWx());
+        wxAuiManager& auiMgr = CheckedDeref(wxAuiManager::GetManager(&mainfrm));
+        serializer = NewSerializer(ff, auiMgr, *m_pDoc);
+        mainfrm.SaveGeometry(*serializer);
+        auiMgr.SaveLayout(*serializer);
     }
     return TRUE;
 }
@@ -69,65 +81,75 @@ BOOL CWinStateManager::GetStateOfOpenDocumentFrames()
 
 void CWinStateManager::RestoreStateOfDocumentFrames()
 {
-    CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
-    // Processes only the main frame and the MDI child frames.
-    // All other records are ignored.
-    for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
+    if (!fileFeatures.Check(ftrAuiLayout))
     {
-        CWinStateElement& pWse = **pos;
-        if (pWse.m_wWinCode == wincodeMainFrame)
+        CGamDoc::SetLoadingVersionGuard setLoadingVersionGuard(fileVersion);
+        // Processes only the main frame and the MDI child frames.
+        // All other records are ignored.
+        for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
         {
-            wxFrame& pWnd = dynamic_cast<wxFrame&>(CB::GetMainWndWx());
-            // TODO:  wxWidgets doesn't wrap all of this
-            CRect rctVScreen;
-            SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
-            int cxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-            if (cxVScreen > 0)
+            CWinStateElement& pWse = **pos;
+            if (pWse.m_wWinCode == wincodeMainFrame)
             {
-                // Multimonitor metrics are are supported
-                int cyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-                int xVScreen = GetSystemMetrics(SM_XVIRTUALSCREEN);
-                int yVScreen = GetSystemMetrics(SM_YVIRTUALSCREEN);
-                rctVScreen.SetRect(xVScreen, yVScreen, xVScreen + cxVScreen, yVScreen + cyVScreen);
-            }
-            else
-            {
-                // Otherwise set the virtual screen rect to the primary
-                // desktop dimensions.
+                wxFrame& pWnd = dynamic_cast<wxFrame&>(CB::GetMainWndWx());
+                // TODO:  wxWidgets doesn't wrap all of this
+                CRect rctVScreen;
                 SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
-            }
-            CRect rctDesktop;
-            SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctDesktop, 0);
+                int cxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+                if (cxVScreen > 0)
+                {
+                    // Multimonitor metrics are are supported
+                    int cyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+                    int xVScreen = GetSystemMetrics(SM_XVIRTUALSCREEN);
+                    int yVScreen = GetSystemMetrics(SM_YVIRTUALSCREEN);
+                    rctVScreen.SetRect(xVScreen, yVScreen, xVScreen + cxVScreen, yVScreen + cyVScreen);
+                }
+                else
+                {
+                    // Otherwise set the virtual screen rect to the primary
+                    // desktop dimensions.
+                    SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
+                }
+                CRect rctDesktop;
+                SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctDesktop, 0);
 
-            // Clone the saved window position for easier calculations
-            CRect rctSaved(pWse.m_wndState.rcNormalPosition);
+                // Clone the saved window position for easier calculations
+                CRect rctSaved(pWse.m_wndState.rcNormalPosition);
 
-            // Check if the Window's midpoint is visible. If so leave it's position alone.
-            if (!rctVScreen.PtInRect(rctSaved.CenterPoint()))
-            {
-                // Force the window onto the primary desktop area.
-                pWse.m_wndState.rcNormalPosition = rctDesktop;
+                // Check if the Window's midpoint is visible. If so leave it's position alone.
+                if (!rctVScreen.PtInRect(rctSaved.CenterPoint()))
+                {
+                    // Force the window onto the primary desktop area.
+                    pWse.m_wndState.rcNormalPosition = rctDesktop;
+                }
+                if (pWse.m_wndState.showCmd == SW_SHOWMAXIMIZED)
+                {
+                    wxASSERT(dynamic_cast<wxTopLevelWindow*>(&pWnd));
+                    static_cast<wxTopLevelWindow&>(pWnd).Maximize();
+                }
+                else
+                {
+                    wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
+                    pWnd.SetSize(rect.GetSize());
+                }
+                RestoreWindowState(pWnd, pWse);
             }
-            if (pWse.m_wndState.showCmd == SW_SHOWMAXIMIZED)
+            else if (pWse.m_wWinCode == wincodeViewFrame)
             {
-                wxASSERT(dynamic_cast<wxTopLevelWindow*>(&pWnd));
-                static_cast<wxTopLevelWindow&>(pWnd).Maximize();
-            }
-            else
-            {
+                wxFrame& pWnd = OnGetFrameForWinStateElement(pWse);
+                pWnd.Raise();
                 wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
                 pWnd.SetSize(rect.GetSize());
+                RestoreWindowState(pWnd, pWse);
             }
-            RestoreWindowState(pWnd, pWse);
         }
-        else if (pWse.m_wWinCode == wincodeViewFrame)
-        {
-            wxFrame& pWnd = OnGetFrameForWinStateElement(pWse);
-            pWnd.Raise();
-            wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
-            pWnd.SetSize(rect.GetSize());
-            RestoreWindowState(pWnd, pWse);
-        }
+    }
+    else
+    {
+        wxTopLevelWindow& mainfrm = dynamic_cast<wxTopLevelWindow&>(CB::GetMainWndWx());
+        wxAuiManager& auiMgr = CheckedDeref(wxAuiManager::GetManager(&mainfrm));
+        mainfrm.RestoreToGeometry(CheckedDeref(serializer));
+        auiMgr.LoadLayout(*serializer);
     }
 }
 
@@ -236,49 +258,69 @@ void CWinStateManager::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        if (m_pList.empty())
+        if (!CB::GetFeatures(ar).Check(ftrAuiLayout))
         {
-            ar << (uint32_t)0;
-            return;
-        }
-        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
-        {
-            ar << value_preserving_cast<uint32_t>(m_pList.size());
+            if (m_pList.empty())
+            {
+                ar << (uint32_t)0;
+                return;
+            }
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
+            {
+                ar << value_preserving_cast<uint32_t>(m_pList.size());
+            }
+            else
+            {
+                CB::WriteCount(ar, m_pList.size());
+            }
+            for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
+            {
+                CWinStateElement& pWse = **pos;
+                pWse.Serialize(ar);
+            }
         }
         else
         {
-            CB::WriteCount(ar, m_pList.size());
-        }
-        for (CWinStateList::iterator pos = m_pList.begin() ; pos != m_pList.end() ; ++pos)
-        {
-            CWinStateElement& pWse = **pos;
-            pWse.Serialize(ar);
+            CheckedDeref(serializer).Store(ar);
         }
     }
     else
     {
-        wxASSERT(m_pList.empty());
-        size_t dwCount;
-        if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
+        if (!CB::GetFeatures(ar).Check(ftrAuiLayout))
         {
-            uint32_t temp;
-            ar >> temp;
-            dwCount = temp;
+            wxASSERT(m_pList.empty());
+            size_t dwCount;
+            if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
+            {
+                uint32_t temp;
+                ar >> temp;
+                dwCount = temp;
+            }
+            else
+            {
+                dwCount = CB::ReadCount(ar);
+            }
+            if (dwCount == size_t(0))
+                return;
+            fileVersion = CB::GetVersion(ar);
+            fileFeatures = CB::GetFeatures(ar);
+            m_pList.clear();
+            while (dwCount--)
+            {
+                OwnerPtr<CWinStateElement> pWse(OnCreateWinStateElement());
+                pWse->Serialize(ar);
+                m_pList.push_back(std::move(pWse));
+            }
         }
         else
         {
-            dwCount = CB::ReadCount(ar);
-        }
-        if (dwCount == size_t(0))
-            return;
-        fileVersion = CB::GetVersion(ar);
-        fileFeatures = CB::GetFeatures(ar);
-        m_pList.clear();
-        while (dwCount--)
-        {
-            OwnerPtr<CWinStateElement> pWse(OnCreateWinStateElement());
-            pWse->Serialize(ar);
-            m_pList.push_back(std::move(pWse));
+            wxASSERT(!serializer);
+            fileVersion = CB::GetVersion(ar);
+            fileFeatures = CB::GetFeatures(ar);
+            wxTopLevelWindow& mainfrm = dynamic_cast<wxTopLevelWindow&>(CB::GetMainWndWx());
+            wxAuiManager& auiMgr = CheckedDeref(wxAuiManager::GetManager(&mainfrm));
+            serializer = NewSerializer(fileFeatures, auiMgr, *m_pDoc);
+            serializer->Load(ar);
         }
     }
 }
@@ -447,5 +489,170 @@ CArchive& AFXAPI operator>>(CArchive& ar, CWinPlacement& wndPlace)
     ar >> dwTmp; wndPlace.rcNormalPosition.right = value_preserving_cast<LONG>(static_cast<int32_t>(dwTmp));
 
     return ar;
+}
+
+// CB4
+CWinStateManager::Serializer::Serializer(const Features& ftrs, wxAuiManager& mgr, CGamDoc& d) :
+    wxAuiDeserializer(mgr),
+    features(ftrs),
+    manager(mgr),
+    doc(d)
+{
+}
+
+void CWinStateManager::Serializer::Store(CArchive& ar) const
+{
+    wxASSERT(!geometry.empty());
+    ar << geometry;
+
+    wxASSERT(!paneLayoutInfos.empty());
+    ar << paneLayoutInfos;
+}
+
+void CWinStateManager::Serializer::Load(CArchive& ar)
+{
+    wxASSERT(geometry.empty());
+    ar >> geometry;
+
+    wxASSERT(paneLayoutInfos.empty());
+    size_t size = CB::ReadCount(ar);
+    paneLayoutInfos.reserve(size);
+    for (size_t i = size_t(0) ; i < size ; ++i)
+    {
+        paneLayoutInfos.emplace_back(ReadwxAuiPaneLayoutInfo(ar));
+    }
+}
+
+/**
+    Save a single field with the given value.
+
+    Note that if this function returns @false, SaveGeometry() supposes
+    that saving the geometry failed and returns @false itself, without
+    even trying to save anything else.
+
+    @param name uniquely identifies the field but is otherwise
+        arbitrary.
+    @param value value of the field (can be positive or negative, i.e.
+        it can't be assumed that a value like -1 is invalid).
+
+    @return @true if the field was saved or @false if saving it failed,
+        resulting in wxTopLevelWindow::SaveGeometry() failure.
+    */
+bool CWinStateManager::Serializer::SaveValue(const wxString& name, int value)
+{
+    geometry[name] = value_preserving_cast<int32_t>(value);
+    return true;
+}
+
+/**
+    Try to restore a single field.
+
+    Unlike for SaveValue(), returning @false from this function may
+    indicate that the value simply wasn't present and doesn't prevent
+    RestoreToGeometry() from continuing with trying to restore the
+    other values.
+
+    @param name uniquely identifies the field
+    @param value non-null pointer to the value to be filled by this
+        function
+
+    @return @true if the value was retrieved or @false if it wasn't
+        found or an error occurred.
+    */
+bool CWinStateManager::Serializer::RestoreValue(const wxString& name, int* value) const
+{
+    auto it = geometry.find(name);
+    if (it != geometry.end())
+    {
+        CheckedDeref(value) = value_preserving_cast<int>(it->second);
+        return true;
+    }
+    return false;
+}
+
+// Called before starting to save information about the panes, does nothing
+// by default.
+void CWinStateManager::Serializer::BeforeSavePanes()
+{
+    wxASSERT(paneLayoutInfos.empty());
+}
+
+// Save information about the given pane.
+void CWinStateManager::Serializer::SavePane(const wxAuiPaneLayoutInfo& pane)
+{
+    paneLayoutInfos.emplace_back(pane);
+}
+
+// Called before starting to save information about the tabs in the
+// notebook in the AUI pane with the given name.
+void CWinStateManager::Serializer::BeforeSaveNotebook(const wxString& name)
+{
+    wxASSERT(name == "mdiclient");
+}
+
+// Load information about all the panes previously saved with SavePane().
+std::vector<wxAuiPaneLayoutInfo> CWinStateManager::Serializer::LoadPanes()
+{
+    wxASSERT(!paneLayoutInfos.empty());
+    std::vector<wxAuiPaneLayoutInfo> retval = std::move(paneLayoutInfos);
+    return retval;
+}
+
+CArchive& operator<<(CArchive& ar, const wxAuiDockLayoutInfo& dock)
+{
+    return ar   << value_preserving_cast<int32_t>(dock.dock_direction)
+                << value_preserving_cast<int32_t>(dock.dock_layer)
+                << value_preserving_cast<int32_t>(dock.dock_row)
+                << value_preserving_cast<int32_t>(dock.dock_pos)
+                << value_preserving_cast<int32_t>(dock.dock_proportion)
+                << value_preserving_cast<int32_t>(dock.dock_size);
+}
+
+CArchive& operator>>(CArchive& ar, wxAuiDockLayoutInfo& dock)
+{
+    int32_t temp;
+    ar >> temp;
+    dock.dock_direction = value_preserving_cast<int>(temp);
+    ar >> temp;
+    dock.dock_layer = value_preserving_cast<int>(temp);
+    ar >> temp;
+    dock.dock_row = value_preserving_cast<int>(temp);
+    ar >> temp;
+    dock.dock_pos = value_preserving_cast<int>(temp);
+    ar >> temp;
+    dock.dock_proportion = value_preserving_cast<int>(temp);
+    ar >> temp;
+    dock.dock_size = value_preserving_cast<int>(temp);
+    return ar;
+}
+
+CArchive& operator<<(CArchive& ar, const wxAuiPaneLayoutInfo& dock)
+{
+    return ar   << static_cast<const wxAuiDockLayoutInfo&>(dock)
+                << CB::string(dock.name)
+                << dock.floating_pos
+                << dock.floating_size
+                << dock.floating_client_size
+                << dock.is_maximized
+                << dock.is_hidden;
+}
+
+/* KLUDGE:  wxAuiPaneLayoutInfo has no default ctor
+CArchive& operator>>(CArchive& ar, wxAuiPaneLayoutInfo& dock);
+*/
+wxAuiPaneLayoutInfo ReadwxAuiPaneLayoutInfo(CArchive& ar)
+{
+    wxAuiDockLayoutInfo temp1;
+    ar >> temp1;
+    CB::string temp2;
+    ar >> temp2;
+    wxAuiPaneLayoutInfo retval(temp2);
+    static_cast<wxAuiDockLayoutInfo&>(retval) = temp1;
+    ar  >> retval.floating_pos
+        >> retval.floating_size
+        >> retval.floating_client_size
+        >> retval.is_maximized
+        >> retval.is_hidden;
+    return retval;
 }
 

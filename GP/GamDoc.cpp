@@ -65,6 +65,7 @@
 #include    "PalTray.h"
 #include    "PalReadMsg.h"
 #include    "VwPrjgam.h"
+#include    "VwPrjgsn.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -580,6 +581,33 @@ CGamProjView& CGamDoc::FindProjectView() const
     }
     wxASSERT(!"no project view");
     AfxThrowNotSupportedException();
+}
+
+CGsnProjView& CGamDoc::FindScenarioView() const
+{
+    const wxList& views = GetViews();
+    for (auto it = views.begin() ; it != views.end() ; ++it)
+    {
+        wxGsnProjView* pView = dynamic_cast<wxGsnProjView*>(*it);
+        if (pView)
+        {
+            return *pView;
+        }
+    }
+    wxASSERT(!"no project view");
+    AfxThrowNotSupportedException();
+}
+
+CB::View& CGamDoc::FindProjectOrScenarioView() const
+{
+    if (!IsScenario())
+    {
+        return FindProjectView();
+    }
+    else
+    {
+        return FindScenarioView();
+    }
 }
 
 CPlayBoardView* CGamDoc::FindPBoardView(const CPlayBoard& pPBoard) const

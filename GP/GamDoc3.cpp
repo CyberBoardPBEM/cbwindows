@@ -667,12 +667,12 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pWinState = NULL;
         if (m_bSaveWindowPositions)
         {
-#if 0
-            m_pWinState = new CGpWinStateMgr(*this);
-            m_pWinState->GetStateOfOpenDocumentFrames();
-#else
-            wxASSERT(!"TODO:");
-#endif
+            if (GetCBFeatures().Check(ftrAuiLayout))
+            {
+                CB::AddFeature(ar, ftrAuiLayout);
+                m_pWinState = new CGpWinStateMgr(*this);
+                m_pWinState->GetStateOfOpenDocumentFrames(CB::GetFeatures(ar));
+            }
         }
 
         ar << (BYTE)progVerMajor;

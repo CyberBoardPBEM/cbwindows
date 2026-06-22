@@ -106,7 +106,7 @@ public:
     virtual ~CWinStateManager() = default;
 
 public:
-    BOOL GetStateOfOpenDocumentFrames();
+    BOOL GetStateOfOpenDocumentFrames(const Features& fileFeatures);
     void RestoreStateOfDocumentFrames();
 
     void Serialize(CArchive& ar);
@@ -151,11 +151,98 @@ protected:
 
 protected:
     RefPtr<CGamDoc> m_pDoc;
+    // for RestoreStateOfDocumentFrames, which is after ar is destroyed
     int fileVersion = INT_MAX;
     Features fileFeatures;
+
+    // non-ftrAuilayout
     typedef std::list<OwnerPtr<CWinStateElement>> CWinStateList;
     CWinStateList m_pList;            // Win state element list
+
+    // ftrAuilayout
+    class Serializer : public wxTopLevelWindow::GeometryStore,
+                        public wxAuiSerializer,
+                        public wxAuiDeserializer
+    {
+    public:
+        Serializer(const Features& ftrs, wxAuiManager& mgr, CGamDoc& d);
+
+        virtual void Store(CArchive& ar) const;
+        virtual void Load(CArchive& ar);
+
+        // GeometryStore
+        /**
+            Save a single field with the given value.
+
+            Note that if this function returns @false, SaveGeometry() supposes
+            that saving the geometry failed and returns @false itself, without
+            even trying to save anything else.
+
+            @param name uniquely identifies the field but is otherwise
+                arbitrary.
+            @param value value of the field (can be positive or negative, i.e.
+                it can't be assumed that a value like -1 is invalid).
+
+            @return @true if the field was saved or @false if saving it failed,
+                resulting in wxTopLevelWindow::SaveGeometry() failure.
+         */
+        bool SaveValue(const wxString& name, int value) override;
+
+        /**
+            Try to restore a single field.
+
+            Unlike for SaveValue(), returning @false from this function may
+            indicate that the value simply wasn't present and doesn't prevent
+            RestoreToGeometry() from continuing with trying to restore the
+            other values.
+
+            @param name uniquely identifies the field
+            @param value non-null pointer to the value to be filled by this
+                function
+
+            @return @true if the value was retrieved or @false if it wasn't
+                found or an error occurred.
+         */
+        bool RestoreValue(const wxString& name, int* value) const override;
+
+        // AuiSerializer
+        // Called before starting to save information about the panes, does nothing
+        // by default.
+        void BeforeSavePanes() override;
+        // Save information about the given pane.
+        void SavePane(const wxAuiPaneLayoutInfo& pane) override;
+
+        // Called before starting to save information about the tabs in the
+        // notebook in the AUI pane with the given name.
+        void BeforeSaveNotebook(const wxString& name) override;
+
+        // AuiDeserializer
+        // Load information about all the panes previously saved with SavePane().
+        std::vector<wxAuiPaneLayoutInfo> LoadPanes() override;
+
+    protected:
+        const Features& features;
+        wxAuiManager& manager;
+        CGamDoc& doc;
+
+        std::map<CB::string, int32_t> geometry;
+
+        std::vector<wxAuiPaneLayoutInfo> paneLayoutInfos;
+    };
+    virtual OwnerPtr<Serializer> NewSerializer(const Features& ftrs, wxAuiManager& mgr, CGamDoc& d) = 0;
+
+private:
+    OwnerOrNullPtr<Serializer> serializer;
 };
+
+CArchive& operator<<(CArchive& ar, const wxAuiDockLayoutInfo& dock);
+CArchive& operator>>(CArchive& ar, wxAuiDockLayoutInfo& dock);
+
+CArchive& operator<<(CArchive& ar, const wxAuiPaneLayoutInfo& dock);
+/* KLUDGE:  wxAuiPaneLayoutInfo has no default ctor
+CArchive& operator>>(CArchive& ar, wxAuiPaneLayoutInfo& dock);
+*/
+wxAuiPaneLayoutInfo ReadwxAuiPaneLayoutInfo(CArchive& ar);
 
 #endif
 

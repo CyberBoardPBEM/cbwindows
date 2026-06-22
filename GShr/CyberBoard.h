@@ -65,6 +65,7 @@
 #include <WinExt.h>
 
 #include <wx/aui/aui.h>
+#include "wx/aui/serializer.h"
 #include <wx/aui/tabmdi.h>
 #include <wx/checkbox.h>
 #include <wx/checklst.h>
