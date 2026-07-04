@@ -76,6 +76,7 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
     EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
     EVT_AUI_PANE_CLOSE(OnPaneClose)
+    EVT_IDLE(OnIdle)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -646,8 +647,10 @@ void CMainFrame::OnHelpIndex()
 
 ///////////////////////////////////////////////////////////////////////
 
-void CMainFrame::OnIdle()
+void CMainFrame::OnIdle(wxIdleEvent& event)
 {
+    event.Skip();
+
     if (GetCurrentDocument() == NULL)
     {
        ShowPalettePanes(FALSE);
@@ -658,8 +661,6 @@ void CMainFrame::OnIdle()
         auiMgrScheduleUpdate = false;
         auiManager.Update();
     }
-
-    CB::FreezeUntilIdleMixin::OnIdle();
 }
 
 #if 0

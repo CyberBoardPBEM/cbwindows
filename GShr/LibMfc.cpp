@@ -1040,6 +1040,12 @@ CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __fu
 CB::FreezeUntilIdleMixin::FreezeUntilIdleMixin(wxWindow& inw) :
     w(inw)
 {
+    w.Bind(wxEVT_IDLE, &FreezeUntilIdleMixin::OnIdle, this);
+}
+
+CB::FreezeUntilIdleMixin::~FreezeUntilIdleMixin()
+{
+    w.Unbind(wxEVT_IDLE, &FreezeUntilIdleMixin::OnIdle, this);
 }
 
 void CB::FreezeUntilIdleMixin::FreezeUntilIdle()
@@ -1051,13 +1057,14 @@ void CB::FreezeUntilIdleMixin::FreezeUntilIdle()
     }
 }
 
-void CB::FreezeUntilIdleMixin::OnIdle()
+void CB::FreezeUntilIdleMixin::OnIdle(wxIdleEvent& event)
 {
     if (scheduleThaw)
     {
         w.Thaw();
         scheduleThaw = false;
     }
+    event.Skip();
 }
 
 CB::ToolTip::~ToolTip()

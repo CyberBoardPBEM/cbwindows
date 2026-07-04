@@ -84,6 +84,7 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     EVT_UPDATE_UI_RANGE(wxID_FILE1, wxID_FILE9, OnUpdateEnable)
     EVT_MENU(XRCID("ID_VIEW_STATUS_BAR"), OnViewStatusBar)
     EVT_UPDATE_UI(XRCID("ID_VIEW_STATUS_BAR"), OnUpdateViewStatusBar)
+    EVT_IDLE(OnIdle)
 wxEND_EVENT_TABLE()
 
 static const int indicators[] =
@@ -636,8 +637,10 @@ BOOL CMainFrame::IsQualifyingView(wxWindow& pWnd, const wxClassInfo** pRtc)
 
 ///////////////////////////////////////////////////////////////////////
 
-void CMainFrame::OnIdle()
+void CMainFrame::OnIdle(wxIdleEvent& event)
 {
+    event.Skip();
+
     if (IsIconized())         // No window palette processing if app minimized
         return;
 
@@ -645,8 +648,8 @@ void CMainFrame::OnIdle()
 
     if (m_wndColorPal->GetHandle() && m_wndColorPal->IsShownOnScreen())
     {
-        wxCommandEvent event(wxEVT_MENU, XRCID("WM_IDLEUPDATECMDUI"));
-        m_wndColorPal->ProcessWindowEvent(event);
+        wxCommandEvent event2(wxEVT_MENU, XRCID("WM_IDLEUPDATECMDUI"));
+        m_wndColorPal->ProcessWindowEvent(event2);
     }
 
     if (auiMgrScheduleUpdate)
@@ -654,8 +657,6 @@ void CMainFrame::OnIdle()
         auiMgrScheduleUpdate = false;
         auiManager.Update();
     }
-
-    CB::FreezeUntilIdleMixin::OnIdle();
 }
 
 namespace {

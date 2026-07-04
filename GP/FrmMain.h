@@ -56,7 +56,7 @@ public:
     void UpdatePaletteWindow(wxWindow& pWnd, BOOL bIsOn);
     void ShowPalettePanes(bool bShow);
     void ShowPane(wxWindow& wnd, bool show);
-    void OnIdle();
+    void OnIdle(wxIdleEvent& event);
 #if 0
     BOOL OnCloseMiniFrame(CPaneFrameWnd* pWnd) override;
     BOOL OnCloseDockingPane(CDockablePane* pWnd) override;

@@ -599,8 +599,6 @@ BOOL CGpApp::OnIdle(LONG lCount)
         pDoc->OnIdle(bAppVisible && pDoc == pCurDoc);
 
     }
-    // Main idle processing...
-    mainWnd->OnIdle();
     // Finally MFC idle processing...
     return CWinAppEx::OnIdle(lCount);
 }

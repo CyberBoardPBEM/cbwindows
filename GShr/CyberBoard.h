@@ -2154,12 +2154,12 @@ namespace CB
     {
     public:
         FreezeUntilIdleMixin(wxWindow& inw);
+        ~FreezeUntilIdleMixin();
         // avoid compiler preferring copy ctor to above ctor
         FreezeUntilIdleMixin(const FreezeUntilIdleMixin&) = delete;
         void FreezeUntilIdle();
-    protected:
-        void OnIdle();
     private:
+        void OnIdle(wxIdleEvent& event);
         wxWindow& w;
         bool scheduleThaw = false;
     };

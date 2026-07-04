@@ -66,7 +66,7 @@ public:
 
 // Implementation
 public:
-    void OnIdle();
+    void OnIdle(wxIdleEvent& event);
     void OnPaneClose(wxAuiManagerEvent& event);
 
     virtual ~CMainFrame();
