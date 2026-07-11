@@ -38,7 +38,7 @@
 class WinStateEvent : public wxEvent
 {
 public:
-    WinStateEvent(CArchive& ar, bool restore);
+    WinStateEvent(wxWindow& dest, CArchive& ar, bool restore);
 
     /* KLUDGE:  unlike MFC, wxSplitterWindow doesn't support 2x2,
                 so sometimes need to consume excess window state
@@ -73,12 +73,13 @@ private:
     std::optional<bool> result = std::nullopt;
 };
 wxDECLARE_EVENT(WM_WINSTATE_WX, WinStateEvent);
-inline WinStateEvent::WinStateEvent(CArchive& a, bool restore) :
+inline WinStateEvent::WinStateEvent(wxWindow& dest, CArchive& a, bool restore) :
     wxEvent(wxID_ANY, WM_WINSTATE_WX),
     ar(a)
 {
     WXUNUSED_UNLESS_DEBUG(restore);
     wxASSERT(bool(ar.IsLoading()) == restore);
+    SetEventObject(&dest);
 }
 typedef void (wxEvtHandler::* WinStateEventFunction)(WinStateEvent&);
 #define WinStateEventHandler(func) wxEVENT_HANDLER_CAST(WinStateEventFunction, func)

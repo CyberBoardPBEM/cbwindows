@@ -37,6 +37,7 @@
     #include "../GM/Resource.h"
     #include "../GM/PalColor.h"
 #endif
+#include    "WinState.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -1023,6 +1024,14 @@ bool CB::View::TryBefore(wxEvent& event)
         event.GetEventObject() != &GetWindow())
     {
 //CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __func__, event);
+        return false;
+    }
+
+    // view shouldn't process a different window's WinState events
+    if (dynamic_cast<WinStateEvent*>(&event) &&
+        event.GetEventObject() != &GetWindow())
+    {
+//CPP20_TRACE("{}({})->{}({}({})):  reject\n", typeid(*this).name(), (void*)this, __func__, typeid(event).name(), (void*)&event);
         return false;
     }
 

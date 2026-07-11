@@ -195,7 +195,7 @@ BOOL CWinStateManager::RestoreWindowState(wxFrame& pWnd, CWinStateElement& pWse)
         CMemFile file(reinterpret_cast<BYTE*>(pWse.m_pWinStateBfr.data()), value_preserving_cast<unsigned>(pWse.m_pWinStateBfr.size()));
         CArchive ar(&file, CArchive::load);
         SetFileFeaturesGuard setFileFeaturesGuard(ar, fileFeatures);
-        WinStateEvent event(ar, true);
+        WinStateEvent event(pWnd, ar, true);
         bOK = pWnd.ProcessWindowEvent(event) &&
                 event.GetResult() &&
                 *event.GetResult();
