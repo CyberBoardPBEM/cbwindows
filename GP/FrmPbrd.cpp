@@ -569,7 +569,94 @@ void CPlayBoardPanel::OnMessageWindowStateMfc(WinStateEvent& event)
 
 void CPlayBoardPanel::OnMessageWindowStateWx(WinStateEvent& event)
 {
-    AfxThrowNotSupportedException();
+    CArchive& ar = event.GetArchive();
+    wxASSERT(CB::GetFeatures(ar).Check(ftrAuiLayout));
+
+    if (ar.IsStoring())
+    {
+        // N.B.:  initializer-list can't contain references
+        for (const wxSplitterWindow* wnd :  {
+                                                &*m_wndSplitter1,
+                                                &*m_wndSplitter2,
+                                                &*m_wndSplitBoards,
+                                            })
+        {
+            ar  << value_preserving_cast<int32_t>(wnd->GetSplitMode())
+                << wnd->IsSplit()
+                << value_preserving_cast<int32_t>(wnd->GetSashPosition())
+                << wnd->GetLastSplitPosition();
+        }
+        ar << ((&GetActiveBoardView() == &*m_vwBoard2) ?
+                    std::byte(2)
+                :
+                    std::byte(1));
+    }
+    else
+    {
+        // N.B.:  initializer-list can't contain references
+        for (wxSplitterWindow* wnd :    {
+                                            &*m_wndSplitter1,
+                                            &*m_wndSplitter2,
+                                            &*m_wndSplitBoards,
+                                        })
+        {
+            int32_t mode;
+            int32_t sashPos;
+            wxPoint lastSplit;
+            bool isSplit;
+            ar >> mode >> isSplit >> sashPos >> lastSplit;
+            wnd->SetSplitMode(static_cast<wxSplitMode>(mode));
+            /* N.B.:  setting sash position
+                before splitting doesn't work right */
+            if (isSplit)
+            {
+                typedef bool (wxSplitterWindow::*Split)(wxWindow*, wxWindow*, int);
+                Split split = wnd->GetSplitMode() == wxSPLIT_HORIZONTAL ?
+                                    &wxSplitterWindow::SplitHorizontally
+                                :
+                                    &wxSplitterWindow::SplitVertically;
+                (wnd->*split)(&*m_vwBoard1, &*m_vwBoard2, 0);
+            }
+            wnd->SetSashPosition(value_preserving_cast<int>(sashPos));
+            wnd->SetLastSplitPosition(lastSplit);
+        }
+        std::byte activeId;
+        ar >> activeId;
+        SetActiveBoardView((activeId == std::byte(2)) ?
+                                *m_vwBoard2
+                            :
+                                *m_vwBoard1);
+    }
+
+    // first view..
+    wxWindow* pWnd = m_wndSplitBoards->GetWindow1();
+    wxASSERT(pWnd != NULL);
+    pWnd->ProcessWindowEvent(event);
+
+    if (m_wndSplitBoards->IsSplit())
+    {
+        // second view...
+        pWnd = m_wndSplitBoards->GetWindow2();
+        wxASSERT(pWnd != NULL &&
+                    pWnd != m_wndSplitBoards->GetWindow1());
+        pWnd->ProcessWindowEvent(event);
+    }
+
+    // Select list view...
+    pWnd = m_wndSplitter2->GetWindow1();
+    pWnd->ProcessWindowEvent(event);
+
+    // Tiny map view...
+    pWnd = m_wndSplitter2->GetWindow2();
+    pWnd->ProcessWindowEvent(event);
+
+    // Finally sync up the select list
+    if (ar.IsLoading())
+    {
+        GetActiveBoardView().NotifySelectListChange();
+    }
+
+    event.SetResult(true);
 }
 
 void CPlayBoardPanel::OnMessageWindowState(WinStateEvent& event)

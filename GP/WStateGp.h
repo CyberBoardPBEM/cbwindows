@@ -60,6 +60,9 @@ private:
         // Called to save information about a single tab control in the given
         // notebook.
         void SaveNotebookTabControl(const wxAuiTabLayoutInfo& tab) override;
+        // Called after the last call to SaveNotebook(), does nothing by default.
+        // We save WinState info
+        void AfterSaveNotebooks() override;
 
         // AuiDeserializer
         // Called before doing anything else, does nothing by default.
@@ -82,6 +85,12 @@ private:
                                    int page,
                                    wxAuiTabCtrl** tabCtrl,
                                    int* tabIndex) override;
+        // Called after restoring everything, calls Update() on the manager by
+        // default.
+        // We restore WinState info
+        /* Restore WinState info after wxAuiManager::Update()
+            because some WinState data depends on window size */
+        void AfterLoad() override;
 
     private:
         /* we can't serialize wxAuiTabLayoutInfo since page
@@ -116,6 +125,15 @@ private:
             void Load(CArchive& ar);
         };
         std::vector<TabLayoutInfo> tabLayoutInfos;
+        class less
+        {
+        public:
+            bool operator()(BoardID left, BoardID right) const
+            {
+                return static_cast<BoardID::UNDERLYING_TYPE>(left) < static_cast<BoardID::UNDERLYING_TYPE>(right);
+            }
+        };
+        std::map<BoardID, std::vector<std::byte>, less> winstates;
 
         /* wx expects LoadNotebookTabs() to report all pages,
             not just new ones, so we need BeforeLoad() to

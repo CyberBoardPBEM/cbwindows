@@ -89,7 +89,7 @@ void CGpWinStateMgr::GpSerializer::Store(CArchive& ar) const
 {
     Serializer::Store(ar);
 
-    ar << tabLayoutInfos;
+    ar << tabLayoutInfos << winstates;
 }
 
 // input direction of Serialize(CArchive&)
@@ -97,8 +97,8 @@ void CGpWinStateMgr::GpSerializer::Load(CArchive& ar)
 {
     Serializer::Load(ar);
 
-    wxASSERT(tabLayoutInfos.empty());
-    ar >> tabLayoutInfos;
+    wxASSERT(tabLayoutInfos.empty() && winstates.empty());
+    ar >> tabLayoutInfos >> winstates;
 }
 
 // Called to save information about a single tab control in the given
@@ -170,6 +170,65 @@ void CGpWinStateMgr::GpSerializer::SaveNotebookTabControl(const wxAuiTabLayoutIn
     if (!tabLayoutInfo.boards.empty())
     {
         tabLayoutInfos.emplace_back(std::move(tabLayoutInfo));
+    }
+}
+
+// Called after the last call to SaveNotebook(), does nothing by default.
+// We save WinState info
+void CGpWinStateMgr::GpSerializer::AfterSaveNotebooks()
+{
+    Serializer::AfterSaveNotebooks();
+
+    // ignore pages belonging to other docs
+    wxList& views = doc.GetViews();
+    for (wxObject* o : views)
+    {
+        CB::View& view = dynamic_cast<CB::View&>(CheckedDeref(o));
+        BoardID bid;
+        if (dynamic_cast<wxGamProjView*>(&view))
+        {
+            /* there must be exactly one non-board page,
+                and it must be the project view,
+                so use nullBid to mean project view */
+            bid = nullBid;
+        }
+        else if (dynamic_cast<CPlayBoardPanelView*>(&view))
+        {
+            // the view associated with the frame
+            CPlayBoardPanelView& wnd = dynamic_cast<CPlayBoardPanelView&>(view);
+            bid = wnd.GetPanel().m_pPBoard->GetBoard()->GetSerialNumber();
+        }
+        else
+        {
+            // ignore views nested in CPlayBoardPanelView
+            continue;
+        }
+        CB::DocChildFrame& frame = view.GetFrame();
+        std::vector<std::byte> winstate;
+        {
+            bool bOK;
+            CMemFile file;
+            {
+                CArchive ar(&file, CArchive::store);
+                CB::SetFeatures(ar, Features(features));
+                WinStateEvent event(frame, ar, false);
+                bOK = frame.ProcessWindowEvent(event) &&
+                        event.GetResult() &&
+                        *event.GetResult();
+                wxASSERT(bOK ||
+                            dynamic_cast<wxGamProjView*>(&view));
+            }
+            if (bOK)
+            {
+                file.SeekToBegin();
+                void* start;
+                void* max;
+                UINT len = file.GetBufferPtr(CMemFile::bufferRead, static_cast<UINT>(-1), &start, &max);
+                wxASSERT(static_cast<std::byte*>(max) - static_cast<std::byte*>(start) == len);
+                winstate.assign(static_cast<std::byte*>(start), static_cast<std::byte*>(max));
+            }
+        }
+        winstates[bid] = std::move(winstate);
     }
 }
 
@@ -292,6 +351,45 @@ bool CGpWinStateMgr::GpSerializer::HandleOrphanedPage(wxAuiNotebook& book,
 {
     wxASSERT(!"should not have orphaned pages");
     return Serializer::HandleOrphanedPage(book, page, tabCtrl, tabIndex);
+}
+
+// Called after restoring everything, calls Update() on the manager by
+// default.
+// We restore WinState info
+/* Restore WinState info after wxAuiManager::Update()
+    because some WinState data depends on window size */
+void CGpWinStateMgr::GpSerializer::AfterLoad()
+{
+    Serializer::AfterLoad();
+
+    for (const auto& pair : winstates)
+    {
+        BoardID bid = pair.first;
+        const std::vector<std::byte>& winstate = pair.second;
+        CB::View* view;
+        if (bid == nullBid)
+        {
+            view = &doc.FindProjectOrScenarioView();
+        }
+        else
+        {
+            CPlayBoard& pbrd = CheckedDeref(doc.GetPBoardManager().
+                                                    GetPBoardBySerial(bid));
+            CPlayBoardView& wnd = CheckedDeref(doc.FindPBoardView(pbrd));
+            view = &static_cast<CB::View&>(wnd);
+        }
+        wxWindow& frame = view->GetFrame();
+        // const_cast<> safe since file is only read
+        CMemFile file(const_cast<BYTE*>(reinterpret_cast<const BYTE*>(winstate.data())), value_preserving_cast<unsigned>(winstate.size()));
+        CArchive ar(&file, CArchive::load);
+        CB::SetFeatures(ar, Features(features));
+        WinStateEvent event(frame, ar, true);
+        bool bOK = frame.ProcessWindowEvent(event) &&
+                    event.GetResult() &&
+                    *event.GetResult();
+        wxASSERT(bOK ||
+                    bid == nullBid);
+    }
 }
 
 void CGpWinStateMgr::GpSerializer::TabLayoutInfo::Store(CArchive& ar) const
