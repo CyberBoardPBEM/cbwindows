@@ -112,7 +112,11 @@ protected:
     afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
     afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
     afx_msg void OnHelpIndex();
-    afx_msg void OnClose();
+#endif
+    void SaveProfileSettings();
+    void RestoreProfileSettings();
+    void OnClose(wxCloseEvent& event);
+#if 0
     afx_msg void OnToggleMarkPalette();
     afx_msg void OnToggleTrayPaletteA();
     afx_msg void OnToggleTrayPaletteB();

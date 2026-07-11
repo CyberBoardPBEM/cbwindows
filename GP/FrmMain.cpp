@@ -49,8 +49,8 @@ wxBEGIN_EVENT_TABLE(CMainFrame, CMainFrame::BASE)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SNAPGRID, OnUpdateDisable)
     ON_WM_HELPINFO()
     ON_COMMAND(ID_HELP_INDEX, OnHelpIndex)
-    ON_WM_CLOSE()
 #endif
+    EVT_CLOSE(OnClose)
     EVT_UPDATE_UI(ID_INDICATOR_CELLNUM, OnUpdateDisable)
     EVT_UPDATE_UI(ID_INDICATOR_COMPMOVE, OnUpdateDisable)
 #if 0
@@ -348,7 +348,11 @@ CMainFrame::CMainFrame() :
                         BestSize(200, 80).
                         Bottom().Layer(0));
 
+    wxPersistentRegisterAndRestore(this);
+
     auiManager.Update();
+
+    RestoreProfileSettings();
 }
 
 CMainFrame::~CMainFrame()
@@ -613,19 +617,58 @@ BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle,
         return FALSE;
     return TRUE;
 }
+#endif
 
-void CMainFrame::OnClose()
+namespace {
+    const CB::string szFramePath = "Persistent_Options/Window/frame/";
+    const CB::string szConfigVer = "v1";
+    const CB::string szEntryPerspective = "Perspective";
+    const CB::string szEntryStatusBar = "StatusBar";
+}
+
+void CMainFrame::SaveProfileSettings()
 {
-    SaveBarState(szSectControlBars);
+    wxConfigBase& config = CheckedDeref(wxConfig::Get());
+    wxConfigPathChanger setPath(&config, szFramePath);
 
-    // Save frame window size and position.
-//@@@@@@    m_wndPosition.SaveWindowPos(this);
+    wxString perspective = szConfigVer + "\n" + auiManager.SavePerspective();
+    CB_VERIFY(config.Write(szEntryPerspective, perspective));
 
-    CMDIFrameWndEx::OnClose();
+    CB_VERIFY(config.Write(szEntryStatusBar, bool(m_wndStatusBar)));
+}
+
+void CMainFrame::RestoreProfileSettings()
+{
+    wxConfigBase& config = CheckedDeref(wxConfig::Get());
+    wxConfigPathChanger setPath(&config, szFramePath);
+
+    // status bar is initialized on, so only adjust to turn off
+    if (!config.Read(szEntryStatusBar, true))
+    {
+        wxCommandEvent dummy;
+        OnViewStatusBar(dummy);
+    }
+
+    wxString perspective = config.Read(szEntryPerspective, wxEmptyString);
+    wxStringTokenizer tokenizer(perspective, "\n");
+    if (tokenizer.HasMoreTokens() &&
+        tokenizer.GetNextToken() == szConfigVer.wx_str() &&
+        tokenizer.HasMoreTokens())
+    {
+        auiManager.LoadPerspective(tokenizer.GetNextToken());
+    }
+}
+
+void CMainFrame::OnClose(wxCloseEvent& event)
+{
+    SaveProfileSettings();
+
+    event.Skip();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if 0
 BOOL CMainFrame::OnHelpInfo(HELPINFO* pHelpInfo)
 {
     return TRUE;
