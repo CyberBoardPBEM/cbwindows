@@ -221,6 +221,33 @@ namespace CB
 
 /////////////////////////////////////////////////////////////////////////////
 
+template<typename T, typename CharT>
+struct std::formatter<const T*, CharT> : private std::formatter<const void*, CharT>
+{
+private:
+    using BASE = formatter<const void*, CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const T* p, FormatContext& ctx) const
+    {
+        if (!p)
+        {
+            return std::format_to(ctx.out(), "(null)");
+        }
+        else
+        {
+            return std::format_to(ctx.out(), "&{}", *p);
+        }
+    }
+};
+
+template<typename T, typename CharT>
+struct std::formatter<T*, CharT> : public std::formatter<const T*, CharT>
+{
+};
+
 template<typename CharT>
 struct std::formatter<SIZE, CharT> : private std::formatter<decltype(SIZE::cx), CharT>
 {
