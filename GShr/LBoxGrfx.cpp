@@ -670,7 +670,7 @@ wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_MOTION(OnMouseMove)
     EVT_LEFT_UP(OnLButtonUp)
-    EVT_TIMER(wxID_ANY, OnTimer)
+    EVT_TIMER(XRCID("ID_SCROLL_TIMER"), OnTimer)
 #if 0
     ON_WM_CREATE()
 #endif
@@ -683,7 +683,7 @@ wxEND_EVENT_TABLE()
 CGrafixListBoxWx::CGrafixListBoxWx() :
     m_toolMsgTipTimer(this, XRCID("ID_TIP_LISTITEM_MSG_TIMER")),
     m_nCurItemCode(Invalid_v<GameElement>),
-    m_nTimerID(this)
+    m_nTimerID(this, XRCID("ID_SCROLL_TIMER"))
 {
     m_nLastInsert = wxNOT_FOUND;
     m_bAllowDrag = FALSE;
