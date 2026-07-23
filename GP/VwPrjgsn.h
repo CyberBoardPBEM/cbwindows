@@ -186,6 +186,7 @@ protected:
     void OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event);
     void OnMessageRestoreWinState(WinStateRestoreEvent& event);
     void OnMouseCaptureLost(wxMouseCaptureLostEvent& event);
+    void OnNavigationKey(wxNavigationKeyEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 

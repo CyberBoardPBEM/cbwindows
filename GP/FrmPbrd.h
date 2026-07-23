@@ -142,6 +142,7 @@ protected:
 #if 0
     afx_msg void OnSize(UINT nType, int cx, int cy);
 #endif
+    void OnNavigationKey(wxNavigationKeyEvent& event);
     wxDECLARE_EVENT_TABLE();
 
     CB::not_null<CB::propagate_const<CPlayBoardView*>> activeView = &*m_vwBoard1;

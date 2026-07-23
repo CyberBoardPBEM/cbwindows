@@ -1043,6 +1043,14 @@ CPP20_TRACE("{}({})->{}({}):  reject\n", typeid(*this).name(), (void*)this, __fu
         return false;
     }
 
+    // view shouldn't process a different window's navigation events
+    if (dynamic_cast<wxNavigationKeyEvent*>(&event) &&
+        event.GetEventObject() != &GetWindow())
+    {
+//CPP20_TRACE("{}({})->{}({}({})):  reject\n", typeid(*this).name(), (void*)this, __func__, typeid(event).name(), (void*)&event);
+        return false;
+    }
+
     return GetWindow().ProcessWindowEventLocally(event);
 }
 

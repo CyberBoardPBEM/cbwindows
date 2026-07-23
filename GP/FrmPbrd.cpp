@@ -102,6 +102,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardPanel, wxPanel)
 #if 0
     ON_WM_SIZE()
 #endif
+    EVT_NAVIGATION_KEY(OnNavigationKey)
 wxEND_EVENT_TABLE()
 
 #if 0
@@ -312,6 +313,14 @@ CPlayBoardPanel::CPlayBoardPanel(wxWindow& parent,
 #else
     RefPtr<CSelectedPieceView> m_vwSelect = XRCCTRL(*m_wndSplitter2, "m_vwSelect", CSelectedPieceView);
     RefPtr<CTinyBoardView> m_vwTiny = XRCCTRL(*m_wndSplitter2, "m_vwTiny", CTinyBoardView);
+    /* KLUDGE:  we need this, or dynamic handlers trigger
+        infinite recursion before executing event table
+        handler */
+    Bind(wxEVT_NAVIGATION_KEY,
+        [this](wxNavigationKeyEvent& event)
+        {
+            OnNavigationKey(event);
+        });
 
     GetParent()->Layout();
     wxRect rct = GetClientRect();
@@ -669,6 +678,19 @@ void CPlayBoardPanel::OnMessageWindowState(WinStateEvent& event)
     else
     {
         OnMessageWindowStateWx(event);
+    }
+}
+
+void CPlayBoardPanel::OnNavigationKey(wxNavigationKeyEvent& event)
+{
+    // don't steal Ctrl-Tab from MDI client
+    if (event.IsWindowChange())
+    {
+        GetMainFrame()->GetClientWindow()->ProcessWindowEvent(event);
+    }
+    else
+    {
+        wxPanel::OnNavigationKey(event);
     }
 }
 

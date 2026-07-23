@@ -142,6 +142,14 @@ CGsnProjView::CGsnProjView(wxGsnProjView& v) :
 
     m_listTrays->Init(GetDocument());
     m_listTrays->SetTrayContentVisibility(trayVizAllSides);
+    /* KLUDGE:  we need this, or dynamic handlers trigger
+        infinite recursion before executing event table
+        handler */
+    Bind(wxEVT_NAVIGATION_KEY,
+        [this](wxNavigationKeyEvent& event)
+        {
+            OnNavigationKey(event);
+        });
 }
 
 CGsnProjView::~CGsnProjView()
@@ -804,6 +812,19 @@ void CGsnProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
 void CGsnProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
 {
     GetDocument().RestoreWindowState();
+}
+
+void CGsnProjView::OnNavigationKey(wxNavigationKeyEvent& event)
+{
+    // don't steal Ctrl-Tab from MDI client
+    if (event.IsWindowChange())
+    {
+        GetMainFrame()->GetClientWindow()->ProcessWindowEvent(event);
+    }
+    else
+    {
+        wxPanel::OnNavigationKey(event);
+    }
 }
 
 const CGsnProjView& wxGsnProjView::DoGetWindow() const

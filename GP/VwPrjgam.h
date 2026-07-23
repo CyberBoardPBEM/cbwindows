@@ -185,6 +185,7 @@ protected:
     void OnUpdateProjItemProperties(wxUpdateUIEvent& pCmdUI);
     void OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event);
     void OnMessageRestoreWinState(WinStateRestoreEvent& event);
+    void OnNavigationKey(wxNavigationKeyEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 

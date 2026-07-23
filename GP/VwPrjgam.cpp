@@ -117,6 +117,7 @@ wxBEGIN_EVENT_TABLE(CGamProjView, wxPanel)
     EVT_UPDATE_UI(XRCID("ID_PPROJITEM_PROPERTIES"), OnUpdateProjItemProperties)
     EVT_SHOWPLAYINGBOARD(OnMessageShowPlayingBoard)
     EVT_WINSTATE_RESTORE(OnMessageRestoreWinState)
+    EVT_NAVIGATION_KEY(OnNavigationKey)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,6 +141,14 @@ CGamProjView::CGamProjView(wxGamProjView& v) :
         of the buttons, so set max width to the initial width to
         prevent long text from growing the window. */
     m_listProj->SetMaxSize(wxSize(m_listProj->GetSize().x, m_listProj->GetMaxSize().y));
+    /* KLUDGE:  we need this, or dynamic handlers trigger
+        infinite recursion before executing event table
+        handler */
+    Bind(wxEVT_NAVIGATION_KEY,
+        [this](wxNavigationKeyEvent& event)
+        {
+            OnNavigationKey(event);
+        });
 }
 
 CGamProjView::~CGamProjView()
@@ -833,6 +842,19 @@ void CGamProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
 void CGamProjView::OnMessageRestoreWinState(WinStateRestoreEvent& event)
 {
     GetDocument().RestoreWindowState();
+}
+
+void CGamProjView::OnNavigationKey(wxNavigationKeyEvent& event)
+{
+    // don't steal Ctrl-Tab from MDI client
+    if (event.IsWindowChange())
+    {
+        GetMainFrame()->GetClientWindow()->ProcessWindowEvent(event);
+    }
+    else
+    {
+        wxPanel::OnNavigationKey(event);
+    }
 }
 
 const CGamProjView& wxGamProjView::DoGetWindow() const
