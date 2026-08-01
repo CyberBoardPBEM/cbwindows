@@ -1717,15 +1717,14 @@ OwnerPtr<CMoveList> CMoveList::CloneMoveList(CGamDoc& pDoc, const CMoveList& pMo
     CMemFile memFile;
     CArchive arStore(&memFile, CArchive::store);
     arStore.m_pDocument = pDoc;
-    // store shouldn't modify src, so const_cast safe
-    const_cast<CMoveList&>(pMoveList).Serialize(arStore, FALSE);
+    pMoveList.Store(arStore);
     arStore.Close();
 
     memFile.SeekToBegin();
     CArchive arLoad(&memFile, CArchive::load);
     arLoad.m_pDocument = pDoc;
     OwnerPtr<CMoveList> pNewMoveList = MakeOwner<CMoveList>();
-    pNewMoveList->Serialize(arLoad, FALSE);
+    pNewMoveList->Load(arLoad);
     return pNewMoveList;
 }
 
@@ -2302,11 +2301,11 @@ void CMoveList::EndRecordingCompoundMove()
     }
 }
 
-void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
+void CMoveList::Store(CArchive& ar) const
 {
-    ASSERT(m_nPlaybackLock == 0);
+    wxASSERT(m_nPlaybackLock == 0);
 
-    if (ar.IsStoring())
+    wxASSERT(ar.IsStoring());
     {
         ASSERT(m_pStateSave == NULL); // Should never save with this active!
 
@@ -2329,7 +2328,9 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         }
         ar << (BYTE)(m_pCompoundBaseBookMark != NULL ? 1 : 0);
         if (m_pCompoundBaseBookMark)
-            m_pCompoundBaseBookMark->Serialize(ar);
+            /* store should not modify m_pCompoundBaseBookMark,
+                so const_cast safe */
+            const_cast<CGameState&>(*m_pCompoundBaseBookMark).Serialize(ar);
 
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
@@ -2339,7 +2340,7 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
         {
             CB::WriteCount(ar, size());
         }
-        iterator pos;
+        const_iterator pos;
         for (pos = begin(); pos != end(); )
         {
             const CMoveRecord& pRcd = GetNext(pos);
@@ -2348,7 +2349,11 @@ void CMoveList::Serialize(CArchive& ar, BOOL bSaveUndo)
             const_cast<CMoveRecord&>(pRcd).Serialize(ar);
         }
     }
-    else
+}
+
+void CMoveList::Load(CArchive& ar)
+{
+    wxASSERT(ar.IsLoading());
     {
         Clear();
         size_t wCount;

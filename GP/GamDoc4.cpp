@@ -323,7 +323,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
         SetLoadingVersion(pHist.m_nGamFileVersion);
         BOOL bTryEarlyVersion = FALSE;
         TRY
-            pMoves->Serialize(ar);
+            pMoves->Load(ar);
         CATCH_ALL (e)
             // First exception we assume it is due to
             // a version problem in the format of the
@@ -342,7 +342,7 @@ BOOL CGamDoc::LoadVintageHistoryRecord(CFile& file, CHistRecord& pHist)
             ar.m_pDocument = *this;
             ar.m_bForceFlat = FALSE;
             SetLoadingVersion(NumVersion(0, 57));
-            pMoves->Serialize(ar);
+            pMoves->Load(ar);
             ar.Close();
             // A-OK set version to proper value.
             pHist.m_nGamFileVersion = NumVersion(0, 57);

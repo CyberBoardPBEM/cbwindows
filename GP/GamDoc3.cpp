@@ -280,7 +280,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         if (CGamDoc::GetLoadingVersion() < NumVersion(2, 90))
         {
             pHist->m_pMList = MakeOwner<CMoveList>();
-            pHist->m_pMList->Serialize(ar, FALSE);             // before Ver2.90
+            pHist->m_pMList->Load(ar);             // before Ver2.90
         }
     }
 }
@@ -345,11 +345,11 @@ void CGamDoc::SerializeGame(CArchive& ar)
 
         ar << (BYTE)(m_pRcdMoves != NULL ? 1 : 0);
         if (m_pRcdMoves)
-            m_pRcdMoves->Serialize(ar, TRUE);   // Save undo stuff too
+            m_pRcdMoves->Store(ar);
 
         ar << (BYTE)(m_pHistMoves != NULL ? 1 : 0);
         if (m_pHistMoves)
-            m_pHistMoves->Serialize(ar, TRUE);  // Save undo stuff too
+            m_pHistMoves->Store(ar);
 
         ar << (BYTE)(m_pPlayHist != NULL ? 1 : 0);
         if (m_pPlayHist)
@@ -467,7 +467,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         if (cTmp != 0)
         {
             m_pRcdMoves = MakeOwner<CMoveList>();
-            m_pRcdMoves->Serialize(ar, TRUE);
+            m_pRcdMoves->Load(ar);
         }
         else
         {
@@ -482,7 +482,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
         if (cTmp != 0)
         {
             m_pHistMoves = MakeOwner<CMoveList>();
-            m_pHistMoves->Serialize(ar, TRUE);
+            m_pHistMoves->Load(ar);
         }
 
         // Process file playback history record.
@@ -928,6 +928,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
     }
 }
 
+#if 0
 /////////////////////////////////////////////////////////////////////////////
 
 void CGamDoc::SerializeCurrentGameData(CFile* pFile, long lOffset, BOOL bSaving)
@@ -970,6 +971,7 @@ long CGamDoc::SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst)
     ar.Close();                 // Flushes and Detaches CFile.
     return (long)pFile->GetPosition();
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

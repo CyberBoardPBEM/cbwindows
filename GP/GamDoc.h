@@ -627,9 +627,11 @@ public:
     void SerializeGame(CArchive& ar);
     void SerializeMoveSet(CArchive& ar, CHistRecord*& pHist);
     void SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatureTable);
+#if 0
     void SerializeCurrentGameData(CFile* pFile, long lOffset, BOOL bSaving);
     long SerializeMovesToFile(CFile* pFile, long lOffset, CMoveList* pLst);
     CMoveList* DeserializeMovesFromFile(CFile* pFile, long lOffset);
+#endif
     void LoadGameBoxFileForSerialize();
     void LoadAndActivateMoveFile(const CB::string& pszPathName);
     BOOL LoadAndActivateHistory(size_t nHistRec);

@@ -112,7 +112,7 @@ void CHistRecord::Serialize(CArchive& ar)
         if (m_pMList)
         {
             ar << (BYTE)1;                  // Write out move list existance flag
-            m_pMList->Serialize(ar);
+            m_pMList->Store(ar);
         }
         else
             ar << (BYTE)0;
@@ -131,7 +131,7 @@ void CHistRecord::Serialize(CArchive& ar)
             if (fMoveExist)
             {
                 m_pMList = MakeOwner<CMoveList>();
-                m_pMList->Serialize(ar);
+                m_pMList->Load(ar);
             }
         }
         else

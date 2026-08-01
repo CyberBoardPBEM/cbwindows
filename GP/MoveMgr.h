@@ -618,7 +618,8 @@ public:
         { return *front(); }
 
     void Clear();
-    void Serialize(CArchive& ar, BOOL bSaveUndo = TRUE);
+    void Store(CArchive& ar) const;
+    void Load(CArchive& ar);
 
 #ifdef _DEBUG
     void DumpToTextFile(const CGamDoc& pDoc, CFile& file);
