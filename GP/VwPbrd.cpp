@@ -279,7 +279,11 @@ CPlayBoardView::CPlayBoardView() :
         OwnerPtr<wxPlayBoardView> retval = static_cast<wxPlayBoardView*>(templ.CreateView(&doc));
         wxView& frameView = CheckedDeref(docMgr.GetCurrentView());
         CB::DocChildFrame* frame = dynamic_cast<CB::DocChildFrame*>(frameView.GetFrame());
+#if 0   // see if we can avoid wx internal function
         retval->SetDocChildFrame(frame);
+#else
+        retval->SetFrame(frame/*->GetWindow()*/);
+#endif
         return retval;
     }())
 {
