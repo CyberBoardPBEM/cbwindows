@@ -55,6 +55,10 @@ class DocChildBoardFrame : public CB::DocChildFrame
 public:
     using CB::DocChildFrame::DocChildFrame;
     bool ProcessEvent(wxEvent& event) override;
+
+private:
+    // GetCurrentView() impl
+    const CB::View& DoGetCurrentView() const override;
 };
 
 class CPlayBoardPanel : public wxPanel

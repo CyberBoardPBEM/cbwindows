@@ -156,6 +156,15 @@ bool DocChildBoardFrame::ProcessEvent(wxEvent& event)
     return panel.ProcessWindowEventLocally(event);
 }
 
+// GetCurrentView() impl
+const CB::View& DocChildBoardFrame::DoGetCurrentView() const
+{
+    const wxView& view = CheckedDeref(GetView());
+    const CPlayBoardPanelView& panelView = dynamic_cast<const CPlayBoardPanelView&>(view);
+    const CPlayBoardPanel& panel = panelView;
+    return panel.GetActiveBoardView();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CPlayBoardPanel
 
