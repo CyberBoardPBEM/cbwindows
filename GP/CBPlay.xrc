@@ -1896,7 +1896,7 @@
       </object>
     </object>
   </object>
-  <object class="wxPanel" name="CPlayBoardFrame">
+  <object class="wxPanel" name="CPlayBoardPanel">
     <size>500,300</size>
     <style>wxTAB_TRAVERSAL</style>
     <object class="wxBoxSizer" name="bSizer91">

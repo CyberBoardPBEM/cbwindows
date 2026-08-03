@@ -308,12 +308,12 @@ void CPlayBoardView::Initialize()
     sizer->Add(0, 0);
 }
 
-CPlayBoardFrame& CPlayBoardView::GetPanel()
+CPlayBoardPanel& CPlayBoardView::GetPanel()
 {
     CB::DocChildFrame& frame = wxview->GetFrame();
     wxView& frameView = CheckedDeref(frame.GetView());
-    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(frameView);
-    return boardFrameView.GetFramePanel();
+    CPlayBoardPanelView& panelView = dynamic_cast<CPlayBoardPanelView&>(frameView);
+    return panelView.GetPanel();
 }
 
 CPlayBoardView::~CPlayBoardView()
@@ -495,7 +495,7 @@ void wxPlayBoardView::OnActivateView(bool bActivate, wxView* pActivateView, wxVi
     {
         GetFrame().Activate();
         CPlayBoardView& cview = *this;
-        CPlayBoardFrame& panel = cview.GetPanel();
+        CPlayBoardPanel& panel = cview.GetPanel();
         cview.SetFocus();
         panel.SetActiveBoardView(cview);
         cview.NotifySelectListChange();

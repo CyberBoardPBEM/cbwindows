@@ -357,12 +357,12 @@ void CTinyBoardView::OnLButtonDown(wxMouseEvent& event)
 {
     wxPoint point = event.GetPosition();
     ClientToWorkspace(point);
-    CB::DocChildFrame& pFrameContainer = wxview->GetFrame();
-    wxView& frameContainerView = CheckedDeref(pFrameContainer.GetView());
-    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(frameContainerView);
-    CPlayBoardFrame& pFrame = boardFrameView.GetFramePanel();
+    CB::DocChildFrame& pFrame = wxview->GetFrame();
+    wxView& frameView = CheckedDeref(pFrame.GetView());
+    CPlayBoardPanelView& panelView = dynamic_cast<CPlayBoardPanelView&>(frameView);
+    CPlayBoardPanel& panel = panelView;
     CenterBoardOnPointEvent event2(point);
-    pFrame.ProcessWindowEvent(event2);
+    panel.ProcessWindowEvent(event2);
 }
 
 void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
@@ -371,9 +371,11 @@ void CTinyBoardView::OnRButtonDown(wxMouseEvent& event)
         return;
 
     // owned by wx
-    CB::DocChildFrame& pFrameContainer = wxview->GetFrame();
-    CPlayBoardFrame& pFrame = dynamic_cast<CPlayBoardFrame&>(CheckedDeref(pFrameContainer.GetChildren().front()));
-    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup(pFrame));
+    CB::DocChildFrame& pFrame = wxview->GetFrame();
+    wxView& frameView = CheckedDeref(pFrame.GetView());
+    CPlayBoardPanelView& panelView = dynamic_cast<CPlayBoardPanelView&>(frameView);
+    CPlayBoardPanel& panel = panelView;
+    RefPtr<CTinyBoardPopup> pTBrd(new CTinyBoardPopup(panel));
 
     pTBrd->m_bmap = DrawFullMap();
 

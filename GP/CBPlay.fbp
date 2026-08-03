@@ -10091,7 +10091,7 @@
       <property name="id">wxID_ANY</property>
       <property name="maximum_size"></property>
       <property name="minimum_size"></property>
-      <property name="name">CPlayBoardFrame</property>
+      <property name="name">CPlayBoardPanel</property>
       <property name="pos"></property>
       <property name="size">500,300</property>
       <property name="subclass">; ; forward_declare</property>

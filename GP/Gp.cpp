@@ -192,8 +192,8 @@ bool wxCGpApp::OnInit()
                         "CGamDoc", "wxGsnProjView",
                         wxCLASSINFO(CGamDoc), wxCLASSINFO(wxGsnProjView));
     new wxDocTemplate(&*docManager, "", "", "", "",
-                        "CGamDoc", "CBPlayBoardFrameView",
-                        wxCLASSINFO(CGamDoc), wxCLASSINFO(CBPlayBoardFrameView),
+                        "CGamDoc", "CPlayBoardPanelView",
+                        wxCLASSINFO(CGamDoc), wxCLASSINFO(CPlayBoardPanelView),
                         wxTEMPLATE_INVISIBLE);
     new wxDocTemplate(&*docManager, "", "", "", "",
                         "CGamDoc", "wxPlayBoardView",
@@ -330,7 +330,7 @@ BOOL CGpApp::InitInstance()
     m_pBrdViewTmpl = new CMultiDocTemplate(
         IDR_GP_BOARDVIEW,
         RUNTIME_CLASS(CGamDocMfc),
-        RUNTIME_CLASS(CPlayBoardFrameContainer),
+        RUNTIME_CLASS(CPlayBoardPanelContainer),
         RUNTIME_CLASS(CPlayBoardViewContainer));
 #endif
 

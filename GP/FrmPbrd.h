@@ -30,16 +30,24 @@
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CPlayBoardFrame frame
+// CPlayBoardPanel frame
 
 class CenterBoardOnPointEvent;
 class CPlayBoard;
 class CPlayBoardView;
 
+/* wxDocChildFrame implementation doesn't support multiple views,
+    but CBPlay's board frames should.  We will use this class as
+    the CBPlay board wxDocChildFrame, CPlayBoardPanelView as
+    its corresponding wxView, and CPlayBoardPanel as its
+    wxWindow.  CPlayBoardPanel will host the CPlayBoardView
+    windows that the user typically interacts with,
+    CPlayBoardView will have wxPlayBoardView as its corresponding
+    wxView, and the frame is still the wxDocChildFrame. */
 /* KLUDGE:  wxDocManager passes events to
             wxView::ProcessEventLocally(), which means
             TryAfter() doesn't get checked, so use this
-            class to also give CPlayBoardFrame a chance at
+            class to also give CPlayBoardPanel a chance at
             event */
 class DocChildBoardFrame : public CB::DocChildFrame
 {
@@ -48,9 +56,9 @@ public:
     bool ProcessEvent(wxEvent& event) override;
 };
 
-class CPlayBoardFrame : public wxPanel
+class CPlayBoardPanel : public wxPanel
 {
-    friend class CBPlayBoardFrameView;
+    friend class CPlayBoardPanelView;
 protected:
 
 // Attributes
@@ -73,9 +81,9 @@ public:
 // Implementation
 protected:
 public:     // for parent's OwnerPtr
-    ~CPlayBoardFrame() override;
+    ~CPlayBoardPanel() override;
 protected:
-    CPlayBoardFrame(wxWindow& parent,
+    CPlayBoardPanel(wxWindow& parent,
                         CGamDoc& doc);
 #if 0
     BOOL PreCreateWindow(CREATESTRUCT& cs) override;
@@ -137,18 +145,18 @@ protected:
 };
 
 #if 0
-class CPlayBoardFrameContainer : public CB::OnCmdMsgOverride<CMDIChildWndEx>
+class CPlayBoardPanelContainer : public CB::OnCmdMsgOverride<CMDIChildWndEx>
 {
-    DECLARE_DYNCREATE(CPlayBoardFrameContainer)
+    DECLARE_DYNCREATE(CPlayBoardPanelContainer)
 protected:
-    CPlayBoardFrameContainer() = default;  // Protected constructor used by dynamic creation
+    CPlayBoardPanelContainer() = default;  // Protected constructor used by dynamic creation
 
 // Attributes
 public:
-    const CPlayBoardFrame& GetChild() const { return CheckedDeref(child); }
-    CPlayBoardFrame& GetChild()
+    const CPlayBoardPanel& GetChild() const { return CheckedDeref(child); }
+    CPlayBoardPanel& GetChild()
     {
-        return const_cast<CPlayBoardFrame&>(std::as_const(*this).GetChild());
+        return const_cast<CPlayBoardPanel&>(std::as_const(*this).GetChild());
     }
     CDocument* GetActiveDocument() override;
 
@@ -157,7 +165,7 @@ public:
 
 // Implementation
 protected:
-    ~CPlayBoardFrameContainer() override = default;
+    ~CPlayBoardPanelContainer() override = default;
     BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) override;
 
     void OnUpdateFrameTitle(BOOL bAddToTitle) override;
@@ -175,26 +183,26 @@ private:
 
     OwnerOrNullPtr<CB::NativeContainerWindowMixin> wxWindow;
     // owned by wx
-    CB::propagate_const<CPlayBoardFrame*> child = nullptr;
+    CB::propagate_const<CPlayBoardPanel*> child = nullptr;
 
     typedef CB::OnCmdMsgOverride<CMDIChildWndEx> BASE;
 };
 #endif
 
-class CBPlayBoardFrameView : public CB::View
+class CPlayBoardPanelView : public CB::View
 {
 public:
     static void New(CGamDoc& doc);
 
-    const CB::DocChildFrame& GetFrameFrame() const;
-    CB::DocChildFrame& GetFrameFrame()
+    const CPlayBoardPanel& GetPanel() const;
+    CPlayBoardPanel& GetPanel()
     {
-        return const_cast<CB::DocChildFrame&>(std::as_const(*this).GetFrameFrame());
+        return const_cast<CPlayBoardPanel&>(std::as_const(*this).GetPanel());
     }
-    const CPlayBoardFrame& GetFramePanel() const;
-    CPlayBoardFrame& GetFramePanel()
+    operator const CPlayBoardPanel&() const { return GetPanel(); }
+    operator CPlayBoardPanel&()
     {
-        return const_cast<CPlayBoardFrame&>(std::as_const(*this).GetFramePanel());
+        return const_cast<CPlayBoardPanel&>(static_cast<const CPlayBoardPanel&>(std::as_const(*this)));
     }
 
     void Activate(bool activate) override;
@@ -202,10 +210,10 @@ public:
     bool OnCreate(wxDocument* doc, long flags) override;
 
 protected:
-    const wxWindow& DoGetWindow() const override { return GetFramePanel(); }
+    const wxWindow& DoGetWindow() const override { return GetPanel(); }
 
 private:
-    wxDECLARE_DYNAMIC_CLASS(CBPlayBoardFrameView);
+    wxDECLARE_DYNAMIC_CLASS(CPlayBoardPanelView);
 
     typedef CB::View BASE;
 };

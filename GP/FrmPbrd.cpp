@@ -40,9 +40,9 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #if 0
-IMPLEMENT_DYNCREATE(CPlayBoardFrameContainer, CMDIChildWndEx)
+IMPLEMENT_DYNCREATE(CPlayBoardPanelContainer, CMDIChildWndEx)
 #endif
-wxIMPLEMENT_DYNAMIC_CLASS(CBPlayBoardFrameView, CB::View);
+wxIMPLEMENT_DYNAMIC_CLASS(CPlayBoardPanelView, CB::View);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,7 +50,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(CBPlayBoardFrameView, CB::View);
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CPlayBoardFrame, wxPanel)
+wxBEGIN_EVENT_TABLE(CPlayBoardPanel, wxPanel)
 #if 0
 #if 0
     ON_COMMAND(ID_VIEW_HALFSCALEBRD, OnViewHalfScaleBrd)
@@ -105,7 +105,7 @@ wxBEGIN_EVENT_TABLE(CPlayBoardFrame, wxPanel)
 wxEND_EVENT_TABLE()
 
 #if 0
-BEGIN_MESSAGE_MAP(CPlayBoardFrameContainer, CPlayBoardFrameContainer::BASE)
+BEGIN_MESSAGE_MAP(CPlayBoardPanelContainer, CPlayBoardPanelContainer::BASE)
     ON_MESSAGE(WM_CENTERBOARDONPOINT, OnMessageCenterBoardOnPoint)
     ON_MESSAGE(WM_WINSTATE, OnMessageWindowState)
 END_MESSAGE_MAP()
@@ -114,7 +114,7 @@ END_MESSAGE_MAP()
 /* KLUDGE:  wxDocManager passes events to
             (non-virtual) wxView::ProcessEventLocally(), which
             means TryAfter() doesn't get checked, so use this
-            class to also give CPlayBoardFrame a chance at
+            class to also give CPlayBoardPanel a chance at
             event */
 bool DocChildBoardFrame::ProcessEvent(wxEvent& event)
 {
@@ -139,19 +139,20 @@ bool DocChildBoardFrame::ProcessEvent(wxEvent& event)
     {
         return false;
     }
-    CBPlayBoardFrameView& boardFrameView = dynamic_cast<CBPlayBoardFrameView&>(*view);
-    return boardFrameView.GetFramePanel().ProcessWindowEventLocally(event);
+    CPlayBoardPanelView& panelView = dynamic_cast<CPlayBoardPanelView&>(*view);
+    CPlayBoardPanel& panel = panelView;
+    return panel.ProcessWindowEventLocally(event);
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPlayBoardFrame
+// CPlayBoardPanel
 
-CPlayBoardFrame::~CPlayBoardFrame()
+CPlayBoardPanel::~CPlayBoardPanel()
 {
 }
 
 #if 0
-BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CPlayBoardPanel::PreCreateWindow(CREATESTRUCT& cs)
 {
     if (!CWnd::PreCreateWindow(cs))
         return FALSE;
@@ -168,7 +169,7 @@ BOOL CPlayBoardFrame::PreCreateWindow(CREATESTRUCT& cs)
 #endif
 
 #if 0
-void CPlayBoardFrameContainer::OnUpdateFrameTitle(BOOL bAddToTitle)
+void CPlayBoardPanelContainer::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
     CGamDoc& pDoc = CheckedDeref(CB::ToCGamDoc(GetActiveDocument()));
     CB::string str = pDoc.GetUserReadableName();
@@ -191,9 +192,9 @@ void CPlayBoardFrameContainer::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 /////////////////////////////////////////////////////////////////////////////
 
-CPlayBoardFrame::CPlayBoardFrame(wxWindow& parent,
+CPlayBoardPanel::CPlayBoardPanel(wxWindow& parent,
                                     CGamDoc& doc) :
-    CB_XRC_BEGIN_CTRLS_DEFN(&parent, CPlayBoardFrame)
+    CB_XRC_BEGIN_CTRLS_DEFN(&parent, CPlayBoardPanel)
         CB_XRC_CTRL(m_wndSplitter1)
         CB_XRC_CTRL(m_wndSplitter2)
         CB_XRC_CTRL(m_wndSplitBoards)
@@ -331,7 +332,7 @@ CPlayBoardFrame::CPlayBoardFrame(wxWindow& parent,
 #define SCHEMA_BRDVIEW_SAVE     1
 
 #if 0
-LRESULT CPlayBoardFrame::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+LRESULT CPlayBoardPanel::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 {
     ASSERT(wParam != NULL);
     CArchive& ar = *((CArchive*)wParam);
@@ -503,7 +504,7 @@ LRESULT CPlayBoardFrame::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 
 /////////////////////////////////////////////////////////////////////////////
 
-bool CPlayBoardFrame::SendMessageToActiveBoardPane(wxEvent& event)
+bool CPlayBoardPanel::SendMessageToActiveBoardPane(wxEvent& event)
 {
     CPlayBoardView& pWnd = GetActiveBoardView();
     wxASSERT(dynamic_cast<SelectBoardObjListEvent*>(&event));
@@ -511,9 +512,9 @@ bool CPlayBoardFrame::SendMessageToActiveBoardPane(wxEvent& event)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPlayBoardFrame message handlers
+// CPlayBoardPanel message handlers
 
-void CPlayBoardFrame::OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event)
+void CPlayBoardPanel::OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event)
 {
     // Route the message to the active board view.
     CPlayBoardView& pView = GetActiveBoardView();
@@ -524,169 +525,169 @@ void CPlayBoardFrame::OnMessageCenterBoardOnPoint(CenterBoardOnPointEvent& event
 // Send these on to the main view so they can be process no
 // matter what frame view is active.
 
-void CPlayBoardFrame::OnClose()
+void CPlayBoardPanel::OnClose()
 {
     CWnd::OnClose();            // Short circuit frame's doc close code
 }
 #endif
 
 #if 0
-void CPlayBoardFrame::OnViewHalfScaleBrd()
+void CPlayBoardPanel::OnViewHalfScaleBrd()
 {
     GetActiveBoardView().OnViewHalfScaleBrd();
 }
 
-void CPlayBoardFrame::OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateViewHalfScaleBrd(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateViewHalfScaleBrd(pCmdUI);
 }
 
-void CPlayBoardFrame::OnViewFullScaleBrd()
+void CPlayBoardPanel::OnViewFullScaleBrd()
 {
     GetActiveBoardView().OnViewFullScaleBrd();
 }
 
-void CPlayBoardFrame::OnUpdateViewFullScaleBrd(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateViewFullScaleBrd(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateViewFullScaleBrd(pCmdUI);
 }
 
-void CPlayBoardFrame::OnViewSnapGrid()
+void CPlayBoardPanel::OnViewSnapGrid()
 {
     GetActiveBoardView().OnViewSnapGrid();
 }
 
-void CPlayBoardFrame::OnUpdateViewSnapGrid(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateViewSnapGrid(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateViewSnapGrid(pCmdUI);
 }
 
-void CPlayBoardFrame::OnEditSelAllMarkers()
+void CPlayBoardPanel::OnEditSelAllMarkers()
 {
     GetActiveBoardView().OnEditSelAllMarkers();
 }
 
-void CPlayBoardFrame::OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateEditSelAllMarkers(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateEditSelAllMarkers(pCmdUI);
 }
 
-void CPlayBoardFrame::OnEditBoardProperties()
+void CPlayBoardPanel::OnEditBoardProperties()
 {
     GetActiveBoardView().OnEditBoardProperties();
 }
 
-void CPlayBoardFrame::OnViewPieces()
+void CPlayBoardPanel::OnViewPieces()
 {
     GetActiveBoardView().OnViewPieces();
 }
 
-void CPlayBoardFrame::OnUpdateViewPieces(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateViewPieces(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateViewPieces(pCmdUI);
 }
 
-void CPlayBoardFrame::OnSelectGroupMarkers(UINT nID)
+void CPlayBoardPanel::OnSelectGroupMarkers(UINT nID)
 {
     GetActiveBoardView().OnSelectGroupMarkers(nID);
 }
 
-void CPlayBoardFrame::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
+void CPlayBoardPanel::OnUpdateSelectGroupMarkers(CCmdUI* pCmdUI, UINT nID)
 {
     GetActiveBoardView().OnUpdateSelectGroupMarkers(pCmdUI, nID);
 }
 
-void CPlayBoardFrame::OnViewToggleScale()
+void CPlayBoardPanel::OnViewToggleScale()
 {
     GetActiveBoardView().OnViewToggleScale();
 }
 
-void CPlayBoardFrame::OnUpdateViewToggleScale(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateViewToggleScale(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateViewToggleScale(pCmdUI);
 }
 
-void CPlayBoardFrame::OnActStack()
+void CPlayBoardPanel::OnActStack()
 {
     GetActiveBoardView().OnActStack();
 }
 
-void CPlayBoardFrame::OnUpdateActStack(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActStack(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActStack(pCmdUI);
 }
 
-void CPlayBoardFrame::OnActToFront()
+void CPlayBoardPanel::OnActToFront()
 {
     GetActiveBoardView().OnActToFront();
 }
 
-void CPlayBoardFrame::OnUpdateActToFront(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActToFront(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActToFront(pCmdUI);
 }
 
-void CPlayBoardFrame::OnActToBack()
+void CPlayBoardPanel::OnActToBack()
 {
     GetActiveBoardView().OnActToBack();
 }
 
-void CPlayBoardFrame::OnUpdateActToBack(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActToBack(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActToBack(pCmdUI);
 }
 
-BOOL CPlayBoardFrame::OnActTurnOver(UINT id)
+BOOL CPlayBoardPanel::OnActTurnOver(UINT id)
 {
     return GetActiveBoardView().OnActTurnOver(id);
 }
 
-void CPlayBoardFrame::OnUpdateActTurnOver(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActTurnOver(CCmdUI* pCmdUI)
 {
     GetActiveBoardView().OnUpdateActTurnOver(pCmdUI);
 }
 
-void CPlayBoardFrame::OnActPlotMove()
+void CPlayBoardPanel::OnActPlotMove()
 {
     wxASSERT(!"dead code?");
     wxCommandEvent dummy;
     GetActiveBoardView().OnActPlotMove(dummy);
 }
 
-void CPlayBoardFrame::OnUpdateActPlotMove(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActPlotMove(CCmdUI* pCmdUI)
 {
     wxASSERT(!"dead code?");
     CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_PTOOL_PLOTMOVE, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
 
-void CPlayBoardFrame::OnActPlotDone()
+void CPlayBoardPanel::OnActPlotDone()
 {
     wxASSERT(!"dead code?");
     wxCommandEvent dummy;
     GetActiveBoardView().OnActPlotDone(dummy);
 }
 
-void CPlayBoardFrame::OnUpdateActPlotDone(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActPlotDone(CCmdUI* pCmdUI)
 {
     wxASSERT(!"dead code?");
     CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_ACT_PLOTDONE, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
 
-void CPlayBoardFrame::OnActPlotDiscard()
+void CPlayBoardPanel::OnActPlotDiscard()
 {
     wxASSERT(!"dead code?");
     wxCommandEvent dummy;
     GetActiveBoardView().OnActPlotDiscard(dummy);
 }
 
-void CPlayBoardFrame::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
+void CPlayBoardPanel::OnUpdateActPlotDiscard(CCmdUI* pCmdUI)
 {
     wxASSERT(!"dead code?");
     CB_VERIFY(CB::RelayOnCmdMsg(GetActiveBoardView(), ID_ACT_PLOTDISCARD, CN_UPDATE_COMMAND_UI, pCmdUI, nullptr));
 }
 #endif
 
-void CPlayBoardFrame::OnViewSplitBoardRows(wxCommandEvent& /*event*/)
+void CPlayBoardPanel::OnViewSplitBoardRows(wxCommandEvent& /*event*/)
 {
     wxSplitterWindow& pSplitWnd = GetBoardSplitter();
     if (!pSplitWnd.IsSplit() ||
@@ -702,7 +703,7 @@ void CPlayBoardFrame::OnViewSplitBoardRows(wxCommandEvent& /*event*/)
         pSplitWnd.Unsplit();
 }
 
-void CPlayBoardFrame::OnUpdateViewSplitBoardRows(wxUpdateUIEvent& pCmdUI)
+void CPlayBoardPanel::OnUpdateViewSplitBoardRows(wxUpdateUIEvent& pCmdUI)
 {
     wxSplitterWindow& pSplitWnd = GetBoardSplitter();
     pCmdUI.Enable(true);
@@ -710,7 +711,7 @@ void CPlayBoardFrame::OnUpdateViewSplitBoardRows(wxUpdateUIEvent& pCmdUI)
                     pSplitWnd.GetSplitMode() == wxSPLIT_HORIZONTAL);
 }
 
-void CPlayBoardFrame::OnViewSplitBoardCols(wxCommandEvent& /*event*/)
+void CPlayBoardPanel::OnViewSplitBoardCols(wxCommandEvent& /*event*/)
 {
     wxSplitterWindow& pSplitWnd = GetBoardSplitter();
     if (!pSplitWnd.IsSplit() ||
@@ -726,7 +727,7 @@ void CPlayBoardFrame::OnViewSplitBoardCols(wxCommandEvent& /*event*/)
         pSplitWnd.Unsplit();
 }
 
-void CPlayBoardFrame::OnUpdateViewSplitBoardCols(wxUpdateUIEvent& pCmdUI)
+void CPlayBoardPanel::OnUpdateViewSplitBoardCols(wxUpdateUIEvent& pCmdUI)
 {
     wxSplitterWindow& pSplitWnd = GetBoardSplitter();
     pCmdUI.Enable(true);
@@ -735,7 +736,7 @@ void CPlayBoardFrame::OnUpdateViewSplitBoardCols(wxUpdateUIEvent& pCmdUI)
 }
 
 #if 0
-void CPlayBoardFrame::OnSize(UINT nType, int cx, int cy)
+void CPlayBoardPanel::OnSize(UINT nType, int cx, int cy)
 {
     CWnd::OnSize(nType, cx, cy);
     if (m_wndSplitter1.m_hWnd)
@@ -750,20 +751,20 @@ void CPlayBoardFrame::OnSize(UINT nType, int cx, int cy)
 #endif
 
 #if 0
-CDocument* CPlayBoardFrameContainer::GetActiveDocument()
+CDocument* CPlayBoardPanelContainer::GetActiveDocument()
 {
     AfxThrowNotSupportedException();
 }
 
-BOOL CPlayBoardFrameContainer::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+BOOL CPlayBoardPanelContainer::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 {
     wxWindow = MakeOwner<CB::wxNativeContainerWindowMixin>(*this);
     CGamDoc& pDoc = CheckedDeref(CB::ToCGamDoc(pContext->m_pCurrentDoc));
-    child = new CPlayBoardFrame(*wxWindow, pDoc);
+    child = new CPlayBoardPanel(*wxWindow, pDoc);
     return true;
 }
 
-LRESULT CPlayBoardFrameContainer::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam)
+LRESULT CPlayBoardPanelContainer::OnMessageCenterBoardOnPoint(WPARAM wParam, LPARAM lParam)
 {
     const POINT* point = reinterpret_cast<POINT*>(wParam);
     CenterBoardOnPointEvent event(CB::Convert(CheckedDeref(point)));
@@ -771,7 +772,7 @@ LRESULT CPlayBoardFrameContainer::OnMessageCenterBoardOnPoint(WPARAM wParam, LPA
     return 0;
 }
 
-LRESULT CPlayBoardFrameContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
+LRESULT CPlayBoardPanelContainer::OnMessageWindowState(WPARAM wParam, LPARAM lParam)
 {
     WinStateEvent event(*reinterpret_cast<CArchive*>(wParam), bool(lParam));
     child->ProcessWindowEvent(event);
@@ -779,40 +780,35 @@ LRESULT CPlayBoardFrameContainer::OnMessageWindowState(WPARAM wParam, LPARAM lPa
 }
 #endif
 
-void CBPlayBoardFrameView::New(CGamDoc& doc)
+void CPlayBoardPanelView::New(CGamDoc& doc)
 {
-    wxDocTemplate& templ = CB::FindDocTemplateByView(*wxCLASSINFO(CBPlayBoardFrameView));
+    wxDocTemplate& templ = CB::FindDocTemplateByView(*wxCLASSINFO(CPlayBoardPanelView));
     templ.CreateView(&doc);
 }
 
-const CB::DocChildFrame& CBPlayBoardFrameView::GetFrameFrame() const
+const CPlayBoardPanel& CPlayBoardPanelView::GetPanel() const
 {
-    return BASE::GetFrame();
-}
-
-const CPlayBoardFrame& CBPlayBoardFrameView::GetFramePanel() const
-{
-    const CB::DocChildFrame& frame = GetFrameFrame();
+    const CB::DocChildFrame& frame = GetFrame();
     const wxWindowList& children = frame.GetChildren();
     wxASSERT(children.size() == 1);
     const wxWindow& wnd = CheckedDeref(children.front());
-    wxASSERT(dynamic_cast<const CPlayBoardFrame*>(&wnd));
-    return static_cast<const CPlayBoardFrame&>(wnd);
+    wxASSERT(dynamic_cast<const CPlayBoardPanel*>(&wnd));
+    return static_cast<const CPlayBoardPanel&>(wnd);
 }
 
-void CBPlayBoardFrameView::Activate(bool activate)
+void CPlayBoardPanelView::Activate(bool activate)
 {
     CB::View::Activate(activate);
     // if possible, move activation to an actual board
     if (activate &&
-        !GetFrameFrame().GetChildren().empty())
+        !GetFrame().GetChildren().empty())
     {
-        wxView& boardView = GetFramePanel().GetActiveBoardView();
+        wxView& boardView = GetPanel().GetActiveBoardView();
         boardView.Activate(true);
     }
 }
 
-bool CBPlayBoardFrameView::OnClose(bool deleteWindow)
+bool CPlayBoardPanelView::OnClose(bool deleteWindow)
 {
     wxASSERT(!deleteWindow);
     /* doc's life determined by wxGsnProjView, not this,
@@ -820,7 +816,7 @@ bool CBPlayBoardFrameView::OnClose(bool deleteWindow)
     return true;
 }
 
-bool CBPlayBoardFrameView::OnCreate(wxDocument* doc, long flags)
+bool CPlayBoardPanelView::OnCreate(wxDocument* doc, long flags)
 {
     wxASSERT(doc == &GetDocument());
     if (!wxView::OnCreate(doc, flags))
@@ -852,7 +848,7 @@ bool CBPlayBoardFrameView::OnCreate(wxDocument* doc, long flags)
                             wxBITMAP_TYPE_ICO_RESOURCE,
                             16, 16),
                     pDoc.GetMenuName());
-    new CPlayBoardFrame(*frame, pDoc);
+    new CPlayBoardPanel(*frame, pDoc);
     frame->Show();
 
     return true;

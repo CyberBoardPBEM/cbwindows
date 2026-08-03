@@ -57,7 +57,7 @@ class CPlayBoardView : public wxScrolledWindow
 {
     wxDECLARE_DYNAMIC_CLASS(CPlayBoardView);
 private:
-    friend class CPlayBoardFrame;
+    friend class CPlayBoardPanel;
 #if 0
     friend class CPlayBoardViewContainer;
 #endif
@@ -74,7 +74,7 @@ public:
     operator wxView&() { return const_cast<wxView&>(static_cast<const wxView&>(std::as_const(*this))); }
     operator const wxView*() const { return &static_cast<const wxView&>(*this); }
     operator wxView*() { return const_cast<wxView*>(static_cast<const wxView*>(std::as_const(*this))); }
-    CPlayBoardFrame& GetPanel();
+    CPlayBoardPanel& GetPanel();
 
     const CGamDoc& GetDocument() const;
     CGamDoc& GetDocument() { return const_cast<CGamDoc&>(std::as_const(*this).GetDocument()); }

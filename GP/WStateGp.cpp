@@ -74,12 +74,12 @@ void CGpWinStateMgr::OnAnnotateWinStateElement(CWinStateElement& pWse, const CWn
 #if 0
     if (pWnd.IsKindOf(RUNTIME_CLASS(CProjFrame)))
         pWse.m_wUserCode1 = gpFrmProject;
-    else if (pWnd.IsKindOf(RUNTIME_CLASS(CPlayBoardFrameContainer)))
+    else if (pWnd.IsKindOf(RUNTIME_CLASS(CPlayBoardPanelContainer)))
     {
-        const CPlayBoardFrameContainer& pFrameContainer = static_cast<const CPlayBoardFrameContainer&>(pWnd);
-        const CPlayBoardFrame& pFrame = pFrameContainer.GetChild();
+        const CPlayBoardPanelContainer& pPanelContainer = static_cast<const CPlayBoardPanelContainer&>(pWnd);
+        const CPlayBoardPanel& pPanel = pPanelContainer.GetChild();
         pWse.m_wUserCode1 = gpFrmPlayBoard;
-        pWse.m_boardID = pFrame.m_pPBoard->GetSerialNumber();
+        pWse.m_boardID = pPanel.m_pPBoard->GetSerialNumber();
     }
 #else
     AfxThrowNotSupportedException();

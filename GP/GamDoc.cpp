@@ -414,7 +414,7 @@ bool CGamDoc::DeleteContents()
         wxList& views = GetViews();
         for (auto it = views.begin(); it != views.end(); ++it)
         {
-            CBPlayBoardFrameView* view = dynamic_cast<CBPlayBoardFrameView*>(*it);
+            CPlayBoardPanelView* view = dynamic_cast<CPlayBoardPanelView*>(*it);
             if (view)
             {
                 more = true;
@@ -422,7 +422,7 @@ bool CGamDoc::DeleteContents()
                     closing non-proj views is disabled
                     in order to override standard doc
                     lifetime */
-                CB_VERIFY(view->GetFrameFrame().Close(true));
+                CB_VERIFY(view->GetFrame().Close(true));
                 break;
             }
         }
@@ -587,7 +587,7 @@ void CGamDoc::CreateNewFrame(const CB::string& pszTitle,
     private:
         CGamDoc& doc;
     } createParamMgr(*this, board);
-    CBPlayBoardFrameView::New(*this);
+    CPlayBoardPanelView::New(*this);
 #endif
 }
 

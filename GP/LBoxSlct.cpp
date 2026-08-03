@@ -489,7 +489,7 @@ const CPlayBoardView& CSelectListBox::GetBoardView() const
     const wxSelectedPieceView& wxSelView = selView;
     const CB::DocChildFrame& frame = wxSelView.GetFrame();
     const wxView& frameView = CheckedDeref(frame.GetView());
-    const CBPlayBoardFrameView& boardFrameView = dynamic_cast<const CBPlayBoardFrameView&>(frameView);
-    return boardFrameView.GetFramePanel().GetActiveBoardView();
+    const CPlayBoardPanelView& panelView = dynamic_cast<const CPlayBoardPanelView&>(frameView);
+    return panelView.GetPanel().GetActiveBoardView();
 }
 
