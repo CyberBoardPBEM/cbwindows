@@ -360,6 +360,16 @@ bool CGpWinStateMgr::GpSerializer::HandleOrphanedPage(wxAuiNotebook& book,
     because some WinState data depends on window size */
 void CGpWinStateMgr::GpSerializer::AfterLoad()
 {
+    /* KLUDGE:  wxWindow::FindFocus() and
+                wxDocManager::GetCurrentView() are (sometimes?)
+                out of sync w/ GetMainFrame()->GetActiveChild(),
+                so Activate() the proper view to update
+                wxWindow::FindFocus() and
+                wxDocManager::GetCurrentView() */
+    wxAuiMDIChildFrame& mdiFrame = CheckedDeref(GetMainFrame()->GetActiveChild());
+    CB::DocChildFrame& frame = dynamic_cast<CB::DocChildFrame&>(mdiFrame);
+    frame.GetCurrentView().Activate(true);
+
     Serializer::AfterLoad();
 
     for (const auto& pair : winstates)
