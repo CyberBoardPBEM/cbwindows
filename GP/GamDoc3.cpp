@@ -129,8 +129,8 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
     {
         // Scenario file header
         ar.Write(FILEGMVSIGNATURE, 4);
-        ar << (BYTE)fileGmvVerMajor;
-        ar << (BYTE)fileGmvVerMinor;
+        ar << value_preserving_cast<uint8_t>(fileGmvVerMajor);
+        ar << value_preserving_cast<uint8_t>(fileGmvVerMinor);
 
         // leave space for pointer to feature list at end of file
         uint64_t offsetOffsetFeatureTable = UINT64_MAX;
@@ -177,12 +177,12 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         }
         else
         {
-            ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) <= NumVersion(3, 90));
+            wxASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) <= NumVersion(3, 90));
             c_fileFeatures = Features();
         }
 
-        ar << (BYTE)progVerMajor;
-        ar << (BYTE)progVerMinor;
+        ar << value_preserving_cast<uint8_t>(progVerMajor);
+        ar << value_preserving_cast<uint8_t>(progVerMinor);
 
         ar << m_dwScenarioID;
         pHist->Serialize(ar);
@@ -207,10 +207,12 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         szID[4] = 0;
         if (strcmp(szID, FILEGMVSIGNATURE) != 0)
         {
-            AfxMessageBox(IDS_ERR_NOTAMOVEFILE, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_NOTAMOVEFILE),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
-        BYTE verMajor, verMinor;
+        uint8_t verMajor, verMinor;
         ar >> verMajor;
         ar >> verMinor;
 
@@ -230,13 +232,13 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
                 ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
                 uint64_t dummy;
                 ar >> dummy;
-                ASSERT(dummy == offsetFeatureTable);
+                wxASSERT(dummy == offsetFeatureTable);
             }
             catch (...)
             {
-                ASSERT(!"exception");
+                wxASSERT(!"exception");
                 // report file too new
-                verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
+                verMajor = value_preserving_cast<uint8_t>(fileGbxVerMajor + 1);
             }
         }
         else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
@@ -245,7 +247,7 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
         }
         else
         {
-            ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
+            wxASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
         }
 
         if (NumVersion(verMajor, verMinor) >
@@ -253,7 +255,9 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
             // file 3.90 is the same as 3.10
             NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
-            AfxMessageBox(IDS_ERR_GAMENEWER, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_GAMENEWER),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
         SetLoadingVersionGuard setLoadingVersionGuard(NumVersion(verMajor, verMinor),
@@ -262,18 +266,20 @@ void CGamDoc::SerializeMoveSet(CArchive& ar, CHistRecord*& pHist)
                                                     std::move(fileFeatures),
                                                     Features(GetCBFeatures()));
 
-        BYTE byteBucket;        // Place to dump unused bytes
+        uint8_t byteBucket;        // Place to dump unused bytes
         ar >> byteBucket;       // Eat the program version
         ar >> byteBucket;
 
-        DWORD dwScnID;
+        uint32_t dwScnID;
         ar >> dwScnID;          // load and check scenario ID
         if (dwScnID != m_dwScenarioID)
         {
-            AfxMessageBox(IDS_ERR_WRONGGAME, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_WRONGGAME),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
-        ASSERT(pHist == NULL);
+        wxASSERT(pHist == NULL);
         pHist = new CHistRecord;
 
         pHist->Serialize(ar);
@@ -300,24 +306,24 @@ void CGamDoc::SerializeGame(CArchive& ar)
         ar << m_dwCurrentPlayer;
         ar << m_dwPlayerHash;
         ar << m_strPlayerFileDescr;
-        ASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
-        ar << (WORD)m_eState;
+        wxASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
+        ar << value_preserving_cast<uint16_t>(m_eState);
         ar << m_strCurMsg;
         ar << m_astrMsgHist;
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ASSERT(m_nCurMove == Invalid_v<size_t> ||
+            wxASSERT(m_nCurMove == Invalid_v<size_t> ||
                     m_nCurMove < size_t(0xFFFF));
-            ar << (m_nCurMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurMove));
-            ASSERT(m_nFirstMove == Invalid_v<size_t> ||
+            ar << (m_nCurMove == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nCurMove));
+            wxASSERT(m_nFirstMove == Invalid_v<size_t> ||
                     m_nFirstMove < size_t(0xFFFF));
-            ar << (m_nFirstMove == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nFirstMove));
-            ASSERT(m_nCurHist == Invalid_v<size_t> ||
+            ar << (m_nFirstMove == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nFirstMove));
+            wxASSERT(m_nCurHist == Invalid_v<size_t> ||
                     m_nCurHist < size_t(0xFFFF));
-            ar << (m_nCurHist == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nCurHist));
-            ASSERT(m_nMoveIdxAtBookMark == Invalid_v<size_t> ||
+            ar << (m_nCurHist == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nCurHist));
+            wxASSERT(m_nMoveIdxAtBookMark == Invalid_v<size_t> ||
                     m_nMoveIdxAtBookMark < size_t(0xFFFF));
-            ar << (m_nMoveIdxAtBookMark == Invalid_v<size_t> ? WORD(0xFFFF) : value_preserving_cast<WORD>(m_nMoveIdxAtBookMark));
+            ar << (m_nMoveIdxAtBookMark == Invalid_v<size_t> ? uint16_t(0xFFFF) : value_preserving_cast<uint16_t>(m_nMoveIdxAtBookMark));
         }
         else
         {
@@ -327,10 +333,10 @@ void CGamDoc::SerializeGame(CArchive& ar)
             CB::WriteCount(ar, m_nMoveIdxAtBookMark);
         }
 
-        ar << (WORD)m_bStepToNextHist;
-        ar << (WORD)m_bKeepSkipInd;
-        ar << (WORD)m_bAutoStep;
-        ar << (WORD)m_bMsgWinVisible;
+        ar << value_preserving_cast<uint16_t>(m_bStepToNextHist);
+        ar << value_preserving_cast<uint16_t>(m_bKeepSkipInd);
+        ar << value_preserving_cast<uint16_t>(m_bAutoStep);
+        ar << value_preserving_cast<uint16_t>(m_bMsgWinVisible);
 
         if (GetCBFeatures().Check(ftrCRollState))
         {
@@ -341,25 +347,25 @@ void CGamDoc::SerializeGame(CArchive& ar)
                 ar << *m_pRollState;
             }
         }
-        ar << (DWORD)m_nSeedCarryOver;
+        ar << m_nSeedCarryOver;
 
-        ar << (BYTE)(m_pRcdMoves != NULL ? 1 : 0);
+        ar << uint8_t(m_pRcdMoves != NULL ? 1 : 0);
         if (m_pRcdMoves)
             m_pRcdMoves->Store(ar);
 
-        ar << (BYTE)(m_pHistMoves != NULL ? 1 : 0);
+        ar << uint8_t(m_pHistMoves != NULL ? 1 : 0);
         if (m_pHistMoves)
             m_pHistMoves->Store(ar);
 
-        ar << (BYTE)(m_pPlayHist != NULL ? 1 : 0);
+        ar << uint8_t(m_pPlayHist != NULL ? 1 : 0);
         if (m_pPlayHist)
             m_pPlayHist->Serialize(ar);
 
-        ar << (BYTE)(m_pBookMark != NULL ? 1 : 0);
+        ar << uint8_t(m_pBookMark != NULL ? 1 : 0);
         if (m_pBookMark)
             m_pBookMark->Serialize(ar);
 
-        ar << (BYTE)(m_pHistTbl != NULL ? 1 : 0);
+        ar << uint8_t(m_pHistTbl != NULL ? 1 : 0);
         if (m_pHistTbl)
             m_pHistTbl->Serialize(ar);
 
@@ -383,7 +389,9 @@ void CGamDoc::SerializeGame(CArchive& ar)
         szID[4] = 0;
         if (strcmp(szID, FILEGAMSIGNATURE) != 0)
         {
-            AfxMessageBox(IDS_ERR_NOTAGAME, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_NOTAGAME),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
 
@@ -415,8 +423,8 @@ void CGamDoc::SerializeGame(CArchive& ar)
             m_strPlayerFileDescr.clear();
         }
 
-        ar >> wTmp; m_eState = (GameState)wTmp;
-        ASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
+        ar >> wTmp; m_eState = static_cast<GameState>(wTmp);
+        wxASSERT(m_eState != stateNotRecording);  // Shouldn't save this state
         ar >> m_strCurMsg;
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
             ar >> m_astrMsgHist;
@@ -439,10 +447,10 @@ void CGamDoc::SerializeGame(CArchive& ar)
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
         {
-            ar >> wTmp; m_bStepToNextHist = (BOOL)wTmp; // Ver2.90
-            ar >> wTmp; m_bKeepSkipInd = (BOOL)wTmp;    // Ver2.90
-            ar >> wTmp; m_bAutoStep = (BOOL)wTmp;       // Ver2.90
-            ar >> wTmp; m_bMsgWinVisible = (BOOL)wTmp;  // Ver2.90
+            ar >> wTmp; m_bStepToNextHist = static_cast<BOOL>(wTmp); // Ver2.90
+            ar >> wTmp; m_bKeepSkipInd = static_cast<BOOL>(wTmp);    // Ver2.90
+            ar >> wTmp; m_bAutoStep = value_preserving_cast<BOOL>(wTmp);       // Ver2.90
+            ar >> wTmp; m_bMsgWinVisible = value_preserving_cast<BOOL>(wTmp);  // Ver2.90
         }
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
@@ -457,9 +465,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
                     ar >> *m_pRollState;
                 }
             }
-            DWORD dwTmp;
-            ar >> dwTmp;
-            m_nSeedCarryOver = (UINT)dwTmp;
+            ar >> m_nSeedCarryOver;
         }
 
         // Process Move List
@@ -474,7 +480,7 @@ void CGamDoc::SerializeGame(CArchive& ar)
             // If no recording is under way make sure the random number seed
             // is new in case the first recorded move record is a random number
             // operation.
-            m_nSeedCarryOver = (UINT)GetTickCount();
+            m_nSeedCarryOver = value_preserving_cast<uint32_t>(GetTickCount());
         }
 
         // Process History Playback Move List
@@ -564,7 +570,9 @@ void CGamDoc::SerializeScenario(CArchive& ar)
         szID[4] = 0;
         if (strcmp(szID, FILEGSNSIGNATURE) != 0)
         {
-            AfxMessageBox(IDS_ERR_NOTASCENARIO, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_NOTASCENARIO),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
     }
@@ -594,7 +602,7 @@ void CGamDoc::SerializeScenario(CArchive& ar)
         CTrayManager& pTMgr = GetTrayManager();
         while (pTMgr.FindPieceIDInTraySet(PieceID(0)) != NULL)
         {
-            TRACE0("Removed bogus PieceID 0 from tray\n");
+            CPP20_TRACE("Removed bogus PieceID 0 from tray\n");
             pTMgr.RemovePieceIDFromTraySets(PieceID(0));
         }
     }
@@ -608,8 +616,8 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
     {
         ASSERT(fileGsnVerMajor == fileGamVerMajor &&
                 fileGsnVerMinor == fileGamVerMinor);
-        ar << (BYTE)fileGsnVerMajor;
-        ar << (BYTE)fileGsnVerMinor;
+        ar << value_preserving_cast<uint8_t>(fileGsnVerMajor);
+        ar << value_preserving_cast<uint8_t>(fileGsnVerMinor);
 
         if (NumVersion(fileGsnVerMajor, fileGsnVerMinor) >= NumVersion(5, 0))
         {
@@ -655,7 +663,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         }
         else
         {
-            ASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(3, 10));
+            wxASSERT(NumVersion(fileGmvVerMajor, fileGmvVerMinor) == NumVersion(3, 10));
             c_fileFeatures = Features();
         }
 
@@ -675,10 +683,10 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             }
         }
 
-        ar << (BYTE)progVerMajor;
-        ar << (BYTE)progVerMinor;
+        ar << value_preserving_cast<uint8_t>(progVerMajor);
+        ar << value_preserving_cast<uint8_t>(progVerMinor);
 
-        ar << (WORD)m_bDisableOwnerTips;
+        ar << value_preserving_cast<uint16_t>(m_bDisableOwnerTips);
         // ar << m_wReserved;  (now m_bDisableOwnerTips);
         ar << m_wReserved2;             // Spares
         ar << m_wReserved3;
@@ -695,36 +703,36 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar << m_strScnAuthor;
         ar << m_strScnDescr;
 
-        ar << (WORD)m_bKeepGamBackup;
-        ar << (WORD)m_bKeepMoveHist;
-        ar << (WORD)m_bVrfyGameState;
-        ar << (WORD)m_bVrfySaveState;
-        ar << (WORD)m_bShowObjTipText;          // V2.0
+        ar << value_preserving_cast<uint16_t>(m_bKeepGamBackup);
+        ar << value_preserving_cast<uint16_t>(m_bKeepMoveHist);
+        ar << value_preserving_cast<uint16_t>(m_bVrfyGameState);
+        ar << value_preserving_cast<uint16_t>(m_bVrfySaveState);
+        ar << value_preserving_cast<uint16_t>(m_bShowObjTipText);          // V2.0
         m_mapStrings.Serialize(ar);             // V2.0
 
         if (m_pPlayerMgr != NULL)               // V2.0
         {
-            ar << (BYTE)1;                      // 1 -> player accounts follow
+            ar << uint8_t(1);                      // 1 -> player accounts follow
             m_pPlayerMgr->Serialize(ar);
         }
         else
-            ar << (BYTE)0;                      // 0 -> no player accounts
+            ar << uint8_t(0);                      // 0 -> no player accounts
 
-        ar << (WORD)m_bSaveWindowPositions;     // V2.0
+        ar << value_preserving_cast<uint16_t>(m_bSaveWindowPositions);     // V2.0
 
         if (m_pWinState != NULL)
         {
-            ar << (BYTE)1;                      // 0 -> win state serialized   // V2.0
+            ar << uint8_t(1);                      // 0 -> win state serialized   // V2.0
             m_pWinState->Serialize(ar);         // V2.0
         }
         else
-            ar << (BYTE)0;                      // 0 -> no win state serialize // V2.0
+            ar << uint8_t(0);                      // 0 -> no win state serialize // V2.0
 
-        ar << (WORD)m_bTrayAVisible;
+        ar << value_preserving_cast<uint16_t>(m_bTrayAVisible);
         m_palTrayA->Serialize(ar);               // Save tray position on screen
-        ar << (WORD)m_bTrayBVisible;
+        ar << value_preserving_cast<uint16_t>(m_bTrayBVisible);
         m_palTrayB->Serialize(ar);               // Save tray position on screen
-        ar << (WORD)m_bMarkPalVisible;
+        ar << value_preserving_cast<uint16_t>(m_bMarkPalVisible);
         m_palMark->Serialize(ar);                // Save tray position on screen
 
         // Main content serialization....
@@ -735,9 +743,9 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
     }
     else
     {
-        BYTE verMajor, verMinor;
-        WORD wTmp;
-        DWORD dwCurFileSlot = DWORD(0xffffffff);
+        uint8_t verMajor, verMinor;
+        uint16_t wTmp;
+        uint32_t dwCurFileSlot = uint32_t(0xffffffff);
 
         ar >> verMajor;
         ar >> verMinor;
@@ -758,13 +766,13 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
                 ar.GetFile()->Seek(value_preserving_cast<LONGLONG>(offsetOffsetFeatureTable), CFile::begin);
                 uint64_t dummy;
                 ar >> dummy;
-                ASSERT(dummy == offsetFeatureTable);
+                wxASSERT(dummy == offsetFeatureTable);
             }
             catch (...)
             {
-                ASSERT(!"exception");
+                wxASSERT(!"exception");
                 // report file too new
-                verMajor = value_preserving_cast<BYTE>(fileGbxVerMajor + 1);
+                verMajor = value_preserving_cast<uint8_t>(fileGbxVerMajor + 1);
             }
         }
         else if (NumVersion(verMajor, verMinor) == NumVersion(4, 0))
@@ -773,7 +781,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         }
         else
         {
-            ASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
+            wxASSERT(NumVersion(verMajor, verMinor) <= NumVersion(3, 90));
         }
 
         if (NumVersion(verMajor, verMinor) >
@@ -781,13 +789,16 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             // file 3.90 is the same as 3.10
             NumVersion(verMajor, verMinor) != NumVersion(3, 90))
         {
-            AfxMessageBox(IDS_ERR_SCENARIONEWER, MB_OK | MB_ICONEXCLAMATION);
+            wxMessageBox(CB::string::LoadString(IDS_ERR_SCENARIONEWER),
+                            CB::GetAppName(),
+                            wxOK | wxICON_EXCLAMATION);
             AfxThrowArchiveException(CArchiveException::genericException);
         }
         if (NumVersion(verMajor, verMinor) < NumVersion(fileGbxVerMajor, fileGbxVerMinor))
         {
-            if (AfxMessageBox(IDS_WARN_FILE_UPGRADE,
-                MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONWARNING) != IDOK)
+            if (wxMessageBox(CB::string::LoadString(IDS_WARN_FILE_UPGRADE),
+                            CB::GetAppName(),
+                            wxOK | wxCANCEL | wxCANCEL_DEFAULT | wxICON_WARNING) != wxOK)
             {
                 AfxThrowArchiveException(CArchiveException::genericException);
             }
@@ -796,11 +807,11 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         SetLoadingVersion(m_nLoadedFileVersion);
         SetFileFeatures(std::move(fileFeatures));
 
-        BYTE byteBucket;        // Place to dump unused bytes
+        uint8_t byteBucket;        // Place to dump unused bytes
         ar >> byteBucket;       // Eat the program version
         ar >> byteBucket;
 
-        ar >> wTmp; m_bDisableOwnerTips = (BOOL)wTmp;
+        ar >> wTmp; m_bDisableOwnerTips = value_preserving_cast<BOOL>(wTmp);
         // ar >> m_wReserved1;
         ar >> m_wReserved2;             // Spares
         ar >> m_wReserved3;
@@ -834,17 +845,17 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         ar >> m_strScnDescr;
         CPP20_TRACE("Scenario Description length is {}\n", m_strScnDescr.a_size());
 
-        ar >> wTmp; m_bKeepGamBackup = (BOOL)wTmp;
-        ar >> wTmp; m_bKeepMoveHist = (BOOL)wTmp;
-        ar >> wTmp; m_bVrfyGameState = (BOOL)wTmp;
-        ar >> wTmp; m_bVrfySaveState = (BOOL)wTmp;
+        ar >> wTmp; m_bKeepGamBackup = value_preserving_cast<BOOL>(wTmp);
+        ar >> wTmp; m_bKeepMoveHist = value_preserving_cast<BOOL>(wTmp);
+        ar >> wTmp; m_bVrfyGameState = value_preserving_cast<BOOL>(wTmp);
+        ar >> wTmp; m_bVrfySaveState = value_preserving_cast<BOOL>(wTmp);
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 0))
         {
-            BYTE bTmp;
+            uint8_t bTmp;
 
             ar >> wTmp;
-            m_bShowObjTipText = (BOOL)wTmp;         // V2.0
+            m_bShowObjTipText = value_preserving_cast<BOOL>(wTmp);         // V2.0
             m_mapStrings.Serialize(ar);             // V2.0
 
             ar >> bTmp;                             // 1 -> player accounts follow // V2.0
@@ -857,7 +868,7 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
 
 
             ar >> wTmp;
-            m_bSaveWindowPositions = (BOOL)wTmp;    // V2.0
+            m_bSaveWindowPositions = value_preserving_cast<BOOL>(wTmp);    // V2.0
 
             m_pWinState = NULL;
 
@@ -874,15 +885,15 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
             }
         }
 
-        ar >> wTmp; m_bTrayAVisible = (BOOL)wTmp;
+        ar >> wTmp; m_bTrayAVisible = value_preserving_cast<BOOL>(wTmp);
         wxASSERT(!m_palTrayA);
         m_palTrayA = new CTrayPalette(*this, ID_VIEW_TRAYA);
         m_palTrayA->Serialize(ar);                   // Restore tray position on screen
-        ar >> wTmp; m_bTrayBVisible = (BOOL)wTmp;
+        ar >> wTmp; m_bTrayBVisible = value_preserving_cast<BOOL>(wTmp);
         wxASSERT(!m_palTrayB);
         m_palTrayB = new CTrayPalette(*this, ID_VIEW_TRAYB);
         m_palTrayB->Serialize(ar);                   // Restore tray position on screen
-        ar >> wTmp; m_bMarkPalVisible = (BOOL)wTmp;
+        ar >> wTmp; m_bMarkPalVisible = value_preserving_cast<BOOL>(wTmp);
         wxASSERT(!m_palMark);
         m_palMark = new CMarkerPalette(*this);
         m_palMark->Serialize(ar);                    // Restore tray position on screen
@@ -997,21 +1008,23 @@ void CGamDoc::LoadGameBoxFileForSerialize()
             // File doesn't exist where the game file is.
             // Use open file dialog to locate file.
             CB::string str = AfxFormatString1(IDP_ERR_NOGAMEBOX, szFPath);
-            if (AfxMessageBox(str, MB_OKCANCEL | MB_ICONEXCLAMATION) != IDOK)
+            if (wxMessageBox(str,
+                            CB::GetAppName(),
+                            wxOK | wxCANCEL | wxICON_EXCLAMATION) != wxOK)
                 AfxThrowArchiveException(CArchiveException::genericException);
 
             CB::string strFilter = CB::string::LoadString(IDS_GBOX_FILTER);
             CB::string strTitle = CB::string::LoadString(IDS_GBOX_SELECT);
 
-            CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_PATHMUSTEXIST,
-                strFilter, NULL, 0);
-            dlg.m_ofn.lpstrTitle = strTitle;
+            wxFileDialog dlg(&CB::GetMainWndWx(), strTitle,
+                                wxEmptyString, wxEmptyString,
+                                strFilter, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
-            if (dlg.DoModal() != IDOK)
+            if (dlg.ShowModal() != wxID_OK)
                 AfxThrowArchiveException(CArchiveException::genericException);
 
-            m_strGBoxFile = dlg.GetPathName();      // Set new name
-            szFPath = dlg.GetPathName();
+            m_strGBoxFile = dlg.GetPath();      // Set new name
+            szFPath = dlg.GetPath();
         }
     }
     else
@@ -1019,14 +1032,17 @@ void CGamDoc::LoadGameBoxFileForSerialize()
     CB::string strErr;
     if (!m_pGbx->Load(*this, szFPath, strErr, m_dwGBoxID))
     {
-        AfxMessageBox(strErr, MB_OK | MB_ICONEXCLAMATION);
+        wxMessageBox(strErr,
+                        CB::GetAppName(),
+                        wxOK | wxICON_EXCLAMATION);
         AfxThrowArchiveException(CArchiveException::genericException);
     }
     // Finally check the major revision number and warn if different.
     if (m_pGbx->m_dwMajorRevs != m_dwMajorRevs)
     {
-        if (AfxMessageBox(IDS_ERR_MAJORREV, MB_OKCANCEL |
-            MB_ICONEXCLAMATION) != IDOK)
+        if (wxMessageBox(CB::string::LoadString(IDS_ERR_MAJORREV),
+                        CB::GetAppName(),
+                        wxOK | wxCANCEL | wxICON_EXCLAMATION) != wxOK)
         {
             AfxThrowArchiveException(CArchiveException::genericException);
         }
