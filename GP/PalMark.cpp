@@ -444,7 +444,7 @@ BOOL CMarkerPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 #endif
 
 CMarkerPaletteContainer::CMarkerPaletteContainer(CGamDoc& pDoc) :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CMarkerPalette(*this, pDoc))
 {
 }

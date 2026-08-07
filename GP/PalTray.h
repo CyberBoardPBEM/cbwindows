@@ -162,7 +162,7 @@ protected:
 };
 
 class CTrayPaletteContainer : public CWnd,
-                                public CB::wxNativeContainerWindowMixin
+                                public CB::NativeContainerWindowMixin
 {
 public:
     CTrayPaletteContainer(CGamDoc& pDoc, UINT palID);

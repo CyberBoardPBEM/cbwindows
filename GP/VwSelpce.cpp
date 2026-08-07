@@ -270,7 +270,7 @@ void CSelectedPieceViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject
 }
 
 CSelectedPieceViewContainer::CSelectedPieceViewContainer() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 

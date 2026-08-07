@@ -187,7 +187,7 @@ private:
 };
 
 class CGsnProjViewContainer :  public CB::OnCmdMsgOverride<CView>,
-                                public CB::wxNativeContainerWindowMixin
+                                public CB::NativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;

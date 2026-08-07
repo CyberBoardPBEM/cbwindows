@@ -2368,7 +2368,7 @@ wxBrdEditView* wxBrdEditView::New(CGamDoc& doc, CBoard& board)
             createParam = nullptr;
         }
     } createParamMgr(board);
-    ::wxView* retval = templ.CreateView(&doc);
+    wxView* retval = templ.CreateView(&doc);
     wxASSERT(dynamic_cast<wxBrdEditView*>(retval));
     return static_cast<wxBrdEditView*>(retval);
 }
@@ -2426,9 +2426,9 @@ bool wxBrdEditView::OnCreate(wxDocument* doc, long flags)
     return true;
 }
 
-void wxBrdEditView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+void wxBrdEditView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
 {
-    CB::wxView::OnUpdate(sender, hint);
+    CB::View::OnUpdate(sender, hint);
 
     CGmBoxHintWx& hint2 = dynamic_cast<CGmBoxHintWx&>(CheckedDeref(hint));
     GetWindow().OnUpdate(nullptr, hint2.hint, hint2.hintObj);

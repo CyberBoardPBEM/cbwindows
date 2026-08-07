@@ -261,7 +261,7 @@ wxBitEditView* wxBitEditView::New(CGamDoc& doc, TileID tid)
             createParam = nullTid;
         }
     } createParamMgr(tid);
-    ::wxView* retval = templ.CreateView(&doc);
+    wxView* retval = templ.CreateView(&doc);
     wxASSERT(dynamic_cast<wxBitEditView*>(retval));
     return static_cast<wxBitEditView*>(retval);
 }
@@ -294,7 +294,7 @@ CTileSelView& CBitEditFrame::GetTileSelView()
     return tsvc;
 }
 
-void wxBitEditView::OnActivateView(bool activate, ::wxView* activeView, ::wxView* deactiveView)
+void wxBitEditView::OnActivateView(bool activate, wxView* activeView, wxView* deactiveView)
 {
     wxASSERT(activeView == this);
     if (!activate)
@@ -335,9 +335,9 @@ bool wxBitEditView::OnCreate(wxDocument* doc, long flags)
     return true;
 }
 
-void wxBitEditView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+void wxBitEditView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
 {
-    CB::wxView::OnUpdate(sender, hint);
+    CB::View::OnUpdate(sender, hint);
 
     CGmBoxHintWx& hint2 = dynamic_cast<CGmBoxHintWx&>(CheckedDeref(hint));
     GetTileSelView().OnUpdate(nullptr, hint2.hint, hint2.hintObj);

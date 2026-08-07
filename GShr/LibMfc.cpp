@@ -770,7 +770,7 @@ void CB::string::Serialize(CArchive& ar)
 #endif
 }
 
-CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() const
+CB::NativeContainerWindowMixin::operator const wxNativeContainerWindow*() const
 {
     if (!mfcWnd->m_hWnd)
     {
@@ -784,7 +784,7 @@ CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() cons
         wxWnd = new wxNativeContainerWindow(mfcWnd->m_hWnd);
 
         // N.B.:  this is a dirty hack
-        wxNativeContainerWindowMixin* ncThis = const_cast<wxNativeContainerWindowMixin*>(this);
+        NativeContainerWindowMixin* ncThis = const_cast<NativeContainerWindowMixin*>(this);
         wxWindow& rThis = *ncThis;
         CPP20_TRACE("{}({}:{}) === {}:{}\n", typeid(*mfcWnd).name(),  (const void*)&*mfcWnd, (void*)mfcWnd->m_hWnd, rThis, WXHANDLE(rThis.GetHWND()));
 
@@ -835,7 +835,7 @@ CB::wxNativeContainerWindowMixin::operator const wxNativeContainerWindow*() cons
     wxNativeContainerWindowMixin, return it */
 wxWindow* CB::GetWxWindow(CWnd& mfcWnd)
 {
-    CB::wxNativeContainerWindowMixin* mixin = dynamic_cast<CB::wxNativeContainerWindowMixin*>(&mfcWnd);
+    CB::NativeContainerWindowMixin* mixin = dynamic_cast<CB::NativeContainerWindowMixin*>(&mfcWnd);
     return mixin ? *mixin : nullptr;
 }
 
@@ -903,9 +903,9 @@ const std::type_info& CB::GetPublicTypeid(const wxWindow& w)
     return mfcWnd ? typeid(*mfcWnd) : typeid(w);
 }
 
-void CB::wxView::OnActivateView(bool activate,
-                        ::wxView *activeView,
-                        ::wxView *deactiveView)
+void CB::View::OnActivateView(bool activate,
+                        wxView *activeView,
+                        wxView *deactiveView)
 {
     if (activate)
     {
@@ -916,24 +916,24 @@ void CB::wxView::OnActivateView(bool activate,
             freezer->FreezeUntilIdle();
         }
     }
-    ::wxView::OnActivateView(activate, activeView, deactiveView);
+    wxView::OnActivateView(activate, activeView, deactiveView);
 }
 
-void CB::wxView::OnDraw(wxDC * dc)
+void CB::View::OnDraw(wxDC * dc)
 {
     CPP20_TRACE("{}({})\n", __func__, *this);
     wxASSERT(!"not impl");
 }
 
 // for CB, forward events to window here
-bool CB::wxView::TryBefore(wxEvent& event)
+bool CB::View::TryBefore(wxEvent& event)
 {
     /* wx expects TryBefore() to be checked before the event
         handlers specific to the current class, and I think
         the wxWindow handlers are equivalent to what wx would
         expect to be the wxView handlers, so check them after
         base class TryBefore() */
-    if (::wxView::TryBefore(event))
+    if (wxView::TryBefore(event))
     {
         return true;
     }
@@ -999,7 +999,7 @@ bool CB::wxView::TryBefore(wxEvent& event)
     return GetWindow().ProcessWindowEventLocally(event);
 }
 
-void CB::wxView::FileHistoryAddMenu()
+void CB::View::FileHistoryAddMenu()
 {
     wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
     wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
@@ -1019,7 +1019,7 @@ void CB::wxView::FileHistoryAddMenu()
     fileHist.SetMenuPathStyle(style);
 }
 
-void CB::wxView::FileHistoryRemoveMenu()
+void CB::View::FileHistoryRemoveMenu()
 {
     wxFrame& frame = dynamic_cast<wxFrame&>(CheckedDeref(GetFrame()));
     wxMenuBar& menubar = CheckedDeref(frame.GetMenuBar());
@@ -1913,14 +1913,14 @@ wxAuiToolBar& CB::CreateToolbar(wxWindow& parent, const ToolArgs(&toolArgs)[], s
 }
 #endif
 
-wxBEGIN_EVENT_TABLE(CB::wxStatusBar, ::wxStatusBar)
+wxBEGIN_EVENT_TABLE(CB::StatusBar, wxStatusBar)
     EVT_IDLE(OnIdle)
     EVT_UPDATE_UI(wxID_SEPARATOR, OnUpdateUI)
     EVT_UPDATE_UI(ID_INDICATOR_CAPS, OnUpdateUI)
     EVT_UPDATE_UI(ID_INDICATOR_NUM, OnUpdateUI)
 wxEND_EVENT_TABLE()
 
-void CB::wxStatusBar::SetIndicators(
+void CB::StatusBar::SetIndicators(
                                 const int (&ids)[],
                                 size_t count)
 {
@@ -1946,7 +1946,7 @@ void CB::wxStatusBar::SetIndicators(
     SetStatusWidths(value_preserving_cast<int>(widths.size()), widths.data());
 }
 
-void CB::wxStatusBar::OnIdle(wxIdleEvent& WXUNUSED(event))
+void CB::StatusBar::OnIdle(wxIdleEvent& WXUNUSED(event))
 {
     // represent disabled fields as ""
     // use the status field stacks to remember enabled value
@@ -1983,7 +1983,7 @@ void CB::wxStatusBar::OnIdle(wxIdleEvent& WXUNUSED(event))
     }
 }
 
-void CB::wxStatusBar::OnUpdateUI(wxUpdateUIEvent& event)
+void CB::StatusBar::OnUpdateUI(wxUpdateUIEvent& event)
 {
     if (event.GetId() == ID_INDICATOR_CAPS)
     {
@@ -1999,23 +1999,23 @@ void CB::wxStatusBar::OnUpdateUI(wxUpdateUIEvent& event)
     }
 }
 
-CB::wxStatusBar& CB::wxAuiMDIParentFrame::CreateStatusBar(
+CB::StatusBar& CB::AuiMDIParentFrame::CreateStatusBar(
                                 const int (&ids)[],
                                 size_t count)
 {
-    ::wxStatusBar* psb = ::wxAuiMDIParentFrame::CreateStatusBar(value_preserving_cast<int>(count));
-    ::wxStatusBar& sb = CheckedDeref(psb);
-    CB::wxStatusBar& retval = dynamic_cast<CB::wxStatusBar&>(sb);
+    wxStatusBar* psb = wxAuiMDIParentFrame::CreateStatusBar(value_preserving_cast<int>(count));
+    wxStatusBar& sb = CheckedDeref(psb);
+    CB::StatusBar& retval = dynamic_cast<CB::StatusBar&>(sb);
     retval.SetIndicators(ids, count);
     return retval;
 }
 
-CB::wxStatusBar* CB::wxAuiMDIParentFrame::OnCreateStatusBar(int number,
+CB::StatusBar* CB::AuiMDIParentFrame::OnCreateStatusBar(int number,
                                             long style,
                                             wxWindowID id,
                                             const wxString& name)
 {
-    CB::wxStatusBar* statusBar = new CB::wxStatusBar(this, id, style, "CB::" + name);
+    CB::StatusBar* statusBar = new CB::StatusBar(this, id, style, "CB::" + name);
 
     statusBar->SetFieldsCount(number);
 

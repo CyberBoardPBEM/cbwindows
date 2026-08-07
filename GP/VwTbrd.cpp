@@ -377,7 +377,7 @@ void CTinyBoardViewContainer::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
 }
 
 CTinyBoardViewContainer::CTinyBoardViewContainer() :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this))
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this))
 {
 }
 

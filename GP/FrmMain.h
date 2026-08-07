@@ -32,7 +32,7 @@ class CDockMarkPalette;
 class CReadMsgWnd;
 
 class CMainFrame : public CMDIFrameWndExCb,
-                    public CB::wxNativeContainerWindowMixin
+                    public CB::NativeContainerWindowMixin
 {
     DECLARE_DYNAMIC(CMainFrame)
 public:

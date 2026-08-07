@@ -336,7 +336,7 @@ inline const CGamDoc& CPlayBoardView::GetDocument() const
 #endif
 
 class CPlayBoardViewContainer : public CB::OnCmdMsgOverride<CView>,
-                                public CB::wxNativeContainerWindowMixin
+                                public CB::NativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;

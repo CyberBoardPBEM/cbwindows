@@ -1325,7 +1325,7 @@ void CTrayPalette::OnInitMenuPopup(CMenu* pMenu, UINT nIndex, BOOL bSysMenu)
 #endif
 
 CTrayPaletteContainer::CTrayPaletteContainer(CGamDoc& pDoc, UINT palID) :
-    CB::wxNativeContainerWindowMixin(static_cast<CWnd&>(*this)),
+    CB::NativeContainerWindowMixin(static_cast<CWnd&>(*this)),
     child(new CTrayPalette(*this, pDoc, palID))
 {
 }

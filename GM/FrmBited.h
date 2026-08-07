@@ -77,7 +77,7 @@ private:
     friend class wxBitEditView;
 };
 
-class wxBitEditView : public CB::wxView
+class wxBitEditView : public CB::View
 {
 public:
     static wxBitEditView* New(CGamDoc& doc, TileID tid);
@@ -88,10 +88,10 @@ public:
     CBitEditView& GetBitEditView() { return GetFrame().GetBitEditView(); }
     CTileSelView& GetTileSelView() { return GetFrame().GetTileSelView(); }
 
-    void OnActivateView(bool activate, ::wxView* activeView, ::wxView* deactiveView) override;
+    void OnActivateView(bool activate, wxView* activeView, wxView* deactiveView) override;
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
-    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 private:
     wxBitEditView() = default;

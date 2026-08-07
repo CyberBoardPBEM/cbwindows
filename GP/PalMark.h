@@ -115,7 +115,7 @@ protected:
 };
 
 class CMarkerPaletteContainer : public CWnd,
-                                public CB::wxNativeContainerWindowMixin
+                                public CB::NativeContainerWindowMixin
 {
 public:
     CMarkerPaletteContainer(CGamDoc& pDoc);

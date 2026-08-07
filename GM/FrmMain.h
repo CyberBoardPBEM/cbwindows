@@ -42,7 +42,7 @@
 #include    "frmdocktile.h"
 #endif
 
-class CMainFrame : public wxDocParentFrameAny<CB::wxAuiMDIParentFrame>,
+class CMainFrame : public wxDocParentFrameAny<CB::AuiMDIParentFrame>,
                     public CB::FreezeUntilIdleMixin
 {
 public:
@@ -88,7 +88,7 @@ public:
     wxAuiToolBar*   m_wndIToolPal;      // Button tool palette for image edit
     CColorPalette*  m_wndColorPal;      // Color tool palette window
     CDockTilePalette* m_wndTilePal;     // Container window for tile palette
-    CB::wxStatusBar*  m_wndStatusBar;   // Status bar at window bottom
+    CB::StatusBar*  m_wndStatusBar;   // Status bar at window bottom
 
     BOOL            m_bColorPalOn;
     BOOL            m_bTilePalOn;

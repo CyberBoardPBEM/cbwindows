@@ -89,7 +89,7 @@ inline CGamDoc& CSelectedPieceView::GetDocument()
 #endif
 
 class CSelectedPieceViewContainer : public CB::OnCmdMsgOverride<CView>,
-                                    public CB::wxNativeContainerWindowMixin
+                                    public CB::NativeContainerWindowMixin
 {
 public:
     void OnDraw(CDC* pDC) override;

@@ -1473,7 +1473,7 @@ bool wxGbxProjView::OnClose(bool deleteWindow)
         wxViewVector views = GetDocument()->GetViewsVector();
         for (auto it = views.begin() ; it != views.end() ; ++it)
         {
-            ::wxView* view = *it;
+            wxView* view = *it;
             if (view != this)
             {
                 /* KLUDGE:  need to close frame because
@@ -1523,7 +1523,7 @@ bool wxGbxProjView::OnCreate(wxDocument* doc, long flags)
     return true;
 }
 
-void wxGbxProjView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
+void wxGbxProjView::OnUpdate(wxView* sender, wxObject* hint /*= nullptr*/)
 {
     CGmBoxHintWx* gbxHint = dynamic_cast<CGmBoxHintWx*>(hint);
     if (gbxHint && gbxHint->hint == HINT_DOCREADY)
@@ -1534,7 +1534,7 @@ void wxGbxProjView::OnUpdate(::wxView* sender, wxObject* hint /*= nullptr*/)
         isDocReady = true;
     }
 
-    CB::wxView::OnUpdate(sender, hint);
+    CB::View::OnUpdate(sender, hint);
 
     if (isDocReady)
     {

@@ -318,7 +318,7 @@ private:
     friend class wxBrdEditView;
 };
 
-class wxBrdEditView : public CB::wxView
+class wxBrdEditView : public CB::View
 {
 public:
     static wxBrdEditView* New(CGamDoc& doc, CBoard& board);
@@ -328,7 +328,7 @@ public:
 
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
-    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 private:
     wxBrdEditView() = default;

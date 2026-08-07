@@ -1930,12 +1930,12 @@ static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdif
 // adapt between CWnd and wxWindow
 namespace CB
 {
-    class wxNativeContainerWindowMixin
+    class NativeContainerWindowMixin
     {
     public:
         // avoid multiple wxWindow for single CWnd
-        wxNativeContainerWindowMixin(const wxNativeContainerWindowMixin&) = delete;
-        wxNativeContainerWindowMixin(CWnd& w) : mfcWnd(&w) {}
+        NativeContainerWindowMixin(const NativeContainerWindowMixin&) = delete;
+        NativeContainerWindowMixin(CWnd& w) : mfcWnd(&w) {}
 
         operator const wxNativeContainerWindow*() const;
         operator wxNativeContainerWindow*()
@@ -2003,7 +2003,7 @@ namespace CB
 
     /* wxView must be separate from wxWindow
         (see https://groups.google.com/g/wx-dev/c/xMK4zYT3FFQ/m/kR9JmczbBAAJ) */
-    class wxView_deprecated : public ::wxView
+    class wxView_deprecated : public wxView
     {
     public:
         wxView_deprecated(wxWindow& v) :
@@ -2032,14 +2032,14 @@ namespace CB
     /* wx passes events to wxView, but, for historical reasons, all
         of our event handlers are in the corresponding wxWindow,
         so use this class as an adapter */
-    class wxView : public ::wxView
+    class View : public wxView
     {
     public:
         virtual wxWindow& GetWindow() = 0;
 
         void OnActivateView(bool activate,
-                                ::wxView *activeView,
-                                ::wxView *deactiveView) override;
+                                wxView *activeView,
+                                wxView *deactiveView) override;
         void OnDraw(wxDC* dc) override;
 
     protected:
@@ -2613,10 +2613,10 @@ namespace CB
 {
     /* emulate MFC support for displaying
     CAPS lock and NUM lock indicators */
-    class wxStatusBar : public ::wxStatusBar
+    class StatusBar : public wxStatusBar
     {
     public:
-        using ::wxStatusBar::wxStatusBar;
+        using wxStatusBar::wxStatusBar;
 
         void SetIndicators(const int (&ids)[],
                             size_t count);
@@ -2635,23 +2635,23 @@ namespace CB
         std::vector<int> indicators;
     };
 
-    // create CB::wxStatusBar instead of ::wxStatusBar
-    class wxAuiMDIParentFrame : public ::wxAuiMDIParentFrame
+    // create CB::StatusBar instead of wxStatusBar
+    class AuiMDIParentFrame : public wxAuiMDIParentFrame
     {
     public:
-        using ::wxAuiMDIParentFrame::wxAuiMDIParentFrame;
+        using wxAuiMDIParentFrame::wxAuiMDIParentFrame;
 
-        wxStatusBar& CreateStatusBar(const int (&ids)[],
+        StatusBar& CreateStatusBar(const int (&ids)[],
                                         size_t count);
 
         template<size_t COUNT>
-        wxStatusBar& CreateStatusBar(const int (&ids)[COUNT])
+        StatusBar& CreateStatusBar(const int (&ids)[COUNT])
         {
             return CreateStatusBar(ids, COUNT);
         }
 
         // return a new status bar
-        wxStatusBar* OnCreateStatusBar(int number,
+        StatusBar* OnCreateStatusBar(int number,
                                                long style,
                                                wxWindowID winid,
                                                const wxString& name) override;

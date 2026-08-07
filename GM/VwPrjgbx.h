@@ -256,7 +256,7 @@ private:
     friend class wxGbxProjView;
 };
 
-class wxGbxProjView : public CB::wxView
+class wxGbxProjView : public CB::View
 {
 public:
     const CDocFrame& GetFrame() const;
@@ -268,7 +268,7 @@ public:
 
     bool OnClose(bool deleteWindow) override;
     bool OnCreate(wxDocument* doc, long flags) override;
-    void OnUpdate(::wxView* sender, wxObject* hint = nullptr) override;
+    void OnUpdate(wxView* sender, wxObject* hint = nullptr) override;
 
 private:
     wxGbxProjView() = default;
