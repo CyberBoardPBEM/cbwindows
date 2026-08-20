@@ -789,8 +789,10 @@ namespace
                         offset += CSize(0, -cf.GetCellSize().cy/2);
                     }
                 }
-                else if (cf.GetCellType() == cformHexPnt &&
-                    cf.GetCellStagger() == CellStagger::Out)
+                /* experiment w/ Space Empires found In/Right
+                    needed offset */
+                else if (cf.GetCellType() == cformHexPnt /*&&
+                    cf.GetCellStagger() == CellStagger::Out*/)
                 {
                     if (board.IsGEVStyle(Edge::Right))
                     {
