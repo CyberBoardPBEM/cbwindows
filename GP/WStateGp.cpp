@@ -224,7 +224,7 @@ void CGpWinStateMgr::GpSerializer::AfterSaveNotebooks()
                 void* start;
                 void* max;
                 UINT len = file.GetBufferPtr(CMemFile::bufferRead, static_cast<UINT>(-1), &start, &max);
-                wxASSERT(static_cast<std::byte*>(max) - static_cast<std::byte*>(start) == len);
+                wxASSERT(static_cast<std::make_unsigned_t<ptrdiff_t>>(static_cast<std::byte*>(max) - static_cast<std::byte*>(start)) == len);
                 winstate.assign(static_cast<std::byte*>(start), static_cast<std::byte*>(max));
             }
         }
