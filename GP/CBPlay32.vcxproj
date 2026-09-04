@@ -129,7 +129,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_aui.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -186,7 +186,7 @@ echo off
       </DataExecutionPrevention>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\out\build\x64-Release\deps\wxWidgets\lib\vc_x64_lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33u.lib;wxbase33u_xml.lib;wxmsw33u_aui.lib;wxmsw33u_core.lib;wxmsw33u_html.lib;wxmsw33u_xrc.lib;wxexpat.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugU|Win32'">
@@ -230,7 +230,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_aui.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -280,7 +280,7 @@ echo off
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase33ud.lib;wxbase33ud_xml.lib;wxmsw33ud_aui.lib;wxmsw33ud_core.lib;wxmsw33ud_html.lib;wxmsw33ud_xrc.lib;wxexpatd.lib;wxpngd.lib;wxzlibd.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -326,11 +326,9 @@ echo off
     <ClCompile Include="FileLib.cpp" />
     <ClCompile Include="..\GShr\Font.cpp" />
     <ClCompile Include="..\GShr\FontName.cpp" />
-    <ClCompile Include="FrmDockMark.cpp" />
-    <ClCompile Include="FrmDockTray.cpp" />
+    <ClCompile Include="FrmDock.cpp" />
     <ClCompile Include="FrmMain.cpp" />
     <ClCompile Include="FrmPbrd.cpp" />
-    <ClCompile Include="FrmProj.cpp" />
     <ClCompile Include="GamDoc.cpp" />
     <ClCompile Include="GamDoc1.cpp" />
     <ClCompile Include="GamDoc2.cpp" />
@@ -440,6 +438,7 @@ echo off
     <ClInclude Include="..\GShr\Font.h" />
     <ClInclude Include="..\GShr\FontName.h" />
     <ClInclude Include="..\GShr\FrmCBMini.h" />
+    <ClInclude Include="FrmDock.h" />
     <ClInclude Include="FrmDockMark.h" />
     <ClInclude Include="FrmDockTray.h" />
     <ClInclude Include="FrmMain.h" />

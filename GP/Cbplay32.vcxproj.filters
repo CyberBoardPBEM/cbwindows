@@ -114,19 +114,10 @@
     <ClCompile Include="..\GShr\FontName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrmDockMark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FrmDockTray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FrmMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FrmPbrd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FrmProj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GamDoc.cpp">
@@ -307,6 +298,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\GShr\LBoxVHScrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrmDock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -615,6 +609,9 @@
     </ClInclude>
     <ClInclude Include="..\GShr\LBoxVHScrl.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrmDock.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
