@@ -446,29 +446,6 @@ wxBitmap CreateColorBitmap(wxSize size, wxColour cr)
 }
 
 /////////////////////////////////////////////////////////////////
-// Bitmap type bitblt. Used global DC mTileDC.
-// Caller may use mDC1 or mDC2.
-
-void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap)
-{
-    BITMAP bmInfo;
-    pBMap.GetObject(sizeof(bmInfo), &bmInfo);
-    CSize size(bmInfo.bmWidth, bmInfo.bmHeight);
-
-    g_gt.mTileDC.SelectObject(pBMap);
-    g_gt.mTileDC.SetMapMode(MM_TEXT);
-    g_gt.mTileDC.SetViewportOrg(0, 0);
-
-    // SetupPalette(&g_gt.mTileDC);
-
-    // Now do the bitblt
-    pDC.BitBlt(pntDst.x, pntDst.y, size.cx, size.cy,
-        &g_gt.mTileDC, 0, 0, SRCCOPY);
-
-    g_gt.SelectSafeObjectsForTileDC();
-}
-
-/////////////////////////////////////////////////////////////////
 
 #ifdef WE_WANT_THIS_STUFF_DLL940113
 // ----------------------------------------------------------- //
