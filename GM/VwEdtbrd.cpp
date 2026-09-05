@@ -1629,7 +1629,7 @@ void CBrdEditView::OnEditPaste(wxCommandEvent& /*event*/)
 
     {
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
-        pDObj->SetBitmap(0, 0, static_cast<HBITMAP>(CB::Convert(pBMap)->Detach()), fullScale);
+        pDObj->SetBitmap(0, 0, pBMap, fullScale);
 
         GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));
@@ -1675,7 +1675,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile(wxCommandEvent& /*event*/)
         wxBitmap pBMap = img;
 
         OwnerPtr<CBitmapImage> pDObj = MakeOwner<CBitmapImage>();
-        pDObj->SetBitmap(0, 0, (HBITMAP)CB::Convert(pBMap)->Detach(), fullScale);
+        pDObj->SetBitmap(0, 0, pBMap, fullScale);
 
         GetSelectList().PurgeList(TRUE);           // Clear current select list
         AddDrawObject(std::move(pDObj));

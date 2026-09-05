@@ -1056,7 +1056,7 @@ void CLine::Serialize(CArchive& ar)
 void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
 {
     wxMemoryDC tileDC;
-    wxBitmap wxm_bitmap = CB::Convert(m_bitmap);
+    const wxBitmap& wxm_bitmap = m_bitmap;
     tileDC.SelectObjectAsSource(wxm_bitmap);
 
     wxPoint pnt = CB::Convert(m_rctExtent.TopLeft());
@@ -1086,19 +1086,16 @@ void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
     }
 }
 
-void CBitmapImage::SetBitmap(int x, int y, HBITMAP hBMap,
+void CBitmapImage::SetBitmap(int x, int y, const wxBitmap& hBMap,
     TileScale eBaseScale /* = fullScale */)
 {
-    m_bitmap.Attach(hBMap);
+    m_bitmap = hBMap;
     m_eBaseScale = eBaseScale;
-
-    BITMAP bmInfo;
-    m_bitmap.GetObject(sizeof(bmInfo), &bmInfo);
 
     m_rctExtent.left = x;
     m_rctExtent.top = y;
-    m_rctExtent.right += bmInfo.bmWidth;
-    m_rctExtent.bottom += bmInfo.bmHeight;
+    m_rctExtent.right += m_bitmap.GetWidth();
+    m_rctExtent.bottom += m_bitmap.GetHeight();
 }
 
 BOOL CBitmapImage::HitTest(CPoint pt)
@@ -1111,18 +1108,16 @@ BOOL CBitmapImage::HitTest(CPoint pt)
 void CBitmapImage::SynchronizeExtentRect(CSize sizeWorld, CSize sizeView)
 {
     ASSERT((GetDObjFlags() & dobjFlgLayerNatural) != 0);// Only should be called in this case
-    ASSERT(m_bitmap.GetSafeHandle() != NULL);
-    if (m_bitmap.GetSafeHandle() == NULL)
+    wxASSERT(m_bitmap.IsOk());
+    if (!m_bitmap.IsOk())
         return;
 
-    BITMAP bmInfo;
-    m_bitmap.GetObject(sizeof(bmInfo), &bmInfo);
     // Might compensate the extend rect for objects with natural
     // sizes in scalings smaller that full scale.
     m_rctExtent.right = m_rctExtent.left;
     m_rctExtent.bottom = m_rctExtent.top;
-    m_rctExtent.right += (sizeWorld.cx * bmInfo.bmWidth) / sizeView.cx;
-    m_rctExtent.bottom += (sizeWorld.cy * bmInfo.bmHeight) / sizeView.cy;
+    m_rctExtent.right += (sizeWorld.cx * m_bitmap.GetWidth()) / sizeView.cx;
+    m_rctExtent.bottom += (sizeWorld.cy * m_bitmap.GetHeight()) / sizeView.cy;
 }
 
 #ifndef     GPLAY
@@ -1154,9 +1149,7 @@ void CBitmapImage::Rotate(Rotation90 rot)
         case Rotation90::r180:
         case Rotation90::r270:
         {
-            ::OwnerPtr<CBitmap> bmpRot = ::Rotate(m_bitmap, rot);
-            m_bitmap.DeleteObject();
-            m_bitmap.Attach(bmpRot->Detach());
+            m_bitmap = ::Rotate(m_bitmap, rot);
             break;
         }
         default:
@@ -1179,8 +1172,8 @@ void CBitmapImage::CopyAttributes(const CBitmapImage& source)
     CDrawObj_SimplRctExtent::CopyAttributes(source);
 
     m_eBaseScale = source.m_eBaseScale;
-    CDib dib(source.m_bitmap);
-    m_bitmap.Attach(dib.DIBToBitmap()->Detach());
+    m_bitmap = source.m_bitmap.GetSubBitmap(
+        wxRect(0, 0, source.m_bitmap.GetWidth(), source.m_bitmap.GetHeight()));
 }
 
 void CBitmapImage::Serialize(CArchive& ar)
@@ -1205,8 +1198,7 @@ void CBitmapImage::Serialize(CArchive& ar)
         ar >> dib;
         if (dib)
         {
-            ::OwnerPtr<CBitmap> pBMap = dib.DIBToBitmap();
-            m_bitmap.Attach(pBMap->Detach());
+            m_bitmap = dib;
         }
     }
 }

@@ -644,6 +644,13 @@ OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot)
     return pDib.DIBToBitmap();
 }
 
+wxBitmap Rotate(const wxBitmap& bmp, Rotation90 rot)
+{
+    OwnerPtr<CBitmap> tempOld = CB::Convert(bmp);
+    OwnerPtr<CBitmap> tempNew = Rotate(*tempOld, rot);
+    return CB::Convert(*tempNew);
+}
+
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
