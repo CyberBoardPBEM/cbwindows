@@ -558,7 +558,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
 
     CRect rct = pBALeft.GetCellRect(nRowLeft, nColLeft, eScale);
 
-    dc.SetViewportOrg(-rct.left, -rct.top);
+    dc.SetWindowOrg(rct.left, rct.top);
     rct.right -= rct.Width() / 2 - (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
@@ -568,7 +568,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
     // Handle right half...
     rct = pBARight.GetCellRect(nRowRight, nColRight, eScale);
 
-    dc.SetViewportOrg(-rct.left, -rct.top);
+    dc.SetWindowOrg(rct.left, rct.top);
     rct.left += rct.Width() / 2 + (rct.Width() % 2);
     dc.IntersectClipRect(&rct);
 
@@ -594,7 +594,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
 
     CRect rct = pBATop.GetCellRect(nRowTop, nColTop, eScale);
 
-    dc.SetViewportOrg(-rct.left, -rct.top);
+    dc.SetWindowOrg(rct.left, rct.top);
     rct.bottom += rct.Height() / 2 - (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 
@@ -604,7 +604,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
     // Handle bottom half...
     rct = pBABottom.GetCellRect(nRowBottom, nColBottom, eScale);
 
-    dc.SetViewportOrg(-rct.left, -rct.top);
+    dc.SetWindowOrg(rct.left, rct.top);
     rct.top += rct.Height() / 2 + (rct.Height() % 2);
     dc.IntersectClipRect(&rct);
 

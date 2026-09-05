@@ -305,14 +305,14 @@ BOOL CDrawObj::BitBlockHitTest(CPoint pt)
     CBitmap* pPrvBMap = dcmem.SelectObject(&bmap);
     dcmem.PatBlt(0, 0, 8, 8, WHITENESS);
 
-    dcmem.SetViewportOrg(-(pt.x - hitZone/2), -(pt.y - hitZone/2));
+    dcmem.SetWindowOrg(pt.x - hitZone / 2, pt.y - hitZone / 2);
 
     c_bHitTestDraw = TRUE;
     Draw(dcmem, fullScale);
     c_bHitTestDraw = FALSE;
 
     BOOL bHit = FALSE;
-    dcmem.SetViewportOrg(0, 0);
+    dcmem.SetWindowOrg(0, 0);
 
     for (int x = 0; x < hitZone; x++)
     {
