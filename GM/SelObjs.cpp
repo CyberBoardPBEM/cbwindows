@@ -608,7 +608,7 @@ void CSelList::CopyToClipboard()
     CSelection& pSel = *front();
     wxASSERT(pSel.m_pObj->GetType() == CDrawObj::drawBitmap);
     CBitmapImage& pDObj = static_cast<CBitmapImage&>(*pSel.m_pObj);
-    SetClipboardBitmap(CB::Convert(pDObj.m_bitmap));
+    SetClipboardBitmap(pDObj.m_bitmap);
 }
 
 void CSelList::Open()

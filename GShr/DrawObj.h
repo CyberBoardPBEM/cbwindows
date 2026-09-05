@@ -861,9 +861,9 @@ public:
 // Attributes
 public:
     TileScale       m_eBaseScale;       // Base 1:1 scale. Stretches to other scales
-    CBitmap         m_bitmap;
+    wxBitmap        m_bitmap;
 
-    void SetBitmap(int x, int y, HBITMAP hBMap, TileScale eBaseScale = fullScale);
+    void SetBitmap(int x, int y, const wxBitmap& hBMap, TileScale eBaseScale = fullScale);
     virtual enum CDrawObjType GetType() const override { return drawBitmap; }
 
 // Operations
