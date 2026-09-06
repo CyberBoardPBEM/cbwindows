@@ -268,7 +268,8 @@ BOOL CDrawObj::BitBlockHitTest(CPoint pt)
     bmap = wxBitmap(8, 8, 1);
 
     dcmem.SelectObject(bmap);
-    dcmem.Blit(0, 0, 8, 8, nullptr, 0, 0, wxSET);
+    // KLUDGE:  wx rejects !source
+    dcmem.Blit(0, 0, 8, 8, &dcmem, 0, 0, wxSET);
 
     dcmem.SetLogicalOrigin(pt.x - hitZone / 2, pt.y - hitZone / 2);
 
