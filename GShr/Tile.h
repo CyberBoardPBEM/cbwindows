@@ -136,14 +136,8 @@ public:
 
 // Friendly Access...
 protected:
-    void TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) const;
     void TileBlt(wxDC& pDC, wxCoord xDst, wxCoord yDst, wxCoord ySrc, wxRasterOperationMode dwRop) const;
-    void StretchBlt(CDC& pDC, int xDst, int yDst, int xWid, int yWid,
-        int ySrc, DWORD dwRop) const;
-    void TransBlt(CDC& pDC, int xDst, int yDst, int ySrc, COLORREF crTrans) const;
     void TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc, wxColour crTrans) const;
-    void TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
-        COLORREF crTrans, const BITMAP& pMaskBMapInfo) const;
     void TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int ySrc,
         wxColour crTrans, const wxBitmap& pMaskBMapInfo) const;
 
@@ -156,15 +150,6 @@ protected:
 
 // Implementation - methods...
 protected:
-    class SheetDC
-    {
-    public:
-        SheetDC(const CTileSheet& sheet);
-        ~SheetDC();
-
-        operator CDC*() const;
-    };
-
     void ClearSheet();
 };
 
@@ -355,10 +340,7 @@ public:
 
 // Operations
 public:
-    void BitBlt(CDC& pDC, int x, int y, DWORD dwRop = SRCCOPY) const;
     void BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop = wxCOPY) const;
-    void StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop = SRCCOPY) const;
-    void TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo = NULL) const;
     void TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo = wxBitmap()) const;
     OwnerPtr<CBitmap> CreateBitmapOfTile() const;
 

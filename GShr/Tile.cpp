@@ -54,22 +54,7 @@ CSize CTile::GetSize() const
     return m_pTS != NULL ? m_pTS->GetSize() : m_size;
 }
 
-void CTile::BitBlt(CDC& pDC, int x, int y, DWORD dwRop) const
-{
-    if (m_pTS != NULL)
-        m_pTS->TileBlt(pDC, x, y, m_yLoc, dwRop);
-    else if (m_crTrans != m_crSmall)
-    {
-        // Only draw color patch if not the transparent color.
-        CBrush oBrsh;
-        oBrsh.CreateSolidBrush(m_crSmall);
-        CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
-        pDC.PatBlt(x, y, m_size.cx, m_size.cy, PATCOPY);
-        pDC.SelectObject(pPrvBrsh);
-    }
-}
-
-void CTile::BitBlt(wxDC & pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop/* = wxCOPY*/) const
+void CTile::BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop/* = wxCOPY*/) const
 {
     if (m_pTS != NULL)
         m_pTS->TileBlt(pDC, x, y, m_yLoc, dwRop);
@@ -81,49 +66,6 @@ void CTile::BitBlt(wxDC & pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop
         wxBrush brush(CB::Convert(m_crSmall));
         pDC.SetBrush(brush);
         pDC.DrawRectangle(x, y, m_size.cx, m_size.cy);
-    }
-}
-
-void CTile::StretchBlt(CDC& pDC, int x, int y, int cx, int cy, DWORD dwRop) const
-{
-    if (m_pTS != NULL)
-        m_pTS->StretchBlt(pDC, x, y, cx, cy, m_yLoc, dwRop);
-    else if (m_crTrans != m_crSmall)
-    {
-        CBrush oBrsh;
-        oBrsh.CreateSolidBrush(m_crSmall);
-        CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
-        pDC.PatBlt(x, y, cx, cy, PATCOPY);
-        pDC.SelectObject(pPrvBrsh);
-    }
-}
-
-// Transparent BitBlt
-void CTile::TransBlt(CDC& pDC, int x, int y, const BITMAP* pMaskBMapInfo /* = NULL */) const
-{
-    if (m_pTS != NULL)
-    {
-        if (m_crTrans != noColor)
-        {
-            if (pMaskBMapInfo != NULL)
-            {
-                m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, m_yLoc,
-                    m_crTrans, *pMaskBMapInfo);
-            }
-            else
-                m_pTS->TransBlt(pDC, x, y, m_yLoc, m_crTrans);
-        }
-        else
-            m_pTS->TileBlt(pDC, x, y, m_yLoc, SRCCOPY);
-    }
-    else if (m_crTrans != m_crSmall)
-    {
-        // Only draw color patch if not the transparent color.
-        CBrush oBrsh;
-        oBrsh.CreateSolidBrush(m_crSmall);
-        CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
-        pDC.PatBlt(x, y, m_size.cx, m_size.cy, PATCOPY);
-        pDC.SelectObject(pPrvBrsh);
     }
 }
 

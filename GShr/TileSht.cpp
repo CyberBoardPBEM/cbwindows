@@ -262,86 +262,12 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 
 ////////////////////////////////////////////////////////////////////////
 
-void CTileSheet::TileBlt(CDC& pDC, int xDst, int yDst, int ySrc, DWORD dwRop) const
-{
-    SheetDC sheetDC(*this);
-    pDC.BitBlt(xDst, yDst, m_size.cx, m_size.cy, sheetDC, 0, ySrc, dwRop);
-}
-
 void CTileSheet::TileBlt(wxDC& pDC, wxCoord xDst, wxCoord yDst, wxCoord ySrc, wxRasterOperationMode dwRop) const
 {
     wxMemoryDC sheetDC;
     wxBitmap wxbmp(ToImage(CheckedDeref(m_pBMap)));
     sheetDC.SelectObjectAsSource(wxbmp);
     pDC.Blit(xDst, yDst, m_size.cx, m_size.cy, &sheetDC, 0, ySrc, dwRop);
-}
-
-void CTileSheet::StretchBlt(CDC& pDC, int xDst, int yDst,
-    int xWid, int yWid, int ySrc, DWORD dwRop) const
-{
-    SheetDC sheetDC(*this);
-    pDC.StretchBlt(xDst, yDst, xWid, yWid, sheetDC, 0, ySrc,
-        m_size.cx, m_size.cy, dwRop);
-}
-
-void CTileSheet::TransBlt(CDC& pDC, int xDst, int yDst, int ySrc,
-    COLORREF crTrans) const
-{
-    GdiFlush();
-    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC.m_hDC, OBJ_BITMAP);
-    ASSERT(hBMapDest != NULL);
-
-    BITMAP  bmapTile;
-    BITMAP  bmapDest;
-
-    memset(&bmapTile, 0, sizeof(BITMAP));
-    memset(&bmapDest, 0, sizeof(BITMAP));
-
-    m_pBMap->GetObject(sizeof(BITMAP), &bmapTile);
-    ::GetObject(hBMapDest, sizeof(BITMAP), &bmapDest);
-    ASSERT(bmapTile.bmBits != NULL && bmapDest.bmBits != NULL);
-
-    CPoint pntOrg = pDC.GetViewportOrg();
-    xDst += pntOrg.x;
-    yDst += pntOrg.y;
-
-    ASSERT(bmapTile.bmBitsPixel == 24);
-    // DIBs are bottom-up
-    ptrdiff_t srcStride = -bmapTile.bmWidthBytes;
-    const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
-                (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
-    ASSERT(bmapDest.bmBitsPixel == 24);
-    ptrdiff_t destStride = -bmapDest.bmWidthBytes;
-    std::byte* destRowStart = static_cast<std::byte*>(bmapDest.bmBits) +
-                (bmapDest.bmHeight - 1 - yDst) * -destStride +
-                xDst * (bmapDest.bmBitsPixel / 8);
-
-    for (int y = 0 ;
-        y < m_size.cy && yDst + y < bmapDest.bmHeight ;
-        ++y)
-    {
-        if (yDst + y >= 0)
-        {
-            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
-            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
-            for (int x = 0 ;
-                x < m_size.cx && xDst + x < bmapDest.bmWidth ;
-                ++x)
-            {
-                COLORREF cr = *src++;
-                if (xDst + x >= 0)
-                {
-                    if (cr != crTrans)
-                    {
-                        *dest = cr;
-                    }
-                }
-                ++dest;
-            }
-        }
-        srcRowStart += srcStride;
-        destRowStart += destStride;
-    }
 }
 
 void CTileSheet::TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc,
@@ -355,76 +281,6 @@ void CTileSheet::TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc,
 }
 
 ////////////////////////////////////////////////////////////////////////
-
-void CTileSheet::TransBltThruDIBSectMonoMask(CDC& pDC, int xDst, int yDst, int ySrc,
-    COLORREF crTrans, const BITMAP& pMaskBMapInfo) const
-{
-    GdiFlush();
-
-    HBITMAP hBMapDest = (HBITMAP)GetCurrentObject(pDC.m_hDC, OBJ_BITMAP);
-    ASSERT(hBMapDest != NULL);
-
-    BITMAP  bmapTile;
-    BITMAP  bmapDest;
-
-    memset(&bmapTile, 0, sizeof(BITMAP));
-    memset(&bmapDest, 0, sizeof(BITMAP));
-
-    m_pBMap->GetObject(sizeof(BITMAP), &bmapTile);
-    ::GetObject(hBMapDest, sizeof(BITMAP), &bmapDest);
-    ASSERT(bmapTile.bmBits != NULL && bmapDest.bmBits != NULL);
-
-    CPoint pntOrg = pDC.GetViewportOrg();
-    xDst += pntOrg.x;
-    yDst += pntOrg.y;
-
-    ASSERT(bmapTile.bmBitsPixel == 24);
-    ptrdiff_t srcStride = -bmapTile.bmWidthBytes;
-    const std::byte* srcRowStart = static_cast<const std::byte*>(bmapTile.bmBits) +
-                                        (bmapTile.bmHeight - 1 - ySrc) * -srcStride;
-    ASSERT(bmapDest.bmBitsPixel == 24);
-    ptrdiff_t destStride = -bmapDest.bmWidthBytes;
-    std::byte* destRowStart = static_cast<std::byte*>(bmapDest.bmBits) +
-                                        (bmapDest.bmHeight - 1 - yDst) * -destStride +
-                                        xDst * (bmapDest.bmBitsPixel / 8);
-    ASSERT(pMaskBMapInfo.bmBitsPixel == 24);
-    ptrdiff_t maskStride = -pMaskBMapInfo.bmWidthBytes;
-    const std::byte* maskRowStart = static_cast<const std::byte*>(pMaskBMapInfo.bmBits) +
-                                        (pMaskBMapInfo.bmHeight - 1) * -maskStride;
-
-    for (int y = 0 ;
-        y < std::min(m_size.cy, pMaskBMapInfo.bmHeight) &&
-                yDst + y < bmapDest.bmHeight ;
-        ++y)
-    {
-        if (yDst + y >= 0)
-        {
-            const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
-            WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
-            const WIN_RGBTRIO* mask = reinterpret_cast<const WIN_RGBTRIO*>(maskRowStart);
-            for (int x = 0 ;
-                x < std::min(m_size.cx, pMaskBMapInfo.bmWidth) &&
-                        xDst + x < bmapDest.bmWidth ;
-                ++x)
-            {
-                COLORREF crMask = *mask++;
-                COLORREF crSrc = *src++;
-                if (xDst + x >= 0)
-                {
-                    if (crMask == RGB(0, 0, 0) &&   // Only black mask bits get through
-                        crSrc != crTrans)
-                    {
-                        *dest = crSrc;
-                    }
-                }
-                ++dest;
-            }
-        }
-        srcRowStart += srcStride;
-        destRowStart += destStride;
-        maskRowStart += maskStride;
-    }
-}
 
 void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int ySrc,
     wxColour crTrans, const wxBitmap& pMaskBMapInfo) const
@@ -518,7 +374,6 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
     }
 #else
     wxPoint pntOrg = pDC.GetLogicalOrigin();
-    wxASSERT(pntOrg == wxPoint(0, 0) || !"untested code");
     xDst += pntOrg.x;
     yDst += pntOrg.y;
 
@@ -553,20 +408,4 @@ void CTileSheet::ClearSheet()
 {
     m_size = CSize(0, 0);
     m_pBMap = nullptr;
-}
-
-CTileSheet::SheetDC::SheetDC(const CTileSheet& sheet)
-{
-    ASSERT(sheet.m_pBMap);
-    g_gt.mTileDC.SelectObject(*sheet.m_pBMap);
-}
-
-CTileSheet::SheetDC::~SheetDC()
-{
-    g_gt.SelectSafeObjectsForTileDC();
-}
-
-CTileSheet::SheetDC::operator CDC*() const
-{
-    return &g_gt.mTileDC;
 }
