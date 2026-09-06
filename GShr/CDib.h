@@ -39,7 +39,9 @@ public:
     CDib(DWORD dwWidth, DWORD dwHeight);
     // ---------- /
     explicit CDib(const CBitmap& pBM);
+    explicit CDib(const wxBitmap& pBM);
     OwnerPtr<CBitmap> DIBToBitmap() const;
+    operator wxBitmap() const;
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
         int xSrc, int ySrc, int cxSrc, int cySrc) const
@@ -113,6 +115,16 @@ namespace CB
     {
         return ToBitmap(bmp.ConvertToImage());
     }
+}
+
+inline CDib::CDib(const wxBitmap& pBM) :
+    CDib(*CB::Convert(pBM))
+{
+}
+
+inline CDib::operator wxBitmap() const
+{
+    return CB::Convert(*DIBToBitmap());
 }
 
 #endif
