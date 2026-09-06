@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    "CDib.h"
 #include    "GamDoc.h"
 #include    "Board.h"
 #include    "GeoBoard.h"
@@ -547,72 +548,70 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
     const CBoardArray& pBALeft, const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft,
     size_t nRowRight, size_t nColRight) const
 {
-    CDC dc;
-    dc.CreateCompatibleDC(NULL);
+    wxMemoryDC dc;
 
-    CSize sizeCell = pBALeft.GetCellSize(eScale);
-    OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
+    wxSize sizeCell = CB::Convert(pBALeft.GetCellSize(eScale));
+    wxBitmap retval = CB::Convert(*CreateBitmap(CB::Convert(sizeCell)));
 
     // Handle left half...
-    CBitmap* prvBMap = dc.SelectObject(&*retval);
+    dc.SelectObject(retval);
 
-    CRect rct = pBALeft.GetCellRect(nRowLeft, nColLeft, eScale);
+    wxRect rct = CB::Convert(pBALeft.GetCellRect(nRowLeft, nColLeft, eScale));
 
-    dc.SetWindowOrg(rct.left, rct.top);
-    rct.right -= rct.Width() / 2 - (rct.Width() % 2);
-    dc.IntersectClipRect(&rct);
+    dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
+    rct.SetRight(rct.GetRight() - (rct.GetWidth() / 2 - (rct.GetWidth() % 2)));
+    dc.SetClippingRegion(rct);
 
     pBALeft.FillCell(dc, nRowLeft, nColLeft, eScale);
-    dc.SelectClipRgn(NULL);
+    dc.DestroyClippingRegion();
 
     // Handle right half...
-    rct = pBARight.GetCellRect(nRowRight, nColRight, eScale);
+    rct = CB::Convert(pBARight.GetCellRect(nRowRight, nColRight, eScale));
 
-    dc.SetWindowOrg(rct.left, rct.top);
-    rct.left += rct.Width() / 2 + (rct.Width() % 2);
-    dc.IntersectClipRect(&rct);
+    dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
+    int right = rct.GetRight();
+    rct.SetLeft(rct.GetLeft() + (rct.GetWidth() / 2 + (rct.GetWidth() % 2)));
+    rct.SetRight(right);
+    dc.SetClippingRegion(rct);
 
     pBARight.FillCell(dc, nRowRight, nColRight, eScale);
 
-    dc.SelectObject(prvBMap);
-
-    return retval;
+    return CB::Convert(retval);
 }
 
 OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
     const CBoardArray& pBATop, const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop,
     size_t nRowBottom, size_t nColBottom) const
 {
-    CDC dc;
-    dc.CreateCompatibleDC(NULL);
+    wxMemoryDC dc;
 
-    CSize sizeCell = pBATop.GetCellSize(eScale);
-    OwnerPtr<CBitmap> retval = CreateBitmap(sizeCell);
+    wxSize sizeCell = CB::Convert(pBATop.GetCellSize(eScale));
+    wxBitmap retval = CB::Convert(*CreateBitmap(CB::Convert(sizeCell)));
 
     // Handle top half...
-    CBitmap* prvBMap = dc.SelectObject(&*retval);
+    dc.SelectObject(retval);
 
-    CRect rct = pBATop.GetCellRect(nRowTop, nColTop, eScale);
+    wxRect rct = CB::Convert(pBATop.GetCellRect(nRowTop, nColTop, eScale));
 
-    dc.SetWindowOrg(rct.left, rct.top);
-    rct.bottom += rct.Height() / 2 - (rct.Height() % 2);
-    dc.IntersectClipRect(&rct);
+    dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
+    rct.SetBottom(rct.GetBottom() + (rct.GetHeight() / 2 - (rct.GetHeight() % 2)));
+    dc.SetClippingRegion(rct);
 
     pBATop.FillCell(dc, nRowTop, nColTop, eScale);
-    dc.SelectClipRgn(NULL);
+    dc.DestroyClippingRegion();
 
     // Handle bottom half...
-    rct = pBABottom.GetCellRect(nRowBottom, nColBottom, eScale);
+    rct = CB::Convert(pBABottom.GetCellRect(nRowBottom, nColBottom, eScale));
 
-    dc.SetWindowOrg(rct.left, rct.top);
-    rct.top += rct.Height() / 2 + (rct.Height() % 2);
-    dc.IntersectClipRect(&rct);
+    dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
+    int bottom = rct.GetBottom();
+    rct.SetTop(rct.GetTop() + (rct.GetHeight() / 2 + (rct.GetHeight() % 2)));
+    rct.SetBottom(bottom);
+    dc.SetClippingRegion(rct);
 
     pBABottom.FillCell(dc, nRowBottom, nColBottom, eScale);
 
-    dc.SelectObject(prvBMap);
-
-    return retval;
+    return CB::Convert(retval);
 }
 
 // Create DIB Section bitmap that's filled with the transparent color.

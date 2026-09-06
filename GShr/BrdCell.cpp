@@ -194,14 +194,6 @@ void CBoardArray::GetBoardScaling(TileScale eScale, CSize& worldSize,
 // the appropriate CCellForm object will produce the
 // appropriate scaling.
 
-void CBoardArray::DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
-{
-    // Fill the cells with tile bitmaps or solid color or nothing
-    for (size_t row = value_preserving_cast<size_t>(pCellRct.top) ; row <= value_preserving_cast<size_t>(pCellRct.bottom) ; ++row)
-        for (size_t col = value_preserving_cast<size_t>(pCellRct.left) ; col <= value_preserving_cast<size_t>(pCellRct.right) ; ++col)
-            FillCell(pDC, row, col, eScale);
-}
-
 void CBoardArray::DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
 {
     // Fill the cells with tile bitmaps or solid color or nothing
@@ -258,65 +250,6 @@ BOOL CBoardArray::MapPixelsToCellBounds(const CRect& pPxlRct, CRect& pCellRct,
 }
 
 // ----------------------------------------------------- //
-
-void CBoardArray::FillCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const
-{
-    const BoardCell& pCell = GetCell(row, col);
-    const CCellForm& pCF = GetCellForm(eScale);
-
-    CRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
-
-    if (!pDC.RectVisible(&rct))
-        return;
-
-    if (pCell.IsTileID())
-    {
-        CTile tile = m_pTsa->GetTile(pCell.GetTID(), eScale);
-
-        if (eScale != smallScale)
-        {
-            const CBitmap *pBMap = pCF.GetMask();
-            if (pBMap != NULL && m_bTransparentCells)
-                tile.TransBlt(pDC, rct.left, rct.top, pCF.GetMaskMemoryInfo());
-            else if (pBMap != NULL)
-            {
-                g_gt.mDC1.SelectObject(*pBMap);
-
-                pDC.SetBkColor(RGB(255, 255, 255));
-                pDC.SetTextColor(RGB(0, 0, 0));
-
-                tile.BitBlt(pDC, rct.left, rct.top, SRCINVERT);
-                pDC.BitBlt(rct.left, rct.top, rct.right, rct.bottom,
-                    &g_gt.mDC1, 0, 0, SRCAND);
-                tile.BitBlt(pDC, rct.left, rct.top, SRCINVERT);
-                g_gt.SelectSafeObjectsForDC1();
-            }
-            else
-                tile.BitBlt(pDC, rct.left, rct.top, SRCCOPY);
-        }
-        else    // Handle small scale tiles here.
-        {
-            if (tile.GetSmallColor() == m_pTsa->GetTransparentColor())
-                return;                 // Dont draw the cell
-            CBrush oBrsh;
-            oBrsh.CreateSolidBrush(tile.GetSmallColor());
-            CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
-            pDC.PatBlt(rct.left, rct.top, rct.Width(), rct.Height(), PATCOPY);
-            pDC.SelectObject(pPrvBrsh);
-        }
-    }
-    else
-    {
-        CBrush oBrsh;
-        if (pCell.GetColor() == noColor)
-            return;                 // Let base color show through
-
-        oBrsh.CreateSolidBrush(pCell.GetColor());
-        CBrush* pPrvBrsh = pDC.SelectObject(&oBrsh);
-        pCF.FillCell(pDC, rct.left, rct.top);
-        pDC.SelectObject(pPrvBrsh);
-    }
-}
 
 void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const
 {

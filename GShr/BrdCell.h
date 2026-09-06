@@ -137,11 +137,9 @@ public:
     static void GenerateCellDefs(CellFormType eType, int32_t nParm1, int32_t nParm2,
         CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
-    void DrawCells(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
     void DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
     void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
     void DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
-    void FillCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
     void FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
     void FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
     void FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
