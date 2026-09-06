@@ -127,20 +127,6 @@ BOOL CPlayBoard::IsOwnedButNotByCurrentPlayer(const CGamDoc& pDoc) const
 // Draw stuff on top of a board. The actual board image is draw by
 // code outside of this object to easily support image caching.
 
-void CPlayBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale)
-{
-    ASSERT(m_pBoard);
-    ASSERT(m_pPceList);
-
-    if (m_bIVisible && !m_bIndOnTop)
-        m_pIndList->Draw(pDC, pDrawRct, eScale);
-
-    m_pPceList->Draw(pDC, pDrawRct, eScale, TRUE, FALSE, !m_bPVisible, m_bLockedDrawnBeneath);
-
-    if (m_bIVisible && m_bIndOnTop)
-        m_pIndList->Draw(pDC, pDrawRct, eScale);
-}
-
 void CPlayBoard::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale)
 {
     wxASSERT(m_pBoard);

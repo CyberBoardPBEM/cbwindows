@@ -100,8 +100,6 @@ public:
 public:
     void DrawBackground(CDC& pDC, const CRect& pDrawRct) const;
     void DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const;
-    static void DrawDrawingList(CDrawList* pDwg, CDC& pDC, const CRect& pDrawRct,
-        TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects = FALSE);
     static void DrawDrawingList(CDrawList* pDwg, wxDC& pDC, const wxRect& pDrawRct,
         TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects = FALSE);
 #ifndef GPLAY
@@ -109,8 +107,6 @@ public:
     BOOL IsTileInUse(TileID tid) const;
 #endif
     // ------- //
-    virtual void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-        int nApplyVisible = -1);
     virtual void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
         int nApplyVisible = -1);
     // ------- //
@@ -196,8 +192,6 @@ public:
     void ForceObjectsOntoBoard();
 #endif
     // ------- //
-    virtual void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-        int nCellBorder = -1, int nApplyVisible = -1);// -1 means use internal
     virtual void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
         int nCellBorder = -1, int nApplyVisible = -1);// -1 means use internal
     // ------- //

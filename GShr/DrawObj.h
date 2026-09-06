@@ -133,7 +133,6 @@ public:
 // Operations
 public:
     // non-const due to CBitmapImage::Draw()
-    virtual void Draw(CDC& pDC, TileScale eScale) /* override */ = 0;
     virtual void Draw(wxDC& pDC, TileScale eScale) /* override */ = 0;
     // Support required by selection objects
 #ifdef GPLAY
@@ -157,14 +156,12 @@ public:
 protected:
     BOOL IsExtentOutOfZone(const CRect& pRctZone, CPoint& pntOffset) const;
     // ------- //
-    virtual void SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const /* override */;
     struct SetUpDrawResult
     {
         wxDCPenChanger setPen;
         wxDCBrushChanger setBrush;
     };
     virtual SetUpDrawResult SetUpDraw(wxDC& pDC) const /* override */;
-    virtual void CleanUpDraw(CDC& pDC) const /* override */;
     virtual BOOL BitBlockHitTest(CPoint pt) /* override */;
     virtual UINT GetLineWidth() const /* override */ { return 0; }
     virtual COLORREF GetLineColor() const /* override */ { return noColor; }
@@ -625,7 +622,6 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
@@ -668,7 +664,6 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
@@ -719,7 +714,6 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -779,7 +773,6 @@ public:
 
 // Overrides
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
@@ -834,7 +827,6 @@ public:
 
 // Operations
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -877,7 +869,6 @@ public:
 // Operations
 public:
 
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -926,7 +917,6 @@ public:
     virtual enum CDrawObjType GetType() const override { return drawTile; }
 // Operations
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -986,7 +976,6 @@ private:
     CSize GetSize() const;
 
 public:
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -1055,7 +1044,6 @@ protected:
 public:
     TileID GetCurrentTileID();
     // ------- //
-    virtual void Draw(CDC& pDC, TileScale eScale) override;
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
     virtual BOOL HitTest(CPoint pt) override;
@@ -1109,9 +1097,6 @@ public:
     void AddToFront(CDrawObj::OwnerPtr pDrawObj) { push_back(std::move(pDrawObj)); }
     CDrawObj& Front() { return *back(); }
     CDrawObj& Back() { return *front(); }
-    void Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-        BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
-        BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
     void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);

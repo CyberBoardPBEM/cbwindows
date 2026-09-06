@@ -216,34 +216,6 @@ BOOL CDrawObj::IsExtentOutOfZone(const CRect& pRctZone, CPoint& pnt) const
 // Sets up pen and brush for drawing. The previous pen
 // and brush are saved in class variables.
 
-void CDrawObj::SetUpDraw(CDC& pDC, CPen& pPen, CBrush& pBrush) const
-{
-    if (c_bHitTestDraw)
-        pPen.CreateStockObject(BLACK_PEN);
-    else
-    {
-        if (GetLineColor() != noColor)
-        {
-            pPen.CreatePen(PS_SOLID, GetLineWidth(), GetLineColor());
-        }
-        else
-            pPen.CreateStockObject(NULL_PEN);
-    }
-
-    if (GetFillColor() != noColor)
-    {
-        if (c_bHitTestDraw)
-            pBrush.CreateStockObject(BLACK_BRUSH);
-        else
-            pBrush.CreateSolidBrush(GetFillColor());
-    }
-    else
-        pBrush.CreateStockObject(NULL_BRUSH);
-
-    c_pPrvPen = pDC.SelectObject(&pPen);
-    c_pPrvBrush = pDC.SelectObject(&pBrush);
-}
-
 CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
 {
     wxPen pPen;
@@ -283,12 +255,6 @@ CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
     return SetUpDrawResult({ pDC, pPen }, { pDC, pBrush });
 }
 
-void CDrawObj::CleanUpDraw(CDC& pDC) const
-{
-    pDC.SelectObject(c_pPrvPen);
-    pDC.SelectObject(c_pPrvBrush);
-}
-
 const int hitZone = 5;          // Must be odd and <= 15
 
 static WORD bmapSeed[hitZone] =
@@ -296,29 +262,30 @@ static WORD bmapSeed[hitZone] =
 
 BOOL CDrawObj::BitBlockHitTest(CPoint pt)
 {
-    CDC dcmem;
-    CBitmap bmap;
+    wxMemoryDC dcmem;
+    wxBitmap bmap;
 
-    dcmem.CreateCompatibleDC(NULL);
-    bmap.CreateBitmap(8, 8, 1, 1, NULL);
+    bmap = wxBitmap(8, 8, 1);
 
-    CBitmap* pPrvBMap = dcmem.SelectObject(&bmap);
-    dcmem.PatBlt(0, 0, 8, 8, WHITENESS);
+    dcmem.SelectObject(bmap);
+    dcmem.Blit(0, 0, 8, 8, nullptr, 0, 0, wxSET);
 
-    dcmem.SetWindowOrg(pt.x - hitZone / 2, pt.y - hitZone / 2);
+    dcmem.SetLogicalOrigin(pt.x - hitZone / 2, pt.y - hitZone / 2);
 
     c_bHitTestDraw = TRUE;
     Draw(dcmem, fullScale);
     c_bHitTestDraw = FALSE;
 
     BOOL bHit = FALSE;
-    dcmem.SetWindowOrg(0, 0);
+    dcmem.SetLogicalOrigin(0, 0);
 
     for (int x = 0; x < hitZone; x++)
     {
         for (int y = 0; y < hitZone; y++)
         {
-            if (dcmem.GetPixel(x, y) == RGB(0,0,0))
+            wxColour c;
+            CB_VERIFY(dcmem.GetPixel(x, y, &c));
+            if (c == *wxBLACK)
             {
                 bHit = TRUE;
                 goto SCANDONE;
@@ -326,7 +293,6 @@ BOOL CDrawObj::BitBlockHitTest(CPoint pt)
         }
     }
 SCANDONE:
-    dcmem.SelectObject(pPrvBMap);
     return bHit;
 }
 
@@ -581,16 +547,6 @@ void CDrawObj_SimplRctExtent::CopyAttributes(const CDrawObj_SimplRctExtent& sour
 ////////////////////////////////////////////////////////////////////
 // CRectObject methods
 
-void CRectObj::Draw(CDC& pDC, TileScale)
-{
-    CPen   penEdge;
-    CBrush brushFill;
-
-    SetUpDraw(pDC, penEdge, brushFill);
-    pDC.Rectangle(&m_rctExtent);
-    CleanUpDraw(pDC);
-}
-
 void CRectObj::Draw(wxDC& pDC, TileScale)
 {
     auto guard = SetUpDraw(pDC);
@@ -674,16 +630,6 @@ void CRectObj::CopyAttributes (const CRectObj& source)
 ////////////////////////////////////////////////////////////////////
 // CEllipse methods
 
-void CEllipse::Draw(CDC& pDC, TileScale)
-{
-    CPen   penEdge;
-    CBrush brushFill;
-
-    SetUpDraw(pDC, penEdge, brushFill);
-    pDC.Ellipse(&m_rctExtent);
-    CleanUpDraw(pDC);
-}
-
 void CEllipse::Draw(wxDC& pDC, TileScale)
 {
     auto guard = SetUpDraw(pDC);
@@ -710,22 +656,6 @@ CDrawObj::OwnerPtr CEllipse::Clone() const
 
 ////////////////////////////////////////////////////////////////////
 // CPolyObj methods
-
-void CPolyObj::Draw(CDC& pDC, TileScale)
-{
-    if (m_Pnts.empty())
-        return;
-    CPen   penEdge;
-    CBrush brushFill;
-    SetUpDraw(pDC, penEdge, brushFill);
-
-    if (m_crFill == noColor)
-        pDC.Polyline(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
-    else
-        pDC.Polygon(m_Pnts.data(), value_preserving_cast<int>(m_Pnts.size()));
-
-    CleanUpDraw(pDC);
-}
 
 void CPolyObj::Draw(wxDC& pDC, TileScale)
 {
@@ -920,21 +850,6 @@ void CPolyObj::Serialize(CArchive& ar)
 
 //////////////////////////////////////////////////////////////////
 // Class CLine
-
-void CLine::Draw(CDC& pDC, TileScale)
-{
-    CPen pen;
-    if (c_bHitTestDraw)
-        pen.CreateStockObject(BLACK_PEN);
-    else
-        pen.CreatePen(PS_SOLID, m_nLineWidth, m_crLine);
-    CPen* pPrvPen = pDC.SelectObject(&pen);
-
-    pDC.MoveTo(m_ptBeg);
-    pDC.LineTo(m_ptEnd);
-
-    pDC.SelectObject(pPrvPen);
-}
 
 void CLine::Draw(wxDC& pDC, TileScale)
 {
@@ -1137,46 +1052,6 @@ void CLine::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CBitmapImage
 
-void CBitmapImage::Draw(CDC& pDC, TileScale eScale)
-{
-    g_gt.mTileDC.SelectObject(&m_bitmap);
-
-    CPoint pnt = m_rctExtent.TopLeft();
-
-    if ((GetDObjFlags() & dobjFlgLayerNatural) == 0)
-    {
-        pDC.SetStretchBltMode(COLORONCOLOR);
-        pDC.StretchBlt(pnt.x, pnt.y, m_rctExtent.Width(),  m_rctExtent.Height(), &g_gt.mTileDC,
-            0, 0, m_rctExtent.Width(), m_rctExtent.Height(), SRCCOPY);
-
-        g_gt.SelectSafeObjectsForTileDC();
-    }
-    else
-    {
-        ASSERT(GetScaleVisibility() ==  fullScale || // there must only be one scale set
-            GetScaleVisibility() == halfScale || GetScaleVisibility() == smallScale);
-
-        // Only draw the bitmap at the proper board scaling.
-        if (GetScaleVisibility() != eScale)
-            return;
-        BITMAP bmInfo;
-        m_bitmap.GetObject(sizeof(bmInfo), &bmInfo);
-
-        CSize sizeWorld = pDC.GetWindowExt();
-        CSize sizeView = pDC.GetViewportExt();
-        CPoint pnt = m_rctExtent.TopLeft();
-        ScalePoint(pnt, sizeView, sizeWorld);
-
-        SynchronizeExtentRect(sizeWorld, sizeView); // Only time we can find true scale
-
-        pDC.SaveDC();
-        pDC.SetMapMode(MM_TEXT);
-        pDC.BitBlt(pnt.x, pnt.y, bmInfo.bmWidth, bmInfo.bmHeight,
-                    &g_gt.mTileDC, 0, 0, SRCCOPY);
-        pDC.RestoreDC(-1);
-    }
-}
-
 void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
 {
     wxMemoryDC tileDC;
@@ -1338,23 +1213,6 @@ void CBitmapImage::Serialize(CArchive& ar)
 //////////////////////////////////////////////////////////////////
 // Class CTileImage
 
-void CTileImage::Draw(CDC& pDC, TileScale eScale)
-{
-    ASSERT(m_pTMgr != NULL);
-    CTile tile = m_pTMgr->GetTile(m_tid, eScale);
-
-    CPoint pnt = m_rctExtent.TopLeft();
-    if (eScale == halfScale)
-    {
-        ScalePoint(pnt, pDC.GetViewportExt(), pDC.GetWindowExt());
-        pDC.SaveDC();
-        pDC.SetMapMode(MM_TEXT);
-    }
-    tile.TransBlt(pDC, pnt.x, pnt.y);
-    if (eScale == halfScale)
-        pDC.RestoreDC(-1);
-}
-
 void CTileImage::Draw(wxDC& pDC, TileScale eScale)
 {
     ASSERT(m_pTMgr != NULL);
@@ -1458,21 +1316,6 @@ void CTileImage::Serialize(CArchive& ar)
 
 CText::~CText()
 {
-}
-
-void CText::Draw(CDC& pDC, TileScale eScale)
-{
-    if (eScale == smallScale && m_rctExtent.Height() < 16)
-        return;
-
-    HFONT hFont = CGamDoc::GetFontManager().GetFontHandle(m_fontID, m_geoRot);
-    CFont* pPrvFont = pDC.SelectObject(CFont::FromHandle(hFont));
-    pDC.SetBkMode(TRANSPARENT);
-    COLORREF crPrev = pDC.SetTextColor(m_crText);
-    CPoint topLeft = m_rctExtent.TopLeft() + m_geoOffset;
-    pDC.ExtTextOut(topLeft.x, topLeft.y,
-        0, NULL, m_text, NULL);
-    pDC.SetTextColor(crPrev);
 }
 
 void CText::Draw(wxDC& pDC, TileScale eScale)
@@ -1626,22 +1469,6 @@ void CText::Serialize(CArchive& ar)
 
 // Tile drawing helper func...
 
-static void DrawObjTile(CDC& pDC, CPoint pnt, CTileManager* pTMgr, TileID tid,
-    TileScale eScale)
-{
-    CTile tile = pTMgr->GetTile(tid, eScale);
-
-    if (eScale == halfScale)
-    {
-        ScalePoint(pnt, pDC.GetViewportExt(), pDC.GetWindowExt());
-        pDC.SaveDC();
-        pDC.SetMapMode(MM_TEXT);
-    }
-    tile.TransBlt(pDC, pnt.x, pnt.y);
-    if (eScale == halfScale)
-        pDC.RestoreDC(-1);
-}
-
 static void DrawObjTile(wxDC& pDC, wxPoint pnt, CTileManager& pTMgr, TileID tid,
     TileScale eScale)
 {
@@ -1670,25 +1497,6 @@ CRect CPieceObj::GetRect() const
 void CPieceObj::SetRect(const CRect& rct)
 {
     m_center = rct.CenterPoint();
-}
-
-void CPieceObj::Draw(CDC& pDC, TileScale eScale)
-{
-    ASSERT(m_pDoc != NULL);
-    CTileManager& pTMgr = m_pDoc->GetTileManager();
-    CPieceTable& pPTbl = m_pDoc->GetPieceTable();
-
-    TileID tid;
-
-    if (!m_pDoc->IsScenario() &&
-            pPTbl.IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc))
-        tid = pPTbl.GetFrontTileID(m_pid, TRUE);
-    else
-        tid = pPTbl.GetActiveTileID(m_pid, TRUE);  // Show rotations
-    ASSERT(tid != nullTid);
-
-    CPoint pnt = GetRect().TopLeft();
-    DrawObjTile(pDC, pnt, &pTMgr, tid, eScale);
 }
 
 void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
@@ -1814,17 +1622,6 @@ void CPieceObj::Serialize(CArchive& ar)
 
 //////////////////////////////////////////////////////////////////
 // Class CMarkObj
-
-void CMarkObj::Draw(CDC& pDC, TileScale eScale)
-{
-    ASSERT(m_pDoc != NULL);
-    CTileManager& pTMgr = m_pDoc->GetTileManager();
-
-    TileID tid = GetCurrentTileID();
-    CPoint pnt = m_rctExtent.TopLeft();
-
-    DrawObjTile(pDC, pnt, &pTMgr, tid, eScale);
-}
 
 void CMarkObj::Draw(wxDC& pDC, TileScale eScale)
 {
@@ -2004,59 +1801,6 @@ void CLineObj::Serialize(CArchive& ar)
 //      the current call is to only render pass 2 objects.
 // bHideUnlocked - If this is set if all unlocked objects are to
 //      be hidden. The user might do this to see the map's terrain.
-
-void CDrawList::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-    BOOL bApplyVisibility /* = TRUE */, BOOL bDrawPass2Objects /* = FALSE */,
-    BOOL bHideUnlocked /* = FALSE */, BOOL bDrawLockedFirst /* = FALSE */)
-{
-    // We might need to draw locked objects first so they
-    // show up under other object which are unlocked. This is
-    // only valid in a non-pass 2 call.
-    if (!bDrawPass2Objects && bDrawLockedFirst)
-    {
-        for (iterator pos = begin(); pos != end(); ++pos)
-        {
-            CDrawObj& pDObj = **pos;
-
-            // Check if the object should be drawn in this scaling
-            if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
-                continue;                   // Doesn't qualify
-
-            ASSERT(!((pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 &&
-                (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0));// We'll never have a locked pass 2 object
-
-            if ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0)
-                continue;                  // Only process locked objects
-
-            if (pDObj.IsVisible(pDrawRct))
-                pDObj.Draw(pDC, eScale);
-        }
-    }
-
-    for (iterator pos = begin(); pos != end(); ++pos)
-    {
-        CDrawObj& pDObj = **pos;
-
-        // Check if the object should be drawn in this scaling
-        if (bApplyVisibility && ((pDObj.GetDObjFlags() & eScale) == 0))
-            continue;                   // Doesn't qualify
-
-        // Check if unlocked objects should be hidden
-        if (bHideUnlocked && ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0))
-            continue;                   // Doesn't qualify
-
-        // Only draw objects in their proper passes
-        if (bDrawLockedFirst && (pDObj.GetDObjFlags() & dobjFlgLockDown) != 0 ||
-            bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) == 0 ||
-           !bDrawPass2Objects && (pDObj.GetDObjFlags() & dobjFlgDrawPass2) != 0)
-        {
-            continue;                   // Doesn't qualify
-        }
-
-        if (pDObj.IsVisible(pDrawRct))
-            pDObj.Draw(pDC, eScale);
-    }
-}
 
 void CDrawList::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
     BOOL bApplyVisibility /* = TRUE */, BOOL bDrawPass2Objects /* = FALSE */,
