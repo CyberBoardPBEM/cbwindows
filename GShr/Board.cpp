@@ -66,91 +66,6 @@ CBoard::CBoard()
 
 // ----------------------------------------------------- //
 
-void CBoard::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-    int nCellBorder /* = -1 */, int nApplyVisible /* = -1 */)// -1 means use internal
-{
-    const CBoardArray& brdAry = GetBoardArray();
-
-    CSize wsize, vsize;
-    brdAry.GetBoardScaling(eScale, wsize, vsize);
-
-    DrawBackground(pDC, pDrawRct);  // Moved here so don't need to scale rect
-    if (m_pBaseDwg != NULL)
-    {
-        CRect rct(pDrawRct);
-        if (eScale != fullScale)
-        {
-            pDC.SaveDC();
-            pDC.SetMapMode(MM_ANISOTROPIC);
-            pDC.SetWindowExt(wsize);
-            pDC.SetViewportExt(vsize);
-            ScaleRect(rct, wsize, vsize);
-        }
-
-        CBoardBase::Draw(pDC, rct, eScale,  nApplyVisible);// Lower Layers
-
-        if (eScale != fullScale)
-            pDC.RestoreDC(-1);
-    }
-
-    CRect rCellRct;
-    if (IsDrawGridLines(nCellBorder))
-        brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
-
-    if (m_iMaxLayer < 0 || m_iMaxLayer >= 2)
-    {
-        if (!IsDrawGridLines(nCellBorder))
-        {
-            brdAry.MapPixelsToCellBounds(pDrawRct, rCellRct, eScale);
-        }
-        DrawCells(pDC, rCellRct, eScale);
-    }
-    if (!m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
-        DrawCellLines(pDC, rCellRct, eScale);
-
-    if ((m_iMaxLayer < 0 || m_iMaxLayer >= 3) && m_pTopDwg != NULL)
-    {
-        CRect rct(pDrawRct);
-        if (eScale != fullScale)
-        {
-            pDC.SaveDC();
-            pDC.SetMapMode(MM_ANISOTROPIC);
-            pDC.SetWindowExt(wsize);
-            pDC.SetViewportExt(vsize);
-            ScaleRect(rct, wsize, vsize);
-        }
-
-        DrawDrawingList(&*m_pTopDwg, pDC, rct, eScale,
-            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
-
-        if (eScale != fullScale)
-            pDC.RestoreDC(-1);
-    }
-
-    if (m_bCellBorderOnTop && IsDrawGridLines(nCellBorder))
-        DrawCellLines(pDC, &rCellRct, eScale);
-
-    if ((m_iMaxLayer < 0 || m_iMaxLayer >= 3) && m_pTopDwg != NULL)
-    {
-        CRect rct(pDrawRct);
-        if (eScale != fullScale)
-        {
-            pDC.SaveDC();
-            pDC.SetMapMode(MM_ANISOTROPIC);
-            pDC.SetWindowExt(wsize);
-            pDC.SetViewportExt(vsize);
-            ScaleRect(rct, wsize, vsize);
-        }
-
-        DrawDrawingList(&*m_pTopDwg, pDC, &rct, eScale,
-            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible,
-            TRUE);
-
-        if (eScale != fullScale)
-            pDC.RestoreDC(-1);
-    }
-}
-
 void CBoard::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
     int nCellBorder /* = -1 */, int nApplyVisible /* = -1 */)// -1 means use internal
 {
@@ -619,14 +534,6 @@ CBoardBase::CBoardBase()
 
 // ----------------------------------------------------- //
 
-void CBoardBase::Draw(CDC& pDC, const CRect& pDrawRct, TileScale eScale,
-    int nApplyVisible /* = -1 */)
-{
-    if (m_iMaxLayer < 0 || m_iMaxLayer >= 1)
-        DrawDrawingList(&*m_pBaseDwg, pDC, pDrawRct, eScale,
-            nApplyVisible == -1 ? m_bApplyVisibility : (BOOL)nApplyVisible);
-}
-
 void CBoardBase::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
     int nApplyVisible /*= -1*/)
 {
@@ -652,14 +559,6 @@ void CBoardBase::DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const
 }
 
 // ----------------------------------------------------- //
-
-void CBoardBase::DrawDrawingList(CDrawList* pDwg, CDC& pDC, const CRect& pDrawRct,
-    TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects)
-{
-    if (pDwg == NULL)
-        return;
-    pDwg->Draw(pDC, pDrawRct, eScale, bApplyVisible, bDrawPass2Objects);
-}
 
 void CBoardBase::DrawDrawingList(CDrawList* pDwg, wxDC& pDC, const wxRect& pDrawRct,
     TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects /*= FALSE*/)
