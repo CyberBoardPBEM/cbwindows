@@ -49,7 +49,7 @@ wxSize CTileListBox::GetItemSize(size_t nIndex) const
     TileID tid = MapIndexToItem(nIndex);
     CTile tile = pTMgr.GetTile(tid, fullScale);
 
-    LONG nHt = 2 * tileBorder + tile.GetHeight();
+    int nHt = 2 * tileBorder + value_preserving_cast<int>(tile.GetHeight());
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
         nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
 
@@ -63,12 +63,12 @@ wxSize CTileListBox::GetItemSize(size_t nIndex) const
         x += pDC.GetTextExtent(str).x;
     }
 
-    x += tile.GetWidth() + tileBorder;
+    x += value_preserving_cast<int>(tile.GetWidth()) + tileBorder;
 
     if (m_bDrawAllScales)
     {
         CTile tileHalf = pTMgr.GetTile(tid, halfScale);
-        x += tileHalf.GetWidth() + 2 * tileBorder;
+        x += value_preserving_cast<int>(tileHalf.GetWidth()) + 2 * tileBorder;
         x += 8;
     }
 
@@ -105,11 +105,11 @@ void CTileListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) c
 
     if (m_bDrawAllScales)
     {
-        x += tile.GetWidth() + 2 * tileBorder;
-        y += tile.GetHeight() / 4;
+        x += value_preserving_cast<int>(tile.GetWidth()) + 2 * tileBorder;
+        y += value_preserving_cast<int>(tile.GetHeight()) / 4;
         CTile tileHalf = pTMgr.GetTile(tid, halfScale);
         tileHalf.BitBlt(pDC, CalcScrolledX(x), y);
-        x += tileHalf.GetWidth() + 2 * tileBorder;
+        x += value_preserving_cast<int>(tileHalf.GetWidth()) + 2 * tileBorder;
         y = rctItem.GetTop() + rctItem.GetHeight()/2 - 4;
         CTile tileSmall = pTMgr.GetTile(tid, smallScale);
         wxPen penSmall(CB::Convert(tileSmall.GetSmallColor()));

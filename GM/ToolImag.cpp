@@ -275,7 +275,7 @@ void CBitPencilTool::OnLButtonDown(CBitEditView& pView, int nMods,
         return;                         // Not in image
     pView.SetUndoFromView();
     pView.DrawImagePixel(point,
-        m_eToolType == itoolPencil ? 1 : pView.GetLineWidth());
+        m_eToolType == itoolPencil ? unsigned(1) : pView.GetLineWidth());
     CImageTool::OnLButtonDown(pView, nMods, point);
 }
 
@@ -285,7 +285,7 @@ void CBitPencilTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
     if (!pView.GetImagePixelLoc(point)) return;    // Not in image
     if (point == c_ptLast) return;
     pView.DrawImageToPixel(c_ptLast, point,
-        m_eToolType == itoolPencil ? 1 : pView.GetLineWidth());
+        m_eToolType == itoolPencil ? unsigned(1) : pView.GetLineWidth());
     CImageTool::OnMouseMove(pView, nMods, point);
 }
 
@@ -428,7 +428,7 @@ void CBitRectTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
     int nWidth = 0;
     if (m_eToolType == itoolRect)
     {
-        nWidth = pView.GetLineWidth();
+        nWidth = value_preserving_cast<int>(pView.GetLineWidth());
         nWidth = nWidth ? nWidth : 1;           // Make sure never zero
     }
     pView.DrawImageRect(c_ptDown, point, nWidth);
@@ -480,7 +480,7 @@ void CBitOvalTool::OnMouseMove(CBitEditView& pView, int nMods, wxPoint point)
     int nWidth = 0;
     if (m_eToolType == itoolOval)
     {
-        nWidth = pView.GetLineWidth();
+        nWidth = value_preserving_cast<int>(pView.GetLineWidth());
         nWidth = nWidth ? nWidth : 1;           // Make sure never zero
     }
     pView.DrawImageEllipse(c_ptDown, point, nWidth);

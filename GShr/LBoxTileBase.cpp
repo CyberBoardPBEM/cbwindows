@@ -76,7 +76,7 @@ wxSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& t
     for (size_t i = size_t(0) ; i < tids.size() ; ++i)
     {
         CTile tile = GetTileManager().GetTile(tids[i], fullScale);
-        htTiles = CB::max(htTiles, tile.GetHeight());
+        htTiles = CB::max(htTiles, value_preserving_cast<int>(tile.GetHeight()));
         DrawTileImage(pDC, rect, FALSE, wdTiles, tids[i]);
     }
 
@@ -131,9 +131,9 @@ void CTileBaseListBox::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wx
 
     if (bDrawIt)
     {
-        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - tile.GetHeight()) / 2 + rctItem.GetTop());
+        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - value_preserving_cast<int>(tile.GetHeight())) / 2 + rctItem.GetTop());
     }
-    x += tile.GetWidth() + tileGap;
+    x += value_preserving_cast<wxCoord>(tile.GetWidth()) + tileGap;
 }
 
 /////////////////////////////////////////////////////////////////////////////

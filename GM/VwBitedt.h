@@ -86,7 +86,7 @@ public:
 
     FontID UpdateBitFont();
     // Current Colors
-    UINT GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
+    unsigned GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
     wxColour GetForeColor() const { return CB::Convert(m_pTMgr->GetForeColor()); }
     wxColour GetBackColor() const { return CB::Convert(m_pTMgr->GetBackColor()); }
     void SetForeColor(wxColour crFore) { m_pTMgr->SetForeColor(CB::Convert(crFore)); }

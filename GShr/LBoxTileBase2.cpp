@@ -64,7 +64,7 @@ wxSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& 
     for (size_t i = size_t(0) ; i < tids.size() ; ++i)
     {
         CTile tile = GetTileManager().GetTile(tids[i], fullScale);
-        nHt = std::max(nHt, tile.GetHeight());
+        nHt = CB::max(nHt, value_preserving_cast<int>(tile.GetHeight()));
     }
 
     // Listbox lines can only be 255 pixels high.
@@ -126,9 +126,9 @@ void CTileBaseListBox2::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, w
 
     if (bDrawIt)
     {
-        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - tile.GetHeight()) / 2 + rctItem.GetTop());
+        tile.BitBlt(pDC, CalcScrolledX(x), (rctItem.GetHeight() - value_preserving_cast<int>(tile.GetHeight())) / 2 + rctItem.GetTop());
     }
-    x += tile.GetWidth() + tileGap;
+    x += value_preserving_cast<int>(tile.GetWidth()) + tileGap;
 }
 
 /////////////////////////////////////////////////////////////////////////////
