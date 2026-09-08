@@ -58,7 +58,7 @@ struct Invalid<TileID32>
 
 constexpr TileID nullTid = Invalid_v<TileID>;
 
-const       UINT maxSheetHeight = 8192;     // Max y pixels allowed in a tile sheet
+const       unsigned maxSheetHeight = 8192;     // Max y pixels allowed in a tile sheet
 
 
 // Note that the values from this enum are used as qualifying
@@ -96,7 +96,7 @@ struct TileDef
     TileLoc     m_tileHalf;         // Half scale tile graphic
     COLORREF    m_tileSmall;        // Color for reduced scale maps
     // ------ //
-    BOOL IsEmpty() const { return m_tileFull.IsEmpty(); }
+    bool IsEmpty() const { return m_tileFull.IsEmpty(); }
     void SetEmpty() { m_tileFull.SetEmpty(); m_tileHalf.SetEmpty(); m_tileSmall = 0; }
 
     void Serialize(CArchive& archive);
@@ -117,12 +117,12 @@ public:
     ~CTileSheet() = default;
 // Attributes
 public:
-    int GetWidth() const { return m_size.cx; }
-    int GetHeight() const { return m_size.cy; }
+    unsigned GetWidth() const { return value_preserving_cast<unsigned>(m_size.cx); }
+    unsigned GetHeight() const { return value_preserving_cast<unsigned>(m_size.cy); }
     CSize GetSize() const { return CSize(m_size.cx, m_size.cy); }
     void SetSize(CSize size);
 
-    BOOL IsSameDimensions(CSize size) const { return size == m_size; }
+    bool IsSameDimensions(CSize size) const { return size == m_size; }
     int GetSheetHeight() const { return m_sheetHt; }
 
 // Operations
@@ -168,7 +168,7 @@ public:
     ~CTileSet() = default;
 
     const std::vector<TileID>& GetTileIDTable() const { return m_tidTbl; }
-    BOOL HasTileID(TileID tid) const;
+    bool HasTileID(TileID tid) const;
 
     const CB::string& GetName() const { return m_strName; }
     void SetName(CB::string pszName) { m_strName = std::move(pszName); }
@@ -209,7 +209,7 @@ public:
     bool IsEmpty() const { return m_TSetTbl.empty(); }
     const CTileSet& GetTileSet(size_t nTSet) const
     {
-        ASSERT(nTSet < m_TSetTbl.size());
+        wxASSERT(nTSet < m_TSetTbl.size());
         return m_TSetTbl.at(nTSet);
     }
     CTileSet& GetTileSet(size_t nTSet)
@@ -220,11 +220,11 @@ public:
     // Access routines for all Tile Editor info...
     void SetForeColor(COLORREF cr);
     void SetBackColor(COLORREF cr);
-    void SetLineWidth(int nWidth) { m_nLineWidth = nWidth; }
-    BOOL DoBitFontDialog();
+    void SetLineWidth(unsigned nWidth) { m_nLineWidth = nWidth; }
+    bool DoBitFontDialog();
     COLORREF GetForeColor() const { return m_crFore; }
     COLORREF GetBackColor() const { return m_crBack; }
-    int GetLineWidth() const { return m_nLineWidth; }
+    unsigned GetLineWidth() const { return m_nLineWidth; }
     const CBrush& GetForeBrushMFC() const { return m_brForeMFC; }
     const wxBrush& GetForeBrushWx() const { return m_brForeWx; }
     const CBrush& GetBackBrush() const { return m_brBack; }
@@ -237,9 +237,9 @@ public:
     CTileUpdatable GetTile(TileID tid, TileScale eScale = fullScale);
     TileID CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
         COLORREF crSmall, size_t nPos = Invalid_v<size_t>);
-    void DeleteTile(TileID tid, BOOL bFromSetAlso = TRUE);
+    void DeleteTile(TileID tid, bool bFromSetAlso = true);
     void SetSmallTileColor(TileID tid, COLORREF cr);
-    BOOL IsTileIDValid(TileID tid) const;
+    bool IsTileIDValid(TileID tid) const;
     size_t FindTileSetFromTileID(TileID tid) const;
     void MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>& tidList, size_t nPos = Invalid_v<size_t>);
 
@@ -266,8 +266,8 @@ public:
     void SerializeTileSheets(CArchive& ar);
 
     // TOOL CODE //
-    BOOL PruneTilesOnSheet255();
-    void DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOOL bNewFile = TRUE) const;
+    bool PruneTilesOnSheet255();
+    void DumpTileDatabaseInfoToFile(const CB::string& pszFileName, bool bNewFile = true) const;
     // TOOL CODE //
 
 // Implementation
@@ -277,17 +277,17 @@ protected:
                 false,
                 CalcAllocSize> m_pTileTbl;
     COLORREF    m_crTrans;          // Transparency color for all tiles
-    WORD        m_wReserved1;       // For future need (set to 0)
-    WORD        m_wReserved2;       // For future need (set to 0)
-    WORD        m_wReserved3;       // For future need (set to 0)
-    WORD        m_wReserved4;       // For future need (set to 0)
+    uint16_t    m_wReserved1;       // For future need (set to 0)
+    uint16_t    m_wReserved2;       // For future need (set to 0)
+    uint16_t    m_wReserved3;       // For future need (set to 0)
+    uint16_t    m_wReserved4;       // For future need (set to 0)
     // These are shared for all Tile Editors...
     COLORREF    m_crFore;           // Current foreground color
     CBrush      m_brForeMFC;        // Foreground solid brush
     wxBrush     m_brForeWx;         // Foreground solid brush
     COLORREF    m_crBack;           // Current background color
     CBrush      m_brBack;           // Background solid brush
-    UINT        m_nLineWidth;       // Current line width
+    unsigned    m_nLineWidth;       // Current line width
     FontID      m_fontID;           // Current font
     // ------- //
     std::vector<CTileSet> m_TSetTbl;
@@ -331,8 +331,8 @@ class CTile
     friend class CTileManager;
 // Attributes
 public:
-    int GetWidth() const;
-    int GetHeight() const;
+    unsigned GetWidth() const;
+    unsigned GetHeight() const;
     CSize GetSize() const;
     void SetNoTransparent() { m_crTrans = noColor; }
     COLORREF GetTransparent() const { return m_crTrans; }
@@ -347,7 +347,7 @@ public:
 // Implementation
 protected:
     const CTileSheet* m_pTS;      // For Reference Only (DON'T DELETE!!!)
-    int         m_yLoc;     // Y location in sheet
+    unsigned    m_yLoc;     // Y location in sheet
     CSize       m_size;     // size of bitmap of color patch
     COLORREF    m_crTrans;  // Transparency color in bitmaps
     COLORREF    m_crSmall;  // For smallScale (m_pTS == NULL)

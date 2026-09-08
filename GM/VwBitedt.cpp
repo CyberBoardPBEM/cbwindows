@@ -1048,7 +1048,7 @@ void CBitEditView::OnSetCustomColors(SetCustomColorEvent& event)
 
 void CBitEditView::OnSetLineWidth(SetLineWidthEvent& event)
 {
-    m_pTMgr->SetLineWidth(event.GetWidth());
+    m_pTMgr->SetLineWidth(value_preserving_cast<unsigned>(event.GetWidth()));
 }
 
 void CBitEditView::OnUpdateColorForeground(CColorCmdUI& colorCmdUI)

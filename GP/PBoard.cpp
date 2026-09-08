@@ -156,7 +156,7 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 
     CTile tile = pTMgr.GetTile(tid, fullScale);
     CRect rct(pnt, tile.GetSize());
-    rct -= CPoint(tile.GetWidth() / 2, tile.GetHeight() / 2);
+    rct -= CPoint(value_preserving_cast<int>(tile.GetWidth()) / 2, value_preserving_cast<int>(tile.GetHeight()) / 2);
     LimitRectToBoard(rct);
 
     {

@@ -37,15 +37,15 @@ static char THIS_FILE[] = __FILE__;
 //////////////////////////////////////////////////////////////////
 //                    CTile - Class
 
-int CTile::GetWidth() const
+unsigned CTile::GetWidth() const
 {
-    ASSERT(m_pTS != NULL);
+    wxASSERT(m_pTS != NULL);
     return m_pTS->GetWidth();
 }
 
-int CTile::GetHeight() const
+unsigned CTile::GetHeight() const
 {
-    ASSERT(m_pTS != NULL);
+    wxASSERT(m_pTS != NULL);
     return m_pTS->GetHeight();
 }
 
@@ -57,7 +57,7 @@ CSize CTile::GetSize() const
 void CTile::BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop/* = wxCOPY*/) const
 {
     if (m_pTS != NULL)
-        m_pTS->TileBlt(pDC, x, y, m_yLoc, dwRop);
+        m_pTS->TileBlt(pDC, x, y, value_preserving_cast<wxCoord>(m_yLoc), dwRop);
     else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
@@ -77,14 +77,14 @@ void CTile::TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo) con
         {
             if (pMaskBMapInfo.IsOk())
             {
-                m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, m_yLoc,
+                m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, value_preserving_cast<int>(m_yLoc),
                     CB::Convert(m_crTrans), pMaskBMapInfo);
             }
             else
-                m_pTS->TransBlt(pDC, x, y, m_yLoc, CB::Convert(m_crTrans));
+                m_pTS->TransBlt(pDC, x, y, value_preserving_cast<int>(m_yLoc), CB::Convert(m_crTrans));
         }
         else
-            m_pTS->TileBlt(pDC, x, y, m_yLoc, wxCOPY);
+            m_pTS->TileBlt(pDC, x, y, value_preserving_cast<int>(m_yLoc), wxCOPY);
     }
     else if (m_crTrans != m_crSmall)
     {
@@ -101,11 +101,11 @@ void CTileUpdatable::Update(const CBitmap& pBMap)
 {
     /* CTileSheet only ever gets created as non-const instances,
         so const_cast is well-defined */
-    const_cast<CTileSheet&>(CheckedDeref(m_pTS)).UpdateTile(pBMap, m_yLoc);
+    const_cast<CTileSheet&>(CheckedDeref(m_pTS)).UpdateTile(pBMap, value_preserving_cast<int>(m_yLoc));
 }
 
 OwnerPtr<CBitmap> CTile::CreateBitmapOfTile() const
 {
-    return CheckedDeref(m_pTS).CreateBitmapOfTile(m_yLoc);
+    return CheckedDeref(m_pTS).CreateBitmapOfTile(value_preserving_cast<int>(m_yLoc));
 }
 

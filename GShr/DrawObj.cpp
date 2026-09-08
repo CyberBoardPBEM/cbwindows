@@ -1228,8 +1228,8 @@ void CTileImage::SetTile(int x, int y, TileID tid)
     m_tid = tid;
     m_rctExtent.left = m_rctExtent.right = x;
     m_rctExtent.top = m_rctExtent.bottom = y;
-    m_rctExtent.right += tile.GetWidth();
-    m_rctExtent.bottom += tile.GetHeight();
+    m_rctExtent.right += value_preserving_cast<int>(tile.GetWidth());
+    m_rctExtent.bottom += value_preserving_cast<int>(tile.GetHeight());
 }
 
 BOOL CTileImage::HitTest(CPoint pt)
@@ -1665,8 +1665,8 @@ void CMarkObj::ResyncExtentRect()
 
     CTile tile = pTMgr.GetTile(tid);
     CPoint pnt = m_rctExtent.CenterPoint();
-    pnt.x -= tile.GetWidth() / 2;
-    pnt.y -= tile.GetHeight() / 2;
+    pnt.x -= value_preserving_cast<int>(tile.GetWidth()) / 2;
+    pnt.y -= value_preserving_cast<int>(tile.GetHeight()) / 2;
     m_rctExtent = CRect(pnt, tile.GetSize());
 }
 

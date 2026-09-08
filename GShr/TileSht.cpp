@@ -217,8 +217,8 @@ void CTileSheet::DeleteTile(int yLoc)
 
 void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
 {
-    ASSERT(m_pBMap != NULL);
-    ASSERT(yLoc < m_sheetHt - 1);
+    wxASSERT(m_pBMap != NULL);
+    wxASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(m_pBMap.get());        // Dest bitmap
     g_gt.mDC2.SelectObject(pBMap);          // Source bitmap
 
@@ -230,8 +230,8 @@ void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
 
 OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 {
-    ASSERT(m_pBMap != NULL);
-    ASSERT(yLoc < m_sheetHt - 1);
+    wxASSERT(m_pBMap != NULL);
+    wxASSERT(yLoc < m_sheetHt - 1);
     g_gt.mDC1.SelectObject(*m_pBMap);        // Source bitmap
 
     OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());

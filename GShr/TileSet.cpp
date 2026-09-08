@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 //////////////////////////////////////////////////////////////////
 
-BOOL CTileSet::HasTileID(TileID tid) const
+bool CTileSet::HasTileID(TileID tid) const
 {
     for (size_t i = 0; i < m_tidTbl.size(); i++)
     {

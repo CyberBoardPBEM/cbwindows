@@ -54,7 +54,7 @@ CTileManager::CTileManager()
     m_crTrans = RGB(0, 255, 255);
     SetForeColor(RGB(0, 0, 0));
     SetBackColor(RGB(255, 255, 255));
-    SetLineWidth(1);
+    SetLineWidth(unsigned(1));
     m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(80),
         0, uint8_t(FF_SWISS), "Arial");
     // --------- //
@@ -86,13 +86,13 @@ CTile CTileManager::GetTile(TileID tid,
     {
         const TileLoc *pLoc = &m_pTileTbl[tid].m_tileFull;
         pTile.m_pTS  = &GetTileSheet(pLoc->m_nSheet);
-        pTile.m_yLoc = pLoc->m_nOffset;
+        pTile.m_yLoc = value_preserving_cast<unsigned>(pLoc->m_nOffset);
     }
     else if (eScale == halfScale)
     {
         const TileLoc *pLoc = &m_pTileTbl[tid].m_tileHalf;
         pTile.m_pTS  = &GetTileSheet(pLoc->m_nSheet);
-        pTile.m_yLoc = pLoc->m_nOffset;
+        pTile.m_yLoc = value_preserving_cast<unsigned>(pLoc->m_nOffset);
     }
     else
     {
@@ -124,11 +124,11 @@ TileID CTileManager::CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
     return tid;
 }
 
-void CTileManager::DeleteTile(TileID tid, BOOL bFromSetAlso /* = TRUE */)
+void CTileManager::DeleteTile(TileID tid, bool bFromSetAlso /* = true */)
 {
-    ASSERT(m_pTileTbl != NULL);
-    ASSERT(m_pTileTbl.Valid(tid));
-    ASSERT(!m_pTileTbl[tid].IsEmpty());
+    wxASSERT(m_pTileTbl != NULL);
+    wxASSERT(m_pTileTbl.Valid(tid));
+    wxASSERT(!m_pTileTbl[tid].IsEmpty());
 
     TileDef& pDef = m_pTileTbl[tid];
     DeleteTileFromSheet(pDef.m_tileFull);
@@ -179,7 +179,7 @@ void CTileManager::UpdateTile(TileID tid, const CBitmap& pbmFull, const CBitmap&
     SetSmallTileColor(tid, crSmall);
 }
 
-BOOL CTileManager::IsTileIDValid(TileID tid) const
+bool CTileManager::IsTileIDValid(TileID tid) const
 {
     for (size_t i = 0; i < GetNumTileSets(); i++)
     {
@@ -187,7 +187,7 @@ BOOL CTileManager::IsTileIDValid(TileID tid) const
         if (pTSet.HasTileID(tid))
             return TRUE;
     }
-    return FALSE;
+    return false;
 }
 
 size_t CTileManager::FindTileSetFromTileID(TileID tid) const
@@ -317,9 +317,9 @@ void CTileManager::DeleteTileFromSheet(const TileLoc& pLoc)
     for (size_t i = 0; i < m_pTileTbl.GetSize(); i++)
     {
         AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileFull, pLoc.m_nSheet,
-            pLoc.m_nOffset, pSht.GetHeight());
+            pLoc.m_nOffset, value_preserving_cast<int>(pSht.GetHeight()));
         AdjustTileLoc(m_pTileTbl[static_cast<TileID>(i)].m_tileHalf, pLoc.m_nSheet,
-            pLoc.m_nOffset, pSht.GetHeight());
+            pLoc.m_nOffset, value_preserving_cast<int>(pSht.GetHeight()));
     }
 }
 
@@ -425,7 +425,7 @@ void CTileManager::Serialize(CArchive& ar)
 
         ar << (DWORD)m_crFore;
         ar << (DWORD)m_crBack;
-        ar << (WORD)m_nLineWidth;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         pFontMgr.Archive(ar, m_fontID);
 
@@ -540,9 +540,9 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
             pTSht.Serialize(ar);
 #ifdef _DEBUG
             if (pTSht.GetSheetHeight() == 0)
-                TRACE3(
+                CPP20_TRACE(
                     "CTileManager::SerializeTileSheets - Zero length tile sheet"
-                    "(index %zu, cx=%d, cy=%d) encountered.\n",
+                    "(index {}, cx={}, cy={}) encountered.\n",
                     i, pTSht.GetWidth(), pTSht.GetHeight());
 #endif
         }
@@ -553,11 +553,11 @@ void CTileManager::SerializeTileSheets(CArchive& ar)
 // TOOL FOR FIXING CORRUPTED GAMEBOXES
 // NOTE: This repair routine may not apply are gameboxes are upgraded
 // to 2.91.
-BOOL CTileManager::PruneTilesOnSheet255()
+bool CTileManager::PruneTilesOnSheet255()
 {
-    BOOL bTileFound = FALSE;
-    if (m_TShtTbl.size() < 256)
-        return FALSE;
+    bool bTileFound = false;
+    if (m_TShtTbl.size() < size_t(256))
+        return false;
 
     for (size_t tid = 0; tid < m_pTileTbl.GetSize(); tid++)
     {
@@ -620,7 +620,7 @@ static int compsheets(const void *elem1, const void *elem2)
         return 0;
 }
 
-void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOOL bNewFile) const
+void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, bool bNewFile) const
 {
     HANDLE hFile = CreateFile(pszFileName, GENERIC_WRITE, 0,
         NULL, bNewFile ? CREATE_ALWAYS : OPEN_ALWAYS,
@@ -693,8 +693,8 @@ void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOO
     {
         const CTileSheet& pTSheet = *m_TShtTbl.at(nSheet);
         *pTbl++ = nSheet;
-        *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetWidth());
-        *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetHeight());
+        *pTbl++ = pTSheet.GetWidth();
+        *pTbl++ = pTSheet.GetHeight();
         *pTbl++ = value_preserving_cast<uintmax_t>(pTSheet.GetSheetHeight());
     }
     qsort(pShtTbl, m_TShtTbl.size(), sizeof(uintmax_t) * 4, compsheets);
@@ -751,15 +751,15 @@ void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, BOO
 
 ////////////////////////////////////////////////////////////////////////
 
-BOOL CTileManager::DoBitFontDialog()
+bool CTileManager::DoBitFontDialog()
 {
-    FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, TRUE);
+    FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, true);
     if (newFontID != (FontID)0)
     {
         m_fontID = newFontID;
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 void CTileManager::SetForeColor(COLORREF cr)
