@@ -111,10 +111,10 @@ protected:
     void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;
     // non-const because new tiles get added to CTileManager
     void    CopyCells(CBoardArray& pBArryTo, const CGeoBoardElement& gbeFrom);
-    OwnerPtr<CBitmap> CreateBitmap(CSize size) const;
-    OwnerPtr<CBitmap> CombineLeftAndRight(TileScale eScale, const CBoardArray& pBALeft,
+    wxBitmap CreateBitmap(wxSize size) const;
+    wxBitmap CombineLeftAndRight(TileScale eScale, const CBoardArray& pBALeft,
                 const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft, size_t nRowRight, size_t nColRight) const;
-    OwnerPtr<CBitmap> CombineTopAndBottom(TileScale eScale, const CBoardArray& pBATop,
+    wxBitmap CombineTopAndBottom(TileScale eScale, const CBoardArray& pBATop,
                 const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop, size_t nRowBottom, size_t nColBottom) const;
     // non-const because new tiles get added to CTileManager
     size_t  GetSpecialTileSet();

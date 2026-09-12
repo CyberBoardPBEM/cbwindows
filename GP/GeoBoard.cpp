@@ -508,19 +508,19 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 if (mergeLeftRight)
                 {
                     // Handle left and right halves
-                    bmapFull = CB::Convert(*CombineLeftAndRight(fullScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol));
-                    bmapHalf = CB::Convert(*CombineLeftAndRight(halfScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol));
+                    bmapFull = CombineLeftAndRight(fullScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol);
+                    bmapHalf = CombineLeftAndRight(halfScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol);
                 }
                 else
                 {
                     wxASSERT(mergeTopBottom);
                     // Handle top and bottom halves
-                    bmapFull = CB::Convert(*CombineTopAndBottom(fullScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol));
-                    bmapHalf = CB::Convert(*CombineTopAndBottom(halfScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol));
+                    bmapFull = CombineTopAndBottom(fullScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol);
+                    bmapHalf = CombineTopAndBottom(halfScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol);
                 }
                 // Determine small cell color. Use the 'To' cell as value;
                 wxColour crSmall;
@@ -544,14 +544,14 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
     }
 }
 
-OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
+wxBitmap CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
     const CBoardArray& pBALeft, const CBoardArray& pBARight, size_t nRowLeft, size_t nColLeft,
     size_t nRowRight, size_t nColRight) const
 {
     wxMemoryDC dc;
 
     wxSize sizeCell = CB::Convert(pBALeft.GetCellSize(eScale));
-    wxBitmap retval = CB::Convert(*CreateBitmap(CB::Convert(sizeCell)));
+    wxBitmap retval = CreateBitmap(sizeCell);
 
     // Handle left half...
     dc.SelectObject(retval);
@@ -576,17 +576,17 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
 
     pBARight.FillCell(dc, nRowRight, nColRight, eScale);
 
-    return CB::Convert(retval);
+    return retval;
 }
 
-OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
+wxBitmap CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
     const CBoardArray& pBATop, const CBoardArray& pBABottom, size_t nRowTop, size_t nColTop,
     size_t nRowBottom, size_t nColBottom) const
 {
     wxMemoryDC dc;
 
     wxSize sizeCell = CB::Convert(pBATop.GetCellSize(eScale));
-    wxBitmap retval = CB::Convert(*CreateBitmap(CB::Convert(sizeCell)));
+    wxBitmap retval = CreateBitmap(sizeCell);
 
     // Handle top half...
     dc.SelectObject(retval);
@@ -611,25 +611,25 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
 
     pBABottom.FillCell(dc, nRowBottom, nColBottom, eScale);
 
-    return CB::Convert(retval);
+    return retval;
 }
 
 // Create DIB Section bitmap that's filled with the transparent color.
-OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
+wxBitmap CGeomorphicBoard::CreateBitmap(wxSize size) const
 {
-    CDC dc;
-    dc.CreateCompatibleDC(NULL);
+    wxMemoryDC dc;
 
-    OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
-    CBitmap* prvBMap = dc.SelectObject(&*retval);
+    wxBitmap retval = wxBitmap(size.x, size.y);
+    {
+    dc.SelectObject(retval);
 
-    CBrush brush(CB::Convert(m_pDoc->GetTileManager().GetTransparentColor()));
-    CBrush* prvBrush = dc.SelectObject(&brush);
+    wxBrush brush(m_pDoc->GetTileManager().GetTransparentColor());
+    dc.SetBrush(brush);
+    wxPen pen(m_pDoc->GetTileManager().GetTransparentColor());
+    dc.SetPen(pen);
 
-    dc.PatBlt(0, 0, size.cx, size.cy, PATCOPY);
-
-    dc.SelectObject(prvBrush);
-    dc.SelectObject(prvBMap);
+    dc.DrawRectangle(0, 0, size.x, size.y);
+    }
 
     return retval;
 }

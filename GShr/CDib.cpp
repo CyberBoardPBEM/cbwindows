@@ -421,44 +421,24 @@ void CDib::ClearDib()
     ASSERT(!*this);
 }
 
-CDib::CDib(DWORD dwWidth, DWORD dwHeight)
+CDib::CDib(int dwWidth, int dwHeight)
 {
-    if (!m_wximg.Create(value_preserving_cast<int>(dwWidth), value_preserving_cast<int>(dwHeight), false))
+    if (!m_wximg.Create(dwWidth, dwHeight, false))
     {
         AfxThrowMemoryException();
     }
     m_nCompressLevel = 0;
 }
 
-CDib::CDib(const CBitmap& pBM)
+CDib::CDib(const wxBitmap& pBM)
 {
-    m_wximg = ToImage(pBM);
+    m_wximg = pBM.ConvertToImage();
     m_nCompressLevel = 0;
 }
 
-OwnerPtr<CBitmap> CDib::DIBToBitmap() const
+CDib::operator wxBitmap() const
 {
-    OwnerPtr<CBitmap> pBMap = ToBitmap(m_wximg);
-    pBMap->SetBitmapDimension(Width(), Height());
-    return pBMap;
-}
-
-OwnerPtr<CBitmap> CDib::CreateDIBSection(int nWidth, int nHeight)
-{
-    OwnerPtr<CBitmap> retval = MakeOwner<CBitmap>();
-
-    CBITMAPINFOHEADER bmi(nWidth, nHeight, size_t(24));
-
-    VOID* pBits;
-    HBITMAP hBmap = ::CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(static_cast<BITMAPINFOHEADER*>(bmi)), DIB_RGB_COLORS,
-        &pBits, NULL, 0);
-    if (!hBmap)
-    {
-        AfxThrowMemoryException();
-    }
-
-    retval->Attach(hBmap);
-    return retval;
+    return m_wximg;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -634,110 +614,4 @@ CArchive& ReadImgBMPZlib(CArchive& ar, CDib& dib)
     }
 
     return ar;
-}
-
-wxImage ToImage(const CBitmap& bmp)
-{
-    BITMAP info;
-    if (!const_cast<CBitmap&>(bmp).GetBitmap(&info))
-    {
-        AfxThrowMemoryException();
-    }
-    ASSERT(info.bmWidth > 0 && info.bmHeight > 0);
-    wxImage retval(info.bmWidth, info.bmHeight, false);
-    wxImagePixelData retvalData(retval);
-    ASSERT(retvalData);
-    wxImagePixelData::Iterator destRowStart(retvalData);
-    switch (info.bmBitsPixel)
-    {
-        case 16:
-        {
-            ASSERT(!"untested code");
-            // DIBS are bottom up;
-            const uint16_t* srcRowStart = static_cast<const uint16_t*>(Ptr(bmp, size_t(0), size_t(0)));
-            ptrdiff_t srcStride = -info.bmWidthBytes / ptrdiff_t(sizeof(*srcRowStart));
-            for (int y = 0 ; y < info.bmHeight ; ++y)
-            {
-                const uint16_t* src = srcRowStart;
-                wxImagePixelData::Iterator dest = destRowStart;
-                for (int x = 0 ; x < info.bmWidth ; ++x)
-                {
-                    COLORREF cr = RGB565_TO_24(*src++);
-                    dest.Red() = GetRValue(cr);
-                    dest.Green() = GetGValue(cr);
-                    dest.Blue() = GetBValue(cr);
-                    ++dest;
-                }
-                srcRowStart += srcStride;
-                destRowStart.OffsetY(retvalData, 1);
-            }
-            break;
-        }
-        case 24:
-        {
-            // DIBS are bottom up;
-            const std::byte* srcRowStart = static_cast<const std::byte*>(Ptr(bmp, size_t(0), size_t(0)));
-            ptrdiff_t srcStride = -info.bmWidthBytes;
-            for (int y = 0 ; y < info.bmHeight ; ++y)
-            {
-                const WIN_RGBTRIO* src = reinterpret_cast<const WIN_RGBTRIO*>(srcRowStart);
-                wxImagePixelData::Iterator dest = destRowStart;
-                for (int x = 0 ; x < info.bmWidth ; ++x)
-                {
-                    dest.Red() = src->red;
-                    dest.Green() = src->green;
-                    dest.Blue() = src->blue;
-                    ++src;
-                    ++dest;
-                }
-                srcRowStart += srcStride;
-                destRowStart.OffsetY(retvalData, 1);
-            }
-            break;
-        }
-        default:
-            AfxThrowNotSupportedException();
-    }
-    return retval;
-}
-
-OwnerPtr<CBitmap> ToBitmap(const wxImage& img)
-{
-    if (img.HasAlpha() || img.HasMask())
-    {
-        AfxThrowNotSupportedException();
-    }
-
-    OwnerPtr<CBitmap> retval = CDib::CreateDIBSection(img.GetWidth(), img.GetHeight());
-
-    DIBSECTION dibSect;
-    VERIFY(GetObject(*retval, sizeof(DIBSECTION), &dibSect));
-    ASSERT(dibSect.dsBm.bmWidth == img.GetWidth() &&
-            dibSect.dsBm.bmHeight == img.GetHeight() &&
-            dibSect.dsBmih.biBitCount == 24);
-
-    wxImagePixelData imgData(const_cast<wxImage&>(img));
-    ASSERT(imgData);
-    wxImagePixelData::Iterator srcRowStart(imgData);
-    // DIBs are bottom up
-    std::byte* destRowStart = static_cast<std::byte*>(Ptr(*retval, size_t(0), size_t(0)));
-    ptrdiff_t destStride = -value_preserving_cast<ptrdiff_t>(CDib::WidthBytes(dibSect.dsBmih));
-
-    for (int y = 0 ; y < dibSect.dsBm.bmHeight ; ++y)
-    {
-        wxImagePixelData::Iterator src = srcRowStart;
-        WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
-        for (int x = 0 ; x < dibSect.dsBm.bmWidth ; ++x)
-        {
-            dest->red = src.Red();
-            dest->green = src.Green();
-            dest->blue = src.Blue();
-            ++src;
-            ++dest;
-        }
-        srcRowStart.OffsetY(imgData, 1);
-        destRowStart += destStride;
-    }
-
-    return retval;
 }

@@ -140,7 +140,7 @@ namespace {
     }
 
 // angle is clockwise
-CDib CDib::Rotate(int angle, COLORREF crTrans) const
+CDib CDib::Rotate(int angle, wxColour crTrans) const
 {
 DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     ASSERT(0 <= angle && angle < 360);
@@ -160,7 +160,7 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
 
     CSize sizeSrc(Width(), Height());
     CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
-    CDib pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
+    CDib pDDib = CreateTransparentColorDIB(CB::Convert(sizeDst), crTrans);
 
     // Find top and bottom point indexes
     int nTopPnt = 0;
@@ -235,10 +235,10 @@ void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
 
 /////////////////////////////////////////////////////////////////////
 
-CDib CDib::CreateTransparentColorDIB(CSize size, COLORREF crTrans)
+CDib CDib::CreateTransparentColorDIB(wxSize size, wxColour crTrans)
 {
-    CDib pDib(size.cx, size.cy);
-    pDib.Fill(crTrans);
+    CDib pDib(size.x, size.y);
+    pDib.Fill(CB::Convert(crTrans));
 
     return pDib;
 }

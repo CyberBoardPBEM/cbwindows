@@ -62,7 +62,7 @@ void CTileSheet::Serialize(CArchive& ar)
 
         if (m_pBMap.IsOk())
         {
-            CDib dib(*CB::Convert(m_pBMap));
+            CDib dib(m_pBMap);
             wxASSERT(dib);
             if (dib)
             {

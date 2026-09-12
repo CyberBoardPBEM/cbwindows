@@ -36,11 +36,9 @@ public:
     ~CDib() { ClearDib(); }
     void ClearDib();
     explicit operator bool() const { return m_wximg.IsOk(); }
-    CDib(DWORD dwWidth, DWORD dwHeight);
+    CDib(int dwWidth, int dwHeight);
     // ---------- /
-    explicit CDib(const CBitmap& pBM);
     explicit CDib(const wxBitmap& pBM);
-    OwnerPtr<CBitmap> DIBToBitmap() const;
     operator wxBitmap() const;
 #ifdef WE_WANT_THIS_STUFF_DLL940113
     int StretchDIBits(CDC& pDC, int xDest, int yDest, int cxDest, int cyDest,
@@ -61,7 +59,7 @@ private:
     void Fill(COLORREF color);
 public:
     // angle is clockwise
-    CDib Rotate(int angle, COLORREF crTrans) const;
+    CDib Rotate(int angle, wxColour crTrans) const;
     // ---------- //
     void SetCompressLevel(int nCompressLevel) { m_nCompressLevel = nCompressLevel; }
     int  GetCompressLevel() const { return m_nCompressLevel; }
@@ -82,14 +80,12 @@ public:
         return BitsToBytes(bmi.biWidth * bmi.biBitCount);
     }
 
-    static OwnerPtr<CBitmap> CreateDIBSection(int nWidth, int nHeight);
-
 private:
     CDib RotateFast(int angle) const;
     struct ImgEdge;
     void DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
         CDib& pDDib) const;
-    static CDib CreateTransparentColorDIB(CSize size, COLORREF crTrans);
+    static CDib CreateTransparentColorDIB(wxSize size, wxColour crTrans);
 
     wxImage m_wximg;
     int   m_nCompressLevel;
@@ -101,31 +97,6 @@ private:
     friend CArchive& ReadRGB565Zlib(CArchive& ar, CDib& dib);
     friend CArchive& ReadImgBMPZlib(CArchive& ar, CDib& dib);
 };
-
-wxImage ToImage(const CBitmap& bmp);
-OwnerPtr<CBitmap> ToBitmap(const wxImage& img);
-namespace CB
-{
-    inline wxBitmap Convert(const CBitmap& bmp)
-    {
-        return wxBitmap(ToImage(bmp), 24);
-    }
-
-    inline OwnerPtr<CBitmap> Convert(const wxBitmap& bmp)
-    {
-        return ToBitmap(bmp.ConvertToImage());
-    }
-}
-
-inline CDib::CDib(const wxBitmap& pBM) :
-    CDib(*CB::Convert(pBM))
-{
-}
-
-inline CDib::operator wxBitmap() const
-{
-    return CB::Convert(*DIBToBitmap());
-}
 
 #endif
 
