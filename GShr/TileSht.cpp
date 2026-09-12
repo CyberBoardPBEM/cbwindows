@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 CTileSheet::CTileSheet()
 {
-    m_size = CSize(0, 0);
+    m_size = wxSize(0, 0);
     m_sheetHt = 0;
 }
 
@@ -57,16 +57,16 @@ void CTileSheet::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (short)m_size.cx;
-        ar << (short)m_size.cy;
+        ar << value_preserving_cast<int16_t>(m_size.x);
+        ar << value_preserving_cast<int16_t>(m_size.y);
 
-        if (m_pBMap)
+        if (m_pBMap.IsOk())
         {
-            CDib dib(*m_pBMap);
-            ASSERT(dib);
+            CDib dib(*CB::Convert(m_pBMap));
+            wxASSERT(dib);
             if (dib)
             {
-                ar << (WORD)1;      // Store "HasBitmap" flag
+                ar << uint16_t(1);      // Store "HasBitmap" flag
 #ifndef GPLAY
                 dib.SetCompressLevel(CB::ToCGamDoc(ar.m_pDocument)->
                     GetCompressLevel());
@@ -74,19 +74,19 @@ void CTileSheet::Serialize(CArchive& ar)
                 ar << dib;
             }
             else
-                ar << (WORD)0;      // Store "HasBitmap" flag
+                ar << uint16_t(0);      // Store "HasBitmap" flag
         }
         else
-            ar << (WORD)0;          // Store "HasBitmap" flag
+            ar << uint16_t(0);          // Store "HasBitmap" flag
     }
     else
     {
         ClearSheet();
-        short sTmp;
-        ar >> sTmp; m_size.cx = sTmp;
-        ar >> sTmp; m_size.cy = sTmp;
+        int16_t sTmp;
+        ar >> sTmp; m_size.x = sTmp;
+        ar >> sTmp; m_size.y = sTmp;
 
-        WORD wHasBitmap = 1;            // Force for old versions of file
+        uint16_t wHasBitmap = 1;            // Force for old versions of file
 #ifdef GPLAY
         if (CGameBox::GetLoadingVersion() > NumVersion(0, 52))
 #else
@@ -100,17 +100,15 @@ void CTileSheet::Serialize(CArchive& ar)
             ar >> dib;
             if (dib)
             {
-                m_pBMap = dib.DIBToBitmap();
-                BITMAP bmInfo;
-                m_pBMap->GetObject(sizeof(bmInfo), &bmInfo);
-                TRACE3("-- Loaded Tile Sheet for cx=%d, cy=%d tiles. Tile sheet height = %d\n",
-                    m_size.cx, m_size.cy, bmInfo.bmHeight);
-                //  ASSERT(bmInfo.bmHeight < maxSheetHeight);
-                m_sheetHt = bmInfo.bmHeight;
+                m_pBMap = dib;
+                CPP20_TRACE("-- Loaded Tile Sheet for cx={}, cy={} tiles. Tile sheet height = {}\n",
+                    m_size.x, m_size.y, m_pBMap.GetHeight());
+                //  wxASSERT(m_pBMap.GetHeight() < maxSheetHeight);
+                m_sheetHt = m_pBMap.GetHeight();
             }
             else
             {
-                TRACE0("CTileSheet::Serialize - Forced truncation of tile sheet. "
+                CPP20_TRACE("CTileSheet::Serialize - Forced truncation of tile sheet. "
                     "No DIB found even though should have one.\n");
                 m_sheetHt = 0;
             }
@@ -122,9 +120,9 @@ void CTileSheet::Serialize(CArchive& ar)
 
 //////////////////////////////////////////////////////////////////
 
-void CTileSheet::SetSize(CSize size)
+void CTileSheet::SetSize(wxSize size)
 {
-    ASSERT(m_sheetHt == 0 && m_pBMap == NULL);  // ONLY LEGAL IF NO DATA IN SHEET!!!!!!
+    wxASSERT(m_sheetHt == 0 && !m_pBMap.IsOk());  // ONLY LEGAL IF NO DATA IN SHEET!!!!!!
     m_size = size;
 }
 
@@ -132,130 +130,107 @@ void CTileSheet::SetSize(CSize size)
 
 void CTileSheet::CreateTile()
 {
-    if (m_pBMap != NULL)
+    if (m_pBMap.IsOk())
     {
-        BITMAP bmInfo;
-        VERIFY(m_pBMap->GetObject(sizeof(bmInfo), &bmInfo) > 0);
-        bmInfo.bmBits = NULL;
-        bmInfo.bmHeight += m_size.cy;       // Increase size.
+        int bmHeight = m_pBMap.GetHeight() + m_size.y;       // Increase size.
 
-        OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
-            bmInfo.bmWidth, bmInfo.bmHeight);
-        ASSERT(pBMap->m_hObject != NULL);
-        g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
-        g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
+        wxBitmap pBMap = wxBitmap(
+            m_pBMap.GetWidth(), bmHeight);
+        wxASSERT(pBMap.IsOk());
+        {
+        wxMemoryDC mDC1(pBMap);          // Dest bitmap
+        wxMemoryDC mDC2(m_pBMap);        // Source bitmap
 
-        g_gt.mDC1.BitBlt(0, 0, m_size.cx, m_sheetHt, &g_gt.mDC2, 0, 0, SRCCOPY);
-        g_gt.mDC1.PatBlt(0, m_sheetHt, m_size.cx, m_size.cy, WHITENESS);
+        mDC1.Blit(0, 0, m_size.x, m_sheetHt, &mDC2, 0, 0, wxCOPY);
+        mDC1.Blit(0, m_sheetHt, m_size.x, m_size.y, &mDC1, 0, 0, wxSET);
+        }
 
-        g_gt.SelectSafeObjectsForDC1();
-        g_gt.SelectSafeObjectsForDC2();
+        m_sheetHt = bmHeight;
 
-        m_sheetHt = bmInfo.bmHeight;
-
-        m_pBMap = std::move(pBMap);
+        m_pBMap = pBMap;
     }
     else
     {
-        ASSERT(m_size != CSize(0,0));
-        TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
-        m_pBMap = CDib::CreateDIBSection(
-            m_size.cx, m_size.cy);
-        g_gt.mDC1.SelectObject(m_pBMap.get());
-        g_gt.mDC1.PatBlt(0, 0, m_size.cx, m_size.cy, WHITENESS);
-        g_gt.SelectSafeObjectsForDC1();
+        wxASSERT(m_size != wxSize(0,0));
+        CPP20_TRACE("CTileSheet::CreateTile - Creating new TileSheet bitmap\n");
+        m_pBMap = wxBitmap(
+            m_size.x, m_size.y);
+        wxMemoryDC mDC1(m_pBMap);
+        mDC1.Blit(0, 0, m_size.x, m_size.y, &mDC1, 0, 0, wxSET);
 
-        m_sheetHt = m_size.cy;
+        m_sheetHt = m_size.y;
     }
 }
 
 void CTileSheet::DeleteTile(int yLoc)
 {
-    ASSERT(m_pBMap != NULL);
-    ASSERT(yLoc < m_sheetHt - 1);
-    if (m_size.cy == m_sheetHt)
+    wxASSERT(m_pBMap.IsOk());
+    wxASSERT(yLoc < m_sheetHt - 1);
+    if (m_size.y == m_sheetHt)
     {
-        TRACE("CTileSheet::DeleteTile - Deleting TileSheet bitmap\n");
+        CPP20_TRACE("CTileSheet::DeleteTile - Deleting TileSheet bitmap\n");
         // Single tile is all that's left...
-        ASSERT(yLoc == 0);
-        m_pBMap = nullptr;
+        wxASSERT(yLoc == 0);
+        m_pBMap = wxBitmap();
         m_sheetHt = 0;
     }
     else
     {
-        BITMAP bmInfo;
-        m_pBMap->GetObject(sizeof(bmInfo), &bmInfo);
-        bmInfo.bmBits = NULL;
-        bmInfo.bmHeight -= m_size.cy;           // Decrease size.
+        int bmHeight = m_pBMap.GetHeight() - m_size.y;           // Decrease size.
 
-        g_gt.mDC2.SelectObject(m_pBMap.get());        // Source bitmap
+        wxBitmap pBMap = wxBitmap(
+            m_pBMap.GetWidth(), bmHeight);
 
-        OwnerPtr<CBitmap> pBMap = CDib::CreateDIBSection(
-            bmInfo.bmWidth, bmInfo.bmHeight);
+        {
+        wxMemoryDC mDC2(m_pBMap);        // Source bitmap
 
-        g_gt.mDC1.SelectObject(pBMap.get());          // Dest bitmap
+        wxMemoryDC mDC1(pBMap);          // Dest bitmap
 
         if (yLoc > 0)
         {
             // There is a piece above the deleted piece.
-            g_gt.mDC1.BitBlt(0, 0, m_size.cx, yLoc, &g_gt.mDC2, 0, 0, SRCCOPY);
+            mDC1.Blit(0, 0, m_size.x, yLoc, &mDC2, 0, 0, wxCOPY);
         }
-        if (yLoc + m_size.cy < m_sheetHt)           // See if not last tile
+        if (yLoc + m_size.y < m_sheetHt)           // See if not last tile
         {
             // There is a piece after the deleted piece.
-            g_gt.mDC1.BitBlt(0, yLoc, m_size.cx, m_sheetHt - (yLoc + m_size.cy),
-                &g_gt.mDC2, 0, yLoc + m_size.cy, SRCCOPY);
+            mDC1.Blit(0, yLoc, m_size.x, m_sheetHt - (yLoc + m_size.y),
+                &mDC2, 0, yLoc + m_size.y, wxCOPY);
         }
-        g_gt.SelectSafeObjectsForDC1();
-        g_gt.SelectSafeObjectsForDC2();
+        }
 
-        m_sheetHt = bmInfo.bmHeight;
+        m_sheetHt = bmHeight;
 
-        m_pBMap = std::move(pBMap);
+        m_pBMap = pBMap;
     }
 }
 
-void CTileSheet::UpdateTile(const CBitmap& pBMap, int yLoc)
+void CTileSheet::UpdateTile(const wxBitmap& pBMap, int yLoc)
 {
-    wxASSERT(m_pBMap != NULL);
+    wxASSERT(m_pBMap.IsOk());
     wxASSERT(yLoc < m_sheetHt - 1);
-    g_gt.mDC1.SelectObject(m_pBMap.get());        // Dest bitmap
-    g_gt.mDC2.SelectObject(pBMap);          // Source bitmap
+    wxMemoryDC mDC1(m_pBMap);        // Dest bitmap
+    wxMemoryDC mDC2;
+    mDC2.SelectObjectAsSource(pBMap);          // Source bitmap
 
-    g_gt.mDC1.BitBlt(0, yLoc, m_size.cx, m_size.cy, &g_gt.mDC2, 0, 0, SRCCOPY);
-
-    g_gt.SelectSafeObjectsForDC1();
-    g_gt.SelectSafeObjectsForDC2();
+    mDC1.Blit(0, yLoc, m_size.x, m_size.y, &mDC2, 0, 0, wxCOPY);
 }
 
-OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
+wxBitmap CTileSheet::CreateBitmapOfTile(int yLoc) const
 {
-    wxASSERT(m_pBMap != NULL);
+    wxASSERT(m_pBMap.IsOk());
     wxASSERT(yLoc < m_sheetHt - 1);
-    g_gt.mDC1.SelectObject(*m_pBMap);        // Source bitmap
 
-    OwnerPtr<CBitmap> pBMap(MakeOwner<CBitmap>());
+    wxBitmap pBMap(m_size);
 
-    BITMAP bmap;
-    memset(&bmap, 0, sizeof(BITMAP));
-    m_pBMap->GetObject(sizeof(BITMAP), &bmap);
-
-    if (bmap.bmBits != NULL)                // DIB Section check
     {
-        pBMap = CDib::CreateDIBSection(
-            m_size.cx, m_size.cy);
+    wxMemoryDC mDC1;
+    mDC1.SelectObjectAsSource(m_pBMap);        // Source bitmap
+
+    wxMemoryDC mDC2(pBMap);          // Activate dest bitmap
+
+    mDC2.Blit(0, 0, m_size.x, m_size.y, &mDC1, 0, yLoc, wxCOPY);
     }
-    else
-    {
-        pBMap->CreateCompatibleBitmap(&g_gt.mDC1, m_size.cx, m_size.cy);
-    }
-
-    g_gt.mDC2.SelectObject(&*pBMap);          // Activate dest bitmap
-
-    g_gt.mDC2.BitBlt(0, 0, m_size.cx, m_size.cy, &g_gt.mDC1, 0, yLoc, SRCCOPY);
-
-    g_gt.SelectSafeObjectsForDC1();
-    g_gt.SelectSafeObjectsForDC2();
 
     return pBMap;
 }
@@ -265,19 +240,18 @@ OwnerPtr<CBitmap> CTileSheet::CreateBitmapOfTile(int yLoc) const
 void CTileSheet::TileBlt(wxDC& pDC, wxCoord xDst, wxCoord yDst, wxCoord ySrc, wxRasterOperationMode dwRop) const
 {
     wxMemoryDC sheetDC;
-    wxBitmap wxbmp(ToImage(CheckedDeref(m_pBMap)));
-    sheetDC.SelectObjectAsSource(wxbmp);
-    pDC.Blit(xDst, yDst, m_size.cx, m_size.cy, &sheetDC, 0, ySrc, dwRop);
+    sheetDC.SelectObjectAsSource(m_pBMap);
+    pDC.Blit(xDst, yDst, m_size.x, m_size.y, &sheetDC, 0, ySrc, dwRop);
 }
 
 void CTileSheet::TransBlt(wxDC& pDC, int xDst, int yDst, int ySrc,
     wxColour crTrans) const
 {
-    wxBitmap wxBMap = CB::Convert(*m_pBMap);
+    wxBitmap wxBMap = m_pBMap.GetSubBitmap(wxRect(wxPoint(0, 0), m_pBMap.GetSize()));
     wxBMap.SetMask(new wxMask(wxBMap, crTrans));
     wxMemoryDC srcDC;
     srcDC.SelectObjectAsSource(wxBMap);
-    pDC.Blit(xDst, yDst, m_size.cx, m_size.cy, &srcDC, 0, ySrc, wxCOPY, true);
+    pDC.Blit(xDst, yDst, m_size.x, m_size.y, &srcDC, 0, ySrc, wxCOPY, true);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -377,12 +351,12 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
     xDst += pntOrg.x;
     yDst += pntOrg.y;
 
-    wxBitmap accum(CB::Convert(m_size));
+    wxBitmap accum(m_size);
     {
         wxMemoryDC accumDC(accum);
         {
             wxMemoryDC tileDC;
-            tileDC.SelectObjectAsSource(CB::Convert(*m_pBMap));
+            tileDC.SelectObjectAsSource(m_pBMap);
             accumDC.Blit(wxPoint(0, 0), accum.GetSize(), &tileDC, wxPoint(0, ySrc), wxCOPY);
         }
         {
@@ -406,6 +380,6 @@ void CTileSheet::TransBltThruDIBSectMonoMask(wxDC& pDC, int xDst, int yDst, int 
 
 void CTileSheet::ClearSheet()
 {
-    m_size = CSize(0, 0);
-    m_pBMap = nullptr;
+    m_size = wxSize(0, 0);
+    m_pBMap = wxBitmap();
 }

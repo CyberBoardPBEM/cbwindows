@@ -1561,7 +1561,7 @@ CSize CPieceObj::GetSize() const
     ASSERT(tid != nullTid);
 
     CTile tile = pTMgr.GetTile(tid);
-    return tile.GetSize();
+    return CB::Convert(tile.GetSize());
 }
 
 BOOL CPieceObj::HitTest(CPoint pt)
@@ -1667,7 +1667,7 @@ void CMarkObj::ResyncExtentRect()
     CPoint pnt = m_rctExtent.CenterPoint();
     pnt.x -= value_preserving_cast<int>(tile.GetWidth()) / 2;
     pnt.y -= value_preserving_cast<int>(tile.GetHeight()) / 2;
-    m_rctExtent = CRect(pnt, tile.GetSize());
+    m_rctExtent = CRect(pnt, CB::Convert(tile.GetSize()));
 }
 
 BOOL CMarkObj::HitTest(CPoint pt)

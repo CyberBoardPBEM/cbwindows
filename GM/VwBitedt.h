@@ -87,10 +87,10 @@ public:
     FontID UpdateBitFont();
     // Current Colors
     unsigned GetLineWidth() const { return m_pTMgr->GetLineWidth(); }
-    wxColour GetForeColor() const { return CB::Convert(m_pTMgr->GetForeColor()); }
-    wxColour GetBackColor() const { return CB::Convert(m_pTMgr->GetBackColor()); }
-    void SetForeColor(wxColour crFore) { m_pTMgr->SetForeColor(CB::Convert(crFore)); }
-    void SetBackColor(wxColour crBack) { m_pTMgr->SetBackColor(CB::Convert(crBack)); }
+    wxColour GetForeColor() const { return m_pTMgr->GetForeColor(); }
+    wxColour GetBackColor() const { return m_pTMgr->GetBackColor(); }
+    void SetForeColor(wxColour crFore) { m_pTMgr->SetForeColor(crFore); }
+    void SetBackColor(wxColour crBack) { m_pTMgr->SetBackColor(crBack); }
 
 // Operations
 public:

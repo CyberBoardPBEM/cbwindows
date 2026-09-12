@@ -726,7 +726,7 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
 
     // Marker is centered on point.
     CTile tile = GetTileManager().GetTile(pMark.m_tid, fullScale);
-    CRect rct(pnt, tile.GetSize());
+    CRect rct(pnt, CB::Convert(tile.GetSize()));
     rct -= CPoint(value_preserving_cast<int>(tile.GetWidth()) / 2, value_preserving_cast<int>(tile.GetHeight()) / 2);
     pPBrd->LimitRectToBoard(rct);
 

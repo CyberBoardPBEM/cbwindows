@@ -285,7 +285,7 @@ void CBitEditView::DrawImageLine(wxPoint startPt, wxPoint curPt, UINT nSize)
 
     {
         wxMemoryDC dc(m_bmView);
-        dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        dc.SetBrush(m_pTMgr->GetForeBrush());
         dc.SetPen(*wxTRANSPARENT_PEN);
 
         if (nSize == 0)
@@ -357,13 +357,13 @@ void CBitEditView::DrawImageRect(wxPoint startPt, wxPoint curPt, UINT nSize)
                     wxSize(std::abs(curPt.x - startPt.x) + 1, std::abs(curPt.y - startPt.y) + 1));
         if (nSize == 0)
         {
-            dc.SetBrush(m_pTMgr->GetForeBrushWx());
+            dc.SetBrush(m_pTMgr->GetForeBrush());
             dc.SetPen(*wxTRANSPARENT_PEN);
             dc.DrawRectangle(rct);
         }
         else
         {
-            wxPen pen(CB::Convert(m_pTMgr->GetForeColor()), nSize);
+            wxPen pen(m_pTMgr->GetForeColor(), nSize);
             dc.SetPen(pen);
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
 
@@ -385,9 +385,9 @@ void CBitEditView::DrawImageEllipse(wxPoint startPt, wxPoint curPt, UINT nSize)
 
         wxRect rct(wxPoint(std::min(startPt.x, curPt.x), std::min(startPt.y, curPt.y)),
                     wxSize(std::abs(curPt.x - startPt.x) + 1, std::abs(curPt.y - startPt.y) + 1));
-        wxPen pen(CB::Convert(m_pTMgr->GetForeColor()), nSize);
+        wxPen pen(m_pTMgr->GetForeColor(), nSize);
         if (nSize == 0)
-            dc.SetBrush(m_pTMgr->GetForeBrushWx());
+            dc.SetBrush(m_pTMgr->GetForeBrush());
         else
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
         dc.SetPen(pen);
@@ -406,7 +406,7 @@ void CBitEditView::DrawImageFill(wxPoint pt)
         wxColour oldColor = GetPixel(m_bmView, pt.x, pt.y);
         wxMemoryDC dc(m_bmView);
 
-        dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        dc.SetBrush(m_pTMgr->GetForeBrush());
 
         /* TODO:  not portable:
                     https://docs.wxwidgets.org/latest/classwx_d_c.html#af510e22ffc274d3d3b29659941f2b5a9 */
@@ -428,7 +428,7 @@ void CBitEditView::DrawImageChangeColor(wxPoint pt)
     it.MoveTo(imgData, pt.x, pt.y);
 
     wxColour crHit(it.Red(), it.Green(), it.Blue());
-    wxColour crNew = CB::Convert(m_pTMgr->GetForeColor());
+    wxColour crNew = m_pTMgr->GetForeColor();
 
     it.Reset(imgData);
     for (int y = 0 ; y < m_bmView.GetHeight() ; ++y)
@@ -506,11 +506,11 @@ void CBitEditView::DrawImagePixel(wxPoint point, UINT nSize)
     wy = point.y / m_nZoom;
     if (wx < m_size.x && wy < m_size.y)
     {
-        dc.SetBrush(m_pTMgr->GetForeBrushWx());
+        dc.SetBrush(m_pTMgr->GetForeBrush());
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.DrawRectangle(wxPoint(wx - nSize / 2, wy - nSize / 2), wxSize(nSize, nSize));
 
-        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrushWx());
+        m_pSelView->UpdateViewPixel(bmapPt, nSize, m_pTMgr->GetForeBrush());
     }
 }
 
@@ -748,7 +748,7 @@ void CBitEditView::UpdateTextView()
         SetViewImageFromMasterImage();          // Get fresh original
         {
             wxMemoryDC dc(m_bmView);
-            dc.SetTextForeground(CB::Convert(m_pTMgr->GetForeColor()));
+            dc.SetTextForeground(m_pTMgr->GetForeColor());
             dc.SetFont(ToWxFont(UpdateBitFont()));
 
             dc.DrawText(m_strText, m_ptText.x, m_ptText.y);
@@ -1026,13 +1026,13 @@ void CBitEditView::OnSetColor(SetColorEvent& event)
 {
     if (event.GetSubId() == XRCID("ID_COLOR_FOREGROUND"))
     {
-        m_pTMgr->SetForeColor(CB::Convert(event.GetColor()));
+        m_pTMgr->SetForeColor(event.GetColor());
         if (m_nCurToolID == XRCID("ID_ITOOL_TEXT"))
             UpdateTextView();
     }
     else if (event.GetSubId() == XRCID("ID_COLOR_BACKGROUND"))
     {
-        m_pTMgr->SetBackColor(CB::Convert(event.GetColor()));
+        m_pTMgr->SetBackColor(event.GetColor());
     }
     else
     {
@@ -1053,17 +1053,17 @@ void CBitEditView::OnSetLineWidth(SetLineWidthEvent& event)
 
 void CBitEditView::OnUpdateColorForeground(CColorCmdUI& colorCmdUI)
 {
-    colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetForeColor()));
+    colorCmdUI.SetColor(m_pTMgr->GetForeColor());
 }
 
 void CBitEditView::OnUpdateColorBackground(CColorCmdUI& colorCmdUI)
 {
-    colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetBackColor()));
+    colorCmdUI.SetColor(m_pTMgr->GetBackColor());
 }
 
 void CBitEditView::OnUpdateColorTransparent(CColorCmdUI& colorCmdUI)
 {
-    colorCmdUI.SetColor(CB::Convert(m_pTMgr->GetTransparentColor()));
+    colorCmdUI.SetColor(m_pTMgr->GetTransparentColor());
 }
 
 void CBitEditView::OnUpdateColorCustom(CColorCmdUI& colorCmdUI)

@@ -305,13 +305,13 @@ void CPieceTable::SetOwnerMask(PieceID pid, PlayerMask dwMask)
 CSize CPieceTable::GetPieceSize(PieceID pid) const
 {
     CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid));
-    return tile.GetSize();
+    return CB::Convert(tile.GetSize());
 }
 
 CSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
 {
     CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid, bWithFacing));
-    return tile.GetSize();
+    return CB::Convert(tile.GetSize());
 }
 
 CSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const

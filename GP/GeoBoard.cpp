@@ -503,39 +503,39 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 // We need to create a tile that has the half images of the
                 // two hex cells joined as one.
                 // We don't bother trying to perform 4-way merge for mergeLeft && mergeTop
-                OwnerOrNullPtr<CBitmap> bmapFull;
-                OwnerOrNullPtr<CBitmap> bmapHalf;
+                wxBitmap bmapFull;
+                wxBitmap bmapHalf;
                 if (mergeLeftRight)
                 {
                     // Handle left and right halves
-                    bmapFull = CombineLeftAndRight(fullScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol);
-                    bmapHalf = CombineLeftAndRight(halfScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol);
+                    bmapFull = CB::Convert(*CombineLeftAndRight(fullScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol));
+                    bmapHalf = CB::Convert(*CombineLeftAndRight(halfScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol));
                 }
                 else
                 {
-                    ASSERT(mergeTopBottom);
+                    wxASSERT(mergeTopBottom);
                     // Handle top and bottom halves
-                    bmapFull = CombineTopAndBottom(fullScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol);
-                    bmapHalf = CombineTopAndBottom(halfScale, pBArryTo, pBArryFrom,
-                        nRowTo, nColTo, nRow, nCol);
+                    bmapFull = CB::Convert(*CombineTopAndBottom(fullScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol));
+                    bmapHalf = CB::Convert(*CombineTopAndBottom(halfScale, pBArryTo, pBArryFrom,
+                        nRowTo, nColTo, nRow, nCol));
                 }
                 // Determine small cell color. Use the 'To' cell as value;
-                COLORREF crSmall;
+                wxColour crSmall;
                 if (pCellTo.IsTileID())
                 {
                     CTile tile = pTMgr.GetTile(pCellTo.GetTID(), smallScale);
                     crSmall = tile.GetSmallColor();
                 }
                 else
-                    crSmall = pCellTo.GetColor();
-                CSize sizeFull = pBArryTo.GetCellSize(fullScale);
-                CSize sizeHalf = pBArryTo.GetCellSize(halfScale);
+                    crSmall = CB::Convert(pCellTo.GetColor());
+                wxSize sizeFull = CB::Convert(pBArryTo.GetCellSize(fullScale));
+                wxSize sizeHalf = CB::Convert(pBArryTo.GetCellSize(halfScale));
                 TileID tidNew = pTMgr.CreateTile(pTMgr.GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
-                pTMgr.UpdateTile(tidNew, *bmapFull, *bmapHalf, crSmall);
+                pTMgr.UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
                 pCellTo.SetTID(tidNew);
             }
             else
@@ -623,7 +623,7 @@ OwnerPtr<CBitmap> CGeomorphicBoard::CreateBitmap(CSize size) const
     OwnerPtr<CBitmap> retval = CreateRGBDIBSection(size.cx, size.cy);
     CBitmap* prvBMap = dc.SelectObject(&*retval);
 
-    CBrush brush(m_pDoc->GetTileManager().GetTransparentColor());
+    CBrush brush(CB::Convert(m_pDoc->GetTileManager().GetTransparentColor()));
     CBrush* prvBrush = dc.SelectObject(&brush);
 
     dc.PatBlt(0, 0, size.cx, size.cy, PATCOPY);

@@ -238,12 +238,12 @@ void CGbxProjView::DoTileGroupProperty()
 
     CTSetPropDialog dlg;
     CTileManager& pTMgr = pDoc.GetTileManager();
-    dlg.m_crTrans = CB::Convert(pTMgr.GetTransparentColor());
+    dlg.m_crTrans = pTMgr.GetTransparentColor();
     dlg.m_strName = wxString(pTMgr.GetTileSet(nGrp).GetName());
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        pTMgr.SetTransparentColor(CB::Convert(dlg.m_crTrans));
+        pTMgr.SetTransparentColor(dlg.m_crTrans);
         pTMgr.GetTileSet(nGrp).SetName(dlg.m_strName);
         pDoc.UpdateAllViews(NULL, HINT_TILESETPROPCHANGE, NULL);
         pDoc.SetModifiedFlag();
@@ -296,9 +296,9 @@ void CGbxProjView::DoTileNew()
     if (dlg.ShowModal() == wxID_OK)
     {
         TileID tidNew = pTMgr.CreateTile(nGrp,
-            CSize(dlg.m_nWidth, dlg.m_nHeight),
-            CSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight),
-            RGB(255, 255, 255));
+            wxSize(dlg.m_nWidth, dlg.m_nHeight),
+            wxSize(dlg.m_nHalfWidth, dlg.m_nHalfHeight),
+            *wxWHITE);
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
         pDoc.UpdateAllViews(NULL, HINT_TILECREATED, &hint);
@@ -361,13 +361,13 @@ void CGbxProjView::DoTileClone()
         TileID tidNew = pTMgr.CreateTile(nGrp, tileFull.GetSize(),
             tileHalf.GetSize(), tileSmall.GetSmallColor());
 
-        OwnerPtr<CBitmap> bmap = tileFull.CreateBitmapOfTile();
+        wxBitmap bmap = tileFull.CreateBitmapOfTile();
         tileFull = pTMgr.GetTile(tidNew, fullScale);
-        tileFull.Update(*bmap);
+        tileFull.Update(bmap);
 
         bmap = tileHalf.CreateBitmapOfTile();
         tileHalf = pTMgr.GetTile(tidNew, halfScale);
-        tileHalf.Update(*bmap);
+        tileHalf.Update(bmap);
 
         CGmBoxHint hint;
         hint.GetArgs<HINT_TILECREATED>().m_tid = tidNew;
