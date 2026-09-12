@@ -136,9 +136,8 @@ public:
 
 // Attributes
 public:
-    const CBitmap* GetMask() const { return m_pMask ? &*m_pMask : nullptr; }
-    const BITMAP*  GetMaskMemoryInfo() const { return m_pMask != NULL ? &m_bmapMask : NULL; }
-    BOOL     HasMask() const { return m_pMask != NULL; }
+    const wxBitmap* GetMask() const { return m_pMask.IsOk() ? &m_pMask : nullptr; }
+    bool     HasMask() const { return m_pMask.IsOk(); }
 
     CRect GetRect(CB::ssize_t row, CB::ssize_t col) const;
     CSize GetCellSize() const { return CSize(m_rct.right, m_rct.bottom); }
@@ -151,9 +150,7 @@ public:
     void CreateCell(CellFormType eType, int nParm1, int nParm2 = 0,
         CellStagger nStagger = CellStagger::Invalid);
     void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const;
-    void FillCell(CDC& pDC, int xPos, int yPos) const;
     void FillCell(wxDC& pDC, int xPos, int yPos) const;
-    void FrameCell(CDC& pDC, int xPos, int yPos) const;
     void FrameCell(wxDC& pDC, int xPos, int yPos) const;
     CSize CalcBoardSize(size_t nRows, size_t nCols) const;
     BOOL CalcTrialBoardSize(size_t nRows, size_t nCols) const;
@@ -170,13 +167,12 @@ protected:
     CellFormType m_eType;       // Format of cell
     CellStagger  m_nStagger;    // 0 = normal. 1 = alternate
     CRect        m_rct;         // Rectangle enclosing cell
-    std::vector<POINT> m_pPoly;  // Zero based set of points
-    OwnerOrNullPtr<CBitmap> m_pMask; // Only defined for hexes
-    BITMAP       m_bmapMask;    // Only filled if m_pMask is defined
+    std::vector<wxPoint> m_pPoly;  // Zero based set of points
+    wxBitmap m_pMask; // Only defined for hexes
     // ------- //
-    static std::vector<POINT> m_pWrk;   // Scratch copy of m_pPoly
+    static std::vector<wxPoint> m_pWrk;   // Scratch copy of m_pPoly
     // ------- //
-    static void OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff);
+    static void OffsetPoly(std::vector<wxPoint>& pPoly, int xOff, int yOff);
     // ------- //
     CB::ssize_t CellPhase(CB::ssize_t val) const { return ((val ^ static_cast<int>(m_nStagger)) & 1); }
     void CreateHexMask();

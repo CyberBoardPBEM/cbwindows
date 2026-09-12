@@ -1094,12 +1094,13 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
         SetUndoFromView();
         wxMemoryDC dc(m_bmView);
 
-        const CBitmap* pMask = pcf.GetMask();
+        const wxBitmap* pMask = pcf.GetMask();
 
         if (pMask != NULL)
         {
-            wxBitmap wxMask = CB::Convert(*pMask);
-            wxMemoryDC dc2(wxMask);
+            const wxBitmap& wxMask = *pMask;
+            wxMemoryDC dc2;
+            dc2.SelectObjectAsSource(wxMask);
             dc.Blit(0, 0, size.x, size.y, &dc2, 0, 0,
                 wxAND_INVERT);
         }
