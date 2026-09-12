@@ -204,17 +204,6 @@ void CBoardArray::DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale)
 
 // ----------------------------------------------------- //
 
-void CBoardArray::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
-{
-//  CPen* pPrvPen = (CPen*)pDC->SelectStockObject(BLACK_PEN);
-    // drawing with a pen shouldn't modify it, so should be safe
-    CPen* pPrvPen = pDC.SelectObject(const_cast<CPen*>(&m_pnCellFrame));
-    for (size_t row = value_preserving_cast<size_t>(pCellRct.top) ; row <= value_preserving_cast<size_t>(pCellRct.bottom) ; ++row)
-        for (size_t col = value_preserving_cast<size_t>(pCellRct.left) ; col <= value_preserving_cast<size_t>(pCellRct.right) ; ++col)
-            FrameCell(pDC, row, col, eScale);
-    pDC.SelectObject(pPrvPen);
-}
-
 void CBoardArray::DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
 {
     wxDCPenChanger setPen(pDC, m_pnCellFrameWx);
@@ -267,12 +256,12 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
 
         if (eScale != smallScale)
         {
-            const CBitmap *pBMap = pCF.GetMask();
+            const wxBitmap *pBMap = pCF.GetMask();
             if (pBMap != NULL && m_bTransparentCells)
-                tile.TransBlt(pDC, rct.GetLeft(), rct.GetTop(), CB::Convert(*pBMap));
+                tile.TransBlt(pDC, rct.GetLeft(), rct.GetTop(), *pBMap);
             else if (pBMap != NULL)
             {
-                wxBitmap wxBMap = CB::Convert(*pBMap);
+                const wxBitmap& wxBMap = *pBMap;
                 wxMemoryDC srcDC;
                 srcDC.SelectObjectAsSource(wxBMap);
 
@@ -320,15 +309,6 @@ CSize CBoardArray::GetCellSize(TileScale eScale) const
 }
 
 // ----------------------------------------------------- //
-
-void CBoardArray::FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const
-{
-    const CCellForm& pCF = GetCellForm(eScale);
-    CRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
-    if (!pDC.RectVisible(&rct))
-        return;
-    pCF.FrameCell(pDC, rct.left, rct.top);
-}
 
 void CBoardArray::FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const
 {

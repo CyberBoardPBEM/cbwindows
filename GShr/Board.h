@@ -181,7 +181,6 @@ public:
 
 // Operations
 public:
-    void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
     void DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
     void DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
 #ifndef GPLAY

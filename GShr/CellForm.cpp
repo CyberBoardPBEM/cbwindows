@@ -40,14 +40,13 @@ static char THIS_FILE[] = __FILE__;
 
 inline int RoundHalf(int x) { return x / 2 + (x & 1); }
 
-std::vector<POINT> CCellForm::m_pWrk;
+std::vector<wxPoint> CCellForm::m_pWrk;
 
 //////////////////////////////////////////////////////////////////////
 
 CCellForm::CCellForm()
 {
     m_nStagger = CellStagger::Out;
-    memset(&m_bmapMask, 0, sizeof(BITMAP));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -78,7 +77,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
     {
         m_pPoly.resize(size_t(5));     // Last point repeats first
 
-        m_rct.SetRect(0, 0, nParm2, nParm1);
+        m_rct.SetRect(CPoint(0, 0), CPoint(nParm2, nParm1));
         m_pPoly[size_t(0)].x = m_pPoly[size_t(3)].x = m_pPoly[size_t(4)].x =
             m_pPoly[size_t(0)].y = m_pPoly[size_t(1)].y = 0;
         m_pPoly[size_t(1)].x = m_pPoly[size_t(2)].x = m_rct.right;
@@ -113,7 +112,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(0, 0, m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1);
+            m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1));
         }
         else
         {
@@ -133,7 +132,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(0, 0, m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1);
+            m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1));
         }
         // Create a monochrome mask for hexes.
         CreateHexMask();
@@ -142,24 +141,19 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 
 void CCellForm::CreateHexMask()
 {
-    CDC dcMask;
-    dcMask.CreateCompatibleDC(NULL);
-    m_pMask = CDib::CreateDIBSection(
+    wxMemoryDC dcMask;
+    m_pMask = wxBitmap(
         m_rct.right, m_rct.bottom);
 
-    CBitmap *prvbmMask = dcMask.SelectObject(&*m_pMask);
+    dcMask.SelectObject(m_pMask);
 
     // Make a black hex with white exterior
-    dcMask.PatBlt(0, 0, m_rct.right, m_rct.bottom, WHITENESS);
-    dcMask.SelectStockObject(BLACK_BRUSH);
-    dcMask.SelectStockObject(BLACK_PEN);
+    dcMask.Blit(0, 0, m_rct.right, m_rct.bottom, &dcMask, 0, 0, wxSET);
+    dcMask.SetBrush(*wxBLACK_BRUSH);
+    dcMask.SetPen(*wxBLACK_PEN);
     wxASSERT((m_eType == cformHexFlat || m_eType == cformHexPnt) &&
             m_pPoly.size() == size_t(7));
-    dcMask.Polygon(m_pPoly.data(), value_preserving_cast<int>(m_pPoly.size()));
-    dcMask.SelectObject(prvbmMask);
-
-    m_pMask->GetObject(sizeof(BITMAP), &m_bmapMask);
-    ASSERT(m_bmapMask.bmBits != NULL);
+    dcMask.DrawPolygon(value_preserving_cast<int>(m_pPoly.size()), m_pPoly.data());
 
     //TEST--Write mask file--TEST//
     //char fname[80];
@@ -181,10 +175,11 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
         col = x < xBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((x - xBase) / m_pPoly[size_t(2)].x);
 
         CRect rct = GetRect(row, col);
-        g_gt.mDC1.SelectObject(*m_pMask);
-        COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
-        g_gt.SelectSafeObjectsForDC1();
-        if (cr != RGB(0, 0, 0))
+        wxMemoryDC mDC1;
+        mDC1.SelectObjectAsSource(m_pMask);
+        wxColour cr;
+        CB_VERIFY(mDC1.GetPixel(x - rct.left, y - rct.top, &cr));
+        if (cr != *wxBLACK)
         {
             if ((CellPhase(row) != 0) && (x > (rct.left + rct.right) / 2))
                 col++;
@@ -201,10 +196,11 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
 
         CRect rct = GetRect(row, col);
 
-        g_gt.mDC1.SelectObject(*m_pMask);
-        COLORREF cr = g_gt.mDC1.GetPixel(x - rct.left, y - rct.top);
-        g_gt.SelectSafeObjectsForDC1();
-        if (cr != RGB(0, 0, 0))
+        wxMemoryDC mDC1;
+        mDC1.SelectObjectAsSource(m_pMask);
+        wxColour cr;
+        CB_VERIFY(mDC1.GetPixel(x - rct.left, y - rct.top, &cr));
+        if (cr != *wxBLACK)
         {
             if ((CellPhase(col) != 0) && (y > (rct.top + rct.bottom) / 2))
                 row++;
@@ -322,40 +318,12 @@ CRect CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col) const
 }
 
 // The pen is assumed to be selected at this point.
-void CCellForm::FrameCell(CDC& pDC, int xPos, int yPos) const
-{
-    m_pWrk = m_pPoly;
-    OffsetPoly(m_pWrk, xPos, yPos);
-    pDC.Polyline(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
-}
-
 void CCellForm::FrameCell(wxDC& pDC, int xPos, int yPos) const
 {
     m_pWrk = m_pPoly;
     OffsetPoly(m_pWrk, xPos, yPos);
-    std::vector<wxPoint> pts = CB::Convert(m_pWrk);
+    std::vector<wxPoint>& pts = m_pWrk;
     pDC.DrawLines(value_preserving_cast<int>(pts.size()), pts.data());
-}
-
-void CCellForm::FillCell(CDC& pDC, int xPos, int yPos) const
-{
-    CPen* pPrvPen = (CPen *)pDC.SelectStockObject(NULL_PEN);
-    if (m_eType == cformRect || m_eType == cformBrickHorz ||
-        m_eType == cformBrickVert)
-    {
-        CRect rct = m_rct;
-        rct.OffsetRect(xPos, yPos);
-        rct.right++;            // Adjust to include start of next rect
-        rct.bottom++;
-        pDC.Rectangle(&rct);
-    }
-    else
-    {
-        // Hexagonal shapes
-        m_pWrk = m_pPoly;
-        OffsetPoly(m_pWrk, xPos, yPos);
-        pDC.Polygon(m_pWrk.data(), value_preserving_cast<int>(m_pWrk.size()));
-    }
 }
 
 void CCellForm::FillCell(wxDC& pDC, int xPos, int yPos) const
@@ -375,14 +343,14 @@ void CCellForm::FillCell(wxDC& pDC, int xPos, int yPos) const
         // Hexagonal shapes
         m_pWrk = m_pPoly;
         OffsetPoly(m_pWrk, xPos, yPos);
-        std::vector<wxPoint> pts = CB::Convert(m_pWrk);
+        std::vector<wxPoint>& pts = m_pWrk;
         pDC.DrawPolygon(value_preserving_cast<int>(pts.size()), pts.data());
     }
 }
 
-void CCellForm::OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff)
+void CCellForm::OffsetPoly(std::vector<wxPoint>& pPoly, int xOff, int yOff)
 {
-    for (POINT& pt : pPoly)
+    for (wxPoint& pt : pPoly)
     {
         pt.x += xOff;
         pt.y += yOff;
@@ -392,7 +360,7 @@ void CCellForm::OffsetPoly(std::vector<POINT>& pPoly, int xOff, int yOff)
 void CCellForm::Clear()
 {
     m_pPoly.clear();
-    m_pMask = nullptr;
+    m_pMask = wxBitmap();
 }
 
 void CCellForm::Serialize(CArchive& ar)
@@ -422,7 +390,7 @@ void CCellForm::Serialize(CArchive& ar)
         ar << static_cast<uint16_t>(m_rct.top);
         ar << static_cast<uint16_t>(m_rct.right);
         ar << static_cast<uint16_t>(m_rct.bottom);
-        WriteArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
+        WriteArchivePoints(ar, m_pPoly);
     }
     else
     {
@@ -449,7 +417,7 @@ void CCellForm::Serialize(CArchive& ar)
         {
             m_pPoly.resize(size_t(5));
         }
-        ReadArchivePoints(ar, m_pPoly.data(), m_pPoly.size());
+        ReadArchivePoints(ar, m_pPoly);
         if (m_eType == cformHexFlat || m_eType == cformHexPnt)
             CreateHexMask();
     }

@@ -138,10 +138,8 @@ public:
         CellStagger nStagger, CCellForm& cfFull, CCellForm& cfHalf, CCellForm& cfSmall);
     // ------- //
     void DrawCells(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
-    void DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const;
     void DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const;
     void FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
-    void FrameCell(CDC& pDC, size_t row, size_t col, TileScale eScale) const;
     void FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
     // ------- //
     void SetCellTile(size_t row, size_t col, TileID tid);

@@ -138,12 +138,6 @@ void CBoard::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
 
 // ----------------------------------------------------- //
 
-void CBoard::DrawCellLines(CDC& pDC, const CRect& pCellRct, TileScale eScale) const
-{
-    if (m_pBrdAry)
-        m_pBrdAry->DrawCellLines(pDC, pCellRct, eScale);
-}
-
 void CBoard::DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eScale) const
 {
     if (m_pBrdAry)
