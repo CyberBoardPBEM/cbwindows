@@ -142,14 +142,6 @@ void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick)
 #endif
 
 /////////////////////////////////////////////////////////////////
-// Creates a 24 bit DIB section.
-
-OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight)
-{
-    return CDib::CreateDIBSection(nWidth, nHeight);
-}
-
-/////////////////////////////////////////////////////////////////
 
 namespace {
 LPVOID GetDIBSectXYLoc(HBITMAP hBitmap, int x, int y)
@@ -294,50 +286,6 @@ void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b)
 
 /////////////////////////////////////////////////////////////////
 
-OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc)
-{
-    ASSERT(pbmSrc.m_hObject != NULL);
-    OwnerPtr<CBitmap> pbmDst(MakeOwner<CBitmap>());
-    BITMAP bmInfo;
-    memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
-
-    if (bmInfo.bmBits != NULL)
-    {
-        if (bmInfo.bmBitsPixel != 24)
-        {
-            AfxThrowNotSupportedException();
-        }
-        pbmDst = CDib::CreateDIBSection(
-            bmInfo.bmWidth, bmInfo.bmHeight);
-        BITMAP bmap;
-        memset(&bmap, 0, sizeof(BITMAP));
-        GetObject(*pbmDst, sizeof(BITMAP), &bmap);
-        // How many bytes in the image data?
-        size_t dwBitsSize = value_preserving_cast<size_t>(bmap.bmHeight) * CDib::BitsToBytes(bmap.bmWidth * bmap.bmPlanes *
-            bmap.bmBitsPixel);
-
-        // Copy the bits
-        memcpy(bmap.bmBits, bmInfo.bmBits, dwBitsSize);
-
-        g_gt.ClearMemDCBitmaps();
-    }
-    else
-    {
-        ASSERT(!"untested code");
-        g_gt.mDC1.SelectObject(pbmSrc);
-        pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, bmInfo.bmWidth, bmInfo.bmHeight);
-        g_gt.mDC2.SelectObject(&*pbmDst);
-        // I don't select and realize the palettes since they aren't used
-        // in memory to memory Bitblt operations.
-        g_gt.mDC2.BitBlt(0, 0, bmInfo.bmWidth, bmInfo.bmHeight, &g_gt.mDC1, 0, 0,
-            SRCCOPY);
-        g_gt.ClearMemDCBitmaps();
-    }
-
-    return pbmDst;
-}
-
 wxBitmap CloneBitmap(const wxBitmap& pbmSrc)
 {
     // see https://docs.wxwidgets.org/latest/classwx_bitmap.html#abfaa21ec563a64ea913af918150db900
@@ -380,36 +328,6 @@ void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst)
     srcDC.SelectObjectAsSource(pbmSrc);
     dstDC.Blit(pntDst, srcSize,
                 &srcDC, wxPoint(0, 0));
-}
-
-OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size)
-{
-    ASSERT(pbmSrc.m_hObject != NULL);
-    OwnerPtr<CBitmap> pbmDst(MakeOwner<CBitmap>());
-    BITMAP bmInfo;
-    memset(&bmInfo, 0, sizeof(BITMAP));
-    pbmSrc.GetObject(sizeof(bmInfo), &bmInfo);
-
-    g_gt.mDC1.SelectObject(pbmSrc);
-
-    if (bmInfo.bmBits != NULL)      // Check for DIB Section
-    {
-        pbmDst = CDib::CreateDIBSection(
-            size.cx, size.cy);
-    }
-    else
-        pbmDst->CreateCompatibleBitmap(&g_gt.mDC1, size.cx, size.cy);
-
-    g_gt.mDC2.SelectObject(&*pbmDst);
-
-    int nPrvMode = g_gt.mDC2.SetStretchBltMode(COLORONCOLOR);
-    g_gt.mDC2.StretchBlt(0, 0, size.cx, size.cy, &g_gt.mDC1,
-        0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY);
-    g_gt.mDC2.SetStretchBltMode(nPrvMode);
-
-    g_gt.ClearMemDCBitmaps();
-
-    return pbmDst;
 }
 
 wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size)
@@ -633,22 +551,15 @@ OwnerPtr<CBrush> Clone(const CBrush& brush)
     return retval;
 }
 
-OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot)
+wxBitmap Rotate(const wxBitmap& bmp, Rotation90 rot)
 {
     CDib sourceDib(bmp);
     if (!sourceDib)
     {
         AfxThrowMemoryException();
     }
-    CDib pDib = sourceDib.Rotate(static_cast<int>(rot)*90, RGB(255, 255, 255));
-    return pDib.DIBToBitmap();
-}
-
-wxBitmap Rotate(const wxBitmap& bmp, Rotation90 rot)
-{
-    OwnerPtr<CBitmap> tempOld = CB::Convert(bmp);
-    OwnerPtr<CBitmap> tempNew = Rotate(*tempOld, rot);
-    return CB::Convert(*tempNew);
+    CDib pDib = sourceDib.Rotate(static_cast<int>(rot)*90, *wxWHITE);
+    return pDib;
 }
 
 /////////////////////////////////////////////////////////////////

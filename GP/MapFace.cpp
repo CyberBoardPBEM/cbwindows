@@ -58,34 +58,31 @@ TileID CTileFacingMap::CreateFacingTileID(ElementState state, TileID baseTileID)
     // Generate rotated full scale bitmap of tile...
 
     CTile tile = m_pTMgr->GetTile(baseTileID, fullScale);
-    OwnerPtr<CBitmap> bmap = CB::Convert(tile.CreateBitmapOfTile());
-    CDib dibSrc(*bmap);
+    wxBitmap bmap = tile.CreateBitmapOfTile();
+    CDib dibSrc(bmap);
 
-    CDib pRDib = dibSrc.Rotate(nAngleDegCW, CB::Convert(m_pTMgr->GetTransparentColor()));
-    OwnerPtr<CBitmap> pBMapFull = pRDib.DIBToBitmap();
-    BITMAP bmapInfo;
-    pBMapFull->GetObject(sizeof(BITMAP), &bmapInfo);
-    CSize sizeFull(bmapInfo.bmWidth, bmapInfo.bmHeight);
+    CDib pRDib = dibSrc.Rotate(nAngleDegCW, m_pTMgr->GetTransparentColor());
+    wxBitmap pBMapFull = pRDib;
+    wxSize sizeFull(pBMapFull.GetSize());
 
     // Generate rotated halfScale scale bitmap of tile...
 
     tile = m_pTMgr->GetTile(baseTileID, halfScale);
-    bmap = CB::Convert(tile.CreateBitmapOfTile());
-    dibSrc = CDib(*bmap);
+    bmap = tile.CreateBitmapOfTile();
+    dibSrc = CDib(bmap);
 
-    pRDib = dibSrc.Rotate(nAngleDegCW, CB::Convert(m_pTMgr->GetTransparentColor()));
-    OwnerPtr<CBitmap> pBMapHalf = pRDib.DIBToBitmap();
+    pRDib = dibSrc.Rotate(nAngleDegCW, m_pTMgr->GetTransparentColor());
+    wxBitmap pBMapHalf = pRDib;
 
-    pBMapHalf->GetObject(sizeof(BITMAP), &bmapInfo);
-    CSize sizeHalf(bmapInfo.bmWidth, bmapInfo.bmHeight);
+    wxSize sizeHalf(pBMapHalf.GetSize());
 
     // Fetch color of small scale tile
     tile = m_pTMgr->GetTile(baseTileID, smallScale);
     wxColour crSmall = tile.GetSmallColor();
 
     // Create the tile in our special tile set...
-    TileID tidNew = m_pTMgr->CreateTile(m_nTileSet, CB::Convert(sizeFull), CB::Convert(sizeHalf), crSmall);
-    m_pTMgr->UpdateTile(tidNew, CB::Convert(*pBMapFull), CB::Convert(*pBMapHalf), crSmall);
+    TileID tidNew = m_pTMgr->CreateTile(m_nTileSet, sizeFull, sizeHalf, crSmall);
+    m_pTMgr->UpdateTile(tidNew, pBMapFull, pBMapHalf, crSmall);
 
     // Finally, add the piece facing mapping...
     SetAt(state, tidNew);
