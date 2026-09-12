@@ -51,9 +51,9 @@ static char THIS_FILE[] = __FILE__;
 
 CTileManager::CTileManager()
 {
-    m_crTrans = RGB(0, 255, 255);
-    SetForeColor(RGB(0, 0, 0));
-    SetBackColor(RGB(255, 255, 255));
+    m_crTrans = *wxCYAN;
+    SetForeColor(*wxBLACK);
+    SetBackColor(*wxWHITE);
     SetLineWidth(unsigned(1));
     m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(80),
         0, uint8_t(FF_SWISS), "Arial");
@@ -108,10 +108,10 @@ CTile CTileManager::GetTile(TileID tid,
 
 ///////////////////////////////////////////////////////////////////////
 
-TileID CTileManager::CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
-    COLORREF crSmall, size_t nPos /* = Invalid_v<size_t> */)
+TileID CTileManager::CreateTile(size_t nTSet, wxSize sFull, wxSize sHalf,
+    wxColour crSmall, size_t nPos /* = Invalid_v<size_t> */)
 {
-    ASSERT(nTSet < m_TSetTbl.size());
+    wxASSERT(nTSet < m_TSetTbl.size());
     TileID tid = m_pTileTbl.CreateIDEntry(&TileDef::SetEmpty);
 
     TileDef* pDef = &m_pTileTbl[tid];
@@ -139,19 +139,16 @@ void CTileManager::DeleteTile(TileID tid, bool bFromSetAlso /* = true */)
     pDef.SetEmpty();
 }
 
-void CTileManager::UpdateTile(TileID tid, const CBitmap& pbmFull, const CBitmap& pbmHalf,
-    COLORREF crSmall)
+void CTileManager::UpdateTile(TileID tid, const wxBitmap& pbmFull, const wxBitmap& pbmHalf,
+    wxColour crSmall)
 {
-    ASSERT(m_pTileTbl != NULL);
-    ASSERT(m_pTileTbl.Valid(tid));
-    ASSERT(!m_pTileTbl[tid].IsEmpty());
+    wxASSERT(m_pTileTbl != NULL);
+    wxASSERT(m_pTileTbl.Valid(tid));
+    wxASSERT(!m_pTileTbl[tid].IsEmpty());
     TileDef& pDef = m_pTileTbl[tid];
 
     // Update full and half scale tile bitmaps
-    BITMAP bmInfo;
-
-    pbmFull.GetObject(sizeof(bmInfo), &bmInfo);
-    CSize bmSize(bmInfo.bmWidth, bmInfo.bmHeight);
+    wxSize bmSize(pbmFull.GetSize());
     CTileUpdatable tile = GetTile(tid, fullScale);
 
     if (tile.GetSize() != bmSize)
@@ -163,8 +160,7 @@ void CTileManager::UpdateTile(TileID tid, const CBitmap& pbmFull, const CBitmap&
     tile.Update(pbmFull);
 
     // Half scale tile.
-    pbmHalf.GetObject(sizeof(bmInfo), &bmInfo);
-    bmSize = CSize(bmInfo.bmWidth, bmInfo.bmHeight);
+    bmSize = pbmHalf.GetSize();
     tile = GetTile(tid, halfScale);
 
     if (tile.GetSize() != bmSize)
@@ -229,24 +225,24 @@ void CTileManager::DeleteTileSet(size_t nTSet)
     m_TSetTbl.erase(m_TSetTbl.begin() + value_preserving_cast<ptrdiff_t>(nTSet));
 }
 
-void CTileManager::SetSmallTileColor(TileID tid, COLORREF cr)
+void CTileManager::SetSmallTileColor(TileID tid, wxColour cr)
 {
-    ASSERT(m_pTileTbl != NULL);
-    ASSERT(m_pTileTbl.Valid(tid));
-    ASSERT(!m_pTileTbl[tid].IsEmpty());
+    wxASSERT(m_pTileTbl != NULL);
+    wxASSERT(m_pTileTbl.Valid(tid));
+    wxASSERT(!m_pTileTbl[tid].IsEmpty());
     TileDef* pDef = &m_pTileTbl[tid];
     pDef->m_tileSmall = cr;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-size_t CTileManager::GetSheetForTile(CSize size)
+size_t CTileManager::GetSheetForTile(wxSize size)
 {
     for (size_t i = 0; i < m_TShtTbl.size(); i++)
     {
         CTileSheet& pSht = *m_TShtTbl.at(i);
         if (pSht.IsSameDimensions(size) &&
-            (pSht.GetSheetHeight() + size.cy < int(maxSheetHeight)))
+            (pSht.GetSheetHeight() + size.y < int(maxSheetHeight)))
             return i;
     }
     // If an empty one exists, reuse a tile sheet having a zero height...
@@ -259,7 +255,7 @@ size_t CTileManager::GetSheetForTile(CSize size)
             return i;
         }
     }
-    TRACE2("Creating new tile sheet for cx=%d by cy=%d tile\n", size.cx, size.cy);
+    CPP20_TRACE("Creating new tile sheet for cx={} by cy={} tile\n", size.x, size.y);
     m_TShtTbl.emplace_back(MakeOwner<CTileSheet>());
     m_TShtTbl.back()->SetSize(size);
     return m_TShtTbl.size() - 1;
@@ -300,13 +296,13 @@ void CTileManager::MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>&
     }
 }
 
-void CTileManager::CreateTileOnSheet(CSize size, TileLoc& pLoc)
+void CTileManager::CreateTileOnSheet(wxSize size, TileLoc& pLoc)
 {
     size_t nSht = GetSheetForTile(size);
     CTileSheet& pSht = *m_TShtTbl.at(nSht);
     pLoc.m_nSheet = nSht;
     pLoc.m_nOffset = pSht.GetSheetHeight();
-    ASSERT(pLoc.m_nOffset < (int)65535U);
+    wxASSERT(pLoc.m_nOffset < (int)65535U);
     pSht.CreateTile();         // Always creates tile at end filled white
 }
 
@@ -335,7 +331,7 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
     const std::vector<TileID>& tidsList)
 {
 #ifndef GPLAY
-    ASSERT(ar.IsStoring());
+    wxASSERT(ar.IsStoring());
     ar << value_preserving_cast<DWORD>(tidsList.size());
     for (size_t i = 0; i < tidsList.size(); i++)
     {
@@ -349,16 +345,16 @@ void CTileManager::CopyTileImagesToArchive(CArchive& ar,
         tileHalf = GetTile(tid, halfScale);
         tileSmall = GetTile(tid, smallScale);
 
-        ar << (DWORD)tileSmall.GetSmallColor();
+        ar << tileSmall.GetSmallColor();
 
-        OwnerPtr<CBitmap> bitmap = tileFull.CreateBitmapOfTile();
-        CDib dib(*bitmap);
-        ASSERT(dib);
+        wxBitmap bitmap = tileFull.CreateBitmapOfTile();
+        CDib dib(bitmap);
+        wxASSERT(dib);
         ar << dib;
 
         bitmap = tileHalf.CreateBitmapOfTile();
-        dib = CDib(*bitmap);
-        ASSERT(dib);
+        dib = CDib(bitmap);
+        wxASSERT(dib);
         ar << dib;
     }
 #endif
@@ -369,45 +365,39 @@ void CTileManager::CreateTilesFromTileImageArchive(CArchive& ar,
     size_t nTSet, std::vector<TileID>* pTidTbl /* = NULL */, size_t nPos /* = Invalid_v<size_t> */)
 {
 #ifndef GPLAY
-    ASSERT(ar.IsLoading());
-    ASSERT(nTSet < GetNumTileSets());
+    wxASSERT(ar.IsLoading());
+    wxASSERT(nTSet < GetNumTileSets());
     if (pTidTbl)
         pTidTbl->clear();
 
-    DWORD nTileCount;
+    uint32_t nTileCount;
     ar >> nTileCount;
     if (pTidTbl)
     {
         pTidTbl->reserve(value_preserving_cast<size_t>(nTileCount));
     }
-    for (DWORD i = 0; i < nTileCount; i++)
+    for (uint32_t i = uint32_t(0); i < nTileCount; i++)
     {
-        COLORREF    crSmall;
-        BITMAP      bmInfoFull;
-        BITMAP      bmInfoHalf;
+        wxColour    crSmall;
         CDib        dib;
-        DWORD       dwTmp;
 
-        ar >> dwTmp; crSmall = (COLORREF)dwTmp;
+        ar >> crSmall;
 
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapFull = std::move(dib.DIBToBitmap());
+        wxBitmap pBMapFull = dib;
 
         // >> expects empty dib
         dib.ClearDib();
         ar >> dib;
-        OwnerPtr<CBitmap> pBMapHalf = std::move(dib.DIBToBitmap());
-
-        VERIFY(pBMapFull->GetObject(sizeof(BITMAP), &bmInfoFull) > 0);
-        VERIFY(pBMapHalf->GetObject(sizeof(BITMAP), &bmInfoHalf) > 0);
+        wxBitmap pBMapHalf = dib;
 
         TileID tid = CreateTile(nTSet,
-            CSize(bmInfoFull.bmWidth, bmInfoFull.bmHeight),
-            CSize(bmInfoHalf.bmWidth, bmInfoHalf.bmHeight),
+            pBMapFull.GetSize(),
+            pBMapHalf.GetSize(),
             crSmall, nPos);
         if (nPos != Invalid_v<size_t>)
             nPos++;             // Position to next insertion point
-        UpdateTile(tid, *pBMapFull, *pBMapHalf, crSmall);
+        UpdateTile(tid, pBMapFull, pBMapHalf, crSmall);
         if (pTidTbl)
             pTidTbl->push_back(tid);
     }
@@ -421,10 +411,10 @@ void CTileManager::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
 #ifndef GPLAY
-        ar << (DWORD)m_crTrans;
+        ar << m_crTrans;
 
-        ar << (DWORD)m_crFore;
-        ar << (DWORD)m_crBack;
+        ar << m_crFore;
+        ar << m_crBack;
         ar << value_preserving_cast<uint16_t>(m_nLineWidth);
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         pFontMgr.Archive(ar, m_fontID);
@@ -439,16 +429,16 @@ void CTileManager::Serialize(CArchive& ar)
     else
     {
         Clear();
-        WORD wTmp;
-        DWORD dwTmp;
-        ar >> dwTmp; m_crTrans = (COLORREF)dwTmp;
+        uint16_t wTmp;
+        wxColour crTmp;
+        ar >> m_crTrans;
 
-        ar >> dwTmp;
-        SetForeColor((COLORREF)dwTmp);      // So brushes are created
-        ar >> dwTmp;
-        SetBackColor((COLORREF)dwTmp);      // So brushes are created
+        ar >> crTmp;
+        SetForeColor(crTmp);      // So brushes are created
+        ar >> crTmp;
+        SetBackColor(crTmp);      // So brushes are created
 
-        ar >> wTmp; m_nLineWidth = (UINT)wTmp;
+        ar >> wTmp; m_nLineWidth = wTmp;
         /* delay font deletion in case archive read adds a
             reference */
         FontID tempRef = std::move(m_fontID);
@@ -573,7 +563,7 @@ bool CTileManager::PruneTilesOnSheet255()
                 AfxMessageBox(szBfr);
                 tp.m_tileFull.SetEmpty();
                 tp.m_tileHalf.SetEmpty();
-                tp.m_tileSmall = 0;
+                tp.m_tileSmall = *wxBLACK;
                 bTileFound = TRUE;
             }
         }
@@ -762,19 +752,15 @@ bool CTileManager::DoBitFontDialog()
     return false;
 }
 
-void CTileManager::SetForeColor(COLORREF cr)
+void CTileManager::SetForeColor(wxColour cr)
 {
     m_crFore = cr;
-    m_brForeMFC.DeleteObject();
-    m_brForeMFC.CreateSolidBrush(m_crFore);
-    m_brForeWx = wxBrush(CB::Convert(m_crFore));
+    m_brFore = wxBrush(m_crFore);
 }
 
-void CTileManager::SetBackColor(COLORREF cr)
+void CTileManager::SetBackColor(wxColour cr)
 {
     m_crBack = cr;
-    m_brBack.DeleteObject();
-    m_brBack.CreateSolidBrush(m_crBack);
 }
 
 #ifdef GPLAY
@@ -797,21 +783,21 @@ TileID CTileManager::Get(TileID tid, Rotation90 rot)
     if (it == geoTiles.end())
     {
         CTile tile = GetTile(tid, fullScale);
-        OwnerPtr<CBitmap> bmp = tile.CreateBitmapOfTile();
-        OwnerPtr<CBitmap> rotBmpFull = Rotate(*bmp, rot);
-        CSize sizeFull(rotBmpFull->GetBitmapDimension());
+        wxBitmap bmp = tile.CreateBitmapOfTile();
+        wxBitmap rotBmpFull = Rotate(bmp, rot);
+        wxSize sizeFull(rotBmpFull.GetSize());
 
         tile = GetTile(tid, halfScale);
         bmp = tile.CreateBitmapOfTile();
-        OwnerPtr<CBitmap> rotBmpHalf = Rotate(*bmp, rot);
-        CSize sizeHalf(rotBmpHalf->GetBitmapDimension());
+        wxBitmap rotBmpHalf = Rotate(bmp, rot);
+        wxSize sizeHalf(rotBmpHalf.GetSize());
 
         tile = GetTile(tid, smallScale);
-        COLORREF crSmall = tile.GetSmallColor();
+        wxColour crSmall = tile.GetSmallColor();
 
         TileID tidNew = CreateTile(GetSpecialTileSet(),
             sizeFull, sizeHalf, crSmall);
-        UpdateTile(tidNew, *rotBmpFull, *rotBmpHalf, crSmall);
+        UpdateTile(tidNew, rotBmpFull, rotBmpHalf, crSmall);
         it = geoTiles.insert(std::make_pair(key, tidNew)).first;
     }
     return it->second;
@@ -825,12 +811,10 @@ void TileDef::Serialize(CArchive& ar)
     m_tileFull.Serialize(ar);
     m_tileHalf.Serialize(ar);
     if (ar.IsStoring())
-        ar << (DWORD)m_tileSmall;
+        ar << m_tileSmall;
     else
     {
-        DWORD dwTmp;
-        ar >> dwTmp;
-        m_tileSmall = (COLORREF)dwTmp;
+        ar >> m_tileSmall;
     }
 }
 

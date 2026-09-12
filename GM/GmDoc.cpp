@@ -608,15 +608,15 @@ TileID CGamDoc::CreateTileFromDib(const CDib& pDib, size_t nTSet)
 {
     int xTile = pDib.Width();
     int yTile = pDib.Height();
-    TileID tid = m_pTMgr->CreateTile(nTSet, CSize(xTile, yTile),
-        CSize(xTile/2, yTile/2), RGB(255, 255, 255));
-    OwnerPtr<CBitmap> pBMap = pDib.DIBToBitmap();
-    OwnerPtr<CBitmap> bmHalf = CloneScaledBitmap(*pBMap, CSize(xTile/2, yTile/2));
+    TileID tid = m_pTMgr->CreateTile(nTSet, wxSize(xTile, yTile),
+        wxSize(xTile/2, yTile/2), *wxWHITE);
+    wxBitmap pBMap = pDib;
+    wxBitmap bmHalf = CloneScaledBitmap(pBMap, wxSize(xTile/2, yTile/2));
 
     CTileUpdatable tile = m_pTMgr->GetTile(tid, fullScale);
-    tile.Update(*pBMap);
+    tile.Update(pBMap);
     tile = m_pTMgr->GetTile(tid, halfScale);
-    tile.Update(*bmHalf);
+    tile.Update(bmHalf);
 
     return tid;
 }

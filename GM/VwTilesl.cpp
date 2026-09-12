@@ -71,17 +71,17 @@ void CTileSelView::OnInitialUpdate()
 
     // Fetch full scale tile
     CTile tile = m_pTileMgr->GetTile(m_tid, fullScale);
-    m_bmFull = CB::Convert(*tile.CreateBitmapOfTile());
-    m_sizeFull = CB::Convert(tile.GetSize());
+    m_bmFull = tile.CreateBitmapOfTile();
+    m_sizeFull = tile.GetSize();
 
     // Fetch half scale tile
     tile = m_pTileMgr->GetTile(m_tid, halfScale);
-    m_bmHalf = CB::Convert(*tile.CreateBitmapOfTile());
-    m_sizeHalf = CB::Convert(tile.GetSize());
+    m_bmHalf = tile.CreateBitmapOfTile();
+    m_sizeHalf = tile.GetSize();
 
     // Fetch small scale color and create bogus tile for color editing
     tile = m_pTileMgr->GetTile(m_tid, smallScale);
-    m_crSmall = CB::Convert(tile.GetSmallColor());
+    m_crSmall = tile.GetSmallColor();
     m_sizeSmall = wxSize(8, 8);
     m_bmSmall = CreateColorBitmap(m_sizeSmall, m_crSmall);
 
@@ -227,7 +227,7 @@ void CTileSelView::UpdateDocumentTiles()
     wxColour crSmall = GetPixel(m_bmSmall, 0, 0);
 
     // The update happens here...
-    m_pTileMgr->UpdateTile(m_tid, *CB::Convert(m_bmFull), *CB::Convert(m_bmHalf), CB::Convert(crSmall));
+    m_pTileMgr->UpdateTile(m_tid, m_bmFull, m_bmHalf, crSmall);
 
     // Finally handle various notifications
     CGmBoxHint hint;

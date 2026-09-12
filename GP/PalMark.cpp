@@ -272,7 +272,7 @@ void CMarkerPalette::OnGetDragSize(GetDragSizeEvent& event)
         MarkID mid = m_listMark->MapIndexToItem(value_preserving_cast<size_t>(item));
         MarkDef& pMark = pMMgr.GetMark(mid);
         wxASSERT(pMark.m_tid != nullTid);
-        wxSize size = CB::Convert(tileMgr.GetTile(pMark.m_tid).GetSize());
+        wxSize size = tileMgr.GetTile(pMark.m_tid).GetSize();
         retval.x = std::max(retval.x, size.x);
         retval.y = std::max(retval.y, size.y);
     }

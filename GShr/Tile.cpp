@@ -49,7 +49,7 @@ unsigned CTile::GetHeight() const
     return m_pTS->GetHeight();
 }
 
-CSize CTile::GetSize() const
+wxSize CTile::GetSize() const
 {
     return m_pTS != NULL ? m_pTS->GetSize() : m_size;
 }
@@ -61,11 +61,11 @@ void CTile::BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop/
     else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
-        wxPen pen(CB::Convert(m_crSmall));
+        wxPen pen(m_crSmall);
         pDC.SetPen(pen);
-        wxBrush brush(CB::Convert(m_crSmall));
+        wxBrush brush(m_crSmall);
         pDC.SetBrush(brush);
-        pDC.DrawRectangle(x, y, m_size.cx, m_size.cy);
+        pDC.DrawRectangle(wxRect(wxPoint(x, y), m_size));
     }
 }
 
@@ -73,15 +73,15 @@ void CTile::TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo) con
 {
     if (m_pTS != NULL)
     {
-        if (m_crTrans != noColor)
+        if (m_crTrans != noColorWx)
         {
             if (pMaskBMapInfo.IsOk())
             {
                 m_pTS->TransBltThruDIBSectMonoMask(pDC, x, y, value_preserving_cast<int>(m_yLoc),
-                    CB::Convert(m_crTrans), pMaskBMapInfo);
+                    m_crTrans, pMaskBMapInfo);
             }
             else
-                m_pTS->TransBlt(pDC, x, y, value_preserving_cast<int>(m_yLoc), CB::Convert(m_crTrans));
+                m_pTS->TransBlt(pDC, x, y, value_preserving_cast<int>(m_yLoc), m_crTrans);
         }
         else
             m_pTS->TileBlt(pDC, x, y, value_preserving_cast<int>(m_yLoc), wxCOPY);
@@ -89,22 +89,22 @@ void CTile::TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo) con
     else if (m_crTrans != m_crSmall)
     {
         // Only draw color patch if not the transparent color.
-        wxBrush oBrsh(CB::Convert(m_crSmall));
+        wxBrush oBrsh(m_crSmall);
         wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
         wxDCBrushChanger setBrush(pDC, oBrsh);
-        pDC.DrawRectangle(wxPoint(x, y), wxSize(m_size.cx, m_size.cy));
+        pDC.DrawRectangle(wxRect(wxPoint(x, y), m_size));
     }
 }
 
 // Updates the tile image in-place
-void CTileUpdatable::Update(const CBitmap& pBMap)
+void CTileUpdatable::Update(const wxBitmap& pBMap)
 {
     /* CTileSheet only ever gets created as non-const instances,
         so const_cast is well-defined */
     const_cast<CTileSheet&>(CheckedDeref(m_pTS)).UpdateTile(pBMap, value_preserving_cast<int>(m_yLoc));
 }
 
-OwnerPtr<CBitmap> CTile::CreateBitmapOfTile() const
+wxBitmap CTile::CreateBitmapOfTile() const
 {
     return CheckedDeref(m_pTS).CreateBitmapOfTile(value_preserving_cast<int>(m_yLoc));
 }

@@ -94,10 +94,10 @@ struct TileDef
 {
     TileLoc     m_tileFull;         // Full scale tile graphic
     TileLoc     m_tileHalf;         // Half scale tile graphic
-    COLORREF    m_tileSmall;        // Color for reduced scale maps
+    wxColour    m_tileSmall;        // Color for reduced scale maps
     // ------ //
     bool IsEmpty() const { return m_tileFull.IsEmpty(); }
-    void SetEmpty() { m_tileFull.SetEmpty(); m_tileHalf.SetEmpty(); m_tileSmall = 0; }
+    void SetEmpty() { m_tileFull.SetEmpty(); m_tileHalf.SetEmpty(); m_tileSmall = *wxBLACK; }
 
     void Serialize(CArchive& archive);
 };
@@ -117,20 +117,20 @@ public:
     ~CTileSheet() = default;
 // Attributes
 public:
-    unsigned GetWidth() const { return value_preserving_cast<unsigned>(m_size.cx); }
-    unsigned GetHeight() const { return value_preserving_cast<unsigned>(m_size.cy); }
-    CSize GetSize() const { return CSize(m_size.cx, m_size.cy); }
-    void SetSize(CSize size);
+    unsigned GetWidth() const { return value_preserving_cast<unsigned>(m_size.x); }
+    unsigned GetHeight() const { return value_preserving_cast<unsigned>(m_size.y); }
+    wxSize GetSize() const { return m_size; }
+    void SetSize(wxSize size);
 
-    bool IsSameDimensions(CSize size) const { return size == m_size; }
+    BOOL IsSameDimensions(wxSize size) const { return size == m_size; }
     int GetSheetHeight() const { return m_sheetHt; }
 
 // Operations
 public:
     void CreateTile();
     void DeleteTile(int yOffset);
-    void UpdateTile(const CBitmap& pBMap, int yLoc);
-    OwnerPtr<CBitmap> CreateBitmapOfTile(int yLoc) const;
+    void UpdateTile(const wxBitmap& pBMap, int yLoc);
+    wxBitmap CreateBitmapOfTile(int yLoc) const;
     // ---------- //
     void Serialize(CArchive& archive);
 
@@ -143,9 +143,9 @@ protected:
 
 // Implementation - vars...
 protected:
-    OwnerOrNullPtr<CBitmap> m_pBMap;        // Pointer to DDB
+    wxBitmap m_pBMap;        // Pointer to DDB
 
-    CSize       m_size;         // Tile sizes for this sheet
+    wxSize      m_size;         // Tile sizes for this sheet
     int         m_sheetHt;      // Total height of sheet
 
 // Implementation - methods...
@@ -201,8 +201,8 @@ public:
 // Attributes
 public:
     // Tile Mangager attributes
-    void SetTransparentColor(COLORREF crTrans) { m_crTrans = crTrans; }
-    COLORREF GetTransparentColor() const { return m_crTrans; }
+    void SetTransparentColor(wxColour crTrans) { m_crTrans = crTrans; }
+    wxColour GetTransparentColor() const { return m_crTrans; }
 
     // Tile Set attributes
     size_t GetNumTileSets() const { return m_TSetTbl.size(); }
@@ -218,16 +218,14 @@ public:
     }
 
     // Access routines for all Tile Editor info...
-    void SetForeColor(COLORREF cr);
-    void SetBackColor(COLORREF cr);
+    void SetForeColor(wxColour cr);
+    void SetBackColor(wxColour cr);
     void SetLineWidth(unsigned nWidth) { m_nLineWidth = nWidth; }
     bool DoBitFontDialog();
-    COLORREF GetForeColor() const { return m_crFore; }
-    COLORREF GetBackColor() const { return m_crBack; }
+    wxColour GetForeColor() const { return m_crFore; }
+    wxColour GetBackColor() const { return m_crBack; }
     unsigned GetLineWidth() const { return m_nLineWidth; }
-    const CBrush& GetForeBrushMFC() const { return m_brForeMFC; }
-    const wxBrush& GetForeBrushWx() const { return m_brForeWx; }
-    const CBrush& GetBackBrush() const { return m_brBack; }
+    const wxBrush& GetForeBrush() const { return m_brFore; }
     FontID GetFontID() const { return m_fontID; }
 
 // Operations
@@ -235,17 +233,17 @@ public:
     // Tile Ops.
     CTile GetTile(TileID tid, TileScale eScale = fullScale) const;
     CTileUpdatable GetTile(TileID tid, TileScale eScale = fullScale);
-    TileID CreateTile(size_t nTSet, CSize sFull, CSize sHalf,
-        COLORREF crSmall, size_t nPos = Invalid_v<size_t>);
+    TileID CreateTile(size_t nTSet, wxSize sFull, wxSize sHalf,
+        wxColour crSmall, size_t nPos = Invalid_v<size_t>);
     void DeleteTile(TileID tid, bool bFromSetAlso = true);
-    void SetSmallTileColor(TileID tid, COLORREF cr);
+    void SetSmallTileColor(TileID tid, wxColour cr);
     bool IsTileIDValid(TileID tid) const;
     size_t FindTileSetFromTileID(TileID tid) const;
     void MoveTileIDsToTileSet(size_t nTSet, const std::vector<TileID>& tidList, size_t nPos = Invalid_v<size_t>);
 
     // Nulls aren't updated...
-    void UpdateTile(TileID tid, const CBitmap& bmFull, const CBitmap& bmHalf,
-        COLORREF crSmall);
+    void UpdateTile(TileID tid, const wxBitmap& bmFull, const wxBitmap& bmHalf,
+        wxColour crSmall);
 
     // Tile Set Ops.
     size_t CreateTileSet(CB::string pszName);
@@ -276,17 +274,15 @@ protected:
                 tileTblBaseSize, tileTblIncrSize,
                 false,
                 CalcAllocSize> m_pTileTbl;
-    COLORREF    m_crTrans;          // Transparency color for all tiles
+    wxColour    m_crTrans;          // Transparency color for all tiles
     uint16_t    m_wReserved1;       // For future need (set to 0)
     uint16_t    m_wReserved2;       // For future need (set to 0)
     uint16_t    m_wReserved3;       // For future need (set to 0)
     uint16_t    m_wReserved4;       // For future need (set to 0)
     // These are shared for all Tile Editors...
-    COLORREF    m_crFore;           // Current foreground color
-    CBrush      m_brForeMFC;        // Foreground solid brush
-    wxBrush     m_brForeWx;         // Foreground solid brush
-    COLORREF    m_crBack;           // Current background color
-    CBrush      m_brBack;           // Background solid brush
+    wxColour    m_crFore;           // Current foreground color
+    wxBrush     m_brFore;           // Foreground solid brush
+    wxColour    m_crBack;           // Current background color
     unsigned    m_nLineWidth;       // Current line width
     FontID      m_fontID;           // Current font
     // ------- //
@@ -298,10 +294,10 @@ protected:
     std::vector<OwnerPtr<CTileSheet>> m_TShtTbl;
     // ------- //
     void Clear();
-    void CreateTileOnSheet(CSize size, TileLoc& pLoc);
+    void CreateTileOnSheet(wxSize size, TileLoc& pLoc);
     void DeleteTileFromSheet(const TileLoc& pLoc);
     void AdjustTileLoc(TileLoc& pLoc, size_t nSht, int yLoc, int cy);
-    size_t GetSheetForTile(CSize size);
+    size_t GetSheetForTile(wxSize size);
     void RemoveTileIDFromTileSets(TileID tid);
     const CTileSheet& GetTileSheet(size_t nSheet) const
         { return *m_TShtTbl.at(nSheet); }
@@ -333,24 +329,24 @@ class CTile
 public:
     unsigned GetWidth() const;
     unsigned GetHeight() const;
-    CSize GetSize() const;
-    void SetNoTransparent() { m_crTrans = noColor; }
-    COLORREF GetTransparent() const { return m_crTrans; }
-    COLORREF GetSmallColor() const { return m_crSmall; }
+    wxSize GetSize() const;
+    void SetNoTransparent() { m_crTrans = noColorWx; }
+    wxColour GetTransparent() const { return m_crTrans; }
+    wxColour GetSmallColor() const { return m_crSmall; }
 
 // Operations
 public:
     void BitBlt(wxDC& pDC, wxCoord x, wxCoord y, wxRasterOperationMode dwRop = wxCOPY) const;
     void TransBlt(wxDC& pDC, int x, int y, const wxBitmap& pMaskBMapInfo = wxBitmap()) const;
-    OwnerPtr<CBitmap> CreateBitmapOfTile() const;
+    wxBitmap CreateBitmapOfTile() const;
 
 // Implementation
 protected:
     const CTileSheet* m_pTS;      // For Reference Only (DON'T DELETE!!!)
     unsigned    m_yLoc;     // Y location in sheet
-    CSize       m_size;     // size of bitmap of color patch
-    COLORREF    m_crTrans;  // Transparency color in bitmaps
-    COLORREF    m_crSmall;  // For smallScale (m_pTS == NULL)
+    wxSize      m_size;     // size of bitmap of color patch
+    wxColour    m_crTrans;  // Transparency color in bitmaps
+    wxColour    m_crSmall;  // For smallScale (m_pTS == NULL)
 
 private:
     friend CTile CTileManager::GetTile(TileID tid, TileScale eScale /*= fullScale*/) const;
@@ -360,7 +356,7 @@ private:
 class CTileUpdatable : public CTile
 {
 public:
-    void Update(const CBitmap& pBMap);
+    void Update(const wxBitmap& pBMap);
 };
 
 inline CTileUpdatable CTileManager::GetTile(TileID tid, TileScale eScale /*= fullScale*/)

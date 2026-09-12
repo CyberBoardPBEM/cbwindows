@@ -77,7 +77,7 @@ CSize CMarkManager::GetMarkSize(MarkID mid)
 {
     MarkDef& pDef = GetMark(mid);
     CTile tile = m_pTMgr->GetTile(pDef.m_tid);
-    return tile.GetSize();
+    return CB::Convert(tile.GetSize());
 }
 
 ///////////////////////////////////////////////////////////////////////

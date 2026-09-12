@@ -174,8 +174,8 @@ void CTilePalette::OnGetDragSize(GetDragSizeEvent& event)
 {
     TileID tid = GetCurrentTileID();
     CTile tile = m_pDoc.GetTileManager().GetTile(tid, fullScale);
-    CSize size = tile.GetSize();
-    event.SetSize(wxSize(size.cx, size.cy));
+    wxSize size = tile.GetSize();
+    event.SetSize(size);
 }
 
 #if 0

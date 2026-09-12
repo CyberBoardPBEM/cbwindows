@@ -461,7 +461,7 @@ void CTrayPalette::OnGetDragSize(GetDragSizeEvent& event)
         for (TileID tid : tids)
         {
             wxASSERT(tid != nullTid);
-            wxSize size = CB::Convert(tileMgr.GetTile(tid).GetSize());
+            wxSize size = tileMgr.GetTile(tid).GetSize();
             retval.x = CB::max(retval.x, size.x);
             retval.y = CB::max(retval.y, size.y);
         }

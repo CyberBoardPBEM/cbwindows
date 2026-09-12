@@ -288,7 +288,7 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
         {
             if (tile.GetSmallColor() == m_pTsa->GetTransparentColor())
                 return;                 // Dont draw the cell
-            wxBrush oBrsh(CB::Convert(tile.GetSmallColor()));
+            wxBrush oBrsh(tile.GetSmallColor());
             wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
             wxDCBrushChanger setBrush(pDC, oBrsh);
             pDC.DrawRectangle(rct);
