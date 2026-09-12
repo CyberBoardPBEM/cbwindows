@@ -33,10 +33,10 @@ void ReadArchivePoints(CArchive& ar, POINT* pPnts, size_t nPnts)
 {
     while (nPnts--)
     {
-        short sTmp;
+        uint16_t sTmp;
         ar >> sTmp; pPnts->x = sTmp;
         ar >> sTmp; pPnts->y = sTmp;
-        pPnts++;
+        ++pPnts;
     }
 }
 
@@ -44,8 +44,27 @@ void WriteArchivePoints(CArchive& ar, const POINT* pPnts, size_t nPnts)
 {
     while (nPnts--)
     {
-        ar << (short)pPnts->x;
-        ar << (short)pPnts->y;
-        pPnts++;
+        ar << value_preserving_cast<uint16_t>(pPnts->x);
+        ar << value_preserving_cast<uint16_t>(pPnts->y);
+        ++pPnts;
+    }
+}
+
+void WriteArchivePoints(CArchive& ar, const std::vector<wxPoint>& pPnts)
+{
+    for (size_t i = size_t(0) ; i < pPnts.size() ; ++i)
+    {
+        ar << value_preserving_cast<uint16_t>(pPnts[i].x);
+        ar << value_preserving_cast<uint16_t>(pPnts[i].y);
+    }
+}
+
+void ReadArchivePoints(CArchive& ar, std::vector<wxPoint>& pPnts)
+{
+    for (size_t i = size_t(0) ; i < pPnts.size() ; ++i)
+    {
+        uint16_t sTmp;
+        ar >> sTmp; pPnts[i].x = sTmp;
+        ar >> sTmp; pPnts[i].y = sTmp;
     }
 }

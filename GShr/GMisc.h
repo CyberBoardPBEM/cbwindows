@@ -116,6 +116,8 @@ inline uint32_t UPGRADE_OWNER_MASK(uint16_t wOldMask)
 
 void WriteArchivePoints(CArchive& ar, const POINT* pPnts, size_t nPnts);
 void ReadArchivePoints(CArchive& ar, POINT* pPnts, size_t nPnts);
+void WriteArchivePoints(CArchive& ar, const std::vector<wxPoint>& pPnts);
+void ReadArchivePoints(CArchive& ar, std::vector<wxPoint>& pPnts);
 
 #endif
 
