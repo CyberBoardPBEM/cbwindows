@@ -1112,7 +1112,6 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
             dc.DrawRectangle(wxPoint(size.x, 0), wxSize(1, size.y));
             dc.DrawRectangle(wxPoint(0, size.y), wxSize(size.x, 1));
         }
-        g_gt.SelectSafeObjectsForDC1();
     }
 
     SetMasterImageFromViewImage();

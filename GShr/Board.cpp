@@ -742,7 +742,7 @@ size_t CBoardManager::FindBoardBySerial(BoardID nSerialNum) const
 
 BOOL CBoardManager::DoBoardFontDialog()
 {
-    FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, TRUE);
+    FontID newFontID = DoFontDialog(m_fontID, &CB::GetMainWndWx(), TRUE);
     if (newFontID != (FontID)0)
     {
         m_fontID = newFontID;
