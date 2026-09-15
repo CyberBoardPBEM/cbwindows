@@ -466,8 +466,6 @@ const CCellForm& CBoardArray::GetCellForm(TileScale eScale) const
 
 void CBoardArray::SetCellFrameColor(COLORREF cr)
 {
-    m_pnCellFrame.DeleteObject();
-    m_pnCellFrame.CreatePen(PS_SOLID, 0, cr);
     m_pnCellFrameWx = wxPen(CB::Convert(cr));
     m_crCellFrame = cr;
 }

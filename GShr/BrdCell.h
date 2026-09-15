@@ -197,7 +197,6 @@ protected:
 
     std::vector<BoardCell> m_pMap;
     // -------- //
-    CPen    m_pnCellFrame;      // Cell frame color pen.
     wxPen   m_pnCellFrameWx;    // Cell frame color pen.
     // -------- //
     RefPtr<CTileManager> m_pTsa;
