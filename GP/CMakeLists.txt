@@ -63,8 +63,6 @@ set(SRCS
 	VwPrjgsn.cpp
 	VwSelpce.cpp
 	VwTbrd.cpp
-	WinDynspl.cpp
-	WinMyspl.cpp
 	WinPoptb.cpp
 	WStateGp.cpp
 )
