@@ -743,7 +743,7 @@ void CTileManager::DumpTileDatabaseInfoToFile(const CB::string& pszFileName, boo
 
 bool CTileManager::DoBitFontDialog()
 {
-    FontID newFontID = DoFontDialog(m_fontID, GetApp()->m_pMainWnd, true);
+    FontID newFontID = DoFontDialog(m_fontID, &CB::GetMainWndWx(), true);
     if (newFontID != (FontID)0)
     {
         m_fontID = newFontID;

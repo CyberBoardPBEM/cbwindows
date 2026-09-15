@@ -321,7 +321,6 @@ BOOL CGpApp::InitInstance()
     if (!m_bDisableHtmlHelp)
         ::HtmlHelp(NULL, NULL, HH_INITIALIZE, reinterpret_cast<uintptr_t>(&m_dwHtmlHelpCookie));
 
-    g_gt.InitGdiTools();
     g_res.InitResourceTable(m_hInstance);
 
     // Load standard INI file options (including MRU)

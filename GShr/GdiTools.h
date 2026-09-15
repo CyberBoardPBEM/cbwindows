@@ -74,39 +74,6 @@ const       wxColour noColorWx = CB::Convert(noColor);
 
 ////////////////////////////////////////////////////////////////////
 
-class CGdiTools
-{
-public:
-    void InitGdiTools();
-    // --------- //
-    CDC mDC1;
-    CDC mDC2;
-    CDC mTileDC;
-    HBITMAP hbmSafe;            // 1x1 Stock monochrome object
-    // --------- //
-    void ClearMemDCBitmaps()
-    {
-        ::SelectObject(mDC1.m_hDC, hbmSafe);
-        ::SelectObject(mDC2.m_hDC, hbmSafe);
-        ::SelectObject(mTileDC.m_hDC, hbmSafe);
-    }
-    void SelectSafeObjectsForDC1()
-    {
-        ::SelectObject(mDC1.m_hDC, hbmSafe);
-    }
-    void SelectSafeObjectsForDC2()
-    {
-        ::SelectObject(mDC2.m_hDC, hbmSafe);
-    }
-    void SelectSafeObjectsForTileDC()
-    {
-        ::SelectObject(mTileDC.m_hDC, hbmSafe);
-    }
-};
-
-extern CGdiTools g_gt;
-
-
 // This structure is used in conjunction with DeltaGenInit() and DeltaGen().
 
 typedef struct _DELTAGEN {
@@ -126,7 +93,6 @@ typedef DELTAGEN *PDELTAGEN;
 ////////////////////////////////////////////////////////////////////
 // Some non-class GDI tools...
 
-FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK = FALSE);
 FontID DoFontDialog(FontID fid, wxWindow* pParentWnd, BOOL bScreenOK = FALSE);
 
 BOOL DeltaGenInit(PDELTAGEN pdg, int x0, int y0, int xf, int yf, int* px,
@@ -138,7 +104,6 @@ int ScreenPixelsToTenthPoints(int nPixels);
 int TenthPointsToScreenPixels(int nTenthPts);
 int GetCurrentVideoResolution();
 
-OwnerPtr<CBitmap> CreateRGBDIBSection(int nWidth, int nHeight);
 OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight);
 OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeight);
 
@@ -149,16 +114,13 @@ void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr)
 COLORREF HSVtoRGB(int h, int s, int v);
 void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
-OwnerPtr<CBitmap> CloneBitmap(const CBitmap& pbmSrc);
 wxBitmap CloneBitmap(const wxBitmap& pbmSrc);
 // The source bitmap will have its
 // cut region filled with the crVoided color.
 wxBitmap CutBitmapPiece(wxBitmap& pbmSrc, wxRect rctSrc,
     wxColour crVoided);
-OwnerPtr<CBitmap> CloneScaledBitmap(const CBitmap& pbmSrc, CSize size);
 wxBitmap CloneScaledBitmap(const wxBitmap& pbmSrc, wxSize size);
 void MergeBitmap(wxBitmap& pbmDst, const wxBitmap& pbmSrc, wxPoint pntDst);
-void BitmapBlt(CDC& pDC, CPoint pntDst, const CBitmap& pBMap);
 #ifndef GPLAY
 void Draw25PctPatBorder(wxWindow& pWnd, wxDC& pDC, wxRect rct, int nThick);
 #endif
@@ -172,16 +134,10 @@ void AppendBitmap(CBitmap *pBMapTo, CBitmap *pBMapFrm, CPalette *pPalTo,
 void RemoveBitmapSlice(CBitmap *pBMap, int yPos, int iHt, CPalette *pPal = NULL);
 CPalette* BuildMasterPalette(CObArray* pPalTbl, BOOL bAppend = TRUE);
 #endif
-OwnerPtr<CPalette> CreateMergedPalette(const CPalette& palPri, const CPalette& palSec);
-void SetupIdentityPalette(uint16_t nNumColors, LPLOGPALETTE pPal);
-void AddEntryToPalette(LPPALETTEENTRY pPal, int nSize, const PALETTEENTRY& pe);
-void SetPaletteEntryFromColorref(PALETTEENTRY& pe, COLORREF cr);
 #ifdef WE_WANT_THIS_STUFF_DLL940113
 void BltThruDIB(CDC& pDCDst, int xDst, int yDst, int cx, int cy,
     CDC& pDCSrc, const CPalette *pPalSrc, const CBitmap& pBMap, int xSrc, int ySrc);
 #endif
-
-OwnerPtr<CBrush> Clone(const CBrush& brush);
 
 // geomorphic board support
 // based on incremental piece rotation, positive rotation is clockwise
@@ -189,7 +145,6 @@ enum class Rotation90
 {
     rInvalid = -1, r0 = 0, r90 = 1, r180 = 2, r270 = 3
 };
-OwnerPtr<CBitmap> Rotate(const CBitmap& bmp, Rotation90 rot);
 wxBitmap Rotate(const wxBitmap& bmp, Rotation90 rot);
 
 #endif

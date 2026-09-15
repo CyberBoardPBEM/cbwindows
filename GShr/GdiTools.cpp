@@ -37,29 +37,8 @@
 #define new DEBUG_NEW
 #endif
 
-CGdiTools g_gt;             // Global GDI tools object
-
 /////////////////////////////////////////////////////////////////
 // If 0 is returned, Cancel was selected.
-
-FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
-{
-    ASSERT(fid != 0);
-    LOGFONT lf;
-
-    CFontTbl& pFontTbl = CGamDoc::GetFontManager();
-    pFontTbl.FillLogFontStruct(fid, &lf);
-
-    CFontDialog dlg(&lf, CF_SCREENFONTS |
-        (bScreenOK ? 0 : CF_SCALABLEONLY) | CF_NOVECTORFONTS,
-        NULL, pParentWnd);
-
-    if (dlg.DoModal() != IDOK)
-        return (FontID)0;
-    return pFontTbl.AddFont(TenthPointsToScreenPixels(dlg.GetSize()),
-        (dlg.IsBold()?taBold:0)|(dlg.IsItalic()?taItalic:0),
-        static_cast<uint8_t>(lf.lfPitchAndFamily & 0xF0), dlg.GetFaceName());
-}
 
 FontID DoFontDialog(FontID fid, wxWindow* pParentWnd, BOOL bScreenOK)
 {
@@ -424,23 +403,6 @@ void ResizeBitmap(CBitmap *pBMap, int iNewX, int iNewY, CPalette* pPalOld,
 #endif
 
 /////////////////////////////////////////////////////////////////
-
-void CGdiTools::InitGdiTools()
-{
-    mDC1.CreateCompatibleDC(NULL);
-    mDC2.CreateCompatibleDC(NULL);
-    mTileDC.CreateCompatibleDC(NULL);
-    // Make a copy of the stock bitmap that is automatically
-    // attached to compatible memory DC's. This stock bitmap
-    // is used for EZ deselection of 'real' bitmaps.
-    CBitmap bmTmp;
-    bmTmp.CreateCompatibleBitmap(&mDC1, 1, 1);
-    CBitmap* pbmStock = mDC1.SelectObject(&bmTmp);
-    hbmSafe = (HBITMAP)pbmStock->m_hObject;
-    mDC1.SelectObject(pbmStock);
-}
-
-/////////////////////////////////////////////////////////////////
 // DeltaGenInit
 //
 // This routine initializes the pdg, px and py in preparation for using
@@ -536,19 +498,6 @@ BOOL DeltaGen(PDELTAGEN pdg, int* px, int* py)
         pdg->d += pdg->inc2;
     }
     return TRUE;
-}
-
-OwnerPtr<CBrush> Clone(const CBrush& brush)
-{
-    LOGBRUSH lb;
-/*  surely this is safe, but we'll avoid the const_cast
-    int rc = const_cast<CBrush&>(brush).GetLogBrush(&lb);
-*/
-    int rc = ::GetObject(brush, sizeof(lb), &lb);
-    ASSERT(rc == sizeof(lb));
-    OwnerPtr<CBrush> retval(MakeOwner<CBrush>());
-    VERIFY(retval->CreateBrushIndirect(&lb));
-    return retval;
 }
 
 wxBitmap Rotate(const wxBitmap& bmp, Rotation90 rot)

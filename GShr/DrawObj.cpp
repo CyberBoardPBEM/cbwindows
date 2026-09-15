@@ -1341,14 +1341,14 @@ BOOL CText::SetFont(FontID fid)
 
     m_fontID = fid;
 
-    HFONT hFont = pFontMgr.GetFontHandle(m_fontID);
-    CFont* pPrvFont = g_gt.mDC1.SelectObject(CFont::FromHandle(hFont));
+    wxFont hFont = ToWxFont(m_fontID);
+    wxInfoDC mDC1(&CB::GetMainWndWx());
+    mDC1.SetFont(hFont);
 
     // Compute (new) dimensions
-    CSize sizeTxt = g_gt.mDC1.GetTextExtent(m_text);
-    m_rctExtent.right = m_rctExtent.left + sizeTxt.cx;
-    m_rctExtent.bottom = m_rctExtent.top + sizeTxt.cy;
-    g_gt.mDC1.SelectObject(pPrvFont);
+    wxSize sizeTxt = mDC1.GetTextExtent(m_text);
+    m_rctExtent.right = m_rctExtent.left + sizeTxt.x;
+    m_rctExtent.bottom = m_rctExtent.top + sizeTxt.y;
 
     return TRUE;
 }
