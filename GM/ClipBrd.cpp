@@ -39,43 +39,6 @@ BOOL IsClipboardBitmap()
     return IsClipboardFormatAvailable(CF_DIB);
 }
 
-void SetClipboardBitmap(CWnd* pWnd, const CBitmap& pBMap)
-{
-    LockWxClipboard lockClipbd(std::try_to_lock);
-    if (lockClipbd)
-    {
-        wxBusyCursor busyCursor;
-
-        wxImage img = ToImage(pBMap);
-        wxBitmap wxbmp(img);
-        if (!wxTheClipboard->SetData(new wxBitmapDataObject(wxbmp)))
-        {
-            AfxThrowMemoryException();
-        }
-    }
-}
-
-OwnerOrNullPtr<CBitmap> GetClipboardBitmap(CWnd* pWnd)
-{
-    LockWxClipboard lockClipbd(std::try_to_lock);
-    if (!lockClipbd)
-        return NULL;
-
-    wxBusyCursor busyCursor;
-
-    wxBitmapDataObject bdo;
-    bool rc = wxTheClipboard->GetData(bdo);
-    lockClipbd.Unlock();
-    if (!rc)
-    {
-        return NULL;
-    }
-    wxBitmap wxbmp = bdo.GetBitmap();
-    wxImage img = wxbmp.ConvertToImage();
-    OwnerPtr<CBitmap> pBMap = ToBitmap(img);
-    return pBMap;
-}
-
 void SetClipboardBitmap(const wxBitmap& pBMap)
 {
     LockWxClipboard lockClipbd(std::try_to_lock);
