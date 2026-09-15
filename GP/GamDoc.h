@@ -520,10 +520,6 @@ public:
 
     CDrawObj& CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         ObjectID dwObjID = ObjectID());
-    CDrawObj& CreateLineObject(CPlayBoard* pPBrd, CPoint ptBeg,
-        CPoint ptEnd, UINT nLineWd, COLORREF crLine, ObjectID dwObjID = ObjectID());
-    void ModifyLineObject(CPlayBoard* pPBrd, CPoint ptBeg, CPoint ptEnd,
-        UINT nLineWd, COLORREF crLine, CLine* pObj);
     void ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<RefPtr<CDrawObj>>& pList, BOOL bToFront);
     void DeleteObjectsInTable(const std::vector<RefPtr<CDrawObj>>& pList);
     void SetObjectText(GameElement elem, const CB::string* pszObjText);
