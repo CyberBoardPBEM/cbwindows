@@ -1,6 +1,6 @@
 // ToolObjs.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -495,8 +495,8 @@ CDrawObj::OwnerPtr CRectTool::CreateDrawObj(const CBrdEditView& pView, wxPoint p
 {
     CRectObj::OwnerPtr pObj = new CRectObj;
     pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
-    pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
-    pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
+    pObj->SetForeColor(pView.GetForeColor());
+    pObj->SetBackColor(pView.GetBackColor());
     pObj->SetLineWidth(pView.GetLineWidth());
     nHandle = hitBottomRight;
     return pObj;
@@ -516,8 +516,8 @@ CDrawObj::OwnerPtr CEllipseTool::CreateDrawObj(const CBrdEditView& pView, wxPoin
 {
     CEllipse::OwnerPtr pObj = new CEllipse;
     pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
-    pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
-    pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
+    pObj->SetForeColor(pView.GetForeColor());
+    pObj->SetBackColor(pView.GetBackColor());
     pObj->SetLineWidth(pView.GetLineWidth());
     nHandle = hitBottomRight;
     return pObj;
@@ -537,7 +537,7 @@ CDrawObj::OwnerPtr CLineTool::CreateDrawObj(const CBrdEditView& pView, wxPoint p
 {
     OwnerPtr<CLine> pObj = new CLine;
     pObj->SetLine(point.x, point.y, point.x, point.y);
-    pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
+    pObj->SetForeColor(pView.GetForeColor());
     pObj->SetLineWidth(pView.GetLineWidth());
     nHandle = hitPtB;
     return pObj;
@@ -698,8 +698,8 @@ void CPolyTool::FinalizePolygon(CBrdEditView& pView,
     if (m_pObj->m_Pnts.size() >= size_t(2) && !bForceDestroy)
     {
         // Update the "dummy" object to make it the real thing.
-        m_pObj->SetForeColor(CB::Convert(pView.GetForeColor()));
-        m_pObj->SetBackColor(CB::Convert(pView.GetBackColor()));
+        m_pObj->SetForeColor(pView.GetForeColor());
+        m_pObj->SetBackColor(pView.GetBackColor());
         m_pObj->SetLineWidth(pView.GetLineWidth());
         wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
         pView.InvalidateWorkspaceRect(rct);

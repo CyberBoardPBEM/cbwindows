@@ -1,6 +1,6 @@
 // VwEdtbrd.cpp : implementation of the CBrdEditView class
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -1093,7 +1093,7 @@ void CBrdEditView::DoCreateTextDrawingObject(wxPoint point)
         if (!dlg.m_strText.empty())
         {
             CreateTextDrawingObject(point, dlg.m_fontID,
-                CB::Convert(m_pBMgr->GetForeColor()), dlg.m_strText, TRUE);
+                m_pBMgr->GetForeColor(), dlg.m_strText, TRUE);
             GetDocument().SetModifiedFlag();
         }
     }
@@ -1129,7 +1129,7 @@ void CBrdEditView::CreateTextDrawingObject(wxPoint pnt, FontID fid,
     {
         OwnerPtr<CText> pText = MakeOwner<CText>();
         AdjustPoint(pnt);
-        pText->SetText(pnt.x, pnt.y, strText, fid, CB::Convert(crText));
+        pText->SetText(pnt.x, pnt.y, strText, fid, crText);
 
         wxRect rct = CB::Convert(pText->GetRect());
         AdjustRect(rct);
@@ -1254,12 +1254,12 @@ void CBrdEditView::PixelToWorkspace(CPoint& point) const
 
 void CBrdEditView::OnUpdateColorForeground(CColorCmdUI& colorCmdUI)
 {
-    colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetForeColor()));
+    colorCmdUI.SetColor(m_pBMgr->GetForeColor());
 }
 
 void CBrdEditView::OnUpdateColorBackground(CColorCmdUI& colorCmdUI)
 {
-    colorCmdUI.SetColor(CB::Convert(m_pBMgr->GetBackColor()));
+    colorCmdUI.SetColor(m_pBMgr->GetBackColor());
 }
 
 void CBrdEditView::OnUpdateColorCustom(CColorCmdUI& colorCmdUI)
@@ -1279,21 +1279,21 @@ void CBrdEditView::OnSetColor(SetColorEvent& event)
 {
     struct ColorSetting
     {
-        COLORREF m_cr;              // Color to set
+        wxColour m_cr;              // Color to set
         BOOL     m_bColorAccepted;  // TRUE if at least one object accepted the color
     };
-    ColorSetting cset = { RGB(0,0,0), FALSE };
+    ColorSetting cset = { *wxBLACK, FALSE };
 
     if (event.GetSubId() == XRCID("ID_COLOR_FOREGROUND"))
     {
-        m_pBMgr->SetForeColor(CB::Convert(event.GetColor()));
+        m_pBMgr->SetForeColor(event.GetColor());
         cset.m_cr = m_pBMgr->GetForeColor();
         m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetForeColor(cset.m_cr); });
         m_selList.UpdateObjects();
     }
     else if (event.GetSubId() == XRCID("ID_COLOR_BACKGROUND"))
     {
-        m_pBMgr->SetBackColor(CB::Convert(event.GetColor()));
+        m_pBMgr->SetBackColor(event.GetColor());
         cset.m_cr = m_pBMgr->GetBackColor();
         m_selList.ForAllSelections([&cset](CDrawObj& pObj) { cset.m_bColorAccepted |= pObj.SetBackColor(cset.m_cr); });
         m_selList.UpdateObjects();

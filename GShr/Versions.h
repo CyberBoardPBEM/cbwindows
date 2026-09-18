@@ -887,14 +887,15 @@ inline CArchive& operator>>(CArchive& ar, wxSize& s)
 
 inline CArchive& operator<<(CArchive& ar, const wxColour& c)
 {
-    return ar << static_cast<uint32_t>(CB::Convert(c));
+    WIN_COLORREF win = c;
+    return ar << reinterpret_cast<uint32_t&>(win);
 }
 
 inline CArchive& operator>>(CArchive& ar, wxColour& c)
 {
     uint32_t temp;
     ar >> temp;
-    c = CB::Convert(static_cast<COLORREF>(temp));
+    c = reinterpret_cast<WIN_COLORREF&>(temp);
     return ar;
 }
 

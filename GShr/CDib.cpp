@@ -1,6 +1,6 @@
 // CDib.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -42,17 +42,18 @@ static char THIS_FILE[] = __FILE__;
 // Converts 24 bit RGB values to 16 bit 5-6-5 format
 
 namespace {
-    inline uint16_t RGB565(COLORREF cref)
+    inline uint16_t RGB565(WIN_COLORREF temp)
     {
+        uint32_t& cref = reinterpret_cast<uint32_t&>(temp);
         return (uint16_t)(((cref & 0xF8) << 8) | ((cref & 0xFC00) >> 5) | ((cref & 0xF80000) >> 19));
     }
 
-    inline COLORREF RGB565_TO_24(uint16_t clr16)
+    inline WIN_COLORREF RGB565_TO_24(uint16_t clr16)
     {
         uint8_t r = (((clr16 & 0xF800) >> 11) * 0xFF) / 0x1F;
         uint8_t g = static_cast<uint8_t>((((clr16 & 0x7E0) >> 5) * 0xFF) / 0x3F);
         uint8_t b = ((clr16 & 0x1F) * 0xFF) / 0x1F;
-        return RGB(r, g, b);
+        return WIN_COLORREF(r, g, b);
     }
 }
 
@@ -255,10 +256,10 @@ CBITMAPINFOHEADER::operator wxImage() const
             wxImagePixelData::Iterator dest = destRowStart;
             for (int x = 0 ; x < bmih.biWidth ; ++x)
             {
-                COLORREF cr = RGB565_TO_24(*src++);
-                dest.Red() = GetRValue(cr);
-                dest.Green() = GetGValue(cr);
-                dest.Blue() = GetBValue(cr);
+                WIN_COLORREF cr = RGB565_TO_24(*src++);
+                dest.Red() = cr.red;
+                dest.Green() = cr.green;
+                dest.Blue() = cr.blue;
                 ++dest;
             }
             srcRowStart += srcStride;
@@ -314,7 +315,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(const wxImage& img, size_t wBitCount)
             WIN_RGBTRIO* dest = reinterpret_cast<WIN_RGBTRIO*>(destRowStart);
             for (int x = 0 ; x < width ; ++x)
             {
-                COLORREF cr = RGB(src.Red(),
+                WIN_COLORREF cr(src.Red(),
                                     src.Green(),
                                     src.Blue());
                 ++src;
@@ -335,7 +336,7 @@ CBITMAPINFOHEADER::CBITMAPINFOHEADER(const wxImage& img, size_t wBitCount)
             uint16_t* dest = destRowStart;
             for (int x = 0 ; x < width ; ++x)
             {
-                COLORREF cr = RGB(src.Red(),
+                WIN_COLORREF cr(src.Red(),
                                     src.Green(),
                                     src.Blue());
                 ++src;
@@ -391,13 +392,13 @@ size_t CBITMAPINFOHEADER::GetNumColors(const BITMAPINFOHEADER& lpbi)
 
 ///////////////////////////////////////////////////////////////
 
-void CDib::Fill(COLORREF color)
+void CDib::Fill(wxColour color)
 {
-    ASSERT(m_wximg.IsOk());
+    wxASSERT(m_wximg.IsOk());
     m_wximg.SetRGB(wxRect(m_wximg.GetSize()),
-                    GetRValue(color),
-                    GetGValue(color),
-                    GetBValue(color));
+                    color.Red(),
+                    color.Green(),
+                    color.Blue());
 }
 
 ///////////////////////////////////////////////////////////////

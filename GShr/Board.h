@@ -1,6 +1,6 @@
 // Board.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -86,7 +86,7 @@ public:
     BOOL GetApplyVisible() const { return m_bApplyVisibility; }
     void SetApplyVisible(BOOL bApply) { m_bApplyVisibility = bApply; }
     // ------- //
-    void SetBkColor(COLORREF crBkGnd) { m_crBkGnd = crBkGnd; }
+    void SetBkColor(wxColour crBkGnd) { m_crBkGnd = crBkGnd; }
     void SetBaseDrawing(OwnerOrNullPtr<CDrawList> pDwg);
     const CDrawList* GetBaseDrawing() const { return m_pBaseDwg ? &*m_pBaseDwg : nullptr; }
     CDrawList* GetBaseDrawing(BOOL bCreate = FALSE);
@@ -116,7 +116,7 @@ protected:
     BOOL        m_bApplyVisibility; // Show objects matching scale mask
     BoardID     m_nSerialNum;       // Board serial number
     CB::string  m_strBoardName;     // Name of board
-    COLORREF    m_crBkGnd;          // Default color of the board
+    wxColour    m_crBkGnd;          // Default color of the board
     int         m_iMaxLayer;        // Max layer to draw
 
     // List of base layer drawing primitives (lines, polygons, text...);
@@ -242,12 +242,12 @@ public:
     }
 
     // Access routines for all Tile Editor info...
-    void SetForeColor(COLORREF cr) { m_crFore = cr; }
-    void SetBackColor(COLORREF cr) { m_crBack = cr; }
-    void SetLineWidth(int nWidth) { m_nLineWidth = nWidth; }
-    COLORREF GetForeColor() const { return m_crFore; }
-    COLORREF GetBackColor() const { return m_crBack; }
-    int GetLineWidth() const { return m_nLineWidth; }
+    void SetForeColor(wxColour cr) { m_crFore = cr; }
+    void SetBackColor(wxColour cr) { m_crBack = cr; }
+    void SetLineWidth(int nWidth) { m_nLineWidth = value_preserving_cast<UINT>(nWidth); }
+    wxColour GetForeColor() const { return m_crFore; }
+    wxColour GetBackColor() const { return m_crBack; }
+    int GetLineWidth() const { return value_preserving_cast<int>(m_nLineWidth); }
     FontID GetFontID() const { return m_fontID; }
 
     BOOL DoBoardFontDialog();
@@ -289,9 +289,9 @@ protected:
     WORD    m_wReserved3;           // For future need (set to 0)
     WORD    m_wReserved4;           // For future need (set to 0)
     // These are shared for all Board Editors...
-    COLORREF    m_crFore;           // Current foreground color
-    COLORREF    m_crBack;           // Current background color
-    UINT        m_nLineWidth;       // Current line width
+    wxColour    m_crFore;           // Current foreground color
+    wxColour    m_crBack;           // Current background color
+    unsigned    m_nLineWidth;       // Current line width
     FontID      m_fontID;           // Current font
 
 #if defined(GPLAY)

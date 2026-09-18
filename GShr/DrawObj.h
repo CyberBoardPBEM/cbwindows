@@ -1,6 +1,6 @@
 // DrawObj.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -125,8 +125,8 @@ public:
     // Some functions that may or may not mean anything to the
     // underlying object. The object will return TRUE if the
     // property was meaningful.
-    virtual BOOL SetForeColor(COLORREF cr) /* override */ { return FALSE; }
-    virtual BOOL SetBackColor(COLORREF cr) /* override */ { return FALSE; }
+    virtual BOOL SetForeColor(wxColour cr) /* override */ { return FALSE; }
+    virtual BOOL SetBackColor(wxColour cr) /* override */ { return FALSE; }
     virtual BOOL SetLineWidth(UINT nLineWidth) /* override */ { return FALSE; }
     virtual BOOL SetFont(FontID fid) /* override */ { return FALSE; }
 
@@ -164,8 +164,8 @@ protected:
     virtual SetUpDrawResult SetUpDraw(wxDC& pDC) const /* override */;
     virtual BOOL BitBlockHitTest(CPoint pt) /* override */;
     virtual UINT GetLineWidth() const /* override */ { return 0; }
-    virtual COLORREF GetLineColor() const /* override */ { return noColor; }
-    virtual COLORREF GetFillColor() const /* override */ { return noColor; }
+    virtual wxColour GetLineColor() const /* override */ { return noColorWx; }
+    virtual wxColour GetFillColor() const /* override */ { return noColorWx; }
 
     void CopyAttributes (const CDrawObj& source);    //DFM19991213
 
@@ -604,19 +604,19 @@ class CRectObj : public CDrawObj_SimplRctExtent
 // Constructors
 public:
     CRectObj()
-    { m_crLine = RGB(0,0,0); m_crFill = RGB(255,255,255); m_nLineWidth = 0;};
+    { m_crLine = *wxBLACK; m_crFill = *wxWHITE; m_nLineWidth = 0;};
 
 // Attributes
 public:
-    COLORREF m_crFill;
-    COLORREF m_crLine;
+    wxColour m_crFill;
+    wxColour m_crLine;
     UINT     m_nLineWidth;
 
     virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawRect; }
 
-    virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
-    virtual BOOL SetBackColor(COLORREF cr) override { m_crFill = cr; return TRUE; }
+    virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
+    virtual BOOL SetBackColor(wxColour cr) override { m_crFill = cr; return TRUE; }
     virtual BOOL SetLineWidth(UINT nLineWidth) override
         { m_nLineWidth = nLineWidth; return TRUE; }
 
@@ -646,8 +646,8 @@ public:
 // Implementation
 protected:
     virtual UINT GetLineWidth() const override { return m_nLineWidth; }
-    virtual COLORREF GetLineColor() const override { return m_crLine; }
-    virtual COLORREF GetFillColor() const override { return m_crFill; }
+    virtual wxColour GetLineColor() const override { return m_crLine; }
+    virtual wxColour GetFillColor() const override { return m_crFill; }
 
     void CopyAttributes (const CRectObj& source);     //DFM19991213
 };
@@ -677,13 +677,13 @@ class CLine : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
-    CLine() { m_crLine = RGB(0, 0, 0); m_nLineWidth = 0; }
+    CLine() { m_crLine = *wxBLACK; m_nLineWidth = 0; }
 // Attributes
 public:
     CPoint  m_ptBeg;
     CPoint  m_ptEnd;
 
-    COLORREF m_crLine;
+    wxColour m_crLine;
     UINT     m_nLineWidth;
 
     void SetLine(int xBeg, int yBeg, int xEnd, int yEnd);
@@ -708,7 +708,7 @@ public:
     virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawLine; }
 
-    virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
+    virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
     virtual BOOL SetLineWidth(UINT nLineWidth) override
         { m_nLineWidth = nLineWidth; return TRUE; }
 
@@ -748,21 +748,21 @@ class CPolyObj : public CDrawObj_SimplRctExtent
 // Constructors
 public:
     CPolyObj()
-    { m_crLine = RGB(0,0,0); m_crFill = noColor; m_nLineWidth = 0; }
+    { m_crLine = *wxBLACK; m_crFill = noColorWx; m_nLineWidth = 0; }
     ~CPolyObj() = default;
 
 // Attributes
 public:
-    COLORREF m_crFill;
-    COLORREF m_crLine;
+    wxColour m_crFill;
+    wxColour m_crLine;
     UINT     m_nLineWidth;
     std::vector<POINT> m_Pnts;
 
     virtual CRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawPolygon; }
 
-    virtual BOOL SetForeColor(COLORREF cr) override { m_crLine = cr; return TRUE; }
-    virtual BOOL SetBackColor(COLORREF cr) override { m_crFill = cr; return TRUE; }
+    virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
+    virtual BOOL SetBackColor(wxColour cr) override { m_crFill = cr; return TRUE; }
     virtual BOOL SetLineWidth(UINT nLineWidth) override
         { m_nLineWidth = nLineWidth; return TRUE; }
 
@@ -799,8 +799,8 @@ protected:
 
     // ------- //
     virtual UINT GetLineWidth() const override { return m_nLineWidth; }
-    virtual COLORREF GetLineColor() const override { return m_crLine; }
-    virtual COLORREF GetFillColor() const override { return m_crFill; }
+    virtual wxColour GetLineColor() const override { return m_crLine; }
+    virtual wxColour GetFillColor() const override { return m_crFill; }
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -809,20 +809,20 @@ class CText : public CDrawObj_SimplRctExtent
 {
 // Constructors
 public:
-    CText() { m_crText = RGB(0, 0, 0); m_fontID = 0; m_nAngle = 0;}
+    CText() { m_crText = *wxBLACK; m_fontID = 0; m_nAngle = 0;}
     ~CText();
 // Attributes
 public:
     int         m_nAngle;
-    COLORREF    m_crText;
+    wxColour    m_crText;
     CB::string  m_text;
     FontID      m_fontID;
 
     void SetText(int x, int y, const CB::string& pszText, FontID fntID,
-        COLORREF crText = RGB(255,255,255));
+        wxColour crText = *wxWHITE);
     virtual enum CDrawObjType GetType() const override { return drawText; }
 
-    virtual BOOL SetForeColor(COLORREF cr) override { m_crText = cr; return TRUE; }
+    virtual BOOL SetForeColor(wxColour cr) override { m_crText = cr; return TRUE; }
     virtual BOOL SetFont(FontID fid) override;
 
 // Operations
