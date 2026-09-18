@@ -56,7 +56,7 @@ public:
     const BITMAPINFO& GetBmi() const { return m_hDib; }
 #endif
 private:
-    void Fill(COLORREF color);
+    void Fill(wxColour color);
 public:
     // angle is clockwise
     CDib Rotate(int angle, wxColour crTrans) const;

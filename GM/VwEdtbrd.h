@@ -64,11 +64,11 @@ public:
     const CBoard& GetBoard() const { return CheckedDeref(m_pBoard); }
 
     // Current Colors etc...
-    wxColour GetForeColor() const { return CB::Convert(m_pBMgr->GetForeColor()); }
-    wxColour GetBackColor() const { return CB::Convert(m_pBMgr->GetBackColor()); }
+    wxColour GetForeColor() const { return m_pBMgr->GetForeColor(); }
+    wxColour GetBackColor() const { return m_pBMgr->GetBackColor(); }
     UINT GetLineWidth() const { return value_preserving_cast<UINT>(m_pBMgr->GetLineWidth()); }
-    void SetForeColor(wxColour crFore) { m_pBMgr->SetForeColor(CB::Convert(crFore)); }
-    void SetBackColor(wxColour crBack) { m_pBMgr->SetBackColor(CB::Convert(crBack)); }
+    void SetForeColor(wxColour crFore) { m_pBMgr->SetForeColor(crFore); }
+    void SetBackColor(wxColour crBack) { m_pBMgr->SetBackColor(crBack); }
 
 // Operations
 public:

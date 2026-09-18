@@ -225,9 +225,9 @@ CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
     }
     else
     {
-        if (GetLineColor() != noColor)
+        if (GetLineColor() != noColorWx)
         {
-            pPen = wxPen(CB::Convert(GetLineColor()), GetLineWidth());
+            pPen = wxPen(GetLineColor(), GetLineWidth());
         }
         else
         {
@@ -236,7 +236,7 @@ CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
     }
 
     wxBrush pBrush;
-    if (GetFillColor() != noColor)
+    if (GetFillColor() != noColorWx)
     {
         if (c_bHitTestDraw)
         {
@@ -244,7 +244,7 @@ CDrawObj::SetUpDrawResult CDrawObj::SetUpDraw(wxDC& pDC) const
         }
         else
         {
-            pBrush = wxBrush(CB::Convert(GetFillColor()));
+            pBrush = wxBrush(GetFillColor());
         }
     }
     else
@@ -603,16 +603,15 @@ void CRectObj::Serialize(CArchive& ar)
     CDrawObj::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_crFill;
-        ar << (DWORD)m_crLine;
-        ar << (WORD)m_nLineWidth;
+        ar << m_crFill;
+        ar << m_crLine;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
     }
     else
     {
-        WORD wTmp;
-        DWORD dwTmp;
-        ar >> dwTmp; m_crFill = (COLORREF)dwTmp;
-        ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
+        uint16_t wTmp;
+        ar >> m_crFill;
+        ar >> m_crLine;
         ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
     }
 }
@@ -665,7 +664,7 @@ void CPolyObj::Draw(wxDC& pDC, TileScale)
     auto guard = SetUpDraw(pDC);
 
     std::vector<wxPoint> pnts = CB::Convert(m_Pnts);
-    if (m_crFill == noColor)
+    if (m_crFill == noColorWx)
         pDC.DrawLines(value_preserving_cast<int>(pnts.size()), pnts.data());
     else
         pDC.DrawPolygon(value_preserving_cast<int>(pnts.size()), pnts.data());
@@ -813,9 +812,9 @@ void CPolyObj::Serialize(CArchive& ar)
     CDrawObj::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (DWORD)m_crFill;
-        ar << (DWORD)m_crLine;
-        ar << (WORD)m_nLineWidth;
+        ar << m_crFill;
+        ar << m_crLine;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar << value_preserving_cast<WORD>(m_Pnts.size());
@@ -829,11 +828,10 @@ void CPolyObj::Serialize(CArchive& ar)
     }
     else
     {
-        WORD wTmp;
-        DWORD dwTmp;
-        ar >> dwTmp; m_crFill = (COLORREF)dwTmp;
-        ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
-        ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
+        uint16_t wTmp;
+        ar >> m_crFill;
+        ar >> m_crLine;
+        ar >> wTmp;  m_nLineWidth = value_preserving_cast<unsigned>(wTmp);
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
             ar >> wTmp; m_Pnts.resize(wTmp);
@@ -861,7 +859,7 @@ void CLine::Draw(wxDC& pDC, TileScale)
     }
     else
     {
-        pen = wxPen(CB::Convert(m_crLine), m_nLineWidth);
+        pen = wxPen(m_crLine, m_nLineWidth);
     }
     wxDCPenChanger setpen(pDC, pen);
 
@@ -1025,26 +1023,25 @@ void CLine::Serialize(CArchive& ar)
     CDrawObj::Serialize(ar);
     if (ar.IsStoring())
     {
-        ar << (short)m_ptBeg.x;
-        ar << (short)m_ptBeg.y;
-        ar << (short)m_ptEnd.x;
-        ar << (short)m_ptEnd.y;
+        ar << value_preserving_cast<int16_t>(m_ptBeg.x);
+        ar << value_preserving_cast<int16_t>(m_ptBeg.y);
+        ar << value_preserving_cast<int16_t>(m_ptEnd.x);
+        ar << value_preserving_cast<int16_t>(m_ptEnd.y);
 
-        ar << (DWORD)m_crLine;
-        ar << (WORD)m_nLineWidth;
+        ar << m_crLine;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
     }
     else
     {
-        WORD wTmp;
-        DWORD dwTmp;
-        short sTmp;
+        uint16_t wTmp;
+        int16_t sTmp;
         ar >> sTmp; m_ptBeg.x = sTmp;
         ar >> sTmp; m_ptBeg.y = sTmp;
         ar >> sTmp; m_ptEnd.x = sTmp;
         ar >> sTmp; m_ptEnd.y = sTmp;
 
-        ar >> dwTmp; m_crLine = (COLORREF)dwTmp;
-        ar >> wTmp;  m_nLineWidth = (UINT)wTmp;
+        ar >> m_crLine;
+        ar >> wTmp;  m_nLineWidth = value_preserving_cast<unsigned>(wTmp);
         // Make sure extent rect is properly set.
         SetLine(m_ptBeg.x, m_ptBeg.y, m_ptEnd.x, m_ptEnd.y);
     }
@@ -1319,13 +1316,13 @@ void CText::Draw(wxDC& pDC, TileScale eScale)
     wxFont hFont = ToWxFont(m_fontID);
     wxDCFontChanger setFont(pDC, hFont);
     pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
-    wxDCTextColourChanger setColor(pDC, CB::Convert(m_crText));
+    wxDCTextColourChanger setColor(pDC, m_crText);
     wxPoint topLeft = CB::Convert(m_rctExtent.TopLeft() + m_geoOffset);
     pDC.DrawRotatedText(m_text, topLeft, m_geoRot);
 }
 
 void CText::SetText(int x, int y, const CB::string& pszText, FontID fntID,
-    COLORREF crText)
+    wxColour crText)
 {
     m_text = pszText;
     m_crText = crText;
@@ -1437,18 +1434,17 @@ void CText::Serialize(CArchive& ar)
             ASSERT(!"serializing rotated board not supported");
             AfxThrowNotSupportedException();
         }
-        ar << (WORD)m_nAngle;
-        ar << (DWORD)m_crText;
+        ar << value_preserving_cast<uint16_t>(m_nAngle);
+        ar << m_crText;
         ar << m_text;
         pFontMgr.Archive(ar, m_fontID);
     }
     else
     {
-        WORD wTmp;
-        DWORD dwTmp;
+        uint16_t wTmp;
         m_fontID = 0;
-        ar >> wTmp; m_nAngle = (int)wTmp;
-        ar >> dwTmp; m_crText = (COLORREF)dwTmp;
+        ar >> wTmp; m_nAngle = value_preserving_cast<int>(wTmp);
+        ar >> m_crText;
         ar >> m_text;
         pFontMgr.Archive(ar, m_fontID);
     }

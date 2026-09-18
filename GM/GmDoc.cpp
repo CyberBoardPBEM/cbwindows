@@ -994,7 +994,7 @@ void CGamDoc::OnEditCreateBoard()
             dlg.m_bStagger);
 
         pBoard->SetBoardArray(std::move(pBrdAry));
-        pBoard->SetBkColor(RGB(255, 255, 255));
+        pBoard->SetBkColor(*wxWHITE);
         pBMgr.Add(pBoard);
         pBoard->SetMaxDrawLayer(LAYER_TOP);
 

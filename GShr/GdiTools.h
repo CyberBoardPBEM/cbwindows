@@ -1,6 +1,6 @@
 // GdiTools.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -46,21 +46,21 @@ struct WIN_RGBTRIO
     uint8_t red;
 
     WIN_RGBTRIO() = default;
-    WIN_RGBTRIO(COLORREF cr)
+    WIN_RGBTRIO(WIN_COLORREF cr)
     {
         *this = cr;
     }
-    WIN_RGBTRIO& operator=(COLORREF cr)
+    WIN_RGBTRIO& operator=(WIN_COLORREF cr)
     {
-        blue = GetBValue(cr);
-        green = GetGValue(cr);
-        red = GetRValue(cr);
+        blue = cr.blue;
+        green = cr.green;
+        red = cr.red;
         return *this;
     }
 
-    operator COLORREF() const
+    operator WIN_COLORREF() const
     {
-        return RGB(red, green, blue);
+        return WIN_COLORREF(red, green, blue);
     }
 };
 static_assert(sizeof(WIN_RGBTRIO) == 3 &&

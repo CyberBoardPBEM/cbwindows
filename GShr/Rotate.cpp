@@ -238,7 +238,7 @@ void CDib::DrawScanLine(ImgEdge& lftEdge, ImgEdge& rgtEdge, int dstY,
 CDib CDib::CreateTransparentColorDIB(wxSize size, wxColour crTrans)
 {
     CDib pDib(size.x, size.y);
-    pDib.Fill(CB::Convert(crTrans));
+    pDib.Fill(crTrans);
 
     return pDib;
 }

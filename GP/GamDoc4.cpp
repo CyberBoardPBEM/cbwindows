@@ -617,7 +617,7 @@ void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
 {
     if (IsQuietPlayback()) return;
     CLine* pObj = new CLine;
-    pObj->SetForeColor(pPBrd.m_crPlotLineColor);
+    pObj->SetForeColor(CB::Convert(pPBrd.m_crPlotLineColor));
     pObj->SetLineWidth(pPBrd.m_nPlotLineWidth);        // Must set width first!
     pObj->SetLine(ptA.x, ptA.y, ptB.x, ptB.y);
 
@@ -638,8 +638,8 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     rct.InflateRect(borderWidth + 1, borderWidth + 1);
     CRectObj* pObj = new CRectObj;
     pObj->SetRect(&rct);
-    pObj->SetForeColor(pPBrd.m_crPlotLineColor);
-    pObj->SetBackColor(noColor);
+    pObj->SetForeColor(CB::Convert(pPBrd.m_crPlotLineColor));
+    pObj->SetBackColor(noColorWx);
     pObj->SetLineWidth(borderWidth);
 
     pPBrd.AddIndicatorObject(pObj);

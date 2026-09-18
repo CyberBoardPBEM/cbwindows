@@ -1,6 +1,6 @@
 // Board.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -403,7 +403,7 @@ bool CBoard::IsGEVStyleHelper(Edge e) const
 bool CBoard::IsEmpty(const BoardCell& cell) const
 {
     return cell.IsEmpty() ||
-        !cell.IsTileID() && cell.GetColor() == m_crBkGnd;
+        !cell.IsTileID() && cell.GetColor() == CB::Convert(m_crBkGnd);
 }
 #endif
 
@@ -517,7 +517,7 @@ CBoardBase::CBoardBase()
     m_xGridSnapOff = 0u;
     m_yGridSnapOff = 0u;
     // --------- //
-    m_crBkGnd = RGB(128, 128, 128);
+    m_crBkGnd = *wxStockGDI::GetColour(wxStockGDI::COLOUR_GREY);
 }
 
 // ----------------------------------------------------- //
@@ -535,7 +535,7 @@ void CBoardBase::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
 void CBoardBase::DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const
 {
     wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);
-    wxDCBrushChanger setBrush(pDC, wxBrush(CB::Convert(m_crBkGnd)));
+    wxDCBrushChanger setBrush(pDC, wxBrush(m_crBkGnd));
     pDC.DrawRectangle(pDrawRct);
 }
 
@@ -597,7 +597,7 @@ void CBoardBase::Serialize(CArchive& ar)
         ar << m_yGridSnapOff;
 
         ar << value_preserving_cast<int16_t>(m_iMaxLayer);
-        ar << static_cast<uint32_t>(m_crBkGnd);
+        ar << m_crBkGnd;
         ar << m_strBoardName;
         ar << static_cast<uint16_t>(m_pBaseDwg != NULL ? 1 : 0);
     }
@@ -606,7 +606,6 @@ void CBoardBase::Serialize(CArchive& ar)
         m_pTMgr = &CheckedDeref(CB::ToCGamDoc(ar.m_pDocument)).GetTileManager();
         m_pBaseDwg = NULL;
         uint16_t wTmp;
-        uint32_t dwTmp;
         ar >> m_nSerialNum;
 #ifndef GPLAY
         if (CGamDoc::GetLoadingVersion() > NumVersion(0, 54))
@@ -632,7 +631,7 @@ void CBoardBase::Serialize(CArchive& ar)
         }
         int16_t sTmp;
         ar >> sTmp; m_iMaxLayer = value_preserving_cast<decltype(m_iMaxLayer)>(sTmp);
-        ar >> dwTmp; m_crBkGnd = (COLORREF)dwTmp;
+        ar >> m_crBkGnd;
         ar >> m_strBoardName;
         ar >> wTmp;
         if (wTmp != 0)
@@ -678,8 +677,8 @@ CBoardManager::CBoardManager(CGamDoc& doc)
 {
     m_nNextSerialNumber = BoardID(1);
     // ------ //
-    SetForeColor(RGB(0, 0, 0));
-    SetBackColor(RGB(255, 255, 255));
+    SetForeColor(*wxBLACK);
+    SetBackColor(*wxWHITE);
     SetLineWidth(3);
     m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(100),
         taBold, uint8_t(FF_SWISS), "Arial");
@@ -761,9 +760,9 @@ void CBoardManager::Serialize(CArchive& ar)
     {
         ar << m_nNextSerialNumber;
 
-        ar << (DWORD)m_crFore;
-        ar << (DWORD)m_crBack;
-        ar << (WORD)m_nLineWidth;
+        ar << m_crFore;
+        ar << m_crBack;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
 
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         pFontMgr.Archive(ar, m_fontID);
@@ -790,13 +789,12 @@ void CBoardManager::Serialize(CArchive& ar)
             reference */
         FontID tempRef = std::move(m_fontID);
         DestroyAllElements();
-        WORD wTmp;
+        uint16_t wTmp;
         ar >> m_nNextSerialNumber;
 
-        DWORD dwTmp;
-        ar >> dwTmp; m_crFore = (COLORREF)dwTmp;
-        ar >> dwTmp; m_crBack = (COLORREF)dwTmp;
-        ar >> wTmp; m_nLineWidth = (UINT)wTmp;
+        ar >> m_crFore;
+        ar >> m_crBack;
+        ar >> wTmp; m_nLineWidth = value_preserving_cast<unsigned>(wTmp);
 
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         pFontMgr.Archive(ar, m_fontID);

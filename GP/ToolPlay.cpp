@@ -580,7 +580,7 @@ OwnerPtr<CDrawObj> CPLineTool::CreateDrawObj(CPlayBoardView& pView, const wxPoin
     wxASSERT(!"dead code");
     OwnerPtr<CLine> pObj = MakeOwner<CLine>();
     pObj->SetLine(point.x, point.y, point.x, point.y);
-    pObj->SetForeColor(CB::Convert(pView.GetLineColor()));
+    pObj->SetForeColor(pView.GetLineColor());
     pObj->SetLineWidth(pView.GetLineWidth());
     nHandle = hitPtB;
     return pObj;
