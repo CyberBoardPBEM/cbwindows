@@ -215,6 +215,72 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
     #undef min
 #endif
 
+// binary-equivalent replacement for WIN32 COLORREF
+struct alignas(uint32_t) WIN_COLORREF
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t noColor;
+
+    WIN_COLORREF() = default;
+    WIN_COLORREF(uint8_t r, uint8_t g, uint8_t b) :
+        red(r),
+        green(g),
+        blue(b),
+        noColor(0)
+    {
+#if defined(__WIN32__)
+        static_assert(sizeof(COLORREF) == sizeof(uint32_t));
+        static_assert(alignof(COLORREF) == alignof(uint32_t));
+#endif
+        static_assert(sizeof(WIN_COLORREF) == sizeof(uint32_t));
+        static_assert(alignof(WIN_COLORREF) == alignof(uint32_t));
+    }
+    WIN_COLORREF(const wxColour& c)
+    {
+        if (c != wxNullColour)
+        {
+            *this = WIN_COLORREF(c.Red(), c.Green(), c.Blue());
+        }
+        else
+        {
+            red = green = blue = 0;
+            noColor = 0xFF;
+        }
+    }
+
+    bool operator==(const WIN_COLORREF&) const = default;
+    bool operator!=(const WIN_COLORREF&) const = default;
+
+    operator wxColour() const
+    {
+        if (!noColor)
+        {
+            return wxColour(red, green, blue);
+        }
+        else
+        {
+            wxASSERT(red == 0 && green == 0 && blue == 0 && noColor == 0xFF);
+            return wxNullColour;
+        }
+    }
+
+    // test must be here so COLORREF can be poisoned
+    static void Test()
+    {
+        const COLORREF ms = RGB(1, 2, 3);
+        wxASSERT(GetRValue(ms) == 1);
+        const WIN_COLORREF cb(1, 2, 3);
+        const wxColour wx(1, 2, 3);
+        // verify binary equivalence
+        wxASSERT(reinterpret_cast<const COLORREF&>(cb) == ms);
+        // verify conversions
+        wxASSERT(static_cast<WIN_COLORREF>(wx) == cb);
+        wxASSERT(wx == static_cast<wxColour>(cb));
+    }
+};
+
 // ensure MFC classes are no longer used
 #define CBitmap ***poison***
 #define CComboBox ***poison***
@@ -432,13 +498,20 @@ public:
     template<typename FormatContext>
     FormatContext::iterator format(const wxColour& c, FormatContext& ctx) const
     {
-        std::format_to(ctx.out(), "RGB(");
-        BASE::format(c.Red(), ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(c.Green(), ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(c.Blue(), ctx);
-        return std::format_to(ctx.out(), ")");
+        if (c != wxNullColour)
+        {
+            std::format_to(ctx.out(), "RGB(");
+            BASE::format(c.Red(), ctx);
+            std::format_to(ctx.out(), ",");
+            BASE::format(c.Green(), ctx);
+            std::format_to(ctx.out(), ",");
+            BASE::format(c.Blue(), ctx);
+            return std::format_to(ctx.out(), ")");
+        }
+        else
+        {
+            return std::format_to(ctx.out(), "wxNullColour");
+        }
     }
 };
 

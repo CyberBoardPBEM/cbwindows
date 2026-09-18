@@ -178,6 +178,15 @@ namespace {
             CPP20_TRACE("wxr3 {}\n", wxr3);
         }
     } rectDiscrepancy;
+
+    class Check_WIN_COLORREF
+    {
+    public:
+        Check_WIN_COLORREF()
+        {
+            WIN_COLORREF::Test();
+        }
+    } check_CB_COLORREF;
 }
 #endif
 
