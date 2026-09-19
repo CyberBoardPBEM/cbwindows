@@ -823,7 +823,7 @@ void CGamProjView::OnUpdateProjItemExport(wxUpdateUIEvent& pCmdUI)
 ///////////////////////////////////////////////////////////////////////
 // This method handles the cutom message WM_SHOWPLAYINGBOARD. The
 // message is posted during view initial update if the playing
-// board m_bOpenBoardOnLoad option is set. (wParam = the board index)
+// board m_bOpenBoardOnLoad option is set.
 
 void CGamProjView::OnMessageShowPlayingBoard(ShowPlayingBoardEvent& event)
 {
