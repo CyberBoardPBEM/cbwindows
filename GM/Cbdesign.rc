@@ -57,7 +57,7 @@ BEGIN
     "\r\n"
     "#define wxUSE_RC_MANIFEST 1\r\n"
     "#define WX_CPU_X86\r\n"
-    "#define wxUSE_DPI_AWARE_MANIFEST 1\r\n"
+    "#define wxUSE_DPI_AWARE_MANIFEST 0\r\n"
     "#include ""wx/msw/wx.rc""\r\n"
     "\0"
 END
@@ -1569,7 +1569,7 @@ LANGUAGE 9, 1
 
 #define wxUSE_RC_MANIFEST 1
 #define WX_CPU_X86
-#define wxUSE_DPI_AWARE_MANIFEST 1
+#define wxUSE_DPI_AWARE_MANIFEST 0
 #include "wx/msw/wx.rc"
 
 /////////////////////////////////////////////////////////////////////////////
