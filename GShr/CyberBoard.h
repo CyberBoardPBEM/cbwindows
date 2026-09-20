@@ -85,6 +85,7 @@
 #include <wx/filedlg.h>
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>
+#include <wx/gdicmn.h>
 #include <wx/image.h>
 #include <wx/listbox.h>
 #include "wx/menu.h"
