@@ -73,12 +73,12 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_xStackStagger = 3;
     m_yStackStagger = 3;
     // ------- //
-    m_crPlotLineColor = RGB(0, 255, 0);
+    m_crPlotLineColor = *wxGREEN;
     m_nPlotLineWidth = 3;
-    m_crLineColor = RGB(255, 0, 255);
+    m_crLineColor = wxTheColourDatabase->Find("magenta"_cbstring);
     m_nLineWidth = 1;
-    m_crTextColor = RGB(0, 0, 0);
-    m_crTextBoxColor = RGB(255, 255, 255);
+    m_crTextColor = *wxBLACK;
+    m_crTextBoxColor = *wxWHITE;
     m_fontID = CGameBox::GetFontManager().AddFont(
         TenthPointsToScreenPixels(100), taBold, uint8_t(FF_SWISS), "Arial");
 
@@ -321,43 +321,43 @@ void CPlayBoard::Serialize(CArchive& ar)
         ar << m_xGridSnapOff;
         ar << m_yGridSnapOff;
 
-        ar << (WORD)m_xStackStagger;
-        ar << (WORD)m_yStackStagger;
-        ar << (WORD)m_bPVisible;
-        ar << (WORD)m_bLockedDrawnBeneath;
-        ar << (WORD)m_bRotate180;
-        ar << (WORD)m_bShowSelListAndTinyMap;
-        ar << (WORD)m_bIVisible;
-        ar << (WORD)m_bCellBorders;
-        ar << (WORD)m_bSmallCellBorders;
-        ar << (WORD)m_bEnforceLocks;
+        ar << value_preserving_cast<uint16_t>(m_xStackStagger);
+        ar << value_preserving_cast<uint16_t>(m_yStackStagger);
+        ar << value_preserving_cast<uint16_t>(m_bPVisible);
+        ar << value_preserving_cast<uint16_t>(m_bLockedDrawnBeneath);
+        ar << value_preserving_cast<uint16_t>(m_bRotate180);
+        ar << value_preserving_cast<uint16_t>(m_bShowSelListAndTinyMap);
+        ar << value_preserving_cast<uint16_t>(m_bIVisible);
+        ar << value_preserving_cast<uint16_t>(m_bCellBorders);
+        ar << value_preserving_cast<uint16_t>(m_bSmallCellBorders);
+        ar << value_preserving_cast<uint16_t>(m_bEnforceLocks);
 
-        ar << (DWORD)m_crPlotLineColor;
-        ar << (WORD)m_nPlotLineWidth;
-        ar << (DWORD)m_crLineColor;
-        ar << (WORD)m_nLineWidth;
-        ar << (DWORD)m_crTextColor;
-        ar << (DWORD)m_crTextBoxColor;
+        ar << m_crPlotLineColor;
+        ar << value_preserving_cast<uint16_t>(m_nPlotLineWidth);
+        ar << m_crLineColor;
+        ar << value_preserving_cast<uint16_t>(m_nLineWidth);
+        ar << m_crTextColor;
+        ar << m_crTextBoxColor;
 
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         pFontMgr.Archive(ar, m_fontID);
 
-        ar << (WORD)m_bGridRectCenters;
-        ar << (WORD)m_bSnapMovePlot;
-        ar << (WORD)m_bIndOnTop;
-        ar << (WORD)m_bOpenBoardOnLoad;
+        ar << value_preserving_cast<uint16_t>(m_bGridRectCenters);
+        ar << value_preserving_cast<uint16_t>(m_bSnapMovePlot);
+        ar << value_preserving_cast<uint16_t>(m_bIndOnTop);
+        ar << value_preserving_cast<uint16_t>(m_bOpenBoardOnLoad);
 
-        ar << (WORD)m_bPlotMode;
+        ar << value_preserving_cast<uint16_t>(m_bPlotMode);
 
-        ar << (short)m_ptPrevPlot.x;
-        ar << (short)m_ptPrevPlot.y;
+        ar << value_preserving_cast<int16_t>(m_ptPrevPlot.x);
+        ar << value_preserving_cast<int16_t>(m_ptPrevPlot.y);
 
         ar << m_dwOwnerMask;
-        ar << (WORD)m_bNonOwnerAccess;
+        ar << value_preserving_cast<uint16_t>(m_bNonOwnerAccess);
 
-        ASSERT(m_pPceList != NULL);
+        wxASSERT(m_pPceList != NULL);
         m_pPceList->Serialize(ar);  // Board's piece and annotation list
-        ASSERT(m_pIndList != NULL);
+        wxASSERT(m_pIndList != NULL);
         m_pIndList->Serialize(ar);  // Board's indicator list
 
         if (!CB::GetFeatures(ar).Check(ftrPrivatePlayerBoard))
@@ -378,7 +378,6 @@ void CPlayBoard::Serialize(CArchive& ar)
         wxASSERT(m_pDoc == CheckedDeref(dynamic_cast<CGamDocMfc*>(ar.m_pDocument)));
         uint8_t cTmp;
         uint16_t wTmp;
-        uint32_t dwTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 01))  // Ver2.01
         {
@@ -422,8 +421,8 @@ void CPlayBoard::Serialize(CArchive& ar)
             ar >> wTmp; m_yGridSnapOff = 1000 * static_cast<uint32_t>(wTmp);
         }
 
-        ar >> wTmp; m_xStackStagger = (int)(short)wTmp;
-        ar >> wTmp; m_yStackStagger = (int)(short)wTmp;
+        ar >> wTmp; m_xStackStagger = value_preserving_cast<int>(value_preserving_cast<int16_t>(wTmp));
+        ar >> wTmp; m_yStackStagger = value_preserving_cast<int>(value_preserving_cast<int16_t>(wTmp));
         ar >> wTmp; m_bPVisible = (BOOL)wTmp;
 
         if (CGamDoc::GetLoadingVersion() >= NumVersion(2, 90))
@@ -448,12 +447,12 @@ void CPlayBoard::Serialize(CArchive& ar)
             ar >> wTmp; m_bEnforceLocks = (BOOL)wTmp;
         }
 
-        ar >> dwTmp; m_crPlotLineColor = (COLORREF)dwTmp;
+        ar >> m_crPlotLineColor;
         ar >> wTmp; m_nPlotLineWidth = (int)wTmp;
-        ar >> dwTmp; m_crLineColor = (COLORREF)dwTmp;
+        ar >> m_crLineColor;
         ar >> wTmp; m_nLineWidth = (int)wTmp;
-        ar >> dwTmp; m_crTextColor = (COLORREF)dwTmp;
-        ar >> dwTmp; m_crTextBoxColor = (COLORREF)dwTmp;
+        ar >> m_crTextColor;
+        ar >> m_crTextBoxColor;
 
         CFontTbl& pFontMgr = CGamDoc::GetFontManager();
         m_fontID = 0;

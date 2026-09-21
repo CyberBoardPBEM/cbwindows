@@ -1,6 +1,6 @@
 // BrdCell.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -55,7 +55,7 @@ CBoardArray::CBoardArray(CTileManager& tileMgr) :
     m_nColTrkOffset = 0;
     m_bRowTrkInvert = 0;
     m_bColTrkInvert = 0;
-    SetCellFrameColor(RGB(0, 0, 0));
+    SetCellFrameColor(*wxBLACK);
     // ------ //
     m_wReserved1 = 0;
     m_wReserved2 = 0;
@@ -285,10 +285,10 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
     }
     else
     {
-        if (pCell.GetColor() == noColor)
+        if (pCell.GetColor() == noColorWx)
             return;                 // Let base color show through
 
-        wxBrush oBrsh(CB::Convert(pCell.GetColor()));
+        wxBrush oBrsh(pCell.GetColor());
         wxDCBrushChanger setBrush(pDC, oBrsh);
         pCF.FillCell(pDC, rct.GetLeft(), rct.GetTop());
     }
@@ -344,7 +344,7 @@ int CBoardArray::GetHeight(TileScale eScale) const
 
 // ----------------------------------------------------- //
 
-void CBoardArray::SetCellColor(size_t row, size_t col, COLORREF cr)
+void CBoardArray::SetCellColor(size_t row, size_t col, wxColour cr)
 {
     size_t nCellIdx = CellIndex(row, col);
     m_pMap[nCellIdx].SetColor(cr);
@@ -361,7 +361,7 @@ void CBoardArray::SetCellTile(size_t row, size_t col, TileID tid)
 // ----------------------------------------------------- //
 
 void CBoardArray::SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
-    size_t colEnd, COLORREF cr)
+    size_t colEnd, wxColour cr)
 {
     for (size_t r = rowBeg ; r <= rowEnd ; ++r)
         for (size_t c = colBeg ; c <= colEnd ; ++c)
@@ -464,9 +464,9 @@ const CCellForm& CBoardArray::GetCellForm(TileScale eScale) const
 
 ///////////////////////////////////////////////////////////////////////////
 
-void CBoardArray::SetCellFrameColor(COLORREF cr)
+void CBoardArray::SetCellFrameColor(wxColour cr)
 {
-    m_pnCellFrameWx = wxPen(CB::Convert(cr));
+    m_pnCellFrameWx = wxPen(cr);
     m_crCellFrame = cr;
 }
 
@@ -503,15 +503,15 @@ void BoardCell::Serialize(CArchive& ar)
     // file format <= 3.90
     union
     {
-        COLORREF    m_crCell;   // 0xFFFFxxxx is TileID, 0xFF000000 is noColor
+        WIN_COLORREF m_crCell;   // 0xFFFFxxxx is TileID, 0xFF000000 is noColor
         struct TID
         {
             TileID16  m_tidCell;  // Typically terrain bitmap
-            WORD    m_key;
+            uint16_t m_key;
         } tid;
     } temp;
-    static_assert(sizeof(temp) == sizeof(DWORD), "file v3.90 mixup");
-    static_assert(sizeof(temp.m_crCell) == sizeof(DWORD), "file v3.90 mixup");
+    static_assert(sizeof(temp) == sizeof(uint32_t), "file v3.90 mixup");
+    static_assert(sizeof(temp.m_crCell) == sizeof(uint32_t), "file v3.90 mixup");
     if (ar.IsStoring())
     {
         if (!CB::GetFeatures(ar).Check(ftrId32Bit))
@@ -519,26 +519,26 @@ void BoardCell::Serialize(CArchive& ar)
             if (IsTileID())
             {
                 SerializeBackdoor sb;
-                temp.tid.m_tidCell = SerializeBackdoor::Convert(m_tidCell);
+                temp.tid.m_tidCell = SerializeBackdoor::Convert(GetTID());
                 temp.tid.m_key = 0xFFFF;
             }
             else
             {
-                temp.m_crCell = m_crCell;
+                temp.m_crCell = GetColor();
             }
-            ar << (DWORD)temp.m_crCell;
+            ar << reinterpret_cast<uint32_t&>(temp);
         }
         else
         {
             if (IsTileID())
             {
                 ar << (uint8_t)1;
-                ar << m_tidCell;
+                ar << GetTID();
             }
             else
             {
                 ar << (uint8_t)0;
-                ar << m_crCell;
+                ar << GetColor();
             }
         }
     }
@@ -546,18 +546,15 @@ void BoardCell::Serialize(CArchive& ar)
     {
         if (!CB::GetFeatures(ar).Check(ftrId32Bit))
         {
-            DWORD dwTmp;
-            ar >> dwTmp; temp.m_crCell = (COLORREF)dwTmp;
+            ar >> reinterpret_cast<uint32_t&>(temp);
             if (temp.tid.m_key == 0xFFFF && temp.tid.m_tidCell != Invalid_v<TileID16>)
             {
                 SerializeBackdoor sb;
-                m_tidCell = SerializeBackdoor::Convert(temp.tid.m_tidCell);
-                m_tile = true;
+                SetTID(SerializeBackdoor::Convert(temp.tid.m_tidCell));
             }
             else
             {
-                m_crCell = temp.m_crCell;
-                m_tile = false;
+                SetColor(temp.m_crCell);
             }
         }
         else
@@ -566,13 +563,15 @@ void BoardCell::Serialize(CArchive& ar)
             ar >> isTileID;
             if (isTileID)
             {
-                ar >> m_tidCell;
-                m_tile = true;
+                TileID temp;
+                ar >> temp;
+                SetTID(temp);
             }
             else
             {
-                ar >> m_crCell;
-                m_tile = false;
+                wxColour temp;
+                ar >> temp;
+                SetColor(temp);
             }
         }
     }
@@ -580,18 +579,66 @@ void BoardCell::Serialize(CArchive& ar)
 
 ////////////////////////////////////////////////////////////////////
 
+BoardCell& BoardCell::operator=(const BoardCell& rhs)
+{
+    if (rhs.IsTileID())
+    {
+        SetTID(rhs.GetTID());
+    }
+    else
+    {
+        SetColor(rhs.GetColor());
+    }
+    return *this;
+}
+
 #ifdef _DEBUG
 
-BoardCell::BoardCell()
+BoardCell::BoardCell() :
+    m_tile(false),
+    m_crCell(noColorWx)
 {
-    Clear();
+}
+
+#endif
+
+BoardCell::BoardCell(const BoardCell& other) :
+    m_tile(other.m_tile)
+{
+#ifdef  _DEBUG
+#undef new
+#endif
+    if (m_tile)
+    {
+        new (&m_tidCell) TileID(other.m_tidCell);
+    }
+    else
+    {
+        new (&m_crCell) wxColour(other.m_crCell);
+    }
+#ifdef  _DEBUG
+#define new DEBUG_NEW
+#endif
+}
+
+BoardCell::~BoardCell()
+{
+    if (m_tile)
+    {
+        m_tidCell.~TileID();
+    }
+    else
+    {
+        m_crCell.~wxColour();
+    }
 }
 
 void BoardCell::Clear()
 {
-    m_tile = false;
-    m_crCell = noColor;
+    SetColor(noColorWx);
 }
+
+#ifdef _DEBUG
 
 BOOL BoardCell::IsTileID() const
 {
@@ -600,7 +647,7 @@ BOOL BoardCell::IsTileID() const
 
 BOOL BoardCell::IsEmpty() const
 {
-    return !m_tile && m_crCell == noColor;
+    return !m_tile && m_crCell == noColorWx;
 }
 
 TileID BoardCell::GetTID() const
@@ -610,22 +657,51 @@ TileID BoardCell::GetTID() const
 
 void BoardCell::SetTID(TileID id)
 {
-    m_tile = true;
-    m_tidCell = id;
-}
-
-COLORREF BoardCell::GetColor() const
-{
-    ASSERT(!m_tile);
-    return !m_tile ? m_crCell : noColor;
-}
-
-void BoardCell::SetColor(COLORREF cr)
-{
-    m_tile = false;
-    m_crCell = cr;
-}
+    if (m_tile)
+    {
+        m_tidCell = id;
+    }
+    else
+    {
+        m_crCell.~wxColour();
+        m_tile = true;
+#ifdef  _DEBUG
+#undef new
 #endif
+        new (&m_tidCell) TileID(id);
+#ifdef  _DEBUG
+#define new DEBUG_NEW
+#endif
+    }
+}
+
+wxColour BoardCell::GetColor() const
+{
+    wxASSERT(!m_tile);
+    return !m_tile ? m_crCell : noColorWx;
+}
+
+#endif
+
+void BoardCell::SetColor(wxColour cr)
+{
+    if (m_tile)
+    {
+        m_tidCell.~TileID();
+        m_tile = false;
+#ifdef  _DEBUG
+#undef new
+#endif
+        new (&m_crCell) wxColour(cr);
+#ifdef  _DEBUG
+#define new DEBUG_NEW
+#endif
+    }
+    else
+    {
+        m_crCell = cr;
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -639,26 +715,26 @@ void CBoardArray::Serialize(CArchive& ar)
         ar << m_wReserved4;
         ar << value_preserving_cast<int16_t>(m_nRowTrkOffset);
         ar << value_preserving_cast<int16_t>(m_nColTrkOffset);
-        ar << (WORD)m_bRowTrkInvert;
-        ar << (WORD)m_bColTrkInvert;
+        ar << value_preserving_cast<uint16_t>(m_bRowTrkInvert);
+        ar << value_preserving_cast<uint16_t>(m_bColTrkInvert);
         if (!CB::GetFeatures(ar).Check(ftrSizet64Bit))
         {
-            ar << value_preserving_cast<WORD>(m_nRows);
-            ar << value_preserving_cast<WORD>(m_nCols);
+            ar << value_preserving_cast<uint16_t>(m_nRows);
+            ar << value_preserving_cast<uint16_t>(m_nCols);
         }
         else
         {
             CB::WriteCount(ar, m_nRows);
             CB::WriteCount(ar, m_nCols);
         }
-        ar << (WORD)m_bTransparentCells;
-        ar << (WORD)m_eNumStyle;
-        ar << (WORD)m_bTrackCellNum;
-        ar << (DWORD)m_crCellFrame;
+        ar << value_preserving_cast<uint16_t>(m_bTransparentCells);
+        ar << value_preserving_cast<uint16_t>(m_eNumStyle);
+        ar << value_preserving_cast<uint16_t>(m_bTrackCellNum);
+        ar << m_crCellFrame;
     }
     else
     {
-        WORD wVal;
+        uint16_t wVal;
         int16_t iVal;
         DestroyBoard();
 
@@ -691,9 +767,9 @@ void CBoardArray::Serialize(CArchive& ar)
         if (CGamDoc::GetLoadingVersion() > NumVersion(0, 51))
 #endif
         {
-            DWORD dwTmp;
+            wxColour dwTmp;
             ar >> dwTmp;
-            SetCellFrameColor((COLORREF)dwTmp);
+            SetCellFrameColor(dwTmp);
         }
 
         m_pMap.resize(m_nRows * m_nCols);

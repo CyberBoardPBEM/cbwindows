@@ -530,7 +530,7 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                     crSmall = tile.GetSmallColor();
                 }
                 else
-                    crSmall = CB::Convert(pCellTo.GetColor());
+                    crSmall = pCellTo.GetColor();
                 wxSize sizeFull = CB::Convert(pBArryTo.GetCellSize(fullScale));
                 wxSize sizeHalf = CB::Convert(pBArryTo.GetCellSize(halfScale));
                 TileID tidNew = pTMgr.CreateTile(pTMgr.GetSpecialTileSet(),

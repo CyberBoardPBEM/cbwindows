@@ -198,7 +198,7 @@ OwnerPtr<wxBitmap> CreateRGBColorBar(int nHueDivisions, int nHeight)
 
     for (int h = 0; h < nHueDivisions; h++)
     {
-        cref = CB::Convert(HSVtoRGB((h * 359) / (nHueDivisions - 1), 255, 255));
+        cref = HSVtoRGB((h * 359) / (nHueDivisions - 1), 255, 255);
         SetPixelBlock(*hBitmap, h, 0, 1, nHeight, cref);
     }
     return hBitmap;
@@ -214,7 +214,7 @@ OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeigh
     {
         for (int y = 0; y < nHeight; y++)
         {
-            cref = CB::Convert(HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1)));
+            cref = HSVtoRGB(nHue, 255 - (255 * y) / (nHeight - 1), (255 * x) / (nWidth - 1));
             SetPixel(*hBitmap, x, y, cref);
         }
     }
@@ -225,11 +225,11 @@ OwnerPtr<wxBitmap> CreateRGBSaturationValueWash(int nHue, int nWidth, int nHeigh
 // h: 0..359
 // s, v: 0..255
 
-COLORREF HSVtoRGB(int h, int s, int v)
+wxColour HSVtoRGB(int h, int s, int v)
 {
     double r, g, b;
     HSVtoRGB((double)h, (double)s/255, (double)v/255, r, g, b);
-    return RGB((int)(r * 255 + 0.5), (int)(g * 255 + 0.5), (int)(b * 255 + 0.5));
+    return wxColour(value_preserving_cast<wxColour::ChannelType>(lround(r * 255)), value_preserving_cast<wxColour::ChannelType>(lround(g * 255)), value_preserving_cast<wxColour::ChannelType>(lround(b * 255)));
 }
 
 /////////////////////////////////////////////////////////////////

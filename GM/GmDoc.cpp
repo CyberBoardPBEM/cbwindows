@@ -551,7 +551,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
     dlg.m_nColTrkOffset = pBrdAry.GetColCellTrackingOffset();
     dlg.m_bRowTrkInvert = pBrdAry.GetRowCellTrackingInvert();
     dlg.m_bColTrkInvert = pBrdAry.GetColCellTrackingInvert();
-    dlg.m_crCellFrame = CB::Convert(pBrdAry.GetCellFrameColor());
+    dlg.m_crCellFrame = pBrdAry.GetCellFrameColor();
     dlg.m_bEnableXParentCells = pBrdAry.IsTransparentCellTilesEnabled();
 
     dlg.m_nRows = pBrdAry.GetRows();
@@ -579,7 +579,7 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
         pBrdAry.SetColCellTrackingOffset(dlg.m_nColTrkOffset);
         pBrdAry.SetRowCellTrackingInvert(dlg.m_bRowTrkInvert);
         pBrdAry.SetColCellTrackingInvert(dlg.m_bColTrkInvert);
-        pBrdAry.SetCellFrameColor(CB::Convert(dlg.m_crCellFrame));
+        pBrdAry.SetCellFrameColor(dlg.m_crCellFrame);
         pBrdAry.SetTransparentCellTilesEnabled(dlg.m_bEnableXParentCells);
 
         if (dlg.m_bShapeChanged)

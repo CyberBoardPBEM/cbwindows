@@ -403,7 +403,7 @@ bool CBoard::IsGEVStyleHelper(Edge e) const
 bool CBoard::IsEmpty(const BoardCell& cell) const
 {
     return cell.IsEmpty() ||
-        !cell.IsTileID() && cell.GetColor() == CB::Convert(m_crBkGnd);
+        !cell.IsTileID() && cell.GetColor() == m_crBkGnd;
 }
 #endif
 

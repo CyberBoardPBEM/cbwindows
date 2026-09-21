@@ -69,8 +69,7 @@ static_assert(sizeof(WIN_RGBTRIO) == 3 &&
 
 ////////////////////////////////////////////////////////////////////
 
-const       COLORREF noColor = 0xFF000000;
-const       wxColour noColorWx = CB::Convert(noColor);
+const       wxColour noColorWx = wxNullColour;
 
 ////////////////////////////////////////////////////////////////////
 
@@ -111,7 +110,7 @@ void SetPixel(wxBitmap& hBitmap, int x, int y, wxColour cr);
 wxColour GetPixel(const wxBitmap& hBitmap, int x, int y);
 void SetPixelBlock(wxBitmap& hBitmap, int x, int y, int cx, int cy, wxColour cr);
 
-COLORREF HSVtoRGB(int h, int s, int v);
+wxColour HSVtoRGB(int h, int s, int v);
 void HSVtoRGB(double h, double s, double v, double& r, double& g, double& b);
 
 wxBitmap CloneBitmap(const wxBitmap& pbmSrc);
