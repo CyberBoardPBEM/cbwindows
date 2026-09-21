@@ -175,8 +175,6 @@ protected:
 
     // Class variables (may be used to during draw of various offspring
     // class objects)
-    static CPen*    c_pPrvPen;
-    static CBrush*  c_pPrvBrush;
     static BOOL     c_bHitTestDraw;// TRUE=Draw() is being called for hit test.
 };
 

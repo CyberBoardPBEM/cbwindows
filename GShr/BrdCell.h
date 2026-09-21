@@ -1,6 +1,6 @@
 // BrdCell.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,12 +38,14 @@ struct BoardCell
     bool m_tile;
     union
     {
-        COLORREF    m_crCell;   // 0xFF000000 is noColor
+        wxColour    m_crCell;   // wxNullColour is noColor
         TileID      m_tidCell;  // Typically terrain bitmap
     };
     // -------- //
     BoardCell();
-    BoardCell& operator=(const BoardCell&) = default;
+    BoardCell(const BoardCell& other);
+    ~BoardCell();
+    BoardCell& operator=(const BoardCell& rhs);
     bool operator==(const BoardCell& rhs) const
     {
         return m_tile == rhs.m_tile &&
@@ -58,11 +60,11 @@ struct BoardCell
     BOOL IsEmpty() const;
     // -------- //
     TileID GetTID() const;
-    COLORREF GetColor() const;
+    wxColour GetColor() const;
     // -------- //
     void Clear();
     void SetTID(TileID id);
-    void SetColor(COLORREF cr);
+    void SetColor(wxColour cr);
     // ------- //
     void Serialize(CArchive& ar);
 };
@@ -80,7 +82,7 @@ public:
 
 // Attributes
 public:
-    COLORREF GetCellColor(size_t row, size_t col) const
+    wxColour GetCellColor(size_t row, size_t col) const
     {
         return GetCell(row, col).m_crCell;
     }
@@ -107,8 +109,8 @@ public:
     CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
     CB::string GetCellNumberStr(size_t row, size_t col) const;
     // ------ //
-    COLORREF GetCellFrameColor() const { return m_crCellFrame; }
-    void SetCellFrameColor(COLORREF cr);
+    wxColour GetCellFrameColor() const { return m_crCellFrame; }
+    void SetCellFrameColor(wxColour cr);
     // ------ //
     const BoardCell& GetCell(size_t row, size_t col) const;
     BoardCell& GetCell(size_t row, size_t col)
@@ -143,9 +145,9 @@ public:
     void FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const;
     // ------- //
     void SetCellTile(size_t row, size_t col, TileID tid);
-    void SetCellColor(size_t row, size_t col, COLORREF cr);
+    void SetCellColor(size_t row, size_t col, wxColour cr);
     void SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
-        size_t colEnd, COLORREF cr);
+        size_t colEnd, wxColour cr);
     // ------- //
     void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize) const;
     void GetBoardScaling(TileScale eScale, wxSize& worldsize, wxSize& viewSize) const
@@ -189,7 +191,7 @@ protected:
     BOOL    m_bTransparentCells;// (Not currently used)
     BOOL    m_bTrackCellNum;    // Mouse traking of cell number
     CellNumStyle m_eNumStyle;   // Cell numbering style
-    COLORREF m_crCellFrame;     // Cell frame color
+    wxColour m_crCellFrame;     // Cell frame color
 
     CCellForm   m_cfFull;       // Defines cell geometry of map (full scale)
     CCellForm   m_cfHalf;       // Defines cell geometry of map (half scale)
@@ -207,17 +209,15 @@ protected:
 ////////////////////////////////////////////////////////////////////
 
 #ifndef _DEBUG
-inline  BoardCell::BoardCell() { Clear(); }
-inline  void BoardCell::Clear() { m_tile = false; m_crCell = noColor; }
+inline  BoardCell::BoardCell() : m_tile(false), m_crCell(noColorWx) {}
 inline  BOOL BoardCell::IsTileID() const
     { return m_tile && m_tidCell != nullTid; }
-inline  BOOL BoardCell::IsEmpty() const { return !m_tile && m_crCell == noColor; }
+inline  BOOL BoardCell::IsEmpty() const { return !m_tile && m_crCell == noColorWx; }
 inline  TileID BoardCell::GetTID() const
     { return m_tile ? m_tidCell : nullTid; }
 inline  void BoardCell::SetTID(TileID id)
     { m_tile = true; m_tidCell = id; }
-inline  COLORREF BoardCell::GetColor() const { ASSERT(!m_tile); return !m_tile ? m_crCell : noColor; }
-inline  void BoardCell::SetColor(COLORREF cr) { m_tile = false; m_crCell = cr; }
+inline  wxColour BoardCell::GetColor() const { wxASSERT(!m_tile); return !m_tile ? m_crCell : noColorWx; }
 #endif
 
 #endif

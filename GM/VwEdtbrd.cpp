@@ -1020,9 +1020,9 @@ void CBrdEditView::SetCellColor(wxColour crCell, wxPoint pnt, BOOL bUpdate)
 
     if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
-    if (crCell != CB::Convert(pBa.GetCellColor(row, col)))
+    if (crCell != pBa.GetCellColor(row, col))
     {
-        pBa.SetCellColor(row, col, CB::Convert(crCell));
+        pBa.SetCellColor(row, col, crCell);
         if (bUpdate)
         {
             wxRect rct = CB::Convert(pBa.GetCellRect(row, col, m_nZoom));// In board coords

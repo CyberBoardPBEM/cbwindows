@@ -1,6 +1,6 @@
 // PBoard.h
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -85,7 +85,7 @@ public:
     const CBoard* GetBoard() const { return m_pBoard.get(); }
     CBoard* GetBoard() { return const_cast<CBoard*>(std::as_const(*this).GetBoard()); }
 
-    COLORREF GetLineColor() const { return m_crLineColor; }
+    wxColour GetLineColor() const { return m_crLineColor; }
     UINT     GetLineWidth() const { return m_nLineWidth; }
 
     BoardID GetSerialNumber() const { return m_nSerialNum; }
@@ -167,14 +167,14 @@ public:
     int     m_bCellBorders;     // Cells have borders.
     int     m_bSmallCellBorders;// Small map cells have borders.
 
-    COLORREF m_crPlotLineColor; // Move plot line color.
+    wxColour m_crPlotLineColor; // Move plot line color.
     UINT     m_nPlotLineWidth;  // Move plot line width
 
-    COLORREF m_crLineColor;     // Line color
+    wxColour m_crLineColor;     // Line color
     UINT     m_nLineWidth;      // Line width
 
-    COLORREF m_crTextColor;     // Text color
-    COLORREF m_crTextBoxColor;  // Text box background color
+    wxColour m_crTextColor;     // Text color
+    wxColour m_crTextBoxColor;  // Text box background color
     // allow default move operations to work right
 public:
     FontID   m_fontID;          // Text font

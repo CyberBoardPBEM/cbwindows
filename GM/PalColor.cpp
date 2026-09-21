@@ -680,7 +680,7 @@ void CColorPalette::UpdateCurrentColors(BOOL bImmediate)
 
 void CColorPalette::UpdateCurrentColorMix(BOOL bUpdate /* = TRUE*/)
 {
-    wxColour cref = CB::Convert(HSVtoRGB(m_nHue, m_nSat, m_nVal));
+    wxColour cref = HSVtoRGB(m_nHue, m_nSat, m_nVal);
     m_crCurMix = cref;
     if (bUpdate)
         RefreshRect(m_rctColorMix, FALSE);
@@ -702,7 +702,7 @@ void CColorPalette::CustomColorsSerialize(CArchive& ar, std::vector<wxColour>& p
     {
         ar << value_preserving_cast<uint16_t>(cellCustArraySize);
         for (int i = 0; i < cellCustArraySize; i++)
-            ar << static_cast<uint32_t>(CB::Convert(crTbl[i]));
+            ar << crTbl[i];
     }
     else
     {
@@ -713,7 +713,7 @@ void CColorPalette::CustomColorsSerialize(CArchive& ar, std::vector<wxColour>& p
         for (int i = 0; i < wCount; i++)
         {
             ar >> dwColor;
-            crTbl[i] = CB::Convert(static_cast<COLORREF>(dwColor));
+            crTbl[i] = reinterpret_cast<WIN_COLORREF&>(dwColor);
         }
     }
 }

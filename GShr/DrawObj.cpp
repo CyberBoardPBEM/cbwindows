@@ -127,8 +127,6 @@ ObjectID64::ObjectID64(PieceID32 pid) :
 ////////////////////////////////////////////////////////////////////
 // Class variables
 
-CPen*   CDrawObj::c_pPrvPen = NULL;
-CBrush* CDrawObj::c_pPrvBrush = NULL;
 BOOL    CDrawObj::c_bHitTestDraw = FALSE;
 
 //////////////////////////////////////////////////////////////////

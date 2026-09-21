@@ -1135,7 +1135,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
     dlg.m_bShowSelListAndTinyMap = pPBoard.m_bShowSelListAndTinyMap;
     dlg.m_xStackStagger = pPBoard.m_xStackStagger;
     dlg.m_yStackStagger = pPBoard.m_yStackStagger;
-    dlg.m_crPlotColor = CB::Convert(pPBoard.m_crPlotLineColor);
+    dlg.m_crPlotColor = pPBoard.m_crPlotLineColor;
     dlg.m_nPlotWd = pPBoard.m_nPlotLineWidth;
     dlg.m_strBoardName = pPBoard.GetBoard()->GetName().wx_str();
     dlg.m_pPlayerMgr = GetPlayerManager();
@@ -1160,7 +1160,7 @@ void CGamDoc::DoBoardProperties(CPlayBoard& pPBoard)
         pPBoard.m_bShowSelListAndTinyMap = dlg.m_bShowSelListAndTinyMap;
         pPBoard.m_xStackStagger = dlg.m_xStackStagger;
         pPBoard.m_yStackStagger = dlg.m_yStackStagger;
-        pPBoard.m_crPlotLineColor = CB::Convert(dlg.m_crPlotColor);
+        pPBoard.m_crPlotLineColor = dlg.m_crPlotColor;
         pPBoard.m_nPlotLineWidth = dlg.m_nPlotWd;
         pPBoard.SetDrawLockedBeneath(dlg.m_bDrawLockedBeneath);
 
