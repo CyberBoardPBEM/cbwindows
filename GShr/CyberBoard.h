@@ -1007,14 +1007,6 @@ namespace CB
         }
 
         [[nodiscard]] static string GetModuleFileName(HMODULE hModule);
-        [[nodiscard]] static string GetWindowText(const CWnd& wnd);
-        [[nodiscard]] static string GetText(const CListBox& wnd, int nIndex);
-        [[nodiscard]] static string GetLBText(const CComboBox& wnd, int nIndex);
-        [[nodiscard]] static string GetMenuString(const CMenu& menu, UINT nIDItem, UINT nFlags);
-        [[nodiscard]] static string GetDocString(const CDocTemplate& docTempl, CDocTemplate::DocStringIndex index);
-        // TODO:  std::optional<string> is probably better
-        [[nodiscard]] static std::unique_ptr<string> DoPromptFileName(CWinApp& app, UINT nIDSTitle,
-            DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
 
         string() = default;     // empty string
         string(const string& other) : cp1252(other.cp1252) {}
@@ -1988,50 +1980,8 @@ static_assert(std::is_same_v<std::vector<int>::iterator::difference_type, ptrdif
 // adapt between CWnd and wxWindow
 namespace CB
 {
-    class NativeContainerWindowMixin
-    {
-    public:
-        // avoid multiple wxWindow for single CWnd
-        NativeContainerWindowMixin(const NativeContainerWindowMixin&) = delete;
-        NativeContainerWindowMixin(CWnd& w) : mfcWnd(&w) {}
-
-        operator const wxNativeContainerWindow*() const;
-        operator wxNativeContainerWindow*()
-        {
-            return const_cast<wxNativeContainerWindow*>(static_cast<const wxNativeContainerWindow*>(std::as_const(*this)));
-        }
-
-        operator const wxNativeContainerWindow&() const
-        {
-            return CheckedDeref(static_cast<const wxNativeContainerWindow*>(*this));
-        }
-        operator wxNativeContainerWindow&()
-        {
-            return CheckedDeref(static_cast<wxNativeContainerWindow*>(*this));
-        }
-
-    private:
-        RefPtr<CWnd> mfcWnd;
-        /* N.B.:  wx deletes this when HWND is destroyed,
-                    BUT does not tell us! */
-        mutable propagate_const<wxNativeContainerWindow*> wxWnd = nullptr;
-    };
-
-    /* if mfcWnd has
-        wxNativeContainerWindowMixin, return it */
-    wxWindow* GetWxWindow(CWnd& mfcWnd);
-    /* if mfcWnd or one of its descendants has
-        wxNativeContainerWindowMixin, return it */
-    wxWindow* FindWxWindow(CWnd& mfcWnd);
-
     // emulate CWnd::SendMessageToDescendants()
     void SendEventToDescendants(wxWindow& wnd, wxEvent& event, bool deep = true);
-
-    const CWnd* ToCWnd(const wxWindow& w);
-    inline CWnd* ToCWnd(wxWindow& w) { return const_cast<CWnd*>(ToCWnd(std::as_const(w))); }
-
-    // MFC if possible, wx otherwise
-    const std::type_info& GetPublicTypeid(const wxWindow& w);
 }
 
 // helpers for providing wx/docview

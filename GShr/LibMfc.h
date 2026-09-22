@@ -1,6 +1,6 @@
 // LibMfc.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -46,41 +46,9 @@ BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 BOOL AppendStringToEditBox(wxTextCtrl& edit, const CB::string& strAppend,
     BOOL bEnsureNewline = FALSE);
 
-BOOL TranslateKeyToScrollBarMessage(CWnd* pWnd, UINT nChar);
-UINT LocateSubMenuIndexOfMenuHavingStartingID(CMenu* pMenu, UINT nID);
-void CreateSequentialSubMenuIDs(CMenu& menu, UINT nBaseID, const std::vector<CB::string>& tblNames,
-        const std::vector<size_t>* pTblSelections = NULL, UINT nBreaksAt = 20);
-
-/////////////////////////////////////////////////////////////////////////////
-// Extend CMDIFrameWndEx with message handlers to split tabs
-// into groups.
-
-class CMDIFrameWndExCb : public CMDIFrameWndEx
-{
-    DECLARE_DYNAMIC(CMDIFrameWndExCb)
-
-public:
-    using CMDIFrameWndExCb::OnSize;
-
-protected:
-    CMDIFrameWndExCb();
-
-    afx_msg void OnUpdateWindowTile(CCmdUI* pCmdUI);
-    afx_msg BOOL OnWindowTile(UINT nID);
-
-    DECLARE_MESSAGE_MAP()
-
-    class CMDIClientAreaWndCb;
-    const CMDIClientAreaWndCb& GetMDIClient() const;
-    CMDIClientAreaWndCb& GetMDIClient();
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // provide overloads of MFC functions that support portable types
 
-void DDX_Check(CDataExchange* pDX, int nIDC, bool& value);
-void DDX_Text(CDataExchange* pDX, int nIDC, CB::string& value);
-void DDV_MaxChars(CDataExchange* pDX, CB::string const& value, int nChars);
 CB::string AfxFormatString1(UINT nIDS, const CB::string& lpsz1);
 
 #endif

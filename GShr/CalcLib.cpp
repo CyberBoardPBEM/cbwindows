@@ -1,6 +1,6 @@
 // CalcLib.cpp -- Miscellaneous calcs
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -263,25 +263,6 @@ wxPoint RotatePointAroundPoint(wxPoint pntOrigin, wxPoint pntXlate, int nAngleDe
 
 // ----------------------------------------------- //
 // This probably belongs elsewhere.
-
-CWnd* GetWindowFromPoint(CPoint pntScreen)
-{
-    CWnd* pWnd = CWnd::WindowFromPoint(pntScreen);
-
-    if (pWnd == NULL)
-        return NULL;
-
-    pWnd->ScreenToClient(&pntScreen);
-    pWnd = pWnd->ChildWindowFromPoint(pntScreen);
-
-    if (pWnd == NULL)
-        return NULL;
-
-    return pWnd->IsWindowVisible() ? pWnd : NULL;
-}
-
-// ----------------------------------------------- //
-// Ditto for this (This probably belongs elsewhere.)
 
 void PushRectOntoScreen(RECT& rct)
 {
