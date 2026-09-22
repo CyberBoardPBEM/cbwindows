@@ -217,7 +217,13 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
 
 // ensure MFC classes are no longer used
 #define CBitmap ***poison***
+#define CComboBox ***poison***
+#define CDataExchange ***poison***
 #define CDC ***poison***
+#define CDocTemplate ***poison***
+#define CListBox ***poison***
+#define CMenu ***poison***
+#define CWnd ***poison***
 
 class CGamDoc;
 namespace CB
