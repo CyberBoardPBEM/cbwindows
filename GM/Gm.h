@@ -167,8 +167,6 @@ public:
 #endif
 
     BOOL DispatchMessages();
-    void UpdateAllViewsForAllDocuments(CView* pSender, LPARAM lHint = 0,
-        CObject* pHint = NULL);
 
 // Overrides
     virtual BOOL InitInstance();

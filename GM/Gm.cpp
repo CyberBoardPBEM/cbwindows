@@ -1,6 +1,6 @@
 // Gm.cpp : Defines the class behaviors for the application.
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -653,27 +653,6 @@ BOOL CGmApp::DispatchMessages()
     AfxGetApp()->OnIdle(0);   // updates user interface
     AfxGetApp()->OnIdle(1);   // frees temporary objects
     return FALSE;
-}
-
-///////////////////////////////////////////////////////////////////////
-// This method transmits a hint to all open documents.
-
-void CGmApp::UpdateAllViewsForAllDocuments(CView* pSender, LPARAM lHint /*  = 0 */, CObject* pHint /* = NULL */)
-{
-    POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
-
-    while (pos != NULL)
-    {
-        CDocTemplate* pTemplate = (CDocTemplate*)m_pDocManager->GetNextDocTemplate(pos);
-        POSITION pos2 = pTemplate->GetFirstDocPosition();
-        while (pos2)
-        {
-            CDocument* pDoc = (CDocument*)pTemplate->GetNextDoc(pos2);
-            ASSERT(pDoc != NULL);
-            ASSERT(pDoc->IsKindOf(RUNTIME_CLASS(CDocument)));
-            pDoc->UpdateAllViews(pSender, lHint, pHint);
-        }
-    }
 }
 
 

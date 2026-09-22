@@ -98,7 +98,6 @@ int NumInWordArray(CWordArray& array, int val);
 WORD GetTimeBasedRandomNumber(BOOL bZeroAllowed = TRUE);
 WORD GetStringBasedRandomNumber(const CB::string& str);
 DWORD GetStringHash(const CB::string& str);
-CWnd* GetWindowFromPoint(CPoint point);
 void PushRectOntoScreen(RECT& rct);
 int Sin10K(int angle);
 int Cos10K(int angle);
