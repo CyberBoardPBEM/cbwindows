@@ -284,13 +284,18 @@ struct alignas(uint32_t) WIN_COLORREF
 
 // ensure MFC classes are no longer used
 #define CBitmap ***poison***
+#define CBrush ***poison***
 #define CComboBox ***poison***
 #define CDataExchange ***poison***
 #define CDC ***poison***
 #define CDocTemplate ***poison***
 #define CListBox ***poison***
 #define CMenu ***poison***
+#define CPen ***poison***
 #define CWnd ***poison***
+
+#undef COLORREF
+#define COLORREF ***poison***
 
 class CGamDoc;
 namespace CB
