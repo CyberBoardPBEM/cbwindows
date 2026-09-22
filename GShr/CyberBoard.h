@@ -215,6 +215,10 @@ static_assert(std::is_unsigned_v<int32_t> == std::is_unsigned_v<LONG> &&
     #undef min
 #endif
 
+// ensure MFC classes are no longer used
+#define CBitmap ***poison***
+#define CDC ***poison***
+
 class CGamDoc;
 namespace CB
 {
