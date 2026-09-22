@@ -2270,27 +2270,9 @@ namespace CB
 */
 #define CB_XRC_CTRL_VAL(ctrl, ...) , ctrl(&CB::SetValidator(*XRCCTRL(*this, #ctrl, std::remove_reference_t<decltype(*ctrl)>), __VA_ARGS__))
 
-// provide conversions between COLORREF and wxColour
+// provide conversions between MS and wx types
 namespace CB
 {
-    inline wxColour Convert(COLORREF c)
-    {
-                // match PalColor.h/GdiTools.h
-        return c != 0xFF000000 ?
-                    wxColour(GetRValue(c), GetGValue(c), GetBValue(c))
-                :
-                    wxNullColour;
-    }
-
-    inline COLORREF Convert(wxColour c)
-    {
-        return c != wxNullColour ?
-                    RGB(c.Red(), c.Green(), c.Blue())
-                :
-                    // match PalColor.h/GdiTools.h
-                    0xFF000000;
-    }
-
     inline wxPoint Convert(const POINT& p)
     {
         return wxPoint(p.x, p.y);
