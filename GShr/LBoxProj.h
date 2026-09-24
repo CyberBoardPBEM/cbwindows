@@ -1,6 +1,6 @@
 // LBoxProj.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -41,79 +41,6 @@
     stored in a normal variable (they are encoded into the
     strings in the list box), so the template is just a
     type-safe wrapper on the base; it has no actual data. */
-
-class CProjListBoxBase : public CGrafixListBox
-{
-// Construction
-public:
-    CProjListBoxBase() { m_nMarkGrp = -1; m_nMarkSourceCode = Invalid_v<size_t>;
-        m_nHorzWidth = 0; }
-
-// Attributes
-public:
-
-// Operations
-protected:
-    int AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode);
-    int AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
-        size_t nSourceCode);
-    void MarkGroupItem(int nGroupCode, size_t nSourceCode)
-        { m_nMarkGrp = nGroupCode; m_nMarkSourceCode = nSourceCode; }
-    int GetItemGroupCode(int nIndex) const;
-public:
-    size_t GetItemSourceCode(int nIndex) const;
-    CB::string GetItemText(int nIndex) const;
-
-    int GetItemWidth(int nItem) const;
-
-    /* N.B.:  CTileBaseListBox requires providing this, and it
-        doesn't hurt much to provide it in general. */
-    virtual int OnGetItemDebugIDCode(size_t nItem) const override
-    {
-        ASSERT(!"not impl");
-        AfxThrowNotSupportedException();
-    }
-
-// Implementation
-protected:
-    int     m_nMarkGrp;
-    size_t  m_nMarkSourceCode;
-    int     m_nHorzWidth;
-
-    // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-
-    virtual void OnDragEnd(CPoint point) override { ASSERT(!"not used"); AfxThrowNotSupportedException(); }
-
-    //{{AFX_MSG(CProjListBox)
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-};
-
-template<typename T>
-class CProjListBox : public CProjListBoxBase
-{
-public:
-    int AddItem(T nGroupCode, const CB::string& pszText, size_t nSourceCode = Invalid_v<size_t>)
-    {
-        return CProjListBoxBase::AddItem(value_preserving_cast<int>(nGroupCode), pszText, nSourceCode);
-    }
-    int AddSeqItem(T nGroupCode, const CB::string& pszText, int nSeqNum,
-        size_t nSourceCode = Invalid_v<size_t>)
-    {
-        return CProjListBoxBase::AddSeqItem(value_preserving_cast<int>(nGroupCode), pszText, nSeqNum, nSourceCode);
-    }
-    void MarkGroupItem(T nGroupCode = Invalid_v<T>, size_t nSourceCode = Invalid_v<size_t>)
-    {
-        CProjListBoxBase::MarkGroupItem(value_preserving_cast<int>(nGroupCode), nSourceCode);
-    }
-    T GetItemGroupCode(int nIndex) const
-    {
-        return static_cast<T>(CProjListBoxBase::GetItemGroupCode(nIndex));
-    }
-};
 
 class CProjListBoxBaseWx : public CGrafixListBoxWx
 {

@@ -1,6 +1,6 @@
 // LBoxTile.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -40,41 +40,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 class CGamDoc;
-
-/////////////////////////////////////////////////////////////////////////////
-
-class CTileListBox : public CGrafixListBoxData<CGrafixListBox, TileID>
-{
-// Construction
-public:
-    CTileListBox();
-
-// Attributes
-public:
-    void SetDrawAllScales(BOOL bDrawAll) { m_bDrawAllScales = bDrawAll; }
-    BOOL GetDrawAllScaled() { return m_bDrawAllScales; }
-
-// Operations
-public:
-    void SetDocument(const CGamDoc* pDoc) { m_pDoc = pDoc; }
-
-// Implementation
-protected:
-    const CGamDoc* m_pDoc;
-    BOOL        m_bDrawAllScales;
-    int         m_bDisplayIDs;     // Set to prop [Settings]:DisplayIDs
-
-    // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-
-    //{{AFX_MSG(CTileListBox)
-    //}}AFX_MSG
-
-    DECLARE_MESSAGE_MAP()
-};
 
 /////////////////////////////////////////////////////////////////////////////
 
