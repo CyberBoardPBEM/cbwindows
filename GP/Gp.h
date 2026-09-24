@@ -231,7 +231,9 @@ public:
     void DoHelpContext(uintptr_t dwContextData);
     void DoHelpTopic(const CB::string& pszTopic);
     BOOL DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray);
+#if 0
     void DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray);
+#endif
 
     BOOL DispatchMessages();
     void Delay(int nMilliSecs, BOOL* pbBailOut = NULL);

@@ -611,6 +611,7 @@ BOOL CGmApp::DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray)
     return TRUE;
 }
 
+#if 0
 void CGmApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
 {
     if (m_bDisableHtmlHelp)
@@ -624,6 +625,7 @@ void CGmApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
     ::HtmlHelp(pWndCtrl->GetSafeHwnd(), strHelpPath,
         HH_TP_HELP_CONTEXTMENU, reinterpret_cast<uintptr_t>(dwIDArray));
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Returns TRUE if WM_QUIT encountered.
