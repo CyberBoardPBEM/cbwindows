@@ -59,7 +59,7 @@ namespace CB { namespace Impl
     };
 }}
 
-class CProjListBoxGam : public CProjListBoxWx<decltype(CB::Impl::CGamProjViewBase::grpDoc)>
+class CProjListBoxGam : public CProjListBox<decltype(CB::Impl::CGamProjViewBase::grpDoc)>
 {
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGam);
 };

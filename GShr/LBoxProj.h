@@ -42,11 +42,11 @@
     strings in the list box), so the template is just a
     type-safe wrapper on the base; it has no actual data. */
 
-class CProjListBoxBaseWx : public CGrafixListBoxWx
+class CProjListBoxBase : public CGrafixListBox
 {
 // Construction
 public:
-    CProjListBoxBaseWx()
+    CProjListBoxBase()
     {
         m_nMarkGrp = -1;
         m_nMarkSourceCode = Invalid_v<size_t>;
@@ -112,25 +112,25 @@ private:
 };
 
 template<typename T>
-class CProjListBoxWx : public CProjListBoxBaseWx
+class CProjListBox : public CProjListBoxBase
 {
 public:
     size_t AddItem(T nGroupCode, const CB::string& pszText, size_t nSourceCode = Invalid_v<size_t>)
     {
-        return CProjListBoxBaseWx::AddItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSourceCode);
+        return CProjListBoxBase::AddItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSourceCode);
     }
     size_t AddSeqItem(T nGroupCode, const CB::string& pszText, int nSeqNum,
         size_t nSourceCode = Invalid_v<size_t>)
     {
-        return CProjListBoxBaseWx::AddSeqItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSeqNum, nSourceCode);
+        return CProjListBoxBase::AddSeqItem(static_cast<std::underlying_type_t<T>>(nGroupCode), pszText, nSeqNum, nSourceCode);
     }
     void MarkGroupItem(T nGroupCode = Invalid_v<T>, size_t nSourceCode = Invalid_v<size_t>)
     {
-        CProjListBoxBaseWx::MarkGroupItem(static_cast<std::underlying_type_t<T>>(nGroupCode), nSourceCode);
+        CProjListBoxBase::MarkGroupItem(static_cast<std::underlying_type_t<T>>(nGroupCode), nSourceCode);
     }
     T GetItemGroupCode(size_t nIndex) const
     {
-        return static_cast<T>(CProjListBoxBaseWx::GetItemGroupCode(nIndex));
+        return static_cast<T>(CProjListBoxBase::GetItemGroupCode(nIndex));
     }
 };
 

@@ -80,7 +80,7 @@ protected:
 
     // Enclosed controls....
     CB::propagate_const<wxChoice*> m_comboMGrp;
-    CB::propagate_const<CMarkListBoxWx*> m_listMark;
+    CB::propagate_const<CMarkListBox*> m_listMark;
 
     void LoadMarkerNameList();
     void UpdateMarkerList();

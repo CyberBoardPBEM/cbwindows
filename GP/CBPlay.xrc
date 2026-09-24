@@ -1156,7 +1156,7 @@
             <flag>wxALL|wxEXPAND</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listTrays" subclass="CTrayListBoxWx"/>
+            <object class="wxVListBox" name="m_listTrays" subclass="CTrayListBox"/>
           </object>
           <object class="sizeritem">
             <flag>wxALL|wxEXPAND</flag>
@@ -1353,7 +1353,7 @@
         <flag>wxEXPAND</flag>
         <border>5</border>
         <option>1</option>
-        <object class="wxVListBox" name="m_listMark" subclass="CMarkListBoxWx">
+        <object class="wxVListBox" name="m_listMark" subclass="CMarkListBox">
           <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
         </object>
       </object>
@@ -2842,7 +2842,7 @@
             <flag>wxALL|wxEXPAND</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listPiece" subclass="CPieceListBoxWx">
+            <object class="wxVListBox" name="m_listPiece" subclass="CPieceListBox">
               <style>wxLB_MULTIPLE</style>
             </object>
           </object>
@@ -2977,7 +2977,7 @@
             <flag>wxALL|wxEXPAND</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listTray" subclass="CTrayListBoxWx">
+            <object class="wxVListBox" name="m_listTray" subclass="CTrayListBox">
               <style>wxLB_MULTIPLE</style>
             </object>
           </object>
@@ -3096,7 +3096,7 @@
         <flag>wxEXPAND</flag>
         <border>5</border>
         <option>1</option>
-        <object class="wxVListBox" name="m_listTray" subclass="CTrayListBoxWx">
+        <object class="wxVListBox" name="m_listTray" subclass="CTrayListBox">
           <style>wxLB_MULTIPLE</style>
         </object>
       </object>

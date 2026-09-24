@@ -36,7 +36,7 @@
 #endif
 
 class CGsnProjView;
-class CTrayListBoxWx;
+class CTrayListBox;
 class wxGsnProjView;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ namespace CB { namespace Impl
 
 class CGsnProjViewContainer;
 
-class CProjListBoxGsn : public CProjListBoxWx<decltype(CB::Impl::CGsnProjViewBase::grpDoc)>
+class CProjListBoxGsn : public CProjListBox<decltype(CB::Impl::CGsnProjViewBase::grpDoc)>
 {
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGsn);
 };
@@ -93,7 +93,7 @@ private:
         RefPtr<CProjListBoxGsn> m_listProj;         // Main project box
 
         RefPtr<wxTextCtrl> m_editInfo;         // Used for various project info/help
-        RefPtr<CTrayListBoxWx> m_listTrays;        // For viewing tray contents
+        RefPtr<CTrayListBox> m_listTrays;        // For viewing tray contents
 
         RefPtr<wxButton> m_btnPrjA;          // Project button group
         RefPtr<wxButton> m_btnPrjB;

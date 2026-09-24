@@ -43,9 +43,9 @@ public:
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxChoice> m_comboPGrp;
-        RefPtr<CPieceListBoxWx> m_listPiece;
+        RefPtr<CPieceListBox> m_listPiece;
         RefPtr<wxChoice> m_comboYGrp;
-        RefPtr<CTrayListBoxWx> m_listTray;
+        RefPtr<CTrayListBox> m_listTray;
     CB_XRC_END_CTRLS_DECL()
 
     RefPtr<CGamDoc> m_pDoc;         // Must be set by creator

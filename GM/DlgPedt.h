@@ -1,6 +1,6 @@
 // DlgPedt.h : header file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -47,11 +47,11 @@ private:
         RefPtr<wxTextCtrl> m_editTextBack;
         RefPtr<wxCheckBox> m_chkSameAsTop;
         RefPtr<wxTextCtrl> m_editTextFront;
-        RefPtr<CPieceListBoxWx> m_listPieces;
+        RefPtr<CPieceListBox> m_listPieces;
         RefPtr<wxChoice> m_comboFtset;
-        RefPtr<CTileListBoxWx> m_listFtile;
+        RefPtr<CTileListBox> m_listFtile;
         RefPtr<wxChoice> m_comboBtset;
-        RefPtr<CTileListBoxWx> m_listBtile;
+        RefPtr<CTileListBox> m_listBtile;
         /* sides are 0-based since they are vector indices, but we
             will display them 1-based for human readability */
         RefPtr<wxChoice> m_numSides;
@@ -75,8 +75,8 @@ protected:
     void SetupPieceTiles();
     void SetupPieceTexts();
     void SetupTileSetNames(wxChoice& pCombo) const;
-    void SetupTileListbox(const wxChoice& pCombo, CTileListBoxWx& pList) const;
-    TileID GetTileID(const wxChoice& pCombo, const CTileListBoxWx& pList) const;
+    void SetupTileListbox(const wxChoice& pCombo, CTileListBox& pList) const;
+    TileID GetTileID(const wxChoice& pCombo, const CTileListBox& pList) const;
     // -------- //
 
     bool TransferDataFromWindow() override;

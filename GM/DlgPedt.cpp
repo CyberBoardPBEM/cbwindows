@@ -108,7 +108,7 @@ void CPieceEditDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceEditDialog::SetupTileListbox(const wxChoice& pCombo, CTileListBoxWx& pList) const
+void CPieceEditDialog::SetupTileListbox(const wxChoice& pCombo, CTileListBox& pList) const
 {
     int nCurSel = pCombo.GetSelection();
     if (nCurSel == wxNOT_FOUND)
@@ -132,7 +132,7 @@ void CPieceEditDialog::SetupTileSetNames(wxChoice& pCombo) const
         pCombo.SetSelection(wxNOT_FOUND);          // Select no entry yet
 }
 
-TileID CPieceEditDialog::GetTileID(const wxChoice& pCombo, const CTileListBoxWx& pList) const
+TileID CPieceEditDialog::GetTileID(const wxChoice& pCombo, const CTileListBox& pList) const
 {
     int nCurSel = pCombo.GetSelection();
     if (nCurSel == wxNOT_FOUND)

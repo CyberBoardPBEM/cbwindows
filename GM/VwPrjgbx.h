@@ -68,7 +68,7 @@ namespace CB { namespace Impl
     };
 }}
 
-class CProjListBoxGm : public CProjListBoxWx<decltype(CB::Impl::CGbxProjViewBase::grpDoc)>
+class CProjListBoxGm : public CProjListBox<decltype(CB::Impl::CGbxProjViewBase::grpDoc)>
 {
     wxDECLARE_DYNAMIC_CLASS(CProjListBoxGm);
 };
@@ -89,9 +89,9 @@ private:
         RefPtr<CProjListBoxGm>  m_listProj;         // Main project box
 
         RefPtr<wxTextCtrl>      m_editInfo;         // Used for various project info/help
-        RefPtr<CTileListBoxWx>  m_listTiles;        // For viewing tiles
-        RefPtr<CPieceListBoxWx> m_listPieces;       // For viewing pieces
-        RefPtr<CMarkListBoxWx>  m_listMarks;        // For viewing marker graphics
+        RefPtr<CTileListBox>    m_listTiles;        // For viewing tiles
+        RefPtr<CPieceListBox>   m_listPieces;       // For viewing pieces
+        RefPtr<CMarkListBox>    m_listMarks;        // For viewing marker graphics
 
         RefPtr<wxButton>        m_btnPrjA;          // Project button group
         RefPtr<wxButton>        m_btnPrjB;

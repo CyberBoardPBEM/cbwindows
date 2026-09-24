@@ -43,11 +43,11 @@ class CGamDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTileListBoxWx : public CGrafixListBoxDataWx<CGrafixListBoxWx, TileID>
+class CTileListBox : public CGrafixListBoxData<CGrafixListBox, TileID>
 {
 // Construction
 public:
-    CTileListBoxWx();
+    CTileListBox();
 
 // Attributes
 public:
@@ -70,7 +70,7 @@ protected:
     virtual BOOL OnDragSetup(DragInfoWx& pDI) const override;
 
 private:
-    wxDECLARE_DYNAMIC_CLASS(CTileListBoxWx);
+    wxDECLARE_DYNAMIC_CLASS(CTileListBox);
 };
 
 #endif

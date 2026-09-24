@@ -41,7 +41,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBoxWx);
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGm, CGrafixListBox);
 wxIMPLEMENT_DYNAMIC_CLASS(wxGbxProjView, wxView);
 
 #ifdef _DEBUG

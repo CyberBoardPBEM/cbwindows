@@ -26,7 +26,7 @@
 #include    "ResTbl.h"
 #include    "GmDoc.h"
 #include    "LBoxTile.h"
-wxIMPLEMENT_DYNAMIC_CLASS(CTileListBoxWx, CB::VListBoxHScroll);
+wxIMPLEMENT_DYNAMIC_CLASS(CTileListBox, CB::VListBoxHScroll);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -34,14 +34,14 @@ const int tileBorder = 3;
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTileListBoxWx::CTileListBoxWx()
+CTileListBox::CTileListBox()
 {
     m_pDoc = NULL;
     m_bDrawAllScales = FALSE;
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
 }
 
-wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
+wxSize CTileListBox::GetItemSize(size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
     const CTileManager& pTMgr = m_pDoc->GetTileManager();
@@ -58,7 +58,7 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
     {
         CB::string str = std::format("[{}] ", MapIndexToItem(nIndex));
         // only using DC to measure text, so const_cast safe;
-        wxWindowDC pDC(const_cast<CTileListBoxWx*>(this));
+        wxWindowDC pDC(const_cast<CTileListBox*>(this));
         pDC.SetFont(g_res.h8ssWx);
         x += pDC.GetTextExtent(str).x;
     }
@@ -75,7 +75,7 @@ wxSize CTileListBoxWx::GetItemSize(size_t nIndex) const
     return wxSize(x, nHt);
 }
 
-void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+void CTileListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     wxASSERT(m_pDoc != NULL);
     const CTileManager& pTMgr = m_pDoc->GetTileManager();
@@ -121,7 +121,7 @@ void CTileListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     }
 }
 
-BOOL CTileListBoxWx::OnDragSetup(DragInfoWx& pDI) const
+BOOL CTileListBox::OnDragSetup(DragInfoWx& pDI) const
 {
     if (IsMultiSelect())
     {

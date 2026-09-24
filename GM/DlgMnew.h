@@ -44,8 +44,8 @@ public:
         RefPtr<wxCheckBox> m_chkPromptText;
         RefPtr<wxTextCtrl> m_editMarkerText;
         RefPtr<wxChoice> m_comboTSet;
-        RefPtr<CTileListBoxWx> m_listTiles;
-        RefPtr<CMarkListBoxWx> m_listMarks;
+        RefPtr<CTileListBox> m_listTiles;
+        RefPtr<CMarkListBox> m_listMarks;
         RefPtr<wxButton> m_btnCreateMarker;
     CB_XRC_END_CTRLS_DECL()
 

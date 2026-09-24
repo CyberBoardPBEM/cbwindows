@@ -43,13 +43,13 @@ const size_t prefixLen = size_t(5);                // five characters
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CProjListBoxBaseWx, CGrafixListBoxWx)
-    EVT_WINDOW_CREATE(CProjListBoxBaseWx::OnCreate)
+wxBEGIN_EVENT_TABLE(CProjListBoxBase, CGrafixListBox)
+    EVT_WINDOW_CREATE(CProjListBoxBase::OnCreate)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
-size_t CProjListBoxBaseWx::AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode)
+size_t CProjListBoxBase::AddItem(int nGroupCode, const CB::string& pszText, size_t nSourceCode)
 {
     // str += "   ";           // Will always precede sequenced entries
     CB::string str = std::format(L"{}{}   {}",
@@ -61,7 +61,7 @@ size_t CProjListBoxBaseWx::AddItem(int nGroupCode, const CB::string& pszText, si
     return nIdx;
 }
 
-size_t CProjListBoxBaseWx::AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
+size_t CProjListBoxBase::AddSeqItem(int nGroupCode, const CB::string& pszText, int nSeqNum,
     size_t nSourceCode)
 {
     CB::string str = std::format(L"{}{}{:03}{}",
@@ -75,25 +75,25 @@ size_t CProjListBoxBaseWx::AddSeqItem(int nGroupCode, const CB::string& pszText,
     return nIdx;
 }
 
-int CProjListBoxBaseWx::GetItemGroupCode(size_t nIndex) const
+int CProjListBoxBase::GetItemGroupCode(size_t nIndex) const
 {
     const CB::string& str = GetString(nIndex);
     return str[size_t(0)] - 'A';
 }
 
 // delete all items from the control
-void CProjListBoxBaseWx::Clear()
+void CProjListBoxBase::Clear()
 {
     items.clear();
-    CGrafixListBoxWx::Clear();
+    CGrafixListBox::Clear();
 }
 
-size_t CProjListBoxBaseWx::GetItemSourceCode(size_t nIndex) const
+size_t CProjListBoxBase::GetItemSourceCode(size_t nIndex) const
 {
     return value_preserving_cast<size_t>(GetItemData(nIndex));
 }
 
-CB::string CProjListBoxBaseWx::GetItemText(size_t nIndex) const
+CB::string CProjListBoxBase::GetItemText(size_t nIndex) const
 {
     const CB::string& strTmp = GetString(nIndex);
     return strTmp.substr(prefixLen);
@@ -101,7 +101,7 @@ CB::string CProjListBoxBaseWx::GetItemText(size_t nIndex) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-unsigned CProjListBoxBaseWx::GetItemWidth(size_t nIndex) const
+unsigned CProjListBoxBase::GetItemWidth(size_t nIndex) const
 {
     int nWidth = 0;
 
@@ -111,7 +111,7 @@ unsigned CProjListBoxBaseWx::GetItemWidth(size_t nIndex) const
     BOOL bHead = str[size_t(1)] == '*';
     /* KLUDGE:  wxInfoDC should not modify wxWindow,
         so const_cast<> should be safe */
-    wxInfoDC scrnDC(const_cast<CProjListBoxBaseWx*>(this));
+    wxInfoDC scrnDC(const_cast<CProjListBoxBase*>(this));
 
     scrnDC.SetFont(bHead ? g_res.h8ssbWx : g_res.h8ssWx);
 
@@ -127,12 +127,12 @@ unsigned CProjListBoxBaseWx::GetItemWidth(size_t nIndex) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxSize CProjListBoxBaseWx::GetItemSize(size_t nIndex) const
+wxSize CProjListBoxBase::GetItemSize(size_t nIndex) const
 {
     return wxSize(value_preserving_cast<decltype(std::declval<wxSize>().x)>(GetItemWidth(nIndex)), g_res.tm8ssb.tmHeight);
 }
 
-void CProjListBoxBaseWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+void CProjListBoxBase::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     bool selected = IsSelected(nIndex);
     // wx automatically draws selected background
@@ -170,7 +170,7 @@ void CProjListBoxBaseWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIn
 
 /* XRC requires default constructor, and Create() is not
     virtual, so initialization must be done here */
-void CProjListBoxBaseWx::OnCreate(wxWindowCreateEvent& event)
+void CProjListBoxBase::OnCreate(wxWindowCreateEvent& event)
 {
     // need to do this after base class OnCreate()
     CallAfter([this]{
@@ -190,7 +190,7 @@ void CProjListBoxBaseWx::OnCreate(wxWindowCreateEvent& event)
     event.Skip();
 }
 
-size_t CProjListBoxBaseWx::AddString(CB::string s)
+size_t CProjListBoxBase::AddString(CB::string s)
 {
     Item item(std::move(s), Invalid_v<uintptr_t>);
     auto ub = std::upper_bound(items.begin(), items.end(), item,
@@ -203,17 +203,17 @@ size_t CProjListBoxBaseWx::AddString(CB::string s)
     return value_preserving_cast<size_t>(ub - items.begin());
 }
 
-void CProjListBoxBaseWx::SetItemData(size_t index, uintptr_t data)
+void CProjListBoxBase::SetItemData(size_t index, uintptr_t data)
 {
     items.at(index).data = data;
 }
 
-const CB::string& CProjListBoxBaseWx::GetString(size_t index) const
+const CB::string& CProjListBoxBase::GetString(size_t index) const
 {
     return items.at(index).string;
 }
 
-uintptr_t CProjListBoxBaseWx::GetItemData(size_t index) const
+uintptr_t CProjListBoxBase::GetItemData(size_t index) const
 {
     return items.at(index).data;
 }

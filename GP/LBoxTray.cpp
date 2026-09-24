@@ -43,38 +43,38 @@ const int tileGap = 6;
 
 // KLUDGE:  macro parser can't handle the , in the template args
 namespace {
-    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID> CTrayListBoxWxBase;
+    typedef CGrafixListBoxData<CTileBaseListBox, PieceID> CTrayListBoxBase;
 }
-wxIMPLEMENT_DYNAMIC_CLASS(CTrayListBoxWx, CTrayListBoxWxBase);
+wxIMPLEMENT_DYNAMIC_CLASS(CTrayListBox, CTrayListBoxBase);
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTrayListBoxWx::CTrayListBoxWx() :
+CTrayListBox::CTrayListBox() :
     m_pDoc(nullptr)
 {
     m_eTrayViz = trayVizOneSide;
     m_bAllowTips = TRUE;
 }
 
-CTrayListBoxWx::CTrayListBoxWx(CGamDoc& pDoc) :
-    CTrayListBoxWx()
+CTrayListBox::CTrayListBox(CGamDoc& pDoc) :
+    CTrayListBox()
 {
     Init(pDoc);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-const CTileManager& CTrayListBoxWx::GetTileManager() const
+const CTileManager& CTrayListBox::GetTileManager() const
 {
     return m_pDoc->GetTileManager();
 }
 
-BOOL CTrayListBoxWx::IsShowingTileImages() const
+BOOL CTrayListBox::IsShowingTileImages() const
 {
     return m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide;
 }
 
-void CTrayListBoxWx::SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString)
+void CTrayListBox::SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString)
 {
     m_eTrayViz = eTrayViz;
     m_strHiddenString = std::move(pszHiddenString);
@@ -83,14 +83,14 @@ void CTrayListBoxWx::SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHi
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CTrayListBoxWx::OnIsToolTipsEnabled() const
+BOOL CTrayListBox::OnIsToolTipsEnabled() const
 {
     if (m_eTrayViz != trayVizAllSides && m_eTrayViz != trayVizOneSide)
         return FALSE;
     return m_pDoc->IsShowingObjectTips() && m_bAllowTips;
 }
 
-GameElement CTrayListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
+GameElement CTrayListBox::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
 {
     point = ClientToItem(point);
 
@@ -135,7 +135,7 @@ GameElement CTrayListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) 
     return Invalid_v<GameElement>;
 }
 
-void CTrayListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
+void CTrayListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CB::string& strTip) const
 {
     if (nItemCode == Invalid_v<GameElement>)
@@ -145,7 +145,7 @@ void CTrayListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CTrayListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
+BOOL CTrayListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     wxASSERT(m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide);
 
@@ -171,7 +171,7 @@ BOOL CTrayListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayListBoxWx::DeselectAll()
+void CTrayListBox::DeselectAll()
 {
     wxASSERT(IsMultiSelect());
     if (GetItemCount() < 1)
@@ -179,7 +179,7 @@ void CTrayListBoxWx::DeselectAll()
     BASE::DeselectAll();
 }
 
-size_t CTrayListBoxWx::SelectTrayPiece(PieceID pid)
+size_t CTrayListBox::SelectTrayPiece(PieceID pid)
 {
     size_t nIndex = MapItemToIndex(pid);
     if (nIndex != Invalid_v<size_t>)
@@ -197,7 +197,7 @@ size_t CTrayListBoxWx::SelectTrayPiece(PieceID pid)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTrayListBoxWx::ShowListIndex(size_t nPos)
+void CTrayListBox::ShowListIndex(size_t nPos)
 {
     if (nPos < this->GetVisibleRowsBegin())
     {
@@ -214,7 +214,7 @@ void CTrayListBoxWx::ShowListIndex(size_t nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxSize CTrayListBoxWx::GetItemSize(size_t nIndex) const
+wxSize CTrayListBox::GetItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide)
     {
@@ -227,14 +227,14 @@ wxSize CTrayListBoxWx::GetItemSize(size_t nIndex) const
         wxASSERT(!m_strHiddenString.empty());
         /* KLUDGE:  wxInfoDC should not modify wxWindow,
             so const_cast<> should be safe */
-        wxInfoDC pDC(const_cast<CTrayListBoxWx*>(this));
+        wxInfoDC pDC(const_cast<CTrayListBox*>(this));
         pDC.SetFont(g_res.h8ssWx);
         wxSize extent = pDC.GetTextExtent(m_strHiddenString);
         return extent;
     }
 }
 
-void CTrayListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+void CTrayListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     if (m_eTrayViz == trayVizAllSides || m_eTrayViz == trayVizOneSide)
     {
@@ -258,7 +258,7 @@ void CTrayListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     }
 }
 
-std::vector<TileID> CTrayListBoxWx::GetPieceTileIDs(size_t nIndex) const
+std::vector<TileID> CTrayListBox::GetPieceTileIDs(size_t nIndex) const
 {
     const CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
@@ -289,7 +289,7 @@ std::vector<TileID> CTrayListBoxWx::GetPieceTileIDs(size_t nIndex) const
     return retval;
 }
 
-BOOL CTrayListBoxWx::OnDragSetup(DragInfoWx& pDI) const
+BOOL CTrayListBox::OnDragSetup(DragInfoWx& pDI) const
 {
     if (m_pDoc->IsPlaying())
     {
@@ -317,7 +317,7 @@ BOOL CTrayListBoxWx::OnDragSetup(DragInfoWx& pDI) const
     return TRUE;
 }
 
-bool CTrayListBoxWx::IsShowAllSides(PieceID pid) const
+bool CTrayListBox::IsShowAllSides(PieceID pid) const
 {
     const CPieceTable& pPTbl = m_pDoc->GetPieceTable();
     const PieceDef& pPce = m_pDoc->GetPieceManager().GetPiece(pid);

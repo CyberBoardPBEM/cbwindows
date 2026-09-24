@@ -36,10 +36,10 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-class CTileBaseListBoxWx : public CGrafixListBoxWx
+class CTileBaseListBox : public CGrafixListBox
 {
 public:
-    CTileBaseListBoxWx();
+    CTileBaseListBox();
 
     void SetTipMarkVisibility(BOOL bShow = TRUE) { m_bTipMarkItems = bShow; }
     BOOL GetTipMarkVisibility() const { return m_bTipMarkItems; }

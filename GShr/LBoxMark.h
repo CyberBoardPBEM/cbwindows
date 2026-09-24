@@ -46,11 +46,11 @@ enum  MarkerTrayViz;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CMarkListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, MarkID>
+class CMarkListBox : public CGrafixListBoxData<CTileBaseListBox, MarkID>
 {
 // Construction
 public:
-    CMarkListBoxWx();
+    CMarkListBox();
 
 // Attributes
 public:
@@ -66,7 +66,7 @@ public:
 public:
     void SetDocument(CGamDoc* pDoc)
     {
-        CGrafixListBoxDataWx::SetDocument(CheckedDeref(pDoc));
+        CGrafixListBoxData::SetDocument(CheckedDeref(pDoc));
         if (GetHandle())
             Clear();
         m_pDoc = pDoc;
@@ -93,7 +93,7 @@ protected:
     virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
 
 private:
-    wxDECLARE_DYNAMIC_CLASS(CMarkListBoxWx);
+    wxDECLARE_DYNAMIC_CLASS(CMarkListBox);
 };
 
 #endif
