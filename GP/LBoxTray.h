@@ -44,68 +44,6 @@ enum  TrayViz : int;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTrayListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
-{
-// Construction
-public:
-    CTrayListBox(CGamDoc& pDoc);
-
-// Attributes
-public:
-    virtual const CTileManager& GetTileManager() const override;
-
-    TrayViz GetTrayContentVisibility() const { return m_eTrayViz; }
-
-    BOOL IsShowingTileImages() const;
-
-// Operations
-public:
-    void DeselectAll();
-    size_t SelectTrayPiece(PieceID pid);
-    void ShowListIndex(int nPos);
-
-    void SetTrayContentVisibility(TrayViz eTrayViz, CB::string pszHiddenString = CB::string());
-    void SetTipsAllowed(BOOL bTipsAllowed)
-    {
-        m_bAllowTips = bTipsAllowed;
-        SetTipMarkVisibility(m_bAllowTips);
-    }
-
-// Implementation
-protected:
-    // retval[0] is active face
-    std::vector<TileID> GetPieceTileIDs(size_t nIndex) const;
-
-// Implementation
-protected:
-    const CGamDoc& m_pDoc;
-
-    TrayViz     m_eTrayViz;
-    CB::string  m_strHiddenString;
-    BOOL        m_bAllowTips;
-
-    // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-
-    // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() const override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
-
-    // Misc
-
-    //{{AFX_MSG(CTrayListBox)
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-
-private:
-    bool IsShowAllSides(PieceID pid) const;
-};
-
 class CTrayListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
 {
 // Construction

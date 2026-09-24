@@ -1,6 +1,6 @@
 // LBoxMark.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -43,61 +43,6 @@
 
 class CGamDoc;
 enum  MarkerTrayViz;
-
-/////////////////////////////////////////////////////////////////////////////
-
-class CMarkListBox : public CGrafixListBoxData<CTileBaseListBox, MarkID>
-{
-// Construction
-public:
-    CMarkListBox();
-
-// Attributes
-public:
-    void SetTrayContentVisibility(MarkerTrayViz eTrayViz, const CB::string& pszHiddenString = CB::string())
-    {
-        m_eTrayViz = eTrayViz;
-        m_strHiddenString = pszHiddenString;
-    }
-
-    virtual const CTileManager& GetTileManager() const override;
-
-// Operations
-public:
-    void SetDocument(CGamDoc* pDoc)
-    {
-        CGrafixListBoxData::SetDocument(CheckedDeref(pDoc));
-        if (m_hWnd != NULL)
-            ResetContent();
-        m_pDoc = pDoc;
-    }
-
-    void SelectMarker(MarkID mid);
-    void ShowListIndex(int nPos);
-
-// Implementation
-protected:
-    CGamDoc*        m_pDoc;
-    MarkerTrayViz   m_eTrayViz;
-    CB::string         m_strHiddenString;
-
-    // Overrides
-    virtual CSize OnItemSize(size_t nIndex) const override;
-    virtual void OnItemDraw(CDC& pDC, size_t nIndex, UINT nAction, UINT nState,
-        CRect rctItem) const override;
-    virtual BOOL OnDragSetup(DragInfo& pDI) const override;
-
-    // Tool tip processing
-    virtual BOOL OnIsToolTipsEnabled() const override;
-    virtual GameElement OnGetHitItemCodeAtPoint(CPoint point, CRect& rct) const override;
-    virtual void OnGetTipTextForItemCode(GameElement nItemCode, CB::string& strTip) const override;
-    virtual BOOL OnDoesItemHaveTipText(size_t nItem) const override;
-
-    //{{AFX_MSG(CMarkListBox)
-//  afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-    //}}AFX_MSG
-    DECLARE_MESSAGE_MAP()
-};
 
 /////////////////////////////////////////////////////////////////////////////
 
