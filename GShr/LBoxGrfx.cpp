@@ -38,7 +38,7 @@ wxDEFINE_EVENT(WM_OVERRIDE_SELECTED_ITEM_WX, OverrideSelectedItemEvent);
 wxDEFINE_EVENT(WM_OVERRIDE_SELECTED_ITEM_LIST_WX, OverrideSelectedItemListEvent);
 wxDEFINE_EVENT(WM_GET_DRAG_SIZE_WX, GetDragSizeEvent);
 
-DragInfoWx CGrafixListBoxWx::di;
+DragInfoWx CGrafixListBox::di;
 
 const int TRIGGER_THRESHOLD = 3;
 const unsigned defaultItemHeight = 16;
@@ -51,7 +51,7 @@ const int timerScrollID = 901;
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CGrafixListBoxWx, CB::VListBoxHScroll)
+wxBEGIN_EVENT_TABLE(CGrafixListBox, CB::VListBoxHScroll)
     EVT_LEFT_DOWN(OnLButtonDown)
     EVT_LEFT_DCLICK(OnLButtonDblClk)
     EVT_MOTION(OnMouseMove)
@@ -66,7 +66,7 @@ wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CGrafixListBoxWx::CGrafixListBoxWx() :
+CGrafixListBox::CGrafixListBox() :
     m_toolMsgTipTimer(this, XRCID("ID_TIP_LISTITEM_MSG_TIMER")),
     m_nCurItemCode(Invalid_v<GameElement>),
     m_nTimerID(this, XRCID("ID_SCROLL_TIMER"))
@@ -80,7 +80,7 @@ CGrafixListBoxWx::CGrafixListBoxWx() :
     m_toolMsgTip.SetMaxWidth(MAX_LISTITEM_TIP_WIDTH);
 }
 
-CGrafixListBoxWx::~CGrafixListBoxWx()
+CGrafixListBox::~CGrafixListBox()
 {
     if (m_toolTip)
     {
@@ -92,7 +92,7 @@ CGrafixListBoxWx::~CGrafixListBoxWx()
 /////////////////////////////////////////////////////////////////////////////
 
 #if 0
-void CGrafixListBoxWx::SetNotificationTip(int nItem, UINT nResID)
+void CGrafixListBox::SetNotificationTip(int nItem, UINT nResID)
 {
     CB::string str = CB::string::LoadString(nResID);
     SetNotificationTip(nItem, str);
@@ -101,7 +101,7 @@ void CGrafixListBoxWx::SetNotificationTip(int nItem, UINT nResID)
 
 // Shows a notification tip over a specified item. If the item
 // doesn't exist, the center of the listbox receives the tip.
-void CGrafixListBoxWx::SetNotificationTip(size_t nItem, const CB::string& pszTip)
+void CGrafixListBox::SetNotificationTip(size_t nItem, const CB::string& pszTip)
 {
     ClearNotificationTip();
 
@@ -124,7 +124,7 @@ void CGrafixListBoxWx::SetNotificationTip(size_t nItem, const CB::string& pszTip
     m_toolMsgTipTimer.Start(MAX_TIP_LISTITEM_MSG_TIME, wxTIMER_ONE_SHOT);
 }
 
-void CGrafixListBoxWx::ClearNotificationTip()
+void CGrafixListBox::ClearNotificationTip()
 {
     m_toolMsgTipTimer.Stop();
 
@@ -133,14 +133,14 @@ void CGrafixListBoxWx::ClearNotificationTip()
     m_toolMsgTip.Enable(FALSE);
 }
 
-void CGrafixListBoxWx::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
+void CGrafixListBox::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
 {
     ClearNotificationTip();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::ShowFirstSelection()
+void CGrafixListBox::ShowFirstSelection()
 {
     int nTopSel = GetTopSelectedItem();
     wxASSERT(nTopSel != wxNOT_FOUND);
@@ -153,7 +153,7 @@ void CGrafixListBoxWx::ShowFirstSelection()
 }
 
 #if 0
-CB::string CGrafixListBoxWx::GetText(int nIndex) const
+CB::string CGrafixListBox::GetText(int nIndex) const
 {
     CString temp;
     CListBox::GetText(nIndex, temp);
@@ -161,7 +161,7 @@ CB::string CGrafixListBoxWx::GetText(int nIndex) const
 }
 #endif
 
-int CGrafixListBoxWx::GetTopSelectedItem() const
+int CGrafixListBox::GetTopSelectedItem() const
 {
     if (IsMultiSelect())
     {
@@ -180,7 +180,7 @@ int CGrafixListBoxWx::GetTopSelectedItem() const
 /////////////////////////////////////////////////////////////////////////////
 // If the selection is out of view, force it into view.
 
-void CGrafixListBoxWx::MakeItemVisible(size_t nItem)
+void CGrafixListBox::MakeItemVisible(size_t nItem)
 {
     wxRect rctLBoxClient = GetClientRect();
     wxRect rct = GetItemRect(nItem);
@@ -190,7 +190,7 @@ void CGrafixListBoxWx::MakeItemVisible(size_t nItem)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::SetSelFromPoint(wxPoint point)
+void CGrafixListBox::SetSelFromPoint(wxPoint point)
 {
     wxASSERT(postProcessEvents.empty());
     if (GetItemCount() == size_t(0))
@@ -206,7 +206,7 @@ void CGrafixListBoxWx::SetSelFromPoint(wxPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
+void CGrafixListBox::DoToolTipHitProcessing(wxPoint point)
 {
     if (!OnIsToolTipsEnabled())
         return;
@@ -241,7 +241,7 @@ void CGrafixListBoxWx::DoToolTipHitProcessing(wxPoint point)
 }
 
 #if 0
-LRESULT CGrafixListBoxWx::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CGrafixListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
     {
@@ -260,7 +260,7 @@ LRESULT CGrafixListBoxWx::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-wxSize CGrafixListBoxWx::GetDragSize() const
+wxSize CGrafixListBox::GetDragSize() const
 {
     wxWindow& parent = CheckedDeref(GetParent());
     GetDragSizeEvent event;
@@ -280,7 +280,7 @@ wxSize CGrafixListBoxWx::GetDragSize() const
 /////////////////////////////////////////////////////////////////////////////
 
 #if 0
-void CGrafixListBoxWx::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
+void CGrafixListBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
 {
     unsigned nHt = value_preserving_cast<unsigned>(OnItemSize(value_preserving_cast<size_t>(lpMIS->itemID)).cy);
 
@@ -290,7 +290,7 @@ void CGrafixListBoxWx::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
     lpMIS->itemHeight = value_preserving_cast<UINT>(nHt);
 }
 
-void CGrafixListBoxWx::DrawItem(LPDRAWITEMSTRUCT lpDIS)
+void CGrafixListBox::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 {
     size_t nIndex = value_preserving_cast<size_t>(lpDIS->itemID);
     CDC& pDC = CheckedDeref(CDC::FromHandle(lpDIS->hDC));
@@ -303,7 +303,7 @@ void CGrafixListBoxWx::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 /////////////////////////////////////////////////////////////////////////////
 // CGrafixListBox Message Processing
 
-void CGrafixListBoxWx::PushPostProcessEvent(std::function<void ()>&& f)
+void CGrafixListBox::PushPostProcessEvent(std::function<void ()>&& f)
 {
     // I'm pretty sure we should have at most one partial event
     /* TODO:  after confirming at most one,
@@ -313,7 +313,7 @@ void CGrafixListBoxWx::PushPostProcessEvent(std::function<void ()>&& f)
     CallAfter([this]{ ExecutePostProcessEvents(); });
 }
 
-void CGrafixListBoxWx::ExecutePostProcessEvents()
+void CGrafixListBox::ExecutePostProcessEvents()
 {
     // I'm pretty sure we should have at most one partial event
     wxASSERT(postProcessEvents.size() <= 1);
@@ -326,7 +326,7 @@ void CGrafixListBoxWx::ExecutePostProcessEvents()
     }
 }
 
-void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
+void CGrafixListBox::OnLButtonDown(wxMouseEvent& event)
 {
     ExecutePostProcessEvents();
     wxASSERT(!GetCapture());
@@ -346,13 +346,13 @@ void CGrafixListBoxWx::OnLButtonDown(wxMouseEvent& event)
 }
 
 // keep event processing in correct order
-void CGrafixListBoxWx::OnLButtonDblClk(wxMouseEvent& event)
+void CGrafixListBox::OnLButtonDblClk(wxMouseEvent& event)
 {
     ExecutePostProcessEvents();
     event.Skip();
 }
 
-void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
+void CGrafixListBox::OnLButtonUp(wxMouseEvent& event)
 {
     ExecutePostProcessEvents();
     if (m_nTimerID.IsRunning())
@@ -378,7 +378,7 @@ void CGrafixListBoxWx::OnLButtonUp(wxMouseEvent& event)
         event.Skip();
 }
 
-void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
+void CGrafixListBox::OnMouseMove(wxMouseEvent& event)
 {
     ExecutePostProcessEvents();
     if (!HasCapture())
@@ -459,14 +459,14 @@ void CGrafixListBoxWx::OnMouseMove(wxMouseEvent& event)
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxWindow* CGrafixListBoxWx::GetWindowFromPoint(wxPoint point)
+wxWindow* CGrafixListBox::GetWindowFromPoint(wxPoint point)
 {
     point = ClientToScreen(point);
     return wxFindWindowAtPoint(point);
 }
 
 #if 0
-int CGrafixListBoxWx::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CGrafixListBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
     if (CListBox::OnCreate(lpCreateStruct) == -1)
         return -1;
@@ -479,7 +479,7 @@ int CGrafixListBoxWx::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfoWx& pdi)
+void CGrafixListBox::DoInsertLineProcessing(const DragInfoWx& pdi)
 {
     if (m_bAllowDropScroll)
     {
@@ -505,7 +505,7 @@ void CGrafixListBoxWx::DoInsertLineProcessing(const DragInfoWx& pdi)
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfoWx& pdi)
+void CGrafixListBox::DoAutoScrollProcessing(const DragInfoWx& pdi)
 {
     if (m_bAllowDropScroll && !m_nTimerID.IsRunning())
     {
@@ -522,7 +522,7 @@ void CGrafixListBoxWx::DoAutoScrollProcessing(const DragInfoWx& pdi)
 /////////////////////////////////////////////////////////////////
 // Pass it up to the parent by default.
 
-void CGrafixListBoxWx::OnDragItem(DragDropEvent& event)
+void CGrafixListBox::OnDragItem(DragDropEvent& event)
 {
     if (event.GetProcessId() != wxGetProcessId())
     {
@@ -541,7 +541,7 @@ void CGrafixListBoxWx::OnDragItem(DragDropEvent& event)
     }
 }
 
-void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
+void CGrafixListBox::OnTimer(wxTimerEvent& event)
 {
     wxASSERT(m_nTimerID.IsRunning() &&
                 event.GetId() == m_nTimerID.GetId());
@@ -602,7 +602,7 @@ void CGrafixListBoxWx::OnTimer(wxTimerEvent& event)
 // This routine selects the next item if the point is past
 // the y midpoint of the item.
 
-int CGrafixListBoxWx::SpecialItemFromPoint(wxPoint pnt) const
+int CGrafixListBox::SpecialItemFromPoint(wxPoint pnt) const
 {
     int nSel = VirtualHitTest(pnt.y);
     if (nSel == wxNOT_FOUND)
@@ -620,7 +620,7 @@ int CGrafixListBoxWx::SpecialItemFromPoint(wxPoint pnt) const
 
 /////////////////////////////////////////////////////////////////
 
-void CGrafixListBoxWx::DrawInsert(int nIndex)
+void CGrafixListBox::DrawInsert(int nIndex)
 {
     if (m_nLastInsert != nIndex)
     {
@@ -630,7 +630,7 @@ void CGrafixListBoxWx::DrawInsert(int nIndex)
     }
 }
 
-void CGrafixListBoxWx::DrawSingle(int nIndex)
+void CGrafixListBox::DrawSingle(int nIndex)
 {
     if (nIndex == wxNOT_FOUND)
         return;
@@ -657,13 +657,13 @@ void CGrafixListBoxWx::DrawSingle(int nIndex)
     rend.DrawItemSelectionRect(this, dc, rect, wxCONTROL_FOCUSED | wxCONTROL_SELECTED);
 }
 
-void CGrafixListBoxWx::EraseSingle()
+void CGrafixListBox::EraseSingle()
 {
     overlay.Reset();
 }
 
 #if 0
-CPoint CGrafixListBoxWx::ClientToItem(CPoint point) const
+CPoint CGrafixListBox::ClientToItem(CPoint point) const
 {
     // account for horz scroll
     int xOffset = GetScrollPos(SB_HORZ);
@@ -672,7 +672,7 @@ CPoint CGrafixListBoxWx::ClientToItem(CPoint point) const
     return point;
 }
 
-CRect CGrafixListBoxWx::ItemToClient(CRect rect) const
+CRect CGrafixListBox::ItemToClient(CRect rect) const
 {
     // account for horz scroll
     int xOffset = GetScrollPos(SB_HORZ);
@@ -682,7 +682,7 @@ CRect CGrafixListBoxWx::ItemToClient(CRect rect) const
 }
 #endif
 
-void CGrafixListBoxWx::AssignNewMoveGroup()
+void CGrafixListBox::AssignNewMoveGroup()
 {
 #if defined(GPLAY)
     CheckedDeref(m_pDoc).AssignNewMoveGroup();

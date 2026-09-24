@@ -40,11 +40,11 @@ class CGamDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CPieceListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
+class CPieceListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
 {
 // Construction
 public:
-    CPieceListBoxWx();
+    CPieceListBox();
 
 // Attributes
 public:
@@ -81,7 +81,7 @@ protected:
 #endif
 
 private:
-    wxDECLARE_DYNAMIC_CLASS(CPieceListBoxWx);
+    wxDECLARE_DYNAMIC_CLASS(CPieceListBox);
 };
 
 #endif

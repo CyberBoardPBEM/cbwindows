@@ -177,12 +177,12 @@ typedef void (wxEvtHandler::* GetDragSizeEventFunction)(GetDragSizeEvent&);
     message map, and a templatized derived class that contains
     the type-specific CGrafixListBox::m_pItemMap. */
 
-class CGrafixListBoxWx : public CB::VListBoxHScroll
+class CGrafixListBox : public CB::VListBoxHScroll
 {
     // Construction
 public:
-    CGrafixListBoxWx();
-    ~CGrafixListBoxWx() override;
+    CGrafixListBox();
+    ~CGrafixListBox() override;
 
     // Attributes
 public:
@@ -324,11 +324,11 @@ private:
     (e.g., CTileBaseListBox), so allow that by letting derived
     class specify another base class */
 template<typename BASE_WND, typename T>
-class CGrafixListBoxDataWx : public BASE_WND
+class CGrafixListBoxData : public BASE_WND
 {
     static_assert(std::is_same_v<XxxxID<T::PREFIX>, T>, "requires XxxxID");
 public:
-    CGrafixListBoxDataWx() : m_pItemMap(NULL) {}
+    CGrafixListBoxData() : m_pItemMap(NULL) {}
 
     const std::vector<T>* GetItemMap() const { return m_pItemMap; }
     T GetCurMapItem() const

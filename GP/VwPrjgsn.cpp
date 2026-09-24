@@ -41,7 +41,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGsn, CProjListBoxBaseWx)
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGsn, CProjListBoxBase)
 wxIMPLEMENT_DYNAMIC_CLASS(wxGsnProjView, CB::View)
 
 #ifdef _DEBUG

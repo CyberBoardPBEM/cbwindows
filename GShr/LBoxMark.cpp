@@ -34,9 +34,9 @@
 
 // KLUDGE:  macro parser can't handle the , in the template args
 namespace {
-    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, MarkID> CMarkListBoxWxBase;
+    typedef CGrafixListBoxData<CTileBaseListBox, MarkID> CMarkListBoxBase;
 }
-wxIMPLEMENT_DYNAMIC_CLASS(CMarkListBoxWx, CMarkListBoxWxBase);
+wxIMPLEMENT_DYNAMIC_CLASS(CMarkListBox, CMarkListBoxBase);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,7 +49,7 @@ const int tileGap = 6;
 
 /////////////////////////////////////////////////////////////////////////////
 
-CMarkListBoxWx::CMarkListBoxWx()
+CMarkListBox::CMarkListBox()
 {
     m_pDoc = NULL;
     m_eTrayViz = mtrayVizNormal;
@@ -57,7 +57,7 @@ CMarkListBoxWx::CMarkListBoxWx()
 
 /////////////////////////////////////////////////////////////////////////////
 
-const CTileManager& CMarkListBoxWx::GetTileManager() const
+const CTileManager& CMarkListBox::GetTileManager() const
 {
     ASSERT(m_pDoc != NULL);
     return m_pDoc->GetTileManager();
@@ -66,7 +66,7 @@ const CTileManager& CMarkListBoxWx::GetTileManager() const
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CMarkListBoxWx::OnIsToolTipsEnabled() const
+BOOL CMarkListBox::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
     return m_pDoc->IsShowingObjectTips();
@@ -75,7 +75,7 @@ BOOL CMarkListBoxWx::OnIsToolTipsEnabled() const
 #endif
 }
 
-GameElement CMarkListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
+GameElement CMarkListBox::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
 {
     point = ClientToItem(point);
 
@@ -107,7 +107,7 @@ GameElement CMarkListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) 
     }
 }
 
-void CMarkListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
+void CMarkListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CB::string& strTip) const
 {
     MarkID mid = static_cast<MarkID>(nItemCode);
@@ -116,7 +116,7 @@ void CMarkListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CMarkListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
+BOOL CMarkListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     wxASSERT(m_eTrayViz == mtrayVizNormal);
     MarkID mid = MapIndexToItem(nItem);
@@ -125,7 +125,7 @@ BOOL CMarkListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CMarkListBoxWx::SelectMarker(MarkID mid)
+void CMarkListBox::SelectMarker(MarkID mid)
 {
     size_t nIndex = MapItemToIndex(mid);
     // NO LONGER IMPOSSIBLE SINCE HIDE ALL MARKERS. ASSERT(nIndex != -1);
@@ -143,7 +143,7 @@ void CMarkListBoxWx::SelectMarker(MarkID mid)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CMarkListBoxWx::ShowListIndex(size_t nPos)
+void CMarkListBox::ShowListIndex(size_t nPos)
 {
     if (nPos < GetVisibleRowsBegin())
     {
@@ -166,7 +166,7 @@ void CMarkListBoxWx::ShowListIndex(size_t nPos)
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
+wxSize CMarkListBox::GetItemSize(size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
@@ -184,14 +184,14 @@ wxSize CMarkListBoxWx::GetItemSize(size_t nIndex) const
         // Hidden markers. Account for drawing the supplied text.
         wxASSERT(!m_strHiddenString.empty());
         // only using DC to measure text, so const_cast safe;
-        wxWindowDC pDC(const_cast<CMarkListBoxWx*>(this));
+        wxWindowDC pDC(const_cast<CMarkListBox*>(this));
         pDC.SetFont(g_res.h8ssWx);
         wxSize extent = pDC.GetTextExtent(m_strHiddenString);
         return extent;
     }
 }
 
-void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+void CMarkListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     if (m_eTrayViz == mtrayVizNormal)
     {
@@ -218,7 +218,7 @@ void CMarkListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex)
     }
 }
 
-BOOL CMarkListBoxWx::OnDragSetup(DragInfoWx& pDI) const
+BOOL CMarkListBox::OnDragSetup(DragInfoWx& pDI) const
 {
 #ifdef GPLAY
     if (m_pDoc->IsPlaying())

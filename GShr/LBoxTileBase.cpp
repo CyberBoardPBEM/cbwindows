@@ -40,13 +40,13 @@ const int tileGap = 6;
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxBEGIN_EVENT_TABLE(CTileBaseListBoxWx, CGrafixListBoxWx)
+wxBEGIN_EVENT_TABLE(CTileBaseListBox, CGrafixListBox)
     EVT_WINDOW_CREATE(OnCreate)
 wxEND_EVENT_TABLE()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CTileBaseListBoxWx::CTileBaseListBoxWx()
+CTileBaseListBox::CTileBaseListBox()
 {
     ASSERT(!GetHandle());
     m_bDisplayIDs = AfxGetApp()->GetProfileInt("Settings"_cbstring, "DisplayIDs"_cbstring, 0);
@@ -55,20 +55,20 @@ CTileBaseListBoxWx::CTileBaseListBoxWx()
     m_sizeTipMark = wxSize(0, 0);
 }
 
-void CTileBaseListBoxWx::OnCreate(wxWindowCreateEvent& event)
+void CTileBaseListBox::OnCreate(wxWindowCreateEvent& event)
 {
     SetupTipMarkerIfRequired();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxSize CTileBaseListBoxWx::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
+wxSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& tids) const
 {
     ASSERT(!tids.empty() &&
             tids[size_t(0)] != nullTid);        // At least one tile needs to exist
 
     // only using DC for measurement, so const_cast safe
-    wxWindowDC pDC(const_cast<CTileBaseListBoxWx*>(this));
+    wxWindowDC pDC(const_cast<CTileBaseListBox*>(this));
     wxRect rect(0, 0, 32000, 32000);
 
     int htTiles = 0;
@@ -97,7 +97,7 @@ wxSize CTileBaseListBoxWx::DoOnItemSize(size_t nItem, const std::vector<TileID>&
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBoxWx::DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
+void CTileBaseListBox::DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
     const std::vector<TileID>& tids) const
 {
     ASSERT(!tids.empty() &&
@@ -122,7 +122,7 @@ void CTileBaseListBoxWx::DoOnDrawItem(wxDC& pDC, size_t nItem, wxRect rctItem,
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBoxWx::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const
+void CTileBaseListBox::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, wxCoord& x, TileID tid) const
 {
     if (tid == nullTid)
         return;                             // Nothing to do
@@ -140,7 +140,7 @@ void CTileBaseListBoxWx::DrawTileImage(wxDC& pDC, wxRect rctItem, BOOL bDrawIt, 
 // Optionally draw debug code string for item. If bDrawIt is false,
 // x is advanced the size of the string anyway but nothing is rendered
 
-void CTileBaseListBoxWx::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const
+void CTileBaseListBox::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctItem, BOOL bDrawIt, wxCoord& x) const
 {
     if (m_bDisplayIDs)
     {
@@ -157,7 +157,7 @@ void CTileBaseListBoxWx::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rct
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CTileBaseListBoxWx::SetupTipMarkerIfRequired()
+void CTileBaseListBox::SetupTipMarkerIfRequired()
 {
     if (m_bTipMarkItems)
     {
@@ -176,7 +176,7 @@ void CTileBaseListBoxWx::SetupTipMarkerIfRequired()
     }
 }
 
-void CTileBaseListBoxWx::DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, wxCoord& x) const
+void CTileBaseListBox::DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible, wxCoord& x) const
 {
     if (m_bTipMarkItems)
     {
@@ -190,14 +190,14 @@ void CTileBaseListBoxWx::DrawTipMarker(wxDC& pDC, wxRect rctItem, BOOL bVisible,
     }
 }
 
-CB::string CTileBaseListBoxWx::OnGetItemDebugString(size_t nItem) const
+CB::string CTileBaseListBox::OnGetItemDebugString(size_t nItem) const
 {
     return std::format(L"[{}] ", OnGetItemDebugIDCode(nItem));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-std::vector<wxRect> CTileBaseListBoxWx::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
+std::vector<wxRect> CTileBaseListBox::GetTileRectsForItem(size_t nItem, const std::vector<TileID>& tids) const
 {
     wxASSERT(!tids.empty() &&
         tids[size_t(0)] != nullTid);
@@ -211,7 +211,7 @@ std::vector<wxRect> CTileBaseListBoxWx::GetTileRectsForItem(size_t nItem, const 
     /* safe to use const_cast here because the DC isn't
         actually drawn on; it's just used for measuring text,
         so this window isn't being changed */
-    wxWindowDC pDC(const_cast<CTileBaseListBoxWx*>(this));
+    wxWindowDC pDC(const_cast<CTileBaseListBox*>(this));
     DrawTipMarker(pDC, rctItem, FALSE, x);
     DrawItemDebugIDCode(pDC, value_preserving_cast<size_t>(nItem), rctItem, FALSE, x);
 

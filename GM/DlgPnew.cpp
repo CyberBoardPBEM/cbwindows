@@ -122,7 +122,7 @@ void CPieceNewDialog::OnContextMenu(CWnd* pWnd, CPoint point)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceNewDialog::SetupTileListbox(const wxChoice& pCombo, CTileListBoxWx& pList) const
+void CPieceNewDialog::SetupTileListbox(const wxChoice& pCombo, CTileListBox& pList) const
 {
     int nCurSel = pCombo.GetSelection();
     if (nCurSel == wxNOT_FOUND)
@@ -214,7 +214,7 @@ void CPieceNewDialog::CreatePiece()
         m_listPieces->ScrollToRow(m_listPieces->GetItemCount()-1);
 }
 
-TileID CPieceNewDialog::GetTileID(const wxChoice& pCombo, const CTileListBoxWx& pList) const
+TileID CPieceNewDialog::GetTileID(const wxChoice& pCombo, const CTileListBox& pList) const
 {
     int nCurSel = pCombo.GetSelection();
     if (nCurSel == wxNOT_FOUND)

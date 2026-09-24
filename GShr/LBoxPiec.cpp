@@ -38,9 +38,9 @@
 
 // KLUDGE:  macro parser can't handle the , in the template args
 namespace {
-    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID> CPieceListBoxWxBase;
+    typedef CGrafixListBoxData<CTileBaseListBox, PieceID> CPieceListBoxBase;
 }
-wxIMPLEMENT_DYNAMIC_CLASS(CPieceListBoxWx, CPieceListBoxWxBase);
+wxIMPLEMENT_DYNAMIC_CLASS(CPieceListBox, CPieceListBoxBase);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,22 +58,22 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 
-CPieceListBoxWx::CPieceListBoxWx()
+CPieceListBox::CPieceListBox()
 {
     m_pPMgr = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CPieceListBoxWx::SetDocument(CGamDoc& pDoc)
+void CPieceListBox::SetDocument(CGamDoc& pDoc)
 {
-    CGrafixListBoxDataWx::SetDocument(pDoc);
+    CGrafixListBoxData::SetDocument(pDoc);
     Clear();
     m_pDoc = &pDoc;
     m_pPMgr = &pDoc.GetPieceManager();
 }
 
-const CTileManager& CPieceListBoxWx::GetTileManager() const
+const CTileManager& CPieceListBox::GetTileManager() const
 {
     wxASSERT(m_pDoc != NULL);
     return m_pDoc->GetTileManager();
@@ -82,7 +82,7 @@ const CTileManager& CPieceListBoxWx::GetTileManager() const
 /////////////////////////////////////////////////////////////////////////////
 // Tool tip processing
 
-BOOL CPieceListBoxWx::OnIsToolTipsEnabled() const
+BOOL CPieceListBox::OnIsToolTipsEnabled() const
 {
 #ifdef GPLAY
     return m_pDoc->IsShowingObjectTips();
@@ -91,7 +91,7 @@ BOOL CPieceListBoxWx::OnIsToolTipsEnabled() const
 #endif
 }
 
-GameElement CPieceListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
+GameElement CPieceListBox::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct) const
 {
     point = ClientToItem(point);
 
@@ -123,7 +123,7 @@ GameElement CPieceListBoxWx::OnGetHitItemCodeAtPoint(wxPoint point, wxRect& rct)
     return Invalid_v<GameElement>;
 }
 
-void CPieceListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
+void CPieceListBox::OnGetTipTextForItemCode(GameElement nItemCode,
     CB::string& strTip) const
 {
     if (nItemCode == Invalid_v<GameElement>)
@@ -133,7 +133,7 @@ void CPieceListBoxWx::OnGetTipTextForItemCode(GameElement nItemCode,
 
 /////////////////////////////////////////////////////////////////////////////
 
-BOOL CPieceListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
+BOOL CPieceListBox::OnDoesItemHaveTipText(size_t nItem) const
 {
     PieceID pid = MapIndexToItem(nItem);
     const PieceDef& piecedef = m_pPMgr->GetPiece(pid);
@@ -149,7 +149,7 @@ BOOL CPieceListBoxWx::OnDoesItemHaveTipText(size_t nItem) const
 
 /////////////////////////////////////////////////////////////////////////////
 
-wxSize CPieceListBoxWx::GetItemSize(size_t nIndex) const
+wxSize CPieceListBox::GetItemSize(size_t nIndex) const
 {
     PieceID pid = MapIndexToItem(nIndex);
 
@@ -159,7 +159,7 @@ wxSize CPieceListBoxWx::GetItemSize(size_t nIndex) const
     return DoOnItemSize(nIndex, tids);
 }
 
-void CPieceListBoxWx::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
+void CPieceListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
 {
     PieceID pid = MapIndexToItem(nIndex);
 

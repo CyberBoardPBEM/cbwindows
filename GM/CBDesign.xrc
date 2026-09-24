@@ -1145,7 +1145,7 @@
             <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
+            <object class="wxVListBox" name="m_listTiles" subclass="CTileListBox">
               <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
@@ -1154,7 +1154,7 @@
             <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
+            <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBox">
               <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
@@ -1163,7 +1163,7 @@
             <flag>wxEXPAND|wxTOP|wxRIGHT|wxLEFT</flag>
             <border>5</border>
             <option>1</option>
-            <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
+            <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBox">
               <style>wxLB_MULTIPLE|wxBORDER_SIMPLE|wxWANTS_CHARS</style>
               <hidden>1</hidden>
             </object>
@@ -1659,7 +1659,7 @@
                     <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1684,7 +1684,7 @@
                     <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
+                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1795,7 +1795,7 @@
                     <flag>wxALL|wxEXPAND</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listTiles" subclass="CTileListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -1820,7 +1820,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBoxWx">
+                    <object class="wxVListBox" name="m_listMarks" subclass="CMarkListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2451,7 +2451,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listFtile" subclass="CTileListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2485,7 +2485,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
+                    <object class="wxVListBox" name="m_listBtile" subclass="CTileListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2510,7 +2510,7 @@
                     <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                     <border>5</border>
                     <option>1</option>
-                    <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
+                    <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBox">
                       <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                     </object>
                   </object>
@@ -2957,7 +2957,7 @@
                         <flag>wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT</flag>
                         <border>5</border>
                         <option>1</option>
-                        <object class="wxVListBox" name="m_listFtile" subclass="CTileListBoxWx">
+                        <object class="wxVListBox" name="m_listFtile" subclass="CTileListBox">
                           <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                         </object>
                       </object>
@@ -2965,7 +2965,7 @@
                         <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
                         <border>5</border>
                         <option>1</option>
-                        <object class="wxVListBox" name="m_listBtile" subclass="CTileListBoxWx">
+                        <object class="wxVListBox" name="m_listBtile" subclass="CTileListBox">
                           <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                         </object>
                       </object>
@@ -3136,7 +3136,7 @@
                 <flag>wxEXPAND|wxBOTTOM|wxRIGHT</flag>
                 <border>5</border>
                 <option>1</option>
-                <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBoxWx">
+                <object class="wxVListBox" name="m_listPieces" subclass="CPieceListBox">
                   <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
                 </object>
               </object>
@@ -3728,7 +3728,7 @@
         <flag>wxEXPAND</flag>
         <border>5</border>
         <option>1</option>
-        <object class="wxVListBox" name="m_listTile" subclass="CTileListBoxWx">
+        <object class="wxVListBox" name="m_listTile" subclass="CTileListBox">
           <style>wxBORDER_SIMPLE|wxWANTS_CHARS</style>
         </object>
       </object>

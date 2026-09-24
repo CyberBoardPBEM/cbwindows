@@ -98,7 +98,7 @@ BOOL CMarkerPalette::Create(CDockPalette& parent/*, DWORD dwStyle, UINT nID*/)
                 complete, so mark it undone */
     parent.SetChild(nullptr);
     m_comboMGrp = XRCCTRL(*this, "m_comboMGrp", wxChoice);
-    m_listMark = XRCCTRL(*this, "m_listMark", CMarkListBoxWx);
+    m_listMark = XRCCTRL(*this, "m_listMark", CMarkListBox);
 
     m_listMark->EnableDrag(TRUE);
     m_listMark->SetDocument(&*m_pDoc);

@@ -44,12 +44,12 @@ enum  TrayViz : int;
 
 /////////////////////////////////////////////////////////////////////////////
 
-class CTrayListBoxWx : public CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID>
+class CTrayListBox : public CGrafixListBoxData<CTileBaseListBox, PieceID>
 {
 // Construction
 public:
-    CTrayListBoxWx();
-    CTrayListBoxWx(CGamDoc& pDoc);
+    CTrayListBox();
+    CTrayListBox(CGamDoc& pDoc);
     void Init(CGamDoc& pDoc)
     {
         wxASSERT(!m_pDoc);
@@ -104,10 +104,10 @@ protected:
 
     // Misc
 
-    wxDECLARE_DYNAMIC_CLASS(CTrayListBoxWx);
+    wxDECLARE_DYNAMIC_CLASS(CTrayListBox);
 
 private:
-    typedef CGrafixListBoxDataWx<CTileBaseListBoxWx, PieceID> BASE;
+    typedef CGrafixListBoxData<CTileBaseListBox, PieceID> BASE;
 
     bool IsShowAllSides(PieceID pid) const;
 };

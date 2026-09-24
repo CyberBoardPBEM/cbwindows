@@ -93,7 +93,7 @@ protected:
     // Enclosed controls....
     CB::propagate_const<wxBitmapButton*> m_bpMenuBtn;
     CB::propagate_const<wxChoice*> m_comboYGrp;
-    CB::propagate_const<CTrayListBoxWx*> m_listTray;
+    CB::propagate_const<CTrayListBox*> m_listTray;
     int          m_nComboHeight;
 
     void LoadTrayNameList();

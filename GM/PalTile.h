@@ -62,7 +62,7 @@ protected:
 private:
     CB_XRC_BEGIN_CTRLS_DECL()
         RefPtr<wxChoice> m_comboTGrp;
-        RefPtr<CTileListBoxWx> m_listTile;
+        RefPtr<CTileListBox> m_listTile;
     CB_XRC_END_CTRLS_DECL()
 
     void LoadTileNameList();

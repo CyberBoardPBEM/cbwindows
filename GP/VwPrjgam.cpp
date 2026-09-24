@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGam, CProjListBoxBaseWx)
+wxIMPLEMENT_DYNAMIC_CLASS(CProjListBoxGam, CProjListBoxBase)
 wxIMPLEMENT_DYNAMIC_CLASS(wxGamProjView, CB::View)
 
 #ifdef _DEBUG

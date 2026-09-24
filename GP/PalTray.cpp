@@ -141,7 +141,7 @@ BOOL CTrayPalette::Create(CDockPalette& parent/*, DWORD dwStyle, UINT nID*/)
     m_bpMenuBtn = XRCCTRL(*this, "m_bpMenuBtn", wxBitmapButton);
     m_bpMenuBtn->SetBitmap(m_bmpMenuBtn);
     m_comboYGrp = XRCCTRL(*this, "m_comboYGrp", wxChoice);
-    m_listTray = XRCCTRL(*this, "m_listTray", CTrayListBoxWx);
+    m_listTray = XRCCTRL(*this, "m_listTray", CTrayListBox);
 
     m_listTray->Init(*m_pDoc);
     m_listTray->EnableDrag();
@@ -317,7 +317,7 @@ void CTrayPalette::DoMenu(wxPoint point)
         /* KLUDGE:  OnGetHitItemCodeAtPoint is public in base
             CGrafixListBox, but protected in derived
             CTrayListBox.  Why? */
-        menuGameElement = static_cast<CGrafixListBoxWx&>(*m_listTray).OnGetHitItemCodeAtPoint(clientPoint, rect);
+        menuGameElement = static_cast<CGrafixListBox&>(*m_listTray).OnGetHitItemCodeAtPoint(clientPoint, rect);
         // ASSERT(menuGameElement != Invalid_v<GameElement> --> menuGameElement.IsAPiece()
         wxASSERT(menuGameElement == Invalid_v<GameElement> ||
                 menuGameElement.IsAPiece());

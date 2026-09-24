@@ -6290,7 +6290,7 @@
                 <property name="show">1</property>
                 <property name="size"></property>
                 <property name="style">wxLB_MULTIPLE</property>
-                <property name="subclass">CTileListBoxWx; forward_declare</property>
+                <property name="subclass">CTileListBox; forward_declare</property>
                 <property name="toolbar_pane">0</property>
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
@@ -6349,7 +6349,7 @@
                 <property name="show">1</property>
                 <property name="size"></property>
                 <property name="style">wxLB_MULTIPLE</property>
-                <property name="subclass">CPieceListBoxWx; forward_declare</property>
+                <property name="subclass">CPieceListBox; forward_declare</property>
                 <property name="toolbar_pane">0</property>
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
@@ -6408,7 +6408,7 @@
                 <property name="show">1</property>
                 <property name="size"></property>
                 <property name="style">wxLB_MULTIPLE</property>
-                <property name="subclass">CMarkListBoxWx; forward_declare</property>
+                <property name="subclass">CMarkListBox; forward_declare</property>
                 <property name="toolbar_pane">0</property>
                 <property name="tooltip"></property>
                 <property name="window_extra_style"></property>
@@ -9105,7 +9105,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CTileListBoxWx; forward_declare</property>
+                        <property name="subclass">CTileListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -9237,7 +9237,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CMarkListBoxWx; forward_declare</property>
+                        <property name="subclass">CMarkListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -9831,7 +9831,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CTileListBoxWx; forward_declare</property>
+                        <property name="subclass">CTileListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -9963,7 +9963,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CMarkListBoxWx; forward_declare</property>
+                        <property name="subclass">CMarkListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -13246,7 +13246,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CTileListBoxWx; forward_declare</property>
+                        <property name="subclass">CTileListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -13446,7 +13446,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CTileListBoxWx; forward_declare</property>
+                        <property name="subclass">CTileListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -13578,7 +13578,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="style"></property>
-                        <property name="subclass">CPieceListBoxWx; forward_declare</property>
+                        <property name="subclass">CPieceListBox; forward_declare</property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
                         <property name="window_extra_style"></property>
@@ -15947,7 +15947,7 @@
                             <property name="show">1</property>
                             <property name="size"></property>
                             <property name="style"></property>
-                            <property name="subclass">CTileListBoxWx; forward_declare</property>
+                            <property name="subclass">CTileListBox; forward_declare</property>
                             <property name="toolbar_pane">0</property>
                             <property name="tooltip"></property>
                             <property name="window_extra_style"></property>
@@ -16006,7 +16006,7 @@
                             <property name="show">1</property>
                             <property name="size"></property>
                             <property name="style"></property>
-                            <property name="subclass">CTileListBoxWx; forward_declare</property>
+                            <property name="subclass">CTileListBox; forward_declare</property>
                             <property name="toolbar_pane">0</property>
                             <property name="tooltip"></property>
                             <property name="window_extra_style"></property>
@@ -16918,7 +16918,7 @@
                     <property name="show">1</property>
                     <property name="size"></property>
                     <property name="style"></property>
-                    <property name="subclass">CPieceListBoxWx; forward_declare</property>
+                    <property name="subclass">CPieceListBox; forward_declare</property>
                     <property name="toolbar_pane">0</property>
                     <property name="tooltip"></property>
                     <property name="window_extra_style"></property>
@@ -19836,7 +19836,7 @@
             <property name="show">1</property>
             <property name="size"></property>
             <property name="style"></property>
-            <property name="subclass">CTileListBoxWx; forward_declare</property>
+            <property name="subclass">CTileListBox; forward_declare</property>
             <property name="toolbar_pane">0</property>
             <property name="tooltip"></property>
             <property name="window_extra_style"></property>
