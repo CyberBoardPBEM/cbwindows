@@ -536,6 +536,7 @@ BOOL CGpApp::DoHelpTipHelp(HELPINFO* pHelpInfo, DWORD* dwIDArray)
     return TRUE;
 }
 
+#if 0
 void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
 {
     if (m_bDisableHtmlHelp)
@@ -549,6 +550,7 @@ void CGpApp::DoHelpWhatIsHelp(CWnd* pWndCtrl, DWORD* dwIDArray)
     ::HtmlHelp(pWndCtrl->GetSafeHwnd(), strHelpPath,
         HH_TP_HELP_CONTEXTMENU, reinterpret_cast<uintptr_t>(dwIDArray));
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
