@@ -287,8 +287,7 @@ void CColorPalette::ComputeLayout()
 BOOL CColorPalette::SetupLineControl()
 {
     if (!m_comboLine->Create(this,
-        XRCID("IDC_W_COLORPAL_LINEWIDTH"),
-        wxPoint(0, 0), wxSize(g_res.tm8ss.tmMaxCharWidth, wxDefaultCoord)))
+        XRCID("IDC_W_COLORPAL_LINEWIDTH")))
     {
         return FALSE;
     }
