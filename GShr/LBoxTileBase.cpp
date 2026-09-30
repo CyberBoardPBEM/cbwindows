@@ -86,7 +86,7 @@ wxSize CTileBaseListBox::DoOnItemSize(size_t nItem, const std::vector<TileID>& t
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
     {
-        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+        nHt = CB::max(nHt, Get_tm8ssHeight() + Get_tm8ssExternalLeading());
         BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
         DrawTipMarker(pDC, rect, bItemHasTipText, nWd);
         DrawItemDebugIDCode(pDC, nItem, rect, false, nWd);
@@ -148,7 +148,7 @@ void CTileBaseListBox::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctIt
 
         pDC.SetFont(g_res.h8ssWx);
         wxCoord y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
-            (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
+            (Get_tm8ssHeight() + Get_tm8ssExternalLeading()) / 2;
         if (bDrawIt)
             pDC.DrawText(str, CalcScrolledX(x), y);
         x += pDC.GetTextExtent(str).x;
@@ -171,7 +171,7 @@ void CTileBaseListBox::SetupTipMarkerIfRequired()
 
             pDC.SetFont(g_res.h8ssWx);
             m_sizeTipMark.x = pDC.GetTextExtent(m_strTipMark).x;
-            m_sizeTipMark.y = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
+            m_sizeTipMark.y = Get_tm8ssHeight() + Get_tm8ssExternalLeading();
         }
     }
 }
@@ -229,5 +229,23 @@ std::vector<wxRect> CTileBaseListBox::GetTileRectsForItem(size_t nItem, const st
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
+wxCoord CTileBaseListBox::Get_tm8ssHeight() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileBaseListBox*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetCharHeight();
+}
+
+wxCoord CTileBaseListBox::Get_tm8ssExternalLeading() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileBaseListBox*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetFontMetrics().externalLeading;
+}
 
 

@@ -71,6 +71,9 @@ protected:
 
 private:
     wxDECLARE_DYNAMIC_CLASS(CTileListBox);
+
+    wxCoord Get_tm8ssHeight() const;
+    wxCoord Get_tm8ssExternalLeading() const;
 };
 
 #endif

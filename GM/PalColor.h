@@ -217,6 +217,9 @@ protected:
     void OnPaletteHide(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
+
+private:
+    wxCoord Get_tm8ssHeight() const;
 };
 
 #endif

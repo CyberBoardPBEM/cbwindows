@@ -109,6 +109,9 @@ private:
         uintptr_t data = Invalid_v<uintptr_t>;
     };
     std::vector<Item> items;
+
+    wxCoord Get_tm8ssbAverageWidth() const;
+    wxCoord Get_tm8ssbHeight() const;
 };
 
 template<typename T>

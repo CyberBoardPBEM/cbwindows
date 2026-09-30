@@ -1,6 +1,6 @@
 // ColorPal.cpp : implementation file
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -267,7 +267,7 @@ void CColorPalette::ComputeLayout()
 
     // Compute various status and selector rectangles...
     m_rctNoColor = wxRect(FromDIP(wxPoint(posXNoColor, posYNoColor)), wxSize(FromDIP(sizeXNoColor),
-        g_res.tm8ss.tmHeight + 2));
+        Get_tm8ssHeight() + 2));
 
     int xOffset = FromDIP(2*sizeCellGap + 1);
     int yOffset = FromDIP(2*sizeCellGap + 1);
@@ -964,5 +964,14 @@ void CColorPalette::OnPaletteHide(wxCommandEvent& /*event*/)
 {
     wxCommandEvent event(wxEVT_MENU, XRCID("ID_WINDOW_COLORPAL"));
     GetMainFrame()->ProcessWindowEvent(event);
+}
+
+wxCoord CColorPalette::Get_tm8ssHeight() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CColorPalette*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetCharHeight();
 }
 

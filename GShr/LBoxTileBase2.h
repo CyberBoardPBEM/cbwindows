@@ -80,6 +80,10 @@ protected:
 
     void OnCreate(wxWindowCreateEvent& event);
     wxDECLARE_EVENT_TABLE();
+
+private:
+    wxCoord Get_tm8ssHeight() const;
+    wxCoord Get_tm8ssExternalLeading() const;
 };
 
 

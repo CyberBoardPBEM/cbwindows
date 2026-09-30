@@ -51,7 +51,7 @@ wxSize CTileListBox::GetItemSize(size_t nIndex) const
 
     int nHt = 2 * tileBorder + value_preserving_cast<int>(tile.GetHeight());
     if (m_bDisplayIDs)          // See if we're drawing PieceIDs
-        nHt = CB::max(nHt, g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading);
+        nHt = CB::max(nHt, Get_tm8ssHeight() + Get_tm8ssExternalLeading());
 
     int x = tileBorder;
     if (m_bDisplayIDs)
@@ -95,7 +95,7 @@ void CTileListBox::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) c
         int prevBkMode = pDC.GetBackgroundMode();
         pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
         int y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
-            (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
+            (Get_tm8ssHeight() + Get_tm8ssExternalLeading()) / 2;
         pDC.DrawText(str, CalcScrolledX(x), y);
         x += pDC.GetTextExtent(str).x;
         pDC.SetBackgroundMode(prevBkMode);
@@ -140,6 +140,24 @@ BOOL CTileListBox::OnDragSetup(DragInfoWx& pDI) const
         pDI.m_hcsrSuggest = g_res.hcrDragTileWx;
     }
     return TRUE;
+}
+
+wxCoord CTileListBox::Get_tm8ssHeight() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileListBox*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetCharHeight();
+}
+
+wxCoord CTileListBox::Get_tm8ssExternalLeading() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileListBox*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetFontMetrics().externalLeading;
 }
 
 

@@ -129,7 +129,7 @@ unsigned CProjListBoxBase::GetItemWidth(size_t nIndex) const
 
 wxSize CProjListBoxBase::GetItemSize(size_t nIndex) const
 {
-    return wxSize(value_preserving_cast<decltype(std::declval<wxSize>().x)>(GetItemWidth(nIndex)), g_res.tm8ssb.tmHeight);
+    return wxSize(value_preserving_cast<decltype(std::declval<wxSize>().x)>(GetItemWidth(nIndex)), Get_tm8ssbHeight());
 }
 
 void CProjListBoxBase::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nIndex) const
@@ -153,15 +153,15 @@ void CProjListBoxBase::OnDrawItem(wxDC& pDC, const wxRect& rctItem, size_t nInde
     {
         wxRect rct = rctItem;
         pDC.DrawText("\xBB"_cbstring, CalcScrolledX(rct.GetLeft()), rct.GetTop());
-        rct.Offset(3*g_res.tm8ssb.tmAveCharWidth, 0);
-        rct.SetWidth(rct.GetWidth() - 3*g_res.tm8ssb.tmAveCharWidth);
+        rct.Offset(3*Get_tm8ssbAverageWidth(), 0);
+        rct.SetWidth(rct.GetWidth() - 3*Get_tm8ssbAverageWidth());
         pDC.DrawText(str.substr(prefixLen), CalcScrolledX(rct.GetLeft()), rct.GetTop());
     }
     else
     {
         pDC.DrawText(str.substr(prefixLen),
                     CalcScrolledX(rctItem.GetLeft() +
-                        bHead ? 0 : 3 * g_res.tm8ssb.tmAveCharWidth),
+                        bHead ? 0 : 3 * Get_tm8ssbAverageWidth()),
                     rctItem.GetTop());
     }
 
@@ -216,5 +216,23 @@ const CB::string& CProjListBoxBase::GetString(size_t index) const
 uintptr_t CProjListBoxBase::GetItemData(size_t index) const
 {
     return items.at(index).data;
+}
+
+wxCoord CProjListBoxBase::Get_tm8ssbAverageWidth() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CProjListBoxBase*>(this));
+    dc.SetFont(g_res.h8ssbWx);
+    return dc.GetCharWidth();
+}
+
+wxCoord CProjListBoxBase::Get_tm8ssbHeight() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CProjListBoxBase*>(this));
+    dc.SetFont(g_res.h8ssbWx);
+    return dc.GetCharHeight();
 }
 

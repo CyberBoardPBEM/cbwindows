@@ -1,7 +1,7 @@
 // LBoxTileBase2.cpp - base class used to handle a variety of tile oriented
 //      listbox functions.
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -71,7 +71,7 @@ wxSize CTileBaseListBox2::DoOnItemSize(size_t nItem, const std::vector<TileID>& 
     nHt = std::min(2 * tileBorder + nHt, 255);
 
     if (m_bDisplayIDs || m_bTipMarkItems)   // See if we're drawing debug ID's
-        nHt = std::max(nHt, value_preserving_cast<int>(g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading));
+        nHt = CB::max(nHt, value_preserving_cast<int>(Get_tm8ssHeight() + Get_tm8ssExternalLeading()));
 
     BOOL bItemHasTipText = OnDoesItemHaveTipText(nItem);
 
@@ -143,7 +143,7 @@ void CTileBaseListBox2::DrawItemDebugIDCode(wxDC& pDC, size_t nItem, wxRect rctI
 
         pDC.SetFont(g_res.h8ssWx);
         wxCoord y = rctItem.GetTop() + rctItem.GetHeight() / 2 -
-            (g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading) / 2;
+            (Get_tm8ssHeight() + Get_tm8ssExternalLeading()) / 2;
         if (bDrawIt)
         {
             pDC.DrawText(str, CalcScrolledX(x), y);
@@ -168,7 +168,7 @@ void CTileBaseListBox2::SetupTipMarkerIfRequired()
 
             pDC.SetFont(g_res.h8ssWx);
             m_sizeTipMark.x = pDC.GetTextExtent(m_strTipMark).x;
-            m_sizeTipMark.y = g_res.tm8ss.tmHeight + g_res.tm8ss.tmExternalLeading;
+            m_sizeTipMark.y = Get_tm8ssHeight() + Get_tm8ssExternalLeading();
         }
     }
 }
@@ -226,6 +226,24 @@ void CTileBaseListBox2::OnCreate(wxWindowCreateEvent& event)
 {
     event.Skip();
     SetupTipMarkerIfRequired();
+}
+
+wxCoord CTileBaseListBox2::Get_tm8ssHeight() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileBaseListBox2*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetCharHeight();
+}
+
+wxCoord CTileBaseListBox2::Get_tm8ssExternalLeading() const
+{
+    /* KLUDGE:  wxInfoDC should not modify wxWindow,
+        so const_cast<> should be safe */
+    wxInfoDC dc(const_cast<CTileBaseListBox2*>(this));
+    dc.SetFont(g_res.h8ssWx);
+    return dc.GetFontMetrics().externalLeading;
 }
 
 
