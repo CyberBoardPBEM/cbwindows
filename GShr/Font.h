@@ -1,6 +1,6 @@
 // Font.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -45,9 +45,6 @@ protected:
     FNameID fnID;
     int     iTypeSize;          // Type height in 0.5 pt units
     int     taFlags;            // See ta* defs above
-    // mutable since it's approximately a lazy evaluation of ctor
-    typedef std::map<int /* angle */, HFONT> HFonts;
-    mutable HFonts hFnt;        // Handle of font in system
 public:
     // ---------- //
     bool operator==(const CbFont& rhs) const;
@@ -55,12 +52,11 @@ public:
     CbFont(void) : fnID(0), iTypeSize(0), taFlags(0) {}
     CbFont(int iSize, int taFlgs, FNameID id) :
         fnID(id), iTypeSize(iSize), taFlags(taFlgs) {}
-    ~CbFont();
     // --------- //
     bool IsBold(void) const { return (taFlags & taBold) != 0; }
     bool IsItalic(void) const { return (taFlags & taItalic) != 0; }
     bool IsULine(void) const { return (taFlags & taULine) != 0; }
-    CB::string ToString(int angle = 0) const;
+    CB::string ToString() const;
 };
 
 template<typename CharT>
@@ -88,9 +84,7 @@ public:
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
     FontID AddFont(int iSize, int taFlgs, uint8_t iFamily, const CB::string& pszFName);
-    // N.B.:  angle is clockwise per CB convention
-    void FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle = 0) const;
-    HFONT GetFontHandle(FontID id, int angle = 0) const;
+    void FillLogFontStruct(FontID id, LPLOGFONT pLF) const;
     void ReleaseAllFontHandles(void);
     wxFontData GetFontData(FontID id) const;
     // -------- //
