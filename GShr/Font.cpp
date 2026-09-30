@@ -1,6 +1,6 @@
 // Font.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -60,15 +60,7 @@ FontID CFontTbl::AddFont(int iSize, int taFlgs, uint8_t iFamily,
 
 // ----------------------------------------------------- //
 
-CbFont::~CbFont()
-{
-    for (HFonts::value_type& v : hFnt)
-    {
-        DeleteObject(v.second);
-    }
-}
-
-CB::string CbFont::ToString(int angle /* = 0 */) const
+CB::string CbFont::ToString() const
 {
     std::wostringstream str;
     str << L"CbFont(" <<
@@ -108,27 +100,21 @@ CB::string CbFont::ToString(int angle /* = 0 */) const
         str << L"<none>";
     }
 
-    if (angle)
-    {
-        str << L' ' << angle << L'°';
-    }
-
     str << L')';
     return str.str();
 }
 
 // ----------------------------------------------------- //
 
-// N.B.:  angle is clockwise per CB convention
-void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */) const
+void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF) const
 {
     const CbFont *opFnt = &**id;
     const CB::string* pszFace;
 
     memset(pLF, 0, sizeof(LOGFONT));
     // need TrueType for rotated text
-    pLF->lfOutPrecision = angle == 0 ? 0 : OUT_TT_ONLY_PRECIS;
-    pLF->lfOrientation = pLF->lfEscapement = -angle*10;
+    pLF->lfOutPrecision = 0;
+    pLF->lfOrientation = pLF->lfEscapement = 0;
     pLF->lfHeight = -(opFnt->iTypeSize);
     pLF->lfWeight = opFnt->IsBold() ? FW_BOLD : FW_NORMAL;
     pLF->lfItalic = opFnt->IsItalic();
@@ -139,24 +125,6 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF, int angle /* = 0 */) 
     {
         _tcscpy(pLF->lfFaceName, *pszFace);
     }
-}
-
-// ----------------------------------------------------- //
-
-HFONT CFontTbl::GetFontHandle(FontID id, int angle /* = 0 */) const
-{
-    if (id == 0)
-        return NULL;
-    const CbFont* opFnt = &**id;
-    CbFont::HFonts::iterator it = opFnt->hFnt.find(angle);
-    if (it != opFnt->hFnt.end())
-        return it->second;
-
-    LOGFONT lf;
-    FillLogFontStruct(id, &lf, angle);
-
-    it = opFnt->hFnt.insert(std::make_pair(angle, CreateFontIndirect(&lf))).first;
-    return it->second;
 }
 
 // ----------------------------------------------------- //
