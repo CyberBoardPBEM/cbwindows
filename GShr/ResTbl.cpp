@@ -1,6 +1,6 @@
 // ResTbl.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -41,7 +41,6 @@ ResourceTable g_res;
 
 void ResourceTable::InitResourceTable(HINSTANCE hInst)
 {
-    m_bInited = TRUE;
     LoadCursors(hInst);
     LoadFonts();
     LoadBrushes(hInst);
@@ -49,72 +48,24 @@ void ResourceTable::InitResourceTable(HINSTANCE hInst)
 
 // ----------------------------------------------------- //
 
-ResourceTable::~ResourceTable(void)
-{
-    FreeCursors();
-    FreeFonts();
-    FreeBrushes();
-}
-
-// ----------------------------------------------------- //
-
 void ResourceTable::LoadCursors(HINSTANCE hInst)
 {
-    hcrDragTile = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE));
     // TODO:  rewrite w/o wxMSW-specific code
     hcrDragTileWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DRAGTILE))));
-    hcrNoDrop = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP));
     hcrNoDropWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP))));
-    hcrNoDropTooBig = LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG));
     hcrNoDropTooBigWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_NODROP_TOOBIG))));
-    hcrCrossHair = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CROSSHAIR));
     hcrCrossHairWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_CROSSHAIR))));
 #ifndef GPLAY
-    hcrFill = LoadCursor(hInst, MAKEINTRESOURCE(IDC_FILL));
     hcrFillWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_FILL))));
-    hcrDropper = LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER));
     hcrDropperWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_DROPPER))));
-    hcrEraser = LoadCursor(hInst, MAKEINTRESOURCE(IDC_ERASER));
     hcrEraserWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_ERASER))));
-    hcrPencil = LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL));
     hcrPencilWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_PENCIL))));
-    hcrBrush = LoadCursor(hInst, MAKEINTRESOURCE(IDC_BRUSH));
     hcrBrushWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_BRUSH))));
-    hcrSmall4Way = LoadCursor(hInst, MAKEINTRESOURCE(IDC_SMALL4WAY));
     hcrSmall4WayWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_SMALL4WAY))));
-    hcrColorChange = LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE));
     hcrColorChangeWx.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_COLORCHANGE))));
 #else
     hcrCompMoveActive.SetHCURSOR(reinterpret_cast<WXHCURSOR>(LoadCursor(hInst, MAKEINTRESOURCE(IDC_CMOVMODE))));
 #endif
-}
-
-// ----------------------------------------------------- //
-
-void ResourceTable::FreeCursors(void)
-{
-    if (!m_bInited)     // Handles are bad
-        return;
-    DestroyCursor(hcrDragTile);
-    DestroyCursor(hcrNoDrop);
-    DestroyCursor(hcrNoDropTooBig);
-    DestroyCursor(hcrCrossHair);
-#ifndef GPLAY
-    DestroyCursor(hcrFill);
-    DestroyCursor(hcrDropper);
-    DestroyCursor(hcrEraser);
-    DestroyCursor(hcrPencil);
-    DestroyCursor(hcrBrush);
-    DestroyCursor(hcrColorChange);
-#endif
-}
-
-// ----------------------------------------------------- //
-
-void ResourceTable::FreeBrushes(void)
-{
-    if (!m_bInited)     // Handles are bad
-        return;
 }
 
 // ----------------------------------------------------- //
@@ -155,10 +106,6 @@ void ResourceTable::LoadBrushes(HINSTANCE hInst)
 
 void ResourceTable::LoadFonts(void)
 {
-    LOGFONT lf;
-    HDC     hDC = GetDC(NULL);      // get the screen DC
-    int     yLogPix = GetDeviceCaps(hDC, LOGPIXELSY);
-
     // Allow for font override from the resource file
     int     nSizeSmall = 8;
     int     nSizeBig = 10;
@@ -173,16 +120,6 @@ void ResourceTable::LoadFonts(void)
     if (!strFontSize.empty())
         nSizeBig = std::stoi(strFontSize.std_wstr());
 
-    memset(&lf, 0, sizeof(LOGFONT));
-
-    lf.lfHeight = -(nSizeSmall * yLogPix) / 72;
-    lf.lfWeight = FW_NORMAL;
-    lf.lfPitchAndFamily = FF_SWISS | VARIABLE_PITCH;
-    lstrcpy(lf.lfFaceName, strFontName);
-
-    h8ss = CreateFontIndirect(&lf);
-    HFONT hFntSave = (HFONT) SelectObject(hDC, h8ss);
-    GetTextMetrics(hDC, &tm8ss);
     h8ssWx = wxFont(nSizeSmall,
                     wxFONTFAMILY_SWISS,
                     wxFONTSTYLE_NORMAL,
@@ -190,35 +127,11 @@ void ResourceTable::LoadFonts(void)
                     false,
                     strFontName);
 
-    lf.lfWeight = FW_BOLD;
-    h8ssb = CreateFontIndirect(&lf);
-    SelectObject(hDC, h8ssb);
-    GetTextMetrics(hDC, &tm8ssb);
     h8ssbWx = wxFont(nSizeSmall,
                     wxFONTFAMILY_SWISS,
                     wxFONTSTYLE_NORMAL,
                     wxFONTWEIGHT_BOLD,
                     false,
                     strFontName);
-
-    lf.lfHeight = -(nSizeBig * yLogPix) / 72;
-    lf.lfWeight = FW_NORMAL;
-    h10ss = CreateFontIndirect(&lf);
-    SelectObject(hDC, h10ss);
-    GetTextMetrics(hDC, &tm10ss);
-
-    SelectObject(hDC, hFntSave);
-    ReleaseDC(NULL, hDC);
-}
-
-// ----------------------------------------------------- //
-
-void ResourceTable::FreeFonts(void)
-{
-    if (!m_bInited)     // Handles are bad
-        return;
-    if (h8ss)  DeleteObject(h8ss);
-    if (h8ssb) DeleteObject(h8ssb);
-    if (h10ss) DeleteObject(h10ss);
 }
 

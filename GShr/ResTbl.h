@@ -1,6 +1,6 @@
 // ResTbl.h
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,40 +27,22 @@
 
 struct ResourceTable
 {
-    BOOL    m_bInited;
     // ======== Screen Fonts ========= //
-    HFONT   h8ss;               // 8pt Sans Serif
     wxFont  h8ssWx;
-    HFONT   h8ssb;              // 8pt Sans Serif Bold
     wxFont  h8ssbWx;
-    HFONT   h10ss;              // 10pt Sans Serif
     // Text metrics for associated screen fonts
-    TEXTMETRIC  tm8ss;
-    TEXTMETRIC  tm8ssb;
-    TEXTMETRIC  tm10ss;
     // ======== Cursors ========= //
-    HCURSOR     hcrDragTile;
     wxCursor    hcrDragTileWx;
-    HCURSOR     hcrNoDrop;
     wxCursor    hcrNoDropWx;
-    HCURSOR     hcrNoDropTooBig;
     wxCursor    hcrNoDropTooBigWx;
-    HCURSOR     hcrCrossHair;
     wxCursor    hcrCrossHairWx;
 #ifndef GPLAY
-    HCURSOR     hcrFill;
     wxCursor    hcrFillWx;
-    HCURSOR     hcrDropper;
     wxCursor    hcrDropperWx;
-    HCURSOR     hcrEraser;
     wxCursor    hcrEraserWx;
-    HCURSOR     hcrPencil;
     wxCursor    hcrPencilWx;
-    HCURSOR     hcrBrush;
     wxCursor    hcrBrushWx;
-    HCURSOR     hcrSmall4Way;
     wxCursor    hcrSmall4WayWx;
-    HCURSOR     hcrColorChange;
     wxCursor    hcrColorChangeWx;
 #else
     wxCursor    hcrCompMoveActive;
@@ -70,17 +52,12 @@ struct ResourceTable
     wxBrush     hbr25PctWx;     // 25% grey pattern
 #endif
     // ------ //
-    ResourceTable() { m_bInited = FALSE; }
-    ~ResourceTable();
     // ------ //
     void InitResourceTable(HINSTANCE hInst);
 private:
     void LoadCursors(HINSTANCE hInst);
-    void FreeCursors(void);
     void LoadBrushes(HINSTANCE hInst);  // Load new brushes and colors
-    void FreeBrushes(void);         // free the brushes
     void LoadFonts(void);           // Load screen fonts
-    void FreeFonts(void);           // Free screen fonts
 };
 
 // ------------------------------------------------------- //
