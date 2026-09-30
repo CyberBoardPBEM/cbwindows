@@ -293,6 +293,9 @@ struct alignas(uint32_t) WIN_COLORREF
 #define CMenu ***poison***
 #define CPen ***poison***
 #define CWnd ***poison***
+#define HCURSOR ***poison***
+#define HFONT ***poison***
+#define TEXTMETRIC ***poison***
 
 #undef COLORREF
 #define COLORREF ***poison***
