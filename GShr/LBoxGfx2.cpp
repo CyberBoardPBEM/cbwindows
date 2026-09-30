@@ -36,8 +36,6 @@
 #define new DEBUG_NEW
 #endif
 
-static DragInfo di;
-
 const int TRIGGER_THRESHOLD = 3;
 const unsigned defaultItemHeight = 16;
 
