@@ -681,7 +681,7 @@ CBoardManager::CBoardManager(CGamDoc& doc)
     SetBackColor(*wxWHITE);
     SetLineWidth(3);
     m_fontID = CGamDoc::GetFontManager().AddFont(TenthPointsToScreenPixels(100),
-        taBold, uint8_t(FF_SWISS), "Arial");
+        taBold, WIN32_FF::SWISS, "Arial");
     // ------ //
     m_wReserved1 = 0;
     m_wReserved2 = 0;

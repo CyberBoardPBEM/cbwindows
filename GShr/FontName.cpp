@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 // ====================================================== //
 
-FNameID FNameTbl::AddFaceName(const CB::string& pszFName, uint8_t iFamily)
+FNameID FNameTbl::AddFaceName(const CB::string& pszFName, WIN32_FF iFamily)
 {
     FName oFName(pszFName, iFamily);
     return Register(std::move(oFName));
@@ -60,7 +60,7 @@ FNameID FNameTbl::operator[](size_t iFaceNum) const
 
 // ====================================================== //
 
-FName::FName(CB::string pszFName, uint8_t iFamily)
+FName::FName(CB::string pszFName, WIN32_FF iFamily)
 {
     if (pszFName.a_size() >= size_t(LF_FACESIZE))
     {

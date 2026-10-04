@@ -1,6 +1,6 @@
 // FontName.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,14 +36,14 @@ class FName
 {
     friend class FNameTbl;
 protected:
-    uint8_t iFamily;                    // See LOGFONT FF_*
+    WIN32_FF iFamily;
     CB::string szFName;      // Name of font
 public:
     // ---------- //
     bool operator==(const FName& rhs) const;
     // ---------- //
-    FName(void) { iFamily = uint8_t(0); szFName.clear(); }
-    FName(CB::string pszFName, uint8_t iFamily);
+    FName(void) { iFamily = WIN32_FF::DONTCARE; szFName.clear(); }
+    FName(CB::string pszFName, WIN32_FF iFamily);
     const CB::string& ToString() const { return szFName; }
 };
 
@@ -67,11 +67,11 @@ public:
 class FNameTbl : private AtomList<FName>
 {
 public:
-    FNameID AddFaceName(const CB::string& pszFName, uint8_t iFamily);
+    FNameID AddFaceName(const CB::string& pszFName, WIN32_FF iFamily);
     const CB::string *GetFaceName(FNameID id) const
         { return id == NULL ? NULL : &(*id)->szFName;}
-    uint8_t GetFaceFamily(FNameID id) const
-        { return id == NULL ? uint8_t(0) : (*id)->iFamily;}
+    WIN32_FF GetFaceFamily(FNameID id) const
+        { return id == NULL ? WIN32_FF::DONTCARE : (*id)->iFamily;}
     size_t GetSize() const { return size(); }
     FNameID operator[](size_t iFaceNum) const;
 };
