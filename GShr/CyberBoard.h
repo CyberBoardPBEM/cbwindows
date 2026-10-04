@@ -282,6 +282,27 @@ struct alignas(uint32_t) WIN_COLORREF
     }
 };
 
+// replacement for WIN32 font family FF_* macros
+enum class WIN32_FF : uint8_t
+{
+    DONTCARE =          0x00,    /* Don't care or don't know. */
+    ROMAN =             0x10,    /* Variable stroke width, serifed. */
+                                    /* Times Roman, Century Schoolbook, etc. */
+    SWISS =             0x20,    /* Variable stroke width, sans-serifed. */
+                                    /* Helvetica, Swiss, etc. */
+    MODERN =            0x30,    /* Constant stroke width, serifed or sans-serifed. */
+                                    /* Pica, Elite, Courier, etc. */
+    SCRIPT =            0x40,    /* Cursive, etc. */
+    DECORATIVE =        0x50,    /* Old English, etc. */
+};
+
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DONTCARE) == FF_DONTCARE);
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::ROMAN) == FF_ROMAN);
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SWISS) == FF_SWISS);
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::MODERN) == FF_MODERN);
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SCRIPT) == FF_SCRIPT);
+static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DECORATIVE) == FF_DECORATIVE);
+
 // ensure MFC classes are no longer used
 #define CBitmap ***poison***
 #define CBrush ***poison***
@@ -299,6 +320,19 @@ struct alignas(uint32_t) WIN_COLORREF
 
 #undef COLORREF
 #define COLORREF ***poison***
+
+#undef FF_DONTCARE
+#define FF_DONTCARE ***poison***
+#undef FF_ROMAN
+#define FF_ROMAN ***poison***
+#undef FF_SWISS
+#define FF_SWISS ***poison***
+#undef FF_MODERN
+#define FF_MODERN ***poison***
+#undef FF_SCRIPT
+#define FF_SCRIPT ***poison***
+#undef FF_DECORATIVE
+#define FF_DECORATIVE ***poison***
 
 class CGamDoc;
 namespace CB

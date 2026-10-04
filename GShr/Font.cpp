@@ -49,7 +49,7 @@ CFontTbl::~CFontTbl(void)
 
 // ----------------------------------------------------- //
 
-FontID CFontTbl::AddFont(int iSize, int taFlgs, uint8_t iFamily,
+FontID CFontTbl::AddFont(int iSize, int taFlgs, WIN32_FF iFamily,
     const CB::string& pszFName)
 {
     FNameID fnID = oFName.AddFaceName(pszFName, iFamily);
@@ -120,7 +120,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF) const
     pLF->lfItalic = opFnt->IsItalic();
     pLF->lfUnderline = opFnt->IsULine();
     pLF->lfCharSet = DEFAULT_CHARSET;
-    pLF->lfPitchAndFamily = oFName.GetFaceFamily(opFnt->fnID);
+    pLF->lfPitchAndFamily = static_cast<std::underlying_type_t<WIN32_FF>>(oFName.GetFaceFamily(opFnt->fnID));
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
         _tcscpy(pLF->lfFaceName, *pszFace);
@@ -138,22 +138,22 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)GetSize(rfontID);
-        ar << (WORD)GetFlags(rfontID);
-        ar << (WORD)GetFamily(rfontID);
+        ar << value_preserving_cast<uint16_t>(GetSize(rfontID));
+        ar << value_preserving_cast<uint16_t>(GetFlags(rfontID));
+        ar << value_preserving_cast<uint16_t>(static_cast<std::underlying_type_t<WIN32_FF>>(GetFamily(rfontID)));
         const CB::string& str = CheckedDeref(GetFaceName(rfontID));
         ar << str;
     }
     else
     {
         ASSERT(rfontID == 0);
-        WORD wSize, wFlags, wFamily;
+        uint16_t wSize, wFlags, wFamily;
         ar >> wSize;
         ar >> wFlags;
         ar >> wFamily;
         CB::string str;
         ar >> str;
-        rfontID = AddFont((int)wSize, (int)wFlags, value_preserving_cast<uint8_t>(wFamily), str);
+        rfontID = AddFont((int)wSize, (int)wFlags, static_cast<WIN32_FF>(value_preserving_cast<uint8_t>(wFamily)), str);
     }
 }
 
@@ -191,26 +191,27 @@ wxFont ToWxFont(FontID fid)
     wxASSERT((lf.lfPitchAndFamily & 0x3) == DEFAULT_PITCH);
     switch (lf.lfPitchAndFamily & 0xf0)
     {
-        case FF_DECORATIVE:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DECORATIVE):
             nfi.SetFamily(wxFONTFAMILY_DECORATIVE);
             break;
-        case FF_DONTCARE:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DONTCARE):
             nfi.SetFamily(wxFONTFAMILY_DEFAULT);
             break;
-        case FF_MODERN:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::MODERN):
             nfi.SetFamily(wxFONTFAMILY_MODERN);
             break;
-        case FF_ROMAN:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::ROMAN):
             nfi.SetFamily(wxFONTFAMILY_ROMAN);
             break;
-        case FF_SCRIPT:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SCRIPT):
             nfi.SetFamily(wxFONTFAMILY_SCRIPT);
             break;
-        case FF_SWISS:
+        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SWISS):
             nfi.SetFamily(wxFONTFAMILY_SWISS);
             break;
         default:
             wxASSERT(!"unknown family");
+            nfi.SetFamily(wxFONTFAMILY_UNKNOWN);
     }
 
     nfi.SetFaceName(lf.lfFaceName);
@@ -237,30 +238,30 @@ FontID ToFontID(wxFont f)
         flags |= taULine;
     }
 
-    uint8_t family;
+    WIN32_FF family;
     switch (f.GetFamily())
     {
         case wxFONTFAMILY_DECORATIVE:
-            family = FF_DECORATIVE;
+            family = WIN32_FF::DECORATIVE;
             break;
         case wxFONTFAMILY_DEFAULT:
-            family = FF_DONTCARE;
+            family = WIN32_FF::DONTCARE;
             break;
         case wxFONTFAMILY_MODERN:
-            family = FF_MODERN;
+            family = WIN32_FF::MODERN;
             break;
         case wxFONTFAMILY_ROMAN:
-            family = FF_ROMAN;
+            family = WIN32_FF::ROMAN;
             break;
         case wxFONTFAMILY_SCRIPT:
-            family = FF_SCRIPT;
+            family = WIN32_FF::SCRIPT;
             break;
         case wxFONTFAMILY_SWISS:
-            family = FF_SWISS;
+            family = WIN32_FF::SWISS;
             break;
         default:
             wxASSERT(!"unknown family");
-            family = FF_DONTCARE;
+            family = WIN32_FF::DONTCARE;
     }
 
     CB::string name = f.GetFaceName();
