@@ -221,7 +221,7 @@ wxFont ToWxFont(FontID fid)
     nfi.SetUnderlined(lf.lfUnderline);
 
     wxASSERT((lf.lfPitchAndFamily & 0x3) == DEFAULT_PITCH);
-    switch (lf.lfPitchAndFamily & 0xf)
+    switch (lf.lfPitchAndFamily & 0xf0)
     {
         case FF_DECORATIVE:
             nfi.SetFamily(wxFONTFAMILY_DECORATIVE);
