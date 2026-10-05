@@ -111,25 +111,30 @@ CB::string CbFont::ToString() const
 
 // ----------------------------------------------------- //
 
-void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF) const
+wxFontInfo CFontTbl::GetFontInfo(FontID id) const
 {
-    const CbFont *opFnt = &**id;
-    const CB::string* pszFace;
+    const CbFont& opFnt = **id;
 
-    memset(pLF, 0, sizeof(LOGFONT));
-    // need TrueType for rotated text
-    pLF->lfOutPrecision = 0;
-    pLF->lfOrientation = pLF->lfEscapement = 0;
-    pLF->lfHeight = -(opFnt->iTypeSize);
-    pLF->lfWeight = opFnt->IsBold() ? FW_BOLD : FW_NORMAL;
-    pLF->lfItalic = opFnt->IsItalic();
-    pLF->lfUnderline = opFnt->IsULine();
-    pLF->lfCharSet = DEFAULT_CHARSET;
-    pLF->lfPitchAndFamily = static_cast<std::underlying_type_t<WIN32_FF>>(FromWxFontFamily(oFName.GetFaceFamily(opFnt->fnID)));
-    if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
+    wxFontInfo retval(wxSize(0, -(opFnt.iTypeSize)));
+    if (opFnt.IsBold())
     {
-        _tcscpy(pLF->lfFaceName, *pszFace);
+        retval.Bold();
     }
+    if (opFnt.IsItalic())
+    {
+        retval.Italic();
+    }
+    if (opFnt.IsULine())
+    {
+        retval.Underlined();
+    }
+    retval.Family(oFName.GetFaceFamily(opFnt.fnID));
+    const CB::string* pszFace = oFName.GetFaceName(opFnt.fnID);
+    if (pszFace)
+    {
+        retval.FaceName(*pszFace);
+    }
+    return retval;
 }
 
 // ----------------------------------------------------- //
@@ -171,34 +176,9 @@ bool CbFont::operator==(const CbFont& rhs) const
 
 wxFont ToWxFont(FontID fid)
 {
-    LOGFONT lf;
     CFontTbl& pFontTbl = CGamDoc::GetFontManager();
-    pFontTbl.FillLogFontStruct(fid, &lf);
-
-    wxNativeFontInfo nfi;
-
-    wxASSERT(lf.lfHeight <= 0);
-    nfi.SetPixelSize(wxSize(0, -lf.lfHeight));
-
-    if (lf.lfWeight == FW_BOLD)
-    {
-        nfi.SetWeight(wxFONTWEIGHT_BOLD);
-    }
-    else
-    {
-        nfi.SetWeight(wxFONTWEIGHT_NORMAL);
-    }
-
-    nfi.SetStyle(lf.lfItalic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
-
-    nfi.SetUnderlined(lf.lfUnderline);
-
-    wxASSERT((lf.lfPitchAndFamily & 0x3) == DEFAULT_PITCH);
-    nfi.SetFamily(ToWxFontFamily(static_cast<WIN32_FF>(lf.lfPitchAndFamily & 0xf0)));
-
-    nfi.SetFaceName(lf.lfFaceName);
-
-    return wxFont(nfi);
+    wxFontInfo fontInfo = pFontTbl.GetFontInfo(fid);
+    return wxFont(fontInfo);
 }
 
 FontID ToFontID(wxFont f)
