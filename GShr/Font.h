@@ -84,7 +84,7 @@ public:
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
     FontID AddFont(int iSize, int taFlgs, wxFontFamily iFamily, const CB::string & pszFName);
-    void FillLogFontStruct(FontID id, LPLOGFONT pLF) const;
+    wxFontInfo GetFontInfo(FontID id) const;
     void ReleaseAllFontHandles(void);
     wxFontData GetFontData(FontID id) const;
     // -------- //

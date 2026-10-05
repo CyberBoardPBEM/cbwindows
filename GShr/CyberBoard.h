@@ -310,12 +310,15 @@ static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DECORATIVE
 #define CDataExchange ***poison***
 #define CDC ***poison***
 #define CDocTemplate ***poison***
+#define CFont ***poison***
 #define CListBox ***poison***
 #define CMenu ***poison***
 #define CPen ***poison***
 #define CWnd ***poison***
 #define HCURSOR ***poison***
 #define HFONT ***poison***
+#define LOGFONT ***poison***
+#define LPLOGFONT ***poison***
 #define TEXTMETRIC ***poison***
 
 #undef COLORREF
