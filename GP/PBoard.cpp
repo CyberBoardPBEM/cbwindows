@@ -80,7 +80,7 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_crTextColor = *wxBLACK;
     m_crTextBoxColor = *wxWHITE;
     m_fontID = CGameBox::GetFontManager().AddFont(
-        TenthPointsToScreenPixels(100), taBold, WIN32_FF::SWISS, "Arial");
+        TenthPointsToScreenPixels(100), taBold, wxFONTFAMILY_SWISS, "Arial");
 
     m_bLockedDrawnBeneath = TRUE;
     m_bPVisible = TRUE;

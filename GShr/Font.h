@@ -83,14 +83,14 @@ public:
     // -------- //
     FNameTbl& GetFNameTbl(void) { return oFName; }
     // -------- //
-    FontID AddFont(int iSize, int taFlgs, WIN32_FF iFamily, const CB::string& pszFName);
+    FontID AddFont(int iSize, int taFlgs, wxFontFamily iFamily, const CB::string & pszFName);
     void FillLogFontStruct(FontID id, LPLOGFONT pLF) const;
     void ReleaseAllFontHandles(void);
     wxFontData GetFontData(FontID id) const;
     // -------- //
     int GetFlags(FontID id) const { return id != 0 ? (*id)->taFlags : 0; }
     int GetSize(FontID id) const { return id != 0 ? (*id)->iTypeSize : 0; }
-    WIN32_FF GetFamily(FontID id) const
+    wxFontFamily GetFamily(FontID id) const
         { return oFName.GetFaceFamily((*id)->fnID); }
     const CB::string* GetFaceName(FontID id) const
         { return oFName.GetFaceName((*id)->fnID); }
