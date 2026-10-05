@@ -41,6 +41,11 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+namespace {
+    wxFontFamily ToWxFontFamily(WIN32_FF ff);
+    WIN32_FF FromWxFontFamily(wxFontFamily ff);
+}
+
 // ----------------------------------------------------- //
 
 CFontTbl::~CFontTbl(void)
@@ -49,7 +54,7 @@ CFontTbl::~CFontTbl(void)
 
 // ----------------------------------------------------- //
 
-FontID CFontTbl::AddFont(int iSize, int taFlgs, WIN32_FF iFamily,
+FontID CFontTbl::AddFont(int iSize, int taFlgs, wxFontFamily iFamily,
     const CB::string& pszFName)
 {
     FNameID fnID = oFName.AddFaceName(pszFName, iFamily);
@@ -120,7 +125,7 @@ void CFontTbl::FillLogFontStruct(FontID id, LPLOGFONT pLF) const
     pLF->lfItalic = opFnt->IsItalic();
     pLF->lfUnderline = opFnt->IsULine();
     pLF->lfCharSet = DEFAULT_CHARSET;
-    pLF->lfPitchAndFamily = static_cast<std::underlying_type_t<WIN32_FF>>(oFName.GetFaceFamily(opFnt->fnID));
+    pLF->lfPitchAndFamily = static_cast<std::underlying_type_t<WIN32_FF>>(FromWxFontFamily(oFName.GetFaceFamily(opFnt->fnID)));
     if ((pszFace = oFName.GetFaceName(opFnt->fnID)) != NULL)
     {
         _tcscpy(pLF->lfFaceName, *pszFace);
@@ -140,7 +145,7 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
     {
         ar << value_preserving_cast<uint16_t>(GetSize(rfontID));
         ar << value_preserving_cast<uint16_t>(GetFlags(rfontID));
-        ar << value_preserving_cast<uint16_t>(static_cast<std::underlying_type_t<WIN32_FF>>(GetFamily(rfontID)));
+        ar << value_preserving_cast<uint16_t>(static_cast<std::underlying_type_t<WIN32_FF>>(FromWxFontFamily(GetFamily(rfontID))));
         const CB::string& str = CheckedDeref(GetFaceName(rfontID));
         ar << str;
     }
@@ -153,7 +158,7 @@ void CFontTbl::Archive(CArchive& ar, FontID& rfontID)
         ar >> wFamily;
         CB::string str;
         ar >> str;
-        rfontID = AddFont((int)wSize, (int)wFlags, static_cast<WIN32_FF>(value_preserving_cast<uint8_t>(wFamily)), str);
+        rfontID = AddFont((int)wSize, (int)wFlags, ToWxFontFamily(static_cast<WIN32_FF>(value_preserving_cast<uint8_t>(wFamily))), str);
     }
 }
 
@@ -189,30 +194,7 @@ wxFont ToWxFont(FontID fid)
     nfi.SetUnderlined(lf.lfUnderline);
 
     wxASSERT((lf.lfPitchAndFamily & 0x3) == DEFAULT_PITCH);
-    switch (lf.lfPitchAndFamily & 0xf0)
-    {
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DECORATIVE):
-            nfi.SetFamily(wxFONTFAMILY_DECORATIVE);
-            break;
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DONTCARE):
-            nfi.SetFamily(wxFONTFAMILY_DEFAULT);
-            break;
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::MODERN):
-            nfi.SetFamily(wxFONTFAMILY_MODERN);
-            break;
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::ROMAN):
-            nfi.SetFamily(wxFONTFAMILY_ROMAN);
-            break;
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SCRIPT):
-            nfi.SetFamily(wxFONTFAMILY_SCRIPT);
-            break;
-        case static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::SWISS):
-            nfi.SetFamily(wxFONTFAMILY_SWISS);
-            break;
-        default:
-            wxASSERT(!"unknown family");
-            nfi.SetFamily(wxFONTFAMILY_UNKNOWN);
-    }
+    nfi.SetFamily(ToWxFontFamily(static_cast<WIN32_FF>(lf.lfPitchAndFamily & 0xf0)));
 
     nfi.SetFaceName(lf.lfFaceName);
 
@@ -238,34 +220,54 @@ FontID ToFontID(wxFont f)
         flags |= taULine;
     }
 
-    WIN32_FF family;
-    switch (f.GetFamily())
-    {
-        case wxFONTFAMILY_DECORATIVE:
-            family = WIN32_FF::DECORATIVE;
-            break;
-        case wxFONTFAMILY_DEFAULT:
-            family = WIN32_FF::DONTCARE;
-            break;
-        case wxFONTFAMILY_MODERN:
-            family = WIN32_FF::MODERN;
-            break;
-        case wxFONTFAMILY_ROMAN:
-            family = WIN32_FF::ROMAN;
-            break;
-        case wxFONTFAMILY_SCRIPT:
-            family = WIN32_FF::SCRIPT;
-            break;
-        case wxFONTFAMILY_SWISS:
-            family = WIN32_FF::SWISS;
-            break;
-        default:
-            wxASSERT(!"unknown family");
-            family = WIN32_FF::DONTCARE;
-    }
-
     CB::string name = f.GetFaceName();
 
     CFontTbl& pFontTbl = CGamDoc::GetFontManager();
-    return pFontTbl.AddFont(size, flags, family, name);
+    return pFontTbl.AddFont(size, flags, f.GetFamily(), name);
+}
+
+namespace {
+    wxFontFamily ToWxFontFamily(WIN32_FF ff)
+    {
+        switch (ff)
+        {
+            case WIN32_FF::DECORATIVE:
+                return wxFONTFAMILY_DECORATIVE;
+            case WIN32_FF::DONTCARE:
+                return wxFONTFAMILY_DEFAULT;
+            case WIN32_FF::MODERN:
+                return wxFONTFAMILY_MODERN;
+            case WIN32_FF::ROMAN:
+                return wxFONTFAMILY_ROMAN;
+            case WIN32_FF::SCRIPT:
+                return wxFONTFAMILY_SCRIPT;
+            case WIN32_FF::SWISS:
+                return wxFONTFAMILY_SWISS;
+            default:
+                wxASSERT(!"unknown family");
+                return wxFONTFAMILY_UNKNOWN;
+        }
+    }
+
+    WIN32_FF FromWxFontFamily(wxFontFamily  ff)
+    {
+        switch (ff)
+        {
+            case wxFONTFAMILY_DECORATIVE:
+                return WIN32_FF::DECORATIVE;
+            case wxFONTFAMILY_DEFAULT:
+                return WIN32_FF::DONTCARE;
+            case wxFONTFAMILY_MODERN:
+                return WIN32_FF::MODERN;
+            case wxFONTFAMILY_ROMAN:
+                return WIN32_FF::ROMAN;
+            case wxFONTFAMILY_SCRIPT:
+                return WIN32_FF::SCRIPT;
+            case wxFONTFAMILY_SWISS:
+                return WIN32_FF::SWISS;
+            default:
+                wxASSERT(!"unknown family");
+                return WIN32_FF::DONTCARE;
+        }
+    }
 }

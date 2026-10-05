@@ -36,14 +36,14 @@ class FName
 {
     friend class FNameTbl;
 protected:
-    WIN32_FF iFamily;
+    wxFontFamily iFamily;
     CB::string szFName;      // Name of font
 public:
     // ---------- //
     bool operator==(const FName& rhs) const;
     // ---------- //
-    FName(void) { iFamily = WIN32_FF::DONTCARE; szFName.clear(); }
-    FName(CB::string pszFName, WIN32_FF iFamily);
+    FName() { iFamily = wxFONTFAMILY_DEFAULT; szFName.clear(); }
+    FName(CB::string pszFName, wxFontFamily iFamily);
     const CB::string& ToString() const { return szFName; }
 };
 
@@ -67,11 +67,11 @@ public:
 class FNameTbl : private AtomList<FName>
 {
 public:
-    FNameID AddFaceName(const CB::string& pszFName, WIN32_FF iFamily);
+    FNameID AddFaceName(const CB::string& pszFName, wxFontFamily iFamily);
     const CB::string *GetFaceName(FNameID id) const
         { return id == NULL ? NULL : &(*id)->szFName;}
-    WIN32_FF GetFaceFamily(FNameID id) const
-        { return id == NULL ? WIN32_FF::DONTCARE : (*id)->iFamily;}
+    wxFontFamily GetFaceFamily(FNameID id) const
+        { return id == NULL ? wxFONTFAMILY_DEFAULT : (*id)->iFamily; }
     size_t GetSize() const { return size(); }
     FNameID operator[](size_t iFaceNum) const;
 };
