@@ -387,8 +387,6 @@ echo off
     <ClCompile Include="VwPrjgsn.cpp" />
     <ClCompile Include="VwSelpce.cpp" />
     <ClCompile Include="VwTbrd.cpp" />
-    <ClCompile Include="WinDynspl.cpp" />
-    <ClCompile Include="WinMyspl.cpp" />
     <ClCompile Include="WinPoptb.cpp" />
     <ClCompile Include="..\GShr\WinState.cpp" />
     <ClCompile Include="WStateGp.cpp" />
@@ -491,9 +489,7 @@ echo off
     <ClInclude Include="VwPrjgsn.h" />
     <ClInclude Include="VwSelpce.h" />
     <ClInclude Include="VwTbrd.h" />
-    <ClInclude Include="WinDynspl.h" />
     <ClInclude Include="..\GShr\WinExt.h" />
-    <ClInclude Include="WinMyspl.h" />
     <ClInclude Include="WinPoptb.h" />
     <ClInclude Include="..\GShr\WinState.h" />
     <ClInclude Include="..\GShr\WinTiny.h" />
