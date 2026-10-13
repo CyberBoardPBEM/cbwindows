@@ -174,21 +174,77 @@ size_t CalcAllocSize(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize)
 // ----------------------------------------------- //
 // Point scaler
 
+namespace Impl
+{
 void ScalePoint(POINT& pnt, const CSize& numSize, const CSize& denSize)
 {
     pnt.x = MulDiv(pnt.x, numSize.cx, denSize.cx);
     pnt.y = MulDiv(pnt.y, numSize.cy, denSize.cy);
 }
 
+void ScalePoint(wxPoint& pnt, const wxSize& numSize, const wxSize& denSize)
+{
+    pnt.x = MulDiv(pnt.x, numSize.x, denSize.x);
+    pnt.y = MulDiv(pnt.y, numSize.y, denSize.y);
+}
+}
+
+void ScalePoint(POINT& pnt, const CSize& numSize, const CSize& denSize)
+{
+    wxPoint test(CB::Convert(pnt));
+    Impl::ScalePoint(test, CB::Convert(numSize), CB::Convert(denSize));
+    Impl::ScalePoint(pnt, numSize, denSize);
+    wxASSERT(CB::Convert(test) == pnt);
+}
+
+void ScalePoint(wxPoint& pnt, const wxSize& numSize, const wxSize& denSize)
+{
+    CPoint expected(CB::Convert(pnt));
+    Impl::ScalePoint(expected, CB::Convert(numSize), CB::Convert(denSize));
+    Impl::ScalePoint(pnt, numSize, denSize);
+    wxASSERT(CB::Convert(pnt) == expected);
+}
+
 // ----------------------------------------------- //
 // Rect scaler
 
+namespace Impl
+{
 void ScaleRect(RECT& rct, const CSize& numSize, const CSize& denSize)
 {
     rct.left = MulDiv(rct.left, numSize.cx, denSize.cx);
     rct.right = MulDiv(rct.right, numSize.cx, denSize.cx);
     rct.top = MulDiv(rct.top, numSize.cy, denSize.cy);
     rct.bottom = MulDiv(rct.bottom, numSize.cy, denSize.cy);
+}
+
+void ScaleRect(wxRect& rct, const wxSize& numSize, const wxSize& denSize)
+{
+    WIN_RECT win(rct);
+
+    win.left = MulDiv(win.left, numSize.x, denSize.x);
+    win.right = MulDiv(win.right, numSize.x, denSize.x);
+    win.top = MulDiv(win.top, numSize.y, denSize.y);
+    win.bottom = MulDiv(win.bottom, numSize.y, denSize.y);
+
+    rct = win;
+}
+}
+
+void ScaleRect(RECT& rct, const CSize& numSize, const CSize& denSize)
+{
+    wxRect test(CB::Convert(rct));
+    Impl::ScaleRect(test, CB::Convert(numSize), CB::Convert(denSize));
+    Impl::ScaleRect(rct, numSize, denSize);
+    wxASSERT(CB::Convert(test) == rct);
+}
+
+void ScaleRect(wxRect& rct, const wxSize& numSize, const wxSize& denSize)
+{
+    CRect expected(CB::Convert(rct));
+    Impl::ScaleRect(expected, CB::Convert(numSize), CB::Convert(denSize));
+    Impl::ScaleRect(rct, numSize, denSize);
+    wxASSERT(CB::Convert(rct) == expected);
 }
 
 // ----------------------------------------------- //
@@ -242,9 +298,33 @@ DWORD GetStringHash(const CB::string& str_)
 
 // ----------------------------------------------- //
 
+namespace Impl
+{
 CPoint GetMidRect(const CRect& rct)
 {
     return CPoint(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+}
+
+wxPoint GetMidRect(const wxRect& rct)
+{
+    return wxPoint(MidPnt(rct.GetLeft(), rct.GetRight() + 1), MidPnt(rct.GetTop(), rct.GetBottom() + 1));
+}
+}
+
+CPoint GetMidRect(const CRect& rct)
+{
+    CPoint retval = Impl::GetMidRect(rct);
+    wxPoint test = Impl::GetMidRect(CB::Convert(rct));
+    wxASSERT(CB::Convert(test) == retval);
+    return retval;
+}
+
+wxPoint GetMidRect(const wxRect& rct)
+{
+    wxPoint retval = Impl::GetMidRect(rct);
+    CPoint expected = Impl::GetMidRect(CB::Convert(rct));
+    wxASSERT(CB::Convert(retval) == expected);
+    return retval;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -261,6 +341,7 @@ wxPoint RotatePointAroundPoint(wxPoint pntOrigin, wxPoint pntXlate, int nAngleDe
     return pntFinal;
 }
 
+#if 0
 // ----------------------------------------------- //
 // This probably belongs elsewhere.
 
@@ -275,6 +356,7 @@ void PushRectOntoScreen(RECT& rct)
     if (rct.bottom >= yHeight)
         OffsetRect(&rct, 0, -(rct.bottom - yHeight));
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // Integer Sine and Cosine. Input is in degrees.
