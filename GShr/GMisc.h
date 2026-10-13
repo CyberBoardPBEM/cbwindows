@@ -1,6 +1,6 @@
 // GMisc.h
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,22 +63,14 @@ std::vector<size_t> AllocateAndCalcRandomIndexVector(size_t nNumIndices, size_t 
 
 inline int MidPnt(int a, int b) { return a+(b-a)/2; }
 CPoint GetMidRect(const CRect& rct);
-inline wxPoint GetMidRect(const wxRect& rct)
-{
-    return CB::Convert(GetMidRect(CB::Convert(rct)));
-}
+wxPoint GetMidRect(const wxRect& rct);
 wxPoint RotatePointAroundPoint(wxPoint pntOrigin, wxPoint pntXlate, int nAngleDeg);
 
 int32_t GridizeClosest1000(int32_t nVal, int32_t nMultiple, int32_t nOffset);
 int32_t GridizeClosest(int32_t nVal, int32_t nMultiple, int32_t nOffset);
 size_t CalcAllocSize(size_t uiDesired, size_t uiBaseSize, size_t uiExtendSize);
 void ScalePoint(POINT& pnt, const CSize& numSize, const CSize& denSize);
-inline void ScalePoint(wxPoint& pnt, const wxSize& numSize, const wxSize& denSize)
-{
-    CPoint temp = CB::Convert(pnt);
-    ScalePoint(temp, CB::Convert(numSize), CB::Convert(denSize));
-    pnt = CB::Convert(temp);
-}
+void ScalePoint(wxPoint& pnt, const wxSize& numSize, const wxSize& denSize);
 inline void ScalePoint(wxPoint& pnt, const wxDC& dc)
 {
     double xScale, yScale;
@@ -88,17 +80,14 @@ inline void ScalePoint(wxPoint& pnt, const wxDC& dc)
     ScalePoint(pnt, sizeView, sizeWorld);
 }
 void ScaleRect(RECT& rct, const CSize& numSize, const CSize& denSize);
-inline void ScaleRect(wxRect& rct, const wxSize& numSize, const wxSize& denSize)
-{
-    CRect temp = CB::Convert(rct);
-    ScaleRect(temp, CB::Convert(numSize), CB::Convert(denSize));
-    rct = CB::Convert(temp);
-}
+void ScaleRect(wxRect& rct, const wxSize& numSize, const wxSize& denSize);
 int NumInWordArray(CWordArray& array, int val);
 WORD GetTimeBasedRandomNumber(BOOL bZeroAllowed = TRUE);
 WORD GetStringBasedRandomNumber(const CB::string& str);
 DWORD GetStringHash(const CB::string& str);
+#if 0
 void PushRectOntoScreen(RECT& rct);
+#endif
 int Sin10K(int angle);
 int Cos10K(int angle);
 
