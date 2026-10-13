@@ -279,12 +279,6 @@
     <ClCompile Include="VwTbrd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WinDynspl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WinMyspl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WinPoptb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -583,13 +577,7 @@
     <ClInclude Include="VwTbrd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WinDynspl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\GShr\WinExt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WinMyspl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinPoptb.h">
