@@ -98,7 +98,6 @@ public:
 
 // Operations
 public:
-    void DrawBackground(CDC& pDC, const CRect& pDrawRct) const;
     void DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const;
     static void DrawDrawingList(CDrawList* pDwg, wxDC& pDC, const wxRect& pDrawRct,
         TileScale eScale, BOOL bApplyVisible, BOOL bDrawPass2Objects = FALSE);

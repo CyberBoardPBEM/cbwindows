@@ -532,13 +532,6 @@ void CBoardBase::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
 
 // ----------------------------------------------------- //
 
-void CBoardBase::DrawBackground(CDC& pDC, const CRect& pDrawRct) const
-{
-    COLORREF crPrv = pDC.SetBkColor(m_crBkGnd);
-    pDC.ExtTextOut(0, 0, ETO_OPAQUE, pDrawRct, NULL, 0, NULL);
-    pDC.SetBkColor(crPrv);
-}
-
 void CBoardBase::DrawBackground(wxDC& pDC, const wxRect& pDrawRct) const
 {
     wxDCPenChanger setPen(pDC, *wxTRANSPARENT_PEN);

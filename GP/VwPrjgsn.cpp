@@ -257,12 +257,6 @@ void CGsnProjView::OnUpdate(wxView* pSender, const CGamDocHint& pHint)
 /////////////////////////////////////////////////////////////////////////////
 // CGsnProjView drawing
 
-void CGsnProjView::OnDraw(CDC* pDC)
-{
-    CDocument& pDoc = GetDocument();
-    // TODO: add draw code here
-}
-
 #if 0
 BOOL CGsnProjView::OnEraseBkgnd(CDC* pDC)
 {
