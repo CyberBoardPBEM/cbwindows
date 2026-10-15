@@ -150,8 +150,6 @@ protected:
     void OnInitialUpdate();
     void OnUpdate(wxView* pSender, const CGamDocHint& pHint);
 
-    void OnDraw(CDC* pDC);      // overridden to draw this view
-
     // Generated message map functions
 protected:
     //{{AFX_MSG(CGsnProjView)
