@@ -179,14 +179,17 @@ namespace {
         }
     } rectDiscrepancy;
 
-    class Check_WIN_COLORREF
+    class Check_WIN_Replacements
     {
     public:
-        Check_WIN_COLORREF()
+        Check_WIN_Replacements()
         {
             WIN_COLORREF::Test();
+            WIN_POINT::Test();
+            WIN_SIZE::Test();
+            WIN_RECT::Test();
         }
-    } check_CB_COLORREF;
+    } check_WIN_Replacements;
 }
 #endif
 

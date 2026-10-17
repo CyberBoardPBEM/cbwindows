@@ -282,6 +282,155 @@ struct alignas(uint32_t) WIN_COLORREF
     }
 };
 
+// binary-equivalent replacement for WIN32 POINT
+struct WIN_POINT
+{
+    int32_t x = 0;
+    int32_t y = 0;
+
+    WIN_POINT() = default;
+    WIN_POINT(int32_t x_, int32_t y_) :
+        x(x_),
+        y(y_)
+    {
+#if defined(__WIN32__)
+        static_assert(sizeof(WIN_POINT) == sizeof(CPoint));
+        static_assert(alignof(WIN_POINT) == alignof(CPoint));
+#endif
+        static_assert(sizeof(WIN_POINT) == 2*sizeof(int32_t));
+        static_assert(alignof(WIN_POINT) == alignof(int32_t));
+    }
+    WIN_POINT(const wxPoint& p)
+    {
+        x = p.x;
+        y = p.y;
+    }
+
+    bool operator==(const WIN_POINT&) const = default;
+    bool operator!=(const WIN_POINT&) const = default;
+
+    operator wxPoint() const
+    {
+        return wxPoint(x, y);
+    }
+
+    // test must be here so CPoint can be poisoned
+    static void Test()
+    {
+        const CPoint ms(1, 2);
+        const WIN_POINT cb(1, 2);
+        const wxPoint wx(1, 2);
+        // verify binary equivalence
+        wxASSERT(reinterpret_cast<const CPoint&>(cb) == ms);
+        // verify conversions
+        wxASSERT(static_cast<WIN_POINT>(wx) == cb);
+        wxASSERT(wx == static_cast<wxPoint>(cb));
+    }
+};
+
+// binary-equivalent replacement for WIN32 RECT
+struct WIN_RECT
+{
+    int32_t left = 0;
+    int32_t top = 0;
+    int32_t right = 0;
+    int32_t bottom = 0;
+
+    WIN_RECT() = default;
+    WIN_RECT(int32_t l, int32_t t, int32_t r, int32_t b) :
+        left(l),
+        top(t),
+        right(r),
+        bottom(b)
+    {
+#if defined(__WIN32__)
+        static_assert(sizeof(WIN_RECT) == sizeof(CRect));
+        static_assert(alignof(WIN_RECT) == alignof(CRect));
+#endif
+        static_assert(sizeof(WIN_RECT) == 4*sizeof(int32_t));
+        static_assert(alignof(WIN_RECT) == alignof(int32_t));
+    }
+    WIN_RECT(const wxRect& r)
+    {
+        left = r.GetLeft();
+        top = r.GetTop();
+        right = r.GetRight() + 1;
+        bottom = r.GetBottom() + 1;
+    }
+
+    bool operator==(const WIN_RECT&) const = default;
+    bool operator!=(const WIN_RECT&) const = default;
+
+    operator wxRect() const
+    {
+        return wxRect(left, top, right - left, bottom - top);
+    }
+
+    // test must be here so CRect can be poisoned
+    static void Test()
+    {
+        CRect ms(1, 2, 3, 4);
+        WIN_RECT cb(1, 2, 3, 4);
+// N.B.:  wxRect() args are different from CRect
+#if 0
+        const wxRect wx(1, 2, 3, 4);
+#else
+        const wxRect wx(ms.left, ms.top, ms.Width(), ms.Height());
+#endif
+        // verify binary equivalence
+        wxASSERT(reinterpret_cast<const CRect&>(cb) == ms);
+        // verify conversions
+        wxASSERT(static_cast<WIN_RECT>(wx) == cb);
+        wxASSERT(wx == static_cast<wxRect>(cb));
+    }
+};
+
+// binary-equivalent replacement for WIN32 SIZE
+struct WIN_SIZE
+{
+    int32_t x = 0;
+    int32_t y = 0;
+
+    WIN_SIZE() = default;
+    WIN_SIZE(int32_t x_, int32_t y_) :
+        x(x_),
+        y(y_)
+    {
+#if defined(__WIN32__)
+        static_assert(sizeof(WIN_SIZE) == sizeof(CSize));
+        static_assert(alignof(WIN_SIZE) == alignof(CSize));
+#endif
+        static_assert(sizeof(WIN_SIZE) == 2*sizeof(int32_t));
+        static_assert(alignof(WIN_SIZE) == alignof(int32_t));
+    }
+    WIN_SIZE(const wxSize& s)
+    {
+        x = s.x;
+        y = s.y;
+    }
+
+    bool operator==(const WIN_SIZE&) const = default;
+    bool operator!=(const WIN_SIZE&) const = default;
+
+    operator wxSize() const
+    {
+        return wxSize(x, y);
+    }
+
+    // test must be here so CSize can be poisoned
+    static void Test()
+    {
+        const CSize ms(1, 2);
+        const WIN_SIZE cb(1, 2);
+        const wxSize wx(1, 2);
+        // verify binary equivalence
+        wxASSERT(reinterpret_cast<const CSize&>(cb) == ms);
+        // verify conversions
+        wxASSERT(static_cast<WIN_SIZE>(wx) == cb);
+        wxASSERT(wx == static_cast<wxSize>(cb));
+    }
+};
+
 // replacement for WIN32 font family FF_* macros
 enum class WIN32_FF : uint8_t
 {
@@ -512,6 +661,29 @@ public:
         std::format_to(ctx.out(), "x");
         BASE::format(r.GetHeight(), ctx);
         return std::format_to(ctx.out(), "])");
+    }
+};
+
+template<typename CharT>
+struct std::formatter<WIN_RECT, CharT> : private std::formatter<decltype(WIN_RECT::left), CharT>
+{
+private:
+    using BASE = formatter<decltype(WIN_RECT::left), CharT>;
+public:
+    using BASE::parse;
+
+    template<typename FormatContext>
+    FormatContext::iterator format(const WIN_RECT& r, FormatContext& ctx) const
+    {
+        std::format_to(ctx.out(), "(");
+        BASE::format(r.left, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.top, ctx);
+        std::format_to(ctx.out(), " - ");
+        BASE::format(r.right, ctx);
+        std::format_to(ctx.out(), ",");
+        BASE::format(r.bottom, ctx);
+        return std::format_to(ctx.out(), ")");
     }
 };
 
