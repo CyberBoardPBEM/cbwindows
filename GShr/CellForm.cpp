@@ -53,9 +53,8 @@ CCellForm::CCellForm()
 
 BOOL CCellForm::CompareEqual(const CCellForm& cf) const
 {
-    wxASSERT((m_rct == cf.m_rct) == (m_siz == cf.m_siz));
     return m_eType == cf.m_eType && m_nStagger == cf.m_nStagger &&
-        m_rct == cf.m_rct;
+        m_siz == cf.m_siz;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -78,14 +77,11 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
     {
         m_pPoly.resize(size_t(5));     // Last point repeats first
 
-        m_rct.SetRect(CPoint(0, 0), CPoint(nParm2, nParm1));
         m_siz = CSize(nParm2, nParm1);
         m_pPoly[size_t(0)].x = m_pPoly[size_t(3)].x = m_pPoly[size_t(4)].x =
             m_pPoly[size_t(0)].y = m_pPoly[size_t(1)].y = 0;
-        wxASSERT(m_siz.cx == m_rct.right &&
-                    m_siz.cy == m_rct.bottom);
-        m_pPoly[size_t(1)].x = m_pPoly[size_t(2)].x = m_rct.right;
-        m_pPoly[size_t(2)].y = m_pPoly[size_t(3)].y = m_rct.bottom;
+        m_pPoly[size_t(1)].x = m_pPoly[size_t(2)].x = m_siz.cx;
+        m_pPoly[size_t(2)].y = m_pPoly[size_t(3)].y = m_siz.cy;
         m_pPoly[size_t(4)] = m_pPoly[size_t(0)];    // Wrap around
 
         return;                     // No mask is required.
@@ -116,7 +112,6 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1));
             m_siz = CSize(m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         else
@@ -137,7 +132,6 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
-            m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1));
             m_siz = CSize(m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         // Create a monochrome mask for hexes.
@@ -148,15 +142,13 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 void CCellForm::CreateHexMask()
 {
     wxMemoryDC dcMask;
-    wxASSERT(m_siz.cx == m_rct.right &&
-                m_siz.cy == m_rct.bottom);
     m_pMask = wxBitmap(
-        m_rct.right, m_rct.bottom);
+        m_siz.cx, m_siz.cy);
 
     dcMask.SelectObject(m_pMask);
 
     // Make a black hex with white exterior
-    dcMask.Blit(0, 0, m_rct.right, m_rct.bottom, &dcMask, 0, 0, wxSET);
+    dcMask.Blit(0, 0, m_siz.cx, m_siz.cy, &dcMask, 0, 0, wxSET);
     dcMask.SetBrush(*wxBLACK_BRUSH);
     dcMask.SetPen(*wxBLACK_PEN);
     wxASSERT((m_eType == cformHexFlat || m_eType == cformHexPnt) &&
@@ -175,8 +167,6 @@ void CCellForm::CreateHexMask()
 
 void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const
 {
-    wxASSERT(m_siz.cx == m_rct.right &&
-                m_siz.cy == m_rct.bottom);
     if (m_eType == cformHexPnt)
     {
         row = y / m_pPoly[size_t(3)].y;
@@ -221,20 +211,20 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
     }
     else if (m_eType == cformRect)
     {
-        row = y / m_rct.bottom;
-        col = x / m_rct.right;
+        row = y / m_siz.cy;
+        col = x / m_siz.cx;
     }
     else if (m_eType == cformBrickHorz)
     {
-        row = y / m_rct.bottom;
-        CB::ssize_t xBase = (CellPhase(row) * m_rct.right) / 2;
-        col = x < xBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((x - xBase) / m_rct.right);
+        row = y / m_siz.cy;
+        CB::ssize_t xBase = (CellPhase(row) * m_siz.cx) / 2;
+        col = x < xBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((x - xBase) / m_siz.cx);
     }
     else    // m_eType == cformBrickVert
     {
-        col = x / m_rct.right;
-        CB::ssize_t yBase = (CellPhase(col) * m_rct.bottom) / 2;
-        row = y < yBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((y - yBase) / m_rct.bottom);
+        col = x / m_siz.cx;
+        CB::ssize_t yBase = (CellPhase(col) * m_siz.cy) / 2;
+        row = y < yBase ? CB::ssize_t(-1) : value_preserving_cast<CB::ssize_t>((y - yBase) / m_siz.cy);
     }
 }
 
@@ -243,23 +233,21 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
 
 BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols) const
 {
-    wxASSERT(m_siz.cx == m_rct.right &&
-                m_siz.cy == m_rct.bottom);
     size_t x, y;
     if (m_eType == cformRect)
     {
-        x = nCols * value_preserving_cast<size_t>(m_rct.right);
-        y = nRows * value_preserving_cast<size_t>(m_rct.bottom);
+        x = nCols * value_preserving_cast<size_t>(m_siz.cx);
+        y = nRows * value_preserving_cast<size_t>(m_siz.cy);
     }
     else if (m_eType == cformBrickHorz)
     {
-        x = nCols * value_preserving_cast<size_t>(m_rct.right) + value_preserving_cast<size_t>(m_rct.right / 2);
-        y = nRows * value_preserving_cast<size_t>(m_rct.bottom);
+        x = nCols * value_preserving_cast<size_t>(m_siz.cx) + value_preserving_cast<size_t>(m_siz.cx / 2);
+        y = nRows * value_preserving_cast<size_t>(m_siz.cy);
     }
     else if (m_eType == cformBrickVert)
     {
-        x = nCols * value_preserving_cast<size_t>(m_rct.right);
-        y = nRows * value_preserving_cast<size_t>(m_rct.bottom) + value_preserving_cast<size_t>(m_rct.bottom / 2);
+        x = nCols * value_preserving_cast<size_t>(m_siz.cx);
+        y = nRows * value_preserving_cast<size_t>(m_siz.cy) + value_preserving_cast<size_t>(m_siz.cy / 2);
     }
     else if (m_eType == cformHexPnt)
     {
@@ -276,19 +264,17 @@ BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols) const
 
 CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols) const
 {
-    wxASSERT(m_siz.cx == m_rct.right &&
-                m_siz.cy == m_rct.bottom);
     if (m_eType == cformRect)
-        return CSize(value_preserving_cast<long>(nCols) * m_rct.right, value_preserving_cast<long>(nRows) * m_rct.bottom);
+        return CSize(value_preserving_cast<long>(nCols) * m_siz.cx, value_preserving_cast<long>(nRows) * m_siz.cy);
     else if (m_eType == cformBrickHorz)
     {
-        return CSize(value_preserving_cast<long>(nCols) * m_rct.right + m_rct.right / 2,
-            value_preserving_cast<long>(nRows) * m_rct.bottom);
+        return CSize(value_preserving_cast<long>(nCols) * m_siz.cx + m_siz.cx / 2,
+            value_preserving_cast<long>(nRows) * m_siz.cy);
     }
     else if (m_eType == cformBrickVert)
     {
-        return CSize(value_preserving_cast<long>(nCols) * m_rct.right,
-            value_preserving_cast<long>(nRows) * m_rct.bottom + m_rct.bottom / 2);
+        return CSize(value_preserving_cast<long>(nCols) * m_siz.cx,
+            value_preserving_cast<long>(nRows) * m_siz.cy + m_siz.cy / 2);
     }
     else if (m_eType == cformHexPnt)
     {
@@ -304,21 +290,18 @@ CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols) const
 
 CRect CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col) const
 {
-    wxASSERT(m_siz.cx == m_rct.right &&
-                m_siz.cy == m_rct.bottom &&
-                CRect(CPoint(0, 0), m_siz) == m_rct);
-    CRect retval = m_rct;          // Copy master rect
+    CRect retval = CRect(CPoint(0, 0), m_siz);          // Copy master rect
     if (m_eType == cformRect)
-        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right), value_preserving_cast<int>(row * m_rct.bottom));
+        retval.OffsetRect(value_preserving_cast<int>(col * m_siz.cx), value_preserving_cast<int>(row * m_siz.cy));
     else if (m_eType == cformBrickHorz)
     {
-        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right + (CellPhase(row) * m_rct.right) / 2),
-            value_preserving_cast<int>(row * m_rct.bottom));
+        retval.OffsetRect(value_preserving_cast<int>(col * m_siz.cx + (CellPhase(row) * m_siz.cx) / 2),
+            value_preserving_cast<int>(row * m_siz.cy));
     }
     else if (m_eType == cformBrickVert)
     {
-        retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right),
-            value_preserving_cast<int>(row * m_rct.bottom + (CellPhase(col) * m_rct.bottom) / 2));
+        retval.OffsetRect(value_preserving_cast<int>(col * m_siz.cx),
+            value_preserving_cast<int>(row * m_siz.cy + (CellPhase(col) * m_siz.cy) / 2));
     }
     else if (m_eType == cformHexPnt)
     {
@@ -349,7 +332,7 @@ void CCellForm::FillCell(wxDC& pDC, int xPos, int yPos) const
     if (m_eType == cformRect || m_eType == cformBrickHorz ||
         m_eType == cformBrickVert)
     {
-        wxRect rct = CB::Convert(m_rct);
+        wxRect rct = CB::Convert(CRect(CPoint(0, 0), m_siz));
         rct.Offset(xPos, yPos);
         rct.SetWidth(rct.GetWidth() + 1);            // Adjust to include start of next rect
         rct.SetHeight(rct.GetHeight() + 1);
@@ -384,12 +367,12 @@ void CCellForm::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        ar << (WORD)m_eType;
+        ar << static_cast<uint16_t>(m_eType);
         if (m_eType == cformRect)
         {
-            ASSERT(m_nStagger == CellStagger::Invalid);
+            wxASSERT(m_nStagger == CellStagger::Invalid);
             // for file v3.90 compatibility
-            ar << static_cast<WORD>(CellStagger::Out);
+            ar << static_cast<uint16_t>(CellStagger::Out);
         }
         else
         {
@@ -397,40 +380,34 @@ void CCellForm::Serialize(CArchive& ar)
             {
                 case CellStagger::Out:
                 case CellStagger::In:
-                    ar << static_cast<WORD>(m_nStagger);
+                    ar << static_cast<uint16_t>(m_nStagger);
                     break;
                 default:
                     AfxThrowInvalidArgException();
             }
         }
-        wxASSERT(m_rct.left == 0 &&
-                    m_rct.top == 0 &&
-                    m_siz.cx == m_rct.right &&
-                    m_siz.cy == m_rct.bottom);
-        ar << static_cast<uint16_t>(m_rct.left);
-        ar << static_cast<uint16_t>(m_rct.top);
-        ar << static_cast<uint16_t>(m_rct.right);
-        ar << static_cast<uint16_t>(m_rct.bottom);
+        ar << static_cast<uint16_t>(0);
+        ar << static_cast<uint16_t>(0);
+        ar << value_preserving_cast<uint16_t>(m_siz.cx);
+        ar << value_preserving_cast<uint16_t>(m_siz.cy);
         WriteArchivePoints(ar, m_pPoly);
     }
     else
     {
-        WORD wVal;
+        uint16_t wVal;
         Clear();
 
-        ar >> wVal; m_eType = (CellFormType)wVal;
+        ar >> wVal; m_eType = static_cast<CellFormType>(wVal);
         ar >> wVal; m_nStagger = static_cast<CellStagger>(wVal);
         if (m_eType == cformRect)
         {
             m_nStagger = CellStagger::Invalid;
         }
         uint16_t sTmp;
-        ar >> sTmp; m_rct.left = sTmp;
-        ar >> sTmp; m_rct.top = sTmp;
-        ar >> sTmp; m_rct.right = sTmp;
-        ar >> sTmp; m_rct.bottom = sTmp;
-        wxASSERT(m_rct.left == 0 && m_rct.top == 0);
-        m_siz = CSize(m_rct.right, m_rct.bottom);
+        ar >> sTmp; wxASSERT(sTmp == 0);
+        ar >> sTmp; wxASSERT(sTmp == 0);
+        ar >> sTmp; m_siz.cx = sTmp;
+        ar >> sTmp; m_siz.cy = sTmp;
 
         if (m_eType == cformHexFlat || m_eType == cformHexPnt)
         {
