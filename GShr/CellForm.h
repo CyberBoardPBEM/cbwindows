@@ -140,7 +140,7 @@ public:
     bool     HasMask() const { return m_pMask.IsOk(); }
 
     CRect GetRect(CB::ssize_t row, CB::ssize_t col) const;
-    CSize GetCellSize() const { return CSize(m_rct.right, m_rct.bottom); }
+    CSize GetCellSize() const { wxASSERT(m_siz == CSize(m_rct.right, m_rct.bottom)); return CSize(m_rct.right, m_rct.bottom); }
     CellFormType GetCellType() const { return m_eType; }
     CellStagger GetCellStagger() const { return m_nStagger; }
 
@@ -167,6 +167,7 @@ protected:
     CellFormType m_eType;       // Format of cell
     CellStagger  m_nStagger;    // 0 = normal. 1 = alternate
     CRect        m_rct;         // Rectangle enclosing cell
+    CSize        m_siz;         // Size of cell
     std::vector<wxPoint> m_pPoly;  // Zero based set of points
     wxBitmap m_pMask; // Only defined for hexes
     // ------- //
