@@ -53,6 +53,7 @@ CCellForm::CCellForm()
 
 BOOL CCellForm::CompareEqual(const CCellForm& cf) const
 {
+    wxASSERT((m_rct == cf.m_rct) == (m_siz == cf.m_siz));
     return m_eType == cf.m_eType && m_nStagger == cf.m_nStagger &&
         m_rct == cf.m_rct;
 }
@@ -78,8 +79,11 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
         m_pPoly.resize(size_t(5));     // Last point repeats first
 
         m_rct.SetRect(CPoint(0, 0), CPoint(nParm2, nParm1));
+        m_siz = CSize(nParm2, nParm1);
         m_pPoly[size_t(0)].x = m_pPoly[size_t(3)].x = m_pPoly[size_t(4)].x =
             m_pPoly[size_t(0)].y = m_pPoly[size_t(1)].y = 0;
+        wxASSERT(m_siz.cx == m_rct.right &&
+                    m_siz.cy == m_rct.bottom);
         m_pPoly[size_t(1)].x = m_pPoly[size_t(2)].x = m_rct.right;
         m_pPoly[size_t(2)].y = m_pPoly[size_t(3)].y = m_rct.bottom;
         m_pPoly[size_t(4)] = m_pPoly[size_t(0)];    // Wrap around
@@ -113,6 +117,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
             m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1));
+            m_siz = CSize(m_pPoly[size_t(2)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         else
         {
@@ -133,6 +138,7 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
             m_pPoly[size_t(6)] = m_pPoly[size_t(0)];    // Wrap around
 
             m_rct.SetRect(CPoint(0, 0), CPoint(m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1));
+            m_siz = CSize(m_pPoly[size_t(3)].x + 1, m_pPoly[size_t(4)].y + 1);
         }
         // Create a monochrome mask for hexes.
         CreateHexMask();
@@ -142,6 +148,8 @@ void CCellForm::CreateCell(CellFormType eType, int nParm1, int nParm2,
 void CCellForm::CreateHexMask()
 {
     wxMemoryDC dcMask;
+    wxASSERT(m_siz.cx == m_rct.right &&
+                m_siz.cy == m_rct.bottom);
     m_pMask = wxBitmap(
         m_rct.right, m_rct.bottom);
 
@@ -167,6 +175,8 @@ void CCellForm::CreateHexMask()
 
 void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const
 {
+    wxASSERT(m_siz.cx == m_rct.right &&
+                m_siz.cy == m_rct.bottom);
     if (m_eType == cformHexPnt)
     {
         row = y / m_pPoly[size_t(3)].y;
@@ -233,6 +243,8 @@ void CCellForm::FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) con
 
 BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols) const
 {
+    wxASSERT(m_siz.cx == m_rct.right &&
+                m_siz.cy == m_rct.bottom);
     size_t x, y;
     if (m_eType == cformRect)
     {
@@ -264,6 +276,8 @@ BOOL CCellForm::CalcTrialBoardSize(size_t nRows, size_t nCols) const
 
 CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols) const
 {
+    wxASSERT(m_siz.cx == m_rct.right &&
+                m_siz.cy == m_rct.bottom);
     if (m_eType == cformRect)
         return CSize(value_preserving_cast<long>(nCols) * m_rct.right, value_preserving_cast<long>(nRows) * m_rct.bottom);
     else if (m_eType == cformBrickHorz)
@@ -290,6 +304,9 @@ CSize CCellForm::CalcBoardSize(size_t nRows, size_t nCols) const
 
 CRect CCellForm::GetRect(CB::ssize_t row, CB::ssize_t col) const
 {
+    wxASSERT(m_siz.cx == m_rct.right &&
+                m_siz.cy == m_rct.bottom &&
+                CRect(CPoint(0, 0), m_siz) == m_rct);
     CRect retval = m_rct;          // Copy master rect
     if (m_eType == cformRect)
         retval.OffsetRect(value_preserving_cast<int>(col * m_rct.right), value_preserving_cast<int>(row * m_rct.bottom));
@@ -386,6 +403,10 @@ void CCellForm::Serialize(CArchive& ar)
                     AfxThrowInvalidArgException();
             }
         }
+        wxASSERT(m_rct.left == 0 &&
+                    m_rct.top == 0 &&
+                    m_siz.cx == m_rct.right &&
+                    m_siz.cy == m_rct.bottom);
         ar << static_cast<uint16_t>(m_rct.left);
         ar << static_cast<uint16_t>(m_rct.top);
         ar << static_cast<uint16_t>(m_rct.right);
@@ -408,6 +429,8 @@ void CCellForm::Serialize(CArchive& ar)
         ar >> sTmp; m_rct.top = sTmp;
         ar >> sTmp; m_rct.right = sTmp;
         ar >> sTmp; m_rct.bottom = sTmp;
+        wxASSERT(m_rct.left == 0 && m_rct.top == 0);
+        m_siz = CSize(m_rct.right, m_rct.bottom);
 
         if (m_eType == cformHexFlat || m_eType == cformHexPnt)
         {
