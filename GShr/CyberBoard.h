@@ -759,7 +759,7 @@ namespace CB
 //#define MAKELONG(a, b) ***poison***      ((LONG)(((WORD)(((DWORD_PTR)(a)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(b)) & 0xffff))) << 16))
 #undef MAKELONG
 template<typename ARG1, typename ARG2>
-constexpr int32_t MAKELONG(ARG1 a, ARG2 b)
+constexpr int32_t WIN_MAKELONG(ARG1 a, ARG2 b)
 {
     static_assert(sizeof(a) <= sizeof(uint16_t), "arg too large");
     static_assert(sizeof(b) <= sizeof(uint16_t), "arg too large");
@@ -768,6 +768,23 @@ constexpr int32_t MAKELONG(ARG1 a, ARG2 b)
             static_cast<uint32_t>(std::make_unsigned_t<CB::remove_cvref_t<decltype(a)>>(a)) |
             (static_cast<uint32_t>(std::make_unsigned_t<CB::remove_cvref_t<decltype(b)>>(b)) << 16)
         );
+}
+
+//#define LOWORD(l)           ((WORD)(((DWORD_PTR)(l)) & 0xffff))
+//#define HIWORD(l)           ((WORD)((((DWORD_PTR)(l)) >> 16) & 0xffff))
+#undef LOWORD
+#undef HIWORD
+template<typename ARG>
+constexpr uint16_t WIN_LOWORD(ARG a)
+{
+    static_assert(sizeof(a) >= sizeof(uint32_t), "arg too small");
+    return static_cast<uint16_t>(static_cast<uint32_t>(a) & 0xffff);
+}
+template<typename ARG>
+constexpr uint16_t WIN_HIWORD(ARG a)
+{
+    static_assert(sizeof(a) >= sizeof(uint32_t), "wrong arg size");
+    return static_cast<uint16_t>((static_cast<uint32_t>(a) >> 16) & 0xffff);
 }
 
 /////////////////////////////////////////////////////////////////////////////

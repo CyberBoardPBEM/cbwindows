@@ -219,7 +219,7 @@ void CBrdEditView::OnInitialUpdate()
 
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    WORD wHint = LOWORD(lHint);
+    uint16_t wHint = WIN_LOWORD(lHint);
     if ((wHint == HINT_TILEMODIFIED && m_pBoard->IsTileInUse(static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_TILEMODIFIED>().m_tid)) ||
         wHint == HINT_TILEDELETED || wHint == HINT_TILESETDELETED)
     {

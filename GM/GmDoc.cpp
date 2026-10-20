@@ -444,7 +444,7 @@ void CGamDoc::IncrMajorRevLevel()
 
 DWORD CGamDoc::IssueGameBoxID()
 {
-    return (DWORD)MAKELONG(GetTimeBasedRandomNumber(FALSE),
+    return (DWORD)WIN_MAKELONG(GetTimeBasedRandomNumber(FALSE),
         (WORD)GetTickCount());
 }
 

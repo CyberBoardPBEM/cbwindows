@@ -1051,7 +1051,7 @@ void CGamDoc::SetThisDocumentType()
 
 DWORD CGamDoc::IssueScenarioID()
 {
-    return (DWORD)MAKELONG(GetTimeBasedRandomNumber(FALSE),
+    return (DWORD)WIN_MAKELONG(GetTimeBasedRandomNumber(FALSE),
         (WORD)GetTickCount());
 }
 
