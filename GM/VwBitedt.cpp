@@ -176,7 +176,7 @@ void CBitEditView::OnInitialUpdate()
 
 void CBitEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    WORD wHint = LOWORD(lHint);
+    uint16_t wHint = WIN_LOWORD(lHint);
     // Update for nonspecific notification only
     if (wHint == HINT_ALWAYSUPDATE)
     {

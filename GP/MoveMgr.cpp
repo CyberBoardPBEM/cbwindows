@@ -1429,8 +1429,8 @@ void CMovePlotList::SavePlotList(const CDrawList& pDwg)
         if (pObj.GetType() == CDrawObj::drawLine)
         {
             const CLine& pLObj = static_cast<const CLine&>(pObj);
-            m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptBeg.x), static_cast<int16_t>(pLObj.m_ptBeg.y)));
-            m_tblPlot.Add((DWORD)MAKELONG(static_cast<int16_t>(pLObj.m_ptEnd.x), static_cast<int16_t>(pLObj.m_ptEnd.y)));
+            m_tblPlot.Add((DWORD)WIN_MAKELONG(static_cast<int16_t>(pLObj.m_ptBeg.x), static_cast<int16_t>(pLObj.m_ptBeg.y)));
+            m_tblPlot.Add((DWORD)WIN_MAKELONG(static_cast<int16_t>(pLObj.m_ptEnd.x), static_cast<int16_t>(pLObj.m_ptEnd.y)));
         }
     }
 }

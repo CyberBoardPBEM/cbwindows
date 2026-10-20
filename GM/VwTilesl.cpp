@@ -1,6 +1,6 @@
 // VwTilesl.cpp : implementation file
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -100,7 +100,7 @@ void CTileSelView::OnInitialUpdate()
 
 void CTileSelView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
-    WORD wHint = LOWORD(lHint);
+    uint16_t wHint = WIN_LOWORD(lHint);
 
     if (wHint == HINT_TILEDELETED)
     {
