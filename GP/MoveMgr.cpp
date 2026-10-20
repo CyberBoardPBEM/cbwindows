@@ -1422,15 +1422,15 @@ void CGameStateRcd::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) const
 
 void CMovePlotList::SavePlotList(const CDrawList& pDwg)
 {
-    m_tblPlot.RemoveAll();
+    m_tblPlot.clear();
     for (CDrawList::const_iterator pos = pDwg.begin(); pos != pDwg.end(); ++pos)
     {
         const CDrawObj& pObj = **pos;
         if (pObj.GetType() == CDrawObj::drawLine)
         {
             const CLine& pLObj = static_cast<const CLine&>(pObj);
-            m_tblPlot.Add((DWORD)WIN_MAKELONG(static_cast<int16_t>(pLObj.m_ptBeg.x), static_cast<int16_t>(pLObj.m_ptBeg.y)));
-            m_tblPlot.Add((DWORD)WIN_MAKELONG(static_cast<int16_t>(pLObj.m_ptEnd.x), static_cast<int16_t>(pLObj.m_ptEnd.y)));
+            m_tblPlot.push_back(pLObj.m_ptBeg);
+            m_tblPlot.push_back(pLObj.m_ptEnd);
         }
     }
 }
@@ -1439,10 +1439,10 @@ void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     CPlayBoard& pPBrd = CheckedDeref(pDoc.GetPBoardManager().GetPBoardBySerial(m_nBrdNum));
     pPBrd.SetPlotMoveMode(TRUE);
-    for (int i = 0; i < m_tblPlot.GetSize(); i += 2)
+    for (size_t i = size_t(0) ; i < m_tblPlot.size() ; i += size_t(2))
     {
-        CPoint ptA(m_tblPlot.GetAt(i));
-        CPoint ptB(m_tblPlot.GetAt(i+1));
+        CPoint ptA(m_tblPlot.at(i));
+        CPoint ptB(m_tblPlot.at(i+size_t(1)));
         pDoc.IndicateBoardPlotLine(pPBrd, ptA, ptB);
     }
 }
@@ -1459,12 +1459,29 @@ void CMovePlotList::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_nBrdNum;
-        ar << m_tblPlot;
+        // CB3 used CDWordArray (loword=x, hiword=y)
+        std::vector<uint32_t> temp;
+        temp.reserve(m_tblPlot.size());
+        for (size_t i = size_t(0) ; i < m_tblPlot.size() ; ++i)
+        {
+            const CPoint& pnt = m_tblPlot[i];
+            temp.push_back(WIN_MAKELONG(value_preserving_cast<int16_t>(pnt.x),
+                                    value_preserving_cast<int16_t>(pnt.y)));
+        }
+        ar << temp;
     }
     else
     {
         ar >> m_nBrdNum;
-        ar >> m_tblPlot;
+        // CB3 used CDWordArray (loword=x, hiword=y)
+        std::vector<uint32_t> temp;
+        ar >> temp;
+        m_tblPlot.clear();
+        m_tblPlot.reserve(temp.size());
+        for (size_t i = size_t(0) ; i < temp.size() ; ++i)
+        {
+            m_tblPlot.emplace_back(WIN_LOWORD(temp[i]), WIN_HIWORD(temp[i]));
+        }
     }
 }
 
