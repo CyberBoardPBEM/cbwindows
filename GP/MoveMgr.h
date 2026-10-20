@@ -444,7 +444,7 @@ public:
 #endif
 protected:
     BoardID     m_nBrdNum;
-    CDWordArray m_tblPlot;
+    std::vector<CPoint> m_tblPlot;
 };
 
 ///////////////////////////////////////////////////////////////////////
