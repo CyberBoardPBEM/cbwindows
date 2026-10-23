@@ -1,6 +1,6 @@
 // Rotate.cpp
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+#include    <array>
 #include    <math.h>
 #include    <limits.h>
 #include    "GdiTools.h"
@@ -31,7 +32,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-const   int numPnts = 4;            // Only rects in rot code
+using Points = std::array<POINT, 4>;    // Only rects in rot code
 
 /////////////////////////////////////////////////////////////////////
 
@@ -63,7 +64,7 @@ void Stepper::Setup(int nStart, int nEnd, int nSteps)
     int nDiff = nEnd - nStart;
     if ((m_bNeg = nDiff < 0) != false)
         nDiff = -nDiff;
-    m_step = nSteps > 0 ? div(nDiff, nSteps) : div(0,1);
+    m_step = nSteps > 0 ? div(nDiff, nSteps) : div(0, 1);
 }
 
 void Stepper::Step()
@@ -89,11 +90,11 @@ inline int Stepper::RoundedVal()
 
 struct CDib::ImgEdge
 {
-    POINT*      m_pSPnts;               // Source rect corner points
-    POINT*      m_pDPnts;               // Rotated rect corner points
-    int         m_nCurPnt;              // Current 'far' point index
-    int         m_nBotPnt;              // Point at bottom of dest image
-    int         m_nPntIncr;             // Point index increment (-1, 1)
+    const Points& m_pSPnts;             // Source rect corner points
+    const Points& m_pDPnts;             // Rotated rect corner points
+    size_t      m_nCurPnt;              // Current 'far' point index
+    size_t      m_nBotPnt;              // Point at bottom of dest image
+    size_t      m_nPntIncr;             // Point index increment (-1, 1)
     int         m_nLines;               // Number of scanlines left on edge
 
     Stepper     m_srcX;
@@ -101,8 +102,8 @@ struct CDib::ImgEdge
     Stepper     m_dstX;
 
     // ------- //
-    ImgEdge(BOOL bLeftSide, POINT* pSrcPnts, POINT* pDstPnts,
-        int nTopPnt, int nBotPnt);
+    ImgEdge(BOOL bLeftSide, const Points& pSrcPnts, const Points& pDstPnts,
+        size_t nTopPnt, size_t nBotPnt);
 
     BOOL SetupNextEdge();
     BOOL NextScanLine();
@@ -110,10 +111,10 @@ struct CDib::ImgEdge
 
 /////////////////////////////////////////////////////////////////////
 
-static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts);
+static CSize CalcRotatedRect(CSize size, int angle, Points& pSPnts, Points& pDPnts);
 static void RotatePoint(POINT& pt, int nSin, int nCos);
 namespace {
-    void RotatePoints(POINT* pPnts, int nPnts, int nDegrees);
+    void RotatePoints(Points& pPnts, int nDegrees);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -149,8 +150,8 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     {
         return RotateFast(angle);
     }
-    POINT   pntSrc[numPnts];
-    POINT   pntDst[numPnts];
+    Points  pntSrc;
+    Points  pntDst;
 
     // There was a long standing bug in the DIB XY addressing (through V2.x)
     // that caused the rotation to be computed opposite of it's actual
@@ -163,9 +164,9 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     CDib pDDib = CreateTransparentColorDIB(CB::Convert(sizeDst), crTrans);
 
     // Find top and bottom point indexes
-    int nTopPnt = 0;
-    int nBotPnt = 0;
-    for (int i = 0; i < numPnts; i++)
+    size_t nTopPnt = size_t(0);
+    size_t nBotPnt = size_t(0);
+    for (size_t i = size_t(0) ; i < pntDst.size() ; ++i)
     {
         if (pntDst[i].y == 0)
             nTopPnt = i;
@@ -245,14 +246,14 @@ CDib CDib::CreateTransparentColorDIB(wxSize size, wxColour crTrans)
 
 /////////////////////////////////////////////////////////////////////
 
-static void RotateRectVector(POINT* pPnts, int angle)
+static void RotateRectVector(Points& pPnts, int angle)
 {
-    RotatePoints(pPnts, 4, angle);
+    RotatePoints(pPnts, angle);
 }
 
 /////////////////////////////////////////////////////////////////////
 
-static void LoadRectVector(CSize size, POINT* pPnts)
+static void LoadRectVector(CSize size, Points& pPnts)
 {
     pPnts[0].x = pPnts[3].x = 0;
     pPnts[1].x = pPnts[2].x = size.cx - 1;
@@ -262,9 +263,9 @@ static void LoadRectVector(CSize size, POINT* pPnts)
 
 /////////////////////////////////////////////////////////////////////
 
-static void OffsetRectVector(POINT* pPnts, int xOff, int yOff)
+static void OffsetRectVector(Points& pPnts, int xOff, int yOff)
 {
-    for (int i = 0; i < numPnts; i++)
+    for (size_t i = size_t(0) ; i < pPnts.size() ; ++i)
     {
         pPnts[i].x += xOff;
         pPnts[i].y += yOff;
@@ -273,21 +274,21 @@ static void OffsetRectVector(POINT* pPnts, int xOff, int yOff)
 
 /////////////////////////////////////////////////////////////////////
 
-static void CopyRectVector(POINT* pSrcPnts, POINT* pDstPnts)
+static void CopyRectVector(const Points& pSrcPnts, Points& pDstPnts)
 {
-    for (int i = 0; i < numPnts; i++)
+    for (size_t i = size_t(0) ; i < pSrcPnts.size() ; ++i)
         pDstPnts[i] = pSrcPnts[i];
 }
 
 /////////////////////////////////////////////////////////////////////
 
-static void FindRectVectorMinMax(POINT* pPnts, CPoint& pntMin, CPoint& pntMax)
+static void FindRectVectorMinMax(const Points& pPnts, CPoint& pntMin, CPoint& pntMax)
 {
     pntMin.x = INT_MAX;
     pntMax.x = INT_MIN;
     pntMin.y = INT_MAX;
     pntMax.y = INT_MIN;
-    for (int i = 0; i < numPnts; i++)
+    for (size_t i = size_t(0) ; i < pPnts.size() ; ++i)
     {
         pntMin.x = CB::min(pntMin.x, pPnts[i].x);
         pntMin.y = CB::min(pntMin.y, pPnts[i].y);
@@ -298,7 +299,7 @@ static void FindRectVectorMinMax(POINT* pPnts, CPoint& pntMin, CPoint& pntMax)
 
 /////////////////////////////////////////////////////////////////////
 
-static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts)
+static CSize CalcRotatedRect(CSize size, int angle, Points& pSPnts, Points& pDPnts)
 {
     LoadRectVector(size, pSPnts);
     CopyRectVector(pSPnts, pDPnts);
@@ -319,39 +320,40 @@ static CSize CalcRotatedRect(CSize size, int angle, POINT* pSPnts, POINT* pDPnts
 
 /////////////////////////////////////////////////////////////////////
 
-CDib::ImgEdge::ImgEdge(BOOL bLeftSide, POINT* pSrcPnts, POINT* pDstPnts,
-    int nTopPnt, int nBotPnt)
+CDib::ImgEdge::ImgEdge(BOOL bLeftSide, const Points& pSrcPnts, const Points& pDstPnts,
+    size_t nTopPnt, size_t nBotPnt) :
+    m_pDPnts(pDstPnts),
+    m_pSPnts(pSrcPnts)
 {
-    m_pDPnts = pDstPnts;
-    m_pSPnts = pSrcPnts;
     m_nCurPnt = nTopPnt;
     m_nBotPnt = nBotPnt;
-    m_nPntIncr = bLeftSide ? -1 : 1;
+    m_nPntIncr = bLeftSide ? size_t(-1) : size_t(1);
 }
 
 /////////////////////////////////////////////////////////////////////
 
 BOOL CDib::ImgEdge::SetupNextEdge()
 {
-    int nBasePnt = m_nCurPnt;       // Seed the line's base point.
+    size_t nBasePnt = m_nCurPnt;       // Seed the line's base point.
     while (1)
     {
         if (nBasePnt == m_nBotPnt)
             return FALSE;               // All done.
-        int nNextPnt = nBasePnt + m_nPntIncr;
-        if (nNextPnt >= numPnts)
+        // N.B.:  nNextPnt is signed due to < 0 check
+        CB::ssize_t nNextPnt = static_cast<CB::ssize_t>((nBasePnt + m_nPntIncr));
+        if (nNextPnt >= static_cast<CB::ssize_t>(Points().size()))
             nNextPnt = 0;
         else if (nNextPnt < 0)
-            nNextPnt = numPnts - 1;
-        m_nLines = m_pDPnts[nNextPnt].y - m_pDPnts[nBasePnt].y;
+            nNextPnt = static_cast<CB::ssize_t>(Points().size()) - 1;
+        m_nLines = m_pDPnts[static_cast<size_t>(nNextPnt)].y - m_pDPnts[nBasePnt].y;
         if (m_nLines > 0)       // Filters out slopes of zero
         {
-            m_nCurPnt = nNextPnt;
+            m_nCurPnt = static_cast<size_t>(nNextPnt);
 
-            m_srcX.Setup(m_pSPnts[nBasePnt].x, m_pSPnts[nNextPnt].x, m_nLines);
-            m_srcY.Setup(m_pSPnts[nBasePnt].y, m_pSPnts[nNextPnt].y, m_nLines);
+            m_srcX.Setup(m_pSPnts[nBasePnt].x, m_pSPnts[static_cast<size_t>(nNextPnt)].x, m_nLines);
+            m_srcY.Setup(m_pSPnts[nBasePnt].y, m_pSPnts[static_cast<size_t>(nNextPnt)].y, m_nLines);
 
-            m_dstX.Setup(m_pDPnts[nBasePnt].x, m_pDPnts[nNextPnt].x, m_nLines);
+            m_dstX.Setup(m_pDPnts[nBasePnt].x, m_pDPnts[static_cast<size_t>(nNextPnt)].x, m_nLines);
 
             // Make sure only last segment does last line.
             if (m_pDPnts[m_nCurPnt].y == m_pDPnts[m_nBotPnt].y)
@@ -359,7 +361,7 @@ BOOL CDib::ImgEdge::SetupNextEdge()
 
             return TRUE;
         }
-        nBasePnt = nNextPnt;
+        nBasePnt = static_cast<size_t>(nNextPnt);
     }
 }
 
@@ -382,14 +384,14 @@ BOOL CDib::ImgEdge::NextScanLine()
 /////////////////////////////////////////////////////////////////////
 
 namespace {
-void RotatePoints(POINT* pPnts, int nPnts, int nDegrees)
+void RotatePoints(Points& pPnts, int nDegrees)
 {
     // Do it cheap and EZ at first....
     // Generate scaled integers (sin and cos: 0 <= sin(a) <= 1).
     // Scale by 1000.
     int nSin = Sin10K(nDegrees);
     int nCos = Cos10K(nDegrees);
-    for (int i = 0; i < nPnts; i++)
+    for (size_t i = size_t(0) ; i < pPnts.size() ; ++i)
         RotatePoint(pPnts[i], nSin, nCos);
 }
 }
