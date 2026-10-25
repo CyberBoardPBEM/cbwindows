@@ -113,6 +113,24 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
                 CRect rctDesktop;
                 SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctDesktop, 0);
 
+                /* TEST:  wx version of screen geometry
+                    This is a blind test since I don't have a
+                    multi-monitor setup */
+                const wxRect rctVScreenWx = [] {
+                    wxRect retval;
+                    for (unsigned i = unsigned(0) ; i < wxDisplay::GetCount() ; ++i)
+                    {
+                        retval.Union(wxDisplay(i).GetGeometry());
+                    }
+                    return retval;
+                }();
+                const wxRect rctDesktopWx = wxDisplay().GetClientArea();
+                if (CB::Convert(rctVScreenWx) != rctVScreen ||
+                    CB::Convert(rctDesktopWx) != rctDesktop)
+                {
+                    wxMessageBox(std::format("expected:{}, actual:{}\nexpected:{}, actual:{}", rctVScreen, rctVScreenWx, rctDesktop, rctDesktopWx), "wxDisplay problem");
+                }
+
                 // Clone the saved window position for easier calculations
                 CRect rctSaved(pWse.m_wndState.rcNormalPosition);
 
