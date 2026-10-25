@@ -1,6 +1,6 @@
 // versions.h - program version numbers.
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 #ifndef __VERSIONS_H__
 #define __VERSIONS_H__
@@ -896,6 +896,21 @@ inline CArchive& operator>>(CArchive& ar, wxColour& c)
     uint32_t temp;
     ar >> temp;
     c = reinterpret_cast<WIN_COLORREF&>(temp);
+    return ar;
+}
+
+inline CArchive& operator<<(CArchive& ar, const wxRect& r)
+{
+    WIN_RECT winRect(r);
+    ar.Write(&winRect, sizeof(winRect));
+    return ar;
+}
+
+inline CArchive& operator>>(CArchive& ar, wxRect& r)
+{
+    WIN_RECT winRect;
+    ar.EnsureRead(&winRect, sizeof(winRect));
+    r = winRect;
     return ar;
 }
 
