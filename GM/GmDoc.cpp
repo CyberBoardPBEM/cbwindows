@@ -556,9 +556,9 @@ BOOL CGamDoc::DoBoardPropertyDialog(CBoard& pBoard)
 
     dlg.m_nRows = pBrdAry.GetRows();
     dlg.m_nCols = pBrdAry.GetCols();
-    CSize size = pBrdAry.GetCellSize(fullScale);
-    dlg.m_nCellHt = value_preserving_cast<uint32_t>(size.cy);
-    dlg.m_nCellWd = value_preserving_cast<uint32_t>(size.cx);
+    wxSize size = pBrdAry.GetCellSize(fullScale);
+    dlg.m_nCellHt = value_preserving_cast<uint32_t>(size.y);
+    dlg.m_nCellWd = value_preserving_cast<uint32_t>(size.x);
     const CCellForm& pcf = pBrdAry.GetCellForm(fullScale);
     dlg.m_eCellStyle = pcf.GetCellType();
     dlg.m_bStagger = pcf.GetCellStagger();

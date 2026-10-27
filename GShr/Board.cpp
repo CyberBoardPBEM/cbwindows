@@ -436,7 +436,7 @@ BOOL CBoard::IsTileInUse(TileID tid) const
 
 void CBoard::ForceObjectsOntoBoard()
 {
-    wxSize sizeBrd = CB::Convert(GetBoardArray().GetSize(fullScale));
+    wxSize sizeBrd = GetBoardArray().GetSize(fullScale);
     wxRect rctZone(wxPoint(0,0), sizeBrd);
     if (m_pBaseDwg != NULL)
         m_pBaseDwg->ForceIntoZone(CB::Convert(rctZone));

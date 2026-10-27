@@ -1002,7 +1002,7 @@ void CBrdEditView::SetCellTile(TileID tid, wxPoint pnt, BOOL bUpdate)
         pBa.SetCellTile(row, col, tid);
         if (bUpdate)
         {
-            wxRect rct = CB::Convert(pBa.GetCellRect(row, col, m_nZoom));// In board coords
+            wxRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
             rct.SetTopLeft(CalcScrolledPosition(rct.GetTopLeft()));
             RefreshRect(rct, FALSE);
         }
@@ -1025,7 +1025,7 @@ void CBrdEditView::SetCellColor(wxColour crCell, wxPoint pnt, BOOL bUpdate)
         pBa.SetCellColor(row, col, crCell);
         if (bUpdate)
         {
-            wxRect rct = CB::Convert(pBa.GetCellRect(row, col, m_nZoom));// In board coords
+            wxRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
             rct.SetTopLeft(CalcScrolledPosition(rct.GetTopLeft()));
             RefreshRect(rct, FALSE);
         }
@@ -1559,7 +1559,7 @@ void CBrdEditView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
         if (rct.Contains(point))
         {
             point = CalcUnscrolledPosition(point);
-            CB::string str = pba.GetCellNumberStr(CB::Convert(point), m_nZoom);
+            CB::string str = pba.GetCellNumberStr(point, m_nZoom);
             pCmdUI.Enable(true);
             pCmdUI.SetText(str);
         }
