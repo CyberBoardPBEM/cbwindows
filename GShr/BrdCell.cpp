@@ -103,17 +103,17 @@ void CBoardArray::ReshapeBoard(size_t nRows, size_t nCols, int nParm1, int nParm
 
     if (nParm1 == -1)
     {
-        CSize size = GetCellSize(fullScale);
+        wxSize size = GetCellSize(fullScale);
         switch (eType)
         {
             case cformRect:
-                nParm1 = size.cy;
-                nParm2 = size.cx;
+                nParm1 = size.y;
+                nParm2 = size.x;
                 break;
             case cformHexFlat:
             case cformHexPnt:
                 // Only the first paramter is used for hex definitions.
-                nParm1 = (eType == cformHexFlat) ? size.cy : size.cx;
+                nParm1 = (eType == cformHexFlat) ? size.y : size.x;
                 nParm2 = 0;
                 break;
             default:
@@ -182,11 +182,11 @@ void CBoardArray::DestroyBoard()
 
 // ----------------------------------------------------- //
 
-void CBoardArray::GetBoardScaling(TileScale eScale, CSize& worldSize,
-    CSize& viewSize) const
+void CBoardArray::GetBoardScaling(TileScale eScale, wxSize& worldSize,
+    wxSize& viewSize) const
 {
-    worldSize = m_cfFull.CalcBoardSize(m_nRows, m_nCols);
-    viewSize = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
+    worldSize = CB::Convert(m_cfFull.CalcBoardSize(m_nRows, m_nCols));
+    viewSize = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
 }
 
 // ----------------------------------------------------- //
@@ -214,27 +214,30 @@ void CBoardArray::DrawCellLines(wxDC& pDC, const wxRect& pCellRct, TileScale eSc
 
 // ----------------------------------------------------- //
 
-BOOL CBoardArray::MapPixelsToCellBounds(const CRect& pPxlRct, CRect& pCellRct,
+BOOL CBoardArray::MapPixelsToCellBounds(const wxRect& pPxlRct, wxRect& pCellRct,
     TileScale eScale) const
 {
+    WIN_RECT winPxlRct(pPxlRct);
     BOOL bOutOfRange;
     size_t row, col;
-    bOutOfRange = !FindCell(pPxlRct.left, pPxlRct.top, row, col, eScale);
-    pCellRct.top = value_preserving_cast<long>(row);
-    pCellRct.left = value_preserving_cast<long>(col);
-    bOutOfRange |= !FindCell(pPxlRct.right, pPxlRct.bottom, row, col, eScale);
-    pCellRct.bottom = value_preserving_cast<long>(row);
-    pCellRct.right = value_preserving_cast<long>(col);
+    bOutOfRange = !FindCell(winPxlRct.left, winPxlRct.top, row, col, eScale);
+    WIN_RECT winCellRct;
+    winCellRct.top = value_preserving_cast<int32_t>(row);
+    winCellRct.left = value_preserving_cast<int32_t>(col);
+    bOutOfRange |= !FindCell(winPxlRct.right, winPxlRct.bottom, row, col, eScale);
+    winCellRct.bottom = value_preserving_cast<int32_t>(row);
+    winCellRct.right = value_preserving_cast<int32_t>(col);
 
     // Expand the rectangle for good measure.
-    pCellRct.left--;
-    if (pCellRct.left < 0) pCellRct.left = 0;
-    pCellRct.right++;
-    if (pCellRct.right >= value_preserving_cast<long>(m_nCols)) pCellRct.right = value_preserving_cast<long>(m_nCols - size_t(1));
-    pCellRct.top--;
-    if (pCellRct.top < 0) pCellRct.top = 0;
-    pCellRct.bottom++;
-    if (pCellRct.bottom >= value_preserving_cast<long>(m_nRows)) pCellRct.bottom = value_preserving_cast<long>(m_nRows - size_t(1));
+    winCellRct.left--;
+    if (winCellRct.left < 0) winCellRct.left = 0;
+    winCellRct.right++;
+    if (winCellRct.right >= value_preserving_cast<int32_t>(m_nCols)) winCellRct.right = value_preserving_cast<int32_t>(m_nCols - size_t(1));
+    winCellRct.top--;
+    if (winCellRct.top < 0) winCellRct.top = 0;
+    winCellRct.bottom++;
+    if (winCellRct.bottom >= value_preserving_cast<int32_t>(m_nRows)) winCellRct.bottom = value_preserving_cast<int32_t>(m_nRows - size_t(1));
+    pCellRct = wxRect(winCellRct);
     return !bOutOfRange;
 }
 
@@ -296,16 +299,16 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
 
 // ----------------------------------------------------- //
 
-CRect CBoardArray::GetCellRect(size_t row, size_t col, TileScale eScale) const
+wxRect CBoardArray::GetCellRect(size_t row, size_t col, TileScale eScale) const
 {
-    return GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
+    return CB::Convert(GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
 }
 
 // ----------------------------------------------------- //
 
-CSize CBoardArray::GetCellSize(TileScale eScale) const
+wxSize CBoardArray::GetCellSize(TileScale eScale) const
 {
-    return GetCellForm(eScale).GetCellSize();
+    return CB::Convert(GetCellForm(eScale).GetCellSize());
 }
 
 // ----------------------------------------------------- //
@@ -321,25 +324,25 @@ void CBoardArray::FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale)
 
 // ----------------------------------------------------- //
 
-CSize CBoardArray::GetSize(TileScale eScale) const
+wxSize CBoardArray::GetSize(TileScale eScale) const
 {
-    return GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
+    return CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
 }
 
 // ----------------------------------------------------- //
 
 int CBoardArray::GetWidth(TileScale eScale) const
 {
-    CSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
-    return size.cx;
+    wxSize size = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    return size.x;
 }
 
 // ----------------------------------------------------- //
 
 int CBoardArray::GetHeight(TileScale eScale) const
 {
-    CSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
-    return size.cy;
+    wxSize size = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    return size.y;
 }
 
 // ----------------------------------------------------- //
@@ -472,7 +475,7 @@ void CBoardArray::SetCellFrameColor(wxColour cr)
 
 ///////////////////////////////////////////////////////////////////////////
 
-CB::string CBoardArray::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CBoardArray::GetCellNumberStr(wxPoint pnt, TileScale eScale) const
 {
     size_t row, col;
     if (!FindCell(pnt.x, pnt.y, row, col, eScale))

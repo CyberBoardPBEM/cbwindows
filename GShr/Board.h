@@ -138,7 +138,7 @@ public:
 public:
     wxSize GetSize(TileScale eScale) const
         {
-            return CB::Convert(GetBoardArray().GetSize(eScale));
+            return GetBoardArray().GetSize(eScale);
         }
     int GetWidth(TileScale eScale) const
         {
@@ -150,7 +150,7 @@ public:
         }
     wxSize GetCellSize(TileScale eScale) const
         {
-            return CB::Convert(GetBoardArray().GetCellSize(eScale));
+            return GetBoardArray().GetCellSize(eScale);
         }
     void SetBoardArray(OwnerOrNullPtr<CBoardArray> pDwg);
     const CBoardArray& GetBoardArray() const { return CheckedDeref(m_pBrdAry); }

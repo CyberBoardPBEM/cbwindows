@@ -1,6 +1,6 @@
 // GeoBoard.cpp
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -531,8 +531,8 @@ void CGeomorphicBoard::CopyCells(CBoardArray& pBArryTo,
                 }
                 else
                     crSmall = pCellTo.GetColor();
-                wxSize sizeFull = CB::Convert(pBArryTo.GetCellSize(fullScale));
-                wxSize sizeHalf = CB::Convert(pBArryTo.GetCellSize(halfScale));
+                wxSize sizeFull = pBArryTo.GetCellSize(fullScale);
+                wxSize sizeHalf = pBArryTo.GetCellSize(halfScale);
                 TileID tidNew = pTMgr.CreateTile(pTMgr.GetSpecialTileSet(),
                     sizeFull, sizeHalf, crSmall);
                 pTMgr.UpdateTile(tidNew, bmapFull, bmapHalf, crSmall);
@@ -550,13 +550,13 @@ wxBitmap CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
 {
     wxMemoryDC dc;
 
-    wxSize sizeCell = CB::Convert(pBALeft.GetCellSize(eScale));
+    wxSize sizeCell = pBALeft.GetCellSize(eScale);
     wxBitmap retval = CreateBitmap(sizeCell);
 
     // Handle left half...
     dc.SelectObject(retval);
 
-    wxRect rct = CB::Convert(pBALeft.GetCellRect(nRowLeft, nColLeft, eScale));
+    wxRect rct = pBALeft.GetCellRect(nRowLeft, nColLeft, eScale);
 
     dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
     rct.SetRight(rct.GetRight() - (rct.GetWidth() / 2 - (rct.GetWidth() % 2)));
@@ -566,7 +566,7 @@ wxBitmap CGeomorphicBoard::CombineLeftAndRight(TileScale eScale,
     dc.DestroyClippingRegion();
 
     // Handle right half...
-    rct = CB::Convert(pBARight.GetCellRect(nRowRight, nColRight, eScale));
+    rct = pBARight.GetCellRect(nRowRight, nColRight, eScale);
 
     dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
     int right = rct.GetRight();
@@ -585,13 +585,13 @@ wxBitmap CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
 {
     wxMemoryDC dc;
 
-    wxSize sizeCell = CB::Convert(pBATop.GetCellSize(eScale));
+    wxSize sizeCell = pBATop.GetCellSize(eScale);
     wxBitmap retval = CreateBitmap(sizeCell);
 
     // Handle top half...
     dc.SelectObject(retval);
 
-    wxRect rct = CB::Convert(pBATop.GetCellRect(nRowTop, nColTop, eScale));
+    wxRect rct = pBATop.GetCellRect(nRowTop, nColTop, eScale);
 
     dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
     rct.SetBottom(rct.GetBottom() + (rct.GetHeight() / 2 - (rct.GetHeight() % 2)));
@@ -601,7 +601,7 @@ wxBitmap CGeomorphicBoard::CombineTopAndBottom(TileScale eScale,
     dc.DestroyClippingRegion();
 
     // Handle bottom half...
-    rct = CB::Convert(pBABottom.GetCellRect(nRowBottom, nColBottom, eScale));
+    rct = pBABottom.GetCellRect(nRowBottom, nColBottom, eScale);
 
     dc.SetLogicalOrigin(rct.GetLeft(), rct.GetTop());
     int bottom = rct.GetBottom();
@@ -637,7 +637,7 @@ wxBitmap CGeomorphicBoard::CreateBitmap(wxSize size) const
 CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const
 {
     const CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
-    CSize sizeCell = pBrdRoot.GetBoardArray().GetCellSize(fullScale);
+    wxSize sizeCell = pBrdRoot.GetBoardArray().GetCellSize(fullScale);
     CPoint pnt(0, 0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
@@ -653,18 +653,18 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
                 nextBrd.IsGEVStyle(Edge::Left))
             {
                 // remove the width provided by the empty half-cell col
-                pnt.x -= sizeCell.cx / 2;
+                pnt.x -= sizeCell.x / 2;
             }
-            pnt.x -= sizeCell.cx;               // A column is shared
+            pnt.x -= sizeCell.x;               // A column is shared
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
         {
             // +2 to round to nearest int
-            pnt.x -= (sizeCell.cx + 2) / 4;
+            pnt.x -= (sizeCell.x + 2) / 4;
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
         {
-            pnt.x -= sizeCell.cx / 2;           // A column is half shared
+            pnt.x -= sizeCell.x / 2;           // A column is half shared
         }
     }
     for (size_t nRow = size_t(0) ; nRow < nBoardRow ; ++nRow)
@@ -681,18 +681,18 @@ CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardC
                 nextBrd.IsGEVStyle(Edge::Top))
             {
                 // remove the height provided by the empty half-cell row
-                pnt.y -= sizeCell.cy / 2;
+                pnt.y -= sizeCell.y / 2;
             }
-            pnt.y -= sizeCell.cy;               // A row is shared
+            pnt.y -= sizeCell.y;               // A row is shared
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexPnt)
         {
             // +2 to round to nearest int
-            pnt.y -= (sizeCell.cy + 2) / 4;
+            pnt.y -= (sizeCell.y + 2) / 4;
         }
         else if (pBArray.GetCellForm(fullScale).GetCellType() == cformHexFlat)
         {
-            pnt.y -= sizeCell.cy / 2;           // A row is half shared
+            pnt.y -= sizeCell.y / 2;           // A row is half shared
         }
     }
     return pnt;

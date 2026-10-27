@@ -512,7 +512,7 @@ CB::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
     if (!m_pGeoBoard)
     {
         const CBoardArray& pba = GetBoard()->GetBoardArray();
-        return pba.GetCellNumberStr(pnt, eScale);
+        return pba.GetCellNumberStr(CB::Convert(pnt), eScale);
     }
     else
     {

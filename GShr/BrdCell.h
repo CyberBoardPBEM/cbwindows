@@ -106,7 +106,7 @@ public:
     BOOL GetColCellTrackingInvert() const { return m_bColTrkInvert; }
     CellNumStyle GetCellNumStyle() const { return m_eNumStyle; }
     // ------ //
-    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(wxPoint pnt, TileScale eScale) const;
     CB::string GetCellNumberStr(size_t row, size_t col) const;
     // ------ //
     wxColour GetCellFrameColor() const { return m_crCellFrame; }
@@ -124,8 +124,8 @@ public:
     size_t GetCols() const { return m_nCols; }
     int GetWidth(TileScale eScale) const;     // Board's pixel width
     int GetHeight(TileScale eScale) const;    // Board's pixel height
-    CSize GetSize(TileScale eScale) const;    // Board's pixel size
-    CSize GetCellSize(TileScale eScale) const;// Cell's pixel size
+    wxSize GetSize(TileScale eScale) const;    // Board's pixel size
+    wxSize GetCellSize(TileScale eScale) const;// Cell's pixel size
 
 // Operations
 public:
@@ -149,27 +149,11 @@ public:
     void SetCellColorInRange(size_t rowBeg, size_t colBeg, size_t rowEnd,
         size_t colEnd, wxColour cr);
     // ------- //
-    void GetBoardScaling(TileScale eScale, CSize& worldsize, CSize& viewSize) const;
-    void GetBoardScaling(TileScale eScale, wxSize& worldsize, wxSize& viewSize) const
-    {
-        CSize w, v;
-        GetBoardScaling(eScale, w, v);
-        worldsize = CB::Convert(w);
-        viewSize = CB::Convert(v);
-    }
+    void GetBoardScaling(TileScale eScale, wxSize& worldsize, wxSize& viewSize) const;
     BOOL FindCell(long x, long y, size_t& rRow, size_t& rCol, TileScale eScale) const;
-    CRect GetCellRect(size_t row, size_t col, TileScale eScale) const;
-    BOOL MapPixelsToCellBounds(const CRect& pPxlRct, CRect& pCellRct,
-        TileScale eScale) const;
+    wxRect GetCellRect(size_t row, size_t col, TileScale eScale) const;
     BOOL MapPixelsToCellBounds(const wxRect& pPxlRct, wxRect& pCellRct,
-        TileScale eScale) const
-    {
-        CRect in = CB::Convert(pPxlRct);
-        CRect out;
-        BOOL rc = MapPixelsToCellBounds(in, out, eScale);
-        pCellRct = CB::Convert(out);
-        return rc;
-    }
+        TileScale eScale) const;
     // ------- //
     BOOL PurgeMissingTileIDs();
     BOOL IsTileInUse(TileID tid) const;
