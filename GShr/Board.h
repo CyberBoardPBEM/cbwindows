@@ -136,9 +136,9 @@ public:
     virtual ~CBoard() = default;
 // Attributes
 public:
-    CSize GetSize(TileScale eScale) const
+    wxSize GetSize(TileScale eScale) const
         {
-            return GetBoardArray().GetSize(eScale);
+            return CB::Convert(GetBoardArray().GetSize(eScale));
         }
     int GetWidth(TileScale eScale) const
         {
@@ -148,9 +148,9 @@ public:
         {
             return GetBoardArray().GetHeight(eScale);
         }
-    CSize GetCellSize(TileScale eScale) const
+    wxSize GetCellSize(TileScale eScale) const
         {
-            return GetBoardArray().GetCellSize(eScale);
+            return CB::Convert(GetBoardArray().GetCellSize(eScale));
         }
     void SetBoardArray(OwnerOrNullPtr<CBoardArray> pDwg);
     const CBoardArray& GetBoardArray() const { return CheckedDeref(m_pBrdAry); }

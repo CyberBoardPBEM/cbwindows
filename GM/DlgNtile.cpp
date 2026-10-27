@@ -1,6 +1,6 @@
 // DlgNtile.cpp : implementation file
 //
-// Copyright (c) 1994-2024 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -124,16 +124,16 @@ void CNewTileDialog::OnSelChangeBoardName(wxCommandEvent& event)
     {
         CBoard& pBoard = m_pBMgr->GetBoard(value_preserving_cast<size_t>(nBrd));
 
-        CSize size = pBoard.GetCellSize(fullScale);
+        wxSize size = pBoard.GetCellSize(fullScale);
 
-        CB::string szNum = std::format("{}", size.cx);
+        CB::string szNum = std::format("{}", size.x);
         m_editWidth->SetValue(szNum);
-        szNum = std::format("{}", size.cy);
+        szNum = std::format("{}", size.y);
         m_editHeight->SetValue(szNum);
 
         size = pBoard.GetCellSize(halfScale);
-        m_nHalfWidth = size.cx;
-        m_nHalfHeight = size.cy;
+        m_nHalfWidth = size.x;
+        m_nHalfHeight = size.y;
     }
 }
 

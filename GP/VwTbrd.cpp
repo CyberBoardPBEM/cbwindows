@@ -228,7 +228,7 @@ void CTinyBoardView::OnDraw(wxDC& pDC)
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
-        wxSize sizeBrd = CB::Convert(m_pPBoard->GetBoard()->GetSize(smallScale));
+        wxSize sizeBrd = m_pPBoard->GetBoard()->GetSize(smallScale);
         oRct = wxRect(wxPoint(sizeBrd.x - oRct.GetLeft() - oRct.GetWidth(),
             sizeBrd.y - oRct.GetTop() - oRct.GetHeight()), oRct.GetSize());
     }
@@ -269,7 +269,7 @@ wxBitmap CTinyBoardView::DrawFullMap()
     wxBitmap bmap;
     wxMemoryDC dcMem;
 
-    wxSize size = CB::Convert(m_pPBoard->GetBoard()->GetSize(smallScale));
+    wxSize size = m_pPBoard->GetBoard()->GetSize(smallScale);
 
     bmap = wxBitmap(size.x, size.y);
     dcMem.SelectObject(bmap);
@@ -295,7 +295,7 @@ void CTinyBoardView::RegenCachedMap(wxDC& pDC)
     wxBusyCursor waitCursor;
 
     CBoard* pBoard = m_pPBoard->GetBoard();
-    wxSize size = CB::Convert(pBoard->GetSize(smallScale));   // Get pixel size of board
+    wxSize size = pBoard->GetSize(smallScale);   // Get pixel size of board
     m_pBMap = wxBitmap(size.x, size.y, pDC);
 
     wxMemoryDC dcMem;
@@ -410,7 +410,7 @@ void CTinyBoardView::RecalcScrollLimits()
     wxASSERT(item.IsSpacer());
 
     CBoard* pBoard = m_pPBoard->GetBoard();
-    wxSize size = CB::Convert(pBoard->GetSize(smallScale));
+    wxSize size = pBoard->GetSize(smallScale);
     item.AssignSpacer(size);
     SetScrollRate(size.x/100, size.y/100);
     sizer.FitInside(this);

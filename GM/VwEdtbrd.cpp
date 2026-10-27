@@ -358,7 +358,7 @@ void CBrdEditView::InvalidateWorkspaceRect(const wxRect& pRect, BOOL bErase)
 wxPoint CBrdEditView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
-    wxSize size = CB::Convert(m_pBoard->GetSize(m_nZoom));
+    wxSize size = m_pBoard->GetSize(m_nZoom);
     wxPoint pnt(size.x, size.y);
     // Translate to current scaling mode.
     pnt = CalcScrolledPosition(pnt);
@@ -922,7 +922,7 @@ void CBrdEditView::OnDragTileItem(DragDropEvent& event)
         return;               // Only tiles from our document.
 
     // if tile can't fit on board, reject drop
-    wxSize limit = CB::Convert(m_pBoard->GetSize(fullScale));
+    wxSize limit = m_pBoard->GetSize(fullScale);
     if (pdi.GetSubInfo<DRAG_TILE>().m_size.x > limit.x ||
         pdi.GetSubInfo<DRAG_TILE>().m_size.y > limit.y)
     {
@@ -2324,7 +2324,7 @@ void CBrdEditView::RecalcScrollLimits()
     wxSizerItem& item = CheckedDeref(items[0]);
     wxASSERT(item.IsSpacer());
 
-    item.AssignSpacer(CB::Convert(m_pBoard->GetSize(m_nZoom)));
+    item.AssignSpacer(m_pBoard->GetSize(m_nZoom));
     SetScrollRate(1, 1);
     sizer.FitInside(this);
 
