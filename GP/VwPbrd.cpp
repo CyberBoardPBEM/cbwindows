@@ -661,7 +661,7 @@ void CPlayBoardView::SetOurScrollSizes(TileScale nZoom)
     wxSizerItem& item = CheckedDeref(items[0]);
     wxASSERT(item.IsSpacer());
 
-    item.AssignSpacer(CB::Convert(pBoard->GetSize(m_nZoom)));
+    item.AssignSpacer(pBoard->GetSize(m_nZoom));
     SetScrollRate(1, 1);
     sizer.FitInside(this);
 
@@ -705,7 +705,7 @@ void CPlayBoardView::OnDraw(wxDC& pDC)
     if (m_pPBoard->IsBoardRotated180())
     {
         oRctSave = oRct;
-        wxSize sizeBrd = CB::Convert(pBoard->GetSize(m_nZoom));
+        wxSize sizeBrd = pBoard->GetSize(m_nZoom);
         oRct = wxRect(wxPoint(sizeBrd.x - oRct.GetLeft() - oRct.GetWidth(),
             sizeBrd.y - oRct.GetTop() - oRct.GetHeight()), oRct.GetSize());
     }
@@ -827,7 +827,7 @@ void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
         return;               // Only pieces from our document.
 
     // if piece can't fit on board, reject drop
-    wxSize limit = CB::Convert(m_pPBoard->GetBoard()->GetSize(fullScale));
+    wxSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
     if (pdi.GetSubInfo<DRAG_PIECELIST>().m_size.x > limit.x ||
         pdi.GetSubInfo<DRAG_PIECELIST>().m_size.y > limit.y)
     {
@@ -915,7 +915,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
     }
 
     // if marker can't fit on board, reject drop
-    wxSize limit = CB::Convert(m_pPBoard->GetBoard()->GetSize(fullScale));
+    wxSize limit = m_pPBoard->GetBoard()->GetSize(fullScale);
     if (pdi.GetSubInfo<DRAG_MARKER>().m_size.x > limit.x ||
         pdi.GetSubInfo<DRAG_MARKER>().m_size.y > limit.y)
     {
@@ -2319,7 +2319,7 @@ void CPlayBoardView::OnEditCopy(wxCommandEvent& /*event*/)
 {
     CBoard* pBoard = m_pPBoard->GetBoard();
 
-    wxSize size = CB::Convert(pBoard->GetSize(m_nZoom));
+    wxSize size = pBoard->GetSize(m_nZoom);
 
     wxBitmap bmap(size.x, size.y);
     {
@@ -2364,7 +2364,7 @@ void CPlayBoardView::OnEditBoardToFile(wxCommandEvent& /*event*/)
     {
         CBoard* pBoard = m_pPBoard->GetBoard();
 
-        wxSize size = CB::Convert(pBoard->GetSize(m_nZoom));
+        wxSize size = pBoard->GetSize(m_nZoom);
 
         wxBitmap bmap(size.x, size.y);
         {

@@ -436,12 +436,12 @@ BOOL CBoard::IsTileInUse(TileID tid) const
 
 void CBoard::ForceObjectsOntoBoard()
 {
-    CSize sizeBrd = GetBoardArray().GetSize(fullScale);
-    CRect rctZone(CPoint(0,0), sizeBrd);
+    wxSize sizeBrd = CB::Convert(GetBoardArray().GetSize(fullScale));
+    wxRect rctZone(wxPoint(0,0), sizeBrd);
     if (m_pBaseDwg != NULL)
-        m_pBaseDwg->ForceIntoZone(&rctZone);
+        m_pBaseDwg->ForceIntoZone(CB::Convert(rctZone));
     if (m_pTopDwg != NULL)
-        m_pTopDwg->ForceIntoZone(&rctZone);
+        m_pTopDwg->ForceIntoZone(CB::Convert(rctZone));
 }
 #endif  // !GPLAY
 // ----------------------------------------------------- //

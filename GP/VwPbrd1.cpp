@@ -449,7 +449,7 @@ void CPlayBoardView::MoveObjsInSelectList(BOOL bToFront, BOOL bInvalidate)
 wxPoint CPlayBoardView::GetWorkspaceDim() const
 {
     // First get MM_TEXT size of board for this scaling mode.
-    wxSize size = CB::Convert(m_pPBoard->GetBoard()->GetSize(m_nZoom));
+    wxSize size = m_pPBoard->GetBoard()->GetSize(m_nZoom);
     wxPoint pnt(size.x, size.y);
 
     // Translate to current scaling mode.
