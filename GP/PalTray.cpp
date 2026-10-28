@@ -310,7 +310,8 @@ void CTrayPalette::DoMenu(wxPoint point)
     // remember clicked side in case of ID_ACT_TURNOVER_SELECT
     wxWindow* child = wxFindWindowAtPoint(point);
     wxASSERT(child == &*m_bpMenuBtn || child == &*m_listTray);
-    if (child == &*m_listTray)
+    if (child == &*m_listTray &&
+        m_listTray->IsShowingTileImages())
     {
         wxRect rect;
         wxPoint clientPoint = m_listTray->ScreenToClient(point);
