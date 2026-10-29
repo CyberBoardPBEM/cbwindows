@@ -1,6 +1,6 @@
 // DlgBrdp.cpp : implementation file
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -267,22 +267,22 @@ void CBoardPropDialog::UpdateInfoArea()
         value_preserving_cast<int32_t>(m_eCellStyle == cformHexPnt ? m_nCellWd : m_nCellHt), value_preserving_cast<int32_t>(m_nCellWd), m_bStagger,
         cfFull, cfHalf, cfSmall);
 
-    CSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);
-    szNum = std::format("{}", size.cx);
+    wxSize size = cfFull.CalcBoardSize(m_nRows, m_nCols);
+    szNum = std::format("{}", size.x);
     m_staticPixelWidth->SetLabel(szNum);
-    szNum = std::format("{}", size.cy);
+    szNum = std::format("{}", size.y);
     m_staticPixelHeight->SetLabel(szNum);
 
     size = cfHalf.CalcBoardSize(m_nRows, m_nCols);
-    szNum = std::format("{}", size.cx);
+    szNum = std::format("{}", size.x);
     m_staticHalfPixelWidth->SetLabel(szNum);
-    szNum = std::format("{}", size.cy);
+    szNum = std::format("{}", size.y);
     m_staticHalfPixelHeight->SetLabel(szNum);
 
     size = cfSmall.CalcBoardSize(m_nRows, m_nCols);
-    szNum = std::format("{}", size.cx);
+    szNum = std::format("{}", size.x);
     m_staticSmallPixelWidth->SetLabel(szNum);
-    szNum = std::format("{}", size.cy);
+    szNum = std::format("{}", size.y);
     m_staticSmallPixelHeight->SetLabel(szNum);
 }
 

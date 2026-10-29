@@ -139,8 +139,8 @@ public:
     const wxBitmap* GetMask() const { return m_pMask.IsOk() ? &m_pMask : nullptr; }
     bool     HasMask() const { return m_pMask.IsOk(); }
 
-    CRect GetRect(CB::ssize_t row, CB::ssize_t col) const;
-    CSize GetCellSize() const { return m_siz; }
+    wxRect GetRect(CB::ssize_t row, CB::ssize_t col) const;
+    wxSize GetCellSize() const { return m_siz; }
     CellFormType GetCellType() const { return m_eType; }
     CellStagger GetCellStagger() const { return m_nStagger; }
 
@@ -152,7 +152,7 @@ public:
     void FindCell(long x, long y, CB::ssize_t& row, CB::ssize_t& col) const;
     void FillCell(wxDC& pDC, int xPos, int yPos) const;
     void FrameCell(wxDC& pDC, int xPos, int yPos) const;
-    CSize CalcBoardSize(size_t nRows, size_t nCols) const;
+    wxSize CalcBoardSize(size_t nRows, size_t nCols) const;
     BOOL CalcTrialBoardSize(size_t nRows, size_t nCols) const;
 
     BOOL CompareEqual(const CCellForm& cf) const;
@@ -166,7 +166,7 @@ public:
 protected:
     CellFormType m_eType;       // Format of cell
     CellStagger  m_nStagger;    // 0 = normal. 1 = alternate
-    CSize        m_siz;         // Size of cell
+    wxSize       m_siz;         // Size of cell
     std::vector<wxPoint> m_pPoly;  // Zero based set of points
     wxBitmap m_pMask; // Only defined for hexes
     // ------- //

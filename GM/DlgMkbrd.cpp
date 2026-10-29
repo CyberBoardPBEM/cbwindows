@@ -285,8 +285,8 @@ void CGridType::UpdateBoardDimensions()
     if (cf.CalcTrialBoardSize(m_iRows, m_iCols))
     {
         CB::string str = CB::string::LoadString(IDS_BSIZE_PATTERN);
-        CSize size = cf.CalcBoardSize(m_iRows, m_iCols);
-        CB::string szBfr = std::vformat(str, std::make_wformat_args(size.cy, size.cx));
+        wxSize size = cf.CalcBoardSize(m_iRows, m_iCols);
+        CB::string szBfr = std::vformat(str, std::make_wformat_args(size.y, size.x));
         m_staticPixelSize->SetLabel(szBfr);
     }
     else

@@ -2330,7 +2330,7 @@ void CBrdEditView::RecalcScrollLimits()
 
     // use size of cell as line increment
     const CCellForm& cf = m_pBoard->GetBoardArray().GetCellForm(m_nZoom);
-    wxSize cellSize = CB::Convert(cf.GetCellSize());
+    wxSize cellSize = cf.GetCellSize();
     switch (cf.GetCellType())
     {
         case cformHexFlat:

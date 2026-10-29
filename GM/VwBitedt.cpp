@@ -1089,7 +1089,7 @@ void CBitEditView::OnImageBoardMask(wxCommandEvent& /*event*/)
     const CCellForm& pcf = pBoard.GetBoardArray().
         GetCellForm(m_pSelView->GetCurrentScale());
 
-    wxSize size = CB::Convert(pcf.GetCellSize());
+    wxSize size = pcf.GetCellSize();
     {
         SetUndoFromView();
         wxMemoryDC dc(m_bmView);

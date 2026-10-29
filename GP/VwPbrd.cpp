@@ -667,7 +667,7 @@ void CPlayBoardView::SetOurScrollSizes(TileScale nZoom)
 
     // use size of cell as line increment
     const CCellForm& cf = pBoard->GetBoardArray().GetCellForm(m_nZoom);
-    wxSize cellSize = CB::Convert(cf.GetCellSize());
+    wxSize cellSize = cf.GetCellSize();
     switch (cf.GetCellType())
     {
         case cformHexFlat:

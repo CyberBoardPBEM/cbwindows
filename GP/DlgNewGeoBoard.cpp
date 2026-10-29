@@ -125,7 +125,7 @@ void CCreateGeomorphicBoardDialog::LoadBoardListWithCompliantBoards()
             if (r == Rotation90::r90 || r == Rotation90::r270)
             {
                 if (!(pCellForm.GetCellType() == cformRect &&
-                    pCellForm.GetCellSize().cx == pCellForm.GetCellSize().cy))
+                    pCellForm.GetCellSize().x == pCellForm.GetCellSize().y))
                 {
                     continue;
                 }
