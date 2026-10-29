@@ -185,8 +185,8 @@ void CBoardArray::DestroyBoard()
 void CBoardArray::GetBoardScaling(TileScale eScale, wxSize& worldSize,
     wxSize& viewSize) const
 {
-    worldSize = CB::Convert(m_cfFull.CalcBoardSize(m_nRows, m_nCols));
-    viewSize = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    worldSize = m_cfFull.CalcBoardSize(m_nRows, m_nCols);
+    viewSize = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
 }
 
 // ----------------------------------------------------- //
@@ -248,7 +248,7 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
     const BoardCell& pCell = GetCell(row, col);
     const CCellForm& pCF = GetCellForm(eScale);
 
-    wxRect rct = CB::Convert(pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
+    wxRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
 
     if (!CB::RectVisible(pDC, rct))
         return;
@@ -301,14 +301,14 @@ void CBoardArray::FillCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) 
 
 wxRect CBoardArray::GetCellRect(size_t row, size_t col, TileScale eScale) const
 {
-    return CB::Convert(GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
+    return GetCellForm(eScale).GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
 }
 
 // ----------------------------------------------------- //
 
 wxSize CBoardArray::GetCellSize(TileScale eScale) const
 {
-    return CB::Convert(GetCellForm(eScale).GetCellSize());
+    return GetCellForm(eScale).GetCellSize();
 }
 
 // ----------------------------------------------------- //
@@ -316,7 +316,7 @@ wxSize CBoardArray::GetCellSize(TileScale eScale) const
 void CBoardArray::FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale) const
 {
     const CCellForm& pCF = GetCellForm(eScale);
-    wxRect rct = CB::Convert(pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col)));
+    wxRect rct = pCF.GetRect(value_preserving_cast<CB::ssize_t>(row), value_preserving_cast<CB::ssize_t>(col));
     if (!CB::RectVisible(pDC, rct))
         return;
     pCF.FrameCell(pDC, rct.GetLeft(), rct.GetTop());
@@ -326,14 +326,14 @@ void CBoardArray::FrameCell(wxDC& pDC, size_t row, size_t col, TileScale eScale)
 
 wxSize CBoardArray::GetSize(TileScale eScale) const
 {
-    return CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    return GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
 }
 
 // ----------------------------------------------------- //
 
 int CBoardArray::GetWidth(TileScale eScale) const
 {
-    wxSize size = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    wxSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
     return size.x;
 }
 
@@ -341,7 +341,7 @@ int CBoardArray::GetWidth(TileScale eScale) const
 
 int CBoardArray::GetHeight(TileScale eScale) const
 {
-    wxSize size = CB::Convert(GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols));
+    wxSize size = GetCellForm(eScale).CalcBoardSize(m_nRows, m_nCols);
     return size.y;
 }
 

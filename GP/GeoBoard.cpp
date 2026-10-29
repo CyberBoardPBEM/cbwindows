@@ -781,11 +781,11 @@ namespace
                 {
                     if (board.IsGEVStyle(Edge::Top))
                     {
-                        offset += CSize(0, cf.GetCellSize().cy / 2);
+                        offset += CSize(0, cf.GetCellSize().y / 2);
                     }
                     else if (board.IsGEVStyle(Edge::Bottom))
                     {
-                        offset += CSize(0, -cf.GetCellSize().cy/2);
+                        offset += CSize(0, -cf.GetCellSize().y/2);
                     }
                 }
                 /* experiment w/ Space Empires found In/Right
@@ -795,11 +795,11 @@ namespace
                 {
                     if (board.IsGEVStyle(Edge::Right))
                     {
-                        offset += CSize(-cf.GetCellSize().cx/2, 0);
+                        offset += CSize(-cf.GetCellSize().x/2, 0);
                     }
                     if (board.IsGEVStyle(Edge::Left))
                     {
-                        offset += CSize(cf.GetCellSize().cx/2, 0);
+                        offset += CSize(cf.GetCellSize().x/2, 0);
                     }
                 }
                 break;
@@ -866,7 +866,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
             {
                 case cformRect:
                     if (r != Rotation90::r180 &&
-                        srcCellForm.GetCellSize().cx != srcCellForm.GetCellSize().cy)
+                        srcCellForm.GetCellSize().x != srcCellForm.GetCellSize().y)
                     {
                         AfxThrowInvalidArgException();
                     }
@@ -888,14 +888,14 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                     {
                         case Rotation90::r90:
                         case Rotation90::r270:
-                            parm1 = srcCellForm.GetCellSize().cx;
-                            parm2 = srcCellForm.GetCellSize().cy;
+                            parm1 = srcCellForm.GetCellSize().x;
+                            parm2 = srcCellForm.GetCellSize().y;
                             rows = srcBoardArray.GetCols();
                             cols = srcBoardArray.GetRows();
                             break;
                         case Rotation90::r180:
-                            parm1 = srcCellForm.GetCellSize().cy;
-                            parm2 = srcCellForm.GetCellSize().cx;
+                            parm1 = srcCellForm.GetCellSize().y;
+                            parm2 = srcCellForm.GetCellSize().x;
                             rows = srcBoardArray.GetRows();
                             cols = srcBoardArray.GetCols();
                             break;
@@ -909,7 +909,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                     {
                         dstStagger = ~dstStagger;
                     }
-                    parm1 = srcCellForm.GetCellSize().cy;
+                    parm1 = srcCellForm.GetCellSize().y;
                     rows = srcBoardArray.GetRows();
                     cols = srcBoardArray.GetCols();
                     break;
@@ -919,7 +919,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                     {
                         dstStagger = ~dstStagger;
                     }
-                    parm1 = srcCellForm.GetCellSize().cx;
+                    parm1 = srcCellForm.GetCellSize().x;
                     rows = srcBoardArray.GetRows();
                     cols = srcBoardArray.GetCols();
                     break;
@@ -1168,12 +1168,12 @@ CB::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) cons
     }
     const CCellForm& cf = ba.GetCellForm(eScale);
     // find which quadrant of cell
-    CRect rect = cf.GetRect(value_preserving_cast<CB::ssize_t>(overallRow),
+    wxRect rect = cf.GetRect(value_preserving_cast<CB::ssize_t>(overallRow),
                             value_preserving_cast<CB::ssize_t>(overallCol));
-    ASSERT(PtInRect(rect, pnt));
-    Edge tb = pnt.y < (rect.top + rect.bottom)/2 ? Edge::Top : Edge::Bottom;
+    wxASSERT(rect.Contains(CB::Convert(pnt)));
+    Edge tb = pnt.y < GetMidRect(rect).y ? Edge::Top : Edge::Bottom;
     size_t tbCvt = tb == Edge::Top ? size_t(0) : size_t(1);
-    Edge lr = pnt.x < (rect.left + rect.right)/2 ? Edge::Left : Edge::Right;
+    Edge lr = pnt.x < GetMidRect(rect).x ? Edge::Left : Edge::Right;
     size_t lrCvt = lr == Edge::Left ? size_t(0) : size_t(1);
     // get subboard corresponding to quadrant
     const CGeoBoardElement& gbe = GetBoardElt(m_rowToBoardRow[overallRow][tbCvt].boardCoord,
