@@ -299,14 +299,14 @@ void CGamDoc::AssignNewMoveGroup()
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, CPoint pnt,
+void CGamDoc::RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, wxPoint pnt,
     PlacePos ePos /* = placeDefault */)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CBoardPieceMove> pRcd = MakeOwner<CBoardPieceMove>(pPBrd->GetSerialNumber(),
-        pid, pnt, ePos);
+        pid, CB::Convert(pnt), ePos);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
@@ -406,13 +406,13 @@ void CGamDoc::RecordEventMessage(const CB::string& strMsg,
 ////////////////////////////////////////////////////////////////////
 
 void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
-    MarkID mid, CPoint pnt, PlacePos ePos /* = placeDefault */)
+    MarkID mid, wxPoint pnt, PlacePos ePos /* = placeDefault */)
 {
     if (!IsRecording()) return;
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CBoardMarkerMove> pRcd = MakeOwner<CBoardMarkerMove>(pPBrd->GetSerialNumber(),
-        dwObjID, mid, pnt, ePos);
+        dwObjID, mid, CB::Convert(pnt), ePos);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 

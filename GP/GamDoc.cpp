@@ -222,7 +222,7 @@ CGamDoc::CGamDoc() :
     m_pPBMgr = NULL;
     m_pYMgr = NULL;
     m_pPTbl = NULL;
-    m_pntMsgReadPos = CPoint(INT_MIN, INT_MIN);
+    m_pntMsgReadPos = wxPoint(INT_MIN, INT_MIN);
     m_nMoveIdxAtBookMark = size_t(0);
     m_pBookMark = NULL;
     m_bTrayAVisible = FALSE;

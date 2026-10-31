@@ -206,7 +206,7 @@ public:
     struct Args<HINT_INVALIDATERECT>
     {
         CPlayBoard* m_pPBoard;
-        const CRect* m_pRect;
+        const wxRect* m_pRect;
     };
 
     template<>
@@ -466,7 +466,7 @@ public:
     void AssignNewMoveGroup();
     void CreateRecordListIfRequired();
 
-    void RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, CPoint pnt,
+    void RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, wxPoint pnt,
         PlacePos ePos = placeDefault);
     void RecordPieceMoveToTray(const CTraySet& pYGrp, PieceID pid, size_t nPos);
     void RecordPieceSetSide(PieceID pid, CPieceTable::Flip flip, size_t side, bool forceHide);
@@ -474,7 +474,7 @@ public:
     void RecordPieceSetOwnership(PieceID pid, PlayerMask dwOwnerMask);
     void RecordMarkerSetFacing(ObjectID dwObjID, MarkID mid, uint16_t nFacingDegCW);
     void RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
-        MarkID mid, CPoint pnt, PlacePos ePos = placeDefault);
+        MarkID mid, wxPoint pnt, PlacePos ePos = placeDefault);
     void RecordPlotList(CPlayBoard* pPBrd);
     void RecordGameState();
     void RecordMessage(const CB::string& strMsg);
@@ -490,19 +490,19 @@ public:
         PieceID pid);
 
     // Document data manipulations methods...
-    void PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd);
+    void PlacePieceOnBoard(wxPoint pnt, PieceID pid, CPlayBoard *pPBrd);
     void PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
-    void PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl,
+    void PlacePieceListOnBoard(wxPoint pnt, const std::vector<PieceID>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
     size_t PlacePieceListInTray(const std::vector<PieceID>& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
     size_t PlaceObjectTableInTray(const std::vector<RefPtr<CDrawObj>>& pTbl, CTraySet& pYGrp, size_t nPos = Invalid_v<size_t>);
-    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPoint pntUpLeft,
+    void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, wxPoint pntUpLeft,
         CPlayBoard* pPBrd, PlacePos ePos = placeDefault);
-    void PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
+    void PlaceObjectTableOnBoard(wxPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
         int xStagger, int yStagger, CPlayBoard *pPBrd);
     void PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pTbl, CPlayBoard* pPBrd);
     void PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr pObj,
-        CSize sizeDelta, PlacePos ePos = placeDefault);
+        wxSize sizeDelta, PlacePos ePos = placeDefault);
 
     void InvertPlayingPieceInTray(PieceID pid, CPieceTable::Flip flip, size_t side, bool bOkToNotifyTray, bool forceHide);
     void InvertPlayingPieceOnBoard(const CPieceObj& pObj, const CPlayBoard& pPBrd, CPieceTable::Flip flip, size_t side = Invalid_v<size_t>);
@@ -518,7 +518,7 @@ public:
     void SetPieceOwnership(PieceID pid, PlayerMask dwOwnerMask);
     void SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, PlayerMask dwOwnerMask);
 
-    CDrawObj& CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
+    CDrawObj& CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, wxPoint pnt,
         ObjectID dwObjID = ObjectID());
     void ReorgObjsInDrawList(CPlayBoard *pPBrd, std::vector<RefPtr<CDrawObj>>& pList, BOOL bToFront);
     void DeleteObjectsInTable(const std::vector<RefPtr<CDrawObj>>& pList);
@@ -531,7 +531,7 @@ public:
     void RemoveObjectFromCurrentLocation(const CDrawObj& pObj);
     void ExpungeUnusedPiecesFromBoards();
 
-    void FindObjectTableUnionRect(const std::vector<RefPtr<CDrawObj>>& pLst, CRect& rct) const;
+    void FindObjectTableUnionRect(const std::vector<RefPtr<CDrawObj>>& pLst, wxRect& rct) const;
 
     // Object and piece locator methods...
     BOOL FindPieceCurrentLocation(PieceID pid, const CTraySet*& pTraySet,
@@ -563,7 +563,7 @@ public:
 
     // Support for playback...
     void EnsureBoardVisible(CPlayBoard& pPBoard);
-    void EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point);
+    void EnsureBoardLocationVisible(CPlayBoard& pPBoard, wxPoint point);
 #if 0
     void EnsureTrayIndexVisible(const CTraySet& pYSet, size_t nPos);
 #endif
@@ -577,18 +577,18 @@ public:
 
     // Support for play indicators...
     void IndicateBoardToBoardPieceMove(CPlayBoard& pPBFrom, CPlayBoard& pPBTo,
-        CPoint ptCtrFrom, CPoint ptCtrTo, CSize size);
-    void IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB);
-    void IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size);
-    void Invalidate(CPlayBoard& pPBrd, const CRect& rect);
+        wxPoint ptCtrFrom, wxPoint ptCtrTo, wxSize size);
+    void IndicateBoardPlotLine(CPlayBoard& pPBrd, wxPoint ptA, wxPoint ptB);
+    void IndicateBoardPiece(CPlayBoard& pPBrd, wxPoint ptCtr, wxSize size);
+    void Invalidate(CPlayBoard& pPBrd, const wxRect& rect);
     void FlushAllSelections();
     void FlushAllIndicators();
     void UpdateAllBoardIndicators(CPlayBoard& pPBrd);
-    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace, UINT nResID);
-    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, CPoint pointWorkspace, const CB::string& pszStr);
+    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, wxPoint pointWorkspace, UINT nResID);
+    void IndicateTextTipOnBoard(const CPlayBoard& pPBoard, wxPoint pointWorkspace, const CB::string& pszStr);
 
     // Support for event notification messages (displayed as tool tips)
-    void EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, const CB::string& strMsg);
+    void EventShowBoardNotification(BoardID nBrdSerNum, wxPoint pntTipLoc, const CB::string& strMsg);
     void EventShowTrayNotification(size_t nTrayNum, PieceID pid, const CB::string& strMsg);
 
     // Support for player messages
@@ -741,7 +741,7 @@ public:
 
     using CSendMsgDlgPtr = CB::propagate_const<std::unique_ptr<CSendMsgDialog, CModelessDialogCleaner>>;
     CSendMsgDlgPtr  m_pMsgDialog; // Pointer to message modeless dialog
-    CPoint          m_pntMsgReadPos; // Position of read message dialog
+    wxPoint         m_pntMsgReadPos; // Position of read message dialog
 
     OwnerOrNullPtr<CGameBox>       m_pGbx;     // Holds the contents of gamebox
 

@@ -461,7 +461,7 @@ void CGamDoc::TransferPlaybackToHistoryTable(BOOL bTruncateAtCurrentMove /* = FA
 
 /////////////////////////////////////////////////////////////////////////////
 
-void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
+void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, wxPoint point)
 {
     if (IsQuietPlayback()) return;
     EnsureBoardVisible(pPBoard);
@@ -470,7 +470,7 @@ void CGamDoc::EnsureBoardLocationVisible(CPlayBoard& pPBoard, CPoint point)
     // near the center of the view.
     CGamDocHint hint;
     hint.GetArgs<HINT_POINTINVIEW>().m_pPBoard = &pPBoard;
-    hint.GetArgs<HINT_POINTINVIEW>().m_point = CB::Convert(point);
+    hint.GetArgs<HINT_POINTINVIEW>().m_point = point;
     UpdateAllViews(NULL, hint);
 }
 
@@ -602,7 +602,7 @@ CPlayBoardView* CGamDoc::MakeSurePBoardVisible(CPlayBoard& pPBoard)
 const int borderWidth = 3;
 
 void CGamDoc::IndicateBoardToBoardPieceMove(CPlayBoard& pPBFrom, CPlayBoard& pPBTo,
-    CPoint ptCtrFrom, CPoint ptCtrTo, CSize size)
+    wxPoint ptCtrFrom, wxPoint ptCtrTo, wxSize size)
 {
     if (IsQuietPlayback()) return;
     IndicateBoardPiece(pPBFrom, ptCtrFrom, size);
@@ -613,7 +613,7 @@ void CGamDoc::IndicateBoardToBoardPieceMove(CPlayBoard& pPBFrom, CPlayBoard& pPB
         IndicateBoardPlotLine(pPBFrom, ptCtrFrom, ptCtrTo);
 }
 
-void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
+void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, wxPoint ptA, wxPoint ptB)
 {
     if (IsQuietPlayback()) return;
     CLine* pObj = new CLine;
@@ -629,15 +629,15 @@ void CGamDoc::IndicateBoardPlotLine(CPlayBoard& pPBrd, CPoint ptA, CPoint ptB)
     UpdateAllViews(NULL, hint);
 }
 
-void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
+void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, wxPoint ptCtr, wxSize size)
 {
     if (IsQuietPlayback()) return;
-    CRect rct(CPoint(0, 0), size);
-    CSize offset(size.cx / 2, size.cy / 2);
-    rct += ptCtr - offset;
-    rct.InflateRect(borderWidth + 1, borderWidth + 1);
+    wxRect rct(wxPoint(0, 0), size);
+    wxSize offset(size.x / 2, size.y / 2);
+    rct.Offset(ptCtr - offset);
+    rct.Inflate(borderWidth + 1, borderWidth + 1);
     CRectObj* pObj = new CRectObj;
-    pObj->SetRect(CB::Convert(rct));
+    pObj->SetRect(rct);
     pObj->SetForeColor(pPBrd.m_crPlotLineColor);
     pObj->SetBackColor(noColorWx);
     pObj->SetLineWidth(borderWidth);
@@ -650,7 +650,7 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     UpdateAllViews(NULL, hint);
 }
 
-void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
+void CGamDoc::Invalidate(CPlayBoard& pPBrd, const wxRect& rect)
 {
     CGamDocHint hint;
     hint.GetArgs<HINT_INVALIDATERECT>().m_pPBoard = &pPBrd;
@@ -660,7 +660,7 @@ void CGamDoc::Invalidate(CPlayBoard& pPBrd, const CRect& rect)
 
 // Shows a balloon tip so person knows what happened. Uses a resource ID.
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
-    CPoint pointWorkspace, UINT nResID)
+    wxPoint pointWorkspace, UINT nResID)
 {
     CB::string str = CB::string::LoadString(nResID);
     IndicateTextTipOnBoard(pPBoard, pointWorkspace, str);
@@ -668,9 +668,8 @@ void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
 
 // Shows a balloon tip so person knows what happened.
 void CGamDoc::IndicateTextTipOnBoard(const CPlayBoard& pPBoard,
-    CPoint pointWorkspaceMfc, const CB::string& pszStr)
+    wxPoint pointWorkspace, const CB::string& pszStr)
 {
-    wxPoint pointWorkspace = CB::Convert(pointWorkspaceMfc);
     if (IsQuietPlayback()) return;
     CPlayBoardView* pView = FindPBoardView(pPBoard);
     wxASSERT(pView != NULL);
