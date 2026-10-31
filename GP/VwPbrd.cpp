@@ -981,7 +981,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
             int i;
             for (i = 0; i < dlg.m_nMarkerCount; i++)
             {
-                wxSize size = CB::Convert(pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]));
+                wxSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 sizeMin.x += size.x;
                 sizeMin.y = CB::max(sizeMin.y, size.y);
                 if (i < dlg.m_nMarkerCount - 1)
@@ -998,7 +998,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
             // corresponding to left to right.
             for (i = dlg.m_nMarkerCount - 1; i >= 0; i--)
             {
-                wxSize size = CB::Convert(pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]));
+                wxSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
                     CB::Convert(wxPoint(x - size.x / 2, y)), ObjectID());
                 x -= size.x + MARKER_DROP_GAP_X;
@@ -1011,7 +1011,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
 NASTY_GOTO_TARGET:
         m_selList.PurgeList();
         // If the snap grid is on, adjust the point.
-        wxSize sz = CB::Convert(pMMgr.GetMarkSize(mid));
+        wxSize sz = pMMgr.GetMarkSize(mid);
         wxASSERT(sz.x != 0 && sz.y != 0);
         wxRect rct(wxPoint(pnt.x - sz.x/2, pnt.y - sz.y/2), sz);
         rct = AdjustRect(rct);

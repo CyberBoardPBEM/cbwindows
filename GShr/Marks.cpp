@@ -73,11 +73,11 @@ const MarkDef& CMarkManager::GetMark(MarkID mid) const
 
 ///////////////////////////////////////////////////////////////////////
 
-CSize CMarkManager::GetMarkSize(MarkID mid)
+wxSize CMarkManager::GetMarkSize(MarkID mid)
 {
     MarkDef& pDef = GetMark(mid);
     CTile tile = m_pTMgr->GetTile(pDef.m_tid);
-    return CB::Convert(tile.GetSize());
+    return tile.GetSize();
 }
 
 ///////////////////////////////////////////////////////////////////////
