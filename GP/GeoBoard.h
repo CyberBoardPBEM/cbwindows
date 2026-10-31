@@ -96,7 +96,7 @@ public:
     bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
-    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(wxPoint pnt, TileScale eScale) const;
 
 // Implementation - methods
 protected:
@@ -107,7 +107,7 @@ protected:
     const CBoard& GetBoard(const CGeoBoardElement& geo) const;
     const CGeoBoardElement& GetBoardElt(size_t nBoardRow, size_t nBoardCol) const;
     void    ComputeNewBoardDimensions(size_t& rnRows, size_t& rnCols) const;
-    CPoint  ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const;
+    wxPoint ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const;
     void    ComputeCellOffset(size_t nBoardRow, size_t nBoardCol, size_t& rnCellRow, size_t& rnCellCol) const;
     // non-const because new tiles get added to CTileManager
     void    CopyCells(CBoardArray& pBArryTo, const CGeoBoardElement& gbeFrom);

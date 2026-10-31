@@ -260,7 +260,7 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
         {
             if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
-            wxPoint pntOffset = CB::Convert(ComputeGraphicalOffset(nBoardRow, nBoardCol));
+            wxPoint pntOffset = ComputeGraphicalOffset(nBoardRow, nBoardCol);
 
             const CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
 
@@ -634,11 +634,11 @@ wxBitmap CGeomorphicBoard::CreateBitmap(wxSize size) const
     return retval;
 }
 
-CPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const
+wxPoint CGeomorphicBoard::ComputeGraphicalOffset(size_t nBoardRow, size_t nBoardCol) const
 {
     const CBoard& pBrdRoot = GetBoard(size_t(0), size_t(0));
     wxSize sizeCell = pBrdRoot.GetBoardArray().GetCellSize(fullScale);
-    CPoint pnt(0, 0);
+    wxPoint pnt(0, 0);
     for (size_t nCol = size_t(0) ; nCol < nBoardCol ; ++nCol)
     {
         const CGeoBoardElement& gbe = GetBoardElt(size_t(0), nCol);
@@ -765,15 +765,15 @@ namespace
             return nullptr;
         }
 
-        CPoint offset;
+        wxPoint offset;
         switch (r)
         {
             case Rotation90::r90:
-                offset = CPoint(board.GetHeight(fullScale), 0);
+                offset = wxPoint(board.GetHeight(fullScale), 0);
                 break;
             case Rotation90::r180:
             {
-                offset = CPoint(board.GetWidth(fullScale), board.GetHeight(fullScale));
+                offset = wxPoint(board.GetWidth(fullScale), board.GetHeight(fullScale));
                 const CBoardArray& ba = board.GetBoardArray();
                 const CCellForm& cf = ba.GetCellForm(fullScale);
                 if (cf.GetCellType() == cformHexFlat &&
@@ -781,11 +781,11 @@ namespace
                 {
                     if (board.IsGEVStyle(Edge::Top))
                     {
-                        offset += CSize(0, cf.GetCellSize().y / 2);
+                        offset += wxSize(0, cf.GetCellSize().y / 2);
                     }
                     else if (board.IsGEVStyle(Edge::Bottom))
                     {
-                        offset += CSize(0, -cf.GetCellSize().y/2);
+                        offset += wxSize(0, -cf.GetCellSize().y/2);
                     }
                 }
                 /* experiment w/ Space Empires found In/Right
@@ -795,24 +795,24 @@ namespace
                 {
                     if (board.IsGEVStyle(Edge::Right))
                     {
-                        offset += CSize(-cf.GetCellSize().x/2, 0);
+                        offset += wxSize(-cf.GetCellSize().x/2, 0);
                     }
                     if (board.IsGEVStyle(Edge::Left))
                     {
-                        offset += CSize(cf.GetCellSize().x/2, 0);
+                        offset += wxSize(cf.GetCellSize().x/2, 0);
                     }
                 }
                 break;
             }
             case Rotation90::r270:
-                offset = CPoint(0, board.GetWidth(fullScale));
+                offset = wxPoint(0, board.GetWidth(fullScale));
                 break;
             default:
                 AfxThrowInvalidArgException();
         }
 
         std::unique_ptr<CDrawList> dest(new CDrawList);
-        dest->AppendWithRotOffset(*src, r, CB::Convert(offset));
+        dest->AppendWithRotOffset(*src, r, offset);
         return dest.release();
     }
 }
@@ -900,7 +900,7 @@ OwnerPtr<CBoard> CBoard::Clone(CGamDoc& doc, Rotation90 r) const
                             cols = srcBoardArray.GetCols();
                             break;
                         default:
-                            ASSERT(!"impossible");
+                            wxASSERT(!"impossible");
                     }
                     break;
                 case cformHexFlat:
@@ -1154,7 +1154,7 @@ void CGeomorphicBoard::Serialize(CArchive& ar)
     }
 }
 
-CB::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CGeomorphicBoard::GetCellNumberStr(wxPoint pnt, TileScale eScale) const
 {
     // find sub-board containing pnt
     const CBoardManager& brdMgr = m_pDoc->GetBoardManager();
@@ -1170,7 +1170,7 @@ CB::string CGeomorphicBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) cons
     // find which quadrant of cell
     wxRect rect = cf.GetRect(value_preserving_cast<CB::ssize_t>(overallRow),
                             value_preserving_cast<CB::ssize_t>(overallCol));
-    wxASSERT(rect.Contains(CB::Convert(pnt)));
+    wxASSERT(rect.Contains(pnt));
     Edge tb = pnt.y < GetMidRect(rect).y ? Edge::Top : Edge::Bottom;
     size_t tbCvt = tb == Edge::Top ? size_t(0) : size_t(1);
     Edge lr = pnt.x < GetMidRect(rect).x ? Edge::Left : Edge::Right;
