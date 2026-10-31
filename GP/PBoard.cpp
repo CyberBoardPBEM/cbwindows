@@ -161,7 +161,7 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
 
     {
         OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>(&*m_pDoc);
-        pObj->SetPiece(rct, pid);
+        pObj->SetPiece(CB::Convert(rct), pid);
         m_pPceList->AddToFront(std::move(pObj));
     }
     return static_cast<CPieceObj&>(m_pPceList->Front());

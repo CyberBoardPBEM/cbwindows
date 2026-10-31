@@ -260,7 +260,7 @@ OwnerPtr<CBoard> CGeomorphicBoard::CreateBoard()
         {
             if (nBoardCol == size_t(0) && nBoardRow == size_t(0))
                 continue;                       // Skip this one since it is done already
-            CPoint pntOffset = ComputeGraphicalOffset(nBoardRow, nBoardCol);
+            wxPoint pntOffset = CB::Convert(ComputeGraphicalOffset(nBoardRow, nBoardCol));
 
             const CBoard& pBrd = GetBoard(nBoardRow, nBoardCol);
 
@@ -812,7 +812,7 @@ namespace
         }
 
         std::unique_ptr<CDrawList> dest(new CDrawList);
-        dest->AppendWithRotOffset(*src, r, offset);
+        dest->AppendWithRotOffset(*src, r, CB::Convert(offset));
         return dest.release();
     }
 }

@@ -114,22 +114,22 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
 {
     CDrawObj& pObj = *opObj;
     CDrawList* pDwg = pPBrd->GetPieceList();
-    ASSERT(pDwg);
+    wxASSERT(pDwg);
 
     // Record processing
     if (pObj.GetType() == CDrawObj::drawPieceObj)
     {
         CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
-        CRect rctPce = pPObj.GetRect();
-        RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
-            sizeDelta, ePos);
+        wxRect rctPce = pPObj.GetRect();
+        RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, CB::Convert(GetMidRect(rctPce) +
+            CB::Convert(sizeDelta)), ePos);
     }
     else if (pObj.GetType() == CDrawObj::drawMarkObj)
     {
         CMarkObj& pMObj = static_cast<CMarkObj&>(pObj);
-        CRect rctMrk = pMObj.GetRect();
+        wxRect rctMrk = pMObj.GetRect();
         RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
-            GetMidRect(rctMrk) + sizeDelta, ePos);
+            CB::Convert(GetMidRect(rctMrk) + CB::Convert(sizeDelta)), ePos);
     }
     BOOL bOnBoard = pDwg->HasObject(pObj);
     if (ePos == placeDefault && bOnBoard)
@@ -146,7 +146,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     else
         RemoveObjectFromCurrentLocation(pObj);
 
-    pObj.MoveObject(pObj.GetRect().TopLeft() + sizeDelta);
+    pObj.MoveObject(pObj.GetRect().GetTopLeft() + CB::Convert(sizeDelta));
 
     if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
         pDwg->AddToFront(std::move(opObj));
@@ -292,16 +292,16 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
         if (pObj.GetType() == CDrawObj::drawPieceObj)
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(pObj);
-            CRect rctPce = pPObj.GetRect();
-            RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
-                size, ePos);
+            wxRect rctPce = pPObj.GetRect();
+            RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, CB::Convert(GetMidRect(rctPce) +
+                CB::Convert(size)), ePos);
         }
         else if (pObj.GetType() == CDrawObj::drawMarkObj)
         {
             const CMarkObj& pMObj = static_cast<const CMarkObj&>(pObj);
-            CRect rctMrk = pMObj.GetRect();
+            wxRect rctMrk = pMObj.GetRect();
             RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
-                GetMidRect(rctMrk) + size, ePos);
+                CB::Convert(GetMidRect(rctMrk) + CB::Convert(size)), ePos);
         }
 
         BOOL bOnBoard = pDwg->HasObject(pObj);
@@ -319,7 +319,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
         else
             RemoveObjectFromCurrentLocation(pObj);
 
-        pObj.MoveObject(pObj.GetRect().TopLeft() + size);
+        pObj.MoveObject(pObj.GetRect().GetTopLeft() + CB::Convert(size));
 
         if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
             pDwg->AddToFront(&pObj);
@@ -368,8 +368,8 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null
     for (size_t i = pTbl.size(); i > 0; i--)
     {
         CDrawObj& pDObj = *pTbl.at(i - size_t(1));
-        CSize sizeDelta = pnt - pDObj.GetRect().CenterPoint();
-        PlaceObjectOnBoard(pPBrd, &pDObj, sizeDelta, placeTop);
+        wxPoint sizeDelta = CB::Convert(pnt) - GetMidRect(pDObj.GetRect());
+        PlaceObjectOnBoard(pPBrd, &pDObj, CSize(sizeDelta.x, sizeDelta.y), placeTop);
         pnt -= CSize(xStagger, yStagger);
     }
 }
@@ -734,7 +734,7 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
     {
         OwnerPtr<CMarkObj> pObj(MakeOwner<CMarkObj>(this));
         pObj->SetObjectID(dwObjID);
-        pObj->SetMark(rct, mid);
+        pObj->SetMark(CB::Convert(rct), mid);
 
         RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(rct), placeTop);
 
@@ -905,9 +905,9 @@ void CGamDoc::FindObjectTableUnionRect(const std::vector<RefPtr<CDrawObj>>& pLst
     {
         const CDrawObj& pObj = **pos;
         if (rct.IsRectEmpty())
-            rct = pObj.GetRect();
+            rct = CB::Convert(pObj.GetRect());
         else
-            rct |= pObj.GetRect();
+            rct |= CB::Convert(pObj.GetRect());
     }
 }
 

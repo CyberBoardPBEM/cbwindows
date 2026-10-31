@@ -439,9 +439,9 @@ void CBoard::ForceObjectsOntoBoard()
     wxSize sizeBrd = GetBoardArray().GetSize(fullScale);
     wxRect rctZone(wxPoint(0,0), sizeBrd);
     if (m_pBaseDwg != NULL)
-        m_pBaseDwg->ForceIntoZone(CB::Convert(rctZone));
+        m_pBaseDwg->ForceIntoZone(rctZone);
     if (m_pTopDwg != NULL)
-        m_pTopDwg->ForceIntoZone(CB::Convert(rctZone));
+        m_pTopDwg->ForceIntoZone(rctZone);
 }
 #endif  // !GPLAY
 // ----------------------------------------------------- //

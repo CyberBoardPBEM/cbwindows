@@ -494,7 +494,7 @@ CDrawObj::OwnerPtr CRectTool::CreateDrawObj(const CBrdEditView& pView, wxPoint p
     int& nHandle) const
 {
     CRectObj::OwnerPtr pObj = new CRectObj;
-    pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
+    pObj->SetRect(wxRect(point, wxSize(0,0)));
     pObj->SetForeColor(pView.GetForeColor());
     pObj->SetBackColor(pView.GetBackColor());
     pObj->SetLineWidth(pView.GetLineWidth());
@@ -505,7 +505,7 @@ CDrawObj::OwnerPtr CRectTool::CreateDrawObj(const CBrdEditView& pView, wxPoint p
 BOOL CRectTool::IsEmptyObject() const
 {
     wxASSERT(m_pObj && dynamic_cast<const CRectObj*>(&*m_pObj));
-    return static_cast<const CRectObj&>(*m_pObj).GetRect().IsRectEmpty();
+    return static_cast<const CRectObj&>(*m_pObj).GetRect().IsEmpty();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -515,7 +515,7 @@ CDrawObj::OwnerPtr CEllipseTool::CreateDrawObj(const CBrdEditView& pView, wxPoin
     int& nHandle) const
 {
     CEllipse::OwnerPtr pObj = new CEllipse;
-    pObj->SetRect(CRect(CB::Convert(point), CSize(0,0)));
+    pObj->SetRect(wxRect(point, wxSize(0,0)));
     pObj->SetForeColor(pView.GetForeColor());
     pObj->SetBackColor(pView.GetBackColor());
     pObj->SetLineWidth(pView.GetLineWidth());
@@ -526,7 +526,7 @@ CDrawObj::OwnerPtr CEllipseTool::CreateDrawObj(const CBrdEditView& pView, wxPoin
 BOOL CEllipseTool::IsEmptyObject() const
 {
     wxASSERT(m_pObj && dynamic_cast<const CEllipse*>(&*m_pObj));
-    return static_cast<const CEllipse&>(*m_pObj).GetRect().IsRectEmpty();
+    return static_cast<const CEllipse&>(*m_pObj).GetRect().IsEmpty();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -546,8 +546,8 @@ CDrawObj::OwnerPtr CLineTool::CreateDrawObj(const CBrdEditView& pView, wxPoint p
 BOOL CLineTool::IsEmptyObject() const
 {
     wxASSERT(m_pObj && dynamic_cast<const CLine*>(&*m_pObj));
-    CRect rct = static_cast<const CLine&>(*m_pObj).GetRect();
-    return rct.Width() < 3 && rct.Height() < 3;
+    wxRect rct = static_cast<const CLine&>(*m_pObj).GetRect();
+    return rct.GetWidth() < 3 && rct.GetHeight() < 3;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -574,7 +574,7 @@ void CPolyTool::OnLButtonDown(CBrdEditView& pView, int nMods, wxPoint point)
         // Polygon is completed. The dummy object will be draw with
         // black lines and a single pixel line.
         m_pObj = new CPolyObj;
-        m_pObj->AddPoint(CB::Convert(point));
+        m_pObj->AddPoint(point);
         pView.AddDrawObject(m_pObj);
         CTool::OnLButtonDown(pView, nMods, point); // Capture and save point
     }
@@ -591,14 +591,14 @@ void CPolyTool::OnLButtonDown(CBrdEditView& pView, int nMods, wxPoint point)
             DrawRubberLine(dc);            // Turn off last rubber line
 
             // Check if back at the original point
-            wxPoint pnt(CB::Convert(m_pObj->m_Pnts[size_t(0)]));
+            wxPoint pnt(m_pObj->m_Pnts[size_t(0)]);
             if (pnt == point)
             {
                 FinalizePolygon(pView);
                 pView.ReleaseMouse();
                 return;
             }
-            m_pObj->AddPoint(CB::Convert(point));
+            m_pObj->AddPoint(point);
             c_ptDown = point;
             c_ptLast = rawPoint;
             DrawRubberLine(dc);            // Turn on last rubber line
@@ -639,14 +639,14 @@ void CPolyTool::OnMouseMove(CBrdEditView& pView, int nMods, int nButs, wxPoint p
 
         pView.AdjustPoint(point);
         // Check if back at the original point
-        wxPoint pnt(CB::Convert(m_pObj->m_Pnts[size_t(0)]));
+        wxPoint pnt(m_pObj->m_Pnts[size_t(0)]);
         if (pnt == point)
         {
             FinalizePolygon(pView);
             pView.ReleaseMouse();
             return;
         }
-        m_pObj->AddPoint(CB::Convert(point));
+        m_pObj->AddPoint(point);
         c_ptDown = point;
         c_ptLast = rawPoint;
         // Directly draw the object.
@@ -701,13 +701,13 @@ void CPolyTool::FinalizePolygon(CBrdEditView& pView,
         m_pObj->SetForeColor(pView.GetForeColor());
         m_pObj->SetBackColor(pView.GetBackColor());
         m_pObj->SetLineWidth(pView.GetLineWidth());
-        wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
+        wxRect rct = m_pObj->GetEnclosingRect();
         pView.InvalidateWorkspaceRect(rct);
     }
     else
     {
         // Not enough to work with...
-        wxRect rct = CB::Convert(m_pObj->GetEnclosingRect());
+        wxRect rct = m_pObj->GetEnclosingRect();
         pView.InvalidateWorkspaceRect(rct);
         pView.DeleteDrawObject(m_pObj);
     }

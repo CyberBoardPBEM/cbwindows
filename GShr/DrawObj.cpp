@@ -138,10 +138,10 @@ CDrawObj::CDrawObj()
     SetScaleVisibility(AllTileScales);
 }
 
-BOOL CDrawObj::IsVisible(const RECT& pClipRct) const
+BOOL CDrawObj::IsVisible(const wxRect& pClipRct) const
 {
-    CRect rct = GetEnclosingRect();
-    return rct.IntersectRect(&rct, &pClipRct);
+    wxRect rct = GetEnclosingRect();
+    return rct.Intersects(pClipRct);
 }
 
 #ifdef GPLAY
@@ -150,33 +150,33 @@ ObjectID CDrawObj::GetObjectID() const
     return ObjectID();
 }
 
-void CDrawObj::MoveObject(CPoint ptUpLeft)
+void CDrawObj::MoveObject(wxPoint ptUpLeft)
 {
-    CRect temp = GetRect();
-    temp += CPoint(ptUpLeft.x - temp.left,
-        ptUpLeft.y - temp.top);
+    wxRect temp = GetRect();
+    temp.Offset(ptUpLeft.x - temp.GetLeft(),
+        ptUpLeft.y - temp.GetTop());
     SetRect(temp);
 }
 
 void CDrawObj::Rotate(Rotation90 rot)
 {
-    CRect temp = GetRect();
+    const WIN_RECT win = GetRect();
     switch (rot)
     {
         case Rotation90::r0:
-            ASSERT(!"no-op call");
+            wxASSERT(!"no-op call");
             break;
         case Rotation90::r90:
-            SetRect(CRect(-temp.bottom, temp.left,
-                                -temp.top, temp.right));
+            SetRect(WIN_RECT(-win.bottom, win.left,
+                                -win.top, win.right));
             break;
         case Rotation90::r180:
-            SetRect(CRect(-temp.right, -temp.bottom,
-                                -temp.left, -temp.top));
+            SetRect(WIN_RECT(-win.right, -win.bottom,
+                                -win.left, -win.top));
             break;
         case Rotation90::r270:
-            SetRect(CRect(temp.top, -temp.right,
-                                temp.bottom, -temp.left));
+            SetRect(WIN_RECT(win.top, -win.right,
+                                win.bottom, -win.left));
             break;
         default:
             AfxThrowInvalidArgException();
@@ -185,27 +185,26 @@ void CDrawObj::Rotate(Rotation90 rot)
 #endif
 
 //DFM991129
-void CDrawObj::OffsetObject(CPoint offset)
+void CDrawObj::OffsetObject(wxPoint offset)
 {
-    CRect temp = GetRect();
-    temp += offset;
+    wxRect temp = GetRect();
+    temp.Offset(offset);
     SetRect(temp);
 }
 //DFM991129
 
-BOOL CDrawObj::IsExtentOutOfZone(const CRect& pRctZone, CPoint& pnt) const
+BOOL CDrawObj::IsExtentOutOfZone(const wxRect& pRctZone, wxPoint& pnt) const
 {
-    CRect rctExtent = GetRect();
-    CRect rct;
-    rct.UnionRect(pRctZone, rctExtent);
-    if (rct != *pRctZone)
+    wxRect rctExtent = GetRect();
+    wxRect rct = pRctZone.Union(rctExtent);
+    if (rct != pRctZone)
     {
         pnt.x = pnt.y = 0;
         // Calc offset needed to push the rect onto the pRctZone
-        if (rctExtent.right > pRctZone.right)
-            pnt.x = pRctZone.right - rctExtent.right;
-        if (rctExtent.bottom > pRctZone.bottom)
-            pnt.y = pRctZone.bottom - rctExtent.bottom;
+        if (rctExtent.GetRight() > pRctZone.GetRight())
+            pnt.x = pRctZone.GetRight() - rctExtent.GetRight();
+        if (rctExtent.GetBottom() > pRctZone.GetBottom())
+            pnt.y = pRctZone.GetBottom() - rctExtent.GetBottom();
         return TRUE;
     }
     return FALSE;
@@ -258,7 +257,7 @@ const int hitZone = 5;          // Must be odd and <= 15
 static WORD bmapSeed[hitZone] =
     { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
 
-BOOL CDrawObj::BitBlockHitTest(CPoint pt)
+BOOL CDrawObj::BitBlockHitTest(wxPoint pt)
 {
     wxMemoryDC dcmem;
     wxBitmap bmap;
@@ -300,11 +299,11 @@ void CDrawObj::Serialize(CArchive& ar)
     if (ar.IsStoring())
     {
         ar << m_dwDObjFlags;            // File Ver 2.0
-        CRect temp = GetRect();
-        ar << static_cast<uint16_t>(temp.left);
-        ar << static_cast<uint16_t>(temp.top);
-        ar << static_cast<uint16_t>(temp.right);
-        ar << static_cast<uint16_t>(temp.bottom);
+        WIN_RECT temp = GetRect();
+        ar << value_preserving_cast<uint16_t>(temp.left);
+        ar << value_preserving_cast<uint16_t>(temp.top);
+        ar << value_preserving_cast<uint16_t>(temp.right);
+        ar << value_preserving_cast<uint16_t>(temp.bottom);
     }
     else
     {
@@ -312,12 +311,12 @@ void CDrawObj::Serialize(CArchive& ar)
             ar >> m_dwDObjFlags;
         else
         {
-            WORD wTmp;
+            uint16_t wTmp;
             ar >> wTmp;
             m_dwDObjFlags = wTmp;
         }
         uint16_t sTmp;
-        CRect temp;
+        WIN_RECT temp;
         ar >> sTmp; temp.left = sTmp;
         ar >> sTmp; temp.top = sTmp;
         ar >> sTmp; temp.right = sTmp;
@@ -549,21 +548,21 @@ void CDrawObj_SimplRctExtent::CopyAttributes(const CDrawObj_SimplRctExtent& sour
 void CRectObj::Draw(wxDC& pDC, TileScale)
 {
     auto guard = SetUpDraw(pDC);
-    pDC.DrawRectangle(CB::Convert(m_rctExtent));
+    pDC.DrawRectangle(m_rctExtent);
 }
 
-CRect CRectObj::GetEnclosingRect() const
+wxRect CRectObj::GetEnclosingRect() const
 {
-    CRect rct = m_rctExtent;
-    rct.InflateRect(m_nLineWidth / 2 + 1, m_nLineWidth / 2 + 1);
+    wxRect rct = m_rctExtent;
+    rct.Inflate(m_nLineWidth / 2 + 1, m_nLineWidth / 2 + 1);
     return rct;
 }
 
-BOOL CRectObj::HitTest(CPoint pt)
+BOOL CRectObj::HitTest(wxPoint pt)
 {
     // First check if anywhere near the object.
-    CRect rct = GetEnclosingRect();
-    if (!rct.PtInRect(pt))
+    wxRect rct = GetEnclosingRect();
+    if (!rct.Contains(pt))
         return FALSE;
 
     // Now check for actual image hit. (!!!For rects this could actually
@@ -572,11 +571,11 @@ BOOL CRectObj::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CRectObj::ForceIntoZone(const CRect& pRctZone)
+void CRectObj::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
-        m_rctExtent += pntOffset;
+        m_rctExtent.Offset(pntOffset);
 }
 
 OwnerPtr<CSelection> CRectObj::CreateSelectProxy(CBrdEditView& pView)
@@ -631,7 +630,7 @@ void CRectObj::CopyAttributes (const CRectObj& source)
 void CEllipse::Draw(wxDC& pDC, TileScale)
 {
     auto guard = SetUpDraw(pDC);
-    CB::DrawEllipse(pDC, CB::Convert(m_rctExtent));
+    CB::DrawEllipse(pDC, m_rctExtent);
 }
 
 #ifndef     GPLAY
@@ -661,20 +660,20 @@ void CPolyObj::Draw(wxDC& pDC, TileScale)
         return;
     auto guard = SetUpDraw(pDC);
 
-    std::vector<wxPoint> pnts = CB::Convert(m_Pnts);
+    std::vector<wxPoint> pnts = m_Pnts;
     if (m_crFill == noColorWx)
         pDC.DrawLines(value_preserving_cast<int>(pnts.size()), pnts.data());
     else
         pDC.DrawPolygon(value_preserving_cast<int>(pnts.size()), pnts.data());
 }
 
-void CPolyObj::AddPoint(CPoint pnt)
+void CPolyObj::AddPoint(wxPoint pnt)
 {
     m_Pnts.push_back(pnt);
     ComputeExtent();
 }
 
-void CPolyObj::SetNewPolygon(const std::vector<POINT>& pnts)
+void CPolyObj::SetNewPolygon(const std::vector<wxPoint>& pnts)
 {
     m_Pnts = pnts;
     ComputeExtent();
@@ -682,7 +681,7 @@ void CPolyObj::SetNewPolygon(const std::vector<POINT>& pnts)
 
 void CPolyObj::ComputeExtent()
 {
-    m_rctExtent.SetRectEmpty();
+    m_rctExtent = wxRect();
     if (m_Pnts.empty())
         return;
     int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
@@ -693,21 +692,21 @@ void CPolyObj::ComputeExtent()
         ymin = CB::min(ymin, m_Pnts[i].y);
         ymax = CB::max(ymax, m_Pnts[i].y);
     }
-    m_rctExtent.SetRect(xmin, ymin, xmax, ymax);
+    m_rctExtent = WIN_RECT(xmin, ymin, xmax, ymax);
 }
 
-CRect CPolyObj::GetEnclosingRect() const
+wxRect CPolyObj::GetEnclosingRect() const
 {
-    CRect rct = m_rctExtent;
-    rct.InflateRect(m_nLineWidth + 1, m_nLineWidth + 1);
+    wxRect rct = m_rctExtent;
+    rct.Inflate(m_nLineWidth + 1, m_nLineWidth + 1);
     return rct;
 }
 
-BOOL CPolyObj::HitTest(CPoint pt)
+BOOL CPolyObj::HitTest(wxPoint pt)
 {
     // First check if anywhere near the object.
-    CRect rct = GetEnclosingRect();
-    if (!rct.PtInRect(pt))
+    wxRect rct = GetEnclosingRect();
+    if (!rct.Contains(pt))
         return FALSE;
 
     // Now check for actual image hit.
@@ -715,9 +714,9 @@ BOOL CPolyObj::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CPolyObj::ForceIntoZone(const CRect& pRctZone)
+void CPolyObj::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
     {
         for (size_t i = size_t(0) ; i < m_Pnts.size() ; ++i)
@@ -744,10 +743,10 @@ void CPolyObj::Rotate(Rotation90 rot)
     switch (rot)
     {
         case Rotation90::r0:
-            ASSERT(!"no-op call");
+            wxASSERT(!"no-op call");
             break;
         case Rotation90::r90:
-            for (POINT& pnt : m_Pnts)
+            for (wxPoint& pnt : m_Pnts)
             {
                 long temp = pnt.y;
                 pnt.y = pnt.x;
@@ -755,14 +754,14 @@ void CPolyObj::Rotate(Rotation90 rot)
             }
             break;
         case Rotation90::r180:
-            for (POINT& pnt : m_Pnts)
+            for (wxPoint& pnt : m_Pnts)
             {
                 pnt.x = -pnt.x;
                 pnt.y = -pnt.y;
             }
             break;
         case Rotation90::r270:
-            for (POINT& pnt : m_Pnts)
+            for (wxPoint& pnt : m_Pnts)
             {
                 long temp = pnt.y;
                 pnt.y = -pnt.x;
@@ -775,7 +774,7 @@ void CPolyObj::Rotate(Rotation90 rot)
 }
 #endif
 
-void CPolyObj::OffsetObject (CPoint offset)
+void CPolyObj::OffsetObject (wxPoint offset)
 {
     //  let parent handle its part
     CDrawObj::OffsetObject (offset);
@@ -822,7 +821,7 @@ void CPolyObj::Serialize(CArchive& ar)
             CB::WriteCount(ar, m_Pnts.size());
         }
         if (!m_Pnts.empty())
-            WriteArchivePoints(ar, m_Pnts.data(), m_Pnts.size());
+            WriteArchivePoints(ar, m_Pnts);
     }
     else
     {
@@ -840,7 +839,7 @@ void CPolyObj::Serialize(CArchive& ar)
         }
         if (!m_Pnts.empty())
         {
-            ReadArchivePoints(ar, m_Pnts.data(), m_Pnts.size());
+            ReadArchivePoints(ar, m_Pnts);
         }
     }
 }
@@ -861,7 +860,7 @@ void CLine::Draw(wxDC& pDC, TileScale)
     }
     wxDCPenChanger setpen(pDC, pen);
 
-    pDC.DrawLine(CB::Convert(m_ptBeg), CB::Convert(m_ptEnd));
+    pDC.DrawLine(m_ptBeg, m_ptEnd);
 }
 
 void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
@@ -872,24 +871,26 @@ void CLine::SetLine(int xBeg, int yBeg, int xEnd, int yEnd)
     m_ptEnd.y = yEnd;
     // An enclosing rectangle *must* have some volume...
     int nWidth = m_nLineWidth / 2 ? m_nLineWidth / 2 : 1;
-    m_rctExtent.left = CB::min(xBeg, xEnd) - nWidth;
-    m_rctExtent.top = CB::min(yBeg, yEnd) - nWidth;
-    m_rctExtent.right = CB::max(xBeg, xEnd) + nWidth;
-    m_rctExtent.bottom = CB::max(yBeg, yEnd) +nWidth;
+    WIN_RECT win;
+    win.left = CB::min(xBeg, xEnd) - nWidth;
+    win.top = CB::min(yBeg, yEnd) - nWidth;
+    win.right = CB::max(xBeg, xEnd) + nWidth;
+    win.bottom = CB::max(yBeg, yEnd) +nWidth;
+    m_rctExtent = win;
 }
 
-CRect CLine::GetEnclosingRect() const
+wxRect CLine::GetEnclosingRect() const
 {
-    CRect rct = m_rctExtent;
-    rct.NormalizeRect();
+    wxRect rct = m_rctExtent;
+    CB::Normalize(rct);
     return rct;
 }
 
-BOOL CLine::HitTest(CPoint pt)
+BOOL CLine::HitTest(wxPoint pt)
 {
     // First check if anywhere near the object.
-    CRect rct = GetEnclosingRect();
-    if (!rct.PtInRect(pt))
+    wxRect rct = GetEnclosingRect();
+    if (!rct.Contains(pt))
         return FALSE;
 
     // Now check for actual image hit.
@@ -897,9 +898,9 @@ BOOL CLine::HitTest(CPoint pt)
 }
 
 #ifndef     GPLAY
-void CLine::ForceIntoZone(const CRect& pRctZone)
+void CLine::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
     {
         SetLine(m_ptBeg.x + pntOffset.x, m_ptBeg.y + pntOffset.y,
@@ -926,7 +927,7 @@ void CLine::Rotate(Rotation90 rot)
     switch (rot)
     {
         case Rotation90::r0:
-            ASSERT(!"no-op call");
+            wxASSERT(!"no-op call");
             break;
         case Rotation90::r90:
         {
@@ -961,14 +962,14 @@ void CLine::Rotate(Rotation90 rot)
 #endif
 
 //DFM19991221
-void CLine::OffsetObject(CPoint offset)
+void CLine::OffsetObject(wxPoint offset)
 {
     // let parent handle its part
     CDrawObj::OffsetObject (offset);
 
     // now we'll handle our part
-    m_ptBeg.Offset (offset.x, offset.y);
-    m_ptEnd.Offset (offset.x, offset.y);
+    m_ptBeg += offset;
+    m_ptEnd += offset;
 
 }
 
@@ -1054,12 +1055,12 @@ void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
     const wxBitmap& wxm_bitmap = m_bitmap;
     tileDC.SelectObjectAsSource(wxm_bitmap);
 
-    wxPoint pnt = CB::Convert(m_rctExtent.TopLeft());
+    wxPoint pnt = m_rctExtent.GetTopLeft();
 
     if ((GetDObjFlags() & dobjFlgLayerNatural) == 0)
     {
-        pDC.StretchBlit(pnt.x, pnt.y, m_rctExtent.Width(),  m_rctExtent.Height(), &tileDC,
-            0, 0, m_rctExtent.Width(), m_rctExtent.Height());
+        pDC.StretchBlit(pnt.x, pnt.y, m_rctExtent.GetWidth(),  m_rctExtent.GetHeight(), &tileDC,
+            0, 0, m_rctExtent.GetWidth(), m_rctExtent.GetHeight());
     }
     else
     {
@@ -1070,7 +1071,7 @@ void CBitmapImage::Draw(wxDC& pDC, TileScale eScale)
         if (GetScaleVisibility() != eScale)
             return;
 
-        wxPoint pnt = CB::Convert(m_rctExtent).GetTopLeft();
+        wxPoint pnt = m_rctExtent.GetTopLeft();
         ScalePoint(pnt, pDC);
 
         SynchronizeExtentRect(pDC); // Only time we can find true scale
@@ -1087,40 +1088,40 @@ void CBitmapImage::SetBitmap(int x, int y, const wxBitmap& hBMap,
     m_bitmap = hBMap;
     m_eBaseScale = eBaseScale;
 
-    m_rctExtent.left = x;
-    m_rctExtent.top = y;
-    m_rctExtent.right += m_bitmap.GetWidth();
-    m_rctExtent.bottom += m_bitmap.GetHeight();
+    WIN_RECT win(m_rctExtent);
+    win.left = x;
+    win.top = y;
+    win.right += m_bitmap.GetWidth();
+    win.bottom += m_bitmap.GetHeight();
+    m_rctExtent = win;
 }
 
-BOOL CBitmapImage::HitTest(CPoint pt)
+BOOL CBitmapImage::HitTest(wxPoint pt)
 {
-    CRect rct = GetEnclosingRect();
-    return rct.PtInRect(pt);
+    wxRect rct = GetEnclosingRect();
+    return rct.Contains(pt);
 }
 
 // The top and left locations are assumed to be correct.
-void CBitmapImage::SynchronizeExtentRect(CSize sizeWorld, CSize sizeView)
+void CBitmapImage::SynchronizeExtentRect(wxSize sizeWorld, wxSize sizeView)
 {
-    ASSERT((GetDObjFlags() & dobjFlgLayerNatural) != 0);// Only should be called in this case
+    wxASSERT((GetDObjFlags() & dobjFlgLayerNatural) != 0);// Only should be called in this case
     wxASSERT(m_bitmap.IsOk());
     if (!m_bitmap.IsOk())
         return;
 
     // Might compensate the extend rect for objects with natural
     // sizes in scalings smaller that full scale.
-    m_rctExtent.right = m_rctExtent.left;
-    m_rctExtent.bottom = m_rctExtent.top;
-    m_rctExtent.right += (sizeWorld.cx * m_bitmap.GetWidth()) / sizeView.cx;
-    m_rctExtent.bottom += (sizeWorld.cy * m_bitmap.GetHeight()) / sizeView.cy;
+    m_rctExtent.SetWidth((sizeWorld.x * m_bitmap.GetWidth()) / sizeView.x);
+    m_rctExtent.SetHeight((sizeWorld.y * m_bitmap.GetHeight()) / sizeView.y);
 }
 
 #ifndef     GPLAY
-void CBitmapImage::ForceIntoZone(const CRect& pRctZone)
+void CBitmapImage::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
-        m_rctExtent += pntOffset;
+        m_rctExtent.Offset(pntOffset);
 }
 #endif
 
@@ -1138,7 +1139,7 @@ void CBitmapImage::Rotate(Rotation90 rot)
     switch (rot)
     {
         case Rotation90::r0:
-            ASSERT(!"no-op call");
+            wxASSERT(!"no-op call");
             break;
         case Rotation90::r90:
         case Rotation90::r180:
@@ -1203,10 +1204,10 @@ void CBitmapImage::Serialize(CArchive& ar)
 
 void CTileImage::Draw(wxDC& pDC, TileScale eScale)
 {
-    ASSERT(m_pTMgr != NULL);
+    wxASSERT(m_pTMgr != NULL);
     CTile tile = m_pTMgr->GetTile(m_tid, eScale);
 
-    wxPoint pnt = CB::Convert(m_rctExtent.TopLeft());
+    wxPoint pnt = m_rctExtent.GetTopLeft();
     CB::DCUserScaleChanger setScale;
     if (eScale == halfScale)
     {
@@ -1218,27 +1219,35 @@ void CTileImage::Draw(wxDC& pDC, TileScale eScale)
 
 void CTileImage::SetTile(int x, int y, TileID tid)
 {
-    ASSERT(m_pTMgr != NULL);
+    wxASSERT(m_pTMgr != NULL);
     CTile tile = m_pTMgr->GetTile(tid);
     m_tid = tid;
-    m_rctExtent.left = m_rctExtent.right = x;
-    m_rctExtent.top = m_rctExtent.bottom = y;
-    m_rctExtent.right += value_preserving_cast<int>(tile.GetWidth());
-    m_rctExtent.bottom += value_preserving_cast<int>(tile.GetHeight());
+    m_rctExtent.SetLeft(x);
+    m_rctExtent.SetTop(y);
+    m_rctExtent.SetWidth(value_preserving_cast<int>(tile.GetWidth()));
+    m_rctExtent.SetHeight(value_preserving_cast<int>(tile.GetHeight()));
+#if 1   // TODO:  remove test
+    CRect test;
+    test.left = test.right = x;
+    test.top = test.bottom = y;
+    test.right += value_preserving_cast<int>(tile.GetWidth());
+    test.bottom += value_preserving_cast<int>(tile.GetHeight());
+    wxASSERT(CB::Convert(m_rctExtent) == test);
+#endif
 }
 
-BOOL CTileImage::HitTest(CPoint pt)
+BOOL CTileImage::HitTest(wxPoint pt)
 {
-    CRect rct = GetEnclosingRect();
-    return rct.PtInRect(pt);
+    wxRect rct = GetEnclosingRect();
+    return rct.Contains(pt);
 }
 
 #ifndef     GPLAY
-void CTileImage::ForceIntoZone(const CRect& pRctZone)
+void CTileImage::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
-        m_rctExtent += pntOffset;
+        m_rctExtent.Offset(pntOffset);
 }
 #endif
 
@@ -1308,14 +1317,14 @@ CText::~CText()
 
 void CText::Draw(wxDC& pDC, TileScale eScale)
 {
-    if (eScale == smallScale && m_rctExtent.Height() < 16)
+    if (eScale == smallScale && m_rctExtent.GetHeight() < 16)
         return;
 
     wxFont hFont = ToWxFont(m_fontID);
     wxDCFontChanger setFont(pDC, hFont);
     pDC.SetBackgroundMode(wxBRUSHSTYLE_TRANSPARENT);
     wxDCTextColourChanger setColor(pDC, m_crText);
-    wxPoint topLeft = CB::Convert(m_rctExtent.TopLeft() + m_geoOffset);
+    wxPoint topLeft = m_rctExtent.GetTopLeft() + m_geoOffset;
     pDC.DrawRotatedText(m_text, topLeft, m_geoRot);
 }
 
@@ -1324,8 +1333,8 @@ void CText::SetText(int x, int y, const CB::string& pszText, FontID fntID,
 {
     m_text = pszText;
     m_crText = crText;
-    m_rctExtent.left = x;
-    m_rctExtent.top = y;
+    m_rctExtent.SetLeft(x);
+    m_rctExtent.SetTop(y);
 
     SetFont(fntID);
 }
@@ -1342,25 +1351,35 @@ BOOL CText::SetFont(FontID fid)
 
     // Compute (new) dimensions
     wxSize sizeTxt = mDC1.GetTextExtent(m_text);
-    m_rctExtent.right = m_rctExtent.left + sizeTxt.x;
-    m_rctExtent.bottom = m_rctExtent.top + sizeTxt.y;
+#if 1
+CRect test;
+test.left = m_rctExtent.GetLeft();
+test.top = m_rctExtent.GetTop();
+#endif
+    m_rctExtent.SetWidth(sizeTxt.x);
+    m_rctExtent.SetHeight(sizeTxt.y);
+#if 1
+test.right = test.left + sizeTxt.x;
+test.bottom = test.top + sizeTxt.y;
+wxASSERT(CB::Convert(m_rctExtent) == test);
+#endif
 
     return TRUE;
 }
 
-BOOL CText::HitTest(CPoint pt)
+BOOL CText::HitTest(wxPoint pt)
 {
     // First check if anywhere near the object.
-    CRect rct = GetEnclosingRect();
-    return rct.PtInRect(pt);
+    wxRect rct = GetEnclosingRect();
+    return rct.Contains(pt);
 }
 
 #ifndef     GPLAY
-void CText::ForceIntoZone(const CRect& pRctZone)
+void CText::ForceIntoZone(const wxRect& pRctZone)
 {
-    CPoint pntOffset;
+    wxPoint pntOffset;
     if (IsExtentOutOfZone(pRctZone, pntOffset))
-        m_rctExtent += pntOffset;
+        m_rctExtent.Offset(pntOffset);
 }
 #endif
 
@@ -1378,21 +1397,21 @@ void CText::Rotate(Rotation90 rot)
     switch (rot)
     {
         case Rotation90::r0:
-            ASSERT(!"no-op call");
+            wxASSERT(!"no-op call");
             m_geoRot = 0;
-            m_geoOffset = CSize(0, 0);
+            m_geoOffset = wxSize(0, 0);
             break;
         case Rotation90::r90:
             m_geoRot = 90;
-            m_geoOffset = CSize(m_rctExtent.right - m_rctExtent.left, 0);
+            m_geoOffset = wxSize(m_rctExtent.GetWidth(), 0);
             break;
         case Rotation90::r180:
             m_geoRot = 180;
-            m_geoOffset = m_rctExtent.BottomRight() - m_rctExtent.TopLeft();
+            m_geoOffset = m_rctExtent.GetSize();
             break;
         case Rotation90::r270:
             m_geoRot = 270;
-            m_geoOffset = CSize(0, m_rctExtent.bottom - m_rctExtent.top);
+            m_geoOffset = wxSize(0, m_rctExtent.GetHeight());
             break;
         default:
             AfxThrowInvalidArgException();
@@ -1473,17 +1492,17 @@ static void DrawObjTile(wxDC& pDC, wxPoint pnt, CTileManager& pTMgr, TileID tid,
 //////////////////////////////////////////////////////////////////
 // Class CPieceObj
 
-CRect CPieceObj::GetRect() const
+wxRect CPieceObj::GetRect() const
 {
-    CSize size = GetSize();
-    return CRect(CPoint(m_center.x - size.cx/2,
-                        m_center.y - size.cy/2),
+    wxSize size = GetSize();
+    return wxRect(wxPoint(m_center.x - size.x/2,
+                        m_center.y - size.y/2),
                 size);
 }
 
-void CPieceObj::SetRect(const CRect& rct)
+void CPieceObj::SetRect(const wxRect& rct)
 {
-    m_center = rct.CenterPoint();
+    m_center = GetMidRect(rct);
 }
 
 void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
@@ -1501,7 +1520,7 @@ void CPieceObj::Draw(wxDC& pDC, TileScale eScale)
         tid = pPTbl.GetActiveTileID(m_pid, TRUE);  // Show rotations
     wxASSERT(tid != nullTid);
 
-    wxPoint pnt = CB::Convert(GetRect()).GetTopLeft();
+    wxPoint pnt = GetRect().GetTopLeft();
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
 
@@ -1533,15 +1552,15 @@ BOOL CPieceObj::IsOwnedButNotByCurrentPlayer() const
     return pPTbl.IsOwnedButNotByCurrentPlayer(m_pid, *m_pDoc);
 }
 
-void CPieceObj::SetPiece(const CRect& rct, PieceID pid)
+void CPieceObj::SetPiece(const wxRect& rct, PieceID pid)
 {
     m_pid = pid;
     SetRect(rct);
 }
 
-CSize CPieceObj::GetSize() const
+wxSize CPieceObj::GetSize() const
 {
-    ASSERT(m_pDoc != NULL);
+    wxASSERT(m_pDoc != NULL);
     CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable& pPTbl = m_pDoc->GetPieceTable();
 
@@ -1555,13 +1574,13 @@ CSize CPieceObj::GetSize() const
     ASSERT(tid != nullTid);
 
     CTile tile = pTMgr.GetTile(tid);
-    return CB::Convert(tile.GetSize());
+    return tile.GetSize();
 }
 
-BOOL CPieceObj::HitTest(CPoint pt)
+BOOL CPieceObj::HitTest(wxPoint pt)
 {
-    CRect rct = GetEnclosingRect();
-    return rct.PtInRect(pt);
+    wxRect rct = GetEnclosingRect();
+    return rct.Contains(pt);
 }
 
 OwnerPtr<CSelection> CPieceObj::CreateSelectProxy(CPlayBoardView& pView)
@@ -1616,12 +1635,12 @@ void CMarkObj::Draw(wxDC& pDC, TileScale eScale)
     CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = GetCurrentTileID();
-    wxPoint pnt = CB::Convert(m_rctExtent).GetTopLeft();
+    wxPoint pnt = m_rctExtent.GetTopLeft();
 
     DrawObjTile(pDC, pnt, pTMgr, tid, eScale);
 }
 
-void CMarkObj::SetMark(CRect& rct, MarkID mid)
+void CMarkObj::SetMark(const wxRect& rct, MarkID mid)
 {
     m_mid = mid;
     m_rctExtent = rct;
@@ -1655,19 +1674,19 @@ void CMarkObj::ResyncExtentRect()
     CTileManager& pTMgr = m_pDoc->GetTileManager();
 
     TileID tid = GetCurrentTileID();
-    ASSERT(tid != nullTid);
+    wxASSERT(tid != nullTid);
 
     CTile tile = pTMgr.GetTile(tid);
-    CPoint pnt = m_rctExtent.CenterPoint();
+    wxPoint pnt = GetMidRect(m_rctExtent);
     pnt.x -= value_preserving_cast<int>(tile.GetWidth()) / 2;
     pnt.y -= value_preserving_cast<int>(tile.GetHeight()) / 2;
-    m_rctExtent = CRect(pnt, CB::Convert(tile.GetSize()));
+    m_rctExtent = wxRect(pnt, tile.GetSize());
 }
 
-BOOL CMarkObj::HitTest(CPoint pt)
+BOOL CMarkObj::HitTest(wxPoint pt)
 {
-    CRect rct = GetEnclosingRect();
-    return rct.PtInRect(pt);
+    wxRect rct = GetEnclosingRect();
+    return rct.Contains(pt);
 }
 
 OwnerPtr<CSelection> CMarkObj::CreateSelectProxy(CPlayBoardView& pView)
@@ -1812,7 +1831,7 @@ void CDrawList::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
             if ((pDObj.GetDObjFlags() & dobjFlgLockDown) == 0)
                 continue;                  // Only process locked objects
 
-            if (pDObj.IsVisible(CB::Convert(pDrawRct)))
+            if (pDObj.IsVisible(pDrawRct))
                 pDObj.Draw(pDC, eScale);
         }
     }
@@ -1837,12 +1856,12 @@ void CDrawList::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale,
             continue;                   // Doesn't qualify
         }
 
-        if (pDObj.IsVisible(CB::Convert(pDrawRct)))
+        if (pDObj.IsVisible(pDrawRct))
             pDObj.Draw(pDC, eScale);
     }
 }
 
-CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
+CDrawObj* CDrawList::HitTest(wxPoint pt, TileScale eScale,
     BOOL bApplyVisibility /* = TRUE */)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
@@ -1858,7 +1877,7 @@ CDrawObj* CDrawList::HitTest(CPoint pt, TileScale eScale,
     return NULL;
 }
 
-void CDrawList::DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
+void CDrawList::DrillDownHitTest(wxPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
     TileScale eScale, BOOL bApplyVisibility /* = TRUE */)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
@@ -2218,7 +2237,7 @@ BOOL CDrawList::IsTileInUse(TileID tid) const
 #endif
 }
 
-void CDrawList::ForceIntoZone(const CRect& pRctZone)
+void CDrawList::ForceIntoZone(const wxRect& pRctZone)
 {
     for (reverse_iterator pos = rbegin(); pos != rend(); ++pos)
     {
@@ -2272,7 +2291,7 @@ BOOL CDrawList::Compare(const CDrawList& pLst) const
     return TRUE;
 }
 
-void CDrawList::AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, CPoint pntOffet)
+void CDrawList::AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, wxPoint pntOffet)
 {
     for (const_iterator pos = pSourceLst.begin(); pos != pSourceLst.end(); ++pos)
     {

@@ -590,8 +590,8 @@ BOOL CPLineTool::IsEmptyObject() const
 {
     wxASSERT(!"dead code");
     wxASSERT(dynamic_cast<const CLine*>(&*m_pObj));
-    CRect rct = static_cast<const CLine&>(*m_pObj).GetRect();
-    return rct.Width() < 3 && rct.Height() < 3;
+    wxRect rct = static_cast<const CLine&>(*m_pObj).GetRect();
+    return rct.GetWidth() < 3 && rct.GetHeight() < 3;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -635,7 +635,7 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
             CDrawObj& pObj = **pos;
             wxASSERT(pObj.GetType() == CDrawObj::drawPieceObj ||
                 pObj.GetType() == CDrawObj::drawMarkObj);
-            wxRect rct = CB::Convert(pObj.GetRect());
+            wxRect rct = pObj.GetRect();
             wxPoint pnt = GetMidRect(rct);
             pDoc.IndicateBoardPlotLine(pPBrd, CB::Convert(pnt), CB::Convert(point));
         }

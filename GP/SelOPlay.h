@@ -141,7 +141,7 @@ class CSelLine : public CSelection
 // Constructors
 public:
     CSelLine(CPlayBoardView& pView, CLine& pObj) : CSelection(pView, pObj)
-        { pObj.GetLine(m_rect.left, m_rect.top, m_rect.right, m_rect.bottom); }
+        { m_rect = CB::Convert(pObj.GetLine()); }
 
 // Attributes
 public:
@@ -171,7 +171,7 @@ class CSelGeneric : public CSelection
 // Constructors
 public:
     CSelGeneric(CPlayBoardView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
-        { m_rect = pObj.GetRect(); }
+        { m_rect = CB::Convert(pObj.GetRect()); }
 
 // Overrides
 public:
