@@ -172,7 +172,7 @@ public:
     BOOL PurgeMissingTileIDs(CGameElementStringMap* pMapString = NULL);
     BOOL IsTileInUse(TileID tid) const;
     // ------- //
-    CSize GetMarkSize(MarkID mid);
+    wxSize GetMarkSize(MarkID mid);
     // ------- //
     size_t CreateMarkSet(const CB::string& pszName);
     void DeleteMarkSet(size_t nMSet, CGameElementStringMap* pMapString = NULL);
