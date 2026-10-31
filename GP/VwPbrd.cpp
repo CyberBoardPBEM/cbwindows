@@ -860,8 +860,8 @@ void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
         pnt = ClientToWorkspace(pnt);
 
         // If the snap grid is on, adjust the point.
-        wxSize sz = CB::Convert(GetDocument().GetPieceTable().GetStackedSize(pTbl,
-            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger));
+        wxSize sz = GetDocument().GetPieceTable().GetStackedSize(pTbl,
+            m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger);
         wxASSERT(sz.x != 0 && sz.y != 0);
         wxRect rct(wxPoint(pnt.x - sz.x/2, pnt.y - sz.y/2), sz);
         rct = AdjustRect(rct);

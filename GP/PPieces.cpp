@@ -1,6 +1,6 @@
 // PPieces.cpp
 //
-// Copyright (c) 1994-2025 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -302,67 +302,65 @@ void CPieceTable::SetOwnerMask(PieceID pid, PlayerMask dwMask)
 
 ///////////////////////////////////////////////////////////////////////
 
-CSize CPieceTable::GetPieceSize(PieceID pid) const
+wxSize CPieceTable::GetPieceSize(PieceID pid) const
 {
     CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid));
-    return CB::Convert(tile.GetSize());
+    return tile.GetSize();
 }
 
-CSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
+wxSize CPieceTable::GetPieceSize(PieceID pid, BOOL bWithFacing)
 {
     CTile tile = m_pDoc->GetTileManager().GetTile(GetActiveTileID(pid, bWithFacing));
-    return CB::Convert(tile.GetSize());
+    return tile.GetSize();
 }
 
-CSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const
+wxSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const
 {
-    CRect rctFull;
-    rctFull.SetRectEmpty();
+    wxRect rctFull = wxRect();
 
-    CPoint pntCtr(0, 0);
+    wxPoint pntCtr(0, 0);
 
     for (size_t i = size_t(0); i < pTbl.size(); i++)
     {
-        CSize sz = GetPieceSize(pTbl.at(i));
+        wxSize sz = GetPieceSize(pTbl.at(i));
         // First create rect centered on zero
-        CRect rct(CPoint(-sz.cx / 2, -sz.cy / 2), sz);
+        wxRect rct(wxPoint(-sz.x / 2, -sz.y / 2), sz);
         // Offset by staggered point
-        rct += pntCtr;
+        rct.Offset(pntCtr);
         // Combine with master rect.
         if (i == size_t(0))
             rctFull = rct;
         else
-            rctFull |= rct;
+            rctFull.Union(rct);
         // Move stagger point along
-        pntCtr += CSize(xDelta, yDelta);
+        pntCtr += wxSize(xDelta, yDelta);
     }
-    return rctFull.Size();
+    return rctFull.GetSize();
 }
 
-CSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta,
+wxSize CPieceTable::GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta,
     BOOL bWithFacing)
 {
-    CRect rctFull;
-    rctFull.SetRectEmpty();
+    wxRect rctFull = wxRect();
 
-    CPoint pntCtr(0, 0);
+    wxPoint pntCtr(0, 0);
 
     for (size_t i = 0; i < pTbl.size(); i++)
     {
-        CSize sz = GetPieceSize(pTbl.at(i), bWithFacing);
+        wxSize sz = GetPieceSize(pTbl.at(i), bWithFacing);
         // First create rect centered on zero
-        CRect rct(CPoint(-sz.cx/2, -sz.cy/2), sz);
+        wxRect rct(wxPoint(-sz.x/2, -sz.y/2), sz);
         // Offset by staggered point
-        rct += pntCtr;
+        rct.Offset(pntCtr);
         // Combine with master rect.
         if (i == size_t(0))
             rctFull = rct;
         else
-            rctFull |= rct;
+            rctFull.Union(rct);
         // Move stagger point along
-        pntCtr += CSize(xDelta, yDelta);
+        pntCtr += wxSize(xDelta, yDelta);
     }
-    return rctFull.Size();
+    return rctFull.GetSize();
 }
 
 ///////////////////////////////////////////////////////////////////////
