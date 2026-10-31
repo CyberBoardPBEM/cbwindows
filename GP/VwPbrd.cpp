@@ -400,7 +400,7 @@ void CPlayBoardView::OnUpdate(wxView* pSender, const CGamDocHint& hint)
     else if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         wxRect rct;
-        rct = CB::Convert(ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect());   // In board coords.
+        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(rct);
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
@@ -409,7 +409,7 @@ void CPlayBoardView::OnUpdate(wxView* pSender, const CGamDocHint& hint)
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
             const CDrawObj& pDObj = *pPtrList[i];
-            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());  // In board coords.
+            wxRect rct = pDObj.GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(rct);
         }
     }
@@ -2126,7 +2126,7 @@ void CPlayBoardView::OnMessageRotateRelative(RotatePieceDeltaEvent& event)
             // Calculate new rotated mid-point for object.
             wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                 m_tblMidPnt[i], nRelativeRotation);
-            wxPoint sizeDelta = pntRotate - GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+            wxPoint sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
             pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
         }
     }
@@ -2177,7 +2177,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         if (m_bWheelRotation &&
             (pDObj.GetType() == CDrawObj::drawPieceObj || pDObj.GetType() == CDrawObj::drawMarkObj))
         {
-            wxPoint midPoint = GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+            wxPoint midPoint = GetMidRect(pDObj.GetEnclosingRect());
             m_tblMidPnt.push_back(midPoint);
         }
     }
@@ -2228,7 +2228,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
         {
             // Restore original position
             wxPoint sizeDelta = m_tblMidPnt[i] -
-                GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+                GetMidRect(pDObj.GetEnclosingRect());
             pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
         }
     }
@@ -2260,7 +2260,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
                 // Calculate new rotated mid-point for object.
                 wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                     m_tblMidPnt[i], dlg.m_nRelativeRotation);
-                wxPoint sizeDelta = pntRotate - GetMidRect(CB::Convert(pDObj.GetEnclosingRect()));
+                wxPoint sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
                 pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
             }
         }

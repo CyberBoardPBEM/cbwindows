@@ -153,7 +153,7 @@ void CTinyBoardView::OnUpdate(wxView* sender, const CGamDocHint& hint)
     if (lHint == HINT_UPDATEOBJECT && ph->GetArgs<HINT_UPDATEOBJECT>().m_pPBoard == m_pPBoard)
     {
         wxRect rct;
-        rct = CB::Convert(ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect());   // In board coords.
+        rct = ph->GetArgs<HINT_UPDATEOBJECT>().m_pDrawObj->GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(rct);
     }
     else if (lHint == HINT_UPDATEOBJLIST && ph->GetArgs<HINT_UPDATEOBJLIST>().m_pPBoard == m_pPBoard)
@@ -163,7 +163,7 @@ void CTinyBoardView::OnUpdate(wxView* sender, const CGamDocHint& hint)
         for (size_t i = size_t(0); i < pPtrList.size(); ++i)
         {
             const CDrawObj& pDObj = *pPtrList[i];
-            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());  // In board coords.
+            wxRect rct = pDObj.GetEnclosingRect();  // In board coords.
             InvalidateWorkspaceRect(rct);
         }
     }

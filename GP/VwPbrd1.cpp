@@ -101,7 +101,7 @@ void CPlayBoardView::DoToolTipHitProcessing(wxPoint pointClient)
         if (pDObj != NULL)
         {
             // New object found so create a new tip
-            wxRect rct = CB::Convert(pDObj->GetRect());
+            wxRect rct = pDObj->GetRect();
             rct = WorkspaceToClient(rct);
 
             CB::string strTip;
@@ -213,7 +213,7 @@ void CPlayBoardView::NotificationTipTimeoutHandler(wxTimerEvent& /*event*/)
 CDrawObj* CPlayBoardView::ObjectHitTest(wxPoint point)
 {
     CDrawList& pDwg = CheckedDeref(m_pPBoard->GetPieceList());
-    return pDwg.HitTest(CB::Convert(point));
+    return pDwg.HitTest(point);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -230,9 +230,9 @@ void CPlayBoardView::SelectWithinRect(wxRect rctNet, BOOL bInclIntersects)
         if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
-                ((CB::Convert(pObj.GetEnclosingRect()).Union(rctNet)) == rctNet)) ||
+                ((pObj.GetEnclosingRect().Union(rctNet)) == rctNet)) ||
                 (bInclIntersects &&
-                (!(CB::Convert(pObj.GetEnclosingRect()).Intersect(rctNet)).IsEmpty())))
+                (!(pObj.GetEnclosingRect().Intersect(rctNet)).IsEmpty())))
             {
                 BOOL bOwnedByCurrentPlayer = TRUE;
                 if (pObj.GetType() == CDrawObj::drawPieceObj)
@@ -278,7 +278,7 @@ void CPlayBoardView::SelectAllUnderPoint(wxPoint point)
     BOOL bPieceSelected = FALSE;
 
     std::vector<CB::not_null<CDrawObj*>> selLst;
-    pDwg->DrillDownHitTest(CB::Convert(point), selLst);
+    pDwg->DrillDownHitTest(point, selLst);
 
     for (size_t i = size_t(0) ; i < selLst.size() ; ++i)
     {

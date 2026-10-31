@@ -62,7 +62,7 @@ class CSelection
 // Constructors
 public:
     CSelection(CBrdEditView& pView, CDrawObj& pObj)
-        : m_pView (&pView), m_pObj (&pObj), m_rect (CB::Convert(pObj.GetRect()))     //DFM19991221
+        : m_pView (&pView), m_pObj (&pObj), m_rect (pObj.GetRect())     //DFM19991221
     {}                                                                 //DFM19991221
     virtual ~CSelection() {}
 
@@ -122,7 +122,7 @@ class CSelRect : public CSelection
 // Constructors
 public:
     CSelRect(CBrdEditView& pView, CRectObj& pObj) : CSelection(pView, pObj)
-        { m_rect = CB::Convert(pObj.GetRect()); }
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:
@@ -219,7 +219,7 @@ class CSelGeneric : public CSelection
 // Constructors
 public:
     CSelGeneric(CBrdEditView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
-        { m_rect = CB::Convert(pObj.GetRect()); }
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:

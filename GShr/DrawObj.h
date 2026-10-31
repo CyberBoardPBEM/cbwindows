@@ -104,22 +104,22 @@ public:
     void  ModifyDObjFlags(DWORD dwFlags, BOOL bState)
         { if (bState) SetDObjFlags(dwFlags); else ClearDObjFlags(dwFlags); }
 
-    virtual CRect GetRect() const /* override */ = 0;
-    virtual void SetRect(const CRect& rct) /* override */ = 0;
+    virtual wxRect GetRect() const /* override */ = 0;
+    virtual void SetRect(const wxRect& rct) /* override */ = 0;
 
-    virtual CRect GetEnclosingRect() const /* override */ { return GetRect(); }
+    virtual wxRect GetEnclosingRect() const /* override */ { return GetRect(); }
     // non-const due to CBitmapImage::Draw()
-    virtual BOOL HitTest(CPoint pt) /* override */ { return FALSE; }
+    virtual BOOL HitTest(wxPoint pt) /* override */ { return FALSE; }
 #ifdef GPLAY
     virtual ObjectID GetObjectID() const /* override */;
-    virtual void MoveObject(CPoint ptUpLeft) /* override */;
+    virtual void MoveObject(wxPoint ptUpLeft) /* override */;
     /* N.B.:  only for use in serializing GeoBoards,
                 not general purpose rotate */
     virtual void Rotate(Rotation90 rot) /* override */;
 #endif
-    virtual void OffsetObject(CPoint offset) /* override */;
+    virtual void OffsetObject(wxPoint offset) /* override */;
     // ----- //
-    virtual BOOL IsVisible(const RECT& pClipRct) const /* override */;
+    virtual BOOL IsVisible(const wxRect& pClipRct) const /* override */;
     virtual CDrawObjType GetType() const /* override */ = 0;
     // ----- //
     // Some functions that may or may not mean anything to the
@@ -142,7 +142,7 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) /* override */ = 0;
+    virtual void ForceIntoZone(const wxRect& pRctZone) /* override */ = 0;
 #endif
     virtual OwnerPtr Clone() const /* override */ { AfxThrowInvalidArgException(); }
 #ifdef GPLAY
@@ -154,7 +154,7 @@ public:
 
 // Implementation - methods
 protected:
-    BOOL IsExtentOutOfZone(const CRect& pRctZone, CPoint& pntOffset) const;
+    BOOL IsExtentOutOfZone(const wxRect& pRctZone, wxPoint& pntOffset) const;
     // ------- //
     struct SetUpDrawResult
     {
@@ -162,7 +162,7 @@ protected:
         wxDCBrushChanger setBrush;
     };
     virtual SetUpDrawResult SetUpDraw(wxDC& pDC) const /* override */;
-    virtual BOOL BitBlockHitTest(CPoint pt) /* override */;
+    virtual BOOL BitBlockHitTest(wxPoint pt) /* override */;
     virtual UINT GetLineWidth() const /* override */ { return 0; }
     virtual wxColour GetLineColor() const /* override */ { return noColorWx; }
     virtual wxColour GetFillColor() const /* override */ { return noColorWx; }
@@ -587,14 +587,14 @@ public:
 class CDrawObj_SimplRctExtent : public CDrawObj
 {
 public:
-    CDrawObj_SimplRctExtent() { m_rctExtent.SetRectEmpty(); }
-    CRect GetRect() const override { return m_rctExtent; }
-    void SetRect(const CRect& rct) override { m_rctExtent = rct; }
+    CDrawObj_SimplRctExtent() { m_rctExtent = wxRect(); }
+    wxRect GetRect() const override { return m_rctExtent; }
+    void SetRect(const wxRect& rct) override { m_rctExtent = rct; }
 
 protected:
     void CopyAttributes(const CDrawObj_SimplRctExtent& source);
 
-    CRect m_rctExtent;
+    wxRect m_rctExtent;
 };
 
 class CRectObj : public CDrawObj_SimplRctExtent
@@ -610,7 +610,7 @@ public:
     wxColour m_crLine;
     UINT     m_nLineWidth;
 
-    virtual CRect GetEnclosingRect() const override;
+    virtual wxRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawRect; }
 
     virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
@@ -623,13 +623,13 @@ public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #endif
     // ------- //
     virtual OwnerPtr Clone() const override;                  //DFM19991210
@@ -678,32 +678,38 @@ public:
     CLine() { m_crLine = *wxBLACK; m_nLineWidth = 0; }
 // Attributes
 public:
-    CPoint  m_ptBeg;
-    CPoint  m_ptEnd;
+    wxPoint  m_ptBeg;
+    wxPoint  m_ptEnd;
 
     wxColour m_crLine;
     UINT     m_nLineWidth;
 
     void SetLine(int xBeg, int yBeg, int xEnd, int yEnd);
-    void GetLine(CRect& rct) const
+#if 1   // TODO:  remove test
+    void GetLineMfc(CRect& rct) const
         { rct.left =m_ptBeg.x; rct.top = m_ptBeg.y;
             rct.right = m_ptEnd.x; rct.bottom = m_ptEnd.y; }
+#endif
     wxRect GetLine() const
     {
         wxRect retval(wxPoint(m_ptBeg.x, m_ptBeg.y),
                         wxSize(m_ptEnd.x - m_ptBeg.x, m_ptEnd.y - m_ptBeg.y));
+#if 1   // TODO:  remove test
         CRect check;
-        GetLine(check);
-        wxASSERT(retval == CB::Convert(check));
+        GetLineMfc(check);
+        wxASSERT(CB::Convert(retval) == check);
+#endif
         return retval;
     }
 
+#if 0
     void GetLine(long& xBeg, long& yBeg, long& xEnd, long& yEnd)
         { xBeg = m_ptBeg.x; yBeg = m_ptBeg.y; xEnd = m_ptEnd.x; yEnd = m_ptEnd.y; }
     void GetLine(POINT& ptBeg, POINT& ptEnd)
         { ptBeg = m_ptBeg; ptEnd = m_ptEnd; }
+#endif
 
-    virtual CRect GetEnclosingRect() const override;
+    virtual wxRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawLine; }
 
     virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
@@ -714,7 +720,7 @@ public:
 public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifdef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
 #else
@@ -722,11 +728,11 @@ public:
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #else
     virtual void Rotate(Rotation90 rot) override;
 #endif
-    virtual void OffsetObject(CPoint offset) override;       //DFM19991221
+    virtual void OffsetObject(wxPoint offset) override;       //DFM19991221
     // ------- //
     virtual OwnerPtr Clone(void) const override;                  //DFM19991210
 #ifdef GPLAY
@@ -754,9 +760,9 @@ public:
     wxColour m_crFill;
     wxColour m_crLine;
     UINT     m_nLineWidth;
-    std::vector<POINT> m_Pnts;
+    std::vector<wxPoint> m_Pnts;
 
-    virtual CRect GetEnclosingRect() const override;
+    virtual wxRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawPolygon; }
 
     virtual BOOL SetForeColor(wxColour cr) override { m_crLine = cr; return TRUE; }
@@ -766,25 +772,25 @@ public:
 
 // Operations
 public:
-    void AddPoint(CPoint pnt);
-    void SetNewPolygon(const std::vector<POINT>& pnts);
+    void AddPoint(wxPoint pnt);
+    void SetNewPolygon(const std::vector<wxPoint>& pnts);
 
 // Overrides
 public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
 
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #else
     virtual void Rotate(Rotation90 rot) override;
 #endif
-    virtual void OffsetObject(CPoint offset) override; //DFM19991221
+    virtual void OffsetObject(wxPoint offset) override; //DFM19991221
     // ------- //
     virtual OwnerPtr Clone() const override;
 
@@ -827,13 +833,13 @@ public:
 public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #else
     virtual void Rotate(Rotation90 rot) override;
 #endif
@@ -846,7 +852,7 @@ public:
 
 private:
     int m_geoRot = 0;
-    CSize m_geoOffset = CSize(0, 0);
+    wxSize m_geoOffset = wxSize(0, 0);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -869,13 +875,13 @@ public:
 
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #else
     virtual void Rotate(Rotation90 rot) override;
 #endif
@@ -887,14 +893,14 @@ public:
     virtual void Serialize(CArchive& ar) override;
 
 protected:
-    void SynchronizeExtentRect(CSize sizeWorld, CSize sizeView);
+    void SynchronizeExtentRect(wxSize sizeWorld, wxSize sizeView);
     void SynchronizeExtentRect(const wxDC& dc)
     {
         double xScale, yScale;
         dc.GetUserScale(&xScale, &yScale);
         wxSize sizeWorld(10000, 10000);
         wxSize sizeView(static_cast<int>(10000 * xScale), static_cast<int>(10000 * yScale));
-        SynchronizeExtentRect(CB::Convert(sizeWorld), CB::Convert(sizeView));
+        SynchronizeExtentRect(sizeWorld, sizeView);
     }
 };
 
@@ -917,13 +923,13 @@ public:
 public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
 #ifndef GPLAY
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CBrdEditView& pView) override;
 #endif
     // ------- //
 #ifndef GPLAY
-    virtual void ForceIntoZone(const CRect& pRctZone) override;
+    virtual void ForceIntoZone(const wxRect& pRctZone) override;
 #else
     virtual void Rotate(Rotation90 rot) override;
 #endif
@@ -950,8 +956,8 @@ public:
     CPieceObj() { m_pid = nullPid; m_pDoc = NULL; }
     CPieceObj(CGamDoc* pDoc) { m_pid = nullPid; m_pDoc = pDoc; }
 
-    CRect GetRect() const override;
-    void SetRect(const CRect& rct) override;
+    wxRect GetRect() const override;
+    void SetRect(const wxRect& rct) override;
 
 // Attributes
 public:
@@ -959,7 +965,7 @@ public:
     CGamDoc*        m_pDoc;
 
 
-    void SetPiece(const CRect& rct, PieceID pid);
+    void SetPiece(const wxRect& rct, PieceID pid);
 
     BOOL IsOwned() const;
     BOOL IsOwnedBy(PlayerMask dwMask) const;
@@ -971,12 +977,12 @@ public:
 
 // Operations
 private:
-    CSize GetSize() const;
+    wxSize GetSize() const;
 
 public:
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
@@ -984,7 +990,7 @@ public:
     virtual void Serialize(CArchive& ar) override;
 
 private:
-    CPoint m_center;
+    wxPoint m_center;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -1023,7 +1029,7 @@ public:
     MarkID          m_mid;
     CGamDoc*        m_pDoc;
 
-    void SetMark(CRect& rct, MarkID mid);
+    void SetMark(const wxRect& rct, MarkID mid);
 
     void SetFacing(uint16_t nFacingDegCW) { m_nFacingDegCW = nFacingDegCW; }
     uint16_t GetFacing() { return m_nFacingDegCW; }
@@ -1044,7 +1050,7 @@ public:
     // ------- //
     virtual void Draw(wxDC& pDC, TileScale eScale) override;
     // Support required by selection processing.
-    virtual BOOL HitTest(CPoint pt) override;
+    virtual BOOL HitTest(wxPoint pt) override;
     virtual ::OwnerPtr<CSelection> CreateSelectProxy(CPlayBoardView& pView) override;
     // ------- //
     virtual OwnerPtr Clone(CGamDoc* pDoc) const override;
@@ -1099,9 +1105,9 @@ public:
         BOOL bApplyVisibility = TRUE, BOOL bDrawPass2Objects = FALSE,
         BOOL bHideUnlocked = FALSE, BOOL bDrawLockedFirst = FALSE);
     // non-const due to CBitmapImage::Draw()
-    CDrawObj* HitTest(CPoint pt, TileScale eScale = (TileScale)AllTileScales,
+    CDrawObj* HitTest(wxPoint pt, TileScale eScale = (TileScale)AllTileScales,
         BOOL bApplyVisibility = TRUE);
-    void DrillDownHitTest(CPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
+    void DrillDownHitTest(wxPoint point, std::vector<CB::not_null<CDrawObj*>>& selLst,
         TileScale eScale = (TileScale)AllTileScales, BOOL bApplyVisibility = TRUE);
 #ifdef GPLAY
     void ArrangePieceTableInDrawOrder(std::vector<PieceID>& pTbl) const;
@@ -1137,12 +1143,12 @@ public:
     CDrawList Clone(CGamDoc* pDoc) const;
     void Restore(CGamDoc* pDoc, const CDrawList& pLst);
     BOOL Compare(const CDrawList& pLst) const;
-    void AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, CPoint pntOffet);
+    void AppendWithRotOffset(const CDrawList& pSourceLst, Rotation90 rot, wxPoint pntOffet);
 #else
     BOOL PurgeMissingTileIDs(CTileManager* pTMgr);
     BOOL IsTileInUse(TileID tid) const;
     // ------- //
-    void ForceIntoZone(const CRect& pRctZone);
+    void ForceIntoZone(const wxRect& pRctZone);
 #endif
     // -------- //
     void Serialize(CArchive& ar);

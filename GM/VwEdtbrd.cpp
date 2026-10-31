@@ -382,7 +382,7 @@ CDrawObj* CBrdEditView::ObjectHitTest(wxPoint point)
 {
     CDrawList* pDwg = GetDrawList(FALSE);
     if (pDwg != NULL)
-        return pDwg->HitTest(CB::Convert(point), m_nZoom, m_pBoard->GetApplyVisible());
+        return pDwg->HitTest(point, m_nZoom, m_pBoard->GetApplyVisible());
     else
         return NULL;
 }
@@ -403,9 +403,9 @@ void CBrdEditView::SelectWithinRect(wxRect rctNet, BOOL bInclIntersects)
         if (!m_selList.IsObjectSelected(pObj))
         {
             if ((!bInclIntersects &&
-                ((CB::Convert(pObj.GetEnclosingRect()) + rctNet) == rctNet)) ||
+                ((pObj.GetEnclosingRect() + rctNet) == rctNet)) ||
                 (bInclIntersects &&
-                (!(CB::Convert(pObj.GetEnclosingRect()) * rctNet).IsEmpty())))
+                (!(pObj.GetEnclosingRect() * rctNet).IsEmpty())))
             {
                 m_selList.AddObject(pObj, TRUE);
             }
@@ -420,7 +420,7 @@ void CBrdEditView::SelectAllUnderPoint(wxPoint point)
         return;
 
     std::vector<CB::not_null<CDrawObj*>> selLst;
-    pDwg->DrillDownHitTest(CB::Convert(point), selLst, m_nZoom,
+    pDwg->DrillDownHitTest(point, selLst, m_nZoom,
         m_pBoard->GetApplyVisible());
 
     for (size_t i = size_t(0) ; i < selLst.size() ; ++i)
@@ -980,7 +980,7 @@ void CBrdEditView::SetDrawingTile(CDrawList& pDwg, TileID tid, wxPoint pnt,
     }
     if (bUpdate)
     {
-        wxRect rct = CB::Convert(pDwg.Front().GetEnclosingRect());   // In board coords.
+        wxRect rct = pDwg.Front().GetEnclosingRect();   // In board coords.
         InvalidateWorkspaceRect(rct);
     }
     GetDocument().SetModifiedFlag();
@@ -1110,13 +1110,13 @@ void CBrdEditView::DoEditTextDrawingObject(CText& pDObj)
     {
         if (!dlg.m_strText.empty())
         {
-            wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
+            wxRect rct = pDObj.GetEnclosingRect();
             InvalidateWorkspaceRect(rct);
 
             pDObj.m_text = dlg.m_strText;
             pDObj.SetFont(dlg.m_fontID);   // Also resyncs the extent rect
 
-            rct = CB::Convert(pDObj.GetEnclosingRect());
+            rct = pDObj.GetEnclosingRect();
             InvalidateWorkspaceRect(rct);
             GetDocument().SetModifiedFlag();
         }
@@ -1131,16 +1131,16 @@ void CBrdEditView::CreateTextDrawingObject(wxPoint pnt, FontID fid,
         AdjustPoint(pnt);
         pText->SetText(pnt.x, pnt.y, strText, fid, crText);
 
-        wxRect rct = CB::Convert(pText->GetRect());
+        wxRect rct = pText->GetRect();
         AdjustRect(rct);
-        pText->SetRect(CB::Convert(rct));
+        pText->SetRect(rct);
 
         GetDrawList(TRUE)->AddToFront(std::move(pText));
     }
     GetDocument().SetModifiedFlag();
     if (bInvalidate)
     {
-        wxRect rct = CB::Convert(GetDrawList(TRUE)->Front().GetEnclosingRect());
+        wxRect rct = GetDrawList(TRUE)->Front().GetEnclosingRect();
         InvalidateWorkspaceRect(rct);
     }
 }
@@ -1636,7 +1636,7 @@ void CBrdEditView::OnEditPaste(wxCommandEvent& /*event*/)
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList().AddObject(pDObj, TRUE);
-    wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
+    wxRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(rct);
 }
 
@@ -1687,7 +1687,7 @@ void CBrdEditView::OnEditPasteBitmapFromFile(wxCommandEvent& /*event*/)
     }
     CDrawObj& pDObj = GetDrawList(FALSE)->Front();
     GetSelectList().AddObject(pDObj, TRUE);
-    wxRect rct = CB::Convert(pDObj.GetEnclosingRect());
+    wxRect rct = pDObj.GetEnclosingRect();
     InvalidateWorkspaceRect(rct);
 }
 
@@ -2154,10 +2154,10 @@ void CBrdEditView::NudgeObjsInSelectList(int dX, int dY, BOOL forceScroll)
         pSel.Offset(offset);
         AdjustRect(pSel.m_rect);
 
-        pSel.m_pObj->OffsetObject(CB::Convert(offset));
-        wxRect temp = CB::Convert(pSel.m_pObj->GetRect());
+        pSel.m_pObj->OffsetObject(offset);
+        wxRect temp = pSel.m_pObj->GetRect();
         AdjustRect(temp);
-        pSel.m_pObj->SetRect(CB::Convert(temp));
+        pSel.m_pObj->SetRect(temp);
     }
 
     m_selList.InvalidateList();

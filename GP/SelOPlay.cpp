@@ -146,9 +146,9 @@ CRect CSelection::GetHandleRect(int nHandleID) const
 
 void CSelection::Invalidate()
 {
-    CRect rct = m_rect;
+    wxRect rct = CB::Convert(m_rect);
     rct = m_pObj->GetEnclosingRect();
-    m_pView->InvalidateWorkspaceRect(CB::Convert(rct), FALSE);
+    m_pView->InvalidateWorkspaceRect(rct, FALSE);
 }
 
 void CSelection::Open()
@@ -247,11 +247,9 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     CLine& pObj = static_cast<CLine&>(*m_pObj);
     if (bInvalidate)
     {
-        wxRect rctA = CB::Convert(pObj.GetEnclosingRect());
-        CRect rctBMfc;
-        pObj.GetLine(rctBMfc);
-        rctBMfc.NormalizeRect();
-        wxRect rctB = CB::Convert(rctBMfc);
+        wxRect rctA = pObj.GetEnclosingRect();
+        wxRect rctB = pObj.GetLine();
+        CB::Normalize(rctB);
         rctB = m_pView->WorkspaceToClient(rctB);
         rctB.Inflate(handleHalfWidth, handleHalfWidth);
         rctB = m_pView->ClientToWorkspace(rctB);
@@ -268,12 +266,12 @@ void CSelLine::UpdateObject(BOOL bInvalidate,
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        pObj.GetLine(m_rect);
+        m_rect = CB::Convert(pObj.GetLine());
     }
     if (bInvalidate)
     {
-        CRect rct = pObj.GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(CB::Convert(rct));
+        wxRect rct = pObj.GetEnclosingRect();
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 
@@ -316,7 +314,7 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
 {
     if (bInvalidate)
     {
-        wxRect rct = CB::Convert(m_pObj->GetRect());
+        wxRect rct = m_pObj->GetRect();
         rct = m_pView->WorkspaceToClient(rct);
         rct.Inflate(handleHalfWidth, handleHalfWidth);
         rct = m_pView->ClientToWorkspace(rct);
@@ -326,18 +324,18 @@ void CSelGeneric::UpdateObject(BOOL bInvalidate,
     {
         // Normal case is when object needs to be updated.
         m_rect.NormalizeRect();
-        m_pObj->SetRect(m_rect);
+        m_pObj->SetRect(CB::Convert(m_rect));
     }
     else
     {
         // Degenerate case when an operation on an object changed
         // its size and the select rect must reflect this.
-        m_rect = m_pObj->GetRect();
+        m_rect = CB::Convert(m_pObj->GetRect());
     }
     if (bInvalidate)
     {
-        CRect rct = m_pObj->GetEnclosingRect();
-        m_pView->InvalidateWorkspaceRect(CB::Convert(rct));
+        wxRect rct = m_pObj->GetEnclosingRect();
+        m_pView->InvalidateWorkspaceRect(rct);
     }
 }
 

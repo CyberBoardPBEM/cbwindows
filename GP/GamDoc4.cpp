@@ -637,7 +637,7 @@ void CGamDoc::IndicateBoardPiece(CPlayBoard& pPBrd, CPoint ptCtr, CSize size)
     rct += ptCtr - offset;
     rct.InflateRect(borderWidth + 1, borderWidth + 1);
     CRectObj* pObj = new CRectObj;
-    pObj->SetRect(&rct);
+    pObj->SetRect(CB::Convert(rct));
     pObj->SetForeColor(pPBrd.m_crPlotLineColor);
     pObj->SetBackColor(noColorWx);
     pObj->SetLineWidth(borderWidth);
