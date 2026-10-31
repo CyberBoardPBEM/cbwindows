@@ -516,7 +516,7 @@ CB::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
     }
     else
     {
-        return m_pGeoBoard->GetCellNumberStr(pnt, eScale);
+        return m_pGeoBoard->GetCellNumberStr(CB::Convert(pnt), eScale);
     }
 }
 
