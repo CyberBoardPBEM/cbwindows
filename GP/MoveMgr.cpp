@@ -105,7 +105,7 @@ bool CMoveRecord::IsPrivateBoard(CGamDoc& pDoc, const CPlayBoard& pbrd)
 /////////////////////////////////////////////////////////////////////
 // CBoardPieceMove methods....
 
-CBoardPieceMove::CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt,
+CBoardPieceMove::CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, wxPoint pnt,
     PlacePos ePos)
 {
     m_eType = mrecPMove;
@@ -141,7 +141,7 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
         pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
-        pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, CB::Convert(m_ptCtr),
+        pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().GetSize());
     }
     else
@@ -157,18 +157,18 @@ void CBoardPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
-    pDoc.EnsureBoardLocationVisible(pPBrdDest, CB::Convert(m_ptCtr));
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
 
     if (pDoc.FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
     {
         wxRect rct = pObj->GetRect();
-        wxPoint size = CB::Convert(m_ptCtr) - GetMidRect(rct);
+        wxPoint size = m_ptCtr - GetMidRect(rct);
         pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, wxSize(size.x, size.y), m_ePos);
     }
     else
     {
-        pDoc.PlacePieceOnBoard(CB::Convert(m_ptCtr), m_pid, &pPBrdDest);
-        VERIFY(pDoc.FindPieceOnBoard(m_pid, pObj) != NULL);
+        pDoc.PlacePieceOnBoard(m_ptCtr, m_pid, &pPBrdDest);
+        CB_VERIFY(pDoc.FindPieceOnBoard(m_pid, pObj) != NULL);
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
@@ -880,7 +880,7 @@ void CMarkerSetFacing::DumpToTextFile(const CGamDoc& /*pDoc*/, CFile& file) cons
 // CBoardMarkerMove methods....
 
 CBoardMarkerMove::CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID mid,
-    CPoint pnt, PlacePos ePos)
+    wxPoint pnt, PlacePos ePos)
 {
     m_eType = mrecMMove;
     // ------- //
@@ -903,7 +903,7 @@ void CBoardMarkerMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
         pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
-        pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, ptCtr, CB::Convert(m_ptCtr),
+        pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, ptCtr, m_ptCtr,
             pObj->GetRect().GetSize());
     }
     else
@@ -915,7 +915,7 @@ void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
-    pDoc.EnsureBoardLocationVisible(pPBrdDest, CB::Convert(m_ptCtr));
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
 
     CDrawObj* pObj;
     CPlayBoard* pPBrdFrom = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
@@ -923,13 +923,13 @@ void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     if (pPBrdFrom != NULL)
     {
         wxRect rct = pObj->GetRect();
-        wxPoint size = CB::Convert(m_ptCtr) - GetMidRect(rct);
+        wxPoint size = m_ptCtr - GetMidRect(rct);
         pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, wxSize(size.x, size.y), m_ePos);
     }
     else
     {
         // Need to create since doesn't currently exist
-        pObj = &pDoc.CreateMarkerObject(&pPBrdDest, m_mid, CB::Convert(m_ptCtr), m_dwObjID);
+        pObj = &pDoc.CreateMarkerObject(&pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
@@ -1429,8 +1429,8 @@ void CMovePlotList::SavePlotList(const CDrawList& pDwg)
         if (pObj.GetType() == CDrawObj::drawLine)
         {
             const CLine& pLObj = static_cast<const CLine&>(pObj);
-            m_tblPlot.push_back(CB::Convert(pLObj.m_ptBeg));
-            m_tblPlot.push_back(CB::Convert(pLObj.m_ptEnd));
+            m_tblPlot.push_back(pLObj.m_ptBeg);
+            m_tblPlot.push_back(pLObj.m_ptEnd);
         }
     }
 }
@@ -1441,8 +1441,8 @@ void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     pPBrd.SetPlotMoveMode(TRUE);
     for (size_t i = size_t(0) ; i < m_tblPlot.size() ; i += size_t(2))
     {
-        wxPoint ptA(CB::Convert(m_tblPlot.at(i)));
-        wxPoint ptB(CB::Convert(m_tblPlot.at(i+size_t(1))));
+        wxPoint ptA(m_tblPlot.at(i));
+        wxPoint ptB(m_tblPlot.at(i+size_t(1)));
         pDoc.IndicateBoardPlotLine(pPBrd, ptA, ptB);
     }
 }
@@ -1464,7 +1464,7 @@ void CMovePlotList::Serialize(CArchive& ar)
         temp.reserve(m_tblPlot.size());
         for (size_t i = size_t(0) ; i < m_tblPlot.size() ; ++i)
         {
-            const CPoint& pnt = m_tblPlot[i];
+            const wxPoint& pnt = m_tblPlot[i];
             temp.push_back(WIN_MAKELONG(value_preserving_cast<int16_t>(pnt.x),
                                     value_preserving_cast<int16_t>(pnt.y)));
         }
