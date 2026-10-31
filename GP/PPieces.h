@@ -148,10 +148,10 @@ public:
     std::vector<TileID> GetInactiveTileIDs(PieceID pid) const;
     std::vector<TileID> GetInactiveTileIDs(PieceID pid, BOOL bWithFacing);
 
-    CSize GetPieceSize(PieceID pid) const;
-    CSize GetPieceSize(PieceID pid, BOOL bWithFacing);
-    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const;
-    CSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing);
+    wxSize GetPieceSize(PieceID pid) const;
+    wxSize GetPieceSize(PieceID pid, BOOL bWithFacing);
+    wxSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta) const;
+    wxSize GetStackedSize(const std::vector<PieceID>& pTbl, int xDelta, int yDelta, BOOL bWithFacing);
 
     void CreatePlayingPieceTable();
     void SetPieceUnused(PieceID pid);
