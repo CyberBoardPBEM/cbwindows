@@ -137,12 +137,12 @@ void CBoardPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     if (pDoc.FindPieceCurrentLocation(m_pid, pTray, pPBoard, pObj))
     {
         wxRect rct = pObj->GetRect();
-        CPoint ptCtr = CB::Convert(GetMidRect(rct));
+        wxPoint ptCtr = GetMidRect(rct);
         pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
-        pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, m_ptCtr,
-            CB::Convert(pObj->GetRect().GetSize()));
+        pDoc.IndicateBoardToBoardPieceMove(CheckedDeref(pPBoard), pPBrdDest, ptCtr, CB::Convert(m_ptCtr),
+            pObj->GetRect().GetSize());
     }
     else
         pDoc.SelectTrayItem(*pTray, m_pid);
@@ -157,22 +157,22 @@ void CBoardPieceMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
-    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, CB::Convert(m_ptCtr));
 
     if (pDoc.FindPieceCurrentLocation(m_pid, pTrayFrom, pPBrdFrom, pObj))
     {
         wxRect rct = pObj->GetRect();
         wxPoint size = CB::Convert(m_ptCtr) - GetMidRect(rct);
-        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, CSize(size.x, size.y), m_ePos);
+        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, wxSize(size.x, size.y), m_ePos);
     }
     else
     {
-        pDoc.PlacePieceOnBoard(m_ptCtr, m_pid, &pPBrdDest);
+        pDoc.PlacePieceOnBoard(CB::Convert(m_ptCtr), m_pid, &pPBrdDest);
         VERIFY(pDoc.FindPieceOnBoard(m_pid, pObj) != NULL);
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.IndicateBoardPiece(pPBrdDest, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.IndicateBoardPiece(pPBrdDest, ptCtr, rct.GetSize());
     }
     pDoc.SelectObjectOnBoard(pPBrdDest, pObj);
 }
@@ -300,8 +300,8 @@ void CTrayPieceMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.GetSize());
     }
     else
         pDoc.SelectTrayItem(CheckedDeref(pTray), m_pid);
@@ -422,8 +422,8 @@ void CPieceSetSide::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.GetSize());
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
@@ -593,8 +593,8 @@ void CPieceSetFacing::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.GetSize());
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
@@ -706,15 +706,15 @@ void CPieceSetOwnership::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
         pDoc.SetPieceOwnership(m_pid, m_dwOwnerMask);
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), CB::Convert(ptCtr));
+        pDoc.EnsureBoardLocationVisible(CheckedDeref(pPBoard), ptCtr);
         wxRect newEnclosingRect = pObj->GetEnclosingRect();
         wxRect enclosingRect(oldEnclosingRect);
         CB_VERIFY(!enclosingRect.Union(newEnclosingRect).IsEmpty());
         if (enclosingRect != newEnclosingRect)
         {
-            pDoc.Invalidate(*pPBoard, CB::Convert(enclosingRect));
+            pDoc.Invalidate(*pPBoard, enclosingRect);
         }
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.GetSize());
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
@@ -803,8 +803,8 @@ void CMarkerSetFacing::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, rct.GetSize());
         pDoc.SelectObjectOnBoard(*pPBoard, pObj);
     }
     else
@@ -900,11 +900,11 @@ void CBoardMarkerMove::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
         CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
             GetPBoardBySerial(m_nBrdNum));
-        pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, CB::Convert(ptCtr), m_ptCtr,
-            CB::Convert(pObj->GetRect().GetSize()));
+        pDoc.IndicateBoardToBoardPieceMove(*pPBoard, pPBrdDest, ptCtr, CB::Convert(m_ptCtr),
+            pObj->GetRect().GetSize());
     }
     else
         pDoc.SelectMarkerPaletteItem(m_mid);
@@ -915,7 +915,7 @@ void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     CPlayBoard& pPBrdDest = CheckedDeref(pDoc.GetPBoardManager().
         GetPBoardBySerial(m_nBrdNum));
 
-    pDoc.EnsureBoardLocationVisible(pPBrdDest, m_ptCtr);
+    pDoc.EnsureBoardLocationVisible(pPBrdDest, CB::Convert(m_ptCtr));
 
     CDrawObj* pObj;
     CPlayBoard* pPBrdFrom = pDoc.FindObjectOnBoard(m_dwObjID, pObj);
@@ -924,16 +924,16 @@ void CBoardMarkerMove::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint size = CB::Convert(m_ptCtr) - GetMidRect(rct);
-        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, CSize(size.x, size.y), m_ePos);
+        pDoc.PlaceObjectOnBoard(&pPBrdDest, pObj, wxSize(size.x, size.y), m_ePos);
     }
     else
     {
         // Need to create since doesn't currently exist
-        pObj = &pDoc.CreateMarkerObject(&pPBrdDest, m_mid, m_ptCtr, m_dwObjID);
+        pObj = &pDoc.CreateMarkerObject(&pPBrdDest, m_mid, CB::Convert(m_ptCtr), m_dwObjID);
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.IndicateBoardPiece(pPBrdDest, CB::Convert(ptCtr), CB::Convert(rct.GetSize()));
+        pDoc.IndicateBoardPiece(pPBrdDest, ptCtr, rct.GetSize());
     }
 }
 
@@ -1012,8 +1012,8 @@ void CObjectDelete::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(pObj->GetRect().GetSize()));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().GetSize());
     }
 }
 
@@ -1152,12 +1152,12 @@ void CObjectSetText::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
     {
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(pObj->GetRect().GetSize()));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().GetSize());
 
         // Show a balloon tip so person knows what happened
         if (nMoveWithinGroup == 0)
-            pDoc.IndicateTextTipOnBoard(*pPBoard, CB::Convert(ptCtr), IDS_TIP_OBJTEXTCHG);
+            pDoc.IndicateTextTipOnBoard(*pPBoard, ptCtr, IDS_TIP_OBJTEXTCHG);
     }
 }
 
@@ -1288,8 +1288,8 @@ void CObjectLockdown::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
-        pDoc.IndicateBoardPiece(*pPBoard, CB::Convert(ptCtr), CB::Convert(pObj->GetRect().GetSize()));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
+        pDoc.IndicateBoardPiece(*pPBoard, ptCtr, pObj->GetRect().GetSize());
     }
 }
 
@@ -1316,10 +1316,10 @@ void CObjectLockdown::DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const
 
         wxRect rct = pObj->GetRect();
         wxPoint ptCtr = GetMidRect(rct);
-        pDoc.EnsureBoardLocationVisible(*pPBoard, CB::Convert(ptCtr));
+        pDoc.EnsureBoardLocationVisible(*pPBoard, ptCtr);
 
         // Show a balloon tip so person knows what happened
-        pDoc.IndicateTextTipOnBoard(*pPBoard, CB::Convert(ptCtr),
+        pDoc.IndicateTextTipOnBoard(*pPBoard, ptCtr,
             m_bLockState ? IDS_TIP_OBJLOCKED : IDS_TIP_OBJUNLOCKED);
     }
 }
@@ -1441,8 +1441,8 @@ void CMovePlotList::DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const
     pPBrd.SetPlotMoveMode(TRUE);
     for (size_t i = size_t(0) ; i < m_tblPlot.size() ; i += size_t(2))
     {
-        CPoint ptA(m_tblPlot.at(i));
-        CPoint ptB(m_tblPlot.at(i+size_t(1)));
+        wxPoint ptA(CB::Convert(m_tblPlot.at(i)));
+        wxPoint ptB(CB::Convert(m_tblPlot.at(i+size_t(1))));
         pDoc.IndicateBoardPlotLine(pPBrd, ptA, ptB);
     }
 }
@@ -1567,7 +1567,7 @@ CEventMessageRcd::CEventMessageRcd(CB::string strMsg,
 void CEventMessageRcd::DoMoveCleanup(CGamDoc& pDoc, int nMoveWithinGroup) const
 {
     if (m_bIsBoardEvent)        // Board event message
-        pDoc.EventShowBoardNotification(m_nBoard, CPoint(m_x, m_y), m_strMsg);
+        pDoc.EventShowBoardNotification(m_nBoard, wxPoint(m_x, m_y), m_strMsg);
     else                        // Tray event message
         pDoc.EventShowTrayNotification(m_nTray, m_pieceID, m_strMsg);
 }

@@ -457,8 +457,8 @@ void CPlayBoardView::OnUpdate(wxView* pSender, const CGamDocHint& hint)
     }
     else if (lHint == HINT_INVALIDATERECT && ph->GetArgs<HINT_INVALIDATERECT>().m_pPBoard == m_pPBoard)
     {
-        const CRect& rect = CheckedDeref(ph->GetArgs<HINT_INVALIDATERECT>().m_pRect);
-        InvalidateWorkspaceRect(CB::Convert(rect), true);
+        const wxRect& rect = CheckedDeref(ph->GetArgs<HINT_INVALIDATERECT>().m_pRect);
+        InvalidateWorkspaceRect(rect, true);
     }
     else if (lHint == HINT_GAMESTATEUSED)
     {
@@ -869,7 +869,7 @@ void CPlayBoardView::DoDragPieceList(DragDropEvent& event)
 
         m_selList.PurgeList(TRUE);          // Purge former selections
         GetDocument().AssignNewMoveGroup();
-        GetDocument().PlacePieceListOnBoard(CB::Convert(pnt), pTbl,
+        GetDocument().PlacePieceListOnBoard(pnt, pTbl,
             m_pPBoard->m_xStackStagger, m_pPBoard->m_yStackStagger, m_pPBoard.get());
 
         if (!pDoc.HasPlayers() || !m_pPBoard->IsOwned() ||
@@ -1000,7 +1000,7 @@ void CPlayBoardView::DoDragMarker(DragDropEvent& event)
             {
                 wxSize size = pMMgr.GetMarkSize(tblMarks[value_preserving_cast<size_t>(i)]);
                 CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), tblMarks[value_preserving_cast<size_t>(i)],
-                    CB::Convert(wxPoint(x - size.x / 2, y)), ObjectID());
+                    wxPoint(x - size.x / 2, y), ObjectID());
                 x -= size.x + MARKER_DROP_GAP_X;
                 m_selList.AddObject(pObj, TRUE);
             }
@@ -1018,7 +1018,7 @@ NASTY_GOTO_TARGET:
         pnt = GetMidRect(rct);
 
         pDoc.AssignNewMoveGroup();
-        CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), mid, CB::Convert(pnt), ObjectID());
+        CDrawObj& pObj = pDoc.CreateMarkerObject(m_pPBoard.get(), mid, pnt, ObjectID());
 
         // If marker is set to prompt for text on drop, show the
         // dialog.
@@ -1138,7 +1138,7 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
         pSLst->PurgeList(FALSE);            // Purge source list
 
         pDoc.AssignNewMoveGroup();
-        pDoc.PlaceObjectTableOnBoard(listObjs, CB::Convert(rctObjs.GetTopLeft()), m_pPBoard.get());
+        pDoc.PlaceObjectTableOnBoard(listObjs, rctObjs.GetTopLeft(), m_pPBoard.get());
 
         m_selList.PurgeList(TRUE);          // Purge former selections
 
@@ -1169,7 +1169,7 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
 void CPlayBoardView::AddPiece(wxPoint pnt, PieceID pid)
 {
     wxASSERT(FALSE);      //!!!!NO LONGER USED?!!!!!
-    GetDocument().PlacePieceOnBoard(CB::Convert(pnt), pid, m_pPBoard.get());
+    GetDocument().PlacePieceOnBoard(pnt, pid, m_pPBoard.get());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1700,7 +1700,7 @@ void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
     m_selList.PurgeList(TRUE);              // Purge former selections
 
     GetDocument().AssignNewMoveGroup();
-    GetDocument().PlaceObjectTableOnBoard(CB::Convert(pntCenter), tblObjs,
+    GetDocument().PlaceObjectTableOnBoard(pntCenter, tblObjs,
         xStagger, yStagger, m_pPBoard.get());
 
     // Reselect the pieces.
@@ -1790,7 +1790,7 @@ void CPlayBoardView::OnActToFront(wxCommandEvent& /*event*/)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument().AssignNewMoveGroup();
-    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
+    GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(rct.TopLeft()),
         m_pPBoard.get(), placeTop);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1816,7 +1816,7 @@ void CPlayBoardView::OnActToBack(wxCommandEvent& /*event*/)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument().AssignNewMoveGroup();
-    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.TopLeft(),
+    GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(rct.TopLeft()),
         m_pPBoard.get(), placeBack);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1957,7 +1957,7 @@ void CPlayBoardView::OnActPlotDone()
 
         // Note that PlaceObjectListOnBoard() automatically detects the
         // plotted move case and records that fact.
-        GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(ptPrev), m_pPBoard.get());
+        GetDocument().PlaceObjectTableOnBoard(listObjs, ptPrev, m_pPBoard.get());
         m_selList.PurgeList(TRUE);          // Purge former selections
         SelectAllObjectsInTable(listObjs);  // Select on this board.
     }
@@ -2127,7 +2127,7 @@ void CPlayBoardView::OnMessageRotateRelative(RotatePieceDeltaEvent& event)
             wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                 m_tblMidPnt[i], nRelativeRotation);
             wxPoint sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, wxSize(sizeDelta.x, sizeDelta.y));
         }
     }
 }
@@ -2229,7 +2229,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
             // Restore original position
             wxPoint sizeDelta = m_tblMidPnt[i] -
                 GetMidRect(pDObj.GetEnclosingRect());
-            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
+            pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, wxSize(sizeDelta.x, sizeDelta.y));
         }
     }
     // Restore recording mode if it was active.
@@ -2261,7 +2261,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
                 wxPoint pntRotate = RotatePointAroundPoint(m_pntWheelMid,
                     m_tblMidPnt[i], dlg.m_nRelativeRotation);
                 wxPoint sizeDelta = pntRotate - GetMidRect(pDObj.GetEnclosingRect());
-                pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, CB::Convert(sizeDelta));
+                pDoc.PlaceObjectOnBoard(m_pPBoard.get(), &pDObj, wxSize(sizeDelta.x, sizeDelta.y));
             }
         }
         m_selList.UpdateObjects(TRUE, FALSE);

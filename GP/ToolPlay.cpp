@@ -637,11 +637,11 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
                 pObj.GetType() == CDrawObj::drawMarkObj);
             wxRect rct = pObj.GetRect();
             wxPoint pnt = GetMidRect(rct);
-            pDoc.IndicateBoardPlotLine(pPBrd, CB::Convert(pnt), CB::Convert(point));
+            pDoc.IndicateBoardPlotLine(pPBrd, pnt, point);
         }
     }
     else
-        pDoc.IndicateBoardPlotLine(pPBrd, CB::Convert(pntPrev), CB::Convert(point));
+        pDoc.IndicateBoardPlotLine(pPBrd, pntPrev, point);
     pPBrd.SetPrevPlotPoint(CB::Convert(point));
 }
 

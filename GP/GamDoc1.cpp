@@ -48,12 +48,12 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////////////////////////////////
 // (RECORDS)
-void CGamDoc::PlacePieceOnBoard(CPoint pnt, PieceID pid, CPlayBoard *pPBrd)
+void CGamDoc::PlacePieceOnBoard(wxPoint pnt, PieceID pid, CPlayBoard *pPBrd)
 {
     RecordPieceMoveToBoard(pPBrd, pid, pnt, placeTop);// Record processing
 
     RemovePieceFromCurrentLocation(pid, TRUE);
-    CPieceObj& pObj = pPBrd->AddPiece(pnt, pid);
+    CPieceObj& pObj = pPBrd->AddPiece(CB::Convert(pnt), pid);
 
     // If the destination is owned, force the piece to take on the
     // same ownership. Otherwise, leave it's ownership state alone.
@@ -110,7 +110,7 @@ void CGamDoc::PlacePieceInTray(PieceID pid, CTraySet& pYGrp, size_t nPos)
 // (RECORDS)
 
 void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
-    CSize sizeDelta, PlacePos ePos /* = placeDefault */)
+    wxSize sizeDelta, PlacePos ePos /* = placeDefault */)
 {
     CDrawObj& pObj = *opObj;
     CDrawList* pDwg = pPBrd->GetPieceList();
@@ -121,15 +121,15 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     {
         CPieceObj& pPObj = static_cast<CPieceObj&>(pObj);
         wxRect rctPce = pPObj.GetRect();
-        RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, CB::Convert(GetMidRect(rctPce) +
-            CB::Convert(sizeDelta)), ePos);
+        RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
+            sizeDelta, ePos);
     }
     else if (pObj.GetType() == CDrawObj::drawMarkObj)
     {
         CMarkObj& pMObj = static_cast<CMarkObj&>(pObj);
         wxRect rctMrk = pMObj.GetRect();
         RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
-            CB::Convert(GetMidRect(rctMrk) + CB::Convert(sizeDelta)), ePos);
+            GetMidRect(rctMrk) + sizeDelta, ePos);
     }
     BOOL bOnBoard = pDwg->HasObject(pObj);
     if (ePos == placeDefault && bOnBoard)
@@ -146,7 +146,7 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
     else
         RemoveObjectFromCurrentLocation(pObj);
 
-    pObj.MoveObject(pObj.GetRect().GetTopLeft() + CB::Convert(sizeDelta));
+    pObj.MoveObject(pObj.GetRect().GetTopLeft() + sizeDelta);
 
     if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
         pDwg->AddToFront(std::move(opObj));
@@ -180,14 +180,14 @@ void CGamDoc::PlaceObjectOnBoard(CPlayBoard *pPBrd, CDrawObj::OwnerPtr opObj,
 
 //////////////////////////////////////////////////////////////////////
 // (RECORDS) { EVENTUALLY USE ABOVE CODE!!!??? }
-void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, CPoint pntUpLeft,
+void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>& pLst, wxPoint pntUpLeft,
     CPlayBoard *pPBrd, PlacePos ePos /* = placeDefault */)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
-    ASSERT(pDwg);
-    CRect rct;
+    wxASSERT(pDwg);
+    wxRect rct;
     FindObjectTableUnionRect(ToRefPtr(pLst), rct);
-    CSize size(pntUpLeft.x - rct.left, pntUpLeft.y - rct.top);
+    wxSize size(pntUpLeft.x - rct.GetLeft(), pntUpLeft.y - rct.GetTop());
 
     if (pPBrd->GetPlotMoveMode())
         RecordPlotList(pPBrd);
@@ -293,15 +293,15 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
         {
             const CPieceObj& pPObj = static_cast<const CPieceObj&>(pObj);
             wxRect rctPce = pPObj.GetRect();
-            RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, CB::Convert(GetMidRect(rctPce) +
-                CB::Convert(size)), ePos);
+            RecordPieceMoveToBoard(pPBrd, pPObj.m_pid, GetMidRect(rctPce) +
+                size, ePos);
         }
         else if (pObj.GetType() == CDrawObj::drawMarkObj)
         {
             const CMarkObj& pMObj = static_cast<const CMarkObj&>(pObj);
             wxRect rctMrk = pMObj.GetRect();
             RecordMarkMoveToBoard(pPBrd, pMObj.GetObjectID(), pMObj.m_mid,
-                CB::Convert(GetMidRect(rctMrk) + CB::Convert(size)), ePos);
+                GetMidRect(rctMrk) + size, ePos);
         }
 
         BOOL bOnBoard = pDwg->HasObject(pObj);
@@ -319,7 +319,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
         else
             RemoveObjectFromCurrentLocation(pObj);
 
-        pObj.MoveObject(pObj.GetRect().GetTopLeft() + CB::Convert(size));
+        pObj.MoveObject(pObj.GetRect().GetTopLeft() + size);
 
         if (ePos == placeTop || (!bOnBoard && ePos == placeDefault))
             pDwg->AddToFront(&pObj);
@@ -346,7 +346,7 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
+void CGamDoc::PlaceObjectTableOnBoard(wxPoint pnt, const std::vector<CB::not_null<CDrawObj*>>& pTbl,
     int xStagger, int yStagger, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
@@ -354,13 +354,13 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null
     if (pTbl.size() & 1)
     {
         // Odd number of pieces
-        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
+        pnt += wxSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
             yStagger * (value_preserving_cast<int>(pTbl.size()) / 2));
     }
     else
     {
         // Even number of pieces
-        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
+        pnt += wxSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
             yStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - yStagger / 2);
         pnt.x -= xStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
         pnt.y -= yStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
@@ -368,9 +368,9 @@ void CGamDoc::PlaceObjectTableOnBoard(CPoint pnt, const std::vector<CB::not_null
     for (size_t i = pTbl.size(); i > 0; i--)
     {
         CDrawObj& pDObj = *pTbl.at(i - size_t(1));
-        wxPoint sizeDelta = CB::Convert(pnt) - GetMidRect(pDObj.GetRect());
-        PlaceObjectOnBoard(pPBrd, &pDObj, CSize(sizeDelta.x, sizeDelta.y), placeTop);
-        pnt -= CSize(xStagger, yStagger);
+        wxPoint sizeDelta = pnt - GetMidRect(pDObj.GetRect());
+        PlaceObjectOnBoard(pPBrd, &pDObj, wxSize(sizeDelta.x, sizeDelta.y), placeTop);
+        pnt -= wxSize(xStagger, yStagger);
     }
 }
 
@@ -385,13 +385,13 @@ void CGamDoc::PlaceObjectTableOnBoard(const std::vector<CB::not_null<CDrawObj*>>
     for (size_t i = pTbl.size(); i > 0; i--)
     {
         CDrawObj& pDObj = *pTbl.at(i - size_t(1));
-        PlaceObjectOnBoard(pPBrd, &pDObj, CSize(0,0), placeTop);
+        PlaceObjectOnBoard(pPBrd, &pDObj, wxSize(0,0), placeTop);
     }
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CGamDoc::PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl,
+void CGamDoc::PlacePieceListOnBoard(wxPoint pnt, const std::vector<PieceID>& pTbl,
     int xStagger, int yStagger, CPlayBoard *pPBrd)
 {
     // Since we want the first entry of the list to be on top
@@ -399,13 +399,13 @@ void CGamDoc::PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl
     if (pTbl.size() & 1)
     {
         // Odd number of pieces
-        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
+        pnt += wxSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2),
             yStagger * (value_preserving_cast<int>(pTbl.size()) / 2));
     }
     else
     {
         // Even number of pieces
-        pnt += CSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
+        pnt += wxSize(xStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - xStagger / 2,
             yStagger * (value_preserving_cast<int>(pTbl.size()) / 2) - yStagger / 2);
         pnt.x -= xStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
         pnt.y -= yStagger & 1 ? 1 : 0;      // Fudge for even/odd round off
@@ -414,7 +414,7 @@ void CGamDoc::PlacePieceListOnBoard(CPoint pnt, const std::vector<PieceID>& pTbl
     {
         PieceID pid = pTbl.at(i - 1);
         PlacePieceOnBoard(pnt, pid, pPBrd);
-        pnt -= CSize(xStagger, yStagger);
+        pnt -= wxSize(xStagger, yStagger);
     }
 }
 
@@ -711,7 +711,7 @@ void CGamDoc::SetPieceOwnershipTable(const std::vector<PieceID>& pTblPieces, Pla
 //////////////////////////////////////////////////////////////////////
 // pnt is center of mark image
 
-CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
+CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, wxPoint pnt,
     ObjectID dwObjID)
 {
     CDrawList* pDwg = pPBrd->GetPieceList();
@@ -726,7 +726,7 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
 
     // Marker is centered on point.
     CTile tile = GetTileManager().GetTile(pMark.m_tid, fullScale);
-    CRect rct(pnt, CB::Convert(tile.GetSize()));
+    CRect rct(CB::Convert(pnt), CB::Convert(tile.GetSize()));
     rct -= CPoint(value_preserving_cast<int>(tile.GetWidth()) / 2, value_preserving_cast<int>(tile.GetHeight()) / 2);
     pPBrd->LimitRectToBoard(rct);
 
@@ -736,7 +736,7 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, CPoint pnt,
         pObj->SetObjectID(dwObjID);
         pObj->SetMark(CB::Convert(rct), mid);
 
-        RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(rct), placeTop);
+        RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(CB::Convert(rct)), placeTop);
 
         // Finally add it to the board's object list.
         pDwg->AddToFront(std::move(pObj));
@@ -897,17 +897,17 @@ void CGamDoc::RemoveObjectFromCurrentLocation(const CDrawObj& pObj)
 
 ////////////////////////////////////////////////////////////////////
 
-void CGamDoc::FindObjectTableUnionRect(const std::vector<RefPtr<CDrawObj>>& pLst, CRect& rct) const
+void CGamDoc::FindObjectTableUnionRect(const std::vector<RefPtr<CDrawObj>>& pLst, wxRect& rct) const
 {
-    rct.SetRectEmpty();
+    rct = wxRect();
 
     for (auto pos = pLst.begin() ; pos != pLst.end() ; ++pos)
     {
         const CDrawObj& pObj = **pos;
-        if (rct.IsRectEmpty())
-            rct = CB::Convert(pObj.GetRect());
+        if (rct.IsEmpty())
+            rct = pObj.GetRect();
         else
-            rct |= CB::Convert(pObj.GetRect());
+            rct.Union(pObj.GetRect());
     }
 }
 

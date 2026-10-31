@@ -311,7 +311,7 @@ const CRollState* CGamDoc::GetDieRollState() const
 // coordinates. If either of the coordinates are -1, the center of
 // the view receives the tip.
 
-void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, const CB::string& strMsg)
+void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, wxPoint pntTipLoc, const CB::string& strMsg)
 {
     if (IsQuietPlayback()) return;
 
@@ -323,16 +323,16 @@ void CGamDoc::EventShowBoardNotification(BoardID nBrdSerNum, CPoint pntTipLoc, c
     {
         EnsureBoardVisible(*pPBoard);
         pView = FindPBoardView(*pPBoard);
-        CRect rct = CB::Convert(pView->GetClientRect());
-        pntTipLoc = rct.CenterPoint();
+        wxRect rct = pView->GetClientRect();
+        pntTipLoc = GetMidRect(rct);
     }
     else
     {
         EnsureBoardLocationVisible(*pPBoard, pntTipLoc);
         pView = FindPBoardView(*pPBoard);
-        pntTipLoc = CB::Convert(pView->WorkspaceToClient(CB::Convert(pntTipLoc)));
+        pntTipLoc = pView->WorkspaceToClient(pntTipLoc);
     }
-    pView->SetNotificationTip(CB::Convert(pntTipLoc), strMsg);
+    pView->SetNotificationTip(pntTipLoc, strMsg);
 }
 
 ////////////////////////////////////////////////////////////////////////////
