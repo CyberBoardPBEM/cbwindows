@@ -306,7 +306,7 @@ void CGamDoc::RecordPieceMoveToBoard(CPlayBoard* pPBrd, PieceID pid, wxPoint pnt
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CBoardPieceMove> pRcd = MakeOwner<CBoardPieceMove>(pPBrd->GetSerialNumber(),
-        pid, CB::Convert(pnt), ePos);
+        pid, pnt, ePos);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 
@@ -412,7 +412,7 @@ void CGamDoc::RecordMarkMoveToBoard(CPlayBoard* pPBrd, ObjectID dwObjID,
     CreateRecordListIfRequired();
     ASSERT(m_pRcdMoves != NULL);
     OwnerPtr<CBoardMarkerMove> pRcd = MakeOwner<CBoardMarkerMove>(pPBrd->GetSerialNumber(),
-        dwObjID, mid, CB::Convert(pnt), ePos);
+        dwObjID, mid, pnt, ePos);
     m_pRcdMoves->AppendMoveRecord(std::move(pRcd));
 }
 

@@ -1,6 +1,6 @@
 // MoveMgr.h
 //
-// Copyright (c) 1994-2023 By Dale L. Larson & William Su, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -106,7 +106,7 @@ class CBoardPieceMove : public CMoveRecord
 {
 public:
     CBoardPieceMove() { m_eType = mrecPMove; }
-    CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, CPoint pnt, PlacePos ePos);
+    CBoardPieceMove(BoardID nBrdSerNum, PieceID pid, wxPoint pnt, PlacePos ePos);
 
     virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
@@ -124,7 +124,7 @@ public:
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
-    CPoint      m_ptCtr;
+    wxPoint     m_ptCtr;
     PieceID     m_pid;
     BoardID     m_nBrdNum;
     PlacePos    m_ePos;
@@ -284,7 +284,7 @@ class CBoardMarkerMove : public CMoveRecord
 public:
     CBoardMarkerMove() { m_eType = mrecMMove; }
     CBoardMarkerMove(BoardID nBrdSerNum, ObjectID dwObjID, MarkID mid,
-        CPoint pnt, PlacePos ePos);
+        wxPoint pnt, PlacePos ePos);
 
     virtual void DoMoveSetup(CGamDoc& pDoc, int nMoveWithinGroup) const override;
     virtual void DoMove(CGamDoc& pDoc, int nMoveWithinGroup) const override;
@@ -299,7 +299,7 @@ public:
     virtual void DumpToTextFile(const CGamDoc& pDoc, CFile& file) const override;
 #endif
 protected:
-    CPoint      m_ptCtr;
+    wxPoint     m_ptCtr;
     ObjectID    m_dwObjID;
     MarkID      m_mid;
     BoardID     m_nBrdNum;
@@ -444,7 +444,7 @@ public:
 #endif
 protected:
     BoardID     m_nBrdNum;
-    std::vector<CPoint> m_tblPlot;
+    std::vector<wxPoint> m_tblPlot;
 };
 
 ///////////////////////////////////////////////////////////////////////
