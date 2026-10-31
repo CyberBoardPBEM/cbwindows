@@ -53,7 +53,7 @@ void CGamDoc::PlacePieceOnBoard(wxPoint pnt, PieceID pid, CPlayBoard *pPBrd)
     RecordPieceMoveToBoard(pPBrd, pid, pnt, placeTop);// Record processing
 
     RemovePieceFromCurrentLocation(pid, TRUE);
-    CPieceObj& pObj = pPBrd->AddPiece(CB::Convert(pnt), pid);
+    CPieceObj& pObj = pPBrd->AddPiece(pnt, pid);
 
     // If the destination is owned, force the piece to take on the
     // same ownership. Otherwise, leave it's ownership state alone.
@@ -726,17 +726,17 @@ CDrawObj& CGamDoc::CreateMarkerObject(CPlayBoard* pPBrd, MarkID mid, wxPoint pnt
 
     // Marker is centered on point.
     CTile tile = GetTileManager().GetTile(pMark.m_tid, fullScale);
-    CRect rct(CB::Convert(pnt), CB::Convert(tile.GetSize()));
-    rct -= CPoint(value_preserving_cast<int>(tile.GetWidth()) / 2, value_preserving_cast<int>(tile.GetHeight()) / 2);
+    wxRect rct(pnt, tile.GetSize());
+    rct.Offset(wxPoint(-value_preserving_cast<int>(tile.GetWidth()) / 2, -value_preserving_cast<int>(tile.GetHeight()) / 2));
     pPBrd->LimitRectToBoard(rct);
 
     // Create the marker object
     {
         OwnerPtr<CMarkObj> pObj(MakeOwner<CMarkObj>(this));
         pObj->SetObjectID(dwObjID);
-        pObj->SetMark(CB::Convert(rct), mid);
+        pObj->SetMark(rct, mid);
 
-        RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(CB::Convert(rct)), placeTop);
+        RecordMarkMoveToBoard(pPBrd, dwObjID, mid, GetMidRect(rct), placeTop);
 
         // Finally add it to the board's object list.
         pDwg->AddToFront(std::move(pObj));

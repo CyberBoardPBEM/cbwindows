@@ -59,7 +59,7 @@ CPlayBoard::CPlayBoard(CGamDoc& doc) :
     m_pIndList = MakeOwner<CDrawList>();
     // ------- //
     m_bPlotMode = FALSE;
-    m_ptPrevPlot = CPoint(-1, -1);
+    m_ptPrevPlot = wxPoint(-1, -1);
     // ------- //
     m_bGridSnap = FALSE;
     m_xGridSnap = 4000u;
@@ -144,7 +144,7 @@ void CPlayBoard::Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale)
 //////////////////////////////////////////////////////////////////////
 // Piece is centered on point.
 
-CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
+CPieceObj& CPlayBoard::AddPiece(wxPoint pnt, PieceID pid)
 {
     CTileManager& pTMgr = m_pDoc->GetTileManager();
     CPieceTable& pPTbl = m_pDoc->GetPieceTable();
@@ -155,13 +155,13 @@ CPieceObj& CPlayBoard::AddPiece(CPoint pnt, PieceID pid)
         pPTbl.SetOwnerMask(pid, GetOwnerMask());// Force piece to be owned by this player
 
     CTile tile = pTMgr.GetTile(tid, fullScale);
-    CRect rct(pnt, CB::Convert(tile.GetSize()));
-    rct -= CPoint(value_preserving_cast<int>(tile.GetWidth()) / 2, value_preserving_cast<int>(tile.GetHeight()) / 2);
+    wxRect rct(pnt, tile.GetSize());
+    rct.Offset(wxPoint(-value_preserving_cast<int>(tile.GetWidth()) / 2, -value_preserving_cast<int>(tile.GetHeight()) / 2));
     LimitRectToBoard(rct);
 
     {
         OwnerPtr<CPieceObj> pObj = MakeOwner<CPieceObj>(&*m_pDoc);
-        pObj->SetPiece(CB::Convert(rct), pid);
+        pObj->SetPiece(rct, pid);
         m_pPceList->AddToFront(std::move(pObj));
     }
     return static_cast<CPieceObj&>(m_pPceList->Front());
@@ -211,16 +211,17 @@ void CPlayBoard::RemoveObject(const CDrawObj& pObj)
 
 //////////////////////////////////////////////////////////////////////
 
-void CPlayBoard::LimitRectToBoard(CRect& rct) const
+void CPlayBoard::LimitRectToBoard(wxRect& rct) const
 {
-    if (rct.right > m_pBoard->GetWidth(fullScale))
-        rct.OffsetRect(m_pBoard->GetWidth(fullScale) - rct.right, 0);
-    if (rct.bottom > m_pBoard->GetHeight(fullScale))
-        rct.OffsetRect(0, m_pBoard->GetHeight(fullScale) - rct.bottom);
-    if (rct.left < 0)
-        rct.OffsetRect(-rct.left, 0);
-    if (rct.top < 0)
-        rct.OffsetRect(0, -rct.top);
+    const WIN_RECT win(rct);
+    if (win.right > m_pBoard->GetWidth(fullScale))
+        rct.Offset(m_pBoard->GetWidth(fullScale) - win.right, 0);
+    if (win.bottom > m_pBoard->GetHeight(fullScale))
+        rct.Offset(0, m_pBoard->GetHeight(fullScale) - win.bottom);
+    if (rct.GetLeft() < 0)
+        rct.Offset(-rct.GetLeft(), 0);
+    if (rct.GetTop() < 0)
+        rct.Offset(0, -rct.GetTop());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -507,16 +508,16 @@ void CPlayBoard::Serialize(CArchive& ar)
     }
 }
 
-CB::string CPlayBoard::GetCellNumberStr(CPoint pnt, TileScale eScale) const
+CB::string CPlayBoard::GetCellNumberStr(wxPoint pnt, TileScale eScale) const
 {
     if (!m_pGeoBoard)
     {
         const CBoardArray& pba = GetBoard()->GetBoardArray();
-        return pba.GetCellNumberStr(CB::Convert(pnt), eScale);
+        return pba.GetCellNumberStr(pnt, eScale);
     }
     else
     {
-        return m_pGeoBoard->GetCellNumberStr(CB::Convert(pnt), eScale);
+        return m_pGeoBoard->GetCellNumberStr(pnt, eScale);
     }
 }
 

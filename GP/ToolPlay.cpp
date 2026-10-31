@@ -623,7 +623,7 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
     if (pPBrd.m_bSnapMovePlot)
         point = pView.AdjustPoint(point);      // Keep on the grid (if enabled)
 
-    wxPoint pntPrev = CB::Convert(pPBrd.GetPrevPlotPoint());
+    wxPoint pntPrev = pPBrd.GetPrevPlotPoint();
 
     if (pntPrev == wxPoint(-1, -1))
     {
@@ -642,7 +642,7 @@ void CPPlotTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
     }
     else
         pDoc.IndicateBoardPlotLine(pPBrd, pntPrev, point);
-    pPBrd.SetPrevPlotPoint(CB::Convert(point));
+    pPBrd.SetPrevPlotPoint(point);
 }
 
 wxCursor CPPlotTool::OnSetCursor(const CPlayBoardView& /*pView*/, const wxPoint& /*point*/) const

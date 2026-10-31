@@ -61,9 +61,9 @@ public:
     CDrawList* GetIndicatorList() { return const_cast<CDrawList*>(std::as_const(*this).GetIndicatorList()); }
     BOOL GetPlotMoveMode() const { return m_bPlotMode; }
     void SetPlotMoveMode(BOOL bPlotMode) { m_bPlotMode = bPlotMode; }
-    void InitPlotStartPoint() { m_ptPrevPlot = CPoint(-1, -1); }
-    CPoint GetPrevPlotPoint() const { return m_ptPrevPlot; }
-    void SetPrevPlotPoint(CPoint pnt) { m_ptPrevPlot = pnt; }
+    void InitPlotStartPoint() { m_ptPrevPlot = wxPoint(-1, -1); }
+    wxPoint GetPrevPlotPoint() const { return m_ptPrevPlot; }
+    void SetPrevPlotPoint(wxPoint pnt) { m_ptPrevPlot = pnt; }
 
     void SetPiecesVisible(BOOL bVisible = TRUE) { m_bPVisible = bVisible; }
     BOOL GetPiecesVisible() const { return m_bPVisible; }
@@ -108,7 +108,7 @@ public:
 public:
     void Draw(wxDC& pDC, const wxRect& pDrawRct, TileScale eScale);
     // ------- //
-    CPieceObj& AddPiece(CPoint pnt, PieceID pid);
+    CPieceObj& AddPiece(wxPoint pnt, PieceID pid);
     const CPieceObj* FindPieceID(PieceID pid) const;
     CPieceObj* FindPieceID(PieceID pid)
     {
@@ -126,7 +126,7 @@ public:
     // ------- //
     BOOL IsObjectOnBoard(const CDrawObj& pObj) const;
     void RemoveObject(const CDrawObj& pObj);
-    void LimitRectToBoard(CRect& rct) const;
+    void LimitRectToBoard(wxRect& rct) const;
     // ------- //
     void ExpungePieceList();
     // ------- //
@@ -137,7 +137,7 @@ public:
     bool NeedsGeoRotate() const;
     void Serialize(CArchive& ar);
 
-    CB::string GetCellNumberStr(CPoint pnt, TileScale eScale) const;
+    CB::string GetCellNumberStr(wxPoint pnt, TileScale eScale) const;
 
 // Vars...
 public:
@@ -201,7 +201,7 @@ protected:
 
 // Implementation
 protected:
-    CPoint  m_ptPrevPlot;       // Previous selected move point
+    wxPoint m_ptPrevPlot;       // Previous selected move point
     BOOL    m_bPlotMode;        // Plot move mode
 
     OwnerOrNullPtr<CDrawList> m_pPceList;      // Piece draw list

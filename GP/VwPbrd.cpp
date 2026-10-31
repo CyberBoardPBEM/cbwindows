@@ -1546,7 +1546,7 @@ void CPlayBoardView::OnUpdateIndicatorCellNum(wxUpdateUIEvent& pCmdUI)
         if (rct.Contains(point))
         {
             point = CalcUnscrolledPosition(point);
-            CB::string str = m_pPBoard->GetCellNumberStr(CB::Convert(point), m_nZoom);
+            CB::string str = m_pPBoard->GetCellNumberStr(point, m_nZoom);
             pCmdUI.Enable(true);
             pCmdUI.SetText(str);
         }
@@ -1942,10 +1942,10 @@ void CPlayBoardView::OnUpdateActPlotMove(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActPlotDone()
 {
-    if (m_pPBoard->GetPrevPlotPoint() != CPoint(-1, -1))
+    if (m_pPBoard->GetPrevPlotPoint() != wxPoint(-1, -1))
     {
         wxRect rct = CB::Convert(m_selList.GetPiecesEnclosingRect());
-        wxPoint ptPrev = CB::Convert(m_pPBoard->GetPrevPlotPoint());
+        wxPoint ptPrev = m_pPBoard->GetPrevPlotPoint();
         ptPrev -= wxSize(rct.GetWidth() / 2, rct.GetHeight() / 2);
         ptPrev = AdjustPoint(ptPrev);
 
