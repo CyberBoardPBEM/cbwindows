@@ -23,6 +23,7 @@
 //
 
 #include    "stdafx.h"
+
 #include    "WinState.h"
 #include    "Versions.h"
 #if !defined(GPLAY)
@@ -92,31 +93,8 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
             if (pWse.m_wWinCode == wincodeMainFrame)
             {
                 wxFrame& pWnd = dynamic_cast<wxFrame&>(CB::GetMainWndWx());
-                // TODO:  wxWidgets doesn't wrap all of this
-                CRect rctVScreen;
-                SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
-                int cxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-                if (cxVScreen > 0)
-                {
-                    // Multimonitor metrics are are supported
-                    int cyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-                    int xVScreen = GetSystemMetrics(SM_XVIRTUALSCREEN);
-                    int yVScreen = GetSystemMetrics(SM_YVIRTUALSCREEN);
-                    rctVScreen.SetRect(xVScreen, yVScreen, xVScreen + cxVScreen, yVScreen + cyVScreen);
-                }
-                else
-                {
-                    // Otherwise set the virtual screen rect to the primary
-                    // desktop dimensions.
-                    SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctVScreen, 0);
-                }
-                CRect rctDesktop;
-                SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)rctDesktop, 0);
 
-                /* TEST:  wx version of screen geometry
-                    This is a blind test since I don't have a
-                    multi-monitor setup */
-                const wxRect rctVScreenWx = [] {
+                const wxRect rctVScreen = [] {
                     wxRect retval;
                     for (unsigned i = unsigned(0) ; i < wxDisplay::GetCount() ; ++i)
                     {
@@ -124,21 +102,16 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
                     }
                     return retval;
                 }();
-                const wxRect rctDesktopWx = wxDisplay().GetClientArea();
-                if (CB::Convert(rctVScreenWx) != rctVScreen ||
-                    CB::Convert(rctDesktopWx) != rctDesktop)
-                {
-                    wxMessageBox(std::format("expected:{}, actual:{}\nexpected:{}, actual:{}", rctVScreen, rctVScreenWx, rctDesktop, rctDesktopWx), "wxDisplay problem");
-                }
+                const wxRect rctDesktop = wxDisplay().GetClientArea();
 
                 // Clone the saved window position for easier calculations
-                CRect rctSaved(pWse.m_wndState.rcNormalPosition);
+                wxRect rctSaved(reinterpret_cast<WIN_RECT&>(pWse.m_wndState.rcNormalPosition));
 
                 // Check if the Window's midpoint is visible. If so leave it's position alone.
-                if (!rctVScreen.PtInRect(rctSaved.CenterPoint()))
+                if (!rctVScreen.Contains(GetMidRect(rctSaved)))
                 {
                     // Force the window onto the primary desktop area.
-                    pWse.m_wndState.rcNormalPosition = rctDesktop;
+                    reinterpret_cast<WIN_RECT&>(pWse.m_wndState.rcNormalPosition) = rctDesktop;
                 }
                 if (pWse.m_wndState.showCmd == SW_SHOWMAXIMIZED)
                 {
@@ -147,7 +120,7 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
                 }
                 else
                 {
-                    wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
+                    wxRect rect = reinterpret_cast<WIN_RECT&>(pWse.m_wndState.rcNormalPosition);
                     pWnd.SetSize(rect.GetSize());
                 }
                 RestoreWindowState(pWnd, pWse);
@@ -156,7 +129,7 @@ void CWinStateManager::RestoreStateOfDocumentFrames()
             {
                 wxFrame& pWnd = OnGetFrameForWinStateElement(pWse);
                 pWnd.Raise();
-                wxRect rect = CB::Convert(pWse.m_wndState.rcNormalPosition);
+                wxRect rect = reinterpret_cast<WIN_RECT&>(pWse.m_wndState.rcNormalPosition);
                 pWnd.SetSize(rect.GetSize());
                 RestoreWindowState(pWnd, pWse);
             }
