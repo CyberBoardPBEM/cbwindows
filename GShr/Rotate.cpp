@@ -32,7 +32,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-using Points = std::array<POINT, 4>;    // Only rects in rot code
+using Points = std::array<wxPoint, 4>;    // Only rects in rot code
 
 /////////////////////////////////////////////////////////////////////
 
@@ -111,8 +111,8 @@ struct CDib::ImgEdge
 
 /////////////////////////////////////////////////////////////////////
 
-static CSize CalcRotatedRect(CSize size, int angle, Points& pSPnts, Points& pDPnts);
-static void RotatePoint(POINT& pt, int nSin, int nCos);
+static wxSize CalcRotatedRect(wxSize size, int angle, Points& pSPnts, Points& pDPnts);
+static void RotatePoint(wxPoint& pt, int nSin, int nCos);
 namespace {
     void RotatePoints(Points& pPnts, int nDegrees);
 }
@@ -144,8 +144,8 @@ namespace {
 CDib CDib::Rotate(int angle, wxColour crTrans) const
 {
 DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
-    ASSERT(0 <= angle && angle < 360);
-    ASSERT(angle != 0 || !"unnecessary call");
+    wxASSERT(0 <= angle && angle < 360);
+    wxASSERT(angle != 0 || !"unnecessary call");
     if (angle % 90 == 0)
     {
         return RotateFast(angle);
@@ -159,9 +159,9 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     // angle to maintain backward compatibility with existing games.
     angle = 360 - angle;
 
-    CSize sizeSrc(Width(), Height());
-    CSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
-    CDib pDDib = CreateTransparentColorDIB(CB::Convert(sizeDst), crTrans);
+    wxSize sizeSrc(Width(), Height());
+    wxSize sizeDst = CalcRotatedRect(sizeSrc, angle, pntSrc, pntDst);
+    CDib pDDib = CreateTransparentColorDIB(sizeDst, crTrans);
 
     // Find top and bottom point indexes
     size_t nTopPnt = size_t(0);
@@ -170,7 +170,7 @@ DBGREL_CPP20_TRACE("{}({} x {}, {}deg)\n", __func__, Width(), Height(), angle);
     {
         if (pntDst[i].y == 0)
             nTopPnt = i;
-        if (pntDst[i].y == sizeDst.cy - 1)
+        if (pntDst[i].y == sizeDst.y - 1)
             nBotPnt = i;
     }
 
@@ -253,12 +253,12 @@ static void RotateRectVector(Points& pPnts, int angle)
 
 /////////////////////////////////////////////////////////////////////
 
-static void LoadRectVector(CSize size, Points& pPnts)
+static void LoadRectVector(wxSize size, Points& pPnts)
 {
     pPnts[0].x = pPnts[3].x = 0;
-    pPnts[1].x = pPnts[2].x = size.cx - 1;
+    pPnts[1].x = pPnts[2].x = size.x - 1;
     pPnts[0].y = pPnts[1].y = 0;
-    pPnts[2].y = pPnts[3].y = size.cy - 1;
+    pPnts[2].y = pPnts[3].y = size.y - 1;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ static void CopyRectVector(const Points& pSrcPnts, Points& pDstPnts)
 
 /////////////////////////////////////////////////////////////////////
 
-static void FindRectVectorMinMax(const Points& pPnts, CPoint& pntMin, CPoint& pntMax)
+static void FindRectVectorMinMax(const Points& pPnts, wxPoint& pntMin, wxPoint& pntMax)
 {
     pntMin.x = INT_MAX;
     pntMax.x = INT_MIN;
@@ -299,23 +299,23 @@ static void FindRectVectorMinMax(const Points& pPnts, CPoint& pntMin, CPoint& pn
 
 /////////////////////////////////////////////////////////////////////
 
-static CSize CalcRotatedRect(CSize size, int angle, Points& pSPnts, Points& pDPnts)
+static wxSize CalcRotatedRect(wxSize size, int angle, Points& pSPnts, Points& pDPnts)
 {
     LoadRectVector(size, pSPnts);
     CopyRectVector(pSPnts, pDPnts);
-    int xHalf = size.cx / 2;
-    int yHalf = size.cy / 2;
+    int xHalf = size.x / 2;
+    int yHalf = size.y / 2;
     OffsetRectVector(pDPnts, -xHalf, -yHalf);
     RotateRectVector(pDPnts, angle);
 
-    CPoint pntMin;
-    CPoint pntMax;
+    wxPoint pntMin;
+    wxPoint pntMax;
     FindRectVectorMinMax(pDPnts, pntMin, pntMax);
 
     // Shove points back into the +x,+y quadrant
     OffsetRectVector(pDPnts, -pntMin.x, -pntMin.y);
 
-    return CSize(pntMax.x - pntMin.x + 1, pntMax.y - pntMin.y + 1);
+    return wxSize(pntMax.x - pntMin.x + 1, pntMax.y - pntMin.y + 1);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ void RotatePoints(Points& pPnts, int nDegrees)
 // Note: Cosine and Sine are scaled by 10000 to make them integers.
 // Rotation is Counter Clockwise rather than the CW convention.
 
-static void RotatePoint(POINT& pt, int nSin, int nCos)
+static void RotatePoint(wxPoint& pt, int nSin, int nCos)
 {
     int x = pt.x;
     int y = pt.y;
