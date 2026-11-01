@@ -112,7 +112,7 @@ public:
 } test;
 #endif
 
-#if 1
+#if 0
 namespace {
     // demonstrate MFC/wx discrepancy
     class RectDiscrepancy
