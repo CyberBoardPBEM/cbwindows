@@ -1077,10 +1077,10 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
 #endif
     }
 
-    wxRect rctSnapRef = CB::Convert(pSLst->GetSnapReferenceRect());
+    wxRect rctSnapRef = pSLst->GetSnapReferenceRect();
     wxPoint pntSnapRefTopLeft = rctSnapRef.GetTopLeft();
 
-    wxPoint pntMseOff = pntSnapRefTopLeft + CB::Convert(pSLst->GetMouseOffset());
+    wxPoint pntMseOff = pntSnapRefTopLeft + pSLst->GetMouseOffset();
     wxPoint sizeDelta = pdi_m_point - pntMseOff; // Trial delta
 
     rctSnapRef.Offset(sizeDelta);    // Calc trial new position
@@ -1091,7 +1091,7 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
     {
         // We still have to make sure the larger rect hasn't left the
         // playing area.
-        wxRect rctObjs = CB::Convert(pSLst->GetEnclosingRect());
+        wxRect rctObjs = pSLst->GetEnclosingRect();
         rctObjs.Offset(sizeDelta);               // Calc trial new position
         BOOL bXOK, bYOK;
         if (!IsRectFullyOnBoard(rctObjs, &bXOK, &bYOK))
@@ -1110,10 +1110,10 @@ void CPlayBoardView::DoDragSelectList(DragDropEvent& event)
             sizeDelta += temp.GetTopLeft() - rctObjs.GetTopLeft();
         }
         if (sizeDelta.x != 0 || sizeDelta.y != 0) // Check 'em again (what a pain!)
-            pSLst->Offset(CB::Convert(sizeDelta));
+            pSLst->Offset(sizeDelta);
     }
 
-    wxRect rctObjs = CB::Convert(pSLst->GetEnclosingRect());
+    wxRect rctObjs = pSLst->GetEnclosingRect();
     wxPoint pntTopLeft = rctObjs.GetTopLeft();
 
     if (pdi.m_phase == PhaseDrag::Over || pdi.m_phase == PhaseDrag::Enter)
@@ -1561,8 +1561,8 @@ void CPlayBoardView::DoViewScaleBrd(TileScale nZoom)
     wxPoint pntMid;
     if (m_selList.IsAnySelects())
     {
-        CRect rctSelection = m_selList.GetEnclosingRect();
-        pntMid = CB::Convert(rctSelection.CenterPoint());
+        wxRect rctSelection = m_selList.GetEnclosingRect();
+        pntMid = GetMidRect(rctSelection);
     }
     else
     {
@@ -1688,7 +1688,7 @@ void CPlayBoardView::OnActStack(wxCommandEvent& /*event*/)
 
 void CPlayBoardView::DoAutostackOfSelectedObjects(int xStagger, int yStagger)
 {
-    wxRect rct = CB::Convert(m_selList.GetPiecesEnclosingRect());
+    wxRect rct = m_selList.GetPiecesEnclosingRect();
     if (rct.IsEmpty())
         return;
 
@@ -1727,13 +1727,13 @@ void CPlayBoardView::OnUpdateActAutostackDeck(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActShuffleSelectedObjects(wxCommandEvent& /*event*/)
 {
-    CRect rct = m_selList.GetPiecesEnclosingRect();
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetPiecesEnclosingRect();
+    if (rct.IsEmpty())
         return;
 
     CGamDoc& pDoc = GetDocument();          // Shorthand pointer
 
-    CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+    wxPoint pntCenter(GetMidRect(rct));
 
     std::vector<RefPtr<CDrawObj>> tblObjs;
     m_selList.LoadTableWithObjectPtrs(tblObjs, CSelList::otPiecesMarks, TRUE);
@@ -1761,7 +1761,7 @@ void CPlayBoardView::OnActShuffleSelectedObjects(wxCommandEvent& /*event*/)
         // feedback during playback.
         CB::string strMsg = CB::string::Format(IDS_TIP_OBJS_SHUFFLED, tblRandObjs.size());
         pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
-            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+            pntCenter.x, pntCenter.y);
     }
 
     pDoc.PlaceObjectTableOnBoard(tblRandObjs, m_pPBoard.get());
@@ -1780,8 +1780,8 @@ void CPlayBoardView::OnUpdateActShuffleSelectedObjects(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActToFront(wxCommandEvent& /*event*/)
 {
-    CRect rct = m_selList.GetEnclosingRect();
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetEnclosingRect();
+    if (rct.IsEmpty())
         return;
 
     std::vector<CB::not_null<CDrawObj*>> listObjs;
@@ -1790,7 +1790,7 @@ void CPlayBoardView::OnActToFront(wxCommandEvent& /*event*/)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument().AssignNewMoveGroup();
-    GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(rct.TopLeft()),
+    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.GetTopLeft(),
         m_pPBoard.get(), placeTop);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1806,8 +1806,8 @@ void CPlayBoardView::OnUpdateActToFront(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActToBack(wxCommandEvent& /*event*/)
 {
-    CRect rct = m_selList.GetEnclosingRect();
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetEnclosingRect();
+    if (rct.IsEmpty())
         return;
 
     std::vector<CB::not_null<CDrawObj*>> listObjs;
@@ -1816,7 +1816,7 @@ void CPlayBoardView::OnActToBack(wxCommandEvent& /*event*/)
     m_selList.PurgeList(TRUE);          // Purge former selections
 
     GetDocument().AssignNewMoveGroup();
-    GetDocument().PlaceObjectTableOnBoard(listObjs, CB::Convert(rct.TopLeft()),
+    GetDocument().PlaceObjectTableOnBoard(listObjs, rct.GetTopLeft(),
         m_pPBoard.get(), placeBack);
 
     SelectAllObjectsInTable(listObjs);  // Reselect pieces
@@ -1855,7 +1855,7 @@ void CPlayBoardView::OnActTurnOver(wxCommandEvent& event)
     wxPoint pntCenter;
     if (flip == CPieceTable::fRandom)
     {
-        wxRect rct = CB::Convert(m_selList.GetPiecesEnclosingRect(FALSE));
+        wxRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
         wxASSERT(!rct.IsEmpty());
         pntCenter = GetMidRect(rct);
     }
@@ -1944,7 +1944,7 @@ void CPlayBoardView::OnActPlotDone()
 {
     if (m_pPBoard->GetPrevPlotPoint() != wxPoint(-1, -1))
     {
-        wxRect rct = CB::Convert(m_selList.GetPiecesEnclosingRect());
+        wxRect rct = m_selList.GetPiecesEnclosingRect();
         wxPoint ptPrev = m_pPBoard->GetPrevPlotPoint();
         ptPrev -= wxSize(rct.GetWidth() / 2, rct.GetHeight() / 2);
         ptPrev = AdjustPoint(ptPrev);
@@ -2158,7 +2158,7 @@ void CPlayBoardView::DoRotateRelative(BOOL bWheelRotation)
 
     m_selList.LoadTableWithObjectPtrs(m_tblCurPieces, CSelList::otAll, FALSE);
 
-    wxRect rctGroupRect = CB::Convert(m_selList.GetPiecesEnclosingRect());
+    wxRect rctGroupRect = m_selList.GetPiecesEnclosingRect();
     m_pntWheelMid = GetMidRect(rctGroupRect);
 
     for (size_t i = size_t(0) ; i < m_tblCurPieces.size() ; ++i)
@@ -2553,11 +2553,11 @@ void CPlayBoardView::OnUpdateActLockSuspend(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActTakeOwnership(wxCommandEvent& /*event*/)
 {
-    CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
+    if (rct.IsEmpty())
         return;
 
-    CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+    wxPoint pntCenter(GetMidRect(rct));
 
     CGamDoc& pDoc = GetDocument();
 
@@ -2573,7 +2573,7 @@ void CPlayBoardView::OnActTakeOwnership(wxCommandEvent& /*event*/)
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
         pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
-            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+            pntCenter.x, pntCenter.y);
     }
 
     pDoc.SetPieceOwnershipTable(tblPieces, pDoc.GetCurrentPlayerMask());
@@ -2602,11 +2602,11 @@ void CPlayBoardView::OnUpdateActTakeOwnership(wxUpdateUIEvent& pCmdUI)
 
 void CPlayBoardView::OnActReleaseOwnership(wxCommandEvent& /*event*/)
 {
-    CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
+    if (rct.IsEmpty())
         return;
 
-    CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+    wxPoint pntCenter(GetMidRect(rct));
 
     CGamDoc& pDoc = GetDocument();
 
@@ -2622,7 +2622,7 @@ void CPlayBoardView::OnActReleaseOwnership(wxCommandEvent& /*event*/)
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_RELEASED);
         pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
-            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+            pntCenter.x, pntCenter.y);
     }
 
     pDoc.SetPieceOwnershipTable(tblPieces, OWNER_MASK_SPECTATOR);
@@ -2652,8 +2652,8 @@ void CPlayBoardView::OnUpdateActReleaseOwnership(wxUpdateUIEvent& pCmdUI)
 void CPlayBoardView::OnActSetOwner(wxCommandEvent& /*event*/)
 {
     CGamDoc& pDoc = GetDocument();
-    CRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
-    if (rct.IsRectEmpty())
+    wxRect rct = m_selList.GetPiecesEnclosingRect(FALSE);
+    if (rct.IsEmpty())
         return;
 
     CSelectNewOwnerDialog dlg(CheckedDeref(pDoc.GetPlayerManager()));
@@ -2665,7 +2665,7 @@ void CPlayBoardView::OnActSetOwner(wxCommandEvent& /*event*/)
 
     PlayerMask dwNewOwnerMask = CPlayerManager::GetMaskFromPlayerNum(dlg.m_nPlayer);
 
-    CPoint pntCenter(MidPnt(rct.left, rct.right), MidPnt(rct.top, rct.bottom));
+    wxPoint pntCenter(GetMidRect(rct));
 
     std::vector<PieceID> tblPieces;
     m_selList.LoadTableWithOwnerStatePieceIDs(tblPieces, m_selList.LF_BOTH);
@@ -2678,7 +2678,7 @@ void CPlayBoardView::OnActSetOwner(wxCommandEvent& /*event*/)
         // feedback during playback.
         CB::string strMsg = CB::string::LoadString(IDS_TIP_OWNER_ACQUIRED);
         pDoc.RecordEventMessage(strMsg, m_pPBoard->GetSerialNumber(),
-            value_preserving_cast<int>(pntCenter.x), value_preserving_cast<int>(pntCenter.y));
+            pntCenter.x, pntCenter.y);
     }
 
     pDoc.SetPieceOwnershipTable(tblPieces, dwNewOwnerMask);
