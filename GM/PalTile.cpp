@@ -99,11 +99,11 @@ void CTilePalette::Serialize(CArchive& ar)
 #pragma message("TODO--> Serialize current indices <--TODO")
     if (ar.IsStoring())
     {
-        ar << CRect();
+        ar << wxRect();
     }
     else
     {
-        CRect junk;
+        wxRect junk;
         ar >> junk;
     }
 }
