@@ -59,11 +59,11 @@ const int hitPtB         = 1;
 // this list. This is done to prevent an even number of XOR's
 // essentially erasing a grab handle.
 
-class CHandleList : public CList< POINT, POINT& >
+class CHandleList : public std::list<wxPoint>
 {
 // Methods
 public:
-    void AddHandle(POINT pntNew);
+    void AddHandle(const wxPoint& pntNew);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -82,18 +82,18 @@ public:
 // Attributes
 public:
     RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
-    CRect     m_rect;           // Enclosing rect for selected object
+    wxRect     m_rect;           // Enclosing rect for selected object
 
     virtual wxCursor GetHandleCursor(int nHandle) const /* override */
         { return wxCursor(wxCURSOR_ARROW); }
-    virtual CRect GetRect() const /* override */ { return m_rect; }
+    virtual wxRect GetRect() const /* override */ { return m_rect; }
 
 // Operations
 public:
-    virtual int HitTestHandles(CPoint point) const /* override */;
+    virtual int HitTestHandles(wxPoint point) const /* override */;
     // ------- //
-    virtual void MoveHandle(int m_nHandle, CPoint point) /* override */ {}
-    virtual void Offset(CPoint ptDelta) /* override */ { m_rect += ptDelta; }
+    virtual void MoveHandle(int m_nHandle, wxPoint point) /* override */ {}
+    virtual void Offset(wxPoint ptDelta) /* override */ { m_rect.Offset(ptDelta); }
     // ------- //
     virtual void DrawTracker(wxDC& pDC, TrackMode eMode) const /* override */;
     virtual void InvalidateHandles() /* override */;
@@ -106,8 +106,8 @@ public:
 
 // Miscellaneous Implementer's Overrides
 protected:
-    virtual CRect GetHandleRect(int nHandleID) const /* override */;
-    virtual CPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
+    virtual wxRect GetHandleRect(int nHandleID) const /* override */;
+    virtual wxPoint GetHandleLoc(int nHandleID) const /* override */ = 0;
     virtual int GetHandleCount() const /* override */ = 0;
     virtual void DrawHandles(wxDC& pDC) const /* override */;
     virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const /* override */ = 0;
@@ -141,21 +141,21 @@ class CSelLine : public CSelection
 // Constructors
 public:
     CSelLine(CPlayBoardView& pView, CLine& pObj) : CSelection(pView, pObj)
-        { m_rect = CB::Convert(pObj.GetLine()); }
+        { m_rect = pObj.GetLine(); }
 
 // Attributes
 public:
-    virtual CRect GetRect() const override;
+    virtual wxRect GetRect() const override;
 
 // Overrides
 public:
     wxCursor GetHandleCursor(int nHandleID) const override;
-    virtual void MoveHandle(int m_nHandle, CPoint point) override;
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override;
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
     virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 2; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
@@ -171,18 +171,18 @@ class CSelGeneric : public CSelection
 // Constructors
 public:
     CSelGeneric(CPlayBoardView& pView, CDrawObj& pObj) : CSelection(pView, pObj)
-        { m_rect = CB::Convert(pObj.GetRect()); }
+        { m_rect = pObj.GetRect(); }
 
 // Overrides
 public:
     wxCursor GetHandleCursor(int nHandleID) const override
         { return wxCursor(wxCURSOR_ARROW); }
-    virtual void MoveHandle(int m_nHandle, CPoint point) override {}
+    virtual void MoveHandle(int m_nHandle, wxPoint point) override {}
 
 protected:
     virtual void AddHandles(CHandleList& listHandles) override;
     virtual void DrawTrackingImage(wxDC& pDC, TrackMode eMode) const override;
-    virtual CPoint GetHandleLoc(int nHandleID) const override;
+    virtual wxPoint GetHandleLoc(int nHandleID) const override;
     virtual int GetHandleCount() const override { return 4; }
     virtual void UpdateObject(BOOL bInvalidate = TRUE,
         BOOL bUpdateObjectExtent = TRUE) override;
@@ -226,17 +226,17 @@ public:
     BOOL HasFlippablePieces() const;
     BOOL IsMarkerSelected() const;
     // -------- //
-    void SetMouseOffset(CSize size) { m_sizeMseOffset = size; }
-    CSize GetMouseOffset() const { return m_sizeMseOffset; }
+    void SetMouseOffset(wxSize size) { m_sizeMseOffset = size; }
+    wxSize GetMouseOffset() const { return m_sizeMseOffset; }
     // -------- //
     void SetSnapReferenceObject(CDrawObj* pObj);
-    CRect GetSnapReferenceRect() const;
+    wxRect GetSnapReferenceRect() const;
     // -------- //
     CPlayBoardView& GetView() { return *m_pView; }
     void SetTrackingMode(TrackMode eTrkMode) { m_eTrkMode = eTrkMode; }
     TrackMode GetTrackingMode() const { return m_eTrkMode; }
-    CRect GetEnclosingRect() const { return m_rctEncl; }
-    CRect GetPiecesEnclosingRect(BOOL bIncludeMarkers = TRUE) const;
+    wxRect GetEnclosingRect() const { return m_rctEncl; }
+    wxRect GetPiecesEnclosingRect(BOOL bIncludeMarkers = TRUE) const;
 
 // Operations
 public:
@@ -261,10 +261,10 @@ public:
     void CountDObjFlags(DWORD dwFlagBits, int& nSet, int& nCleared) const;
     void DeselectIfDObjFlagsSet(DWORD dwFlagBits);
     // -------- //
-    int  HitTestHandles(CPoint point) const;
+    int  HitTestHandles(wxPoint point) const;
     // -------- //
-    void Offset(CPoint ptDelta);
-    void MoveHandle(int m_nHandle, CPoint point);
+    void Offset(wxPoint ptDelta);
+    void MoveHandle(int m_nHandle, wxPoint point);
     // -------- //
     void OnDraw(wxDC& pDC);  // Called by view OnDraw()
     void DrawTracker(wxDC& pDC, TrackMode eTrkMode = trkCurrent);
@@ -288,8 +288,8 @@ protected:
 protected:
     RefPtr<CPlayBoardView> m_pView;        // Selection's view
     TrackMode       m_eTrkMode;     // Current list tracking mode.
-    CRect           m_rctEncl;      // Enclosing rect.
-    CSize           m_sizeMseOffset;// Mouse offset from upper left m_rctEncl
+    wxRect          m_rctEncl;      // Enclosing rect.
+    wxSize          m_sizeMseOffset;// Mouse offset from upper left m_rctEncl
     CDrawObj*       m_pobjSnapReference;// Reference for snap grid processing
 
     // List of uniqeue handle coordinates. No coordinate is duplicated.

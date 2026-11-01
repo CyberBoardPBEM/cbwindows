@@ -117,7 +117,7 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
 
     // If a a handle is clicked on, immediately start tracking the
     // resize.
-    if ((m_nHandleID = pSLst.HitTestHandles(CB::Convert(point))) >= 0)
+    if ((m_nHandleID = pSLst.HitTestHandles(point)) >= 0)
     {
         StartSizingOperation(pView, nMods, point);
         return;
@@ -170,9 +170,9 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
         CPlayTool::OnLButtonDown(pView, nMods, point);
         StartDragTimer(pView);
 
-        wxRect rct = CB::Convert(pSLst.GetEnclosingRect());
+        wxRect rct = pSLst.GetEnclosingRect();
         wxPoint sizeOff = point - rct.GetTopLeft();
-        pSLst.SetMouseOffset(CSize(sizeOff.x, sizeOff.y));
+        pSLst.SetMouseOffset(wxSize(sizeOff.x, sizeOff.y));
         return;
     }
     // At this point we know s/he clicked on an object that was
@@ -187,9 +187,9 @@ void CPSelectTool::OnLButtonDown(CPlayBoardView& pView, int nMods,
     CPlayTool::OnLButtonDown(pView, nMods, point);
 
     pSLst.SetSnapReferenceObject(pObj);
-    wxRect rct = CB::Convert(pSLst.GetSnapReferenceRect());
+    wxRect rct = pSLst.GetSnapReferenceRect();
     wxPoint sizeOff = point - rct.GetTopLeft();
-    pSLst.SetMouseOffset(CSize(sizeOff.x, sizeOff.y));
+    pSLst.SetMouseOffset(wxSize(sizeOff.x, sizeOff.y));
 
     StartDragTimer(pView);
 }
@@ -347,7 +347,7 @@ wxCursor CPSelectTool::OnSetCursor(const CPlayBoardView& pView, const wxPoint& p
         // Check if cursor is over a handle. If it is,
         // get handle cursor.
         const CSelection& pSelObj = *pSLst.front();
-        int nHandle = pSelObj.HitTestHandles(CB::Convert(point));
+        int nHandle = pSelObj.HitTestHandles(point);
         if (nHandle >= 0)
         {
             return pSelObj.GetHandleCursor(nHandle);
@@ -390,10 +390,10 @@ void CPSelectTool::MoveSelections(CSelList &pSLst, const wxPoint& point)
     if (m_eSelMode == smodeMove)
     {
         wxPoint ptDelta = point - c_ptLast;
-        pSLst.Offset(CB::Convert(ptDelta));
+        pSLst.Offset(ptDelta);
     }
     else
-        pSLst.MoveHandle(m_nHandleID, CB::Convert(point));
+        pSLst.MoveHandle(m_nHandleID, point);
 }
 
 wxPoint CPSelectTool::AdjustPoint(const CPlayBoardView& pView, wxPoint point) const
@@ -403,7 +403,7 @@ wxPoint CPSelectTool::AdjustPoint(const CPlayBoardView& pView, wxPoint point) co
         return point;
     if (m_eSelMode == smodeMove)
     {
-        wxRect rct = CB::Convert(pView.GetSelectList().GetEnclosingRect());
+        wxRect rct = pView.GetSelectList().GetEnclosingRect();
         wxPoint pnt = pView.GetWorkspaceDim();
         if (rct.GetLeft() + point.x - c_ptLast.x < 0)        // Clamp
             point.x = c_ptLast.x - rct.GetLeft();
