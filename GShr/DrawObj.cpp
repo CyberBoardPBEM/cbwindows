@@ -1226,14 +1226,6 @@ void CTileImage::SetTile(int x, int y, TileID tid)
     m_rctExtent.SetTop(y);
     m_rctExtent.SetWidth(value_preserving_cast<int>(tile.GetWidth()));
     m_rctExtent.SetHeight(value_preserving_cast<int>(tile.GetHeight()));
-#if 1   // TODO:  remove test
-    CRect test;
-    test.left = test.right = x;
-    test.top = test.bottom = y;
-    test.right += value_preserving_cast<int>(tile.GetWidth());
-    test.bottom += value_preserving_cast<int>(tile.GetHeight());
-    wxASSERT(CB::Convert(m_rctExtent) == test);
-#endif
 }
 
 BOOL CTileImage::HitTest(wxPoint pt)
@@ -1351,18 +1343,8 @@ BOOL CText::SetFont(FontID fid)
 
     // Compute (new) dimensions
     wxSize sizeTxt = mDC1.GetTextExtent(m_text);
-#if 1
-CRect test;
-test.left = m_rctExtent.GetLeft();
-test.top = m_rctExtent.GetTop();
-#endif
     m_rctExtent.SetWidth(sizeTxt.x);
     m_rctExtent.SetHeight(sizeTxt.y);
-#if 1
-test.right = test.left + sizeTxt.x;
-test.bottom = test.top + sizeTxt.y;
-wxASSERT(CB::Convert(m_rctExtent) == test);
-#endif
 
     return TRUE;
 }
