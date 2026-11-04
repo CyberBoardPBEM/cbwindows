@@ -675,6 +675,10 @@ void CGamDoc::SerializeScenarioOrGame(CArchive& ar, uint64_t& offsetOffsetFeatur
         m_pWinState = NULL;
         if (m_bSaveWindowPositions)
         {
+            /* The CB4 windows are too different from the CB3
+                windows for me to think it's worth the effort
+                to try to generate CB3-compatible window
+                layouts */
             if (GetCBFeatures().Check(ftrAuiLayout))
             {
                 CB::AddFeature(ar, ftrAuiLayout);
