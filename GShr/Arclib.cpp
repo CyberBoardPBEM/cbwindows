@@ -1,6 +1,6 @@
 // Arclib.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2026 By Dale L. Larson & William Su, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,27 +28,6 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-void ReadArchivePoints(CArchive& ar, POINT* pPnts, size_t nPnts)
-{
-    while (nPnts--)
-    {
-        uint16_t sTmp;
-        ar >> sTmp; pPnts->x = sTmp;
-        ar >> sTmp; pPnts->y = sTmp;
-        ++pPnts;
-    }
-}
-
-void WriteArchivePoints(CArchive& ar, const POINT* pPnts, size_t nPnts)
-{
-    while (nPnts--)
-    {
-        ar << value_preserving_cast<uint16_t>(pPnts->x);
-        ar << value_preserving_cast<uint16_t>(pPnts->y);
-        ++pPnts;
-    }
-}
 
 void WriteArchivePoints(CArchive& ar, const std::vector<wxPoint>& pPnts)
 {

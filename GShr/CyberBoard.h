@@ -463,11 +463,17 @@ static_assert(static_cast<std::underlying_type_t<WIN32_FF>>(WIN32_FF::DECORATIVE
 #define CListBox ***poison***
 #define CMenu ***poison***
 #define CPen ***poison***
+#define CPoint ***poison***
+#define CRect ***poison***
+#define CSize ***poison***
 #define CWnd ***poison***
 #define HCURSOR ***poison***
 #define HFONT ***poison***
 #define LOGFONT ***poison***
 #define LPLOGFONT ***poison***
+#define POINT ***poison***
+#define RECT ***poison***
+#define SIZE ***poison***
 #define TEXTMETRIC ***poison***
 
 #undef COLORREF
@@ -524,82 +530,6 @@ public:
 
 template<typename T, typename CharT>
 struct std::formatter<T*, CharT> : public std::formatter<const T*, CharT>
-{
-};
-
-template<typename CharT>
-struct std::formatter<SIZE, CharT> : private std::formatter<decltype(SIZE::cx), CharT>
-{
-private:
-    using BASE = formatter<decltype(SIZE::cx), CharT>;
-public:
-    using BASE::parse;
-
-    template<typename FormatContext>
-    FormatContext::iterator format(const SIZE& s, FormatContext& ctx) const
-    {
-        std::format_to(ctx.out(), "(");
-        BASE::format(s.cx, ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(s.cy, ctx);
-        return std::format_to(ctx.out(), ")");
-    }
-};
-
-template<typename CharT>
-struct std::formatter<CSize, CharT> : public std::formatter<SIZE, CharT>
-{
-};
-
-template<typename CharT>
-struct std::formatter<POINT, CharT> : private std::formatter<decltype(POINT::x), CharT>
-{
-private:
-    using BASE = formatter<decltype(POINT::x), CharT>;
-public:
-    using BASE::parse;
-
-    template<typename FormatContext>
-    FormatContext::iterator format(const POINT& p, FormatContext& ctx) const
-    {
-        std::format_to(ctx.out(), "(");
-        BASE::format(p.x, ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(p.y, ctx);
-        return std::format_to(ctx.out(), ")");
-    }
-};
-
-template<typename CharT>
-struct std::formatter<CPoint, CharT> : public std::formatter<POINT, CharT>
-{
-};
-
-template<typename CharT>
-struct std::formatter<RECT, CharT> : private std::formatter<decltype(RECT::left), CharT>
-{
-private:
-    using BASE = formatter<decltype(RECT::left), CharT>;
-public:
-    using BASE::parse;
-
-    template<typename FormatContext>
-    FormatContext::iterator format(const RECT& r, FormatContext& ctx) const
-    {
-        std::format_to(ctx.out(), "(");
-        BASE::format(r.left, ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(r.top, ctx);
-        std::format_to(ctx.out(), " - ");
-        BASE::format(r.right, ctx);
-        std::format_to(ctx.out(), ",");
-        BASE::format(r.bottom, ctx);
-        return std::format_to(ctx.out(), ")");
-    }
-};
-
-template<typename CharT>
-struct std::formatter<CRect, CharT> : public std::formatter<RECT, CharT>
 {
 };
 
@@ -2503,64 +2433,6 @@ namespace CB
     CB_XRC_CTRL_VAL(ctrl*&, int&, min, max)
 */
 #define CB_XRC_CTRL_VAL(ctrl, ...) , ctrl(&CB::SetValidator(*XRCCTRL(*this, #ctrl, std::remove_reference_t<decltype(*ctrl)>), __VA_ARGS__))
-
-// provide conversions between MS and wx types
-namespace CB
-{
-    inline wxPoint Convert(const POINT& p)
-    {
-        return wxPoint(p.x, p.y);
-    }
-
-    inline CPoint Convert(const wxPoint& p)
-    {
-        return CPoint(p.x, p.y);
-    }
-
-    inline wxSize Convert(const SIZE& sz)
-    {
-        return wxSize(sz.cx, sz.cy);
-    }
-
-    inline CSize Convert(const wxSize& sz)
-    {
-        return CSize(sz.x, sz.y);
-    }
-
-    // see GM.cpp RectDiscrepancy
-    inline wxRect Convert(const RECT& r)
-    {
-        return wxRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
-    }
-
-    // see GM.cpp RectDiscrepancy
-    inline CRect Convert(const wxRect& r)
-    {
-        return CRect(r.GetLeft(), r.GetTop(), r.GetRight() + 1, r.GetBottom() + 1);
-    }
-
-    inline std::vector<POINT> Convert(const std::vector<wxPoint>& v)
-    {
-        std::vector<POINT> retval;
-        retval.reserve(v.size());
-        for (const wxPoint& p : v)
-        {
-            retval.emplace_back(CB::Convert(p));
-        }
-        return retval;
-    }
-
-    inline std::vector<wxPoint> Convert(const std::vector<POINT>& v)
-    {
-        std::vector<wxPoint> retval;
-        retval.reserve(v.size());
-        for (const POINT& p : v)
-        {
-            retval.emplace_back(CB::Convert(p));
-        }
-        return retval;
-    }
-}
 
 // emulate MFC features
 namespace CB

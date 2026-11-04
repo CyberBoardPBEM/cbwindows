@@ -685,29 +685,11 @@ public:
     UINT     m_nLineWidth;
 
     void SetLine(int xBeg, int yBeg, int xEnd, int yEnd);
-#if 1   // TODO:  remove test
-    void GetLineMfc(CRect& rct) const
-        { rct.left =m_ptBeg.x; rct.top = m_ptBeg.y;
-            rct.right = m_ptEnd.x; rct.bottom = m_ptEnd.y; }
-#endif
     wxRect GetLine() const
     {
-        wxRect retval(wxPoint(m_ptBeg.x, m_ptBeg.y),
+        return wxRect(wxPoint(m_ptBeg.x, m_ptBeg.y),
                         wxSize(m_ptEnd.x - m_ptBeg.x, m_ptEnd.y - m_ptBeg.y));
-#if 1   // TODO:  remove test
-        CRect check;
-        GetLineMfc(check);
-        wxASSERT(CB::Convert(retval) == check);
-#endif
-        return retval;
     }
-
-#if 0
-    void GetLine(long& xBeg, long& yBeg, long& xEnd, long& yEnd)
-        { xBeg = m_ptBeg.x; yBeg = m_ptBeg.y; xEnd = m_ptEnd.x; yEnd = m_ptEnd.y; }
-    void GetLine(POINT& ptBeg, POINT& ptEnd)
-        { ptBeg = m_ptBeg; ptEnd = m_ptEnd; }
-#endif
 
     virtual wxRect GetEnclosingRect() const override;
     virtual enum CDrawObjType GetType() const override { return drawLine; }
